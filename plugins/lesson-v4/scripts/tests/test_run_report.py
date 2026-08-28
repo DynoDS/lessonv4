@@ -7,9 +7,9 @@ or:
 
 `validate-run-report.py` proves the one complete run report: headings in
 order, package status honest, every earned resource accounted for, every
-delivered path real, and the completion records matching the orchestration
-audit. These tests exercise it against fixture reports rather than against
-any particular prose.
+delivered path real, and retained picture/friction evidence reported. These
+tests exercise it against fixture reports rather than against any particular
+prose.
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def run_validator(*args: str) -> subprocess.CompletedProcess:
 
 
 class RunReportCase(unittest.TestCase):
-    """A working dir with earned resources, real output paths and an audit."""
+    """A working dir with earned resources and real output paths."""
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -50,19 +50,6 @@ class RunReportCase(unittest.TestCase):
         self.worksheets_out.write_bytes(b"worksheet fixture")
         self.answers_out = self.output / "Beatrix Potter - Answers.txt"
         self.answers_out.write_bytes(b"answers fixture")
-
-        self.write_json(
-            self.working / "orchestration-audit.json",
-            {
-                "schemaVersion": 1,
-                "contracts": 2,
-                "receipts": 2,
-                "missingReceipts": [],
-                "unexpectedReceipts": [],
-                "invalidReceipts": [],
-                "status": "PASS",
-            },
-        )
 
         self.report = self.working / "run-report.md"
 
@@ -86,7 +73,6 @@ class RunReportCase(unittest.TestCase):
             "picture": "- None.",
             "helper": "- None.",
             "friction": "- None.",
-            "completion": "contracts=2 receipts=2",
             "shared": "Status: NOT REQUIRED",
         }
         parts.update(overrides or {})
@@ -101,7 +87,6 @@ class RunReportCase(unittest.TestCase):
             f"## Picture results\n\n{parts['picture']}\n\n"
             f"## Helper gaps\n\n{parts['helper']}\n\n"
             f"## Friction\n\n{parts['friction']}\n\n"
-            f"## Completion records\n\n{parts['completion']}\n\n"
             f"## Shared investigation log\n\n{parts['shared']}\n"
         )
         self.report.write_text(body, encoding="utf-8")
@@ -171,7 +156,7 @@ class TestRunReport(RunReportCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("path does not exist", result.stdout)
 
-    def test_missing_failed_attempt_is_rejected(self):
+    def test_legacy_failed_attempt_receipt_is_not_a_report_dependency(self):
         self.write_json(
             self.working / "orchestration-receipts" / "worksheet-builder-repair-1.json",
             {
@@ -185,14 +170,6 @@ class TestRunReport(RunReportCase):
             },
         )
         report = self.write_report(overrides={"outcome": "Package status: PARTIAL"})
-        result = self.validate(report)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("worksheet-builder-repair-1", result.stdout)
-
-        report = self.write_report(overrides={
-            "outcome": "Package status: PARTIAL",
-            "build": "- worksheet-builder-repair-1: FAILED",
-        })
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
@@ -217,7 +194,7 @@ class TestRunReport(RunReportCase):
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_helper_gap_must_be_named(self):
+    def test_legacy_helper_receipt_is_not_a_report_dependency(self):
         self.write_json(
             self.working / "orchestration-receipts" / "slide-designer-helper-1.json",
             {
@@ -228,14 +205,6 @@ class TestRunReport(RunReportCase):
             },
         )
         report = self.write_report(overrides={"outcome": "Package status: PARTIAL"})
-        result = self.validate(report)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("slide-designer-helper-1", result.stdout)
-
-        report = self.write_report(overrides={
-            "outcome": "Package status: PARTIAL",
-            "helper": "- slide-designer-helper-1: SLIDE_HELPER_GAP",
-        })
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
@@ -254,14 +223,14 @@ class TestRunReport(RunReportCase):
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_audit_count_mismatch_is_rejected(self):
-        report = self.write_report(
-            overrides={"completion": "contracts=9 receipts=9"}
+    def test_legacy_audit_is_not_required(self):
+        self.write_json(
+            self.working / "orchestration-audit.json",
+            {"status": "FAIL", "contracts": 99, "receipts": 0},
         )
+        report = self.write_report()
         result = self.validate(report)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("contracts=9", result.stdout)
-        self.assertIn("2", result.stdout)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_queued_shared_log_without_path_is_rejected(self):
         report = self.write_report(

@@ -1,0 +1,654 @@
+# Make Lesson — Lightweight runtime playbook
+
+This is the active runtime playbook. It deliberately avoids a generic job
+controller. The host launches named workers directly, waits through the host's
+normal worker lifecycle, and runs deterministic checks at meaningful file
+boundaries. Do not create orchestration job specs, completion events, worker
+snapshots, transition receipts, scheduler audits or latency reports.
+
+## Lightweight execution protocol
+
+For a named model worker:
+
+1. give it only its role file, authoritative input paths, owned output paths,
+   required check and terminal marker;
+2. launch it directly with clean context;
+3. wait for it through the host's ordinary worker-wait mechanism;
+4. require its owned files and exact terminal marker;
+5. run the named deterministic validator immediately.
+
+Independent workers may run in parallel. Never launch two workers that own the
+same file. A downstream worker starts only after its authoritative input has
+passed its deterministic check.
+
+Retry once only for an infrastructure failure: a launch that never starts, a
+terminated tool session, or a worker that stalls without writing usable output.
+Use a fresh clean-context worker with the same saved inputs. Do not retry a
+completed semantic result merely because it is inconvenient. Use the explicit
+redesign or focused-repair route instead. After the one infrastructure retry,
+preserve clean outputs from unrelated branches and report the affected output
+as incomplete.
+
+Canonical validated files are the checkpoints. On an interrupted run, resume
+from the latest checkpoint whose validator still passes and whose upstream
+teacher input belongs to this working directory. Do not manufacture a second
+queue or receipt system.
+
+Run deterministic commands directly. Require their exit status, exact success
+marker, and structured summary when the command defines one. A failed build may
+receive its one documented focused repair; do not wrap ordinary commands in
+model workers.
+
+The picture stage is the sole evidence-heavy exception. Keep its immutable
+schema-2 assignments, staged worker results, per-filename terminal receipts and
+final provenance because they protect external-source licensing, generated-
+image history and partial publication. These picture records do not require or
+authorise the generic orchestration controller.
+
+---
+
+## Before Each Run: Know What Exists
+
+Check the named agents under `[PLUGIN_ROOT]/agents/`. `lesson-designer` is
+required. Missing optional agents skip only their resource or review:
+
+- no `design-reviewer`: use the validated design and report review skipped;
+- no `adaptation-designer`: build only the expected-range worksheet;
+- no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
+  that output;
+- no visual reviewer: keep the build but report its review as `UNVERIFIED`;
+- no image scout: omit unresolved pictures under the normal degradation rule.
+
+Check fixed builders only when their resource is earned. Never spawn a model to
+imitate a missing fixed builder.
+
+### Gather and preserve the brief
+
+Require a Year 1–6 and learning objective. Infer only what is explicit or fixed
+by the routing rules; ask only when year or subject is genuinely ambiguous.
+
+Create `[OUTPUT_DIR]/working/[lesson-slug]` after deriving the slug with
+`scripts/slugify.js`. Archive an existing non-empty working folder to the lowest
+unused ` (N)` sibling before starting a fresh run. Create its `unsplash/`
+subfolder.
+
+Write the teacher's original message verbatim to
+`[WORKING_DIR]/teacher-brief.txt`, read it back once, and require an exact match.
+Store clarification replies separately as
+`teacher-clarifications/001.txt`, `002.txt`, and so on. Put genuinely useful
+host inference in `orchestrator-context.md`; it never overrides teacher text.
+
+A separately supplied lesson plan remains `LESSON_PLAN_INPUT`; a supplied
+worksheet remains `TEACHER_WORKSHEET_INPUT`. Do not paste either into the brief.
+Only Lesson Designer, Design Reviewer and Adaptation Designer may read raw
+teacher-authored files.
+
+Resolve the filing destination with `scripts/resolve-filing.py` using the first
+explicit year and subject in teacher-authored input, then the fixed LO-to-subject
+lookup in the main skill. Tell the teacher the destination before generation.
+
+For direct fixed slides, worksheets and stick-in sheets, let
+`run-fixed-resource.py` own output-family collision archiving. The retained wall
+builder owns its wall-family archive.
+
+---
+
+## Phase 1 — Run the Lesson Designer (Sequential, Blocking)
+
+Launch `lesson-designer` directly. Respect the model and effort declared in its
+frontmatter.
+
+```text
+You are the lesson designer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/lesson-designer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt
+[TEACHER_CLARIFICATION_FILES when present]
+[ORCHESTRATOR_CONTEXT_FILE when present]
+[LESSON_PLAN_INPUT when supplied]
+[TEACHER_WORKSHEET_INPUT when supplied]
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/design-decisions.md
+- [WORKING_DIR]/lesson-design.json
+- [WORKING_DIR]/photo-requirements.json
+- [WORKING_DIR]/lesson-design-scaffold-request.initial.json
+
+SUCCESS_CHECK:
+python3 "[PLUGIN_ROOT]/scripts/lesson-design-scaffold.py" \
+  --request "[WORKING_DIR]/lesson-design-scaffold-request.initial.json" \
+  --lesson-design "[WORKING_DIR]/lesson-design.json" \
+  --photo-requirements "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_SCAFFOLD_OK
+
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_OK
+
+TERMINAL_STATE: COMPLETE
+```
+
+After return, require the four outputs and run both success checks yourself.
+Then run:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/check-photo-cap.py" \
+  "[WORKING_DIR]/photo-requirements.json"
+```
+
+If the picture cap exceeds 16, run one focused Lesson Designer revision against
+the current three canonical design files. Preserve learning-critical picture
+jobs, edit only the picture prioritisation and genuinely consequential content,
+do not add `adaptation-photo-###`, and do not rewrite the initial scaffold
+request. Re-run the design validator and photo-cap check.
+
+Carry every `flagsForTeacher` entry into the final report.
+
+---
+
+## Phase 1.25 — Review the Design (Sequential, Blocking)
+
+Skip only when `design-reviewer` is absent. Otherwise prepare its compact view
+directly—no job or successor manifest:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/design-review-packet.py" prepare \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --teacher-brief "[WORKING_DIR]/teacher-brief.txt" \
+  [one --teacher-clarification per file] \
+  [--orchestrator-context ...] \
+  [--lesson-plan-input ...] \
+  [--teacher-worksheet-input ...] \
+  --preflight-output "[WORKING_DIR]/design-review-preflight.json" \
+  --reference-output "[WORKING_DIR]/design-review-reference.md" \
+  --view-output "[WORKING_DIR]/design-review-view.md"
+```
+
+Require `DESIGN_REVIEW_PREFLIGHT_OK`, then launch the reviewer directly:
+
+```text
+You are the design reviewer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/design-reviewer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+DESIGN_REVIEW_REFERENCE: [WORKING_DIR]/design-review-reference.md
+DESIGN_REVIEW_VIEW: [WORKING_DIR]/design-review-view.md
+TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt
+[the same optional teacher inputs supplied to Lesson Designer]
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+- [WORKING_DIR]/design-decisions.md
+- [WORKING_DIR]/photo-requirements.json
+- [WORKING_DIR]/design-review.md
+
+ORCHESTRATOR_CHECK_AFTER_RETURN:
+Write the four owned outputs and return the exact Result value from
+design-review.md. Do not run design-review-packet.py verify. The orchestrator owns that check.
+
+ALLOWED_TERMINAL_STATES:
+- APPROVED
+- REDESIGN REQUIRED
+```
+
+After return, run `design-review-packet.py verify` with the prepared preflight,
+reference, view and review, writing `design-review-postflight.json`. Require
+`DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.
+
+If the packet helper is absent, run the same reviewer directly against the three
+canonical design files, require `APPROVED` or `REDESIGN REQUIRED` in
+`design-review.md`, and run `validate-lesson-design.py
+--initial-photo-namespace` afterwards.
+
+For `APPROVED`, continue. For `REDESIGN REQUIRED`, give Lesson Designer the
+current canonical files plus the complete diagnosis. Preserve named passing
+content, edit the same paths, do not rewrite the initial scaffold request, and
+re-run design validation, photo cap and independent review. Permit at most two
+semantic redesign passes. If the second review still requires redesign, stop as
+`BLOCKED`; infrastructure retries do not consume this semantic budget.
+
+Append genuine corrections and remaining teacher choices to the shared build
+review log when `PLUGIN_SOURCE_ROOT` is available. Read routing values directly
+from the approved `lesson-design.json`, never from prose.
+
+---
+
+## Phase 1.5 — Helper Check (Before Spawning Any Renderer)
+
+Run `collect-helper-uses.py` against approved `lesson-design.json`. Compare only
+the representations it names with the existing helper catalogues. If every
+required helper exists, continue.
+
+If a genuinely required helper is missing and the helper-builder/source route
+is available, build and test only that helper before renderers launch. Otherwise
+record the exact `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP`; do not silently
+replace it with an unfaithful picture or generic decoration.
+
+---
+
+## Phase 2 — Spawn Parallel Rendering Branches
+
+Freeze the approved initial photo contract once:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" freeze-initial \
+  --canonical "[WORKING_DIR]/photo-requirements.json" \
+  --snapshot "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
+  --receipt "[WORKING_DIR]/phase2-initial-photo-requirements.receipt.json"
+```
+
+The freeze receipt is the phase boundary; do not create worker snapshots or
+generic receipts.
+
+Launch independent first-pass designers concurrently when host slots permit:
+Slide Designer, worksheet adaptation/routing work, and picture compilation.
+Working Wall and stick-in design wait for `lesson.json` only when their prompts
+require it. Each worker owns only its named canonical specification.
+
+Run printable Chrome preflight once before worksheet, wall or stick-in builds.
+Pass its resulting `ready` or `unavailable` state to fixed builders rather than
+repeating browser recovery for every resource.
+
+Direct fixed builds write summaries under `[WORKING_DIR]/build-results/`.
+Require schema version 1, `ok: true`, the builder's success marker and every
+reported output path. A content/build diagnostic goes to the owning designer's
+single focused repair, then the command runs once more. A host/tool outage gets
+one infrastructure retry. Preserve successful sibling resources.
+
+---
+
+### Track A — Slides (slide-designer + the picture stage → fixed slide build)
+
+Launch Slide Designer directly:
+
+```text
+You are the slide designer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/slide-designer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+PHOTO_REQUIREMENTS: [WORKING_DIR]/phase2-initial-photo-requirements.json
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson.json
+
+This worker creates JSON only. Do not load or use the global `Presentations`
+skill. The fixed slide builder creates the PowerPoint after this worker
+completes.
+
+SUCCESS_CHECK:
+node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
+  "[WORKING_DIR]/lesson.json"
+
+Require: Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides
+TERMINAL_STATE: COMPLETE
+```
+
+Wait for `lesson.json` and require the slide-design marker. Preserve every
+`BUILD_DIAGNOSTIC:` line for a focused Slide Designer repair.
+
+---
+
+**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:
+
+Compile assignments directly:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
+  --requirements "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
+  --expected-prefix p \
+  --output-dir "[WORKING_DIR]/picture-assignments/p" \
+  --working-dir "[WORKING_DIR]" \
+  --summary-output "[WORKING_DIR]/picture-assignments/p-summary.json"
+```
+
+Require `PICTURE_ASSIGNMENTS_OK`, then validate the emitted `manifest.json` with
+`validate-image-scout.py manifest`.
+
+Launch one unified `image-scout` per assignment in the manifest, up to four at
+once and no more than two direct-AI batches at once. Use role `image-scout`, its
+frontmatter model/effort, the exact assignment path, its assignment `work_root`,
+and one unique result path:
+
+```text
+[WORKING_DIR]/picture-results/[batch-id]/result.json
+```
+
+The worker may write only its work root, authorised AI ledger paths and result.
+After return, run `validate-image-scout.py result` against the exact assignment,
+result, work root and batch ID. Require `PICTURE_RESULT_OK`.
+
+Finalise each valid batch immediately with
+`finalize-picture-assignment.py assignment --replace no`. The finaliser
+independently validates the whole result before publishing, derives source or AI
+provenance, and writes one terminal receipt per filename under
+`[WORKING_DIR]/orchestration-receipts/picture-terminal/`. This retained folder
+contains picture evidence only. A failed batch gets one fresh infrastructure
+retry only when the worker did not produce a completed semantic result.
+
+For a known-wrong published picture, remove only that canonical file, build one
+focused repair slice from its assignment, finding file and prior terminal
+receipt, launch one fresh image scout, and finalise with `--replace yes`. Never
+reopen a passing sibling.
+
+Picture provenance is completed after visual review, not here.
+
+---
+
+**Track A trigger:**
+
+Wait until Slide Designer and all picture filenames referenced by `lesson.json`
+are terminal. If the lesson uses a labelled diagram over a photo, launch Diagram
+Anchor against the final published image and update only anchor coordinates.
+
+Build slides directly:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" slides \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --output-dir "[OUTPUT_DIR]" \
+  --lesson-name "[TOPIC]" \
+  --summary-output "[WORKING_DIR]/build-results/slides.json"
+```
+
+Require `ok: true` and the exact output paths in the summary. On a semantic
+build diagnostic, run one focused Slide Designer repair and rebuild once.
+
+---
+
+### Track B — Worksheets (adaptation-designer → merge gate → worksheet-designer → fixed worksheet build)
+
+Read `worksheet.resourceMode` from approved `lesson-design.json`.
+
+- `shared-frame`: skip Adaptation Designer;
+- teacher-provided expected worksheet: consider adaptation but do not generate a
+  second expected sheet;
+- other per-child generated worksheet: run Adaptation Designer when available.
+
+Never infer this route from old Markdown status text.
+
+---
+
+**Adaptation Designer** — if `adaptation-designer` exists AND the worksheet is a per-child sheet (not a shared frame, per the check just above):
+
+Launch directly with approved lesson design, teacher worksheet when supplied,
+teacher brief/clarifications, and the frozen initial photo contract. It owns
+`adaptation.md`, `adaptation.json`, and a provisional adaptation photo contract.
+
+Run `photo-contract.py build-provisional` and the lesson-design validator against
+the provisional contract. Adaptation may add only `adaptation-photo-###` entries;
+it may not mutate the frozen initial entries.
+
+If adaptation fails deterministically, preserve the expected worksheet route and
+report adaptation omitted. Do not rerun unrelated branches.
+
+---
+
+**Worksheet Designer** — if `worksheet-designer` exists AND either:
+
+- the approved lesson requires a generated worksheet or shared frame; or
+- accepted adaptation requires generated Below/Greater Depth sheets around a
+  teacher-provided expected worksheet.
+
+Before every attempt, obtain the exact worksheet photo-contract path through
+`photo-contract.py select-worksheet`. Launch Worksheet Designer directly:
+
+```text
+You are the worksheet designer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/worksheet-designer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+WORKSHEET_PHOTO_REQUIREMENTS: [selected contract path]
+[ADAPTATION_DESIGN when accepted]
+[TEACHER_WORKSHEET_INPUT when supplied]
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/worksheet.json
+
+SUCCESS_CHECK:
+Run the worksheet specification validator named by your role.
+TERMINAL_STATE: COMPLETE
+```
+
+After the spec passes, promote only adaptation photos actually referenced by the
+accepted worksheet through `photo-contract.py promote-used`. Compile any new
+supplemental `w` picture assignments through the same direct picture route.
+
+Build worksheets directly:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" worksheets \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --output-dir "[OUTPUT_DIR]" \
+  --lesson-name "[TOPIC]" \
+  --chrome-state "[ready|unavailable]" \
+  --summary-output "[WORKING_DIR]/build-results/worksheets.json"
+```
+
+Require the complete answer key as a separate teacher output. One semantic
+diagnostic permits one focused Worksheet Designer repair and one rebuild.
+
+---
+
+### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)
+
+This branch remains unavailable while its agents are marked Planned. Do not
+invent it. Mention the omission only when the approved design requested one.
+
+### Track D — Working Wall (working-wall-designer → working-wall-builder, runs after slide-designer; in parallel with Tracks B and the rest of A)
+
+If the approved lesson earns a wall, launch Working Wall Designer directly with
+approved `lesson-design.json`, `lesson.json` and the applicable photo contract.
+It owns only `working-wall.json`. After its deterministic check, launch the
+retained Working Wall Builder, which runs the fixed wall script and returns its
+short Output Report. One wall diagnostic permits one focused wall-owner repair
+and rebuild. Preserve its exact returned output path.
+
+### Track E — Stick-in Spec (stick-in-sheets-designer, runs after slide-designer; in parallel with Tracks B, D and the rest of A)
+
+If the approved design earns stick-in sheets, launch the designer directly with
+approved `lesson-design.json`, `lesson.json` and applicable picture contract. It
+owns only `stick-in-sheets.json`. Require its role validator.
+
+### Track F — Stick-in Sheets (fixed build, runs after stick-in-sheets-designer)
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" stick-in \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --output-dir "[OUTPUT_DIR]" \
+  --lesson-name "[TOPIC]" \
+  --chrome-state "[ready|unavailable]" \
+  --summary-output "[WORKING_DIR]/build-results/stick-in.json"
+```
+
+Require `ok: true` and its exact output paths. One semantic diagnostic permits
+one focused stick-in designer repair and one rebuild.
+
+---
+
+## Phase 3 — Wait for All Branches
+
+Wait through the host's ordinary multi-worker wait once for all active branches.
+Do not poll each worker serially and do not create scheduler state. As each
+worker completes, run its deterministic check and release only its genuine
+dependants. A failed branch does not invalidate a clean independent branch.
+
+Before visual review, require every earned resource to be either built with an
+accepted summary or explicitly excluded with a reason.
+
+---
+
+## Phase 3.5 — Visual Check and Repair (after all builders, before the report and sync)
+
+Render every delivered surface through the established `render-pages.py` route.
+**Start each artefact's visual reviewer here, after its final build is present.**
+Launch one Visual Reviewer per resource concurrently. Each receives only
+approved `lesson-design.json`, that resource's own specification, its final
+render manifest/pages, and its artefact-specific review module. It writes one
+`findings-[resource].md` file.
+
+Stable finding IDs persist through repairs. Reviewer-local tiny fixes are
+allowed only where the role permits them; rebuild and confirm the exact affected
+pages. A material content/layout fault routes once to the resource's existing
+owner using the focused-repair entrypoint. Do not reopen passing content.
+
+When two or more comparable resources exist, build the deterministic consistency
+overview and launch Visual Consistency Reviewer once. Missing or stale evidence
+causes rerender of only the named resource, not a full pipeline replay.
+
+Use `PASS`, `BLOCKED` or `UNVERIFIED` exactly. Never relabel unavailable review
+as pass.
+
+---
+
+### The focused owner-repair round
+
+Use the compact focused-repair role for the named owner when present, otherwise
+its full creation role. Give it the finding ID, exact artefact/location,
+required change, protected passing content, potential cross-resource impact and
+existing build diagnostic.
+
+- `slide-designer`: use `[PLUGIN_ROOT]/agents/slide-designer-focused-repair.md`;
+  if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/slide-designer.md`.
+- `worksheet-designer`: use `[PLUGIN_ROOT]/agents/worksheet-designer-focused-repair.md`;
+  if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/worksheet-designer.md`.
+- `working-wall-designer`: use `[PLUGIN_ROOT]/agents/working-wall-designer-focused-repair.md`;
+  if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/working-wall-designer.md`.
+- `stick-in-sheets-designer`: use `[PLUGIN_ROOT]/agents/stick-in-sheets-designer-focused-repair.md`;
+  if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/stick-in-sheets-designer.md`.
+
+Launch the selected role directly; do not create a repair job spec.
+
+Return these exact repair-impact fields with the normal terminal marker:
+
+```text
+Changed: [exact changed content]
+Unchanged: [exact protected content]
+Potential cross-resource impact: [specific relationships or None]
+```
+
+Rebuild only that resource, rerun its deterministic check, rerender changed
+pages and confirm the same finding ID. Run a consistency confirmation only when
+the repair declares a real cross-resource impact. There is no third general
+repair round.
+
+For a picture finding, use the one-filename repair slice and prior picture
+receipt, finalise with `--replace yes`, then rebuild/review only affected
+resources.
+
+---
+
+### Deterministic final merge
+
+Run `merge-visual-reviews.py` with only findings and confirmations that exist,
+writing `[WORKING_DIR]/visual-review.md`.
+Use `--consistency-required` only when two or more comparable resources required
+the specialist comparison. Read `## Verdict` exactly.
+
+Run picture provenance once from the final schema-2 requirements and
+`[WORKING_DIR]/orchestration-receipts/picture-terminal/`:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/finalize-picture-assignment.py" provenance \
+  --requirements "[WORKING_DIR]/photo-requirements.json" \
+  --terminal-receipts-dir "[WORKING_DIR]/orchestration-receipts/picture-terminal" \
+  --working-dir "[WORKING_DIR]" \
+  --output "[WORKING_DIR]/picture-provenance.json" \
+  --summary-output "[WORKING_DIR]/picture-provenance-summary.json"
+```
+
+Require `PICTURE_PROVENANCE_OK` before removing transient picture work. Keep
+requirements snapshots, assignments, terminal receipts and provenance. Delete
+only transient worker results, work roots and orphan prompt/search scratch.
+
+Append genuine findings to the shared build review log when source access is
+available. Otherwise write the pending log entry in the working directory.
+
+No generic controller audit or latency report is part of completion.
+
+---
+
+## Phase 4 — Final Assembly and Report
+
+Write `[WORKING_DIR]/run-report.md` with:
+
+- outcome: `COMPLETE`, `PARTIAL`, `BLOCKED` or `UNVERIFIED`;
+- delivered resources with exact paths from fixed build summaries or the wall
+  builder;
+- excluded earned resources and exact reasons;
+- blocking faults, accepted minor findings and failed build attempts;
+- picture outcomes and helper gaps;
+- worker friction lines;
+- shared investigation-log status.
+
+Do not include scheduler contracts, receipts or counts. Picture terminal
+receipts are evidence for picture provenance, not generic completion records.
+
+Run `validate-run-report.py` and require `RUN_REPORT_OK`. Then send a short
+teacher-facing report naming the topic, year, subject, objective, lesson scope,
+exact files, pedagogical highlights, design-review result, visual verdict and
+every teacher flag.
+
+Use actual summary output paths, never guessed filenames. A package missing an
+earned output is `PARTIAL`; an unresolved blocking fault is `BLOCKED`; missing
+required visual verification is `UNVERIFIED`.
+
+### Report format
+
+Keep the teacher report concise. Always include a `Reviewer flags` section,
+using `None` when empty. Worksheet pupil sheets and answer key remain separate.
+State when a two-lesson scope covers Lesson 1 only and name deferred learning.
+
+---
+
+## Phase 5 — SharePoint Sync
+
+After review and repair settle, build the explicit sync list from exact delivered
+paths. Run `run-fixed-resource.py sharepoint` directly with the resolved term,
+year, week, subject/day and one `--file` per exact basename. Require schema 1
+`ok: true`, `DESTINATION=` and `STATUS=COPIED`.
+
+Do not create a command job or rerun a scheduler audit. If the mapped drive is
+unavailable, retain local outputs and report the exact local folder.
+
+### Edge cases
+
+- A lesson-plan-only request still preserves that file separately after reading
+  only enough to resolve Phase-0 routing.
+- A teacher worksheet is the Expected/base sheet; generate only genuinely
+  needed adaptations around it.
+- Missing pictures use the approved fallback or omission and are reported.
+- A generated worksheet is expected unless the teacher supplied one; an
+  unexplained `not-needed` decision is a design fault.
+- Ambiguous or incomplete Lesson Designer output is not silently repaired by
+  the host.
+
+The lesson design remains the single pedagogical source of truth. Downstream
+roles coordinate through validated files, not conversations or scheduler state.

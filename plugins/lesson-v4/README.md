@@ -26,7 +26,7 @@ compatibility builder-agent files remain packaged for direct or legacy use.
 ## How pictures are obtained
 
 1. **Contract.** Lesson Designer writes one complete schema 2 picture contract and Design Reviewer independently checks teaching evidence, authenticity, source fitness, fallback meaning, generation controls and comparison-set coherence.
-2. **Compile.** `compile-picture-assignments.py compile` validates the frozen contract, derives routes and search schedules, computes the fewest valid small batches, renders immutable AI prompts, and registers unified `image-scout` workers.
+2. **Compile.** `compile-picture-assignments.py compile` validates the frozen contract, derives routes and search schedules, computes the fewest valid small batches, and renders immutable AI prompts. The host launches one unified `image-scout` directly for each emitted assignment.
 3. **Fulfil.** One `image-scout` per batch searches and visually judges real candidates, then continues to authorised AI generation after a checked real-search gate. Authentic evidence never reaches AI; outages never count as exhaustion.
 4. **Finalise.** Workers stage only. The deterministic finaliser validates the whole result, derives source attribution/licence or exact AI history, publishes accepted rows independently, writes terminal receipts, and releases each filename. Provenance rechecks canonical hashes before transient cleanup.
 

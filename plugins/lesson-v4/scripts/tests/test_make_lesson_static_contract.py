@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL = ROOT / "skills" / "make-lesson" / "SKILL.md"
-PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook.md"
+PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook-lite.md"
 RUNTIME = ROOT / "scripts" / "make-lesson-runtime.py"
 FINALIZER = ROOT / "scripts" / "finalize-picture-assignment.py"
 
@@ -24,29 +24,28 @@ class MakeLessonStaticContractTests(unittest.TestCase):
     def test_picture_playbook_has_contract_review_compile_worker_finalise_order(self):
         text = PLAYBOOK.read_text(encoding="utf-8")
         flat = " ".join(text.split())
-        self.assertIn("Lesson Designer writes", text)
-        self.assertIn("Design Reviewer approves", text)
-        self.assertIn("The compiler owns", text)
-        self.assertIn("routes, budgets, prompt bytes, batching and worker specifications", text)
-        self.assertIn("One unified", text)
-        self.assertIn("`image-scout` owns visual search and authorised generation", text)
-        self.assertIn("finaliser independently validates the whole result before publishing", text)
-        self.assertLess(flat.index("Design Reviewer approves"), flat.index("The compiler owns"))
-        self.assertLess(flat.index("The compiler owns"), flat.index("Launch one unified worker"))
-        self.assertLess(flat.index("Launch one unified worker"), flat.index("Finalise each batch"))
+        for marker in (
+            "Freeze the approved initial photo contract once",
+            "Compile assignments directly",
+            "Launch one unified `image-scout` per assignment",
+            "Finalise each valid batch immediately",
+        ):
+            self.assertIn(marker, text)
+        self.assertLess(flat.index("Freeze the approved initial photo contract once"), flat.index("Compile assignments directly"))
+        self.assertLess(flat.index("Compile assignments directly"), flat.index("Launch one unified `image-scout` per assignment"))
+        self.assertLess(flat.index("Launch one unified `image-scout` per assignment"), flat.index("Finalise each valid batch immediately"))
 
     def test_picture_paths_and_release_gates_are_explicit(self):
         text = PLAYBOOK.read_text(encoding="utf-8")
         for marker in (
-            "WORKING_DIR]/unsplash/_picture-work/<batch-id>/",
-            "orchestration-results/picture-workers/[batch-id]/try-[attempt]/result.json",
+            "assignment `work_root`",
+            "picture-results/[batch-id]/result.json",
             "orchestration-receipts/picture-terminal",
             "--replace no",
             "--replace yes",
             "PICTURE_RESULT_OK",
             "PICTURE_PROVENANCE_OK",
-            "result validator",
-            "picture_publish_failed",
+            "validate-image-scout.py result",
         ):
             self.assertIn(marker, text)
 
@@ -143,12 +142,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "## Central design evidence",
             reviewer,
         )
-        self.assertEqual(
-            playbook.count(
-                'design-review-packet.py" verify'
-            ),
-            1,
-        )
+        self.assertIn("After return, run `design-review-packet.py verify`", playbook)
         self.assertIn(
             "Do not run design-review-packet.py verify. "
             "The orchestrator owns that check.",
@@ -165,10 +159,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "You are the lesson designer. "
             "Read your agent instructions at:"
         )
-        end = text.index(
-            "**Wait** for the subagent to complete.",
-            start,
-        )
+        end = text.index("TERMINAL_STATE: COMPLETE", start)
         prompt = text[start:end]
 
         markers = [

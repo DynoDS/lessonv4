@@ -14,21 +14,19 @@ description: >
 
 # Make Lesson — Orchestrator
 
-You are the host adapter for the lesson pipeline. You do not design lessons,
-maintain scheduler state, calculate retry/backoff state, own write locks or
+You are the host adapter for the lesson pipeline. You do not design lessons or
 manually publish picture rows. Semantic decisions belong to the named specialist
-agents. Generic orchestration state belongs to
-`scripts/orchestration-controller.py`; deterministic resource/file operations
-belong to the bundled command helpers.
+agents; deterministic validation, rendering and file operations belong to the
+bundled command helpers.
 
 Your job is to:
 
 1. resolve the verified package root;
-2. load only the runtime instruction slice needed for the current pipeline job;
-3. register the semantic jobs defined by those instructions;
-4. launch or execute exactly the action the controller releases;
-5. pass terminal results back to the controller;
-6. report the resulting lesson package to the teacher.
+2. load only the runtime instruction slice needed for the current phase;
+3. launch the named workers directly with their authoritative inputs and owned
+   outputs;
+4. run the deterministic check immediately after each meaningful boundary;
+5. report the resulting lesson package to the teacher.
 
 The pipeline splits work across three layers:
 
@@ -38,13 +36,13 @@ The pipeline splits work across three layers:
    specifications; deterministic commands build the direct fixed resources;
    the retained Working Wall builder performs its required physical-output
    judgement.
-3. **Delivery** — gather the accepted outputs, complete the review/audit route
+3. **Delivery** — gather the validated outputs, complete the review route
    and tell the teacher what was made.
 
 The resource-design agents never make pedagogical decisions. They read the
-approved pedagogical contract and specify their own resource. Saved files,
-controller state, receipts and findings carry continuity. Conversation history
-does not.
+approved pedagogical contract and specify their own resource. Validated canonical
+files, picture evidence and review findings carry continuity. Conversation
+history does not.
 
 ---
 
@@ -97,8 +95,8 @@ A worker prompt contains only:
 - the assignment-specific current fault or immutable hand-off evidence, when applicable;
 - the deterministic success check and expected markers for that assignment.
 
-Saved lesson files, picture contracts, compiled assignments, picture results, AI ledgers, source snapshots,
-receipts and review findings carry continuity between attempts. Conversational
+Saved lesson files, picture contracts, compiled assignments, picture results, AI
+ledgers and review findings carry continuity between attempts. Conversational
 inheritance does not.
 
 A retry or focused repair is a new task-scoped worker. Give it the current saved
@@ -158,11 +156,6 @@ Do not pass `TEACHER_BRIEF_FILE`, `TEACHER_CLARIFICATION_FILES`,
 `diagram-anchor`, `visual-reviewer`, `visual-consistency-reviewer`,
 deterministic command jobs or any other downstream renderer/reviewer.
 
-When one of the three authorised semantic workers is a controller worker job,
-every teacher-authored or orchestrator-context file supplied to that attempt must
-occur in that job's `sourcePaths` and in `attempt.inputs` with mode
-`read-only`. Do not add those files to unrelated jobs.
-
 ---
 
 ## Pipeline completion discipline
@@ -205,11 +198,9 @@ there was no friction, add no friction line.
 ```
 
 When a worker returns, extract only lines whose raw text begins exactly
-`Friction:`. Preserve those lines exactly and in their returned order. Put them
-in that worker's controller completion event under `friction`. Use `[]` when
-there were none.
-
-Do not keep a second model-owned friction list.
+`Friction:`. Preserve those lines in `[WORKING_DIR]/friction.md`, in return
+order, and include them in the final run report. If there were none, do not
+create an empty friction file.
 
 Exact assignment-specific completion markers remain authoritative. In
 particular:
@@ -299,10 +290,10 @@ brackets or a host-specific plugin-root variable to the worker or its shell.
 The detailed orchestration playbook is stored at:
 
 ```text
-[PLUGIN_ROOT]/skills/make-lesson/playbook.md
+[PLUGIN_ROOT]/skills/make-lesson/playbook-lite.md
 ```
 
-Do not open, read or load `playbook.md` directly.
+Do not open, read or load `playbook-lite.md` directly.
 
 The only allowed access to that file during a lesson run is:
 
@@ -318,7 +309,7 @@ Immediately after `PLUGIN_ROOT` verification and before run-specific work, load
 these two slices in this order:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "controller"
+python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "execution"
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "setup"
 ```
 
@@ -328,9 +319,8 @@ Immediately before the first Lesson Designer attempt, load:
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "design"
 ```
 
-After the initial Lesson Designer returns and before processing its transition,
-launching Design Reviewer, handling a photo-cap revision or applying any redesign
-route, load:
+After the initial Lesson Designer returns and before launching Design Reviewer,
+handling a photo-cap revision or applying any redesign route, load:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "design-review"
@@ -344,13 +334,13 @@ After final Phase-1 approval and before helper-use collection, load:
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "helpers"
 ```
 
-Immediately before the first Phase-2 job registration, load:
+Immediately before launching the first Phase-2 branch, load:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "phase2-core"
 ```
 
-Immediately before the first Slide Designer job, load:
+Immediately before the first Slide Designer attempt, load:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "slides-design"
@@ -388,7 +378,7 @@ Immediately before the first Worksheet Designer job, load:
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "worksheet-render"
 ```
 
-Immediately before the first scaffold, Working Wall or stick-in branch job, load:
+Immediately before the first scaffold, Working Wall or stick-in branch, load:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "other-resources"
@@ -416,8 +406,7 @@ python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "focused-repair"
 ```
 
 After first passes, required repairs and confirmations have settled, immediately
-before deterministic review merge, picture provenance, logging and the
-pre-assembly audit, load:
+before deterministic review merge, picture provenance and logging, load:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "finalize-review"
@@ -437,5 +426,5 @@ slice immediately before applying that route. Do not reload unrelated slices.
 
 A runtime-reader failure is a pipeline configuration error. Stop and report its
 exact `MAKE_LESSON_RUNTIME_ERROR:` line. Do not work around a missing or
-malformed slice by opening `playbook.md` directly or reconstructing the omitted
+malformed slice by opening `playbook-lite.md` directly or reconstructing the omitted
 instructions from conversation history.

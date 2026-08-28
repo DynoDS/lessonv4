@@ -14,6 +14,10 @@ description: >
 
 # Make Lesson — Orchestrator
 
+> Retired compatibility reference. The active runtime is
+> `playbook-lite.md`, selected by `make-lesson-runtime.py`. Do not load or follow
+> this file during a lesson run.
+
 You are the host adapter for the lesson pipeline. You do not design lessons,
 maintain scheduler state, calculate retry/backoff state, own write locks or
 manually publish picture rows. Semantic decisions belong to the named specialist

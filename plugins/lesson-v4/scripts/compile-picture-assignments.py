@@ -444,23 +444,62 @@ def compile_command(args) -> int:
     output_dir = Path(args.output_dir).resolve()
     working_dir = Path(args.working_dir).resolve()
     batches = pack_batches(photos)
-    manifest_rows = []; controller_rows = []
+    controller_mode = bool(args.dependency_job_id or args.controller_manifest_output)
+    if controller_mode and not (
+        args.dependency_job_id and args.controller_manifest_output
+    ):
+        raise AssignmentError(
+            "--dependency-job-id and --controller-manifest-output must be "
+            "supplied together"
+        )
+    manifest_rows = []
+    controller_rows = []
     for number, batch in enumerate(batches, 1):
         batch_id = f"{prefix}{number}"
         assignment_path = (output_dir / f"{batch_id}.json").resolve()
         assignment = build_assignment(requirements_path, batch, batch_id, prefix, output_dir, working_dir)
         write_json_immutable(assignment_path, assignment)
-        spec_path = (working_dir / "orchestration-jobs" / f"phase2-picture-{batch_id}.json").resolve()
-        spec = worker_spec(assignment, assignment_path, requirements_path, working_dir, args.dependency_job_id)
-        write_json_immutable(spec_path, spec)
-        manifest_rows.append({"batch_id": batch_id, "assignment": str(assignment_path), "filenames": [p["filename"] for p in batch], "worker_job_id": spec["jobId"]})
-        controller_rows.append({"specPath": str(spec_path), "specSha256": file_hash(spec_path), "spec": spec})
+        row = {
+            "batch_id": batch_id,
+            "assignment": str(assignment_path),
+            "filenames": [p["filename"] for p in batch],
+        }
+        if controller_mode:
+            spec_path = (
+                working_dir
+                / "orchestration-jobs"
+                / f"phase2-picture-{batch_id}.json"
+            ).resolve()
+            spec = worker_spec(
+                assignment,
+                assignment_path,
+                requirements_path,
+                working_dir,
+                args.dependency_job_id,
+            )
+            write_json_immutable(spec_path, spec)
+            row["worker_job_id"] = spec["jobId"]
+            controller_rows.append(
+                {
+                    "specPath": str(spec_path),
+                    "specSha256": file_hash(spec_path),
+                    "spec": spec,
+                }
+            )
+        manifest_rows.append(row)
     public_manifest = {"schema_version": 2, "kind": "image", "requirements": {"path": str(requirements_path), "sha256": file_hash(requirements_path)}, "assignments": manifest_rows}
     manifest_path = (output_dir / "manifest.json").resolve()
     write_json_immutable(manifest_path, public_manifest)
-    controller_manifest = {"schemaVersion": 1, "kind": "orchestration-job-manifest", "sourceJobId": args.dependency_job_id, "jobs": controller_rows}
-    controller_path = Path(args.controller_manifest_output).resolve()
-    write_json_immutable(controller_path, controller_manifest)
+    controller_path = None
+    if controller_mode:
+        controller_manifest = {
+            "schemaVersion": 1,
+            "kind": "orchestration-job-manifest",
+            "sourceJobId": args.dependency_job_id,
+            "jobs": controller_rows,
+        }
+        controller_path = Path(args.controller_manifest_output).resolve()
+        write_json_immutable(controller_path, controller_manifest)
     summary = {
         "schemaVersion": 1,
         "ok": True,
@@ -474,7 +513,8 @@ def compile_command(args) -> int:
     write_json_immutable(Path(args.summary_output).resolve(), summary)
     print(f"PICTURE_ASSIGNMENTS_OK: {len(batches)} assignments")
     print(f"MANIFEST={manifest_path}")
-    print(f"CONTROLLER_MANIFEST={controller_path}")
+    if controller_path is not None:
+        print(f"CONTROLLER_MANIFEST={controller_path}")
     print(f"SUMMARY={Path(args.summary_output).resolve()}")
     return 0
 
@@ -537,8 +577,8 @@ def parser() -> argparse.ArgumentParser:
     compile_parser.add_argument("--expected-filename", action="append", default=[])
     compile_parser.add_argument("--output-dir", required=True)
     compile_parser.add_argument("--working-dir", required=True)
-    compile_parser.add_argument("--dependency-job-id", required=True)
-    compile_parser.add_argument("--controller-manifest-output", required=True)
+    compile_parser.add_argument("--dependency-job-id")
+    compile_parser.add_argument("--controller-manifest-output")
     compile_parser.add_argument("--summary-output", required=True)
     compile_parser.set_defaults(func=compile_command)
     repair = sub.add_parser("slice")

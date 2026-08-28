@@ -24,18 +24,16 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("def provenance_command", finalizer)
         self.assertIn("PUBLISH_ATTEMPTS = 1", finalizer)
 
-    def test_controller_preserves_picture_capacity_classes_and_command_transitions(self):
-        controller = (ROOT / "scripts" / "orchestration-controller.py").read_text(encoding="utf-8")
-        self.assertIn("picture-real", controller)
-        self.assertIn("picture-ai", controller)
-        self.assertIn("PICTURE_TOTAL_CAP", controller)
-        self.assertIn("PICTURE_AI_CAP", controller)
-        self.assertIn("transition", controller)
-        self.assertIn("executionClass", controller)
+    def test_active_runtime_uses_direct_picture_workers(self):
+        text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
+        self.assertIn("Launch one unified `image-scout` per assignment", text)
+        self.assertIn("up to four at", text)
+        self.assertIn("no more than two direct-AI batches", text)
+        self.assertNotIn("orchestration-controller.py", text)
 
     def test_worker_spec_contract_is_documented(self):
-        text = (ROOT / "skills" / "make-lesson" / "playbook.md").read_text(encoding="utf-8")
-        for marker in ("role `image-scout`", "model `luna`", "effort `max`", "maxAttempts: 2", "picture-real", "picture-ai"):
+        text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
+        for marker in ("unified `image-scout`", "exact assignment path", "one unique result path"):
             self.assertIn(marker, text)
 
     def test_durable_attempt_result_path_is_exact(self):
@@ -46,7 +44,7 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("_picture-work", text)
 
     def test_final_resource_visual_review_remains_in_playbook(self):
-        text = (ROOT / "skills" / "make-lesson" / "playbook.md").read_text(encoding="utf-8")
+        text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
         self.assertIn("Visual Review", text)
         self.assertIn("visual-review.md", text)
         self.assertIn("**Start each artefact's visual reviewer here", text)

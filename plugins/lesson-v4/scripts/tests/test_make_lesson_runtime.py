@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "make-lesson-runtime.py"
-PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook.md"
+PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook-lite.md"
 AGENTS = ROOT / "agents"
 
 FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str]] = {
@@ -36,9 +36,9 @@ FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str]] = {
 }
 
 BOUNDS: dict[str, tuple[str, str | None]] = {
-    "controller": (
-        "## Internal orchestration controller",
-        "## Worker context isolation",
+    "execution": (
+        "## Lightweight execution protocol",
+        "## Before Each Run: Know What Exists",
     ),
     "setup": (
         "## Before Each Run: Know What Exists",
@@ -62,10 +62,10 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "slides-design": (
         "### Track A — Slides (slide-designer + the picture stage → fixed slide build)",
-        "**The picture stage** — if `[WORKING_DIR]/photo-requirements.json` has a non-empty `photos` array:",
+        "**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:",
     ),
     "pictures": (
-        "**The picture stage** — if `[WORKING_DIR]/photo-requirements.json` has a non-empty `photos` array:",
+        "**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:",
         "**Track A trigger:**",
     ),
     "slides-finalize": (
@@ -197,7 +197,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             design,
         )
         self.assertNotIn(
-            "Spawn the `design-reviewer`",
+            "launch the reviewer directly",
             design,
         )
         self.assertNotIn(
@@ -211,7 +211,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "Spawn the `design-reviewer`",
+            "launch the reviewer directly",
             review,
         )
         self.assertIn(
@@ -232,11 +232,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             slides,
         )
         self.assertIn(
-            "Do not load or use the global `Presentations` skill.",
+            "Do not load or use the global `Presentations`",
             slides,
         )
         self.assertIn(
-            "The fixed slide builder creates the PowerPoint after this worker completes.",
+            "The fixed slide builder creates the PowerPoint after this worker",
             slides,
         )
 
@@ -248,7 +248,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 self.run_slice(name).stdout
             )
             for name in (
-                "controller",
+                "execution",
                 "setup",
                 "design",
             )
@@ -258,6 +258,20 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             total,
             50 * 1024,
         )
+
+    def test_active_runtime_has_no_generic_controller_choreography(self) -> None:
+        active = PLAYBOOK.read_text(encoding="utf-8")
+        for retired in (
+            "orchestration-controller.py",
+            "orchestration-jobs/",
+            "orchestration-events/",
+            "orchestration-snapshots/",
+            "build-orchestration-latency-report.py",
+        ):
+            with self.subTest(retired=retired):
+                self.assertNotIn(retired, active)
+
+        self.assertLess(len(PLAYBOOK.read_bytes()), 40 * 1024)
 
     def test_focused_repair_slice_routes_resource_owners_to_compact_entrypoints(
         self,
@@ -270,7 +284,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         )
 
         self.assertIn(
-            "do not change `attempt.role`",
+            "do not create a repair job spec",
             focused,
         )
         self.assertIn(

@@ -8,10 +8,9 @@ from pathlib import Path
 
 REQUIRED_PACKAGE_PATHS = (
     "skills/make-lesson/SKILL.md",
-    "skills/make-lesson/playbook.md",
+    "skills/make-lesson/playbook-lite.md",
     "agents/lesson-designer.md",
     "scripts/validate-lesson-design.py",
-    "scripts/orchestration-controller.py",
     "scripts/make-lesson-runtime.py",
     "scripts/run-fixed-resource.py",
     "scripts/photo-contract.py",

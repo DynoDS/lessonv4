@@ -126,6 +126,39 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             self.assertEqual(spec_data["maxAttempts"], 2)
             self.assertIn(spec_data["capacityClass"], {"picture-real", "picture-ai"})
 
+    def test_direct_compilation_emits_assignments_without_controller_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            req = root / "requirements.json"
+            output = root / "assignments"
+            summary = root / "summary.json"
+            req.write_text(
+                json.dumps(requirements([photo("one.jpg")])) + "\n",
+                encoding="utf-8",
+            )
+            args = type(
+                "Args",
+                (),
+                {
+                    "requirements": str(req),
+                    "expected_filename": [],
+                    "expected_prefix": "p",
+                    "output_dir": str(output),
+                    "working_dir": str(root),
+                    "dependency_job_id": None,
+                    "controller_manifest_output": None,
+                    "summary_output": str(summary),
+                },
+            )()
+
+            self.assertEqual(compiler.compile_command(args), 0)
+            manifest = json.loads((output / "manifest.json").read_text())
+            self.assertEqual(
+                set(manifest["assignments"][0]),
+                {"batch_id", "assignment", "filenames"},
+            )
+            self.assertFalse((root / "orchestration-jobs").exists())
+
     def test_slice_carries_hash_bound_repair_evidence_and_one_filename(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); req = root / "requirements.json"; source = root / "assignment.json"

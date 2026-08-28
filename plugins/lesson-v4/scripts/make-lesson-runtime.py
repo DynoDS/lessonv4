@@ -10,13 +10,13 @@ PLAYBOOK = (
     Path(__file__).resolve().parents[1]
     / "skills"
     / "make-lesson"
-    / "playbook.md"
+    / "playbook-lite.md"
 )
 
 SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
-    "controller": (
-        "## Internal orchestration controller",
-        "## Worker context isolation",
+    "execution": (
+        "## Lightweight execution protocol",
+        "## Before Each Run: Know What Exists",
     ),
     "setup": (
         "## Before Each Run: Know What Exists",
@@ -40,10 +40,10 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "slides-design": (
         "### Track A — Slides (slide-designer + the picture stage → fixed slide build)",
-        "**The picture stage** — if `[WORKING_DIR]/photo-requirements.json` has a non-empty `photos` array:",
+        "**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:",
     ),
     "pictures": (
-        "**The picture stage** — if `[WORKING_DIR]/photo-requirements.json` has a non-empty `photos` array:",
+        "**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:",
         "**Track A trigger:**",
     ),
     "slides-finalize": (
