@@ -6,6 +6,7 @@ const path = require('path');
 const { FONT, COLOURS, FIT } = require('../styles');
 const { warn } = require('../warnings');
 const { drawMissingImage } = require('../images/placeholder');
+const { longPathSafe } = require('../images/resolve');
 const requireGlobal = require('../require-global');
 const { polyline } = require('./_geom');
 
@@ -173,7 +174,8 @@ async function preRenderMaps(lesson) {
       );
     }
     try {
-      const image = sharp(assetPath).ensureAlpha();
+      // sharp needs the long-path form; fs above does not. See images/resolve.js.
+      const image = sharp(longPathSafe(assetPath)).ensureAlpha();
       const decoded = await image.raw().toBuffer({ resolveWithObject: true });
       fillRegion(decoded.data, decoded.info, BRAZIL_SEED, COUNTRY_FILL);
       const png = await sharp(decoded.data, { raw: decoded.info }).png().toBuffer();

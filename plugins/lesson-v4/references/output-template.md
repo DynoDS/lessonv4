@@ -198,6 +198,8 @@ Define each pedagogically meaningful visual or representational family once, the
 }
 ```
 
+A symbol counts as a representation whenever the learning depends on its exact form. A UK three-pin plug and socket, a pound coin, a specific road sign or a named piece of apparatus is a representation with that form as a `requiredFeature`, however small it renders, because a child reads the form and not the caption. Declaring it here is what puts it in front of the helper check before any renderer starts; leaving it as a bare label sends the designer looking for the nearest emoji, and the emoji is drawn by the device rather than by the lesson. A general picture children recognise at a glance, where any reasonable drawing would do, is not a representation.
+
 `loadBearing` belongs to a named configuration because the same representation family may have a load-bearing live-complete state, a different load-bearing prepared state, and a non-load-bearing reminder state. A configuration with `loadBearing: true` must contain at least one non-empty `requiredFeatures` entry; a non-load-bearing configuration uses `requiredFeatures: []`. Do not copy one configuration's capability requirements onto every use of the representation.
 
 A representation use is always an explicit object:

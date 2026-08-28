@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { longPathSafe } = require('./resolve');
+
 const requireGlobal = require('../require-global');
 let sharp = null;
 function getSharp() {
@@ -48,11 +50,14 @@ async function trimIfNeeded(key) {
   try {
     fs.mkdirSync(TRIMMED_DIR, { recursive: true });
     const s = getSharp();
-    await s(srcPath)
+    // sharp cannot open a Windows path past 260 characters without the
+    // long-path form, and a plugin installed deep inside a user profile gets
+    // there on its own.
+    await s(longPathSafe(srcPath))
       .trim({ threshold: TRIM_THRESHOLD })
       .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
       .png({ compressionLevel: 9 })
-      .toFile(outPath);
+      .toFile(longPathSafe(outPath));
   } catch (err) {
     console.warn(`[trim-money] could not trim ${key}: ${err.message}`);
   }

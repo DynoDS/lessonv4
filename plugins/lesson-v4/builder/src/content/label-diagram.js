@@ -34,7 +34,7 @@
 
 const requireGlobal = require('../require-global');
 const { FONT, COLOURS, FIT } = require('../styles');
-const { resolveForEmbed } = require('../images/resolve');
+const { resolveForEmbed, longPathSafe } = require('../images/resolve');
 const { buildLabelDiagramSvg } = require('../../../shared/visuals/label-diagram-svg');
 const { measureContainedAspect } = require('./contained-extent');
 const fs = require('fs');
@@ -88,7 +88,8 @@ async function preRenderLabelDiagrams(lesson, lessonDir) {
     const resolved = resolveForEmbed(spec.imagePath, ctx);
     if (!resolved || !fs.existsSync(resolved)) continue;   // drawLabelDiagram shows the fallback marker
     try {
-      const meta = await sharp(resolved).metadata();
+      // sharp needs the long-path form; fs above does not. See images/resolve.js.
+      const meta = await sharp(longPathSafe(resolved)).metadata();
       const b64 = fs.readFileSync(resolved).toString('base64');
       // A photo-backed anatomy diagram (parts of a church, parts of a real
       // flower) reads best as a POSTER: the part names sit out in the margins

@@ -17,6 +17,7 @@ const { preflightLayouts } = require('./src/layout-preflight');
 const { capacityWarnings } = require('./src/content/capacity');
 const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
+const { verifyPictures } = require('./src/verify-pictures');
 const { sanitizeHouseStyle } = require('../shared/text/house-style');
 const { withoutDecorations } = require("../shared/decorations");
 const {
@@ -344,9 +345,39 @@ async function main() {
     }
   }
 
-  const publishable = autofit.status === 'AUTOFIT_OK' && failedSlides.length === 0;
+  // Last deterministic check before the deck is allowed to become the real file.
+  //
+  // It runs here, after the decoration pass has finished editing the package, so
+  // what is checked is the deck that would actually be renamed into place. A
+  // picture that did not arrive is a blocking fault rather than a warning: the
+  // slide that needed it cannot be taught from, and the fault is invisible until
+  // someone opens the deck.
+  const pictures = await runPictureCheck(tempOutputPath);
+  for (const fault of pictures.faults) {
+    console.error(`  ✗ ${fault.message}`);
+    diagnostic(
+      'SLIDE_PICTURE_MISSING',
+      'technical',
+      { slide: fault.slide, path: fault.part },
+      fault.message
+    );
+  }
+
+  const publishable =
+    autofit.status === 'AUTOFIT_OK' &&
+    failedSlides.length === 0 &&
+    pictures.faults.length === 0;
 
   if (!publishable) {
+    if (pictures.faults.length) {
+      const one = pictures.faults.length === 1;
+      console.error(
+        `
+${pictures.faults.length} picture(s) did not make it into the deck, so ` +
+          `${one ? 'a slide' : 'those slides'} would open with a white box where the ` +
+          `picture should be. No deck was published.`
+      );
+    }
     if (autofit.status !== 'AUTOFIT_OK') {
       console.error(`${autofit.status}: ${autofit.message}`);
       for (const item of autofitDiagnostics(autofit)) {
@@ -419,6 +450,25 @@ async function main() {
     // deleted above, and the [error] lines are how you find out which slide
     // broke.
     process.exitCode = 1;
+  }
+}
+
+// A picture check that cannot itself become the reason a lesson is lost.
+//
+// Every fault it reports is real and blocking. A check that could not RUN is a
+// different thing: reading the package needs jszip, and a machine without it
+// would otherwise have every deck refused for a fault nobody has shown exists.
+// So a check that breaks says so loudly as a warning and lets the deck through.
+async function runPictureCheck(pptxPath) {
+  try {
+    return await verifyPictures(pptxPath);
+  } catch (err) {
+    note(
+      'the pictures in this deck could not be checked (' +
+        (err && err.message ? err.message : err) +
+        '), so open it and confirm every picture is showing before you teach from it.'
+    );
+    return { faults: [], pictures: 0, media: 0 };
   }
 }
 

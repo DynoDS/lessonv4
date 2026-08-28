@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "node build.js",
-    "check": "node scripts/check-catalogue.js && node scripts/check-parity.js && node scripts/check-paragraph-props.js && node scripts/check-render-failures.js && node scripts/check-vocab-visuals.js"
+    "check": "node scripts/check-catalogue.js && node scripts/check-parity.js && node scripts/check-paragraph-props.js && node scripts/check-render-failures.js && node scripts/check-pictures.js && node scripts/check-vocab-visuals.js"
   },
   "dependencies": {
     "pptxgenjs": "^3.12.0",

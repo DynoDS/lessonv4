@@ -58,11 +58,15 @@ def verify(candidate_text: str, *, source: bool = False) -> Path:
             if not required.is_file():
                 raise RootError(f"required source path is missing: {required}")
 
-        git_marker = root.parent / ".git"
-        if not git_marker.exists():
+        # Walk up rather than looking only at the parent. The plugin used to sit
+        # directly inside its repository, so the parent was always the checkout.
+        # It now lives one level deeper, under `plugins/`, which left this guard
+        # rejecting the real source tree and telling the caller to go and find a
+        # repository they were already standing in.
+        if not any((folder / ".git").exists() for folder in root.parents):
             raise RootError(
-                "source root is not inside the teaching-plugins git checkout: "
-                f"missing {git_marker}"
+                "source root is not inside a git checkout: no .git above "
+                f"{root}"
             )
 
         if not os.access(root, os.W_OK):

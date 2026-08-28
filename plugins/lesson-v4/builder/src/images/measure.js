@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { normalizeLocalPath, longPathSafe } = require('./resolve');
+
 const requireGlobal = require('../require-global');
 let sharp = null;
 function getSharp() {
@@ -32,10 +34,18 @@ async function preMeasureAll(lesson, lessonDir) {
   let s;
   try { s = getSharp(); } catch (e) { return dims; }
   for (const rel of paths) {
-    const abs = path.isAbsolute(rel) ? rel : path.join(lessonDir, rel);
+    // `rel` stays the key the lesson JSON used, because the draw step looks the
+    // dimensions up by that exact string. Only the path opened off disk changes.
+    const local = normalizeLocalPath(rel);
+    const abs = path.isAbsolute(local)
+      ? local
+      : path.join(normalizeLocalPath(lessonDir), local);
     if (!fs.existsSync(abs)) continue;
     try {
-      const meta = await s(abs).metadata();
+      // sharp gets the long-path form. Without it a photograph in a lesson
+      // folder past 260 characters is reported missing by sharp alone, and the
+      // build then stops on a picture that is sitting exactly where it should.
+      const meta = await s(longPathSafe(abs)).metadata();
       if (meta && meta.width && meta.height) {
         dims[rel] = { w: meta.width, h: meta.height };
       }

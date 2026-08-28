@@ -25,6 +25,7 @@
 const fs = require('fs');
 const path = require('path');
 const { TEMPLATES } = require('./templates');
+const { normalizeLocalPath } = require('./images/resolve');
 const {
   inspectDecorations,
   withoutDecorations,
@@ -194,7 +195,14 @@ function validateLesson(lesson, lessonDir) {
     // the slide would show a grey box (essential) or a silent gap (non-essential).
     forEachValue(slide, 'imagePath', (p, owner) => {
       if (typeof p !== 'string' || !p) return;
-      const onDisk = fs.existsSync(path.join(lessonDir, p));
+      // An absolute path is already the whole answer. Joining it onto the lesson
+      // folder produced a path that never exists, so every absolute image was
+      // reported as missing while the file sat right there, and the one check
+      // that could have caught a picture going astray cried wolf on all of them.
+      const local = normalizeLocalPath(p);
+      const onDisk = fs.existsSync(
+        path.isAbsolute(local) ? local : path.join(lessonDir, local)
+      );
       // An Educational SVG context picture is a nice-to-have local asset. If the optional
       // search could not run, its request stays in the spec without imagePath,
       // or an old path may be absent. Neither case may block the lesson.

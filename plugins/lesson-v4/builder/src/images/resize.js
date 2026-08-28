@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
+const { normalizeLocalPath, longPathSafe } = require('./resolve');
+
 const requireGlobal = require('../require-global');
 let sharp = null;
 function getSharp() {
@@ -64,24 +66,33 @@ async function trimWhiteMatte(s, absolute, width, height) {
 
 async function resizeIfNeeded(imagePath, lessonDir, keepFraming) {
   if (!imagePath) return;
-  const absolute = path.isAbsolute(imagePath) ? imagePath : path.join(lessonDir, imagePath);
+  const local = normalizeLocalPath(imagePath);
+  const base = normalizeLocalPath(lessonDir);
+  const absolute = path.isAbsolute(local) ? local : path.join(base, local);
   if (!fs.existsSync(absolute)) return;
 
-  const relative = path.relative(lessonDir, absolute);
+  const relative = path.relative(base, absolute);
   if (relative.startsWith('..') || path.isAbsolute(relative)) return;
 
-  const cachePath = path.join(lessonDir, '.resized', relative);
+  const cachePath = path.join(base, '.resized', relative);
   const s = getSharp();
 
+  // Every sharp call gets the long-path form of the file. Node's own fs calls
+  // above go past 260 characters happily; sharp does not, so a lesson folder
+  // deep inside OneDrive would otherwise leave every photograph unreadable to
+  // the only library that measures and crops it.
+  const readable = longPathSafe(absolute);
+  const writable = longPathSafe(cachePath);
+
   try {
-    const metadata = await s(absolute).metadata();
+    const metadata = await s(readable).metadata();
     const width = metadata.width || 0;
     const height = metadata.height || 0;
 
     // A labelled diagram pins each dot to a percentage of its base image, so
     // re-cropping that image would slide every dot off the part it names. Those
     // bases keep their framing and are only ever resized.
-    const trimmed = keepFraming ? null : await trimWhiteMatte(s, absolute, width, height);
+    const trimmed = keepFraming ? null : await trimWhiteMatte(s, readable, width, height);
     const oversized = width > MAX_DIMENSION || height > MAX_DIMENSION;
     if (!trimmed && !oversized) return;
 
@@ -92,9 +103,9 @@ async function resizeIfNeeded(imagePath, lessonDir, keepFraming) {
     }
 
     fs.mkdirSync(path.dirname(cachePath), { recursive: true });
-    await s(trimmed || absolute)
+    await s(trimmed || readable)
       .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
-      .toFile(cachePath);
+      .toFile(writable);
   } catch (err) {
     console.warn(`[resize] could not prepare ${absolute}: ${err.message}`);
   }

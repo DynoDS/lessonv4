@@ -135,9 +135,30 @@ def test_source_root_requires_a_git_checkout():
         result = run_verifier("--source", str(source_root))
 
         assert result.returncode == 2
+        assert "source root is not inside a git checkout" in result.stderr
+
+
+def test_source_root_is_found_when_the_plugin_sits_below_the_checkout():
+    """The plugin lives at `<repo>/plugins/<name>`, not directly in the repo.
+
+    The guard used to demand `.git` in the plugin's own parent folder, which is
+    `plugins/`. That made the real source tree fail its own check, so any
+    workflow that edits the plugin stopped with a message telling the caller to
+    find a repository they were already inside.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        checkout = Path(tmp) / "lessonv4"
+        source_root = checkout / "plugins" / "lesson-v4"
+        make_package(source_root, source=True)
+        (source_root.parent / ".git").rmdir()
+        (checkout / ".git").mkdir(parents=True, exist_ok=True)
+
+        result = run_verifier("--source", str(source_root))
+
+        assert result.returncode == 0, result.stdout + result.stderr
         assert (
-            "source root is not inside the teaching-plugins git checkout"
-            in result.stderr
+            result.stdout.strip()
+            == f"PLUGIN_SOURCE_ROOT={source_root.resolve()}"
         )
 
 

@@ -88,6 +88,20 @@ Use either an emoji or a hand-drawn Educational SVG picture.
 
 - An emoji is the fallback route when it is clear, suitable for children and
   visually coherent with the surrounding set.
+- **An emoji is drawn by the device, not by you.** Every platform draws its own
+  version, so an emoji carries only the meaning that survives all of them. It is
+  the right picture for a general thing children recognise at a glance (a candle,
+  a bird, a bus). It cannot carry a form the learning depends on: a UK three-pin
+  plug and socket, a pound coin, a particular instrument, a specific road sign,
+  a named piece of apparatus. When the design asks for one of those, the emoji
+  route is closed and the visual comes from a helper, a required photograph or
+  an Educational SVG drawing. The test is simple: if a child could look at the
+  drawn glyph and learn the wrong thing, no emoji fits.
+- **This applies wherever the emoji sits, not only in a `picture` object.** An
+  emoji typed into a category label, a sorting heading, a word bank, an item of
+  teaching text or an answer is still the picture a child reads the meaning
+  from, so it meets the same test. A relevant emoji lifting an otherwise
+  text-only line is decoration and is unaffected.
 - Prefer an Educational SVG picture when the hand-drawn object gives a cleaner,
   calmer or more specific match. Search the shared local library after the
   resource's design is complete. The builder never guesses the picture.
