@@ -1,0 +1,80 @@
+{
+  "lessonName": "New Helpers Smoke",
+  "yearGroup": "Year 4",
+  "subject": "Test",
+  "lo": "Smoke test for the four new content helpers.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "Smoke test for the four new content helpers.",
+      "instruction": "Cover slide for the smoke test.",
+      "speakerNotes": "Cover slide."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Diamond Nine",
+      "instruction": "Rank these values from most to least important.",
+      "body": {
+        "type": "diamond-nine",
+        "items": [
+          "Honesty",
+          "Kindness", "Respect",
+          "Hard work", "Helping others", "Listening",
+          "Tidiness", "Quietness",
+          "Following rules"
+        ]
+      },
+      "speakerNotes": "Diamond nine helper test."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Continuum Line",
+      "instruction": "Mark where you stand on the line.",
+      "body": {
+        "type": "continuum-line",
+        "question": "Was it fair to invade Britain?",
+        "left": "Completely unfair",
+        "right": "Completely fair",
+        "middle": "Sometimes fair",
+        "marks": 5
+      },
+      "speakerNotes": "Continuum line test."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Fishbone",
+      "instruction": "What caused this?",
+      "body": {
+        "type": "fishbone",
+        "effect": "The Romans invaded Britain",
+        "causes": [
+          "Britain had tin and gold",
+          "Caesar wanted military glory",
+          "Britain was helping the Gauls",
+          "Rome wanted to expand"
+        ]
+      },
+      "speakerNotes": "Fishbone test."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Concept Map",
+      "instruction": "How did cacao connect to Maya life?",
+      "body": {
+        "type": "concept-map",
+        "centre": "Cacao",
+        "spokes": [
+          { "label": "Money", "relationship": "used as" },
+          { "label": "Religion", "relationship": "used in" },
+          { "label": "Power", "relationship": "controlled by rulers" },
+          { "label": "Afterlife", "relationship": "buried with" }
+        ]
+      },
+      "speakerNotes": "Concept map test."
+    }
+  ]
+}

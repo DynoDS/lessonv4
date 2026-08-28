@@ -1,0 +1,27 @@
+{
+  "topic": "Adding Fractions Misconception",
+  "yearGroup": "Year 4",
+  "lessonSlug": "adding-fractions-misconception",
+  "rationaleNote": "The 'add the bottoms too' error is specific, common, and self-correctable by glance.",
+  "cards": [
+    {
+      "type": "misconception",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Look out for",
+      "items": [
+        {
+          "label": "Don't",
+          "text": "2/5 + 1/5 = 3/10"
+        },
+        {
+          "label": "Do",
+          "text": "2/5 + 1/5 = 3/5  — denominator stays the same"
+        }
+      ],
+      "photo": null
+    }
+  ]
+}

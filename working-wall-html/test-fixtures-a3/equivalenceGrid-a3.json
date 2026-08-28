@@ -1,0 +1,18 @@
+{
+  "topic": "Fraction, Decimal, Percentage Equivalents",
+  "yearGroup": "Year 5",
+  "lessonSlug": "fdp-equivalence-grid-a3",
+  "rationaleNote": "Minimal equivalenceGrid fixture for the A3 baseline set.",
+  "cards": [
+    {
+      "type": "equivalenceGrid",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "Fraction, decimal, percentage",
+      "rows": [
+        { "colour": "3B82F6", "values": ["1/2", "0.5", "50%"], "visual": { "type": "fractionCircle", "numerator": 1, "denominator": 2 } },
+        { "colour": "10B981", "values": ["1/4", "0.25", "25%"], "visual": { "type": "fractionCircle", "numerator": 1, "denominator": 4 } },
+        { "colour": "F59E0B", "values": ["3/4", "0.75", "75%"], "visual": { "type": "fractionCircle", "numerator": 3, "denominator": 4 } }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "lessonName": "Place Value Pair Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can find 10, 100 and 1,000 more than a 4-digit number.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "One comparison as a pair — 10 more",
+      "instruction": "the case the mode exists for",
+      "body": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["3", "4", "6", "2"],
+          "to":   ["3", "4", "7", "2"],
+          "operation": "10 more"
+        } }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "The SECOND comparison is its own pair, never a chain",
+      "instruction": "100 more of the SAME starting number",
+      "body": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["3", "4", "6", "2"],
+          "to":   ["3", "5", "6", "2"],
+          "operation": "100 more"
+        } }
+    },
+    {
+      "template": "split-v-50-50",
+      "headerStyle": "title",
+      "title": "Two pairs on one slide — the right way to show both",
+      "instruction": "two comparisons, two pairs",
+      "primary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": { "from": ["3", "4", "6", "2"], "to": ["3", "4", "7", "2"], "operation": "+ 10" } },
+      "secondary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": { "from": ["3", "4", "6", "2"], "to": ["3", "5", "6", "2"], "operation": "+ 100" } }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "An exchange — two columns move at once",
+      "instruction": "10 more of 3,497",
+      "body": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["3", "4", "9", "7"],
+          "to":   ["3", "5", "0", "7"],
+          "operation": "10 more"
+        } }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Five columns, and a written-out title",
+      "instruction": "explicit title overrides the derived one",
+      "body": { "type": "place-value-chart",
+        "columns": ["TTh", "Th", "H", "T", "O"],
+        "pair": {
+          "from": ["2", "4", "3", "0", "6"],
+          "to":   ["3", "4", "3", "0", "6"],
+          "operation": "10,000 more",
+          "title": "24,306 + 10,000 = 34,306"
+        } }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Decimals — a tenths column changing",
+      "instruction": "the dot column is not a digit, so it never says \"same\"",
+      "body": { "type": "place-value-chart",
+        "columns": ["O", ".", "t", "h"],
+        "pair": {
+          "from": ["4", null, "3", "5"],
+          "to":   ["4", null, "4", "5"],
+          "operation": "0.1 more"
+        } }
+    },
+    {
+      "template": "split-h-50-50",
+      "headerStyle": "title",
+      "title": "Half column (class C), and the same chart the old way",
+      "instruction": "pair left, stacked rows right — both still render",
+      "left": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": { "from": ["3", "4", "6", "2"], "to": ["3", "4", "7", "2"], "operation": "10 more" } },
+      "right": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "rows": [
+          { "label": "3,462",    "cells": ["3", "4", "6", "2"] },
+          { "label": "10 more",  "cells": ["3", "4", "7", "2"], "highlight": ["T"] },
+          { "label": "100 more", "cells": ["3", "5", "6", "2"], "highlight": ["H"] }
+        ] }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Counters and one exchange — 890 to 900",
+      "instruction": "ten tens exchange into one hundred",
+      "body": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["0", "8", "9", "0"],
+          "to":   ["0", "9", "0", "0"],
+          "operation": "+ 10",
+          "counters": {
+            "from": { "Th": 0, "H": 8, "T": 9, "O": 0 },
+            "to":   { "Th": 0, "H": 9, "T": 0, "O": 0 }
+          },
+          "exchanges": [
+            { "from": "T", "to": "H", "count": 10 }
+          ]
+        } }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Counters and a cascading exchange — 1,990 to 2,000",
+      "instruction": "two separate exchanges, never a chained calculation",
+      "body": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["1", "9", "9", "0"],
+          "to":   ["2", "0", "0", "0"],
+          "operation": "+ 10",
+          "counters": {
+            "from": { "Th": 1, "H": 9, "T": 9, "O": 0 },
+            "to":   { "Th": 2, "H": 0, "T": 0, "O": 0 }
+          },
+          "exchanges": [
+            { "from": "T", "to": "H", "count": 10 },
+            { "from": "H", "to": "Th", "count": 10 }
+          ]
+        } }
+    },
+    {
+      "template": "split-v-50-50",
+      "headerStyle": "title",
+      "title": "Hundred boundary exchanges in both directions",
+      "instruction": "each comparison starts from its own number",
+      "primary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["3", "9", "5", "0"],
+          "to":   ["4", "0", "5", "0"],
+          "operation": "+ 100",
+          "counters": {
+            "from": { "Th": 3, "H": 9, "T": 5, "O": 0 },
+            "to":   { "Th": 4, "H": 0, "T": 5, "O": 0 }
+          },
+          "exchange": { "from": "H", "to": "Th" }
+        } },
+      "secondary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["5", "0", "6", "0"],
+          "to":   ["4", "9", "6", "0"],
+          "operation": "− 100",
+          "counters": {
+            "from": { "Th": 5, "H": 0, "T": 6, "O": 0 },
+            "to":   { "Th": 4, "H": 9, "T": 6, "O": 0 }
+          },
+          "exchange": { "from": "Th", "to": "H" }
+        } }
+    },
+    {
+      "template": "split-h-50-50",
+      "headerStyle": "title",
+      "title": "Fade from counters to compact unknown",
+      "instruction": "populated teaching row left; digit-only question pair right",
+      "left": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "rows": [
+          { "label": "4,895", "cells": ["4", "8", "9", "5"],
+            "counters": { "Th": 4, "H": 8, "T": 9, "O": 5 } }
+        ] },
+      "right": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "pair": {
+          "from": ["4", "8", "9", "5"],
+          "to":   ["", "", "", ""],
+          "operation": "+ 10",
+          "title": ""
+        } }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Regression — a plain chart with no pair field",
+      "instruction": "must render exactly as it did before",
+      "body": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O", ".", "t", "h"],
+        "rows": [
+          ["3", "4", "5", "6", null, "7", "8"],
+          ["",  "",  "",  "",  null, "",  ""]
+        ] }
+    }
+  ]
+}

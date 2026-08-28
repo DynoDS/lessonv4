@@ -1,0 +1,18 @@
+{
+  "topic": "Why Is the Rainforest Shrinking?",
+  "yearGroup": "Year 5",
+  "lessonSlug": "rainforest-cause-cards-a3",
+  "rationaleNote": "Minimal causeCards fixture for the A3 baseline set.",
+  "cards": [
+    {
+      "type": "causeCards",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "Why is the rainforest shrinking?",
+      "people": [
+        { "title": "The farmer", "photo": "photos/pizza.jpg", "action": "Clears trees for grazing land", "reason": "To raise more cattle" },
+        { "title": "The logger", "photo": "photos/pizza.jpg", "action": "Cuts down valuable hardwood trees", "reason": "To sell the timber" },
+        { "title": "The miner", "photo": "photos/pizza.jpg", "action": "Digs out gold and other metals", "reason": "To sell them for money" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "lessonName": "Triangle Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can classify triangles by their sides.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Scalene — all sides different (1, 2, 3 dashes)",
+      "instruction": "kind scalene",
+      "body": { "type": "triangle", "kind": "scalene", "label": "Scalene" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Isosceles — two equal sides (one dash each)",
+      "instruction": "kind isosceles",
+      "body": { "type": "triangle", "kind": "isosceles", "label": "Isosceles" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Equilateral — all sides equal (one dash each)",
+      "instruction": "kind equilateral",
+      "body": { "type": "triangle", "kind": "equilateral", "label": "Equilateral" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Right-angled — blue square in the corner",
+      "instruction": "kind right",
+      "body": { "type": "triangle", "kind": "right", "label": "Right-angled" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Marking the three angles (angleArcs)",
+      "instruction": "equilateral with angle arcs",
+      "body": { "type": "triangle", "kind": "equilateral", "angleArcs": true, "label": "Three angles" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Rotated isosceles — dashes follow the turn",
+      "instruction": "rotation 90",
+      "body": { "type": "triangle", "kind": "isosceles", "rotation": 90, "label": "Still isosceles" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "The three types side by side (answers revealed)",
+      "instruction": "row, label reveal",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "triangle", "kind": "scalene",     "rotation": 0,   "label": "(a) ||scalene" },
+          { "type": "triangle", "kind": "isosceles",   "rotation": 25,  "label": "(b) ||isosceles" },
+          { "type": "triangle", "kind": "equilateral", "rotation": 0,   "label": "(c) ||equilateral" },
+          { "type": "triangle", "kind": "right",       "rotation": 0,   "label": "(d) ||right-angled" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Which of these are triangles? (concept attainment)",
+      "instruction": "mix examples and non-examples in one row",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "triangle",            "kind": "scalene",  "label": "(a)" },
+          { "type": "triangle-nonexample", "shape": "open",    "label": "(b)" },
+          { "type": "triangle-nonexample", "shape": "curved",  "label": "(c)" },
+          { "type": "triangle-nonexample", "shape": "quad",    "label": "(d)" }
+        ]
+      }
+    },
+    {
+      "template": "key-vocabulary",
+      "instruction": "Three type words with triangle icons",
+      "words": [
+        { "word": "scalene", "definition": "A triangle with all three sides different lengths.", "visual": { "type": "triangle", "kind": "scalene" } },
+        { "word": "isosceles", "definition": "A triangle with two sides the same length.", "visual": { "type": "triangle", "kind": "isosceles" } },
+        { "word": "equilateral", "definition": "A triangle with all three sides the same length.", "visual": { "type": "triangle", "kind": "equilateral" } }
+      ]
+    }
+  ]
+}

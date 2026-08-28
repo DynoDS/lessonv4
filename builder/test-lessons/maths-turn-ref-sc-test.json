@@ -1,0 +1,37 @@
+{
+  "lessonName": "maths-turn-ref-sc smoke test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can solve money problems.",
+  "slides": [
+    {
+      "template": "maths-turn-ref-sc",
+      "title": "My Turn",
+      "questions": [
+        "Sam bought a skipping rope and a bouncy ball. How much did he spend?"
+      ],
+      "referenceLabel": "Price list",
+      "reference": {
+        "type": "table",
+        "headers": ["Item", "Cost"],
+        "rows": [
+          ["A skipping rope", "£2.45"],
+          ["A bouncy ball", "80p"],
+          ["A water bottle", "£4.30"],
+          ["A hat", "£6.99"]
+        ]
+      },
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          "READ — Underline the items the person bought.",
+          "SPOT — Check the units. Convert pence-only prices to £.",
+          "PLAN — Decide the operation. Spend / altogether = add.",
+          "SOLVE — Use the partition method, exchange if needed."
+        ]
+      },
+      "speakerNotes": "Smoke test for the new maths-turn-ref-sc template."
+    }
+  ]
+}

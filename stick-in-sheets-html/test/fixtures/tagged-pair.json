@@ -1,0 +1,9 @@
+{
+  "meta": { "lesson": "Reflect across a mirror line", "yearGroup": "Year 4", "subject": "Maths" },
+  "items": [
+    { "visual": "reflection-grid", "tag": "Straight a", "label": "Complete the shape across the mirror line",
+      "spec": { "cols": 10, "rows": 8, "mirror": { "orientation": "vertical", "at": 5 }, "shape": [[5,1],[5,6],[3,6],[3,4],[2,4],[2,1]], "showReflection": false } },
+    { "visual": "reflection-grid", "tag": "Diagonal a", "label": "Complete the shape across the diagonal mirror line",
+      "spec": { "cols": 8, "rows": 8, "mirror": { "orientation": "diagonal-up", "at": 0 }, "shape": [[1,4],[1,7],[3,7],[3,5]], "showReflection": false } }
+  ]
+}

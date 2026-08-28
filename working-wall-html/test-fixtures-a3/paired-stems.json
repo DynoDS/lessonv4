@@ -1,0 +1,30 @@
+{
+  "topic": "Money — Coin Values",
+  "yearGroup": "Year 2",
+  "lessonSlug": "money-coin-values",
+  "rationaleNote": "Lesson teaches children to say the value of a coin in a full sentence; My Turn slide models the completion, so the stems are paired (gappy + modelled) on one card.",
+  "cards": [
+    {
+      "type": "sentenceStem",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "How to explain it",
+      "items": [
+        {
+          "text": "The value of the coin is ___.",
+          "filled": "The value of the coin is 10 pence."
+        },
+        {
+          "text": "I know this coin is worth ___ because ___.",
+          "filled": "I know this coin is worth 5 pence because it has 5p written on it."
+        },
+        {
+          "text": "Two ___ coins make ___ pence."
+        }
+      ],
+      "photo": null
+    }
+  ]
+}

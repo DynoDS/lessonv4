@@ -1,0 +1,33 @@
+{
+  "name": "lesson-v4",
+  "version": "4.0.0",
+  "description": "Lesson design and resource creation tools for UK primary schools.",
+  "author": {
+    "name": "DynoDS",
+    "url": "https://github.com/DynoDS"
+  },
+  "repository": "https://github.com/DynoDS/lessonv4",
+  "keywords": [
+    "lessons",
+    "teaching",
+    "primary",
+    "worksheets",
+    "PowerPoint"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Lesson v4",
+    "shortDescription": "Build complete lessons for UK primary classrooms.",
+    "longDescription": "Lesson v4 plans lessons and produces teacher-ready slides, worksheets, stick-in sheets and working walls.",
+    "developerName": "DynoDS",
+    "category": "Education",
+    "capabilities": [
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Create a lesson from this learning objective.",
+      "Make a worksheet for this lesson.",
+      "Build the lesson resources."
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "topic": "Explaining Fractions",
+  "yearGroup": "Year 4",
+  "lessonSlug": "explaining-fractions",
+  "rationaleNote": "A single 'pick one' stem menu helps children put their reasoning into words.",
+  "cards": [
+    {
+      "type": "sentenceStem",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "How to explain it",
+      "items": [
+        {
+          "text": "I added the numerators because ___"
+        },
+        {
+          "text": "The denominator stays the same because ___"
+        }
+      ],
+      "photo": null
+    }
+  ]
+}

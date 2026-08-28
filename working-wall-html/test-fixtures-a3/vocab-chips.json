@@ -1,0 +1,38 @@
+{
+  "topic": "Money Vocabulary",
+  "yearGroup": "Year 2",
+  "lessonSlug": "money-vocabulary",
+  "rationaleNote": "Money unit introduces a set of supporting vocab words children will use across the unit. Single chip card sits under the Vocabulary zoner alongside any tier-3 definition cards.",
+  "cards": [
+    {
+      "type": "vocabChips",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Money words",
+      "chips": [
+        {
+          "word": "amount"
+        },
+        {
+          "word": "cost"
+        },
+        {
+          "word": "change"
+        },
+        {
+          "word": "ten pence",
+          "photo": "photos/pizza.jpg"
+        },
+        {
+          "word": "pound",
+          "photo": "photos/pizza.jpg"
+        },
+        {
+          "word": "spend"
+        }
+      ]
+    }
+  ]
+}

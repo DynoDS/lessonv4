@@ -1,0 +1,77 @@
+{
+  "lessonName": "Quick Check Rail Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can find 10 and 100 more than a 4-digit number.",
+  "slides": [
+    {
+      "template": "split-h-75-25",
+      "headerStyle": "title",
+      "title": "Quick check with a chart rail — the case this exists for",
+      "instruction": "Write only the name of the column that changes",
+      "primary": { "type": "numbered-questions",
+        "questions": ["10 more than 3,462", "100 more than 3,462", "10 more than 3,497"] },
+      "secondary": { "type": "place-value-chart", "columns": ["Th", "H", "T", "O"], "rows": [] }
+    },
+    {
+      "template": "split-h-75-25",
+      "headerStyle": "title",
+      "title": "The same check with a word-bank rail instead",
+      "instruction": "Write only the name of the column that changes",
+      "primary": { "type": "numbered-questions",
+        "questions": ["10 more than 3,462", "100 more than 3,462", "10 more than 3,497"] },
+      "secondary": { "type": "chip-bank", "title": "Use these words",
+        "chips": ["thousands", "hundreds", "tens", "ones"], "variant": "yellow" }
+    },
+    {
+      "template": "split-h-75-25",
+      "headerStyle": "title",
+      "title": "And with a criteria line rail",
+      "instruction": "Write only the name of the column that changes",
+      "primary": { "type": "numbered-questions",
+        "questions": ["10 more than 3,462", "100 more than 3,462", "10 more than 3,497"] },
+      "secondary": { "type": "text",
+        "value": "Name the column.\n\nDo not write the whole number." }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "No rail — three short questions taking the room",
+      "instruction": "Write only the name of the column that changes",
+      "body": { "type": "numbered-questions",
+        "questions": ["10 more than 3,462", "100 more than 3,462", "10 more than 3,497"] }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "The same three with answers revealed",
+      "instruction": "|| reveal still works",
+      "body": { "type": "numbered-questions",
+        "questions": ["10 more than 3,462 — ||tens", "100 more than 3,462 — ||hundreds", "10 more than 3,497 — ||hundreds and tens"] }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Regression — a six-question Apply with longer questions",
+      "instruction": "must still fit and stay readable",
+      "body": { "type": "numbered-questions",
+        "questions": [
+          "A shop sells pencils in packs of 6. How many pencils are in 7 packs?",
+          "Find half of 48 and explain how you know your answer is right.",
+          "There are 24 children and 3 tables. How many sit at each table?",
+          "What is 100 less than 3,462?",
+          "Write the number that is 1,000 more than 4,506.",
+          "Two numbers add to 100. One is 37. What is the other?"
+        ] }
+    },
+    {
+      "template": "split-h-75-25",
+      "headerStyle": "title",
+      "title": "Narrow-rail regression — a full chart still renders in class G",
+      "instruction": "rows omitted, so a blank working row as before",
+      "primary": { "type": "numbered-questions",
+        "questions": ["What changes?", "What stays the same?"] },
+      "secondary": { "type": "place-value-chart", "columns": ["Th", "H", "T", "O"] }
+    }
+  ]
+}

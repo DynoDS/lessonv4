@@ -1,0 +1,20 @@
+{
+  "topic": "Working Wall Banner",
+  "yearGroup": "Year 4",
+  "lessonSlug": "english-working-wall-banner",
+  "rationaleNote": "Demo of the banner card type — three A4 landscape pages spelling 'English Working Wall' in giant rainbow letters, pinned end-to-end across the top of the wall.",
+  "cards": [
+    {
+      "type": "banner",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "words": [
+        "English",
+        "Working",
+        "Wall"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1997 @@
+"""Deterministic tests for the authoritative lesson-design.json hand-off.
+
+Run:
+  python3 test_lesson_design_contract.py
+or:
+  pytest test_lesson_design_contract.py
+"""
+from __future__ import annotations
+
+import copy
+import importlib.util
+import json
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+VALIDATOR = ROOT / "scripts" / "validate-lesson-design.py"
+PHOTO_CAP = ROOT / "scripts" / "check-photo-cap.py"
+SKILL = ROOT / "skills" / "make-lesson" / "SKILL.md"
+PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook.md"
+ADAPTATION_DESIGNER = ROOT / "agents" / "adaptation-designer.md"
+OUTPUT_TEMPLATE = ROOT / "references" / "output-template.md"
+CONTEXT_PICTURES = ROOT / "references" / "context-pictures.md"
+
+spec = importlib.util.spec_from_file_location("validate_lesson_design", VALIDATOR)
+assert spec and spec.loader
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+
+
+def read(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    if path == SKILL:
+        text += "\n" + PLAYBOOK.read_text(encoding="utf-8")
+    return text
+
+
+def no_answer():
+    return {
+        "kind": "none",
+        "content": None,
+        "acceptanceCondition": None,
+        "delivery": "none",
+    }
+
+
+def exact_answer(content: str, delivery: str = "teacher-only"):
+    return {
+        "kind": "exact",
+        "content": content,
+        "acceptanceCondition": None,
+        "delivery": delivery,
+    }
+
+
+def photo_requirement(
+    photo_id: str,
+    subject: str,
+    filename: str,
+    *,
+    pedagogical_constraint: str = "",
+    teaching_requirement: str | None = None,
+    essential: bool = True,
+    fallback_action: str = "unsatisfied",
+):
+    return {
+        "id": photo_id,
+        "subject": subject,
+        "pedagogical_constraint": pedagogical_constraint,
+        "teaching_requirement": teaching_requirement or f"Show {subject} clearly.",
+        "load_bearing_evidence": [subject],
+        "use": "slide",
+        "essential": essential,
+        "filename": filename,
+        "acquisition_mode": "ordinary-real",
+        "source_profile": "unsplash-only",
+        "fallback_action": fallback_action,
+        "fallback_note": None,
+        "generation_prompt": None,
+        "coherent_group": None,
+        "coherent_mode": "none",
+        "coherent_visual_invariants": [],
+    }
+
+
+def source_unit(
+    ordinal: int,
+    kind: str,
+    content: dict,
+    *,
+    label: str | None = None,
+    concept_ref: str | None = None,
+    modelling_state: str | None = None,
+    representation_refs: list | None = None,
+    success_criteria_refs: list | None = None,
+    sticky_refs: list | None = None,
+    misconception_refs: list | None = None,
+    photo_refs: list | None = None,
+    pupil_instruction: str | None = None,
+    script: str | None = "Say to children: Have a look at this.",
+    teacher_info: str | None = None,
+    look_for: str | None = None,
+    answer: dict | None = None,
+):
+    return {
+        "sourceUnitId": f"lesson-section/teaching-sequence/unit-{ordinal:03d}",
+        "label": label or kind.replace("-", " ").title(),
+        "kind": kind,
+        "conceptRef": concept_ref,
+        "content": content,
+        "pupilInstruction": pupil_instruction,
+        "modellingState": modelling_state,
+        "representationRefs": representation_refs or [],
+        "successCriteriaRefs": success_criteria_refs or [],
+        "stickyKnowledgeRefs": sticky_refs or [],
+        "misconceptionRefs": misconception_refs or [],
+        "photoRefs": photo_refs or [],
+        "speakerNotes": {
+            "script": script,
+            "teacherInfo": teacher_info,
+            "lookFor": look_for,
+        },
+        "answer": copy.deepcopy(answer if answer is not None else no_answer()),
+    }
+
+
+def valid_contract():
+    design = {
+        "schemaVersion": 1,
+        "lesson": {
+            "structure": "Skill-based",
+            "yearGroup": 4,
+            "subject": "Maths",
+            "lo": "To add two-digit numbers using partitioning",
+            "displayedLo": "To add two-digit numbers",
+            "durationMinutes": 45,
+            "scope": "Complete lesson",
+            "deferredLearning": None,
+            "lesson2Direction": None,
+            "stickingPoint": "Keep tens with tens and ones with ones.",
+        },
+        "teacherOrientation": (
+            "Teacher orientation: Children add two-digit numbers by partitioning. "
+            "The tricky bit is keeping each place value together."
+        ),
+        "starter": {
+            "sourceUnitId": "lesson-section/starter/unit-001",
+            "label": "Starter",
+            "kind": "starter",
+            "conceptRef": None,
+            "content": {
+                "activity": "Recall number bonds to 10.",
+                "connection": "Retrieves addition facts used inside today's method.",
+                "format": "Four short calculations.",
+                "testQuestionPath": None,
+            },
+            "pupilInstruction": "Find each total.",
+            "modellingState": None,
+            "representationRefs": [],
+            "successCriteriaRefs": [],
+            "stickyKnowledgeRefs": [],
+            "misconceptionRefs": [],
+            "photoRefs": [],
+            "speakerNotes": {
+                "script": "Say to children: Find each total. These facts will help us later.",
+                "teacherInfo": None,
+                "lookFor": None,
+            },
+            "answer": exact_answer("10, 10, 10, 10", "answer-slide"),
+        },
+        "vocabulary": [
+            {
+                "id": "vocab-001",
+                "sourceUnitId": "lesson-section/vocabulary/unit-001",
+                "term": "exchange",
+                "definition": "Swap ten ones for one ten.",
+                "visual": {"kind": "emoji", "value": "\U0001f51f"},
+            }
+        ],
+        "trimmedVocabulary": [],
+        "representations": [
+            {
+                "id": "rep-001",
+                "name": "Part-whole model",
+                "purpose": "Show how each two-digit number is partitioned.",
+                "configurations": [
+                    {
+                        "id": "model",
+                        "description": "Whole filled; two parts blank for live completion.",
+                        "loadBearing": True,
+                        "requiredFeatures": [
+                            "one whole linked to two parts",
+                            "whole value visible",
+                            "part values blank while they are being found",
+                        ],
+                    },
+                    {
+                        "id": "prepared",
+                        "description": "Complete worked model visible from the start.",
+                        "loadBearing": True,
+                        "requiredFeatures": [
+                            "one whole linked to two completed parts",
+                            "completed values visible from the start",
+                        ],
+                    },
+                    {
+                        "id": "practice",
+                        "description": "Whole filled; two parts blank for pupil use.",
+                        "loadBearing": True,
+                        "requiredFeatures": [
+                            "one whole linked to two parts",
+                            "whole value visible",
+                            "part values blank for pupil use",
+                        ],
+                    },
+                    {
+                        "id": "vocabulary",
+                        "description": "Small labelled reminder for a vocabulary card.",
+                        "loadBearing": False,
+                        "requiredFeatures": [],
+                    },
+                ],
+            }
+        ],
+        "successCriteria": [
+            {
+                "id": "sc-001",
+                "type": "steps",
+                "drawLive": False,
+                "content": {
+                    "steps": [
+                        "Partition each number.",
+                        "Add the tens.",
+                        "Add the ones.",
+                        "Recombine.",
+                    ]
+                },
+            }
+        ],
+        "stickyKnowledge": [
+            {
+                "id": "sk-001",
+                "text": "Ten ones can be exchanged for one ten.",
+            }
+        ],
+        "misconceptions": [
+            {
+                "id": "mc-001",
+                "belief": "Add a tens digit to an ones digit because they are beside each other.",
+                "correctiveFact": "Keep place values together.",
+                "strategy": "guided question",
+                "reason": "It is a common place-value error.",
+            }
+        ],
+        "concepts": [
+            {
+                "id": "concept-001",
+                "name": "Add by partitioning",
+                "successCriteriaRefs": ["sc-001"],
+            }
+        ],
+        "teachingSequence": [
+            source_unit(
+                1,
+                "my-turn",
+                {"example": "23 + 14 =", "modelledExemplar": None},
+                label="My Turn",
+                concept_ref="concept-001",
+                modelling_state="Live-complete helper",
+                representation_refs=[
+                    {"ref": "rep-001", "configuration": "model", "interaction": "teacher-completes"}
+                ],
+                success_criteria_refs=["sc-001"],
+                script="Say to children: Watch how I partition each number first.",
+                answer=exact_answer("37", "teacher-only"),
+            ),
+            source_unit(
+                2,
+                "our-turn",
+                {
+                    "example": "32 + 25 =",
+                    "guidedQuestions": [
+                        "What should we partition first?",
+                        "Which tens can we add?",
+                        "Which ones can we add?",
+                    ],
+                },
+                label="Our Turn",
+                concept_ref="concept-001",
+                modelling_state="Live-complete helper",
+                representation_refs=[
+                    {"ref": "rep-001", "configuration": "model", "interaction": "teacher-completes"}
+                ],
+                success_criteria_refs=["sc-001"],
+                sticky_refs=["sk-001"],
+                misconception_refs=["mc-001"],
+                script="Say to children: What should we partition first?",
+                answer=exact_answer("57", "teacher-only"),
+            ),
+            source_unit(
+                3,
+                "your-turn",
+                {
+                    "activityArchitecture": "Three fresh calculations using the same method.",
+                    "task": "41 + 26 =\n52 + 17 =\n63 + 25 =",
+                },
+                label="Your Turn",
+                concept_ref="concept-001",
+                representation_refs=[
+                    {"ref": "rep-001", "configuration": "practice", "interaction": "pupil-uses"}
+                ],
+                success_criteria_refs=["sc-001"],
+                pupil_instruction="Solve each calculation.",
+                script=None,
+                look_for="Look for: tens added to tens and ones added to ones.",
+                answer=exact_answer("67\n69\n88", "answer-slide"),
+            ),
+        ],
+        "ending": {
+            "included": False,
+            "kind": "Apply",
+            "reason": "The final Your Turn already provides sufficient synthesis.",
+            "beat": None,
+        },
+        "worksheet": {
+            "status": "generated",
+            "resourceMode": "per-child",
+            "use": "separate-fresh-worksheet",
+            "activityArchitecture": {
+                "coreActionAndEvidence": "Add two-digit numbers by partitioning.",
+                "amount": "Six calculations.",
+                "variationAndBoundaryPlan": "Fresh values; keep the same method.",
+                "organisation": "Each calculation stands independently.",
+            },
+            "sheetShape": {"kind": "question-set", "reason": "Repeated calculations are the target practice."},
+            "demand": "Accurate use of the taught partition method.",
+            "successCriteriaRefs": ["sc-001"],
+            "stickyKnowledgeRefs": [],
+            "fitPriority": {"protected": ["all six calculations"], "preAuthorisedRemoval": []},
+            "centralWriteOnVisualException": None,
+            "contentBlocks": [
+                {
+                    "id": "ws-q-001",
+                    "kind": "question",
+                    "pupilPrompt": "Add 34 + 25.",
+                    "response": "Write the answer and show the partition.",
+                    "support": "",
+                    "visualRequirements": "",
+                    "representationRefs": [
+                        {"ref": "rep-001", "configuration": "practice", "interaction": "pupil-uses"}
+                    ],
+                    "stickyKnowledgeRefs": [],
+                    "photoRefs": [],
+                    "answer": exact_answer("59", "teacher-only"),
+                }
+            ],
+            "answerKeyMode": "required",
+            "providedWorksheet": None,
+        },
+        "slideDesignNotes": [],
+        "flagsForTeacher": [],
+    }
+    photos = {
+        "schema_version": 2,
+        "lesson_name": "Adding two-digit numbers",
+        "photos": [],
+    }
+    return design, photos
+
+
+def set_route(design: dict, structure: str, sequence: list[dict]):
+    design["lesson"]["structure"] = structure
+    design["teachingSequence"] = sequence
+    if structure != "Skill-based":
+        design["concepts"] = []
+    design["ending"] = {
+        "included": False,
+        "kind": "Reflect" if structure == "Dialogic" else "Apply",
+        "reason": "The route already closes the learning purposefully.",
+        "beat": None,
+    }
+
+
+def valid_content_contract():
+    design, photos = valid_contract()
+    set_route(
+        design,
+        "Content-based",
+        [
+            source_unit(1, "observe", {"activity": "Compare the two photos.", "focus": "What changed?", "evidenceProduced": "One noticed difference."}),
+            source_unit(2, "teach", {"headline": "Roads open up the forest", "takeaway": {"kind": "text", "text": "A road can let more people reach the forest."}, "teachingText": None, "keyQuestions": ["What might happen once a road is there?"]}),
+            source_unit(3, "do", {"activity": "Use the idea", "format": None, "task": "Explain one possible effect of the road."}, answer={"kind": "model", "content": "More people can reach the forest and more trees may be cut down.", "acceptanceCondition": "Accept another accurate consequence.", "delivery": "teacher-only"}),
+            source_unit(4, "practise", {"activity": "Explain the chain", "format": "short written explanation", "task": "Explain how a new road could lead to more forest being cleared."}, answer={"kind": "model", "content": "The road makes the area easier to reach, so more people may enter and clear land.", "acceptanceCondition": "Accept an accurate causal explanation.", "delivery": "answer-slide"}),
+        ],
+    )
+    return design, photos
+
+
+def valid_discovery_contract():
+    design, photos = valid_contract()
+    set_route(
+        design,
+        "Discovery",
+        [
+            source_unit(1, "question", {"focus": "Which surface creates most friction?", "prerequisites": "Children know a force can change movement.", "discoveryFocus": "Compare how far the same object travels."}),
+            source_unit(2, "explore", {"activity": "Release the same block across three surfaces.", "conditionsAndSafety": "Keep the ramp height the same.", "evidenceProduced": "Distances travelled."}),
+            source_unit(3, "make-sense", {"resultOrPattern": "The block travels different distances.", "prompt": "Which surface slowed it most?"}),
+            source_unit(4, "teach-why", {"accurateExplanation": "Rougher surfaces usually create more friction.", "unsupportedExplanationToCorrect": None}),
+            source_unit(5, "use-learning", {"activity": "Predict which new surface would slow the block most and explain why."}),
+            source_unit(6, "finish", {"purposefulEnding": "State what the investigation showed about friction."}),
+        ],
+    )
+    return design, photos
+
+
+def valid_dialogic_contract():
+    design, photos = valid_contract()
+    set_route(
+        design,
+        "Dialogic",
+        [
+            source_unit(1, "grounding-input", {"input": "A councillor is chosen by local people to represent their area."}),
+            source_unit(2, "stimulus-talk", {"prompt": "A park has room for one new facility.", "question": "What should the council choose?", "materialOnSlide": "play area / garden / sports court", "format": "ranking", "sentenceStems": ["I would choose ___ because ___."], "durationMinutes": 5, "teacherListensFor": ["different community needs", "reasons linked to who would benefit"]}),
+            source_unit(3, "synthesise", {"framesToName": ["who benefits", "how many people benefit", "what the area already has"]}),
+        ],
+    )
+    return design, photos
+
+
+def valid_task_contract():
+    design, photos = valid_contract()
+    set_route(
+        design,
+        "Task-Centred",
+        [
+            source_unit(1, "set-task", {"question": "Which material is best at blocking sound?", "investigationBrief": "Test the same sound through several materials."}, pupil_instruction="Write your prediction: I think ___ because ___."),
+            source_unit(2, "teach-needed", {"enablingInput": "Model how to keep one variable the same.", "modelledOn": "A quick demonstration using two materials."}, modelling_state="Physical-demonstration support"),
+            source_unit(3, "do-task", {"activity": "Plan the comparison, get the fairness check, then run the investigation.", "planWithinTask": "Choose what will stay the same while the material changes.", "checkpointQuestion": "What would make this unfair?", "runsBeyondToday": False, "todayEndsAt": None}),
+            source_unit(4, "share-conclude", {"activity": "Conclude which material blocked sound best and use the results as evidence."}),
+        ],
+    )
+    return design, photos
+
+
+def valid_shared_frame_contract():
+    design, photos = valid_contract()
+    worksheet = design["worksheet"]
+    worksheet["resourceMode"] = "shared-frame"
+    worksheet["use"] = "required-task-resource"
+    worksheet["sheetShape"] = {"kind": "frame", "reason": "The printed resource is the same frame the teacher models."}
+    worksheet["successCriteriaRefs"] = []
+    worksheet["stickyKnowledgeRefs"] = []
+    worksheet["contentBlocks"] = [
+        {
+            "id": "ws-frame-001",
+            "kind": "frame",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "sections": [
+                {"heading": "What I changed", "whatGoesHere": "The one thing changed in the test.", "noteSpace": "one short line"},
+                {"heading": "What I measured", "whatGoesHere": "The result measured each time.", "noteSpace": "one short line"},
+            ],
+            "answer": no_answer(),
+        }
+    ]
+    worksheet["answerKeyMode"] = "not-applicable"
+    return design, photos
+
+
+def assert_invalid(mutator, expected):
+    design, photos = valid_contract()
+    mutator(design, photos)
+    try:
+        module.validate_design(design, photos)
+    except module.ContractError as exc:
+        assert expected in str(exc), str(exc)
+    else:
+        raise AssertionError("contract unexpectedly validated")
+
+
+def assert_invalid_contract(design, photos, expected):
+    try:
+        module.validate_design(design, photos)
+    except module.ContractError as exc:
+        assert expected in str(exc), str(exc)
+    else:
+        raise AssertionError("contract unexpectedly validated")
+
+
+def test_image_team_cap_is_authoritative_and_current_aware():
+    skill = read(SKILL)
+    adaptation = read(ADAPTATION_DESIGNER)
+    output_template = read(OUTPUT_TEMPLATE)
+    context_pictures = read(CONTEXT_PICTURES)
+    photo_contract = read(ROOT / "scripts" / "photo-contract.py")
+    validator = read(VALIDATOR)
+
+    assert PHOTO_CAP.is_file()
+    assert "Keep count at or below 16." in output_template
+    assert "photo-requirements.json may contain at most 16 photos" in validator
+    assert "PHOTO CAP REVISION" in skill
+    assert "CURRENT_PROMOTED_PHOTO_COUNT:" in skill
+    assert "PHOTO_SLOTS_REMAINING:" in skill
+    assert 'photo-contract.py" promote-used' in skill
+    assert 'candidate = canonical_path.with_name(f".{canonical_path.name}.candidate")' in photo_contract
+    assert "run_photo_cap(candidate)" in photo_contract
+    assert "PHOTO_CAP_GAP" in skill
+    assert "Once a filename appears in an immutable compiled assignment manifest" in output_template
+    assert "Earlier requirements snapshots, compiled manifests, filename ownership, and terminal receipts are immutable." in skill
+    assert "may promote at most 16 required Image Team picture requests" in adaptation
+    assert "Do not impose a fixed picture ceiling." not in adaptation
+    assert "P2 and P3 are outside the lesson's 16" in context_pictures
+
+
+def test_valid_skill_contract_passes():
+    design, photos = valid_contract()
+    module.validate_design(design, photos)
+
+
+def test_valid_skill_contract_allows_optional_our_turn():
+    concept_items = [{"id": "concept-001"}]
+    module.validate_route_sequence(
+        "Skill-based",
+        [
+            {
+                "kind": "my-turn",
+                "conceptRef": "concept-001",
+            },
+            {
+                "kind": "your-turn",
+                "conceptRef": "concept-001",
+            },
+        ],
+        concept_items,
+    )
+    module.validate_route_sequence(
+        "Skill-based",
+        [
+            {
+                "kind": "my-turn",
+                "conceptRef": "concept-001",
+            },
+            {
+                "kind": "our-turn",
+                "conceptRef": "concept-001",
+            },
+            {
+                "kind": "your-turn",
+                "conceptRef": "concept-001",
+            },
+        ],
+        concept_items,
+    )
+
+
+def test_unresolved_lesson_design_scaffold_placeholder_is_rejected():
+    design, photos = valid_contract()
+    design["vocabulary"][0]["term"] = module.SCAFFOLD_PLACEHOLDER
+
+    assert_invalid_contract(
+        design,
+        photos,
+        (
+            "unresolved scaffold placeholder at "
+            "lesson-design.json.vocabulary[0].term"
+        ),
+    )
+
+
+def test_unresolved_photo_requirement_scaffold_placeholder_is_rejected():
+    design, photos = valid_contract()
+    design["lesson"]["subject"] = "Science"
+    design["starter"]["photoRefs"] = ["photo-001"]
+    photos["photos"] = [photo_requirement(
+        "photo-001",
+        module.SCAFFOLD_PLACEHOLDER,
+        "unsplash/test.jpg",
+        fallback_action="omit",
+    )]
+
+    assert_invalid_contract(
+        design,
+        photos,
+        (
+            "unresolved scaffold placeholder at "
+            "photo-requirements.json.photos[0].subject"
+        ),
+    )
+
+
+def test_valid_skill_contract_allows_multiple_distinct_my_turn_moves():
+    design, photos = valid_contract()
+    second = source_unit(
+        2,
+        "my-turn",
+        {"example": "46 + 38 =", "modelledExemplar": None},
+        label="My Turn",
+        concept_ref="concept-001",
+        modelling_state="Prepared example",
+        representation_refs=[{"ref": "rep-001", "configuration": "prepared", "interaction": "view"}],
+        success_criteria_refs=["sc-001"],
+        answer=exact_answer("84", "visible-in-unit"),
+    )
+    design["teachingSequence"].insert(1, second)
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    module.validate_design(design, photos)
+
+
+def test_valid_content_contract_passes():
+    module.validate_design(*valid_content_contract())
+
+
+def test_valid_discovery_contract_passes():
+    module.validate_design(*valid_discovery_contract())
+
+
+def test_valid_dialogic_contract_passes():
+    module.validate_design(*valid_dialogic_contract())
+
+
+def test_valid_dialogic_separate_stimulus_talk_pair_passes():
+    design, photos = valid_dialogic_contract()
+    design["teachingSequence"] = [
+        design["teachingSequence"][0],
+        source_unit(
+            2,
+            "stimulus",
+            {
+                "prompt": "A park has room for one new facility.",
+                "question": "What should the council choose?",
+                "materialOnSlide": "play area / garden / sports court",
+            },
+        ),
+        source_unit(
+            3,
+            "talk",
+            {
+                "format": "ranking",
+                "discussionQuestion": "What should the council choose?",
+                "sentenceStems": ["I would choose ___ because ___."],
+                "durationMinutes": 5,
+                "teacherListensFor": ["different community needs"],
+            },
+        ),
+        source_unit(4, "synthesise", {"framesToName": ["who benefits"]}),
+    ]
+    module.validate_design(design, photos)
+
+
+def test_valid_task_centred_contract_passes():
+    module.validate_design(*valid_task_contract())
+
+
+def test_valid_task_centred_separate_plan_checkpoint_passes():
+    design, photos = valid_task_contract()
+    do_task = design["teachingSequence"][2]
+    do_task["content"]["planWithinTask"] = None
+    do_task["content"]["checkpointQuestion"] = None
+    design["teachingSequence"].insert(
+        2,
+        source_unit(
+            3,
+            "plan-checkpoint",
+            {
+                "whatChildrenPlan": "Choose what will stay the same while the material changes.",
+                "checkpointQuestion": "What would make this unfair?",
+            },
+        ),
+    )
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    module.validate_design(design, photos)
+
+
+def test_source_unit_ids_are_stable_section_plus_ordinal_only():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0].__setitem__(
+            "sourceUnitId", "lesson-section/teaching-sequence/unit-001-my-turn"
+        ),
+        "invalid sourceUnitId",
+    )
+
+
+def test_skill_route_order_is_enforced():
+    design, photos = valid_contract()
+    design["teachingSequence"][0], design["teachingSequence"][1] = design["teachingSequence"][1], design["teachingSequence"][0]
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "requires at least one My Turn")
+
+
+def test_content_route_requires_teach_do_pairing_and_practise_last():
+    design, photos = valid_content_contract()
+    design["teachingSequence"][1], design["teachingSequence"][2] = design["teachingSequence"][2], design["teachingSequence"][1]
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "observe must be followed immediately by Teach")
+
+
+def test_discovery_route_requires_canonical_progression():
+    design, photos = valid_discovery_contract()
+    design["teachingSequence"][2], design["teachingSequence"][3] = design["teachingSequence"][3], design["teachingSequence"][2]
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "Discovery sequence must be exactly")
+
+
+def test_dialogic_route_requires_discussion_cycle_before_synthesis():
+    design, photos = valid_dialogic_contract()
+    design["teachingSequence"] = [design["teachingSequence"][0], design["teachingSequence"][2]]
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "requires at least one discussion cycle")
+
+
+def test_task_centred_route_requires_set_task_first():
+    design, photos = valid_task_contract()
+    design["teachingSequence"][0], design["teachingSequence"][1] = design["teachingSequence"][1], design["teachingSequence"][0]
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "must begin with Set the Task")
+
+
+def test_dialogic_separate_talk_question_must_match_stimulus_exactly():
+    design, photos = valid_dialogic_contract()
+    design["teachingSequence"] = [
+        design["teachingSequence"][0],
+        source_unit(
+            2,
+            "stimulus",
+            {
+                "prompt": "A park has room for one new facility.",
+                "question": "What should the council choose?",
+                "materialOnSlide": "play area / garden / sports court",
+            },
+        ),
+        source_unit(
+            3,
+            "talk",
+            {
+                "format": "ranking",
+                "discussionQuestion": "Which choice is best?",
+                "sentenceStems": ["I would choose ___ because ___."],
+                "durationMinutes": 5,
+                "teacherListensFor": ["different community needs"],
+            },
+        ),
+        source_unit(4, "synthesise", {"framesToName": ["who benefits"]}),
+    ]
+    assert_invalid_contract(design, photos, "must exactly match the preceding Stimulus question")
+
+
+def test_task_centred_separate_plan_cannot_coexist_with_folded_plan():
+    design, photos = valid_task_contract()
+    plan = source_unit(
+        3,
+        "plan-checkpoint",
+        {
+            "whatChildrenPlan": "Choose what will stay the same.",
+            "checkpointQuestion": "What would make this unfair?",
+        },
+    )
+    design["teachingSequence"].insert(2, plan)
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "cannot coexist with folded planWithinTask")
+
+
+def test_visible_in_unit_is_for_teacher_presented_model_units_only():
+    design, photos = valid_contract()
+    your_turn = design["teachingSequence"][-1]
+    your_turn["modellingState"] = "Prepared example"
+    your_turn["answer"] = exact_answer("67\n69\n88", "visible-in-unit")
+    assert_invalid_contract(design, photos, "visible-in-unit is allowed only on teacher-presented model units")
+
+
+def test_teacher_orientation_requires_actual_text_after_prefix():
+    assert_invalid(
+        lambda design, photos: design.__setitem__("teacherOrientation", "Teacher orientation:"),
+        "must contain orientation text",
+    )
+
+
+def test_set_task_does_not_accept_duplicate_child_task_field():
+    design, photos = valid_task_contract()
+    design["teachingSequence"][0]["content"]["childTask"] = "Duplicate pupil instruction."
+    assert_invalid_contract(design, photos, "unknown fields: childTask")
+
+
+def test_modelling_state_wrong_json_type_is_contract_error():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0].__setitem__("modellingState", {}),
+        "modellingState must be a string",
+    )
+
+
+def test_unknown_representation_ref_fails():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0]["representationRefs"][0].__setitem__("ref", "rep-999"),
+        "unknown representation",
+    )
+
+
+def test_vocabulary_representation_configuration_must_exist():
+    def mutate(design, photos):
+        design["vocabulary"][0]["visual"] = {
+            "kind": "representation",
+            "representationRef": "rep-001",
+            "configuration": "does-not-exist",
+        }
+    assert_invalid(mutate, "configuration unknown")
+
+
+def test_load_bearing_configuration_requires_features():
+    def mutate(design, photos):
+        design["representations"][0]["configurations"][0]["requiredFeatures"] = []
+    assert_invalid(mutate, "requiredFeatures must not be empty when loadBearing is true")
+
+
+def test_non_load_bearing_configuration_has_no_required_features():
+    def mutate(design, photos):
+        config = design["representations"][0]["configurations"][-1]
+        config["requiredFeatures"] = ["an irrelevant proactive capability"]
+    assert_invalid(mutate, "requiredFeatures must be empty when loadBearing is false")
+
+
+def test_initial_lesson_contract_cannot_reference_adaptation_photo_id():
+    def mutate(design, photos):
+        design["lesson"]["subject"] = "Science"
+        photos["photos"].append(photo_requirement(
+            "adaptation-photo-001",
+            "A separate adaptation image",
+            "ai/adaptation.png",
+            pedagogical_constraint="Used only by adaptation.md",
+        ))
+        design["starter"]["photoRefs"] = ["adaptation-photo-001"]
+    assert_invalid(mutate, "unknown id")
+
+
+def test_unknown_sticky_ref_fails():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][1].__setitem__("stickyKnowledgeRefs", ["sk-999"]),
+        "unknown id",
+    )
+
+
+def test_sticky_teach_takeaway_must_be_available_on_that_unit():
+    design, photos = valid_content_contract()
+    teach = design["teachingSequence"][1]
+    teach["content"]["takeaway"] = {"kind": "sticky", "ref": "sk-001"}
+    teach["stickyKnowledgeRefs"] = []
+    assert_invalid_contract(design, photos, "must also appear in stickyKnowledgeRefs")
+
+
+def test_skill_prepare_cannot_carry_concept_ref():
+    design, photos = valid_contract()
+    prepare = source_unit(1, "prepare", {"mode": "explanation", "activity": "Recall the place-value names."}, concept_ref="concept-001")
+    design["teachingSequence"].insert(0, prepare)
+    for index, unit in enumerate(design["teachingSequence"], 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "conceptRef must be null for prepare")
+
+
+def test_skill_turn_must_use_concept_success_criteria_exactly():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0].__setitem__("successCriteriaRefs", []),
+        "must exactly match concept-001.successCriteriaRefs",
+    )
+
+
+def test_load_bearing_representation_configuration_requires_features():
+    assert_invalid(
+        lambda design, photos: design["representations"][0]["configurations"][0].__setitem__("requiredFeatures", []),
+        "requiredFeatures must not be empty",
+    )
+
+
+def test_script_prefix_must_have_actual_script_after_it():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0]["speakerNotes"].__setitem__("script", "Say to children:"),
+        "must contain words after",
+    )
+
+
+def test_canonical_answer_marker_is_not_duplicated_in_speaker_notes():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0]["speakerNotes"].__setitem__(
+            "teacherInfo", "Answer to question(s) on this slide: 23 + 14 = 37"
+        ),
+        "must not duplicate the structured answer marker",
+    )
+
+
+def test_my_turn_cannot_request_following_answer_slide():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0]["answer"].__setitem__("delivery", "answer-slide"),
+        "is not allowed here",
+    )
+
+
+def test_exact_do_answer_cannot_request_answer_slide():
+    design, photos = valid_content_contract()
+    do = next(unit for unit in design["teachingSequence"] if unit["kind"] == "do")
+    do["answer"] = exact_answer("More people can reach the forest.", "answer-slide")
+    assert_invalid_contract(
+        design,
+        photos,
+        "answer-slide is allowed only for a starter, main independent work, or a model/standard reveal",
+    )
+
+
+def test_model_do_may_request_answer_slide():
+    design, photos = valid_content_contract()
+    do = next(unit for unit in design["teachingSequence"] if unit["kind"] == "do")
+    do["answer"] = {
+        "kind": "model",
+        "content": "More people can reach the forest, so more trees may be cut down.",
+        "acceptanceCondition": "Accept another accurate consequence.",
+        "delivery": "answer-slide",
+    }
+    module.validate_design(design, photos)
+
+
+def test_exact_practise_answer_may_request_answer_slide():
+    design, photos = valid_content_contract()
+    practise = next(
+        unit for unit in design["teachingSequence"] if unit["kind"] == "practise"
+    )
+    practise["answer"] = exact_answer(
+        "The road makes the area easier to reach.",
+        "answer-slide",
+    )
+    module.validate_design(design, photos)
+
+
+def test_my_turn_requires_structured_answer():
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["answer"] = no_answer()
+    assert_invalid_contract(
+        design,
+        photos,
+        "answer must contain the My Turn answer/model/standard",
+    )
+
+
+def test_prepared_my_turn_requires_visible_in_unit_answer():
+    design, photos = valid_contract()
+    my_turn = design["teachingSequence"][0]
+    my_turn["modellingState"] = "Prepared example"
+    my_turn["representationRefs"] = [
+        {"ref": "rep-001", "configuration": "prepared", "interaction": "view"}
+    ]
+    my_turn["answer"] = exact_answer("37", "teacher-only")
+    assert_invalid_contract(
+        design,
+        photos,
+        "answer.delivery must be visible-in-unit for Prepared example My Turn",
+    )
+
+
+def test_visible_in_unit_answer_requires_prepared_example():
+    design, photos = valid_content_contract()
+    teach = next(unit for unit in design["teachingSequence"] if unit["kind"] == "teach")
+    teach["answer"] = exact_answer("A completed model.", "visible-in-unit")
+    assert_invalid_contract(
+        design,
+        photos,
+        "requires modellingState Prepared example",
+    )
+
+
+def test_my_turn_requires_modelling_state():
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["modellingState"] = None
+    assert_invalid_contract(design, photos, "modellingState is required for My Turn")
+
+
+def test_live_complete_requires_teacher_completes_representation():
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["representationRefs"] = []
+    assert_invalid_contract(
+        design,
+        photos,
+        "Live-complete helper requires a teacher-completes representation use",
+    )
+
+
+def test_live_complete_teacher_completes_representation_must_be_load_bearing():
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["representationRefs"] = [
+        {"ref": "rep-001", "configuration": "vocabulary", "interaction": "teacher-completes"}
+    ]
+    assert_invalid_contract(
+        design,
+        photos,
+        "requires a load-bearing teacher-completes representation configuration",
+    )
+
+
+def test_modelled_exemplar_is_only_for_question_and_reference_my_turn():
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["content"]["modelledExemplar"] = "A finished sentence."
+    assert_invalid_contract(
+        design,
+        photos,
+        "modelledExemplar is valid only for Question and reference My Turn writing",
+    )
+
+
+def test_required_script_my_turn_cannot_be_null():
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["speakerNotes"]["script"] = None
+    assert_invalid_contract(design, photos, "speakerNotes.script is required for my-turn")
+
+
+def test_required_script_our_turn_cannot_be_null():
+    design, photos = valid_contract()
+    design["teachingSequence"][1]["speakerNotes"]["script"] = None
+    assert_invalid_contract(design, photos, "speakerNotes.script is required for our-turn")
+
+
+def test_required_script_content_teach_cannot_be_null():
+    design, photos = valid_content_contract()
+    teach = next(unit for unit in design["teachingSequence"] if unit["kind"] == "teach")
+    teach["speakerNotes"]["script"] = None
+    assert_invalid_contract(design, photos, "speakerNotes.script is required for teach")
+
+
+def test_required_script_set_task_cannot_be_null():
+    design, photos = valid_task_contract()
+    set_task = next(unit for unit in design["teachingSequence"] if unit["kind"] == "set-task")
+    set_task["speakerNotes"]["script"] = None
+    assert_invalid_contract(design, photos, "speakerNotes.script is required for set-task")
+
+
+def test_required_script_apply_cannot_be_null_when_included():
+    design, photos = valid_content_contract()
+    design["ending"] = {
+        "included": True,
+        "kind": "Apply",
+        "reason": "A final application is useful.",
+        "beat": source_unit(
+            1,
+            "apply",
+            {"activity": "Apply the idea to a fresh example."},
+            script=None,
+            answer={"kind": "model", "content": "A suitable model response.", "acceptanceCondition": "Accept equivalent reasoning.", "delivery": "answer-slide"},
+        ),
+    }
+    design["ending"]["beat"]["sourceUnitId"] = "lesson-section/apply/unit-001"
+    assert_invalid_contract(design, photos, "speakerNotes.script is required for apply")
+
+
+def test_required_script_reflect_cannot_be_null_when_included():
+    design, photos = valid_dialogic_contract()
+    design["ending"] = {
+        "included": True,
+        "kind": "Reflect",
+        "reason": "Individual synthesis is useful.",
+        "beat": source_unit(
+            1,
+            "reflect",
+            {"activity": "Write the view you now find most convincing and why."},
+            script=None,
+            answer={"kind": "model", "content": "A reasoned personal position.", "acceptanceCondition": "Accept a defensible position with a relevant reason.", "delivery": "answer-slide"},
+        ),
+    }
+    design["ending"]["beat"]["sourceUnitId"] = "lesson-section/reflect/unit-001"
+    assert_invalid_contract(design, photos, "speakerNotes.script is required for reflect")
+
+
+def test_none_answer_carries_no_content():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0].__setitem__(
+            "answer", {"kind": "none", "content": "37", "acceptanceCondition": None, "delivery": "none"}
+        ),
+        "content must be null",
+    )
+
+
+def add_structured_sort(design):
+    starter = design["starter"]
+    starter["pupilInstruction"] = "Sort each object into one group."
+    starter["taskStructure"] = {
+        "kind": "sort",
+        "groups": [
+            {"id": "group-001", "label": "Uses electricity"},
+            {"id": "group-002", "label": "Does not use electricity"},
+        ],
+        "items": [
+            {"id": "item-001", "label": "Kettle", "detail": None, "photoRef": None},
+            {"id": "item-002", "label": "Television", "detail": None, "photoRef": None},
+            {"id": "item-003", "label": "Bicycle", "detail": None, "photoRef": None},
+            {"id": "item-004", "label": "Football", "detail": None, "photoRef": None},
+            {"id": "item-005", "label": "Lamp", "detail": None, "photoRef": None},
+            {"id": "item-006", "label": "Book", "detail": None, "photoRef": None},
+        ],
+    }
+    starter["answer"] = {
+        "kind": "exact",
+        "content": None,
+        "structure": {
+            "kind": "sort",
+            "placements": [
+                {"itemRef": "item-001", "groupRef": "group-001"},
+                {"itemRef": "item-002", "groupRef": "group-001"},
+                {"itemRef": "item-003", "groupRef": "group-002"},
+                {"itemRef": "item-004", "groupRef": "group-002"},
+                {"itemRef": "item-005", "groupRef": "group-001"},
+                {"itemRef": "item-006", "groupRef": "group-002"},
+            ],
+        },
+        "acceptanceCondition": None,
+        "delivery": "answer-slide",
+    }
+    return starter
+
+
+def test_valid_structured_sort_contract_passes():
+    design, photos = valid_contract()
+    add_structured_sort(design)
+    module.validate_design(design, photos)
+
+
+def test_task_structure_requires_non_null_instruction():
+    design, photos = valid_contract()
+    starter = add_structured_sort(design)
+    starter["pupilInstruction"] = None
+    assert_invalid_contract(
+        design,
+        photos,
+        "pupilInstruction must be non-null when taskStructure is present",
+    )
+
+
+def test_task_structure_photo_ref_must_be_in_unit_photo_refs():
+    design, photos = valid_contract()
+    starter = add_structured_sort(design)
+    starter["taskStructure"]["items"][0]["photoRef"] = "photo-001"
+    assert_invalid_contract(
+        design,
+        photos,
+        "photoRef must also appear in the source unit photoRefs",
+    )
+
+
+def test_answer_structure_must_place_every_item_once():
+    design, photos = valid_contract()
+    starter = add_structured_sort(design)
+    starter["answer"]["structure"]["placements"].pop()
+    assert_invalid_contract(
+        design,
+        photos,
+        "answer.structure.placements missing items: item-006",
+    )
+
+
+def test_structured_sort_answer_cannot_duplicate_content():
+    design, photos = valid_contract()
+    starter = add_structured_sort(design)
+    starter["answer"]["content"] = "Uses electricity: kettle, television, lamp."
+    assert_invalid_contract(
+        design,
+        photos,
+        "answer.content must be null when structure is present",
+    )
+
+
+def add_evidence_classification(design, photos):
+    design["lesson"]["subject"] = "Science"
+    photos["photos"].extend([
+        photo_requirement(
+            "photo-001",
+            "A hairdryer with its plug and lead visible",
+            "unsplash/hairdryer.jpg",
+            pedagogical_constraint="The plug and lead must be visible.",
+        ),
+        photo_requirement(
+            "photo-002",
+            "A manual can opener",
+            "unsplash/manual-can-opener.jpg",
+            pedagogical_constraint="The hand-operated mechanism must be visible.",
+        ),
+    ])
+    starter = design["starter"]
+    starter["photoRefs"] = ["photo-001", "photo-002"]
+    starter["pupilInstruction"] = "Classify each photograph from visible evidence."
+    starter["taskStructure"] = {
+        "kind": "evidence-classification",
+        "fields": [
+            {"id": "field-001", "label": "Object name"},
+            {"id": "field-002", "label": "Electrical appliance?"},
+            {"id": "field-003", "label": "Power source"},
+            {"id": "field-004", "label": "Evidence"},
+        ],
+        "items": [
+            {"id": "item-001", "photoRef": "photo-001"},
+            {"id": "item-002", "photoRef": "photo-002"},
+        ],
+    }
+    starter["answer"] = {
+        "kind": "model",
+        "content": None,
+        "structure": {
+            "kind": "evidence-classification",
+            "results": [
+                {
+                    "itemRef": "item-001",
+                    "values": [
+                        {"fieldRef": "field-001", "value": "Hairdryer"},
+                        {"fieldRef": "field-002", "value": "Electrical appliance"},
+                        {"fieldRef": "field-003", "value": "Mains electricity"},
+                        {"fieldRef": "field-004", "value": "Plug and lead"},
+                    ],
+                },
+                {
+                    "itemRef": "item-002",
+                    "values": [
+                        {"fieldRef": "field-001", "value": "Manual can opener"},
+                        {"fieldRef": "field-002", "value": "Not an electrical appliance"},
+                        {"fieldRef": "field-003", "value": "No electrical power source"},
+                        {"fieldRef": "field-004", "value": "Designed to work by hand"},
+                    ],
+                },
+            ],
+        },
+        "acceptanceCondition": "Accept equivalent evidence that is visible in the photograph.",
+        "delivery": "answer-slide",
+    }
+    return starter
+
+
+def test_valid_evidence_classification_contract_passes():
+    design, photos = valid_contract()
+    add_evidence_classification(design, photos)
+    module.validate_design(design, photos)
+
+
+def test_evidence_classification_requires_every_field_for_every_photo():
+    design, photos = valid_contract()
+    starter = add_evidence_classification(design, photos)
+    starter["answer"]["structure"]["results"][0]["values"].pop()
+    assert_invalid_contract(
+        design,
+        photos,
+        "values missing fields: field-004",
+    )
+
+
+def test_evidence_classification_rejects_duplicate_photo_result():
+    design, photos = valid_contract()
+    starter = add_evidence_classification(design, photos)
+    starter["answer"]["structure"]["results"][1]["itemRef"] = "item-001"
+    assert_invalid_contract(
+        design,
+        photos,
+        "results contains duplicate itemRef: item-001",
+    )
+
+
+def test_nullable_pupil_instruction_rejects_empty_string():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0].__setitem__("pupilInstruction", ""),
+        "must be null or a non-empty string",
+    )
+
+
+def test_nullable_teacher_info_rejects_empty_string():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0]["speakerNotes"].__setitem__("teacherInfo", ""),
+        "must be null or a non-empty string",
+    )
+
+
+def test_nullable_acceptance_condition_rejects_empty_string():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0]["answer"].__setitem__("acceptanceCondition", ""),
+        "must be null or a non-empty string",
+    )
+
+
+def test_bank_starter_requires_exact_answer_slide_answer():
+    design, photos = valid_contract()
+    starter = design["starter"]
+    starter["content"]["testQuestionPath"] = "/bank/question.png"
+    starter["answer"] = no_answer()
+    assert_invalid_contract(
+        design,
+        photos,
+        "must be an exact answer-slide answer when starter.testQuestionPath is present",
+    )
+
+
+def test_json_booleans_do_not_pass_as_integer_fields():
+    assert_invalid(lambda design, photos: design.__setitem__("schemaVersion", True), "schemaVersion must be integer 1")
+    assert_invalid(lambda design, photos: design["lesson"].__setitem__("durationMinutes", True), "positive integer")
+
+
+def test_every_initial_photo_requirement_is_referenced_in_phase_one():
+    design, photos = valid_contract()
+    design["lesson"]["subject"] = "Science"
+    photos["photos"].append(photo_requirement(
+        "photo-001",
+        "A classroom number line",
+        "unsplash/number-line.jpg",
+        essential=False,
+        fallback_action="omit",
+    ))
+    try:
+        module.validate_design(design, photos, initial_photo_namespace=True)
+    except module.ContractError as exc:
+        assert "initial photo requirement is not referenced" in str(exc)
+    else:
+        raise AssertionError("unreferenced Phase-1 photo requirement unexpectedly validated")
+
+
+def test_valid_shared_frame_is_one_actual_frame():
+    module.validate_design(*valid_shared_frame_contract())
+
+
+def test_shared_frame_rejects_ordinary_question_content():
+    design, photos = valid_shared_frame_contract()
+    design["worksheet"]["contentBlocks"] = copy.deepcopy(valid_contract()[0]["worksheet"]["contentBlocks"])
+    design["worksheet"]["answerKeyMode"] = "required"
+    assert_invalid_contract(design, photos, "content block must be kind frame")
+
+
+def test_non_mixed_sheet_shape_must_match_content_family():
+    design, photos = valid_contract()
+    design["worksheet"]["sheetShape"] = {"kind": "frame", "reason": "Incorrect metadata."}
+    assert_invalid_contract(design, photos, "does not match contentBlocks families")
+
+
+def test_stimulus_prompt_can_carry_its_own_visual_semantics():
+    design, photos = valid_contract()
+    worksheet = design["worksheet"]
+    worksheet["sheetShape"] = {"kind": "stimulus-set", "reason": "The prompts work from one coherent stimulus."}
+    worksheet["contentBlocks"] = [
+        {
+            "id": "ws-stimulus-001",
+            "kind": "stimulus-set",
+            "stimulus": "A simple chart showing three results.",
+            "relationship": "Children compare the three values.",
+            "pupilAction": "Use the chart to answer the prompts.",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "prompts": [
+                {
+                    "id": "ws-stimulus-001-prompt-01",
+                    "pupilPrompt": "Which result is greatest?",
+                    "response": "Write one result.",
+                    "support": "",
+                    "visualRequirements": "Keep the chart visible beside this prompt.",
+                    "representationRefs": [],
+                    "stickyKnowledgeRefs": [],
+                    "photoRefs": [],
+                    "answer": exact_answer("Result B", "teacher-only"),
+                }
+            ],
+        }
+    ]
+    module.validate_design(design, photos)
+
+
+def test_provided_worksheet_has_no_generated_expected_content():
+    design, photos = valid_contract()
+    worksheet = design["worksheet"]
+    worksheet.update({
+        "status": "provided-by-teacher",
+        "resourceMode": "per-child",
+        "activityArchitecture": None,
+        "sheetShape": None,
+        "demand": None,
+        "successCriteriaRefs": [],
+        "stickyKnowledgeRefs": [],
+        "fitPriority": None,
+        "centralWriteOnVisualException": None,
+        "contentBlocks": [],
+        "answerKeyMode": "not-applicable",
+        "providedWorksheet": {
+            "source": "teacher-supplied.pdf",
+            "skillMatch": "Aligned with LO",
+            "duplicateCheck": "No slide example duplicates its values.",
+            "notes": "",
+        },
+    })
+    module.validate_design(design, photos)
+
+
+def test_cli_success_marker():
+    design, photos = valid_contract()
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        design_path = tmp_path / "lesson-design.json"
+        photo_path = tmp_path / "photo-requirements.json"
+        design_path.write_text(json.dumps(design, ensure_ascii=False, indent=2), encoding="utf-8")
+        photo_path.write_text(json.dumps(photos, ensure_ascii=False, indent=2), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, "-S", str(VALIDATOR), str(design_path), str(photo_path)],
+            capture_output=True,
+            text=True,
+        )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "LESSON_DESIGN_OK"
+
+
+def test_photo_requirements_root_requires_lesson_name():
+    def mutate(design, photos):
+        del photos["lesson_name"]
+
+    assert_invalid(mutate, "photo-requirements.json missing fields")
+
+
+def test_photo_requirements_root_rejects_unknown_field():
+    def mutate(design, photos):
+        photos["unexpected"] = True
+
+    assert_invalid(mutate, "photo-requirements.json has unknown fields")
+
+
+def test_initial_photo_ids_are_sequential_in_array_order():
+    design, photos = valid_contract()
+    design["lesson"]["subject"] = "Science"
+    design["starter"]["photoRefs"] = ["photo-999"]
+    photos["photos"] = [photo_requirement(
+        "photo-999",
+        "Circuit apparatus",
+        "unsplash/circuit-apparatus.jpg",
+        pedagogical_constraint="Clear classroom setup.",
+    )]
+    try:
+        module.validate_design(design, photos, initial_photo_namespace=True)
+    except module.ContractError as exc:
+        assert "must be exactly photo-001" in str(exc)
+    else:
+        raise AssertionError("non-sequential initial photo ID unexpectedly validated")
+
+
+def test_maths_lesson_rejects_nonempty_photo_requirements():
+    design, photos = valid_contract()
+    design["starter"]["photoRefs"] = ["photo-001"]
+    photos["photos"] = [photo_requirement(
+        "photo-001",
+        "Decorative maths photograph",
+        "unsplash/maths.jpg",
+        pedagogical_constraint="Should not exist under CURRENT maths contract.",
+    )]
+    assert_invalid_contract(
+        design,
+        photos,
+        "Maths lesson-design may not define initial photo-### requirements",
+    )
+
+
+def test_reusable_validator_accepts_adaptation_photo_for_maths():
+    design, photos = valid_contract()
+    photos["photos"] = [photo_requirement(
+        "adaptation-photo-001",
+        "Accessible real-world objects for an adaptation task",
+        "unsplash/adaptation-maths-objects.jpg",
+        pedagogical_constraint="Owned only by adaptation.md after Phase 1.",
+    )]
+    module.validate_design(design, photos)
+
+
+def test_reusable_merged_mode_allows_historical_unreferenced_initial_photo():
+    design, photos = valid_contract()
+    design["lesson"]["subject"] = "Science"
+    photos["photos"] = [photo_requirement(
+        "photo-001",
+        "Previously planned source image",
+        "unsplash/historical-source.jpg",
+        pedagogical_constraint=(
+            "Historical planned requirement after a later replacement."
+        ),
+    )]
+    module.validate_design(design, photos)
+
+
+def test_adaptation_photo_ids_cannot_skip_ordinals():
+    design, photos = valid_contract()
+    photos["photos"] = [photo_requirement(
+        "adaptation-photo-002",
+        "Skipped first adaptation ID",
+        "unsplash/skipped-id.jpg",
+        pedagogical_constraint="Invalid ID allocation.",
+    )]
+    assert_invalid_contract(
+        design,
+        photos,
+        "adaptation-photo- IDs must be contiguous from 001",
+    )
+
+
+def test_skill_concept_requires_nonempty_success_criteria_refs():
+    design, photos = valid_contract()
+    design["concepts"][0]["successCriteriaRefs"] = []
+    for unit in design["teachingSequence"]:
+        if unit["kind"] in {"my-turn", "our-turn", "your-turn"}:
+            unit["successCriteriaRefs"] = []
+    assert_invalid_contract(
+        design,
+        photos,
+        "successCriteriaRefs must not be empty for a Skill-based concept",
+    )
+
+
+def test_cli_initial_namespace_accepts_normal_phase_one_photo_file():
+    design, photos = valid_contract()
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        design_path = tmp_path / "lesson-design.json"
+        photo_path = tmp_path / "photo-requirements.json"
+        design_path.write_text(json.dumps(design, ensure_ascii=False, indent=2), encoding="utf-8")
+        photo_path.write_text(json.dumps(photos, ensure_ascii=False, indent=2), encoding="utf-8")
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-S",
+                str(VALIDATOR),
+                "--initial-photo-namespace",
+                str(design_path),
+                str(photo_path),
+            ],
+            capture_output=True,
+            text=True,
+        )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "LESSON_DESIGN_OK"
+
+
+def test_reusable_validator_accepts_merged_adaptation_photo_namespace():
+    design, photos = valid_contract()
+    design["lesson"]["subject"] = "Science"
+    photos["photos"].append(photo_requirement(
+        "adaptation-photo-001",
+        "A later adaptation image",
+        "ai/adaptation.png",
+        pedagogical_constraint="Owned by adaptation.md, not lesson-design.json.",
+    ))
+    module.validate_design(design, photos)
+
+
+def test_cli_initial_photo_namespace_rejects_adaptation_object_before_merge():
+    design, photos = valid_contract()
+    design["lesson"]["subject"] = "Science"
+    photos["photos"].append(photo_requirement(
+        "adaptation-photo-001",
+        "A later adaptation image",
+        "ai/adaptation.png",
+        pedagogical_constraint="Must not exist in Phase 1.",
+    ))
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        design_path = tmp_path / "lesson-design.json"
+        photo_path = tmp_path / "photo-requirements.json"
+        design_path.write_text(json.dumps(design, ensure_ascii=False, indent=2), encoding="utf-8")
+        photo_path.write_text(json.dumps(photos, ensure_ascii=False, indent=2), encoding="utf-8")
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-S",
+                str(VALIDATOR),
+                "--initial-photo-namespace",
+                str(design_path),
+                str(photo_path),
+            ],
+            capture_output=True,
+            text=True,
+        )
+    assert result.returncode == 1
+    assert result.stderr.startswith("LESSON_DESIGN_INVALID:")
+    assert "must be exactly photo-001" in result.stderr
+
+
+def test_cli_wrong_json_type_uses_contract_error_interface_without_traceback():
+    design, photos = valid_contract()
+    design["lesson"]["scope"] = []
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        design_path = tmp_path / "lesson-design.json"
+        photo_path = tmp_path / "photo-requirements.json"
+        design_path.write_text(json.dumps(design, ensure_ascii=False, indent=2), encoding="utf-8")
+        photo_path.write_text(json.dumps(photos, ensure_ascii=False, indent=2), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, "-S", str(VALIDATOR), str(design_path), str(photo_path)],
+            capture_output=True,
+            text=True,
+        )
+    assert result.returncode == 1
+    assert result.stderr.startswith("LESSON_DESIGN_INVALID:")
+    assert "Traceback" not in result.stderr
+
+
+def test_runtime_contract_no_longer_names_lesson_design_md_or_lesson_analysis():
+    runtime_roots = (
+        ROOT / "agents",
+        ROOT / "skills" / "make-lesson",
+        ROOT / "references",
+        ROOT / "scripts",
+    )
+    tests_root = ROOT / "scripts" / "tests"
+    failures = []
+    for base in runtime_roots:
+        for path in base.rglob("*"):
+            if not path.is_file() or tests_root in path.parents:
+                continue
+            if path.suffix.lower() not in {".md", ".py", ".js", ".json"}:
+                continue
+            text = path.read_text(encoding="utf-8")
+            if "lesson-design.md" in text:
+                failures.append(f"{path.relative_to(ROOT)} still contains lesson-design.md")
+    lesson_designer_text = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+    output_template_text = (ROOT / "references" / "output-template.md").read_text(encoding="utf-8")
+    if "Section 1: Lesson Analysis" in lesson_designer_text:
+        failures.append("agents/lesson-designer.md still defines Section 1: Lesson Analysis")
+    if "Section 1: Lesson Analysis" in output_template_text:
+        failures.append("references/output-template.md still defines Section 1: Lesson Analysis")
+
+    adaptation_text = (ROOT / "agents" / "adaptation-designer.md").read_text(encoding="utf-8")
+    worksheet_text = (ROOT / "agents" / "worksheet-designer.md").read_text(encoding="utf-8")
+    preferences_text = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
+    for retired in (
+        "Status: Generated (shared frame, one sheet, no adaptation)",
+        "Status: Provided by teacher",
+    ):
+        if retired in lesson_designer_text:
+            failures.append(f"agents/lesson-designer.md still contains retired lesson-design semantic: {retired}")
+    # The output template owns the no-representation output rule: the empty
+    # array is the required shape, and the retired prose sentinel is
+    # explicitly prohibited there rather than in the agent file.
+    if 'Use `"representations": []` when no pedagogical representation is required.' not in output_template_text:
+        failures.append("references/output-template.md missing empty-array rule for no-representation output")
+    if 'Never emit a prose sentinel such as `"Plain text only."`' not in output_template_text:
+        failures.append("references/output-template.md missing explicit prohibition of the retired 'Plain text only.' sentinel")
+    # Reject an actual old positive instruction to write the sentinel
+    # (a standalone instruction line, not inside a prohibition).
+    import re as _re_check
+    for owner_name, owner_text in (
+        ("agents/lesson-designer.md", lesson_designer_text),
+        ("references/output-template.md", output_template_text),
+    ):
+        for line in owner_text.splitlines():
+            stripped = _re_check.sub(r"\*{1,2}", "", line).strip()
+            if stripped == '"Plain text only."' or stripped == "Plain text only.":
+                failures.append(f"{owner_name} still positively instructs writing 'Plain text only.' sentinel")
+    if "Status: Generated (shared frame, one sheet, no adaptation)" in adaptation_text:
+        failures.append("agents/adaptation-designer.md still branches on shared-frame magic status")
+    if "Status: Provided by teacher" in adaptation_text:
+        failures.append("agents/adaptation-designer.md still branches on old Status field")
+    if "Status: Provided by teacher" in worksheet_text:
+        failures.append("agents/worksheet-designer.md still branches on old Status field")
+    if "the teacher-facing analysis and the starter-slide teacher orientation" in preferences_text:
+        failures.append("references/preferences.md still requires split visibility in retired teacher-facing analysis")
+    assert not failures, "\n".join(failures)
+
+
+def test_written_voice_contract_is_canonical_and_old_sentence_quota_is_gone():
+    preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
+    lesson_designer = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+    reviewer = (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8")
+    for marker in (
+        "Write for understanding, not merely decodability.",
+        "Glanceable means low mental clutter, not a sentence-length quota.",
+        "Put challenge in the thinking, not in avoidably difficult wording.",
+        "Humour, personality, emojis, callbacks and small asides are optional tools, never quotas.",
+        "Does this wording help children understand or act, or is it merely narrating the lesson back to them?",
+    ):
+        assert marker in preferences
+    adaptive = (ROOT / "references" / "adaptive-adaptation.md").read_text(encoding="utf-8")
+    assert "Short, straightforward sentences with basic vocabulary." not in lesson_designer
+    assert "short sentences with basic vocabulary" not in preferences
+    assert "a Teach explanation that runs past a short line" not in lesson_designer
+    assert "Use the shortest wording that preserves the task." not in adaptive
+    assert "Apply Written Voice as a comprehension test, not a shortening test." in reviewer
+
+
+def test_worksheet_question_group_maps_directly_to_question_group_id():
+    text = (ROOT / "agents" / "worksheet-designer.md").read_text(encoding="utf-8")
+    assert "`questionGroupId` equal byte-for-byte to the enclosing content block `id`" in text
+    assert "Ordinary `question` blocks carry no `questionGroupId`" in text
+
+
+def test_photo_id_is_not_added_to_compiled_filename_identity():
+    compiler = (ROOT / "scripts" / "compile-picture-assignments.py").read_text(encoding="utf-8")
+    validator = (ROOT / "scripts" / "validate-image-scout.py").read_text(encoding="utf-8")
+    assert "image-scout-designer" not in compiler
+    assert "real_handoff" not in compiler
+    assert '"entry_key"' in validator
+    assert '"id"' not in validator.split('required =', 1)[1].split('}', 1)[0]
+
+
+def test_slide_designer_protects_child_facing_content_beyond_pupil_instruction():
+    text = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+    assert "Any string already authored in source-unit `content` that is rendered as pupil-facing" in text
+    assert "Physical navigation and presentation headings remain Slide Designer-owned" in text
+
+
+def test_adaptation_photo_merge_happens_before_worksheet_snapshot_and_spawn():
+    text = read(SKILL)
+    flat = " ".join(text.split())
+
+    track_b = flat.index("**Track B trigger:**")
+    provisional = flat.index('photo-contract.py" build-provisional', track_b)
+    provisional_ok = flat.index("Require `PHOTO_CONTRACT_PROVISIONAL_OK`", provisional)
+    select = flat.index('photo-contract.py" select-worksheet', provisional_ok)
+    promote = flat.index('photo-contract.py" promote-used', select)
+    wave = flat.index("The first adaptation picture work and every later post-freeze picture addition use the supplemental-wave rule in O11a.", promote)
+    assert provisional < provisional_ok < select < promote < wave
+
+    assert "Keep adaptation photos provisional until the worksheet page plan is final." in text
+    assert "The first Worksheet Designer attempt for a per-child adapted worksheet runs before that promotion against the validated provisional contract." in flat
+    assert "reusable `validate-lesson-design.py` check in merged mode" in flat
+    assert "same id has different photo object" in read(ROOT / "scripts" / "photo-contract.py")
+    assert "same filename has different id" in read(ROOT / "scripts" / "photo-contract.py")
+    assert "Picture planning and sourcing then run in parallel with Worksheet Designer." not in text
+    assert "Start any genuinely new adaptation-picture planning and sourcing after that merge" not in text
+    assert "Merge adaptation photo IDs before Worksheet Designer snapshot/spawn." not in text
+    assert "adaptation-designer completes → queue worksheet-designer (Track B) right away" not in text
+
+
+def test_helper_preflight_includes_transitive_representation_uses():
+    skill = read(SKILL)
+    helper = read(ROOT / "scripts" / "collect-helper-uses.py")
+    assert "collect-helper-uses.py" in skill
+    assert 'visual.get("kind") == "representation"' in helper
+    assert "walk(design, (), rep_ids, raw)" in helper
+    assert 'config.get("loadBearing") is True' in helper
+    assert '"requiredFeatures": list(config.get("requiredFeatures") or [])' in helper
+    assert "resolved.get((rep_id, config_id))" in helper
+    assert "surface_for(path)" in helper
+    assert 'interaction == "pupil-writes-on"' in helper
+    assert '"requiredSurface": "stick-in"' in helper
+
+
+def test_design_reviewer_durable_contract_includes_all_mutable_inputs():
+    text = read(SKILL)
+    assert "`[WORKING_DIR]/lesson-design.json` - `read-write`" in text
+    assert "`[WORKING_DIR]/design-decisions.md` - `read-write`" in text
+    assert "`[WORKING_DIR]/photo-requirements.json` - `read-write`" in text
+    assert "Record all three in the accepted receipt's `outputs` array" in text
+
+
+def test_stick_in_pedagogy_walks_json_not_markdown_headings():
+    text = (ROOT / "references" / "stick-in-sheets-pedagogy.md").read_text(encoding="utf-8")
+    assert "inspect each `teachingSequence` source unit in array order" in text
+    assert "`lesson-design.json` determines which pedagogical moment is write-on" in text
+    assert "Read lesson-design.md top to bottom" not in text
+
+
+def test_slide_designer_has_no_second_answer_or_missing_script_authority():
+    text = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+    assert "Answer treatment comes only from the source unit's structured `answer`." in text
+    assert "Do not infer a reveal from stage, task type, whether an answer is definite" in text
+    assert "A null script is an intentional absence, not a prompt for downstream script writing." in text
+    assert "A definite-answer starter gets an answer slide next." not in text
+    assert "derive a minimal lesson-specific note" not in text
+
+
+def test_task_centred_reference_has_one_pupil_action_source():
+    text = (ROOT / "references" / "teaching-sequence-task-centred.md").read_text(encoding="utf-8")
+    assert "Use the common source-unit `pupilInstruction` for any pupil action performed at Set the Task" in text
+    assert "`childTask`" not in text
+
+
+def test_visual_consistency_requires_exact_canonical_success_criteria():
+    text = (ROOT / "agents" / "visual-consistency-reviewer.md").read_text(encoding="utf-8")
+    assert "A compatible paraphrase is still drift" in text
+    assert "Natural shorter wording or compatible rephrasing is allowed" not in text
+
+
+def test_worksheet_designer_protects_all_printed_upstream_text():
+    text = (ROOT / "agents" / "worksheet-designer.md").read_text(encoding="utf-8")
+    assert "Verbatim Expected pupil-visible text is broader than `pupilPrompt`." in text
+    assert "frame headings and `whatGoesHere`" in text
+    assert "Do not shorten or paraphrase visible support to make the page fit." in text
+
+
+def test_phase_one_worker_and_controller_both_validate_initial_contract():
+    text = read(SKILL)
+    worker_check = text.split("SUCCESS_CHECK:", 1)[1].split(
+        "TERMINAL_STATE: COMPLETE", 1
+    )[0]
+    assert "validate-lesson-design.py" in worker_check
+    assert "--initial-photo-namespace" in worker_check
+    assert "LESSON_DESIGN_OK" in worker_check
+
+    controller_check = text.split(
+        "After the Lesson Designer returns", 1
+    )[1].split("If it returns `PHOTO_CAP_EXCEEDED`", 1)[0]
+    assert "orchestration-controller.py" in controller_check
+    assert "the existing lesson-design validator" in controller_check
+    assert "the existing photo-cap check" in controller_check
+
+
+def test_phase_two_freezes_initial_photo_contract_for_initial_workers():
+    text = read(SKILL)
+    flat = " ".join(text.split())
+    assert "phase2-initial-photo-requirements.json" in text
+    assert "Slide Designer receives `PHOTO_REQUIREMENTS_PATH=" in text
+    assert "the initial `p` picture compiler reads that same frozen path" in text
+    assert "derive its `EXPECTED_FILENAMES` from `phase2-initial-photo-requirements.json`" in text
+    assert "run the host's `validate-image-scout.py manifest --requirements ...` check against that same frozen file" in text
+    assert 'photo-contract.py" promote-used' in text
+    assert '--canonical "[WORKING_DIR]/photo-requirements.json"' in text
+    assert "before replacing canonical state" in flat
+
+
+def test_phase_one_approval_reconstructs_from_frozen_photo_after_adaptation_merge():
+    text = read(SKILL)
+    helper = read(ROOT / "scripts" / "photo-contract.py")
+    flat = " ".join(text.split())
+    assert "Durable Phase-1 approval boundary after the freeze." in text
+    assert "use the frozen file to satisfy the Phase-1 photo-output hash requirement" in text
+    assert "adaptation-photo-merge.json" in text
+    for field in (
+        "baseInitialPhotoSha256",
+        "adaptationSha256",
+        "mergedPhotoSha256",
+        "newPhotoIds",
+        "newFilenames",
+    ):
+        assert field in helper
+    assert "highest-numbered** supplemental receipt" in text
+    assert "accepts the O11 canonical merge only when canonical `photo-requirements.json` matches the recorded merged hash" in flat
+    assert 'reason = "adaptation-merge"' in helper
+
+
+def test_post_freeze_new_photos_use_immutable_supplemental_waves():
+    text = read(SKILL)
+    assert "Supplemental picture waves after the Phase-2 freeze" in text
+    assert "compile-picture-assignments.py" in text
+    assert "expected-prefix w" in text
+    assert "Earlier requirements snapshots, compiled manifests, filename ownership, and terminal receipts are immutable." in text
+    assert "Never reopen a completed filename" in text
+def test_supplemental_picture_compilation_receives_immutable_contract():
+    text = read(SKILL)
+    compiler = read(ROOT / "scripts" / "compile-picture-assignments.py")
+    assert "Supplemental `w` picture compilation" in text
+    assert "--expected-prefix w" in text
+    assert "requirements" in compiler
+    assert "schema_version" in compiler
+def test_o11_semantically_validates_after_photo_merge():
+    text = read(SKILL)
+    helper = read(ROOT / "scripts" / "photo-contract.py")
+    assert helper.count("run_lesson_design_validator(Path(args.lesson_design),") == 2
+    assert text.count('--lesson-design "[WORKING_DIR]/lesson-design.json"') >= 2
+
+    provisional = helper[helper.index("def cmd_build_provisional"):helper.index("def cmd_promote_used")]
+    assert provisional.index("run_photo_cap(output)") < provisional.index("run_lesson_design_validator") < provisional.index("receipt = {")
+
+    promote = helper[helper.index("def cmd_promote_used"):helper.index("def valid_receipt")]
+    assert promote.index("run_photo_cap(candidate)") < promote.index("run_lesson_design_validator") < promote.index("atomic_write_bytes(canonical_path")
+    assert "only then writes the O11 merge receipt" in text
+
+
+def promoted_adaptation_ids(provisional_ids, worksheet_refs):
+    """Mirror deterministic promote-used identity selection: only exact
+    adaptation-photo IDs referenced by the accepted worksheet are promoted."""
+    strings = set(worksheet_refs)
+    return [photo_id for photo_id in provisional_ids if photo_id in strings]
+
+
+def test_supplemental_plan_owns_only_filenames_the_final_worksheet_uses():
+    provisional = [
+        "adaptation-photo-001",
+        "adaptation-photo-002",
+        "adaptation-photo-003",
+    ]
+    worksheet_refs = ["adaptation-photo-002"]
+    assert promoted_adaptation_ids(provisional, worksheet_refs) == ["adaptation-photo-002"]
+
+    skill = read(SKILL)
+    flat = " ".join(skill.split())
+    helper = read(ROOT / "scripts" / "photo-contract.py")
+    assert "searches the accepted worksheet structure for exact adaptation photo IDs" in flat
+    assert "promotes only those objects" in flat
+    assert "A provisional `adaptation-photo-###` entry is page-planning input only." in skill
+    assert "Worksheet Designer must not source, generate, stage, publish or promote it." in flat
+    assert 'used = [photo for photo in provisional_adaptation if photo["id"] in strings]' in helper
+    assert "compiles only the receipt's new filenames" in skill
+    assert "Determine ownership from earlier compiled manifest filename sets." in skill
+
+
+def test_design_reviewer_leaves_post_review_validation_to_orchestrator():
+    text = (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8")
+    assert "The orchestrator owns post-review validation." in text
+    assert "Do not run `design-review-packet.py verify` yourself." in text
+
+
+def test_representation_capability_metadata_is_configuration_level_everywhere():
+    text = OUTPUT_TEMPLATE.read_text(encoding="utf-8")
+    validator = VALIDATOR.read_text(encoding="utf-8")
+    assert "Put `loadBearing` and `requiredFeatures` on each configuration, never on the representation root." in text
+    assert 'config_fields = {"id", "description", "loadBearing", "requiredFeatures"}' in validator
+    assert "whether it is load-bearing, the visible features that must survive rendering" not in text
+
+
+def test_lesson_designer_uses_current_contract_field_names():
+    output_template = OUTPUT_TEMPLATE.read_text(encoding="utf-8")
+    lesson_designer = (
+        ROOT / "agents" / "lesson-designer.md"
+    ).read_text(encoding="utf-8")
+
+    validator = VALIDATOR.read_text(encoding="utf-8")
+
+    assert (
+        "a stable `rep-###` ID, a `name`, a `purpose`"
+        in output_template
+    )
+    assert "`instructionalPurpose`" not in output_template
+
+    # Vocabulary visual kinds come from the output template, and the
+    # Lesson Designer defers to it rather than re-listing the kinds.
+    assert "`visual.kind` is one of:" in output_template
+    assert "use kinds defined in `output-template.md`" in lesson_designer
+
+    assert "`photo-ref`" not in output_template
+    assert "`photo-ref`" not in lesson_designer
+    assert "`instructionalPurpose`" not in lesson_designer
+    assert 'allowed = {"none", "emoji", "photo", "representation", "built-in", "description"}' in validator
+
+
+def test_initial_scaffold_keeps_output_template_as_canonical_fallback():
+    designer = (
+        ROOT / "agents" / "lesson-designer.md"
+    ).read_text(encoding="utf-8")
+
+    output_template = (
+        ROOT / "references" / "output-template.md"
+    ).read_text(encoding="utf-8")
+
+    guide = (
+        ROOT
+        / "references"
+        / "lesson-design-scaffold.md"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        "lesson-design-scaffold-request.initial.json"
+        in designer
+    )
+    assert (
+        "lesson-design-scaffold.py"
+        in output_template
+    )
+    assert (
+        "Use `output-template.md` selectively"
+        in guide
+    )
+    assert (
+        "When no scaffold command is supplied"
+        in guide
+    )
+    assert (
+        "__LESSON_DESIGN_FILL__"
+        in designer
+    )
+
+
+def test_working_wall_and_final_report_use_canonical_structure_names():
+    wall = (ROOT / "agents" / "working-wall-designer.md").read_text(encoding="utf-8")
+    skill = read(SKILL)
+    assert "whose values are `Skill-based`, `Content-based`, `Discovery`, `Dialogic` or `Task-Centred`" in wall
+    assert "Procedural / Explicit-skill / Explicit-content / Discovery / Dialogic" not in wall
+    assert "Structure: [Procedural / Explicit skill-based / Explicit content-based / Discovery / Dialogic]" not in skill
+    assert "Structure: [exact lesson.structure value \u2014 do not translate to retired labels]" in skill
+
+
+def test_empty_photo_list_keeps_non_photo_visual_support_available():
+    text = (ROOT / "references" / "output-template.md").read_text(encoding="utf-8")
+    designer = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+    assert "Maths always has an empty `photos` list because its visual tools are rendered directly." in text
+    assert "When word names idea no picture can honestly carry" in designer
+    assert '"kind": "none"' in designer
+    assert '"kind": "built-in"' in designer
+    assert "write `visual: \U0001f51f emoji`" not in text
+    assert "visual: diagram \u2014 number line showing position of 0.3" not in text
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print("PASS", name)
+            except AssertionError as exc:
+                failed += 1
+                print("FAIL", name, str(exc)[:500])
+    raise SystemExit(1 if failed else 0)

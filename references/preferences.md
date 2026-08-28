@@ -1,0 +1,493 @@
+# Teacher Preferences
+
+These are the specific preferences of the teacher this agent serves. They sit alongside the evidence base in `evidence-synthesis.md` and take precedence where they differ — this is how the teacher teaches.
+
+Treat `evidence-synthesis.md` as conditional evidence to use whenever it is relevant and does not conflict with this file. It does not automatically override this file; where relevant evidence and an agreed teacher preference conflict, this file wins.
+
+Some of these are classroom norms (what tools are used), some are pedagogical principles (how learning is sequenced), and some are aesthetic (what slides should feel like). All of them are stable and apply across every lesson unless a brief explicitly overrides them.
+
+## Contents — each agent reads its own sections
+
+This file serves several agents. The Lesson Designer reads the introduction, contents and the sections named by its runtime route. It returns to the relevant section before making the decision that section governs. The Design Reviewer receives a compact runtime routing card and reads only the named section when its trigger applies. Other agents read the introduction and only the sections named by their runtime route. Written Voice is startup guidance only for an agent that normally authors child-facing or parent-facing wording. An agent that normally copies settled wording exactly reads Written Voice only when it must author a permitted new line or report that settled wording is unsuitable.
+
+- **Written Voice (House Style)** — the understanding, natural register and house style of every word a child or parent reads. Everyone, every run.
+- **Classroom Norms** — the lesson-time default, routine teacher autonomy, purposeful partner talk, and the LO's on-slide form.
+- **The Teach → Do → Teach → Do Rhythm** — the load-bearing lesson shape and the variety rules across Do beats.
+- **Cognitive Load Triage on Scaffolds** — what stays blank and what gets pre-filled on any scaffold, on slides and sheets alike.
+- **How Much Fits in One Lesson** — when an LO is honestly two lessons, and where to split.
+- **Starters** — retrieval-first openers: what each subject retrieves, the forms a starter can take, test-question starters, the on-slide rules.
+- **Question Labelling** — bracketed labels only for starter and main independent work, plus lettered multi-question Maths Our Turn work.
+- **Vocabulary** — choosing 3–5 cards or genuine vocabulary units, definitions written for children, one coherent visual per card or unit.
+- **A Picture Beside a Word** — the test any meaning-carrying picture must pass before it sits beside a word.
+- **Sticky Knowledge** — up to 3 must-carry facts or rules and when each appears; none is required when no separate fact or rule earns the role.
+- **Success Criteria** — a live reference, form follows the task, and the draw-live marking for wall-worthy references.
+- **The Apply Slide** — earned through the lesson, never automatic; the full decision lives with the lesson-designer.
+- **Practising a Test Question** — fresh questions at the test's exact demand and form; the real item stays out of the lesson.
+- **Reasoning Is Every Child's Entitlement** — genuine reasoning shapes for the whole class, not just the quick finishers.
+- **Slide Philosophy** — the glance test, the slide carrying the lesson on its own, takeaways, and the speaker-notes voice.
+- **Slide Headings (Child-Facing Labels)** — warm child-facing titles, My/Our/Your Turn, performative demonstration titles.
+- **Worksheets** — normally optional independent practice, the required task-resource exception, one page per child, and the two kinds of sheet.
+- **Pride Lessons (Quality Anchor)** — two real lessons that show what "right" feels like.
+
+---
+
+## Written Voice (House Style)
+
+### Core rules
+
+**Write for understanding, not merely decodability.** A child can be able to read every word and still not understand what the sentence means. Judge pupil-facing language by whether the child can quickly grasp the idea, relationship or action, not by reading age or word difficulty alone.
+
+**Sound like a real, knowledgeable teacher speaking or writing naturally to children.** Be clear, direct, warm and human without becoming babyish, over-friendly or performative. Mix short, medium and, when the idea needs it, longer sentences. Natural sentence-length variation is welcome. Do not turn everything into punchy fragments, a list of tiny statements or compressed headline language merely because that looks tidy on a slide.
+
+**Keep one manageable idea in view at a time.** One idea may need several connected sentences. Several distinct ideas do not become easier because they have been compressed into one short paragraph or a row of abstract labels. Prefer concrete actions and relationships, especially when the concept itself is unfamiliar. `People can now reach more of the forest` is easier to enter than `increased access`; `the forest becomes divided` is easier to enter than a compressed phrase such as `habitat split and possible permanent land clearance`. Teach the precise technical term when it matters, but do not make a child unpack unnecessary abstraction before they can reach the learning.
+
+**Glanceable means low mental clutter, not a sentence-length quota.** A child looking up should quickly know what this moment is about and where to start. Three connected sentences about one idea can be more glanceable than four disconnected fragments. A large paragraph is still a warning sign when its visual mass is off-putting or it asks the child to process several separate ideas before they can act. Shorten or split because understanding improves, not because a rule demanded fewer words.
+
+**Explain rather than merely simplify.** Keep correct subject vocabulary when the lesson teaches or genuinely needs it. Use a clear bridge when a word or idea is unfamiliar: `which means...`, `for example...`, `it's like when...`, a concrete comparison, a picture, or a brief parenthetical explanation may all help. Do not use the same bridge mechanically every time. Once a technical word has been properly taught in the lesson, start using it normally. Necessary precise vocabulary is better than an easier but vaguer substitute.
+
+**Put challenge in the thinking, not in avoidably difficult wording.** Deep reasoning, justification, comparison and evaluation may still be asked in direct, accessible language. Formal or assessment-style wording is not banned: words such as `identify`, `compare`, `justify`, `evidence` or a test-like question form are legitimate when they are authentic to the learning or useful preparation for the form children really meet. Slides may use that language when it fits; worksheets are especially allowed to be more neutral and assessment-like.
+
+**Different surfaces have different registers without becoming different voices.** Slides can be conversational and occasionally use natural teacher-speak such as `Have a look at this`, `Can you spot what's gone wrong?` or `Here's the important bit...` when it genuinely helps. Do not sprinkle those phrases in as AI decoration. Worksheets are normally more neutral, concise and test-like: self-contained enough that a child knows what to do, but they do not reteach the method or give away the thinking. Speaker scripts are the most conversational surface because a teacher may read them aloud verbatim. Working-wall and stick-in wording remains self-contained and quick to re-enter because children may meet it away from the original explanation.
+
+**Do not hide necessary teaching in speaker notes.** Notes may enrich delivery, add a useful explanation, help an unconfident or unprepared teacher, or carry teacher-only information. They are not overflow storage for learning children needed to see. If the slide has become too crowded to carry A, B, C and D when children genuinely need all four, reform or split the teaching moment; do not silently drop D into the notes and pretend the visible lesson is complete.
+
+**Use direct language when it removes abstraction.** Prefer active, concrete relationships such as `The river carries the soil downstream` when that is clearer than a more distant construction. Do not ban passive voice, nominalisations, brackets, colons or formal constructions: tests and real subject writing sometimes use them. The question is whether they help the child understand this particular meaning.
+
+**Repetition is allowed when it helps learning.** A useful anchor phrase, taught definition or stable wording may repeat across the lesson and resources. Do not rephrase merely to sound stylistically varied. Equally, do not make every sentence follow the same rhythm or template; resources should not sound assembled from one repeated AI pattern.
+
+**Success criteria are concise actions, not miniature explanations.** Keep one action or idea per step. Use direct actionable verbs. The reasoning for a step belongs in the teaching that established it, not appended to the success-criteria line simply to make the line more complete.
+
+**Sentence stems help children start expressing thinking.** Use them when a child may know the idea but not know how to begin saying or writing it. A stem must not supply the judgement, answer, reason or conclusion the child is meant to decide. If the question asks who is incorrect, a stem such as `Jake is wrong because...` is not support; it has answered the first part for them.
+
+**Definitions should be simple, accurate and useful rather than artificially dictionary-like.** One clear sentence is normal; two short connected sentences are fine when the second gives a genuinely helpful example or experience. `Friction - a force that slows things when surfaces rub together. You can feel it when you rub your hands together.` is acceptable when that extra example earns its space.
+
+**Use examples and analogies that genuinely bridge understanding.** Familiar and concrete is good; stereotypical `child-friendly` is not. Do not automatically reach for sweets because the audience is children, football because the children are boys, or friendship/birthday-party scenarios because they sound youthful. Use a familiar comparison only when these children can reasonably understand the link. A strange analogy creates another concept to decode instead of removing one.
+
+**KS1 and KS2 change the support, not the humanity.** KS1 normally needs more familiar vocabulary, more concrete meaning and stronger reading-access support. KS2 can carry richer vocabulary and more complex thought. Neither phase has a sentence-length target. Do not make KS1 robotic by chopping every explanation into tiny sentences, and do not make KS2 abstract or academic merely because the children are older. Year 3 may need either treatment according to the material and the class.
+
+**Below resources need stronger reading access without losing dignity.** Reduce unnecessary reading load, descriptive padding and avoidable vocabulary. Shorter words or sentences are useful when they genuinely make the task easier to enter; they are not a quota. Use phonics as a practical accessibility guide where relevant. Keep central subject vocabulary and proper nouns, supporting them with examples, visuals or plain-language bridges rather than automatically replacing them. The language should still sound natural, respectful and age-appropriate rather than babyish or telegraphic.
+
+**Greater Depth normally deepens the thinking rather than the prose.** Keep language accessible unless a richer text, terminology or language demand is itself a legitimate part of the subject thinking. Do not manufacture depth through longer reading or harder wording alone.
+
+**Warmth, humour and personality are welcome when they happen naturally. Humour, personality, emojis, callbacks and small asides are optional tools, never quotas.** A tiny aside, callback to an earlier lesson moment, harmless first-person comment, playful bracket or emoji can make a resource feel made by a real person and can help attention. It must not compete with the learning, become a compulsory `fun line`, fabricate a consequential personal biography, stereotype children, or trivialise sensitive subject matter. A deliberately silly throwaway such as `(and one comma too hehehehe)` can be right in the rare moment it genuinely fits; its existence creates no requirement to imitate that informality elsewhere.
+
+**Avoid recognisable AI habits when they are serving the writing rather than the lesson.** Repeated `Here's the tricky part`, `Let's explore`, `Your task is to`, forced enthusiasm, generic motivational language, perfectly symmetrical mini-lists, needless narration of the lesson sequence and repeated sentence templates should trigger a reread. None of those phrases is individually forbidden. Repetition, generic use and lack of purpose are the problem.
+
+**Every visible sentence should earn its place.** Do not tell children `Watch as I show you the tools you will need - then you will use them yourself` when the useful thing is simply to introduce the tools at the moment they are needed. Natural-sounding language can still be wasted language. A line should help the child understand, orient, think or act.
+
+### Written Voice read-back
+
+Before approving child-facing wording, ask all five questions:
+
+1. **Will a child understand what this means, not merely be able to read the words?**
+2. **Is this asking them to process one manageable idea at a time, or too much at once?**
+3. **Would a real teacher feel natural saying or showing this, or would it make them sound like they are reading generated text?**
+4. **Have I made this shorter because it became clearer, or merely because I was trying to make it `glanceable`?**
+5. **Does this wording help children understand or act, or is it merely narrating the lesson back to them?**
+
+### Calibration examples
+
+These examples are diagnostic, not templates to copy.
+
+- Rewrite `What can the sharp forest boundary suggest, and what can this photograph not prove on its own?` The evidence-thinking is worthwhile, but the wording makes the child decode the question before reaching it. A clearer form is `What do you think has happened to the forest here? What can't we tell just from this photo?`
+- Rewrite `Habitat split and possible permanent land clearance` when it is ordinary pupil prose. It is compressed noun-phrase language. A heading may occasionally be terse, but the teaching should normally say what is happening with a verb.
+- The river-dolphin/heron/fishing paragraph is **context dependent**. If those sentences are background explanation whose causal relationship children are meant to be told, connect the relationship explicitly. If they are the evidence/stimulus from which children are meant to infer the effect of reduced fish numbers, do **not** add the inference itself. Improve flow only while preserving the facts children must reason from. Written Voice never overrides the rule to protect the answer.
+- Prefer an explanation such as `Water and electricity are a dangerous mix. Never touch an electrical appliance with wet hands.` over a generic safety-poster line when the explanation helps the rule land.
+- `The local council looks after the everyday services in your town - like bins, libraries, parks, streetlights and schools.` is a good example of a longer sentence remaining easy to understand because the examples make the idea concrete.
+- `Councillors are chosen by local people who vote - maybe someone in your family has voted before.` is an acceptable small relatable aside. It is hedged, harmless and does not assume a particular family experience.
+- `You have an atlas and a list of six of the world's longest rivers. Your job is to find each one and work out where in the world it is - which continent, and a country it flows through.` is a good example of natural connected instruction. Do not chop it into fragments merely to shorten it.
+- Rewrite or remove `Watch as I show you the tools you will need - then you will use them yourself.` when it merely narrates what the lesson is about to do. Introduce the actual useful information instead.
+- A long equipment paragraph that introduces the investigation, names every piece of apparatus and then lists every test object in one block is likely to overload the moment. Reveal or group the information when children need it rather than assuming line breaks alone solve the problem.
+- Reject a stem such as `Jake is wrong because...` when children are meant to decide whether Jake or Sarah is wrong.
+
+**The em dash is not part of this teacher's voice - keep it out of everything a child or parent reads.** Across the whole pipeline, every word that reaches a child or a parent is written in the teacher's own register: slide titles, body text, speech bubbles, success criteria, captions, a stick-in piece's labels, worksheet prose, report comments. The em dash reads as machine-written rather than as something this teacher wrote, and he replaces it by hand wherever it slips through, so writing it in the first place just makes more work and risks one reaching a parent unedited. Reach instead for the punctuation a person actually writes the thought with: a comma for a small aside, brackets for a quiet aside, a colon before a list or an answer, a full stop to make two sentences, or a spaced hyphen ( - ) where a dash-like pause genuinely reads best. The en dash reads the same way and goes too; an ordinary hyphen inside a compound word (`fly-half`, `three-quarter`) is fine and stays. This is house style, so it holds across every subject and lesson unless a brief explicitly asks for something else.
+
+---
+
+## Classroom Norms
+
+**Time: a lesson runs about 45 minutes end to end; when children are expected to work independently afterwards, the taught input is about 30.** Every sequence is designed against that clock: the per-beat timings in this file (a starter five to eight minutes, a Do beat one to three, a Talk three to five) have to sum to the slot with real minutes left over for ordinary classroom setup and transitions, including getting books ready and the normal time associated with Date + LO. An arc can be excellent beat by beat and still not fit, because each component earns its place separately and nothing else pushes back — this budget is the pushback. When the honest sum doesn't fit, cut a beat rather than compressing them all: a squeezed beat teaches nothing and rushes every beat around it, and choosing what goes is part of the design. "How Much Fits in One Lesson" below is the same judgement at lesson scale — split into two lessons rather than thinning every chunk.
+
+When independent work follows, the roughly 30-minute taught section means the teacher-guided lesson sequence, including modelling, questions, guided attempts and short child-processing activities, not continuous teacher talk. Different lesson structures may divide the time differently, and a duration supplied by the teacher overrides this default.
+
+**Routine classroom management belongs to the live teacher.** Generated slides, notes and task briefs normally state the learning action only, such as "Write...", "Discuss...", "Draw..." or "Choose...", without naming a recording surface or routine participation method. Name a medium, device or response structure only when it is genuinely part of the selected task or required resource. The teacher chooses whether children use books, whiteboards, devices, hands up, cold calling, wait time or another routine in the live classroom.
+
+**Partner talk is acceptable in any subject** where talk helps thinking — a reasoning prompt, a values discussion, a "convince me" or "is this always true". Partner talk may lead to individual written thinking when that genuinely adds value, but it does not have to. A brief reasoning discussion may lead straight to a written justification, several connected discussions may culminate in one considered written reflection, and some discussions need no written follow-up.
+
+**Date and LO live on the starter slide header, not on their own slide.** The starter is slide 1 and carries both in its header — no separate "Copy the date and LO" slide. A dedicated slide before the starter wastes a teaching beat.
+
+**The LO on slides uses the shortest form that preserves the learning.** Many LOs are a core action with enumerated detail tacked on — joined by a colon ("Solve problems involving time conversions: hours/minutes, minutes/seconds, years/months and weeks/days"), by a comma and an "-ing" clause ("Plan a fair test, deciding what I will change, what I will measure and what I will keep the same"), or by "including" / "by", or by the method or instrument the action uses ("using a number line", "with a decibel-meter website on the iPad"). Shorten this detail only when removing it does not remove a qualifier, condition, method, focus or other element that is itself part of the learning. The core action is the starting point for shortening; a method, instrument or condition may come off when it describes only the route to the learning, but it stays when it is itself part of the learning. A quick test: what is the shortest wording that still states everything children are meant to learn? That is the board objective. The full LO is still used internally in the lesson design, worksheet headers, and spoken teacher orientation; only the on-slide display is trimmed. This keeps the displayed objective quick to read and, where the teacher has children copy it, avoids unnecessary writing time — and the detail it spells out is almost always the success criteria, which children meet on the modelling slide anyway. Slide format is **LO: To [verb] [object]** — "To plan a fair test", "To solve problems involving time conversions". The "To" keeps the displayed objective in a familiar school form.
+
+When the system generates the objective, create a precise full internal objective first and use the same short displayed form, `LO: To [verb] [object]`, for the starter header. Do not use "I can" or "WALT" unless the user requests it.
+
+---
+
+## The Teach → Do → Teach → Do Rhythm
+
+This is the load-bearing principle of every lesson design.
+
+Children do not learn by being told things. They learn by doing something with what they have just been told. Every chunk of teaching — every Teach slide, every My Turn, every new concept — is followed immediately by a chance for children to process the information before the next chunk arrives.
+
+An explanation and its model may form one coherent teaching block when they develop the same idea. The required child processing comes before the lesson introduces a genuinely different concept; it is not forced between the explanation and modelling of one idea.
+
+**One concept per Teach block, then back to the children.** A Teach block introduces a single new thing — a method, a sentence structure, a fact, an explanation, a cause, a vocabulary distinction. Two at once means neither gets used before the next arrives; split them. The teacher's job in the block is to give the shortest, clearest route to that one thing, then hand the work back to the children. Long teacher talk replaces practice with listening and drains pace.
+
+**Why the rhythm matters.** Working memory is tiny. If the next idea arrives before children have actively used the previous one, the previous one fades — they walk away with a vague impression of the lesson instead of usable knowledge. "Memory is the residue of thought." Design so that what children are meant to remember is what their working memory actually processes.
+
+**Choose Do activities for the learning.** A short processing beat makes children use one manageable chunk before the next distinct idea arrives. One to three minutes is a useful normal estimate, not a hard limit. Let the activity take the time its thinking genuinely needs, but do not let a beat intended as a quick check quietly expand until it crowds out the lesson. When a worthwhile sort, explanation, diagram or other activity becomes substantial, treat it as main practice rather than continuing to call it a tiny Do beat.
+
+**Use variety deliberately, without a quota.** Consider changing the response form when repetition would create fatigue, monotony or an avoidable access barrier, but do not require three different registers or a compulsory non-writing activity. Repeat a form when repeated performance builds the target skill, including arithmetic, spelling and other fluency. Learning fit comes first.
+
+**Check demand without forcing a staircase.** Successive activities do not have to become harder in a fixed order. A lesson may return to a simpler check after demanding work, and a task-centred lesson may sustain one complex level for a substantial period. Read the finished sequence for what children actually think about and repair a lesson that stays unnecessarily shallow when the objective supports worthwhile thinking.
+
+---
+
+## Cognitive Load Triage on Scaffolds
+
+Whenever you design a visual scaffold — a part-whole model, a number line, a place-value chart, a labelled diagram, a sentence frame, a coin strip — identify which part of it children are actually operating on. That part stays blank or constructable. The rest of the scaffold can be pre-filled.
+
+**Why this matters.** Working memory is limited. Every empty box on a scaffold asks the child to hold something — a value to write, a relationship to figure out, a step to plan. When the empty box represents the learning target, that load is the lesson. When the empty box represents something the child isn't being assessed on, the load is wasted: it competes with the actual learning for working memory space.
+
+**How to apply.** Before specifying any scaffold, name what the lesson is asking the child to *do*. The bubbles, lines, or boxes the child fills in to demonstrate that doing stay blank. Everything else — including the parts of the scaffold that show what they're working *with* — can be filled.
+
+A few examples:
+
+- **Lesson: add £2.40 + £3.90 using the partition method.** The learning target is partitioning each amount and adding the parts. So a part-whole model whose parts the child fills in (£2 and 40p) stays blank; coin strips alongside that *show* what £2.40 and £3.90 look like as money can be pre-filled, because making the amounts isn't what's being learned today.
+- **Lesson: write a sentence with a fronted adverbial.** The learning target is the adverbial phrase and the comma. So the slot for the adverbial is blank; the rest of the sentence may be partially scaffolded so children spend their cognitive effort on the part being taught.
+- **Lesson: round 5.6 to the nearest whole using a number line.** The arrow placement and the rounded answer are blank; the number line itself is fully drawn, with marked points at 5 and 6 — drawing the line isn't the lesson.
+- **Lesson: read the value an arrow points to on a scaled number line (or read a value off a graph's axis).** Here working out the scale is the learning target, so the scale itself is what stays partly blank: label a few anchor points so the child can work out what each step is worth (0 and 2 near the start, then 18 and 20 at the end), and leave the ticks between them bare so they count on to the arrow. Labelling every tick hands over the answer, because the child then reads a printed number instead of reasoning about the scale. The same holds for the axis of a graph a child reads: mark enough of the scale to fix what each interval is worth, not every gridline.
+
+The same principle applies on slides (modelling, practice) and on worksheets. Blank what's being learned, fill what's only there to support.
+
+**Don't duplicate a physical manipulative on the worksheet when children have it on their desks.** When the lesson brief says children have real coins, real counters, base-10 blocks, fraction tiles, etc. on their desks, the visual scaffold splits across slide and worksheet differently. The slide still benefits from a rendered version of the manipulative — slides are public reference, children are looking up, not all of them will reach for the physical resource at exactly the right moment. But the worksheet is one-per-child, sat right next to the physical manipulative, and rendering the same coins on the page duplicates what's already on the desk. The duplicate consumes vertical space, competes with the child's writing area, and adds no pedagogical value the desk version doesn't already provide. Drop it. Keep only the load-bearing scaffold (the diagram the child is filling in — the part-whole model, the bar model, the ten-frame). The principle: the manipulative is for the child to *use*, not to *look at* — and the place to use it is the desk, not the page.
+
+---
+
+## How Much Fits in One Lesson
+
+An LO often describes more than a single lesson's worth of learning — most clearly when it names both *understanding* something and *producing* something substantial from it: "understand the water cycle, then draw and explain it"; "know how a Roman lived, then write a diary entry as one"; "understand the structure of a volcano, then label it and explain an eruption". Building the knowledge and producing the extended artefact may each be a lesson's work. Decide which the LO is *before* designing the sequence, by budgeting honestly: will teaching every new chunk properly — each its own Teach → Do — *and* the substantial production both fit the time, with room for children to breathe? When they won't, that is two lessons, and saying so is the design, not a failure to fit everything in.
+
+When it is two lessons, split at the natural seam: teach and consolidate the knowledge today, ending on the lesson's core idea while it is still fresh; make the production the opening of the next lesson, warmed by a quick retrieval of today's learning. The reason is how working memory leaves a lesson — the last thing children hold should be the idea the lesson was built to land, not the hardest task attempted when their attention and stamina are already spent (the cognitive-load and closure mechanisms are in `evidence-synthesis.md` §7–8). A lesson that builds to a clear conceptual high point — the moment the separate parts snap into a whole — can stop there, on the high point, with the production saved for tomorrow.
+
+Treat the two-lesson decision as a judgement rather than an automatic response: consider how much knowledge is new, how substantial the product is, whether children already command its form and the time available. When a split is chosen, the lesson design must say plainly that the package covers Lesson 1 only, name what has been deferred and state what Lesson 2 should cover. Record those three facts in `lesson.scope`, `lesson.deferredLearning` and `lesson.lesson2Direction` respectively, and surface the same orientation in the starter-slide teacher orientation paragraph so the split is not buried in structured fields.
+
+The tell of a lesson straining to be two: one of the new chunks quietly loses its own Teach → Do and survives only as a line in a summary — so the teacher ends up explaining it on the fly — and the final production gets squeezed into the minutes that are left. When you notice either while designing, that is the signal to split: give every chunk its proper teaching today and let the production be its own lesson, rather than thinning the teaching to make room. This is a judgement about scope, not a cap on ambition — a lesson whose knowledge genuinely fits still runs its full Teach → Do → Practise arc in one sitting.
+
+---
+
+## Starters
+
+Every lesson opens with a starter. The starter connects backwards:
+
+- **If the prior lesson is known** — retrieve that lesson's learning. This is retrieval, not re-teaching. For answerable retrieval, aim for high success and keep it within the normal five-to-eight-minute range; one quick retrieval may be enough, and the starter must not expand until it crowds out today's teaching. Questions children can mostly answer are the point, because the starter strengthens a memory rather than diagnosing a gap.
+- **If the prior lesson is not known** — identify the prerequisite skill this LO builds on, and practise that.
+
+Normally focus on the previous lesson or today's prerequisite. Mixed recent and older retrieval remains available when the teacher requests it or the wider sequence gives it a clear purpose and children have enough security to choose productively between methods or knowledge. An open values or discussion prompt needs an accessible entry point rather than a numerical success-rate target.
+
+**Subject shapes what "prerequisite" means.** Maths and English have procedural prerequisites — children retrieve a method. PSHE, RE and Citizenship don't — they need a values prompt, a scenario response, a discussion question, or a short reflection that primes the conceptual schema the lesson will use. History, Geography and Science usually retrieve prior content (a fact, a definition, a labelled diagram) or set up a question the lesson will answer. A maths-style arithmetic starter at the front of a PSHE lesson primes the wrong frame, even when the topic has numbers in it (money, ages, time) — the numbers are scenery, the lesson is about the values or decisions those numbers sit inside. Match the starter to the schema the lesson actually builds on:
+
+- **PSHE / RE / Citizenship** — a discussion prompt, a values question, an opinion poll, a scenario response, or a short written reflection. ("Think of a time when…", "What would you do if…", "Is it always wrong to…?")
+- **History / Geography / Science** — retrieval of a prior fact, definition, or diagram; or a hook question the lesson will answer.
+- **Maths / English** — procedural retrieval of the prerequisite skill.
+
+These subject patterns are examples, not fixed routes. The lesson designer identifies what today's objective actually depends on and chooses the starter from that prerequisite, even when it differs from the usual subject pattern.
+
+**Match the form of the starter to the recall, not just the content.** A numbered list of written questions is the workhorse, and it is the right one whenever the skill being warmed *is* answering questions of that kind — most maths and English retrieval. But it is one retrieval form among several, not the shape a starter defaults into. The same recall often comes back faster through a different doing: sorting items into two columns (true/false, fact/opinion, multiple/not-a-multiple), matching each term to its definition or its pair, spotting and correcting a deliberate mistake, labelling a diagram from memory, or one rich problem to chew on instead of several quick ones. The slide engine renders all of these, so the choice is genuinely open. Choosing the form that fits what children are actually retrieving makes the warm-up do more in the same few minutes, and stops every lesson opening with the identical ritual children learn to switch off during. Reach for the list of questions when the recall genuinely is a list of questions; reach for another form when it would prime *this* skill more cleanly.
+
+State what children do in the starter without prescribing a routine recording surface or participation method. Discussion, individual response, matching, sorting, correction, labelling and one rich problem are available when they fit the retrieval target; the teacher chooses how responses are gathered unless the selected activity genuinely requires a particular structure.
+
+**A real test question is one available retrieval tool.** The plugin carries a bank of real past-paper questions cropped as images (`builder/assets/test-questions/`, filed by subject and strand with filenames that read as one-line summaries; method in `test-question-bank.md`). When one genuinely matches the starter's retrieval target, difficulty and useful authentic response form, it may be the whole starter: the child rehearses the skill *and* the exact format the test will use — the same layout, scale drawings, and answer boxes — in one go (the "single rich problem" form). The retrieval target still leads: search the bank *for the target*, and when nothing fits, or the skill needs several quick reps rather than one rich problem, a written starter is the right call, not a fallback of last resort. A test question on the board must be readable from the back of the room, like everything else on the slides.
+
+A starter with a definite answer is followed immediately by an answer slide. An open discussion starter does not require an answer slide. An open judgement or reasoning starter may have a model or example-response slide when it genuinely helps; an open outcome does not receive a manufactured correct answer.
+
+**Starter questions are quick to read.** Retrieval works when the recall happens *now* — a child looks at the question and feels the answer come back. A starter question that has to be re-read or unpicked has stopped being retrieval and become a comprehension task, and the actual recall is pushed further away. Keep each question short — a few words of recall, a one-sentence prompt, a fill-in-the-blank — and phrase it so the answer can be written without parsing the wording first. Treat ten words as a diagnostic warning rather than a hard limit, and lean shorter still where the recall is well rehearsed (a single vocabulary term, a known fact). Longer wording is justified when understanding authentic wording is part of the skill being retrieved, including a suitable real test question or reading-retrieval task. A fill-in-the-blank still has to leave the recall to the child: a cue lowers the cost of *starting* to remember — a first letter (*an a______*), a sentence frame, the shape of the word — without naming the thing being recalled. A parenthetical that supplies the answer (*an a______ (adjective)*), a definition that already contains the target word, or a gap whose only sensible filler sits right beside it has crossed from cue into answer key, and the child copies instead of recalls. The test: cover everything except the blank — could a child who had genuinely forgotten still write it from what is left on the line? If so, the answer is on the slide, and it belongs only on the answer slide that follows. Five short questions warm the skill better than five long ones because the recall on each one happens cleanly.
+
+**Predictions, framing, and orientation are not part of the starter.** A starter is the recap that primes the lesson. A reasoned prediction ("I think X because Y") needs today's question to be live first; without the question on the table, the prediction has nothing to attach to. An orientation paragraph or framing of the day's task needs the teacher to introduce that task. Both belong to their own beat — usually right after the question is properly posed on a Set the Task slide — not folded into the starter slot. Combining them turns the starter into a single early slide that is three different beats fighting for one minute of class time, and the retrieval gets squeezed.
+
+This bites hardest in enquiry-frame lessons, where a brief often carries the recap in one frame box and the prediction in the next, so folding both into the starter looks like following the brief. Keep the starter slot for the retrieval and give the prediction its own beat once the question is posed: the recall depends on happening now, in the first minutes, and the prediction asks for the longer thinking that would squeeze it.
+
+**A starter readies the ground; it doesn't hand over what the lesson is there to discover.** In an enquiry or investigation the finding is the children's to reach, and the value is in arriving at it by doing. Recalling the idea the lesson rests on is retrieval ("some materials absorb sound vibrations"); aiming that same idea at today's exact case ("true or false — felt blocks more sound than foil") quietly settles the result before anyone tests it. So a starter draws on the secure prior knowledge the lesson builds on and leaves today's specific finding for the lesson itself. A quick check: if a child who answered every starter question would already know how today's investigation turns out, the starter has stepped onto the lesson's ground — pull it back to the prior knowledge underneath.
+
+---
+
+## Question Labelling
+
+Question labels are used only for work that children need to match to their own recorded answers. Labels are always bracketed - (1), (a), (1a) - never bare numbers or letters.
+
+**On lesson slides, number starter questions and the lesson's main independent work.** The starter and main independent sequence are separate: each starts at (1). Do not number smaller questions or tasks between teaching steps, including content-based Do beats, quick checks, discussion questions and short guided responses.
+
+**In maths, My Turn has no question label.** A Maths Our Turn uses letters - (a), (b), (c) - when it contains two or more discrete questions that the class needs to refer to separately. A single Our Turn prompt has no label. Your Turn starts at (1), and numbering then continues through any connected Problem Solving, Reasoning or Apply work.
+
+In other subjects, do not use letters. Number starter questions and main independent work only.
+
+Worksheets, stick-in pieces and adaptation sheets use bracketed numbers for independent questions. Their numbering belongs to that resource and does not continue from the starter or slide lesson.
+
+---
+
+## Vocabulary
+
+3–5 cards or conceptual units maximum, because five is about the most a child absorbs before the vocabulary slide stops being a quick reference and becomes a reading exercise. Choose the disciplinary language children think and reason *with* — words they reuse and that deepen their understanding of the subject, the words you would want to hear in their explanations. Prioritise learning-critical language rather than excluding equipment names categorically. An equipment word earns a card when children must understand, distinguish, select, use safely or explain it. Otherwise label the equipment clearly where it is used without spending a vocabulary card on it. A unit like *decibel* may be a concept children reason with; a device name may be either learning-critical language or only a label, depending on the task. The test for each candidate is whether knowing the word helps children perform or explain the intended learning.
+
+A word also has to be put to work somewhere in the lesson itself. A card is a glance reference for language children are about to handle, so before a word keeps its card, point to where it lands: a script that says it aloud, a question whose answer needs it, a task written with it in, a stem that holds it. A word with nowhere to point is being displayed rather than taught, and that is true even of a genuinely strong subject word inherited from a scheme's list that children will meet later in the unit. Strong but unused still comes off this lesson's set; if it deserves to stay, give it a job in a task or a script and it earns its place honestly.
+
+Definitions are written for children, not adults: short, concrete, plain English. The card is somewhere children glance back at, not somewhere the lesson teaches from, so keep the definition as short and clear as reasonably possible without making it inaccurate. It must also stay short enough that the card itself does not become confusing. When a necessary caveat or fuller explanation would make the card too long, that fuller teaching belongs on the Teach slide. Add a visual note where it makes the meaning clearer.
+
+Treat "one breath" as a quality test rather than a rigid sentence limit. Keep the card short and concrete, but do not make a definition inaccurate to save words; teach necessary comparisons, caveats or fuller explanation elsewhere while the card remains useful as a quick reference.
+
+**Use one coherent visual per vocabulary card or genuine vocabulary unit.** Two terms may share one card only when they genuinely form one simple paired idea or directly contrasting/symmetrical parts that make more sense together. Being related, being taught together or having an important relationship is not enough. `clockwise / anticlockwise` may share; `evaporation / condensation` normally stays as two separate cards. The visual may contain a simple labelled comparison when the relationship is the learning, but a comparison visual does not itself justify combining separate concepts. It must move the child meaningfully closer to the intended concept; when no visual adds honest help, leave the card without one. Avoid collections of separate decorative pictures.
+
+---
+
+## A Picture Beside a Word
+
+Wherever a picture sits next to a word — a vocabulary card, a worksheet word bank, a sorting card, a slide list, a label — it is there to carry the meaning, so a child who cannot yet read the word still knows what the thing is. That is the only job it has, and it is the test it has to pass: **would a child who did not know this word get closer to it from this picture?**
+
+A picture passes when it IS the thing (🦴 for spine, 🔦 for torch, 🛹 for skateboard). It fails when it merely gestures at the area: a spiral beside "vacuum cleaner", an ice cube beside "fridge", a puff of air beside "hairdryer", 🌍 beside "biome". A child meeting those has two things to decode instead of one, and the picture that was meant to help is now a small riddle sitting where the help should be.
+
+**When nothing true exists, the word goes on its own.** No picture reads better than a vague one, and it is the right answer rather than a gap to apologise for. Leaving one word bare in a set where the others have pictures is fine — better than reaching for a near-miss to keep the row tidy, because a set where every word wears a picture teaches the child that the pictures mean something, and then one that doesn't quietly lies.
+
+The boundary: this is about a picture whose job is to carry a word's meaning. A photograph that is the lesson's stimulus, a diagram a child labels or reads values off, a drawn model that is itself the teaching — those earn their place as content, and this test does not apply to them.
+
+### Visual priority
+
+P1 is teaching-critical and always wins. P2 is helpful context attached to what
+it supports. P3 is relevant decoration with no teaching meaning and is first
+expendable. Deliberate empty space is allowed; do not add P3 merely to cure a
+sparse page. On serious material omit P3 before it makes the treatment cute,
+jokey or trivial.
+
+---
+
+## Sticky Knowledge
+
+Up to 3 facts children MUST carry away from this lesson. "For children to succeed at this LO, they need to know this." Zero separate sticky facts is acceptable when nothing distinct earns the role because the objective, representation or success criteria already carries the necessary idea.
+
+Short, clear, child-readable. Appears contextually — at the point in the lesson where children need it. Some facts appear during teaching; some during independent practice as a reference; some at both points.
+
+Document when each fact appears — not where on the slide (that's the PPT designer's decision), just which part of the lesson it belongs to.
+
+---
+
+## Success Criteria
+
+A live reference, not a framing for what's about to happen. Success criteria earns its place by being visible *while* children work — so they can consult it as they apply it.
+
+Do not put the criteria on their own introductory slide before the My Turn unless the criteria themselves genuinely need teaching, comparison or construction. The teacher is about to demonstrate them; a list of "what we're about to do" teaches nothing. The criteria belong on the My Turn slide and on practice slides, where children see them in use.
+
+**The success criteria is whatever a child has to look at to get *this* task right — its form follows the task, so don't default to a list of steps.** When the task is carrying out a procedure, the steps are what the child checks against. But when the task is recognising, naming, or classifying — name this turn, name this word class, sort this shape — there is no procedure to step through; what the child checks an instance against is the **labelled set of the categories themselves**. There the most useful criteria is that set shown and labelled, and it is usually a visual reference or helper rather than a column of imperatives — because "is this a half turn?" is answered by comparing to the turns the child knows, not by running a procedure. So success criteria can be how-to steps, a lookup table, a worked example, or a labelled reference/diagram; pick the form by what a child must glance at to succeed, and use more than one form when both genuinely help.
+
+**The discriminator is whether there is a method to carry out or only an instance to match against a set, and if the content disagrees with the type you picked, the type is wrong.** Reading or deriving an attribute — counting a shape's sides, finding which sides are equal or parallel, which corners are right angles, working out a duration — is a **process**: its criteria is how-to steps the child performs, and it is taught by modelling the method on an example rather than by displaying the finished attributes as a set. Recognising or naming — which named quadrilateral this is, which word class, which turn — **matches an instance to named categories**: its criteria is the labelled set of those categories, shown as the categories themselves. One lesson often holds both, one per concept ("classify quadrilaterals" reads the properties first, a process, then names the shape from them, a recognition), so type each concept's criteria on its own. The tell that a process has been mislabelled as a labelled reference: the "reference" comes out as a column of imperatives ("count the sides", "check for equal sides"). Those are how-to steps, so reclassify, and let the teaching model them rather than list them.
+
+When the recognition turns on two independent attributes the child reads separately — size *and* direction, shape *and* orientation, number *and* unit — show each attribute's full set on its own (the four turn sizes; then, separately, what clockwise and what anticlockwise look like), not a handful of specific combinations. Separate axes always match the instance in front of the child and give a clean lookup for each decision; a fixed set of combos is longer, cannot cover every pairing, and reads wrong when it shows one combination beside a question that is a different one.
+
+**A recognition reference children will meet again can be worth building *with* them, not only showing.** When the labelled set is knowledge a later lesson assumes — the named angles a properties-of-shapes lesson leans on, the word classes a later grammar lesson reuses, the triangle types a later angles-in-shapes lesson takes as known — it may be useful to build it live with the class and leave it up on the working wall. Building it together gives children a generative, physical encounter with the categories: they make the reference rather than only reading it off a screen, and the drawing stays up as the reference for the lessons where it is no longer the on-screen criteria. A procedure's step list rarely gains this — it does its best work as a live on-screen reference for today's task, and a later lesson doesn't glance back at it as named knowledge. So when a recognition/labelled criteria is knowledge later lessons will assume and copying it verbatim to a flipchart or working wall could be useful, mark it as a draw-live suggestion; the slide then carries a small pencil in the corner of its green panel that suggests that possibility to the teacher, and the working wall reproduces the same reference. The pencil is the whole cue — the slide stays otherwise unchanged, with no extra note or instruction added for the children.
+
+What can earn this optional draw-live suggestion is the *named set of categories itself*: the five quadrilaterals with the properties that identify each, the word classes, the named angles, the labelled reference later lessons look up. The *method* for deriving or applying it does not carry forward, even when it is given a reference-like title. A "Read the properties" or "How to name it" panel written as steps is a procedure, and titling it a reference does not make it wall knowledge. So this marking goes on the labelled category set only, and a method stays on screen unmarked, including in a lesson where one concept is a process (its steps unmarked) and another is a recognition (its named set marked).
+
+---
+
+## The Apply Slide
+
+An apply slide is earned through the lesson, not included automatically. The judgement is whether the lesson has accumulated enough that using all of it together asks something the Your Turn didn't; where the Your Turn and its answers already are the synthesis moment, a further slide adds length rather than learning. A lesson that doesn't earn one says so and says why, so the teacher can see it was decided rather than forgotten.
+
+The rest of it, including what an Apply has to be to earn its place and the shapes it can take, lives in the Apply Slide section of the lesson-designer agent, which is the only place that decides it.
+
+---
+
+## Practising a Test Question
+
+Sometimes the teacher supplies a real question from an upcoming assessment as part of an ordinary lesson.
+
+When the item is being held for later assessment, normally keep that exact item out of teaching and practice and use a fresh parallel. If the teacher explicitly asks to teach or review that exact held item, honour the request and state clearly that it can no longer provide secure untouched assessment evidence afterwards. Supplying a paper or question and asking for practice does not by itself count as an explicit request to reuse the exact held item.
+
+A suitable real question from a paper or bank may still be used when it is not being held for later assessment.
+
+When the ordinary lesson route creates a fresh parallel, preserve the assessed skill, level of difficulty, number range, number of steps, information and wording structure, and answer form while changing the actual instance.
+
+Preserve the complete question form, including any shared stem, parts, options, diagram and response form. Do not turn a multipart or selection question into an easier chain of mini-questions merely because the smaller pieces are easier to model.
+
+---
+
+## Reasoning Is Every Child's Entitlement
+
+When the objective supports worthwhile reasoning or problem-solving, it belongs to every child — not as a reward for pupils who finish first and not as work saved for the most able. Do not bolt a token reasoning task onto a lesson where it serves no real purpose.
+
+The shapes good reasoning questions take live in `[PLUGIN_ROOT]/references/reasoning-prompts.md`. The lesson-designer draws on them for the class, the same way the adaptation-designer draws on them for a generated Greater Depth resource — the difference is the threshold, not the entitlement.
+
+This is about the quality of the reasoning, not its quantity. It does not mean adding reasoning where a structure already carries it — a content lesson's Do beats and a discussion lesson's talk are already the reasoning. It means the reasoning a lesson *does* design is a real shape — convince me; always/sometimes/never; what's the same and what's different — rather than a generic "now solve a word problem".
+
+Judge reasoning by the thinking demanded, not by a named surface form. Genuine reasoning involves a choice, justification, connection of evidence or ideas, testing or evaluating a claim, or comparing possible methods or explanations. Named forms are examples rather than a checklist, a well-designed word problem may genuinely require reasoning, and not every individual practice item has to be reasoning.
+
+## Support, Checking and Release
+
+**Keep support when it enables the intended thinking; remove or reduce it when it supplies that thinking or the answer.** Representations remain consistent wherever they are used, but they do not have to be printed or displayed everywhere. The lesson designer explicitly decides when to omit or reduce one because the real object is present, constructing it is the learning, it would reveal the answer, or the support should fade. A worked example, reference table, visual tool or success criteria may remain when it enables the intended performance without doing the new thinking for the child. Do not withdraw support automatically by stage, item or pupil label.
+
+For a defined procedure or answerable repeatable skill, plan enough modelling, guided practice and accessible progression that roughly 80% success at the intended release point is a reasonable expectation if the lesson proceeds as designed. This is a planning target, not a result the resource can know or guarantee. It does not govern content, dialogic or task-centred lessons through a universal percentage, and very high success is not automatically unproductive. The live teacher decides whether the actual class is ready and adapts the pace.
+
+Design a worthwhile check before independent practice of a new procedure when its result can genuinely inform whether the class is ready. The check should be capable of revealing more than the answers of willing volunteers, but generated materials do not prescribe how the teacher gathers responses.
+
+**Reserve separate answer slides for the starter and main independent work.** Main independent work means Your Turn, Practise, Use Learning, Do the Task, Apply or Reflect when that beat contains work children complete independently. Exact-answer Do beats, Our Turn questions and other smaller checks between teaching steps keep their answers in speaker notes and do not receive a separate answer slide. A smaller beat may receive a separate model or standard slide when seeing a modelled written answer, comparison standard or equivalent shared outcome genuinely improves teaching or checking. Every structured answer, model or standard remains available in the speaker notes whether or not a separate answer slide is shown.
+
+## Purposeful Endings and Linked Lessons
+
+Every lesson ends with purposeful consolidation or useful evidence, but the lesson structure determines its form. A separate exit ticket appears only when it adds useful evidence rather than repeating the ending already present. Use later retrieval or reteaching only when the user supplies genuine linked-lesson context, a sequence or real assessment evidence. Without that context, do not invent results, thresholds, weaknesses or a next-day lesson.
+
+## Source and Scenario Integrity
+
+Use real and classic sources accurately, sensitively and for a clear curriculum purpose. Screen potentially sensitive themes, including romance, affection, fear, distress and violence. Adapt language and detail to the year group while preserving important curriculum content that can be taught safely. Remove or replace detail when it is unnecessary for the learning or unsuitable for the class; do not automatically sanitise material merely because a sensitive theme appears. The selected excerpt or retelling should be something the teacher can confidently read aloud, and a parent should be able to understand why it was included and how it supports the curriculum. Difficult but appropriate content does not fail merely because it may cause discomfort.
+
+For invented scenarios and real-world claims, keep quantities, actions, chronology and context coherent. Avoid unnecessarily forcing personal disclosure or assuming children share the same family circumstances, experiences or emotional safety. Personal reflection remains available when it is genuinely suitable. The lesson designer screens and frames the material; the design reviewer independently verifies the finished result.
+
+---
+
+## Slide Philosophy
+
+### Lesson Designer content boundaries
+
+**A slide should be quick to understand and complete for its teaching move.** A teacher should be able to glance at it and immediately know what it is doing, what it is about and what they or the children need to do. The slide also carries everything children genuinely need for that moment, including essential explanation that would otherwise be hidden in speaker notes. Quick-glance does not mean reducing every teaching point to a snappy summary, and completeness does not license walls of text or several different concepts crowded together. Use the teaching object itself — an annotated example, diagram, source, comparison, question with its reference, or another suitable form — to keep the slide both readable and complete.
+
+Slides carry what children **do**, **see**, **learn**, or **reference**. Speaker notes provide fuller spoken explanation and backup for a teacher who needs it; they do not rescue missing essential meaning.
+
+**The slide has to carry the lesson on its own, because not every teacher reads the speaker notes.** Some teachers deliver the notes almost word for word; many glance at the slide and improvise from there. So the notes *enrich* delivery for the teachers who lean on them — they are not a place a task or its meaning is allowed to live alone. A quick test before a slide is finished: if the notes were never opened, would a child still know what to do, and would the standard they are working to still be on screen? Whatever fails that test belongs on the slide — a prediction the child writes (with its sentence stem), a question they answer, the signal that a list of steps *is* the success criteria. What the notes carry is the teacher's part: the framing, the why-it-matters, the worked-aloud explanation, the misconception to watch for. The slide is the durable record; the voice is the enrichment, and the slide must still teach when the voice improvises.
+
+**"Carrying the lesson" and "a glance" meet on the same slide: the resolution is form, not relocation.** The slide carries the full content of its moment, and it carries it in a form a child can take in at a glance and a teacher can teach from with the notes closed, because circumstance often means the notes go unread. That form is the thing being learned, shown and annotated: the worked example with the key move visible, the diagram with its parts labelled, the two cases side by side, the sentence marked up. Short lines attached to the thing they explain are how the explanation lives on the board; a paragraph *about* the thing is the same content in the wrong form. The failure to design out is the text-only Teach slide: even short, well-spaced sentences with bold key words and coloured vocabulary are still only text, and a slide that is only text pulls the teacher into reading the board aloud and explaining as they go, while children sit passive being read to, the lesson runs long, and it starts to feel dull. Reading off the board is the tell that the slide holds prose doing a diagram's job, never proof that it holds too much lesson: re-form the content rather than cutting it. Done right, nothing is lost. The annotated example carries every piece of the explanation; a misconception is addressed by showing the wrong move beside the right one with a short line naming why it fails; the one takeaway sentence children should remember stays as the slide's key line; and a teacher who is shaky on the topic can reconstruct the whole explanation, correctly, from what is on screen, because the labels and the example ARE the explanation. The speaker-notes script still carries the full spoken version for teachers who want it, but the board never relies on the notes having been read. The boundary: when the thing being studied is itself text (a sentence being deconstructed, a word and its parts, a quotation, a journalistic report), text IS the visual, so show it as the object of study, marked and annotated, rather than write sentences describing it.
+
+**The same economy covers every string a child reads.** A success-criteria step is a short action in the child's own words, not a sentence carrying its justification; a question uses the fewest words that keep it precise and answerable. When a step or a question runs long, the surplus is almost always explanation, and explanation lives in the voice, not on the board.
+
+**Simple is not the same as cryptic — a sparse slide still has to be self-explanatory.** Cutting a slide to its essentials means dropping the teacher's elaboration, not the context a child needs to make sense of what's left. A prompt with an unexplained blank ("the water in the ___" — in the *what*?), a criterion in teacher-shorthand ("Change: pick the ONE thing" — change what?), or a reference cut off from what it points at (a "read the question" step on a slide with no question) is "simple" only by word-count; to a nine-year-old it is a puzzle with the clue missing. The repair is rarely more text — it is the *right* text: a blank cued with the *kind* of thing that fills it ("in the ____ (which place?)" names the category, not the word, so the child still supplies the answer — a cue that printed the word itself would stop being a cue and become the answer key), a step phrased the way the child would act on it, the question kept beside the criteria that refer to it. The test to run on a finished slide: read it as a child who missed what the teacher just said — is it still clear what to do and what good looks like? If it isn't, it needs clearer wording or the one piece of missing context, not a fuller paragraph. Clarity and brevity pull the same way here: the best slide is short *and* intelligible on its own.
+
+**The harder half of that same test: a prompt written by someone who already knows the answer.** Missing context is the visible failure; this one is invisible, because the prompt reads perfectly to whoever wrote it and only breaks for the child meeting it cold. It wears four shapes. A question can name the property the answer turns on before the child has found it: "what shape is the land where the forest has gone?" is a clue to an adult who knows about the fishbone pattern, while a child looking at the same photograph sees size and damage and no shape at all. A second question can lean on the first already being solved, so "the line down the middle of each shape" cannot be read until "each shape" means something. A heading can name a bucket where a question would tell the child what to do: "What this photo shows us" labels a column, "What does this photo show us?" asks for the sentence, and a child who lost the thread of the explanation can still act on the second. And a sentence stem can be built from the mechanics of the task instead of the thing being learned, so "I put ___ first because ___" yields a sentence about ranking where "I think ___ clears the most rainforest because ___" yields a sentence about geography, which is the one worth having in a book. So read every prompt back with the answer covered up and ask whether a child could tell what *kind* of thing is being asked for; phrase as a question anything a child responds to; and build a stem out of the words of the question it answers. The limit is the prompt whose difficulty is the point — a "what do you notice?", an odd one out, a deliberate puzzle — where being briefly stuck is the work. Even there the child has to know what they are being asked *for*; they just should not find it easy.
+
+**Show the structure a task points at, not only its name.** When a beat asks children to record into or read off a structure — fill a results table, look down a column, sort into a diagram, complete a labelled model — that structure belongs on the board, not only on the child's sheet. Put the empty frame on the slide where the work happens: it gives every child the shape to reproduce, gives the teacher something to point to and model live, and lets a later instruction that refers back to it land for the whole class. "Look down your conductor column — what is the same about all of them?" reads as a reference with its referent missing when no column is on screen; with the two-column table shown, the teacher runs that discussion off the board and the child who built their table differently still has the shared picture to look at. The cost is one visual the engine can already draw (a `table`, a Venn, a labelled diagram); the gain is that the task and its follow-up stop depending on twenty-eight separate sheets all looking the same. This is the same instinct as keeping success criteria visible while children work: the thing the task refers to has to be where they can see it.
+
+Slides should be quick to read. Some text is fine — especially on Teach slides, where a short explanation or key point anchored on the slide helps children and supports the teacher. What's not acceptable is walls of text the teacher reads aloud: that creates redundancy load and means the teacher is delivering a script rather than teaching.
+
+The test: can a child glance at this slide and immediately see what they need? Can a teacher glance at it and know what to talk about? If either takes work, the slide has too much. A useful anchor: a glance is roughly five seconds — about 30 words of body text in a single zone reads in that time, and 50 words tips a child from glancing into reading. Treat these as diagnostic numbers, not as hard limits — a slide can carry more when the teacher's voice does the heavy lifting and the slide holds one short sentence per phase. The check is the experience: a child glancing up, a teacher glancing across. If body text on a single zone is reaching past 30 words, ask whether the next idea belongs on its own slide, whether the longer description belongs in speaker notes instead, or whether a visual could carry what the text is currently doing.
+
+**One coherent teaching move per slide.** A slide makes one coherent move — it teaches one thing, asks one question, or reveals one answer. When a slide is carrying two distinct teaching points, or enough content that a child has to work through a crowded surface rather than understand the move at a glance, it is really two slides wearing one; split it. Spending an extra slide to keep each one clear is the right trade, not a cost to manage down — each slide carries its complete move without crowding it, so a deck of twenty clear slides teaches better than twelve crowded ones. Slide count follows from the lesson's coherent moves; it is not a budget to keep low.
+
+What counts as *one coherent teaching move*: the question a child is working on, together with the tool, useful explanation and success criteria that serve it, is one move — the fraction wall and the steps are *how* the child meets that one question, not separate things competing for attention. So this principle rules out different teaching points sharing a slide, and rules out walls of text; it does not mean stripping the explanation or scaffold a child needs to work. Keep the useful content around one move, and split when the surface would otherwise become crowded.
+
+When there is text, keep it short: a question, a headline, or a key sentence a child should remember. The extended explanation belongs in the speaker notes, where the teacher's voice lives.
+
+**The slide carries the takeaway, not only the prompt, and the takeaway answers the question the title asked.** When a slide title is a question ("Why does it matter?", "Where did the Mayans live?"), the answer the lesson establishes must appear on the slide somewhere visible: a short key sentence, a labelled outcome, a banner reveal. A title that asks a question with no visible answer leaves the actual learning living in speaker notes; children look up at supporting examples and don't know what they're meant to remember. The teacher's voice elaborates and connects, and the slide carries the sentence.
+
+The half that is easy to miss is *which* sentence. A true statement about the topic is not the same as an answer to the question on the board, and it satisfies the rule in form while leaving the teaching gap wide open. A slide headed "Why are rainforests in hot places?" whose key sentence says where rainforests grow has stated a fact and never given the reason, so the actual explanation (the sun strikes most directly at the Equator) survives only in the notes, and a teacher whose own subject knowledge is thin cannot teach the slide from what is on it. That is the test worth running: read the title and the key sentence back to back, and check the second answers the first. When it doesn't, the sentence to put on the slide is the because, not another fact about the topic. A title that is a plain label rather than a question ("The Amazon rainforest") asks nothing, so it needs the idea children should carry away rather than an answer.
+
+The other half of *which sentence* is what it adds to the picture already on the slide. Words and figure are read together, so text beside a visual has to carry what the visual cannot: a sentence naming what the diagram's own labels already name spends the board twice and teaches nothing. "A tropical rainforest has four layers: the emergent layer, the canopy layer, the understorey layer and the forest floor", set beside a cross section already labelled with those four names, is a whole text panel spent on a caption while the lesson's actual content (what each layer is *like*, and why) stays in the speaker notes. A restatement of the *pattern* fails the same way even when it sounds like an explanation: "the higher the layer, the more sunlight it gets", beside arrows the child can see thinning as they go down, says only what the picture says. So ask of any text sharing a slide with a figure: what does this say that the rest of the slide has not already said? The cause behind the pattern, the misconception to head off, the takeaway to remember, a definition, a number with its unit: all of those pass, and when the answer is nothing, the fix is to replace that text rather than to shorten it.
+
+The slide's closing line is where this costs most, because it is the largest text and the last thing read: a band along the bottom that recaps the captions two inches above it spends the one line children were always going to keep, while the line worth keeping ("if you want to find animals in a rainforest, look up") stays in the notes. A closing line also has to respect the distinctions the slide has just drawn: "the top two layers are bright, windy and rainy", ending a slide that has just shown the emergent taking the full weather and the canopy sheltering beneath it, undoes in one sentence the difference the slide spent its whole width making. So summarise across parts only where they genuinely behave alike, and where they don't, close on what the parts have taught rather than on an average of them. Where the figure itself can hold the words, prefer that: the drawn helpers increasingly take a short note per part (`rainforest-layers` takes a `notes` map, `label-diagram` its labels and leaders), and a few words sitting on the part they explain outteach any paragraph beside it, which also leaves the slide's one prominent line free for the takeaway. The limit: a meaning that genuinely cannot be drawn still earns its sentence, and then it should be the *largest* text on the slide rather than a caption tucked beside the picture.
+
+### Slide Designer presentation rules
+
+**Black is the primary reading colour and blue is the secondary organising colour.** Keep ordinary teacher explanation, statements, takeaways, success-criteria body text and reminder body text black by default. Use house blue for slide titles, short category names, option labels and other small navigational labels.
+
+A single focal thinking question may use house blue when that question is the organising question children should keep returning to on the slide. This is not a rule that every question is blue: routine starter questions, ordinary task questions and supporting prompts stay black unless another established semantic role applies.
+
+A compact set of two or more equal-status peer prompts may alternate house blue and house purple when the colour only helps children keep the prompts visually separate. Start with blue and alternate blue, purple, blue, purple. Do not use this peer pattern for a sequence whose order matters, categories whose colours already carry meaning, or any set where colour could imply correctness, difficulty or answer status.
+
+Existing task-action verbs may use house blue when that treatment reveals the phases of a multi-step pupil task. Use size, position and spacing before colour when prominence alone is the job.
+
+**Green has a fixed teaching role.** Green pupil-facing text is reserved for answers being revealed or marked, vocabulary emphasis, vocabulary slides and success-criteria treatment. A taught vocabulary term or a short bank of taught terms may use vocabulary green inside otherwise black task text when the colour identifies the words as terms rather than as answers. Prepared examples and `visible-in-unit` models are teaching content and stay black, even when they are complete. Do not colour ordinary teaching explanations green for emphasis.
+
+**Use the whole slide, and give the eye somewhere to land.** A slide that fills its canvas and steers the eye teaches better than a sparse, flat one, and two habits carry most of it. First, size text to the room it has: a short key sentence shrunk into a corner with empty space around it reads as a half-finished slide, so let it grow to fill its zone rather than sit small and faint. Second, keep no slide one flat colour — a wall of black reads as something to wade through, and a wall of one tint (a whole body painted blue, say) is the same wall in a different shade. Colour is for *separating* what matters from what supports it: the key phrase or the question stands out, the rest recedes, so a child's eye lands on the important thing first. On an otherwise text-only slide, one relevant emoji per line is the lightest way to lift it. This is taste rather than a formula — the test is whether the slide looks made for a child to glance at, not typed out for them to read.
+
+### Lesson Designer visual-need boundary
+
+**Foundation subject Teach and task-framing slides earn meaningful visual support.** In PSHE, RE, History, Geography and Science, slides that present categories, locations, comparisons, sequences, or the task children are about to investigate should use meaningful visual differentiation when it improves understanding rather than defaulting to plain text columns. The visual treatment may be a labelled diagram, photograph, map, timeline, source, object, shape, icon, emoji or another representation that fits the learning; it does not need to give every individual item its own picture. Text can be the teaching object when the text itself is what children are studying, and a separate picture should not be forced where it adds nothing. The test is which representation teaches the content best. Task-framing slides in particular fail this test often: the question, the success criteria, and any useful visual or teaching object for the real context, with the wider task description living in speaker notes, is enough to set up the task. Children don't need both a paraphrase of the question AND the success criteria on screen — the SC is what tells them what good looks like. What lives in the notes here is the teacher's *framing* — the orientation, the why-it-matters, the longer description of what's ahead. A task the children actually carry out at this beat is a different thing and stays on the slide: when the beat asks them to write a prediction, the prediction prompt and its sentence stem go on screen, because writing it is something the child *does*, not something the teacher says. The line to hold is framing-in-notes, task-on-slide — trimming the framing keeps the slide a glance, and keeping the task visible keeps it doable when the notes go unread.
+
+### Speaker notes hand-off
+
+Speaker notes have a fixed shape: a **script** first, then a short **teacher-info** line only if needed. Speaker notes have the same fixed script-first shape, but the script follows **Written Voice (House Style)**: natural, speakable, direct and clear, with sentence length and vocabulary chosen for the idea rather than a mechanical simplicity rule. Necessary taught subject vocabulary stays. Teacher information remains concise because it is focused, not because every sentence must be short. The teacher-info line that follows is plain English, short and precise, and only carries things the teacher genuinely needs — the specific misconception to watch for, an answer they need to deliver, a reason a step matters that isn't visible from the slide. It does not carry generic classroom routines (cold-calling, circulating, marking, celebrating) — those are obvious. The full voice and worked examples live in the Speaker Notes Voice section of the lesson-designer agent.
+
+---
+
+## Slide Headings (Child-Facing Labels)
+
+Internal structural labels from the lesson design — "Do 1: Cold-call recap", "Teach 3: Emotional boundaries", "Practise: Information paragraph" — are for the lesson-design document. They must not appear on slides as-is. Children see warm, short, child-facing titles.
+
+**My Turn, Our Turn, Your Turn** are familiar classroom labels and are kept as-is on skill-based maths and English slides. Children already know what these mean.
+
+**Do beats** on slides display as short, warm titles that fit the format of the beat — often with a small emoji. Examples:
+
+| Beat format | Slide title |
+|---|---|
+| Cold-call recap | "Quick check" 🎯 |
+| True / False with reasoning | "True or false?" 🤔 |
+| Sort / classification | "Sort it" 📋 |
+| Labelling task | "Label this" ✏️ |
+| One-sentence written | "Write it" ✍️ |
+| Partner-talk-then-write | "Talk then write" 🗣️ |
+
+These are examples, not a fixed list — pick the warmest short title that suits the beat.
+
+**Teach slides** are titled with the specific thing being taught, not the structural label. Not "Teach 2: The oesophagus is the food pipe" — just "The oesophagus is the food pipe" (or warmer: "The food pipe"). The structural label belongs in the lesson design; the child-facing title belongs on the slide.
+
+**Practise** on slides can be titled "Your Practice", "Let's practise", or similar warm label. **Apply** slides can be titled "Put it all together" or similar. Again, not the word "Apply" as a bare label.
+
+**When directing children's attention to a live physical demonstration genuinely helps, use a performative title.** A performative title ("Watch me — taking a reading", "Let me show you how to mix", "Watch me set this up") can tell everyone that the teacher is the centre of attention right now, not the slide. Use it when the teacher's hands, real equipment or movement are the focus and the cue helps children follow the action. Do not require it for every physical demonstration or modelled example. The screen may still carry the useful support selected in the lesson design.
+
+---
+
+## Worksheets
+
+A normal worksheet contains separate fresh work from the slide practice. It is not a missing part of the slide lesson. The teacher decides whether and how to use it, including using it as the main independent work.
+
+When the lesson's main independent task genuinely needs a printed working surface, and it is not a stick-in-sheet case, that required task resource uses the worksheet output. It may be all or part of the worksheet, as the designer judges appropriate. Do not generate a second separate worksheet on top of it. Routine Your Turn work does not qualify for this exception.
+
+**Every lesson has a worksheet unless the teacher has already supplied the base worksheet. Producing the worksheet and deciding how it is used are separate decisions.** For a normal worksheet, the teacher decides whether and how to use it, including whether it becomes the main independent work. A required task-resource worksheet is different because the main independent task genuinely depends on that printed working surface. When the teacher supplies the base worksheet, do not generate another unrelated base worksheet; that supplied status does not by itself rule out Below or Greater Depth adaptation.
+
+**Every per-child sheet is normally exactly one printable page.** This is a classroom-handling invariant, not a soft target. A normal private pack identifies Below, Expected and Greater Depth provision, but it does not require three physically different sheets. When the adaptation designer deliberately decides that Below or Greater Depth should use the Expected sheet unchanged, that is a complete adaptation decision and must not make the lesson fail or create an artificial duplicate.
+
+A per-child sheet may use exactly two printable pages only when the central learning task requires a substantial write-on visual that pupils must directly plot on, measure, draw on, label or annotate and that visual cannot remain usable on one page. The second page is not available for ordinary overflow, additional questions, prose or extra practice. In every other case, never solve overflow by adding a page, making the central visual unusably small, or silently deleting questions. Redesign the composition and the quantity together upstream. A coordinate lesson might put several prompts around one shared grid; a geography lesson might make one evidence panel do work for several questions. The finished page must still have readable type, usable writing or plotting space, and a compact child-facing title. Do not add name/date boxes unless the teacher asks.
+
+**Why the normal worksheet is not the missing half of the slide lesson.** The slides must contain enough teaching, tasks and work opportunities for the full lesson to be teachable without depending on the normal worksheet. The teacher chooses the recording medium and may still make the worksheet the main independent work. The required-task-resource exception is different because that printed working surface is itself part of the main task.
+
+**Your Turn and the normal worksheet are distinct.** Your Turn belongs to the slide lesson. The normal worksheet uses different fresh questions, contexts or intellectual work rather than repeating the slide practice. The teacher decides when and how to use that worksheet.
+
+**Fresh means intellectually fresh, not cosmetically changed.** For straightforward procedural fluency, new values or numbers can be genuinely fresh when executing the calculation or procedure is itself the target performance. Changing names, numbers or nouns is insufficient when the actual demand is reasoning, inference, explanation or another decision and the child can replay the board's exact answer path. The worksheet may assess the same knowledge and method, but it must present unseen values, evidence, combinations, decisions or claims suited to the target thinking. A familiar representation is welcome; a pre-solved board example wearing new labels is not.
+
+**A worksheet should look like a purposeful children's activity, not a test paper.** Use one coherent visual or working surface, clear section blocks, small banks/cards/tables where they reduce reading load, and enough variation in response type to make the thinking visible. Colour is for navigation and support, not decoration. A title followed by a long numbered list and answer lines is a warning sign even when the prose is colour-coded. The page should be inviting and calm, but never quick to complete without close reading.
+
+**Blank page area must belong to the pupil.** Writing lines, a labelled drawing
+box, a plotting grid, annotation space or a recording table may be spacious
+because that space is the work. An empty band after the last task is not
+breathing room. Keep a compact title, one quiet accent and restrained square
+rules; repeated pastel cards, thick colour strips and decorative containers
+make the sheet look templated and spend room that should carry learning.
+
+**The typeface is not yours to change.** The worksheet is set in the same font
+as the slides and the stick-in sheets, because a child meets
+one set of letterforms across the whole lesson and they are the letterforms
+primary handwriting is taught in. If a page is too full, close its spacing or
+recompose it; never buy room by shrinking or swapping the font. Changing it is
+a whole-pipeline decision made with the teacher, not a fix applied to a sheet
+that won't fit.
+
+**When a Your Turn needs a write-on figure a child cannot redraw by hand** - a grid of pre-plotted points to draw the sides between, a reflection lattice, an angle to mark, a Venn to sort into - that need is met inside the core lesson, by the child's own book or by a *stick-in piece* glued in beside their working (the Stick-in Sheets pack the stick-in-sheets-designer specs), and never by turning the worksheet into the Your Turn medium. The stick-in carries the class's Your Turn, so every child completes it whether or not any worksheet is printed; the worksheet stays what it always is, separate independent practice on fresh problems. Slow, costly printing pushes the same way, not the opposite: it is a reason the worksheet is optional *to print*, since the book and its stick-in already carry the lesson, and it is not a reason to collapse the Your Turn into the worksheet. Merging the two makes the optional sheet load-bearing for the core lesson (so a teacher who skips worksheets loses the Your Turn), and because the merged sheet then has to reuse the board's figures, it quietly turns the extra practice into a replay of what the class just did together instead of the fresh problems independent practice is for.
+
+**Your Turn is genuine pupil practice and may be enough to complete a procedural skill lesson.** Do not automatically add a separate independent-practice phase after it. Where a deeper application, different task or further practice would genuinely improve the lesson, the lesson designer may include it. Every lesson still has its worksheet as a separate fresh resource, and the teacher decides whether and how to use it, including as independent work. This is separate from a required task resource, where the main task genuinely needs a printed working surface.
+
+**A worksheet is one of two kinds, and which one it is decides its whole shape.** Most worksheets are a *private practice artefact*: a child completes it alone to consolidate a skill and to evidence their own thinking, so it is differentiated into the three sheets (below, expected, greater depth), made self-contained, and carries the framing a child needs when no teacher is talking them through it. Some lessons instead centre on a *shared working tool*: a frame the class or a group fills together to carry out a task the teacher has modelled, such as a group performance planner, a shared investigation plan, or a collaborative design grid. The tool's job is to get the task done, not to evidence one child's independent work, and three things follow from that:
+
+- **One version for everyone.** A group fills a single shared copy, so a differentiated set of three would hand the group three versions of the one thing they share. Build it as a single sheet the whole class uses. The children who need more or less are supported through the role they take and the standard the teacher holds them to as they work, which is a teaching decision made in the moment rather than a separate printed sheet.
+- **Only the modelled frame goes on it.** The child fills the same shape they watched the teacher fill. Whatever is already on the slides while they work, most often the success-criteria panel, is on the board for them to consult, so reprinting it on the sheet duplicates what they can already see and spends the space the frame needs.
+- **The frame is the page's protected content.** It is the worksheet's whole reason to exist, so when the page is tight it is the last thing to shrink and is never the thing cut to keep a secondary box (a checklist, a reflection prompt). Trimming the central frame to protect the furniture inverts what the sheet is for.
+
+The test for which kind you face: does each child work on their own copy to show what they learned, or does a group, or the class, fill one shared frame together to get a task done? The first is a practice artefact and differentiates as usual; the second is a working tool and is one clean sheet. (The lesson-designer's Worksheet section names which kind a lesson's worksheet is; the worksheet-designer's fill-in-frame guidance renders it.)
+
+**Practice can have the child produce the work, not only receive it.** The strongest independent practice often asks the child to generate and construct rather than only complete: to supply their own material (their own sentence to improve, their own choice of what to test, in maths their own numbers), to draw the representation rather than fill a pre-drawn one, to notice a pattern across a sequence, or to choose and justify a method. It is usually the same skill made more demanding and more of a game, and because the child made the material, it is harder to coast through and clearer evidence of thinking. These generative and constructive shapes land naturally in independent practice. Reach for them by default on repeatable practice, falling back to a set list of questions only when generating would change the skill or there is no natural generator. The operational moves for briefing them live in the lesson-designer Worksheet section, and the maths-specific set in `subject-maths.md`.
+
+The judgement above governs what an optional worksheet is for and why it is normally not load-bearing, including the required central-task-resource exception, and it is the only place that judgement lives. How one is generated lives in the Worksheet section of the lesson-designer agent: the two cases (Teacher provides / Generated), how question quantity is judged, the page-and-picture sizing rules, the generative moves, the question-labelling rule, the frame-as-worksheet case, and the duplicate-check between PPT and worksheet.
+
+---
+
+## Pride Lessons (Quality Anchor)
+
+Two lessons the teacher has taught and been proud of, as reference points for what "right" feels like:
+
+**Maths — rounding decimals (Y4/Y5):** Starter recapped prior rounding skill. My Turn slide had one question ("Round 5.6 to the nearest whole"), a blank number line below, success criteria below that — and speaker notes carried a ready-to-read teaching script plus things to watch for in Our Turn. Our Turn used the same format with a different question. Your Turn showed 3 questions, same style ("Use the numberline to help you"), then moved to problem solving. The slides were minimal: the question, the tool, the SC. The teacher's voice filled the rest.
+
+**Science — vertebrates classification (Y3/Y4):** Starter was an open-ended question with animal pictures ("How would you group these animals?"). Vocabulary had visuals next to definitions (e.g. "vertebrate" with a spine image). The success criteria was a classification table — nothing else on the slide; the teacher spoke through it. Practise had a working space for children to write their reasoning. Sparse slides, teacher voice adding everything else.
+
+Both lessons pass the test: a teacher reading them feels confident delivering, and a child looking at the slide sees exactly what they need to do.

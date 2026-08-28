@@ -1,0 +1,109 @@
+{
+  "lessonName": "Teach Family Test",
+  "yearGroup": "Year 4",
+  "subject": "Science",
+  "lo": "I can test the teach family and split-h-60-40 templates.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test the teach family and split-h-60-40 templates."
+    },
+    {
+      "template": "teach-compare",
+      "title": "Teach",
+      "instruction": "Mayan pyramids vs Egyptian pyramids",
+      "leftHeading": "Mayan",
+      "rightHeading": "Egyptian",
+      "leftContent": {
+        "type": "text",
+        "value": "Stepped \u2014 big flat levels going up to a temple at the top."
+      },
+      "rightContent": {
+        "type": "text",
+        "value": "Smooth-sided \u2014 straight triangular faces meeting at a single point."
+      },
+      "speakerNotes": "Pedagogical core of the slide \u2014 the comparison makes the Mayan style distinctive. Blue left / orange right so children track which is which."
+    },
+    {
+      "template": "teach-compare-with-row",
+      "title": "Teach",
+      "instruction": "Pyramids compared + supporting Mayan artefacts",
+      "leftHeading": "Mayan",
+      "rightHeading": "Egyptian",
+      "leftContent": {
+        "type": "text",
+        "value": "Stepped stone pyramids with flat platforms."
+      },
+      "rightContent": {
+        "type": "text",
+        "value": "Smooth triangular pyramids that come to a point."
+      },
+      "supports": {
+        "type": "row",
+        "items": [
+          { "type": "image", "imagePath": "unsplash/mayan-glyph.jpg",   "caption": "A Mayan glyph" },
+          { "type": "image", "imagePath": "unsplash/mayan-calendar.jpg", "caption": "A Mayan calendar fragment" }
+        ]
+      },
+      "speakerNotes": "Two pyramid cards on top, supporting Mayan artefacts on a row below."
+    },
+    {
+      "template": "teach-steps",
+      "title": "Teach",
+      "instruction": "The scientific method",
+      "steps": [
+        "Ask a question about something you observe.",
+        "Write a prediction (a hypothesis).",
+        "Plan and carry out a fair test.",
+        "Collect and record the results.",
+        "Draw a conclusion based on the evidence."
+      ],
+      "speakerNotes": "Procedure slide \u2014 the five steps of a scientific investigation."
+    },
+    {
+      "template": "teach-sequence",
+      "title": "Teach",
+      "instruction": "The journey of food through the digestive system",
+      "stages": [
+        "Mouth",
+        "Oesophagus",
+        "Stomach",
+        "Small intestine",
+        "Large intestine"
+      ],
+      "speakerNotes": "Five stages of digestion, arranged horizontally with blue arrows between them."
+    },
+    {
+      "template": "teach-annotated",
+      "title": "Teach",
+      "instruction": "Label the parts of a sentence",
+      "centralContent": {
+        "type": "text",
+        "value": "Every morning, the workers pick the cotton."
+      },
+      "annotations": [
+        "Fronted adverbial",
+        "Comma after adverbial",
+        "Subject",
+        "Main verb"
+      ],
+      "speakerNotes": "Central sentence with four coloured callout boxes at the corners naming each part."
+    },
+    {
+      "template": "split-h-60-40",
+      "primarySide": "left",
+      "title": "Teach",
+      "instruction": "Hero image left, key sentence right",
+      "primary": {
+        "type": "image",
+        "imagePath": "unsplash/tikal-hero.jpg",
+        "caption": "The Mayan city of Tikal"
+      },
+      "secondary": {
+        "type": "text",
+        "value": "The Mayans built one of the biggest civilisations in the Americas."
+      },
+      "speakerNotes": "60/40 split \u2014 hero image on the left, key sentence right. Missing image renders grey placeholder."
+    }
+  ]
+}

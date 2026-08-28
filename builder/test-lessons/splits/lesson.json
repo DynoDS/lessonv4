@@ -1,0 +1,94 @@
+{
+  "lessonName": "Splits Test",
+  "yearGroup": "Year 4",
+  "subject": "Test",
+  "lo": "I can test all 12 split templates.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test all 12 split templates."
+    },
+    {
+      "template": "split-h-50-50",
+      "title": "split-h-50-50 (symmetric)",
+      "left":  { "type": "text", "value": "Left half" },
+      "right": { "type": "text", "value": "Right half" }
+    },
+    {
+      "template": "split-h-60-40",
+      "primarySide": "left",
+      "title": "split-h-60-40 (primary left)",
+      "primary":   { "type": "text", "value": "60% primary (E-wide)" },
+      "secondary": { "type": "text", "value": "40% secondary (E-narrow)" }
+    },
+    {
+      "template": "split-h-70-30",
+      "primarySide": "right",
+      "title": "split-h-70-30 (primary right)",
+      "primary":   { "type": "text", "value": "70% primary (right side)" },
+      "secondary": { "type": "text", "value": "30% secondary (left side)" }
+    },
+    {
+      "template": "split-h-75-25",
+      "primarySide": "left",
+      "title": "split-h-75-25 (primary left)",
+      "primary":   { "type": "bullets", "items": ["Primary E-wide 75%", "Holds bullets", "Plenty of width"] },
+      "secondary": { "type": "text", "value": "25% G callout" }
+    },
+    {
+      "template": "split-h-80-20",
+      "primarySide": "left",
+      "title": "split-h-80-20 (primary left)",
+      "primary":   { "type": "text", "value": "80% primary (class A)" },
+      "secondary": { "type": "text", "value": "20% E-narrow sidebar" }
+    },
+    {
+      "template": "split-h-90-10",
+      "primarySide": "left",
+      "title": "split-h-90-10 (primary left)",
+      "primary":   { "type": "text", "value": "90% primary (class A)" },
+      "secondary": { "type": "text", "value": "10% F bar" }
+    },
+    {
+      "template": "split-v-50-50",
+      "title": "split-v-50-50 (symmetric)",
+      "top":    { "type": "text", "value": "Top half" },
+      "bottom": { "type": "text", "value": "Bottom half" }
+    },
+    {
+      "template": "split-v-60-40",
+      "primarySide": "top",
+      "title": "split-v-60-40 (primary top)",
+      "primary":   { "type": "text", "value": "60% primary on top (E-wide)" },
+      "secondary": { "type": "text", "value": "40% secondary below (E-narrow)" }
+    },
+    {
+      "template": "split-v-70-30",
+      "primarySide": "bottom",
+      "title": "split-v-70-30 (primary bottom)",
+      "primary":   { "type": "text", "value": "70% primary on bottom" },
+      "secondary": { "type": "text", "value": "30% secondary on top" }
+    },
+    {
+      "template": "split-v-75-25",
+      "primarySide": "top",
+      "title": "split-v-75-25 (primary top)",
+      "primary":   { "type": "text", "value": "75% primary top (E-wide)" },
+      "secondary": { "type": "text", "value": "25% B banner below" }
+    },
+    {
+      "template": "split-v-80-20",
+      "primarySide": "top",
+      "title": "split-v-80-20 (primary top)",
+      "primary":   { "type": "text", "value": "80% primary top (class A)" },
+      "secondary": { "type": "text", "value": "20% B banner below" }
+    },
+    {
+      "template": "split-v-90-10",
+      "primarySide": "top",
+      "title": "split-v-90-10 (primary top)",
+      "primary":   { "type": "text", "value": "90% primary top (class A)" },
+      "secondary": { "type": "text", "value": "10% F bar below" }
+    }
+  ]
+}

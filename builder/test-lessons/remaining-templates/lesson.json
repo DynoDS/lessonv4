@@ -1,0 +1,101 @@
+{
+  "lessonName": "Remaining Templates Test",
+  "yearGroup": "Year 4",
+  "subject": "Test",
+  "lo": "I can test all remaining templates.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test all remaining templates."
+    },
+    {
+      "template": "grid-6",
+      "title": "grid-6 (3\u00d72 cells)",
+      "cells": [
+        { "type": "text", "value": "Cell 1" },
+        { "type": "text", "value": "Cell 2" },
+        { "type": "text", "value": "Cell 3" },
+        { "type": "text", "value": "Cell 4" },
+        { "type": "text", "value": "Cell 5" },
+        { "type": "text", "value": "Cell 6" }
+      ]
+    },
+    {
+      "template": "banner-grid-6",
+      "title": "banner-grid-6 (banner + 3\u00d72)",
+      "banner": { "type": "text", "value": "Banner across the top (B)" },
+      "cells": [
+        { "type": "text", "value": "A" },
+        { "type": "text", "value": "B" },
+        { "type": "text", "value": "C" },
+        { "type": "text", "value": "D" },
+        { "type": "text", "value": "E" },
+        { "type": "text", "value": "F" }
+      ]
+    },
+    {
+      "template": "central-callouts-4",
+      "title": "central-callouts-4",
+      "centre": { "type": "text", "value": "Central statement (E-wide)" },
+      "callouts": [
+        { "type": "text", "value": "Top-left callout" },
+        { "type": "text", "value": "Top-right callout" },
+        { "type": "text", "value": "Bottom-left callout" },
+        { "type": "text", "value": "Bottom-right callout" }
+      ]
+    },
+    {
+      "template": "task-scaffold",
+      "title": "task-scaffold",
+      "task": { "type": "text", "value": "Main task area (class A, 65% of body)" },
+      "scaffoldLeft":  { "type": "text", "value": "Vocabulary scaffold" },
+      "scaffoldRight": { "type": "text", "value": "Sentence stems" }
+    },
+    {
+      "template": "body-sidebar",
+      "title": "body-sidebar",
+      "banner":  { "type": "text", "value": "Banner (B) \u2014 short strip on left" },
+      "body":    { "type": "text", "value": "Body (E-wide) \u2014 main content area on the left" },
+      "sidebar": { "type": "text", "value": "Sidebar (E-narrow) \u2014 full-height reference on the right" }
+    },
+    {
+      "template": "flanked-split",
+      "title": "flanked-split",
+      "left":         { "type": "text", "value": "Left column (E-narrow)" },
+      "middleTop":    { "type": "text", "value": "Middle top (G)" },
+      "middleBottom": { "type": "text", "value": "Middle bottom (G)" },
+      "right":        { "type": "text", "value": "Right column (E-narrow)" }
+    },
+    {
+      "template": "cards-and-bars",
+      "title": "cards-and-bars",
+      "cards": [
+        { "type": "text", "value": "Card 1 (C)" },
+        { "type": "text", "value": "Card 2 (C)" },
+        { "type": "text", "value": "Card 3 (C)" }
+      ],
+      "bars": [
+        { "type": "text", "value": "Bar 1 (F)" },
+        { "type": "text", "value": "Bar 2 (F)" },
+        { "type": "text", "value": "Bar 3 (F)" }
+      ]
+    },
+    {
+      "template": "grid-calc",
+      "title": "Independent Tasks",
+      "instruction": "Work these out in your book",
+      "calculations": [
+        "24 \u00d7 3",   "35 \u00d7 7",   "48 \u00d7 9",   "63 \u00d7 8",
+        "126 \u00f7 3", "252 \u00f7 4", "432 \u00f7 8", "504 \u00f7 7",
+        "15 \u00d7 12", "18 \u00d7 14", "21 \u00d7 16", "35 \u00d7 24"
+      ]
+    },
+    {
+      "template": "number-sets",
+      "title": "Order from smallest to largest",
+      "instruction": "Write them in order in your book",
+      "numbers": ["3.45", "0.8", "3.09", "0.45", "3.4", "0.51"],
+      "prompt": "Tip: compare digit by digit from the left."
+    }
+  ]
+}

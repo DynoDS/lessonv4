@@ -1,0 +1,10 @@
+{
+  "name": "lesson-v4",
+  "version": "4.0.0",
+  "description": "Lesson design and resource creation tools for UK primary schools.",
+  "author": {
+    "name": "DynoDS",
+    "url": "https://github.com/DynoDS"
+  },
+  "repository": "https://github.com/DynoDS/lessonv4"
+}

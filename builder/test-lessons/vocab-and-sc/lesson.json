@@ -1,0 +1,174 @@
+{
+  "lessonName": "Vocab and SC Templates Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can test the key-vocabulary and success-criteria templates.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test the key-vocabulary and success-criteria templates."
+    },
+    {
+      "template": "key-vocabulary",
+      "instruction": "Three words with emoji visuals",
+      "words": [
+        {
+          "word": "equivalent",
+          "definition": "worth the same amount",
+          "visual": {
+            "type": "text",
+            "value": "⚖️"
+          }
+        },
+        {
+          "word": "numerator",
+          "definition": "the top number — the parts you have",
+          "visual": {
+            "type": "text",
+            "value": "⬆️"
+          }
+        },
+        {
+          "word": "denominator",
+          "definition": "the bottom number — how many equal parts the whole is split into",
+          "visual": {
+            "type": "text",
+            "value": "⬇️"
+          }
+        }
+      ],
+      "speakerNotes": "Key-vocabulary template — three cards with pale green fill, green bold word, black definition, white visual panel with emoji."
+    },
+    {
+      "template": "key-vocabulary",
+      "instruction": "Four compact place-value diagrams",
+      "words": [
+        {
+          "word": "digit",
+          "definition": "one symbol used to write a number",
+          "visual": {
+            "type": "place-value-mini",
+            "mode": "digit-value",
+            "digit": 6,
+            "value": 600
+          }
+        },
+        {
+          "word": "hundreds column",
+          "definition": "the place that tells us how many hundreds",
+          "visual": {
+            "type": "place-value-mini",
+            "mode": "column",
+            "column": "H"
+          }
+        },
+        {
+          "word": "exchange",
+          "definition": "regroup ten of one place as one of the next place",
+          "visual": {
+            "type": "place-value-mini",
+            "mode": "exchange"
+          }
+        },
+        {
+          "word": "placeholder",
+          "definition": "a zero that keeps every other digit in the correct place",
+          "visual": {
+            "type": "place-value-mini",
+            "mode": "placeholder",
+            "number": "4050"
+          }
+        }
+      ],
+      "speakerNotes": "Place-value vocabulary card smoke test — all four mini-diagram modes render as vectors inside the fixed card panel."
+    },
+    {
+      "template": "key-vocabulary",
+      "instruction": "Four words, no visuals on two of them",
+      "words": [
+        {
+          "word": "digestion",
+          "definition": "the way the body breaks down food so it can use the goodness inside",
+          "visual": {
+            "type": "text",
+            "value": "🥗"
+          }
+        },
+        {
+          "word": "oesophagus",
+          "definition": "the tube that carries food from your mouth down to your stomach"
+        },
+        {
+          "word": "stomach",
+          "definition": "a stretchy bag that churns food and mixes it with acid",
+          "visual": {
+            "type": "text",
+            "value": "💥"
+          }
+        },
+        {
+          "word": "small intestine",
+          "definition": "a long, thin tube where most of the goodness from food is taken into the body"
+        }
+      ],
+      "speakerNotes": "Mixed-visual card — two with emoji, two text-only. Text-only cards use the full card width with no visual panel."
+    },
+    {
+      "template": "success-criteria",
+      "title": "✓ Success Criteria",
+      "instruction": "Full-slide steps reference",
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          "Write the fraction you're starting with.",
+          "Choose a number to multiply by (start with 2).",
+          "Multiply the numerator by that number.",
+          "Multiply the denominator by the same number.",
+          "Check with the fraction wall — both fractions should cover the same amount."
+        ]
+      },
+      "speakerNotes": "Success-criteria template — title header, full-body steps reference."
+    },
+    {
+      "template": "success-criteria",
+      "title": "Journey of Food",
+      "instruction": "Full-slide classification table",
+      "criteria": {
+        "type": "table",
+        "headers": [
+          "Organ",
+          "Job",
+          "Time"
+        ],
+        "rows": [
+          [
+            "Mouth",
+            "Breaks up with teeth + saliva",
+            "30 seconds"
+          ],
+          [
+            "Oesophagus",
+            "Squeezes food down",
+            "5 seconds"
+          ],
+          [
+            "Stomach",
+            "Churns + adds acid",
+            "2–4 hours"
+          ],
+          [
+            "Small intestine",
+            "Takes goodness into body",
+            "3–5 hours"
+          ],
+          [
+            "Large intestine",
+            "Soaks up water",
+            "12–48 hours"
+          ]
+        ]
+      },
+      "speakerNotes": "Success-criteria template with a full-slide reference table — five organs, three columns."
+    }
+  ]
+}

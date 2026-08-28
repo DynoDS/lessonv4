@@ -1,0 +1,82 @@
+{
+  "topic": "Adding Fractions",
+  "yearGroup": "Year 4",
+  "lessonSlug": "adding-fractions-full-set",
+  "rationaleNote": "Full demo: every card type, mixed page sizes, no photos.",
+  "cards": [
+    {
+      "type": "workedExample",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Adding fractions",
+      "items": [
+        {
+          "label": "Step 1",
+          "text": "Check the denominators (bottom numbers) match."
+        },
+        {
+          "label": "Step 2",
+          "text": "Add only the numerators. Keep the denominator."
+        },
+        {
+          "label": "Worked example",
+          "text": "2/5 + 1/5 = 3/5"
+        }
+      ],
+      "photo": null
+    },
+    {
+      "type": "stickyKnowledge",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Remember",
+      "items": [
+        {
+          "text": "When the bottom numbers match, just add the top numbers."
+        }
+      ],
+      "photo": null
+    },
+    {
+      "type": "sentenceStem",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "How to explain it",
+      "items": [
+        {
+          "text": "I added the numerators because ___"
+        },
+        {
+          "text": "The denominator stays the same because ___"
+        }
+      ],
+      "photo": null
+    },
+    {
+      "type": "misconception",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Look out for",
+      "items": [
+        {
+          "label": "Don't",
+          "text": "2/5 + 1/5 = 3/10"
+        },
+        {
+          "label": "Do",
+          "text": "2/5 + 1/5 = 3/5  — denominator stays the same"
+        }
+      ],
+      "photo": null
+    }
+  ],
+  "fixtureSweep": true
+}

@@ -1,0 +1,79 @@
+{
+  "lessonName": "Symmetry Lines Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can draw the lines of symmetry of a 2D shape.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Polygons with their lines of symmetry (answer reveal, green)",
+      "instruction": "square 4, pentagon 5, hexagon 6, parallelogram 0",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "square" } ],        "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Square: 4" },
+          { "type": "polygon", "shapes": [ { "name": "pentagon" } ],      "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Pentagon: 5" },
+          { "type": "polygon", "shapes": [ { "name": "hexagon" } ],       "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Hexagon: 6" },
+          { "type": "polygon", "shapes": [ { "name": "parallelogram" } ], "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Parallelogram: 0" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "More polygons: rectangle 2, rhombus 2, triangle 3, right-triangle 0",
+      "instruction": "answer reveal green",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "rectangle" } ],      "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Rectangle: 2" },
+          { "type": "polygon", "shapes": [ { "name": "rhombus" } ],        "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Rhombus: 2" },
+          { "type": "polygon", "shapes": [ { "name": "triangle" } ],       "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Triangle: 3" },
+          { "type": "polygon", "shapes": [ { "name": "right-triangle" } ], "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Right triangle: 0" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Classified triangles with axes (answer reveal, green)",
+      "instruction": "equilateral 3, isosceles 1, scalene 0",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "triangle", "kind": "equilateral", "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Equilateral: 3" },
+          { "type": "triangle", "kind": "isosceles",   "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Isosceles: 1" },
+          { "type": "triangle", "kind": "scalene",     "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Scalene: 0" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Geoboard kite with one explicit vertical line of symmetry (green)",
+      "instruction": "explicit segment in peg coordinates",
+      "body": {
+        "type": "geoboard",
+        "cols": 4, "rows": 4,
+        "shape": [ [2, 0], [3, 2], [2, 4], [1, 2] ],
+        "symmetryLines": [ [[2, 0], [2, 4]] ],
+        "symmetryLinesAnswer": true,
+        "label": "Kite: 1 line"
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Question colour check (neutral dark, not green)",
+      "instruction": "same shapes, no answer flag",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "hexagon" } ], "symmetryLines": true, "label": "Hexagon (question)" },
+          { "type": "triangle", "kind": "equilateral",             "symmetryLines": true, "label": "Equilateral (question)" }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "lessonName": "Flipchart Pencil Test",
+  "lo": "Test the draw-this flipchart pencil cue",
+  "slides": [
+    {
+      "template": "maths-turn-sc",
+      "title": "My Turn",
+      "instruction": "Narrow SC panel WITH pencil",
+      "questions": ["Classify this angle."],
+      "flipchart": true,
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          "Look at the opening.",
+          "Smaller than a corner = acute.",
+          "Square corner = right angle.",
+          "Bigger than a corner = obtuse."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "My Turn",
+      "instruction": "Narrow SC panel WITHOUT pencil (control)",
+      "questions": ["Classify this angle."],
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          "Look at the opening.",
+          "Smaller than a corner = acute.",
+          "Square corner = right angle.",
+          "Bigger than a corner = obtuse."
+        ]
+      }
+    },
+    {
+      "template": "success-criteria",
+      "title": "Today's Success Criteria",
+      "criteria": {
+        "type": "sc-panel",
+        "flipchart": true,
+        "content": {
+          "type": "steps",
+          "steps": [
+            "acute - smaller than a right angle",
+            "right angle - a square corner",
+            "obtuse - bigger than a right angle, but not flat"
+          ]
+        }
+      }
+    }
+  ]
+}

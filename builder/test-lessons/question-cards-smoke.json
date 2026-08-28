@@ -1,0 +1,71 @@
+{
+  "lessonName": "Question Cards Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can recall multiplication facts.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Five short questions — full body (the starter case)",
+      "instruction": "the case the helper exists for",
+      "body": { "type": "question-cards",
+        "questions": ["6 × 7", "9 × 4", "8 × 8", "7 × 3", "5 × 6"] }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "The same five, answers revealed",
+      "instruction": "|| reveal inside a card",
+      "body": { "type": "question-cards",
+        "questions": ["6 × 7 = ||42", "9 × 4 = ||36", "8 × 8 = ||64", "7 × 3 = ||21", "5 × 6 = ||30"] }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Three short worded questions",
+      "instruction": "a few words each — still cards",
+      "body": { "type": "question-cards",
+        "questions": ["Half of 24?", "Double 18?", "What is 100 less than 3,462?"] }
+    },
+    {
+      "template": "split-h-50-50",
+      "headerStyle": "title",
+      "title": "Half column (class C) beside a list of the same questions",
+      "instruction": "cards left, numbered-questions right — the two ways side by side",
+      "left":  { "type": "question-cards",
+        "questions": ["6 × 7", "9 × 4", "8 × 8", "7 × 3"] },
+      "right": { "type": "numbered-questions",
+        "questions": ["6 × 7", "9 × 4", "8 × 8", "7 × 3"] }
+    },
+    {
+      "template": "thirds-h",
+      "headerStyle": "title",
+      "title": "Third column (class D) — the narrowest zone the helper claims",
+      "instruction": "one card per row here",
+      "left":   { "type": "question-cards", "questions": ["12 × 3", "6 × 9"] },
+      "middle": { "type": "question-cards", "questions": ["Half of 46?", "Double 35?"] },
+      "right":  { "type": "question-cards", "questions": ["4 × 8", "7 × 7", "3 × 9"] }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Two questions only",
+      "instruction": "small set — cards should grow, not stretch to fill the zone",
+      "body": { "type": "question-cards",
+        "questions": ["9 × 6", "48 ÷ 8"] }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Boundary check — long worded questions (belongs in a list)",
+      "instruction": "deliberately the WRONG use, to see what it costs",
+      "body": { "type": "question-cards",
+        "questions": [
+          "A shop sells pencils in packs of 6. How many pencils are in 7 packs?",
+          "Find half of 48 and explain how you know your answer is right.",
+          "There are 24 children in a class and 3 tables. How many sit at each table?"
+        ] }
+    }
+  ]
+}

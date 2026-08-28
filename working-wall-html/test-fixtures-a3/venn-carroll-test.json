@@ -1,0 +1,135 @@
+{
+  "topic": "Sort and compare shapes — Venn and Carroll",
+  "yearGroup": "Year 4",
+  "lessonSlug": "sort-shapes-venn-carroll",
+  "rationaleNote": "Test fixture: confirms venn / carroll / geoboard primitives render on the working wall.",
+  "note": "Content shortened from the source fixture so it fits A3; the source overflows the builder's own validation even at A4.",
+  "cards": [
+    {
+      "type": "workedExample",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Sort onto a Venn",
+      "items": [
+        {
+          "label": "Step 1",
+          "text": "Read the labels."
+        },
+        {
+          "label": "Step 2",
+          "text": "Test the shape."
+        },
+        {
+          "label": "Step 3",
+          "text": "Fits both? Overlap."
+        }
+      ],
+      "visual": {
+        "type": "venn",
+        "label1": "has a right angle",
+        "label2": "has 4 equal sides",
+        "shapes": [
+          {
+            "region": "overlap",
+            "label": "Square"
+          },
+          {
+            "region": "leftOnly",
+            "label": "Right triangle"
+          },
+          {
+            "region": "rightOnly",
+            "label": "Rhombus"
+          }
+        ]
+      },
+      "visualScale": "dominant",
+      "photo": null
+    },
+    {
+      "type": "workedExample",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Sort onto a Carroll",
+      "items": [
+        {
+          "label": "Step 1",
+          "text": "Read the side label."
+        },
+        {
+          "label": "Step 2",
+          "text": "Read the top label."
+        },
+        {
+          "label": "Step 3",
+          "text": "Find the matching box."
+        }
+      ],
+      "visual": {
+        "type": "carroll",
+        "rowLabel": "is a quadrilateral",
+        "rowNotLabel": "is NOT a quadrilateral",
+        "colLabel": "has a right angle",
+        "colNotLabel": "has NO right angle",
+        "shapes": [
+          {
+            "cell": "topLeft",
+            "label": "Square"
+          },
+          {
+            "cell": "topRight",
+            "label": "Rhombus"
+          },
+          {
+            "cell": "bottomLeft",
+            "label": "Right triangle"
+          }
+        ]
+      },
+      "visualScale": "dominant",
+      "photo": null
+    },
+    {
+      "type": "stickyKnowledge",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Turn it — still a square",
+      "items": [
+        {
+          "text": "A square turned 45° is still a square, not a diamond."
+        }
+      ],
+      "visual": {
+        "type": "geoboard",
+        "cols": 4,
+        "rows": 4,
+        "shape": [
+          [
+            2,
+            0
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            0,
+            2
+          ]
+        ]
+      },
+      "photo": null
+    }
+  ],
+  "fixtureSweep": true
+}

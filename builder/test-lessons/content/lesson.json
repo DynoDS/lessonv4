@@ -1,0 +1,97 @@
+{
+  "lessonName": "Content Objects Test",
+  "yearGroup": "Year 4",
+  "subject": "Test",
+  "lo": "I can test every content object in a body-full zone.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test every content object in a body-full zone.",
+      "instruction": "Copy the date and LO into your book.",
+      "speakerNotes": "Cover slide for the content-objects test deck."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Text",
+      "instruction": "A single block of prose",
+      "body": {
+        "type": "text",
+        "value": "The body-full zone renders a single paragraph of prose. Comic Sans at 18pt ceiling, left-aligned, autofit shrinks to fit if needed. Simple. This is the content type used for short explanations, key sentences on Teach slides, or prompts."
+      },
+      "speakerNotes": "Text content type."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Bullets",
+      "body": {
+        "type": "bullets",
+        "items": [
+          "First bullet point — keep each line short",
+          "Second bullet — the prefix is a round \u2022 symbol",
+          "Third bullet — bold body colour at 22pt ceiling",
+          "Fourth bullet — autofit handles longer lists"
+        ]
+      },
+      "speakerNotes": "Bullets content type."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Steps",
+      "body": {
+        "type": "steps",
+        "steps": [
+          "Read the question carefully.",
+          "Underline the key information.",
+          "Choose a method to solve it.",
+          "Check your answer makes sense."
+        ]
+      },
+      "speakerNotes": "Steps content type — numbered with green badges, divider lines between rows."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Vocab",
+      "body": {
+        "type": "vocab",
+        "words": [
+          { "word": "equivalent", "definition": "worth the same amount" },
+          { "word": "numerator", "definition": "the top number — the parts you have" },
+          { "word": "denominator", "definition": "the bottom number — how many equal parts" }
+        ]
+      },
+      "speakerNotes": "Vocab content type — word in green bold, definition in black bold, cream panel."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Table",
+      "body": {
+        "type": "table",
+        "headers": ["Group", "Body covering", "How babies are born"],
+        "rows": [
+          ["Mammals", "Fur or hair", "Born live; fed milk"],
+          ["Birds",   "Feathers",    "Hatched from eggs"],
+          ["Fish",    "Scales",      "Hatched from eggs in water"],
+          ["Reptiles","Dry scales",  "Hatched from eggs on land"]
+        ]
+      },
+      "speakerNotes": "Table content type — dark grey header, pastel alternating rows, first column bold centred."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Image",
+      "instruction": "Placeholder shown when path does not exist",
+      "body": {
+        "type": "image",
+        "imagePath": "unsplash/does-not-exist.jpg",
+        "caption": "Fallback — grey placeholder rectangle with caption"
+      },
+      "speakerNotes": "Image content type with missing file — should render grey placeholder."
+    }
+  ]
+}

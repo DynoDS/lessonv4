@@ -1,0 +1,36 @@
+{
+  "lessonName": "Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can test the builder skeleton.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test the builder skeleton.",
+      "instruction": "Copy the date and LO into your book.",
+      "speakerNotes": "Welcome to the smoke-test lesson. Children should copy the date and the learning objective. This tests the cover template."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "A Single Body Slide",
+      "instruction": "Default title header",
+      "body": {
+        "type": "text",
+        "value": "This slide uses body-full with a compact title header. One big class-A zone holds this block of text. Autofit should keep the size pleasant — the declared ceiling is 18pt for body text, and the post-processor shrinks down toward 10pt only if the content needs it."
+      },
+      "speakerNotes": "This is a speaker note for the body-full slide. The note should appear verbatim in PowerPoint's speaker-notes area."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "starter",
+      "lo": "I can test the builder skeleton.",
+      "heading": "Starter",
+      "body": {
+        "type": "text",
+        "value": "Starter prompt goes here. The tall starter header above shows the date placeholder, the learning objective in purple, and the blue heading bar."
+      },
+      "speakerNotes": "Starter speaker note verbatim."
+    }
+  ]
+}

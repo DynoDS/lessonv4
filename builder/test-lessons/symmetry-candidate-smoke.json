@@ -1,0 +1,88 @@
+{
+  "lessonName": "Symmetry Candidate-Line Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can test whether a line is a line of symmetry.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Square: each of its 4 candidate lines passes (green tick)",
+      "instruction": "vertical, horizontal, both diagonals — every one a true line of symmetry",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "square", "candidate": "vertical",      "verdict": "pass" } ], "label": "Down the middle" },
+          { "type": "polygon", "shapes": [ { "name": "square", "candidate": "horizontal",    "verdict": "pass" } ], "label": "Across the middle" },
+          { "type": "polygon", "shapes": [ { "name": "square", "candidate": "diagonal-tlbr", "verdict": "pass" } ], "label": "Corner to corner" },
+          { "type": "polygon", "shapes": [ { "name": "square", "candidate": "diagonal-trbl", "verdict": "pass" } ], "label": "The other diagonal" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Rectangle: the diagonal is NOT a line of symmetry (red cross + fold mismatch)",
+      "instruction": "the fold ghost sticks out — the halves do not match",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "rectangle", "candidate": "diagonal-tlbr", "verdict": "fail", "fold": true } ], "label": "Fold on the diagonal: it does not match" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Parallelogram: the vertical line FAILS (red cross + fold mismatch)",
+      "instruction": "the fold ghost leaves an overhang and a gap",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "parallelogram", "candidate": "vertical", "verdict": "fail", "fold": true } ], "label": "Fold down the middle: it does not match" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Isosceles triangle: the vertical line PASSES (green tick + clean overlap)",
+      "instruction": "the fold ghost lands exactly on the shape",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "isosceles-triangle", "candidate": "vertical", "verdict": "pass", "fold": true } ], "label": "Fold down the middle: it matches" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "New preset shapes draw upright and honest",
+      "instruction": "isosceles, scalene, kite, parallelogram drawn from true vertices",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "isosceles-triangle" } ], "label": "Isosceles" },
+          { "type": "polygon", "shapes": [ { "name": "scalene-triangle" } ],   "label": "Scalene" },
+          { "type": "polygon", "shapes": [ { "name": "kite" } ],               "label": "Kite" },
+          { "type": "polygon", "shapes": [ { "name": "parallelogram" } ],      "label": "Parallelogram" }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "New shapes' full symmetry set (answer reveal, green)",
+      "instruction": "isosceles 1, kite 1, scalene 0",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "polygon", "shapes": [ { "name": "isosceles-triangle" } ], "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Isosceles: 1" },
+          { "type": "polygon", "shapes": [ { "name": "kite" } ],               "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Kite: 1" },
+          { "type": "polygon", "shapes": [ { "name": "scalene-triangle" } ],   "symmetryLines": true, "symmetryLinesAnswer": true, "label": "Scalene: 0" }
+        ]
+      }
+    }
+  ]
+}

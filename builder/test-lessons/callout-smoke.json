@@ -1,0 +1,123 @@
+{
+  "lessonName": "Callout Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can find 10 more than a 4-digit number.",
+  "slides": [
+    {
+      "template": "split-v-50-50",
+      "headerStyle": "title",
+      "title": "The sketched case — chart above, callout below pointing up",
+      "instruction": "50/50 so the chart fills its zone and the arrow lands on it",
+      "primary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "rows": [
+          { "label": "3,462",   "cells": ["3", "4", "6", "2"] },
+          { "label": "10 more", "cells": ["3", "4", "7", "2"], "highlight": ["T"] }
+        ] },
+      "secondary": { "type": "callout",
+        "text": "The [[tens]] column changes.",
+        "points": "up", "at": 0.72 }
+    },
+    {
+      "template": "split-v-75-25",
+      "headerStyle": "title",
+      "primarySide": "top",
+      "title": "The badly-sized split — chart floats, arrow stops short",
+      "instruction": "75/25 gives the chart far more height than it wants",
+      "primary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "rows": [
+          { "label": "3,462",   "cells": ["3", "4", "6", "2"] },
+          { "label": "10 more", "cells": ["3", "4", "7", "2"], "highlight": ["T"] }
+        ] },
+      "secondary": { "type": "callout",
+        "text": "The [[tens]] column changes.",
+        "points": "up", "at": 0.72 }
+    },
+    {
+      "template": "split-v-75-25",
+      "headerStyle": "title",
+      "primarySide": "top",
+      "title": "The same slide with reach — the patch, not the fix",
+      "instruction": "reach: 1.0 carries the tip up to the chart",
+      "primary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "rows": [
+          { "label": "3,462",   "cells": ["3", "4", "6", "2"] },
+          { "label": "10 more", "cells": ["3", "4", "7", "2"], "highlight": ["T"] }
+        ] },
+      "secondary": { "type": "callout",
+        "text": "The [[tens]] column changes.",
+        "points": "up", "at": 0.72, "reach": 1.0 }
+    },
+    {
+      "template": "split-v-75-25",
+      "headerStyle": "title",
+      "primarySide": "bottom",
+      "title": "Callout above, pointing down",
+      "secondary": { "type": "callout",
+        "text": "Every other digit stays the {{same}}.",
+        "points": "down", "at": 0.4, "variant": "blue" },
+      "primary": { "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O"],
+        "rows": [
+          { "label": "3,462",   "cells": ["3", "4", "6", "2"] },
+          { "label": "10 more", "cells": ["3", "4", "7", "2"], "highlight": ["T"] }
+        ] }
+    },
+    {
+      "template": "split-h-70-30",
+      "headerStyle": "title",
+      "primarySide": "left",
+      "title": "Callout on the right, pointing left at the number line",
+      "primary": { "type": "numberline",
+        "start": 0, "end": 100, "interval": 10, "labels": [0, 10, 90, 100],
+        "arrow": { "at": 40, "label": "?" } },
+      "secondary": { "type": "callout",
+        "text": "Each jump is <<10>>.",
+        "points": "left", "at": 0.5, "variant": "orange" }
+    },
+    {
+      "template": "split-h-70-30",
+      "headerStyle": "title",
+      "primarySide": "right",
+      "title": "Callout on the left, pointing right",
+      "primary": { "type": "numberline",
+        "start": 0, "end": 100, "interval": 10, "labels": [0, 10, 90, 100],
+        "arrow": { "at": 70, "label": "?" } },
+      "secondary": { "type": "callout",
+        "text": "Count on in **tens**.",
+        "points": "right", "variant": "purple" }
+    },
+    {
+      "template": "thirds-h",
+      "headerStyle": "title",
+      "title": "Three variants, third columns (class D)",
+      "instruction": "green / blue / orange",
+      "left":   { "type": "callout", "text": "This is what changed.", "points": "up" },
+      "middle": { "type": "callout", "text": "Which digit do we look at?", "points": "up", "variant": "blue" },
+      "right":  { "type": "callout", "text": "You are given <<3,462>>.", "points": "up", "variant": "orange" }
+    },
+    {
+      "template": "thirds-h",
+      "headerStyle": "title",
+      "title": "Edge cases — long line, no arrow, tip hard to one side",
+      "instruction": "wraps / points:none / at:0.05",
+      "left":   { "type": "callout", "text": "The digit in the tens column goes up by one and nothing else moves.", "points": "up" },
+      "middle": { "type": "callout", "text": "A plain note box.", "points": "none", "variant": "purple" },
+      "right":  { "type": "callout", "text": "Look here.", "points": "up", "at": 0.05 }
+    },
+    {
+      "template": "grid-4",
+      "headerStyle": "title",
+      "title": "Small cards (class G) — one callout per card, each pointing a different way",
+      "cells": [
+        { "type": "callout", "text": "Points up.", "points": "up" },
+        { "type": "callout", "text": "Points down.", "points": "down", "variant": "blue" },
+        { "type": "callout", "text": "Points left.", "points": "left", "variant": "orange" },
+        { "type": "callout", "text": "Points right.", "points": "right", "variant": "purple" }
+      ]
+    }
+  ]
+}

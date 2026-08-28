@@ -1,0 +1,244 @@
+{
+  "lessonName": "Stage C Success Criteria Helpers",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can use geometry notation.",
+  "slides": [
+    {
+      "template": "maths-turn-sc",
+      "title": "My Turn",
+      "instruction": "Mark each property as I model it",
+      "questions": ["How do I show these properties on the diagram?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "triangle", "kind": "isosceles" },
+          { "type": "line-pair", "relationship": "parallel", "form": "horizontal", "notation": "arrows" },
+          { "type": "line-pair", "relationship": "perpendicular", "form": "L", "notation": "right-angle" }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Dash the equal sides.", "figure": "dash-equal-sides" },
+          { "text": "Mark the parallel lines.", "figure": "arrow-parallels" },
+          { "text": "Mark the square corner.", "figure": "square-corner" }
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Our Turn",
+      "instruction": "Plot and join the points together",
+      "questions": ["Plot A (2, 1), B (2, 3) and C (4, 3)."],
+      "workingSpace": false,
+      "questionVisual": { "type": "coordinate-grid", "max": 4, "route": [2, 3] },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Plot across, then up.", "helper": "plot-grid" },
+          { "text": "Join the points in order.", "helper": "join-in-order" },
+          { "text": "Close the shape.", "helper": "close-the-shape" }
+        ]
+      }
+    },
+    {
+      "template": "success-criteria",
+      "title": "Mixed steps stay intentional",
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Dash the equal sides.", "figure": "dash-equal-sides" },
+          "Write the matching lengths.",
+          { "text": "Mark the square corner.", "figure": "square-corner" },
+          "Check each label."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "My Turn",
+      "instruction": "Mark and record as I model",
+      "questions": ["How do I mark an angle and record a group of five?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "angle", "degrees": 60 },
+          {
+            "type": "tally-chart",
+            "headers": ["Object", "Tally"],
+            "rows": [{ "label": "Shells", "tally": 5 }],
+            "showTotals": false
+          }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Mark the angle with an arc.", "helper": "angle-arc" },
+          { "text": "Draw the fifth tally across the group.", "helper": "tally-five" },
+          "Count each mark once."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Sorting helpers",
+      "instruction": "Choose the one place where each shape belongs",
+      "questions": ["Where should each shape go?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "venn", "label1": "4 sides", "label2": "right angle" },
+          { "type": "carroll", "rowLabel": "4 sides", "rowNotLabel": "not 4 sides", "colLabel": "right angle", "colNotLabel": "no right angle" }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Put shapes that match both in the overlap.", "helper": "venn-overlap" },
+          { "text": "Put shapes that match neither outside both circles.", "helper": "venn-outside" },
+          { "text": "Put each shape in one Carroll box.", "helper": "carroll-one-box" },
+          "Check each shape against both headings."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Transformation helpers",
+      "instruction": "Keep each movement exact",
+      "questions": ["What must stay the same?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "reflection-grid", "cols": 4, "rows": 3, "mirror": { "orientation": "vertical", "at": 2 }, "shape": [[0, 0], [1, 0], [1, 1]], "showReflection": true },
+          { "type": "translation-shape", "cols": 5, "rows": 4, "points": [[1, 1], [2, 1], [2, 2]], "translate": { "dx": 2, "dy": 1 }, "showImage": true },
+          { "type": "geoboard", "cols": 3, "rows": 3, "shapes": [{ "points": [[0, 0], [3, 0], [3, 3], [0, 3]], "closed": true }], "symmetryLines": [[[1.5, 0], [1.5, 3]]] }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Reflect the shape the same distance across the mirror line.", "helper": "reflect-across-line" },
+          { "text": "Move every vertex the same direction and distance.", "helper": "translate-shape" },
+          { "text": "Draw a line that makes matching halves.", "helper": "line-of-symmetry" }
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Diagram helpers",
+      "instruction": "Show the structure before calculating",
+      "questions": ["Which structure makes the relationship visible?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "bar-model", "shape": "part-whole", "whole": { "label": "Whole" }, "parts": [{ "label": "Part" }, { "label": "Part" }] },
+          { "type": "bar-model", "shape": "comparison", "bars": [{ "name": "A", "label": "A", "value": 3 }, { "name": "B", "label": "B", "value": 2 }], "difference": { "label": "?", "value": 1 } }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Split the whole bar into its parts.", "helper": "bar-model-parts" },
+          { "text": "Align the bars and show the difference.", "helper": "bar-model-compare" },
+          { "text": "Join each label to the exact part with a ruled line.", "helper": "label-with-leader" },
+          "Write the values from the question."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Direction helpers",
+      "instruction": "Follow the direction named in the step",
+      "questions": ["Which way does the movement go?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "numberline", "start": 0, "end": 10, "interval": 1, "labels": "ends" }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Jump right to increase the number.", "helper": "jump-right" },
+          { "text": "Jump left to decrease the number.", "helper": "jump-left" },
+          "Write the landing number."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Turn helpers",
+      "instruction": "Follow the direction named in the step",
+      "questions": ["Which way does the turn go?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "turn-diagram",
+        "quarters": 1,
+        "direction": "clockwise"
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Turn clockwise.", "helper": "turn-clockwise" },
+          { "text": "Turn anticlockwise.", "helper": "turn-anticlockwise" },
+          "Check the size of the turn."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Structure helpers",
+      "instruction": "Use the layout to organise the calculation",
+      "questions": ["What does each part of the layout tell us to do?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "area-grid", "cols": 4, "rows": 3, "rects": [{ "x": 0, "y": 0, "w": 4, "h": 3, "label": "A" }] },
+          { "type": "pyramid", "rows": [{ "cells": 1, "items": ["?"] }, { "cells": 2, "items": ["7", "8"] }] },
+          { "type": "part-whole-model", "whole": "?", "parts": ["7", "8"], "orientation": "vertical" }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Count the rows and columns in the array.", "helper": "count-array" },
+          { "text": "Combine neighbouring boxes to make the box above.", "helper": "number-pyramid" },
+          { "text": "Put the whole and parts in the correct circles.", "helper": "part-whole" }
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Recording helpers",
+      "instruction": "Record each value in the right structure",
+      "questions": ["Which marks make the information readable?"],
+      "workingSpace": false,
+      "questionVisual": {
+        "type": "row",
+        "items": [
+          { "type": "bar-chart", "categories": ["A", "B", "C"], "values": [2, 4, 3], "y_max": 4, "y_interval": 1 },
+          { "type": "place-value-chart", "columns": ["H", "T", "O"], "rows": [["3", "4", "2"]] },
+          { "type": "measuring-jug", "max": 400, "majorEvery": 100, "minorEvery": 50, "value": 250, "unit": "ml" }
+        ]
+      },
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          { "text": "Draw equal-width bars from the baseline.", "helper": "draw-bars" },
+          { "text": "Put one digit in each place-value column.", "helper": "one-per-column" },
+          { "text": "Count equal scale intervals before reading the value.", "helper": "count-scale-intervals" },
+          "Check the units in the question."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "topic": "Lines of symmetry wall test",
+  "yearGroup": "Year 4",
+  "lessonSlug": "symmetry-wall-test",
+  "rationaleNote": "Smoke test for symmetryLines on triangle + geoboard wall visuals.",
+  "cards": [
+    {
+      "type": "referenceTable",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Lines of symmetry in triangles",
+      "columns": [
+        "Triangle",
+        "Lines of symmetry",
+        "Shown"
+      ],
+      "rows": [
+        [
+          "Equilateral",
+          "3",
+          {
+            "visual": {
+              "type": "triangle",
+              "kind": "equilateral",
+              "symmetryLines": true,
+              "symmetryLinesAnswer": true
+            }
+          }
+        ],
+        [
+          "Isosceles",
+          "1",
+          {
+            "visual": {
+              "type": "triangle",
+              "kind": "isosceles",
+              "symmetryLines": true,
+              "symmetryLinesAnswer": true
+            }
+          }
+        ],
+        [
+          "Scalene",
+          "0",
+          {
+            "visual": {
+              "type": "triangle",
+              "kind": "scalene",
+              "symmetryLines": true,
+              "symmetryLinesAnswer": true
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "type": "vocabDefinition",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Line of symmetry",
+      "definition": "A line that splits a shape into two halves that are mirror images.",
+      "visual": {
+        "type": "geoboard",
+        "cols": 4,
+        "rows": 4,
+        "shape": [
+          [
+            2,
+            0
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "symmetryLines": [
+          [
+            [
+              2,
+              0
+            ],
+            [
+              2,
+              4
+            ]
+          ]
+        ],
+        "symmetryLinesAnswer": true
+      }
+    }
+  ]
+}

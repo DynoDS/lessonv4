@@ -1,0 +1,122 @@
+{
+  "lessonName": "Line Pair Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can identify parallel and perpendicular lines.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Parallel — horizontal (bare)",
+      "instruction": "notation none",
+      "body": { "type": "line-pair", "relationship": "parallel", "form": "horizontal" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Parallel — vertical (arrows)",
+      "instruction": "notation arrows, single chevron",
+      "body": { "type": "line-pair", "relationship": "parallel", "form": "vertical", "notation": "arrows", "label": "parallel" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Parallel — diagonal (double arrows)",
+      "instruction": "notation arrows, arrows:2",
+      "body": { "type": "line-pair", "relationship": "parallel", "form": "diagonal", "notation": "arrows", "arrows": 2, "label": "parallel" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Parallel — unequal lengths",
+      "instruction": "misconception: must be equal length",
+      "body": { "type": "line-pair", "relationship": "parallel", "form": "horizontal", "unequal": true, "notation": "arrows", "label": "still parallel" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Neither — converging",
+      "instruction": "NOT parallel — gap changes",
+      "body": { "type": "line-pair", "relationship": "neither", "form": "converging", "label": "not parallel" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Perpendicular — cross (right-angle)",
+      "instruction": "+ crossing, blue square",
+      "body": { "type": "line-pair", "relationship": "perpendicular", "form": "cross", "notation": "right-angle", "label": "perpendicular" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Perpendicular — L (right-angle)",
+      "instruction": "shared endpoint corner",
+      "body": { "type": "line-pair", "relationship": "perpendicular", "form": "L", "notation": "right-angle", "label": "perpendicular" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Perpendicular — T (right-angle)",
+      "instruction": "meets at midpoint",
+      "body": { "type": "line-pair", "relationship": "perpendicular", "form": "T", "notation": "right-angle", "label": "perpendicular" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Perpendicular — detached (right-angle)",
+      "instruction": "misconception: must actually cross",
+      "body": { "type": "line-pair", "relationship": "perpendicular", "form": "detached", "notation": "right-angle", "label": "still perpendicular" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Perpendicular — detached (bare)",
+      "instruction": "no notation",
+      "body": { "type": "line-pair", "relationship": "perpendicular", "form": "detached" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Neither — slant",
+      "instruction": "NOT perpendicular — non-right angle",
+      "body": { "type": "line-pair", "relationship": "neither", "form": "slant", "label": "not perpendicular" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Rotated parallel",
+      "instruction": "rotation 35 — answer must not change",
+      "body": { "type": "line-pair", "relationship": "parallel", "form": "horizontal", "rotation": 35, "notation": "arrows", "label": "parallel" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Rotated perpendicular cross",
+      "instruction": "rotation 30 — square still square",
+      "body": { "type": "line-pair", "relationship": "perpendicular", "form": "cross", "rotation": 30, "notation": "right-angle", "label": "perpendicular" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Which pairs are parallel? (row of 4)",
+      "instruction": "the sorting layout, answers revealed",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "line-pair", "relationship": "parallel",      "form": "horizontal", "rotation": 0,  "label": "(a) ||parallel" },
+          { "type": "line-pair", "relationship": "neither",       "form": "converging", "rotation": 0,  "label": "(b) ||not parallel" },
+          { "type": "line-pair", "relationship": "parallel",      "form": "diagonal",   "rotation": 0,  "label": "(c) ||parallel" },
+          { "type": "line-pair", "relationship": "perpendicular", "form": "cross",      "rotation": 20, "label": "(d) ||not parallel" }
+        ]
+      }
+    },
+    {
+      "template": "key-vocabulary",
+      "instruction": "Two words with line-pair icons",
+      "words": [
+        { "word": "parallel", "definition": "Two lines that stay the same distance apart and never meet.", "visual": { "type": "line-pair", "relationship": "parallel", "form": "horizontal", "notation": "arrows" } },
+        { "word": "perpendicular", "definition": "Two lines that meet at a right angle.", "visual": { "type": "line-pair", "relationship": "perpendicular", "form": "cross", "notation": "right-angle" } }
+      ]
+    }
+  ]
+}

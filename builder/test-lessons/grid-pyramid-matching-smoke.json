@@ -1,0 +1,79 @@
+{
+  "lessonName": "New Objects Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "Smoke test",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "starter",
+      "heading": "Starter — question",
+      "instruction": "Draw a line to match each number to the nearest 10",
+      "body": {
+        "type": "matching",
+        "left": ["47", "62", "28", "81", "34", "76"],
+        "right": ["30", "50", "80", "60", "40", "70"],
+        "connections": [[0, 1]]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "starter",
+      "heading": "Starter — answers",
+      "instruction": "Draw a line to match each number to the nearest 10",
+      "body": {
+        "type": "matching",
+        "answer": true,
+        "left": ["47", "62", "28", "81", "34", "76"],
+        "right": ["30", "50", "80", "60", "40", "70"],
+        "connections": [[0, 1], [1, 3], [2, 0], [3, 2], [4, 0], [5, 2]]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "headerStyle": "title",
+      "title": "Our Turn — grid (question)",
+      "workingSpace": false,
+      "questions": ["Find the missing header, then fill the gaps."],
+      "questionVisual": {
+        "type": "mult-grid",
+        "corner": "×",
+        "colHeaders": ["9", "6", ""],
+        "rowHeaders": ["3", "8", "6"],
+        "cells": [["", "18", "21"], ["72", "", "56"], ["54", "36", "42"]]
+      },
+      "criteria": { "type": "steps", "steps": ["See the ×.", "Trace up and across.", "Multiply.", "Write the product."] }
+    },
+    {
+      "template": "maths-turn-sc",
+      "headerStyle": "title",
+      "title": "Our Turn — grid (answers)",
+      "workingSpace": false,
+      "questions": ["Find the missing header, then fill the gaps."],
+      "questionVisual": {
+        "type": "mult-grid",
+        "corner": "×",
+        "colHeaders": ["9", "6", "||7"],
+        "rowHeaders": ["3", "8", "6"],
+        "cells": [["||27", "18", "21"], ["72", "||48", "56"], ["54", "36", "42"]]
+      },
+      "criteria": { "type": "steps", "steps": ["See the ×.", "Trace up and across.", "Multiply.", "Write the product."] }
+    },
+    {
+      "template": "maths-turn-sc",
+      "headerStyle": "title",
+      "title": "Our Turn — pyramid (answers)",
+      "workingSpace": false,
+      "questions": ["Find the missing bricks."],
+      "questionVisual": {
+        "type": "pyramid",
+        "rows": [
+          { "cells": 1, "items": ["||54"] },
+          { "cells": 2, "items": ["||23", "31"] },
+          { "cells": 3, "items": ["||8", "15", "16"] }
+        ]
+      },
+      "criteria": { "type": "steps", "steps": ["No symbol — add.", "Two side by side.", "Add them.", "Write above."] }
+    }
+  ]
+}

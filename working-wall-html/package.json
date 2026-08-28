@@ -1,0 +1,11 @@
+{
+  "name": "working-wall-html",
+  "private": true,
+  "description": "Working-wall HTML/PDF renderer. Reads working-wall.json and prints to PDF through worksheet-html's Chrome step.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "sharp": "0.33.5"
+  }
+}

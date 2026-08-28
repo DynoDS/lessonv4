@@ -1,0 +1,18 @@
+"use strict";
+
+// A simple flowering plant, drawn as SVG and carried as a data URI.
+//
+// label-diagram is the one helper that takes a PICTURE rather than drawing its
+// own, so it cannot be exercised without one. A real lesson supplies a
+// photograph that image-scout has fetched; the tests and the showcase need
+// something self-contained, and a drawing costs no binary file in the repo and
+// no network call in a test.
+//
+// It is a real primary science diagram rather than a grey placeholder, so the
+// showcase page shows what the helper is actually for.
+
+module.exports = {
+  href: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iODAwIiB2aWV3Qm94PSIwIDAgNjAwIDgwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI4MDAiIGZpbGw9IiNGRkZGRkYiLz48cGF0aCBkPSJNMzAwIDYyMCBWMzAwIiBzdHJva2U9IiM0QzdBMzQiIHN0cm9rZS13aWR0aD0iMTQiIGZpbGw9Im5vbmUiLz48cGF0aCBkPSJNMzAwIDQ3MCBDMjMwIDQ0MCAxOTAgNDcwIDE3NSA1MDUgQzIxNSA1MzAgMjcwIDUxNSAzMDAgNDcwIFoiIGZpbGw9IiM2RkE4NEIiLz48cGF0aCBkPSJNMzAwIDQwMCBDMzcwIDM3MCA0MTAgNDAwIDQyNSA0MzUgQzM4NSA0NjAgMzMwIDQ0NSAzMDAgNDAwIFoiIGZpbGw9IiM2RkE4NEIiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIyNTAiIHI9IjUyIiBmaWxsPSIjRThCMjNBIi8+PGcgZmlsbD0iI0U0NTc0QyI+PGVsbGlwc2UgY3g9IjMwMCIgY3k9IjE3MiIgcng9IjM0IiByeT0iNTIiLz48ZWxsaXBzZSBjeD0iMzAwIiBjeT0iMzI4IiByeD0iMzQiIHJ5PSI1MiIvPjxlbGxpcHNlIGN4PSIyMjIiIGN5PSIyNTAiIHJ4PSI1MiIgcnk9IjM0Ii8+PGVsbGlwc2UgY3g9IjM3OCIgY3k9IjI1MCIgcng9IjUyIiByeT0iMzQiLz48L2c+PGNpcmNsZSBjeD0iMzAwIiBjeT0iMjUwIiByPSIzMCIgZmlsbD0iI0U4QjIzQSIvPjxwYXRoIGQ9Ik0zMDAgNjIwIEMyNjAgNjYwIDI1MCA3MDAgMjQ1IDc0NSBNMzAwIDYyMCBDMzQwIDY2MCAzNTAgNzAwIDM1NSA3NDUgTTMwMCA2MjAgQzMwMCA2NzAgMzAwIDcxMCAzMDAgNzU1IiBzdHJva2U9IiM4QTZBNDQiIHN0cm9rZS13aWR0aD0iOSIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0xMjAgNjIwIEg0ODAiIHN0cm9rZT0iI0IwODY1NCIgc3Ryb2tlLXdpZHRoPSI2IiBmaWxsPSJub25lIi8+PC9zdmc+",
+  width: 600,
+  height: 800,
+};

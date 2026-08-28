@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "kind": "design-reviewer-behaviour-cases",
+  "cases": [
+    {
+      "id": "curriculum-drift",
+      "protectedBehaviour": "Find teaching that moves beyond the stated curriculum objective.",
+      "materialDifference": "A substantial teaching block introduces later curriculum content.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject an accurate example that stays inside the objective."
+    },
+    {
+      "id": "incorrect-year-pitch",
+      "protectedBehaviour": "Find demand that is materially unsuitable for the year group.",
+      "materialDifference": "Required reading or reasoning assumes knowledge well beyond the stated year.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not remove necessary subject vocabulary that is taught and supported."
+    },
+    {
+      "id": "displayed-lo-changes-meaning",
+      "protectedBehaviour": "Keep the displayed objective semantically equal to the full objective.",
+      "materialDifference": "The child-facing shortening changes the intended learning.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not require identical wording when the shortening keeps the meaning."
+    },
+    {
+      "id": "sound-alternative-design",
+      "protectedBehaviour": "Accept a different but sound lesson choice.",
+      "materialDifference": "The activity differs from the reviewer's likely preference but teaches the same objective well.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not report personal taste as a defect."
+    },
+    {
+      "id": "number-question-contradiction",
+      "protectedBehaviour": "Correct a bounded contradiction between wording and values.",
+      "materialDifference": "The question asks how much more one character has when the other has more.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not redesign the lesson architecture for a local number correction."
+    },
+    {
+      "id": "new-skill-omits-needed-guidance",
+      "protectedBehaviour": "Find premature independence in genuinely new or difficult learning.",
+      "materialDifference": "Pupils move from one model to independent work without needed guided practice.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not assume every lesson needs the same amount of guided practice."
+    },
+    {
+      "id": "secure-skill-justifiably-omits-guidance",
+      "protectedBehaviour": "Permit omission of guided practice when the learning is already secure enough.",
+      "materialDifference": "The brief and lesson evidence establish secure prior learning before fresh independent use.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not reject the route only because Our Turn is absent."
+    },
+    {
+      "id": "independent-work-repeats-model-answer-path",
+      "protectedBehaviour": "Find independent work that repeats the model's exact decision route.",
+      "materialDifference": "Surface details change but the answer path and decision are already completed in modelling.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject fresh procedural values when executing the procedure is the target."
+    },
+    {
+      "id": "procedural-practice-uses-fresh-values",
+      "protectedBehaviour": "Accept new values as fresh practice when executing the procedure is the learning.",
+      "materialDifference": "The method stays stable while pupils independently calculate new values.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not demand a different task architecture merely for variety."
+    },
+    {
+      "id": "worksheet-repeats-board-decisions",
+      "protectedBehaviour": "Find a worksheet that reuses the board's load-bearing decisions.",
+      "materialDifference": "The worksheet repeats the same evidence, classifications or conclusions as the lesson model.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject a familiar representation carrying genuinely unseen work."
+    },
+    {
+      "id": "sentence-stem-supplies-judgement",
+      "protectedBehaviour": "Find support that gives away the decision pupils must make.",
+      "materialDifference": "The stem names which character is wrong before pupils decide.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not reject a neutral stem that only helps pupils start expressing a reason."
+    },
+    {
+      "id": "dialogic-question-has-predetermined-answer",
+      "protectedBehaviour": "Find a dialogic route that does not permit several defensible positions.",
+      "materialDifference": "The discussion is framed around reaching one preselected correct view.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not treat correction of harmful or false claims as forced consensus."
+    },
+    {
+      "id": "discovery-lacks-safe-dependable-exploration",
+      "protectedBehaviour": "Find discovery work whose phenomenon is unsafe, unreliable or unrevealing.",
+      "materialDifference": "The exploration cannot dependably make the target pattern visible.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject a bounded exploration followed by explicit teaching."
+    },
+    {
+      "id": "task-centred-route-is-ordinary-practice",
+      "protectedBehaviour": "Find a Task-Centred route without one genuine sustained task.",
+      "materialDifference": "The route is a list of ordinary practice questions labelled as a real task.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject a sustained task that legitimately uses short enabling input."
+    },
+    {
+      "id": "photo-physical-state-contradiction",
+      "protectedBehaviour": "Correct an existing picture brief that contradicts the settled lesson state.",
+      "materialDifference": "The lesson needs a plugged-in appliance but the brief requires it to be unplugged.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not change photo identity, source profile or authenticity class."
+    },
+    {
+      "id": "photo-repair-needs-new-visual-job",
+      "protectedBehaviour": "Return a new visual purpose to Lesson Designer.",
+      "materialDifference": "The honest repair requires a new photograph or a different authenticity boundary.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not create or remove photo objects during review."
+    },
+    {
+      "id": "volatile-fact-needs-verification",
+      "protectedBehaviour": "Do not replace an unverified changing fact with another remembered figure.",
+      "materialDifference": "A load-bearing current statistic has no verified source.",
+      "expectedResult": "APPROVED WITH TEACHER FLAG OR STABLE BOUNDED CORRECTION",
+      "expectedOwner": "teacher",
+      "forbiddenFinding": "Do not flag stable well-established subject facts merely because they are factual."
+    },
+    {
+      "id": "downstream-layout-preference-only",
+      "protectedBehaviour": "Leave physical presentation to downstream designers and visual review.",
+      "materialDifference": "The only concern is colour, type, spacing or page regions.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "downstream reviewer",
+      "forbiddenFinding": "Do not report presentation taste as a lesson-design defect."
+    },
+    {
+      "id": "schema-invalid",
+      "protectedBehaviour": "Trust deterministic validation to block malformed designs before semantic review.",
+      "materialDifference": "A required identifier or field is malformed.",
+      "expectedResult": "VALIDATOR BLOCK",
+      "expectedOwner": "validator",
+      "forbiddenFinding": "Do not spend semantic review attention rechecking the malformed field."
+    },
+    {
+      "id": "genuine-teacher-choice",
+      "protectedBehaviour": "Flag a choice only when teacher context can decide between sound options.",
+      "materialDifference": "Both difficulty choices are pedagogically sound and the brief does not settle the class need.",
+      "expectedResult": "APPROVED WITH TEACHER FLAG",
+      "expectedOwner": "teacher",
+      "forbiddenFinding": "Do not label either sound option as defective."
+    },
+    {
+      "id": "recorded-outcome-hides-subject-thinking",
+      "protectedBehaviour": "Find recorded work that hides the subject learning.",
+      "materialDifference": "The final record preserves activity but omits the evidence, method or justification taught.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not require a specific book layout when the selected medium shows the learning."
+    },
+    {
+      "id": "support-enables-thinking",
+      "protectedBehaviour": "Keep support that enables the intended performance without supplying it.",
+      "materialDifference": "A reference tool reduces access load while pupils still make the target decision.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not remove support merely because the work is independent."
+    },
+    {
+      "id": "support-gives-answer",
+      "protectedBehaviour": "Find support that performs the new thinking for pupils.",
+      "materialDifference": "The scaffold contains the classification, inference or answer pupils must generate.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject support that only reduces reading or recording load."
+    },
+    {
+      "id": "misconception-left-untreated",
+      "protectedBehaviour": "Find a likely misconception that blocks the intended method or concept.",
+      "materialDifference": "The lesson depends on a distinction but never addresses the predictable wrong belief.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not demand a catalogue of every possible minor error."
+    },
+    {
+      "id": "test-question-form-reduced",
+      "protectedBehaviour": "Protect the structure, scale, response form and demand of named test preparation.",
+      "materialDifference": "A multi-part grid task is reduced to separate easier checks.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not require the real protected item or its exact values to appear."
+    },
+    {
+      "id": "decision-record-stale-design-correct",
+      "protectedBehaviour": "Correct one stale record line when the lesson and brief clearly agree.",
+      "materialDifference": "The lesson preserves the sound decision but the compact record names an earlier option.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not redesign a sound lesson to match a stale record."
+    },
+    {
+      "id": "design-drifted-from-sound-decision",
+      "protectedBehaviour": "Find purposeful drift from a sound recorded decision.",
+      "materialDifference": "The finished lesson quietly replaces the selected representation or learning demand.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not treat the decision record as higher authority than the teacher brief."
+    }
+  ]
+}

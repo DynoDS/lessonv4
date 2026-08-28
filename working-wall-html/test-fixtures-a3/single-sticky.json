@@ -1,0 +1,22 @@
+{
+  "topic": "Adding Fractions",
+  "yearGroup": "Year 4",
+  "lessonSlug": "adding-fractions-same-denominator",
+  "rationaleNote": "One durable fact worth sticking up: the rule for adding fractions with the same denominator.",
+  "cards": [
+    {
+      "type": "stickyKnowledge",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Remember",
+      "items": [
+        {
+          "text": "When the bottom numbers match, just add the top numbers."
+        }
+      ],
+      "photo": null
+    }
+  ]
+}

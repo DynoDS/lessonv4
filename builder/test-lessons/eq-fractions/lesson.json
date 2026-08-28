@@ -1,0 +1,354 @@
+{
+  "lessonName": "Equivalent Fractions",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can find equivalent fractions.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can find equivalent fractions.",
+      "instruction": "Copy the date and LO into your book.",
+      "speakerNotes": "Opening slide. Children copy the date and the learning objective into their books."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "starter",
+      "lo": "I can find equivalent fractions.",
+      "heading": "Starter",
+      "body": {
+        "type": "bullets",
+        "items": [
+          "(1)  What fraction of this shape is shaded?  (rectangle split into 4, 3 shaded)",
+          "(2)  What fraction of this shape is shaded?  (circle split into 6, 1 shaded)",
+          "(3)  What is 1/4 of 20?",
+          "(4)  What is 1/3 of 12?"
+        ]
+      },
+      "speakerNotes": "Four quick retrieval questions. Children answer in their books. Q1 and Q2 prime the shaded-parts-of-a-whole schema we need for the fraction wall. Q3 and Q4 keep unit fractions of amounts warm."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "starter",
+      "lo": "I can find equivalent fractions.",
+      "heading": "Starter — Answers",
+      "body": {
+        "type": "bullets",
+        "items": [
+          "(1)  3/4",
+          "(2)  1/6",
+          "(3)  5",
+          "(4)  4"
+        ]
+      },
+      "speakerNotes": "Answer slide. Children mark their own work in their books."
+    },
+    {
+      "template": "key-vocabulary",
+      "instruction": "Three words we will use today",
+      "words": [
+        {
+          "word": "equivalent",
+          "definition": "worth the same amount",
+          "visual": {
+            "type": "text",
+            "value": "⚖️"
+          }
+        },
+        {
+          "word": "numerator",
+          "definition": "the top number — the parts you have",
+          "visual": {
+            "type": "text",
+            "value": "⬆️"
+          }
+        },
+        {
+          "word": "denominator",
+          "definition": "the bottom number — how many equal parts the whole is split into",
+          "visual": {
+            "type": "text",
+            "value": "⬇️"
+          }
+        }
+      ],
+      "speakerNotes": "Three vocabulary words. Read each word and definition aloud; children repeat. The visuals on the right support the meaning."
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "My Turn",
+      "instruction": "Recognise equivalence visually",
+      "questions": [
+        "Are 1/2 and 2/4 equivalent?"
+      ],
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              "Shade the first fraction on the fraction wall.",
+              "Shade the second fraction on the fraction wall.",
+              "If both shadings cover the same amount, the fractions are equivalent."
+            ]
+          },
+          {
+            "type": "fraction-wall",
+            "fractions": [
+              1,
+              2,
+              4,
+              8,
+              3,
+              6
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "I want to know if 1/2 and 2/4 are the same amount. I'll use the fraction wall. I shade one half — this much. Now I shade two quarters — this much. Look: the ends line up exactly. Two quarters covers exactly the same as one half. So 1/2 and 2/4 are equivalent — they are the same amount, just written differently. That's our first sticky knowledge: equivalent fractions are the same amount written in different ways. Watch this — what if I just added 1 to the top and 1 to the bottom of 1/2? That would give me 2/3. Are 1/2 and 2/3 the same? (Check the wall — no.) So 'add the same to top and bottom' is NOT how equivalence works. Keep that in your head for later."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Do 1",
+      "instruction": "True or false — how do you know?",
+      "body": {
+        "type": "text",
+        "value": "True or false:  3/6 and 1/2 are equivalent fractions."
+      },
+      "speakerNotes": "Cold call two or three children. Wait time. Expected answer: True — both cover the same amount on the fraction wall / both shade half of the whole."
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "My Turn",
+      "instruction": "Generate equivalence using the rule",
+      "questions": [
+        "Find a fraction equivalent to 1/3."
+      ],
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              "Write the fraction you're starting with.",
+              "Choose a number to multiply by (start with 2).",
+              "Multiply the numerator by that number.",
+              "Multiply the denominator by the same number.",
+              "Check with the fraction wall — both fractions should cover the same amount."
+            ]
+          },
+          {
+            "type": "fraction-wall",
+            "fractions": [
+              1,
+              2,
+              4,
+              8,
+              3,
+              6
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "I want to find a fraction equivalent to 1/3. From the wall I can see 1/3 is this much. The rule: multiply the top and the bottom by the same number. I'll choose ×2. 1 times 2 is 2. 3 times 2 is 6. So 1/3 is equivalent to 2/6. Let me check on the wall — 2/6 shaded… yes, same amount. Now watch: why does this work? When I multiplied the denominator by 2, I cut each third into 2 smaller pieces — so I have sixths. When I multiplied the numerator by 2, I took 2 of those pieces instead of 1. The amount didn't change; I just cut it into more pieces. Name the sticky knowledge with me: to find an equivalent fraction, multiply the numerator and denominator by the same number."
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Our Turn",
+      "instruction": "Find a fraction equivalent to 2/5 using ×3",
+      "questions": [
+        "Find a fraction equivalent to 2/5."
+      ],
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              "Write the fraction you're starting with.",
+              "Choose a number to multiply by (start with 2).",
+              "Multiply the numerator by that number.",
+              "Multiply the denominator by the same number.",
+              "Check with the fraction wall — both fractions should cover the same amount."
+            ]
+          },
+          {
+            "type": "fraction-wall",
+            "fractions": [
+              1,
+              2,
+              4,
+              8,
+              3,
+              6
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "Cold call each step — do not call the keen children first. Guided questions: What fraction are we starting with? What's our first step? What number shall we multiply by? What's 2 times 3? What's 5 times 3? So 2/5 is equivalent to…? How can we check? Watch for: children who multiply only the numerator — the rule hasn't landed; re-model briefly. Watch for: children answering '7/8' (adding 3 to top and bottom instead of multiplying) — this is the addition misconception; stop, show the fraction wall, and check whether 2/5 and 7/8 cover the same amount."
+    },
+    {
+      "template": "maths-your-turn-sc",
+      "title": "Your Turn",
+      "instruction": "Questions 1–3 — recognise equivalence using the fraction wall",
+      "questions": [
+        "Are 1/2 and 3/6 equivalent fractions? Use the fraction wall to help.",
+        "Are 1/4 and 2/8 equivalent fractions? Use the fraction wall to help.",
+        "Circle the fraction that is equivalent to 1/2:   3/4   2/4   3/6   4/4"
+      ],
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              "Shade the first fraction on the fraction wall.",
+              "Shade the second fraction on the fraction wall.",
+              "If both shadings cover the same amount, they are equivalent."
+            ]
+          },
+          {
+            "type": "fraction-wall",
+            "fractions": [
+              1,
+              2,
+              4,
+              8,
+              3,
+              6
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "Questions 1–3 are the recognise-phase. Children use the fraction wall to decide whether pairs of fractions are equivalent. Q3 has two correct answers (2/4 and 3/6) — flag this when going through the answers."
+    },
+    {
+      "template": "maths-your-turn-sc",
+      "title": "Your Turn — Answers",
+      "instruction": "Questions 1–3 — answers revealed",
+      "questions": [
+        "Are 1/2 and 3/6 equivalent fractions?   Answer: Yes — both shade the same amount.",
+        "Are 1/4 and 2/8 equivalent fractions?   Answer: Yes — both shade the same amount.",
+        "Circle the fraction that is equivalent to 1/2:   3/4   2/4 ✓   3/6 ✓   4/4"
+      ],
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              "Shade the first fraction on the fraction wall.",
+              "Shade the second fraction on the fraction wall.",
+              "If both shadings cover the same amount, they are equivalent."
+            ]
+          },
+          {
+            "type": "fraction-wall",
+            "fractions": [
+              1,
+              2,
+              4,
+              8,
+              3,
+              6
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "Answers to Q1–3. Point out that Q3 had TWO correct answers — 2/4 and 3/6."
+    },
+    {
+      "template": "maths-your-turn-sc",
+      "title": "Your Turn",
+      "instruction": "Questions 4–6 — generate equivalent fractions using the rule",
+      "questions": [
+        "Find a fraction equivalent to 1/4 by multiplying the top and bottom by 2.",
+        "Find a fraction equivalent to 3/5 by multiplying the top and bottom by 3.",
+        "Jake says 2/3 is equivalent to 4/5 because he added 2 to the top and 2 to the bottom. Is Jake right? Explain."
+      ],
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              "Write the fraction you're starting with.",
+              "Multiply the numerator by that number.",
+              "Multiply the denominator by the same number."
+            ]
+          },
+          {
+            "type": "fraction-wall",
+            "fractions": [
+              1,
+              2,
+              4,
+              8,
+              3,
+              6
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "Questions 4–6 are the generate-phase. Q6 is the diagnostic — the addition misconception. If more than a few children say Jake is right, stop and re-model the ×/÷ rule before Apply."
+    },
+    {
+      "template": "maths-your-turn-sc",
+      "title": "Your Turn — Answers",
+      "instruction": "Questions 4–6 — answers revealed",
+      "questions": [
+        "Find a fraction equivalent to 1/4 by multiplying by 2.   Answer: 2/8",
+        "Find a fraction equivalent to 3/5 by multiplying by 3.   Answer: 9/15",
+        "Jake added 2 to top and bottom. Is Jake right?   Answer: No — you must multiply, not add. 2/3 = 4/6, not 4/5."
+      ],
+      "criteriaLabel": "✓ Success Criteria",
+      "criteria": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              "Write the fraction you're starting with.",
+              "Multiply the numerator by that number.",
+              "Multiply the denominator by the same number."
+            ]
+          },
+          {
+            "type": "fraction-wall",
+            "fractions": [
+              1,
+              2,
+              4,
+              8,
+              3,
+              6
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "Answers to Q4–6. Spend extra time on Q6 — it's the diagnostic."
+    },
+    {
+      "template": "maths-your-turn-sc",
+      "title": "Apply",
+      "instruction": "Find the missing number in each equivalent fraction",
+      "questions": [
+        "1/2 = ?/10",
+        "2/3 = 8/?",
+        "6/8 = 3/?"
+      ],
+      "criteriaLabel": "Sentence Stem",
+      "criteria": {
+        "type": "text",
+        "value": "The ______ has been multiplied/divided by ___, so the ______ must also be multiplied/divided by ___."
+      },
+      "speakerNotes": "Three missing-value questions. The first uses ×5, the second ×4, the third ÷2. Q3 is the first time division appears in practice — expect hesitation. If the class stalls, model one before moving on. Sentence stem is available on the right as a writing scaffold."
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "lessonName": "Stage E picture layouts for Daniel to edit",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can solve short problems and record each answer clearly.",
+  "slides": [
+    {
+      "template": "body-full",
+      "title": "Solve each problem",
+      "instruction": "Write each answer in the box",
+      "body": {
+        "type": "numbered-questions",
+        "answerBoxes": true,
+        "questions": [
+          {
+            "text": "A robin eats 3 worms, then 5 more. Total =",
+            "picture": {
+              "kind": "educational-svg",
+              "concept": "robin",
+              "context": "A plain robin beside a short word problem",
+              "educationalSvgId": "standard/ro/robin.svg",
+              "educationalSvgSlug": "robin",
+              "imagePath": "stage-e-robin.png",
+              "fallbackEmoji": "🐦",
+              "alt": "robin"
+            }
+          },
+          "Work out 12 - 5 =",
+          {
+            "text": "A television costs £240 and is reduced by £40. New price =",
+            "picture": {
+              "kind": "educational-svg",
+              "concept": "television",
+              "context": "A simple television beside a price problem",
+              "educationalSvgId": "standard/tv/tv-minimal.svg",
+              "educationalSvgSlug": "tv-minimal",
+              "imagePath": "stage-e-tv-minimal.png",
+              "fallbackEmoji": "📺",
+              "alt": "television"
+            }
+          },
+          {
+            "text": "A baptism candle burns for 15 minutes. 5 minutes have passed. Minutes left =",
+            "picture": {
+              "kind": "educational-svg",
+              "concept": "lit candle",
+              "context": "One plain lit candle used at a baptism",
+              "educationalSvgId": "standard/ca/candle-lit.svg",
+              "educationalSvgSlug": "candle-lit",
+              "imagePath": "stage-e-candle-lit.png",
+              "fallbackEmoji": "🕯️",
+              "alt": "lit candle"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "title": "Pictures can sit at the row end",
+      "instruction": "Read each complete question",
+      "body": {
+        "type": "numbered-questions",
+        "questions": [
+          {
+            "text": "A robin eats 3 worms, then 5 more. How many altogether?",
+            "picture": {
+              "kind": "educational-svg",
+              "concept": "robin",
+              "context": "A plain robin beside a short word problem",
+              "educationalSvgId": "standard/ro/robin.svg",
+              "educationalSvgSlug": "robin",
+              "imagePath": "stage-e-robin.png",
+              "alt": "robin"
+            }
+          },
+          "Work out 12 - 5.",
+          {
+            "text": "A television costs £240 and is reduced by £40. What is its new price?",
+            "picture": {
+              "kind": "educational-svg",
+              "concept": "television",
+              "context": "A simple television beside a price problem",
+              "educationalSvgId": "standard/tv/tv-minimal.svg",
+              "educationalSvgSlug": "tv-minimal",
+              "imagePath": "stage-e-tv-minimal.png",
+              "alt": "television"
+            }
+          },
+          {
+            "text": "A baptism candle burns for 15 minutes. 5 minutes have passed. How many minutes are left?",
+            "picture": {
+              "kind": "educational-svg",
+              "concept": "lit candle",
+              "context": "One plain lit candle used at a baptism",
+              "educationalSvgId": "standard/ca/candle-lit.svg",
+              "educationalSvgSlug": "candle-lit",
+              "imagePath": "stage-e-candle-lit.png",
+              "alt": "lit candle"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

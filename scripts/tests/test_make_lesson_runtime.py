@@ -1,0 +1,370 @@
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts" / "make-lesson-runtime.py"
+PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook.md"
+AGENTS = ROOT / "agents"
+
+FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str]] = {
+    "slide-designer": (
+        "slide-designer-focused-repair.md",
+        "sol",
+        "medium",
+    ),
+    "worksheet-designer": (
+        "worksheet-designer-focused-repair.md",
+        "sol",
+        "medium",
+    ),
+    "working-wall-designer": (
+        "working-wall-designer-focused-repair.md",
+        "terra",
+        "high",
+    ),
+    "stick-in-sheets-designer": (
+        "stick-in-sheets-designer-focused-repair.md",
+        "terra",
+        "high",
+    ),
+}
+
+BOUNDS: dict[str, tuple[str, str | None]] = {
+    "controller": (
+        "## Internal orchestration controller",
+        "## Worker context isolation",
+    ),
+    "setup": (
+        "## Before Each Run: Know What Exists",
+        "## Phase 1 — Run the Lesson Designer (Sequential, Blocking)",
+    ),
+    "design": (
+        "## Phase 1 — Run the Lesson Designer (Sequential, Blocking)",
+        "## Phase 1.25 — Review the Design (Sequential, Blocking)",
+    ),
+    "design-review": (
+        "## Phase 1.25 — Review the Design (Sequential, Blocking)",
+        "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)",
+    ),
+    "helpers": (
+        "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)",
+        "## Phase 2 — Spawn Parallel Rendering Branches",
+    ),
+    "phase2-core": (
+        "## Phase 2 — Spawn Parallel Rendering Branches",
+        "### Track A — Slides (slide-designer + the picture stage → fixed slide build)",
+    ),
+    "slides-design": (
+        "### Track A — Slides (slide-designer + the picture stage → fixed slide build)",
+        "**The picture stage** — if `[WORKING_DIR]/photo-requirements.json` has a non-empty `photos` array:",
+    ),
+    "pictures": (
+        "**The picture stage** — if `[WORKING_DIR]/photo-requirements.json` has a non-empty `photos` array:",
+        "**Track A trigger:**",
+    ),
+    "slides-finalize": (
+        "**Track A trigger:**",
+        "### Track B — Worksheets (adaptation-designer → merge gate → worksheet-designer → fixed worksheet build)",
+    ),
+    "worksheet-routing": (
+        "### Track B — Worksheets (adaptation-designer → merge gate → worksheet-designer → fixed worksheet build)",
+        "**Adaptation Designer** — if `adaptation-designer` exists AND the worksheet is a per-child sheet (not a shared frame, per the check just above):",
+    ),
+    "worksheet-adaptation": (
+        "**Adaptation Designer** — if `adaptation-designer` exists AND the worksheet is a per-child sheet (not a shared frame, per the check just above):",
+        "**Worksheet Designer** — if `worksheet-designer` exists AND either:",
+    ),
+    "worksheet-render": (
+        "**Worksheet Designer** — if `worksheet-designer` exists AND either:",
+        "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
+    ),
+    "other-resources": (
+        "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
+        "## Phase 3 — Wait for All Branches",
+    ),
+    "phase3": (
+        "## Phase 3 — Wait for All Branches",
+        "## Phase 3.5 — Visual Check and Repair (after all builders, before the report and sync)",
+    ),
+    "visual-review": (
+        "## Phase 3.5 — Visual Check and Repair (after all builders, before the report and sync)",
+        "### The focused owner-repair round",
+    ),
+    "focused-repair": (
+        "### The focused owner-repair round",
+        "### Deterministic final merge",
+    ),
+    "finalize-review": (
+        "### Deterministic final merge",
+        "## Phase 4 — Final Assembly and Report",
+    ),
+    "delivery": (
+        "## Phase 4 — Final Assembly and Report",
+        None,
+    ),
+}
+
+
+def expected_slice(data: bytes, start_text: str, end_text: str | None) -> bytes:
+    start = start_text.encode("utf-8")
+    start_index = data.index(start)
+    if end_text is None:
+        return data[start_index:]
+    end = end_text.encode("utf-8")
+    return data[start_index:data.index(end)]
+
+
+class MakeLessonRuntimeTests(unittest.TestCase):
+    def run_slice(
+        self,
+        name: str,
+        *,
+        expected_returncode: int = 0,
+    ) -> subprocess.CompletedProcess[bytes]:
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--slice", name],
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(
+            completed.returncode,
+            expected_returncode,
+            completed.stderr.decode("utf-8", errors="replace"),
+        )
+        return completed
+
+    def test_every_runtime_slice_matches_playbook_bytes(self) -> None:
+        data = PLAYBOOK.read_bytes()
+
+        for name, bounds in BOUNDS.items():
+            with self.subTest(slice=name):
+                completed = self.run_slice(name)
+                self.assertEqual(
+                    completed.stdout,
+                    expected_slice(data, *bounds),
+                )
+                self.assertEqual(completed.stderr, b"")
+
+    def test_runtime_markers_are_unique(self) -> None:
+        data = PLAYBOOK.read_bytes()
+
+        markers = set()
+        for start, end in BOUNDS.values():
+            markers.add(start)
+            if end is not None:
+                markers.add(end)
+
+        for marker in sorted(markers):
+            with self.subTest(marker=marker):
+                self.assertEqual(
+                    data.count(marker.encode("utf-8")),
+                    1,
+                )
+
+    def test_every_runtime_slice_stays_bounded(self) -> None:
+        for name in BOUNDS:
+            with self.subTest(slice=name):
+                completed = self.run_slice(name)
+                self.assertLess(
+                    len(completed.stdout),
+                    70000,
+                )
+
+    def test_initial_design_slice_excludes_later_review_work(
+        self,
+    ) -> None:
+        design = (
+            self.run_slice("design")
+            .stdout.decode("utf-8")
+        )
+        review = (
+            self.run_slice("design-review")
+            .stdout.decode("utf-8")
+        )
+
+        self.assertIn(
+            "## Phase 1",
+            design,
+        )
+        self.assertNotIn(
+            "## Phase 1.25",
+            design,
+        )
+        self.assertNotIn(
+            "Spawn the `design-reviewer`",
+            design,
+        )
+        self.assertNotIn(
+            "REDESIGN REQUIRED",
+            design,
+        )
+
+        self.assertTrue(
+            review.startswith(
+                "## Phase 1.25"
+            )
+        )
+        self.assertIn(
+            "Spawn the `design-reviewer`",
+            review,
+        )
+        self.assertIn(
+            "REDESIGN REQUIRED",
+            review,
+        )
+
+    def test_slide_designer_prompt_refuses_general_presentations_skill(
+        self,
+    ) -> None:
+        slides = (
+            self.run_slice("slides-design")
+            .stdout.decode("utf-8")
+        )
+
+        self.assertIn(
+            "This worker creates JSON only.",
+            slides,
+        )
+        self.assertIn(
+            "Do not load or use the global `Presentations` skill.",
+            slides,
+        )
+        self.assertIn(
+            "The fixed slide builder creates the PowerPoint after this worker completes.",
+            slides,
+        )
+
+    def test_pre_first_worker_runtime_text_stays_below_fifty_kib(
+        self,
+    ) -> None:
+        total = sum(
+            len(
+                self.run_slice(name).stdout
+            )
+            for name in (
+                "controller",
+                "setup",
+                "design",
+            )
+        )
+
+        self.assertLess(
+            total,
+            50 * 1024,
+        )
+
+    def test_focused_repair_slice_routes_resource_owners_to_compact_entrypoints(
+        self,
+    ) -> None:
+        focused = (
+            self.run_slice("focused-repair")
+            .stdout.decode("utf-8")
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+        )
+
+        self.assertIn(
+            "do not change `attempt.role`",
+            focused,
+        )
+        self.assertIn(
+            "Return these exact repair-impact fields",
+            focused,
+        )
+
+        for owner, (filename, _, _) in FOCUSED_REPAIR_ENTRYPOINTS.items():
+            with self.subTest(owner=owner):
+                expected_route = (
+                    f"- `{owner}`: use "
+                    f"`[PLUGIN_ROOT]/agents/{filename}`;\n"
+                    "  if that file is missing or unreadable, use "
+                    f"`[PLUGIN_ROOT]/agents/{owner}.md`."
+                )
+                self.assertIn(expected_route, focused)
+
+    def test_focused_repair_entrypoints_are_compact_and_keep_owner_models(
+        self,
+    ) -> None:
+        for owner, (
+            filename,
+            model,
+            effort,
+        ) in FOCUSED_REPAIR_ENTRYPOINTS.items():
+            with self.subTest(owner=owner):
+                compact_path = AGENTS / filename
+                full_path = AGENTS / f"{owner}.md"
+
+                self.assertTrue(compact_path.is_file())
+                self.assertTrue(full_path.is_file())
+
+                compact_bytes = compact_path.read_bytes()
+                full_bytes = full_path.read_bytes()
+                compact_text = compact_bytes.decode("utf-8")
+
+                self.assertLess(len(compact_bytes), len(full_bytes))
+                self.assertLess(len(compact_bytes), 8000)
+                self.assertIn(
+                    f"name: {filename.removesuffix('.md')}",
+                    compact_text,
+                )
+                self.assertIn(
+                    f"model: {model}",
+                    compact_text,
+                )
+                self.assertIn(
+                    f"effort: {effort}",
+                    compact_text,
+                )
+                self.assertIn(
+                    f"existing `{owner}` semantic owner",
+                    compact_text,
+                )
+                self.assertIn(
+                    "Do not read the full creation role at the start of the repair.",
+                    compact_text,
+                )
+                self.assertIn(
+                    f"`[PLUGIN_ROOT]/agents/{owner}.md` once",
+                    compact_text,
+                )
+                self.assertNotIn(
+                    "Read these at the start of every run",
+                    compact_text,
+                )
+
+    def test_creation_slices_do_not_reference_focused_repair_entrypoints(
+        self,
+    ) -> None:
+        for slice_name in (
+            "slides-design",
+            "worksheet-render",
+            "other-resources",
+        ):
+            output = self.run_slice(slice_name).stdout.decode("utf-8")
+            for owner, (filename, _, _) in FOCUSED_REPAIR_ENTRYPOINTS.items():
+                with self.subTest(slice=slice_name, owner=owner):
+                    self.assertNotIn(filename, output)
+
+    def test_unknown_slice_fails_closed(self) -> None:
+        completed = self.run_slice(
+            "not-a-slice",
+            expected_returncode=2,
+        )
+        self.assertEqual(completed.stdout, b"")
+        self.assertEqual(
+            completed.stderr,
+            (
+                "MAKE_LESSON_RUNTIME_ERROR: unknown slice: not-a-slice"
+                + os.linesep
+            ).encode("utf-8"),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,149 @@
+"""Resolve where a built lesson, deck, or set of resources is filed on SharePoint.
+
+This is the single filing resolver used by the make-lesson skill. Keeping the rule
+here is deliberate: where a lesson lands (and especially the core-versus-foundation
+difference below) stays in one place instead of being duplicated inside the
+orchestrator.
+
+Usage:
+    python3 resolve-filing.py <Term.md path> <year group> <subject>
+
+It prints five KEY=VALUE lines the caller stores:
+    TERM_FOLDER   the half-term folder, e.g. "Summer 2"
+    WEEK_NUM      the teaching week within that half-term, e.g. 1
+    DAY           the weekday for core subjects (Maths/English/Reading/Writing);
+                  empty for foundation subjects, which file with no day layer
+    BUMPED        "yes" when the day was stepped forward past an already-filled
+                  slot (core only), so the announcement can lead with the move
+    IS_CORE       "yes" for core subjects, "no" for foundation; the caller passes
+                  DAY to the sync only when this is "yes"
+
+Core subjects are taught daily and filed by day (Maths/Monday/). Foundation
+subjects (Science, History, Geography, Art, DT, Music, PE, RE, PSHE, Computing,
+and the rest) are taught once a week and file straight into the subject folder
+with no day layer, matching how the teacher actually organises the drive.
+
+On a date that falls outside any teaching term it prints a single ERROR line.
+"""
+import sys, re, os, glob
+from datetime import date, timedelta, datetime
+
+term_md = sys.argv[1]
+year    = sys.argv[2] if len(sys.argv) > 2 else ''
+subject = sys.argv[3] if len(sys.argv) > 3 else ''
+
+def parse_date(s):
+    s = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', s.strip())
+    for fmt in ('%A %d %B %Y', '%d %B %Y', '%d %b %Y'):
+        try: return datetime.strptime(s, fmt).date()
+        except ValueError: pass
+    return None
+
+rows = []
+for line in open(term_md):
+    if '|' not in line or '---' in line: continue
+    parts = [p.strip() for p in line.strip().strip('|').split('|')]
+    if len(parts) < 3 or parts[1] in ('Starts', ''): continue
+    s, e = parse_date(parts[1]), parse_date(parts[2])
+    if s and e: rows.append((parts[0], s, e))
+
+TERM_MAP = {'Autumn, term 1':'Autumn 1','Autumn, term 2':'Autumn 2',
+            'Spring, term 3':'Spring 1','Spring, term 4':'Spring 2',
+            'Summer, term 5':'Summer 1','Summer, term 6':'Summer 2'}
+DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday']
+
+# Core subjects are taught daily and filed by day (e.g. Maths/Monday/).
+# Foundation subjects are taught once per week and go straight into the subject
+# folder with no day layer (e.g. Geography/). Adding a day subfolder there would
+# create a folder structure that doesn't match how the teacher actually files.
+CORE_SUBJECTS = {'maths', 'mathematics', 'english', 'reading', 'writing', 'literacy', 'numeracy'}
+is_core = subject.lower() in CORE_SUBJECTS
+
+def resolve(d):                       # (term, week) when d is a teaching-term weekday, else None
+    for name, start, end in rows:
+        if start == end: continue
+        if start <= d <= end and name in TERM_MAP:
+            return TERM_MAP[name], (d - start).days // 7 + 1
+    return None
+
+def first_teaching_day(d, limit=70):  # first weekday on/after d that sits in a teaching term
+    for _ in range(limit):
+        if d.weekday() < 5 and resolve(d): return d
+        d += timedelta(days=1)
+    return None
+
+# The academic-year prefix on the year folder changes each year, so match on the "Year N" suffix.
+# Try the Windows drive form first (this script runs under Windows Python, where "/e/..." won't resolve).
+def find_year_dir(y):
+    if not y: return None
+    override = os.environ.get('SP_BASE')
+    bases = [override] if override else ["E:/Felmore Primary School", "/e/Felmore Primary School"]
+    for base in bases:
+        hits = sorted(glob.glob("%s/* - Year %s" % (base, y)))
+        if hits: return hits[-1]
+    return None
+year_dir = find_year_dir(year)
+
+def _has_content(p):
+    # A day (or subject) folder is "taken" if it holds ANY real file: an
+    # auto-built lesson, or the teacher's own material (an assessment .pdf, a
+    # hand-made deck). This both stops a lesson back-filling onto it and stops
+    # one ever landing on top of the teacher's own work. Office lock files
+    # (~$...) and dotfiles are not real content.
+    if not os.path.isdir(p): return False
+    return any(not f.startswith('~$') and not f.startswith('.') for f in os.listdir(p))
+
+def occupied(d):
+    if not (year_dir and subject): return False
+    r = resolve(d)
+    if not r: return False
+    term, week = r
+    if is_core:
+        p = os.path.join(year_dir, term, "Week %d" % week, subject, DAYS[d.weekday()])
+    else:
+        p = os.path.join(year_dir, term, "Week %d" % week, subject)
+    return _has_content(p)
+
+# Resolve today's starting target, rolling Fri/weekend forward to the next teaching day.
+today_env = os.environ.get('SP_TODAY')
+today = datetime.strptime(today_env, '%Y-%m-%d').date() if today_env else date.today()
+target = first_teaching_day(today + timedelta(days={4:3,5:2,6:1}.get(today.weekday(),0)))
+
+bumped = False
+if target:
+    d = target
+    if is_core:
+        # Place by sequence, never back-fill an earlier gap. Scan this teaching
+        # week Mon..Fri for the LAST day already holding content, then place on
+        # the first free day after it (but never earlier than today's target). A
+        # lesson sequence only moves forward, so an empty day that sits before a
+        # filled one is not a valid slot.
+        week_monday = target - timedelta(days=target.weekday())
+        last_occ = None
+        for i in range(5):
+            wd = week_monday + timedelta(days=i)
+            if wd.weekday() < 5 and resolve(wd) and occupied(wd):
+                last_occ = wd
+        if last_occ is not None:
+            nd = first_teaching_day(last_occ + timedelta(days=1), limit=15)
+            if nd and nd > d: d = nd
+        # Step past any day that is itself still filled: a first-day-of-week that
+        # already holds content, or a slot just filled earlier in this same login
+        # run. Spills into the following week when a week is full.
+        for _ in range(15):
+            if not occupied(d): break
+            nd = first_teaching_day(d + timedelta(days=1), limit=15)
+            if not nd: break
+            d = nd
+        bumped = (d != target)
+    # Foundation subjects: no day layer, no bumping. The week slot resolves once
+    # and the teacher redirects if it already holds content.
+    res = resolve(d)
+    if res:
+        term, week = res
+        day_out = DAYS[d.weekday()] if is_core else ''
+        print(f"TERM_FOLDER={term}\nWEEK_NUM={week}\nDAY={day_out}\nBUMPED={'yes' if bumped else 'no'}\nIS_CORE={'yes' if is_core else 'no'}")
+    else:
+        print("ERROR: target date not in any term period")
+else:
+    print("ERROR: target date not in any term period")

@@ -1,0 +1,72 @@
+{
+  "lessonName": "Reflection Diagonal Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can reflect a shape in a mirror line, including a diagonal one.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Vertical mirror — answer",
+      "instruction": "Reflect the shape in the mirror line.",
+      "body": {
+        "type": "reflection-grid",
+        "cols": 10, "rows": 8,
+        "mirror": { "orientation": "vertical", "at": 5 },
+        "shape": [[2,2],[2,6],[4,6],[4,4],[3,4],[3,2]],
+        "showReflection": true
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Horizontal mirror — answer",
+      "instruction": "Reflect the shape in the mirror line.",
+      "body": {
+        "type": "reflection-grid",
+        "cols": 10, "rows": 8,
+        "mirror": { "orientation": "horizontal", "at": 4 },
+        "shape": [[2,5],[2,7],[5,7],[5,6],[3,6],[3,5]],
+        "showReflection": true
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Diagonal-up mirror — question",
+      "instruction": "Reflect the shape in the diagonal mirror line.",
+      "body": {
+        "type": "reflection-grid",
+        "cols": 8, "rows": 8,
+        "mirror": { "orientation": "diagonal-up", "at": 0 },
+        "shape": [[1,3],[1,6],[3,6],[3,5],[2,5],[2,3]]
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Diagonal-up mirror — answer",
+      "instruction": "Reflect the shape in the diagonal mirror line.",
+      "body": {
+        "type": "reflection-grid",
+        "cols": 8, "rows": 8,
+        "mirror": { "orientation": "diagonal-up", "at": 0 },
+        "shape": [[1,3],[1,6],[3,6],[3,5],[2,5],[2,3]],
+        "showReflection": true
+      }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Diagonal-down mirror — answer",
+      "instruction": "Reflect the shape in the diagonal mirror line.",
+      "body": {
+        "type": "reflection-grid",
+        "cols": 8, "rows": 8,
+        "mirror": { "orientation": "diagonal-down", "at": 6 },
+        "shape": [[0,1],[0,3],[2,3],[2,2],[1,2],[1,1]],
+        "showReflection": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "lessonName": "Containers Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can test the stack and row containers.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test the stack and row containers."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Stack: steps + fraction wall",
+      "instruction": "Your Turn reference panel pattern",
+      "body": {
+        "type": "stack",
+        "items": [
+          { "type": "steps",
+            "steps": [
+              "Shade the first fraction on the fraction wall.",
+              "Shade the second fraction on the fraction wall.",
+              "If both shadings cover the same amount, they are equivalent."
+            ] },
+          { "type": "fraction-wall", "fractions": [2, 4, 8] }
+        ]
+      },
+      "speakerNotes": "Stack container test — steps on top, fraction wall below."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Row: four starter cards",
+      "instruction": "Which civilisation did we learn about today?",
+      "body": {
+        "type": "row",
+        "items": [
+          { "type": "text", "value": "Egyptians" },
+          { "type": "text", "value": "Romans" },
+          { "type": "text", "value": "Ancient Britons" },
+          { "type": "text", "value": "A civilisation we are learning about today" }
+        ]
+      },
+      "speakerNotes": "Row container test — four text blocks side by side."
+    }
+  ]
+}

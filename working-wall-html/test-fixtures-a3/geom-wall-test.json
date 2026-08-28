@@ -1,0 +1,108 @@
+{
+  "topic": "Geometry wall test",
+  "yearGroup": "Year 4",
+  "lessonSlug": "geom-wall-test",
+  "rationaleNote": "Smoke test for line-pair + angle diagram cells and aspect-true placement.",
+  "cards": [
+    {
+      "type": "referenceTable",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Parallel & perpendicular",
+      "columns": [
+        "Line type",
+        "What it means",
+        "Looks like"
+      ],
+      "rows": [
+        [
+          "Parallel",
+          "Same distance apart — never meet",
+          {
+            "visual": {
+              "type": "line-pair",
+              "relationship": "parallel",
+              "form": "horizontal",
+              "notation": "arrows"
+            }
+          }
+        ],
+        [
+          "Perpendicular",
+          "Meet at a right angle",
+          {
+            "visual": {
+              "type": "line-pair",
+              "relationship": "perpendicular",
+              "form": "L",
+              "notation": "right-angle"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "type": "referenceTable",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Types of angle",
+      "columns": [
+        "Angle",
+        "What it means",
+        "Looks like"
+      ],
+      "rows": [
+        [
+          "Acute",
+          "Smaller than a right angle",
+          {
+            "visual": {
+              "type": "angle",
+              "degrees": 40
+            }
+          }
+        ],
+        [
+          "Right",
+          "A square corner",
+          {
+            "visual": {
+              "type": "angle",
+              "degrees": 90
+            }
+          }
+        ],
+        [
+          "Obtuse",
+          "Bigger than a right angle",
+          {
+            "visual": {
+              "type": "angle",
+              "degrees": 130
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "type": "vocabDefinition",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Perpendicular",
+      "definition": "Two lines that meet at a right angle.",
+      "visual": {
+        "type": "line-pair",
+        "relationship": "perpendicular",
+        "form": "L",
+        "notation": "right-angle"
+      }
+    }
+  ],
+  "fixtureSweep": true
+}

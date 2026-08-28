@@ -1,0 +1,77 @@
+{
+  "lessonName": "Maths Visuals Test",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "I can test the ported maths visuals.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test the ported maths visuals.",
+      "instruction": "Three maths drawings in a row."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Number line — red arrow question",
+      "instruction": "Where is 0.7 on this line?",
+      "body": {
+        "type": "numberline",
+        "start": 0, "end": 1, "interval": 0.1, "labels": "all",
+        "arrow": { "at": 0.7, "label": "?" }
+      },
+      "speakerNotes": "Number line test — arrow variant."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Number line — green answer dot",
+      "instruction": "0.7 revealed",
+      "body": {
+        "type": "numberline",
+        "start": 0, "end": 1, "interval": 0.1, "labels": "all",
+        "answer": { "at": 0.7, "text": "0.7" }
+      },
+      "speakerNotes": "Number line test — answer variant."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Number line — stacked",
+      "instruction": "Two scales stacked: halves and quarters",
+      "body": {
+        "type": "numberline",
+        "lines": [
+          { "start": 0, "end": 1, "interval": 0.5,  "labels": "all" },
+          { "start": 0, "end": 1, "interval": 0.25, "labels": "all" }
+        ]
+      },
+      "speakerNotes": "Stacked number-line test."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Place value chart",
+      "instruction": "Thousands through hundredths with decimal point",
+      "body": {
+        "type": "place-value-chart",
+        "columns": ["Th", "H", "T", "O", ".", "t", "h"],
+        "rows": [
+          ["3", "4", "5", "6", null, "7", "8"],
+          ["",  "",  "",  "",  null, "",  ""]
+        ]
+      },
+      "speakerNotes": "Place value chart with 7 columns."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Fraction wall",
+      "instruction": "1, halves, thirds, quarters, sixths, eighths",
+      "body": {
+        "type": "fraction-wall",
+        "fractions": [1, 2, 3, 4, 6, 8]
+      },
+      "speakerNotes": "Fraction wall test — six rows, colour-cycled."
+    }
+  ]
+}

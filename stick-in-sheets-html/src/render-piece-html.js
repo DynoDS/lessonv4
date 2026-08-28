@@ -1,0 +1,199 @@
+"use strict";
+
+// HTML piece renderer for the stick-in pack.
+//
+// Size and validation rules come from the Stick-in visual registry. This file
+// translates them into HTML: pieces carry their figures as inline SVG sized in
+// CSS millimetres, so Chrome's print pipeline preserves their physical size.
+//
+// Each render function returns { html, widthMm, heightMm } for the tiling layer.
+
+const fs = require("fs");
+const path = require("path");
+
+const {
+  VISUALS, ROW_VISUALS, ROW_PER_ROW, BOXES_PER_ROW,
+  missingQuestionContent, ROW_BOX_H_MM, ROW_LINE_GAP_MM, LABEL_DIAGRAM_WIDTH_MM,
+} = require("./visual-registry");
+const { buildLabelDiagramSvg } = require("../../shared/visuals/label-diagram-svg");
+
+const GREY = "#999999";
+
+// Row cell padding and caption-band sizing. The figure-to-line gap is imported
+// above, where its reason lives.
+const ROW_CELL_PAD_MM = 4;   // (cellWMm = boxWMm + 8) → 4mm each side
+const ROW_LABEL_BAND_MM = 8; // extra height per sub-row when writeOnLabels is on
+
+const esc = (s) => String(s == null ? "" : s)
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// Inline a tightSvg result at an exact printed size. The shared modules emit a
+// root <svg> with width/height in px and a matching viewBox; strip the XML
+// prolog and replace the px dimensions with the mm ones so the figure prints at
+// the size the registry decided, scaling by its viewBox.
+function inlineSvg(svgStr, widthMm, heightMm) {
+  return svgStr
+    .replace(/^<\?xml[^?]*\?>/, "")
+    .replace(/^<svg /, `<svg style="display:block" `)
+    .replace(/ width="[^"]*"/, ` width="${widthMm}mm"`)
+    .replace(/ height="[^"]*"/, ` height="${heightMm}mm"`);
+}
+
+function centreWrap(inner, widthMm) {
+  return `<div style="width:${widthMm}mm;margin:0 auto">${inner}</div>`;
+}
+
+// One single-figure write-on item - sizing walk:
+// per-item widthMm override, else fitHeightMm (width follows aspect), else
+// defaultWidthMm; then shrink just enough to fit the reserved handle band so a
+// labelled piece keeps the same tile footprint as an unlabelled one.
+function renderSingle(item, opts = {}) {
+  const def = VISUALS[item.visual];
+  const missing = missingQuestionContent(item);
+  if (missing) {
+    console.warn(`[stick-in] "${item.label || item.visual}": ${missing}, so this item is skipped rather than tiled as blank copies.`);
+    return null;
+  }
+  const rawSpec = item.spec || {};
+  const { svg, w, h, aspect } = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec);
+  const a = aspect ?? w / h;
+  const naturalWidthMm = item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
+  const reserveTopMm = opts.reserveTopMm || 0;
+  const naturalHeightMm = naturalWidthMm / a;
+  const widthMm = reserveTopMm > 0
+    ? Math.max(1, naturalHeightMm - reserveTopMm) * a
+    : naturalWidthMm;
+  const heightMm = widthMm / a;
+  return {
+    html: centreWrap(inlineSvg(svg, widthMm, heightMm), widthMm),
+    widthMm,
+    heightMm: heightMm + reserveTopMm,
+  };
+}
+
+// A strip of N figures, each contain-fitted into one common box with a solid
+// write-on line beneath - same box, same wrap count, same footprint arithmetic,
+// so all the lines sit on one baseline and the strip plans into the same tile.
+function renderRow(item) {
+  const def = ROW_VISUALS[item.visual];
+  const figs = (item.spec && item.spec.figures) || [];
+  if (figs.length === 0) return null;
+  const boxWMm = item.spec?.figureWidthMm ?? def.defaultFigureWidthMm;
+  const cellWMm = boxWMm + 2 * ROW_CELL_PAD_MM;
+  const withLabels = Boolean(item.spec?.writeOnLabels);
+
+  const cells = figs.map((fspec) => {
+    const { svg, w, h } = def.tightSvg(fspec);
+    const scale = Math.min(boxWMm / w, ROW_BOX_H_MM / h);
+    const displayW = w * scale;
+    const displayH = h * scale;
+    const line = withLabels
+      ? `<div style="border-bottom:0.4mm solid ${GREY};height:0;margin-top:${ROW_LINE_GAP_MM}mm"></div>`
+      : "";
+    // Bottom-aligned figure so every write-on line sits level however tall the
+    // figure inside the common box is.
+    return `<td style="width:${cellWMm}mm;height:${ROW_BOX_H_MM + ROW_LINE_GAP_MM}mm;vertical-align:bottom;padding:1mm 2mm;border:none">` +
+      `<div style="display:flex;align-items:flex-end;justify-content:center;height:${ROW_BOX_H_MM}mm">` +
+      inlineSvg(svg, displayW, displayH) +
+      `</div>${line}</td>`;
+  });
+
+  const colCount = Math.min(figs.length, ROW_PER_ROW);
+  const rows = [];
+  for (let i = 0; i < cells.length; i += ROW_PER_ROW) {
+    const rowCells = cells.slice(i, i + ROW_PER_ROW);
+    while (rowCells.length < colCount) rowCells.push(`<td style="width:${cellWMm}mm;border:none"></td>`);
+    rows.push(`<tr>${rowCells.join("")}</tr>`);
+  }
+
+  const rowCount = Math.ceil(figs.length / ROW_PER_ROW);
+  return {
+    html: `<table style="border-collapse:collapse;margin:0 auto"><tbody>${rows.join("")}</tbody></table>`,
+    widthMm: colCount * cellWMm,
+    heightMm: rowCount * (ROW_BOX_H_MM + ROW_LINE_GAP_MM + (withLabels ? ROW_LABEL_BAND_MM : 0)),
+  };
+}
+
+// A row of empty solid-bordered boxes the child draws in, caption above each -
+// same box size and footprint arithmetic.
+function renderBoxRow(item) {
+  const boxes = (item.spec && item.spec.boxes) || [];
+  if (boxes.length === 0) return null;
+  const boxMm = item.spec?.boxWidthMm ?? 40;
+  const cellWMm = boxMm + 6;
+
+  const cells = boxes.map((b) => {
+    const caption = b.caption
+      ? `<div style="text-align:center;font-weight:bold;margin-bottom:1mm">${esc(b.caption)}</div>`
+      : "";
+    return `<td style="width:${cellWMm}mm;vertical-align:top;padding:1mm 2mm;border:none">${caption}` +
+      `<div style="width:${boxMm}mm;height:${boxMm}mm;border:0.35mm solid #000;margin:0 auto"></div></td>`;
+  });
+
+  const colCount = Math.min(boxes.length, BOXES_PER_ROW);
+  const rows = [];
+  for (let i = 0; i < cells.length; i += BOXES_PER_ROW) {
+    const rowCells = cells.slice(i, i + BOXES_PER_ROW);
+    while (rowCells.length < colCount) rowCells.push(`<td style="width:${cellWMm}mm;border:none"></td>`);
+    rows.push(`<tr>${rowCells.join("")}</tr>`);
+  }
+
+  const rowCount = Math.ceil(boxes.length / BOXES_PER_ROW);
+  return {
+    html: `<table style="border-collapse:collapse;margin:0 auto"><tbody>${rows.join("")}</tbody></table>`,
+    widthMm: colCount * cellWMm + 8,
+    heightMm: rowCount * (boxMm + 12),
+  };
+}
+
+// The photo-based labelled diagram - the picture is embedded as a data URI
+// inside the shared SVG overlay, so the printed piece shows the same photo the
+// board shows with the same leader lines.
+async function renderLabelDiagram(item, baseDir, opts = {}) {
+  const spec = item.spec || {};
+  if (!spec.image) return null;
+  const imgPath = path.isAbsolute(spec.image) ? spec.image : path.join(baseDir || ".", spec.image);
+  if (!fs.existsSync(imgPath)) {
+    console.warn(`[stick-in] "${item.label || item.visual}": image not found at ${imgPath}, skipping this item.`);
+    return null;
+  }
+  const sharp = require("sharp");
+  const meta = await sharp(imgPath).metadata();
+  const mime = meta.format === "png" ? "image/png" : meta.format === "svg" ? "image/svg+xml" : "image/jpeg";
+  const b64 = fs.readFileSync(imgPath).toString("base64");
+  const { svg, aspect } = buildLabelDiagramSvg({
+    href: `data:${mime};base64,${b64}`,
+    width: meta.width,
+    height: meta.height,
+    callouts: spec.callouts || [],
+    blue: "#0070C0",
+  });
+
+  const a = aspect;
+  const naturalWidthMm = item.widthMm ?? LABEL_DIAGRAM_WIDTH_MM;
+  const reserveTopMm = opts.reserveTopMm || 0;
+  const naturalHeightMm = naturalWidthMm / a;
+  const widthMm = reserveTopMm > 0
+    ? Math.max(1, naturalHeightMm - reserveTopMm) * a
+    : naturalWidthMm;
+  const heightMm = widthMm / a;
+  return {
+    html: centreWrap(inlineSvg(svg, widthMm, heightMm), widthMm),
+    widthMm,
+    heightMm: heightMm + reserveTopMm,
+  };
+}
+
+// One write-on item → { html, widthMm, heightMm }, or null (with a warning)
+// when there is nothing to render.
+async function renderPieceHtml(item, opts = {}) {
+  if (ROW_VISUALS[item.visual]) return renderRow(item);
+  if (item.visual === "draw-box-row") return renderBoxRow(item);
+  if (item.visual === "label-diagram") return renderLabelDiagram(item, opts.baseDir, opts);
+  if (!VISUALS[item.visual]) {
+    throw new Error(`Unknown stick-in visual: "${item.visual}". Add it to VISUALS or ROW_VISUALS in stick-in-sheets-html/src/visual-registry.js.`);
+  }
+  return renderSingle(item, opts);
+}
+
+module.exports = { renderPieceHtml, esc };

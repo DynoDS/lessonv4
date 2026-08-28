@@ -1,0 +1,31 @@
+{
+  "topic": "Adding Fractions Worked Example",
+  "yearGroup": "Year 4",
+  "lessonSlug": "adding-fractions-worked-example",
+  "rationaleNote": "The procedure is multi-step and durable — children will repeat this method across the unit.",
+  "cards": [
+    {
+      "type": "workedExample",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Adding fractions",
+      "items": [
+        {
+          "label": "Step 1",
+          "text": "Check the denominators (bottom numbers) match."
+        },
+        {
+          "label": "Step 2",
+          "text": "Add only the numerators. Keep the denominator."
+        },
+        {
+          "label": "Worked example",
+          "text": "2/5 + 1/5 = 3/5"
+        }
+      ],
+      "photo": null
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "topic": "Working Wall Setup",
+  "yearGroup": "Year 4",
+  "lessonSlug": "fractions-unit-start",
+  "rationaleNote": "First lesson of the fractions unit — the wall is being newly set up, so produce a starter set of zoner headings. No teaching cards earned on this run; they'll come from subsequent lessons.",
+  "cards": [
+    {
+      "type": "sectionHeading",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "heading": "Vocabulary",
+      "colour": "DC2626"
+    },
+    {
+      "type": "sectionHeading",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "heading": "Sentence Stems",
+      "colour": "16A34A"
+    },
+    {
+      "type": "sectionHeading",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "heading": "Modelled Strategies",
+      "colour": "0EA5E9"
+    },
+    {
+      "type": "sectionHeading",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "heading": "Look out for",
+      "colour": "D97706"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "meta": { "lesson": "To identify angles", "yearGroup": "Year 4", "subject": "Maths" },
+  "items": [
+    { "visual": "angle-row", "label": "Name each angle", "spec": { "figures": [
+        { "degrees": 35, "rotation": 20 },
+        { "degrees": 55, "rotation": -15 },
+        { "degrees": 90, "rightAngle": true },
+        { "degrees": 85, "rotation": 5 },
+        { "degrees": 120, "rotation": -10 },
+        { "degrees": 150, "rotation": 25 }
+      ], "writeOnLabels": true } },
+    { "visual": "venn", "label": "Sort the shapes", "spec": { "label1": "has a right angle", "label2": "has 4 equal sides" } }
+  ]
+}

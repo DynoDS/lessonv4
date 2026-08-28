@@ -1,0 +1,56 @@
+{
+  "lessonName": "Three-zone Test",
+  "yearGroup": "Year 4",
+  "subject": "Test",
+  "lo": "I can test the six three-zone templates.",
+  "slides": [
+    {
+      "template": "lesson-cover",
+      "lo": "I can test the six three-zone templates."
+    },
+    {
+      "template": "thirds-h",
+      "title": "thirds-h (three equal columns)",
+      "left":   { "type": "text", "value": "Left third (D)" },
+      "middle": { "type": "text", "value": "Middle third (D)" },
+      "right":  { "type": "text", "value": "Right third (D)" }
+    },
+    {
+      "template": "thirds-v",
+      "title": "thirds-v (three equal rows)",
+      "top":    { "type": "text", "value": "Top third (B)" },
+      "middle": { "type": "text", "value": "Middle third (B)" },
+      "bottom": { "type": "text", "value": "Bottom third (B)" }
+    },
+    {
+      "template": "centre-big-h",
+      "title": "centre-big-h (25 / 50 / 25 horizontal)",
+      "left":   { "type": "text", "value": "Left 25% (G)" },
+      "centre": { "type": "text", "value": "Centre 50% (E-wide)" },
+      "right":  { "type": "text", "value": "Right 25% (G)" }
+    },
+    {
+      "template": "side-big-h",
+      "primarySide": "left",
+      "title": "side-big-h (primary left)",
+      "primary":    { "type": "text", "value": "Primary 50% (C)" },
+      "secondary1": { "type": "text", "value": "Sec 1 25% (G)" },
+      "secondary2": { "type": "text", "value": "Sec 2 25% (G)" }
+    },
+    {
+      "template": "side-big-v",
+      "primarySide": "top",
+      "title": "side-big-v (primary top)",
+      "primary":    { "type": "text", "value": "Primary 50% top (A)" },
+      "secondary1": { "type": "text", "value": "Sec 1 25% (B)" },
+      "secondary2": { "type": "text", "value": "Sec 2 25% (B)" }
+    },
+    {
+      "template": "sandwich-v",
+      "title": "sandwich-v (thin / tall / thin)",
+      "top":    { "type": "text", "value": "Top strip (F)" },
+      "middle": { "type": "text", "value": "Middle big zone (A)" },
+      "bottom": { "type": "text", "value": "Bottom strip (F)" }
+    }
+  ]
+}

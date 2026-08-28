@@ -1,0 +1,186 @@
+"use strict";
+
+// Finding and driving the browser that turns HTML into a printed page.
+//
+// puppeteer-core deliberately, not puppeteer: it ships no browser of its own,
+// so we use the Chrome already installed rather than adding a 300MB download
+// to every checkout. The cost is that we have to find it ourselves, which is
+// what CANDIDATES below is for.
+
+const fs = require("node:fs");
+const path = require("node:path");
+
+// Where ensure-chrome.js puts a downloaded chrome-headless-shell. The version
+// number is part of the folder name and changes with every release, so the
+// cache is searched rather than listed as a fixed path.
+const CACHE_DIR = path.join(__dirname, "..", ".chrome");
+
+const BINARY_NAMES = new Set([
+  "chrome-headless-shell",
+  "chrome-headless-shell.exe",
+  "chrome",
+  "chrome.exe",
+  "chromium",
+]);
+
+function downloadedCandidates(dir = CACHE_DIR) {
+  const found = [];
+  const walk = (d, depth) => {
+    if (depth > 4) return;
+    let entries;
+    try {
+      entries = fs.readdirSync(d, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) walk(p, depth + 1);
+      else if (BINARY_NAMES.has(e.name)) found.push(p);
+    }
+  };
+  walk(dir, 0);
+  return found;
+}
+
+// Ordered by how likely each is to be the one a person actually uses.
+// CHROME_PATH wins outright so a sandbox or CI box can name its own.
+function candidatePaths() {
+  const fromEnv = process.env.CHROME_PATH;
+  return [
+    ...(fromEnv ? [fromEnv] : []),
+    // Windows
+    "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    `${process.env.LOCALAPPDATA || ""}\\Google\\Chrome\\Application\\chrome.exe`,
+    // Linux (the shape a cloud sandbox usually takes)
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    "/snap/bin/chromium",
+    // macOS
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    // A headless shell that ensure-chrome.js downloaded earlier.
+    ...downloadedCandidates(),
+  ].filter(Boolean);
+}
+
+function findChrome() {
+  const tried = candidatePaths();
+  for (const exe of tried) {
+    try {
+      if (fs.existsSync(exe)) return exe;
+    } catch {
+      // An unreadable path is just a path that is not it.
+    }
+  }
+  throw new Error(
+    `NO_CHROME: no Chrome or Chromium found. Tried:\n  ${tried.join("\n  ")}\n` +
+      `Run "node scripts/ensure-chrome.js" to fetch a headless one (needs ` +
+      `the network), or set CHROME_PATH to name one explicitly.`
+  );
+}
+
+// What the PAGE ACTUALLY DID, read out of the finished DOM.
+//
+// The arithmetic fit check runs on estimates: a character width, a line height,
+// a guess at how a word wraps. It is right often enough to plan with and it is
+// not what a child holds. A font that loads slightly wider than assumed, a
+// picture with its own intrinsic size, a long unbroken word - each puts content
+// over the edge of its zone while every estimate still says the sheet fits.
+//
+// So this asks the browser, after layout, with the real fonts loaded. Returned
+// as facts rather than thrown, because the caller decides what a clipped zone
+// means for the artefact it is building.
+const RENDERED_FIT_PROBE = `(() => {
+  const problems = [];
+
+  for (const zone of document.querySelectorAll("[data-worksheet-zone]")) {
+    const rect = zone.getBoundingClientRect();
+    const id = zone.getAttribute("data-worksheet-zone");
+
+    if (
+      zone.scrollWidth > zone.clientWidth + 1 ||
+      zone.scrollHeight > zone.clientHeight + 1
+    ) {
+      problems.push({
+        zone: id,
+        kind: "zone-overflow",
+        scrollWidth: zone.scrollWidth,
+        clientWidth: zone.clientWidth,
+        scrollHeight: zone.scrollHeight,
+        clientHeight: zone.clientHeight,
+      });
+    }
+
+    for (const child of zone.querySelectorAll("*")) {
+      const childRect = child.getBoundingClientRect();
+      if (
+        childRect.right > rect.right + 1 ||
+        childRect.bottom > rect.bottom + 1 ||
+        childRect.left < rect.left - 1 ||
+        childRect.top < rect.top - 1
+      ) {
+        problems.push({ zone: id, kind: "child-clipped" });
+        break;
+      }
+    }
+  }
+
+  return problems;
+})()`;
+
+// The HTML owns its own margins, so the PDF is printed edge to edge. This
+// keeps one source of truth for page geometry: src/page.js, in millimetres.
+//
+// `opts.inspectFit` additionally reads the rendered geometry back and returns
+// `{ pdf, fitProblems }` instead of a bare buffer. It is opt-in because the
+// twenty other scripts that print a page want the buffer they have always had.
+async function htmlToPdf(html, opts = {}) {
+  // Required here rather than at the top so that finding Chrome, and building
+  // HTML-only on a machine without it, never needs the packages installed.
+  const puppeteer = require("puppeteer-core");
+  const browser = await puppeteer.launch({
+    executablePath: findChrome(),
+    headless: true,
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "load" });
+
+    // Fonts decide how wide every word is, and "load" does not wait for them.
+    // Measuring before they arrive measures a different page from the one that
+    // prints, which is worse than not measuring at all: it would report a
+    // verified fit for geometry no child ever sees.
+    await page.evaluate(async () => {
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+    });
+
+    const fitProblems = opts.inspectFit
+      ? await page.evaluate(RENDERED_FIT_PROBE)
+      : null;
+
+    const pdf = await page.pdf({
+      format: "A4",
+      landscape: Boolean(opts.landscape),
+      printBackground: true,
+      preferCSSPageSize: true,
+      displayHeaderFooter: false,
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+    });
+    // page.pdf() returns a Uint8Array in this puppeteer-core version, not a
+    // Node Buffer. The interface promises a Buffer, so wrap it here rather
+    // than leaving every caller to remember the difference.
+    const buffer = Buffer.from(pdf);
+    return opts.inspectFit ? { pdf: buffer, fitProblems } : buffer;
+  } finally {
+    await browser.close();
+  }
+}
+
+module.exports = { findChrome, htmlToPdf, candidatePaths, downloadedCandidates };

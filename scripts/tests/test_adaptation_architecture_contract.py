@@ -1,0 +1,228 @@
+from __future__ import annotations
+
+import re
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+AGENT = (ROOT / "agents" / "adaptation-designer.md").read_text(encoding="utf-8")
+WORKSHEET_DESIGNER = (ROOT / "agents" / "worksheet-designer.md").read_text(
+    encoding="utf-8"
+)
+ADAPTIVE = (ROOT / "references" / "adaptive-adaptation.md").read_text(
+    encoding="utf-8"
+)
+PREFERENCES = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
+SUBJECT_MATHS = (ROOT / "references" / "subject-maths.md").read_text(
+    encoding="utf-8"
+)
+MAKE_LESSON = (
+    (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(encoding="utf-8")
+    + "\n"
+    + (ROOT / "skills" / "make-lesson" / "playbook.md").read_text(encoding="utf-8")
+)
+
+RUNTIME_CONTRACTS = {
+    "agents/adaptation-designer.md": AGENT,
+    "agents/worksheet-designer.md": WORKSHEET_DESIGNER,
+    "references/adaptive-adaptation.md": ADAPTIVE,
+    "references/preferences.md": PREFERENCES,
+    "references/subject-maths.md": SUBJECT_MATHS,
+    "skills/make-lesson/SKILL.md": MAKE_LESSON,
+}
+
+LEGACY_TERMS = (
+    "CHILD Z",
+    "CHILD X",
+    "Child Z",
+    "Child X",
+    "Z/X",
+    "Z or X",
+    "Z and X",
+    "Z's",
+    "X's",
+    "Read it as Z",
+    "read it as X",
+    "Stretch for the greater depth child",
+    "Task shape:\nopen-task",
+    "No generated adaptation needed",
+)
+
+
+class AdaptationArchitectureContractTests(unittest.TestCase):
+    def test_legacy_learner_labels_are_absent_from_runtime_contracts(self) -> None:
+        for path, text in RUNTIME_CONTRACTS.items():
+            for term in LEGACY_TERMS:
+                with self.subTest(path=path, term=term):
+                    self.assertNotIn(term, text)
+
+    def test_adaptation_output_uses_canonical_sections_and_decisions(self) -> None:
+        self.assertIn(
+            "**`adaptation.md`** — one markdown file with two sections: "
+            "`## Greater Depth` and `## Below`. Written to "
+            "`WORKING_DIR/adaptation.md`.",
+            AGENT,
+        )
+        self.assertIn(
+            "Resource decision: [Use Expected unchanged / "
+            "Generate separate Greater Depth adaptation]",
+            AGENT,
+        )
+        self.assertIn(
+            "Resource decision: [Use Expected unchanged / "
+            "Generate separate Below adaptation]",
+            AGENT,
+        )
+        self.assertIn(
+            "Where no separate resource is needed, record the applicable "
+            "`Resource decision: Use Expected unchanged` value and the reason.",
+            AGENT,
+        )
+
+    def test_output_fields_and_photo_contract_are_preserved(self) -> None:
+        for field in (
+            "Resource decision:",
+            "Reason:",
+            "LO:",
+            "Task form:",
+            "Pupil prompt:",
+            "Response:",
+            "Support:",
+            "Visual requirements:",
+            "Photo refs:",
+            "Fit priority:",
+            "Answers for Greater Depth:",
+            "Selected tier:",
+            "Evidence or basis for tier:",
+            "Class LO:",
+            "Below objective:",
+            "Working level used:",
+            "Connection to class learning:",
+            "Next-step objective:",
+            "Support and representation decision:",
+            "Reading-access check:",
+            "Answers for Below:",
+        ):
+            with self.subTest(field=field):
+                self.assertIn(field, AGENT)
+
+        self.assertIn("## Photos for the sheets", AGENT)
+        self.assertIn("fenced `json` code block", AGENT)
+        self.assertIn("adaptation-photo-001", AGENT)
+        self.assertIn("CURRENT_PROMOTED_PHOTO_COUNT", MAKE_LESSON)
+        self.assertIn("PHOTO_SLOTS_REMAINING", MAKE_LESSON)
+        self.assertIn("build-provisional", MAKE_LESSON)
+        self.assertIn("select-worksheet", MAKE_LESSON)
+        self.assertIn("promote-used", MAKE_LESSON)
+
+    def test_teacher_provided_and_shared_frame_routes_are_preserved(self) -> None:
+        self.assertIn('worksheet.status == "provided-by-teacher"', AGENT)
+        self.assertIn('worksheet.status == "provided-by-teacher"', MAKE_LESSON)
+        self.assertIn(
+            'worksheet.status == "provided-by-teacher"',
+            WORKSHEET_DESIGNER,
+        )
+        self.assertIn("shared-frame", AGENT)
+        self.assertIn("shared-frame", MAKE_LESSON)
+        self.assertIn(
+            "there are no separate Below or Greater Depth resources to design",
+            MAKE_LESSON,
+        )
+        self.assertIn(
+            'Note "Adaptation: skipped (shared working frame, one sheet)"',
+            MAKE_LESSON,
+        )
+        self.assertNotIn("three-sheet fan-out", MAKE_LESSON)
+
+    def test_greater_depth_practice_is_not_depth_by_itself(self) -> None:
+        sentence = (
+            "Fresh same-objective practice may be included when it improves "
+            "case coverage, but harder numbers, extra quantity or a changed "
+            "surface representation do not by themselves create Greater Depth."
+        )
+        for path, text in (
+            ("agents/adaptation-designer.md", AGENT),
+            ("references/adaptive-adaptation.md", ADAPTIVE),
+            ("references/subject-maths.md", SUBJECT_MATHS),
+        ):
+            with self.subTest(path=path):
+                self.assertIn(sentence, text)
+
+    def test_rules_are_contiguous_and_resource_based(self) -> None:
+        rules = AGENT.split("## Rules That Never Change", 1)[1].split(
+            "\n---\n",
+            1,
+        )[0]
+        numbers = re.findall(r"(?m)^(\d+)\. \*\*", rules)
+        self.assertEqual(numbers, [str(number) for number in range(1, 9)])
+        self.assertIn(
+            "**Greater Depth stays on the class objective and within "
+            "year-group content.**",
+            rules,
+        )
+        self.assertIn(
+            "**Do not change the class lesson or Expected resource.**",
+            rules,
+        )
+
+    def test_readback_uses_resource_vantages(self) -> None:
+        self.assertIn(
+            "### Read the Greater Depth work, then the Below work",
+            AGENT,
+        )
+        self.assertIn(
+            "List from the adaptation: any Greater Depth practice or task "
+            "and any Below task.",
+            AGENT,
+        )
+        self.assertIn(
+            "A fault that lives entirely inside the class lesson goes in the "
+            "output notes under rule 8",
+            AGENT,
+        )
+
+    def test_worksheet_handoff_uses_task_form(self) -> None:
+        self.assertIn("`Task form: open task`", WORKSHEET_DESIGNER)
+        self.assertNotIn("Task shape:", WORKSHEET_DESIGNER)
+        self.assertNotIn("open-task", WORKSHEET_DESIGNER)
+
+    def test_orchestrator_delegates_reference_loading_and_uses_resource_terms(
+        self,
+    ) -> None:
+        spawn = MAKE_LESSON.split("**Adaptation Designer**", 1)[1].split(
+            "**Track B trigger:**",
+            1,
+        )[0]
+        self.assertIn(
+            "Follow the agent file's `Before You Start` instructions exactly.",
+            spawn,
+        )
+        self.assertNotIn("Also read these reference files at the start:", spawn)
+        self.assertIn(
+            "one `## Greater Depth` section and one `## Below` section",
+            spawn,
+        )
+        self.assertIn(
+            "TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt",
+            spawn,
+        )
+        self.assertIn("TEACHER_WORKSHEET_INPUT", spawn)
+        self.assertIn("fenced `json` object", spawn)
+
+    def test_preferences_and_maths_reference_use_resource_vocabulary(self) -> None:
+        self.assertIn(
+            "the adaptation-designer draws on them for a generated "
+            "Greater Depth resource",
+            PREFERENCES,
+        )
+        self.assertIn("## Default Working-Level Gap", ADAPTIVE)
+        self.assertIn("## Greater Depth in maths", SUBJECT_MATHS)
+        self.assertIn(
+            "before making the Greater Depth and Below resource decisions",
+            SUBJECT_MATHS,
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

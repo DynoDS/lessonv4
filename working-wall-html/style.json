@@ -1,0 +1,67 @@
+{
+  "fonts": {
+    "title": "Comic Sans MS",
+    "body": "Comic Sans MS"
+  },
+  "colours": {
+    "body": "000000",
+    "pureWhite": "FFFFFF",
+    "titleBarText": "FFFFFF",
+
+    "workedExampleTitleBarFill": "00B050",
+    "workedExamplePanelFill": "D5F5E3",
+    "workedExamplePanelLine": "00B050",
+    "workedExampleLabel": "00B050",
+    "workedExampleBadge": "00B050",
+
+    "stickyTitleBarFill": "1F4E79",
+    "stickyPanelFill": "DEEAF1",
+    "stickyPanelLine": "1F4E79",
+    "stickyLabel": "1F4E79",
+
+    "sentenceStemTitleBarFill": "00B050",
+    "sentenceStemPanelFill": "D5F5E3",
+    "sentenceStemPanelLine": "00B050",
+    "sentenceStemLabel": "00B050",
+    "sentenceStemBullet": "00B050",
+
+    "misconceptionTitleBarFill": "D97706",
+    "misconceptionWrongPanelFill": "FCE4D6",
+    "misconceptionWrongPanelLine": "C00000",
+    "misconceptionWrongLabel": "C00000",
+
+    "misconceptionRightPanelFill": "D5F5E3",
+    "misconceptionRightPanelLine": "00B050",
+    "misconceptionRightLabel": "00B050",
+
+    "referenceTableHeaderFill": "1F4E79",
+    "referenceTableHeaderText": "FFFFFF",
+    "referenceTableAltRow": "F4F6FA",
+    "referenceTableGrid": "C9C9C9",
+
+    "vocabDefinitionTitleBarFill": "0D9488",
+    "vocabDefinitionPanelFill": "F0FDFA",
+    "vocabDefinitionPanelLine": "0D9488",
+
+    "equivalenceGridTitleBarFill": "1F4E79",
+    "mnemonicTitleBarFill": "1F4E79",
+
+    "rainbowPalette": ["DC2626", "EA580C", "D97706", "16A34A", "0EA5E9", "9333EA"]
+  },
+  "sizes": {
+    "a3TitlePt": 96,
+    "a4TitlePt": 72,
+    "a3BodyPt": 80,
+    "a4BodyPt": 56,
+    "a4BodyMinPt": 28,
+    "a3BodyMinPt": 36,
+    "labelPt": 36,
+    "panelLabelA3Pt": 56,
+    "panelLabelA4Pt": 40,
+    "panelBorderEighths": 24
+  },
+  "marginsCm": {
+    "a4": 1.2,
+    "a3": 1.6
+  }
+}

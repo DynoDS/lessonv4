@@ -1,0 +1,39 @@
+{
+  "name": "lesson-resources-worksheet-html",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Worksheet HTML engine - reads worksheet.json, writes PDF",
+  "scripts": {
+    "test": "node --test",
+    "sandbox-check": "node scripts/sandbox-check.js",
+    "serve": "node scripts/serve.js",
+    "sheet": "node scripts/build-sheet.js",
+    "variants": "node scripts/build-variants.js",
+    "history": "node scripts/build-history.js",
+    "science": "node scripts/build-science.js",
+    "suggest": "node scripts/suggest.js",
+    "preflight": "node scripts/check-worksheet.js",
+    "showcase": "node scripts/build-showcase.js",
+    "check-render": "node scripts/check-render.js",
+    "showcase-book": "node scripts/build-showcase-book.js",
+    "size-ladder": "node scripts/build-size-ladder.js",
+    "composed": "node scripts/build-composed.js",
+    "real": "node scripts/build-real.js",
+    "published": "node scripts/build-published.js",
+    "gallery": "node scripts/build-gallery.js",
+    "photo-sheet": "node scripts/build-photo-sheet.js",
+    "check-sheet": "node scripts/build-check-sheet.js",
+    "worksheet": "node scripts/build-worksheet.js",
+    "ensure-chrome": "node scripts/ensure-chrome.js",
+    "catalogue": "node scripts/build-catalogue.js",
+    "layouts": "node scripts/build-layouts-doc.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "^23.0.0",
+    "pdf-lib": "^1.17.1"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18"
+  }
+}

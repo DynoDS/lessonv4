@@ -1,0 +1,21 @@
+{
+  "topic": "Our Local Area",
+  "yearGroup": "Year 3",
+  "lessonSlug": "local-area-overview-a3",
+  "rationaleNote": "Minimal photoMapOverview fixture for the A3 baseline set.",
+  "cards": [
+    {
+      "type": "photoMapOverview",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "Our local area",
+      "map": { "photo": "photos/pizza.jpg", "caption": "Map of our local area" },
+      "tiles": [
+        { "title": "The park", "photo": "photos/pizza.jpg", "caption": "Where people play and relax" },
+        { "title": "The high street", "photo": "photos/pizza.jpg", "caption": "Where people shop" },
+        { "title": "The school", "photo": "photos/pizza.jpg", "caption": "Where children learn" }
+      ],
+      "keyHeading": "The big idea",
+      "keySentence": "Our local area has different zones for different jobs."
+    }
+  ]
+}

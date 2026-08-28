@@ -1,0 +1,22 @@
+{
+  "topic": "Adding Fractions Photo Test",
+  "yearGroup": "Year 4",
+  "lessonSlug": "adding-fractions-photo-test",
+  "rationaleNote": "Test photo reuse from a relative path.",
+  "cards": [
+    {
+      "type": "stickyKnowledge",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Remember",
+      "items": [
+        {
+          "text": "When the bottom numbers match, just add the top numbers."
+        }
+      ],
+      "photo": "photos/pizza.jpg"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "meta": { "lesson": "To identify angles", "yearGroup": "Year 4", "subject": "Maths" },
+  "items": [
+    { "visual": "angle-row", "label": "Name each angle", "spec": { "figures": [], "writeOnLabels": true } },
+    { "visual": "venn", "label": "Sort the shapes", "spec": {} }
+  ]
+}

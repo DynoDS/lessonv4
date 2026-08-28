@@ -1,0 +1,162 @@
+{
+  "meta": {
+    "lesson": "Finding places with grid references",
+    "lo": "To find and give four-figure grid references on a map",
+    "yearGroup": "Year 4",
+    "subject": "Geography"
+  },
+  "sheets": {
+    "expected": {
+      "title": "Finding places with grid references",
+      "layout": "thirds-stacked",
+      "orientation": "portrait",
+      "zones": {
+        "a": {
+          "parts": [
+            1.8,
+            1
+          ],
+          "row": [
+            {
+              "helper": "grid-map",
+              "eastings": [
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "northings": [
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "river": [
+                [
+                  31,
+                  54.6
+                ],
+                [
+                  32.4,
+                  53.8
+                ],
+                [
+                  33.2,
+                  53.1
+                ],
+                [
+                  34.1,
+                  52.4
+                ],
+                [
+                  35,
+                  51.6
+                ]
+              ],
+              "features": [
+                {
+                  "name": "Mill",
+                  "square": [
+                    32,
+                    53
+                  ],
+                  "type": "human"
+                },
+                {
+                  "name": "Wood",
+                  "square": [
+                    34,
+                    54
+                  ],
+                  "type": "physical"
+                },
+                {
+                  "name": "Bridge",
+                  "square": [
+                    33,
+                    51
+                  ],
+                  "type": "human"
+                }
+              ]
+            },
+            {
+              "question": true,
+              "helper": "questions",
+              "items": [
+                "Give the four-figure grid reference for the mill.",
+                "What is found at 3454?",
+                "Which square does the river leave the map in?"
+              ]
+            }
+          ]
+        },
+        "b": {
+          "stack": [
+            {
+              "helper": "source-text",
+              "heading": "A walker's notebook",
+              "paragraphs": [
+                "We started at the bridge and followed the river north-west, keeping the water on our left. The mill came into view after about twenty minutes, and we stopped there to eat."
+              ],
+              "attribution": "From a walking diary, 2019"
+            },
+            {
+              "question": true,
+              "helper": "questions",
+              "items": [
+                "In which direction did the walkers travel?",
+                "Which two places did they pass between?"
+              ]
+            }
+          ]
+        },
+        "c": {
+          "stack": [
+            {
+              "helper": "recording-table",
+              "caption": "Complete the table for three more places",
+              "columns": [
+                "Place",
+                "Grid reference",
+                "Next to the river?"
+              ],
+              "rowLabels": [
+                "Wood",
+                "Bridge",
+                "Your choice"
+              ],
+              "writing": "word"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "answerKey": {
+    "expected": [
+      {
+        "question": 1,
+        "answer": "3253"
+      },
+      {
+        "question": 2,
+        "answer": "The wood"
+      },
+      {
+        "question": 3,
+        "answer": "3451"
+      },
+      {
+        "question": 4,
+        "answer": "North-west"
+      },
+      {
+        "question": 5,
+        "answer": "The bridge and the mill"
+      }
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "lessonName": "Stage D Category Colours",
+  "yearGroup": "Year 4",
+  "subject": "Geography",
+  "lo": "I can compare categories and follow their colour consistently.",
+  "slides": [
+    {
+      "template": "teach-compare",
+      "title": "National and local government",
+      "instruction": "Compare the jobs",
+      "leftHeading": "National",
+      "rightHeading": "Local",
+      "leftContent": {
+        "type": "text",
+        "value": "Makes decisions for the whole country.",
+        "categoryColor": "blue"
+      },
+      "rightContent": {
+        "type": "text",
+        "value": "Runs services in the local area.",
+        "categoryColor": "orange"
+      }
+    },
+    {
+      "template": "split-h-50-50",
+      "title": "Sort each responsibility",
+      "instruction": "Say which group it belongs to",
+      "left": {
+        "type": "stack",
+        "categoryColor": "blue",
+        "items": [
+          { "type": "text", "value": "National" },
+          { "type": "bullets", "items": ["Defence", "Passports", "Taxes"] }
+        ]
+      },
+      "right": {
+        "type": "stack",
+        "categoryColor": "orange",
+        "items": [
+          { "type": "text", "value": "Local" },
+          { "type": "bullets", "items": ["Libraries", "Parks", "Bin collection"] }
+        ]
+      }
+    },
+    {
+      "template": "cards-and-bars",
+      "title": "Three regions, one colour each",
+      "instruction": "Use the matching hint",
+      "cards": [
+        {
+          "type": "stack",
+          "categoryColor": "blue",
+          "items": [
+            { "type": "text", "value": "Coastal" },
+            { "type": "text", "value": "Near the sea, with cliffs or beaches." }
+          ]
+        },
+        {
+          "type": "stack",
+          "categoryColor": "orange",
+          "items": [
+            { "type": "text", "value": "Urban" },
+            { "type": "text", "value": "A built-up town or city area." }
+          ]
+        },
+        {
+          "type": "stack",
+          "categoryColor": "purple",
+          "items": [
+            { "type": "text", "value": "Rural" },
+            { "type": "text", "value": "Countryside with fields and villages." }
+          ]
+        }
+      ],
+      "bars": [
+        { "type": "text", "value": "Hint: sea", "categoryColor": "blue" },
+        { "type": "text", "value": "Hint: city", "categoryColor": "orange" },
+        { "type": "text", "value": "Hint: countryside", "categoryColor": "purple" }
+      ]
+    },
+    {
+      "template": "body-full",
+      "title": "Quick questions stay plain",
+      "instruction": "Answer each question",
+      "body": {
+        "type": "question-cards",
+        "questions": [
+          "Who issues passports?",
+          "Who runs libraries?",
+          "Which area is near the sea?"
+        ]
+      }
+    }
+  ]
+}

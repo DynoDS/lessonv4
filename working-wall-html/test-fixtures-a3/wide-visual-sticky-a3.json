@@ -1,0 +1,34 @@
+{
+  "topic": "Reading a Bar Chart",
+  "yearGroup": "Year 3",
+  "lessonSlug": "reading-a-bar-chart",
+  "rationaleNote": "Gap-filling fixture for the HTML port's sweep test: a stickyKnowledge card with a wide-aspect visual (a six-category bar chart with a title), so the STACKED branch of panelWithVisualHtml is exercised (full-width panel, wide visual beneath) rather than the usual side-by-side layout.",
+  "cards": [
+    {
+      "type": "stickyKnowledge",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Remember",
+      "items": [
+        {
+          "text": "Look at the height of the bar, then read across to the number on the scale."
+        },
+        {
+          "text": "A taller bar means more votes."
+        }
+      ],
+      "visual": {
+        "type": "bar-chart",
+        "title": "Our favourite playground games",
+        "categories": ["Football", "Tag", "Skipping", "Hopscotch", "Trim trail", "Handball"],
+        "values": [9, 6, 4, 3, 5, 2],
+        "y_max": 10,
+        "y_interval": 2,
+        "label": "Class 3B survey"
+      },
+      "photo": null
+    }
+  ]
+}

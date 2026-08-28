@@ -1,0 +1,32 @@
+{
+  "topic": "Part-Whole Model Misconception",
+  "yearGroup": "Year 3",
+  "lessonSlug": "part-whole-model-misconception",
+  "rationaleNote": "Gap-filling fixture for the HTML port's sweep test: a misconception card with a diagram visual (triangle-square part-whole model, not a photo), exercising the diagram-under-the-pair branch. The docx builder's diagram maths for this branch renders the picture at 0.75x its stated inches (render-card.js:452-455 works in a 72-per-inch unit without the x96 pixel correction panelWithVisual applies elsewhere); the HTML port matches that size deliberately, so both builders should print the diagram at the same size.",
+  "cards": [
+    {
+      "type": "misconception",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Look out for",
+      "items": [
+        {
+          "label": "Don't",
+          "text": "Write the biggest number in a triangle because it looks like it needs the most room."
+        },
+        {
+          "label": "Do",
+          "text": "The whole always goes in the square. The two parts go in the triangles."
+        }
+      ],
+      "visual": {
+        "type": "triangle-square",
+        "triangles": ["7", "5"],
+        "square": "12"
+      },
+      "photo": null
+    }
+  ]
+}

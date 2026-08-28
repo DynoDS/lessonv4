@@ -1,0 +1,25 @@
+{
+  "topic": "Life in the Rainforest",
+  "yearGroup": "Year 5",
+  "lessonSlug": "rainforest-hero-callouts-a3",
+  "rationaleNote": "Minimal heroCallouts fixture for the A3 baseline set.",
+  "cards": [
+    {
+      "type": "heroCallouts",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "The rainforest canopy",
+      "heroPhoto": "photos/pizza.jpg",
+      "heroCaption": "The canopy layer, seen from below",
+      "groups": [
+        {
+          "title": "What we can see",
+          "items": ["A thick layer of leaves and branches", "Monkeys moving between the trees", "Very little sunlight reaching the ground"]
+        },
+        {
+          "title": "Why it matters",
+          "items": ["Most rainforest animals live here", "It shelters the layers below from heavy rain", "It produces much of the oxygen we breathe"]
+        }
+      ]
+    }
+  ]
+}

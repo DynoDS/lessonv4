@@ -1,0 +1,78 @@
+{
+  "topic": "Tell and write the time to the nearest 5 mins on an analogue clock",
+  "yearGroup": "Year 4",
+  "lessonSlug": "tell-and-write-the-time-to-the-nearest-5-mins-on-an-analogue-clock",
+  "rationaleNote": "Three cards earned: a worked example for the harder 'to' procedure (the new skill this lesson introduces, and the one children are most likely to need to glance back at mid-task), a combined sticky-knowledge card for the two durable rules children must carry away (count in 5s; past side vs to side), and a misconception card for the canonical wrong-hour error at 'to' times. The simpler 'past' procedure was not given its own card, children have a Y2/Y3 foundation for past times and the worked-example card's Step 1 (check which side) directs them to the correct procedure. No photos available in photo-requirements.json.",
+  "note": "Content shortened from the source fixture so it fits A3; the source overflows the builder's own validation even at A4.",
+  "cards": [
+    {
+      "type": "workedExample",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "How to read to times",
+      "items": [
+        {
+          "label": "Step 1",
+          "text": "Check the minute hand: past side or to side?"
+        },
+        {
+          "label": "Step 2",
+          "text": "Count back in 5s from 12 to the minute hand."
+        },
+        {
+          "label": "Step 3",
+          "text": "Check the hour hand: which hour is it nearly at?"
+        },
+        {
+          "label": "Worked example",
+          "text": "8:50 is 10 to 9."
+        }
+      ],
+      "visual": {
+        "type": "clock",
+        "time": "8:50",
+        "label": "10 to 9"
+      },
+      "photo": null
+    },
+    {
+      "type": "stickyKnowledge",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Remember",
+      "items": [
+        {
+          "text": "The minute hand counts in 5s round the clock. Each number means 5 more minutes."
+        },
+        {
+          "text": "Past side (right) = minutes past the hour. To side (left) = minutes to the next hour."
+        }
+      ],
+      "photo": null
+    },
+    {
+      "type": "misconception",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Look out for",
+      "items": [
+        {
+          "label": "Don't",
+          "text": "8:50 is not 10 to 8."
+        },
+        {
+          "label": "Do",
+          "text": "8:50 is 10 to 9."
+        }
+      ],
+      "photo": null
+    }
+  ],
+  "fixtureSweep": true
+}

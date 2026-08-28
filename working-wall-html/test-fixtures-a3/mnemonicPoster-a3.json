@@ -1,0 +1,22 @@
+{
+  "topic": "RUCSAC Problem Solving",
+  "yearGroup": "Year 4",
+  "lessonSlug": "rucsac-mnemonic-a3",
+  "rationaleNote": "Minimal mnemonicPoster fixture for the A3 baseline set.",
+  "cards": [
+    {
+      "type": "mnemonicPoster",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "RUCSAC",
+      "subtitle": "Solving word problems",
+      "items": [
+        { "letter": "R", "phrase": "Read the problem carefully" },
+        { "letter": "U", "phrase": "Understand what it is asking" },
+        { "letter": "C", "phrase": "Choose the right operation" },
+        { "letter": "S", "phrase": "Solve the calculation" },
+        { "letter": "A", "phrase": "Answer the question" },
+        { "letter": "C", "phrase": "Check it makes sense" }
+      ]
+    }
+  ]
+}

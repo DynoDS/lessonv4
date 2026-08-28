@@ -1,0 +1,13 @@
+{
+  "meta": { "lesson": "To identify angles", "yearGroup": "Year 4", "subject": "Maths" },
+  "items": [
+    { "visual": "angle-row", "label": "Name each angle", "spec": { "figures": [
+        { "degrees": 35, "rotation": 20 },
+        { "degrees": 90, "rightAngle": true },
+        { "degrees": 120, "rotation": -10 }
+      ], "writeOnLabels": true } },
+    { "visual": "label-diagram", "label": "Label the plant",
+      "spec": { "image": "no-such-photo-on-disk.jpg", "callouts": [{ "anchor": [50, 50], "label": "stem" }] } },
+    { "visual": "venn", "label": "Sort the shapes", "spec": { "label1": "has a right angle", "label2": "has 4 equal sides" } }
+  ]
+}
