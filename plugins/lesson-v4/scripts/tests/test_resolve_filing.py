@@ -69,3 +69,13 @@ if __name__ == "__main__":
             except AssertionError as e:
                 failed += 1; print("FAIL", name, str(e)[:200])
     sys.exit(1 if failed else 0)
+
+
+def test_out_of_term_date_prints_error_and_exits_nonzero():
+    # A date outside every teaching term used to print ERROR but exit 0, so an
+    # unattended run had no way to notice the destination never resolved.
+    with tempfile.TemporaryDirectory() as tmp:
+        kv, out = run(tmp, {}, today="2026-08-10")
+        assert out.returncode != 0, out.stdout + out.stderr
+        assert "ERROR: target date not in any term period" in out.stdout
+        assert "TERM_FOLDER" not in kv

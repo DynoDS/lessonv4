@@ -10,6 +10,21 @@ RESOURCES = ROOT
 
 
 class WorkerLifecycleOrchestrationTests(unittest.TestCase):
+    def test_retired_controller_scripts_stay_deleted(self):
+        """The live route launches workers directly; the generic controller is gone.
+
+        These scripts were retired dead weight: no agent, skill or command
+        referenced them, and the playbook forbids the artefacts they produce.
+        Reintroducing one silently re-creates a second orchestration route.
+        """
+        for name in (
+            "orchestration-controller.py",
+            "orchestration-attempt.py",
+            "build-orchestration-latency-report.py",
+        ):
+            with self.subTest(script=name):
+                self.assertFalse((ROOT / "scripts" / name).exists())
+
     def test_unified_picture_worker_is_the_only_picture_agent(self):
         agents = sorted(path.name for path in (ROOT / "agents").glob("*image-scout*"))
         self.assertEqual(agents, ["image-scout.md"])
@@ -62,14 +77,10 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         The retired controller route kept its artefacts under generic
         `orchestration-*` directories. The playbook now writes to the working
         directory, and any script still hardcoding an old location fails on an
-        artefact the run definitely produced. Only the two retired controller
-        scripts, which the packaged route never calls, may still name them.
+        artefact the run definitely produced.
         """
         retired = ("orchestration-snapshots", "orchestration-events", "orchestration-jobs")
-        allowed = {"orchestration-controller.py", "orchestration-attempt.py", "build-orchestration-latency-report.py"}
         for path in sorted((ROOT / "scripts").glob("*.py")):
-            if path.name in allowed:
-                continue
             text = path.read_text(encoding="utf-8")
             for directory in retired:
                 with self.subTest(script=path.name, directory=directory):

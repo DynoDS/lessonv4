@@ -74,6 +74,9 @@ subfolder.
 
 Write the teacher's original message verbatim to
 `[WORKING_DIR]/teacher-brief.txt`, read it back once, and require an exact match.
+On a mismatch, rewrite and read back once more; a second mismatch means the
+working directory is not holding files, so stop and report that infrastructure
+fault, because nothing later in the run can persist its outputs either.
 Store clarification replies separately as
 `teacher-clarifications/001.txt`, `002.txt`, and so on. Put genuinely useful
 host inference in `orchestrator-context.md`; it never overrides teacher text.
@@ -86,6 +89,9 @@ teacher-authored files.
 Resolve the filing destination with `scripts/resolve-filing.py` using the first
 explicit year and subject in teacher-authored input, then the fixed LO-to-subject
 lookup in the main skill. Tell the teacher the destination before generation.
+If the resolver prints an `ERROR:` line or exits non-zero, continue the run and
+plan local-only delivery: the destination is a filing convenience, never a gate
+on making the lesson.
 
 For direct fixed slides, worksheets and stick-in sheets, let
 `run-fixed-resource.py` own output-family collision archiving. The retained wall
@@ -140,7 +146,19 @@ TERMINAL_STATE: COMPLETE
 
 After return, require the four outputs and run the success check yourself. Do
 not re-run the scaffold builder: it writes the empty scaffold and would discard
-the finished design. Then run:
+the finished design.
+
+A designer that cannot reach `LESSON_DESIGN_OK` within its bounded repair
+passes returns `LESSON_DESIGN_CHECK_FAILED` with the validator's failure lines.
+Treat that, or a failed orchestrator success check, as one recoverable fault:
+launch one fresh clean-context Lesson Designer attempt with the current saved
+files and the exact validator failures. If that attempt also fails the
+validator, nothing downstream can build from an invalid design: go to Phase 4,
+report `BLOCKED` with the exact failures, and deliver `design-decisions.md`
+and the diagnosis, so an unattended run ends with evidence the teacher can act
+on rather than silence.
+
+Then run:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/check-photo-cap.py" \
@@ -151,7 +169,10 @@ If the picture cap exceeds 16, run one focused Lesson Designer revision against
 the current three canonical design files. Preserve learning-critical picture
 jobs, edit only the picture prioritisation and genuinely consequential content,
 do not add `adaptation-photo-###`, and do not rewrite the initial scaffold
-request. Re-run the design validator and photo-cap check.
+request. Re-run the design validator and photo-cap check. The 16-picture cap is
+also enforced inside the design validator, so a contract still over the cap
+after that one revision cannot validate either: treat it as a failed success
+check and use the same one fresh-attempt recovery, not further revision passes.
 
 Carry every `flagsForTeacher` entry into the final report.
 
@@ -214,17 +235,36 @@ After return, run `design-review-packet.py verify` with the prepared preflight,
 reference, view and review, writing `design-review-postflight.json`. Require
 `DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.
 
-If the packet helper is absent, run the same reviewer directly against the three
+If the packet helper is absent, or `prepare` fails deterministically after its
+one infrastructure retry, run the same reviewer directly against the three
 canonical design files, require `APPROVED` or `REDESIGN REQUIRED` in
 `design-review.md`, and run `validate-lesson-design.py
 --initial-photo-namespace` afterwards.
+
+If `verify` fails after a completed review, do not discard or re-run the
+review. Re-run `validate-lesson-design.py --initial-photo-namespace` yourself:
+when it passes, continue on the exact `Result` in `design-review.md` and record
+the packet failure in the run report; when it fails, the review pass has
+corrupted the canonical files, so route the validator's failures through the
+Phase 1 fresh-attempt recovery.
 
 For `APPROVED`, continue. For `REDESIGN REQUIRED`, give Lesson Designer the
 current canonical files plus the complete diagnosis. Preserve named passing
 content, edit the same paths, do not rewrite the initial scaffold request, and
 re-run design validation, photo cap and independent review. Permit at most two
-semantic redesign passes. If the second review still requires redesign, stop as
-`BLOCKED`; infrastructure retries do not consume this semantic budget.
+semantic redesign passes; infrastructure retries do not consume this semantic
+budget.
+
+If the review after the final permitted redesign still requires redesign, the
+review loop ends there: two complete diagnoses have been spent, and a third
+pass re-argues the same judgement at token cost instead of improving the
+lesson. Continue the pipeline from the current canonical files, which still
+pass deterministic validation, and carry the reviewer's unresolved findings
+verbatim into the run report's blocking faults and the teacher flags. This
+route can never end `COMPLETE`, and the teacher report must lead with the
+unresolved findings: a run that builds the lesson and names the dispute gives
+the teacher something to judge in the morning, where stopping delivers
+nothing.
 
 Append genuine corrections and remaining teacher choices to the shared build
 review log when `PLUGIN_SOURCE_ROOT` is available. Read routing values directly
@@ -574,8 +614,10 @@ Do not poll each worker serially and do not create scheduler state. As each
 worker completes, run its deterministic check and release only its genuine
 dependants. A failed branch does not invalidate a clean independent branch.
 
-Before visual review, require every earned resource to be either built with an
-accepted summary or explicitly excluded with a reason.
+Before visual review, every earned resource must be either built with an
+accepted summary or excluded with a reason. A resource that is neither by this
+point is excluded now, with its exact failing marker as the reason: exclusion
+is the honest record of a branch that ended, not a fault to repair here.
 
 ---
 
@@ -692,14 +734,21 @@ Write `[WORKING_DIR]/run-report.md` with:
 Do not include scheduler contracts, receipts or counts. Picture terminal
 receipts are evidence for picture provenance, not generic completion records.
 
-Run `validate-run-report.py` and require `RUN_REPORT_OK`. Then send a short
+Run `validate-run-report.py` and require `RUN_REPORT_OK`. On failure, repair
+the report from the validator's printed failure list and re-run the check; it
+reports every failure at once, so one repair pass is normally enough. Report
+validation keeps the record honest, it never withholds the record: if the check
+still fails after two repair passes, send the teacher report anyway and include
+the exact `RUN_REPORT_FAILED` output. Then send a short
 teacher-facing report naming the topic, year, subject, objective, lesson scope,
 exact files, pedagogical highlights, design-review result, visual verdict and
 every teacher flag.
 
 Use actual summary output paths, never guessed filenames. A package missing an
 earned output is `PARTIAL`; an unresolved blocking fault is `BLOCKED`; missing
-required visual verification is `UNVERIFIED`.
+required visual verification is `UNVERIFIED`. `BLOCKED` labels the record, not
+the delivery: a blocked package still hands over every resource that built and
+passed its own checks, with the unresolved faults named first.
 
 ### Report format
 
@@ -716,8 +765,11 @@ paths. Run `run-fixed-resource.py sharepoint` directly with the resolved term,
 year, week, subject/day and one `--file` per exact basename. Require schema 1
 `ok: true`, `DESTINATION=` and `STATUS=COPIED`.
 
-Do not create a command job or rerun a scheduler audit. If the mapped drive is
-unavailable, retain local outputs and report the exact local folder.
+Do not create a command job or rerun a scheduler audit. Sync the delivered
+files whatever the package outcome: the run report, not the sync, is where
+faults are told. If the mapped drive is unavailable or the filing destination
+never resolved, retain local outputs and report the exact local folder and
+resolver error.
 
 ### Edge cases
 

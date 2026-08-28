@@ -76,13 +76,52 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         for marker in ("image-scout-designer", "image-scout-ai", "picture-plan", "real-to-AI successor"):
             self.assertNotIn(marker, text)
 
-    def test_finalizer_keeps_publisher_boundary_and_controller_transition_is_generic(self):
+    def test_unattended_run_failure_branches_deliver_instead_of_stopping(self):
+        """Every bounded budget must end in delivery plus honest flags.
+
+        An unattended cloud run cannot answer questions or restart itself, so
+        an exhausted budget that dead-stops hands the teacher nothing in the
+        morning. The playbook must keep the recovery branches that turn each
+        exhaustion into a delivered package with the faults named.
+        """
+        playbook = " ".join(PLAYBOOK.read_text(encoding="utf-8").split())
+
+        # Design review: bounded passes, then continue with findings on record.
+        self.assertIn("Permit at most two semantic redesign passes", playbook)
+        self.assertNotIn("stop as `BLOCKED`", playbook)
+        self.assertIn("carry the reviewer's unresolved findings", playbook)
+
+        # An invalid design gets one fresh recovery attempt, then an evidence-rich stop.
+        self.assertIn("LESSON_DESIGN_CHECK_FAILED", playbook)
+        self.assertIn("one fresh clean-context Lesson Designer attempt", playbook)
+
+        # BLOCKED labels the record; built resources are still delivered and synced.
+        self.assertIn("`BLOCKED` labels the record, not the delivery", playbook)
+        self.assertIn("Sync the delivered files whatever the package outcome", playbook)
+
+        # Report validation repairs the record; it never withholds the teacher report.
+        self.assertIn("send the teacher report anyway", playbook)
+
+        # An unresolved filing destination degrades to local delivery.
+        self.assertIn("plan local-only delivery", playbook)
+
+    def test_lesson_designer_self_repair_is_bounded(self):
+        """The designer's validate-and-fix loop must not run unbounded.
+
+        Every other self-repair loop in the pipeline has a budget; an uncapped
+        validator loop can burn an entire unattended run without producing a
+        design or a diagnosis.
+        """
+        designer = " ".join(
+            (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8").split()
+        )
+        self.assertIn("three repair passes", designer)
+        self.assertIn("LESSON_DESIGN_CHECK_FAILED", designer)
+
+    def test_finalizer_keeps_publisher_boundary(self):
         finalizer = FINALIZER.read_text(encoding="utf-8")
-        controller = (ROOT / "scripts" / "orchestration-controller.py").read_text(encoding="utf-8")
         self.assertIn("publish-picture.py", finalizer)
         self.assertIn("_staging", finalizer)
-        self.assertIn("command jobs may own a transition", controller)
-        self.assertIn("transition", controller)
 
     def test_plugin_metadata_lists_only_unified_picture_worker(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")

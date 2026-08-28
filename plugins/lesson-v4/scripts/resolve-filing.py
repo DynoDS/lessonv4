@@ -144,6 +144,10 @@ if target:
         day_out = DAYS[d.weekday()] if is_core else ''
         print(f"TERM_FOLDER={term}\nWEEK_NUM={week}\nDAY={day_out}\nBUMPED={'yes' if bumped else 'no'}\nIS_CORE={'yes' if is_core else 'no'}")
     else:
+        # Exit non-zero so the caller can tell an unresolved destination
+        # from a resolved one instead of parsing stdout for the ERROR line.
         print("ERROR: target date not in any term period")
+        sys.exit(1)
 else:
     print("ERROR: target date not in any term period")
+    sys.exit(1)

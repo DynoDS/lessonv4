@@ -446,7 +446,13 @@ On the scaffold route, fill the generated files in place; on the no-scaffold fal
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"
 ```
 
-Return only after exits 0 and prints exactly `LESSON_DESIGN_OK`.
+Repair validator failures in grouped passes: fix every currently reported
+fault, then re-run the validator once. Return `COMPLETE` only after it exits 0
+and prints exactly `LESSON_DESIGN_OK`. If it still fails after three repair
+passes, stop repairing: leave the files exactly as last written and return
+`LESSON_DESIGN_CHECK_FAILED` with every validator failure line verbatim. A
+bounded honest failure lets the orchestrator relaunch with the diagnosis; an
+unbounded repair loop burns an unattended run with no one watching.
 
 ---
 
