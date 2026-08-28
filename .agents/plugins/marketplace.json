@@ -1,0 +1,20 @@
+{
+  "name": "lessonv4",
+  "interface": {
+    "displayName": "Lesson v4"
+  },
+  "plugins": [
+    {
+      "name": "lesson-v4",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lesson-v4"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Education"
+    }
+  ]
+}
