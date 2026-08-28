@@ -120,6 +120,131 @@ def atomic_write_json(path: Path, value: Any) -> None:
     temporary.replace(path)
 
 
+def collect_placeholder_paths(
+    node: Any,
+    path: list[Any],
+    out: list[list[Any]],
+) -> None:
+    if isinstance(node, str):
+        if node == PLACEHOLDER:
+            out.append(list(path))
+        return
+
+    if isinstance(node, dict):
+        for key, value in node.items():
+            path.append(key)
+            collect_placeholder_paths(value, path, out)
+            path.pop()
+        return
+
+    if isinstance(node, list):
+        for index, value in enumerate(node):
+            path.append(index)
+            collect_placeholder_paths(value, path, out)
+            path.pop()
+
+
+def resolve_path(
+    node: Any,
+    path: list[Any],
+) -> tuple[bool, Any]:
+    current = node
+
+    for step in path:
+        if isinstance(step, str):
+            if (
+                not isinstance(current, dict)
+                or step not in current
+            ):
+                return False, None
+            current = current[step]
+        else:
+            if (
+                not isinstance(current, list)
+                or step >= len(current)
+            ):
+                return False, None
+            current = current[step]
+
+    return True, current
+
+
+def format_path(name: str, path: list[Any]) -> str:
+    rendered = name
+
+    for step in path:
+        if isinstance(step, str):
+            rendered += f".{step}"
+        else:
+            rendered += f"[{step}]"
+
+    return rendered
+
+
+def decided_fields_at_risk(
+    generated: Any,
+    existing: Any,
+    name: str,
+) -> list[str]:
+    """Paths the fresh scaffold would blank but the existing file has filled.
+
+    The scaffold is a one-shot builder: it runs once, before the design is
+    filled, and every field it owns leaves as `__LESSON_DESIGN_FILL__`. A path
+    that the fresh scaffold marks as a placeholder but the file on disk already
+    answers is decided work, and rewriting the scaffold over it would destroy
+    that work.
+
+    Re-running the builder after correcting the request but before filling is
+    still allowed: every shared path is a placeholder on both sides, so nothing
+    is at risk.
+    """
+    placeholders: list[list[Any]] = []
+    collect_placeholder_paths(generated, [], placeholders)
+
+    at_risk: list[str] = []
+
+    for path in placeholders:
+        found, value = resolve_path(existing, path)
+        if found and value != PLACEHOLDER:
+            at_risk.append(format_path(name, path))
+
+    return at_risk
+
+
+def refuse_to_discard_decided_work(
+    path: Path,
+    generated: Any,
+    name: str,
+) -> None:
+    if not path.exists():
+        return
+
+    try:
+        existing = json.loads(
+            path.read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError):
+        return
+
+    at_risk = decided_fields_at_risk(
+        generated,
+        existing,
+        name,
+    )
+
+    if not at_risk:
+        return
+
+    raise ScaffoldError(
+        f"refusing to discard decided design work in {path}: "
+        f"{len(at_risk)} field(s) already carry a decided value, "
+        f"first {at_risk[0]}. The scaffold builds the empty design once, "
+        "before it is filled. It is not a success check and must never run "
+        "again after any field has been answered. To rebuild from a corrected "
+        "request, delete the file first."
+    )
+
+
 def answer_scaffold() -> dict[str, Any]:
     return {
         "kind": PLACEHOLDER,
@@ -1158,12 +1283,26 @@ def main(
             request
         )
 
+        design_path = Path(args.lesson_design)
+        photos_path = Path(args.photo_requirements)
+
+        refuse_to_discard_decided_work(
+            design_path,
+            design,
+            "lesson-design.json",
+        )
+        refuse_to_discard_decided_work(
+            photos_path,
+            photos,
+            "photo-requirements.json",
+        )
+
         atomic_write_json(
-            Path(args.lesson_design),
+            design_path,
             design,
         )
         atomic_write_json(
-            Path(args.photo_requirements),
+            photos_path,
             photos,
         )
 

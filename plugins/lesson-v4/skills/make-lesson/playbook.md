@@ -728,7 +728,7 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/photo-requirements.json
 - [WORKING_DIR]/lesson-design-scaffold-request.initial.json
 
-SUCCESS_CHECK:
+BUILD_SCAFFOLD_ONCE — run this before you fill anything, and never again:
 python3 "[PLUGIN_ROOT]/scripts/lesson-design-scaffold.py" \
   --request "[WORKING_DIR]/lesson-design-scaffold-request.initial.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
@@ -737,6 +737,10 @@ python3 "[PLUGIN_ROOT]/scripts/lesson-design-scaffold.py" \
 Require exactly:
 LESSON_DESIGN_SCAFFOLD_OK
 
+This command writes the empty scaffold over both files. It is a builder, not a
+check. Once any field is filled, running it again would discard the design.
+
+SUCCESS_CHECK:
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
   --initial-photo-namespace \
   "[WORKING_DIR]/lesson-design.json" \
@@ -749,6 +753,8 @@ TERMINAL_STATE: COMPLETE
 ```
 
 **Wait** for the subagent to complete. Require all three canonical files and `[WORKING_DIR]/lesson-design-scaffold-request.initial.json` to exist. A missing `lesson-design.json`, `photo-requirements.json`, `design-decisions.md` or `lesson-design-scaffold-request.initial.json` is a Phase 1 failure — report the error to the teacher and stop. The scaffold request is provenance only; do not pass it to downstream agents.
+
+Do not re-run the scaffold builder after the Lesson Designer returns. It writes the empty scaffold and would discard the finished design. Re-run the lesson-design validator, not the builder.
 
 After the Lesson Designer returns, write its completion event to
 `[WORKING_DIR]/orchestration-events/phase1-lesson-design-complete.json` and

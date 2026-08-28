@@ -15,6 +15,8 @@ Do not use the scaffold route when the orchestrator supplies an existing `lesson
 7. Replace every exact `__LESSON_DESIGN_FILL__` placeholder with the decided final value, including `null`, `[]`, an object or a scalar where the contract requires it.
 8. Run the normal JSON parse checks and the supplied lesson-design validator. The validator rejects any unresolved scaffold placeholder.
 
+The scaffold command is a builder, not a check. It writes the empty scaffold over both files every time it runs, so it belongs at step 4 only. Never run it again to confirm the work at step 8, and never re-run it once any field has been filled: it would discard the design. The builder itself now refuses to overwrite a file whose fields carry decided values, so a second run fails rather than destroying work.
+
 The scaffold request is initial-build provenance only. It is not an authoritative lesson contract and no downstream agent reads it.
 
 ## Scaffold request

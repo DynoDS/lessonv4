@@ -120,26 +120,60 @@ UNIT_FIELDS = {
 UNIT_OPTIONAL_FIELDS = {"taskStructure"}
 
 SCAFFOLD_PLACEHOLDER = "__LESSON_DESIGN_FILL__"
+PLACEHOLDER_REPORT_LIMIT = 10
 
 
 class ContractError(ValueError):
     pass
 
 
-def reject_unresolved_scaffold_placeholders(node: Any, path: str) -> None:
+def collect_unresolved_scaffold_placeholders(
+    node: Any,
+    path: str,
+    found: list[str],
+) -> None:
     if isinstance(node, str):
         if node == SCAFFOLD_PLACEHOLDER:
-            raise ContractError(f"unresolved scaffold placeholder at {path}")
+            found.append(path)
         return
 
     if isinstance(node, dict):
         for key, value in node.items():
-            reject_unresolved_scaffold_placeholders(value, f"{path}.{key}")
+            collect_unresolved_scaffold_placeholders(value, f"{path}.{key}", found)
         return
 
     if isinstance(node, list):
         for index, value in enumerate(node):
-            reject_unresolved_scaffold_placeholders(value, f"{path}[{index}]")
+            collect_unresolved_scaffold_placeholders(value, f"{path}[{index}]", found)
+
+
+def reject_unresolved_scaffold_placeholders(node: Any, path: str) -> None:
+    """Report every unresolved placeholder, not only the first one found.
+
+    One reported path reads like a single missed field. When the file is still
+    the generated scaffold, that understates the fault badly enough to send a
+    repair down the wrong route, so the count and the leading paths are part of
+    the diagnosis.
+    """
+    found: list[str] = []
+    collect_unresolved_scaffold_placeholders(node, path, found)
+
+    if not found:
+        return
+
+    if len(found) == 1:
+        raise ContractError(f"unresolved scaffold placeholder at {found[0]}")
+
+    shown = found[:PLACEHOLDER_REPORT_LIMIT]
+    remainder = len(found) - len(shown)
+    tail = f", and {remainder} more" if remainder else ""
+
+    raise ContractError(
+        f"unresolved scaffold placeholder at {found[0]}: {len(found)} "
+        f"placeholders are still unresolved, so this file is the generated "
+        f"scaffold rather than a filled design and needs filling throughout, "
+        f"not a single-field repair. Unresolved: {', '.join(shown)}{tail}"
+    )
 
 
 def expect(condition: bool, message: str) -> None:

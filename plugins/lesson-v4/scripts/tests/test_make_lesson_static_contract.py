@@ -186,6 +186,43 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             sorted(positions),
         )
 
+    def test_scaffold_builder_is_never_a_lesson_designer_success_check(self):
+        """The builder rewrites both files as the empty scaffold.
+
+        Listing it under SUCCESS_CHECK, or telling the orchestrator to re-run
+        it after the designer returns, discards the finished design.
+        """
+        text = PLAYBOOK.read_text(encoding="utf-8")
+        start = text.index(
+            "You are the lesson designer. "
+            "Read your agent instructions at:"
+        )
+        end = text.index("TERMINAL_STATE: COMPLETE", start)
+        prompt = text[start:end]
+
+        builder = "lesson-design-scaffold.py"
+        self.assertLess(
+            prompt.index(builder),
+            prompt.index("SUCCESS_CHECK:"),
+            "the scaffold builder must be run before filling, "
+            "not as a success check",
+        )
+        self.assertNotIn(
+            builder,
+            prompt[prompt.index("SUCCESS_CHECK:"):],
+        )
+        self.assertIn("BUILD_SCAFFOLD_ONCE", prompt)
+
+        after_prompt = text[end:]
+        self.assertIn(
+            "Do\nnot re-run the scaffold builder",
+            after_prompt,
+        )
+        self.assertNotIn(
+            "run both success checks yourself",
+            text,
+        )
+
     def test_stage1_lesson_designer_has_no_retired_route_names(self):
         text = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
         for retired in ("Procedural Skills and Explicit Teaching", "Explicit Teaching (Skill-based)", "Explicit Teaching (Content-based)", "Explicit-content", "Procedural / Explicit"):

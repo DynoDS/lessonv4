@@ -506,6 +506,231 @@ def test_cli_writes_parseable_scaffolds_and_exact_success_marker():
         )
 
 
+def run_scaffold_cli(
+    request: dict,
+    root: Path,
+) -> subprocess.CompletedProcess:
+    request_path = root / "request.json"
+
+    request_path.write_text(
+        json.dumps(
+            request,
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    return subprocess.run(
+        [
+            sys.executable,
+            "-S",
+            str(SCAFFOLD),
+            "--request",
+            str(request_path),
+            "--lesson-design",
+            str(root / "lesson-design.json"),
+            "--photo-requirements",
+            str(root / "photo-requirements.json"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_scaffold_refuses_to_discard_a_filled_lesson_design():
+    """The reported failure: the builder re-run as a success check.
+
+    Running the builder again after the design is filled used to rewrite both
+    files as the empty scaffold, so the finished lesson was silently lost and
+    the validator then reported it as one missing field.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+
+        first = run_scaffold_cli(base_request(), root)
+        assert first.returncode == 0, (
+            first.stdout + first.stderr
+        )
+
+        design_path = root / "lesson-design.json"
+        design = json.loads(
+            design_path.read_text(encoding="utf-8")
+        )
+
+        design["lesson"]["lo"] = (
+            "To explain how a food chain transfers energy"
+        )
+        design["lesson"]["displayedLo"] = (
+            "I can explain how a food chain transfers energy"
+        )
+        design["teacherOrientation"] = (
+            "Children already name producers and consumers."
+        )
+
+        design_path.write_text(
+            json.dumps(
+                design,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        second = run_scaffold_cli(base_request(), root)
+
+        assert second.returncode == 1, (
+            "the builder overwrote a filled design"
+        )
+        assert (
+            "LESSON_DESIGN_SCAFFOLD_OK"
+            not in second.stdout
+        )
+        assert (
+            "refusing to discard decided design work"
+            in second.stderr
+        )
+        assert (
+            "lesson-design.json.lesson.lo"
+            in second.stderr
+        )
+
+        preserved = json.loads(
+            design_path.read_text(encoding="utf-8")
+        )
+        assert (
+            preserved["lesson"]["lo"]
+            == "To explain how a food chain transfers energy"
+        ), "the filled design was not preserved"
+
+
+def test_scaffold_refuses_to_discard_a_filled_photo_contract():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+
+        first = run_scaffold_cli(base_request(), root)
+        assert first.returncode == 0, (
+            first.stdout + first.stderr
+        )
+
+        photos_path = root / "photo-requirements.json"
+        photos = json.loads(
+            photos_path.read_text(encoding="utf-8")
+        )
+        photos["lesson_name"] = "food-chains"
+
+        photos_path.write_text(
+            json.dumps(
+                photos,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        second = run_scaffold_cli(base_request(), root)
+
+        assert second.returncode == 1
+        assert (
+            "photo-requirements.json.lesson_name"
+            in second.stderr
+        )
+
+
+def test_scaffold_may_be_rebuilt_from_a_corrected_request_before_filling():
+    """Discrimination case: an untouched scaffold carries no work to lose."""
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+
+        first = run_scaffold_cli(base_request(), root)
+        assert first.returncode == 0, (
+            first.stdout + first.stderr
+        )
+
+        corrected = base_request()
+        corrected["vocabularyCount"] = 5
+        corrected["stickyKnowledgeCount"] = 1
+
+        second = run_scaffold_cli(corrected, root)
+
+        assert second.returncode == 0, (
+            second.stdout + second.stderr
+        )
+        assert (
+            second.stdout.strip()
+            == "LESSON_DESIGN_SCAFFOLD_OK"
+        )
+
+        design = json.loads(
+            (root / "lesson-design.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert len(design["vocabulary"]) == 5
+
+
+def test_unfilled_scaffold_reports_every_placeholder_not_only_the_first():
+    """The one reported path read like a single missed field."""
+    design, photos = scaffold.build_scaffold(
+        base_request()
+    )
+
+    try:
+        validator.validate_design(
+            design,
+            photos,
+            initial_photo_namespace=True,
+        )
+    except validator.ContractError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError(
+            "unfinished scaffold unexpectedly validated"
+        )
+
+    assert (
+        "unresolved scaffold placeholder at "
+        "lesson-design.json.lesson.lo"
+        in message
+    )
+    assert (
+        "placeholders are still unresolved"
+        in message
+    )
+    assert (
+        "not a single-field repair"
+        in message
+    )
+    assert (
+        "lesson-design.json.lesson.displayedLo"
+        in message
+    )
+
+
+def test_single_unresolved_placeholder_still_reports_one_plain_path():
+    """Discrimination case: one missed field must not read as a wiped file."""
+    design, photos = scaffold.build_scaffold(
+        base_request()
+    )
+
+    try:
+        validator.reject_unresolved_scaffold_placeholders(
+            {"lesson": {"lo": scaffold.PLACEHOLDER}},
+            "lesson-design.json",
+        )
+    except validator.ContractError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError(
+            "single placeholder unexpectedly accepted"
+        )
+
+    assert message == (
+        "unresolved scaffold placeholder at "
+        "lesson-design.json.lesson.lo"
+    )
+
+
 if __name__ == "__main__":
     failed = 0
 

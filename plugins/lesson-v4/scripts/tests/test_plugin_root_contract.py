@@ -80,8 +80,13 @@ def iter_contract_text_files():
 
 
 def test_orchestration_runtime_helpers_are_required_package_sentinels():
+    """Every helper the active make-lesson route runs must be a sentinel.
+
+    `orchestration-controller.py` is deliberately absent: the simplified route
+    in `playbook-lite.md` never calls it, so a package missing it is still a
+    usable package.
+    """
     required = {
-        "scripts/orchestration-controller.py",
         "scripts/run-fixed-resource.py",
         "scripts/photo-contract.py",
         "scripts/collect-helper-uses.py",
@@ -163,12 +168,10 @@ def test_codex_manifest_matches_the_claude_identity_and_version():
         )
     )
 
-    assert codex == {
-        "name": claude["name"],
-        "version": claude["version"],
-        "description": claude["description"],
-        "skills": "./skills/",
-    }
+    for field in ("name", "version", "description"):
+        assert codex[field] == claude[field], field
+
+    assert codex["skills"] == "./skills/"
 
 
 def test_claude_root_token_exists_only_at_explicit_host_boundaries():

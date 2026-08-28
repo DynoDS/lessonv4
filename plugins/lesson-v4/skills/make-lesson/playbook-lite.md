@@ -119,13 +119,16 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/photo-requirements.json
 - [WORKING_DIR]/lesson-design-scaffold-request.initial.json
 
-SUCCESS_CHECK:
+BUILD_SCAFFOLD_ONCE — run this before you fill anything, and never again:
 python3 "[PLUGIN_ROOT]/scripts/lesson-design-scaffold.py" \
   --request "[WORKING_DIR]/lesson-design-scaffold-request.initial.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
   --photo-requirements "[WORKING_DIR]/photo-requirements.json"
 Require exactly: LESSON_DESIGN_SCAFFOLD_OK
+This command writes the empty scaffold over both files. It is a builder, not a
+check. Once any field is filled, running it again would discard the design.
 
+SUCCESS_CHECK:
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
   --initial-photo-namespace \
   "[WORKING_DIR]/lesson-design.json" \
@@ -135,8 +138,9 @@ Require exactly: LESSON_DESIGN_OK
 TERMINAL_STATE: COMPLETE
 ```
 
-After return, require the four outputs and run both success checks yourself.
-Then run:
+After return, require the four outputs and run the success check yourself. Do
+not re-run the scaffold builder: it writes the empty scaffold and would discard
+the finished design. Then run:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/check-photo-cap.py" \
