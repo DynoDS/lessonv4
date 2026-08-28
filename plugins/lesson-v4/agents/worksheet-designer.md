@@ -236,7 +236,14 @@ thumbnail, reference it through the exact approved `imagePath` taken from that r
 path or substitute an emoji.
 
 A picture that is still being sourced is not missing; complete the page
-specification and let the builder wait for the approved file.
+specification and let the builder wait for the approved file. Your prompt's
+`PICTURE_STAGE:` line tells you which of those you have. Under `attempting`
+or `none required`, an absent file is simply not sourced yet. Under
+`unavailable` the picture stage stopped before it ran and no approved
+filename will ever be published, so treat every affected ref as a required
+visual with no usable picture, apply the rule immediately below, and name the
+affected refs in your completion report. Never invent, substitute or quietly
+rewrite the task as text because of it.
 
 When a required visual has no approved request, do not put the word or question
 on the page bare and do not redesign the task as text. Omit the affected sheet

@@ -40,10 +40,10 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "slides-design": (
         "### Track A — Slides (slide-designer + the picture stage → fixed slide build)",
-        "**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:",
+        "**The picture stage** - only when Phase 2 resolved `PICTURE_STAGE: attempting`:",
     ),
     "pictures": (
-        "**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:",
+        "**The picture stage** - only when Phase 2 resolved `PICTURE_STAGE: attempting`:",
         "**Track A trigger:**",
     ),
     "slides-finalize": (

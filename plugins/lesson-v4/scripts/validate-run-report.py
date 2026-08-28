@@ -6,7 +6,8 @@ record of what the run produced, what it could not, and why. This validator
 proves that record: the headings are all present in order, the package status
 is one of the four allowed values and never claims ``COMPLETE`` the evidence
 cannot support, every earned resource is accounted for, every delivered path
-exists, and retained picture/friction evidence is reported.
+exists, every picture the contract promised and the run did not publish is
+named, and retained friction evidence is reported.
 
     python3 validate-run-report.py \
         --working-dir PATH --output-dir PATH --report PATH
@@ -44,6 +45,8 @@ PACKAGE_STATUSES = ("COMPLETE", "PARTIAL", "BLOCKED", "UNVERIFIED")
 # picture. A publication failure is a missing picture too, so the teacher must be
 # told about it in the run report.
 PICTURE_FAILURE_STATES = ("omitted", "unsatisfied", "picture_publish_failed")
+# The one state that means the lesson actually got the picture it promised.
+PICTURE_PUBLISHED_STATE = "published"
 
 # The resources a run can earn, and the specification that proves each.
 EARNED_RESOURCES = [
@@ -107,6 +110,29 @@ def resource_names(bullets: list[str]) -> set[str]:
     return names
 
 
+def promised_filenames(working_dir: Path) -> list[str]:
+    """Every picture the approved contract promised this lesson.
+
+    The contract is the only record of a picture the run owed the teacher that
+    survives a picture stage which never started. Receipts do not: a stage that
+    fails its compile or manifest gate writes none at all, so a report derived
+    from receipts alone reads a deck with no photographs as nothing wrong.
+    """
+    contract = read_json(working_dir / "photo-requirements.json", "photo requirements", [])
+    if not isinstance(contract, dict):
+        return []
+    photos = contract.get("photos")
+    if not isinstance(photos, list):
+        return []
+    names = []
+    for photo in photos:
+        if isinstance(photo, dict):
+            filename = photo.get("filename")
+            if isinstance(filename, str) and filename and filename not in names:
+                names.append(filename)
+    return names
+
+
 def report_obligations(working_dir: Path, failures: list[str]) -> dict[str, list[str]]:
     obligations = {
         "picture": [],
@@ -115,15 +141,25 @@ def report_obligations(working_dir: Path, failures: list[str]) -> dict[str, list
 
     receipts_dir = working_dir / "orchestration-receipts"
     picture_dir = receipts_dir / "picture-terminal"
+    published: set[str] = set()
     if picture_dir.is_dir():
         for path in sorted(picture_dir.glob("*.json")):
             payload = read_json(path, str(path), failures)
             if not isinstance(payload, dict):
                 continue
-            if payload.get("terminalState") in PICTURE_FAILURE_STATES:
-                filename = payload.get("filename")
-                if isinstance(filename, str) and filename:
-                    obligations["picture"].append(filename)
+            filename = payload.get("filename")
+            if not isinstance(filename, str) or not filename:
+                continue
+            if payload.get("terminalState") == PICTURE_PUBLISHED_STATE:
+                published.add(filename)
+            elif payload.get("terminalState") in PICTURE_FAILURE_STATES:
+                obligations["picture"].append(filename)
+
+    # A promised picture with no published receipt never reached the lesson,
+    # however far the picture stage got.
+    for filename in promised_filenames(working_dir):
+        if filename not in published and filename not in obligations["picture"]:
+            obligations["picture"].append(filename)
 
     friction_path = working_dir / "friction.md"
     if friction_path.is_file():
@@ -373,6 +409,13 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
             failures.append(
                 "COMPLETE: the report carries PAGE_FIT_UNVERIFIED; an unverified review "
                 "cannot close as COMPLETE."
+            )
+        if obligations["picture"]:
+            failures.append(
+                "COMPLETE: picture(s) the contract promised were never published: "
+                + ", ".join(obligations["picture"])
+                + "; a package that ships without a picture it promised is PARTIAL, "
+                "not COMPLETE."
             )
     return failures
 

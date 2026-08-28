@@ -75,6 +75,56 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
                 with self.subTest(script=path.name, directory=directory):
                     self.assertNotIn(directory, text)
 
+    def test_picture_stage_is_resolved_before_any_designer_launches(self):
+        """The cheap deterministic gate runs before the expensive worker.
+
+        Compilation and its manifest check read only the frozen contract and
+        finish in seconds. Run beside the designers instead, they answer whether
+        the promised photographs are coming only after a deck has already been
+        composed around them, so a stage that fails its gate costs a redesign
+        nobody can route.
+        """
+        text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
+        flat = " ".join(text.split())
+        resolve = flat.index("Resolve the picture stage before launching any designer")
+        compile_at = flat.index("Compile assignments directly")
+        launch_branches = flat.index("Launch independent first-pass designers concurrently")
+        slide_designer = flat.index("You are the slide designer.")
+        self.assertLess(resolve, compile_at)
+        self.assertLess(compile_at, launch_branches)
+        self.assertLess(launch_branches, slide_designer)
+        self.assertEqual(flat.count("Compile assignments directly"), 1)
+
+    def test_resolved_picture_state_reaches_every_designer_that_reads_a_contract(self):
+        text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
+        for marker in (
+            "PICTURE_STAGE: none required",
+            "PICTURE_STAGE: attempting",
+            "PICTURE_STAGE: unavailable",
+            "PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]",
+        ):
+            with self.subTest(marker=marker):
+                self.assertIn(marker, text)
+        # Both model workers whose prompt names a photo contract carry the state.
+        self.assertEqual(
+            text.count("PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]"), 2
+        )
+
+    def test_designers_are_told_which_absent_picture_means_which_thing(self):
+        """Not yet sourced and never coming look identical on disk.
+
+        Treated as one state, the designer either wastes a pass composing around
+        a picture that will never arrive, or abandons a picture that is merely
+        late.
+        """
+        slides = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+        worksheets = (ROOT / "agents" / "worksheet-designer.md").read_text(encoding="utf-8")
+        for text in (slides, worksheets):
+            self.assertIn("PICTURE_STAGE:", text)
+            self.assertIn("unavailable", text)
+        self.assertIn("Never refuse to write `lesson.json`", slides)
+        self.assertIn("on your first pass", slides)
+
     def test_final_resource_visual_review_remains_in_playbook(self):
         text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
         self.assertIn("Visual Review", text)

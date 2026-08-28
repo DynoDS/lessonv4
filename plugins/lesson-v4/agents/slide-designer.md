@@ -48,7 +48,7 @@ Read before the first affected decision:
 Read from the working directory:
 
 - `lesson-design.json`, which is the authoritative pedagogical contract.
-- the exact file named by `PHOTO_REQUIREMENTS_PATH`, which is the authoritative photograph contract for this attempt. Reference only listed filenames. Do not open a different photograph contract.
+- the exact file named by `PHOTO_REQUIREMENTS_PATH`, which is the authoritative photograph contract for this attempt. Reference only listed filenames. Do not open a different photograph contract. Read it against the `PICTURE_STAGE:` state in your prompt: under `unavailable` it still tells you what each beat needed, but none of it will arrive.
 
 Do not read the teacher's original brief to reinterpret the settled lesson design.
 
@@ -220,6 +220,23 @@ Do not:
 - remove the task because the photo is not on disk yet.
 
 The builder waits for the picture stage's terminal result. If a required picture ends unsatisfied, the orchestrator handles degradation according to the existing picture contract.
+
+### When the orchestrator says the pictures are not coming
+
+Your prompt carries a `PICTURE_STAGE:` line. It separates two situations that look identical on disk and call for opposite work.
+
+`attempting` or `none required` is the ordinary case above. The promised files are simply not published yet. Design to the promised filenames, hold the geometry the picture will need, and change nothing because a file is absent.
+
+`unavailable` means the picture stage was resolved and stopped before it ran: no filename in that contract will ever be published, this run or later. Design the deck once, without them, on your first pass. For each affected beat, in this order:
+
+1. carry the same evidence with a representation the deck can draw itself, when the helper catalogue holds one that is genuinely faithful;
+2. otherwise keep the beat, its teaching job and its wording, compose the slide so the task still works without the image, and let the speaker script describe what children would have seen.
+
+Never invent a substitute photograph, semantic-match another file, promote an emoji into a required photograph's place, or delete the learning the picture was carrying. Never refuse to write `lesson.json`: an unavailable picture stage is a thinner deck, not a blocked one.
+
+Name every affected `photoRef` in your completion report so the teacher is told what the lesson does without.
+
+A picture that fails after `lesson.json` is written is not this case. That is one slide, and the orchestrator routes it back as a focused repair. Do not pre-empt it by designing the whole deck around a failure that has not happened.
 
 ### Required image composition
 

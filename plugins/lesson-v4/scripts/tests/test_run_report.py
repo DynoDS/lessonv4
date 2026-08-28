@@ -233,6 +233,72 @@ class TestRunReport(RunReportCase):
         result = self.validate(self.write_report())
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_promised_picture_that_was_never_attempted_must_be_named(self):
+        """A picture stage that never started writes no receipt at all.
+
+        When the compile or manifest gate rejects the contract, no image scout
+        runs and no terminal receipt exists, so a report built from receipts
+        alone reads a deck with no photographs as nothing wrong. The contract is
+        the surviving record of what the lesson owed the teacher.
+        """
+        self.write_json(
+            self.working / "photo-requirements.json",
+            {
+                "schema_version": 2,
+                "lesson_name": "electrical appliances",
+                "photos": [{"id": "photo-001", "filename": "unsplash/kettle.jpg"}],
+            },
+        )
+        report = self.write_report(overrides={"outcome": "Package status: PARTIAL"})
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("unsplash/kettle.jpg", result.stdout)
+
+        report = self.write_report(overrides={
+            "outcome": "Package status: PARTIAL",
+            "picture": "- unsplash/kettle.jpg: picture stage unavailable, slide runs without it",
+        })
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_promised_picture_that_never_arrived_cannot_be_complete(self):
+        self.write_json(
+            self.working / "photo-requirements.json",
+            {
+                "schema_version": 2,
+                "lesson_name": "electrical appliances",
+                "photos": [{"id": "photo-001", "filename": "unsplash/kettle.jpg"}],
+            },
+        )
+        report = self.write_report(overrides={
+            "outcome": "Package status: COMPLETE",
+            "picture": "- unsplash/kettle.jpg: picture stage unavailable",
+        })
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("PARTIAL", result.stdout)
+
+    def test_promised_picture_that_was_published_creates_no_obligation(self):
+        """The discrimination case: the contract promised it and the run got it."""
+        self.write_json(
+            self.working / "photo-requirements.json",
+            {
+                "schema_version": 2,
+                "lesson_name": "electrical appliances",
+                "photos": [{"id": "photo-001", "filename": "unsplash/kettle.jpg"}],
+            },
+        )
+        self.write_json(
+            self.working / "orchestration-receipts" / "picture-terminal" / "jkl.json",
+            {
+                "schemaVersion": 1,
+                "filename": "unsplash/kettle.jpg",
+                "terminalState": "published",
+            },
+        )
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_legacy_helper_receipt_is_not_a_report_dependency(self):
         self.write_json(
             self.working / "orchestration-receipts" / "slide-designer-helper-1.json",

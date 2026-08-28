@@ -62,6 +62,28 @@ not enter, consume or reduce those 16 Image Team places.
 
 ## Priority 2 source routes
 
+### Check the Educational SVG library is here before you use that route
+
+The Educational SVG drawings are a large shared asset set held at
+`[PLUGIN_ROOT]/educational-svg/`. An install of this plugin may not carry
+them. Confirm once, before the opportunity pass reaches any Educational SVG
+decision, that `[PLUGIN_ROOT]/educational-svg/search.js` is present.
+
+If it is absent, the Educational SVG route is unavailable for the whole run.
+Then, on every surface:
+
+- an ordinary P2 uses the emoji route when a clear, child-suitable emoji
+  genuinely fits, and otherwise the item closes text-only;
+- semantic vocabulary P2 and P3 are Educational SVG only, so author none and
+  record the zero with that reason;
+- on the Working Wall, apply the card's visual-entry rule with the emoji route
+  as the only P2 available.
+
+Do not run the search, preview or publish commands, do not read the rest of
+this reference's Educational SVG detail, and do not spend a retry on it. A
+missing optional-picture library is a quieter resource, not a fault, a helper
+gap or a blocking finding, and it never delays or stops a build.
+
 Use either an emoji or a hand-drawn Educational SVG picture.
 
 - An emoji is the fallback route when it is clear, suitable for children and
@@ -257,8 +279,9 @@ Choose the picture that:
 4. remains clear at the intended small size;
 5. keeps its natural proportions and suits the other pictures in the set.
 
-Search the fixed shared library with one short concrete query and up to five
-useful alternatives:
+These rules apply only when the library check above found
+`[PLUGIN_ROOT]/educational-svg/search.js`. Search the fixed shared library
+with one short concrete query and up to five useful alternatives:
 
 `node "[PLUGIN_ROOT]/educational-svg/search.js" --query "<concept>" --query "<useful-alternative>" --limit 12`
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -226,6 +227,47 @@ def test_runtime_contract_does_not_require_project_codex_agents():
                     matches.append(str(path.relative_to(ROOT)))
 
     assert not matches, "\n".join(matches)
+
+# A plugin file an instruction tells a worker to run, whose absence the plugin
+# documents as an ordinary degrade rather than a fault. The library is a large
+# optional asset set, so an install may legitimately not carry it.
+OPTIONAL_INSTRUCTED_PATHS = {
+    "educational-svg/search.js": (
+        ROOT / "references" / "context-pictures.md",
+        "the Educational SVG route is unavailable for the whole run",
+    ),
+}
+
+INSTRUCTED_PATH_RE = re.compile(
+    r"\[PLUGIN_ROOT\]/([A-Za-z0-9._/-]+\.(?:py|js|mjs|cjs|json|md))"
+)
+
+
+def test_every_plugin_file_the_instructions_name_is_actually_shipped():
+    """An instruction may not send a worker to a file the plugin does not have.
+
+    A large asset directory was removed from the package while four roles and a
+    reference still routed into it, so the documented graceful outcome could not
+    be produced: the worker got a crash from a missing script instead.
+    """
+    unshipped: dict[str, set[str]] = {}
+    for folder in ("agents", "references", "skills", "commands"):
+        for path in sorted((ROOT / folder).rglob("*.md")):
+            for named in INSTRUCTED_PATH_RE.findall(path.read_text(encoding="utf-8")):
+                if not (ROOT / named).exists():
+                    unshipped.setdefault(named, set()).add(
+                        str(path.relative_to(ROOT)).replace("\\", "/")
+                    )
+
+    for named, sources in sorted(unshipped.items()):
+        documented = OPTIONAL_INSTRUCTED_PATHS.get(named)
+        assert documented is not None, (
+            f"{named} is named by {sorted(sources)} but the plugin does not ship it"
+        )
+        owner, degrade = documented
+        assert degrade in owner.read_text(encoding="utf-8"), (
+            f"{named} is absent, so {owner.name} must document what a run does instead"
+        )
 
 
 if __name__ == "__main__":

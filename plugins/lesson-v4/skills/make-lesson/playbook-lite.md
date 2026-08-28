@@ -259,10 +259,54 @@ python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" freeze-initial \
 The freeze receipt is the phase boundary; do not create worker snapshots or
 generic receipts.
 
+### Resolve the picture stage before launching any designer
+
+Compilation reads only the frozen contract, is deterministic, and finishes in
+seconds. A designer that reads a photo contract spends far more than that. So
+settle whether the promised photographs will be attempted at all before those
+workers start, and hand every one of them the answer.
+
+If the frozen contract's `photos` array is empty, the state is
+`PICTURE_STAGE: none required` and there is nothing to compile.
+
+Compile assignments directly:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
+  --requirements "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
+  --expected-prefix p \
+  --output-dir "[WORKING_DIR]/picture-assignments/p" \
+  --working-dir "[WORKING_DIR]" \
+  --summary-output "[WORKING_DIR]/picture-assignments/p-summary.json"
+```
+
+Require `PICTURE_ASSIGNMENTS_OK`, then validate the emitted `manifest.json` with
+`validate-image-scout.py manifest` and require `PICTURE_MANIFEST_OK`. Together
+these two markers give the state `PICTURE_STAGE: attempting [N] pictures`.
+
+If either command fails, no photograph in the contract will arrive. That is a
+degradation, not a stop: the state becomes `PICTURE_STAGE: unavailable - [the
+exact failing marker and message]`, the picture stage is skipped for this run,
+and every other branch proceeds. Give it the one infrastructure retry only when
+the command never ran; a command that ran and rejected the contract has given a
+result, and repeating it wastes the run.
+
+Put the resolved `PICTURE_STAGE:` line, verbatim, into the prompt of every
+worker whose authoritative inputs name a photo contract - Slide Designer,
+Worksheet Designer, Working Wall Designer and the stick-in designer. Knowing the
+state at launch is what lets each one design the right resource on its first
+pass instead of composing around a picture that never comes and being redesigned
+afterwards. An unavailable picture stage never excuses a missing specification:
+each designer still writes and validates its owned file.
+
+Carry the same line into the run report's picture results.
+
+### Launch the branches
+
 Launch independent first-pass designers concurrently when host slots permit:
-Slide Designer, worksheet adaptation/routing work, and picture compilation.
-Working Wall and stick-in design wait for `lesson.json` only when their prompts
-require it. Each worker owns only its named canonical specification.
+Slide Designer and worksheet adaptation/routing work. Working Wall and stick-in
+design wait for `lesson.json` only when their prompts require it. Each worker
+owns only its named canonical specification.
 
 Run printable Chrome preflight once before worksheet, wall or stick-in builds.
 Pass its resulting `ready` or `unavailable` state to fixed builders rather than
@@ -291,6 +335,7 @@ OUTPUT_DIR: [OUTPUT_DIR]
 AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
 PHOTO_REQUIREMENTS_PATH: [WORKING_DIR]/phase2-initial-photo-requirements.json
+PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson.json
@@ -312,21 +357,10 @@ Wait for `lesson.json` and require the slide-design marker. Preserve every
 
 ---
 
-**The picture stage** — if `[WORKING_DIR]/phase2-initial-photo-requirements.json` has a non-empty `photos` array:
+**The picture stage** - only when Phase 2 resolved `PICTURE_STAGE: attempting`:
 
-Compile assignments directly:
-
-```text
-python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
-  --requirements "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
-  --expected-prefix p \
-  --output-dir "[WORKING_DIR]/picture-assignments/p" \
-  --working-dir "[WORKING_DIR]" \
-  --summary-output "[WORKING_DIR]/picture-assignments/p-summary.json"
-```
-
-Require `PICTURE_ASSIGNMENTS_OK`, then validate the emitted `manifest.json` with
-`validate-image-scout.py manifest` and require `PICTURE_MANIFEST_OK`.
+The assignments and their validated `manifest.json` already exist: Phase 2
+compiled and checked them before any designer launched. Do not compile again.
 
 Launch one unified `image-scout` per assignment in the manifest, up to four at
 once and no more than two direct-AI batches at once. Use role `image-scout`, its
@@ -361,8 +395,12 @@ Picture provenance is completed after visual review, not here.
 **Track A trigger:**
 
 Wait until Slide Designer and all picture filenames referenced by `lesson.json`
-are terminal. If the lesson uses a labelled diagram over a photo, launch Diagram
-Anchor against the final published image and update only anchor coordinates.
+are terminal. When the resolved state is `PICTURE_STAGE: unavailable` or
+`none required`, no terminal receipt is coming and there is nothing to wait
+for: build the slides from the specification the designer already wrote.
+
+If the lesson uses a labelled diagram over a photo, launch Diagram Anchor
+against the final published image and update only anchor coordinates.
 
 Build slides directly:
 
@@ -439,6 +477,7 @@ OUTPUT_DIR: [OUTPUT_DIR]
 AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
 PHOTO_REQUIREMENTS_PATH: [selected contract path]
+PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 [ADAPTATION_DESIGN when accepted]
 [TEACHER_WORKSHEET_INPUT when supplied]
 
@@ -623,6 +662,13 @@ Require `PICTURE_PROVENANCE_OK` before removing transient picture work. Keep
 requirements snapshots, assignments, terminal receipts and provenance. Delete
 only transient worker results, work roots and orphan prompt/search scratch.
 
+Provenance proves the licence and history of pictures the run published, so it
+runs only when the picture stage attempted them. Under `PICTURE_STAGE:
+unavailable` or `none required` nothing was published and there is nothing to
+prove: skip it, and do not treat its absence as a blocking fault. The teacher
+still learns what the lesson does without from the run report's picture
+results, which name every promised picture the run did not publish.
+
 Append genuine findings to the shared build review log when source access is
 available. Otherwise write the pending log entry in the working directory.
 
@@ -679,7 +725,10 @@ unavailable, retain local outputs and report the exact local folder.
   only enough to resolve Phase-0 routing.
 - A teacher worksheet is the Expected/base sheet; generate only genuinely
   needed adaptations around it.
-- Missing pictures use the approved fallback or omission and are reported.
+- Missing pictures use the approved fallback or omission and are reported. A
+  picture the contract promised and the run did not publish is a missing
+  picture whether one scout failed or the whole stage never started, so it is
+  named in the run report and the package is not `COMPLETE`.
 - A generated worksheet is expected unless the teacher supplied one; an
   unexplained `not-needed` decision is a design fault.
 - Ambiguous or incomplete Lesson Designer output is not silently repaired by

@@ -145,6 +145,20 @@ class PhotoContractTests(unittest.TestCase):
                 "--canonical", "c.json", "--receipt", "r.json",
             ])
 
+    def test_playbook_and_gate_name_the_same_freeze_receipt(self):
+        """The gate reads one receipt path; the playbook writes one receipt path.
+
+        The reported failure was a gate looking where the run had not written.
+        Resolving the snapshot through the receipt fixed that, but only while
+        both sides still agree on where the receipt itself lives, and that
+        agreement is spelled out in two files.
+        """
+        playbook = (ROOT.parent / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
+        gate = (ROOT / "photo-contract.py").read_text(encoding="utf-8")
+        receipt_name = "phase2-initial-photo-requirements.receipt.json"
+        self.assertIn(f'working / "{receipt_name}"', gate)
+        self.assertIn(f'--receipt "[WORKING_DIR]/{receipt_name}"', playbook)
+
     def test_latest_supplemental_snapshot_is_selected_from_valid_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); snapshot = root / "snapshot.json"; snapshot.write_text(json.dumps({"schema_version": 2, "lesson_name": "lesson", "photos": []}), encoding="utf-8")

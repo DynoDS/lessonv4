@@ -17,9 +17,29 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         import subprocess
         result = subprocess.run(["python3", str(RUNTIME), "--slice", "pictures"], capture_output=True, text=True, check=True)
         self.assertIn("one unified `image-scout`", result.stdout)
-        self.assertIn("compile-picture-assignments.py", result.stdout)
         self.assertNotIn("image-scout-designer", result.stdout)
         self.assertNotIn("image-scout-ai", result.stdout)
+
+    def test_compilation_loads_with_phase_2_not_with_the_scouts(self):
+        """Compilation answers whether photographs are coming at all.
+
+        It is loaded and run with the Phase 2 core, before the designers, so its
+        answer can shape the specifications rather than arrive after them. The
+        scout slice is loaded later and only when there is picture work to do.
+        """
+        import subprocess
+
+        def slice_text(name):
+            return subprocess.run(
+                ["python3", str(RUNTIME), "--slice", name],
+                capture_output=True, text=True, check=True,
+            ).stdout
+
+        core = slice_text("phase2-core")
+        pictures = slice_text("pictures")
+        self.assertIn("compile-picture-assignments.py", core)
+        self.assertIn("PICTURE_MANIFEST_OK", core)
+        self.assertNotIn("compile-picture-assignments.py", pictures)
 
     def test_picture_playbook_has_contract_review_compile_worker_finalise_order(self):
         text = PLAYBOOK.read_text(encoding="utf-8")

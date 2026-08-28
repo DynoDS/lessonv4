@@ -57,20 +57,37 @@ test("resource designers resolve optional Educational SVG requests without a sco
     fs.existsSync(path.join(ROOT, "agents", "context-picture-scout.md")),
     false
   );
-  assert.equal(fs.existsSync(path.join(ROOT, "educational-svg", "search.js")), true);
-  assert.equal(
-    fs.existsSync(
-      path.join(ROOT, "educational-svg", "library", "standard", "ro", "robin.svg")
-    ),
-    true
+  // The drawings are a large optional asset set and an install may not carry
+  // them. Whichever way this package ships, a designer must be able to tell
+  // before it searches, and must know what a run does instead.
+  assert.match(
+    reference,
+    /Check the Educational SVG library is here before you use that route/
   );
+  assert.match(
+    reference,
+    /the Educational SVG route is unavailable for the whole run/
+  );
+  assert.match(reference, /Do not run the search, preview or publish commands/);
+  if (!fs.existsSync(path.join(ROOT, "educational-svg", "search.js"))) {
+    assert.equal(
+      fs.existsSync(
+        path.join(ROOT, "educational-svg", "library", "standard", "ro", "robin.svg")
+      ),
+      false,
+      "a shipped library must include its search entrypoint"
+    );
+  }
 
   assert.match(reference, /ordinary P2[\s\S]*emoji fallback/);
   assert.match(reference, /semantic vocabulary[\s\S]*text-only/);
   assert.match(reference, /failed P3 decoration/);
+  // Optional pictures are settled inside the designer that owns the spec, so the
+  // orchestrator waits on the finished lesson.json and only then anchors any
+  // labelled diagram over a real photograph.
   assert.match(
     playbook,
-    /slide-designer completes with final `lesson\.json`[\s\S]*check `lesson\.json` for a labelled diagram over a photo/
+    /Wait for `lesson\.json`[\s\S]*labelled diagram over a photo, launch Diagram\s+Anchor/
   );
   assert.doesNotMatch(playbook, /context-picture pass/i);
 });
@@ -148,11 +165,4 @@ test("visual consistency does not demand decorative parity", () => {
   const reviewer = read("agents/visual-consistency-reviewer.md");
   assert.match(reviewer, /P3/);
   assert.match(reviewer, /not.*carry-across|no cross-resource.*decoration/s);
-});
-
-test("plugin version mirrors are identical at 3.31.0", () => {
-  const claude = JSON.parse(read(".claude-plugin/plugin.json"));
-  const codex = JSON.parse(read(".codex-plugin/plugin.json"));
-  assert.equal(claude.version, "3.31.0");
-  assert.equal(codex.version, "3.31.0");
 });

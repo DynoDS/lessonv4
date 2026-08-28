@@ -120,7 +120,7 @@ test("active SVG content is refused", () => {
   );
 });
 
-test("the installed plugin carries the default library beside its scripts", () => {
+test("the default library is used when shipped and named plainly when it is not", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "lr-educational-svg-packaged-"));
   const candidate = path.join(
     __dirname,
@@ -132,7 +132,18 @@ test("the installed plugin carries the default library beside its scripts", () =
     "robin.svg"
   );
   const rasterize = (_source, output) => fs.writeFileSync(output, PNG);
-  const result = publishEducationalSvgAsset(candidate, root, "robin", { rasterize });
-  assert.equal(result.educationalSvgId, "standard/ro/robin.svg");
-  assert.equal(result.imagePath, "icons/robin.png");
+
+  if (fs.existsSync(candidate)) {
+    const result = publishEducationalSvgAsset(candidate, root, "robin", { rasterize });
+    assert.equal(result.educationalSvgId, "standard/ro/robin.svg");
+    assert.equal(result.imagePath, "icons/robin.png");
+    return;
+  }
+
+  // An install without the optional library must fail here with the reason the
+  // designers are told to expect, not with an obscure module or path error.
+  assert.throws(
+    () => publishEducationalSvgAsset(candidate, root, "robin", { rasterize }),
+    /Educational SVG library is unavailable/
+  );
 });
