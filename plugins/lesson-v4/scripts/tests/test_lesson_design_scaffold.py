@@ -731,6 +731,72 @@ def test_single_unresolved_placeholder_still_reports_one_plain_path():
     )
 
 
+def all_route_unit_kinds() -> set[str]:
+    kinds: set[str] = {"starter", "apply", "reflect"}
+
+    for route_kinds in validator.ROUTE_KINDS.values():
+        kinds |= set(route_kinds)
+
+    return kinds
+
+
+def validator_required_content_fields(kind: str) -> set[str]:
+    try:
+        validator.validate_content(
+            kind,
+            {},
+            "probe",
+            set(),
+        )
+    except validator.ContractError as exc:
+        message = str(exc)
+        marker = "missing fields: "
+        assert marker in message, (kind, message)
+        listed = message.split(marker, 1)[1]
+        return {
+            field.strip()
+            for field in listed.split(",")
+        }
+
+    raise AssertionError(
+        f"validator accepted an empty content object for {kind}"
+    )
+
+
+def test_every_route_unit_kind_has_a_content_envelope():
+    for kind in sorted(all_route_unit_kinds()):
+        envelope = scaffold.content_scaffold(kind)
+        assert envelope, kind
+
+
+def test_content_envelopes_match_validator_required_fields_exactly():
+    for kind in sorted(all_route_unit_kinds()):
+        envelope = scaffold.content_scaffold(kind)
+        required = validator_required_content_fields(kind)
+        assert set(envelope) == required, (
+            kind,
+            sorted(envelope),
+            sorted(required),
+        )
+
+        for field, value in envelope.items():
+            if field in scaffold.CONTENT_LIST_FIELDS:
+                assert value == [scaffold.PLACEHOLDER], (kind, field)
+            else:
+                assert value == scaffold.PLACEHOLDER, (kind, field)
+
+
+def test_unknown_unit_kind_is_a_scaffold_error_not_a_bare_placeholder():
+    try:
+        scaffold.content_scaffold("made-up-kind")
+    except scaffold.ScaffoldError as exc:
+        assert "made-up-kind" in str(exc)
+    else:
+        raise AssertionError(
+            "content_scaffold accepted an unknown kind"
+        )
+
+
 if __name__ == "__main__":
     failed = 0
 

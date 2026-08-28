@@ -223,6 +223,53 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             text,
         )
 
+    def test_scaffold_fill_is_in_place_never_delete_and_recreate(self):
+        """Filling means editing the generated files where they stand.
+
+        A designer that deletes and re-creates lesson-design.json re-authors
+        the mechanical envelope the scaffold owns, which is slower, shows the
+        teacher a confusing wipe in the activity feed, and can corrupt IDs the
+        validator then reports as semantic faults.
+        """
+        designer = (ROOT / "agents" / "lesson-designer.md").read_text(
+            encoding="utf-8"
+        )
+        guide = (
+            ROOT / "references" / "lesson-design-scaffold.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("by editing them in place", designer)
+        self.assertIn(
+            "Do not delete a generated file to rewrite it",
+            designer,
+        )
+        self.assertIn(
+            "Fill by editing the generated files in place",
+            guide,
+        )
+        self.assertIn(
+            "Never delete or rewrite a generated file to fill it; edit it.",
+            guide,
+        )
+
+    def test_scaffold_owns_route_specific_content_envelopes(self):
+        """The builder emits each unit's content envelope; the designer only
+        fills decided values, so the guide must not send it back to
+        reconstructing content objects from the reference files."""
+        guide = (
+            ROOT / "references" / "lesson-design-scaffold.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "route-specific envelope with the exact fields for its kind",
+            guide,
+        )
+        self.assertNotIn(
+            "replace the whole value with the exact route-specific "
+            "content object",
+            guide,
+        )
+
     def test_stage1_lesson_designer_has_no_retired_route_names(self):
         text = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
         for retired in ("Procedural Skills and Explicit Teaching", "Explicit Teaching (Skill-based)", "Explicit Teaching (Content-based)", "Explicit-content", "Procedural / Explicit"):

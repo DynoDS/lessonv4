@@ -410,7 +410,7 @@ Use these alignment traces:
 - Decisions to JSON: every decision maps to its final object, field or reference.
 - Completion pass: vocabulary is used, success criteria match the boundary performance, explanations are present where claimed and independent work does not depend on untaught content.
 
-Then use the deterministic scaffold on the normal route. Read `lesson-design-scaffold.md`, write the scaffold request from the settled decisions, run the exact supplied command and require `LESSON_DESIGN_SCAFFOLD_OK`. Fill the generated JSON files. Do not recreate mechanical IDs, ordinals, envelopes or keys. Replace every `__LESSON_DESIGN_FILL__` value before validation.
+Then use the deterministic scaffold on the normal route. Read `lesson-design-scaffold.md`, write the scaffold request from the settled decisions, run the exact supplied command and require `LESSON_DESIGN_SCAFFOLD_OK`. Fill the generated JSON files by editing them in place: the scaffold's IDs, ordinals, envelopes and per-kind content shapes are already final, and re-creating a file from scratch reintroduces the mechanical errors the scaffold exists to prevent. Do not delete a generated file to rewrite it, and do not recreate mechanical IDs, ordinals, envelopes or keys. Replace every `__LESSON_DESIGN_FILL__` value before validation.
 
 For a photo-cap revision or Design Reviewer redesign, revise the current files in place. Do not regenerate the scaffold request.
 
@@ -440,7 +440,7 @@ Do not write default Lesson Analysis.
 
 Main agent + matching teaching-sequence ref govern JSON content. On scaffold route, `lesson-design-scaffold.py` owns mechanical IDs, ordinals, envelopes, keys. `output-template.md` is canonical field/value ref and fallback when no scaffold command.
 
-Write JSON via real serializer, parse both outputs after writing. Validator must reject any unresolved `__LESSON_DESIGN_FILL__`. Then run:
+On the scaffold route, fill the generated files in place; on the no-scaffold fallback, write JSON via a real serializer. Either way, parse both files after writing. Validator must reject any unresolved `__LESSON_DESIGN_FILL__`. Then run:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"

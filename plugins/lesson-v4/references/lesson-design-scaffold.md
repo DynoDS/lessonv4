@@ -11,11 +11,13 @@ Do not use the scaffold route when the orchestrator supplies an existing `lesson
 3. Write `[WORKING_DIR]/lesson-design-scaffold-request.initial.json` from those settled decisions.
 4. Run the exact scaffold command supplied by the orchestrator.
 5. Require exactly `LESSON_DESIGN_SCAFFOLD_OK`.
-6. Fill the generated `lesson-design.json` and `photo-requirements.json`.
+6. Fill the generated `lesson-design.json` and `photo-requirements.json` by editing them in place.
 7. Replace every exact `__LESSON_DESIGN_FILL__` placeholder with the decided final value, including `null`, `[]`, an object or a scalar where the contract requires it.
 8. Run the normal JSON parse checks and the supplied lesson-design validator. The validator rejects any unresolved scaffold placeholder.
 
 The scaffold command is a builder, not a check. It writes the empty scaffold over both files every time it runs, so it belongs at step 4 only. Never run it again to confirm the work at step 8, and never re-run it once any field has been filled: it would discard the design. The builder itself now refuses to overwrite a file whose fields carry decided values, so a second run fails rather than destroying work.
+
+Fill by editing the generated files in place, replacing each placeholder where it stands. The scaffold's IDs, ordinals, envelopes and keys are already final, so re-typing either document from scratch can only reintroduce the mechanical errors the scaffold exists to prevent, and a delete-and-recreate shows the teacher a confusing wipe in the activity feed. Never delete or rewrite a generated file to fill it; edit it.
 
 The scaffold request is initial-build provenance only. It is not an authoritative lesson contract and no downstream agent reads it.
 
@@ -71,7 +73,7 @@ Use exactly these top-level fields:
 }
 ```
 
-The values in the request are decisions already made by the Lesson Designer. The scaffold script only turns them into IDs, ordinals, repeated envelopes and required top-level keys.
+The values in the request are decisions already made by the Lesson Designer. The scaffold script only turns them into IDs, ordinals, repeated envelopes, required top-level keys and each source unit's route-specific `content` envelope.
 
 ## Counts
 
@@ -179,7 +181,7 @@ A placeholder inside an array means replace the whole placeholder entry with the
 
 A placeholder in a nullable field means replace it with either the decided string/object/value or `null`. Do not leave a placeholder merely because the final field is optional.
 
-A placeholder in `content` means replace the whole value with the exact route-specific content object defined by the matching teaching-sequence reference file.
+Each source unit's `content` arrives as the route-specific envelope with the exact fields for its kind already in place. Fill those fields; the matching teaching-sequence reference explains what each field means. A whole-value placeholder remains only where the final shape is itself a decision - a teach `takeaway`, a `taskStructure`, a vocabulary `visual` - and there you replace the placeholder with the complete final object, array or `null`.
 
 A placeholder in a vocabulary `visual` means replace the whole value with the final structured visual object.
 

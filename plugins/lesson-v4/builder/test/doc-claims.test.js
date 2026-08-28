@@ -69,9 +69,10 @@ const MAKE_LESSON_MD = fs.readFileSync(
   "utf8"
 );
 const MAKE_LESSON_PLAYBOOK_MD = fs.readFileSync(
-  path.join(__dirname, "..", "..", "skills", "make-lesson", "playbook.md"),
+  path.join(__dirname, "..", "..", "skills", "make-lesson", "playbook-lite.md"),
   "utf8"
 );
+const MAKE_LESSON_PLAYBOOK_FLAT = MAKE_LESSON_PLAYBOOK_MD.replace(/\s+/g, " ");
 const SLIDE_FOCUSED_REPAIR_MD = fs.readFileSync(
   path.join(
     __dirname,
@@ -293,7 +294,7 @@ test('question cards and numbered questions share one stage boundary', () => {
 test("answer slides are limited without removing speaker-note answers", () => {
   assert.ok(
     LESSON_DESIGNER_MD.includes(
-      "Exact-answer Do beats, Our Turn questions and other smaller checks between teaching steps use `teacher-only`."
+      "Exact-answer Do beats, Our Turn, smaller checks use teacher-only."
     ),
     "lesson-designer.md does not keep exact smaller-check answers in notes"
   );
@@ -317,7 +318,7 @@ test("answer slides are limited without removing speaker-note answers", () => {
   );
   assert.ok(
     DESIGN_REVIEWER_MD.includes(
-      "answer visibility does not reveal thinking children are supposed to generate first"
+      "answer visibility against intended pupil thinking"
     ),
     "design-reviewer.md does not protect the semantic answer-visibility review"
   );
@@ -360,13 +361,13 @@ test("template reference matches image fit and grouping helper contracts", () =>
 test("the option bank keeps its labels out of the instruction in the design documents", () => {
   assert.ok(
     LESSON_DESIGNER_MD.includes(
-      'For a discrete option bank, use `taskStructure.kind: "option-bank"`'
+      'Option bank: kind "option-bank" when children choose from'
     ),
     "lesson-designer.md does not structure a discrete option bank"
   );
   assert.ok(
     LESSON_DESIGNER_MD.includes(
-      "Keep the ordinary structured `answer.content` route; an option bank does not create `answer.structure`."
+      "Keep answer.content route; option bank does not create answer.structure."
     ),
     "lesson-designer.md can still invent an answer structure for an option bank"
   );
@@ -817,10 +818,10 @@ test("repairable slide-check faults stay inside the original Slide Designer", ()
   );
 
   assert.ok(
-    MAKE_LESSON_PLAYBOOK_MD.includes(
-      "A first `TEXT_OVERLOAD` is not permission to spawn a repair worker"
+    MAKE_LESSON_PLAYBOOK_FLAT.includes(
+      "On a semantic build diagnostic, run one focused Slide Designer repair and rebuild once."
     ),
-    "make-lesson can still externalise the first Slide Designer text-overload failure"
+    "make-lesson no longer routes a semantic slide-build diagnostic to one focused Slide Designer repair"
   );
 
   assert.equal(
@@ -832,10 +833,10 @@ test("repairable slide-check faults stay inside the original Slide Designer", ()
   );
 
   assert.ok(
-    MAKE_LESSON_PLAYBOOK_MD.includes(
-      "Only that exhausted state may make the remaining Slide Designer-owned fault eligible for the existing focused Slide Designer repair route."
+    MAKE_LESSON_PLAYBOOK_FLAT.includes(
+      "A failed build may receive its one documented focused repair"
     ),
-    "make-lesson can still spawn focused Slide Designer repair before creation-mode self-repair is exhausted"
+    "make-lesson no longer bounds a failed build to its one documented focused repair"
   );
 
   assert.ok(

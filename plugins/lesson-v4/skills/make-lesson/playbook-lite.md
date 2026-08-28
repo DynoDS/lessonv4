@@ -290,7 +290,7 @@ OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-PHOTO_REQUIREMENTS: [WORKING_DIR]/phase2-initial-photo-requirements.json
+PHOTO_REQUIREMENTS_PATH: [WORKING_DIR]/phase2-initial-photo-requirements.json
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson.json
@@ -427,7 +427,7 @@ OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-WORKSHEET_PHOTO_REQUIREMENTS: [selected contract path]
+PHOTO_REQUIREMENTS_PATH: [selected contract path]
 [ADAPTATION_DESIGN when accepted]
 [TEACHER_WORKSHEET_INPUT when supplied]
 

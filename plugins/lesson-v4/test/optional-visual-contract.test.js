@@ -14,7 +14,7 @@ function count(haystack, needle) {
 
 test("resource designers resolve optional Educational SVG requests without a scout", () => {
   const skill = read("skills/make-lesson/SKILL.md");
-  const playbook = read("skills/make-lesson/playbook.md");
+  const playbook = read("skills/make-lesson/playbook-lite.md");
   const reference = read("references/context-pictures.md");
   const readme = read("README.md");
   const slide = read("agents/slide-designer.md");

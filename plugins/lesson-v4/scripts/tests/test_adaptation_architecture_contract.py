@@ -20,7 +20,7 @@ SUBJECT_MATHS = (ROOT / "references" / "subject-maths.md").read_text(
 MAKE_LESSON = (
     (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(encoding="utf-8")
     + "\n"
-    + (ROOT / "skills" / "make-lesson" / "playbook.md").read_text(encoding="utf-8")
+    + (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
 )
 
 RUNTIME_CONTRACTS = {
@@ -110,28 +110,28 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
         self.assertIn("## Photos for the sheets", AGENT)
         self.assertIn("fenced `json` code block", AGENT)
         self.assertIn("adaptation-photo-001", AGENT)
-        self.assertIn("CURRENT_PROMOTED_PHOTO_COUNT", MAKE_LESSON)
-        self.assertIn("PHOTO_SLOTS_REMAINING", MAKE_LESSON)
+        self.assertIn("check-photo-cap.py", MAKE_LESSON)
         self.assertIn("build-provisional", MAKE_LESSON)
         self.assertIn("select-worksheet", MAKE_LESSON)
         self.assertIn("promote-used", MAKE_LESSON)
 
     def test_teacher_provided_and_shared_frame_routes_are_preserved(self) -> None:
+        flat = " ".join(MAKE_LESSON.split())
         self.assertIn('worksheet.status == "provided-by-teacher"', AGENT)
-        self.assertIn('worksheet.status == "provided-by-teacher"', MAKE_LESSON)
         self.assertIn(
             'worksheet.status == "provided-by-teacher"',
             WORKSHEET_DESIGNER,
         )
         self.assertIn("shared-frame", AGENT)
-        self.assertIn("shared-frame", MAKE_LESSON)
+        self.assertIn("`shared-frame`: skip Adaptation Designer", flat)
         self.assertIn(
-            "there are no separate Below or Greater Depth resources to design",
-            MAKE_LESSON,
+            "teacher-provided expected worksheet: consider adaptation but do "
+            "not generate a second expected sheet",
+            flat,
         )
         self.assertIn(
-            'Note "Adaptation: skipped (shared working frame, one sheet)"',
-            MAKE_LESSON,
+            "Never infer this route from old Markdown status text.",
+            flat,
         )
         self.assertNotIn("three-sheet fan-out", MAKE_LESSON)
 
@@ -187,28 +187,26 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
         self.assertNotIn("Task shape:", WORKSHEET_DESIGNER)
         self.assertNotIn("open-task", WORKSHEET_DESIGNER)
 
-    def test_orchestrator_delegates_reference_loading_and_uses_resource_terms(
+    def test_orchestrator_launch_gives_adaptation_designer_its_inputs(
         self,
     ) -> None:
         spawn = MAKE_LESSON.split("**Adaptation Designer**", 1)[1].split(
-            "**Track B trigger:**",
+            "**Worksheet Designer**",
             1,
         )[0]
+        flat = " ".join(spawn.split())
+        self.assertIn("approved lesson design", flat)
+        self.assertIn("teacher worksheet when supplied", flat)
+        self.assertIn("teacher brief/clarifications", flat)
+        self.assertIn("frozen initial photo contract", flat)
         self.assertIn(
-            "Follow the agent file's `Before You Start` instructions exactly.",
-            spawn,
+            "It owns `adaptation.md`, `adaptation.json`, and a provisional "
+            "adaptation photo contract.",
+            flat,
         )
         self.assertNotIn("Also read these reference files at the start:", spawn)
-        self.assertIn(
-            "one `## Greater Depth` section and one `## Below` section",
-            spawn,
-        )
-        self.assertIn(
-            "TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt",
-            spawn,
-        )
-        self.assertIn("TEACHER_WORKSHEET_INPUT", spawn)
-        self.assertIn("fenced `json` object", spawn)
+        self.assertIn("## Greater Depth", AGENT)
+        self.assertIn("## Below", AGENT)
 
     def test_preferences_and_maths_reference_use_resource_vocabulary(self) -> None:
         self.assertIn(

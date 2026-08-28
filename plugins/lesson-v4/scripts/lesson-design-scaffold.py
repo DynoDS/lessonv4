@@ -262,6 +262,92 @@ def notes_scaffold() -> dict[str, Any]:
     }
 
 
+# Route-specific content envelopes. Each source-unit kind's content object is
+# a fixed key set enforced by validate-lesson-design.py, and mechanical shape
+# belongs to this builder, so the scaffold emits the envelope and the Lesson
+# Designer fills only decided values. A field whose shape itself turns on a
+# decision (a teach takeaway, a task structure) stays a whole-value
+# placeholder.
+CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
+    "starter": ("activity", "connection", "format", "testQuestionPath"),
+    "prepare": ("mode", "activity"),
+    "my-turn": ("example", "modelledExemplar"),
+    "our-turn": ("example", "guidedQuestions"),
+    "your-turn": ("activityArchitecture", "task"),
+    "observe": ("activity", "focus", "evidenceProduced"),
+    "teach": ("headline", "takeaway", "teachingText", "keyQuestions"),
+    "do": ("activity", "format", "task"),
+    "practise": ("activity", "format", "task"),
+    "question": ("focus", "prerequisites", "discoveryFocus"),
+    "explore": ("activity", "conditionsAndSafety", "evidenceProduced"),
+    "make-sense": ("resultOrPattern", "prompt"),
+    "teach-why": (
+        "accurateExplanation",
+        "unsupportedExplanationToCorrect",
+    ),
+    "use-learning": ("activity",),
+    "finish": ("purposefulEnding",),
+    "grounding-input": ("input",),
+    "stimulus": ("prompt", "question", "materialOnSlide"),
+    "talk": (
+        "format",
+        "discussionQuestion",
+        "sentenceStems",
+        "durationMinutes",
+        "teacherListensFor",
+    ),
+    "stimulus-talk": (
+        "prompt",
+        "question",
+        "materialOnSlide",
+        "format",
+        "sentenceStems",
+        "durationMinutes",
+        "teacherListensFor",
+    ),
+    "synthesise": ("framesToName",),
+    "set-task": ("question", "investigationBrief"),
+    "teach-needed": ("enablingInput", "modelledOn"),
+    "plan-checkpoint": ("whatChildrenPlan", "checkpointQuestion"),
+    "do-task": (
+        "activity",
+        "planWithinTask",
+        "checkpointQuestion",
+        "runsBeyondToday",
+        "todayEndsAt",
+    ),
+    "share-conclude": ("activity",),
+    "apply": ("activity",),
+    "reflect": ("activity",),
+}
+
+CONTENT_LIST_FIELDS = {
+    "guidedQuestions",
+    "keyQuestions",
+    "sentenceStems",
+    "teacherListensFor",
+    "framesToName",
+}
+
+
+def content_scaffold(kind: str) -> dict[str, Any]:
+    fields = CONTENT_ENVELOPE_FIELDS.get(kind)
+
+    if fields is None:
+        raise ScaffoldError(
+            f"no content envelope for source-unit kind: {kind}"
+        )
+
+    return {
+        field: (
+            [PLACEHOLDER]
+            if field in CONTENT_LIST_FIELDS
+            else PLACEHOLDER
+        )
+        for field in fields
+    }
+
+
 def source_unit(
     source_unit_id: str,
     kind: str,
@@ -273,7 +359,7 @@ def source_unit(
         "label": PLACEHOLDER,
         "kind": kind,
         "conceptRef": concept_ref,
-        "content": PLACEHOLDER,
+        "content": content_scaffold(kind),
         "pupilInstruction": PLACEHOLDER,
         "taskStructure": PLACEHOLDER,
         "modellingState": PLACEHOLDER,

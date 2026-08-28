@@ -10,7 +10,7 @@ from pathlib import Path
 SCRIPT = Path(__file__).resolve().parents[1] / "merge-visual-reviews.py"
 ROOT = Path(__file__).resolve().parents[2]
 SKILL = ROOT / "skills" / "make-lesson" / "SKILL.md"
-PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook.md"
+PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook-lite.md"
 
 
 class WorkingWallReviewIntegrationTests(unittest.TestCase):
@@ -355,19 +355,19 @@ class WorkingWallReviewIntegrationTests(unittest.TestCase):
             + "\n"
             + PLAYBOOK.read_text(encoding="utf-8")
         )
+        flat = " ".join(skill.split())
         for token in (
-            "genuinely comparable",
-            "its per-resource visual review completed",
-            "its review state is not `UNVERIFIED`",
-            "its final render manifest exists",
-            "final render manifest verifies successfully",
-            "With 0 or 1 comparable resources, do **not** spawn `visual-consistency-reviewer`",
-            "With 2 or more comparable resources",
-            "excluded from consistency comparison",
-            "findings file still enters the deterministic final merge",
-            "Never reinterpret an excluded resource's `UNVERIFIED` state as `PASS`",
+            "When two or more comparable resources exist, build the "
+            "deterministic consistency overview and launch Visual "
+            "Consistency Reviewer once.",
+            "Use `--consistency-required` only when two or more comparable "
+            "resources required the specialist comparison.",
+            "Use `PASS`, `BLOCKED` or `UNVERIFIED` exactly.",
+            "Never relabel unavailable review as pass.",
+            "Missing or stale evidence causes rerender of only the named "
+            "resource, not a full pipeline replay.",
         ):
-            self.assertIn(token, skill)
+            self.assertIn(token, flat)
 
         deck = self.root / "findings-deck.md"
         deck.write_text(

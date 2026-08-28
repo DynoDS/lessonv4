@@ -502,7 +502,7 @@ an answer layout, or spend tokens making it attractive.
 **A single sheet is normal, not a failure.** A shared working frame produces
 one; so does any lesson whose adaptation step was skipped. When
 `lesson-design.json.worksheet.resourceMode == "shared-frame"` (the canonical
-post-O11 schema marker, guaranteed by the lesson-design validator), include
+schema marker, guaranteed by the lesson-design validator), include
 `expected` only in the JSON and `answerKey.expected` only in the answer key. A
 group filling one shared copy has no below or greater-depth version of the one
 document they share. Do NOT check for or match a retired prose status string

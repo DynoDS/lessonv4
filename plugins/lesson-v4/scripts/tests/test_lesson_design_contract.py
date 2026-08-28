@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR = ROOT / "scripts" / "validate-lesson-design.py"
 PHOTO_CAP = ROOT / "scripts" / "check-photo-cap.py"
 SKILL = ROOT / "skills" / "make-lesson" / "SKILL.md"
-PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook.md"
+PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook-lite.md"
 ADAPTATION_DESIGNER = ROOT / "agents" / "adaptation-designer.md"
 OUTPUT_TEMPLATE = ROOT / "references" / "output-template.md"
 CONTEXT_PICTURES = ROOT / "references" / "context-pictures.md"
@@ -493,6 +493,7 @@ def assert_invalid_contract(design, photos, expected):
 
 def test_image_team_cap_is_authoritative_and_current_aware():
     skill = read(SKILL)
+    flat = " ".join(skill.split())
     adaptation = read(ADAPTATION_DESIGNER)
     output_template = read(OUTPUT_TEMPLATE)
     context_pictures = read(CONTEXT_PICTURES)
@@ -502,15 +503,20 @@ def test_image_team_cap_is_authoritative_and_current_aware():
     assert PHOTO_CAP.is_file()
     assert "Keep count at or below 16." in output_template
     assert "photo-requirements.json may contain at most 16 photos" in validator
-    assert "PHOTO CAP REVISION" in skill
-    assert "CURRENT_PROMOTED_PHOTO_COUNT:" in skill
-    assert "PHOTO_SLOTS_REMAINING:" in skill
-    assert 'photo-contract.py" promote-used' in skill
+    assert "check-photo-cap.py" in skill
+    assert (
+        "If the picture cap exceeds 16, run one focused Lesson Designer "
+        "revision" in flat
+    )
+    assert "photo-contract.py promote-used" in flat
     assert 'candidate = canonical_path.with_name(f".{canonical_path.name}.candidate")' in photo_contract
     assert "run_photo_cap(candidate)" in photo_contract
-    assert "PHOTO_CAP_GAP" in skill
+    assert "PHOTO_CAP_GAP" in adaptation
     assert "Once a filename appears in an immutable compiled assignment manifest" in output_template
-    assert "Earlier requirements snapshots, compiled manifests, filename ownership, and terminal receipts are immutable." in skill
+    assert (
+        "Keep its immutable schema-2 assignments, staged worker results, "
+        "per-filename terminal receipts and final provenance" in flat
+    )
     assert "may promote at most 16 required Image Team picture requests" in adaptation
     assert "Do not impose a fixed picture ceiling." not in adaptation
     assert "P2 and P3 are outside the lesson's 16" in context_pictures
@@ -1706,23 +1712,30 @@ def test_adaptation_photo_merge_happens_before_worksheet_snapshot_and_spawn():
     text = read(SKILL)
     flat = " ".join(text.split())
 
-    track_b = flat.index("**Track B trigger:**")
-    provisional = flat.index('photo-contract.py" build-provisional', track_b)
-    provisional_ok = flat.index("Require `PHOTO_CONTRACT_PROVISIONAL_OK`", provisional)
-    select = flat.index('photo-contract.py" select-worksheet', provisional_ok)
-    promote = flat.index('photo-contract.py" promote-used', select)
-    wave = flat.index("The first adaptation picture work and every later post-freeze picture addition use the supplemental-wave rule in O11a.", promote)
-    assert provisional < provisional_ok < select < promote < wave
+    adaptation = flat.index("**Adaptation Designer**")
+    provisional = flat.index("photo-contract.py build-provisional", adaptation)
+    select = flat.index("photo-contract.py select-worksheet", provisional)
+    promote = flat.index("photo-contract.py promote-used", select)
+    assert adaptation < provisional < select < promote
 
-    assert "Keep adaptation photos provisional until the worksheet page plan is final." in text
-    assert "The first Worksheet Designer attempt for a per-child adapted worksheet runs before that promotion against the validated provisional contract." in flat
-    assert "reusable `validate-lesson-design.py` check in merged mode" in flat
+    assert (
+        "Adaptation may add only `adaptation-photo-###` entries; it may not "
+        "mutate the frozen initial entries." in flat
+    )
+    assert (
+        "Before every attempt, obtain the exact worksheet photo-contract path "
+        "through `photo-contract.py select-worksheet`." in flat
+    )
+    assert (
+        "promote only adaptation photos actually referenced by the accepted "
+        "worksheet" in flat
+    )
     assert "same id has different photo object" in read(ROOT / "scripts" / "photo-contract.py")
     assert "same filename has different id" in read(ROOT / "scripts" / "photo-contract.py")
     assert "Picture planning and sourcing then run in parallel with Worksheet Designer." not in text
     assert "Start any genuinely new adaptation-picture planning and sourcing after that merge" not in text
     assert "Merge adaptation photo IDs before Worksheet Designer snapshot/spawn." not in text
-    assert "adaptation-designer completes → queue worksheet-designer (Track B) right away" not in text
+    assert "adaptation-designer completes -> queue worksheet-designer (Track B) right away" not in flat
 
 
 def test_helper_preflight_includes_transitive_representation_uses():
@@ -1741,10 +1754,18 @@ def test_helper_preflight_includes_transitive_representation_uses():
 
 def test_design_reviewer_durable_contract_includes_all_mutable_inputs():
     text = read(SKILL)
-    assert "`[WORKING_DIR]/lesson-design.json` - `read-write`" in text
-    assert "`[WORKING_DIR]/design-decisions.md` - `read-write`" in text
-    assert "`[WORKING_DIR]/photo-requirements.json` - `read-write`" in text
-    assert "Record all three in the accepted receipt's `outputs` array" in text
+    flat = " ".join(text.split())
+    start = flat.index("You are the design reviewer.")
+    owned = flat.index("OWNED_OUTPUTS:", start)
+    end = flat.index("ORCHESTRATOR_CHECK_AFTER_RETURN:", owned)
+    block = flat[owned:end]
+    for name in (
+        "[WORKING_DIR]/lesson-design.json",
+        "[WORKING_DIR]/design-decisions.md",
+        "[WORKING_DIR]/photo-requirements.json",
+        "[WORKING_DIR]/design-review.md",
+    ):
+        assert name in block, name
 
 
 def test_stick_in_pedagogy_walks_json_not_markdown_headings():
@@ -1782,8 +1803,9 @@ def test_worksheet_designer_protects_all_printed_upstream_text():
     assert "Do not shorten or paraphrase visible support to make the page fit." in text
 
 
-def test_phase_one_worker_and_controller_both_validate_initial_contract():
+def test_phase_one_worker_and_orchestrator_both_validate_initial_contract():
     text = read(SKILL)
+    flat = " ".join(text.split())
     worker_check = text.split("SUCCESS_CHECK:", 1)[1].split(
         "TERMINAL_STATE: COMPLETE", 1
     )[0]
@@ -1791,34 +1813,40 @@ def test_phase_one_worker_and_controller_both_validate_initial_contract():
     assert "--initial-photo-namespace" in worker_check
     assert "LESSON_DESIGN_OK" in worker_check
 
-    controller_check = text.split(
-        "After the Lesson Designer returns", 1
-    )[1].split("If it returns `PHOTO_CAP_EXCEEDED`", 1)[0]
-    assert "orchestration-controller.py" in controller_check
-    assert "the existing lesson-design validator" in controller_check
-    assert "the existing photo-cap check" in controller_check
+    assert (
+        "After return, require the four outputs and run the success check "
+        "yourself." in flat
+    )
+    assert "check-photo-cap.py" in text
+    assert "Do not re-run the scaffold builder" in flat
 
 
 def test_phase_two_freezes_initial_photo_contract_for_initial_workers():
     text = read(SKILL)
     flat = " ".join(text.split())
     assert "phase2-initial-photo-requirements.json" in text
-    assert "Slide Designer receives `PHOTO_REQUIREMENTS_PATH=" in text
-    assert "the initial `p` picture compiler reads that same frozen path" in text
-    assert "derive its `EXPECTED_FILENAMES` from `phase2-initial-photo-requirements.json`" in text
-    assert "run the host's `validate-image-scout.py manifest --requirements ...` check against that same frozen file" in text
-    assert 'photo-contract.py" promote-used' in text
+    assert 'photo-contract.py" freeze-initial' in text
+    assert (
+        "PHOTO_REQUIREMENTS_PATH: "
+        "[WORKING_DIR]/phase2-initial-photo-requirements.json" in text
+    )
+    assert '--requirements "[WORKING_DIR]/phase2-initial-photo-requirements.json"' in text
+    assert (
+        "validate the emitted `manifest.json` with `validate-image-scout.py "
+        "manifest`" in flat
+    )
+    assert "photo-contract.py promote-used" in flat
     assert '--canonical "[WORKING_DIR]/photo-requirements.json"' in text
-    assert "before replacing canonical state" in flat
 
 
-def test_phase_one_approval_reconstructs_from_frozen_photo_after_adaptation_merge():
+def test_adaptation_merge_integrity_lives_in_photo_contract_helper():
     text = read(SKILL)
     helper = read(ROOT / "scripts" / "photo-contract.py")
     flat = " ".join(text.split())
-    assert "Durable Phase-1 approval boundary after the freeze." in text
-    assert "use the frozen file to satisfy the Phase-1 photo-output hash requirement" in text
-    assert "adaptation-photo-merge.json" in text
+    assert (
+        "Adaptation may add only `adaptation-photo-###` entries; it may not "
+        "mutate the frozen initial entries." in flat
+    )
     for field in (
         "baseInitialPhotoSha256",
         "adaptationSha256",
@@ -1827,37 +1855,50 @@ def test_phase_one_approval_reconstructs_from_frozen_photo_after_adaptation_merg
         "newFilenames",
     ):
         assert field in helper
-    assert "highest-numbered** supplemental receipt" in text
-    assert "accepts the O11 canonical merge only when canonical `photo-requirements.json` matches the recorded merged hash" in flat
     assert 'reason = "adaptation-merge"' in helper
 
 
 def test_post_freeze_new_photos_use_immutable_supplemental_waves():
     text = read(SKILL)
-    assert "Supplemental picture waves after the Phase-2 freeze" in text
+    flat = " ".join(text.split())
+    compiler = read(ROOT / "scripts" / "compile-picture-assignments.py")
+    assert (
+        "Compile any new supplemental `w` picture assignments through the "
+        "same direct picture route." in flat
+    )
     assert "compile-picture-assignments.py" in text
-    assert "expected-prefix w" in text
-    assert "Earlier requirements snapshots, compiled manifests, filename ownership, and terminal receipts are immutable." in text
-    assert "Never reopen a completed filename" in text
+    assert "expected-prefix" in compiler
+    assert "Never reopen a passing sibling." in flat
+    assert (
+        "Keep its immutable schema-2 assignments, staged worker results, "
+        "per-filename terminal receipts and final provenance" in flat
+    )
+
+
 def test_supplemental_picture_compilation_receives_immutable_contract():
     text = read(SKILL)
+    flat = " ".join(text.split())
     compiler = read(ROOT / "scripts" / "compile-picture-assignments.py")
-    assert "Supplemental `w` picture compilation" in text
-    assert "--expected-prefix w" in text
+    assert "supplemental `w` picture assignments" in flat
     assert "requirements" in compiler
     assert "schema_version" in compiler
-def test_o11_semantically_validates_after_photo_merge():
+
+
+def test_photo_promotion_semantically_validates_after_merge():
     text = read(SKILL)
     helper = read(ROOT / "scripts" / "photo-contract.py")
+    flat = " ".join(text.split())
     assert helper.count("run_lesson_design_validator(Path(args.lesson_design),") == 2
-    assert text.count('--lesson-design "[WORKING_DIR]/lesson-design.json"') >= 2
+    assert (
+        "Run `photo-contract.py build-provisional` and the lesson-design "
+        "validator against the provisional contract." in flat
+    )
 
     provisional = helper[helper.index("def cmd_build_provisional"):helper.index("def cmd_promote_used")]
     assert provisional.index("run_photo_cap(output)") < provisional.index("run_lesson_design_validator") < provisional.index("receipt = {")
 
     promote = helper[helper.index("def cmd_promote_used"):helper.index("def valid_receipt")]
     assert promote.index("run_photo_cap(candidate)") < promote.index("run_lesson_design_validator") < promote.index("atomic_write_bytes(canonical_path")
-    assert "only then writes the O11 merge receipt" in text
 
 
 def promoted_adaptation_ids(provisional_ids, worksheet_refs):
@@ -1879,13 +1920,11 @@ def test_supplemental_plan_owns_only_filenames_the_final_worksheet_uses():
     skill = read(SKILL)
     flat = " ".join(skill.split())
     helper = read(ROOT / "scripts" / "photo-contract.py")
-    assert "searches the accepted worksheet structure for exact adaptation photo IDs" in flat
-    assert "promotes only those objects" in flat
-    assert "A provisional `adaptation-photo-###` entry is page-planning input only." in skill
-    assert "Worksheet Designer must not source, generate, stage, publish or promote it." in flat
+    assert (
+        "promote only adaptation photos actually referenced by the accepted "
+        "worksheet" in flat
+    )
     assert 'used = [photo for photo in provisional_adaptation if photo["id"] in strings]' in helper
-    assert "compiles only the receipt's new filenames" in skill
-    assert "Determine ownership from earlier compiled manifest filename sets." in skill
 
 
 def test_design_reviewer_leaves_post_review_validation_to_orchestrator():
@@ -1969,8 +2008,12 @@ def test_working_wall_and_final_report_use_canonical_structure_names():
     skill = read(SKILL)
     assert "whose values are `Skill-based`, `Content-based`, `Discovery`, `Dialogic` or `Task-Centred`" in wall
     assert "Procedural / Explicit-skill / Explicit-content / Discovery / Dialogic" not in wall
-    assert "Structure: [Procedural / Explicit skill-based / Explicit content-based / Discovery / Dialogic]" not in skill
-    assert "Structure: [exact lesson.structure value \u2014 do not translate to retired labels]" in skill
+    for retired in (
+        "Explicit skill-based",
+        "Explicit content-based",
+        "Procedural /",
+    ):
+        assert retired not in skill, retired
 
 
 def test_empty_photo_list_keeps_non_photo_visual_support_available():

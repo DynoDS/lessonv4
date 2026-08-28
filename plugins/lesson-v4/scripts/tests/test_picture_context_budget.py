@@ -26,7 +26,7 @@ class PictureContextBudgetTests(unittest.TestCase):
         active = "\n".join([
             (ROOT / "agents" / "image-scout.md").read_text(encoding="utf-8"),
             (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(encoding="utf-8"),
-            (ROOT / "skills" / "make-lesson" / "playbook.md").read_text(encoding="utf-8"),
+            (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8"),
         ])
         self.assertNotIn("photo-plan-", active)
         self.assertNotIn("image-scout-designer", active)
