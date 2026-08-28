@@ -336,8 +336,14 @@ function drawContent(pptx, slide, zone, data, ctx) {
             w: drawn.w + 2 * pad, h: drawn.h + 2 * pad
           };
           if (drawn.clamp) {
+            // `cell` keeps the allocation the helper was given before its card
+            // hugged the drawn content. A helper that judges whether it was
+            // handed enough room has to read the allocation, not the hug: the
+            // hug is the answer to that question, so measuring it would always
+            // agree with itself.
             inner = Object.assign({}, inner, {
-              x: drawn.x, y: drawn.y, w: drawn.w, h: drawn.h
+              x: drawn.x, y: drawn.y, w: drawn.w, h: drawn.h,
+              cell: { x: inner.x, y: inner.y, w: inner.w, h: inner.h }
             });
           }
         }

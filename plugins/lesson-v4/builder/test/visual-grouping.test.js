@@ -25,6 +25,7 @@ const { drawSortBoard } = require('../src/content/sort-board');
 const { drawEvidenceCards } = require('../src/content/evidence-cards');
 const { drawSourcePathway } = require('../src/content/source-pathway');
 const { drawImage } = require('../src/content/image');
+const { clearWarnings, getWarnings } = require('../src/warnings');
 const { drawContent, ZONE_COMPAT } = require('../src/content');
 
 const ZONE = { x: 0, y: 0, w: 10, h: 5, class: 'A' };
@@ -364,6 +365,163 @@ test('cover uses a centred crop instead of stretch', (t) => {
   assert.equal(images[0].sizing.y, 0);
   assert.equal(images[0].sizing.w, 2);
   assert.equal(images[0].sizing.h, 2);
+});
+
+// ─── A PICTURE THAT HAS NOT ARRIVED YET ───────────────────────
+//
+// A run sources its photographs while the slide specification is being written,
+// so a deck is routinely drawn with some pictures delivered and some still
+// coming. The reserved space for a picture that has not arrived is what the
+// designer reads the composition off, so it has to mean the same thing as the
+// space a delivered picture takes. It used to mean the opposite: a pending
+// picture filled its whole cell while a delivered one was contain-fitted and
+// its card hugged it, so a wide, shallow cell previewed as a broad landscape
+// band and then rendered a near-square photograph at a quarter of that width.
+
+// A wide, shallow picture cell: the shape a 2x2 grid of pictures takes when a
+// statement bar sits above and below it.
+const SHALLOW_PICTURE_CELL = { x: 0.22, y: 1.9, w: 6.3, h: 1.55, class: 'C' };
+
+test('a picture that has not arrived reserves the room a picture is guaranteed', (t) => {
+  clearWarnings();
+  t.after(() => clearWarnings());
+  const { shapes } = capture(
+    drawContent,
+    SHALLOW_PICTURE_CELL,
+    { type: 'image', imagePath: 'not-delivered-yet.jpg', caption: 'Kettle - heats water' },
+    { slideIndex: 0, imageDims: {}, cardLook: true }
+  );
+  const grey = shapes.find((shape) => shape.kind === 'rect');
+  assert.ok(grey, 'a required picture still holds its place while it is missing');
+  // Square, because which orientation arrives is not the lesson's to choose.
+  assert.ok(
+    Math.abs(grey.w - grey.h) < 0.01,
+    `the placeholder is square, not a full-cell band (got ${grey.w} x ${grey.h})`
+  );
+  assert.ok(
+    grey.w < SHALLOW_PICTURE_CELL.w / 2,
+    'the placeholder never promises width the cell cannot guarantee'
+  );
+});
+
+test('a pending and a delivered picture claim the same room in the same cell', (t) => {
+  clearWarnings();
+  t.after(() => clearWarnings());
+  const image = temporaryImage(t);
+  const caption = 'Hand whisk - mixes food';
+
+  const pending = capture(
+    drawContent,
+    SHALLOW_PICTURE_CELL,
+    { type: 'image', imagePath: 'not-delivered-yet.jpg', caption },
+    { slideIndex: 0, imageDims: {}, cardLook: true }
+  );
+  const delivered = capture(
+    drawContent,
+    SHALLOW_PICTURE_CELL,
+    { type: 'image', imagePath: image, caption },
+    { slideIndex: 0, imageDims: { [image]: { w: 900, h: 800 } }, cardLook: true }
+  );
+
+  const pendingCard = pending.shapes.find((shape) => shape.kind !== 'rect');
+  const deliveredCard = delivered.shapes.find((shape) => shape.kind !== 'rect');
+  assert.ok(pendingCard && deliveredCard, 'both cells draw a card');
+  // A near-square photograph is what the square stand-in predicted, so the two
+  // cards are within a whisker of each other. Before the fix the pending card
+  // was the full 6.3in cell and the delivered one about 1.1in.
+  assert.ok(
+    Math.abs(pendingCard.w - deliveredCard.w) < 0.2,
+    `pending ${pendingCard.w} and delivered ${deliveredCard.w} cards must agree`
+  );
+});
+
+test('a cover-fit picture that has not arrived still fills its cell', (t) => {
+  clearWarnings();
+  t.after(() => clearWarnings());
+  const { shapes } = capture(
+    drawContent,
+    SHALLOW_PICTURE_CELL,
+    { type: 'image', imagePath: 'not-delivered-yet.jpg', fit: 'cover' },
+    { slideIndex: 0, imageDims: {}, cardLook: true }
+  );
+  const grey = shapes.find((shape) => shape.kind === 'rect');
+  assert.ok(grey, 'a required cover picture holds its place');
+  // A cover picture really is cropped to fill its frame, so the whole frame is
+  // the honest reservation here and the square stand-in would understate it.
+  assert.ok(grey.w > SHALLOW_PICTURE_CELL.w - 0.5, 'cover keeps the full width');
+});
+
+test('an optional picture that has not arrived still leaves no empty card', (t) => {
+  clearWarnings();
+  t.after(() => clearWarnings());
+  const { shapes } = capture(
+    drawContent,
+    SHALLOW_PICTURE_CELL,
+    { type: 'image', imagePath: 'not-delivered-yet.jpg', essential: false, caption: 'nice to have' },
+    { slideIndex: 0, imageDims: {}, cardLook: true }
+  );
+  assert.equal(shapes.length, 0, 'an enhancement that could not be sourced vanishes cleanly');
+  assert.equal(getWarnings().length, 0, 'and says nothing, by design');
+});
+
+test('a picture cell too small to read from the back of the room is named', (t) => {
+  clearWarnings();
+  t.after(() => clearWarnings());
+  capture(
+    drawContent,
+    SHALLOW_PICTURE_CELL,
+    { type: 'image', imagePath: 'not-delivered-yet.jpg', caption: 'Kettle - heats water' },
+    { slideIndex: 0, imageDims: {}, cardLook: true }
+  );
+  const sizeWarnings = getWarnings().filter((line) => /short side/.test(line));
+  assert.equal(sizeWarnings.length, 1, 'named once, on the slide it belongs to');
+  assert.match(sizeWarnings[0], /back of the room/);
+  assert.match(sizeWarnings[0], /non-essential/, 'and says how a supporting photo opts out');
+});
+
+test('the same cramped cell is named whether or not the picture arrived', (t) => {
+  // The fault is the allocation, not the file, so the answer must not change
+  // when the picture stage delivers. A warning that only appeared afterwards
+  // would reach the designer once repairing it had become expensive.
+  const image = temporaryImage(t);
+  t.after(() => clearWarnings());
+
+  clearWarnings();
+  capture(
+    drawContent,
+    SHALLOW_PICTURE_CELL,
+    { type: 'image', imagePath: image, caption: 'Kettle - heats water' },
+    { slideIndex: 0, imageDims: { [image]: { w: 1600, h: 900 } }, cardLook: true }
+  );
+  assert.equal(getWarnings().filter((line) => /short side/.test(line)).length, 1);
+});
+
+test('a picture cell with room to be read is left alone', (t) => {
+  clearWarnings();
+  t.after(() => clearWarnings());
+  capture(
+    drawContent,
+    { x: 0.22, y: 0.8, w: 6.3, h: 3.2, class: 'C' },
+    { type: 'image', imagePath: 'not-delivered-yet.jpg', caption: 'Kettle - heats water' },
+    { slideIndex: 0, imageDims: {}, cardLook: true }
+  );
+  assert.equal(
+    getWarnings().filter((line) => /short side/.test(line)).length,
+    0,
+    'a 2x2 picture grid with real height is a sound composition'
+  );
+});
+
+test('a supporting picture in a small corner is not held to the reading floor', (t) => {
+  clearWarnings();
+  t.after(() => clearWarnings());
+  capture(
+    drawContent,
+    { x: 0.22, y: 1.9, w: 1.4, h: 1.4, class: 'G' },
+    { type: 'image', imagePath: 'not-delivered-yet.jpg', essential: false },
+    { slideIndex: 0, imageDims: {}, cardLook: true }
+  );
+  assert.equal(getWarnings().filter((line) => /short side/.test(line)).length, 0);
 });
 
 test('an unmeasured real image stops the build', (t) => {

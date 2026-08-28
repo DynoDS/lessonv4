@@ -464,7 +464,9 @@ When page evidence exists, inspect the whole deck yourself in the same Slide Des
 
 This is one lightweight creator-QA pass, not the independent final Deck Visual Review. Use the overview contact sheet or sheets as the primary evidence. Do not crop, zoom or separately reinspect every slide when the overview already settles the judgement. Open an individual rendered page only when the overview exposes a possible problem that cannot be judged confidently at overview size.
 
-A required-picture placeholder cannot prove the final crop, photograph balance or picture-internal label position. Do not redesign a sound composition merely because the picture stage has not supplied the final asset yet. Judge the allocated geometry around the placeholder; the later Deck Visual Reviewer judges the final photograph.
+A required picture the run has not delivered yet draws as a grey square, sized to the room its cell can guarantee whatever shape the photograph turns out to be. That square is trustworthy evidence about space: a delivered picture only ever grows from it along the axis with room to spare, so a picture that reads as a postage stamp in the preview will still be small in the finished deck, and that is your fault to repair now rather than the Deck Visual Reviewer's to find later. Repair it by giving the picture a taller or wider zone, by putting fewer pictures in one zone, or by splitting the slide, never by shrinking the content around it below its own readable floor.
+
+What the square cannot prove is the crop, the photograph's internal balance or where a label inside the picture will land. Do not redesign a sound composition over those; the later Deck Visual Reviewer judges the final photograph.
 
 If the visual self-read finds one or more presentation faults you own, repair all currently visible owned faults together in the candidate file and rerun the complete `--preview` check. The rerun produces a new private preview. Inspect that new preview rather than the previous one. Do not return control to the orchestrator merely because your own rendered self-read found a repairable slide-design fault.
 

@@ -15,7 +15,8 @@
 //                                      table, key-vocabulary's visual column,
 //                                      centre-big-v's ratios, the rainforest
 //                                      layer heights
-//   references/slide-visual-sizing.md  the criteria column's usable size
+//   references/slide-visual-sizing.md  the criteria column's usable size,
+//                                      the picture reading floor
 
 const test = require("node:test");
 const assert = require("node:assert");
@@ -24,6 +25,7 @@ const path = require("node:path");
 
 const layout = require("../src/layout.js");
 const { ZONE_COMPAT } = require("../src/content/index.js");
+const { PICTURE_READABLE_FLOOR } = require("../src/content/image.js");
 const { HEIGHT_TEXT } = require("../../shared/visuals/rainforest-layers-svg.js");
 
 const TEMPLATES_MD = fs.readFileSync(
@@ -44,6 +46,10 @@ const DESIGN_REVIEWER_MD = fs.readFileSync(
 );
 const VISUAL_REVIEWER_MD = fs.readFileSync(
   path.join(__dirname, "..", "..", "agents", "visual-reviewer.md"),
+  "utf8"
+);
+const SLIDE_VISUAL_SIZING_MD = fs.readFileSync(
+  path.join(__dirname, "..", "..", "references", "slide-visual-sizing.md"),
   "utf8"
 );
 const PREFERENCES_MD = fs.readFileSync(
@@ -844,5 +850,21 @@ test("repairable slide-check faults stay inside the original Slide Designer", ()
       "This role is an escalation, not a continuation of creation-mode self-check."
     ),
     "the focused Slide Designer role can still act as creation-mode Slide Designer part two"
+  );
+});
+
+test("the documented picture reading floor is the one the build enforces", () => {
+  // The designer sizes a picture cell from this figure and the build names a
+  // cell that falls below it. Two copies of one number is how a check and the
+  // guidance that is supposed to pre-empt it drift apart, so the document's
+  // copy is pinned to the engine's.
+  const quoted = new RegExp(
+    "children work FROM: " + PICTURE_READABLE_FLOOR.toFixed(1) + "″ on the"
+  );
+  assert.ok(
+    quoted.test(SLIDE_VISUAL_SIZING_MD),
+    "slide-visual-sizing.md does not quote the engine's " +
+      PICTURE_READABLE_FLOOR +
+      "in picture reading floor"
   );
 });

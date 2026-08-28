@@ -42,6 +42,42 @@ Reserve image-dependent layouts — a photo filling one half of a split — for 
 
 ---
 
+## A picture's shape is not yours to choose
+
+Every other visual on a slide is drawn to order: a Venn is 1.4 times as wide as
+it is tall because the engine draws it that way. A sourced photograph is not.
+The picture stage asks for a composition and takes the best real photograph it
+can find, so the kettle may arrive landscape and the hand whisk almost square,
+and no earlier decision can make them match.
+
+A photograph keeps its own proportions, so it grows only until it meets the
+**nearer** edge of its cell. That makes the cell's short side, not its area, the
+size the cell can promise: a 6.3″ by 1.3″ cell looks generous and gives a square
+photograph 1.3″. Size a picture cell by asking **"if a square photograph turns
+up here, is it still readable from the back of the room?"** If the answer is no,
+the cell is too small however wide it looks.
+
+This is why four pictures belong in a 2 by 2 rather than a row, and why a picture
+grid squeezed between a statement bar above and a conclusion bar below is usually
+the wrong shape: each of those decisions spends the axis the photograph needs.
+Give the pictures the height, and put the sentences in slim bands or on their own
+slide.
+
+**Pictures still being sourced show this honestly.** A picture that has not
+arrived draws as a grey square at exactly the size its cell guarantees, so a
+preview taken mid-run shows the same cramped composition the finished deck will.
+A placeholder that looks small IS small. The one thing it cannot show is the
+crop and framing of the photograph itself.
+
+**A picture that is meant to be small says so.** `essential: false` marks a photo
+as supporting context rather than something children work from, and takes it out
+of this floor entirely, which is the right answer for a corner inset of the real
+setting. It is not the right answer for a picture a task depends on: marking a
+load-bearing photo non-essential to quiet the check leaves the lesson with a hole
+in it, because an unsourced non-essential picture is dropped silently.
+
+---
+
 ## The readable floors
 
 Each visual helper has an empirically-tested minimum below which children stop being able to read it from across the room (the "Minimum useful size" notes in §4 of `templates.md` carry the full set). Multiply your item count by the helper's minimum on the zone's *short* axis: if it exceeds what the zone has, you have outgrown the template. Pick a template with a bigger zone, or split across slides — but **never reduce the count of helpers the lesson-designer specified to make geometry fit.** Content count is set upstream and stays whole.
@@ -56,6 +92,7 @@ The floors for the helpers that get crammed into rows most often:
 - `table`: 5.5″ wide for sentence-length cells, 3.0″ for digit-only cells
 - `money` single coin (focal): 1.0″ square, no upper cap when alone
 - `money` mixed strip: 6.0″ wide for a typical coin set
+- a photograph or sourced picture children work FROM: 1.6″ on the cell's **short** side, because that is all a picture of unknown shape is guaranteed (see "A picture's shape is not yours to choose" below). The build names a required picture that falls below it
 
 ---
 
