@@ -68,6 +68,83 @@ class PhotoContractTests(unittest.TestCase):
             path.write_text("Photos for the sheets\n```json\n" + json.dumps(block) + "\n```\n", encoding="utf-8")
             self.assertEqual(photo_contract.adaptation_photos(path)[0]["id"], "adaptation-photo-001")
 
+    def freeze(self, root, photos=()):
+        """Freeze an initial contract exactly the way the playbook freezes it."""
+        canonical = root / "photo-requirements.json"
+        canonical.write_text(json.dumps({"schema_version": 2, "lesson_name": "lesson", "photos": list(photos)}, indent=2) + "\n", encoding="utf-8")
+        args = type("Args", (), {
+            "canonical": str(canonical),
+            "snapshot": str(root / "phase2-initial-photo-requirements.json"),
+            "receipt": str(root / "phase2-initial-photo-requirements.receipt.json"),
+        })()
+        photo_contract.cmd_freeze_initial(args)
+        return canonical
+
+    def select(self, root, adaptation_accepted=False):
+        args = type("Args", (), {
+            "working_dir": str(root),
+            "adaptation_accepted": adaptation_accepted,
+            "summary_output": None,
+        })()
+        return photo_contract.cmd_select_worksheet(args)
+
+    def test_worksheet_gate_finds_the_contract_the_playbook_actually_froze(self):
+        """The worksheet gate must read the snapshot the freeze step wrote.
+
+        The gate used to look inside a retired orchestration directory the live
+        route never writes to, so every ordinary lesson - no adaptation, no
+        supplemental wave - was blocked at the worksheet stage by a contract
+        that was sitting in the working directory all along.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.freeze(root)
+            self.assertEqual(self.select(root), 0)
+
+    def test_worksheet_gate_rejects_a_snapshot_edited_after_the_freeze(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.freeze(root)
+            snapshot = root / "phase2-initial-photo-requirements.json"
+            snapshot.write_text(json.dumps({"schema_version": 2, "lesson_name": "edited", "photos": []}), encoding="utf-8")
+            with self.assertRaises(photo_contract.PhotoContractError):
+                self.select(root)
+
+    def test_provisional_contract_is_read_from_the_path_its_receipt_records(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.freeze(root)
+            adaptation = root / "adaptation.md"
+            block = {"schema_version": 2, "lesson_name": "lesson", "photos": [full_photo()]}
+            adaptation.write_text("Photos for the sheets\n```json\n" + json.dumps(block) + "\n```\n", encoding="utf-8")
+            provisional = root / "adaptation-photo-provisional.json"
+            receipts = root / "orchestration-receipts"
+            receipts.mkdir(parents=True, exist_ok=True)
+            args = type("Args", (), {
+                "initial": str(root / "phase2-initial-photo-requirements.json"),
+                "adaptation": str(adaptation),
+                "output": str(provisional),
+                "lesson_design": None,
+                "receipt": str(receipts / "adaptation-photo-provisional.json"),
+            })()
+            self.assertEqual(photo_contract.cmd_build_provisional(args), 0)
+            self.assertEqual(self.select(root, adaptation_accepted=True), 0)
+
+    def test_promote_used_cannot_write_a_receipt_its_own_consumer_refuses(self):
+        """The supplemental snapshot is not optional paperwork.
+
+        `choose_latest_supplemental` refuses a receipt that names no immutable
+        snapshot and never falls back to an earlier wave, so a promote without
+        one leaves the next worksheet gate permanently stale.
+        """
+        parser = photo_contract.parser()
+        with self.assertRaises(SystemExit):
+            parser.parse_args([
+                "promote-used", "--initial", "i.json", "--provisional", "p.json",
+                "--adaptation", "a.md", "--worksheet", "w.json",
+                "--canonical", "c.json", "--receipt", "r.json",
+            ])
+
     def test_latest_supplemental_snapshot_is_selected_from_valid_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); snapshot = root / "snapshot.json"; snapshot.write_text(json.dumps({"schema_version": 2, "lesson_name": "lesson", "photos": []}), encoding="utf-8")

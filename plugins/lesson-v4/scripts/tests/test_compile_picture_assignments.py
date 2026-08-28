@@ -25,9 +25,19 @@ PROMPT = {
 }
 
 
+# Python randomises string hashing per process, so deriving an id from hash()
+# made two filenames collide on roughly one run in a hundred and the compiler
+# rejected the requirements as duplicates. Number each distinct filename once.
+_PHOTO_IDS: dict[str, int] = {}
+
+
+def photo_id(filename: str) -> str:
+    return f"photo-{_PHOTO_IDS.setdefault(filename, len(_PHOTO_IDS) + 1):03d}"
+
+
 def photo(filename: str, mode="ordinary-real", profile="unsplash-then-wikimedia", fallback="omit", essential=False, group=None, coherent="none"):
     return {
-        "id": f"photo-{abs(hash(filename)) % 900 + 100:03d}",
+        "id": photo_id(filename),
         "subject": f"subject {filename}",
         "pedagogical_constraint": "show the feature clearly",
         "teaching_requirement": "pupils identify the visible feature",

@@ -194,6 +194,45 @@ class TestRunReport(RunReportCase):
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_failed_publication_must_be_named_too(self):
+        """A picture that failed to publish is a missing picture.
+
+        The finaliser writes `picture_publish_failed`, which the report gate did
+        not count as a failure, so a lesson could ship a slide with no photograph
+        and the teacher would read nothing about it.
+        """
+        self.write_json(
+            self.working / "orchestration-receipts" / "picture-terminal" / "def.json",
+            {
+                "schemaVersion": 1,
+                "filename": "unsplash/failed-lamp.jpg",
+                "terminalState": "picture_publish_failed",
+            },
+        )
+        report = self.write_report(overrides={"outcome": "Package status: PARTIAL"})
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("unsplash/failed-lamp.jpg", result.stdout)
+
+        report = self.write_report(overrides={
+            "outcome": "Package status: PARTIAL",
+            "picture": "- unsplash/failed-lamp.jpg: could not be published",
+        })
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_published_picture_creates_no_report_obligation(self):
+        self.write_json(
+            self.working / "orchestration-receipts" / "picture-terminal" / "ghi.json",
+            {
+                "schemaVersion": 1,
+                "filename": "unsplash/good-lamp.jpg",
+                "terminalState": "published",
+            },
+        )
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_legacy_helper_receipt_is_not_a_report_dependency(self):
         self.write_json(
             self.working / "orchestration-receipts" / "slide-designer-helper-1.json",

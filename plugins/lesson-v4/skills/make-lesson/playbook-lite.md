@@ -400,8 +400,19 @@ teacher brief/clarifications, and the frozen initial photo contract. It owns
 `adaptation.md`, `adaptation.json`, and a provisional adaptation photo contract.
 
 Run `photo-contract.py build-provisional` and the lesson-design validator against
-the provisional contract. Adaptation may add only `adaptation-photo-###` entries;
-it may not mutate the frozen initial entries.
+the provisional contract. Use exactly:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
+  --initial "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
+  --adaptation "[WORKING_DIR]/adaptation.json" \
+  --output "[WORKING_DIR]/adaptation-photo-provisional.json" \
+  --lesson-design "[WORKING_DIR]/lesson-design.json" \
+  --receipt "[WORKING_DIR]/orchestration-receipts/adaptation-photo-provisional.json"
+```
+
+Adaptation may add only `adaptation-photo-###` entries; it may not mutate the
+frozen initial entries.
 
 If adaptation fails deterministically, preserve the expected worksheet route and
 report adaptation omitted. Do not rerun unrelated branches.
@@ -442,6 +453,26 @@ TERMINAL_STATE: COMPLETE
 After the spec passes, promote only adaptation photos actually referenced by the
 accepted worksheet through `photo-contract.py promote-used`. Compile any new
 supplemental `w` picture assignments through the same direct picture route.
+
+Number each wave from 1, and keep the receipt name and the snapshot name on the
+same number, because the next `select-worksheet` reads the highest-numbered
+receipt and the immutable snapshot that receipt names:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" promote-used \
+  --initial "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
+  --provisional "[WORKING_DIR]/adaptation-photo-provisional.json" \
+  --adaptation "[WORKING_DIR]/adaptation.json" \
+  --worksheet "[WORKING_DIR]/worksheet.json" \
+  --canonical "[WORKING_DIR]/photo-requirements.json" \
+  --lesson-design "[WORKING_DIR]/lesson-design.json" \
+  --requirements-snapshot "[WORKING_DIR]/photo-requirements-w-[N].json" \
+  --receipt "[WORKING_DIR]/orchestration-receipts/photo-requirements-w-[N].json"
+```
+
+Require `PHOTO_CONTRACT_PROMOTED`, and compile the supplemental wave from that
+immutable snapshot rather than from the canonical contract, which a later wave
+rewrites.
 
 Build worksheets directly:
 

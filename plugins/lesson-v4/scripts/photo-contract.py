@@ -316,11 +316,10 @@ def cmd_promote_used(args) -> int:
         "newPhotoIds": new_ids,
         "newFilenames": new_filenames,
     }
-    if args.requirements_snapshot:
-        snapshot = Path(args.requirements_snapshot)
-        atomic_write_bytes(snapshot, canonical_path.read_bytes())
-        receipt["requirementsSnapshot"] = str(snapshot.resolve())
-        receipt["requirementsSnapshotSha256"] = sha256_file(snapshot)
+    snapshot = Path(args.requirements_snapshot)
+    atomic_write_bytes(snapshot, canonical_path.read_bytes())
+    receipt["requirementsSnapshot"] = str(snapshot.resolve())
+    receipt["requirementsSnapshotSha256"] = sha256_file(snapshot)
     atomic_write_json(Path(args.receipt), receipt)
     print(f"PHOTO_CONTRACT_PROMOTED {len(new_ids)}")
     return 0
@@ -390,15 +389,16 @@ def cmd_select_worksheet(args) -> int:
             reason = "adaptation-merge"
 
     if selected is None and args.adaptation_accepted:
-        provisional = (
-            working / "orchestration-snapshots" / "adaptation-photo-provisional.json"
-        )
         provisional_receipt = (
             receipt_dir / "adaptation-photo-provisional.json"
         )
         data = valid_receipt(provisional_receipt)
+        # The receipt records where build-provisional actually wrote, so the
+        # caller chooses the location and this gate never has to guess it.
+        provisional = Path(data["provisionalPath"]) if isinstance(data, dict) and isinstance(data.get("provisionalPath"), str) else None
         if (
             data is not None
+            and provisional is not None
             and isinstance(data.get("provisionalPhotoSha256"), str)
             and provisional.is_file()
             and sha256_file(provisional) == data["provisionalPhotoSha256"]
@@ -408,13 +408,25 @@ def cmd_select_worksheet(args) -> int:
             reason = "adaptation-provisional"
 
     if selected is None:
-        selected = (
-            working
-            / "orchestration-snapshots"
-            / "phase2-initial-photo-requirements.json"
-        )
+        # The freeze receipt is the phase boundary and names the snapshot it
+        # wrote, so the frozen contract is found wherever the caller froze it.
+        freeze_receipt = working / "phase2-initial-photo-requirements.receipt.json"
+        data = valid_receipt(freeze_receipt)
+        if data is None:
+            raise PhotoContractError(
+                f"initial photo requirements freeze receipt is missing or invalid: {freeze_receipt}"
+            )
+        snapshot_text = data.get("snapshotPath")
+        digest = data.get("sha256")
+        if not isinstance(snapshot_text, str) or not isinstance(digest, str):
+            raise PhotoContractError(
+                f"initial photo requirements freeze receipt names no snapshot: {freeze_receipt}"
+            )
+        selected = Path(snapshot_text)
         if not selected.is_file():
-            raise PhotoContractError("initial photo requirements snapshot is missing")
+            raise PhotoContractError(f"initial photo requirements snapshot is missing: {selected}")
+        if sha256_file(selected) != digest:
+            raise PhotoContractError(f"initial photo requirements snapshot is stale: {selected}")
         require_schema2(read_json(selected, "initial photo requirements"), "initial photo requirements")
         reason = "initial"
 
@@ -457,7 +469,9 @@ def parser() -> argparse.ArgumentParser:
     promote.add_argument("--canonical", required=True)
     promote.add_argument("--lesson-design")
     promote.add_argument("--receipt", required=True)
-    promote.add_argument("--requirements-snapshot")
+    # choose_latest_supplemental refuses a receipt without this immutable
+    # snapshot, so a promote that omitted it wrote an unusable receipt.
+    promote.add_argument("--requirements-snapshot", required=True)
     promote.set_defaults(func=cmd_promote_used)
 
     select = sub.add_parser("select-worksheet")

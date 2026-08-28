@@ -56,6 +56,25 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
             self.assertNotIn("orchestration-job-manifest", text)
         self.assertIn('{"batch_id", "assignment", "filenames"}', validator)
 
+    def test_no_live_script_reads_from_a_retired_orchestration_directory(self):
+        """Scripts must look where the live route actually writes.
+
+        The retired controller route kept its artefacts under generic
+        `orchestration-*` directories. The playbook now writes to the working
+        directory, and any script still hardcoding an old location fails on an
+        artefact the run definitely produced. Only the two retired controller
+        scripts, which the packaged route never calls, may still name them.
+        """
+        retired = ("orchestration-snapshots", "orchestration-events", "orchestration-jobs")
+        allowed = {"orchestration-controller.py", "orchestration-attempt.py", "build-orchestration-latency-report.py"}
+        for path in sorted((ROOT / "scripts").glob("*.py")):
+            if path.name in allowed:
+                continue
+            text = path.read_text(encoding="utf-8")
+            for directory in retired:
+                with self.subTest(script=path.name, directory=directory):
+                    self.assertNotIn(directory, text)
+
     def test_final_resource_visual_review_remains_in_playbook(self):
         text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
         self.assertIn("Visual Review", text)

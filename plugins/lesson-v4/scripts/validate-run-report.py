@@ -40,7 +40,10 @@ HEADINGS = [
 ]
 
 PACKAGE_STATUSES = ("COMPLETE", "PARTIAL", "BLOCKED", "UNVERIFIED")
-PICTURE_FAILURE_STATES = ("omitted", "unsatisfied", "host-owned-degradation")
+# Every terminal state the finaliser can write that leaves a lesson without its
+# picture. A publication failure is a missing picture too, so the teacher must be
+# told about it in the run report.
+PICTURE_FAILURE_STATES = ("omitted", "unsatisfied", "picture_publish_failed")
 
 # The resources a run can earn, and the specification that proves each.
 EARNED_RESOURCES = [
