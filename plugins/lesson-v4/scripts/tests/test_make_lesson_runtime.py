@@ -284,7 +284,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         )
 
         self.assertIn(
-            "do not create a repair job spec",
+            "Launch the selected role directly.",
             focused,
         )
         self.assertIn(
@@ -301,6 +301,84 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                     f"`[PLUGIN_ROOT]/agents/{owner}.md`."
                 )
                 self.assertIn(expected_route, focused)
+
+    def test_focused_repair_slice_routes_designer_findings_to_the_lesson_designer(
+        self,
+    ) -> None:
+        # Regression: `DESIGNER REPAIR REQUIRED` existed in the reviewer's
+        # vocabulary, the evidence reference and the merge script's blocking
+        # rule, but named no owner anywhere in the runtime the orchestrator
+        # reads. A lesson whose promised photographs never published therefore
+        # produced findings with nowhere to go, and the only reachable end was
+        # a blocked package. The route back to the Lesson Designer, and its
+        # authority limits, must be in the slice a run actually loads.
+        focused = (
+            self.run_slice("focused-repair")
+            .stdout.decode("utf-8")
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+        )
+
+        for token in (
+            "### When the repair is a design decision",
+            "`DESIGNER REPAIR REQUIRED`",
+            "[PLUGIN_ROOT]/agents/lesson-designer.md",
+            "PICTURES_THAT_WILL_NOT_ARRIVE",
+            "Run this route once per lesson, with every `DESIGNER REPAIR "
+            "REQUIRED` finding in\nthe same launch",
+            "Do not change the objective",
+            "do not add a picture requirement",
+            "Require exactly: LESSON_DESIGN_OK",
+            "This is not the route for an ordinary layout fault",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, focused)
+
+    def test_finalize_review_slice_carries_the_unrepaired_declaration_contract(
+        self,
+    ) -> None:
+        # The merge now refuses a verdict while a blocking finding has no
+        # repair on record. The orchestrator must meet that refusal with a
+        # repair round or an honest declaration, so both, and the warning
+        # against declaring a round that was merely skipped, belong in the
+        # slice that owns the merge command.
+        finalize = (
+            self.run_slice("finalize-review")
+            .stdout.decode("utf-8")
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+        )
+
+        for token in (
+            "The merge refuses to write a verdict while a finding is still "
+            "blocking and no\nrepair is on record for it",
+            "--unrepaired [FINDING-ID]=owner-unavailable:",
+            "--unrepaired [FINDING-ID]=no-owner-authority:",
+            "Declare only what is true.",
+            "the answer is that finding's repair round, not a declaration",
+        ):
+            with self.subTest(token=token):
+                self.assertIn(token, finalize)
+
+    def test_visual_review_slice_sends_every_blocking_finding_to_a_repair_round(
+        self,
+    ) -> None:
+        visual = (
+            self.run_slice("visual-review")
+            .stdout.decode("utf-8")
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+        )
+
+        self.assertIn(
+            "A finding the reviewer classified\n`DESIGNER REPAIR REQUIRED` "
+            "routes through that same slice to a different owner.",
+            visual,
+        )
+        self.assertIn(
+            "Every blocking finding gets a repair round",
+            visual,
+        )
 
     def test_focused_repair_entrypoints_are_compact_and_keep_owner_models(
         self,

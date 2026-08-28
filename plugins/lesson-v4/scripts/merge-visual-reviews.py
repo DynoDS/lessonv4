@@ -4,6 +4,13 @@
 This script makes no pedagogical, visual or ownership judgement. It preserves
 stable finding IDs, applies only later explicit outcomes for those IDs, and
 writes the package verdict from the recorded states.
+
+It also refuses to write a verdict while a finding is still blocking and no
+repair is on record for it, so a run cannot deliver a fault that nobody was
+ever asked to fix. Proof of a repair round is the confirmation pass that
+re-reviewed the finding; where no repairer could be put in front of it,
+``--unrepaired ID=reason-code: detail`` says so on the record, and the reason
+is printed beside the finding in the merged review.
 """
 import argparse
 import re
@@ -13,6 +20,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ALLOWED_OUTCOMES = {"OPEN", "FIXED", "ACCEPTED MINOR", "DESIGNER REPAIR REQUIRED"}
+BLOCKING_OUTCOMES = {"OPEN", "DESIGNER REPAIR REQUIRED"}
+# The only honest reasons a still-blocking finding can reach delivery without a
+# repair on record. Both say a repairer could not be put in front of it; neither
+# says nobody looked. "It was attempted and failed" is not in this list because
+# an attempt leaves its own evidence: the confirmation pass that re-reviewed it.
+UNREPAIRED_REASONS = ("no-owner-authority", "owner-unavailable")
 FINDING_SECTIONS = {
     "Repairs completed during review",
     "Blocking faults still needing repair",
@@ -66,6 +79,38 @@ def parse_assignment(value, option):
     if not label.strip() or not path.strip():
         raise MergeError(f"{option} must use non-empty Label=path: {value}")
     return label.strip(), Path(path).resolve()
+
+
+def parse_unrepaired(value):
+    """Read one ``ID=reason-code: detail`` declaration."""
+    if "=" not in value:
+        raise MergeError(
+            f"--unrepaired must use ID=reason-code: detail: {value}"
+        )
+    finding_id, remainder = value.split("=", 1)
+    finding_id = finding_id.strip()
+    if not ID_RE.match(finding_id):
+        raise MergeError(f"--unrepaired names a malformed finding ID: {finding_id}")
+    if ":" not in remainder:
+        raise MergeError(
+            f"--unrepaired {finding_id} must give a reason code then a colon and "
+            f"the detail: {value}"
+        )
+    reason, detail = remainder.split(":", 1)
+    reason = reason.strip()
+    detail = detail.strip()
+    if reason not in UNREPAIRED_REASONS:
+        raise MergeError(
+            f"--unrepaired {finding_id} reason must be one of "
+            + ", ".join(UNREPAIRED_REASONS)
+            + f"; got {reason!r}"
+        )
+    if not detail:
+        raise MergeError(
+            f"--unrepaired {finding_id} must say which owner was missing or which "
+            "change was outside every available owner's authority"
+        )
+    return finding_id, reason, detail
 
 
 def section_blocks(text):
@@ -343,11 +388,18 @@ def main():
     ap.add_argument("--finding", action="append", default=[])
     ap.add_argument("--confirmation", action="append", default=[])
     ap.add_argument("--consistency-required", action="store_true")
+    ap.add_argument("--unrepaired", action="append", default=[])
     args = ap.parse_args()
 
     try:
         finding_inputs = [parse_assignment(v, "--finding") for v in args.finding]
         confirmation_inputs = [parse_assignment(v, "--confirmation") for v in args.confirmation]
+        declared_unrepaired = OrderedDict()
+        for value in args.unrepaired:
+            finding_id, reason, detail = parse_unrepaired(value)
+            if finding_id in declared_unrepaired:
+                raise MergeError(f"--unrepaired declares {finding_id} twice")
+            declared_unrepaired[finding_id] = (reason, detail)
         if not finding_inputs:
             raise MergeError("At least one --finding report is required")
 
@@ -377,6 +429,10 @@ def main():
                 records[finding.finding_id] = finding
 
         confirmation_raw = []
+        # Every ID a confirmation pass explicitly reported on. A repair round
+        # that ran leaves this evidence whatever its result, so it is what
+        # separates "repaired and still faulty" from "never sent for repair".
+        reviewed_after_repair = set()
         for label, path in confirmation_inputs:
             text = read_text(path, label)
             validate_confirmation_report(text, path)
@@ -398,6 +454,7 @@ def main():
                 records[finding.finding_id] = finding
 
             for finding_id, fields, raw, explicit_new in parse_repair_outcomes(text, path):
+                reviewed_after_repair.add(finding_id)
                 if finding_id not in records:
                     if not explicit_new:
                         raise MergeError(
@@ -421,6 +478,63 @@ def main():
                         "Verification evidence"
                     ]
                 confirmation_raw.append(raw)
+
+        # ── No blocking finding leaves the run without a repair on record ────
+        # A skipped repair round and a failed one used to reach this point
+        # identically: both simply left the finding OPEN, and the verdict came
+        # out BLOCKED either way. An unattended run therefore had no way to
+        # notice that a repairable fault was never sent to its owner. Each
+        # still-blocking finding must now carry either the confirmation pass
+        # that re-reviewed its repair, or an explicit declaration of why no
+        # repairer could be put in front of it.
+        still_blocking = [
+            record for record in records.values()
+            if record.outcome in BLOCKING_OUTCOMES
+        ]
+        blocking_ids = {record.finding_id for record in still_blocking}
+        stale = [
+            finding_id for finding_id in declared_unrepaired
+            if finding_id not in blocking_ids
+        ]
+        if stale:
+            known = ", ".join(
+                f"{finding_id} ({records[finding_id].outcome})"
+                if finding_id in records else f"{finding_id} (no such finding)"
+                for finding_id in stale
+            )
+            raise MergeError(
+                "--unrepaired declares findings that are not still blocking: " + known
+            )
+        undeclared = [
+            record for record in still_blocking
+            if record.finding_id not in reviewed_after_repair
+            and record.finding_id not in declared_unrepaired
+        ]
+        if undeclared:
+            raise MergeError(
+                "no repair is on record for "
+                + str(len(undeclared))
+                + " still-blocking finding(s):\n"
+                + "\n".join(
+                    f"  - {record.finding_id} ({record.outcome}) in "
+                    f"{record.source_label}: {record.fields['Location']}"
+                    for record in undeclared
+                )
+                + "\nRun each one's repair round and supply the confirmation "
+                "pass that re-reviewed it, or declare it with "
+                "--unrepaired ID=<"
+                + "|".join(UNREPAIRED_REASONS)
+                + ">: <reason>."
+            )
+        for record in still_blocking:
+            declaration = declared_unrepaired.get(record.finding_id)
+            if declaration:
+                reason, detail = declaration
+                record.fields["Repair attempt"] = f"{reason} - {detail}"
+            else:
+                record.fields["Repair attempt"] = (
+                    "attempted and re-reviewed; see Confirmation"
+                )
 
         outcomes = [record.outcome for record in records.values()]
         if "OPEN" in outcomes or "DESIGNER REPAIR REQUIRED" in outcomes:

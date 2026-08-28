@@ -181,7 +181,7 @@ Carry every `flagsForTeacher` entry into the final report.
 ## Phase 1.25 — Review the Design (Sequential, Blocking)
 
 Skip only when `design-reviewer` is absent. Otherwise prepare its compact view
-directly—no job or successor manifest:
+directly:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/design-review-packet.py" prepare \
@@ -296,8 +296,7 @@ python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" freeze-initial \
   --receipt "[WORKING_DIR]/phase2-initial-photo-requirements.receipt.json"
 ```
 
-The freeze receipt is the phase boundary; do not create worker snapshots or
-generic receipts.
+The freeze receipt is the phase boundary.
 
 ### Resolve the picture stage before launching any designer
 
@@ -610,9 +609,8 @@ one focused stick-in designer repair and one rebuild.
 ## Phase 3 — Wait for All Branches
 
 Wait through the host's ordinary multi-worker wait once for all active branches.
-Do not poll each worker serially and do not create scheduler state. As each
-worker completes, run its deterministic check and release only its genuine
-dependants. A failed branch does not invalidate a clean independent branch.
+Do not poll each worker serially. As each worker completes, run its
+deterministic check and release only its genuine dependants. A failed branch does not invalidate a clean independent branch.
 
 Before visual review, every earned resource must be either built with an
 accepted summary or excluded with a reason. A resource that is neither by this
@@ -633,7 +631,11 @@ render manifest/pages, and its artefact-specific review module. It writes one
 Stable finding IDs persist through repairs. Reviewer-local tiny fixes are
 allowed only where the role permits them; rebuild and confirm the exact affected
 pages. A material content/layout fault routes once to the resource's existing
-owner using the focused-repair entrypoint. Do not reopen passing content.
+owner using the focused-repair entrypoint. A finding the reviewer classified
+`DESIGNER REPAIR REQUIRED` routes through that same slice to a different owner.
+Every blocking finding gets a repair round: load the focused-repair slice as
+soon as the first one exists, and do not decide from here that a finding is
+unrepairable. Do not reopen passing content.
 
 When two or more comparable resources exist, build the deterministic consistency
 overview and launch Visual Consistency Reviewer once. Missing or stale evidence
@@ -660,7 +662,7 @@ existing build diagnostic.
 - `stick-in-sheets-designer`: use `[PLUGIN_ROOT]/agents/stick-in-sheets-designer-focused-repair.md`;
   if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/stick-in-sheets-designer.md`.
 
-Launch the selected role directly; do not create a repair job spec.
+Launch the selected role directly.
 
 Return these exact repair-impact fields with the normal terminal marker:
 
@@ -677,7 +679,93 @@ repair round.
 
 For a picture finding, use the one-filename repair slice and prior picture
 receipt, finalise with `--replace yes`, then rebuild/review only affected
-resources.
+resources. That route replaces a picture that published and is wrong. A picture
+that never published at all is a different fault, and it is the designer route
+below.
+
+---
+
+### When the repair is a design decision
+
+A finding the reviewer classified `DESIGNER REPAIR REQUIRED` names a change the
+resource owner is barred from making: the honest repair alters what children are
+asked to do, not how the page shows it. The commonest case is a picture the
+contract promised and the run could not publish, on a beat whose task depends on
+seeing it. The slide or worksheet owner cannot conjure the picture and may not
+change the task, so the finding has no home among the four owners above and
+returns to the Lesson Designer, who chose the beat.
+
+This is not the route for an ordinary layout fault, however stubborn. The
+resource owner above keeps every fault whose repair leaves the task, the
+question and the answer as designed.
+
+Run this route once per lesson, with every `DESIGNER REPAIR REQUIRED` finding in
+the same launch, whether they came from one resource or four. One designer
+holding all of them re-plans the lesson coherently for the cost of one round; a
+launch per finding re-plans the same lesson many times over and can leave the
+repaired beats disagreeing with each other.
+
+There is no compact repair entrypoint for this role. Launch `lesson-designer`
+directly:
+
+```text
+You are the lesson designer, repairing the design faults one visual review
+found. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/lesson-designer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+DESIGNER_REPAIR_FINDINGS: [every DESIGNER REPAIR REQUIRED finding block verbatim]
+PICTURES_THAT_WILL_NOT_ARRIVE: [one exact filename per promised picture with no
+published terminal receipt, or None]
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+- [WORKING_DIR]/design-decisions.md
+- [WORKING_DIR]/photo-requirements.json
+
+Re-plan only the beats the findings name, so that the lesson works with what
+this run can actually deliver. You may change those beats' tasks, reshape or
+drop a picture-dependent activity, and use a representation the run already
+holds. Do not change the objective, do not touch a beat no finding names, and
+do not add a picture requirement: the picture stage has closed, so a new one
+would reach the teacher unpublished exactly as these did.
+
+Do not run the scaffold builder. It writes the empty scaffold and would discard
+the finished design.
+
+SUCCESS_CHECK:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_OK
+
+TERMINAL_STATE: COMPLETE
+```
+
+Return the same three repair-impact fields with that terminal state.
+
+Run the design validator yourself after it returns. Then re-run only the
+resource designers whose specification the changed beats touch, rebuild those
+resources, and confirm the affected pages against the same finding IDs. A
+finding the designer resolved by removing the requirement altogether closes
+under the authorised-removal rule in `review-evidence.md`.
+
+A run reaching this route is already past `COMPLETE`: the teacher is owed the
+picture the contract promised whatever the re-plan achieves. What this round
+buys is the difference between a deck the class cannot use and a lesson that
+teaches without the picture, which is the difference the teacher meets in the
+morning.
+
+If `lesson-designer` is absent, or this one round leaves a finding unresolved,
+that finding stays blocking and is declared at the merge.
 
 ---
 
@@ -687,6 +775,24 @@ Run `merge-visual-reviews.py` with only findings and confirmations that exist,
 writing `[WORKING_DIR]/visual-review.md`.
 Use `--consistency-required` only when two or more comparable resources required
 the specialist comparison. Read `## Verdict` exactly.
+
+The merge refuses to write a verdict while a finding is still blocking and no
+repair is on record for it, because a skipped repair round and a failed one
+otherwise reach delivery looking identical. The confirmation pass that
+re-reviewed a repair is that record, whatever its result. Where no repairer
+could be put in front of a finding, say so:
+
+```text
+--unrepaired [FINDING-ID]=owner-unavailable: [the role that is missing, or that
+  could not be run to a result after its one infrastructure retry]
+--unrepaired [FINDING-ID]=no-owner-authority: [the change no available owner may make]
+```
+
+Declare only what is true. The reason prints beside the finding in
+`visual-review.md` and carries into the run report, so a declaration standing in
+for a repair round that was simply skipped tells the teacher a fault was
+unfixable when nobody had tried. When the merge names an undeclared blocking
+finding, the answer is that finding's repair round, not a declaration.
 
 Run picture provenance once from the final schema-2 requirements and
 `[WORKING_DIR]/orchestration-receipts/picture-terminal/`:
@@ -714,8 +820,6 @@ results, which name every promised picture the run did not publish.
 Append genuine findings to the shared build review log when source access is
 available. Otherwise write the pending log entry in the working directory.
 
-No generic controller audit or latency report is part of completion.
-
 ---
 
 ## Phase 4 — Final Assembly and Report
@@ -731,8 +835,8 @@ Write `[WORKING_DIR]/run-report.md` with:
 - worker friction lines;
 - shared investigation-log status.
 
-Do not include scheduler contracts, receipts or counts. Picture terminal
-receipts are evidence for picture provenance, not generic completion records.
+Picture terminal receipts are evidence for picture provenance, not generic
+completion records.
 
 Run `validate-run-report.py` and require `RUN_REPORT_OK`. On failure, repair
 the report from the validator's printed failure list and re-run the check; it
@@ -765,11 +869,10 @@ paths. Run `run-fixed-resource.py sharepoint` directly with the resolved term,
 year, week, subject/day and one `--file` per exact basename. Require schema 1
 `ok: true`, `DESTINATION=` and `STATUS=COPIED`.
 
-Do not create a command job or rerun a scheduler audit. Sync the delivered
-files whatever the package outcome: the run report, not the sync, is where
-faults are told. If the mapped drive is unavailable or the filing destination
-never resolved, retain local outputs and report the exact local folder and
-resolver error.
+Sync the delivered files whatever the package outcome: the run report, not the
+sync, is where faults are told. If the mapped drive is unavailable or the
+filing destination never resolved, retain local outputs and report the exact
+local folder and resolver error.
 
 ### Edge cases
 

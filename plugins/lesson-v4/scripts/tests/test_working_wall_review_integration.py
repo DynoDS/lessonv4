@@ -26,6 +26,7 @@ class WorkingWallReviewIntegrationTests(unittest.TestCase):
         self,
         findings: Path,
         confirmations: tuple[Path, ...] = (),
+        unrepaired: tuple[str, ...] = (),
     ) -> subprocess.CompletedProcess[str]:
         command = [
             sys.executable,
@@ -41,6 +42,8 @@ class WorkingWallReviewIntegrationTests(unittest.TestCase):
         ]
         for confirmation in confirmations:
             command += ["--confirmation", f"Working wall={confirmation}"]
+        for declaration in unrepaired:
+            command += ["--unrepaired", declaration]
         return subprocess.run(
             command,
             capture_output=True,
@@ -128,17 +131,25 @@ class WorkingWallReviewIntegrationTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-        completed = self.run_merge(findings)
+        # A blocking finding needs a repair on record before it can reach a
+        # verdict at all, so this run declares why no repairer was available.
+        completed = self.run_merge(
+            findings,
+            unrepaired=(
+                "WORKING-WALL-001=owner-unavailable: "
+                "working-wall-designer is not installed",
+            ),
+        )
 
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(completed.stdout.strip(), "BLOCKED")
+        merged = self.output.read_text(encoding="utf-8")
+        self.assertIn("`BLOCKED`", merged)
+        self.assertIn("WORKING-WALL-001", merged)
         self.assertIn(
-            "`BLOCKED`",
-            self.output.read_text(encoding="utf-8"),
-        )
-        self.assertIn(
-            "WORKING-WALL-001",
-            self.output.read_text(encoding="utf-8"),
+            "- Repair attempt: owner-unavailable - working-wall-designer is "
+            "not installed",
+            merged,
         )
 
     def test_plain_bullet_wall_fault_is_rejected_instead_of_passing(
