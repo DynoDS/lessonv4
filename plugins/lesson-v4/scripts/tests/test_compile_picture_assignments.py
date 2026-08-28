@@ -48,7 +48,7 @@ def photo(filename: str, mode="ordinary-real", profile="unsplash-then-wikimedia"
         "acquisition_mode": mode,
         "source_profile": profile,
         "fallback_action": fallback,
-        "fallback_note": None,
+        "fallback_note": "a generated image would misrepresent the real record" if mode == "authentic-real" else None,
         "generation_prompt": PROMPT if mode == "controlled-ai" or fallback == "ai" else None,
         "coherent_group": group,
         "coherent_mode": coherent,
@@ -58,6 +58,16 @@ def photo(filename: str, mode="ordinary-real", profile="unsplash-then-wikimedia"
 
 def requirements(photos):
     return {"schema_version": 2, "lesson_name": "test lesson", "photos": photos}
+
+
+def compile_one(root: Path, single_photo: dict) -> dict:
+    req = root / "requirements.json"
+    req.write_text(json.dumps(requirements([single_photo]), indent=2) + "\n", encoding="utf-8")
+    assignment = compiler.build_assignment(
+        req, [single_photo], "p1", "p", root / "assignments", root
+    )
+    return assignment["entries"][0]
+
 
 
 class CompilePictureAssignmentsTests(unittest.TestCase):
@@ -271,6 +281,81 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             self.assertEqual(summary["schemaVersion"], 1)
             self.assertIs(summary["ok"], True)
             self.assertEqual(summary["schema_version"], 2)
+
+
+class EssentialPictureAlwaysHasARouteTests(unittest.TestCase):
+    """A required picture must have some authorised way to become an image.
+
+    A lesson once shipped twelve required appliance photographs where eleven
+    were authored as real-only with no authorised substitute. Stock libraries
+    do not hold a kettle photographed whole beside its disconnected plug, so
+    eleven slots stayed empty. `ordinary-real` means authenticity is not
+    load-bearing, so refusing a faithful generated photograph there buys
+    nothing and costs the picture.
+    """
+
+    def test_essential_ordinary_real_requires_an_ai_fallback(self):
+        for fallback in ("omit", "unsatisfied"):
+            with self.subTest(fallback=fallback):
+                with self.assertRaises(compiler.AssignmentError) as caught:
+                    compiler.validate_requirements(
+                        requirements([photo("kettle.jpg", fallback=fallback, essential=True)])
+                    )
+                self.assertIn("photo contract route error", str(caught.exception))
+
+    def test_essential_ordinary_real_with_ai_fallback_compiles_a_generation_route(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            entry = compile_one(root, photo("kettle.jpg", fallback="ai", essential=True))
+            self.assertEqual(entry["initial_route"], "real")
+            self.assertTrue(entry["search_schedule"])
+            self.assertIsNotNone(entry["generation_prompt_file"])
+            self.assertIsNotNone(entry["ai_ledger_path"])
+
+    def test_ordinary_real_never_authors_an_unsatisfied_fallback(self):
+        with self.assertRaises(compiler.AssignmentError):
+            compiler.validate_requirements(
+                requirements([photo("leaf.jpg", fallback="unsatisfied", essential=False)])
+            )
+
+    def test_optional_ordinary_real_may_still_be_omitted(self):
+        # Discrimination control: a picture the lesson is no poorer without
+        # keeps its cheap route. The rule targets required pictures only.
+        compiler.validate_requirements(
+            requirements([photo("leaf.jpg", fallback="omit", essential=False)])
+        )
+
+    def test_authentic_real_requires_a_written_reason(self):
+        bare = photo("charter.jpg", mode="authentic-real", fallback="unsatisfied", essential=True)
+        bare["fallback_note"] = None
+        with self.assertRaises(compiler.AssignmentError) as caught:
+            compiler.validate_requirements(requirements([bare]))
+        self.assertIn("fallback_note", str(caught.exception))
+
+    def test_authentic_real_with_a_written_reason_is_accepted(self):
+        # Unaffected control: a genuine primary source still routes real-only,
+        # because a generated substitute would be a lie about a real record.
+        compiler.validate_requirements(
+            requirements([photo("charter.jpg", mode="authentic-real", fallback="unsatisfied", essential=True)])
+        )
+
+    def test_all_real_group_cannot_hold_an_essential_ordinary_member(self):
+        members = [
+            photo("compare-a.jpg", group="APPLIANCES", coherent="all-real", essential=True),
+            photo("compare-b.jpg", group="APPLIANCES", coherent="all-real", essential=True),
+        ]
+        with self.assertRaises(compiler.AssignmentError) as caught:
+            compiler.validate_requirements(requirements(members))
+        self.assertIn("all-generated", str(caught.exception))
+
+    def test_matched_generated_comparison_set_is_the_available_answer(self):
+        members = [
+            photo("compare-a.jpg", mode="controlled-ai", profile="none", fallback="unsatisfied",
+                  essential=True, group="APPLIANCES", coherent="all-generated"),
+            photo("compare-b.jpg", mode="controlled-ai", profile="none", fallback="unsatisfied",
+                  essential=True, group="APPLIANCES", coherent="all-generated"),
+        ]
+        compiler.validate_requirements(requirements(members))
 
 
 if __name__ == "__main__":

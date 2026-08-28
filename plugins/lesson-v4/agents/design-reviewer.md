@@ -268,6 +268,8 @@ When an authorised local lesson correction makes one existing photo brief inaccu
 
 Never change `id`, `filename`, entry order, `acquisition_mode`, `source_profile`, `coherent_group`, `coherent_mode` or `coherent_visual_invariants`.
 
+Keep every essential picture's route to an image intact. An essential `ordinary-real` picture keeps `fallback_action: ai` and its generation prompt, so making a picture essential also means giving it that route. A correction that would leave an essential picture able to end with no image is a `REDESIGN REQUIRED`, not a local edit.
+
 After a JSON correction, serialise through the host JSON library, parse the written file again, and read back every changed field.
 
 The orchestrator owns post-review validation. Do not run `design-review-packet.py verify` yourself.

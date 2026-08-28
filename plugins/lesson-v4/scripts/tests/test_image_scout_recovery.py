@@ -244,7 +244,8 @@ class Schema2ResultValidationTests(unittest.TestCase):
             "load_bearing_evidence": ["the object"], "use": "slide", "essential": essential,
             "filename": "unsplash/object.jpg", "acquisition_mode": mode,
             "source_profile": "none" if mode == "controlled-ai" else "unsplash-only",
-            "fallback_action": fallback, "fallback_note": None,
+            "fallback_action": fallback,
+            "fallback_note": "a generated image would misrepresent the real record" if mode == "authentic-real" else None,
             "generation_prompt": PROMPT if mode == "controlled-ai" or fallback == "ai" else None,
             "coherent_group": None, "coherent_mode": "none", "coherent_visual_invariants": [],
         }
@@ -348,7 +349,7 @@ class Schema2ResultValidationTests(unittest.TestCase):
         validator.validate_result(args)
 
     def test_essential_optional_omission_is_rejected(self):
-        _, _, entry, args = self.fixture(mode="ordinary-real", fallback="omit", essential=True)
+        _, _, entry, args = self.fixture(mode="authentic-real", fallback="omit", essential=True)
         self.write_result(args, entry, "omitted", reason="optional_omission")
         with self.assertRaises(validator.ValidationError): validator.validate_result(args)
 
@@ -375,10 +376,37 @@ class Schema2ResultValidationTests(unittest.TestCase):
         self.write_result(args, entry, "unsatisfied", reason="no_faithful_real_match")
         with self.assertRaises(validator.ValidationError): validator.validate_result(args)
 
-    def test_source_outage_blocks_ai_fallback(self):
-        _, assignment, entry, args = self.fixture(mode="ordinary-real", fallback="ai")
+    def outage_generated_fixture(self, fallback, *, retried):
+        _, assignment, entry, args = self.fixture(mode="ordinary-real", fallback=fallback)
         self.search_summary(entry, complete=False, failure_kind="transport")
+        if retried:
+            self.search_summary(entry, complete=False, failure_kind="transport", retry=True)
         stage = Path(assignment["work_root"]) / entry["entry_key"] / "ai" / "output.png"; stage.parent.mkdir(parents=True); Image.new("RGB", (8, 8)).save(stage)
         self.reserve_and_accept(entry, prompt=Path(entry["generation_prompt_file"]).read_text(), staging=stage)
         self.write_result(args, entry, "generated", staging=str(stage))
+        return args
+
+    def test_transient_source_failure_still_owes_its_retry(self):
+        # One blip is not an outage, so the fallback does not open yet.
+        args = self.outage_generated_fixture("ai", retried=False)
+        with self.assertRaises(validator.ValidationError): validator.validate_result(args)
+
+    def test_source_outage_falls_through_to_authorised_ai(self):
+        # The reported failure: a source the run could not reach left the
+        # lesson with no picture even though AI was authorised.
+        args = self.outage_generated_fixture("ai", retried=True)
+        validator.validate_result(args)
+
+    def test_source_outage_without_ai_fallback_still_blocks_generation(self):
+        _, _, entry, args = self.fixture(mode="ordinary-real", fallback="omit")
+        self.search_summary(entry, complete=False, failure_kind="transport")
+        self.search_summary(entry, complete=False, failure_kind="transport", retry=True)
+        self.write_result(args, entry, "unsatisfied", reason="real_source_unavailable")
+        validator.validate_result(args)
+
+    def test_ai_fallback_cannot_report_a_source_outage_as_terminal(self):
+        _, _, entry, args = self.fixture(mode="ordinary-real", fallback="ai")
+        self.search_summary(entry, complete=False, failure_kind="transport")
+        self.search_summary(entry, complete=False, failure_kind="transport", retry=True)
+        self.write_result(args, entry, "unsatisfied", reason="real_source_unavailable")
         with self.assertRaises(validator.ValidationError): validator.validate_result(args)

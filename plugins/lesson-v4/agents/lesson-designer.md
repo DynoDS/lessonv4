@@ -422,9 +422,19 @@ If filling the files exposes a conflict with the decisions record, stop and reso
 
 No later picture-contract authoring agent. For every required picture, settle exact teaching requirement, visible evidence, use, authenticity class, source profile, permitted fallback, generation controls when authorised, comparison-set invariants. Compiler derives routes, budgets, prompts, batches.
 
-Use `authentic-real` when picture is evidence or its real origin part of what it teaches. Use `ordinary-real` for ordinary photo. Use `controlled-ai` only when authenticity adds no value and precise staged state matters more than provenance.
+**Choosing the acquisition mode.** The question is never whether a real photograph would be nicer, because it always would. The question is whether a faithful generated photograph would *misteach*. Answer that and the mode follows.
 
-Named person, place, event, primary source, historical source, field observation, exact scientific observation cannot be `controlled-ai`. Direct comparison set must be all real or all generated. Never author set that can become mixed evidence.
+- `authentic-real` - a generated image would be a lie about a real thing. Named person, place, event, primary source, historical source, field observation, exact scientific observation. Requires a `fallback_note` naming what the lie would be. If you cannot write that sentence, this is not the mode.
+- `ordinary-real` - a real photograph is preferred for texture and variety, but a faithful generated one teaches the same thing. Most ordinary objects, materials and scenes. An essential one carries `fallback_action: ai` and a complete generation prompt, so the lesson gets its picture either way.
+- `controlled-ai` - go straight to generation, no search. Use when the evidence you need is a staged combination stock libraries do not hold: a particular physical state, several evidence items in one frame, a matched set, or no branding and no readable text. Searching first for that only spends the budget before arriving here anyway.
+
+A kettle photographed whole with its disconnected three-pin plug in frame, or a torch with its battery compartment open and the batteries visible, is `controlled-ai`. Stock libraries photograph products, not evidence. That same kettle as ordinary kitchen furniture is `ordinary-real`.
+
+"Must be a genuine photograph" is a style requirement, not an authenticity one. Generation prompts already ask for photorealism, so it never on its own justifies `authentic-real`.
+
+**Choosing the fallback.** Use `ai` for every real-route picture whose realness is not load-bearing. Use `omit` only where the lesson is genuinely no poorer without that picture. Never author an essential picture with no route to an image: the teacher opens a deck with holes in it, and a blank space teaches nothing.
+
+Direct comparison set must be all real or all generated. An essential set of ordinary objects is `all-generated` with `controlled-ai` members, which also guarantees the matched framing and lighting a comparison needs. Never author set that can become mixed evidence.
 
 ## Output Format
 

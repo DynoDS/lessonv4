@@ -172,9 +172,40 @@ def _validate_photo(photo: dict, index: int) -> None:
     if photo["acquisition_mode"] == "authentic-real":
         if photo["source_profile"] == "none" or photo["fallback_action"] == "ai" or photo["generation_prompt"] is not None:
             raise AssignmentError(f"photo contract route error: {photo['id']}: invalid authentic-real route")
+        # authentic-real is the only route that can end a lesson with no picture
+        # and no authorised substitute, so the reason has to be written down
+        # rather than reached by default.
+        if not nonempty(photo["fallback_note"]):
+            raise AssignmentError(
+                f"photo contract route error: {photo['id']}: authentic-real requires a fallback_note "
+                f"saying why a faithful generated photograph would misteach; use ordinary-real when it would not"
+            )
     elif photo["acquisition_mode"] == "ordinary-real":
         if photo["source_profile"] == "none":
             raise AssignmentError(f"photo contract route error: {photo['id']}: ordinary-real requires a source profile")
+        # ordinary-real means authenticity is not load-bearing, so a faithful
+        # generated photograph does the same teaching job. Refusing that
+        # substitute is what leaves an essential picture undelivered.
+        if photo["fallback_action"] == "unsatisfied":
+            raise AssignmentError(
+                f"photo contract route error: {photo['id']}: ordinary-real cannot use fallback_action unsatisfied; "
+                f"use ai, or omit when the picture is not essential"
+            )
+        if photo["essential"] and photo["fallback_action"] != "ai":
+            if photo["coherent_mode"] == "all-real":
+                # The set forbids the AI fallback this member needs, so the
+                # whole comparison can arrive empty. A matched generated set
+                # also gives the shared framing a comparison depends on.
+                raise AssignmentError(
+                    f"photo contract coherence error: {photo['id']}: an essential ordinary-real member of an "
+                    f"all-real set has no way to be delivered; use all-generated with controlled-ai members, "
+                    f"or authentic-real members when real origin is the evidence"
+                )
+            raise AssignmentError(
+                f"photo contract route error: {photo['id']}: an essential ordinary-real picture requires "
+                f"fallback_action ai with a complete generation_prompt; use authentic-real only when a "
+                f"generated photograph would misteach"
+            )
     else:
         if photo["source_profile"] != "none" or photo["fallback_action"] == "ai":
             raise AssignmentError(f"photo contract route error: {photo['id']}: invalid controlled-ai route")

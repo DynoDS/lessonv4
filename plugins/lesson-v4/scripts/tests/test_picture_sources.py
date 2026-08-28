@@ -27,6 +27,7 @@ unsplash = load("test_unsplash_source", "unsplash_fetch.py")
 wikimedia = load("test_wikimedia_source", "wikimedia_fetch.py")
 validator = load("test_picture_source_validator", "validate-image-scout.py")
 compiler = load("test_picture_source_compiler", "compile-picture-assignments.py")
+design_validator = load("test_picture_source_design_validator", "validate-lesson-design.py")
 
 
 class PictureSourceTests(unittest.TestCase):
@@ -154,7 +155,7 @@ class PictureSourceTests(unittest.TestCase):
 
     def result_fixture(self, selected_index, earlier_failure=None, later_exists=False):
         root = Path(tempfile.mkdtemp()); working = root / "working"; working.mkdir()
-        photo = {"id": "photo-001", "subject": "subject", "pedagogical_constraint": "show it", "teaching_requirement": "identify it", "load_bearing_evidence": ["the subject"], "use": "slide", "essential": True, "filename": "unsplash/item.jpg", "acquisition_mode": "authentic-real", "source_profile": "unsplash-then-wikimedia", "fallback_action": "unsatisfied", "fallback_note": None, "generation_prompt": None, "coherent_group": None, "coherent_mode": "none", "coherent_visual_invariants": []}
+        photo = {"id": "photo-001", "subject": "subject", "pedagogical_constraint": "show it", "teaching_requirement": "identify it", "load_bearing_evidence": ["the subject"], "use": "slide", "essential": True, "filename": "unsplash/item.jpg", "acquisition_mode": "authentic-real", "source_profile": "unsplash-then-wikimedia", "fallback_action": "unsatisfied", "fallback_note": "a generated image would misrepresent the real record", "generation_prompt": None, "coherent_group": None, "coherent_mode": "none", "coherent_visual_invariants": []}
         req = root / "requirements.json"; req.write_text(json.dumps({"schema_version": 2, "lesson_name": "lesson", "photos": [photo]}) + "\n")
         assignment = compiler.build_assignment(req, [photo], "p1", "p", root / "assignments", working)
         assignment_path = root / "assignment.json"; assignment_path.write_text(json.dumps(assignment) + "\n")
@@ -180,6 +181,122 @@ class PictureSourceTests(unittest.TestCase):
     def test_search_after_winner_is_rejected(self):
         args = self.result_fixture(0, later_exists=True)
         with self.assertRaises(validator.ValidationError): validator.validate_result(args)
+
+
+class PictureRouteEnforcementAgreementTests(unittest.TestCase):
+    """The design validator and the compiler must reject the same contracts.
+
+    They hold separate copies of the route rules and both stand between a
+    lesson design and the image pipeline. If one drifts, a contract that leaves
+    a required picture with no way to become an image reaches a real lesson
+    through whichever gate is looser.
+    """
+
+    PROMPT = {
+        "physical_state": "the subject shown whole and unobstructed",
+        "must_avoid": ["a second subject"],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "the whole subject in one clear frame",
+    }
+
+    def photo(self, **overrides):
+        base = {
+            "id": "photo-001",
+            "subject": "an electric kettle with its disconnected plug in frame",
+            "pedagogical_constraint": "the kettle is unplugged and the whole plug stays visible",
+            "teaching_requirement": "recognise that an appliance can be made safe before inspection",
+            "load_bearing_evidence": ["one complete kettle", "a visible three-pin plug"],
+            "use": "both",
+            "essential": True,
+            "filename": "unsplash/kettle.jpg",
+            "acquisition_mode": "ordinary-real",
+            "source_profile": "unsplash-then-wikimedia",
+            "fallback_action": "ai",
+            "fallback_note": None,
+            "generation_prompt": dict(self.PROMPT),
+            "coherent_group": None,
+            "coherent_mode": "none",
+            "coherent_visual_invariants": [],
+        }
+        base.update(overrides)
+        return base
+
+    def verdicts(self, photo):
+        document = {"schema_version": 2, "lesson_name": "Electrical safety", "photos": [photo]}
+        try:
+            compiler.validate_requirements(document)
+            compiled_ok = True
+        except compiler.AssignmentError:
+            compiled_ok = False
+        try:
+            design_validator.validate_photo_contract_v2(document)
+            design_ok = True
+        except design_validator.ContractError:
+            design_ok = False
+        return compiled_ok, design_ok
+
+    def assert_both(self, photo, expected, message):
+        compiled_ok, design_ok = self.verdicts(photo)
+        self.assertEqual(compiled_ok, expected, f"compiler disagreed: {message}")
+        self.assertEqual(design_ok, expected, f"design validator disagreed: {message}")
+
+    def test_required_picture_with_no_route_to_an_image_is_rejected_by_both(self):
+        # The reported failure: eleven required photographs authored real-only
+        # with no authorised substitute, and eleven empty slots in the lesson.
+        for fallback in ("omit", "unsatisfied"):
+            with self.subTest(fallback=fallback):
+                self.assert_both(
+                    self.photo(fallback_action=fallback, generation_prompt=None),
+                    False,
+                    f"essential ordinary-real with fallback {fallback}",
+                )
+
+    def test_required_picture_with_an_ai_fallback_is_accepted_by_both(self):
+        self.assert_both(self.photo(), True, "essential ordinary-real with an AI fallback")
+
+    def test_optional_picture_may_still_be_omitted_by_both(self):
+        self.assert_both(
+            self.photo(essential=False, fallback_action="omit", generation_prompt=None),
+            True,
+            "non-essential ordinary-real may be omitted",
+        )
+
+    def test_authentic_real_without_a_written_reason_is_rejected_by_both(self):
+        self.assert_both(
+            self.photo(
+                acquisition_mode="authentic-real",
+                fallback_action="unsatisfied",
+                generation_prompt=None,
+                fallback_note=None,
+            ),
+            False,
+            "authentic-real with no fallback_note",
+        )
+
+    def test_authentic_real_with_a_written_reason_is_accepted_by_both(self):
+        self.assert_both(
+            self.photo(
+                acquisition_mode="authentic-real",
+                fallback_action="unsatisfied",
+                generation_prompt=None,
+                fallback_note="a generated image would invent a record that never existed",
+            ),
+            True,
+            "authentic-real with a fallback_note",
+        )
+
+    def test_direct_ai_route_is_accepted_by_both(self):
+        # The staged-evidence case this lesson actually needed: whole kettle
+        # and disconnected plug in one frame is not a stock product photograph.
+        self.assert_both(
+            self.photo(
+                acquisition_mode="controlled-ai",
+                source_profile="none",
+                fallback_action="unsatisfied",
+            ),
+            True,
+            "controlled-ai for staged evidence",
+        )
 
 
 if __name__ == "__main__":

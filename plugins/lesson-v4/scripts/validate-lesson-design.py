@@ -1395,12 +1395,35 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
             expect(source != "none", f"photo contract route error: {path} authentic-real requires a real source profile")
             expect(fallback != "ai", f"photo contract route error: {path} authentic-real cannot fall back to AI")
             expect(prompt is None, f"photo contract route error: {path} authentic-real requires a null generation prompt")
+            # authentic-real is the only route that can end a lesson with no
+            # picture and no authorised substitute, so the reason has to be
+            # written down rather than reached by default.
+            expect(_photo_nonempty(note),
+                   f"photo contract route error: {path} authentic-real requires a fallback_note saying why a "
+                   f"faithful generated photograph would misteach; use ordinary-real when it would not")
         elif acquisition == "ordinary-real":
             expect(source != "none", f"photo contract route error: {path} ordinary-real requires a real source profile")
             if fallback == "ai":
                 expect(_photo_prompt_valid(prompt), f"photo contract route error: {path} ordinary-real AI fallback requires a complete generation prompt")
             else:
                 expect(prompt is None, f"photo contract route error: {path} ordinary-real without AI fallback requires a null generation prompt")
+            # ordinary-real means authenticity is not load-bearing, so a
+            # faithful generated photograph does the same teaching job.
+            # Refusing that substitute is what leaves a picture undelivered.
+            expect(fallback != "unsatisfied",
+                   f"photo contract route error: {path} ordinary-real cannot use fallback_action unsatisfied; "
+                   f"use ai, or omit when the picture is not essential")
+            if photo["essential"] and fallback != "ai":
+                # An all-real set forbids the AI fallback this member needs, so
+                # the whole comparison can arrive empty. A matched generated set
+                # also gives the shared framing a comparison depends on.
+                expect(coherent_mode != "all-real",
+                       f"photo contract coherence error: {path} an essential ordinary-real member of an all-real set "
+                       f"has no way to be delivered; use all-generated with controlled-ai members, or authentic-real "
+                       f"members when real origin is the evidence")
+                raise ContractError(
+                    f"photo contract route error: {path} an essential ordinary-real picture requires fallback_action ai "
+                    f"with a complete generation_prompt; use authentic-real only when a generated photograph would misteach")
         elif acquisition == "controlled-ai":
             expect(source == "none", f"photo contract route error: {path} controlled-ai requires source_profile none")
             expect(_photo_prompt_valid(prompt), f"photo contract route error: {path} controlled-ai requires a complete generation prompt")

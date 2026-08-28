@@ -64,7 +64,7 @@ def photo_requirement(
     pedagogical_constraint: str = "",
     teaching_requirement: str | None = None,
     essential: bool = True,
-    fallback_action: str = "unsatisfied",
+    fallback_action: str = "ai",
 ):
     return {
         "id": photo_id,
@@ -79,7 +79,12 @@ def photo_requirement(
         "source_profile": "unsplash-only",
         "fallback_action": fallback_action,
         "fallback_note": None,
-        "generation_prompt": None,
+        "generation_prompt": {
+            "physical_state": "the subject shown whole and unobstructed",
+            "must_avoid": ["a second subject"],
+            "text_rule": "no readable text, labels, logos or branding",
+            "composition": "the whole subject in one clear frame",
+        } if fallback_action == "ai" else None,
         "coherent_group": None,
         "coherent_mode": "none",
         "coherent_visual_invariants": [],

@@ -295,6 +295,32 @@ def step_has_final_operational_failure(step: dict, label: str) -> bool:
     return not retry_path.exists()
 
 
+def attempted_step_summary(step: dict, label: str, *, allow_outage: bool):
+    """A compiled search step that the worker was entitled to move on from.
+
+    Without an authorised AI fallback a step must complete, because a picture
+    invented in place of an outage would be provenance the contract refused.
+    With `fallback_action: ai` the lesson already has an authorised substitute,
+    so a step that stayed unavailable through its one allowed retry counts as
+    attempted and generation continues. The retry itself is still owed: a
+    transient blip is not an outage.
+    """
+    if not allow_outage:
+        return completed_step_summary(step, label)
+    try:
+        return completed_step_summary(step, label)
+    except ValidationError as incomplete:
+        try:
+            outage = step_has_final_operational_failure(step, label)
+        except ValidationError:
+            # The outage probe found its own fault with the summary. Report why
+            # the step did not complete, not why the probe could not read it.
+            raise incomplete from None
+        if outage:
+            return None
+        raise
+
+
 def terminal_ai_state(compiled: dict, label: str, attempts) -> dict:
     ledger_text = compiled.get("ai_ledger_path")
     if not isinstance(ledger_text, str):
@@ -433,8 +459,9 @@ def validate_result(args) -> None:
                 raise ValidationError(f"{label}: generated requires a staged path and no selection")
             if not compiler.ai_authorised({"acquisition_mode": compiled["acquisition_mode"], "fallback_action": compiled["fallback_action"]}):
                 raise ValidationError(f"{label}: generated status is not AI-authorised")
+            outage_allowed = compiled["fallback_action"] == "ai"
             for step in compiled["search_schedule"]:
-                completed_step_summary(step, label)
+                attempted_step_summary(step, label, allow_outage=outage_allowed)
             staged_path = Path(staged).resolve()
             if not inside(staged_path, work_root) or staged_path.is_symlink() or not staged_path.is_file():
                 raise ValidationError(f"{label}: generated staging path is outside WORK_ROOT")
@@ -515,12 +542,22 @@ def validate_result(args) -> None:
                 for step in compiled["search_schedule"]:
                     completed_step_summary(step, label)
 
+            # An authorised AI fallback exists so the lesson still gets its
+            # picture. Neither an exhausted search nor a source outage is a
+            # terminal answer while that fallback remains unused.
             if (
                 compiled["initial_route"] == "real"
                 and compiled["fallback_action"] == "ai"
-                and reason in {"no_faithful_real_match", "real_requirement_unfulfillable"}
+                and reason in {
+                    "no_faithful_real_match",
+                    "real_requirement_unfulfillable",
+                    "real_source_unavailable",
+                }
             ):
-                raise ValidationError(f"{label}: authorised AI fallback cannot stop at real-search exhaustion")
+                raise ValidationError(
+                    f"{label}: authorised AI fallback cannot stop at a real-search outcome; "
+                    f"generate, then report the generation outcome"
+                )
 
             if compiled["initial_route"] == "real" and reason == "real_source_unavailable":
                 if status != "unsatisfied":

@@ -34,7 +34,7 @@ A non-zero call, `complete: false`, authentication failure, rate limit, transpor
 
 Retry one clearly transient transport failure once. Use a `retry-1` child directory inside that compiled step's output directory. The retry summary is `retry-1/<the same compiled summary filename>`. Never overwrite the first failed summary. Never retry authentication or rate limit as if it were a semantic search.
 
-If a required compiled step remains unavailable, report `real_source_unavailable`. Do not move to AI.
+If a required compiled step remains unavailable after that one retry, the entry's own contract decides what happens next. When `fallback_action` is `ai`, the outage is not a terminal answer: the lesson has an authorised substitute, so continue to generation and let the generation outcome be the result. Otherwise report `real_source_unavailable`, because no substitute is authorised and a picture invented in place of an outage would be provenance the contract refused.
 
 ## Candidate inspection
 

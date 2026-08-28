@@ -407,9 +407,14 @@ Write the following object inside a fenced `json` code block:
       "filename": "unsplash/adaptation-leaf-veins.jpg",
       "acquisition_mode": "ordinary-real",
       "source_profile": "unsplash-then-wikimedia",
-      "fallback_action": "omit",
+      "fallback_action": "ai",
       "fallback_note": null,
-      "generation_prompt": null,
+      "generation_prompt": {
+        "physical_state": "One intact leaf lying flat, photographed from directly above.",
+        "must_avoid": ["labels or arrows", "a second leaf", "a cluttered background"],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "The whole leaf fills a near-square frame on a plain background."
+      },
       "coherent_group": null,
       "coherent_mode": "none",
       "coherent_visual_invariants": []
@@ -418,7 +423,7 @@ Write the following object inside a fenced `json` code block:
 }
 ```
 
-There is no later picture-contract authoring pass. Set every semantic and acquisition field now.
+There is no later picture-contract authoring pass. Set every semantic and acquisition field now, using the acquisition-mode and fallback rules in `output-template.md`. An essential picture always keeps a route to an image: `fallback_action: ai` with a complete generation prompt for an ordinary real photograph, or `controlled-ai` when the evidence is a staged combination stock libraries do not hold. Reserve `authentic-real` for a picture where a generated image would be a lie about a real thing, and say what that lie would be in `fallback_note`.
 
 Assign IDs sequentially in the order those objects appear across the one adaptation file (`adaptation-photo-001`, `adaptation-photo-002`, …). Every required adaptation photo used by an item must be named by ID in that item's `Photo refs`. Do not ask the worksheet-designer to match a prose visual requirement to a photo subject. `filename` remains the image-pipeline identity.
 

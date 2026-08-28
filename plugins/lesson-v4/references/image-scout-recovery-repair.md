@@ -28,7 +28,7 @@ For a sourced real image:
 1. Inspect unused candidates from prior immutable summaries.
 2. Accept one only when it fixes the fault and meets the full contract.
 3. Otherwise use at most one additional real search.
-4. Continue to AI only when the original contract permits it and search has no operational gap.
+4. Continue to AI only when the original contract permits it. With `fallback_action: ai` an operational gap does not withdraw that permission: record the outage and generate.
 
 For a generated image:
 
