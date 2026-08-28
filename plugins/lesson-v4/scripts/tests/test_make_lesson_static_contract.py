@@ -313,6 +313,104 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             guide,
         )
 
+    def test_every_worker_editing_its_own_file_edits_it_in_place(self):
+        """The rule the Lesson Designer already had, owned once for everyone.
+
+        The Worksheet Designer was told to "write the updated worksheet.json
+        atomically" after resolving three picture paths, and re-emitted the
+        whole specification to carry them. A whole-file rewrite silently
+        re-decides every question, page and answer it retypes, leaves no
+        readable diff for the confirmation pass, and shows the teacher their
+        lesson deleted and rebuilt for a one-word fix.
+        """
+        revising = (ROOT / "references" / "revising-in-place.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "## Changing a file you already wrote: edit the lines, not the file",
+            revising,
+        )
+        self.assertIn("every worker in the pipeline", revising)
+        self.assertIn(
+            "Atomic means nobody sees a partial file; it does not mean the "
+            "content has to be retyped.",
+            revising,
+        )
+        self.assertIn(
+            "The first authoring pass is the exception", revising
+        )
+
+        worksheet = (ROOT / "agents" / "worksheet-designer.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("Edit the resolved identity and path fields where they", worksheet)
+        self.assertIn("revising-in-place.md", worksheet)
+
+        playbook = PLAYBOOK.read_text(encoding="utf-8")
+        repair = playbook.split("### The focused owner-repair round", 1)[1].split(
+            "### When the repair is a design decision", 1
+        )[0]
+        self.assertIn("Edit the named file in place", repair)
+        self.assertIn("references/revising-in-place.md", repair)
+
+    def test_a_table_zone_carries_a_height_budget_the_designer_can_read(self):
+        """The reported fault was a table zone 1.119in tall holding two rows.
+
+        Every cell got 0.19in, and the numbers "(1)" and "(2)" came back as
+        TEXT_OVERLOAD on a generated box name - a content signal for a problem
+        no amount of cutting words could fix. The sizing reference listed
+        table widths and no heights at all, so the designer had nothing to size
+        the zone against.
+        """
+        sizing = (ROOT / "references" / "slide-visual-sizing.md").read_text(
+            encoding="utf-8"
+        )
+        table_line = next(
+            line for line in sizing.splitlines() if line.startswith("- `table`:")
+        )
+        self.assertIn("0.74", table_line)
+        self.assertIn("0.2", table_line)
+        self.assertIn("row", table_line)
+
+        helper = (
+            ROOT / "builder" / "src" / "content" / "table.js"
+        ).read_text(encoding="utf-8")
+        self.assertIn("TABLE_ZONE_TOO_SHORT", helper)
+        self.assertIn("ROW_MIN_H", helper)
+
+    def test_a_missing_helper_can_be_answered_with_a_generated_picture(self):
+        """A one-off symbol is not an engine helper's job.
+
+        The lesson needed a UK three-pin plug and socket. It was declared as a
+        representation, no helper drew one, and the only routes on offer were
+        build a helper or record a gap - so the deck fell back on the plug
+        emoji, which the platform draws as a generic two-pin plug. The run has
+        image generation throughout; a fixed depiction of one real thing is
+        exactly what it produces.
+        """
+        playbook = PLAYBOOK.read_text(encoding="utf-8")
+        helpers = playbook.split(
+            "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)", 1
+        )[1].split("## Phase 2 — Spawn Parallel Rendering Branches", 1)[0]
+
+        self.assertIn("**A helper** draws itself from the lesson's data", helpers)
+        self.assertIn("**A picture** is a fixed depiction of one real thing", helpers)
+        self.assertIn("UK three-pin plug and socket", helpers)
+        self.assertIn("`controlled-ai`", helpers)
+        self.assertIn("16-picture cap", helpers)
+        # The gap record stays available, but only after both routes are shut.
+        self.assertIn("only when neither", helpers)
+
+        template = (ROOT / "references" / "output-template.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(
+            "A fixed depiction of one real thing is the opposite", template
+        )
+        self.assertIn(
+            "Ask for that visual as a picture instead, `controlled-ai`", template
+        )
+
     def test_scaffold_owns_route_specific_content_envelopes(self):
         """The builder emits each unit's content envelope; the designer only
         fills decided values, so the guide must not send it back to

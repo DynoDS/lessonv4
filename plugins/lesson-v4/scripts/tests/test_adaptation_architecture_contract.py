@@ -200,13 +200,57 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
         self.assertIn("teacher brief/clarifications", flat)
         self.assertIn("frozen initial photo contract", flat)
         self.assertIn(
-            "It owns `adaptation.md`, `adaptation.json`, and a provisional "
+            "It owns `adaptation.md` and, through it, a provisional "
             "adaptation photo contract.",
             flat,
         )
         self.assertNotIn("Also read these reference files at the start:", spawn)
         self.assertIn("## Greater Depth", AGENT)
         self.assertIn("## Below", AGENT)
+
+    def test_every_photo_contract_command_reads_the_file_the_designer_writes(
+        self,
+    ) -> None:
+        """The adaptation document has one name, and the commands must use it.
+
+        The playbook told the photo-contract step to read `adaptation.json`
+        while the adaptation-designer wrote `adaptation.md`. The extractor found
+        no markdown section in a JSON file and reported zero adaptation photos,
+        so three requested pictures were dropped in silence and the Below sheet
+        that referenced them was omitted.
+        """
+        self.assertIn("`adaptation.md`", AGENT)
+        self.assertNotIn("adaptation.json", AGENT)
+
+        arguments = [
+            line.strip()
+            for line in MAKE_LESSON.splitlines()
+            if line.strip().startswith("--adaptation ")
+        ]
+        self.assertTrue(arguments, "the playbook runs no --adaptation command")
+        for argument in arguments:
+            self.assertIn("adaptation.md", argument)
+            self.assertNotIn("adaptation.json", argument)
+
+    def test_promoted_adaptation_pictures_get_their_own_scout_wave(self) -> None:
+        """Adaptation pictures are compiled after the Phase 2 wave has closed.
+
+        Promoting them into the contract is not sourcing them: without a second
+        wave every adaptation picture is promised to the worksheet and never
+        attempted.
+        """
+        wave = MAKE_LESSON.split("**The supplemental picture wave**", 1)
+        self.assertEqual(len(wave), 2, "no supplemental picture wave in the playbook")
+        section = wave[1].split("Build worksheets directly", 1)[0]
+        self.assertIn("compile-picture-assignments.py", section)
+        self.assertIn("--expected-prefix w", section)
+        self.assertIn("--expected-filename", section)
+        self.assertIn("PICTURE_ASSIGNMENTS_OK", section)
+        self.assertIn("PICTURE_MANIFEST_OK", section)
+        self.assertIn("image-scout", section)
+        self.assertIn("PICTURE_RESULT_OK", section)
+        self.assertIn("finalize-picture-assignment.py", section)
+        self.assertIn("Track B trigger", section)
 
     def test_preferences_and_maths_reference_use_resource_vocabulary(self) -> None:
         self.assertIn(

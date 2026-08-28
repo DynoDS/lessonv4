@@ -116,11 +116,31 @@ def validate_unique(photos: list[dict], label: str) -> None:
         filenames[filename] = photo_id
 
 
+ADAPTATION_SECTION_RE = re.compile(r"^#{1,6}\s*(greater depth|below)\b", re.I | re.M)
+
+
 def adaptation_photos(path: Path) -> list[dict]:
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
         raise PhotoContractError(f"adaptation file is unreadable: {exc}") from exc
+    # An adaptation with no pictures and a file that is not the adaptation
+    # document at all both used to arrive here as an empty list, and the run
+    # then reported "0 adaptation photos" for a wiring mistake exactly as it
+    # would for a lesson that genuinely needed none. Every picture the
+    # adaptation asked for was dropped without a word, and the worksheet that
+    # referenced them lost its sheet. So the document is identified before a
+    # zero is believed: it is markdown carrying the Greater Depth and Below
+    # sections the adaptation-designer owns, and anything else is a caller
+    # fault, not an answer.
+    if not ADAPTATION_SECTION_RE.search(text):
+        raise PhotoContractError(
+            f"{path} is not the adaptation document: it carries no Greater Depth "
+            "or Below section. The adaptation-designer writes adaptation.md, and "
+            "that file is the one that carries Photos for the sheets. Reporting "
+            "zero adaptation photos from another file would silently drop every "
+            "picture the adaptation asked for."
+        )
     marker = text.lower().find("photos for the sheets")
     if marker < 0:
         return []

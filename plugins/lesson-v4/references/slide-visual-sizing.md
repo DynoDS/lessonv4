@@ -89,7 +89,7 @@ The floors for the helpers that get crammed into rows most often:
 - `place-value-chart`: very tolerant — ~2.0″ wide with 4 columns is still readable
 - `part-whole-model`: 1.4″ square
 - `pyramid`: 2.0″ square if empty, 2.8″ square if cells carry text
-- `table`: 5.5″ wide for sentence-length cells, 3.0″ for digit-only cells
+- `table`: 5.5″ wide for sentence-length cells, 3.0″ for digit-only cells, **and 0.74″ of height for the header band plus 0.2″ for every row**, so a two-row table needs a 1.15″ zone, a four-row table 1.55″, before any cell wraps onto a second line. A row shorter than that cannot show even `(1)` at a size a child can read, and the build refuses the zone by name rather than printing it
 - `money` single coin (focal): 1.0″ square, no upper cap when alone
 - `money` mixed strip: 6.0″ wide for a typical coin set
 - a photograph or sourced picture children work FROM: 1.6″ on the cell's **short** side, because that is all a picture of unknown shape is guaranteed (see "A picture's shape is not yours to choose" below). The build names a required picture that falls below it

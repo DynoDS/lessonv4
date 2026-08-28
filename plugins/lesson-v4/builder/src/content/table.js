@@ -17,7 +17,21 @@ const ROW_FILLS        = ['FFE0C2', 'FFF8C2', 'D6EEFF', 'D5F5E3', 'E8D5F5'];
 const CELL_BORDER      = 'CCCCCC';
 const FIRST_COL_BOLD   = true;
 const CELL_ALIGN       = 'center';
+// One line of cell text at the build's 10pt readable floor, measured through
+// the same font metrics the fitting pass uses. A row shorter than this cannot
+// show its own content at any size a child can read.
+const ROW_MIN_H        = 0.20;
 // ─── END CONSTANTS ────────────────────────────────────────────
+
+// A table divides whatever height it is handed. Handed too little, it used to
+// divide it anyway and hand every cell a slot no line of text could sit in;
+// the fault then surfaced at the very end of the build as TEXT_OVERLOAD on a
+// generated box name, reading as "the words are too heavy" when the words were
+// "(1)" and the room was the whole problem. Cutting text cannot repair that, so
+// the refusal happens here, in the units the zone is written in.
+function requiredZoneHeight(rowCount) {
+  return 2 * PAD + HEADER_H + rowCount * ROW_MIN_H;
+}
 
 function drawTable(pptx, slide, zone, data) {
   const headers = Array.isArray(data.headers) ? data.headers : [];
@@ -32,6 +46,17 @@ function drawTable(pptx, slide, zone, data) {
   const colW   = innerW / cols;
   const bodyH  = innerH - HEADER_H;
   const rowH   = bodyH / rows.length;
+
+  if (rowH < ROW_MIN_H) {
+    const needed = requiredZoneHeight(rows.length);
+    throw new Error(
+      `TABLE_ZONE_TOO_SHORT: ${rows.length} row(s) plus the header leave ` +
+        `${rowH.toFixed(2)}in per row in a ${zone.h.toFixed(2)}in zone, below the ` +
+        `${ROW_MIN_H.toFixed(2)}in one line of cell text needs at the readable ` +
+        `floor. Give the table a zone at least ${needed.toFixed(2)}in tall, or ` +
+        `carry fewer rows; nothing was shrunk further or cut.`
+    );
+  }
   const headerGroup = fitGroupId(zone, 'table-headers');
   const columnGroups = headers.map(function (_header, c) {
     return fitGroupId(zone, 'table-column-' + c);
@@ -74,4 +99,4 @@ function drawTable(pptx, slide, zone, data) {
   });
 }
 
-module.exports = { drawTable };
+module.exports = { drawTable, requiredZoneHeight, ROW_MIN_H };

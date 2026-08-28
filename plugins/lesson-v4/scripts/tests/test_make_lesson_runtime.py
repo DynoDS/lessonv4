@@ -271,7 +271,24 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             with self.subTest(retired=retired):
                 self.assertNotIn(retired, active)
 
-        self.assertLess(len(PLAYBOOK.read_bytes()), 40 * 1024)
+        # A growth alarm, an order of magnitude below the 179KB document this
+        # runtime replaced. The per-slice budget below is the one that measures
+        # what a run actually pays: no worker ever loads this file whole.
+        self.assertLess(len(PLAYBOOK.read_bytes()), 46 * 1024)
+
+    def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
+        """The cost of the runtime is paid one slice at a time.
+
+        The whole-file size was the only budget for a while, which measured
+        something no run ever loads. A slice is what reaches an orchestrator's
+        context, so that is where growth has to be caught: one section
+        accreting past this is the signal to consolidate it, not to widen the
+        cap.
+        """
+        for name in BOUNDS:
+            with self.subTest(slice=name):
+                size = len(self.run_slice(name).stdout)
+                self.assertLess(size, 7 * 1024, f"slice {name} is {size} bytes")
 
     def test_focused_repair_slice_routes_resource_owners_to_compact_entrypoints(
         self,

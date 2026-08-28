@@ -278,10 +278,30 @@ Run `collect-helper-uses.py` against approved `lesson-design.json`. Compare only
 the representations it names with the existing helper catalogues. If every
 required helper exists, continue.
 
-If a genuinely required helper is missing and the helper-builder/source route
-is available, build and test only that helper before renderers launch. Otherwise
-record the exact `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP`; do not silently
-replace it with an unfaithful picture or generic decoration.
+A missing one has two routes, and what the visual is made of decides which:
+
+- **A helper** draws itself from the lesson's data - change the numbers, labels,
+  categories or the child's marks and the picture changes with them. A chart, a
+  place-value chart, a sorting frame. The next lesson wants the same picture with
+  different data, so it earns a helper: when the helper-builder/source route is
+  available, build and test only that helper before renderers launch.
+- **A picture** is a fixed depiction of one real thing, the same drawing every
+  time, nothing computed from the lesson: a UK three-pin plug and socket, a named
+  piece of apparatus, a particular road sign. A helper here would be a renderer
+  built to draw one unchanging object, and the picture stage already makes staged
+  images to a written prompt. This gap goes to Lesson Designer as a picture.
+
+The picture route is open here and closed after Phase 2, because the contract has
+not been frozen yet and a picture added now is sourced in the same wave as the
+rest. Take it with one focused Lesson Designer revision over the three canonical
+design files: add the visual as a `controlled-ai` picture with a complete
+generation prompt, drop the representation use that has no helper, change nothing
+else, stay within the 16-picture cap. Re-run the design validator, the photo-cap
+check and the helper check.
+
+Record the exact `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP` only when neither
+route can run. Do not silently replace a missing visual with an unfaithful
+picture, an approximate emoji or generic decoration.
 
 ---
 
@@ -474,7 +494,11 @@ Never infer this route from old Markdown status text.
 
 Launch directly with approved lesson design, teacher worksheet when supplied,
 teacher brief/clarifications, and the frozen initial photo contract. It owns
-`adaptation.md`, `adaptation.json`, and a provisional adaptation photo contract.
+`adaptation.md` and, through it, a provisional adaptation photo contract.
+
+`adaptation.md` is the only adaptation file, and its `Photos for the sheets`
+block is the only place adaptation pictures are written. Every command below
+reads that path. There is no `adaptation.json`.
 
 Run `photo-contract.py build-provisional` and the lesson-design validator against
 the provisional contract. Use exactly:
@@ -482,7 +506,7 @@ the provisional contract. Use exactly:
 ```text
 python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
   --initial "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
-  --adaptation "[WORKING_DIR]/adaptation.json" \
+  --adaptation "[WORKING_DIR]/adaptation.md" \
   --output "[WORKING_DIR]/adaptation-photo-provisional.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
   --receipt "[WORKING_DIR]/orchestration-receipts/adaptation-photo-provisional.json"
@@ -490,6 +514,10 @@ python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
 
 Adaptation may add only `adaptation-photo-###` entries; it may not mutate the
 frozen initial entries.
+
+`PHOTO_CONTRACT_PROVISIONAL_OK 0` means this adaptation asked for no pictures.
+The command refuses a file that is not the adaptation document, so a zero can no
+longer be a wiring mistake wearing the face of a lesson that needed none.
 
 If adaptation fails deterministically, preserve the expected worksheet route and
 report adaptation omitted. Do not rerun unrelated branches.
@@ -529,8 +557,7 @@ TERMINAL_STATE: COMPLETE
 ```
 
 After the spec passes, promote only adaptation photos actually referenced by the
-accepted worksheet through `photo-contract.py promote-used`. Compile any new
-supplemental `w` picture assignments through the same direct picture route.
+accepted worksheet through `photo-contract.py promote-used`.
 
 Number each wave from 1, and keep the receipt name and the snapshot name on the
 same number, because the next `select-worksheet` reads the highest-numbered
@@ -540,7 +567,7 @@ receipt and the immutable snapshot that receipt names:
 python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" promote-used \
   --initial "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
   --provisional "[WORKING_DIR]/adaptation-photo-provisional.json" \
-  --adaptation "[WORKING_DIR]/adaptation.json" \
+  --adaptation "[WORKING_DIR]/adaptation.md" \
   --worksheet "[WORKING_DIR]/worksheet.json" \
   --canonical "[WORKING_DIR]/photo-requirements.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
@@ -548,9 +575,47 @@ python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" promote-used \
   --receipt "[WORKING_DIR]/orchestration-receipts/photo-requirements-w-[N].json"
 ```
 
-Require `PHOTO_CONTRACT_PROMOTED`, and compile the supplemental wave from that
-immutable snapshot rather than from the canonical contract, which a later wave
-rewrites.
+Require `PHOTO_CONTRACT_PROMOTED`.
+
+---
+
+**The supplemental picture wave** - whenever `PHOTO_CONTRACT_PROMOTED` reports
+one or more, and the Phase 2 picture stage is not `unavailable`:
+
+The Phase 2 wave could not compile these: the adaptation had not been written
+when it ran. Without this wave every adaptation picture is promised to the
+worksheet and never sourced.
+
+Compile from the immutable snapshot the promotion just wrote, never from
+canonical `photo-requirements.json`, which a later wave rewrites, and name each
+promoted filename so no finished picture is reopened:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
+  --requirements "[WORKING_DIR]/photo-requirements-w-[N].json" \
+  --expected-prefix w \
+  [one --expected-filename per newFilenames entry in the promotion receipt] \
+  --output-dir "[WORKING_DIR]/picture-assignments/w-[N]" \
+  --working-dir "[WORKING_DIR]" \
+  --summary-output "[WORKING_DIR]/picture-assignments/w-[N]-summary.json"
+```
+
+Require `PICTURE_ASSIGNMENTS_OK`, validate the emitted `manifest.json` with
+`validate-image-scout.py manifest` and require `PICTURE_MANIFEST_OK`. Then run
+the Phase 2 picture stage again, unchanged, over this manifest: one `image-scout`
+per assignment, `validate-image-scout.py result` requiring `PICTURE_RESULT_OK`,
+and `finalize-picture-assignment.py assignment --replace no` on each valid batch.
+Its terminal receipts join the same provenance run at the merge.
+
+A compile or manifest failure degrades this wave as Phase 2 degrades: the
+pictures are not attempted, each is named in the run report as promised and
+unpublished, and the worksheet branch continues to a built sheet.
+
+**Track B trigger:** wait until every picture filename referenced by
+`worksheet.json` is terminal before building. Under `PICTURE_STAGE: unavailable`
+or `none required`, or a promotion that reported zero, nothing is coming.
+
+---
 
 Build worksheets directly:
 
@@ -663,6 +728,18 @@ existing build diagnostic.
   if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/stick-in-sheets-designer.md`.
 
 Launch the selected role directly.
+
+Add this line to every repair prompt, whichever owner it goes to:
+
+```text
+Edit the named file in place: change the values this finding names and leave
+every other byte as it is. Do not delete and recreate it, and do not re-emit the
+whole file to alter part of it. See [PLUGIN_ROOT]/references/revising-in-place.md.
+```
+
+A repairer that rewrites the whole specification re-decides every passing thing
+it retypes, which is what `Already passed - leave unchanged` exists to protect,
+and the confirmation pass cannot then tell a repair from a silent redesign.
 
 Return these exact repair-impact fields with the normal terminal marker:
 

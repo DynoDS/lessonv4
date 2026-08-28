@@ -1958,10 +1958,7 @@ def test_post_freeze_new_photos_use_immutable_supplemental_waves():
     text = read(SKILL)
     flat = " ".join(text.split())
     compiler = read(ROOT / "scripts" / "compile-picture-assignments.py")
-    assert (
-        "Compile any new supplemental `w` picture assignments through the "
-        "same direct picture route." in flat
-    )
+    assert "**The supplemental picture wave**" in text
     assert "compile-picture-assignments.py" in text
     assert "expected-prefix" in compiler
     assert "Never reopen a passing sibling." in flat
@@ -1972,10 +1969,20 @@ def test_post_freeze_new_photos_use_immutable_supplemental_waves():
 
 
 def test_supplemental_picture_compilation_receives_immutable_contract():
+    """The wave reads the snapshot the promotion wrote, not canonical.
+
+    Canonical `photo-requirements.json` is rewritten by the next wave, so a
+    compile pointed at it can source a contract that has already moved.
+    """
     text = read(SKILL)
     flat = " ".join(text.split())
     compiler = read(ROOT / "scripts" / "compile-picture-assignments.py")
-    assert "supplemental `w` picture assignments" in flat
+    wave = text.split("**The supplemental picture wave**", 1)[1].split(
+        "Build worksheets directly", 1
+    )[0]
+    assert '--requirements "[WORKING_DIR]/photo-requirements-w-[N].json"' in wave
+    assert '--requirements "[WORKING_DIR]/photo-requirements.json"' not in wave
+    assert "--expected-prefix w" in wave
     assert "requirements" in compiler
     assert "schema_version" in compiler
 

@@ -37,6 +37,20 @@ def full_photo(photo_id="adaptation-photo-001", filename="adaptation/one.jpg"):
     }
 
 
+def adaptation_document(photos=None):
+    """An adaptation.md shaped the way adaptation-designer actually writes one.
+
+    The extractor identifies the document by its Greater Depth and Below
+    sections before it believes a zero, so a fixture without them is no longer
+    a realistic adaptation file.
+    """
+    text = "# Adaptation\n\n## Greater Depth\n\nDepth prompts.\n\n## Below\n\nA backward-mapped task.\n"
+    if photos is not None:
+        block = {"schema_version": 2, "lesson_name": "lesson", "photos": list(photos)}
+        text += "\n## Photos for the sheets\n\n```json\n" + json.dumps(block) + "\n```\n"
+    return text
+
+
 class PhotoContractTests(unittest.TestCase):
     def test_schema_two_is_required_for_initial_freeze(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -71,8 +85,48 @@ class PhotoContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "adaptation.md"
             block = {"schema_version": 2, "lesson_name": "lesson", "photos": [full_photo()]}
-            path.write_text("Photos for the sheets\n```json\n" + json.dumps(block) + "\n```\n", encoding="utf-8")
+            path.write_text(adaptation_document(block["photos"]), encoding="utf-8")
             self.assertEqual(photo_contract.adaptation_photos(path)[0]["id"], "adaptation-photo-001")
+
+    def test_a_file_that_is_not_the_adaptation_document_is_refused_not_read_as_zero(self):
+        """A wiring mistake must not look like a lesson that needed no pictures.
+
+        The orchestrator handed this step `adaptation.json` while the adaptation
+        designer had written `adaptation.md`. The extractor searched for a
+        markdown section, found none in a JSON file, and reported zero
+        adaptation photos. Three pictures the adaptation had asked for were
+        dropped without a word, and the worksheet designer then omitted the
+        whole Below sheet because the ids it had been told to use were absent
+        from the approved contract.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            wrong = root / "adaptation.json"
+            wrong.write_text(json.dumps({"greaterDepth": {}, "below": {}}), encoding="utf-8")
+            with self.assertRaises(photo_contract.PhotoContractError) as caught:
+                photo_contract.adaptation_photos(wrong)
+            message = str(caught.exception)
+            self.assertIn("not the adaptation document", message)
+            self.assertIn("adaptation.md", message)
+
+    def test_an_adaptation_that_genuinely_needs_no_pictures_still_reports_zero(self):
+        """The discrimination case: a real document with no photos block.
+
+        This is the reading the guard must keep, or every adaptation without
+        pictures would fail the run.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "adaptation.md"
+            path.write_text(adaptation_document(), encoding="utf-8")
+            self.assertEqual(photo_contract.adaptation_photos(path), [])
+
+    def test_a_truncated_adaptation_document_is_refused(self):
+        """A file that lost its sections mid-write is a fault, not a zero."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "adaptation.md"
+            path.write_text("# Adaptation\n\nWorking notes only.\n", encoding="utf-8")
+            with self.assertRaises(photo_contract.PhotoContractError):
+                photo_contract.adaptation_photos(path)
 
     def freeze(self, root, photos=()):
         """Freeze an initial contract exactly the way the playbook freezes it."""
@@ -122,7 +176,7 @@ class PhotoContractTests(unittest.TestCase):
             self.freeze(root)
             adaptation = root / "adaptation.md"
             block = {"schema_version": 2, "lesson_name": "lesson", "photos": [full_photo()]}
-            adaptation.write_text("Photos for the sheets\n```json\n" + json.dumps(block) + "\n```\n", encoding="utf-8")
+            adaptation.write_text(adaptation_document(block["photos"]), encoding="utf-8")
             provisional = root / "adaptation-photo-provisional.json"
             receipts = root / "orchestration-receipts"
             receipts.mkdir(parents=True, exist_ok=True)

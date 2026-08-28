@@ -733,8 +733,13 @@ If the library is unavailable or no candidate passes inspection, apply the
 named emoji, text-only or remove-decoration fallback. Final `worksheet.json`
 contains no unresolved Educational SVG object. Do not retry through another
 worker and do not delay the worksheet branch for optional picture work.
-Write the updated worksheet.json atomically, preserve order as far as practical
-and parse it again.
+Edit the resolved identity and path fields where they stand in the file you
+already wrote. Do not re-emit `worksheet.json` to carry a few picture paths: a
+whole-file rewrite silently re-decides every question, page and answer it
+retypes, and the run has no way to show the teacher what changed. Write the edit
+atomically - through a temporary file, then moved into place, so a crash cannot
+leave half a file - and parse it again afterwards. `revising-in-place.md` has the
+rule and why it holds for every file a worker changes after writing it.
 Then run the exact, write-nothing gate:
 
 ```
