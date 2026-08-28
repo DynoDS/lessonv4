@@ -36,12 +36,25 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         for marker in ("unified `image-scout`", "exact assignment path", "one unique result path"):
             self.assertIn(marker, text)
 
-    def test_durable_attempt_result_path_is_exact(self):
-        text = (ROOT / "scripts" / "compile-picture-assignments.py").read_text(encoding="utf-8")
-        self.assertIn("picture-workers", text)
-        self.assertIn("try-{attemptNumber}", text)
-        self.assertIn("result.json", text)
-        self.assertIn("_picture-work", text)
+    def test_durable_work_root_and_result_path_are_exact(self):
+        compiler = (ROOT / "scripts" / "compile-picture-assignments.py").read_text(encoding="utf-8")
+        playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
+        self.assertIn("_picture-work", compiler)
+        self.assertIn("[WORKING_DIR]/picture-results/[batch-id]/result.json", playbook)
+
+    def test_compiler_emits_one_manifest_shape_the_validator_accepts(self):
+        """The compiler and its gate must agree on the manifest row fields.
+
+        The retired controller mode added `worker_job_id` to every row while the
+        direct route never did, and the gate demanded it unconditionally, so no
+        image scout could be launched for any lesson that needed photographs.
+        """
+        compiler = (ROOT / "scripts" / "compile-picture-assignments.py").read_text(encoding="utf-8")
+        validator = (ROOT / "scripts" / "validate-image-scout.py").read_text(encoding="utf-8")
+        for text in (compiler, validator):
+            self.assertNotIn("worker_job_id", text)
+            self.assertNotIn("orchestration-job-manifest", text)
+        self.assertIn('{"batch_id", "assignment", "filenames"}', validator)
 
     def test_final_resource_visual_review_remains_in_playbook(self):
         text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")

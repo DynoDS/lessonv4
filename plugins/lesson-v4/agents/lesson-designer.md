@@ -345,7 +345,7 @@ Quantity follows cognitive value, response cost, representational weight, not fi
 
 Option bank: kind "option-bank" when children choose from/match to/label from/refer to short set of distinct labels. Put each option once in items with own item-### ID and exact label. PupilInstruction names action without repeating bank labels. Keep answer.content route; option bank does not create answer.structure.
 
-Sort: kind "sort". Put groups in groups, sortable things in items (label=name, detail=clue, photoRef). Use answer.structure for placements. Place every item once.
+Sort: kind "sort". Put groups in groups, sortable things in items (label=name, detail=clue, photoRef). Use answer.structure for placements. Place every item once. Choose answer.delivery by ordinary delivery rule, not by structure: a sort on Do beat, Our Turn or other smaller check is teacher-only. Never downgrade sort to option bank, evidence-classification or prose because beat carries no answer slide.
 
 Evidence-classification: kind "evidence-classification". Put headings in fields. Put each photo in items with item-### identity and photoRef. Use answer.structure.results to attach complete model answer to same item identity. Give every item one result and every result one value for every field. Don't combine answers into one paragraph.
 

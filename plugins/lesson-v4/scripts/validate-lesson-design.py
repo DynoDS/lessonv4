@@ -518,7 +518,6 @@ def validate_answer(
             )
         else:
             expect(answer["content"] is None, f"{path}.content must be null when structure is present")
-            expect(delivery == "answer-slide", f"{path}.structure requires delivery answer-slide")
             expect(task_structure is not None, f"{path}.structure requires a source-unit taskStructure")
             if task_structure["kind"] == "option-bank":
                 raise ContractError(

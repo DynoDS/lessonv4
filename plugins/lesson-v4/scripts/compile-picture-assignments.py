@@ -391,40 +391,6 @@ def write_json_immutable(path: Path, value: dict) -> None:
     immutable_write(path, (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
 
-def worker_spec(assignment: dict, assignment_path: Path, requirements_path: Path, working_dir: Path, dependency_job_id: str) -> dict:
-    batch_id = assignment["batch_id"]
-    expected = str((working_dir / "orchestration-results" / "picture-workers" / batch_id / "try-{attemptNumber}" / "result.json").resolve())
-    direct_ai = any(entry["initial_route"] == "ai" for entry in assignment["entries"])
-    write_paths = [assignment["work_root"]]
-    write_paths.extend(entry["ai_ledger_path"] for entry in assignment["entries"] if entry["ai_ledger_path"])
-    sources = [str(requirements_path.resolve()), str(assignment_path.resolve())]
-    sources.extend(entry["generation_prompt_file"] for entry in assignment["entries"] if entry["generation_prompt_file"])
-    return {
-        "schemaVersion": 1,
-        "jobId": f"phase2-picture-{batch_id}",
-        "kind": "picture-worker",
-        "executionClass": "worker",
-        "capacityClass": "picture-ai" if direct_ai else "picture-real",
-        "dependencies": [dependency_job_id],
-        "sourcePaths": sources,
-        "writePaths": write_paths,
-        "holdsBarriers": [],
-        "requiresClearBarriers": [],
-        "maxAttempts": 2,
-        "attempt": {
-            "role": "image-scout",
-            "identity": batch_id,
-            "model": "luna",
-            "effort": "max",
-            "expectedOutputs": [expected],
-            "allowedDeclaredStates": ["COMPLETE"],
-            "outputsByDeclaredState": {"COMPLETE": [expected]},
-            "inputs": [{"sourcePath": path, "mode": "read-only"} for path in sources],
-            "checks": [],
-        },
-    }
-
-
 def compile_command(args) -> int:
     requirements_path = Path(args.requirements).resolve()
     requirements = read_json(requirements_path, "requirements")
@@ -444,62 +410,20 @@ def compile_command(args) -> int:
     output_dir = Path(args.output_dir).resolve()
     working_dir = Path(args.working_dir).resolve()
     batches = pack_batches(photos)
-    controller_mode = bool(args.dependency_job_id or args.controller_manifest_output)
-    if controller_mode and not (
-        args.dependency_job_id and args.controller_manifest_output
-    ):
-        raise AssignmentError(
-            "--dependency-job-id and --controller-manifest-output must be "
-            "supplied together"
-        )
     manifest_rows = []
-    controller_rows = []
     for number, batch in enumerate(batches, 1):
         batch_id = f"{prefix}{number}"
         assignment_path = (output_dir / f"{batch_id}.json").resolve()
         assignment = build_assignment(requirements_path, batch, batch_id, prefix, output_dir, working_dir)
         write_json_immutable(assignment_path, assignment)
-        row = {
+        manifest_rows.append({
             "batch_id": batch_id,
             "assignment": str(assignment_path),
             "filenames": [p["filename"] for p in batch],
-        }
-        if controller_mode:
-            spec_path = (
-                working_dir
-                / "orchestration-jobs"
-                / f"phase2-picture-{batch_id}.json"
-            ).resolve()
-            spec = worker_spec(
-                assignment,
-                assignment_path,
-                requirements_path,
-                working_dir,
-                args.dependency_job_id,
-            )
-            write_json_immutable(spec_path, spec)
-            row["worker_job_id"] = spec["jobId"]
-            controller_rows.append(
-                {
-                    "specPath": str(spec_path),
-                    "specSha256": file_hash(spec_path),
-                    "spec": spec,
-                }
-            )
-        manifest_rows.append(row)
+        })
     public_manifest = {"schema_version": 2, "kind": "image", "requirements": {"path": str(requirements_path), "sha256": file_hash(requirements_path)}, "assignments": manifest_rows}
     manifest_path = (output_dir / "manifest.json").resolve()
     write_json_immutable(manifest_path, public_manifest)
-    controller_path = None
-    if controller_mode:
-        controller_manifest = {
-            "schemaVersion": 1,
-            "kind": "orchestration-job-manifest",
-            "sourceJobId": args.dependency_job_id,
-            "jobs": controller_rows,
-        }
-        controller_path = Path(args.controller_manifest_output).resolve()
-        write_json_immutable(controller_path, controller_manifest)
     summary = {
         "schemaVersion": 1,
         "ok": True,
@@ -513,8 +437,6 @@ def compile_command(args) -> int:
     write_json_immutable(Path(args.summary_output).resolve(), summary)
     print(f"PICTURE_ASSIGNMENTS_OK: {len(batches)} assignments")
     print(f"MANIFEST={manifest_path}")
-    if controller_path is not None:
-        print(f"CONTROLLER_MANIFEST={controller_path}")
     print(f"SUMMARY={Path(args.summary_output).resolve()}")
     return 0
 
@@ -577,8 +499,6 @@ def parser() -> argparse.ArgumentParser:
     compile_parser.add_argument("--expected-filename", action="append", default=[])
     compile_parser.add_argument("--output-dir", required=True)
     compile_parser.add_argument("--working-dir", required=True)
-    compile_parser.add_argument("--dependency-job-id")
-    compile_parser.add_argument("--controller-manifest-output")
     compile_parser.add_argument("--summary-output", required=True)
     compile_parser.set_defaults(func=compile_command)
     repair = sub.add_parser("slice")

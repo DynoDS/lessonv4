@@ -326,7 +326,7 @@ python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
 ```
 
 Require `PICTURE_ASSIGNMENTS_OK`, then validate the emitted `manifest.json` with
-`validate-image-scout.py manifest`.
+`validate-image-scout.py manifest` and require `PICTURE_MANIFEST_OK`.
 
 Launch one unified `image-scout` per assignment in the manifest, up to four at
 once and no more than two direct-AI batches at once. Use role `image-scout`, its

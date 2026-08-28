@@ -45,7 +45,9 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "--replace yes",
             "PICTURE_RESULT_OK",
             "PICTURE_PROVENANCE_OK",
+            "PICTURE_MANIFEST_OK",
             "validate-image-scout.py result",
+            "validate-image-scout.py manifest",
         ):
             self.assertIn(marker, text)
 

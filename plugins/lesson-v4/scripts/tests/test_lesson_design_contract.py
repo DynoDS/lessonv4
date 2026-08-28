@@ -1166,6 +1166,97 @@ def test_answer_structure_must_place_every_item_once():
     )
 
 
+def test_structured_answer_delivery_rule_is_stated_where_the_designer_decides():
+    template = read(ROOT / "references" / "output-template.md")
+    designer = read(ROOT / "agents" / "lesson-designer.md")
+    assert "A structured answer does not change how `delivery` is chosen." in template
+    assert (
+        "the same structured sort on a Do beat, an Our Turn or another smaller "
+        "check uses `teacher-only`" in template
+    )
+    assert "Never weaken a sort into prose, an option bank or a looser task shape" in template
+    assert "Choose answer.delivery by ordinary delivery rule, not by structure" in designer
+
+
+def structured_sort_on(unit):
+    unit["pupilInstruction"] = "Sort each appliance into one group."
+    unit["taskStructure"] = {
+        "kind": "sort",
+        "groups": [
+            {"id": "group-001", "label": "Mains electricity"},
+            {"id": "group-002", "label": "Battery"},
+        ],
+        "items": [
+            {"id": "item-001", "label": "Lamp", "detail": "plug on a lead", "photoRef": None},
+            {"id": "item-002", "label": "Kettle", "detail": "plug on a lead", "photoRef": None},
+            {"id": "item-003", "label": "Torch", "detail": "battery compartment", "photoRef": None},
+            {"id": "item-004", "label": "Remote", "detail": "battery compartment", "photoRef": None},
+        ],
+    }
+    unit["answer"] = {
+        "kind": "exact",
+        "content": None,
+        "structure": {
+            "kind": "sort",
+            "placements": [
+                {"itemRef": "item-001", "groupRef": "group-001"},
+                {"itemRef": "item-002", "groupRef": "group-001"},
+                {"itemRef": "item-003", "groupRef": "group-002"},
+                {"itemRef": "item-004", "groupRef": "group-002"},
+            ],
+        },
+        "acceptanceCondition": None,
+        "delivery": "teacher-only",
+    }
+    return unit
+
+
+def test_structured_sort_is_available_on_a_smaller_check_beat():
+    """A Do beat, an Our Turn and their neighbours may carry a structured sort.
+
+    A structured sort is pinned to `exact`, and a smaller check keeps an exact
+    answer in the speaker notes rather than on a separate answer slide. Tying
+    structure to answer-slide delivery therefore made the sort unencodable on
+    every beat except the starter and the main independent work, and a designer
+    reaching that wall silently downgrades the task to looser prose shapes.
+    """
+    for contract, index in (
+        (valid_content_contract, 2),
+        (valid_content_contract, 0),
+        (valid_dialogic_contract, 1),
+        (valid_task_contract, 2),
+    ):
+        design, photos = contract()
+        structured_sort_on(design["teachingSequence"][index])
+        module.validate_design(design, photos)
+
+
+def test_structured_sort_still_reveals_on_main_independent_work():
+    design, photos = valid_content_contract()
+    unit = structured_sort_on(design["teachingSequence"][3])
+    unit["answer"]["delivery"] = "answer-slide"
+    module.validate_design(design, photos)
+
+
+def test_smaller_check_still_cannot_reveal_an_exact_answer_on_a_slide():
+    design, photos = valid_content_contract()
+    unit = structured_sort_on(design["teachingSequence"][2])
+    unit["answer"]["delivery"] = "answer-slide"
+    assert_invalid_contract(
+        design,
+        photos,
+        "answer-slide is allowed only for a starter, main independent work, "
+        "or a model/standard reveal",
+    )
+
+
+def test_structured_answer_still_refuses_a_none_delivery():
+    design, photos = valid_content_contract()
+    unit = structured_sort_on(design["teachingSequence"][2])
+    unit["answer"]["delivery"] = "none"
+    assert_invalid_contract(design, photos, "delivery must not be none when kind is exact")
+
+
 def test_structured_sort_answer_cannot_duplicate_content():
     design, photos = valid_contract()
     starter = add_structured_sort(design)

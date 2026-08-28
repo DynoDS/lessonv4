@@ -185,10 +185,14 @@ def validate_manifest(args) -> None:
     prefix = args.expected_prefix
     for number, (expected_batch, row) in enumerate(zip(expected_batches, assignments), 1):
         batch_id = f"{prefix}{number}"
-        if (not isinstance(row, dict) or set(row) != {"batch_id", "assignment", "filenames", "worker_job_id"}
-                or row.get("batch_id") != batch_id or row.get("filenames") != [p["filename"] for p in expected_batch]
-                or row.get("worker_job_id") != f"phase2-picture-{batch_id}"):
-            raise ValidationError(f"manifest batch {batch_id} does not match deterministic partition")
+        if not isinstance(row, dict) or set(row) != {"batch_id", "assignment", "filenames"}:
+            raise ValidationError(
+                f"manifest batch {number} must carry exactly batch_id, assignment and filenames"
+            )
+        if row["batch_id"] != batch_id:
+            raise ValidationError(f"manifest batch {number} must be named {batch_id}")
+        if row["filenames"] != [p["filename"] for p in expected_batch]:
+            raise ValidationError(f"manifest batch {batch_id} filenames do not match deterministic partition")
         assignment_path = Path(row.get("assignment", ""))
         if not assignment_path.is_absolute() or assignment_path.name != f"{batch_id}.json" or assignment_path.is_symlink() or not assignment_path.is_file():
             raise ValidationError(f"manifest assignment path is malformed for {batch_id}")
@@ -197,6 +201,7 @@ def validate_manifest(args) -> None:
     expected_names = [photo["filename"] for photo in requirements]
     if len(seen) != len(expected_names) or set(seen) != set(expected_names):
         raise ValidationError("manifest omits, adds, or duplicates requirements")
+    print(f"PICTURE_MANIFEST_OK: {len(assignments)} assignments")
 
 
 def wikimedia_licence_allowed(name: str) -> bool:

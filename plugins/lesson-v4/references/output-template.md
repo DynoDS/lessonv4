@@ -557,6 +557,8 @@ For an exact answer to a structured sort, use:
 
 Every item appears exactly once. Each `itemRef` and `groupRef` resolves inside the same source unit's `taskStructure`. `answer.structure` is the sole answer source for this sort, so `answer.content` stays `null` and the same answer is not authored twice.
 
+A structured answer does not change how `delivery` is chosen. The delivery rule above still decides it, and the structured answer reaches the speaker notes under every delivery. The example shows `answer-slide` because a starter earns a separate reveal; the same structured sort on a Do beat, an Our Turn or another smaller check uses `teacher-only` and stays in the notes. Never weaken a sort into prose, an option bank or a looser task shape because a beat cannot carry a separate answer slide.
+
 For a model answer to a photograph-based evidence classification, use:
 
 ```json

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -100,16 +101,15 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
         grouped = compiler.pack_batches(coherent)
         self.assertEqual([[p["filename"] for p in b] for b in grouped], [["g0.jpg", "g1.jpg", "g2.jpg", "g3.jpg"]])
 
-    def test_compilation_writes_immutable_prompts_and_controller_compatible_specs(self):
+    def test_compilation_writes_immutable_prompts_and_hash_bound_assignments(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); req = root / "photo-requirements.json"; output = root / "assignments"
             photos = [photo("real.jpg"), photo("generated.jpg", mode="controlled-ai", profile="none")]
             req.write_text(json.dumps(requirements(photos), indent=2) + "\n", encoding="utf-8")
-            controller_manifest = root / "controller-manifest.json"; summary = root / "summary.json"
+            summary = root / "summary.json"
             args = type("Args", (), {
                 "requirements": str(req), "expected_filename": [], "expected_prefix": "p",
                 "output_dir": str(output), "working_dir": str(root),
-                "dependency_job_id": "phase1", "controller_manifest_output": str(controller_manifest),
                 "summary_output": str(summary),
             })()
             self.assertEqual(compiler.compile_command(args), 0)
@@ -120,11 +120,6 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             generated = next(row for row in assignment["entries"] if row["filename"] == "generated.jpg")
             self.assertTrue(Path(generated["generation_prompt_file"]).is_file())
             self.assertEqual(generated["generation_prompt_sha256"], hashlib.sha256(Path(generated["generation_prompt_file"]).read_bytes()).hexdigest())
-            spec_data = json.loads(next((root / "orchestration-jobs").glob("*.json")).read_text())
-            attempt = spec_data["attempt"]
-            self.assertEqual((attempt["role"], attempt["model"], attempt["effort"]), ("image-scout", "luna", "max"))
-            self.assertEqual(spec_data["maxAttempts"], 2)
-            self.assertIn(spec_data["capacityClass"], {"picture-real", "picture-ai"})
 
     def test_direct_compilation_emits_assignments_without_controller_files(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -145,8 +140,6 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
                     "expected_prefix": "p",
                     "output_dir": str(output),
                     "working_dir": str(root),
-                    "dependency_job_id": None,
-                    "controller_manifest_output": None,
                     "summary_output": str(summary),
                 },
             )()
@@ -212,23 +205,57 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
         batches = compiler.pack_batches(photos)
         self.assertEqual([[p["filename"] for p in b] for b in batches], [["generated-a.jpg", "generated-b.jpg", "real.jpg"]])
 
+    def test_direct_manifest_passes_independent_validation(self):
+        """The compiled manifest must clear the gate the orchestrator actually runs.
+
+        Every earlier manifest test compiled in the retired controller mode, so the
+        row shape the playbook really produces reached no validator, and the gate
+        rejected every real lesson before a single image scout was launched.
+        """
+        import subprocess
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); req = root / "requirements.json"; output = root / "assignments"
+            photos = [photo("one.jpg"), photo("two.jpg"), photo("three.jpg"), photo("four.jpg"), photo("five.jpg")]
+            req.write_text(json.dumps(requirements(photos), indent=2) + "\n", encoding="utf-8")
+            args = type("Args", (), {"requirements": str(req), "expected_filename": [], "expected_prefix": "p", "output_dir": str(output), "working_dir": str(root), "summary_output": str(root / "summary.json")})()
+            compiler.compile_command(args)
+            result = subprocess.run([sys.executable, str(ROOT / "validate-image-scout.py"), "manifest", "--requirements", str(req), "--manifest", str(output / "manifest.json"), "--working-dir", str(root), "--expected-prefix", "p"], capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("PICTURE_MANIFEST_OK", result.stdout)
+
+    def test_retired_controller_flags_are_rejected_by_the_compile_command(self):
+        """One manifest shape only, so a stale controller flag must fail loudly.
+
+        The retired controller mode was the sole producer of the manifest's
+        `worker_job_id`; nothing may quietly reintroduce a second row shape.
+        """
+        parser = compiler.parser()
+        for flag in ("--dependency-job-id", "--controller-manifest-output"):
+            with self.subTest(flag=flag):
+                with self.assertRaises(SystemExit):
+                    parser.parse_args([
+                        "compile", "--requirements", "r.json", "--expected-prefix", "p",
+                        "--output-dir", "o", "--working-dir", "w",
+                        "--summary-output", "s.json", flag, "x",
+                    ])
+
     def test_interleaved_coherent_group_manifest_validates(self):
         import subprocess
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); req = root / "requirements.json"; output = root / "assignments"
             photos = [photo("g-a.jpg", group="G", coherent="all-real"), photo("ordinary-a.jpg"), photo("ordinary-b.jpg"), photo("ordinary-c.jpg"), photo("g-b.jpg", group="G", coherent="all-real")]
             req.write_text(json.dumps(requirements(photos), indent=2) + "\n", encoding="utf-8")
-            args = type("Args", (), {"requirements": str(req), "expected_filename": [], "expected_prefix": "p", "output_dir": str(output), "working_dir": str(root), "dependency_job_id": "phase1", "controller_manifest_output": str(root / "controller.json"), "summary_output": str(root / "summary.json")})()
+            args = type("Args", (), {"requirements": str(req), "expected_filename": [], "expected_prefix": "p", "output_dir": str(output), "working_dir": str(root), "summary_output": str(root / "summary.json")})()
             compiler.compile_command(args)
             validator = ROOT / "validate-image-scout.py"
-            result = subprocess.run(["python3", str(validator), "manifest", "--requirements", str(req), "--manifest", str(output / "manifest.json"), "--working-dir", str(root), "--expected-prefix", "p"], capture_output=True, text=True)
+            result = subprocess.run([sys.executable, str(validator), "manifest", "--requirements", str(req), "--manifest", str(output / "manifest.json"), "--working-dir", str(root), "--expected-prefix", "p"], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_compile_summary_matches_controller_command_contract(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); req = root / "requirements.json"; output = root / "assignments"; summary_path = root / "summary.json"
             req.write_text(json.dumps(requirements([photo("one.jpg")])) + "\n", encoding="utf-8")
-            args = type("Args", (), {"requirements": str(req), "expected_filename": [], "expected_prefix": "p", "output_dir": str(output), "working_dir": str(root), "dependency_job_id": "phase1", "controller_manifest_output": str(root / "controller.json"), "summary_output": str(summary_path)})()
+            args = type("Args", (), {"requirements": str(req), "expected_filename": [], "expected_prefix": "p", "output_dir": str(output), "working_dir": str(root), "summary_output": str(summary_path)})()
             compiler.compile_command(args)
             summary = json.loads(summary_path.read_text(encoding="utf-8"))
             self.assertEqual(summary["schemaVersion"], 1)
