@@ -2,6 +2,7 @@
 "use strict";
 
 const fs = require("node:fs");
+const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
@@ -16,17 +17,59 @@ const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const LIBRARY_ROOT_VARIABLE = "LESSON_EDUCATIONAL_SVG_ROOT";
 const BUNDLED_LIBRARY_HOME = path.resolve(__dirname, "..", "educational-svg");
 
-function libraryHome() {
+// The conventional location beside a source checkout, mirroring the source-root
+// convention in verify-plugin-root.py. Absent is a normal answer, not a fault.
+const LIBRARY_CONVENTIONS = ["Projects/lessonv4/educational-svg"];
+
+function libraryCandidates() {
+  const candidates = [];
+
   const configured = (process.env[LIBRARY_ROOT_VARIABLE] || "").trim();
-  return configured ? path.resolve(configured) : BUNDLED_LIBRARY_HOME;
+  if (configured) {
+    candidates.push({ label: `$${LIBRARY_ROOT_VARIABLE}`, dir: path.resolve(configured) });
+  }
+
+  candidates.push({ label: "the running package", dir: BUNDLED_LIBRARY_HOME });
+
+  const home = os.homedir();
+  for (const relative of LIBRARY_CONVENTIONS) {
+    candidates.push({
+      label: `~/${relative}`,
+      dir: path.resolve(home, ...relative.split("/")),
+    });
+  }
+
+  return candidates;
+}
+
+function isUsableLibrary(dir) {
+  // Both halves or neither. A folder with a search script and no drawings is
+  // not a smaller library, it is a broken one, and using it half-way would
+  // report every picture as simply not found.
+  return (
+    fs.existsSync(path.join(dir, "search.js")) &&
+    fs.existsSync(path.join(dir, "library"))
+  );
 }
 
 function resolveLibraryHome() {
-  const home = libraryHome();
-  const searchScript = path.join(home, "search.js");
-  const library = path.join(home, "library");
-  if (!fs.existsSync(searchScript) || !fs.existsSync(library)) return null;
-  return home;
+  // Order: an explicit setting, the copy a published install ships, then the
+  // conventional checkout. Waiting on a setting alone would leave the whole
+  // optional-picture layer switched off on every machine that never set one,
+  // which is the failure the setting was added to prevent.
+  const notes = [];
+  const seen = new Set();
+  for (const { label, dir } of libraryCandidates()) {
+    if (seen.has(dir)) continue;
+    seen.add(dir);
+    if (isUsableLibrary(dir)) return { home: dir, label, notes };
+    notes.push(`${label}: no search.js and library/ under ${dir}`);
+  }
+  return { home: null, label: null, notes };
+}
+
+function libraryHome() {
+  return resolveLibraryHome().home || BUNDLED_LIBRARY_HOME;
 }
 
 const DEFAULT_LIBRARY_ROOT = path.join(BUNDLED_LIBRARY_HOME, "library");
@@ -44,6 +87,15 @@ function isWithin(base, candidate) {
 function inspectLibrarySvg(candidateSvgPath, libraryRoot) {
   if (!fs.existsSync(libraryRoot) || !fs.statSync(libraryRoot).isDirectory()) {
     throw new Error(`Educational SVG library is unavailable: ${libraryRoot}`);
+  }
+
+  // A named drawing that is not there is its own answer and deserves its own
+  // sentence. While the library could only ever be the packaged one, a missing
+  // drawing and a missing library were the same situation, so this went
+  // unnoticed; now that a real library can be present while one drawing is not,
+  // the caller would otherwise get a bare path error from realpath.
+  if (!fs.existsSync(candidateSvgPath)) {
+    throw new Error(`Educational SVG drawing does not exist: ${candidateSvgPath}`);
   }
 
   const libraryReal = fs.realpathSync(libraryRoot);
@@ -214,14 +266,13 @@ function main() {
   // that owns the location answers both. A caller that had to work the folder
   // out for itself is the caller that quietly looks in the wrong one.
   if (candidateArg === "--resolve-root") {
-    const home = resolveLibraryHome();
+    const { home, label, notes } = resolveLibraryHome();
     if (!home) {
-      console.log(
-        `EDUCATIONAL_SVG_UNAVAILABLE: no search.js and library/ under ${libraryHome()}`
-      );
+      console.log(`EDUCATIONAL_SVG_UNAVAILABLE: ${notes.join("; ")}`);
       return;
     }
     console.log(`EDUCATIONAL_SVG_ROOT=${home}`);
+    console.log(`EDUCATIONAL_SVG_SOURCE: ${label}`);
     return;
   }
 

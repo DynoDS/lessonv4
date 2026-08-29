@@ -32,11 +32,16 @@ compatibility builder-agent files remain packaged for direct or legacy use.
 
 Every filename has at most two AI calls in its immutable ledger. Final resource visual review still checks crop, teaching meaning, task fit and set consistency.
 
-Optional P2 and P3 drawings use the packaged `educational-svg` library. Each
-visual designer searches the fixed local library after its core design is
-settled, previews the best candidates, and publishes only the selected SVG. The
-search uses no network or separate server. If the library is unavailable, the
-optional drawing is replaced or removed and the lesson continues.
+Optional P2 and P3 drawings come from the `educational-svg` library. It is a
+large asset set, so an install need not carry it and a working copy may sit
+outside the package. `publish-educational-svg.js --resolve-root` finds it,
+looking at `LESSON_EDUCATIONAL_SVG_ROOT`, then the running package, then
+`~/Projects/lessonv4/educational-svg`, and accepting a folder only when both
+`search.js` and `library/` are there. Each visual designer searches the resolved
+library after its core design is settled, previews the best candidates, and
+publishes only the selected SVG. The search uses no network or separate server.
+If no library is found, the optional drawing is replaced or removed and the
+lesson continues.
 
 ## What's in this repo
 

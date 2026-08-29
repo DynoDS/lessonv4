@@ -119,7 +119,10 @@ before the opportunity pass reaches any Educational SVG decision:
 `node "[PLUGIN_ROOT]/scripts/publish-educational-svg.js" --resolve-root`
 
 `EDUCATIONAL_SVG_ROOT=<path>` gives this run's library home. Use it wherever
-this reference writes `[EDUCATIONAL_SVG_ROOT]`.
+this reference writes `[EDUCATIONAL_SVG_ROOT]`. The resolver looks at an explicit
+setting, the running package and the conventional checkout in that order, so a
+library normally needs no configuration and its absence from the package is not
+by itself an answer.
 
 `EDUCATIONAL_SVG_UNAVAILABLE` means that
 the Educational SVG route is unavailable for the whole run.

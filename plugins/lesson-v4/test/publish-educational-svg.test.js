@@ -140,10 +140,13 @@ test("the default library is used when shipped and named plainly when it is not"
     return;
   }
 
-  // An install without the optional library must fail here with the reason the
-  // designers are told to expect, not with an obscure module or path error.
+  // Without that drawing, publishing must fail with a reason a reader can act
+  // on, not an obscure module or path error. Which reason depends on whether a
+  // library resolved at all: the packaged copy may be absent while a working
+  // copy elsewhere is found, and then it is one drawing that is missing rather
+  // than the whole library.
   assert.throws(
     () => publishEducationalSvgAsset(candidate, root, "robin", { rasterize }),
-    /Educational SVG library is unavailable/
+    /Educational SVG (library is unavailable|drawing does not exist)/
   );
 });
