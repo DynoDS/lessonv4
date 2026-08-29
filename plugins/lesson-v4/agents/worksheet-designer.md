@@ -32,7 +32,7 @@ Do not shorten or paraphrase visible support to make the page fit. Change physic
 
 Apply the same principle to exact `Pupil prompt` and child-visible `Support` authored by Adaptation Designer for Below/Greater Depth.
 
-The worksheet surface is normally more neutral and assessment-like than slides, but that register difference is already expressed by the upstream Expected/adaptation wording. Worksheet Designer does not rewrite visible wording merely to make it more test-like or more conversational.
+The worksheet surface is normally plainer and more direct than slides - instructions without the slide's conversational flavour, not an exam register - but that difference is already expressed by the upstream Expected/adaptation wording. Worksheet Designer does not rewrite visible wording merely to make it plainer or more conversational.
 
 If upstream wording, task grouping, support or visual requirements would create
 a genuinely poor or misleading pupil resource, do not knowingly ship it and do
