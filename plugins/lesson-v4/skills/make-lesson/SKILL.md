@@ -442,8 +442,9 @@ launch, whichever becomes relevant first, load:
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "phase3"
 ```
 
-Immediately before the first visual-review or consistency-review first-pass
-handling, load:
+Immediately before the first visual-review launch - which happens as soon as any
+one artefact's build is accepted, not after every branch has finished - or before
+consistency-review first-pass handling, load:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "visual-review"

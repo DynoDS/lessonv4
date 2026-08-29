@@ -48,6 +48,21 @@ function atLeast(minMm, spec) {
   return typeof minMm === "function" ? minMm(spec) : minMm;
 }
 
+// Named because the plate's own height floor has to re-render it to find out
+// what shape this lesson's wording made it.
+const balancedPatternPlateSpec = (spec) => ({
+  mode: spec.mode,
+  practice: spec.practice,
+  givenGroups: spec.givenGroups,
+  blankGroups: spec.blankGroups,
+  groupLabels: spec.groupLabels,
+  examples: spec.examples,
+  water: spec.water,
+  caption: spec.caption,
+  instruction: spec.instruction,
+  lessOftenLabel: spec.lessOftenLabel,
+});
+
 // Every helper built this way is an SVG scaled by its WIDTH: the CSS gives it
 // `width: 100%` and its height follows its own aspect. So extra height cannot
 // make one bigger, and greed defaults to nought.
@@ -359,17 +374,17 @@ const helpers = {
   // sectors; practice replaces selected labels/examples with decision spaces.
   "balanced-pattern-plate": fromShared(
     balancedPatternPlateSvg,
-    (spec) => ({
-      mode: spec.mode,
-      practice: spec.practice,
-      givenGroups: spec.givenGroups,
-      groupLabels: spec.groupLabels,
-      examples: spec.examples,
-      water: spec.water,
-      caption: spec.caption,
-      lessOftenLabel: spec.lessOftenLabel,
-    }),
-    { capMm: 170, minWidthMm: 145, minHeightMm: 105 }
+    balancedPatternPlateSpec,
+    {
+      capMm: 170,
+      minWidthMm: 145,
+      // The plate rearranges itself around whatever labels and examples a lesson
+      // gives it, so its proportions are not a constant. Ask the drawing what it
+      // actually came out as; a fixed floor here would be right for the default
+      // wording and quietly wrong for a longer set.
+      minHeightMm: (spec) =>
+        Math.ceil(145 / balancedPatternPlateSvg.tightSvg(balancedPatternPlateSpec(spec)).aspect),
+    }
   ),
 
   // The study area a rainforest unit keeps returning to: South America, Brazil

@@ -76,7 +76,7 @@ module.exports = {
   "rainforest-layers":
     "The rainforest cross-section, labelled by layer.",
   "balanced-pattern-plate":
-    "A neutral proportional food-group plate, labelled for teaching or partly blank for pupil decisions.",
+    "A neutral proportional food-group plate. The five shares are fixed; you set each group's label, its example foods, and which groups arrive blank for the child.",
   "label-diagram":
     "A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on. The one helper built around a PHOTOGRAPH.",
 

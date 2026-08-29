@@ -169,7 +169,9 @@ module.exports = {
   "balanced-pattern-plate": {
     mode: "practice",
     givenGroups: ["fruit-vegetables", "starchy-carbohydrates"],
-    caption: "Aim for this balance across a day or over time — not every meal.",
+    groupLabels: { protein: "Protein foods" },
+    examples: { "fruit-vegetables": ["apple", "carrot", "peas", "berries"] },
+    caption: "Aim for this balance across a day or over time, not every meal.",
   },
   "reflection-grid": {
     cols: 10,

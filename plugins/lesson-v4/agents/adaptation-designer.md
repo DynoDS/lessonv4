@@ -170,7 +170,9 @@ If the task genuinely qualifies for the two-page central-write-on-visual excepti
 
 ### 6. Mark fit priorities for any separate resource being designed
 
-Identify the essential content and any lower-priority item the worksheet designer may remove first if a fit problem occurs. If no removal is pedagogically authorised, state that explicitly. The worksheet designer must not decide which learning is expendable.
+Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side is about 250mm of stacked height below the title; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes.
+
+If no removal is pedagogically authorised, state that explicitly - but only when the priced set already fits. On a set that prices over a page, refusing to name a removal order does not save the content: it sends the sheet back unbuilt and returns the same decision to you later. The worksheet designer must not decide which learning is expendable, which is exactly why the ordering is decided here.
 
 ### 7. Check required pictures for any separate resource being designed
 
@@ -329,6 +331,7 @@ For each generated question, part or task:
 - Photo refs: [adaptation-photo-### IDs used by this item, or None]
 
 Fit priority:
+- Page budget check: [the protected items priced against one A4 side, and the total]
 - Essential and protected: [...]
 - Pre-authorised removal, if any: [...]
 - Central write-on visual exception: [Not needed / Eligible — exact reason]
@@ -380,6 +383,7 @@ Reading-access check:
 [how the wording remains light and independently accessible; phonic accessibility is a guide, not a formal test; name any essential difficult vocabulary and its support]
 
 Fit priority:
+- Page budget check: [the protected items priced against one A4 side, and the total]
 - Essential and protected: [...]
 - Pre-authorised removal, if any: [...]
 - Central write-on visual exception: [Not needed / Eligible — exact reason]

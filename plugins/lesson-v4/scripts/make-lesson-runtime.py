@@ -64,14 +64,14 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "other-resources": (
         "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
-        "## Phase 3 — Wait for All Branches",
+        "## Phase 3 — Service Each Branch as It Lands",
     ),
     "phase3": (
-        "## Phase 3 — Wait for All Branches",
-        "## Phase 3.5 — Visual Check and Repair (after all builders, before the report and sync)",
+        "## Phase 3 — Service Each Branch as It Lands",
+        "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
     ),
     "visual-review": (
-        "## Phase 3.5 — Visual Check and Repair (after all builders, before the report and sync)",
+        "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
         "### The focused owner-repair round",
     ),
     "focused-repair": (

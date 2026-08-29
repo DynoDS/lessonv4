@@ -92,6 +92,7 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
             "Visual requirements:",
             "Photo refs:",
             "Fit priority:",
+            "Page budget check:",
             "Answers for Greater Depth:",
             "Selected tier:",
             "Evidence or basis for tier:",
@@ -114,6 +115,26 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
         self.assertIn("build-provisional", MAKE_LESSON)
         self.assertIn("select-worksheet", MAKE_LESSON)
         self.assertIn("promote-used", MAKE_LESSON)
+
+    def test_fit_priority_is_priced_against_the_page_before_it_is_closed(self) -> None:
+        """A protected set nobody counted is how a sheet reaches the worksheet
+        designer 60mm over a page with no removal authorised, and comes back."""
+        self.assertIn("Page budget check", AGENT)
+        self.assertIn("250mm", AGENT)
+        self.assertIn("preferences.md", AGENT)
+        self.assertIn(
+            "refusing to name a removal order does not save the content",
+            AGENT,
+        )
+        preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
+        worksheets = preferences.split("## Worksheets", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("Price the protected set against the page", worksheets)
+        self.assertIn("250mm", worksheets)
+        self.assertIn("165mm", worksheets)
+        self.assertIn(
+            '"Nothing may be removed" is a claim about a sheet that already fits',
+            worksheets,
+        )
 
     def test_teacher_provided_and_shared_frame_routes_are_preserved(self) -> None:
         flat = " ".join(MAKE_LESSON.split())

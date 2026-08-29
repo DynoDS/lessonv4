@@ -142,6 +142,52 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("visual-review.md", text)
         self.assertIn("**Start each artefact's visual reviewer here", text)
 
+    def test_visual_review_starts_per_artefact_not_after_every_branch(self):
+        """A per-artefact trigger competing with a whole-pipeline gate loses.
+
+        The gate won on a real run: the slide deck was built and checked, and
+        its reviewer still waited for the worksheet branch, costing a whole
+        review round and delaying every repair behind it.
+        """
+        playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
+            encoding="utf-8"
+        )
+        skill = (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(encoding="utf-8")
+        runtime = (ROOT / "scripts" / "make-lesson-runtime.py").read_text(encoding="utf-8")
+
+        # Nothing may still read as "hold every reviewer until every branch ends".
+        self.assertNotIn("Wait for All Branches", playbook)
+        self.assertNotIn("after all builders", playbook)
+        self.assertNotIn("Before visual review, every earned resource", playbook)
+
+        self.assertIn("## Phase 3 — Service Each Branch as It Lands", playbook)
+        self.assertIn(
+            "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
+            playbook,
+        )
+        self.assertIn(
+            "A finished artefact's own visual reviewer is one of those dependants",
+            playbook,
+        )
+        self.assertIn("That trigger is per artefact, not per pipeline", playbook)
+        flat_playbook = " ".join(playbook.split())
+        flat_skill = " ".join(skill.split())
+        self.assertIn(
+            "The only work that genuinely waits for every branch is the "
+            "cross-resource consistency review",
+            flat_playbook,
+        )
+        self.assertIn(
+            "as soon as any one artefact's build is accepted", flat_skill
+        )
+
+        # The slice markers are the playbook's own headings, so they move together.
+        self.assertIn("## Phase 3 — Service Each Branch as It Lands", runtime)
+        self.assertIn(
+            "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
+            runtime,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

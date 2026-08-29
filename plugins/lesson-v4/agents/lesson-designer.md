@@ -316,7 +316,7 @@ After status, set `worksheet.use` to one: "separate-fresh-worksheet" or "require
 
 **Count performances of core action, not question numbers.** Four rows each asking four brief transformations = 16 attempts, not 4; one whole paragraph transformed = one substantial performance. Match amount to time/thought. Keep related cases together when comparison carries learning; separate when each needs own decision/method/working and neighbours would cue answer.
 
-**Mark fit priority before handing downstream.** Name essential content, protected representation. Identify lower-priority elements may be removed first if page cannot fit. Otherwise state nothing may be removed without returning decision upstream.
+**Price the protected set against the page, then mark fit priority.** One A4 side is about 250mm of stacked height below the title. Count what you are protecting against it using the rough prices in `preferences.md` → Worksheets before writing `fitPriority`: a design that protects more than a page's worth comes back three agents later with the sheet unbuilt, and the redesign is a teaching decision that was always yours. Name essential content and protected representation. Name the lower-priority elements that may be removed first, lowest value first with the reason each is the one that goes. `preAuthorisedRemoval: []` is honest only when the priced set already fits; on a set that prices over the page it does not protect the content, it only moves the failure later.
 
 **Separate pupil wording from build info.** For each question/part/open task, give exact Pupil prompt, intended Response and printed target, Support, Visual requirements. Keep sourcing/composition/answer info out of pupil prompt. Word bank as separately labelled support, not inserted.
 

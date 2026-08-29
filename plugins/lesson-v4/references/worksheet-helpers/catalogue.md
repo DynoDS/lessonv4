@@ -401,9 +401,9 @@ Smallest usable: **140mm wide x 100mm tall**. Spare height: never takes spare he
 
 #### `balanced-pattern-plate`
 
-A neutral proportional food-group plate, labelled for teaching or partly blank for pupil decisions.
+A neutral proportional food-group plate. The five shares are fixed; you set each group's label, its example foods, and which groups arrive blank for the child.
 
-Smallest usable: **148mm wide x 105mm tall**. Spare height: never takes spare height.
+Smallest usable: **145mm wide x 116mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -413,7 +413,18 @@ Smallest usable: **148mm wide x 105mm tall**. Spare height: never takes spare he
     "fruit-vegetables",
     "starchy-carbohydrates"
   ],
-  "caption": "Aim for this balance across a day or over time — not every meal."
+  "groupLabels": {
+    "protein": "Protein foods"
+  },
+  "examples": {
+    "fruit-vegetables": [
+      "apple",
+      "carrot",
+      "peas",
+      "berries"
+    ]
+  },
+  "caption": "Aim for this balance across a day or over time, not every meal."
 }
 ```
 

@@ -558,6 +558,19 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertIn("### Lesson Designer visual-need boundary", preferences)
         self.assertIn("### Speaker notes hand-off", preferences)
 
+    def test_lesson_designer_prices_the_protected_set_against_the_page(self):
+        # A protected set nobody counted is how a sheet reaches the worksheet
+        # designer over a page with no removal authorised, and comes straight
+        # back for a decision that was always the designer's.
+        designer = self._designer_text()
+        self.assertIn("Price the protected set against the page", designer)
+        self.assertIn("250mm", designer)
+        self.assertIn("preAuthorisedRemoval: []", designer)
+        preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
+        worksheets = preferences.split("## Worksheets", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("Price the protected set against the page", worksheets)
+        self.assertIn("about 250mm of stacked height", worksheets)
+
     def test_lesson_designer_does_not_read_slide_designer_presentation_rules(self):
         designer = self._designer_text()
         preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")

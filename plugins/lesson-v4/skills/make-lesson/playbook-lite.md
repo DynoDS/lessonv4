@@ -722,20 +722,30 @@ one focused stick-in designer repair and one rebuild.
 
 ---
 
-## Phase 3 — Wait for All Branches
+## Phase 3 — Service Each Branch as It Lands
 
 Wait through the host's ordinary multi-worker wait once for all active branches.
 Do not poll each worker serially. As each worker completes, run its
 deterministic check and release only its genuine dependants. A failed branch does not invalidate a clean independent branch.
 
-Before visual review, every earned resource must be either built with an
-accepted summary or excluded with a reason. A resource that is neither by this
+**A finished artefact's own visual reviewer is one of those dependants, so start
+it here rather than holding it for the slowest sibling.** Reviewing one artefact
+needs that artefact and nothing else, which is why a deck that is built and
+checked goes to review while the worksheet branch is still designing. Holding it
+costs the whole review round in wall-clock and delays every repair behind it.
+Phase 3.5 carries the launch: run its route probe once, then launch each
+reviewer from there as its build is accepted. The only work that genuinely waits
+for every branch is the cross-resource consistency review and the deterministic
+merge.
+
+Once the last branch settles, every earned resource must be either built with an
+accepted summary or excluded with a reason. A resource that is neither by that
 point is excluded now, with its exact failing marker as the reason: exclusion
 is the honest record of a branch that ended, not a fault to repair here.
 
 ---
 
-## Phase 3.5 — Visual Check and Repair (after all builders, before the report and sync)
+## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)
 
 Probe this machine's render routes once before any reviewer starts, and hand the
 file to every reviewer as `RENDER_ROUTE_FILE`. Nothing else probes it, and a
@@ -747,6 +757,8 @@ python3 "[PLUGIN_ROOT]/scripts/render-pages.py" --probe-route "[WORKING_DIR]/ren
 
 Render every delivered surface through that established route.
 **Start each artefact's visual reviewer here, after its final build is present.**
+That trigger is per artefact, not per pipeline: the first accepted build starts
+its reviewer immediately, and the rest follow one at a time as they land.
 Launch one Visual Reviewer per resource concurrently. Each receives only
 approved `lesson-design.json`, that resource's own specification, its final
 render manifest/pages, and its artefact-specific review module. It writes one

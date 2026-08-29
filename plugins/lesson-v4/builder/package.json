@@ -2,14 +2,14 @@
   "name": "lesson-resources-builder",
   "version": "0.1.0",
   "private": true,
-  "description": "PowerPoint builder — reads lesson.json, writes .pptx",
+  "description": "PowerPoint builder \u2014 reads lesson.json, writes .pptx",
   "main": "build.js",
   "bin": {
     "build-lesson": "./build.js"
   },
   "scripts": {
     "build": "node build.js",
-    "check": "node scripts/check-catalogue.js && node scripts/check-parity.js && node scripts/check-paragraph-props.js && node scripts/check-render-failures.js && node scripts/check-pictures.js && node scripts/check-vocab-visuals.js"
+    "check": "node scripts/check-catalogue.js && node scripts/check-parity.js && node scripts/check-paragraph-props.js && node scripts/check-render-failures.js && node scripts/check-pictures.js && node scripts/check-vocab-visuals.js && node --test \"test/*.test.js\""
   },
   "dependencies": {
     "pptxgenjs": "^3.12.0",

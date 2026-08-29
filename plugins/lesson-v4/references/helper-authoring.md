@@ -69,6 +69,24 @@ A flat colour fill behind the figure is the same waste in a different guise — 
 
 ---
 
+## Lay the drawing out from its own content
+
+**A helper is a shape that redraws itself around whatever a lesson puts in it, so the only positions it may hold are ones it works out at draw time.** A table of hand-picked x/y coordinates, chosen by eye against the wording you happened to build it with, renders perfectly for that wording and then clips, collides or floats the moment a lesson supplies its own labels. Nothing catches it: the build is green, the guard is green, and the fault reaches a child's worksheet.
+
+Three moves, for every helper that places text:
+
+1. **Measure the text, do not count its characters.** The house pattern is a `fitFont(text, avail, maxFont, minFont)` beside the constants block - `carroll-svg.js`, `place-value-chart-svg.js` and `grid-map-svg.js` each carry one. Where the space is tight enough that a wrong estimate clips (text inside a wedge, a cell, a circle), measure with real glyph widths rather than an average, as `balanced-pattern-plate-svg.js` does.
+2. **Derive the position from the geometry.** Compute the anchor from the shape the words belong to: the centroid of a band, the middle of a cell, the run of radii along a sector's bisector where the whole block still fits inside. A named constant for a gap, a stroke width or a colour is house style; a named constant for *where one particular label goes* is the eyeballing this rule exists to stop.
+3. **Give it somewhere honest to go when it will not fit.** Shrink to a readable floor, then wrap, and if it still does not fit, move that label out to a gutter beside the drawing on a leader line - the pattern `rainforest-layers-svg.js` and `balanced-pattern-plate-svg.js` both use. The fallback is never "draw it anyway": a label lying across a neighbouring part teaches the wrong thing, which is worse than a label sitting outside on a line.
+
+A readable floor is part of the rule, not an escape from it. A label that would have to go below it has outgrown its space and belongs in the gutter, not at eight point.
+
+**Where this does not apply:** a drawing with no text in it, and a figure whose words are fixed content of the picture rather than a lesson's data - a compass rose's N, E, S and W. Those have nothing to vary, so nothing to fit.
+
+**Lock it with a test on the layout, not on the words.** A test that greps the rendered SVG for a label passes on a label that is clipped in half. Expose where each space landed (`describeLayout` in `balanced-pattern-plate-svg.js` is the model) and assert the boxes sit inside the picture, inside the part they belong to, and clear of each other - with at least one case using wording the helper was not built around.
+
+---
+
 ## House code rules (both engines)
 
 These keep a new helper consistent with the others and safe through the autofit pass:
@@ -153,6 +171,7 @@ Then look at the PNGs it writes.
 - **Worksheets:** run `node worksheet-html/scripts/build-worksheet.js <worksheet.json>` on a small spec that uses the helper, confirm the page-fit line, then render the PDF and confirm the figure prints at a readable size. Where the helper can sit inside a `stack` or a `row`, render it that way as well as standalone.
 - **Working wall** (whenever the helper serves it): write a tiny `working-wall.json` with one card carrying the new `visual`, run `working-wall-html/build.js`, and look at the figure on the page it actually ships on. The build writes a PDF (`Working Wall - [Topic].pdf`); render it and look at those pages. A card that builds with no error but shows only step badges and text is the silent-skip failure: the primitive isn't reaching the wall, usually because a wiring step (the SVG registry, the key registry, or one of the designer's two catalogues) was missed.
 - **Stick-in pack** (whenever the helper serves it): write a tiny `stick-in-sheets.json` with one item carrying the new `visual`, run `stick-in-sheets-html/build.js`, and look at the same way. The build writes a PDF (`[Topic] - Stick-in Sheets.pdf`); render it and confirm the figure is in its write-on (blank) form and prints large enough to mark on.
+- **Look at it with content you did not design it around.** The example you built the helper on is the one case already tuned to fit, so it proves the least. Render it again with the longest labels a real lesson might plausibly send, with a different number of items, and with the parts a lesson might leave blank for a child, and look at each. Anything that clips, collides or floats means the layout is still hand-placed: go back to *Lay the drawing out from its own content*.
 - **A quick standalone check** of a figure helper — render a handful of representative cases (for an angle: a sharp acute, a near-right acute, a right angle, an obtuse) into bordered cells and look at how much of each cell the figure fills — catches both geometry bugs and leftover deadspace before a full lesson build.
 
 **Run the guard as the mechanical complement to looking.** `npm run check` (in `builder/`) runs the catalogue and parity guards: it confirms every surface you declared in the manifest is actually wired, and that no live wall/stick-in/slide figure is missing from the manifest. Looking proves the picture is *right*; the guard proves the slide, worksheet, wall and stick-in wiring is *complete* - together they close both halves. A red guard names the exact surface still missing a wire. The guard proves the worksheet key is registered; `npm test` and `npm run check-render` in `worksheet-html/` prove the worksheet behavior and rendering.
