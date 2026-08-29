@@ -9,6 +9,7 @@ const coordinateGrid = require("../../shared/visuals/coordinate-grid-svg");
 const translationShape = require("../../shared/visuals/translation-shape-svg");
 const gridMap = require("../../shared/visuals/grid-map-svg");
 const rainforestLayers = require("../../shared/visuals/rainforest-layers-svg");
+const worldGeographyMap = require("../../shared/visuals/world-geography-map-svg");
 
 // A labelled diagram a child sticks in and writes the part names onto. The figure
 // is the SAME one the board shows (the slide's label-diagram), so the cut-out and
@@ -92,6 +93,20 @@ const VISUALS = {
     tightSvg: rainforestLayers.tightSvg,
     defaultWidthMm: 125,
     specFn: (s) => Object.assign({}, s, { blank: s.blank !== false }),
+  },
+  // 150mm wide: a child has to write seven continent names on the ruled spaces,
+  // so the handwriting lines, not the coastline stroke, set the usable size.
+  // The registry forces retrieval mode and blank labels even if a labelled
+  // teaching spec is copied by mistake; highlightSouthAmerica is also removed so
+  // the child can carry out the requested circling themselves.
+  "world-geography-map": {
+    tightSvg: worldGeographyMap.tightSvg,
+    defaultWidthMm: 150,
+    specFn: (s) => Object.assign({}, s, {
+      configuration: "continent-retrieval",
+      labels: false,
+      highlightSouthAmerica: false,
+    }),
   },
 };
 
