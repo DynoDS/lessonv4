@@ -5,7 +5,7 @@
 // column method is a grid of cells, and all three need a browser's own text
 // flow (wrapping, borders) far more than they need a drawing.
 
-const { LINE_MM, NOTE_LINE_MM, esc, linesFor } = require("./shared");
+const { LINE_MM, NOTE_LINE_MM, esc, promptHtml, linesFor } = require("./shared");
 const { SPACE } = require("../tokens");
 
 // ─── multiple-choice ─────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ function renderMultipleChoice(spec) {
     .join("");
   return `
     <div class="h-mc">
-      <p class="h-mc-stem">${esc(spec.text)}</p>
+      <p class="h-mc-stem">${promptHtml(spec.text)}</p>
       <p class="h-mc-instr">${esc(instr)}</p>
       <ul class="h-mc-opts">${options}</ul>
     </div>`;

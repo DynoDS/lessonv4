@@ -160,7 +160,7 @@ module.exports = {
   "part-whole-money":
     "A whole bubble with parts beneath it, joined by lines.",
   "chip-bank":
-    "A set of short labels drawn as separate bordered choices, so they read as options rather than as running text.",
+    "A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text. A bank titled Word bank prints in vocabulary green unless a variant overrides it.",
   "stacked-fraction":
     "A fraction written properly, numerator sitting on a rule above the denominator, with a question stem.",
   "fraction-sequence":

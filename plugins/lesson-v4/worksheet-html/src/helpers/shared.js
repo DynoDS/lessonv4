@@ -17,6 +17,30 @@ function esc(s) {
     .replace(/>/g, "&gt;");
 }
 
+// A run of underscores in child-facing prompt text is a blank the child
+// writes INTO - a sentence stem's gaps are its answer space. Printed as the
+// designer's literal "___" it is a few millimetres wide: an answer space no
+// pencil fits, on a page that looks finished. So every run of two or more
+// underscores prints as one uniform write-in blank wide enough for a real
+// written word, and every blank in a stem comes out the same width, so a
+// blank's length never leaks which word it wants.
+//
+// BLANK_CHARS is what the measurement counts for each blank, and the printed
+// width is derived from the same number, so the estimate and the page agree.
+const BLANK_CHARS = 12;
+const BLANK_MM = 25; // the printed width of one blank; tracks BLANK_CHARS at body size
+const BLANK_RUN = /_{2,}/g;
+
+function normaliseBlanks(text) {
+  return String(text).replace(BLANK_RUN, "_".repeat(BLANK_CHARS));
+}
+
+// Escape first, then swap the runs: the replacement carries markup that must
+// not itself be escaped.
+function promptHtml(text) {
+  return esc(text).replace(BLANK_RUN, '<span class="h-blank"></span>');
+}
+
 // Roughly how many characters of Comic Sans fit on a line at body size.
 //
 // A helper that over-estimates leaves a gap; one that under-estimates
@@ -34,7 +58,9 @@ const CHAR_WIDTH_FACTOR = 0.5;
 function linesFor(text, widthMm) {
   const charMm = BODY_PT * PT_MM * CHAR_WIDTH_FACTOR;
   const perLine = Math.max(8, Math.floor(widthMm / charMm));
-  return Math.max(1, Math.ceil(String(text).length / perLine));
+  // Blanks are normalised so the count sees the width the blank will PRINT at,
+  // not the two or three underscores the designer typed.
+  return Math.max(1, Math.ceil(normaliseBlanks(text).length / perLine));
 }
 
 // A drawn visual's natural height follows from the width it is given and its
@@ -84,7 +110,11 @@ module.exports = {
   LINE_MM,
   NOTE_LINE_MM,
   WRITING_LINE_MM,
+  BLANK_CHARS,
+  BLANK_MM,
   esc,
+  promptHtml,
+  normaliseBlanks,
   linesFor,
   heightFromAspect,
   legibleWidthMm,

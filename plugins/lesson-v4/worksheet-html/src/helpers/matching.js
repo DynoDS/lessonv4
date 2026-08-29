@@ -19,7 +19,7 @@
 // at the point size the design system states, whatever width the zone gives
 // it, so the problem cannot arise here in the first place.
 
-const { BODY_PT, PT_MM, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, esc, linesFor } = require("./shared");
+const { BODY_PT, PT_MM, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, esc, promptHtml, linesFor } = require("./shared");
 const { SPACE, INSET } = require("../tokens");
 
 // The widest a zone can ever be, so a minimum height can be stated as the
@@ -113,7 +113,7 @@ function renderMatchUp(spec) {
 
   return `
     <div class="h-match">
-      ${spec.text ? `<p class="h-match-stem">${esc(spec.text)}</p>` : ""}
+      ${spec.text ? `<p class="h-match-stem">${promptHtml(spec.text)}</p>` : ""}
       <div class="h-match-cols">
         <ul class="h-match-col h-match-left">${column(spec.left)}</ul>
         <ul class="h-match-col h-match-right">${column(spec.right)}</ul>

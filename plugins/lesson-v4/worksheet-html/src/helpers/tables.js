@@ -24,8 +24,21 @@ const DATA_ROW_COMPACT_MM = LINE_MM * 1.35;
 const DATA_COL_MIN_MM = 24;
 const DATA_COL_COMPACT_MIN_MM = 20;
 
+// A headerless table is legitimate (a nutrient | job | examples grid whose
+// note beneath explains the columns), and it is written as no `columns` or an
+// empty array. It must not emit an empty <thead><tr></tr></thead>: Chrome's
+// collapsed-border resolution treats that empty row as the table's first row,
+// and the first body row's TOP border vanishes - the table prints open along
+// its top edge and looks clipped.
+function dataColumns(spec) {
+  return Array.isArray(spec.columns) ? spec.columns : [];
+}
+
 function renderDataTable(spec) {
-  const head = spec.columns.map((c) => `<th>${esc(c)}</th>`).join("");
+  const columns = dataColumns(spec);
+  const head = columns.length
+    ? `<thead><tr>${columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>`
+    : "";
   const body = spec.rows
     .map((r) => `<tr>${r.map((cell) => `<td>${esc(cell)}</td>`).join("")}</tr>`)
     .join("");
@@ -40,7 +53,7 @@ function renderDataTable(spec) {
   return `
     <table class="${classes}">
       ${spec.caption ? `<caption>${esc(spec.caption)}</caption>` : ""}
-      <thead><tr>${head}</tr></thead>
+      ${head}
       <tbody>${body}</tbody>
     </table>
     ${spec.note ? `<p class="h-data-note">${esc(spec.note)}</p>` : ""}`;
@@ -50,7 +63,8 @@ function measureDataTable(spec, widthMm = 100) {
   const rowMm = spec.compact ? DATA_ROW_COMPACT_MM : DATA_ROW_MM;
   const capMm = spec.caption ? (spec.compactCaption ? NOTE_LINE_MM : LINE_MM * 1.4) : 0;
   const noteMm = spec.note ? linesFor(spec.note, widthMm) * NOTE_LINE_MM + 1 : 0;
-  return capMm + rowMm * (spec.rows.length + 1) + noteMm + 4;
+  const headerRows = dataColumns(spec).length ? 1 : 0;
+  return capMm + rowMm * (spec.rows.length + headerRows) + noteMm + 4;
 }
 
 // ─── recording table ─────────────────────────────────────────────────────

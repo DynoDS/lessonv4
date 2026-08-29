@@ -50,15 +50,34 @@ arrangement, response target and usable answer space that realise those settled
 decisions. You do not repitch questions, invent scaffolds, remove challenge or
 decide which learning is expendable.
 
-**Every printed response action receives one obvious usable target.** A tick has
-a tick box beside each eligible item. A match has clear start and finish points.
-A naming task has a line or label target for each object. A circle instruction
-has one unambiguous thing to circle.
+**Every printed response action receives one obvious usable target, sized for
+what the prompt demands.** A tick has a tick box beside each eligible item. A
+match has clear start and finish points. A naming task has a line or label
+target for each object. A circle instruction has one unambiguous thing to
+circle. And a written answer gets room counted from the prompt: `explain two
+ways, then identify one more` is three written things, each needing roughly two
+writing lines at this year group's line height. Two dotted lines under a
+three-part prompt is a contradiction printed on the page, and the child
+resolves it by writing less than the task asked.
 
 **Every word bank is a separate labelled support block.** Put `Word bank` on its
 own line and present each option as a distinct choice. Never embed the bank
 choices inside an instruction or paragraph, including when the bank has only
 two words.
+
+**Support sits with the question it serves, and a stimulus comes before its
+questions.** A word bank, reference or picture that serves one question lives
+inside that question's stack, directly beside the element it feeds - never
+parked in another zone with a pointer line (`Use this word bank for question
+2.`) asking the child to commute across the page. When it will not fit beside
+its question, that is a fit problem with a fit answer (another layout, or the
+fit-priority route), not a licence to exile the support. The pointer line of
+rule 12 is for a reference that genuinely serves several questions, and that
+reference sits earlier in reading order than the first question using it. The
+same order holds for any stimulus a question depends on: a child must never
+meet `Is Rowan's claim supported?` on a page that has not yet shown them
+Rowan's claim. Zones fill in reading order, so hand content over in the order
+the dependencies need: stimulus, then the questions that lean on it.
 
 ---
 

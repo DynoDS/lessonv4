@@ -800,14 +800,13 @@ function needsFractionSequence(spec) {
 // builder's warm word-bank yellow was for - material handed to the child.
 const CHIP_VARIANTS = { blue: "question", yellow: "given", green: "vocab" };
 
-// A chip is only as wide as its longest label needs, with a floor so that a
-// bank of three-letter words does not come out as a row of stubs. The track
-// width is content-derived and handed to the CSS as a custom property, rather
-// than pinned in the stylesheet, for two reasons: a bank of long words then
-// gets wide tracks and a bank of short ones gets many, and - the part that
-// matters - `measure` can work out the column count exactly instead of guessing
-// what the browser decided to do.
-const CHIP_TRACK_MIN_MM = 26;
+// A chip is only as wide as ITS OWN label needs, with a floor so that a bank
+// of three-letter words does not come out as a row of stubs. Sizing every chip
+// to the longest label in the bank was tried and looked wrong on paper: a bank
+// holding "beans" beside "vitamins and minerals" printed "beans" in a pill
+// mostly made of empty space, and a child reads dead space inside a border as
+// a place to write. Each chip hugs its word; the wrap packs them.
+const CHIP_MIN_MM = 20;
 const CHIP_GAP_MM = SPACE_TIGHT_MM;
 const CHIP_PAD_X_MM = INSET.card.h;
 const CHIP_PAD_Y_MM = INSET.card.v;
@@ -820,8 +819,19 @@ function chipList(spec) {
     .filter((c) => c !== "");
 }
 
+// A bank titled "Word bank" is vocabulary by definition, so with no variant
+// stated it takes vocabulary green rather than the neutral blue. The teacher's
+// colour system says green IS what a bank of taught words means on paper, and
+// a designer who leaves `variant` off has not chosen blue - they have not
+// chosen. An explicit variant still wins, for the bank that is genuinely
+// something else (options for a question, material handed over).
 function chipVariantClass(spec) {
-  const role = CHIP_VARIANTS[spec.variant] || CHIP_VARIANTS.blue;
+  let role = CHIP_VARIANTS[spec.variant];
+  if (!role) {
+    role = /word\s*bank/i.test(String(spec.title || ""))
+      ? CHIP_VARIANTS.green
+      : CHIP_VARIANTS.blue;
+  }
   return `h-chipbank--${role}`;
 }
 
@@ -837,27 +847,38 @@ function renderChipBank(spec) {
   return `
     <div class="h-chipbank ${chipVariantClass(spec)}">
       ${stem}${title}
-      <div class="h-chipbank-grid" style="--h-chip-track:${f(chipTrackMm(chips))}mm">${pills}</div>
+      <div class="h-chipbank-grid">${pills}</div>
     </div>`;
 }
 
-function chipLongestChars(chips) {
-  return chips.reduce((m, c) => Math.max(m, c.length), 0);
+// One chip's printed width at this zone width: its own label, padded and
+// bordered, floored, and never wider than the zone.
+function chipWidthMm(label, widthMm) {
+  const naturalMm =
+    label.length * CHIP_CHAR_MM + CHIP_PAD_X_MM * 2 + CHIP_BORDER_MM * 2;
+  return Math.min(widthMm, Math.max(CHIP_MIN_MM, naturalMm));
 }
 
-function chipTrackMm(chips) {
-  return Math.max(
-    CHIP_TRACK_MIN_MM,
-    chipLongestChars(chips) * CHIP_CHAR_MM + CHIP_PAD_X_MM * 2 + CHIP_BORDER_MM * 2
-  );
-}
-
-// How many tracks `repeat(auto-fill, minmax(track, 1fr))` actually lays down at
-// this width. Written out rather than guessed, because the row COUNT falls out
-// of it and the row count is the whole height.
-function chipColumns(chips, widthMm) {
-  const trackMm = chipTrackMm(chips);
-  return Math.max(1, Math.floor((widthMm + CHIP_GAP_MM) / (trackMm + CHIP_GAP_MM)));
+// The wrap the browser will produce, simulated greedily: chips go onto a row
+// until the next one no longer fits, exactly as flex wrap lays them. The row
+// count is the whole height, so it is worked out rather than guessed.
+function chipRows(chips, widthMm) {
+  const rows = [];
+  let row = null;
+  let usedMm = 0;
+  for (const label of chips) {
+    const wMm = chipWidthMm(label, widthMm);
+    const withGapMm = row ? usedMm + CHIP_GAP_MM + wMm : wMm;
+    if (!row || withGapMm > widthMm) {
+      row = [label];
+      usedMm = wMm;
+      rows.push(row);
+    } else {
+      row.push(label);
+      usedMm = withGapMm;
+    }
+  }
+  return rows;
 }
 
 function measureChipBank(spec, widthMm) {
@@ -868,39 +889,47 @@ function measureChipBank(spec, widthMm) {
   const titleMm = spec.title ? LINE_MM + SPACE_TIGHT_MM : 0;
   if (chips.length === 0) return stemMm + titleMm;
 
-  const cols = chipColumns(chips, widthMm);
-  const trackMm = (widthMm - (cols - 1) * CHIP_GAP_MM) / cols;
-  const textMm = Math.max(
-    4,
-    trackMm - CHIP_PAD_X_MM * 2 - CHIP_BORDER_MM * 2
-  );
-  // The longest chip decides the row height for every row: a chip that wraps to
-  // two lines makes its whole row two lines tall, and over-stating that for the
-  // short rows is the cheap direction to be wrong in.
-  const chipLines = Math.max(
-    1,
-    Math.ceil((chipLongestChars(chips) * CHIP_CHAR_MM) / textMm)
-  );
-  const rowMm = chipLines * LINE_MM + CHIP_PAD_Y_MM * 2 + CHIP_BORDER_MM * 2;
-  const rows = Math.ceil(chips.length / cols);
+  // Each row is as tall as its tallest chip. A chip only wraps its own text
+  // when its label is wider than the whole zone, because its width hugs the
+  // label everywhere short of that.
+  const rowsMm = chipRows(chips, widthMm).map((row) => {
+    const lines = Math.max(
+      ...row.map((label) => {
+        const textMm = Math.max(
+          4,
+          chipWidthMm(label, widthMm) - CHIP_PAD_X_MM * 2 - CHIP_BORDER_MM * 2
+        );
+        return Math.max(1, Math.ceil((label.length * CHIP_CHAR_MM) / textMm));
+      })
+    );
+    return lines * LINE_MM + CHIP_PAD_Y_MM * 2 + CHIP_BORDER_MM * 2;
+  });
 
-  return stemMm + titleMm + rows * rowMm + (rows - 1) * CHIP_GAP_MM;
+  return (
+    stemMm +
+    titleMm +
+    rowsMm.reduce((sum, mm) => sum + mm, 0) +
+    (rowsMm.length - 1) * CHIP_GAP_MM
+  );
 }
 
 function needsChipBank(spec) {
   const chips = chipList(spec);
-  // A track wide enough for the longest label, and at least two of them once
-  // there is more than one chip: a bank one chip wide is a list, and the
+  // Wide enough for the longest label, plus a second smallest chip beside it
+  // once there is more than one: a bank one chip wide is a list, and the
   // separation the borders exist for stops doing any work.
-  const trackMm = chipTrackMm(chips);
-  const cols = Math.min(Math.max(chips.length, 1), 2);
-  const minWidthMm = cols * trackMm + (cols - 1) * CHIP_GAP_MM;
+  const widestMm = chips.reduce(
+    (m, label) => Math.max(m, chipWidthMm(label, WIDEST_ZONE_MM)),
+    CHIP_MIN_MM
+  );
+  const minWidthMm =
+    chips.length > 1 ? widestMm + CHIP_GAP_MM + CHIP_MIN_MM : widestMm;
   return {
     minWidthMm,
-    // Chips get shorter as they get wider, so the shortest the content can ever
-    // come out is at the widest a zone could be. Same reasoning as text.js: a
-    // minimum measured at the NARROWEST width states the tallest case and
-    // refuses zones that would have been fine.
+    // Chips pack better as the zone gets wider, so the shortest the content can
+    // ever come out is at the widest a zone could be. Same reasoning as
+    // text.js: a minimum measured at the NARROWEST width states the tallest
+    // case and refuses zones that would have been fine.
     minHeightMm: measureChipBank(spec, WIDEST_ZONE_MM),
   };
 }
@@ -975,15 +1004,18 @@ const css = `
     font-size: var(--type-body); line-height: 1.35;
   }
   .h-chipbank-grid {
-    display: grid;
-    /* The track width is set per bank by render(), from the longest chip in it.
-       A value pinned here could not know that, and the column count is what the
-       height estimate is built on. */
-    grid-template-columns: repeat(auto-fill, minmax(var(--h-chip-track, ${CHIP_TRACK_MIN_MM}mm), 1fr));
+    /* Wrapped flex rather than a uniform grid: every chip hugs its own word,
+       so "beans" is beans-sized beside a wide "vitamins and minerals" instead
+       of matching it and carrying dead space a child reads as writing room.
+       measure() simulates this exact greedy wrap. */
+    display: flex; flex-wrap: wrap;
     gap: ${CHIP_GAP_MM}mm;
   }
   .h-chip {
     box-sizing: border-box;
+    flex: 0 1 auto;
+    min-width: ${CHIP_MIN_MM}mm;
+    max-width: 100%;
     border: ${CHIP_BORDER_MM}mm solid var(--colour-question);
     background: var(--colour-tint);
     color: var(--colour-question);

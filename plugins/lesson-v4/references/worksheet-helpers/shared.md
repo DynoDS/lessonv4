@@ -22,8 +22,20 @@ Not from what the page looks like. A helper is chosen by the action:
 | completes a taught method | `method-frame`, the grid helpers |
 | draws or plots | `blank-surface`, `coordinate-grid`, `storyboard` |
 | writes at length in a shape | `writing-frame`, `fact-file`, `speech-scene` |
+| judges or answers what a named person says | `speech-scene` |
 
 If two fit, choose the one that leaves the least explaining to do.
+
+**A claim in a person's mouth is a speech-scene, not prose.** When the upstream
+prompt quotes someone by name - `Rae says, "Toast is bad..."`, `Rowan says,
+'the day must already be balanced'` - draw the person and put their words in
+the bubble. The figure gives the claim a face a child can argue with, the
+bubble separates the claim from the question about it, and the judge box gives
+`Is she right?` its tick target. The same quote buried in a question stem or a
+`source-text` block prints a voice as furniture, and the child asked to test
+"Rowan's claim" has to hunt the page for where Rowan spoke. `source-text` is
+for a passage, account or extract - text the child reads AS text - not for a
+person speaking.
 
 **A frame the child fills** is `fact-file` when it is a stack of named slots. A
 frame whose boxes need different heights, or one the child fills row by row, is
@@ -48,7 +60,19 @@ so a child who cannot read the word still knows what it is, and where nothing
 true exists the word goes on its own rather than wearing a near-miss. An upstream
 brief asking for "a small picture beside each object" is asking for that, not for
 one glyph per word at any cost - so a bank where two of eight words are bare is
-right, and a spiral standing in for a vacuum cleaner is not.
+right, and a spiral standing in for a vacuum cleaner is not. `card-row` is the
+bank that carries pictures; `chip-bank` is words alone, and a bank titled
+`Word bank` prints in vocabulary green.
+
+**A sheet with no visual at all is worth a second look before it ships.** The
+questions and their helpers come from upstream, but plenty of visual work is
+yours: a quoted person is a drawn figure (`speech-scene`), concrete nouns in a
+bank can carry true thumbnails (`card-row`), and the `questions` helper takes a
+small picture beside an item where one genuinely IS the thing. A page of bare
+boxes and text reads as a test paper, and the child it costs most is the below
+reader the visuals would have carried. The P1 > P2 > P3 priorities and the
+picture-beside-a-word test still decide each case; this is a prompt to ask the
+question, not a quota to fill.
 
 ---
 

@@ -19,7 +19,7 @@
 // by having its own line. Colour on paper means question (blue), given
 // material (orange) or vocabulary (green), and a scaffold is none of those.
 
-const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, linesFor } = require("./shared");
+const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, promptHtml, linesFor } = require("./shared");
 const { TYPE, RULE, INSET, SPACE } = require("../tokens");
 
 const WIDEST_ZONE_MM = 261;
@@ -174,7 +174,7 @@ function renderSpeechScene(spec) {
 
   return `
     <div class="h-speech">
-      ${spec.text ? `<p class="h-speech-stem">${esc(spec.text)}</p>` : ""}
+      ${spec.text ? `<p class="h-speech-stem">${promptHtml(spec.text)}</p>` : ""}
       <ul class="h-speech-turns">${turns}</ul>
       ${wantsTickOrCross(spec) ? judgeBoxHtml() : ""}
     </div>`;
@@ -398,7 +398,7 @@ function renderWritingFrame(spec) {
     <div class="h-wf h-wf-${shape}">
       ${frameOutline(shape)}
       <div class="h-wf-inner">
-        ${spec.text ? `<p class="h-wf-stem">${esc(spec.text)}</p>` : ""}
+        ${spec.text ? `<p class="h-wf-stem">${promptHtml(spec.text)}</p>` : ""}
         <ul class="h-wf-starters">${starters}</ul>
       </div>
     </div>`;

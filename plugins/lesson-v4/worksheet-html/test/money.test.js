@@ -456,6 +456,56 @@ test("a chip bank in a narrow column wraps to more rows, and says so", () => {
   );
 });
 
+test("a bank titled Word bank prints in vocabulary green unless told otherwise", () => {
+  // The teacher's colour system: green IS what a bank of taught words means on
+  // paper. A designer who leaves `variant` off a word bank has not chosen blue.
+  const bank = helpers["chip-bank"].render({
+    title: "Word bank",
+    chips: ["energy", "variety"],
+  });
+  assert.ok(bank.includes("h-chipbank--vocab"), "a word bank came out blue");
+
+  // An explicit variant still wins: a bank can genuinely be something else.
+  const given = helpers["chip-bank"].render({
+    title: "Word bank",
+    variant: "yellow",
+    chips: ["energy", "variety"],
+  });
+  assert.ok(given.includes("h-chipbank--given"));
+
+  // A bank with no title and no variant keeps the neutral colour.
+  const bare = helpers["chip-bank"].render({ chips: ["energy", "variety"] });
+  assert.ok(bare.includes("h-chipbank--question"));
+});
+
+test("each chip hugs its own word instead of matching the longest in the bank", () => {
+  // "beans" beside "vitamins and minerals" must not print beans-sized dead
+  // space: a child reads empty room inside a border as a place to write. So a
+  // mixed bank packs into fewer rows than a bank of all-long chips would.
+  const mixed = {
+    chips: ["beans", "apple", "energy", "protein", "vitamins and minerals"],
+  };
+  const allLong = {
+    chips: [
+      "vitamins and minerals",
+      "vitamins and mineralz",
+      "vitamins and mineralx",
+      "vitamins and mineralw",
+      "vitamins and mineralv",
+    ],
+  };
+  const mixedMm = helpers["chip-bank"].measure(mixed, A_HALF_COLUMN_MM);
+  const longMm = helpers["chip-bank"].measure(allLong, A_HALF_COLUMN_MM);
+  assert.ok(
+    mixedMm < longMm,
+    `short chips still cost long-chip room: ${mixedMm.toFixed(1)}mm vs ${longMm.toFixed(1)}mm`
+  );
+
+  // And the uniform-track mechanism is genuinely gone from the page.
+  const html = helpers["chip-bank"].render(mixed);
+  assert.ok(!html.includes("--h-chip-track"), "chips still share one track width");
+});
+
 // ─── the contract, for all five ──────────────────────────────────────────
 
 const EXAMPLES = {

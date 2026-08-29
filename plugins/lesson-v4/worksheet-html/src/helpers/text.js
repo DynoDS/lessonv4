@@ -4,7 +4,7 @@
 // read. Nothing here is subject-specific. A source is a history source, a
 // science explanation or an RE text depending only on what is put in it.
 
-const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, linesFor } = require("./shared");
+const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, BLANK_MM, esc, promptHtml, linesFor } = require("./shared");
 const { SPACE, TYPE } = require("../tokens");
 const { formatQuestionLabel } = require("../labels");
 
@@ -16,7 +16,7 @@ const { formatQuestionLabel } = require("../labels");
 // to be a question.
 
 function renderInstruction(spec) {
-  return `<p class="h-instruction">${esc(spec.text)}</p>`;
+  return `<p class="h-instruction">${promptHtml(spec.text)}</p>`;
 }
 
 function measureInstruction(spec, widthMm) {
@@ -195,7 +195,7 @@ function renderQuestions(spec, widthMm = 100) {
       }">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         ${pictureMarkup(pictures && pictures[i])}
-        <span class="h-text">${esc(questionText(q))}</span>
+        <span class="h-text">${promptHtml(questionText(q))}</span>
         <span class="h-blank"></span>
       </li>`
     )
@@ -236,7 +236,7 @@ function measureQuestions(spec, widthMm) {
 // have to agree to the millimetre or the last question is drawn outside the
 // zone and clipped without a word.
 function stem(spec) {
-  return spec.text ? `<p class="h-q-stem">${esc(spec.text)}</p>` : "";
+  return spec.text ? `<p class="h-q-stem">${promptHtml(spec.text)}</p>` : "";
 }
 
 function stemMm(spec, widthMm) {
@@ -390,6 +390,16 @@ const css = `
     margin: 0;
     font-size: var(--type-body);
     line-height: 1.35;
+  }
+  /* A write-in blank inside prompt text, swapped in for a designer's run of
+     underscores. One uniform width everywhere: wide enough for a real written
+     word, and never hinting by its length at which word it wants. */
+  .h-blank {
+    display: inline-block;
+    width: ${BLANK_MM}mm;
+    height: 0.9em;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+    vertical-align: baseline;
   }
   /* The block's heading. Question blue, because it is part of what is being
      asked rather than something the child writes, and the same size and colour

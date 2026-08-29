@@ -1427,9 +1427,9 @@ Smallest usable: **60mm wide x 20mm tall**. Spare height: never takes spare heig
 
 #### `chip-bank`
 
-A set of short labels drawn as separate bordered choices, so they read as options rather than as running text.
+A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text. A bank titled Word bank prints in vocabulary green unless a variant overrides it.
 
-Smallest usable: **79mm wide x 26mm tall**. Spare height: never takes spare height.
+Smallest usable: **61mm wide x 32mm tall**. Spare height: never takes spare height.
 
 ```json
 {
