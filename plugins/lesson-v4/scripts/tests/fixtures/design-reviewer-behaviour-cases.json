@@ -11,6 +11,22 @@
       "forbiddenFinding": "Do not reject an accurate example that stays inside the objective."
     },
     {
+      "id": "later-formalism-competes-with-current-learning",
+      "protectedBehaviour": "Keep related later notation or technique out when it competes with the current year objective.",
+      "materialDifference": "A lesson adds a substantial new formal convention from later progression on top of the new concept being taught.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject formalism required by the approved objective, supplied sequence or current year curriculum."
+    },
+    {
+      "id": "required-formalism-is-taught-and-practised",
+      "protectedBehaviour": "Permit formal notation or technique when it is part of the approved current objective and receives enough teaching and practice.",
+      "materialDifference": "The formal convention is the lesson's stated learning rather than an attached extension.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not remove required current learning merely because a younger year would use an informal representation."
+    },
+    {
       "id": "incorrect-year-pitch",
       "protectedBehaviour": "Find demand that is materially unsuitable for the year group.",
       "materialDifference": "Required reading or reasoning assumes knowledge well beyond the stated year.",
@@ -193,6 +209,38 @@
       "expectedResult": "REDESIGN REQUIRED",
       "expectedOwner": "Lesson Designer",
       "forbiddenFinding": "Do not demand a catalogue of every possible minor error."
+    },
+    {
+      "id": "activities-do-not-share-a-learning-centre",
+      "protectedBehaviour": "Find a sequence of individually plausible activities that never resolves and retests the lesson's central difficulty.",
+      "materialDifference": "The practical, explanation and questions touch the topic but do not build evidence around one blocking misconception or central gap.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not require one misconception when the lesson has no genuine misconception and a clear central difficulty already organises the sequence."
+    },
+    {
+      "id": "surface-cue-check-mimics-understanding",
+      "protectedBehaviour": "Find a checking question whose answer is visible without using the target relationship or method.",
+      "materialDifference": "Children can choose correctly from an obvious picture or wording cue while still holding the misconception the lesson claims to assess.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject a deliberately brief recall check when recall is the stated evidence claim."
+    },
+    {
+      "id": "success-criteria-list-facts-not-performance",
+      "protectedBehaviour": "Keep success criteria usable for the performance children are learning.",
+      "materialDifference": "The criteria mix topic facts into a numbered procedure, so children cannot use them to complete or judge the target work.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject a labelled recognition reference merely because it is not a numbered procedure."
+    },
+    {
+      "id": "equipment-practical-omits-specific-safety",
+      "protectedBehaviour": "Require a short usable safety precaution before equipment is handled.",
+      "materialDifference": "The lesson asks children to handle equipment but gives neither an equipment-specific on-screen precaution nor teacher guidance.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not demand a separate safety lesson when one concise precaution controls the risk."
     },
     {
       "id": "test-question-form-reduced",

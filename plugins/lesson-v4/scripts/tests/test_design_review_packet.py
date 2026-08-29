@@ -70,6 +70,8 @@ def test_behaviour_regression_map_covers_material_boundaries():
     }
     assert {
         "curriculum-drift",
+        "later-formalism-competes-with-current-learning",
+        "required-formalism-is-taught-and-practised",
         "sound-alternative-design",
         "new-skill-omits-needed-guidance",
         "secure-skill-justifiably-omits-guidance",
@@ -82,6 +84,10 @@ def test_behaviour_regression_map_covers_material_boundaries():
         "downstream-layout-preference-only",
         "schema-invalid",
         "genuine-teacher-choice",
+        "activities-do-not-share-a-learning-centre",
+        "surface-cue-check-mimics-understanding",
+        "success-criteria-list-facts-not-performance",
+        "equipment-practical-omits-specific-safety",
     } <= ids
 
 

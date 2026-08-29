@@ -108,9 +108,12 @@ Then inspect the following priorities. Do not perform separate whole-lesson rere
 Check:
 
 - the curriculum content, year pitch and subject;
+- the lesson distinguishes this year group's required performance from related later content, notation or technique;
+- a later formal convention is included only when the approved objective or supplied sequence requires it, not merely because it belongs to the same topic;
 - the full and displayed learning objectives mean the same thing;
 - substantial teaching and tasks serve the objective;
 - deferred learning is not taught early;
+- two substantial new demands are not stacked into one lesson without enough teaching, practice and checking for both;
 - any lesson split is honest and visible;
 - the lesson fits the stated duration without rushing or dropping learning;
 - direct teacher requirements and supplied-resource requirements are followed.
@@ -138,10 +141,12 @@ Roughly 80 per cent successful independence is a planning expectation for repeat
 Check:
 
 - the task requires the thinking named by the objective;
+- the lesson has a coherent centre: the dominant sticking point or blocking misconception is exposed, resolved and tested again, or a clearly named central difficulty serves that role when no genuine misconception exists;
 - a child cannot succeed by copying, reformatting, reading a visible answer or following a predictable answer pattern;
+- a hinge or checking question cannot be answered from an incidental picture cue, wording cue, answer position or immediate repetition; the correct response must depend on the relationship, decision or method being assessed;
 - reasoning is part of core learning when the objective supports it;
 - sentence stems help expression without supplying the decision;
-- success criteria are usable and match the taught method;
+- success criteria are usable actions, decisions or recognition categories that match the taught performance, rather than a list of facts or a lesson outline;
 - misconceptions are addressed where they could block learning;
 - assessment opportunities reveal useful evidence;
 - the recorded outcome makes the subject learning visible;
@@ -190,6 +195,8 @@ Do not choose page regions, typography, colour, spacing or composition. Those be
 ### 6. Source, scenario and visual meaning
 
 Check real-world scenarios for factual and practical plausibility.
+
+For a practical or demonstration involving equipment, check that the design gives the teacher the short equipment-specific safety precaution before handling begins. A generic safety reminder is not enough; do not turn the precaution into a second lesson.
 
 For real, classic, sensitive or changing sources, use the relevant conditional source guidance. Check accuracy, age suitability, curriculum purpose, safe distance and sensitivity.
 

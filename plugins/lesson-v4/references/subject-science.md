@@ -12,6 +12,20 @@ Read this at the start of a Science lesson, before the route is chosen. Return t
 
 A smaller investigation, pattern or method comparison may also sit inside another route. Use the final route names and conditions rather than older labels such as Procedural or Explicit Teaching.
 
+## Set the curriculum boundary before adding technique
+
+Settle what children in this year group must understand or do today, then name any related later content that stays out. A formal notation, technical term or enquiry method from a later stage is not a helpful extension when it competes with the new scientific idea. Add it only when the approved objective, supplied sequence or curriculum for this lesson requires it.
+
+For electricity, Year 4 children construct simple series circuits, reason about the complete loop and draw pictorial representations. Recognised circuit symbols belong to Year 6. A Year 4 build-and-draw lesson therefore uses a labelled picture of the loop unless the teacher has directly supplied a different approved progression. The same boundary applies elsewhere in Science: teach the representation and precision the current objective needs, not every later convention attached to the topic.
+
+When an objective appears to combine a new scientific idea with a new formal technique, decide which is the learning and which is support. Split or defer the second demand when both cannot be taught, practised and checked honestly in the available lesson.
+
+## Build the lesson around the scientific sticking point
+
+Name the scientific relationship children must grasp and the strongest predictable wrong model that would block it. Use the practical, demonstration, embodied model, diagram and discussion only when each makes that relationship easier to notice, test or explain. Several activities are coherent when they attack the same sticking point from different angles; a list of science activities is not a sequence by itself.
+
+Design at least one check that cannot be passed by spotting an incidental picture cue or repeating the previous slide. Change the critical scientific condition while keeping irrelevant features stable, then require children to predict, trace, explain or perform. If a child can answer without using the relationship taught, the check is evidence of noticing rather than understanding.
+
 ## Keep an investigation genuinely investigative
 
 When an activity is called an investigation or enquiry, identify what children genuinely find out that the prior teaching has not already answered. If the result has already been fully supplied, describe the activity honestly as a demonstration or practice.
@@ -45,3 +59,9 @@ When useful, give the teacher accurate teacher-facing information about:
 - the plain-English scientific explanation.
 
 Keep the expected result and failure guidance out of child-facing material when children are genuinely meant to find the result themselves. On-screen support for a physical demonstration may include equipment identification, setup, safety information or steps when those help the action, but it must not compete with what children need to watch.
+
+## Make the safety moment specific
+
+Any lesson in which children or the teacher handle equipment must include the short, equipment-specific precaution needed before handling begins. Put it where the teacher can actually use it: on screen when children act, or in the script/teacher information for a demonstration. Do not substitute a generic "be safe" reminder.
+
+For simple circuits, do not connect a wire directly across the battery terminals, disconnect the circuit if a component or wire becomes warm, and use only ordinary low-voltage classroom equipment. Safety supports the practical; it does not become a second lesson.

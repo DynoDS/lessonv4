@@ -627,6 +627,88 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         )
         self.assertIn("full fallback contract", output_template)
 
+    def test_lesson_quality_lock_centres_learning_without_copying_mechanics(self):
+        """The failed lesson completed fields but lost the learning centre.
+
+        The compact record now protects the curriculum boundary, central gap
+        and diagnostic evidence. Mechanical JSON and picture bookkeeping stay
+        at their deterministic owners instead of competing in the first
+        semantic pass.
+        """
+        designer = self._designer_text()
+        section = designer.split(
+            "When every decision is made,",
+            1,
+        )[1].split(
+            "Use these alignment traces:",
+            1,
+        )[0]
+        semantic_record = section.split(
+            "Do not duplicate mechanical IDs",
+            1,
+        )[0]
+
+        for required in (
+            "compact semantic quality lock",
+            "By the end, children will",
+            "approved curriculum boundary",
+            "dominant sticking point or misconception",
+            "cannot be passed by a surface cue",
+            "fresh worksheet evidence",
+        ):
+            self.assertIn(required, semantic_record)
+
+        for retired_duplication in (
+            "representation family IDs",
+            "sticky-knowledge IDs",
+            "answers or models and their delivery",
+            "authenticity classes and comparison-set invariants",
+        ):
+            self.assertNotIn(
+                retired_duplication,
+                semantic_record,
+            )
+
+        self.assertIn(
+            "Their canonical JSON files and deterministic validators own them.",
+            section,
+        )
+
+    def test_designer_and_reviewer_defend_scope_and_diagnostic_validity(self):
+        designer = self._designer_text()
+        reviewer = (
+            ROOT / "agents" / "design-reviewer.md"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("Related does not mean prerequisite.", designer)
+        self.assertIn("surface cue, answer position", designer)
+        self.assertIn(
+            "related later content, notation or technique",
+            reviewer,
+        )
+        self.assertIn(
+            "incidental picture cue, wording cue, answer position",
+            reviewer,
+        )
+        self.assertIn(
+            "rather than a list of facts or a lesson outline",
+            reviewer,
+        )
+
+    def test_science_progression_and_practical_safety_are_explicit(self):
+        science = (
+            ROOT / "references" / "subject-science.md"
+        ).read_text(encoding="utf-8")
+
+        for required in (
+            "Year 4 children construct simple series circuits",
+            "Recognised circuit symbols belong to Year 6",
+            "cannot be passed by spotting an incidental picture cue",
+            "equipment-specific precaution",
+            "do not connect a wire directly across the battery terminals",
+        ):
+            self.assertIn(required, science)
+
     def test_consolidation_report_records_pr69_result_without_stale_claims(self):
         report = (ROOT / "CONSOLIDATION_REPORT.md").read_text(encoding="utf-8")
 

@@ -80,11 +80,12 @@ Design forward; separate reviewer reads whole design with fresh eyes before buil
 When `TEACHER_BRIEF_FILE` supplied, read full as verbatim brief. Then `TEACHER_CLARIFICATION_FILES` in order. Then `ORCHESTRATOR_CONTEXT_FILE` as lower-confidence. Otherwise direct brief.
 
 - **Cognitive demand:** how to do? why works? what happens when? Determines structure.
+- **Curriculum boundary:** What must this year group understand or do today, and which related later content, notation or technique stays out? Related does not mean prerequisite. Add a later convention only when the approved objective or supplied sequence requires it.
 - **One or two lessons?** LOs naming knowledge + substantial product may be two. Budget honestly Teach→Do per chunk + production vs time. If not fit, today teaches/consolidates knowledge, production opens next. See `preferences.md` → How Much Fits. Signal split in `lesson.scope`, `deferredLearning`, `lesson2Direction` + orientation.
 - **Prior knowledge:** What YX normally met earlier. Use supplied prior context; else cautious curriculum reasoning. Expected prior ≠ proof mastery. Make essential foundation visible.
 - **Source integrity:** Apply `preferences.md` rule. Screen sensitive themes. Adapt language/detail to year group without auto-sanitising important content. Check teacher can read aloud, parent understands purpose. Check scenarios coherent.
-- **Sticking point:** Where will children struggle? Gap between known and asked? Whole lesson bridges.
-- **Misconceptions:** Predictable wrong rules, usually 1–3, sometimes 0. Count is topic's own, not quota. Never manufacture.
+- **Dominant sticking point:** Name the central gap or strongest predictable wrong rule that would block the objective. The lesson should expose it, replace it with the target idea or method, then require children to use that learning. Record other genuine misconceptions only when they materially change teaching or checking; never manufacture a quota.
+- **Diagnostic evidence:** Plan one check that is hard to pass by surface cue, answer position or repetition from the previous slide. Hold irrelevant features stable, vary the taught feature, and require the target decision, explanation, trace or performance. A quick recall check is fine when recall is the claim; do not present it as deeper evidence.
 - **Teacher plan + worksheet:** Worksheet via `TEACHER_WORKSHEET_INPUT` if supplied else brief files. PPT examples must not duplicate worksheet numbers/contexts. If drifts off LO, flag.
 - **Direct requirement vs source.** A **direct requirement** is what the teacher asked for in their own message or clarifications: this objective, this text, this class, keep this activity. Binding; if you cannot honour one, flag it, don't drop it silently. A supplied `LESSON_PLAN_INPUT` is a **source**: it says what the school intends this lesson to cover and what sits either side of it, and it is authoritative on objective, coverage and sequence. It is not a specification for how to teach. Structure, starter, worked examples, misconceptions, representation and practice remain yours, and a listed activity is a suggestion you take when it serves the objective. Where the plan's activity would teach the objective badly, design the better lesson and say in `flagsForTeacher` what you did instead and why. Where the plan and a direct requirement disagree, the teacher's own words win.
 - **Read around the named lesson.** When the source is a unit, medium-term or long-term plan, read the lesson you are designing AND its neighbours before deciding anything. Earlier lessons tell you what children already hold, so continuity is real rather than assumed - reuse their success criteria, sticky knowledge, vocabulary and representation verbatim where this lesson continues them. Later lessons tell you what this one must set up, and equally what it must leave alone: teaching lesson 3's content in lesson 1 empties lesson 3. If only the one lesson's row is available, say so in the flags rather than inferring a unit that was not supplied.
@@ -391,29 +392,26 @@ Before choosing or polishing activities, settle the lesson's learning chain:
 
 An activity earns its place only when it teaches, practises, reveals or assesses something in this chain.
 
-When every decision is made, and before the scaffold request or JSON, write `design-decisions.md` in the working folder. Keep it compact. Give one decision per line, a short reason and where it lands in JSON. Cover:
+When every decision is made, and before the scaffold request or JSON, write `design-decisions.md` in the working folder as a compact semantic quality lock. Open with one sentence: `By the end, children will [performance] because the lesson helps them [overcome the central gap or wrong rule], evidenced by [independent check].` If there is no genuine misconception, name the central difficulty instead.
 
-- learning chain: prior knowledge, visible foundation, new learning, sticking point, end performance and assessment evidence;
-- structure and sub-shape, including why the nearest alternative was rejected;
-- LO split axis, concepts and boundary test;
-- explanation, modelling or enabling input, including why each is needed;
-- supported practice, release and the point where independence becomes appropriate;
-- representation family IDs, purpose, configurations, `loadBearing`, `requiredFeatures` and `modellingState` per concept;
-- vocabulary set, trimmed vocabulary and visual kinds;
-- sticky-knowledge IDs and placement;
-- each misconception and the exact handling move or beat;
-- worksheet status, use, resource mode, shape, protected representation and fit priority;
-- ending: whether Apply or Reflect is earned, its kind and how its thinking differs from earlier practice;
-- answers or models and their delivery for each beat, plus any useful `Look for:` guidance;
-- picture contract summary, authenticity classes and comparison-set invariants;
-- deliberate omissions and why they do not weaken the learning;
-- `flagsForTeacher`, or `None`.
+Then give one short decision per line, with its reason, covering only:
+
+- the approved curriculum boundary for today and any related content deliberately deferred;
+- prior knowledge, visible foundation, new learning, the path from supported practice to independence, end performance and why the chosen structure fits;
+- the dominant sticking point or misconception, plus where it is exposed, resolved and retested;
+- the distinct teaching job of each explanation, model, experience or practice beat;
+- the independent assessment evidence, including why it cannot be passed by a surface cue or copied answer path;
+- the success-criteria form and the fresh worksheet evidence children produce;
+- any load-bearing representation, source, photograph or safety constraint and the teaching job it protects;
+- deliberate omissions and `flagsForTeacher`, or `None`.
+
+Do not duplicate mechanical IDs, JSON field names, answer-delivery values, worksheet page-fit data, or picture acquisition/provenance fields in this record. Their canonical JSON files and deterministic validators own them. A second prose copy adds drift and completion work without protecting the lesson.
 
 Use these alignment traces:
 
 - Brief to decisions: every teacher requirement appears in a decision or `flagsForTeacher`.
-- Learning chain to sequence: every unit teaches, practises, reveals or assesses a named part of the chain.
-- Decisions to JSON: every decision maps to its final object, field or reference.
+- Quality lock to sequence: every unit teaches, practises, reveals or assesses the stated lesson spine.
+- Decisions to JSON: every semantic decision is represented in the final contract without copying its mechanical fields back into the record.
 - Completion pass: vocabulary is used, success criteria match the boundary performance, explanations are present where claimed and independent work does not depend on untaught content.
 
 Then use the deterministic scaffold on the normal route. Read `lesson-design-scaffold.md`, write the scaffold request from the settled decisions, run the exact supplied command and require `LESSON_DESIGN_SCAFFOLD_OK`. Fill the generated JSON files by editing them in place: the scaffold's IDs, ordinals, envelopes and per-kind content shapes are already final, and re-creating a file from scratch reintroduces the mechanical errors the scaffold exists to prevent. Do not delete a generated file to rewrite it, and do not recreate mechanical IDs, ordinals, envelopes or keys. Replace every `__LESSON_DESIGN_FILL__` value before validation.
