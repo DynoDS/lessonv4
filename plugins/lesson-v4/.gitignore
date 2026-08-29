@@ -6,6 +6,9 @@ node_modules/
 # Resized image cache
 .resized/
 
+# Trimmed money-asset cache, rebuilt on demand by trim-money.js
+builder/assets/money/.trimmed/
+
 # Generated test-render images from worksheet-builder/tests checks
 worksheet-builder/tests/out/
 
