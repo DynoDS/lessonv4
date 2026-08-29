@@ -96,6 +96,41 @@ class OptionalPicturePlacementTests(unittest.TestCase):
             self.reviewer,
         )
 
+    def test_use_is_judged_per_slide_not_against_a_deck_quota(self) -> None:
+        """A count fixed in advance is met by finding that many, relevant or not.
+
+        The old target was one or two across a whole deck, which was consistent
+        while the layer could only sit beside words. Once every text-heavy and
+        every imageless slide became a candidate, that number left almost every
+        slide bare for a reason that no longer applied.
+        """
+        self.assertNotIn("One or two meaningful uses remains the normal target", self.context)
+        self.assertIn("Decide slide by slide rather than against a whole-deck quota", self.context)
+        self.assertIn("Expect a normal deck to carry several", self.context)
+        self.assertIn("Judge each slide on its own rather than against a deck quota", self.designer)
+
+    def test_variety_is_required_and_sameness_named_as_the_failure(self) -> None:
+        self.assertIn("Vary what is used and where it sits", self.context)
+        self.assertIn("reads as a template rather than a decision", self.context)
+        self.assertIn("Slides that are genuinely full stay bare", self.context)
+
+    def test_a_number_never_justifies_an_unrelated_drawing(self) -> None:
+        self.assertIn("Never use an unrelated drawing to reach a number", self.context)
+        self.assertIn("Zero is valid only when", self.context)
+
+    def test_the_reviewer_can_notice_a_bare_slide_but_not_nag(self) -> None:
+        """The backstop only worked when a whole deck had nothing at all."""
+        review = read("references", "visual-review-deck.md")
+        self.assertIn("reads as a wall of text or carries no imagery at all", review)
+        self.assertNotIn("When the entire deck contains no optional P2/P3 visual", review)
+        self.assertIn("Raise at most two of these for a deck", review)
+        self.assertIn("Missing P3 by itself is never a fault", review)
+
+    def test_previews_are_compared_on_one_sheet(self) -> None:
+        """One look per drawing is the cost that kept a deck down to one or two."""
+        self.assertIn("--sheet", self.context)
+        self.assertIn("Candidates for several requests may share one sheet", self.context)
+
     def test_the_protections_that_matter_survived(self) -> None:
         """Freedom over space, not over the child's experience."""
         for marker in (

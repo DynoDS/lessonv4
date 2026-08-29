@@ -171,13 +171,24 @@ Use either an emoji or a hand-drawn Educational SVG picture.
   or no relevant optional visual fits without competition. A slide that has done
   everything else right and still reads as a wall of text, or carries no imagery
   at all, is the case a P3 is for.
-- Author at least one relevant Educational SVG P2 or P3 request when that pass finds a
-  plausible suitable object that does not take space from P1. One or two
-  meaningful uses remains the normal target.
+- Decide slide by slide rather than against a whole-deck quota. Each slide's
+  answer belongs to that slide: what P1 already carries there, whether a
+  relevant P2 helps there, and whether the finished slide reads flat enough to
+  want a P3. A count fixed in advance is answered by finding that many, which is
+  how an unrelated drawing ends up on a slide that did not want one.
+- Expect a normal deck to carry several. Its teaching, task, reference and
+  reflection slides are different situations and will not answer alike, so a
+  deck where only one slide could take a picture is a genuinely dense deck
+  rather than a well-judged one.
+- Vary what is used and where it sits. The same drawing slide after slide, or
+  the same corner every time, reads as a template rather than a decision and
+  stops being noticed at all. Slides that are genuinely full stay bare, and that
+  contrast is what makes the pictures elsewhere read as chosen.
 - Zero is valid only when the explicit opportunity pass found no suitable use or
   every plausible use would compete with P1 or P2. Record that zero reason in
   the Slide Designer completion report.
-- Never use an unrelated drawing solely to meet the target.
+- Never use an unrelated drawing to reach a number. A drawing that does not
+  belong to this lesson's subject is worse on the slide than no drawing at all.
 
 Do not generate lesson-specific pictures with an image generator for this
 layer. Keep fixed signal icons reserved for their learned meanings and separate
@@ -396,13 +407,24 @@ folder; it does not search the computer or use the network.
 If it prints `EDUCATIONAL_SVG_UNAVAILABLE`, apply the failure rule below. This
 is an optional-picture outcome and must not stop the lesson.
 
-For a short candidate list, render temporary previews with:
+Render the candidates onto one numbered preview sheet:
 
-`node "[PLUGIN_ROOT]/scripts/rasterize-educational-svg.js" "<candidate.svg>" "[WORKING_DIR]/icons/.preview/<unique-name>.png"`
+`node "[PLUGIN_ROOT]/scripts/rasterize-educational-svg.js" --sheet "[WORKING_DIR]/icons/.preview/<unique-name>.png" "<candidate-1.svg>" "<candidate-2.svg>" ...`
 
-Inspect the previews with the host's image-reading tool. Compare the real
-drawing with the request's context and avoid list. Remove the temporary preview
-files after the request is settled.
+The command prints the sheet path and then one numbered line per drawing, in
+reading order, so tile 3 and the third line name the same file. Look at the
+sheet once with the host's image-reading tool and compare the real drawings with
+the request's context and avoid list. Choosing means comparing, and a sheet is
+what makes comparing possible; separate files turn one judgement into a
+succession of half-remembered ones.
+
+Candidates for several requests may share one sheet. Keep each request's
+candidates together in the order given, and take the whole deck's optional
+pictures in as few sheets as the shortlists allow.
+
+A single drawing can still be rendered on its own by giving a source and an
+output path with no `--sheet`. Remove the temporary preview files once the
+requests are settled.
 
 Publish the chosen library SVG directly with:
 

@@ -487,8 +487,18 @@ test("context pictures require an explicit slide opportunity pass without creati
   );
   assert.ok(
     CONTEXT_PICTURES_MD.includes(
-      "Never use an unrelated drawing solely to meet the target."
+      "Never use an unrelated drawing to reach a number."
     )
+  );
+  // The deck target used to be one or two pictures across a whole deck, which
+  // is a quota by another name and left almost every slide bare.
+  assert.ok(
+    CONTEXT_PICTURES_MD.includes(
+      "Decide slide by slide rather than against a whole-deck quota"
+    )
+  );
+  assert.ok(
+    !CONTEXT_PICTURES_MD.includes("One or two meaningful uses remains the normal target")
   );
 });
 

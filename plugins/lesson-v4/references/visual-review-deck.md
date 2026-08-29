@@ -65,9 +65,14 @@ cosmetic awkwardness is MINOR at most.
 
 Missing P3 by itself is never a fault.
 
-When the entire deck contains no optional P2/P3 visual and one specific relevant Educational SVG opportunity is plainly visible in a sparse or text-heavy slide without
+When a slide reads as a wall of text or carries no imagery at all, and one specific relevant Educational SVG opportunity is plainly visible there without
 reducing P1, a MINOR finding may name that missed opportunity. The finding must
 name the actual nearby concept that could carry the visual; never report
 "needs decoration" without a specific relevant use.
+
+Raise at most two of these for a deck. What is worth catching is a deck that
+forgot the layer, not a tally of every slide that could have taken one more
+picture, and a long list of them would drown the findings that stop a lesson
+working.
 
 P3 has no cross-resource carry-across requirement.
