@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "name": "Balanced Pattern Plate Smoke Test",
+    "lesson": "Balanced Pattern Plate Smoke Test",
+    "lo": "To explore the importance of having a balanced diet.",
+    "yearGroup": 4,
+    "subject": "PSHE"
+  },
+  "sheets": {
+    "expected": {
+      "layout": "full",
+      "orientation": "portrait",
+      "zones": {
+        "a": {
+          "question": true,
+          "helper": "balanced-pattern-plate",
+          "mode": "practice",
+          "givenGroups": ["fruit-vegetables", "starchy-carbohydrates"]
+        }
+      }
+    }
+  },
+  "answerKey": {
+    "expected": [
+      {
+        "question": 1,
+        "answer": "Protein foods; dairy or alternatives; oils and spreads in small amounts. Examples will vary."
+      }
+    ]
+  }
+}

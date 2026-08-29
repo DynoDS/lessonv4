@@ -50,6 +50,7 @@ const { preRenderLabelDiagrams } = require('./src/content/label-diagram');
 const { preRenderGridMaps } = require('./src/content/grid-map');
 const { preRenderTranslationShapes } = require('./src/content/translation-shape');
 const { preRenderRainforestLayers } = require('./src/content/rainforest-layers');
+const { preRenderBalancedPatternPlates } = require('./src/content/balanced-pattern-plate');
 const { preRenderMaps } = require('./src/content/map');
 const { preRenderCircuitDiagrams } = require('./src/content/circuit-diagram');
 const { preRenderCircuitSymbolBanks } = require('./src/content/circuit-symbol-bank');
@@ -186,6 +187,7 @@ async function main() {
   const gridMapImages = await preRenderGridMaps(coreLesson);
   const translationShapeImages = await preRenderTranslationShapes(coreLesson);
   const rainforestLayersImages = await preRenderRainforestLayers(coreLesson);
+  const balancedPatternPlateImages = await preRenderBalancedPatternPlates(coreLesson);
   const mapImages = await preRenderMaps(coreLesson);
   const circuitDiagramImages = await preRenderCircuitDiagrams(coreLesson);
   const circuitSymbolBankImages = await preRenderCircuitSymbolBanks(coreLesson);
@@ -201,7 +203,7 @@ async function main() {
 
   // One ctx builder, used by the preflight and by the real render, so the dry
   // run cannot pass because it was handed something the real one is not.
-  const contextForSlide = (i) => ({ slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, clockImages, turnImages, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, mapImages, circuitDiagramImages, circuitSymbolBankImages, successCriteriaHelperImages });
+  const contextForSlide = (i) => ({ slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, clockImages, turnImages, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, mapImages, circuitDiagramImages, circuitSymbolBankImages, successCriteriaHelperImages });
 
   // Draw everything once into a presentation nobody will open. A slide that
   // cannot be drawn is found here, before a file exists, rather than after the

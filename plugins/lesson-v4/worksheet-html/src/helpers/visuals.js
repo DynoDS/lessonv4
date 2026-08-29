@@ -29,6 +29,7 @@ const lineGraphSvg = require("../../../shared/visuals/line-graph-svg");
 const linePairSvg = require("../../../shared/visuals/line-pair-svg");
 const pictogramSvg = require("../../../shared/visuals/pictogram-svg");
 const rainforestLayersSvg = require("../../../shared/visuals/rainforest-layers-svg");
+const balancedPatternPlateSvg = require("../../../shared/visuals/balanced-pattern-plate-svg");
 const amazonStudyAreaSvg = require("../../../shared/visuals/amazon-study-area-svg");
 const reflectionGridSvg = require("../../../shared/visuals/reflection-grid-svg");
 const tallyChartSvg = require("../../../shared/visuals/tally-chart-svg");
@@ -352,6 +353,23 @@ const helpers = {
       blank: spec.blank,
     }),
     { capMm: 200, minWidthMm: 140, minHeightMm: 100 }
+  ),
+
+  // A broad proportional food-group plate. Teaching and practice use identical
+  // sectors; practice replaces selected labels/examples with decision spaces.
+  "balanced-pattern-plate": fromShared(
+    balancedPatternPlateSvg,
+    (spec) => ({
+      mode: spec.mode,
+      practice: spec.practice,
+      givenGroups: spec.givenGroups,
+      groupLabels: spec.groupLabels,
+      examples: spec.examples,
+      water: spec.water,
+      caption: spec.caption,
+      lessOftenLabel: spec.lessOftenLabel,
+    }),
+    { capMm: 170, minWidthMm: 145, minHeightMm: 105 }
   ),
 
   // The study area a rainforest unit keeps returning to: South America, Brazil

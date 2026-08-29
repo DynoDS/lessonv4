@@ -1,0 +1,26 @@
+{
+  "lessonName": "Balanced Pattern Plate Smoke Test",
+  "yearGroup": "Year 4",
+  "subject": "PSHE",
+  "lo": "To explore the importance of having a balanced diet.",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "A broad pattern across a day or over time",
+      "instruction": "Notice which areas are larger and which are smaller.",
+      "body": { "type": "balanced-pattern-plate", "mode": "teaching" }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Complete the balanced pattern",
+      "instruction": "Decide what belongs in the empty areas.",
+      "body": {
+        "type": "balanced-pattern-plate",
+        "mode": "practice",
+        "givenGroups": ["fruit-vegetables", "starchy-carbohydrates"]
+      }
+    }
+  ]
+}

@@ -63,6 +63,7 @@ const { drawMethodFrame }    = require('./method-frame');
 const { drawLabelDiagram, measureLabelDiagram }   = require('./label-diagram');
 const { drawGridMap }        = require('./grid-map');
 const { drawRainforestLayers } = require('./rainforest-layers');
+const { drawBalancedPatternPlate } = require('./balanced-pattern-plate');
 
 const ZONE_COMPAT = {
   text:                ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'F', 'G'],
@@ -135,7 +136,8 @@ const ZONE_COMPAT = {
   'method-frame':      ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'label-diagram':     ['A', 'B', 'C', 'D', 'E-wide', 'G'],
   'grid-map':          ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
-  'rainforest-layers': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G']
+  'rainforest-layers': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
+  'balanced-pattern-plate': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G']
 };
 
 const HELPERS = {
@@ -199,7 +201,8 @@ const HELPERS = {
   'method-frame':      drawMethodFrame,
   'label-diagram':     drawLabelDiagram,
   'grid-map':          drawGridMap,
-  'rainforest-layers': drawRainforestLayers
+  'rainforest-layers': drawRainforestLayers,
+  'balanced-pattern-plate': drawBalancedPatternPlate
 };
 
 // Content types that already paint their own surface (a panel, cards, pills,

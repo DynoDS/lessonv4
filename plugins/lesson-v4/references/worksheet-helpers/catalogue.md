@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 69 helpers, what each is for, and a working example of each.
+The 70 helpers, what each is for, and a working example of each.
 
 **The example is the contract.** It is a real spec, and check-render draws every
 one of them at four widths on every run, so it cannot describe a field that does
@@ -396,6 +396,24 @@ Smallest usable: **140mm wide x 100mm tall**. Spare height: never takes spare he
   "labels": true,
   "heights": true,
   "highlight": "canopy"
+}
+```
+
+#### `balanced-pattern-plate`
+
+A neutral proportional food-group plate, labelled for teaching or partly blank for pupil decisions.
+
+Smallest usable: **148mm wide x 105mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "balanced-pattern-plate",
+  "mode": "practice",
+  "givenGroups": [
+    "fruit-vegetables",
+    "starchy-carbohydrates"
+  ],
+  "caption": "Aim for this balance across a day or over time — not every meal."
 }
 ```
 

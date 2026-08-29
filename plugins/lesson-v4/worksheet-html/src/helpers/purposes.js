@@ -75,6 +75,8 @@ module.exports = {
     "A tally table: bundles of five drawn as marks rather than the number written out.",
   "rainforest-layers":
     "The rainforest cross-section, labelled by layer.",
+  "balanced-pattern-plate":
+    "A neutral proportional food-group plate, labelled for teaching or partly blank for pupil decisions.",
   "label-diagram":
     "A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on. The one helper built around a PHOTOGRAPH.",
 

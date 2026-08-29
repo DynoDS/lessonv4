@@ -41,7 +41,7 @@ const FAMILIES = [
     "Charts and diagrams",
     [
       "bar-chart", "line-graph", "pictogram", "tally-chart", "venn", "carroll",
-      "label-diagram", "rainforest-layers", "amazon-study-area-map", "grid-map",
+      "label-diagram", "rainforest-layers", "balanced-pattern-plate", "amazon-study-area-map", "grid-map",
       "process-chain", "circuit-diagram", "classification-key",
     ],
   ],

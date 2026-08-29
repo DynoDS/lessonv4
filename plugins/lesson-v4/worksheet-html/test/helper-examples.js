@@ -166,6 +166,11 @@ module.exports = {
     heights: true,
     highlight: "canopy",
   },
+  "balanced-pattern-plate": {
+    mode: "practice",
+    givenGroups: ["fruit-vegetables", "starchy-carbohydrates"],
+    caption: "Aim for this balance across a day or over time — not every meal.",
+  },
   "reflection-grid": {
     cols: 10,
     rows: 10,
