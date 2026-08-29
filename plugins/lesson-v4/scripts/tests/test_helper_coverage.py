@@ -1,0 +1,439 @@
+"""The helper check has to reach an answer, and the build has to keep it.
+
+The failure these guard: a run decided a lesson needed a balanced-plate helper,
+built no helper, shipped slides that drew something else, and finished clean.
+Every part of that was possible because the decision lived only in the run's own
+head. Nothing recorded it, nothing could contradict it, and nothing downstream
+asked whether the promised picture had actually arrived.
+
+So the tests below hold three separate points:
+
+  the decision exists     every required use carries one, and a use claimed
+                          covered names a helper a renderer really dispatches on;
+  the route can run       a writable checkout is found rather than waited for,
+                          because a gate that never opens is the failure it was
+                          meant to prevent;
+  the picture arrived     a use recorded as drawn by a helper that the built
+                          specification never uses fails at the boundary.
+"""
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+COVERAGE = ROOT / "scripts" / "check-helper-coverage.py"
+VERIFY = ROOT / "scripts" / "verify-plugin-root.py"
+PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook-lite.md"
+HELPER_ROUTE = ROOT / "references" / "helper-route.md"
+HELPER_BUILDER = ROOT / "agents" / "helper-builder.md"
+HELPER_AUTHORING = ROOT / "references" / "helper-authoring.md"
+
+
+def run(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(COVERAGE), *args],
+        capture_output=True,
+        text=True,
+    )
+
+
+def design(helper_needed: bool = True) -> dict:
+    """A lesson whose teaching turns on one representation, used on the board."""
+    return {
+        "representations": [
+            {
+                "id": "rep-001",
+                "name": "Balanced plate",
+                "purpose": "Show the proportions of a balanced meal",
+                "configurations": [
+                    {
+                        "id": "blank",
+                        "description": "Empty plate divided into groups",
+                        "loadBearing": helper_needed,
+                        "requiredFeatures": ["group boundaries"] if helper_needed else [],
+                    }
+                ],
+            }
+        ],
+        "teachingSequence": [
+            {
+                "id": "unit-001",
+                "representationRefs": [
+                    {
+                        "ref": "rep-001",
+                        "configuration": "blank",
+                        "interaction": "view",
+                    }
+                ],
+            }
+        ],
+    }
+
+
+class HelperCoverageTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.temp.name)
+        self.design_path = self.dir / "lesson-design.json"
+        self.design_path.write_text(json.dumps(design()), encoding="utf-8")
+        self.verdict_path = self.dir / "helper-check.json"
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def write_verdict(self, *decisions: dict) -> None:
+        self.verdict_path.write_text(
+            json.dumps({"schemaVersion": 1, "decisions": list(decisions)}),
+            encoding="utf-8",
+        )
+
+    def verdict(self) -> subprocess.CompletedProcess:
+        return run(
+            "verdict",
+            "--lesson-design",
+            str(self.design_path),
+            "--verdict",
+            str(self.verdict_path),
+        )
+
+    # ── the decision exists ───────────────────────────────────────────────
+
+    def test_a_required_use_with_no_decision_fails(self):
+        """The reported failure in its plainest form.
+
+        The lesson said it needed a visual. Nothing was written down about it,
+        and the run carried on to the renderers.
+        """
+        self.write_verdict()
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("HELPER_COVERAGE_FAILED", result.stderr)
+        self.assertIn("rep-001/blank/slides", result.stderr)
+        self.assertIn("no recorded decision", result.stderr)
+
+    def test_covered_by_a_helper_no_renderer_draws_fails(self):
+        """A name is not a helper.
+
+        Claiming cover from something the slide dispatcher has never heard of
+        is the same silence one step later, so the key is checked against the
+        live registry rather than taken on trust.
+        """
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "balanced-plate",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("no slides renderer can draw", result.stderr)
+
+    def test_a_build_left_standing_fails(self):
+        """`build` is a job, not an outcome.
+
+        A run that records "this needs building" and then proceeds has made
+        exactly the decision it then ignored.
+        """
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "build",
+                "helperKey": "balanced-plate",
+                "reason": "nothing draws a plate divided into food groups",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("still marked build", result.stderr)
+
+    def test_substitute_needs_its_reason(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "substitute",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("records no reason", result.stderr)
+
+    def test_substitute_with_a_reason_is_an_honest_answer(self):
+        """The picture route is legitimate and must not be squeezed out."""
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "substitute",
+                "reason": "one fixed real object, generated for this lesson",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HELPER_COVERAGE_OK", result.stdout)
+
+    def test_a_live_helper_key_passes(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "part-whole-model",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HELPER_COVERAGE_OK", result.stdout)
+
+    def test_a_decision_for_a_use_the_design_never_required_fails(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "part-whole-model",
+            },
+            {
+                "representationId": "rep-009",
+                "configuration": "invented",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "table",
+            },
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("the approved design does not", result.stderr)
+
+    # ── the inventory is read from the renderers, not a catalogue ─────────
+
+    def test_inventory_lists_the_need_and_the_live_keys_of_every_surface(self):
+        result = run("inventory", "--lesson-design", str(self.design_path))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Balanced plate", result.stdout)
+        self.assertIn("group boundaries", result.stdout)
+        for surface in ("slides", "worksheets", "wall", "stick-in"):
+            self.assertIn(f"LIVE HELPERS {surface}", result.stdout)
+        # Real keys from each engine's own registry, not a written list.
+        self.assertIn("part-whole-model", result.stdout)
+        self.assertIn("written-answers", result.stdout)
+        self.assertIn("HELPER_INVENTORY_OK", result.stdout)
+
+    def test_a_nested_option_is_not_read_as_a_helper(self):
+        """Only top-level registry entries are helpers a surface can draw."""
+        sys.path.insert(0, str(ROOT / "scripts"))
+        try:
+            import importlib.util
+
+            spec = importlib.util.spec_from_file_location("coverage_mod", COVERAGE)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            body = module.object_body(
+                "const HELPERS = {\n  real: draw,\n  other: { nested: 1 },\n};", "HELPERS"
+            )
+            self.assertIn("real:", body)
+        finally:
+            sys.path.pop(0)
+
+    # ── the picture actually arrived ──────────────────────────────────────
+
+    def delivery(self, spec: dict, surface: str = "slides") -> subprocess.CompletedProcess:
+        spec_path = self.dir / "lesson.json"
+        spec_path.write_text(json.dumps(spec), encoding="utf-8")
+        return run(
+            "delivery",
+            "--verdict",
+            str(self.verdict_path),
+            "--spec",
+            str(spec_path),
+            "--surface",
+            surface,
+        )
+
+    def test_a_covered_helper_missing_from_the_built_deck_fails(self):
+        """The silent substitution, caught at the boundary.
+
+        This is the shape of the original fault: the decision said the deck
+        would draw the figure, and the deck drew a text block instead.
+        """
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "part-whole-model",
+            }
+        )
+        result = self.delivery(
+            {"slides": [{"template": "body-full", "body": {"type": "text", "text": "A plate"}}]}
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("HELPER_DELIVERY_FAILED", result.stderr)
+        self.assertIn("shipped a substitute", result.stderr)
+
+    def test_a_covered_helper_present_in_the_built_deck_passes(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "part-whole-model",
+            }
+        )
+        result = self.delivery(
+            {"slides": [{"body": {"type": "part-whole-model", "whole": 12}}]}
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HELPER_DELIVERY_OK 1", result.stdout)
+
+    def test_delivery_ignores_another_surface_and_a_substitute(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "worksheets",
+                "decision": "covered",
+                "helperKey": "venn",
+            },
+            {
+                "representationId": "rep-002",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "substitute",
+                "reason": "one fixed real object",
+            },
+        )
+        result = self.delivery({"slides": []})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HELPER_DELIVERY_OK 0", result.stdout)
+
+    def test_worksheet_delivery_reads_the_helper_field(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "worksheets",
+                "decision": "covered",
+                "helperKey": "venn",
+            }
+        )
+        spec_path = self.dir / "worksheet.json"
+        spec_path.write_text(
+            json.dumps({"sheets": {"expected": {"zones": {"a": {"helper": "venn"}}}}}),
+            encoding="utf-8",
+        )
+        result = run(
+            "delivery",
+            "--verdict",
+            str(self.verdict_path),
+            "--spec",
+            str(spec_path),
+            "--surface",
+            "worksheets",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class SourceRootDiscoveryTests(unittest.TestCase):
+    """A route gated on a value nobody sets is a route that never runs.
+
+    The helper builder could not start without a writable checkout, and the
+    only way to name one was an environment variable that no lesson run had.
+    So "build the missing helper" was unreachable by construction, and every
+    lesson needing a new visual quietly shipped a substitute instead.
+    """
+
+    def find_source(self, root: str, env: dict | None = None) -> subprocess.CompletedProcess:
+        environ = dict(os.environ)
+        for name in ("LESSON_V4_SOURCE_ROOT", "LESSON_RESOURCES_SOURCE_ROOT"):
+            environ.pop(name, None)
+        environ.update(env or {})
+        return subprocess.run(
+            [sys.executable, str(VERIFY), "--find-source", root],
+            capture_output=True,
+            text=True,
+            env=environ,
+        )
+
+    def test_a_checkout_is_found_without_an_environment_value(self):
+        result = self.find_source(str(ROOT))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(result.stdout.startswith("PLUGIN_SOURCE_ROOT="))
+
+    def test_an_explicit_environment_value_is_honoured(self):
+        result = self.find_source(
+            str(ROOT), {"LESSON_V4_SOURCE_ROOT": str(ROOT)}
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(str(ROOT.resolve()), result.stdout)
+
+    def test_a_tree_that_is_not_a_checkout_is_refused_with_its_reason(self):
+        with tempfile.TemporaryDirectory() as temp:
+            result = self.find_source(temp)
+            # Either nothing is found, or discovery falls through to a real
+            # checkout - but the bare temporary directory is never accepted.
+            self.assertNotIn(f"PLUGIN_SOURCE_ROOT={temp}", result.stdout)
+            if result.returncode != 0:
+                self.assertIn("PLUGIN_SOURCE_ROOT_UNAVAILABLE", result.stderr)
+
+
+class HelperRouteContractTests(unittest.TestCase):
+    """The instructions a run follows when a helper turns out to be missing."""
+
+    def test_the_runtime_sends_a_build_decision_to_the_route(self):
+        text = PLAYBOOK.read_text(encoding="utf-8")
+        self.assertIn("check-helper-coverage.py", text)
+        self.assertIn("references/helper-route.md", text)
+        self.assertIn("HELPER_DELIVERY_OK", text)
+        # Read only on the runs that need it, so an ordinary lesson does not
+        # pay for a route it never takes.
+        self.assertIn("only when a `build` decision exists", text)
+
+    def test_the_route_launches_the_builder_and_names_its_inputs(self):
+        text = HELPER_ROUTE.read_text(encoding="utf-8")
+        self.assertIn("--find-source", text)
+        self.assertIn("helper-builder", text)
+        for field in ("PLUGIN_SOURCE_ROOT:", "HELPER:", "BUILD OR GROW:", "SURFACES:"):
+            self.assertIn(field, text)
+        self.assertIn("pending-helper/", text)
+        self.assertIn("HELPER_COVERAGE_OK", text)
+
+    def test_the_builder_knows_both_kinds_and_the_drop_in_route(self):
+        text = HELPER_BUILDER.read_text(encoding="utf-8")
+        self.assertIn("Two kinds of helper", text)
+        self.assertIn("drawn helper", text.lower())
+        self.assertIn("stock helper", text.lower())
+        # Image generation belongs to the builder here; routing it through the
+        # lesson picture stage would drag a per-lesson provenance ledger onto a
+        # picture made once for the package.
+        self.assertIn("your own image generation", text)
+        self.assertIn("pending-helper", text)
+        # The old wiring pointed at a repository this package no longer lives in.
+        self.assertNotIn("teaching-plugins", text)
+
+    def test_the_authoring_guide_carries_the_stock_helper_wiring(self):
+        text = HELPER_AUTHORING.read_text(encoding="utf-8")
+        self.assertIn("drawn or stock", text)
+        self.assertIn("builder/assets/", text)
+        self.assertNotIn("`teaching-plugins` is its own git repo", text)
+
+
+if __name__ == "__main__":
+    unittest.main()

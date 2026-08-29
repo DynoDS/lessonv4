@@ -133,6 +133,47 @@ def promised_filenames(working_dir: Path) -> list[str]:
     return names
 
 
+def helper_obligations(working_dir: Path) -> list[str]:
+    """Every visual the lesson needed that no live helper drew.
+
+    A run that decides a lesson needs a helper it does not have, and then ships
+    a picture or a stand-in in its place, has made a real decision the teacher
+    has to hear: the same lesson type will degrade the same way next week until
+    the helper exists. That decision used to live only in the run's own head, so
+    it reached nobody. It is now recorded per use in ``helper-check.json``, and a
+    helper the run built but could not install waits in ``pending-helper/``, so
+    both are evidence the report has to carry.
+    """
+    owed: list[str] = []
+
+    verdict = working_dir / "helper-check.json"
+    if verdict.is_file():
+        try:
+            data = json.loads(verdict.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            data = None
+        decisions = data.get("decisions") if isinstance(data, dict) else None
+        if isinstance(decisions, list):
+            for decision in decisions:
+                if not isinstance(decision, dict):
+                    continue
+                if decision.get("decision") != "substitute":
+                    continue
+                owed.append(
+                    f"{decision.get('representationId')}/"
+                    f"{decision.get('configuration')} "
+                    f"({decision.get('requiredSurface')})"
+                )
+
+    pending = working_dir / "pending-helper"
+    if pending.is_dir():
+        for child in sorted(pending.iterdir()):
+            if child.is_dir():
+                owed.append(f"pending helper {child.name}")
+
+    return owed
+
+
 def report_obligations(working_dir: Path, failures: list[str]) -> dict[str, list[str]]:
     obligations = {
         "picture": [],
@@ -390,6 +431,28 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 failures.append(
                     f"shared investigation log: queued path does not exist: {queued_token}"
                 )
+
+    # ── Helper gaps are reported, never silently absorbed ────────────────
+    owed_helpers = helper_obligations(working)
+    if owed_helpers:
+        gap_section = sections.get("## Helper gaps", "")
+        gap_bullets = section_bullets(gap_section)
+        if not gap_bullets:
+            failures.append(
+                "helper gaps: this run substituted for, or left pending, "
+                + str(len(owed_helpers))
+                + " visual(s) no live helper draws ("
+                + ", ".join(owed_helpers)
+                + "), and the Helper gaps section reports none."
+            )
+        else:
+            for item in owed_helpers:
+                token = item.split(" (")[0]
+                if token not in gap_section:
+                    failures.append(
+                        f"helper gaps: {token} was substituted or left pending "
+                        "and is not named in the Helper gaps section."
+                    )
 
     # ── COMPLETE is earned, not declared ─────────────────────────────────
     if package_status == "COMPLETE":

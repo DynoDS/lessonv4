@@ -355,5 +355,77 @@ class TestRunReport(RunReportCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
+class TestHelperGapsReachTheTeacher(RunReportCase):
+    """A visual no helper drew is news, not housekeeping.
+
+    When a run answers a missing helper with a generated picture, or builds one
+    it could not install, the same lesson type degrades the same way next week
+    until someone acts. That used to live only in the run's own head, so it
+    reached nobody. The evidence now exists on disk, and the report has to
+    carry it.
+    """
+
+    def write_verdict(self, *decisions):
+        self.write_json(
+            self.working / "helper-check.json",
+            {"schemaVersion": 1, "decisions": list(decisions)},
+        )
+
+    def test_a_substitute_absent_from_the_report_is_rejected(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "substitute",
+                "reason": "no helper draws a balanced plate",
+            }
+        )
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("helper gaps", result.stdout)
+        self.assertIn("rep-001/blank", result.stdout)
+
+    def test_a_substitute_named_in_the_report_passes(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "substitute",
+                "reason": "no helper draws a balanced plate",
+            }
+        )
+        report = self.write_report(
+            overrides={
+                "helper": (
+                    "- rep-001/blank (slides): no helper draws a balanced "
+                    "plate; the slide carries a generated picture instead."
+                )
+            }
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_pending_helper_folder_must_be_reported(self):
+        (self.working / "pending-helper" / "balanced-plate").mkdir(parents=True)
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("pending helper balanced-plate", result.stdout)
+
+    def test_a_fully_covered_run_needs_no_helper_gap_line(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "part-whole-model",
+            }
+        )
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

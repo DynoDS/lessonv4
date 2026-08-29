@@ -15,6 +15,7 @@ REQUIRED_PACKAGE_PATHS = (
     "scripts/run-fixed-resource.py",
     "scripts/photo-contract.py",
     "scripts/collect-helper-uses.py",
+    "scripts/check-helper-coverage.py",
     "scripts/finalize-picture-assignment.py",
     "scripts/compile-picture-assignments.py",
     "scripts/slugify.js",
@@ -75,9 +76,67 @@ def verify(candidate_text: str, *, source: bool = False) -> Path:
     return root
 
 
+# Where a writable checkout of this package is looked for, in order, when the
+# caller asks for one rather than naming it. The helper route depends on this:
+# it used to wait for an environment value that in practice was never set, so
+# "build the missing helper" was a branch no run could ever take and every
+# lesson needing a new visual silently shipped a substitute instead.
+SOURCE_ENV_VARS = ("LESSON_V4_SOURCE_ROOT", "LESSON_RESOURCES_SOURCE_ROOT")
+
+# The conventional checkout location. Absent is a normal answer, not a fault.
+SOURCE_CONVENTIONS = ("Projects/lessonv4/plugins/lesson-v4",)
+
+
+def find_source(package_root: str | None) -> tuple[Path | None, list[str]]:
+    """Locate a writable checkout of this package, or say why there isn't one.
+
+    Order: an explicit environment value, the running package root itself
+    (which is the checkout whenever the plugin is run from source), then the
+    conventional location. Every candidate is verified the same way an
+    explicitly named one is, so an unwritable or incomplete tree is rejected
+    rather than half-used.
+    """
+    notes: list[str] = []
+    candidates: list[tuple[str, str]] = []
+
+    for name in SOURCE_ENV_VARS:
+        value = os.environ.get(name)
+        if value:
+            candidates.append((f"${name}", value))
+
+    if package_root:
+        candidates.append(("the running package root", package_root))
+
+    home = Path.home()
+    for relative in SOURCE_CONVENTIONS:
+        candidates.append((f"~/{relative}", str(home / relative)))
+
+    seen: set[str] = set()
+    for label, value in candidates:
+        if value in seen:
+            continue
+        seen.add(value)
+        try:
+            return verify(value, source=True), notes
+        except RootError as exc:
+            notes.append(f"{label}: {exc}")
+    return None, notes
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     source = False
+
+    if args and args[0] == "--find-source":
+        package_root = args[1] if len(args) > 1 else None
+        root, notes = find_source(package_root)
+        if root is None:
+            print("PLUGIN_SOURCE_ROOT_UNAVAILABLE", file=sys.stderr)
+            for note in notes:
+                print(f"- {note}", file=sys.stderr)
+            return 1
+        print(f"PLUGIN_SOURCE_ROOT={root}")
+        return 0
 
     if args and args[0] == "--source":
         source = True

@@ -393,8 +393,8 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)", 1
         )[1].split("## Phase 2 — Spawn Parallel Rendering Branches", 1)[0]
 
-        self.assertIn("**A helper** draws itself from the lesson's data", helpers)
-        self.assertIn("**A picture** is a fixed depiction of one real thing", helpers)
+        self.assertIn("substitute", helpers)
+        self.assertIn("a fixed depiction of one real thing", helpers)
         self.assertIn("UK three-pin plug and socket", helpers)
         self.assertIn("`controlled-ai`", helpers)
         self.assertIn("16-picture cap", helpers)

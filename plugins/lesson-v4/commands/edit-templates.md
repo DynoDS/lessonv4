@@ -320,7 +320,7 @@ Rebuild the demo (Phase 1 Step 3) and confirm the `Fit-text:` line appears and w
 ## Finish every run
 
 1. **Bump the plugin version.** Edit `[PLUGIN_SOURCE_ROOT]/.claude-plugin/plugin.json` and `[PLUGIN_SOURCE_ROOT]/.codex-plugin/plugin.json`, raising both `version` values to the same next minor version (e.g. `2.1.0` → `2.2.0`). The architect reads the plugin from a version-pinned cache, so without a bump a new template or a coordinate change stays invisible on the next lesson build until the cache expires. The bump busts the cache.
-2. **Commit and push.** `teaching-plugins` is its own git repo and deploys to the marketplace from `master`. Commit the changed files and push, so the marketplace copy syncs.
+2. **Commit and push.** The checkout above the package is its own git repo and deploys to the marketplace from `main`. Commit the changed files and push, so the marketplace copy syncs.
 3. **Tell the teacher in plain English** what changed and why it matters to them — what moved where, not raw coordinates. For a brand-new template, confirm it's registered and in the catalogue so the architect can use it.
 
 ## Notes

@@ -274,30 +274,58 @@ from the approved `lesson-design.json`, never from prose.
 
 ## Phase 1.5 — Helper Check (Before Spawning Any Renderer)
 
-Run `collect-helper-uses.py` against approved `lesson-design.json`. Compare only
-the representations it names with the existing helper catalogues. If every
-required helper exists, continue.
+A renderer cannot supply a visual the engine has no helper for; it degrades
+around the hole and nothing errors. So this is the only place the gap is
+catchable, and the outcome must be written down: a decision nobody records is a
+decision the run walks past.
 
-A missing one has two routes, and what the visual is made of decides which:
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" inventory   --lesson-design "[WORKING_DIR]/lesson-design.json"
+```
 
-- **A helper** draws itself from the lesson's data - change the numbers, labels,
-  categories or the child's marks and the picture changes with them. A chart, a
-  place-value chart, a sorting frame. The next lesson wants the same picture with
-  different data, so it earns a helper: when the helper-builder/source route is
-  available, build and test only that helper before renderers launch.
-- **A picture** is a fixed depiction of one real thing, the same drawing every
-  time, nothing computed from the lesson: a UK three-pin plug and socket, a named
-  piece of apparatus, a particular road sign. A helper here would be a renderer
-  built to draw one unchanging object, and the picture stage already makes staged
-  images to a written prompt. This gap goes to Lesson Designer as a picture.
+Live keys come from the renderers themselves, so the list is what the engine
+draws today, not what a catalogue claims.
 
-The picture route is open here and closed after Phase 2, because the contract has
-not been frozen yet and a picture added now is sourced in the same wave as the
-rest. Take it with one focused Lesson Designer revision over the three canonical
-design files: add the visual as a `controlled-ai` picture with a complete
-generation prompt, drop the representation use that has no helper, change nothing
-else, stay within the 16-picture cap. Re-run the design validator, the photo-cap
-check and the helper check.
+**Ask whether the engine can draw this lesson's figure the way this lesson uses
+it**, not whether a helper of roughly the right name exists. A translation
+lesson's picture is two whole shapes on one numbered grid; `translation-grid`
+draws one start-and-end marker and `coordinate-grid` joins one set of points, so
+both exist and neither draws it. A helper that cannot draw the designed figure
+leaves renderers the same nothing a missing one does, so treat them alike; open
+the candidate's own file when its name does not settle it. **The bar is the
+central teaching visual**, not a nicety a renderer can approximate without
+pedagogical loss.
+
+Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
+`{"schemaVersion": 1, "decisions": [...]}`, each carrying `representationId`,
+`configuration`, `requiredSurface`, `decision` and the fields below:
+
+- `covered` - a live helper draws it as designed. Name it in `helperKey`; the
+  check refuses a key no renderer on that surface dispatches on.
+- `build` - nothing draws it, or the closest helper cannot draw it as designed.
+  Give `helperKey` and a `reason` naming what it cannot draw, then take the
+  helper route.
+- `substitute` - no helper should draw it: a fixed depiction of one real thing
+  this lesson alone needs. Give the `reason` and take the picture route.
+
+### The helper route
+
+When any decision is `build`, read
+`[PLUGIN_ROOT]/references/helper-route.md` and follow it: it resolves a writable
+checkout, launches `helper-builder`, and closes the decision. It ends by
+re-running the check, which must print `HELPER_COVERAGE_OK` before Phase 2. Read
+it only when a `build` decision exists.
+
+### The picture route
+
+Open here and closed after Phase 2, because the contract is not frozen yet and a
+picture added now is sourced in the same wave as the rest. Take it with one
+focused Lesson Designer revision over the three canonical design files: add the
+visual as a `controlled-ai` picture with a complete generation prompt, drop the
+representation use that has no helper, change nothing else, stay within the
+16-picture cap. Re-run the design validator, the photo-cap check and the helper
+check. A UK three-pin plug and socket is this route's shape: one real object, the
+same every time, that no renderer should own.
 
 Record the exact `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP` only when neither
 route can run. Do not silently replace a missing visual with an unfaithful
@@ -306,6 +334,19 @@ picture, an approximate emoji or generic decoration.
 ---
 
 ## Phase 2 — Spawn Parallel Rendering Branches
+
+**After the slides and the worksheets build, confirm the promised visuals
+arrived**, with `--spec` `lesson.json`/`--surface slides` and `worksheet.json`/
+`--surface worksheets`:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery   --verdict "[WORKING_DIR]/helper-check.json"   --spec "[WORKING_DIR]/[spec].json" --surface [surface]
+```
+
+Require `HELPER_DELIVERY_OK`. A failure means a use recorded as drawn by a helper
+is drawn by it nowhere in the specification: the silent substitution this check
+exists to catch. Repair through that surface's focused designer repair, rebuild,
+re-check.
 
 Freeze the approved initial photo contract once:
 
@@ -475,6 +516,7 @@ python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" slides \
 Require `ok: true` and the exact output paths in the summary. On a semantic
 build diagnostic, run one focused Slide Designer repair and rebuild once.
 
+
 ---
 
 ### Track B — Worksheets (adaptation-designer → merge gate → worksheet-designer → fixed worksheet build)
@@ -631,6 +673,7 @@ python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" worksheets \
 
 Require the complete answer key as a separate teacher output. One semantic
 diagnostic permits one focused Worksheet Designer repair and one rebuild.
+
 
 ---
 
@@ -908,7 +951,8 @@ Write `[WORKING_DIR]/run-report.md` with:
   builder;
 - excluded earned resources and exact reasons;
 - blocking faults, accepted minor findings and failed build attempts;
-- picture outcomes and helper gaps;
+- picture outcomes, and every helper gap: each visual answered with a
+  substitute, and any helper left waiting in `pending-helper/`;
 - worker friction lines;
 - shared investigation-log status.
 

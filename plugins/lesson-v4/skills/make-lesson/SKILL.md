@@ -254,21 +254,27 @@ or spawning workers. Report the verifier's error exactly. Do not search parent
 directories, inspect unrelated repositories, use `pwd` as the package root, or
 fall back to another installed or source copy.
 
-`PLUGIN_SOURCE_ROOT` is separate and optional. It means the writable
-`lesson-resources` directory inside the real `teaching-plugins` git checkout.
-Normal lesson generation does not require it.
-
-When the host environment contains `LESSON_RESOURCES_SOURCE_ROOT`, run:
+`PLUGIN_SOURCE_ROOT` is separate. It means a writable git checkout of this
+package, the copy a source-writing step may edit. Normal lesson generation does
+not require it, but the helper route does, so resolve it only at the step that
+needs it rather than up front:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --source "$LESSON_RESOURCES_SOURCE_ROOT"
+python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
 ```
 
-When that command succeeds, store the value after `PLUGIN_SOURCE_ROOT=`. When
-the environment value is absent or verification fails, leave
-`PLUGIN_SOURCE_ROOT` unavailable. Do not search for a checkout. Normal lesson
-generation continues; any later source-writing step follows its explicit
-unavailable-source rule.
+The command looks in a fixed order - an explicit environment value, the running
+package root, then the conventional checkout location - and verifies each
+candidate the same way, so an incomplete or read-only tree is refused rather
+than half-used. On success, store the value after `PLUGIN_SOURCE_ROOT=`. On
+`PLUGIN_SOURCE_ROOT_UNAVAILABLE`, leave it unavailable and follow that step's
+own unavailable-source rule. Do not search for a checkout yourself, and never
+write to an installed package copy.
+
+This used to wait on an environment value alone, which in practice was never
+set, so every step gated on source access was a branch no run could take. A
+gate that can never open is not caution; it is the failure it was meant to
+prevent, taken silently.
 
 The active host owns the worker-launch mechanism. Claude Code may launch its
 bundled named agent. Codex or another host may launch a normal worker. In either

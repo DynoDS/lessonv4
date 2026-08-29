@@ -91,6 +91,7 @@ def test_orchestration_runtime_helpers_are_required_package_sentinels():
         "scripts/run-fixed-resource.py",
         "scripts/photo-contract.py",
         "scripts/collect-helper-uses.py",
+        "scripts/check-helper-coverage.py",
         "scripts/finalize-picture-assignment.py",
         "scripts/compile-picture-assignments.py",
     }

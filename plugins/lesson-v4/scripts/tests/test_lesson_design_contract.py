@@ -1837,7 +1837,11 @@ def test_adaptation_photo_merge_happens_before_worksheet_snapshot_and_spawn():
 def test_helper_preflight_includes_transitive_representation_uses():
     skill = read(SKILL)
     helper = read(ROOT / "scripts" / "collect-helper-uses.py")
-    assert "collect-helper-uses.py" in skill
+    coverage = read(ROOT / "scripts" / "check-helper-coverage.py")
+    # The runtime reaches the collector through the coverage check, so one
+    # definition of "a required use" serves both the decision and its audit.
+    assert "check-helper-coverage.py" in skill
+    assert "collect-helper-uses.py" in coverage
     assert 'visual.get("kind") == "representation"' in helper
     assert "walk(design, (), rep_ids, raw)" in helper
     assert 'config.get("loadBearing") is True' in helper
