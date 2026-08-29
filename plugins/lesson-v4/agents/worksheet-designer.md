@@ -98,10 +98,13 @@ and the panel on the right beside it, with the panel carrying its one job line
 the whole run rather than before it, so the child holds their place in the
 questions and glances right at the evidence. Reading order still protects
 genuinely sequential material: a claim a question judges or a stem it
-completes is not a shared panel and stays ahead of its question. And when a
-question run splits across more than one zone, the zones must run down a
-column and then down the next - never left, right, left, right across the page
-- which the turned and mirrored layout variants always make available.
+completes is not a shared panel and stays ahead of its question. And wherever
+the questions sit, (1) starts at the top left of the page and the run flows so
+a child who has just finished one question can see the next without hunting -
+usually down a column, though a long question filling one side with the next
+beside it reads fine. What fails that test is a run ping-ponging left, right,
+left, right between short zones; the turned and mirrored layout variants
+always offer a followable arrangement instead.
 
 ---
 
