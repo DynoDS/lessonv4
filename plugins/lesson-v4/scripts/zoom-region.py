@@ -129,11 +129,16 @@ def main():
                   "SOFFICE_PATH.", file=sys.stderr)
             sys.exit(2)
         tmp = tempfile.mkdtemp(prefix="zoom-region-")
+        # Convert from inside the scratch directory: LibreOffice is handed a
+        # short path, so a deeply nested working directory converts the same as
+        # a shallow one. render-pages.py stages the same way.
+        staged = Path(tmp, "staged-source" + src.suffix.lower())
+        shutil.copyfile(src, staged)
         profile = Path(tmp, "lo-profile").as_uri()
         cmd = [soffice, "--headless", f"-env:UserInstallation={profile}",
-               "--convert-to", "pdf", "--outdir", tmp, str(src)]
+               "--convert-to", "pdf", "--outdir", tmp, str(staged)]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
-        pdf_path = Path(tmp, src.stem + ".pdf")
+        pdf_path = Path(tmp, staged.stem + ".pdf")
         if not pdf_path.is_file():
             print(f"LibreOffice could not convert {src.name} to PDF.\n"
                   f"{result.stdout}\n{result.stderr}", file=sys.stderr)

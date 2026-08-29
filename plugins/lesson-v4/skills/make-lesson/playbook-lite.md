@@ -320,9 +320,9 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
 
 When any decision is `build`, read
 `[PLUGIN_ROOT]/references/helper-route.md` and follow it: it resolves a writable
-checkout, launches `helper-builder`, and closes the decision. It ends by
-re-running the check, which must print `HELPER_COVERAGE_OK` before Phase 2. Read
-it only when a `build` decision exists.
+checkout, launches `helper-builder`, names what may run beside it, and closes the
+decision. It ends by re-running the check, which must print `HELPER_COVERAGE_OK`
+before any Phase 2 designer. Read it only when a `build` decision exists.
 
 ### The picture route
 
@@ -737,7 +737,15 @@ is the honest record of a branch that ended, not a fault to repair here.
 
 ## Phase 3.5 — Visual Check and Repair (after all builders, before the report and sync)
 
-Render every delivered surface through the established `render-pages.py` route.
+Probe this machine's render routes once before any reviewer starts, and hand the
+file to every reviewer as `RENDER_ROUTE_FILE`. Nothing else probes it, and a
+reviewer without it returns `UNVERIFIED` for an artefact that was fine.
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/render-pages.py" --probe-route "[WORKING_DIR]/render-route.json"
+```
+
+Render every delivered surface through that established route.
 **Start each artefact's visual reviewer here, after its final build is present.**
 Launch one Visual Reviewer per resource concurrently. Each receives only
 approved `lesson-design.json`, that resource's own specification, its final

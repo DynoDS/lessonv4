@@ -5,6 +5,11 @@ The orchestrator probes established render routes once, then every reviewer uses
 that same ordered route file. Render evidence is written to a SHA-256 manifest so
 later confirmation and consistency passes can reuse evidence that is still valid.
 
+Conversion and rasterising happen in a short scratch directory and the finished
+evidence is copied into <out-dir>, so the length of the caller's own working
+directory never reaches PowerPoint or pdftoppm - neither of which can open a
+path over 255 characters, whatever the operating system permits.
+
 Usage:
     python3 render-pages.py --probe-route <route-file>
     python3 render-pages.py <source> <out-dir> --route-file <route-file> \
@@ -30,6 +35,13 @@ ROUTE_VERSION = 1
 MANIFEST_VERSION = 1
 POWERPOINT_PROBE_TIMEOUT_SECONDS = 30
 POWERPOINT_CONVERT_TIMEOUT_SECONDS = 180
+
+# PowerPoint COM refuses a filename over 255 characters outright, and poppler's
+# pdftoppm cannot open one either, whatever the operating system allows. A
+# working directory nested a few folders deep passes that mark easily, so every
+# converter below is handed a file inside a short scratch directory instead of
+# the caller's own path, and this limit is asserted where each tool is invoked.
+LEGACY_TOOL_PATH_LIMIT = 255
 
 
 def sha256_file(path):
@@ -95,6 +107,28 @@ def write_json(path, payload):
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+def require_short_path(path, tool):
+    """Refuse to hand a legacy converter a path it cannot open.
+
+    Staging keeps this from firing inside `render`; it fires for a direct
+    caller, and it names the real fault instead of the tool's own opaque
+    complaint ("Invalid request", "Couldn't open file").
+    """
+    text = str(path)
+    if len(text) > LEGACY_TOOL_PATH_LIMIT:
+        raise RuntimeError(
+            f"{tool} cannot use a path of {len(text)} characters "
+            f"(limit {LEGACY_TOOL_PATH_LIMIT}): {text}"
+        )
+
+
+def stage_source(src, tmp_dir):
+    """Copy the source into the short scratch directory the converters use."""
+    staged = Path(tmp_dir, "staged-source" + src.suffix.lower())
+    shutil.copyfile(src, staged)
+    return staged
+
+
 def probe_routes(route_file):
     pptx = []
     if probe_powerpoint():
@@ -132,6 +166,8 @@ def load_route_file(path):
 def powerpoint_to_pdf(src, out_pdf):
     if not is_windows():
         raise RuntimeError("PowerPoint COM is not available off Windows")
+    require_short_path(src, "PowerPoint")
+    require_short_path(out_pdf, "PowerPoint")
     command = [
         sys.executable,
         str(powerpoint_helper()),
@@ -164,6 +200,8 @@ def libreoffice_to_pdf(src, out_pdf, tmp_dir):
     soffice = find_soffice()
     if not soffice:
         raise RuntimeError("LibreOffice (soffice) is unavailable")
+    require_short_path(src, "LibreOffice")
+    require_short_path(out_pdf, "LibreOffice")
     profile = Path(tmp_dir, "lo-profile").as_uri()
     cmd = [soffice, "--headless", f"-env:UserInstallation={profile}",
            "--convert-to", "pdf", "--outdir", str(tmp_dir), str(src)]
@@ -206,6 +244,8 @@ def render_pdftoppm(pdf_path, out_dir, stem, dpi):
     binary = shutil.which("pdftoppm")
     if not binary:
         raise RuntimeError("pdftoppm is unavailable")
+    require_short_path(pdf_path, "pdftoppm")
+    require_short_path(out_dir, "pdftoppm")
     prefix = out_dir / f".{stem}-pdftoppm"
     cmd = [binary, "-png", "-r", str(dpi), str(pdf_path), str(prefix)]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
@@ -285,32 +325,45 @@ def render(source, out_dir, route_file, manifest_file, dpi):
 
     out_dir = Path(out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    tmp_dir = tempfile.mkdtemp(prefix="render-pages-")
+    tmp_dir = Path(tempfile.mkdtemp(prefix="render-pages-"))
     office_route = None
     try:
+        # Convert and rasterise inside the scratch directory, then place the
+        # finished evidence in out_dir. The caller's own path never reaches a
+        # converter, so a deeply nested working directory renders the same as a
+        # shallow one instead of failing on a length nothing warned about.
+        staged = stage_source(src, tmp_dir)
         if suffix == ".pdf":
-            working_pdf = src
+            working_pdf = staged
         else:
             key = "pptxRoutes" if suffix == ".pptx" else "docxRoutes"
             try:
-                working_pdf, office_route = convert_office(src, routes[key], tmp_dir)
+                working_pdf, office_route = convert_office(
+                    staged, routes[key], tmp_dir)
             except RuntimeError as exc:
                 print(
                     f"VISUAL_ROUTE_UNVERIFIED: {src.name}: no established visual "
                     f"verification route succeeded\n{exc}", file=sys.stderr)
                 return 2
 
-        kept_pdf = out_dir / f"{src.stem}-source.pdf"
-        if working_pdf.resolve() != kept_pdf.resolve():
-            shutil.copyfile(working_pdf, kept_pdf)
         try:
-            page_files, pdf_route = render_pdf_pages(
-                kept_pdf, routes["pdfRoutes"], out_dir, src.stem, dpi)
+            rendered, pdf_route = render_pdf_pages(
+                working_pdf, routes["pdfRoutes"], tmp_dir, "staged", dpi)
         except RuntimeError as exc:
             print(
                 f"VISUAL_ROUTE_UNVERIFIED: {src.name}: no established visual "
                 f"verification route succeeded\n{exc}", file=sys.stderr)
             return 2
+
+        kept_pdf = out_dir / f"{src.stem}-source.pdf"
+        shutil.copyfile(working_pdf, kept_pdf)
+        for stale in out_dir.glob(f"{src.stem}-page-*.png"):
+            stale.unlink()
+        page_files = []
+        for number, produced in enumerate(rendered, start=1):
+            placed = out_dir / f"{src.stem}-page-{number:02d}.png"
+            shutil.copyfile(produced, placed)
+            page_files.append(placed)
 
         manifest = {
             "version": MANIFEST_VERSION,

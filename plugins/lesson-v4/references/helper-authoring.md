@@ -132,10 +132,27 @@ The stick-in-sheets-designer then emits `{ "visual": "<type>", "spec": { … } }
 
 A clean build log means the builder didn't choke — not that the page looks right. Always render and *look* — **and look once for every renderer the helper serves, not only the one that triggered this build.** A helper is almost always commissioned from one place (a slide that needs it now), and the natural pull is to prove it on the board and stop. But the wiring you did in step 4 spans every renderer, and the renderer you don't render is the one that silently ships text where the picture should be — most often the working wall, because its lesson usually surfaces on the board first. Treat "I have seen this figure render on each engine I wired it into" as the bar for done.
 
-- **Slides:** build the deck, then export the affected slides to PNG (PowerPoint COM on Windows: open the `.pptx`, `Slides(n).Export(path, "PNG", 1280, 720)`) and inspect them. Confirm the figure is correct *and* large — if it floats small in its slot, the no-deadspace work isn't done.
-- **Worksheets:** run `node worksheet-html/scripts/build-worksheet.js <worksheet.json>` on a small spec that uses the helper, confirm the page-fit line, then render the PDF to page PNGs with `scripts/render-pages.py` and confirm the figure prints at a readable size. Where the helper can sit inside a `stack` or a `row`, render it that way as well as standalone.
-- **Working wall** (whenever the helper serves it): write a tiny `working-wall.json` with one card carrying the new `visual`, run `working-wall-html/build.js`, and look at the figure on the page it actually ships on. The build writes a PDF (`Working Wall - [Topic].pdf`); render it to page PNGs with `scripts/render-pages.py` and look at those. A card that builds with no error but shows only step badges and text is the silent-skip failure: the primitive isn't reaching the wall, usually because a wiring step (the SVG registry, the key registry, or one of the designer's two catalogues) was missed.
-- **Stick-in pack** (whenever the helper serves it): write a tiny `stick-in-sheets.json` with one item carrying the new `visual`, run `stick-in-sheets-html/build.js`, and look at the same way. The build writes a PDF (`[Topic] - Stick-in Sheets.pdf`); render it to page PNGs with `scripts/render-pages.py` and confirm the figure is in its write-on (blank) form and prints large enough to mark on.
+**Render every surface through `scripts/render-pages.py`, not by hand.** It turns
+a built `.pptx`, `.docx` or `.pdf` into one PNG per page. Probe the machine's
+render routes once, then render each artefact against that route file:
+
+```bash
+python3 "[PLUGIN_SOURCE_ROOT]/scripts/render-pages.py" --probe-route "[a scratch dir]/render-route.json"
+
+python3 "[PLUGIN_SOURCE_ROOT]/scripts/render-pages.py" "[the built file]" "[a scratch dir]/render" --route-file "[a scratch dir]/render-route.json" --manifest "[a scratch dir]/render.json"
+```
+
+Reach for it instead of driving PowerPoint COM or pdftoppm yourself. Neither can
+open a path over 255 characters, and a lesson working directory a few folders
+deep passes that mark easily, so a hand-rolled export fails on the workspace
+rather than on the helper. The script converts inside a short scratch directory
+and copies the page images back, so a deep workspace renders like a shallow one.
+Then look at the PNGs it writes.
+
+- **Slides:** build the deck, render it, and inspect the slides that carry the helper. Confirm the figure is correct *and* large — if it floats small in its slot, the no-deadspace work isn't done.
+- **Worksheets:** run `node worksheet-html/scripts/build-worksheet.js <worksheet.json>` on a small spec that uses the helper, confirm the page-fit line, then render the PDF and confirm the figure prints at a readable size. Where the helper can sit inside a `stack` or a `row`, render it that way as well as standalone.
+- **Working wall** (whenever the helper serves it): write a tiny `working-wall.json` with one card carrying the new `visual`, run `working-wall-html/build.js`, and look at the figure on the page it actually ships on. The build writes a PDF (`Working Wall - [Topic].pdf`); render it and look at those pages. A card that builds with no error but shows only step badges and text is the silent-skip failure: the primitive isn't reaching the wall, usually because a wiring step (the SVG registry, the key registry, or one of the designer's two catalogues) was missed.
+- **Stick-in pack** (whenever the helper serves it): write a tiny `stick-in-sheets.json` with one item carrying the new `visual`, run `stick-in-sheets-html/build.js`, and look at the same way. The build writes a PDF (`[Topic] - Stick-in Sheets.pdf`); render it and confirm the figure is in its write-on (blank) form and prints large enough to mark on.
 - **A quick standalone check** of a figure helper — render a handful of representative cases (for an angle: a sharp acute, a near-right acute, a right angle, an obtuse) into bordered cells and look at how much of each cell the figure fills — catches both geometry bugs and leftover deadspace before a full lesson build.
 
 **Run the guard as the mechanical complement to looking.** `npm run check` (in `builder/`) runs the catalogue and parity guards: it confirms every surface you declared in the manifest is actually wired, and that no live wall/stick-in/slide figure is missing from the manifest. Looking proves the picture is *right*; the guard proves the slide, worksheet, wall and stick-in wiring is *complete* - together they close both halves. A red guard names the exact surface still missing a wire. The guard proves the worksheet key is registered; `npm test` and `npm run check-render` in `worksheet-html/` prove the worksheet behavior and rendering.

@@ -240,11 +240,21 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             slides,
         )
 
+    @staticmethod
+    def measured_bytes(raw: bytes) -> int:
+        """Size as content, not as the checkout's line-ending policy.
+
+        These budgets are growth alarms on what the runtime says. Counting raw
+        bytes made the same text pass on a LF checkout and fail on a CRLF one,
+        which alarms on `core.autocrlf` rather than on anything an author wrote.
+        """
+        return len(raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n"))
+
     def test_pre_first_worker_runtime_text_stays_below_fifty_kib(
         self,
     ) -> None:
         total = sum(
-            len(
+            self.measured_bytes(
                 self.run_slice(name).stdout
             )
             for name in (
@@ -274,7 +284,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # A growth alarm, an order of magnitude below the 179KB document this
         # runtime replaced. The per-slice budget below is the one that measures
         # what a run actually pays: no worker ever loads this file whole.
-        self.assertLess(len(PLAYBOOK.read_bytes()), 46 * 1024)
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 46 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.
@@ -287,7 +297,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         """
         for name in BOUNDS:
             with self.subTest(slice=name):
-                size = len(self.run_slice(name).stdout)
+                size = self.measured_bytes(self.run_slice(name).stdout)
                 self.assertLess(size, 7 * 1024, f"slice {name} is {size} bytes")
 
     def test_focused_repair_slice_routes_resource_owners_to_compact_entrypoints(

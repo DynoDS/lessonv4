@@ -30,9 +30,34 @@ SURFACES: [which of slides, worksheets, wall, stick-in this visual reaches]
 CANNOT CURRENTLY DRAW: [for a grow, exactly what the existing helper falls short of]
 ```
 
-Wait for it. Then pass `[PLUGIN_SOURCE_ROOT]` as `PLUGIN_ROOT` to every Phase 2
+When it returns, pass `[PLUGIN_SOURCE_ROOT]` as `PLUGIN_ROOT` to every Phase 2
 designer and builder, so this lesson uses the helper now rather than waiting for
 the installed copy to catch up.
+
+## What may run while it builds
+
+The build changes the package, not the lesson. So the work that has to wait is
+the work that reads a package catalogue, and every designer and builder does
+read one: the slide catalogue, the worksheet catalogue, the wall's two primitive
+lists, the stick-in supported-visuals list. One of those is about to gain a
+helper that was not there a minute ago, and a designer that read the old copy
+designs around a hole that no longer exists. Hold all of them until the build
+returns.
+
+The picture stage reads none of them. It reads the frozen photo contract and
+writes into `WORKING_DIR`, and on a picture-carrying lesson it is the longest
+stage in the run, so start it beside the helper build rather than after it: load
+the `phase2-core` slice now, freeze the photo contract and compile the picture
+assignments exactly as that slice sets out, and launch the picture work. The
+helper build and the picture work touch nothing in common, so neither can spoil
+the other.
+
+Two things keep this honest. If this run also recorded a `substitute`, take that
+picture route revision **first**: it changes the photo contract you are about to
+freeze, and a contract frozen mid-revision is the wrong one for the whole of
+Phase 2. And if the lesson promises no photographs at all, there is nothing to
+overlap and the helper build simply runs on its own, which is the ordinary case
+for maths.
 
 ## When no checkout is available
 
