@@ -167,7 +167,7 @@ Check:
 
 Read the full `Written Voice (House Style)` section only when exact wording is genuinely in doubt.
 
-Keep em dashes and en dashes out of child-facing and parent-facing text.
+Keep em dashes and en dashes out of child-facing and parent-facing text. In the same pass, check child-facing and spoken text calls the class `children`, `you` or `we` rather than `kids`, `pupils` or `students` (a genuinely different meaning stays, such as the pupil of an eye), and that no praise line (`Well done!`, `Great job!`) sits on a slide or in the notes.
 
 ### 5. Worksheet evidence
 

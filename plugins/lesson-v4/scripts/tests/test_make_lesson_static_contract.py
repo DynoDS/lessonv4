@@ -619,5 +619,31 @@ class MakeLessonStaticContractTests(unittest.TestCase):
                 self.assertNotIn(stale_claim, report)
 
 
+    def test_written_voice_interview_rules_are_encoded(self):
+        """Rules the teacher gave in the language-guidance interview stay encoded.
+
+        Each assertion below traces to an interview answer: the class-reference
+        words, contractions, praise and reassurance placement, protecting
+        authentic assessment language, and the vocabulary card not counting as
+        teaching. A consolidation that drops one silently reopens the gap.
+        """
+        preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
+        self.assertIn("**The class is `children`, `you` and `we`.**", preferences)
+        self.assertIn("never says `kids`, `pupils` or `students`", preferences)
+        self.assertIn("the contractions natural speech uses", preferences)
+        self.assertIn("generated wording does not praise", preferences)
+        self.assertIn("can sit naturally in the spoken script but not on the board", preferences)
+        self.assertIn("Do not simplify wording merely because an assessment word is formal", preferences)
+        self.assertIn("a vocabulary card alone is a reference, not that teaching", preferences)
+
+        reviewer = (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8")
+        self.assertIn("check child-facing and spoken text calls the class `children`, `you` or `we`", reviewer)
+        self.assertIn("no praise line", reviewer)
+
+        designer = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+        self.assertIn("No praise lines - live teacher's job.", designer)
+        self.assertNotIn("No fake praise.", designer)
+
+
 if __name__ == "__main__":
     unittest.main()

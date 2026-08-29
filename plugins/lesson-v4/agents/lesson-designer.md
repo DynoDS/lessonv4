@@ -59,7 +59,7 @@ Write last, after design complete. Plain English, no pedagogy jargon. Audience t
 
 Every note: **script** first, then optional **teacher info**, then optional **Look for:**. Slide 1 orientation precedes script.
 
-**Script:** Open `Say to children:` with speakable words teacher can read aloud verbatim. Apply `preferences.md` → Written Voice. Natural, direct, warm, confident. Precise subject vocab when helps. Occasional natural teacher phrases allowed when fit, not mannerism. No fake praise. My Turn/Teach/Apply = modelling narration; Our Turn/Do = guided questions; Your Turn rarely needs script.
+**Script:** Open `Say to children:` with speakable words teacher can read aloud verbatim. Apply `preferences.md` → Written Voice. Natural, direct, warm, confident. Precise subject vocab when helps. Occasional natural teacher phrases allowed when fit, not mannerism. No praise lines - live teacher's job. Reassurance (`don't worry if this feels tricky`) may live in script, never on slide. My Turn/Teach/Apply = modelling narration; Our Turn/Do = guided questions; Your Turn rarely needs script.
 
 Answers/models live only in structured `answer` object. Don't repeat in script/teacherInfo/lookFor. `answer.delivery` decides rendering: `teacher-only`, `answer-slide`, `visible-in-unit` (only for Prepared example), `none`.
 
