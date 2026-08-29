@@ -358,125 +358,41 @@ The command prints exactly one bounded, authoritative runtime slice. Read and
 follow that returned slice. Do not ask the script for arbitrary headings or
 ranges.
 
-Immediately after `PLUGIN_ROOT` verification and before run-specific work, load
-these two slices in this order:
+Load these two slices in this order, immediately after `PLUGIN_ROOT`
+verification and before any run-specific work:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "execution"
 python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "setup"
 ```
 
-Immediately before the first Lesson Designer attempt, load:
+**From there, every slice ends with a `## NEXT` block naming what it hands you,
+and that block is how the run advances.** Work the slice you are holding, then
+do what its NEXT block names - load the slice it points at and carry on. The
+pipeline branches, so a NEXT block often names more than one step: unless a step
+carries a condition this run does not meet, every step it names is due, and
+starting one branch never finishes the others.
 
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "design"
-```
+The order of work belongs to those blocks rather than to a list here, because a
+list here can only key each slice to an event ("before the first Worksheet
+Designer job", "before the first visual-review launch") that you cannot
+recognise until you are holding the slice that names it. Two failures come from
+exactly that gap, so treat both as things NEXT tells you and a linear read of
+the playbook will not:
 
-After the initial Lesson Designer returns and before launching Design Reviewer,
-handling a photo-cap revision or applying any redesign route, load:
+- **A finished artefact goes to visual review straight away.** The reviewer for
+  a build that has been accepted starts while other branches are still
+  designing. Reviewing one artefact needs that artefact alone, so holding it for
+  the slowest sibling costs the whole review round and every repair behind it.
+  Only the cross-resource consistency pass and the deterministic merge wait for
+  everything.
+- **A designer that produces an intermediate file has not produced its
+  resource.** Adaptation writes `adaptation.md`; the sheet still has to be
+  designed and built after it.
 
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "design-review"
-```
-
-Do not load `design-review` before the initial Lesson Designer returns.
-
-After final Phase-1 approval and before helper-use collection, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "helpers"
-```
-
-Immediately before launching the first Phase-2 branch, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "phase2-core"
-```
-
-Immediately before the first Slide Designer attempt, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "slides-design"
-```
-
-Load the picture runtime only when the current approved picture contract contains
-required picture work:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "pictures"
-```
-
-Immediately before Diagram Anchor or the final direct slide-build route, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "slides-finalize"
-```
-
-Immediately before deciding the worksheet shared-frame/per-child route, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "worksheet-routing"
-```
-
-Load adaptation runtime only when the worksheet route actually requires the
-per-child Adaptation Designer branch:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "worksheet-adaptation"
-```
-
-Immediately before the first Worksheet Designer job, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "worksheet-render"
-```
-
-Immediately before the first scaffold, Working Wall or stick-in branch, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "other-resources"
-```
-
-Immediately before Phase 3 servicing or the first per-resource visual-review
-launch, whichever becomes relevant first, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "phase3"
-```
-
-Immediately before the first visual-review launch - which happens as soon as any
-one artefact's build is accepted, not after every branch has finished - or before
-consistency-review first-pass handling, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "visual-review"
-```
-
-Load focused owner-repair runtime only when an unresolved finding actually
-requires that route:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "focused-repair"
-```
-
-After first passes, required repairs and confirmations have settled, immediately
-before deterministic review merge, picture provenance and logging, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "finalize-review"
-```
-
-Immediately before final assembly, the short teacher report or SharePoint
-delivery, load:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "delivery"
-```
-
-Do not preload a later slice merely because the branch might eventually need it.
-
-If a later repair returns to an earlier route, reload only that route's named
-slice immediately before applying that route. Do not reload unrelated slices.
+Do not preload a later slice merely because the branch might eventually need
+it, and do not reload unrelated slices. If a later repair returns to an earlier
+route, reload only that route's named slice.
 
 A runtime-reader failure is a pipeline configuration error. Stop and report its
 exact `MAKE_LESSON_RUNTIME_ERROR:` line. Do not work around a missing or

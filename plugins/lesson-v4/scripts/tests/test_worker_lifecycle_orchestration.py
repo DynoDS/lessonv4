@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -173,13 +175,39 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         flat_playbook = " ".join(playbook.split())
         flat_skill = " ".join(skill.split())
         self.assertIn(
-            "The only work that genuinely waits for every branch is the "
-            "cross-resource consistency review",
+            "Only the cross-resource consistency review and the deterministic "
+            "merge wait for every branch",
             flat_playbook,
         )
+
+        # The prose above states the principle. What makes a run act on it is
+        # the successor block the runtime reader appends to each slice that
+        # ends with an accepted build, because that is where the orchestrator
+        # is standing when the build lands. Prose alone lost this once already.
         self.assertIn(
-            "as soon as any one artefact's build is accepted", flat_skill
+            "every slice ends with a `## NEXT` block naming what it hands you",
+            flat_skill,
         )
+        for slice_name in (
+            "slides-finalize",
+            "worksheet-render",
+            "other-resources",
+        ):
+            with self.subTest(slice=slice_name):
+                stdout = subprocess.run(
+                    [
+                        sys.executable,
+                        str(ROOT / "scripts" / "make-lesson-runtime.py"),
+                        "--slice",
+                        slice_name,
+                    ],
+                    capture_output=True,
+                    check=True,
+                ).stdout.decode("utf-8")
+                trailer = stdout.split(
+                    "## NEXT: what this slice hands you"
+                )[1]
+                self.assertIn("visual-review", trailer)
 
         # The slice markers are the playbook's own headings, so they move together.
         self.assertIn("## Phase 3 — Service Each Branch as It Lands", runtime)

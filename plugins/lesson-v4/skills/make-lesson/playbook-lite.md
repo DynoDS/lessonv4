@@ -619,11 +619,17 @@ report adaptation omitted. Do not rerun unrelated branches.
 
 ---
 
-**Worksheet Designer** — if `worksheet-designer` exists AND either:
+**Worksheet Designer** — launch whenever the role exists, reading
+`worksheet.status` in the approved design rather than judging the need:
 
-- the approved lesson requires a generated worksheet or shared frame; or
-- accepted adaptation requires generated Below/Greater Depth sheets around a
-  teacher-provided expected worksheet.
+- `generated`: design the sheet, per-child or shared frame alike;
+- `provided-by-teacher`: the teacher's sheet stands, so design only the Below
+  and Greater Depth sheets accepted adaptation asked for. Only an adaptation
+  that produced none ends this track.
+
+The schema offers no third state, so asking whether the lesson "needs" a
+worksheet invites a no it never offered - the silent skip that made the wall
+and stick-in spawns unconditional.
 
 Before every attempt, obtain the exact worksheet photo-contract path through
 `photo-contract.py select-worksheet`. Launch Worksheet Designer directly:
@@ -781,15 +787,11 @@ Wait through the host's ordinary multi-worker wait once for all active branches.
 Do not poll each worker serially. As each worker completes, run its
 deterministic check and release only its genuine dependants. A failed branch does not invalidate a clean independent branch.
 
-**A finished artefact's own visual reviewer is one of those dependants, so start
-it here rather than holding it for the slowest sibling.** Reviewing one artefact
-needs that artefact and nothing else, which is why a deck that is built and
-checked goes to review while the worksheet branch is still designing. Holding it
-costs the whole review round in wall-clock and delays every repair behind it.
-Phase 3.5 carries the launch: run its route probe once, then launch each
-reviewer from there as its build is accepted. The only work that genuinely waits
-for every branch is the cross-resource consistency review and the deterministic
-merge.
+**A finished artefact's own visual reviewer is one of those dependants**, so a
+deck that is built and checked goes to review while the worksheet branch is
+still designing. Phase 3.5 carries the launch: run its route probe once, then
+launch each reviewer as its build is accepted. Only the cross-resource
+consistency review and the deterministic merge wait for every branch.
 
 Once the last branch settles, every earned resource must be either built with an
 accepted summary or excluded with a reason. A resource that is neither by that

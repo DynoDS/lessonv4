@@ -78,10 +78,10 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "worksheet-adaptation": (
         "**Adaptation Designer** — if `adaptation-designer` exists AND the worksheet is a per-child sheet (not a shared frame, per the check just above):",
-        "**Worksheet Designer** — if `worksheet-designer` exists AND either:",
+        "**Worksheet Designer** — launch whenever the role exists, reading",
     ),
     "worksheet-render": (
-        "**Worksheet Designer** — if `worksheet-designer` exists AND either:",
+        "**Worksheet Designer** — launch whenever the role exists, reading",
         "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
     ),
     "other-resources": (
@@ -145,11 +145,101 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         for name, bounds in BOUNDS.items():
             with self.subTest(slice=name):
                 completed = self.run_slice(name)
-                self.assertEqual(
-                    completed.stdout,
-                    expected_slice(data, *bounds),
+                body = expected_slice(data, *bounds)
+                self.assertTrue(
+                    completed.stdout.startswith(body),
+                    f"{name} body no longer matches the playbook bytes",
                 )
                 self.assertEqual(completed.stderr, b"")
+
+    def test_every_slice_names_its_successor(self) -> None:
+        """A slice that ends without naming what follows stalls the run.
+
+        Every slice used to end at its own `---`, and the only record of the
+        order was the skill's list of "load slice X immediately before Y"
+        bullets. Each of those bullets is keyed on an event the orchestrator
+        can only recognise once it already holds the slice naming it, so a
+        host reading strictly slice by slice read the playbook top to bottom
+        instead: per-artefact visual review collapsed into one batch at the
+        end, and Track B stopped at the Adaptation Designer because the step
+        that launches the Worksheet Designer sat in a slice nothing told it to
+        load. The successor travels with the slice for that reason.
+        """
+        for name in BOUNDS:
+            with self.subTest(slice=name):
+                stdout = self.run_slice(name).stdout.decode("utf-8")
+                self.assertIn(
+                    "## NEXT: what this slice hands you",
+                    stdout,
+                )
+
+    def test_successor_map_covers_exactly_the_slices(self) -> None:
+        """The two maps must not drift apart as the playbook changes."""
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "make_lesson_runtime", SCRIPT
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        self.assertEqual(
+            set(module.NEXT_STEPS),
+            set(module.SLICE_BOUNDS),
+        )
+        self.assertEqual(set(module.SLICE_BOUNDS), set(BOUNDS))
+        for name, steps in module.NEXT_STEPS.items():
+            with self.subTest(slice=name):
+                self.assertTrue(steps)
+
+    def test_a_finished_build_sends_its_own_artefact_to_review(self) -> None:
+        """Reviewing one artefact needs that artefact and nothing else.
+
+        The reported failure was every review running in one batch after the
+        last branch finished, which costs the whole review round in wall-clock
+        and delays every repair behind it. Each slice that ends with an
+        accepted build has to say so where the orchestrator is standing.
+        """
+        for name in ("slides-finalize", "worksheet-render", "other-resources"):
+            with self.subTest(slice=name):
+                nxt = self.run_slice(name).stdout.decode("utf-8").split(
+                    "## NEXT: what this slice hands you"
+                )[1]
+                self.assertIn("visual-review", nxt)
+
+        deck = self.run_slice("slides-finalize").stdout.decode("utf-8")
+        self.assertIn("do not hold it for the worksheet", deck)
+
+    def test_adaptation_hands_on_to_the_worksheet_designer(self) -> None:
+        """Adaptation writes `adaptation.md`; it never produces a sheet.
+
+        A run that treated the Adaptation Designer as the end of Track B
+        delivered no worksheet at all, so the hand-off is named in the slice
+        that finishes adaptation rather than only in a slice nothing had told
+        the orchestrator to load.
+        """
+        nxt = self.run_slice("worksheet-adaptation").stdout.decode(
+            "utf-8"
+        ).split("## NEXT: what this slice hands you")[1]
+        self.assertIn("worksheet-render", nxt)
+        self.assertIn("Worksheet Designer", nxt)
+
+    def test_worksheet_designer_gate_reads_the_design_not_a_judgement(
+        self,
+    ) -> None:
+        """`worksheet.status` is `generated` or `provided-by-teacher`.
+
+        There is no third state, so asking whether the lesson "requires" a
+        worksheet invites a no that the schema never offered - the same silent
+        skip that made the wall and stick-in spawns unconditional.
+        """
+        render = self.run_slice("worksheet-render").stdout.decode("utf-8")
+        self.assertIn("`worksheet.status`", render)
+        self.assertIn("rather than judging the need", render)
+        self.assertNotIn(
+            "the approved lesson requires a generated worksheet",
+            render,
+        )
 
     def test_runtime_markers_are_unique(self) -> None:
         data = PLAYBOOK.read_bytes()
