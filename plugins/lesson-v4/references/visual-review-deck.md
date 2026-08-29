@@ -59,20 +59,22 @@ On a completed sort, check whether the item labels use the category areas confid
 
 ### Optional decoration
 
-When P3 is present, check relevance, subordination and non-obstruction. Covering
-meaningful text, a task, answer/workspace, label or figure is BLOCKING. Harmless
-cosmetic awkwardness is MINOR at most.
+This layer has exactly one fault: a picture covering something a child has to
+read. Text, a number, a table cell, a label, a task, an answer, a workspace or
+part of a figure, obscured enough that reading it is harder than it should be.
+That is BLOCKING.
 
-Missing P3 by itself is never a fault.
+Nothing else about this layer is a finding. Not whether the drawing was a good
+choice, not whether a different one would have suited the lesson better, not
+whether it sits slightly awkwardly, not that a slide has none and could have had
+one, and not that the deck used fewer than you would have. Overlapping a card is
+how this layer is built to work, so overlap by itself is never the fault: the
+only question is whether something is now harder to read.
 
-When a slide reads as a wall of text or carries no imagery at all, and one specific relevant Educational SVG opportunity is plainly visible there without
-reducing P1, a MINOR finding may name that missed opportunity. The finding must
-name the actual nearby concept that could carry the visual; never report
-"needs decoration" without a specific relevant use.
-
-Raise at most two of these for a deck. What is worth catching is a deck that
-forgot the layer, not a tally of every slide that could have taken one more
-picture, and a long list of them would drown the findings that stop a lesson
-working.
+That boundary is the point of the layer. It carries no teaching and costs a child
+nothing, so a reviewer's view of it is taste, and taste findings crowd out the
+ones that stop a lesson working. Whether a deck uses the layer well is the
+teacher's call, and the Slide Designer already reports how many pictures it
+authored.
 
 P3 has no cross-resource carry-across requirement.

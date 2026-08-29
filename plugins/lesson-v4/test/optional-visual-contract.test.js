@@ -157,10 +157,12 @@ test("working-wall authorities agree that P3 never earns wall-worthiness", () =>
 test("review contract makes contextual P3-only repair first", () => {
   const reviewer = read("agents/visual-reviewer.md");
   assert.match(reviewer, /smallest sound P3-only repair/);
-  assert.match(
-    reviewer,
-    /moving.*resizing.*prominence\/transparency.*replacing.*removing/s
-  );
+  // The repairs are the ones that clear an obstruction. Swapping in a different
+  // drawing was on this list, but a different drawing at the same size and place
+  // covers exactly what the first one did, so it never was a repair for the one
+  // fault this layer can have.
+  assert.match(reviewer, /move it.*smaller.*fade it further.*remove it/s);
+  assert.doesNotMatch(reviewer, /replacing the source/);
   assert.match(reviewer, /Removal is always valid/);
   assert.doesNotMatch(reviewer, /repair in this order/i);
 });

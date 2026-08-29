@@ -118,13 +118,28 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn("Never use an unrelated drawing to reach a number", self.context)
         self.assertIn("Zero is valid only when", self.context)
 
-    def test_the_reviewer_can_notice_a_bare_slide_but_not_nag(self) -> None:
-        """The backstop only worked when a whole deck had nothing at all."""
+    def test_the_reviewer_judges_legibility_and_nothing_else(self) -> None:
+        """Taste findings on a layer that teaches nothing crowd out real faults.
+
+        The reviewer used to weigh relevance, cosmetic awkwardness and whether a
+        slide had missed an opportunity. All three are opinions about a layer
+        that costs a child nothing, and how much of it a deck uses is the
+        teacher's call rather than a fault to report.
+        """
         review = read("references", "visual-review-deck.md")
-        self.assertIn("reads as a wall of text or carries no imagery at all", review)
-        self.assertNotIn("When the entire deck contains no optional P2/P3 visual", review)
-        self.assertIn("Raise at most two of these for a deck", review)
-        self.assertIn("Missing P3 by itself is never a fault", review)
+        self.assertIn("exactly one fault: a picture covering something a child has to read", review)
+        self.assertIn("overlap by itself is never the fault", review)
+        for retired in (
+            "check relevance, subordination and non-obstruction",
+            "Harmless cosmetic awkwardness is MINOR at most",
+            "a MINOR finding may name that missed opportunity",
+        ):
+            with self.subTest(retired=retired):
+                self.assertNotIn(retired, review)
+
+        reviewer = read("agents", "visual-reviewer.md")
+        self.assertIn("judge legibility rather than taste", reviewer)
+        self.assertIn("the choice of drawing itself are never findings", reviewer)
 
     def test_previews_are_compared_on_one_sheet(self) -> None:
         """One look per drawing is the cost that kept a deck down to one or two."""
@@ -140,7 +155,8 @@ class OptionalPicturePlacementTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.context)
         self.assertIn("P3 is always the first thing to remove", self.designer)
-        self.assertIn("Missing P3 and deliberate sparseness are never findings", self.reviewer)
+        self.assertIn("Missing P3, deliberate sparseness", self.reviewer)
+        self.assertIn("are never findings", self.reviewer)
 
 
 if __name__ == "__main__":

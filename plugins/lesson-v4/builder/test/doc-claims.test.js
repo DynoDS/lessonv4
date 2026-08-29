@@ -502,13 +502,12 @@ test("context pictures require an explicit slide opportunity pass without creati
   );
 });
 
-test("deck visual review checks main-task prominence alignment active work surfaces group distinction and specific optional-visual misses", () => {
+test("deck visual review checks main-task prominence alignment active work surfaces and group distinction", () => {
   for (const token of [
     "Main task prominence.",
     "Whole-composition alignment.",
     "Active work surface dominance.",
-    "Parallel-group distinction.",
-    "one specific relevant Educational SVG opportunity"
+    "Parallel-group distinction."
   ]) {
     assert.ok(
       VISUAL_REVIEW_DECK_MD.includes(token),

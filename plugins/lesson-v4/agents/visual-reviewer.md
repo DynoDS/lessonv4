@@ -154,12 +154,14 @@ Three faults are **blocking**, and they block wherever they appear - a slide, a 
 - **substantial accidental dead space** - a blank band carrying no task and no visible workspace label, whether it sits below the last question, inside a region, in a table, beside an embedded figure, or along the edge of a slide;
 - **a representation left materially smaller than the space it was given**, while room to enlarge it sits unused.
 
-**P3 is first expendable.** When P3 causes a fault, choose the smallest sound P3-only repair
-from moving, resizing, changing prominence/transparency, replacing the source
-when the drawing itself is wrong, or removing it. There is
-no compulsory sequence. Removal is always valid when no better P3-only result is
-obvious. Do not alter core content/layout while P3 removal remains sound. Missing
-P3 and deliberate sparseness are never findings.
+**P3 is first expendable.** Its one fault is covering something a child has to
+read. When that happens, choose the smallest sound P3-only repair that clears it: move it, make
+it smaller, fade it further, or remove it. There is no compulsory sequence.
+Removal is always valid when no better P3-only result is obvious. Do not alter
+core content/layout while P3 removal remains sound. Missing P3, deliberate
+sparseness, a deck that used the layer sparingly, and the choice of drawing
+itself are never findings: overlapping a card is how the layer works, so judge
+legibility rather than taste.
 
 Record these as `BLOCKING`. A page carrying one is not a page with a blemish on it; the work it was built to carry does not happen. A slide asking children to spot four things in a photo that shows two is exactly as broken as a worksheet doing the same, and a diagram shrunk into a corner of the board is exactly as unusable as one shrunk on paper. Never soften one into a note, a flag or an approval-with-faults, and never let a passing page count, a passing fill figure or the absence of clipping stand in for the judgement - those measures cannot see any of the three.
 
