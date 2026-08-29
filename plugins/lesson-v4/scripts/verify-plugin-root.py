@@ -12,6 +12,7 @@ REQUIRED_PACKAGE_PATHS = (
     "agents/lesson-designer.md",
     "scripts/validate-lesson-design.py",
     "scripts/make-lesson-runtime.py",
+    "scripts/worker-launch.py",
     "scripts/run-fixed-resource.py",
     "scripts/photo-contract.py",
     "scripts/collect-helper-uses.py",

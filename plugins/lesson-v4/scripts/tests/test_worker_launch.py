@@ -1,0 +1,235 @@
+"""Every named worker launches at the model and effort its role file declares.
+
+The playbook used to say "respect the model and effort declared in its
+frontmatter", which asked the orchestrator to open the role file, translate its
+shorthand into the host's model name and fill two extra fields, all from memory
+at the moment of spawning, with nothing checking the result. One run launched
+nine workers with no model or effort at all, so every one of them inherited the
+controller's; other runs sent focused repairs out on the wrong model. Both runs
+finished reporting success.
+
+These tests hold both halves of the repair: the resolver that removes the
+remembering, and the audit that reads the host's own launch record so the answer
+does not depend on the orchestrator's account of itself.
+"""
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts" / "worker-launch.py"
+AGENTS = ROOT / "agents"
+
+
+def run(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), *args],
+        capture_output=True,
+        text=True,
+    )
+
+
+def write_session(path: Path, launches: list[dict]) -> Path:
+    """Write a session record in the shape the host actually produces."""
+    lines = []
+    for launch in launches:
+        lines.append(
+            json.dumps(
+                {
+                    "type": "response_item",
+                    "payload": {
+                        "type": "function_call",
+                        "name": "spawn_agent",
+                        "arguments": json.dumps(launch),
+                    },
+                }
+            )
+        )
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
+class SpecTests(unittest.TestCase):
+    def test_every_role_the_package_ships_resolves(self) -> None:
+        """A new role with an unmapped model must fail here, not in a lesson."""
+        roles = sorted(path.stem for path in AGENTS.glob("*.md"))
+        self.assertTrue(roles)
+        args: list[str] = []
+        for role in roles:
+            args += ["--role", role]
+        result = run("spec", *args)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for role in roles:
+            with self.subTest(role=role):
+                self.assertIn(f"role: {role}\n", result.stdout)
+
+    def test_spec_prints_fields_that_can_be_copied_without_translation(self) -> None:
+        result = run("spec", "--role", "lesson-designer")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("WORKER_LAUNCH_OK", result.stdout)
+        for line in (
+            "task_name: lesson_designer",
+            "model: gpt-5.6-sol",
+            "reasoning_effort: xhigh",
+            "fork_turns: none",
+        ):
+            with self.subTest(line=line):
+                self.assertIn(line, result.stdout)
+
+    def test_a_mechanical_role_gets_a_real_model_rather_than_a_guess(self) -> None:
+        """`haiku` names a Claude model; five roles carry it and Codex has none."""
+        result = run("spec", "--role", "working-wall-builder")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("model: gpt-5.6-luna", result.stdout)
+        self.assertIn("reasoning_effort: low", result.stdout)
+
+    def test_an_unknown_role_fails_loudly(self) -> None:
+        result = run("spec", "--role", "not-a-role")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("WORKER_LAUNCH_ERROR: unknown role: not-a-role", result.stderr)
+
+    def test_claude_needs_no_fields_because_the_host_reads_the_agent(self) -> None:
+        result = run("spec", "--host", "claude", "--role", "slide-designer")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("WORKER_LAUNCH_HOST_NATIVE: slide-designer", result.stdout)
+
+
+class AuditTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = Path(__file__).resolve().parent / "_worker_launch_tmp"
+        self.tmp.mkdir(exist_ok=True)
+        self.session = self.tmp / "rollout-test.jsonl"
+
+    def tearDown(self) -> None:
+        for path in self.tmp.glob("*"):
+            path.unlink()
+        self.tmp.rmdir()
+
+    def audit(self) -> subprocess.CompletedProcess:
+        return run("audit", "--session", str(self.session))
+
+    def test_the_reported_failure_is_caught(self) -> None:
+        """Nine workers launched with neither field set, all inheriting."""
+        write_session(
+            self.session,
+            [
+                {"task_name": "lesson_designer", "fork_turns": "none"},
+                {"task_name": "design_reviewer", "fork_turns": "none"},
+                {"task_name": "slide_designer", "fork_turns": "none"},
+            ],
+        )
+        result = self.audit()
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("launched inherited/inherited", result.stdout)
+        self.assertIn(
+            "WORKER_LAUNCH_AUDIT_FAILED: 3 of 3 named workers", result.stdout
+        )
+
+    def test_a_correct_run_passes(self) -> None:
+        write_session(
+            self.session,
+            [
+                {
+                    "task_name": "lesson_designer",
+                    "model": "gpt-5.6-sol",
+                    "reasoning_effort": "xhigh",
+                    "fork_turns": "none",
+                },
+                {
+                    "task_name": "image_scout_p1",
+                    "model": "gpt-5.6-luna",
+                    "reasoning_effort": "max",
+                    "fork_turns": "none",
+                },
+            ],
+        )
+        result = self.audit()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("WORKER_LAUNCH_AUDIT_OK: 2 named workers", result.stdout)
+
+    def test_the_wrong_model_is_caught_even_when_both_fields_were_set(self) -> None:
+        """The quieter half of the fault: set, but set to the wrong thing."""
+        write_session(
+            self.session,
+            [
+                {
+                    "task_name": "worksheet_designer",
+                    "model": "gpt-5.6-terra",
+                    "reasoning_effort": "high",
+                    "fork_turns": "none",
+                }
+            ],
+        )
+        result = self.audit()
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("wanted gpt-5.6-sol/medium", result.stdout)
+        self.assertIn("launched gpt-5.6-terra/high", result.stdout)
+
+    def test_a_repair_role_is_matched_by_its_longest_role_prefix(self) -> None:
+        """A focused repair has its own settings; the base role's would pass wrongly."""
+        write_session(
+            self.session,
+            [
+                {
+                    "task_name": "slide_designer_focused_repair",
+                    "model": "gpt-5.6-sol",
+                    "reasoning_effort": "medium",
+                    "fork_turns": "none",
+                }
+            ],
+        )
+        result = self.audit()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("WORKER_LAUNCH_AUDIT_OK: 1 named workers", result.stdout)
+
+    def test_a_run_specific_suffix_still_matches_its_role(self) -> None:
+        write_session(
+            self.session,
+            [
+                {
+                    "task_name": "lesson_designer_redesign_2",
+                    "model": "gpt-5.6-sol",
+                    "reasoning_effort": "xhigh",
+                    "fork_turns": "none",
+                }
+            ],
+        )
+        result = self.audit()
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_a_name_without_its_role_is_reported_rather_than_passed_over(self) -> None:
+        """Otherwise a badly named lesson worker escapes the check in silence."""
+        write_session(
+            self.session,
+            [
+                {
+                    "task_name": "stick_in_designer",
+                    "model": "gpt-5.6-terra",
+                    "reasoning_effort": "high",
+                    "fork_turns": "none",
+                }
+            ],
+        )
+        result = self.audit()
+        self.assertIn(
+            "WORKER_LAUNCH_AUDIT_UNCHECKED: stick_in_designer", result.stdout
+        )
+
+    def test_a_missing_record_degrades_rather_than_stopping_the_run(self) -> None:
+        result = run("audit", "--session", str(self.tmp / "absent.jsonl"))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("WORKER_LAUNCH_AUDIT_UNAVAILABLE", result.stdout)
+
+    def test_another_host_keeps_no_record_and_says_so(self) -> None:
+        result = run("audit", "--host", "claude")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("WORKER_LAUNCH_AUDIT_UNAVAILABLE", result.stdout)
+
+
+if __name__ == "__main__":
+    unittest.main()

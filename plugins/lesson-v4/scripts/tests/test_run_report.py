@@ -70,6 +70,7 @@ class RunReportCase(unittest.TestCase):
             "blocking": "- None.",
             "accepted": "- None.",
             "build": "- None.",
+            "launches": "WORKER_LAUNCH_AUDIT_OK: 6 named workers launched at their declared model and effort",
             "picture": "- None.",
             "helper": "- None.",
             "friction": "- None.",
@@ -84,6 +85,7 @@ class RunReportCase(unittest.TestCase):
             f"## Blocking faults\n\n{parts['blocking']}\n\n"
             f"## Accepted minor issues\n\n{parts['accepted']}\n\n"
             f"## Build attempts\n\n{parts['build']}\n\n"
+            f"## Worker launches\n\n{parts['launches']}\n\n"
             f"## Picture results\n\n{parts['picture']}\n\n"
             f"## Helper gaps\n\n{parts['helper']}\n\n"
             f"## Friction\n\n{parts['friction']}\n\n"
@@ -106,6 +108,25 @@ class TestRunReport(RunReportCase):
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("RUN_REPORT_OK", result.stdout)
+
+    def test_report_without_the_worker_launch_audit_is_rejected(self):
+        """A run whose workers ran on the wrong model must not report clean.
+
+        The audit is only worth having if skipping it is visible, so the report
+        has to carry one of its terminal markers rather than any prose.
+        """
+        report = self.write_report({"launches": "- All workers launched correctly."})
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("worker launches", result.stdout)
+
+    def test_a_failed_audit_is_an_acceptable_thing_to_report(self):
+        """The record stays honest; it does not withhold a package over this."""
+        report = self.write_report(
+            {"launches": "WORKER_LAUNCH_AUDIT_FAILED: 8 of 8 named workers did not launch at their declared model and effort"}
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_hidden_wall_is_rejected(self):
         # The wall was earned (its spec has cards) but the report names it

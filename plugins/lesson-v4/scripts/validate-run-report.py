@@ -34,6 +34,7 @@ HEADINGS = [
     "## Blocking faults",
     "## Accepted minor issues",
     "## Build attempts",
+    "## Worker launches",
     "## Picture results",
     "## Helper gaps",
     "## Friction",
@@ -41,6 +42,15 @@ HEADINGS = [
 ]
 
 PACKAGE_STATUSES = ("COMPLETE", "PARTIAL", "BLOCKED", "UNVERIFIED")
+# Every terminal state `worker-launch.py audit` can reach. Requiring one of them
+# is what stops a run reporting clean while its workers ran on the controller's
+# model instead of their own: without this the check could simply not be run,
+# and nothing downstream would know.
+WORKER_LAUNCH_MARKERS = (
+    "WORKER_LAUNCH_AUDIT_OK",
+    "WORKER_LAUNCH_AUDIT_FAILED",
+    "WORKER_LAUNCH_AUDIT_UNAVAILABLE",
+)
 # Every terminal state the finaliser can write that leaves a lesson without its
 # picture. A publication failure is a missing picture too, so the teacher must be
 # told about it in the run report.
@@ -305,6 +315,16 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
         start = positions[heading] + 1
         end = positions[ordered[index + 1]] if index + 1 < len(ordered) else len(lines)
         sections[heading] = "\n".join(lines[start:end])
+
+    # ── Worker launches: the audit was run and its result carried over ───
+    launches = sections.get("## Worker launches", "")
+    if not any(marker in launches for marker in WORKER_LAUNCH_MARKERS):
+        failures.append(
+            "worker launches: the section must carry one line from "
+            "`worker-launch.py audit`, one of "
+            + ", ".join(WORKER_LAUNCH_MARKERS)
+            + "."
+        )
 
     # ── Outcome: exactly one allowed package status ──────────────────────
     status_lines = [

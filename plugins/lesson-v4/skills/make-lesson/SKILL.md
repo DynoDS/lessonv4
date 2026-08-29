@@ -104,6 +104,51 @@ state and the one current fault; do not give it the earlier worker conversation.
 
 ---
 
+## Worker launch settings
+
+Every named worker runs at the model and thinking level its own role file
+declares. A lesson designed at the controller's effort instead of the designer's
+is not the lesson this pipeline specifies, and nothing it writes shows the
+difference, so a run that gets this wrong reads exactly like one that got it
+right.
+
+Do not open the role file and translate its settings yourself. Ask for them:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" spec --host [codex|claude] --role [role] [--role [role] ...]
+```
+
+Copy the printed fields verbatim into the launch. Ask once per branch, naming
+every role that branch launches, rather than once per worker.
+
+Give each launch the printed `task_name`. When one launch of a role is not
+enough, append a run-specific suffix and keep the role prefix intact:
+`image_scout_p1`, `lesson_designer_redesign_1`,
+`slide_designer_focused_repair`. That name is both what the teacher sees in the
+host's agent list and what lets the launch be checked afterwards, so a name that
+drops its role costs both at once.
+
+On Codex the host keeps its own record of what it launched. Read it back:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex
+```
+
+Run it twice: once when the approved design is settled, because a design made at
+the wrong setting is cheapest to redo before anything is built on it, and once
+before the run report. Put the final marker line in the report's
+`## Worker launches` section.
+
+`WORKER_LAUNCH_AUDIT_FAILED` names each worker that ran at the wrong settings.
+Report it and say which resources it affects; do not rerun the package on your
+own initiative, because the teacher owns that cost.
+`WORKER_LAUNCH_AUDIT_UNCHECKED` names launches whose task name carried no role,
+which is a naming fault to report, not a silent pass.
+`WORKER_LAUNCH_AUDIT_UNAVAILABLE` is a host that keeps no readable record. It is
+not a fault and never stops a run.
+
+---
+
 ## Teacher-authored run input
 
 Raw teacher-authored input is durable run state, not a general worker-prompt

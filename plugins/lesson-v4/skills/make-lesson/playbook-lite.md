@@ -12,7 +12,8 @@ For a named model worker:
 
 1. give it only its role file, authoritative input paths, owned output paths,
    required check and terminal marker;
-2. launch it directly with clean context;
+2. launch it directly with clean context, at the model, effort and task name
+   `worker-launch.py spec` prints for its role;
 3. wait for it through the host's ordinary worker-wait mechanism;
 4. require its owned files and exact terminal marker;
 5. run the named deterministic validator immediately.
@@ -101,8 +102,9 @@ builder owns its wall-family archive.
 
 ## Phase 1 — Run the Lesson Designer (Sequential, Blocking)
 
-Launch `lesson-designer` directly. Respect the model and effort declared in its
-frontmatter.
+Launch `lesson-designer` directly, using the launch fields printed by
+`worker-launch.py spec` for this role. Do not read its settings out of the role
+file yourself.
 
 ```text
 You are the lesson designer. Read your agent instructions at:
@@ -269,6 +271,12 @@ nothing.
 Append genuine corrections and remaining teacher choices to the shared build
 review log when `PLUGIN_SOURCE_ROOT` is available. Read routing values directly
 from the approved `lesson-design.json`, never from prose.
+
+With the design approved, run
+`python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex` and read
+the result. A design or review worker that ran below its declared setting is
+worth redoing here, where one worker repeats; after Phase 2 the same fault costs
+the whole package. Continue either way and carry the marker to the run report.
 
 ---
 
@@ -463,9 +471,9 @@ The assignments and their validated `manifest.json` already exist: Phase 2
 compiled and checked them before any designer launched. Do not compile again.
 
 Launch one unified `image-scout` per assignment in the manifest, up to four at
-once and no more than two direct-AI batches at once. Use role `image-scout`, its
-frontmatter model/effort, the exact assignment path, its assignment `work_root`,
-and one unique result path:
+once and no more than two direct-AI batches at once. Use role `image-scout`, the launch fields printed by
+`worker-launch.py spec --role image-scout`, the exact assignment path, its
+assignment `work_root`, and one unique result path:
 
 ```text
 [WORKING_DIR]/picture-results/[batch-id]/result.json
@@ -953,6 +961,8 @@ Write `[WORKING_DIR]/run-report.md` with:
 - blocking faults, accepted minor findings and failed build attempts;
 - picture outcomes, and every helper gap: each visual answered with a
   substitute, and any helper left waiting in `pending-helper/`;
+- the worker-launch audit marker under `## Worker launches`, from
+  `worker-launch.py audit` run immediately beforehand;
 - worker friction lines;
 - shared investigation-log status.
 
