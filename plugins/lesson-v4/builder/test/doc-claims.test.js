@@ -469,9 +469,33 @@ test('context pictures own the optional pass and the core keeps the execution an
     /After the core slide geometry is settled, run the one whole-deck opportunity pass/
   );
   assert.match(SLIDE_DESIGNER_MD, /strict order P1 > P2 > P3/);
-  assert.match(SLIDE_DESIGNER_MD, /P1 already carries the meaning/);
   assert.match(SLIDE_DESIGNER_MD, /Optional visual pass:/);
   assert.match(SLIDE_DESIGNER_MD, /Optional visual zero reason:/);
+
+  // "P1 already carries the meaning" used to be the first of four answers, which
+  // turned a photograph into a full stop: a deck came back with seventeen slides
+  // and no drawing on any of them, explained as most slides already having
+  // strong P1 visuals. A photograph settles what a picture may displace, never
+  // whether the slide has room to spare.
+  assert.doesNotMatch(SLIDE_DESIGNER_MD, /P1 already carries the meaning/);
+  assert.match(
+    SLIDE_DESIGNER_MD,
+    /A photograph on this slide does not answer question 1/
+  );
+  assert.match(SLIDE_DESIGNER_MD, /There is no deck budget/);
+
+  // The pass leaves a record, which is what makes slide-by-slide a thing that
+  // happened rather than a thing that was claimed.
+  assert.match(SLIDE_DESIGNER_MD, /optional-picture-pass\.json/);
+  assert.match(SLIDE_DESIGNER_MD, /OPTIONAL_PICTURE_PASS_OK/);
+  assert.match(
+    CONTEXT_PICTURES_MD,
+    /The pass writes a record, one line per slide/
+  );
+  assert.match(
+    CONTEXT_PICTURES_MD,
+    /There is no code for a deck-level answer/
+  );
 });
 
 test("context pictures require an explicit slide opportunity pass without creating a visual quota", () => {

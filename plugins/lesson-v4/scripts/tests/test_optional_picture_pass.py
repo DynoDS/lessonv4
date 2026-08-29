@@ -1,0 +1,237 @@
+"""The optional-picture pass has to answer for every slide, in writing.
+
+A deck of seventeen slides came back with no drawing on any of them. Guidance had
+already been rewritten twice - judge slide by slide, expect several across a
+deck, a deck-level reason never zeroes the layer - and the deck still came back
+empty, explained afterwards as "I treated the deck as sufficiently visual" and
+"most slides already had strong P1 visuals".
+
+Guidance kept losing because the pass had no output. A run that weighed every
+slide and a run that had one thought about the whole deck produced the identical
+artefact, so nothing could tell them apart. The pass now writes one line per
+slide and this check reads it, which is where the two answers the teacher named
+stop being available: there is no reason code for a photograph already being on
+the slide, and none for a picture already used on another slide.
+
+Nothing here forces a picture onto any slide. A full slide stays bare and says
+so. What is gone is answering for the whole deck at once, silently.
+"""
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts" / "check-optional-pictures.py"
+LIBRARY = ROOT.parents[1] / "educational-svg"
+LIBRARY_AVAILABLE = (LIBRARY / "search.js").is_file() and (LIBRARY / "library").is_dir()
+
+
+def deck(*slides: dict) -> dict:
+    return {"lessonName": "test", "slides": list(slides)}
+
+
+def slide_with(kind: str) -> dict:
+    return {"title": "t", "content": [{"text": "a", "picture": {"kind": kind}}]}
+
+
+def bare_slide() -> dict:
+    return {"title": "t", "content": [{"text": "a"}]}
+
+
+class CheckRunner(unittest.TestCase):
+    def run_check(self, record: dict, lesson: dict, *, library: bool = False):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            record_path = root / "optional-picture-pass.json"
+            lesson_path = root / "lesson.json"
+            record_path.write_text(json.dumps(record), encoding="utf-8")
+            lesson_path.write_text(json.dumps(lesson), encoding="utf-8")
+            argv = [
+                sys.executable, "-S", str(SCRIPT),
+                "--pass-record", str(record_path),
+                "--lesson", str(lesson_path),
+            ]
+            if library:
+                argv += ["--library-root", str(LIBRARY)]
+            return subprocess.run(argv, capture_output=True, text=True)
+
+
+class EverySlideAnswersTests(CheckRunner):
+    def test_a_slide_left_out_of_the_record_fails(self):
+        # One thought about the whole deck leaves most slides unanswered. This is
+        # the check that makes the slide-by-slide rule a thing you do.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(record, deck(bare_slide(), bare_slide(), bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("every slide answers for itself", result.stderr)
+        self.assertIn("2, 3", result.stderr)
+
+    def test_a_complete_record_passes_and_prints_the_deck_shape(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+            {"slide": 2, "decision": "none", "reason": "full"},
+            {"slide": 3, "decision": "none", "reason": "competes"},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg"), bare_slide(), bare_slide())
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OPTIONAL_PICTURE_PASS_OK 3 slides", result.stdout)
+        self.assertIn("OPTIONAL_PICTURE_SHAPE: 1,0,0", result.stdout)
+        self.assertIn("1 drawing(s)", result.stdout)
+
+    def test_a_slide_recorded_twice_fails(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+            {"slide": 1, "decision": "none", "reason": "competes"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("recorded twice", result.stderr)
+
+
+class TheTwoBannedAnswersTests(CheckRunner):
+    def test_a_photograph_already_on_the_slide_is_not_a_reason(self):
+        # "I already have a P1 picture here" was one of the two answers that
+        # emptied the layer. A photograph settles whether a duplicating P2 is
+        # wanted; it says nothing about whether the slide has room to spare.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "p1-already-here"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("no code for a deck-level answer", result.stderr)
+        self.assertIn("a photograph already on this slide", result.stderr)
+
+    def test_a_picture_used_on_another_slide_is_not_a_reason(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "already-used-one"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("already used on", result.stderr)
+
+    def test_the_deck_reading_as_visual_enough_is_not_a_reason(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "deck-is-visual-enough"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("reading as visual enough", result.stderr)
+
+    def test_each_of_the_five_slide_level_reasons_is_accepted(self):
+        for reason in ("full", "competes", "would-mislead", "library-unavailable"):
+            with self.subTest(reason=reason):
+                record = {"schemaVersion": 1, "slides": [
+                    {"slide": 1, "decision": "none", "reason": reason},
+                ]}
+                result = self.run_check(record, deck(bare_slide()))
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class TheRecordMatchesTheDeckTests(CheckRunner):
+    def test_a_used_entry_with_no_picture_on_the_slide_fails(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("carries no optional picture", result.stderr)
+
+    def test_a_none_entry_on_a_slide_that_has_one_fails(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(record, deck(slide_with("educational-svg")))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("recorded as `none` but carries", result.stderr)
+
+
+class EvidenceTests(CheckRunner):
+    def test_nothing_fits_without_named_searches_fails(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("names the searches it ran", result.stderr)
+        self.assertIn("a library nobody opened", result.stderr)
+
+    def test_an_emoji_only_slide_owes_the_same_evidence(self):
+        # The reported failure exactly: an emoji weather strip typed onto the one
+        # slide that wanted a picture, on a deck whose library was never opened.
+        # An emoji is the fallback route, so choosing one asserts the library had
+        # nothing better - the same claim as nothing-fits.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["emoji"]},
+        ]}
+        result = self.run_check(record, deck(slide_with("emoji")))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("names the searches it ran", result.stderr)
+
+    def test_a_drawing_slide_owes_no_search_evidence(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+        ]}
+        result = self.run_check(record, deck(slide_with("educational-svg")))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
+@unittest.skipUnless(LIBRARY_AVAILABLE, "the drawing library is not on this machine")
+class EvidenceAgainstTheRealLibraryTests(CheckRunner):
+    def test_a_rejection_that_is_not_in_the_library_fails(self):
+        # A drawing you never saw cannot be one you rejected. The identifier has
+        # to come out of a search that actually ran.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["sun"], "rejected": ["standard/zz/invented-drawing.svg"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("is not in the library", result.stderr)
+
+    def test_nothing_fits_on_a_search_that_returned_drawings_needs_a_rejection(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["sun"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("turned down", result.stderr)
+
+    def test_a_real_rejection_is_accepted(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["sun"], "rejected": ["cartoon/su/sun.svg"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class ContractTests(unittest.TestCase):
+    def test_the_designer_and_the_orchestrator_both_run_it(self):
+        designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+        playbook = (
+            ROOT / "skills" / "make-lesson" / "playbook-lite.md"
+        ).read_text(encoding="utf-8")
+        for text in (designer, playbook):
+            self.assertIn("check-optional-pictures.py", text)
+            self.assertIn("OPTIONAL_PICTURE_PASS_OK", text)
+        # The designer cannot close on its own word for the one thing that
+        # separates a real pass from a claimed one.
+        self.assertIn("Run the optional-picture check yourself", playbook)
+
+    def test_the_deck_reviewer_may_read_the_record(self):
+        reviewer = (ROOT / "agents" / "visual-reviewer.md").read_text(encoding="utf-8")
+        self.assertIn("optional-picture-pass.json", reviewer)
+
+
+if __name__ == "__main__":
+    unittest.main()

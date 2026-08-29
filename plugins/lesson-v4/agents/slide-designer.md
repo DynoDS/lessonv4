@@ -277,12 +277,30 @@ While composing a light slide, ask whether a relevant P2 belongs before settling
 
 After the core geometry is sound, run one explicit whole-deck pass under the strict order P1 > P2 > P3.
 
-For every credible opportunity, record one decision:
+Go slide by slide, every slide, and write one line each into
+`[WORKING_DIR]/optional-picture-pass.json` as you go. The record's shape, the
+five reason codes and the evidence a declined slide owes are in
+`context-pictures.md`; the questions you are answering are these:
 
-1. P1 already carries the meaning.
-2. P2 adds useful context without competing.
-3. P3 adds safe decoration without competing.
-4. No optional visual belongs here.
+1. **Has this slide room to spare?** Room is physical: space its own content is
+   not using at a readable size. This is the only question that decides whether
+   the slide is a candidate.
+2. **If it has room, what relevant drawing belongs in it?** A P2 when it helps a
+   child recognise, locate or understand something here; a P3 when the slide
+   reads flat and there is nothing to explain.
+3. **If nothing belongs, which of the five reasons is true?**
+
+**A photograph on this slide does not answer question 1.** P1 beating P2 settles
+what a picture may *displace* and whether a second picture saying the same thing
+is wanted. It never settles whether the slide has room, and a slide with a strong
+photograph and a wide empty margin has room. Treating P1's presence as the end of
+the pass is how a deck came back with seventeen slides and no drawing on any of
+them.
+
+**A picture on another slide answers nothing at all.** There is no deck budget:
+one slide's picture neither earns nor spends anything anywhere else. Each slide's
+answer belongs to that slide, which is why a normal deck's shape comes out uneven
+- 2, 0, 1, 0, 0, 3, 1 - rather than flat.
 
 Competing is physical and judged on this slide alone: covering, shrinking or
 crowding what a child must read here. The deck's P1 visuals, however strong or
@@ -430,6 +448,19 @@ SLIDE_DESIGN_CHECK_OK: [N] slides
 
 `[N]` must equal the candidate's `slides` array length.
 
+Then check the optional-picture pass against the same candidate:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+  --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
+  --lesson "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
+  --library-root "[EDUCATIONAL_SVG_ROOT]"
+```
+
+Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver
+returned `EDUCATIONAL_SVG_UNAVAILABLE`. A failure here names the slide and what
+is missing from its line; repair the record, or the deck, and run it again.
+
 A pass also prints, immediately before that marker:
 
 ```text
@@ -562,8 +593,16 @@ Report briefly:
 - any optional icon requests written;
 - any notable visual decision that the teacher would genuinely care about.
 
-Include the optional-visual result in the completion report, copied from the
-check's own `SLIDE_DESIGN_OPTIONAL_PICTURES` line rather than counted by hand:
+Include the optional-visual result in the completion report, copied from the two
+checks' own lines rather than counted by hand - the shape line first, because it
+is what shows the teacher whether the layer varies across the deck or is flat:
+
+```text
+Optional picture shape: [the OPTIONAL_PICTURE_SHAPE line verbatim]
+Optional picture totals: [the OPTIONAL_PICTURE_TOTALS line verbatim]
+```
+
+Then:
 
 ```text
 Optional visual pass: [D] Educational SVG P2/P3 requests authored, [E] emoji.

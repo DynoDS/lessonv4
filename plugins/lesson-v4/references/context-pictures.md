@@ -10,7 +10,7 @@ meaning; P3 does not. P1 always wins over both, and P2 wins over P3.
 
 ## Slide Designer read route
 
-At Slide Designer startup, read this introduction, `The boundary`, `Where an optional picture sits on a slide`, and the whole-deck opportunity-pass rules in `Priority 2 source routes`. The placement section is needed at startup rather than later because a light slide may choose its template around a P2, and by the opportunity pass that choice has already been made. Do not load request JSON, resolver publication steps or other resource surfaces at startup.
+At Slide Designer startup, read this introduction, `The boundary`, `Where an optional picture sits on a slide`, and the whole-deck opportunity-pass rules in `Priority 2 source routes`, including `The pass writes a record, one line per slide` - the record is written as the pass goes, so reading it afterwards is reading it too late. The placement section is needed at startup rather than later because a light slide may choose its template around a P2, and by the opportunity pass that choice has already been made. Do not load request JSON, resolver publication steps or other resource surfaces at startup.
 
 After the core slide geometry is settled, run the one whole-deck opportunity pass. If that pass selects an ordinary P2, semantic vocabulary P2 or P3 request, read `Request shape`, `How a designer searches and chooses`, the Slides part of `Timing by resource`, and the Slides line in `Surface-specific limits` before authoring or resolving it.
 
@@ -224,6 +224,90 @@ cannot say what the search returned, you have not made the choice yet.
   sentence about how visual the deck already is.
 - Never use an unrelated drawing to reach a number. A drawing that does not
   belong to this lesson's subject is worse on the slide than no drawing at all.
+
+### The pass writes a record, one line per slide
+
+The pass has an output, and it is not the deck. It is
+`[WORKING_DIR]/optional-picture-pass.json`: one entry for every slide, written as
+you go, and checked before the deck is promoted.
+
+This exists because the pass used to leave no trace. A designer that weighed
+seventeen slides one at a time and a designer that had a single thought about the
+whole deck produced the identical file, so nothing downstream could tell them
+apart and the honest version was never the cheaper one. Writing a line per slide
+is what makes the slide-by-slide rule a thing you do rather than a thing you
+claim.
+
+```json
+{
+  "schemaVersion": 1,
+  "slides": [
+    { "slide": 1, "decision": "used", "pictures": ["educational-svg"] },
+    { "slide": 2, "decision": "none", "reason": "full" },
+    { "slide": 4, "decision": "none", "reason": "nothing-fits",
+      "searched": ["monsoon", "rainy season", "year of weather"],
+      "rejected": ["cartoon/ra/rain-cloud.svg", "standard/we/weather-icons.svg"] }
+  ]
+}
+```
+
+`decision` is `used` or `none`. On `used`, `pictures` lists the kinds you placed
+there, and the check reads the deck to confirm they are really on that slide.
+
+On `none`, `reason` is one of exactly five, and every one of them is a claim
+about **this slide**:
+
+| Reason | What you are saying |
+| --- | --- |
+| `full` | This slide's own content already fills it at a readable size. There is no spare room. |
+| `competes` | A picture would cover, shrink or crowd what a child has to read here. |
+| `would-mislead` | A drawing here would bias, answer or pre-empt the task. The rainforest photo beside "which biome?" is this. |
+| `nothing-fits` | You searched the library for this slide and nothing suitable came back. |
+| `library-unavailable` | The library is not on this machine. |
+
+**There is no code for a deck-level answer, and that is deliberate.** "The deck
+is already visual enough", "I used one on slide 4 already", and "this slide has a
+photograph on it" are the three answers that emptied the layer, and none of them
+can be written down. A photograph settles whether a P2 saying the same thing is
+wanted; it says nothing about whether this slide has room to spare, which is the
+only question the pass asks. There is no deck budget: a picture on one slide
+neither earns nor spends anything on another.
+
+**`nothing-fits` is paid for, not asserted.** Name the searches you ran in
+`searched`. Where those searches return drawings, name in `rejected` at least one
+real `libraryId` you looked at and turned down. The check re-runs your searches
+against the real library and confirms each rejected drawing exists, so a drawing
+you never saw cannot be one you rejected. Say nothing-fits about drawings you
+have actually looked at.
+
+**An emoji-only slide pays the same price.** Choosing an emoji is saying the
+library had nothing better, which is the same claim as `nothing-fits`, so a
+`used` entry whose pictures are all emoji carries `searched` and `rejected` too.
+That is the exact failure this catches: an emoji weather strip typed onto the one
+slide that wanted a picture, on a deck where the library was never opened.
+
+Run the check before promoting the deck:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+  --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
+  --lesson "[the candidate lesson.json]" \
+  --library-root "[EDUCATIONAL_SVG_ROOT]"
+```
+
+Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver
+returned `EDUCATIONAL_SVG_UNAVAILABLE`.
+
+It also prints `OPTIONAL_PICTURE_SHAPE` - the per-slide counts in order, like
+`2,0,1,0,0,3,1`. That shape is the variety, made visible: a deck should read
+uneven, because a teaching slide, a task slide and a reflection slide are
+different situations. A shape that is all zeros, or the same number over and
+over, is the failure this whole section exists to catch.
+
+**Nothing here puts a picture on a slide.** A full slide stays bare and says so
+in one word. What the record removes is answering for the whole deck at once,
+quietly.
+
 
 Do not generate lesson-specific pictures with an image generator for this
 layer. Keep fixed signal icons reserved for their learned meanings and separate

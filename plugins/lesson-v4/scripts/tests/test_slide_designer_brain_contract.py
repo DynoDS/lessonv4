@@ -263,22 +263,56 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "After the core slide geometry is settled, run the one whole-deck opportunity pass",
             self.context,
         )
-        self.assertIn(
-            "verify that the earlier optional P2/P3 opportunity pass",
-            self.profile,
-        )
+        # The reviewer checks the pass; it does not run one. Until the pass wrote
+        # a record there was nothing to check it against, so the profile now
+        # names the record rather than asking for a verification it could not do.
+        self.assertIn("optional-picture-pass.json", self.profile)
+        self.assertIn("check the earlier optional P2/P3 pass", self.profile)
         self.assertNotIn("perform the optional P2/P3 opportunity pass", self.profile)
 
     def test_optional_pass_preserves_priority_and_no_delegation(self) -> None:
         self.assert_tokens(
             self.agent,
             "strict order P1 > P2 > P3",
-            "P1 already carries the meaning",
-            "P2 adds useful context without competing",
-            "P3 adds safe decoration without competing",
-            "No optional visual belongs here",
             "P3 is always the first thing to remove",
             "Do not create or delegate to a new agent or a separate Educational SVG resolver worker",
+        )
+
+    def test_a_photograph_on_the_slide_does_not_end_the_pass(self) -> None:
+        # "P1 already carries the meaning" used to be the first of four answers,
+        # which made a photograph a full stop rather than an answer about what a
+        # picture may displace. A deck came back with seventeen slides and no
+        # drawing on any of them, explained as "most slides already had strong P1".
+        self.assertNotIn("P1 already carries the meaning", self.agent)
+        self.assert_tokens(
+            self.agent,
+            "A photograph on this slide does not answer question 1",
+            "It never settles whether the slide has room",
+        )
+
+    def test_a_picture_elsewhere_is_not_a_budget(self) -> None:
+        self.assert_tokens(
+            self.agent,
+            "A picture on another slide answers nothing at all",
+            "There is no deck budget",
+        )
+
+    def test_the_pass_writes_a_record_the_deck_check_can_read(self) -> None:
+        # The pass used to leave no trace, so a slide-by-slide weighing and one
+        # thought about the whole deck produced the identical artefact.
+        self.assert_tokens(
+            self.agent,
+            "optional-picture-pass.json",
+            "check-optional-pictures.py",
+            "OPTIONAL_PICTURE_PASS_OK",
+        )
+        self.assert_tokens(
+            self.context,
+            "The pass writes a record, one line per slide",
+            "There is no code for a deck-level answer",
+            "`nothing-fits` is paid for, not asserted",
+            "An emoji-only slide pays the same price",
+            "OPTIONAL_PICTURE_SHAPE",
         )
 
     def test_the_library_is_the_route_and_the_emoji_is_the_fallback(self) -> None:

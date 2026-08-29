@@ -334,8 +334,8 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
   Give `helperKey` and a `reason` naming what it cannot draw, then take the
   helper route. When a helper already holds the real source for this subject,
   the route is to grow that one, not to add a second helper beside it. The
-  helper is built for a later lesson, not this one, so this visual still ends up
-  on the picture route.
+  helper is built for a later lesson, so this visual still takes the picture
+  route.
 - `substitute` - no helper should draw it: a fixed depiction of one real thing
   this lesson alone needs. Give the `reason` and take the picture route.
 
@@ -344,12 +344,11 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
 When any decision is `build`, read
 `[PLUGIN_ROOT]/references/helper-route.md` and follow it: it launches
 `helper-builder` to write the helper into `[WORKING_DIR]/pending-helper/` for a
-person to install later, and closes the decision. A helper built here is live
-for nobody in this run, so the decision closes as `substitute` and the visual
-takes the picture route below. The check must print `HELPER_COVERAGE_OK` before
-any Phase 2 designer. Nothing in Phase 2 waits on the build itself: it writes
-into the working folder and changes no catalogue a designer reads. Read the
-route only when a `build` decision exists.
+person to install later, and closes the decision as `substitute`, because a
+helper built here is live for nobody in this run. The check must print
+`HELPER_COVERAGE_OK` before any Phase 2 designer, but nothing in Phase 2 waits
+on the build itself: it changes no catalogue a designer reads. Read the route
+only when a `build` decision exists.
 
 ### The picture route
 
@@ -474,6 +473,7 @@ PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson.json
+- [WORKING_DIR]/optional-picture-pass.json
 
 This worker creates JSON only. Do not load or use the global `Presentations`
 skill. The fixed slide builder creates the PowerPoint after this worker
@@ -484,11 +484,24 @@ node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
   "[WORKING_DIR]/lesson.json"
 
 Require: Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides
+
+python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+  --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
+  --lesson "[WORKING_DIR]/lesson.json" \
+  --library-root "[EDUCATIONAL_SVG_ROOT]"
+
+Require: OPTIONAL_PICTURE_PASS_OK
 TERMINAL_STATE: COMPLETE
 ```
 
-Wait for `lesson.json` and require the slide-design marker. Preserve every
+Wait for both files and require both markers. Preserve every
 `BUILD_DIAGNOSTIC:` line for a focused Slide Designer repair.
+
+Run the optional-picture check yourself too, passing `--library-root` only when
+the resolver found one: it is what separates a pass weighed slide by slide from
+one thought about the whole deck, so the designer cannot close on its own word
+for it. Carry its `OPTIONAL_PICTURE_SHAPE` and `OPTIONAL_PICTURE_TOTALS` lines
+into the run report.
 
 ---
 
@@ -591,14 +604,11 @@ python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
 Adaptation may add only `adaptation-photo-###` entries; it may not mutate the
 frozen initial entries.
 
-Because `--lesson-design` is supplied, this command runs the photo cap and the
-lesson-design validator against the provisional contract itself, and fails if
-either does. **Do not run the validator again by hand.** A second run makes no
-check the command has not already made, and the invocation is easy to get wrong:
-`--initial-photo-namespace` belongs only to the Phase 1 contract, where every id
-is `photo-###`. Applied to a contract carrying adaptation photos it rejects
-perfectly valid ids, and the worksheet then waits behind a diagnosis nobody
-needed.
+With `--lesson-design` supplied this runs the photo cap and the lesson-design
+validator itself and fails if either does. **Do not run the validator again by
+hand.** `--initial-photo-namespace` belongs to the Phase 1 contract alone, and on
+a contract carrying adaptation photos it rejects valid ids and stalls the
+worksheet behind a needless diagnosis.
 
 `PHOTO_CONTRACT_PROVISIONAL_OK 0` means this adaptation asked for no pictures.
 The command refuses a file that is not the adaptation document, so a zero can no
@@ -947,9 +957,8 @@ Require exactly: LESSON_DESIGN_OK
 TERMINAL_STATE: COMPLETE
 ```
 
-No `--initial-photo-namespace` here. By this point the canonical contract may
-carry adaptation photos promoted in Phase 2, and that flag exists only for the
-Phase 1 contract, where every id is `photo-###`.
+No `--initial-photo-namespace` here: the canonical contract may already carry
+adaptation photos promoted in Phase 2.
 
 Return the same three repair-impact fields with that terminal state.
 
@@ -1034,11 +1043,9 @@ Write `[WORKING_DIR]/run-report.md` with:
 - blocking faults, accepted minor findings and failed build attempts;
 - picture outcomes, and every helper gap: each visual answered with a
   substitute, and every helper this run built and left waiting in
-  `pending-helper/`. For each waiting helper, say in plain English what it
-  draws, name the exact folder, and say that `/install-helper` over that folder
-  is what puts it into the engine. It was built for the teacher to install and
-  nothing else surfaces it, so a helper the report does not name is a helper
-  nobody will ever install;
+  `pending-helper/`. Say in plain English what each waiting helper draws, name
+  its exact folder, and say that `/install-helper` over that folder installs it.
+  Nothing else surfaces it, so one the report omits is one nobody installs;
 - the worker-launch audit marker under `## Worker launches`, from
   `worker-launch.py audit` run immediately beforehand;
 - worker friction lines;

@@ -483,7 +483,7 @@ class HelperRouteContractTests(unittest.TestCase):
         text = PLAYBOOK.read_text(encoding="utf-8")
         self.assertIn("pending-helper/", text)
         self.assertIn("/install-helper", text)
-        self.assertIn("is what puts it into the engine", text)
+        self.assertIn("installs it", text)
 
     def test_the_installer_command_exists_and_never_publishes_on_its_own(self):
         command = ROOT / "commands" / "install-helper.md"
