@@ -125,8 +125,11 @@ not enter, consume or reduce those 16 Image Team places.
 
 The Educational SVG drawings are a large shared asset set. An install of this
 plugin may not carry them, and a working copy may sit outside the package
-entirely, so the folder is not a fixed path to be assumed. Resolve it once,
-before the opportunity pass reaches any Educational SVG decision:
+entirely, so the folder is not a fixed path to be assumed. Resolve it once, as
+the first act of the opportunity pass, before any slide's optional picture is
+decided. Not when a decision reaches the library: a designer that never looks
+never runs the check, and then reports a deck with no drawings in it as though
+the library had been consulted and found wanting.
 
 `node "[PLUGIN_ROOT]/scripts/publish-educational-svg.js" --resolve-root`
 
@@ -152,7 +155,17 @@ this reference's Educational SVG detail, and do not spend a retry on it. A
 missing optional-picture library is a quieter resource, not a fault, a helper
 gap or a blocking finding, and it never delays or stops a build.
 
-Use either an emoji or a hand-drawn Educational SVG picture.
+**Look in the Educational SVG library first, and use an emoji when nothing in it
+fits.** These are not two routes to pick between on taste. The library is the
+route; the emoji is what you fall back to when the library has no clear,
+child-suitable drawing for this item, and it is the weaker picture because the
+device draws it, not you.
+
+So an emoji is a decision made **after** a search, never instead of one. Typing
+an emoji into a slot without having searched the library for that same slot is
+not choosing the cheaper of two routes: it is skipping the route, and it reads
+afterwards exactly like a deck where the library had nothing to offer. If you
+cannot say what the search returned, you have not made the choice yet.
 
 - An emoji is the fallback route when it is clear, suitable for children and
   visually coherent with the surrounding set.
@@ -170,9 +183,10 @@ Use either an emoji or a hand-drawn Educational SVG picture.
   teaching text or an answer is still the picture a child reads the meaning
   from, so it meets the same test. A relevant emoji lifting an otherwise
   text-only line is decoration and is unaffected.
-- Prefer an Educational SVG picture when the hand-drawn object gives a cleaner,
-  calmer or more specific match. Search the shared local library after the
-  resource's design is complete. The builder never guesses the picture.
+- Search the shared local library once the resource's design is complete, and
+  take the drawing whenever one fits: it is cleaner, calmer and more specific
+  than the glyph a device happens to ship. The builder never guesses the
+  picture.
 - While composing a light slide, ask whether a relevant P2 belongs before
   settling its template, and choose one that leaves the picture somewhere to
   sit. Only a slide with genuine room to spare qualifies, and only P2 does: room
@@ -202,6 +216,12 @@ Use either an emoji or a hand-drawn Educational SVG picture.
   the P1 visuals, the sensitivity of the subject - is not competition and never
   zeroes the layer. Record that zero reason in the Slide Designer completion
   report.
+- Zero drawings is not the same as zero optional pictures, and the second is the
+  one that has to be explained. A deck whose optional layer is entirely emoji has
+  not run an empty pass: it has run a pass that never opened the library. So when
+  the drawing count is zero and the emoji count is not, the reason to record is
+  what the library search returned for those items, item by item, and not a
+  sentence about how visual the deck already is.
 - Never use an unrelated drawing to reach a number. A drawing that does not
   belong to this lesson's subject is worse on the slide than no drawing at all.
 

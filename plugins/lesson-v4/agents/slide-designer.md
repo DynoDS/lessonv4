@@ -291,7 +291,7 @@ owns the full definition.
 
 A slide that has done everything else right and still reads as a wall of text, or that carries no imagery at all, is what P3 is for: one small relevant drawing behind a card, resting over a card's edge or tucked into a corner, in space the composition already left spare.
 
-Author relevant P2 before requesting it. Request zero only when no useful P2 or safe P3 opportunity exists. Judge each slide on its own rather than against a deck quota, and vary both the drawings and where they sit: a normal deck carries several, and the same drawing in the same corner slide after slide reads as a template rather than a decision. Read the relevant specialist section of `context-pictures.md` at that decision point. Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.
+Author relevant P2 before requesting it. Request zero only when no useful P2 or safe P3 opportunity exists. Resolve the Educational SVG library as the first act of the pass, and search it for each optional picture before settling on one: an emoji is the fallback for an item the library has nothing for, not a cheaper equal, so an emoji typed in without a search is a slide the pass skipped. "The deck is already visual enough" is a deck-level judgement, and a deck-level judgement never zeroes this layer. Judge each slide on its own rather than against a deck quota, and vary both the drawings and where they sit: a normal deck carries several, and the same drawing in the same corner slide after slide reads as a template rather than a decision. Read the relevant specialist section of `context-pictures.md` at that decision point. Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.
 
 P3 is always the first thing to remove when it competes with content, task, answer, reference or readability.
 
@@ -430,6 +430,17 @@ SLIDE_DESIGN_CHECK_OK: [N] slides
 
 `[N]` must equal the candidate's `slides` array length.
 
+A pass also prints, immediately before that marker:
+
+```text
+SLIDE_DESIGN_OPTIONAL_PICTURES: [D] educational-svg, [E] emoji
+```
+
+That is the optional visual layer as it actually stands in the candidate, by
+route. Copy both numbers into the completion report. Read it as a check on
+your own pass too: `0 educational-svg` beside a non-zero emoji count means the
+library was never searched for those items, and the pass is not finished.
+
 A successful preview check also prints exactly one line of each form before the success marker:
 
 ```text
@@ -551,13 +562,21 @@ Report briefly:
 - any optional icon requests written;
 - any notable visual decision that the teacher would genuinely care about.
 
-Include exactly one optional-visual line in the completion report:
+Include the optional-visual result in the completion report, copied from the
+check's own `SLIDE_DESIGN_OPTIONAL_PICTURES` line rather than counted by hand:
 
 ```text
-Optional visual pass: [N] Educational SVG P2/P3 requests authored.
-When [N] is 0, immediately follow it with:
+Optional visual pass: [D] Educational SVG P2/P3 requests authored, [E] emoji.
+When D + E is 0, immediately follow it with:
 Optional visual zero reason: [short reason].
+When D is 0 and E is not, immediately follow it with:
+Optional visual library result: [what the library search returned for those
+items].
 ```
+
+Both numbers, always. A deck's optional layer can be entirely emoji, which is
+what a pass that never opened the library looks like from the outside, and
+reporting only the drawing count hides exactly that.
 
 Do not narrate template-by-template choices. The JSON is the detailed output.
 

@@ -2,7 +2,12 @@
 
 This is the single authoritative guide for adding a new **content helper** to the lesson-resources engine — a new kind of thing a lesson can draw (a diagram, a chart, a labelled visual). Both the `helper-builder` agent and the `/edit-templates` command read this, so the rules live here once rather than in each.
 
-Every repository-relative path in this guide is relative to the caller's verified `PLUGIN_SOURCE_ROOT`. Run git commands from `[PLUGIN_SOURCE_ROOT]/..`. This guide must never write to an installed `PLUGIN_ROOT` unless its canonical path is exactly the same as `PLUGIN_SOURCE_ROOT`.
+It is read at two different moments, and every repository-relative path in it means the same thing at both: a destination inside the package.
+
+- **Building** (the `helper-builder` agent, mid-lesson). Nothing is written into the package. Each path names where the file will land, so it is the path the file is written at inside `[WORKING_DIR]/pending-helper/<name>/`. Nothing here is rendered, guarded, versioned, committed or pushed.
+- **Installing** (`/install-helper`, or `/edit-templates` working directly). Each path is relative to the caller's verified `PLUGIN_SOURCE_ROOT` - a writable git checkout. Never write to an installed `PLUGIN_ROOT` unless its canonical path is exactly the same as `PLUGIN_SOURCE_ROOT`.
+
+The split exists because a helper is commissioned in the middle of a lesson, from one lesson's need, with nobody having read it. Building it there is right; letting it into the engine, or out to everyone the package installs for, is a decision a person makes with the pictures in front of them. So the *Verify by looking* and *Finish every install* sections below belong to the install, and everything before them belongs to the build.
 
 A content helper is small and reusable: it renders one kind of content object inside whatever zone it is handed, and the slide-designer and worksheet-designer reach for it by name. Getting one *fully* wired matters because the engine fails quietly — a helper registered in one place but not another doesn't error, it just renders as plain label text or a blank cell, and the gap only shows up when a teacher looks at a finished slide. The checklists below exist so a new helper works the first time, everywhere it is used.
 
@@ -162,6 +167,48 @@ The stick-in-sheets-designer then emits `{ "visual": "<type>", "spec": { … } }
 
 ---
 
+## Hand the helper over
+
+The build ends here. Write the drop-in complete, under `[WORKING_DIR]/pending-helper/<name>/`, laid out exactly as the package is laid out, and beside those files write `install.json` and a plain-English `README.md`.
+
+`install.json` is what the installer reads. Its shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "name": "rainfall-graph",
+  "kind": "drawn",
+  "summary": "A rainfall bar chart that redraws itself from a lesson's monthly figures.",
+  "surfaces": ["slides", "worksheets", "wall", "stick-in"],
+  "files": [
+    { "from": "shared/visuals/rainfall-graph-svg.js",
+      "to": "shared/visuals/rainfall-graph-svg.js",
+      "action": "add" }
+  ],
+  "wiring": [
+    { "file": "builder/src/content/index.js",
+      "change": "dispatch type 'rainfall-graph' to drawRainfallGraph" },
+    { "file": "shared/visual-parity.js",
+      "change": "add the rainfall-graph row: slides true, worksheets true, wall true, stick-in true" }
+  ],
+  "unproven": ["npm run check", "slide render", "worksheet render", "wall render", "stick-in render"]
+}
+```
+
+`kind` is `drawn` or `stock`. `surfaces` lists only the surfaces the helper actually serves. `files` carries every whole file you wrote: `from` is its path inside the drop-in folder, `to` is its destination inside the package (write them the same, so installing is a copy), and `action` is `add` for a new file or `replace` for a file you rewrote wholesale when growing an existing helper. `wiring` carries every surgical edit to a file that already exists - a dispatcher line, a catalogue entry, a registry key, the `shared/visual-parity.js` row - named file by file with the exact change, because those are the edits nobody can guess and the ones a missed wire hides in. `unproven` lists each check that has not been run, by name and surface.
+
+Then run:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/install-pending-helper.py" check --pending "[WORKING_DIR]/pending-helper/<name>"
+```
+
+Require `PENDING_HELPER_OK`. It proves the manifest is complete, that every file it lists is really there, and that every destination lands inside the package. It does not prove the picture is right; nothing at build time can.
+
+**Do not bump a version, commit, or push.** Those belong to the install, where a person has seen the drawing.
+
+---
+
 ## Verify by looking, not by the log
 
 A clean build log means the builder didn't choke — not that the page looks right. Always render and *look* — **and look once for every renderer the helper serves, not only the one that triggered this build.** A helper is almost always commissioned from one place (a slide that needs it now), and the natural pull is to prove it on the board and stop. But the wiring you did in step 4 spans every renderer, and the renderer you don't render is the one that silently ships text where the picture should be — most often the working wall, because its lesson usually surfaces on the board first. Treat "I have seen this figure render on each engine I wired it into" as the bar for done.
@@ -194,10 +241,13 @@ Then look at the PNGs it writes.
 
 ---
 
-## Finish every run
+## Finish every install
 
-1. **Run `npm run check`** (in `builder/`) and confirm it is green — both guards passing is the sign the manifest and every renderer's wiring agree. Fix any gap it names before committing; a red guard here is the silent-skip caught at the cheapest possible moment.
-3. **Bump the plugin version** in `[PLUGIN_SOURCE_ROOT]/.claude-plugin/plugin.json` and `[PLUGIN_SOURCE_ROOT]/.codex-plugin/plugin.json`, setting both to the same next minor version — the designers read the plugin from a version-pinned cache, so without a bump a new helper stays invisible on the next real lesson until the cache expires.
-4. **Commit and push.** The checkout above the package is its own git repo and deploys to the marketplace from `main`.
+This runs when a person installs the helper - `/install-helper` over a drop-in, or `/edit-templates` working straight in the checkout. Not at build time.
+
+1. **Run `npm run check`** (in `builder/`) and confirm it is green - both guards passing is the sign the manifest and every renderer's wiring agree. A red guard names the exact surface still missing a wire, and it is the silent-skip caught at the cheapest possible moment. Fix it, or send the helper back, before anything below.
+2. **Look at every surface the helper declares**, exactly as *Verify by looking* sets out. A drop-in arrives with nothing rendered, so this is the first time anybody has seen the picture. A figure that clips, collides, floats small in its slot or is simply wrong about the world is not installed - it is repaired here or refused here.
+3. **Bump the plugin version** in `[PLUGIN_SOURCE_ROOT]/.claude-plugin/plugin.json` and `[PLUGIN_SOURCE_ROOT]/.codex-plugin/plugin.json`, setting both to the same next minor version - the designers read the plugin from a version-pinned cache, so without a bump a new helper stays invisible on the next real lesson until the cache expires.
+4. **Commit and push, once the teacher has said to.** The checkout above the package is its own git repo and deploys to the marketplace from `main`, so a push puts this drawing in front of every lesson anyone builds. Show what changed and what the guard and the renders said, and let the teacher answer. Never commit or push on your own judgement.
 5. **To use the helper in a lesson running *now*** (before the cache picks up the new version), pass `PLUGIN_ROOT: [PLUGIN_SOURCE_ROOT]` to the affected designers and builders, run `node "[PLUGIN_SOURCE_ROOT]/builder/build.js" …`, and tell the designers to read the catalogue from `[PLUGIN_SOURCE_ROOT]` so they know the helper exists.
-6. **When the lesson already rendered with the fallback, regenerate every output that used it — not just the one that surfaced the gap.** A missing helper degrades every renderer at once (slides, worksheet, working wall all shipped the text or typed-mark substitute), but the gap is usually noticed on one of them, and the pull is to rebuild only that one. The others keep the substitute until someone looks at each in turn. So once the helper is live, re-run the designer and builder for every renderer whose output carried the fallback, and look at each — the same "prove every renderer" bar as the original build.
+6. **When a lesson already rendered with the fallback, regenerate every output that used it - not just the one that surfaced the gap.** A missing helper degrades every renderer at once (slides, worksheet, working wall all shipped the text or typed-mark substitute), but the gap is usually noticed on one of them, and the pull is to rebuild only that one. The others keep the substitute until someone looks at each in turn. So once the helper is live, re-run the designer and builder for every renderer whose output carried the fallback, and look at each - the same "prove every renderer" bar as the original build.

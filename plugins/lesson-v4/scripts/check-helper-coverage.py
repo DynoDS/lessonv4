@@ -268,7 +268,9 @@ def run_verdict(root: Path, design_path: Path, verdict_path: Path) -> int:
         if verdict == "build":
             failures.append(
                 f"{label} is still marked build: run the helper route, then "
-                "re-record it as covered, or record substitute with its reason"
+                "record substitute with its reason. A helper built in this run "
+                "is written to pending-helper/ and is not live here, so this "
+                "lesson's visual comes from the picture route"
             )
 
     if failures:

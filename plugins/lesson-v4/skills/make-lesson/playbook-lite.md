@@ -333,17 +333,23 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
 - `build` - nothing draws it, or the closest helper cannot draw it as designed.
   Give `helperKey` and a `reason` naming what it cannot draw, then take the
   helper route. When a helper already holds the real source for this subject,
-  the route is to grow that one, not to add a second helper beside it.
+  the route is to grow that one, not to add a second helper beside it. The
+  helper is built for a later lesson, not this one, so this visual still ends up
+  on the picture route.
 - `substitute` - no helper should draw it: a fixed depiction of one real thing
   this lesson alone needs. Give the `reason` and take the picture route.
 
 ### The helper route
 
 When any decision is `build`, read
-`[PLUGIN_ROOT]/references/helper-route.md` and follow it: it resolves a writable
-checkout, launches `helper-builder`, names what may run beside it, and closes the
-decision. It ends by re-running the check, which must print `HELPER_COVERAGE_OK`
-before any Phase 2 designer. Read it only when a `build` decision exists.
+`[PLUGIN_ROOT]/references/helper-route.md` and follow it: it launches
+`helper-builder` to write the helper into `[WORKING_DIR]/pending-helper/` for a
+person to install later, and closes the decision. A helper built here is live
+for nobody in this run, so the decision closes as `substitute` and the visual
+takes the picture route below. The check must print `HELPER_COVERAGE_OK` before
+any Phase 2 designer. Nothing in Phase 2 waits on the build itself: it writes
+into the working folder and changes no catalogue a designer reads. Read the
+route only when a `build` decision exists.
 
 ### The picture route
 
@@ -571,8 +577,7 @@ teacher brief/clarifications, and the frozen initial photo contract. It owns
 block is the only place adaptation pictures are written. Every command below
 reads that path. There is no `adaptation.json`.
 
-Run `photo-contract.py build-provisional` and the lesson-design validator against
-the provisional contract. Use exactly:
+Run `photo-contract.py build-provisional`. Use exactly:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
@@ -585,6 +590,15 @@ python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
 
 Adaptation may add only `adaptation-photo-###` entries; it may not mutate the
 frozen initial entries.
+
+Because `--lesson-design` is supplied, this command runs the photo cap and the
+lesson-design validator against the provisional contract itself, and fails if
+either does. **Do not run the validator again by hand.** A second run makes no
+check the command has not already made, and the invocation is easy to get wrong:
+`--initial-photo-namespace` belongs only to the Phase 1 contract, where every id
+is `photo-###`. Applied to a contract carrying adaptation photos it rejects
+perfectly valid ids, and the worksheet then waits behind a diagnosis nobody
+needed.
 
 `PHOTO_CONTRACT_PROVISIONAL_OK 0` means this adaptation asked for no pictures.
 The command refuses a file that is not the adaptation document, so a zero can no
@@ -926,13 +940,16 @@ the finished design.
 
 SUCCESS_CHECK:
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace \
   "[WORKING_DIR]/lesson-design.json" \
   "[WORKING_DIR]/photo-requirements.json"
 Require exactly: LESSON_DESIGN_OK
 
 TERMINAL_STATE: COMPLETE
 ```
+
+No `--initial-photo-namespace` here. By this point the canonical contract may
+carry adaptation photos promoted in Phase 2, and that flag exists only for the
+Phase 1 contract, where every id is `photo-###`.
 
 Return the same three repair-impact fields with that terminal state.
 
@@ -1016,7 +1033,12 @@ Write `[WORKING_DIR]/run-report.md` with:
 - excluded earned resources and exact reasons;
 - blocking faults, accepted minor findings and failed build attempts;
 - picture outcomes, and every helper gap: each visual answered with a
-  substitute, and any helper left waiting in `pending-helper/`;
+  substitute, and every helper this run built and left waiting in
+  `pending-helper/`. For each waiting helper, say in plain English what it
+  draws, name the exact folder, and say that `/install-helper` over that folder
+  is what puts it into the engine. It was built for the teacher to install and
+  nothing else surfaces it, so a helper the report does not name is a helper
+  nobody will ever install;
 - the worker-launch audit marker under `## Worker launches`, from
   `worker-launch.py audit` run immediately beforehand;
 - worker friction lines;

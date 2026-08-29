@@ -281,6 +281,56 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "Do not create or delegate to a new agent or a separate Educational SVG resolver worker",
         )
 
+    def test_the_library_is_the_route_and_the_emoji_is_the_fallback(self) -> None:
+        # A deck came back with seventeen slides and no drawing in it. The
+        # designer had typed an emoji weather strip onto the one slide that
+        # wanted a picture, without ever searching the library, and then reported
+        # zero requests as though the library had been consulted. The old opening
+        # line - "Use either an emoji or a hand-drawn Educational SVG picture" -
+        # is what made that read like a free choice between equals.
+        self.assertNotIn(
+            "Use either an emoji or a hand-drawn Educational SVG picture.",
+            self.context,
+        )
+        self.assert_tokens(
+            self.context,
+            "Look in the Educational SVG library first",
+            "an emoji is a decision made **after** a search, never instead of one",
+            "it is skipping the route",
+        )
+
+    def test_the_library_is_resolved_at_the_start_of_the_pass(self) -> None:
+        # Resolving it only when a decision reaches the library means a designer
+        # that never looks never runs the check, and then reports an empty layer
+        # as though the library had been searched and found wanting.
+        self.assertIn("the first act of the opportunity pass", self.context)
+        self.assertNotIn(
+            "before the opportunity pass reaches any Educational SVG decision",
+            self.context,
+        )
+
+    def test_zero_drawings_beside_emojis_is_not_a_zero_pass(self) -> None:
+        self.assert_tokens(
+            self.context,
+            "Zero drawings is not the same as zero optional pictures",
+            "a pass that never opened the library",
+        )
+        self.assert_tokens(
+            self.agent,
+            "an emoji typed in without a search is a slide the pass skipped",
+            "deck-level judgement never zeroes this layer",
+        )
+
+    def test_the_completion_report_names_both_routes_from_the_check(self) -> None:
+        # Reporting only the drawing count hides an all-emoji layer, which is
+        # exactly what a skipped pass looks like from the outside.
+        self.assert_tokens(
+            self.agent,
+            "SLIDE_DESIGN_OPTIONAL_PICTURES",
+            "Educational SVG P2/P3 requests authored, [E] emoji",
+            "Optional visual library result",
+        )
+
     def test_slide_gap_route_has_one_current_owner(self) -> None:
         self.assert_tokens(
             self.gap,

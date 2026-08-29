@@ -1678,7 +1678,11 @@ def test_cli_initial_photo_namespace_rejects_adaptation_object_before_merge():
         )
     assert result.returncode == 1
     assert result.stderr.startswith("LESSON_DESIGN_INVALID:")
-    assert "must be exactly photo-001" in result.stderr
+    # Adaptation ids under this flag are ambiguous from the file alone, so the
+    # message names both readings rather than asserting the contract is corrupt.
+    assert "adaptation-photo-001" in result.stderr
+    assert "those entries do not belong in it" in result.stderr
+    assert "the ids are right" in result.stderr
 
 
 def test_cli_wrong_json_type_uses_contract_error_interface_without_traceback():
@@ -1996,10 +2000,12 @@ def test_photo_promotion_semantically_validates_after_merge():
     helper = read(ROOT / "scripts" / "photo-contract.py")
     flat = " ".join(text.split())
     assert helper.count("run_lesson_design_validator(Path(args.lesson_design),") == 2
-    assert (
-        "Run `photo-contract.py build-provisional` and the lesson-design "
-        "validator against the provisional contract." in flat
-    )
+    # build-provisional runs the validator itself when --lesson-design is
+    # supplied, so the playbook must not ask for a second run by hand: the
+    # hand-built invocation is where --initial-photo-namespace got carried onto a
+    # merged contract and stalled the worksheet behind a needless diagnosis.
+    assert "Run `photo-contract.py build-provisional`. Use exactly:" in flat
+    assert "Do not run the validator again by hand." in flat
 
     provisional = helper[helper.index("def cmd_build_provisional"):helper.index("def cmd_promote_used")]
     assert provisional.index("run_photo_cap(output)") < provisional.index("run_lesson_design_validator") < provisional.index("receipt = {")

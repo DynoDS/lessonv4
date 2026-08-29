@@ -32,6 +32,7 @@ EXPECTED_CLAUDE_TOKEN_COUNTS = {
     "skills/make-subject-file/SKILL.md": 1,
     "commands/add-test-questions.md": 1,
     "commands/edit-templates.md": 1,
+    "commands/install-helper.md": 1,
 }
 
 TEXT_SUFFIXES = {

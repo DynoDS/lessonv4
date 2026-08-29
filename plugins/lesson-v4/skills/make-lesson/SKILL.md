@@ -300,9 +300,11 @@ directories, inspect unrelated repositories, use `pwd` as the package root, or
 fall back to another installed or source copy.
 
 `PLUGIN_SOURCE_ROOT` is separate. It means a writable git checkout of this
-package, the copy a source-writing step may edit. Normal lesson generation does
-not require it, but the helper route does, so resolve it only at the step that
-needs it rather than up front:
+package, the copy a source-writing step may edit. **A lesson run never writes
+to it.** Nothing a run produces - a helper included - goes into the package or
+out to the marketplace on the run's own judgement, because nobody has read it
+yet. Only the shared build review log reads this value, and only to append to a
+log, so resolve it at that step rather than up front:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"

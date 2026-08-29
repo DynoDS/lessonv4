@@ -113,6 +113,46 @@ function presentationDiagnostic(warning) {
   })}`;
 }
 
+// The optional visual layer has two routes: a drawing from the shared
+// Educational SVG library, and an emoji as the fallback when no drawing fits.
+// Only the drawing route leaves a trace anyone looks for, so a pass that never
+// opened the library and typed emojis instead reports as "zero requests" and
+// reads exactly like a deck the library had nothing for. Counting both makes
+// the route that was actually taken a fact rather than a claim.
+const OPTIONAL_PICTURE_KINDS = ['educational-svg', 'emoji'];
+
+function countOptionalPictures(lesson) {
+  const counts = { 'educational-svg': 0, emoji: 0 };
+  const seen = new Set();
+
+  const walk = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (seen.has(node)) return;
+    seen.add(node);
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (
+      typeof node.kind === 'string' &&
+      OPTIONAL_PICTURE_KINDS.includes(node.kind)
+    ) {
+      counts[node.kind] += 1;
+    }
+    Object.values(node).forEach(walk);
+  };
+
+  walk(lesson);
+  return counts;
+}
+
+function optionalPictureLine(counts) {
+  return (
+    `SLIDE_DESIGN_OPTIONAL_PICTURES: ${counts['educational-svg']} ` +
+    `educational-svg, ${counts.emoji} emoji`
+  );
+}
+
 function runSlideDesignCheck(inputPath, options = {}) {
   const jsonPath = path.resolve(inputPath);
   const buildPath = path.resolve(
@@ -146,6 +186,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
   }
 
   const slideCount = Array.isArray(lesson.slides) ? lesson.slides.length : 0;
+  const optionalPictures = countOptionalPictures(lesson);
   const capacity = capacityWarnings(lesson);
   if (capacity.length) {
     return {
@@ -393,6 +434,8 @@ function runSlideDesignCheck(inputPath, options = {}) {
     }
   }
 
+  if (outcome) outcome.optionalPictures = optionalPictures;
+
   return outcome;
 }
 
@@ -444,6 +487,9 @@ function main(argv = process.argv.slice(2)) {
       console.log(`SLIDE_DESIGN_PREVIEW_DIR: ${result.previewDir}`);
       console.log(`SLIDE_DESIGN_PREVIEW: ${result.previewOutputPath}`);
     }
+    if (result.optionalPictures) {
+      console.log(optionalPictureLine(result.optionalPictures));
+    }
     console.log(`SLIDE_DESIGN_CHECK_OK: ${result.slideCount} slides`);
     return 0;
   }
@@ -458,6 +504,8 @@ if (require.main === module) {
 
 module.exports = {
   BLOCKING_CAPACITY_SIGNALS,
+  countOptionalPictures,
+  optionalPictureLine,
   buildDiagnostic,
   main,
   parseBuildDiagnostics,

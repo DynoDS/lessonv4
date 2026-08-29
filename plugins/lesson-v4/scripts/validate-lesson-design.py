@@ -1451,6 +1451,26 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
         expect(len(members) <= 4, f"photo contract coherence error: group {group!r} is larger than four")
 
     if initial_photo_namespace:
+        # Adaptation ids under this flag are ambiguous from the file alone: either
+        # a Phase 1 contract has been polluted, or a post-merge contract is being
+        # validated with a flag that does not apply to it. Reporting the second as
+        # "id must be exactly photo-001" reads as corrupt data and sends the caller
+        # hunting a file that is perfectly correct, so name both readings and the
+        # fact that separates them.
+        merged = [photo["id"] for photo in items
+                  if isinstance(photo.get("id"), str)
+                  and photo["id"].startswith("adaptation-photo-")]
+        if merged:
+            raise ContractError(
+                "photo-requirements.json carries adaptation photo ids "
+                f"({', '.join(merged)}) while --initial-photo-namespace is set. "
+                "One of two things is wrong. If this is the Phase 1 initial "
+                "contract, those entries do not belong in it: adaptation photos "
+                "are added later by photo-contract.py, from adaptation.md. If "
+                "this is a provisional or promoted contract, the ids are right "
+                "and the flag is not, because it applies only to the Phase 1 "
+                "contract, where every id is photo-###."
+            )
         for index, photo in enumerate(items, 1):
             expect(photo["id"] == f"photo-{index:03d}",
                    f"photo-requirements.json.photos[{index - 1}].id must be exactly photo-{index:03d}")

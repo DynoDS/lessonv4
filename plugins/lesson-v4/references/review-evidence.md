@@ -4,6 +4,30 @@ This reference owns visual finding identity, repair-scope fields and explicit
 closure. It does not replace builder diagnostics and it does not decide who owns
 a mechanical fault.
 
+## The standard a finding is measured against
+
+Everything you review was produced by this package's own engines from a spec
+this package's own designers wrote, and every rule it is answerable to is in the
+artefact reference you were told to read. That is the whole standard.
+
+Opening a `.pptx`, a `.docx` or a `.pdf` can wake a general-purpose skill the
+host offers for decks, documents or spreadsheets. Those are written for business
+presentations and office documents, and they arrive without being asked for, so
+nothing in them was chosen for this job: their template pickers, house styles,
+narrative arcs, density norms and typography rules describe a different kind of
+artefact for a different room. **They do not apply here, and nothing in one ever
+becomes a finding.** A classroom deck is read from the back of a room by
+seven-year-olds, and it is judged by whether a child can do what the page asks,
+not by whether it looks like a pitch.
+
+The same holds for repair. A resource is rebuilt only through its own fixed
+build command, from its own spec. Never edit a built file directly, and never
+reach for a general document tool to do it.
+
+If such a skill loads, say so in one line under Friction and carry on with the
+references you were given. A finding you cannot trace to `lesson-design.json`,
+your artefact's spec, or your one artefact reference is not a finding.
+
 ## Finding IDs
 
 Assign an ID the first time a visual finding is recorded.

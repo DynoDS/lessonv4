@@ -408,13 +408,45 @@ class HelperRouteContractTests(unittest.TestCase):
 
     def test_the_route_launches_the_builder_and_names_its_inputs(self):
         text = HELPER_ROUTE.read_text(encoding="utf-8")
-        self.assertIn("--find-source", text)
         self.assertIn("helper-builder", text)
-        for field in ("PLUGIN_SOURCE_ROOT:", "HELPERS:", "HELPER 1:", "BUILD OR GROW:",
-                      "DEPICTS:", "SURFACES:"):
+        for field in ("PLUGIN_ROOT:", "WORKING_DIR:", "HELPERS:", "HELPER 1:",
+                      "BUILD OR GROW:", "DEPICTS:", "SURFACES:"):
             self.assertIn(field, text)
         self.assertIn("pending-helper/", text)
         self.assertIn("HELPER_COVERAGE_OK", text)
+
+    def test_the_route_never_writes_to_the_package_or_publishes(self):
+        # A helper is commissioned mid-lesson, from one lesson's need, and nobody
+        # has looked at it. Writing it into the engine puts unreviewed drawing
+        # code in front of every future lesson; pushing it publishes that code to
+        # everyone the package installs for. Neither is a lesson run's decision.
+        for path in (HELPER_ROUTE, HELPER_BUILDER):
+            text = path.read_text(encoding="utf-8")
+            lowered = text.lower()
+            self.assertNotIn("--find-source", text, path.name)
+            self.assertNotIn("git commit", lowered, path.name)
+            self.assertNotIn("git push", lowered, path.name)
+            self.assertNotIn("and push", lowered, path.name)
+        builder = HELPER_BUILDER.read_text(encoding="utf-8")
+        self.assertIn("never run git", builder)
+        self.assertIn("do not commit, and do not push", builder)
+        # The build no longer edits a checkout, so it cannot version one either.
+        self.assertNotIn("plugin.json", builder)
+
+    def test_the_route_does_not_hold_phase_two_behind_the_build(self):
+        # The build writes into the run's own working folder and changes no
+        # catalogue a designer reads, so nothing downstream can read a stale one.
+        text = HELPER_ROUTE.read_text(encoding="utf-8")
+        self.assertIn("changes no", text)
+        self.assertIn("nothing has to wait", text)
+
+    def test_a_helper_built_in_the_run_is_not_live_in_the_run(self):
+        # It has been rendered by nobody, so the lesson takes the picture route
+        # and the decision closes as substitute rather than covered.
+        text = HELPER_ROUTE.read_text(encoding="utf-8")
+        self.assertIn("picture route", text)
+        self.assertIn("substitute", text)
+        self.assertIn("/install-helper", text)
 
     def test_one_builder_covers_every_decision_in_the_run(self):
         # Every helper build edits the same dispatcher, registry, parity manifest
@@ -444,6 +476,25 @@ class HelperRouteContractTests(unittest.TestCase):
         self.assertIn("pending-helper", text)
         # The old wiring pointed at a repository this package no longer lives in.
         self.assertNotIn("teaching-plugins", text)
+
+    def test_the_run_report_tells_the_teacher_how_to_install_a_waiting_helper(self):
+        # The build now ends in the run's own folder and nothing else surfaces
+        # it, so a helper the report does not name is a helper nobody installs.
+        text = PLAYBOOK.read_text(encoding="utf-8")
+        self.assertIn("pending-helper/", text)
+        self.assertIn("/install-helper", text)
+        self.assertIn("is what puts it into the engine", text)
+
+    def test_the_installer_command_exists_and_never_publishes_on_its_own(self):
+        command = ROOT / "commands" / "install-helper.md"
+        self.assertTrue(command.is_file())
+        text = command.read_text(encoding="utf-8")
+        self.assertIn("install-pending-helper.py", text)
+        self.assertIn("PENDING_HELPER_OK", text)
+        self.assertIn("npm run check", text)
+        # Publishing puts the drawing in front of every lesson anyone builds.
+        self.assertIn("Do not commit and do not push until the teacher says to",
+                      text)
 
     def test_the_authoring_guide_carries_the_stock_helper_wiring(self):
         text = HELPER_AUTHORING.read_text(encoding="utf-8")
