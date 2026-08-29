@@ -66,6 +66,15 @@ EARNED_RESOURCES = [
     ("stick-in sheets", "stick-in-sheets.json", "items"),
 ]
 
+# The resources whose designer runs on every lesson and answers with its spec
+# file, empty or not. A missing file means nobody made the decision: that
+# silent skip once cost a teacher a wall the lesson had clearly earned, so it
+# must surface as an explicit exclusion rather than pass as "not earned".
+DECIDED_RESOURCES = [
+    ("working wall", "working-wall.json", "cards"),
+    ("stick-in sheets", "stick-in-sheets.json", "items"),
+]
+
 STATUS_LINE_RE = re.compile(
     rf"^Package status: ({'|'.join(PACKAGE_STATUSES)})$"
 )
@@ -378,6 +387,18 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
             failures.append(
                 f"earned resource {name!r} is not accounted for: it appears under "
                 "neither Delivered resources nor Excluded resources."
+            )
+
+    # ── Every always-run designer decision is on the record ──────────────
+    for name, filename, key in DECIDED_RESOURCES:
+        spec = read_json(working / filename, filename, [])
+        decided = isinstance(spec, dict) and isinstance(spec.get(key), list)
+        if not decided and name not in excluded_names and name not in delivered_names:
+            failures.append(
+                f"{name}: no decision is on record. Its designer runs on every "
+                f"lesson and answers with {filename} (an empty {key} list is a "
+                "valid answer); a run without that file must exclude the "
+                "resource with a reason, not skip the decision silently."
             )
 
     # ── Every delivered path exists ──────────────────────────────────────

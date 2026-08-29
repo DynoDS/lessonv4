@@ -233,6 +233,44 @@ class VisualReviewRepairGateTests(unittest.TestCase):
             "Repair attempt", self.output.read_text(encoding="utf-8")
         )
 
+    def test_reviewer_local_repair_closed_in_first_pass_needs_no_confirmation(self) -> None:
+        """A reviewer that repaired, rebuilt and looked closes its own finding.
+
+        The cheap local-repair route (edit the spec, rerun REBUILD_COMMAND,
+        re-render, look, mark FIXED) only saves its spawns if the merge accepts
+        the closed finding from the first-pass file without a separate
+        confirmation pass.
+        """
+        lines = [
+            "### DECK-001",
+            "- Classification: BLOCKING",
+            "- Location: Deck, slide 6, sticky-statement zone",
+            "- Finding: The sticky statement renders too small to project.",
+            "- Required change: Enlarge the statement within its settled zone.",
+            "- Already passed: Every other slide.",
+            "- Existing BUILD_DIAGNOSTIC: None - visual-only finding",
+            "- Changed: Statement zone share raised within the settled layout.",
+            "- Unchanged: Every other entry.",
+            "- Potential cross-resource impact: None",
+            "- Outcome: FIXED",
+            "- Verification evidence: Rebuilt render, slide 6 page image; "
+            "statement reads at projection size.",
+        ]
+        block = "\n".join(lines)
+        path = self.root / "findings-deck.md"
+        path.write_text(
+            DECK_FINDINGS.format(blocking="- None.", designer="- None.").replace(
+                "## Repairs completed during review\n- None.",
+                "## Repairs completed during review\n" + block,
+            ),
+            encoding="utf-8",
+        )
+
+        completed = self.run_merge(path)
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stdout.strip(), "PASS")
+
     def test_clean_review_still_passes_untouched(self) -> None:
         path = self.root / "findings-deck.md"
         path.write_text(

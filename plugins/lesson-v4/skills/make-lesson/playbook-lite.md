@@ -56,7 +56,7 @@ required. Missing optional agents skip only their resource or review:
 - no `design-reviewer`: use the validated design and report review skipped;
 - no `adaptation-designer`: build only the expected-range worksheet;
 - no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
-  that output;
+  that output and exclude it as NOT DELIVERED naming the missing role;
 - no visual reviewer: keep the build but report its review as `UNVERIFIED`;
 - no image scout: omit unresolved pictures under the normal degradation rule.
 
@@ -692,20 +692,28 @@ invent it. Mention the omission only when the approved design requested one.
 
 ### Track D — Working Wall (working-wall-designer → working-wall-builder, runs after slide-designer; in parallel with Tracks B and the rest of A)
 
-If the approved lesson earns a wall, launch Working Wall Designer directly with
-approved `lesson-design.json`, `lesson.json` and the applicable photo contract.
-It owns only `working-wall.json`. After its deterministic check, launch the
-retained Working Wall Builder, which runs the fixed wall script and returns its
-short Output Report. One wall diagnostic permits one focused wall-owner repair
-and rebuild. Preserve its exact returned output path.
+Launch Working Wall Designer on every run, directly with approved
+`lesson-design.json`, `lesson.json` and the applicable photo contract.
+Wall-worthiness is the designer's judgement, never decided here: no
+lesson-design field records it, and a designer that finds nothing wall-worthy
+writes `cards: []` with its rationale for the run report. It owns only `working-wall.json`. After its deterministic
+check, launch the retained Working Wall Builder only when `cards` is
+non-empty. The builder runs the fixed wall script and returns its short Output
+Report. One wall diagnostic permits one focused wall-owner repair and rebuild.
+Preserve its exact returned output path.
 
 ### Track E — Stick-in Spec (stick-in-sheets-designer, runs after slide-designer; in parallel with Tracks B, D and the rest of A)
 
-If the approved design earns stick-in sheets, launch the designer directly with
-approved `lesson-design.json`, `lesson.json` and applicable picture contract. It
-owns only `stick-in-sheets.json`. Require its role validator.
+Launch the stick-in designer on every run, directly with approved
+`lesson-design.json`, `lesson.json` and applicable picture contract. The
+write-on test is the designer's judgement, never decided here; a lesson with
+no write-on moment gets an empty `items` list with a short rationale. It owns
+only `stick-in-sheets.json`. Require its role validator.
 
 ### Track F — Stick-in Sheets (fixed build, runs after stick-in-sheets-designer)
+
+Run this build only when `stick-in-sheets.json` has a non-empty `items` list;
+an empty list ends the track.
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" stick-in \
@@ -761,13 +769,20 @@ That trigger is per artefact, not per pipeline: the first accepted build starts
 its reviewer immediately, and the rest follow one at a time as they land.
 Launch one Visual Reviewer per resource concurrently. Each receives only
 approved `lesson-design.json`, that resource's own specification, its final
-render manifest/pages, and its artefact-specific review module. It writes one
-`findings-[resource].md` file.
+render manifest/pages, its artefact-specific review module, and, for a
+resource built by `run-fixed-resource.py`, that build's exact command and
+summary path as `REBUILD_COMMAND` for finishing its own safe local repairs.
+The working wall gets no `REBUILD_COMMAND`; its rebuild stays with the
+retained builder. Each writes one `findings-[resource].md` file.
 
-Stable finding IDs persist through repairs. Reviewer-local tiny fixes are
-allowed only where the role permits them; rebuild and confirm the exact affected
-pages. A material content/layout fault routes once to the resource's existing
-owner using the focused-repair entrypoint. A finding the reviewer classified
+Stable finding IDs persist through repairs. A fault the role permits the
+reviewer to repair locally is finished inside that same review: spec edit,
+`REBUILD_COMMAND` rerun, re-render, confirm, `FIXED` with evidence. Do not
+route a finding the reviewer has already fixed and confirmed into the
+focused-repair round or a separate confirmation pass; check the refreshed
+build summary still reports `ok: true` and carry its output paths forward. A
+material content/layout fault the reviewer could not repair locally routes
+once to the resource's existing owner using the focused-repair entrypoint. A finding the reviewer classified
 `DESIGNER REPAIR REQUIRED` routes through that same slice to a different owner.
 Every blocking finding gets a repair round: load the focused-repair slice as
 soon as the first one exists, and do not decide from here that a finding is

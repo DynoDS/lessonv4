@@ -43,6 +43,10 @@ class RunReportCase(unittest.TestCase):
 
         self.write_json(self.working / "lesson.json", {"slides": [{"cards": []}]})
         self.write_json(self.working / "worksheet.json", {"sheets": {"expected": []}})
+        # The wall and stick-in designers run on every lesson and answer with
+        # their spec file; an empty list is the recorded "no" answer.
+        self.write_json(self.working / "working-wall.json", {"cards": []})
+        self.write_json(self.working / "stick-in-sheets.json", {"items": []})
 
         self.slides_out = self.output / "Beatrix Potter.pptx"
         self.slides_out.write_bytes(b"slides fixture")
@@ -126,6 +130,49 @@ class TestRunReport(RunReportCase):
             {"launches": "WORKER_LAUNCH_AUDIT_FAILED: 8 of 8 named workers did not launch at their declared model and effort"}
         )
         result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_missing_wall_decision_is_rejected(self):
+        """A run that never spawned the wall designer must not report clean.
+
+        The observed failure: several lessons shipped with no working wall and
+        no record that anyone had decided against one, because the spawn was
+        silently skipped. The decision file is the proof the designer ran; a
+        run without it must exclude the wall with a reason.
+        """
+        (self.working / "working-wall.json").unlink()
+        report = self.write_report()
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("working wall", result.stdout)
+        self.assertIn("no decision is on record", result.stdout)
+
+    def test_missing_stick_in_decision_is_rejected(self):
+        (self.working / "stick-in-sheets.json").unlink()
+        report = self.write_report()
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("stick-in sheets", result.stdout)
+        self.assertIn("no decision is on record", result.stdout)
+
+    def test_missing_decision_excluded_with_reason_passes(self):
+        """A degraded run (no wall role installed) stays honest and deliverable."""
+        (self.working / "working-wall.json").unlink()
+        report = self.write_report(
+            overrides={
+                "outcome": "Package status: PARTIAL",
+                "excluded": (
+                    "- Working wall: NOT DELIVERED - working-wall-designer role "
+                    "file missing from this installation."
+                ),
+            }
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_empty_decision_files_need_no_report_entry(self):
+        """cards: [] and items: [] are answered decisions, not omissions."""
+        result = self.validate(self.write_report())
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_hidden_wall_is_rejected(self):

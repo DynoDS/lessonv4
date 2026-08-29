@@ -118,6 +118,26 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn("Never use an unrelated drawing to reach a number", self.context)
         self.assertIn("Zero is valid only when", self.context)
 
+    def test_competing_is_defined_physically_and_per_surface(self) -> None:
+        """Strong P1 visuals must not zero the optional layer.
+
+        A balanced-diet deck carried its plate and nutrient table on nearly
+        every slide, and the designer read that strength as competition,
+        shipping a deck with no optional pictures at all. Competition is
+        covering, shrinking, crowding on the picture's own surface; the deck's
+        P1 identity, a shared subject, and imagined endorsement are not it.
+        """
+        self.assertIn('"Competes" is physical and local', self.context)
+        self.assertIn("Judge it one surface at a time", self.context)
+        self.assertIn("never why the whole deck goes without it", self.context)
+        self.assertIn(
+            "Competing is physical and judged on this slide alone", self.designer
+        )
+
+    def test_deck_level_reasons_never_zero_the_layer(self) -> None:
+        self.assertIn("is not competition and never zeroes the layer", self.context)
+        self.assertIn("no task asks a child to read it", self.context)
+
     def test_the_reviewer_judges_legibility_and_nothing_else(self) -> None:
         """Taste findings on a layer that teaches nothing crowd out real faults.
 

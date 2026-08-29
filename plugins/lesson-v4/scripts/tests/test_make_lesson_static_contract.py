@@ -105,6 +105,31 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         # An unresolved filing destination degrades to local delivery.
         self.assertIn("plan local-only delivery", playbook)
 
+    def test_wall_and_stick_in_designers_are_spawned_every_run(self):
+        """Wall-worthiness and the write-on test belong to their designers.
+
+        The regressed wording, "If the approved lesson earns a wall", handed
+        the orchestrator a judgement it has no criteria for and no signal to
+        answer (lesson-design.json records no wall decision), so runs silently
+        skipped the spawn and lessons shipped without walls nobody had decided
+        against. Both designers answer cheaply with an empty spec when the
+        lesson earns nothing, so the spawn is unconditional and only the
+        builders gate on spec content.
+        """
+        import subprocess
+        result = subprocess.run(
+            ["python3", str(RUNTIME), "--slice", "other-resources"],
+            capture_output=True, text=True, check=True,
+        )
+        text = " ".join(result.stdout.split())
+        self.assertIn("Launch Working Wall Designer on every run", text)
+        self.assertIn("Launch the stick-in designer on every run", text)
+        self.assertIn("only when `cards` is non-empty", text)
+        self.assertIn("non-empty `items` list", text)
+        playbook = " ".join(PLAYBOOK.read_text(encoding="utf-8").split())
+        self.assertNotIn("If the approved lesson earns", playbook)
+        self.assertNotIn("If the approved design earns", playbook)
+
     def test_lesson_designer_self_repair_is_bounded(self):
         """The designer's validate-and-fix loop must not run unbounded.
 

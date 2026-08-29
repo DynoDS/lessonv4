@@ -40,6 +40,18 @@ chosen. A P3 carries none, so no template, layout or page count is ever arranged
 around one: it goes where the surface is already spare. P3 stays the first thing
 moved, faded, replaced or removed when anything competes.
 
+"Competes" is physical and local. An optional picture competes when it covers,
+shrinks, crowds or pulls the eye off something on its own slide or page that a
+child must read or use. Judge it one surface at a time, against that surface's
+spare space. What does not count as competing: the P1 visuals a deck leans on
+appearing on many slides, or on this one; the drawing sharing its subject with
+a P1 visual; a wish to keep the deck visually uniform around its teaching
+visuals; or a worry that a decoration might be read as recommending the thing
+it shows, since a P3 asserts nothing and no task asks a child to read it. A
+deck anchored by one or two strong P1 references is the normal case, not a
+special one: those references are why the optional layer stays quiet beside
+them, never why the whole deck goes without it.
+
 On a slide, keeping the text size does not mean keeping the original line
 count. A picture may shorten the text column and make a question or fact wrap
 onto an extra line when the complete set still fits comfortably at the same
@@ -185,8 +197,11 @@ Use either an emoji or a hand-drawn Educational SVG picture.
   stops being noticed at all. Slides that are genuinely full stay bare, and that
   contrast is what makes the pictures elsewhere read as chosen.
 - Zero is valid only when the explicit opportunity pass found no suitable use or
-  every plausible use would compete with P1 or P2. Record that zero reason in
-  the Slide Designer completion report.
+  every plausible use would compete with P1 or P2, physically and on its own
+  slide. A deck-level reason - visual consistency, the strength or number of
+  the P1 visuals, the sensitivity of the subject - is not competition and never
+  zeroes the layer. Record that zero reason in the Slide Designer completion
+  report.
 - Never use an unrelated drawing to reach a number. A drawing that does not
   belong to this lesson's subject is worse on the slide than no drawing at all.
 

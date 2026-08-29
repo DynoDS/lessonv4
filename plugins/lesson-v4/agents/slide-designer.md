@@ -284,6 +284,11 @@ For every credible opportunity, record one decision:
 3. P3 adds safe decoration without competing.
 4. No optional visual belongs here.
 
+Competing is physical and judged on this slide alone: covering, shrinking or
+crowding what a child must read here. The deck's P1 visuals, however strong or
+frequent, never veto another slide's optional picture; `context-pictures.md`
+owns the full definition.
+
 A slide that has done everything else right and still reads as a wall of text, or that carries no imagery at all, is what P3 is for: one small relevant drawing behind a card, resting over a card's edge or tucked into a corner, in space the composition already left spare.
 
 Author relevant P2 before requesting it. Request zero only when no useful P2 or safe P3 opportunity exists. Judge each slide on its own rather than against a deck quota, and vary both the drawings and where they sit: a normal deck carries several, and the same drawing in the same corner slide after slide reads as a template rather than a decision. Read the relevant specialist section of `context-pictures.md` at that decision point. Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.

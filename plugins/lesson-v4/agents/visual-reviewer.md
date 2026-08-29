@@ -28,6 +28,9 @@ Your spawn prompt contains:
 - `RENDER_ROUTE_FILE` - the centrally probed established rendering routes
 - `FINAL_RENDER_DIR` - where this pass writes its render evidence
 - `FINAL_RENDER_MANIFEST` - the manifest this pass writes and later reviewers reuse
+- `REBUILD_COMMAND` - when the artefact has a direct fixed build, the exact
+  deterministic command that rebuilds it from its spec; used only to finish
+  your own safe local repairs
 
 Read `[PLUGIN_ROOT]/references/review-evidence.md` before writing any finding.
 Use its stable IDs and exact finding fields.
@@ -213,7 +216,7 @@ Do this with the crop tool rather than with your attention where you can. Coveri
 
 Too crowded is the familiar half: a slide that passes the minimum font size and still reads as a wall of text, a worksheet picture shrunk past what a child of this year group can read.
 
-Too empty is the half worth naming, because the teacher's own instinct is the test. Look at the page and ask: **would a teacher about to use this want to make the picture bigger, or the words bigger, before putting it in front of the class?** The signals are concrete. A photograph or map with broad bands of blank page along one side, which means the picture bound on the other axis and is smaller than its slot allows. A caption or label printing smaller than the body text near it, when that label is what children read across the room. A zone holding one short sentence in small type with most of its height unused. A row of pictures each squeezed into a narrow column while the height above and below them sits empty. Report these as faults on the page, and say which element wanted the room, since the repair is a layout choice upstream rather than a re-render. The limit is the one stated above under blocking faults: sparseness that is the design passes.
+Too empty is the half worth naming, because the teacher's own instinct is the test. Look at the page and ask: **would a teacher about to use this want to make the picture bigger, or the words bigger, before putting it in front of the class?** The signals are concrete. A photograph or map with broad bands of blank page along one side, which means the picture bound on the other axis and is smaller than its slot allows. A caption or label printing smaller than the body text near it, when that label is what children read across the room. A zone holding one short sentence in small type with most of its height unused. A row of pictures each squeezed into a narrow column while the height above and below them sits empty. Report these as faults on the page, and say which element wanted the room. When enlarging that one element within the settled layout is unambiguous, this is the safe local repair permitted below: make the change yourself and finish it, rather than routing a one-line enlargement through a repair round. Route it upstream only when giving the element its room means re-deciding the layout around it. The limit is the one stated above under blocking faults: sparseness that is the design passes.
 
 ---
 
@@ -279,7 +282,7 @@ You may directly repair a fault only when all of these are true:
 
 Examples include making one existing element larger within its settled layout, repairing an obvious crop or wrap, fixing one obvious local word to match its settled source, or removing an obvious duplicate. Do not directly repair a different question, a different activity, a changed answer or model, a different source interpretation, an unsupported helper, a systemic renderer problem, or anything whose correct repair is debatable. Report those through the existing responsible-owner route.
 
-When you make a safe local repair, edit only the named entry in your own artefact's spec. Do not rebuild. Give the finding its stable ID and record the exact file, entry and before → after change. Until the orchestrator rebuilds and you look at the changed render in confirmation, keep that finding explicitly unresolved; `FIXED` is valid only after visual verification.
+When you make a safe local repair, edit only the named entry in your own artefact's spec. Give the finding its stable ID and record the exact file, entry and before → after change. Then finish the repair yourself when your spawn prompt supplies `REBUILD_COMMAND`: run that exact command, require its success result, re-render the affected pages through the established route, and look at them. `FIXED` is valid only after visual verification of the rebuilt render, and its verification evidence names the rebuilt page image you looked at. If the rebuild fails, or the rebuilt page still shows the fault, restore the value you changed, record the finding `OPEN`, and leave it to the responsible-owner route. Without a `REBUILD_COMMAND` (the working wall's build belongs to its retained builder), keep the finding explicitly unresolved after your spec edit; the orchestrator rebuilds and you confirm the changed render in a later pass.
 
 Write your `FINDINGS_FILE`:
 
@@ -290,7 +293,7 @@ Write your `FINDINGS_FILE`:
 [One line: artefact name and page count, e.g. "Deck: 18 slides."]
 
 ## Repairs completed during review
-[one full review-evidence finding block per locally repaired finding; a local edit remains explicitly OPEN until its rebuilt render is confirmed]
+[one full review-evidence finding block per locally repaired finding; `FIXED` only when you saw the repair sound in the rebuilt render, otherwise it stays OPEN]
 - (or "None.")
 
 ## Blocking faults still needing repair
@@ -342,4 +345,4 @@ Match the record to what you found. One block per finding, one bullet per flag a
 - Any artefact other than the one your spawn prompt named, and any spec other than the lesson design and your own.
 - Setting the package verdict, or writing `visual-review.md`. The deterministic merger owns that result.
 - Editing anything except your own findings file and the small, unambiguous local entry in your own artefact's spec permitted above. All deeper, specialist, systemic, cross-resource or debatable repairs stay with the orchestrator and the appropriate owner.
-- Re-running builders. You may apply the permitted local spec repair, then you report it; the orchestrator rebuilds and you confirm only the changed or genuinely affected content.
+- Re-running builders, beyond one exception: the exact `REBUILD_COMMAND` your spawn prompt supplies, run only to finish your own safe local repairs. Every other rebuild stays with the orchestrator, and a confirmation pass still confirms only the changed or genuinely affected content.
