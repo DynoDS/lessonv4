@@ -410,10 +410,27 @@ class HelperRouteContractTests(unittest.TestCase):
         text = HELPER_ROUTE.read_text(encoding="utf-8")
         self.assertIn("--find-source", text)
         self.assertIn("helper-builder", text)
-        for field in ("PLUGIN_SOURCE_ROOT:", "HELPER:", "BUILD OR GROW:", "SURFACES:"):
+        for field in ("PLUGIN_SOURCE_ROOT:", "HELPERS:", "HELPER 1:", "BUILD OR GROW:",
+                      "DEPICTS:", "SURFACES:"):
             self.assertIn(field, text)
         self.assertIn("pending-helper/", text)
         self.assertIn("HELPER_COVERAGE_OK", text)
+
+    def test_one_builder_covers_every_decision_in_the_run(self):
+        # Every helper build edits the same dispatcher, registry, parity manifest
+        # and catalogues, so parallel builders collide in them and sequential
+        # ones repeat the whole read-wire-render-guard cycle each time.
+        text = HELPER_ROUTE.read_text(encoding="utf-8")
+        self.assertIn("not one spawn", text)
+        builder = HELPER_BUILDER.read_text(encoding="utf-8")
+        self.assertIn("HELPERS: [count]", builder)
+
+    def test_the_route_makes_the_builder_name_what_a_visual_is_drawn_from(self):
+        # The failure this guards: a location map built from polygon points
+        # chosen by eye, while eight real map images sat in builder/assets/maps.
+        text = HELPER_ROUTE.read_text(encoding="utf-8")
+        self.assertIn("DEPICTS:", text)
+        self.assertIn("real place or a real object", text)
 
     def test_the_builder_knows_both_kinds_and_the_drop_in_route(self):
         text = HELPER_BUILDER.read_text(encoding="utf-8")
@@ -432,6 +449,18 @@ class HelperRouteContractTests(unittest.TestCase):
         text = HELPER_AUTHORING.read_text(encoding="utf-8")
         self.assertIn("drawn or stock", text)
         self.assertIn("builder/assets/", text)
+
+    def test_the_authoring_guide_forbids_inventing_real_world_geometry(self):
+        # A bar chart is right when it matches the lesson's numbers; a coastline
+        # is right only when it matches the world. The drawn/stock test alone
+        # does not separate those, because a real-world figure can still be
+        # configurable - which is how a hand-drawn Amazon map got built.
+        text = HELPER_AUTHORING.read_text(encoding="utf-8")
+        self.assertIn("fact about the world", text)
+        self.assertIn("depicts", text)
+        self.assertIn("mismatched the world", text)
+        builder = HELPER_BUILDER.read_text(encoding="utf-8")
+        self.assertIn("fact about the world", builder)
         self.assertNotIn("`teaching-plugins` is its own git repo", text)
 
 

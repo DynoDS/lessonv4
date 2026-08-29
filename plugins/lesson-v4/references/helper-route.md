@@ -16,19 +16,40 @@ incomplete or read-only tree is refused rather than half-used.
 
 ## When a checkout is available
 
+**One `helper-builder` covers every unresolved decision in the run, not one spawn
+per helper.** Every helper build edits the same shared files - the slide
+dispatcher, the worksheet registry, the parity manifest, the two catalogues - so
+two builders running at once collide in them, and running them one after the
+other repeats the whole read-the-reference, wire-four-surfaces, render, guard
+cycle for each. One spawn reads the guide once, wires them together and runs
+`npm run check` once over the finished set.
+
 Launch `helper-builder` with its bundled role file and exactly:
 
 ```text
 PLUGIN_ROOT: [literal verified PLUGIN_ROOT]
 PLUGIN_SOURCE_ROOT: [literal verified PLUGIN_SOURCE_ROOT]
 WORKING_DIR: [WORKING_DIR]
-HELPER: [the helperKey recorded in the decision]
+
+HELPERS: [count]
+
+HELPER 1: [the helperKey recorded in the decision]
 BUILD OR GROW: [build a new helper | grow the named existing helper]
+DEPICTS: [data | the real asset or projection this visual must be built on]
 WHAT IT DRAWS: [plain English, the data fields it takes, and any rendering rule
 the teaching depends on]
 SURFACES: [which of slides, worksheets, wall, stick-in this visual reaches]
 CANNOT CURRENTLY DRAW: [for a grow, exactly what the existing helper falls short of]
+
+[repeat the block, numbered, for each further decision]
 ```
+
+`DEPICTS` is the line that stops the failure this route exists to avoid. Write
+`data` when the drawing is right by matching the lesson's own numbers, labels or
+an agreed convention. When the visual shows a real place or a real object, name
+what it must be built on instead - the shipped asset folder, or a stated
+projection of real coordinates - because a coastline or a border drawn from
+chosen coordinates renders cleanly and is wrong about the world.
 
 When it returns, pass `[PLUGIN_SOURCE_ROOT]` as `PLUGIN_ROOT` to every Phase 2
 designer and builder, so this lesson uses the helper now rather than waiting for

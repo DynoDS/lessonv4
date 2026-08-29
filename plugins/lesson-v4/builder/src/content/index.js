@@ -65,6 +65,7 @@ const { drawGridMap }        = require('./grid-map');
 const { drawRainforestLayers } = require('./rainforest-layers');
 const { drawWorldGeographyMap } = require('./world-geography-map');
 const { drawBalancedPatternPlate } = require('./balanced-pattern-plate');
+const { drawGeographicalDescriptionFrame } = require('./geographical-description-frame');
 
 const ZONE_COMPAT = {
   text:                ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'F', 'G'],
@@ -139,7 +140,8 @@ const ZONE_COMPAT = {
   'grid-map':          ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'rainforest-layers': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'world-geography-map': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
-  'balanced-pattern-plate': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G']
+  'balanced-pattern-plate': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
+  'geographical-description-frame': ['A', 'C', 'E-wide']
 };
 
 const HELPERS = {
@@ -205,7 +207,8 @@ const HELPERS = {
   'grid-map':          drawGridMap,
   'rainforest-layers': drawRainforestLayers,
   'world-geography-map': drawWorldGeographyMap,
-  'balanced-pattern-plate': drawBalancedPatternPlate
+  'balanced-pattern-plate': drawBalancedPatternPlate,
+  'geographical-description-frame': drawGeographicalDescriptionFrame
 };
 
 // Content types that already paint their own surface (a panel, cards, pills,

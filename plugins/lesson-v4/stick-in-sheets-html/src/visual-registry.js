@@ -10,6 +10,7 @@ const translationShape = require("../../shared/visuals/translation-shape-svg");
 const gridMap = require("../../shared/visuals/grid-map-svg");
 const rainforestLayers = require("../../shared/visuals/rainforest-layers-svg");
 const worldGeographyMap = require("../../shared/visuals/world-geography-map-svg");
+const geographicalDescriptionFrame = require("../../shared/visuals/geographical-description-frame-svg");
 
 // A labelled diagram a child sticks in and writes the part names onto. The figure
 // is the SAME one the board shows (the slide's label-diagram), so the cut-out and
@@ -107,6 +108,14 @@ const VISUALS = {
       labels: false,
       highlightSouthAmerica: false,
     }),
+  },
+  // 145mm wide: this is a handwriting frame, so the ruled lines set the minimum
+  // usable size. The registry always forces task mode, preventing optional
+  // teacher answers or reveal text copied from a slide from appearing in books.
+  "geographical-description-frame": {
+    tightSvg: geographicalDescriptionFrame.tightSvg,
+    defaultWidthMm: 145,
+    specFn: (s) => Object.assign({}, s, { mode: "task", showAnswers: false }),
   },
 };
 

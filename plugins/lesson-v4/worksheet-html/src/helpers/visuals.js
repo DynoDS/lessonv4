@@ -30,7 +30,7 @@ const linePairSvg = require("../../../shared/visuals/line-pair-svg");
 const pictogramSvg = require("../../../shared/visuals/pictogram-svg");
 const rainforestLayersSvg = require("../../../shared/visuals/rainforest-layers-svg");
 const balancedPatternPlateSvg = require("../../../shared/visuals/balanced-pattern-plate-svg");
-const amazonStudyAreaSvg = require("../../../shared/visuals/amazon-study-area-svg");
+const realMapSvg = require("../../../shared/visuals/real-map-svg");
 const reflectionGridSvg = require("../../../shared/visuals/reflection-grid-svg");
 const tallyChartSvg = require("../../../shared/visuals/tally-chart-svg");
 const translationShapeSvg = require("../../../shared/visuals/translation-shape-svg");
@@ -387,27 +387,26 @@ const helpers = {
     }
   ),
 
-  // The study area a rainforest unit keeps returning to: South America, Brazil
-  // within it, the Amazon basin within that.
+  // A real map of a real place, drawn from the map image this package ships in
+  // builder/assets/maps/ - the same asset and the same annotation geometry the
+  // board uses, so a continent on the sheet is the continent on the screen.
   //
-  // Chosen explicitly, like any other helper. Nothing selects it because a
-  // lesson mentions the Amazon - which resource a lesson should use is the
-  // designer's decision and stays there.
+  // Nothing here draws land. A place is marked ON the real map with a point, a
+  // region with a dashed area, a river with a line, each given in fractions of
+  // the map image. A coastline a helper drew by eye looks confident and is
+  // wrong by hundreds of miles, which is the one thing a locating map must not be.
   //
-  // Height is the one thing it takes, and it is handled strictly. An omitted
-  // height gets the mechanical default because no size was asked for. A height
-  // that WAS asked for and cannot be honoured is refused by name: silently
-  // substituting the default would hand back a picture of a different size from
-  // the one the designer sized their page around, and the first anyone would
-  // know is the printed sheet.
-  "amazon-study-area-map": (() => {
-    const MIN_HEIGHT_MM = 80;
-    const MAX_HEIGHT_MM = 150;
+  // Height is handled strictly. An omitted height gets the mechanical default
+  // because no size was asked for. A height that WAS asked for and cannot be
+  // honoured is refused by name: silently substituting the default hands back a
+  // picture of a different size from the one the designer sized the page around.
+  map: (() => {
+    const MIN_HEIGHT_MM = 60;
+    const MAX_HEIGHT_MM = 170;
     const DEFAULT_HEIGHT_MM = 110;
 
     function heightFor(spec) {
       if (spec.heightMm === undefined) return DEFAULT_HEIGHT_MM;
-
       const requested = Number(spec.heightMm);
       if (
         !Number.isFinite(requested) ||
@@ -415,25 +414,35 @@ const helpers = {
         requested > MAX_HEIGHT_MM
       ) {
         throw new Error(
-          `VISUAL_SIZE_UNSUPPORTED: amazon-study-area-map heightMm ` +
+          `VISUAL_SIZE_UNSUPPORTED: map heightMm ` +
             `${spec.heightMm} is outside ${MIN_HEIGHT_MM}-${MAX_HEIGHT_MM}mm.`
         );
       }
       return requested;
     }
 
+    function mapSpec(spec) {
+      return {
+        map: spec.map,
+        basin: spec.basin,
+        labels: spec.labels,
+        annotations: spec.annotations,
+        selectedCountry: spec.selectedCountry,
+      };
+    }
+
     return {
       render: (spec) => {
         const heightMm = heightFor(spec);
-        const { svg } = amazonStudyAreaSvg.tightSvg({ labels: spec.labels });
+        const { svg } = realMapSvg.tightSvg(mapSpec(spec));
         return `<div class="h-figure h-figure--fixed" style="height:${heightMm}mm">${svg}</div>`;
       },
       measure: (spec) => heightFor(spec),
       needs: (spec) => {
         const heightMm = heightFor(spec);
-        const { aspect } = amazonStudyAreaSvg.tightSvg({ labels: spec.labels });
-        // The drawing is taller than it is wide, so the width it needs follows
-        // from the height it was given rather than from a flat floor.
+        const { aspect } = realMapSvg.tightSvg(mapSpec(spec));
+        // The width follows from the height it was given and the map's own real
+        // proportions, so a map is never stretched to fill a zone.
         return {
           minWidthMm: Math.ceil(heightMm * aspect),
           minHeightMm: heightMm,

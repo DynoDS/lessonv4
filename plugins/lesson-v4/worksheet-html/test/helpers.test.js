@@ -557,7 +557,7 @@ test("every helper draws the words its own example gives it", () => {
   const NOT_PRINTED = new Set([
     "helper", "imagePath", "imageHref", "shape", "state", "phase", "unit",
     "variant", "kind", "orientation", "separator", "operator", "dot", "mode",
-    "relationship", "highlight", "mirror", "labels", "type",
+    "relationship", "highlight", "mirror", "labels", "type", "map", "configuration", "stage",
   ]);
 
   for (const [name, example] of Object.entries(examples)) {

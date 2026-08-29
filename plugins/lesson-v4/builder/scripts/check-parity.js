@@ -148,6 +148,70 @@ for (const p of PRIMITIVES) {
   }
 }
 
+// ── TRUTH SOURCE: every primitive says where its picture's correctness comes
+// from. `depicts: 'data'` means the drawing is right when it matches the lesson's
+// numbers, labels or an agreed convention - a bar chart, a Venn, a circuit
+// symbol. Anything else names the real source the form is taken from:
+// `asset:<folder under builder/assets>` or `projection:<named projection>`.
+//
+// This exists because a helper that DEPICTS a real thing - a coastline, a
+// border, a real object - cannot be right by construction the way a bar chart
+// can. A drawn-by-eye continent renders cleanly, passes every other check, and
+// teaches a child the wrong world. The guard cannot judge whether a drawing is
+// accurate; it can insist the author says out loud what it is drawn from, so
+// "I made these coordinates up" has to be written down before it can ship.
+// Projections whose coordinates are real. Adding one here is a statement that
+// the figure's geometry comes from real longitude/latitude (or another surveyed
+// coordinate system), not from points chosen to look right.
+const REAL_PROJECTIONS = new Set(['equirectangular-lonlat']);
+
+{
+  const ASSET_ROOT = path.join(ROOT, 'builder', 'assets');
+  for (const p of PRIMITIVES) {
+    const depicts = p.depicts;
+    if (typeof depicts !== 'string' || !depicts) {
+      problems.push(
+        `manifest "${p.id}" does not say what its picture is drawn from.
+` +
+        `      → add depicts: 'data' when the drawing is right by matching the lesson's own data or an agreed convention, ` +
+        `or depicts: 'asset:<folder>' / 'projection:<name>' when it depicts a real place or object.`
+      );
+      continue;
+    }
+    if (depicts === 'data') continue;
+    if (depicts.startsWith('asset:')) {
+      const folder = depicts.slice('asset:'.length);
+      if (!folder || !fs.existsSync(path.join(ASSET_ROOT, folder))) {
+        problems.push(
+          `manifest "${p.id}" says it is drawn from asset folder "${folder}", but builder/assets/${folder} does not exist.`
+        );
+      }
+      continue;
+    }
+    if (depicts.startsWith('projection:')) {
+      // A named projection is a named projection. This used to accept anything
+      // after the colon, and the first thing to meet the guard declared
+      // `projection:amazon-location-teaching-schematic` - a hand-drawn map
+      // wearing the word that was supposed to mean "registered to real
+      // coordinates". An escape hatch that takes any string is not a control.
+      const name = depicts.slice('projection:'.length);
+      if (REAL_PROJECTIONS.has(name)) continue;
+      problems.push(
+        `manifest "${p.id}" claims projection "${name}", which is not a real projection this package draws from.
+` +
+        `      → known projections: ${[...REAL_PROJECTIONS].join(', ')}. A schematic drawn by hand is not a projection: ` +
+        `either build the figure on a real asset, or declare depicts: 'data' and stop presenting it as a real place.`
+      );
+      continue;
+    }
+    problems.push(
+      `manifest "${p.id}" has depicts: ${JSON.stringify(depicts)}, which names no real source.
+` +
+      `      → use 'data', 'asset:<folder under builder/assets>', or 'projection:<named projection>'.`
+    );
+  }
+}
+
 // ── COVERAGE: every live visual key is declared (purely-visual registries) ──
 for (const engine of COVERAGE_ENGINES) {
   const declaredForEngine = new Set(PRIMITIVES.flatMap((p) => declaredKeys(p[engine]) || []));

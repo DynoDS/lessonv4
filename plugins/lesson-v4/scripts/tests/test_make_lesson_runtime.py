@@ -285,9 +285,12 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # runtime replaced. The per-slice budget below is the one that measures
         # what a run actually pays: no worker ever loads this file whole.
         # Raised from 46 KiB when the always-spawn wall/stick-in rules and the
-        # reviewer-local rebuild route landed with ~150 bytes of headroom left;
-        # every slice still sits far under its own 7 KiB budget.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 48 * 1024)
+        # reviewer-local rebuild route landed with ~150 bytes of headroom left,
+        # and from 48 KiB when two demonstrated failures were repaired here: a
+        # brief that names a document rather than carrying the lesson, and a
+        # helper decision for a visual of a real place. Every slice still sits
+        # far under its own 7 KiB budget, which is what a run actually pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 50 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

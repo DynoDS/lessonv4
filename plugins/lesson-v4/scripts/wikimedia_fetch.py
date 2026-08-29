@@ -28,7 +28,50 @@ class SourceFailure(Exception):
 
 
 def _normalise_licence(value: str) -> str:
-    return re.sub(r"[\\s-]+", " ", (value or "").strip().casefold())
+    # The character class needs a real backslash-s, not an escaped backslash:
+    # with the backslash doubled the class matched the LETTER s, so
+    # "CC BY-SA 4.0" normalised to "cc by a 4.0" and "ShareAlike" to
+    # "harealike". Restrictive licences still happened to be caught, but no
+    # licence name could be looked up by its normalised form.
+    return re.sub(r"[\s_-]+", " ", (value or "").strip().casefold())
+
+
+# Commons does not publish a LicenseUrl for every licence it names. Public-domain
+# marks in particular usually carry a name and no URL, and every stage downstream
+# requires a URL - so a scout that found a perfectly usable public-domain image
+# had to supply one from somewhere, which means typing a licence URL that was not
+# in the metadata. Inventing provenance to satisfy a provenance check is the one
+# thing this pipeline must not do, so the canonical URL each of these licences
+# publishes for itself is recorded here and filled in when Commons omits it. The
+# licence still comes from Commons; only its address is supplied.
+CANONICAL_LICENCE_URLS = {
+    "public domain": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "public domain mark": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "pd": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "pdm": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "cc0": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "cc 0": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "cc by 2.0": "https://creativecommons.org/licenses/by/2.0/",
+    "cc by 2.5": "https://creativecommons.org/licenses/by/2.5/",
+    "cc by 3.0": "https://creativecommons.org/licenses/by/3.0/",
+    "cc by 4.0": "https://creativecommons.org/licenses/by/4.0/",
+    "cc by sa 2.0": "https://creativecommons.org/licenses/by-sa/2.0/",
+    "cc by sa 2.5": "https://creativecommons.org/licenses/by-sa/2.5/",
+    "cc by sa 3.0": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "cc by sa 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+}
+
+
+def canonical_licence_url(licence_name):
+    """The URL a named licence publishes for itself, or '' when there isn't one."""
+    normal = _normalise_licence(licence_name)
+    if normal in CANONICAL_LICENCE_URLS:
+        return CANONICAL_LICENCE_URLS[normal]
+    # "Public Domain (PD-old-100)" and friends: a public-domain designation with
+    # a qualifier after it, which the mark's own URL still describes.
+    if normal.startswith("public domain") or normal.startswith("pd ") or normal.startswith("pdm "):
+        return CANONICAL_LICENCE_URLS["public domain"]
+    return ""
 
 
 def is_allowed_licence(licence_name):
@@ -77,7 +120,7 @@ def search_commons(query, reserve, thumb_width=800):
             "artist": _strip_html(meta.get("Artist", {}).get("value", "")) or "Unknown",
             "description": (_strip_html(meta.get("ImageDescription", {}).get("value", "")) or title.replace("File:", ""))[:500],
             "licence": licence,
-            "licence_url": _strip_html(meta.get("LicenseUrl", {}).get("value", "")),
+            "licence_url": _strip_html(meta.get("LicenseUrl", {}).get("value", "")) or canonical_licence_url(licence),
             "width": info.get("width"), "height": info.get("height"),
         })
     return output

@@ -428,17 +428,32 @@ Smallest usable: **145mm wide x 116mm tall**. Spare height: never takes spare he
 }
 ```
 
-#### `amazon-study-area-map`
+#### `map`
 
-The study area a rainforest unit keeps returning to: South America in outline, Brazil shaded within it, the Amazon basin within that.
+A real map of a real place - one of the world and continent maps this package ships - with the lesson's own places, regions and rivers marked on top of it.
 
-Smallest usable: **74mm wide x 110mm tall**. Spare height: never takes spare height.
+Smallest usable: **80mm wide x 110mm tall**. Spare height: never takes spare height.
 
 ```json
 {
-  "helper": "amazon-study-area-map",
+  "helper": "map",
+  "map": "south-america",
   "heightMm": 110,
-  "labels": true
+  "basin": "Amazon basin",
+  "labels": {
+    "basin": "Amazon basin"
+  },
+  "annotations": [
+    {
+      "kind": "point",
+      "at": [
+        0.62,
+        0.34
+      ],
+      "label": "Manaus",
+      "colour": "blue"
+    }
+  ]
 }
 ```
 

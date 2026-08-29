@@ -46,6 +46,7 @@ const { preRenderTallyCharts } = require('./src/content/tally-chart');
 const { preRenderPictograms } = require('./src/content/pictogram');
 const { preRenderBarModels } = require('./src/content/bar-model');
 const { preRenderBlankSurfaces } = require('./src/content/blank-surface');
+const { preRenderGeographicalDescriptionFrames } = require('./src/content/geographical-description-frame');
 const { preRenderLabelDiagrams } = require('./src/content/label-diagram');
 const { preRenderGridMaps } = require('./src/content/grid-map');
 const { preRenderWorldGeographyMaps } = require('./src/content/world-geography-map');
@@ -184,6 +185,7 @@ async function main() {
   const pictogramImages = await preRenderPictograms(coreLesson);
   const barModelImages = await preRenderBarModels(coreLesson);
   const blankSurfaceImages = await preRenderBlankSurfaces(coreLesson);
+  const geographicalDescriptionFrameImages = await preRenderGeographicalDescriptionFrames(coreLesson);
   const labelDiagramImages = await preRenderLabelDiagrams(coreLesson, lessonDir);
   const gridMapImages = await preRenderGridMaps(coreLesson);
   const worldGeographyMapImages = await preRenderWorldGeographyMaps(coreLesson);
@@ -205,7 +207,7 @@ async function main() {
 
   // One ctx builder, used by the preflight and by the real render, so the dry
   // run cannot pass because it was handed something the real one is not.
-  const contextForSlide = (i) => ({ slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, clockImages, turnImages, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, labelDiagramImages, gridMapImages, worldGeographyMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, mapImages, circuitDiagramImages, circuitSymbolBankImages, successCriteriaHelperImages });
+  const contextForSlide = (i) => ({ slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, clockImages, turnImages, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, geographicalDescriptionFrameImages, labelDiagramImages, gridMapImages, worldGeographyMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, mapImages, circuitDiagramImages, circuitSymbolBankImages, successCriteriaHelperImages });
 
   // Draw everything once into a presentation nobody will open. A slide that
   // cannot be drawn is found here, before a file exists, rather than after the

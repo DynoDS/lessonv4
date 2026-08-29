@@ -9,6 +9,7 @@ const { drawMissingImage } = require('../images/placeholder');
 const { longPathSafe } = require('../images/resolve');
 const requireGlobal = require('../require-global');
 const { polyline } = require('./_geom');
+const shared = require('../../../shared/visuals/map-annotations');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD          = 0.12;
@@ -20,69 +21,22 @@ const BASIN_LINE_PT = 3;
 const BASIN_HALO_PT = 6;
 const BASIN_COLOUR = 'C65911';
 const COUNTRY_FILL = { r: 189, g: 220, b: 235 };
+const MARK_LINE_PT  = 3;      // annotation stroke (points)
+const MARK_HALO_PT  = 6;      // white halo behind it, so a mark stays visible over dark map ink
+const MARK_DOT_IN   = 0.13;   // point-annotation dot diameter (inches)
 // ─── END CONSTANTS ────────────────────────────────────────────
 
-const ASSET_DIR = path.resolve(__dirname, '..', '..', 'assets', 'maps');
+const ASSET_DIR = shared.ASSET_DIR;
 
-// Real pixel dimensions recorded here at authoring time rather than read from
-// the file at render time, the same way money.js hardcodes each coin's
-// real-world size instead of inspecting the asset — it keeps this renderer
-// synchronous and avoids a dependency on ctx.imageDims, which nothing in the
-// pipeline currently populates. Add a new entry whenever a new file is added
-// to builder/assets/maps/.
-const MAPS = {
-  world:           { file: 'world.png', w: 1272, h: 647 },
-  europe:          { file: 'europe.png', w: 554, h: 554 },
-  africa:          { file: 'africa.png', w: 554, h: 554 },
-  asia:            { file: 'asia.png', w: 624, h: 491 },
-  'south-america': { file: 'south-america.png', w: 472, h: 649 },
-  'north-america': { file: 'north-america.jpg', w: 1936, h: 2200 },
-  oceania:         { file: 'oceania.jpg', w: 2200, h: 1690 }
-};
+// The map registry, the two named overlays and the annotation contract all live
+// in shared/visuals/map-annotations.js, so the slide engine and the worksheet
+// engine draw the identical geography from the identical real asset.
+const MAPS = shared.MAPS;
+const normaliseMapKey = shared.normaliseMapKey;
+const normaliseOverlayName = shared.normaliseOverlayName;
+const checkOverlaySupport = shared.checkOverlaySupport;
 
-const BRAZIL_SEED = { x: 300, y: 220 };
-const AMAZON_BASIN = [
-  [86, 98], [116, 76], [158, 78], [205, 92], [253, 109], [306, 121],
-  [353, 143], [378, 176], [365, 203], [329, 226], [286, 242], [241, 261],
-  [198, 270], [153, 253], [119, 231], [90, 204], [75, 170], [74, 134], [86, 98]
-];
-
-function normaliseMapKey(value) {
-  return String(value || '').trim().toLowerCase().replace(/[ _]+/g, '-');
-}
-
-function normaliseOverlayName(value) {
-  return String(value || '').trim().toLowerCase().replace(/[-_]+/g, ' ');
-}
-
-// What this helper can actually draw on top of a base map.
-//
-// Normalising "South_America" to "south-america" is harmless: the same place,
-// spelled differently. An overlay is not like that. A country the drawing has no
-// region for cannot be shaded, and quietly rendering the plain map instead sends
-// a teacher a slide that is missing the one thing it was asked for - with
-// nothing anywhere saying so. So a requested overlay either appears or the build
-// says why it did not.
-const COUNTRY_OVERLAYS = new Set(['brazil']);
-const BASIN_OVERLAYS = new Set(['amazon basin']);
-
-function checkOverlaySupport(data) {
-  const country = normaliseOverlayName(data && data.selectedCountry);
-  if (country && !COUNTRY_OVERLAYS.has(country)) {
-    throw new Error(
-      `MAP_OVERLAY_UNSUPPORTED: selectedCountry ${JSON.stringify(String(data.selectedCountry))} ` +
-        `has no shaded region in this map. Supported: ${[...COUNTRY_OVERLAYS].join(', ')}.`
-    );
-  }
-
-  const basin = normaliseOverlayName(data && data.basin);
-  if (basin && !BASIN_OVERLAYS.has(basin)) {
-    throw new Error(
-      `MAP_OVERLAY_UNSUPPORTED: basin ${JSON.stringify(String(data.basin))} ` +
-        `has no outline in this map. Supported: ${[...BASIN_OVERLAYS].join(', ')}.`
-    );
-  }
-}
+const BRAZIL_SEED = shared.BRAZIL_SEED_SOUTH_AMERICA;
 
 function mapKey(data) {
   return [normaliseMapKey(data && data.map), normaliseOverlayName(data && data.selectedCountry)].join('|');
@@ -135,9 +89,12 @@ function fillRegion(raw, info, seed, colour) {
 async function preRenderMaps(lesson) {
   const specs = Object.entries(contentSpecs(lesson));
 
-  // Every requested overlay is checked whether or not this machine can draw
-  // one, so an unsupported name is reported the same way everywhere.
-  for (const [, spec] of specs) checkOverlaySupport(spec);
+  // Every requested overlay and annotation is checked whether or not this
+  // machine can draw one, so a bad value is reported the same way everywhere.
+  for (const [, spec] of specs) {
+    checkOverlaySupport(spec);
+    shared.resolveAnnotations(spec);
+  }
 
   const wantsOverlay = specs.some(
     ([, spec]) =>
@@ -208,33 +165,94 @@ function labelsFor(data) {
   };
 }
 
-function mapPoint(point, x, y, w, h, entry) {
-  return { x: x + point[0] / entry.w * w, y: y + point[1] / entry.h * h };
+function fractionPoint(point, x, y, w, h) {
+  return { x: x + point[0] * w, y: y + point[1] * h };
 }
 
-function drawMapLabel(pptx, slide, text, px, py, mapW, mapH) {
-  if (!text) return;
-  const w = Math.min(1.62, Math.max(0.82, String(text).length * 0.105));
-  const h = 0.34;
-  const x = px - w / 2;
-  const y = py - h / 2;
+function mapPoint(point, x, y, w, h, entry) {
+  return fractionPoint([point[0] / entry.w, point[1] / entry.h], x, y, w, h);
+}
+
+const LABEL_W_MIN = 0.82;   // label pill width floor (inches)
+const LABEL_W_MAX = 1.62;   // label pill width ceiling (inches)
+const LABEL_H     = 0.34;   // label pill height (inches)
+const LEADER_PT   = 1.5;    // leader-line weight (points)
+
+function pillWidth(text) {
+  return Math.min(LABEL_W_MAX, Math.max(LABEL_W_MIN, String(text).length * 0.105));
+}
+
+function drawMapPill(pptx, slide, text, box, colour) {
   slide.addShape(pptx.ShapeType.roundRect, {
-    x, y, w, h,
+    x: box.x, y: box.y, w: box.w, h: box.h,
     rectRadius: 0.05,
     fill: { color: 'FFFFFF', transparency: 8 },
-    line: { color: '333333', width: 1.2 }
+    line: { color: colour || '333333', width: 1.2 }
   });
   slide.addText(String(text), {
-    x: x + 0.04, y: y + 0.02, w: w - 0.08, h: h - 0.04,
+    x: box.x + 0.04, y: box.y + 0.02, w: box.w - 0.08, h: box.h - 0.04,
     fontFace: FONT, fontSize: OVERLAY_LABEL_FONT, bold: true, color: COLOURS.body,
     align: 'center', valign: 'middle', margin: 0, fit: FIT
   });
 }
 
+// Every word printed on the map goes through one layout pass, shared with the
+// worksheet engine, rather than each label being dropped where its own mark
+// happens to sit. Three marks a few percent apart used to print three pills on
+// top of each other and only the last was readable.
+function drawMapLabels(pptx, slide, items, fx, fy, fw, fh) {
+  const placed = shared.layoutLabels(items, function (text) {
+    return { w: pillWidth(text) / fw, h: LABEL_H / fh };
+  });
+  const boxes = placed.map(function (item) {
+    return {
+      item,
+      box: { x: fx + item.box.x * fw, y: fy + item.box.y * fh, w: item.box.w * fw, h: item.box.h * fh }
+    };
+  });
+  // Leaders first, so no line is drawn across the words it belongs to.
+  boxes.forEach(function (entry) {
+    if (!entry.item.leader) return;
+    const from = fractionPoint(entry.item.leader[0], fx, fy, fw, fh);
+    const to = fractionPoint(entry.item.leader[1], fx, fy, fw, fh);
+    polyline(pptx, slide, [from, to], { lineColor: entry.item.colour || '333333', width: LEADER_PT });
+  });
+  boxes.forEach(function (entry) {
+    drawMapPill(pptx, slide, entry.item.text, entry.box, entry.item.colour);
+  });
+}
+
+// Marks drawn ON TOP of the real map: a dot on a city, a dashed outline round a
+// region, a line along a river. Every one is placed in fractions of the real
+// asset, so nothing here redraws the land itself.
+function drawAnnotations(pptx, slide, marks, fx, fy, fw, fh) {
+  marks.forEach(function (mark) {
+    if (mark.kind === 'point') {
+      const at = fractionPoint(mark.at, fx, fy, fw, fh);
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: at.x - MARK_DOT_IN / 2, y: at.y - MARK_DOT_IN / 2, w: MARK_DOT_IN, h: MARK_DOT_IN,
+        fill: { color: mark.colour },
+        line: { color: 'FFFFFF', width: 1.5 }
+      });
+    } else {
+      const points = mark.points.map(function (p) { return fractionPoint(p, fx, fy, fw, fh); });
+      // An area closes back on itself; a river does not.
+      const path = mark.kind === 'area' ? points.concat([points[0]]) : points;
+      polyline(pptx, slide, path, { lineColor: 'FFFFFF', width: MARK_HALO_PT });
+      polyline(pptx, slide, path, {
+        lineColor: mark.colour,
+        width: MARK_LINE_PT,
+        dash: mark.kind === 'area' ? 'dash' : undefined
+      });
+    }
+  });
+}
+
 function drawMap(pptx, slide, zone, data, ctx) {
-  // Before anything is drawn: an overlay this map cannot produce is a refusal,
-  // not a quieter picture.
+  // Before anything is drawn: an overlay or annotation this map cannot produce
+  // is a refusal, not a quieter picture.
   checkOverlaySupport(data);
+  const marks = shared.resolveAnnotations(data);
 
   const key = normaliseMapKey(data.map);
   const entry = MAPS[key];
@@ -284,24 +302,39 @@ function drawMap(pptx, slide, zone, data, ctx) {
 
   const basin = normaliseOverlayName(data.basin);
   if (key === 'south-america' && basin === 'amazon basin') {
-    const points = AMAZON_BASIN.map(function (point) {
-      return mapPoint(point, fittedX, fittedY, fittedW, fittedH, entry);
+    const points = shared.AMAZON_BASIN_SOUTH_AMERICA.map(function (point) {
+      return fractionPoint(point, fittedX, fittedY, fittedW, fittedH);
     });
     polyline(pptx, slide, points, { lineColor: 'FFFFFF', width: BASIN_HALO_PT });
     polyline(pptx, slide, points, { lineColor: BASIN_COLOUR, width: BASIN_LINE_PT, dash: 'dash' });
   }
 
+  drawAnnotations(pptx, slide, marks, fittedX, fittedY, fittedW, fittedH);
+
   const labels = labelsFor(data);
+  const labelItems = [];
   if (key === 'south-america') {
-    if (normaliseOverlayName(data.selectedCountry) === 'brazil') {
-      const countryPoint = mapPoint([294, 286], fittedX, fittedY, fittedW, fittedH, entry);
-      drawMapLabel(pptx, slide, labels.country, countryPoint.x, countryPoint.y, fittedW, fittedH);
+    if (normaliseOverlayName(data.selectedCountry) === 'brazil' && labels.country) {
+      labelItems.push({
+        text: labels.country,
+        anchor: shared.BRAZIL_LABEL_SOUTH_AMERICA,
+        preferred: shared.BRAZIL_LABEL_SOUTH_AMERICA
+      });
     }
-    if (basin === 'amazon basin') {
-      const basinPoint = mapPoint([210, 163], fittedX, fittedY, fittedW, fittedH, entry);
-      drawMapLabel(pptx, slide, labels.basin, basinPoint.x, basinPoint.y, fittedW, fittedH);
+    if (basin === 'amazon basin' && labels.basin) {
+      labelItems.push({
+        text: labels.basin,
+        anchor: shared.AMAZON_BASIN_LABEL_SOUTH_AMERICA,
+        preferred: shared.AMAZON_BASIN_LABEL_SOUTH_AMERICA,
+        colour: BASIN_COLOUR
+      });
     }
   }
+  marks.forEach(function (mark) {
+    if (!mark.label) return;
+    labelItems.push({ text: mark.label, anchor: mark.anchor, preferred: mark.labelAt, colour: mark.colour });
+  });
+  drawMapLabels(pptx, slide, labelItems, fittedX, fittedY, fittedW, fittedH);
 
   if (hasCaption) {
     slide.addText(caption, {
@@ -312,4 +345,4 @@ function drawMap(pptx, slide, zone, data, ctx) {
   }
 }
 
-module.exports = { drawMap, preRenderMaps, mapKey, normaliseMapKey };
+module.exports = { drawMap, preRenderMaps, mapKey, normaliseMapKey, mapPoint };

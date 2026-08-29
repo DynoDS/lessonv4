@@ -18,6 +18,22 @@ A helper is anything a designer reaches for by name and gets the same faithful v
 
 The test is what the picture is made of. If the lesson's data changes the drawing, it is drawn. If the picture is one fixed thing that would be wrong if it varied, it is stock. Reuse is what makes either worth building, but it is not what tells them apart.
 
+### Before either: is this picture's correctness a fact about the world?
+
+Ask what makes the drawing right. A bar chart is right when its bars match the lesson's numbers. A Venn is right when its regions match the sets. An angle is right when it measures what it says. Those are true by construction, so code can draw them from nothing and be correct every time.
+
+A coastline, a country border, a river's course, the face of a coin, the shape of a named piece of apparatus is not like that. It is right only when it matches something that already exists, and no amount of care in the code gets you closer to it. **So a figure whose correctness is a fact about the world is never drawn from coordinates you choose.** It is built on the real thing: an asset already in `builder/assets/`, a new stock asset you source or generate and check, or the lesson's own picture route. Whatever the lesson adds goes ON TOP of that as annotation - a dot on a place, a dashed outline round a region, a line along a river - positioned in fractions of the real picture, the way the `map` content object does.
+
+The trap is that a real-world figure can still be configurable, so it passes the drawn/stock test above and reads as "drawn". A location map that takes a zoom stage, a highlight and a label list changes with the lesson's data in every way except the one that matters: the land. **The discriminating question is not "does this vary?" but "if this comes out wrong, is it wrong because it mismatched the lesson, or because it mismatched the world?"**
+
+The case this rule was written from: a Year 4 rainforest lesson needed a world-to-Amazon location map. Nothing in the catalogue did the zoom, so a new drawn helper was built, with continents, country borders and a rainforest boundary as hand-picked polygon points. It rendered cleanly, filled its slot, passed the parity guard and every test, and put South America in the wrong shape, Brazil in the wrong place, and a rainforest boundary that answered to nothing. Meanwhile eight real map images were sitting in `builder/assets/maps/`, and the `map` object already drew them.
+
+**Where this does not apply.** A diagram whose form is a teaching convention rather than a survey: a circuit symbol, a rainforest cross-section, a water cycle, a food-group plate. Nobody can photograph the canonical rainforest cross-section; its accuracy is pedagogical, and drawing it is exactly right. Nor does it apply to a schematic that is honestly presented as invented - the four-figure grid-reference map of a town that does not exist - because there is no real place for it to be wrong about. The rule bites when a child is being told **where or what something actually is**.
+
+**Record the answer where the guard can hold you to it.** Every entry in `shared/visual-parity.js` carries a `depicts` field: `'data'` when the drawing is right by matching the lesson's own data or an agreed convention, or `'asset:<folder under builder/assets>'` / `'projection:<named projection>'` when it depicts a real place or object and takes its form from that source. `npm run check` refuses an entry that declares neither, and refuses an `asset:` folder that does not exist. The guard cannot judge whether a drawing is accurate; what it can do is make you write down what it is drawn from, so "I picked these coordinates by eye" has to be said out loud before it can ship.
+
+**Before building a real-world figure at all, look for the helper that already holds the real source.** If one exists and falls short, grow it - a new annotation, a new asset in its folder, a new named overlay - rather than building a second helper that draws the same place its own way. Two helpers for one place is two answers to "where is it", and the sheet and the board will eventually give different ones.
+
 ### Building a stock helper
 
 1. **Make the picture once.** Source it, or generate it with your own image generation. Do not route it through a lesson's picture stage: that stage is built for one-off lesson photographs and carries a per-picture attempt ledger, prompt hashing and provenance rules that exist for that job and add nothing here.

@@ -537,11 +537,18 @@ module.exports = {
     lines: 2,
   },
 
-  "amazon-study-area-map": {
-    // Omitted, the helper uses its own default height. A height that IS given
-    // and is outside what the drawing supports is refused rather than replaced.
+  map: {
+    // The base is the real south-america.png this package ships; everything
+    // else is a mark placed on it in fractions of that image. Omit heightMm and
+    // the helper uses its own default; a height that IS given and is outside
+    // what the sheet supports is refused rather than quietly replaced.
+    map: "south-america",
     heightMm: 110,
-    labels: true,
+    basin: "Amazon basin",
+    labels: { basin: "Amazon basin" },
+    annotations: [
+      { kind: "point", at: [0.62, 0.34], label: "Manaus", colour: "blue" },
+    ],
   },
 
   // ─── cause, effect and evidence ───

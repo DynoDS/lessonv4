@@ -34,7 +34,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `steps` | A numbered step list |
 | `vocab` | Word + definition pairs |
 | `image` | Photograph or diagram (with optional caption) |
-| `map` | A named stock map rendered from a plugin-shipped asset, with the supported Brazil/Amazon teaching overlay when requested |
+| `map` | A real map of a real place, drawn from a map image this package ships, with the lesson's own places, regions and rivers marked on top of it |
 | `table` | Header row + body rows |
 | `mult-grid` | A multiplication-facts grid (the SATs "missing numbers in this multiplication grid" shape): `×` corner, headers across and down, product cells. Big numbers, blank cells, green `||` answers. Use for a times-tables grid, not the generic `table` |
 | `matching` | A "draw a line to match" layout: two columns of boxes joined by connector lines. One example line on the question, every line green on the answer slide. Use for any match-these-to-those starter or task |
@@ -66,6 +66,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `reflection-grid` | A dot grid with a mirror line and a shape on one side; set `showReflection` to add the reflected shape in green on the answer slide. The mirror runs vertical, horizontal, or on either 45° **diagonal** (`diagonal-up`/`diagonal-down`). Use for "reflect this shape in the mirror line" symmetry work, where the unnumbered dots and equal-distance reflection are the point |
 | `grid-map` | A schematic river-town map on a **numbered four-figure grid** — eastings along the bottom, northings up the side, the numbers sitting ON the grid lines at the corners (read along the bottom, then up the side). A blue river winds through with a meander, features sit inside their squares, and an optional ring marks one square's bottom-left corner. Use for "read the human/physical features and four-figure grid references off the map" geography/maths work; the `highlightSquare` ring models reading a reference on the Teach slide |
 | `world-geography-map` | A north-up seven-continent world map in three deliberate configurations: blank continent retrieval, four-biome examples with an exact key, or tropical-rainforest distribution with the Equator and both Tropics. Use when the geography itself must stay accurate and consistent between the board and a child's write-on map |
+| `geographical-description-frame` | A blank three-part writing frame headed Biome, Location, and Features from evidence. It prompts for a biome meaning and example, a continent and more than one country, and two features linked to map or photograph evidence |
 | `rainforest-layers` | A cross section of a tropical rainforest — four stacked bands, top to bottom: emergent (a few very tall widely spaced trees), canopy (an unbroken roof of overlapping treetops), understorey (thin trunks and large leaves), forest floor (dark ground, leaf litter and roots). The **band tint is the light gradient**, brightest at the top and near dark at the floor, so the diagram teaches the light idea just by looking right. Toggle `labels`, `heights` and `light` (sun, arrows thinning band by band, "about 2 rays in every 100"); `notes` prints a short phrase under a layer's name, which is where what a layer is *like* belongs rather than in a text panel beside the picture; `highlight` takes a pair of layer names and dims the other two, so the same diagram carries a whole lesson slide by slide; `blank` gives the write-on form. Use for any "describe the layers of a rainforest" geography work |
 | `balanced-pattern-plate` | A neutral broad proportional food-group plate: larger fruit-and-vegetable and starchy-carbohydrate areas, smaller protein and dairy-or-alternative areas, and a very small oils-and-spreads area. The five proportions are the fixed thing the picture teaches and no field changes them; everything you set is words. Each group takes its own label and up to four short examples, and the drawing measures them, so a longer label wraps, shrinks, and moves out to a labelled card beside the plate rather than being clipped. `mode: "practice"` keeps the identical sectors and turns whichever groups you name into pupil-decision spaces. Water sits beside it; foods high in fat, salt or sugar have a separate "less often / small amounts" cue. Never use calorie, weight-loss, moral, or bad-food labels. |
 | `geoboard` | A grid of evenly spaced pegs (dotty paper) with zero, one, or many straight-line shapes drawn on by their vertices. A general workspace: blank dotty paper to draw on, a single shape to name, a square turned 45° on diagonal pegs ("it's not a diamond"), or several shapes to sort. Not limited to four sides — triangles, pentagons, irregular and open paths all work. Use for shape, area, perimeter, symmetry and "how many shapes can you make?" investigations. Unnumbered (unlike `coordinate-grid`); a free drawing surface, not a reflection task (unlike `reflection-grid`) |
@@ -1720,7 +1721,7 @@ If the zone is narrower than required, the row wraps to a second line — usuall
 
 ### `map`
 
-A named stock map, drawn from a real map image stored in the plugin, the same way `money` draws from real coin photos. Use this instead of a photo brief whenever the lesson needs a stable continent or world map. South America can also show the built-in Brazil and Amazon basin teaching overlay.
+A real map of a real place, drawn from a map image this package ships, the same way `money` draws from real coin photos. Use it whenever a lesson has to say where something is. The base is never drawn: a coastline or a border comes from the real image, and everything the lesson adds sits on top of it as an annotation.
 
 ```json
 { "type": "map", "map": "world" }
@@ -1731,7 +1732,38 @@ With a caption:
 { "type": "map", "map": "world", "caption": "World map" }
 ```
 
-South America with Brazil selected and the Amazon basin outlined:
+**Available values:** `world`, `europe`, `africa`, `asia`, `south-america`, `north-america`, `oceania`, `uk` - present-day political outlines, real country borders, no labels, no shading.
+
+#### Marking places on the map
+
+`annotations` is how a lesson names a city, outlines a region, or traces a river on any of those maps. Each entry is one mark, positioned in **fractions of the map image**: `[x, y]` with `[0, 0]` at the top-left corner and `[1, 1]` at the bottom-right. Fractions, not pixels, so the same mark lands in the same place on the board and on a printed sheet.
+
+```json
+{
+  "type": "map",
+  "map": "south-america",
+  "annotations": [
+    { "kind": "point", "at": [0.62, 0.34], "label": "Manaus", "colour": "blue" },
+    { "kind": "line", "points": [[0.30, 0.29], [0.45, 0.30], [0.62, 0.315], [0.80, 0.325]], "label": "Amazon River", "colour": "blue" },
+    { "kind": "area", "points": [[0.26, 0.20], [0.60, 0.22], [0.72, 0.34], [0.52, 0.45], [0.28, 0.40]], "label": "Amazon rainforest", "colour": "green" }
+  ]
+}
+```
+
+- `kind` is exactly `point` (a dot on a place), `line` (a river, a route, a border you are tracing), or `area` (a dashed outline round a region, closed for you).
+- `point` takes `at`; `line` and `area` take `points` (at least two, and at least three for an area).
+- `label` is optional. Labels are laid out against each other, so two marks near the same place do not print on top of one another; a label that has to move away from its mark gets a leader line back to it. A region's label sits just clear of the region rather than across it.
+- `labelAt` optionally places a label yourself, in the same fractions.
+- `colour` is exactly `orange`, `blue`, `green` or `black`. Omit it for orange.
+- At most **8** annotations. Past that a map stops being readable from the back of the room; if a lesson wants more, it wants two maps.
+
+Anything wrong is refused by name rather than drawn wrongly: `MAP_ANNOTATION_UNSUPPORTED` for a kind that does not exist, `MAP_ANNOTATION_INVALID` for a coordinate outside the map, too few points, an unknown colour, or more marks than the map can carry.
+
+**Place a mark by looking at the real map, and check it by looking at the render.** A dot a few millimetres out is visible and fixable; there is deliberately no way to draw the land itself, because a coastline drawn by eye looks exactly as confident as a real one and is wrong by hundreds of miles.
+
+#### The two built-in overlays
+
+South America carries two ready-made overlays that predate annotations and stay supported:
 
 ```json
 {
@@ -1744,21 +1776,17 @@ South America with Brazil selected and the Amazon basin outlined:
 }
 ```
 
-**Available values:** `world`, `europe`, `africa`, `asia`, `south-america`, `north-america`, `oceania` — present-day political outlines, real country borders, no labels, no shading.
-
-`selectedCountry` currently accepts `Brazil` on the South America map. It fills Brazil while keeping its printed border. `basin` currently accepts `Amazon basin`. It draws an orange dashed boundary with a white halo, so the region cannot be mistaken for a solid national border. `caption` remains optional.
+`selectedCountry` accepts `Brazil` on the South America map. It fills Brazil while keeping its printed border, and it is **board only** - the fill works on the image itself, so on a worksheet name the country with a `point` annotation instead. `basin` accepts `Amazon basin` and draws an orange dashed boundary with a white halo on either surface, so the region cannot be mistaken for a solid national border.
 
 **A requested overlay either appears or the build stops.** Ask for a country or basin the map has no region for and the build fails with `MAP_OVERLAY_UNSUPPORTED`, naming the exact value supplied; if the shading was supported but could not be prepared, it fails with `MAP_OVERLAY_RENDER_FAILED`. Neither quietly falls back to the plain map: a slide that was meant to show where something is happening, printed without the shading and with nothing saying so, is the one failure this content object exists to prevent.
 
-**`labels` prints only words somebody wrote.** Omitted, the map carries no printed names. Pass `{ "country": "...", "basin": "..." }` to print short labels, or `false` to be explicit that there are none. Naming a country in `selectedCountry` asks for it to be SHADED and does not ask for its name to be printed across it — a map for "which country is this?" must not answer its own question.
-
-Use a sourced or purpose-built diagram when the lesson needs another country selection, a city, a river, a line of latitude or another lesson-specific mark. The stock map does not guess unsupported geography.
+**`labels` prints only words somebody wrote.** Omitted, the map carries no printed names. Pass `{ "country": "...", "basin": "..." }` to print short labels, or `false` to be explicit that there are none. Naming a country in `selectedCountry` asks for it to be SHADED and does not ask for its name to be printed across it - a map for "which country is this?" must not answer its own question.
 
 Harmless spellings of a map name still resolve to the same map: `south america`, `south_america` and `South-America` are one place typed three ways.
 
 The image keeps its true aspect ratio inside the zone. It is never stretched, since a distorted map draws countries the wrong shape.
 
-Zone class compatibility: fits A, B, C, D, E-wide, E-narrow (not F, not G — a map needs enough room for its borders to stay legible, the same floor as `image`).
+Zone class compatibility: fits A, B, C, D, E-wide, E-narrow (not F, not G - a map needs enough room for its borders to stay legible, the same floor as `image`).
 
 ### `stack`
 
@@ -2251,6 +2279,23 @@ A configurable, conventional **north-up world map** with recognisable outlines f
 
 Zone class compatibility: fits A, B, C, D, E-wide, E-narrow and G. It is a wide map, so A, C or E-wide keeps the key and latitude labels most readable.
 
+### `geographical-description-frame`
+
+A reusable three-part writing frame for turning geographical evidence into a precise description. The task form is always blank and keeps these three visible sections: **Biome**, **Location**, and **Features from evidence**.
+
+```json
+{
+  "type": "geographical-description-frame",
+  "responseLines": { "biome": 2, "location": 2, "features": 3 }
+}
+```
+
+The default prompts enforce the geographical structure: Biome asks what the word means and for one example; Location asks for the continent and more than one country; Features asks for two features, each linked to map or photograph evidence. Override wording with `headings` or `prompts`, keyed by `biome`, `location`, and `features`. Set each section's writing room with `responseLines` (1–6) or `responseHeights` (SVG units, 92–270); the same fields may instead sit inside `biome`, `location`, or `features` objects.
+
+Optional `answers` or `reveals` may hold one answer string per section. They remain hidden unless the slide explicitly sets `mode: "answer"` or `showAnswers: true`; the stick-in renderer always forces task mode, so pupil copies stay blank even if an answer spec is copied accidentally.
+
+Zone class compatibility: fits A, C and E-wide. The helper deliberately refuses strips, third-columns, narrow splits and small cards because shrinking all three prompts below the back-row reading floor would defeat the scaffold.
+
 ### `rainforest-layers`
 
 A cross section of a tropical rainforest: four stacked horizontal bands, top to bottom — **emergent** (a few very tall, widely spaced trees with small crowns rising clear above everything else against pale sky), **canopy** (a continuous dense band of overlapping treetops forming an unbroken roof), **understorey** (thinner trunks and large leaves in dimmer green), **forest floor** (dark brown ground with leaf litter and roots, and almost nothing growing).
@@ -2442,6 +2487,7 @@ Which content types fit which zone class.
 | `reflection-grid`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `grid-map`          | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `rainforest-layers` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
+| `geographical-description-frame` | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `geoboard`          | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `measuring-jug`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `tally-chart`       | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |

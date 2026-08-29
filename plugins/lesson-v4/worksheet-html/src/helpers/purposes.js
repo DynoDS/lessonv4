@@ -183,8 +183,8 @@ module.exports = {
     "Boxes joined by arrows: a food chain, a life cycle, the order of events. The arrows are the point.",
 
   // ─── geography ───
-  "amazon-study-area-map":
-    "The study area a rainforest unit keeps returning to: South America in outline, Brazil shaded within it, the Amazon basin within that.",
+  map:
+    "A real map of a real place - one of the world and continent maps this package ships - with the lesson's own places, regions and rivers marked on top of it.",
   "cause-path-grid":
     "Named steps across the top and a choice to make at each one, so a child traces a cause through to its effect rather than naming both ends.",
   "evidence-chain-frame":

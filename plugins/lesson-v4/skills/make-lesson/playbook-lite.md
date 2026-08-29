@@ -87,6 +87,16 @@ worksheet remains `TEACHER_WORKSHEET_INPUT`. Do not paste either into the brief.
 Only Lesson Designer, Design Reviewer and Adaptation Designer may read raw
 teacher-authored files.
 
+**A brief that names a document is a pointer, not the lesson.** The brief file
+keeps its exact words, but a designer handed only the pointer has to find and
+interpret the file itself, and on an unattended run a path that does not resolve
+becomes a lesson designed from a filename. Check the path exists, pass it as
+`LESSON_PLAN_INPUT`, and put in `orchestrator-context.md` which lesson in it this
+run is for and that the surrounding lessons are context, not a script. Never
+summarise the plan into either file. If the path does not resolve, say so and
+stop, unless the message also carries a usable year and objective - then design
+from that and flag the file.
+
 Resolve the filing destination with `scripts/resolve-filing.py` using the first
 explicit year and subject in teacher-authored input, then the fixed LO-to-subject
 lookup in the main skill. Tell the teacher the destination before generation.
@@ -304,6 +314,16 @@ the candidate's own file when its name does not settle it. **The bar is the
 central teaching visual**, not a nicety a renderer can approximate without
 pedagogical loss.
 
+**A visual of a real place or object is decided differently.** A Venn is right
+when it matches the lesson's data; a coastline is right only when it matches the
+world, and a helper drawing one from chosen coordinates renders cleanly and
+teaches a world that is not there. So ask which shipped asset or live helper
+already holds the real thing - `map` carries eight real world and continent maps
+and takes marks on top of them - and when one nearly does it, record `build`
+naming that helper to be **grown**. A second helper for a place an existing one
+already holds is how a package ends up with two maps of one continent that
+disagree.
+
 Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
 `{"schemaVersion": 1, "decisions": [...]}`, each carrying `representationId`,
 `configuration`, `requiredSurface`, `decision` and the fields below:
@@ -312,7 +332,8 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
   check refuses a key no renderer on that surface dispatches on.
 - `build` - nothing draws it, or the closest helper cannot draw it as designed.
   Give `helperKey` and a `reason` naming what it cannot draw, then take the
-  helper route.
+  helper route. When a helper already holds the real source for this subject,
+  the route is to grow that one, not to add a second helper beside it.
 - `substitute` - no helper should draw it: a fixed depiction of one real thing
   this lesson alone needs. Give the `reason` and take the picture route.
 
