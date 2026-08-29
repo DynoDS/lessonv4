@@ -29,10 +29,31 @@ const ORIENTATIONS = ["portrait", "landscape"];
 const ROOMY_BELOW_PCT = 70;
 const TIGHT_ABOVE_PCT = 98;
 
+// The fill a sheet is aimed at. Full enough that the page is worth printing,
+// with enough left over that the arithmetic can be a millimetre out - which it
+// routinely is - and the zone still has somewhere to put the difference.
+const TARGET_FILL_PCT = 88;
+
 function verdictFor(fillPct) {
   if (fillPct < ROOMY_BELOW_PCT) return "roomy";
   if (fillPct > TIGHT_ABOVE_PCT) return "tight";
   return "good";
+}
+
+// How far a page is from the fill it should be aimed at, in a single number
+// that can be sorted on. The two ends are not symmetrical on purpose: a roomy
+// page wastes paper and a teacher trims it, whereas a page with no spare left
+// clips its content and is refused outright, so being over the tight line is
+// penalised far more steeply than being under the roomy one.
+function comfortPenalty(fillPct) {
+  if (!Number.isFinite(fillPct)) return Number.POSITIVE_INFINITY;
+  if (fillPct > TIGHT_ABOVE_PCT) {
+    return 40 + (fillPct - TIGHT_ABOVE_PCT) * 10;
+  }
+  if (fillPct < ROOMY_BELOW_PCT) {
+    return 20 + (ROOMY_BELOW_PCT - fillPct) * 2;
+  }
+  return Math.abs(fillPct - TARGET_FILL_PCT);
 }
 
 // Every layout, at both orientations unless one is asked for.
@@ -177,10 +198,20 @@ function suggestLayouts(rawItems, options = {}) {
     });
   }
 
-  // Best first. A page that is slightly roomy beats one that is bursting, so
-  // rank by how close the fill sits to comfortably full rather than by raw
-  // percentage: 96% is a better sheet than 104% would be if it were allowed.
-  fits.sort((a, b) => b.fillPct - a.fillPct);
+  // Best first: closest to comfortably full, NOT fullest.
+  //
+  // This sorted by raw percentage, highest first, which is the opposite of what
+  // the line above it has always claimed. The layout offered at the top of the
+  // list was therefore always the tightest one available, and a designer told
+  // to take what the tool gives got handed the shape nearest the edge every
+  // time. Every millimetre of estimate error then had nowhere to go, because
+  // the spare a zone borrows to be wrong in is the spare this ranking had just
+  // spent. That is how a sheet came back 6px over and cost a whole lesson its
+  // worksheets.
+  //
+  // So rank by comfort. A page a little roomier than ideal is a page a teacher
+  // trims; a page with nothing left over is a page that clips.
+  fits.sort((a, b) => comfortPenalty(a.fillPct) - comfortPenalty(b.fillPct));
 
   return {
     fits,
@@ -188,6 +219,65 @@ function suggestLayouts(rawItems, options = {}) {
     wrongZoneCount,
     verdict: fits.length ? null : diagnose(items, refused, wrongZoneCount),
   };
+}
+
+/**
+ * Roomier arrangements of a sheet that has already been written.
+ *
+ * `suggestLayouts` answers "which layout should this content go in?" before a
+ * sheet exists, from raw items. This asks the same question about a sheet that
+ * is already final - zones numbered, writing lines sized to the year group -
+ * which is what the build is holding when a browser reports a clipped zone.
+ *
+ * Nothing about the sheet's content changes. Zones are read in reading order
+ * and put back in reading order, so a question that followed another still
+ * does. The orientation is kept, because the page shape is the designer's
+ * decision and any decorations are framed against it: only the arrangement of
+ * the zones on that page changes.
+ *
+ * @returns {Array} roomier arrangements, most comfortable first
+ */
+function roomierArrangements(spec) {
+  const { getLayout } = require("./render");
+  const current = getLayout(spec.layout);
+  const orientation = spec.orientation === "landscape" ? "landscape" : "portrait";
+
+  const items = flatten(current.tree).map((z) => z.id).map((id) => spec.zones[id]);
+  const currentFill = measureFill(spec);
+  if (!Number.isFinite(currentFill.fillPct)) return [];
+
+  const out = [];
+  for (const layout of [...LAYOUTS, ...VARIANTS]) {
+    if (layout.id === current.id) continue;
+    const ids = flatten(layout.tree).map((z) => z.id);
+    if (ids.length !== items.length) continue;
+
+    const zones = {};
+    ids.forEach((id, i) => {
+      zones[id] = items[i];
+    });
+    const candidate = { ...spec, layout: layout.id, orientation, zones };
+
+    if (checkFit(candidate).length) continue;
+    const fill = measureFill(candidate);
+    if (!Number.isFinite(fill.fillPct)) continue;
+
+    // Only a genuinely roomier shape is worth drawing again. An arrangement as
+    // tight as the one that just clipped has the same nowhere to put the
+    // millimetre, and would clip in the same way.
+    if (fill.fillPct >= currentFill.fillPct) continue;
+
+    out.push({
+      spec: candidate,
+      layout: layout.id,
+      name: layout.name,
+      orientation,
+      fillPct: fill.fillPct,
+    });
+  }
+
+  out.sort((a, b) => comfortPenalty(a.fillPct) - comfortPenalty(b.fillPct));
+  return out;
 }
 
 // Why NOTHING fits, answered once, in millimetres.
@@ -370,8 +460,11 @@ function describeSuggestions(result, limit = 8) {
 
 module.exports = {
   suggestLayouts,
+  roomierArrangements,
   describeSuggestions,
   verdictFor,
+  comfortPenalty,
   ROOMY_BELOW_PCT,
   TIGHT_ABOVE_PCT,
+  TARGET_FILL_PCT,
 };

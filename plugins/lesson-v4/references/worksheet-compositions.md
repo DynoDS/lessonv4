@@ -43,8 +43,11 @@ helpers and a two-column sheet is two entries. Asking about a zone's helpers
 one at a time asks about one-zone layouts instead, and the answer will not
 match what the build then measures.
 
-It returns every shape that holds the content, ranked by how full the page
-comes out. It is doing arithmetic against each helper's stated minimum,
+It returns every shape that holds the content, best first, where best means most
+comfortably full rather than fullest. Its heights are estimates and a browser
+draws the real page a shade taller or shorter, so a shape with room to spare
+absorbs the difference while a shape filled to the brim clips and is refused.
+It is doing arithmetic against each helper's stated minimum,
 which is the part worth handing over; which of the shapes it offers suits the
 TEACHING is the part it cannot answer, and that is the designer's to choose.
 

@@ -286,9 +286,17 @@ three-zone layout. Split one zone's stack into separate entries and you are
 asking a different question from the one the build will answer, and the answers
 will not match.
 
-It returns every layout that holds the content, ranked by how full the page
-comes out. It is doing arithmetic against each helper's stated minimum, which
-is worth handing over.
+It returns every layout that holds the content, **best first, where best means
+most comfortably full rather than fullest**. It is doing arithmetic against each
+helper's stated minimum, which is worth handing over.
+
+That ranking is not a nicety. The heights it works from are estimates, and a
+browser draws the real page a fraction taller or shorter than any estimate; a
+page with spare room absorbs that difference and a page filled to the brim
+cannot, so it clips and the sheet is refused. The list used to be ordered
+fullest first, which put the shape nearest the edge at the top and cost real
+lessons their worksheets. Take from the top unless the teaching says otherwise,
+and treat a layout marked `tight` as a warning rather than an achievement.
 
 **Its numbers ARE the build's numbers.** Same measurements, same helpers, same
 millimetres — this is the build's own fit check, asked before a page exists.

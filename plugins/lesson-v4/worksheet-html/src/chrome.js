@@ -96,6 +96,12 @@ function findChrome() {
 const RENDERED_FIT_PROBE = `(() => {
   const problems = [];
 
+  // Whole CSS pixels, and a box's edge can land a fraction either side of the
+  // zone's without a mark being lost. Two pixels is half a millimetre, well
+  // under the thickness of a printed rule, and still far below the six pixels
+  // that were genuinely cutting the bottom row off a table.
+  const OUTSIDE_TOLERANCE_PX = 2;
+
   for (const zone of document.querySelectorAll("[data-worksheet-zone]")) {
     const rect = zone.getBoundingClientRect();
     const id = zone.getAttribute("data-worksheet-zone");
@@ -114,15 +120,48 @@ const RENDERED_FIT_PROBE = `(() => {
       });
     }
 
+    // A box that clips its OWN content. The zone's scroll size cannot see this:
+    // an inner box can cut a row off while the inner box itself sits neatly
+    // inside the zone, and the page still looks finished.
+    const CLIPS = new Set(["hidden", "clip", "auto", "scroll"]);
     for (const child of zone.querySelectorAll("*")) {
-      const childRect = child.getBoundingClientRect();
+      const style = getComputedStyle(child);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+      const clipsX = CLIPS.has(style.overflowX);
+      const clipsY = CLIPS.has(style.overflowY);
+      if (!clipsX && !clipsY) continue;
       if (
-        childRect.right > rect.right + 1 ||
-        childRect.bottom > rect.bottom + 1 ||
-        childRect.left < rect.left - 1 ||
-        childRect.top < rect.top - 1
+        (clipsX && child.scrollWidth > child.clientWidth + 1) ||
+        (clipsY && child.scrollHeight > child.clientHeight + 1)
       ) {
         problems.push({ zone: id, kind: "child-clipped" });
+        break;
+      }
+    }
+
+    // Content that reaches outside the zone altogether. The zone's scroll size
+    // does not see content above or left of its own origin, so this is the only
+    // thing that catches a block drawn off the top of its zone.
+    //
+    // Drawings are judged by their own outer element and never by the shapes
+    // inside them. An SVG's contents live in its viewBox and are clipped by the
+    // SVG, not by the zone, and an SVG text node's box routinely reaches two or
+    // three pixels above its own visible ink - so comparing those inner nodes
+    // against the zone reports a clip where nothing whatever is cut. It did:
+    // three sound worksheets were refused over a bar chart title overshooting
+    // by 2px, and the real fault on those sheets went unmentioned underneath it.
+    for (const child of zone.querySelectorAll("*")) {
+      if (child.closest("svg")) continue;
+      const style = getComputedStyle(child);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+      const childRect = child.getBoundingClientRect();
+      if (
+        childRect.right > rect.right + OUTSIDE_TOLERANCE_PX ||
+        childRect.bottom > rect.bottom + OUTSIDE_TOLERANCE_PX ||
+        childRect.left < rect.left - OUTSIDE_TOLERANCE_PX ||
+        childRect.top < rect.top - OUTSIDE_TOLERANCE_PX
+      ) {
+        problems.push({ zone: id, kind: "child-outside-zone" });
         break;
       }
     }

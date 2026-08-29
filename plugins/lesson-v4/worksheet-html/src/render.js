@@ -98,6 +98,44 @@ function eachLeaf(measured, fn) {
   measured.children.forEach((c) => eachLeaf(c, fn));
 }
 
+// Every helper's height here is an ESTIMATE - a guess at how a word wraps, how
+// tall a line of this font really sits, where a picture settles - because the
+// overnight box has no browser to measure with. The estimates are good, and
+// they are not the truth. The browser draws the same content a fraction taller
+// or shorter, and `.zone` clips what it cannot hold.
+//
+// So a zone drawn at EXACTLY its estimate has no room to be wrong in. A zone
+// holding content that cannot stretch used to get precisely that: its estimate
+// to the millimetre, no matter how empty the rest of the page was. A sheet 54%
+// full, with 122mm going spare at the foot of the page, still handed its two
+// reference tables their estimate and not a hair more - and when the browser
+// drew them 6px taller, the bottom row was cut off and the whole worksheet was
+// refused. The page had the room all along; nothing offered it.
+//
+// This is the tolerance. It is taken only from height the page genuinely has
+// spare, so it can never turn a sheet that fitted into one that does not.
+const SAFETY_FLOOR_MM = 1.5;
+const SAFETY_CEILING_MM = 4;
+const SAFETY_SHARE = 0.02;
+
+// Wrap error accumulates line by line, so a tall zone can be wrong by more than
+// a short one, but neither needs an unbounded allowance.
+function safetyMarginMm(naturalMm) {
+  if (!(naturalMm > 0)) return 0;
+  return Math.min(SAFETY_CEILING_MM, Math.max(SAFETY_FLOOR_MM, naturalMm * SAFETY_SHARE));
+}
+
+// Heights changed underneath, so the containers have to be recomputed.
+function recomputeHeights(node) {
+  if (node.kind === "leaf") return node.height;
+  const kids = node.children.map(recomputeHeights);
+  node.height =
+    node.kind === "cols"
+      ? Math.max(...kids)
+      : kids.reduce((a, b) => a + b, 0) + (kids.length - 1) * GUTTER_MM;
+  return node.height;
+}
+
 // Hand the leftover height to whatever can genuinely use it, capped so nothing
 // is inflated. Anything still spare is left at the FOOT of the page, which is
 // where a teacher trims it off, rather than pooled between two question blocks.
@@ -122,26 +160,51 @@ function growToFit(measured, availableMm) {
     return { spare: 0, short: 0 };
   }
 
+  // Tolerance first, for EVERY zone, greedy or not. A zone that cannot stretch
+  // is exactly the zone that gets no growth below and so most needs this.
+  //
+  // Zones side by side in a column share one height rather than adding to it,
+  // so the cost of the margins is not the sum of them and cannot be worked out
+  // in advance. Find the largest fraction of the wanted margin the page can
+  // actually afford, the same way the slide engine finds the largest readable
+  // type that fits: propose, measure the whole tree, narrow.
+  const wanted = leaves.map((l) => safetyMarginMm(l.natural));
+  const applyMargins = (fraction) => {
+    leaves.forEach((l, i) => {
+      l.margin = wanted[i] * fraction;
+      l.height = l.natural + l.margin;
+    });
+    recomputeHeights(measured);
+    return measured.height;
+  };
+
+  if (applyMargins(1) > availableMm) {
+    let lo = 0;
+    let hi = 1;
+    for (let i = 0; i < 24; i += 1) {
+      const mid = (lo + hi) / 2;
+      if (applyMargins(mid) > availableMm) hi = mid;
+      else lo = mid;
+    }
+    applyMargins(lo);
+  }
+
+  // What is left after tolerance is what the greedy helpers may claim.
+  const afterMargins = availableMm - measured.height;
   const greedTotal = leaves.reduce((s, l) => s + l.greed, 0);
-  if (greedTotal <= 0) return { spare, short: 0 };
+  if (greedTotal <= 0 || afterMargins <= 0) {
+    return { spare: afterMargins, short: 0 };
+  }
 
   for (const l of leaves) {
     if (!l.greed) continue;
-    const share = (spare * l.greed) / greedTotal;
-    l.height = l.natural + Math.min(share, l.natural * 0.5);
+    const share = (afterMargins * l.greed) / greedTotal;
+    // The margin is kept on top of the growth, not replaced by it: growth is
+    // room the helper asked for, tolerance is room the estimate might need.
+    l.height = l.natural + l.margin + Math.min(share, l.natural * 0.5);
   }
 
-  // Heights changed underneath, so the containers have to be recomputed.
-  const recompute = (n) => {
-    if (n.kind === "leaf") return n.height;
-    const kids = n.children.map(recompute);
-    n.height =
-      n.kind === "cols"
-        ? Math.max(...kids)
-        : kids.reduce((a, b) => a + b, 0) + (kids.length - 1) * GUTTER_MM;
-    return n.height;
-  };
-  recompute(measured);
+  recomputeHeights(measured);
 
   return { spare: availableMm - measured.height, short: 0 };
 }

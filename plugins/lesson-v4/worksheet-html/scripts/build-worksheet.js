@@ -24,6 +24,13 @@ const path = require("node:path");
 const { safeFilenameComponent } = require("../../shared/text/filename");
 
 const { renderSheet } = require("../src/render");
+
+// How many roomier arrangements are worth drawing before a clipped sheet is
+// refused for real. Each one costs a browser render, and a sheet that three
+// measured, roomier shapes cannot draw cleanly has something wrong with its
+// content rather than its shape - which is a designer's decision, not this
+// script's.
+const MAX_RESHAPES = 3;
 const { tightnessOf, describeTightness } = require("../src/tightness");
 const {
   sheetsOf,
@@ -206,17 +213,83 @@ async function main() {
     );
   } else {
     const { htmlToPdf } = require("../src/chrome");
+    const { roomierArrangements } = require("../src/suggest");
     const pdfs = [];
     const clipped = [];
+    const reshaped = [];
+
     for (const r of rendered) {
-      const { pdf, fitProblems } = await htmlToPdf(r.html, {
+      let { pdf, fitProblems } = await htmlToPdf(r.html, {
         landscape: r.sheet.spec.orientation === "landscape",
         inspectFit: true,
       });
+
+      // The arithmetic said it fitted and the browser disagreed, which means an
+      // estimate ran a hair short. Before that costs a class its worksheets,
+      // draw the SAME content again in a roomier arrangement of the same page
+      // and see whether the browser is happy with that one.
+      //
+      // This is not the engine bending to make a page pass. Nothing is trimmed,
+      // shrunk, reworded, moved to a second page or dropped: every question,
+      // every writing line and every picture is exactly what the designer
+      // wrote, in exactly the order they wrote it. Only which rectangle each
+      // zone occupies changes, and only to a shape that was already measured
+      // and already accepted. A version is kept only if a browser then draws it
+      // with nothing clipped, so what ships is still a page that was verified
+      // rather than one that was hoped about.
+      //
+      // The alternative was what actually happened: a sheet 6px over, one
+      // focused repair spent guessing at it, and a teacher waking up to a
+      // lesson with no worksheets and no answer key.
+      if ((fitProblems || []).length) {
+        for (const option of roomierArrangements(r.sheet.spec).slice(0, MAX_RESHAPES)) {
+          let retryHtml;
+          try {
+            retryHtml = renderSheet(option.spec);
+          } catch {
+            continue; // measured as fitting, refused when drawn: try the next.
+          }
+          const retry = await htmlToPdf(retryHtml, {
+            landscape: option.orientation === "landscape",
+            inspectFit: true,
+          });
+          if ((retry.fitProblems || []).length) continue;
+
+          fs.writeFileSync(r.htmlPath, retryHtml);
+          pdf = retry.pdf;
+          fitProblems = [];
+          reshaped.push({
+            sheet: r.sheet,
+            from: r.sheet.spec.layout,
+            to: option.layout,
+            fillPct: option.fillPct,
+          });
+          break;
+        }
+      }
+
       pdfs.push(pdf);
       for (const problem of fitProblems || []) {
         clipped.push({ sheet: r.sheet, problem });
       }
+    }
+
+    // Said out loud, every time. A page that was rearranged to print is still a
+    // different page from the one the designer composed, and the teacher who
+    // opens it is entitled to know which sheet moved and why.
+    for (const move of reshaped) {
+      console.log(
+        `PAGE_RESHAPED: ${move.sheet.label} page ${move.sheet.page} was drawn in ` +
+          `"${move.to}" instead of "${move.from}" (${move.fillPct}% full) because the ` +
+          "browser found the composed arrangement clipped by a hair. Same content, " +
+          "same order, roomier shape."
+      );
+      diagnostic(
+        "PAGE_RESHAPED",
+        "composition",
+        { sheet: move.sheet.key, page: move.sheet.page },
+        `Reshaped from ${move.from} to ${move.to} after rendered clipping.`
+      );
     }
 
     // Real clipping, found in the real page. Nothing is trimmed, shrunk, moved
@@ -229,7 +302,9 @@ async function main() {
             ? `rendered content overflows the zone (content ${problem.scrollHeight}px ` +
               `tall in ${problem.clientHeight}px, ${problem.scrollWidth}px wide in ` +
               `${problem.clientWidth}px)`
-            : "rendered content is clipped by the edge of the zone";
+            : problem.kind === "child-outside-zone"
+              ? "rendered content reaches outside the zone and is cut by its edge"
+              : "a box inside the zone is cutting off its own content";
         fail(
           "SHEET_DOES_NOT_FIT",
           `${sheet.label} page ${sheet.page} zone "${problem.zone}" - ${detail}.`,

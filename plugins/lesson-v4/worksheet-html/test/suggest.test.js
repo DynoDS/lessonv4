@@ -3,7 +3,14 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
 
-const { suggestLayouts, describeSuggestions, verdictFor } = require("../src/suggest");
+const {
+  suggestLayouts,
+  describeSuggestions,
+  verdictFor,
+  comfortPenalty,
+  ROOMY_BELOW_PCT,
+  TIGHT_ABOVE_PCT,
+} = require("../src/suggest");
 const { checkFit, renderSheet } = require("../src/render");
 
 const CHART = {
@@ -28,15 +35,45 @@ const WRITING = {
 
 const THREE = [CHART, SHORT_QUESTIONS, WRITING];
 
-test("suggestions come back ranked, fullest page first", () => {
+test("suggestions come back ranked, most comfortable page first", () => {
   const { fits } = suggestLayouts(THREE);
   assert.ok(fits.length > 0, "nothing fitted, which cannot be right");
   for (let i = 1; i < fits.length; i++) {
     assert.ok(
-      fits[i - 1].fillPct >= fits[i].fillPct,
-      "a fuller page was ranked below an emptier one"
+      comfortPenalty(fits[i - 1].fillPct) <= comfortPenalty(fits[i].fillPct),
+      `a less comfortable page (${fits[i - 1].fillPct}%) was ranked above a ` +
+        `more comfortable one (${fits[i].fillPct}%)`
     );
   }
+});
+
+// The ranking used to sort by raw fullness, so the shape at the top of the list
+// was always the one nearest the edge of the page. A designer told to take what
+// the tool offers was therefore handed the riskiest arrangement every time, and
+// a sheet that measured 99% full clipped by 6px once a browser drew it for real.
+test("a page with no room to spare is never offered above a comfortable one", () => {
+  assert.ok(
+    comfortPenalty(88) < comfortPenalty(99),
+    "a bursting page ranked at least as well as a comfortable one"
+  );
+  assert.ok(
+    comfortPenalty(88) < comfortPenalty(100),
+    "a completely full page ranked at least as well as a comfortable one"
+  );
+  // And it must not overcorrect into recommending half-empty pages either.
+  assert.ok(
+    comfortPenalty(88) < comfortPenalty(40),
+    "a half-empty page ranked at least as well as a comfortable one"
+  );
+});
+
+test("the tight end is penalised harder than the roomy end", () => {
+  // Ten points over the tight line clips and is refused. Ten points under the
+  // roomy line is a strip at the foot of the page that a teacher trims off.
+  assert.ok(
+    comfortPenalty(TIGHT_ABOVE_PCT + 10) > comfortPenalty(ROOMY_BELOW_PCT - 10),
+    "being over-full was treated as no worse than being under-full"
+  );
 });
 
 test("only layouts with the right number of zones are considered", () => {

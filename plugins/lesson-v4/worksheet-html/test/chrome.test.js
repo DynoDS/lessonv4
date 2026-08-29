@@ -223,3 +223,53 @@ test("pupil PDF and complete teacher answers build as separate files", async () 
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+// ─── what the rendered-fit probe counts as clipped ───────────────────────
+//
+// The probe is the last thing standing between a clipped worksheet and a class,
+// so it has to be right in both directions. It used to compare EVERY descendant
+// box against the zone, which condemned three sound worksheets over a bar chart
+// title whose SVG text box reached 2px above its own visible ink - nothing was
+// cut, and the sheets were refused anyway.
+
+const ZONE_STYLE =
+  "position:absolute;left:0;top:0;width:60mm;height:30mm;overflow:hidden;";
+
+const probe = async (inner) => {
+  const { fitProblems } = await htmlToPdf(
+    `<div data-worksheet-zone="a" style="${ZONE_STYLE}">${inner}</div>`,
+    { inspectFit: true }
+  );
+  return fitProblems;
+};
+
+test("a drawing whose inner shapes overshoot its own box is not called clipped", async () => {
+  // The SVG's contents are clipped by its viewBox, not by the zone. A text node
+  // reaching past the edge of the drawing is the drawing's business.
+  const problems = await probe(
+    `<svg width="100" height="40" viewBox="0 0 100 40">
+       <text x="0" y="-6" font-size="14">Books read this term</text>
+     </svg>`
+  );
+  assert.deepEqual(problems, [], "an SVG's own inner geometry was reported as a clipped zone");
+});
+
+test("content that genuinely spills out of the zone is still reported", async () => {
+  const problems = await probe(`<div style="height:80mm;">too tall</div>`);
+  assert.ok(problems.length > 0, "content twice the height of its zone was passed as fitting");
+});
+
+test("a box that cuts off its own content is still reported", async () => {
+  const problems = await probe(
+    `<div style="height:10mm;overflow:hidden;"><div style="height:40mm;">cut</div></div>`
+  );
+  assert.ok(
+    problems.some((p) => p.kind === "child-clipped"),
+    `an inner box cutting its own content was not reported: ${JSON.stringify(problems)}`
+  );
+});
+
+test("an ordinary zone with room to spare reports nothing", async () => {
+  const problems = await probe(`<p style="margin:0;">A short question.</p>`);
+  assert.deepEqual(problems, [], `a comfortable zone was reported as a problem: ${JSON.stringify(problems)}`);
+});

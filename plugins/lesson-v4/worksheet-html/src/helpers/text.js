@@ -56,7 +56,20 @@ function fallbackEmoji(picture) {
   return "";
 }
 
-function selectContextPictures(items, textWidthMm) {
+// A picture beside a question earns its place only while it costs the words
+// nothing. It is dropped the moment it would push the question onto another
+// line, because a picture is a help and a wrapped question is a cost.
+//
+// Both widths are checked, not one. A row puts its answer blank beside the
+// words or beneath them, and the words get a different width in each; measuring
+// the picture against only one of them kept pictures that added a line in the
+// other, which is the same fault as measuring anything else against a width it
+// does not get. The decision cannot know which arrangement it will be in - the
+// arrangement depends on whether the picture is there - so a picture stays only
+// if it is free in BOTH.
+function selectContextPictures(items, widths) {
+  const textWidthMm = typeof widths === "number" ? widths : widths.inlineMm;
+  const otherWidthMm = typeof widths === "number" ? widths : widths.belowMm;
   const requests = items.map(pictureRequest);
   if (!requests.some(Boolean)) return null;
 
@@ -89,12 +102,13 @@ function selectContextPictures(items, textWidthMm) {
       : null);
   }
 
-  const roomWithPicture = Math.max(10, textWidthMm - CONTEXT_PICTURE_SLOT_MM);
+  const costsALine = (text, roomMm) =>
+    linesFor(text, Math.max(10, roomMm - CONTEXT_PICTURE_SLOT_MM)) > linesFor(text, roomMm);
+
   selected = selected.map((picture, i) => {
     if (!picture) return null;
-    return linesFor(questionText(items[i]), roomWithPicture) > linesFor(questionText(items[i]), textWidthMm)
-      ? null
-      : picture;
+    const text = questionText(items[i]);
+    return costsALine(text, textWidthMm) || costsALine(text, otherWidthMm) ? null : picture;
   });
   return selected.some(Boolean) ? selected : null;
 }
@@ -124,25 +138,58 @@ function pictureMarkup(picture) {
 // the estimate and the markup have to agree or the zone clips.
 const SHORT_BLANK_MIN_MM = 20;
 
-function blankBelow(question, widthMm, hasPicture, numberGutterMm = 5) {
-  const numberAndPictureMm = numberGutterMm + (hasPicture ? CONTEXT_PICTURE_SLOT_MM : 0);
+// The real width of the number column, which is `min-width` on `.h-num` and not
+// the 5mm the arithmetic used to assume, and the real gap between one flex item
+// and the next. Both are read straight off the CSS below, because a question
+// row is a flex row and its height depends on where that flex row wraps.
+//
+// This is where the sheets were being lost. `.h-text` was `flex: 1 1 auto`, so
+// a long question's own content width became the size the flex line tried to
+// honour; in a narrow zone the line could not, and the browser put the number,
+// the words and the answer blank on THREE separate lines. The arithmetic was
+// still measuring one line, in a column 8mm wider than the words actually got.
+// A single question came out 15mm taller than its estimate - about 57px, near
+// ten times the 6px that cost a lesson its worksheets - and `overflow: hidden`
+// on the zone quietly cut the difference off.
+//
+// `.h-text` is now `flex: 1 1 0` with `min-width: 0`, so it takes the room that
+// is left and wraps its words INSIDE that room instead of pushing itself onto a
+// line of its own. The row then has the shape the arithmetic below describes.
+const QUESTION_NUMBER_COL_MM = 9;
+const QUESTION_GAP_MM = SPACE.tight;
 
-  const fullTextMm = Math.max(10, widthMm - numberAndPictureMm);
-  const inlineTextMm = Math.max(10, fullTextMm - SHORT_BLANK_MIN_MM - 4);
+// What the words on a question row are actually given, in the two arrangements
+// a row can take. Written once and used by the markup's own wrap decision, the
+// measurement and the width the text is laid out in, because the moment those
+// three disagree the zone clips.
+function questionTextWidths(widthMm, hasPicture, showNumbers) {
+  const numberMm = showNumbers ? QUESTION_NUMBER_COL_MM + QUESTION_GAP_MM : 0;
+  const pictureMm = hasPicture ? CONTEXT_PICTURE_SLOT_MM + QUESTION_GAP_MM : 0;
 
-  return linesFor(question, inlineTextMm) > linesFor(question, fullTextMm);
+  // The blank beneath the words: the words get the whole row bar the gutter.
+  const belowMm = Math.max(10, widthMm - numberMm - pictureMm);
+  // The blank beside the words: it takes its fixed width and its gap as well.
+  const inlineMm = Math.max(10, belowMm - SHORT_BLANK_MIN_MM - QUESTION_GAP_MM);
+
+  return { belowMm, inlineMm };
+}
+
+function blankBelow(question, widthMm, hasPicture, showNumbers = true) {
+  const { belowMm, inlineMm } = questionTextWidths(widthMm, hasPicture, showNumbers);
+  return linesFor(question, inlineMm) > linesFor(question, belowMm);
 }
 
 function renderQuestions(spec, widthMm = 100) {
   const showNumbers = spec.showNumbers !== false;
-  const numberGutterMm = showNumbers ? 5 : 0;
-  const textWidth = widthMm - numberGutterMm - 20;
-  const pictures = selectContextPictures(spec.items, textWidth);
+  const pictures = selectContextPictures(
+    spec.items,
+    questionTextWidths(widthMm, false, showNumbers)
+  );
   const items = spec.items
     .map(
       (q, i) => `
       <li class="h-q${
-        blankBelow(questionText(q), widthMm, Boolean(pictures && pictures[i]), numberGutterMm)
+        blankBelow(questionText(q), widthMm, Boolean(pictures && pictures[i]), showNumbers)
           ? " h-q--blank-below"
           : ""
       }">
@@ -160,24 +207,25 @@ function renderQuestions(spec, widthMm = 100) {
 
 function measureQuestions(spec, widthMm) {
   const showNumbers = spec.showNumbers !== false;
-  const numberGutterMm = showNumbers ? 5 : 0;
-  const gapMm = 4; // SPACE.item
-  const baseTextWidth = widthMm - numberGutterMm - 20; // number gutter, answer blank
-  const pictures = selectContextPictures(spec.items, baseTextWidth);
+  const gapMm = SPACE.item; // margin-bottom on .h-q
+  const pictures = selectContextPictures(
+    spec.items,
+    questionTextWidths(widthMm, false, showNumbers)
+  );
   return (
     stemMm(spec, widthMm) +
     spec.items.reduce((h, q, i) => {
       const hasPicture = Boolean(pictures && pictures[i]);
-      // A blank that drops beneath the prompt is a row of its own, and the
-      // prompt above it then gets the full width back.
-      const below = blankBelow(questionText(q), widthMm, hasPicture, numberGutterMm);
-      const textWidth = below
-        ? Math.max(10, widthMm - numberGutterMm - (hasPicture ? CONTEXT_PICTURE_SLOT_MM : 0))
-        : baseTextWidth - (hasPicture ? CONTEXT_PICTURE_SLOT_MM : 0);
+      const { belowMm, inlineMm } = questionTextWidths(widthMm, hasPicture, showNumbers);
+      // A blank that drops beneath the prompt is a flex line of its own, and
+      // the prompt above it then gets the full width back. That second line
+      // costs its own height AND the row gap above it - the gap was missed, so
+      // every question with a dropped blank was measured 2mm short.
+      const below = blankBelow(questionText(q), widthMm, hasPicture, showNumbers);
       return (
         h +
-        linesFor(questionText(q), textWidth) * LINE_MM +
-        (below ? LINE_MM : 0) +
+        linesFor(questionText(q), below ? belowMm : inlineMm) * LINE_MM +
+        (below ? QUESTION_GAP_MM + LINE_MM : 0) +
         gapMm
       );
     }, 0)
@@ -376,9 +424,23 @@ const css = `
     color: var(--colour-ink);
     font-weight: bold;
     font-size: var(--type-body);
-    min-width: 9mm;
+    min-width: ${QUESTION_NUMBER_COL_MM}mm;
+    /* A number never wraps onto a line of its own, and never shrinks below the
+       column every other number on the sheet starts in. */
+    flex: 0 0 auto;
   }
-  .h-text { flex: 1 1 auto; }
+  /* "flex: 1 1 0" and not "1 1 auto", and the difference decides whether a
+     worksheet prints. With "auto" the words' own content width is the size the
+     flex line tries to honour, so a long question in a narrow zone pushed
+     itself onto a second flex line and the answer blank onto a third - three
+     lines where the arithmetic had measured one, and 15mm of the zone quietly
+     cut off. With a zero basis the words take the room that is left and wrap
+     inside it, which is the shape the measurement describes.
+
+     "min-width: 0" is what lets them: a flex item will not shrink below its
+     longest unbreakable word without it, and one long word would put the wrap
+     back. */
+  .h-text { flex: 1 1 0; min-width: 0; overflow-wrap: break-word; }
   .h-context-picture {
     flex: 0 0 ${CONTEXT_PICTURE_SLOT_MM}mm;
     width: ${CONTEXT_PICTURE_SLOT_MM}mm;

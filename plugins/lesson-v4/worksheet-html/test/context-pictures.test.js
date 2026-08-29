@@ -20,15 +20,27 @@ test('a worksheet question may have a picture while its neighbour stays text-onl
   assert.equal((html.match(/h-context-picture--emoji/g) || []).length, 1);
 });
 
+const LONG_QUESTION = {
+  items: [{
+    text: 'abcdefghijklmnopqrstuvwxy',
+    picture: { kind: 'emoji', value: '🐦', alt: 'robin' }
+  }]
+};
+
 test('a worksheet picture disappears when it would add a line of text', () => {
-  const spec = {
-    items: [{
-      text: 'abcdefghijklmnopqrstuvwxy',
-      picture: { kind: 'emoji', value: '🐦', alt: 'robin' }
-    }]
-  };
-  const html = REGISTRY.questions.render(spec, 80);
+  // 70mm: the words fit on one line without the picture and need two with it,
+  // so the picture is costing the child a wrapped question and goes.
+  const html = REGISTRY.questions.render(LONG_QUESTION, 70);
   assert.doesNotMatch(html, /🐦/);
+});
+
+// The discriminating case. This used to be the test above, at a width where the
+// picture was believed to cost a line - it was not, and the widths the question
+// row was measured against were simply wrong. A picture that costs the words
+// nothing must be kept, or the rule quietly becomes "no pictures in a column".
+test('a worksheet picture stays when the words do not pay for it', () => {
+  const html = REGISTRY.questions.render(LONG_QUESTION, 80);
+  assert.match(html, /🐦/);
 });
 
 test('a missing optional Educational SVG file does not fail the worksheet', () => {
