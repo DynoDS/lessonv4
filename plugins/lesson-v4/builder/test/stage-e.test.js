@@ -190,18 +190,22 @@ test('long questions keep their pictures when wrapping still fits at the same fo
 
 test('number and picture form a tight left group when an answer box uses the right', () => {
   const slide = fakeSlide();
+  // startAt places this question mid-run: a lone question at (1) prints no
+  // number at all (see lone-question-number.test.js), and this test is about
+  // where a printed number sits, so it needs one that prints.
   drawNumberedQuestions(
     fakePptx(), slide,
     { x: 0.5, y: 1, w: 12, h: 2, class: 'A' },
     {
       answerBoxes: true,
+      startAt: 2,
       questions: [
         { text: 'A robin eats 3 worms, then 5 more. Total =', picture: { kind: 'emoji', value: '🐦' } }
       ]
     },
     {}
   );
-  const label = slide.texts.find((entry) => entry.value === '(1)');
+  const label = slide.texts.find((entry) => entry.value === '(2)');
   const picture = slide.texts.find((entry) => /question-context-.*-emoji/.test(entry.options.objectName || ''));
   const card = slide.shapes[0];
   assert.ok(label.options.w < 1);

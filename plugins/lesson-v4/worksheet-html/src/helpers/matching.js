@@ -178,7 +178,21 @@ function needsMatchUp(spec) {
 const CARD_PAD_V_MM = INSET.card.v;
 const CARD_PAD_H_MM = INSET.card.h;
 const CARD_GAP_MM = 3;
-const CARD_IMAGE_RATIO = 0.6; // a picture's height as a share of its card's width
+// Only a fallback for a picture whose natural size is unknown. The CSS draws
+// a card's image at `width: 100%; height: auto` - the photo's OWN aspect -
+// so the estimate must use that same aspect. A flat 0.6 guessed here while
+// the browser drew the truth: a square photo rendered two-thirds taller than
+// it was measured, and the zone's `overflow: hidden` cut the difference off
+// the bottom of the card without anything looking wrong. resolveImages fills
+// `imageWidth`/`imageHeight` from the file's real header before any measuring
+// runs, so the fallback should almost never be reached.
+const CARD_IMAGE_RATIO = 0.6;
+
+function cardImageAspect(card) {
+  return card.imageWidth > 0 && card.imageHeight > 0
+    ? card.imageHeight / card.imageWidth
+    : CARD_IMAGE_RATIO;
+}
 
 function cardInnerWidthMm(widthMm, columns) {
   const gaps = (columns - 1) * CARD_GAP_MM;
@@ -213,7 +227,7 @@ function cardResponseMm(spec) {
 
 function cardHeightMm(card, innerMm, spec) {
   const titleMm = card.title ? linesFor(card.title, innerMm) * LINE_MM : 0;
-  const imageMm = card.imageHref ? innerMm * CARD_IMAGE_RATIO : 0;
+  const imageMm = card.imageHref ? innerMm * cardImageAspect(card) : 0;
   const captionMm = card.caption
     ? linesFor(card.caption, innerMm) * NOTE_LINE_MM
     : 0;

@@ -213,6 +213,8 @@ Do not create depth through:
 - novelty alone;
 - automatic scaffold withdrawal.
 
+**Depth raises the thinking, never the register.** Greater Depth wording stays in the same child speech as every other sheet (Written Voice, full strength): the deeper task is still met by a nine-year-old reading it alone. Evaluative moves borrowed from secondary exam papers - `How far is Asha right?`, `To what extent...`, a starter like `A more accurate description...` - make the child decode an adult form before any thinking starts, and the same judgement asks itself plainly: `Is Asha right? How do you know?`, `What can the map tell us? What can't it?`. The partial-credit nuance the exam form was reaching for survives in child speech (`Is she right about all of it?`). A sentence starter must be words a child would actually begin a sentence with: `The map shows...` passes that test; `A more accurate description...` does not, because no child talks that way and the starter becomes another thing to interpret.
+
 Preserve the central task and its relationships. When the task is open, Greater Depth may use the same central task with richer input, sharper criteria or a higher standard for the outcome rather than an extra prompt block.
 
 When separate prompts are useful, choose the amount from the task. One rich prompt may be enough; another lesson may need several concise prompts. There is no fixed one-to-three quota.

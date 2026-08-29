@@ -51,8 +51,6 @@ const SIZE_CEILINGS = {
   stepBadge:        20,
   mathsQuestion:    28,
   question:         18,
-  vocabWord:        20,
-  vocabDefn:        16,
   scStep:           14,
   scLabel:          13,
   tableHeader:      14,

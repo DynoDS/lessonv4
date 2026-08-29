@@ -565,7 +565,7 @@ of text. It is not a way to place free decoration on an empty part of a slide.
 
 When two items are genuinely separate pieces of content (especially different types, e.g. a text label above a table), prefer a `stack` of content objects instead. `stack` items always render with visible vertical spacing between them; `\n\n` is for within-one-text-block paragraph breaks.
 
-**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question/focus or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted.
+**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question/focus or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. A role's treatment is a deck-wide decision (the playbook's Colour section): a deck whose focal question is blue on one slide and black on the next has spent the colour and lost its meaning, so colour every focal question or none.
 
 Green answer text is not an ordinary emphasis option. Do not set text `color` to `00B050` and do not use `||`, `{{green}}` or `{{answer-green}}` on a teaching slide. Prepared examples and `visible-in-unit` models remain body black. Use answer green only on an answer/reveal slide. Vocabulary and success criteria keep their established green treatments.
 

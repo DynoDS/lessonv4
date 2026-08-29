@@ -472,7 +472,18 @@ module.exports = {
     text: "Use an atlas to find where each plant grows.",
     columns: 3,
     cards: [
-      { title: "Cacao", caption: "Amazon River basin, southern Mexico" },
+      {
+        title: "Cacao",
+        caption: "Amazon River basin, southern Mexico",
+        // One card carries a real picture, and a PORTRAIT one on purpose: a
+        // card's image draws at the photo's own aspect (`height: auto`), so
+        // the browser check must exercise an aspect well away from any flat
+        // guess. A square Amazon photo measured with a 0.6 ratio shipped cut
+        // in half at the bottom of its zone.
+        imageHref: PLANT.href,
+        imageWidth: PLANT.width,
+        imageHeight: PLANT.height,
+      },
       { title: "Coffee", caption: "Ethiopia, South America, Sudan" },
       { title: "Orchids", caption: "Central and South America" },
     ],

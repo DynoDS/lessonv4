@@ -82,6 +82,25 @@ function stripLeadingLabel(text) {
   return String(text).replace(/^\(\s*(?:[a-z]|\d+)\s*\)\s*/i, '');
 }
 
+// Does any block anywhere in this deck continue a numbering run? Numbering
+// carries on across the independent slides that follow (preferences.md,
+// Question Labelling), and `startAt` is how a later slide says so. A deck
+// where no block starts past (1) has no runs to keep whole, which is what
+// makes it safe to leave a lone question unnumbered.
+function deckContinuesNumbering(ctx) {
+  const slides = ctx && ctx.lesson && ctx.lesson.slides;
+  if (!Array.isArray(slides)) return false;
+  let found = false;
+  const walk = function (node) {
+    if (found || node == null || typeof node !== 'object') return;
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (Number(node.startAt) >= 2) { found = true; return; }
+    Object.keys(node).forEach(function (key) { walk(node[key]); });
+  };
+  walk(slides);
+  return found;
+}
+
 // The plain reading length: the colour markers are instructions to the renderer,
 // not characters on the board, so counting them would size an answer card wider
 // than the question card it sits beneath.
@@ -96,11 +115,16 @@ function plainLength(text) {
 // widest question's), each card's own height, and the total with the gaps.
 function measureStack(questions, fontPt, maxW, answerBoxes, options) {
   const lineH    = (fontPt * LINE_H_RATIO) / 72;
+  // A set that prints no numbers (one lone question - see the draw function)
+  // spends no width on the label column either, so the question gets the room
+  // the number would have taken.
+  const noLabel = !!(options && options.noLabel);
   // The label column is priced from the widest label the set will print, so a set
   // running past (9) does not have its numbers clipped.
-  const labelTextW = ((String(questions.length).length + 2) * LABEL_CHAR_W_EM)
-                     * fontPt / 72;
-  const labelGapW = LABEL_GAP_EM * fontPt / 72;
+  const labelTextW = noLabel
+    ? 0
+    : ((String(questions.length).length + 2) * LABEL_CHAR_W_EM) * fontPt / 72;
+  const labelGapW = noLabel ? 0 : LABEL_GAP_EM * fontPt / 72;
   const labelW = labelTextW + labelGapW;
   const answerMetrics = answerBoxes ? answerBoxMetrics(fontPt) : null;
   const answerGutterW = answerMetrics ? answerMetrics.w + ANSWER_BOX_GAP : 0;
@@ -191,6 +215,22 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   const startN  = Number(data.startAt);
   const startAt = Number.isFinite(startN) && startN >= 1 ? Math.floor(startN) : 1;
 
+  // A question number exists so a child can tell questions apart and match
+  // answers back. A block holding exactly one question has nothing to tell
+  // apart, so the lone "(1)" beside a one-question starter was furniture
+  // (preferences.md, Question Labelling). It is suppressed only when nothing
+  // in the deck continues a numbering run (`startAt` of 2 or more anywhere):
+  // where numbering carries on across slides, the first question keeps its
+  // "(1)" so the run the later slides continue stays whole.
+  const soleQuestion =
+    questions.length === 1 && startAt === 1 && !deckContinuesNumbering(ctx);
+  const measureHere = function (qs, font, w, ab, opts) {
+    return measureStack(
+      qs, font, w, ab,
+      Object.assign({}, opts, { noLabel: soleQuestion })
+    );
+  };
+
   const innerX = zone.x + PAD;
   const innerY = zone.y + PAD;
   const innerW = Math.max(0.8, zone.w - 2 * PAD);
@@ -205,7 +245,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   let fontPt = CARD_FONT_MAX;
   let stack;
   for (;;) {
-    stack = measureStack(questions, fontPt, innerW, answerBoxes);
+    stack = measureHere(questions, fontPt, innerW, answerBoxes);
     if (stack.totalH <= innerH || fontPt <= fontFloor) break;
     fontPt -= 1;
   }
@@ -250,7 +290,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       return pictureMetrics(q.picture, pictureH, ctx, QUESTION_PICTURE_MAX_W).w + PICTURE_GAP;
     });
     let acceptedSlots = proposedSlots.slice();
-    let picturedStack = measureStack(
+    let picturedStack = measureHere(
       questions,
       fontPt,
       innerW,
@@ -266,7 +306,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       let trialFont = fontPt - 1;
       let stepped = null;
       while (trialFont >= fontFloor) {
-        const trialStack = measureStack(
+        const trialStack = measureHere(
           questions,
           trialFont,
           innerW,
@@ -290,7 +330,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
             if (!slotW) return null;
             const one = acceptedSlots.slice();
             one[i] = slotW;
-            const oneStack = measureStack(
+            const oneStack = measureHere(
               questions,
               fontPt,
               innerW,
@@ -305,7 +345,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
         candidates.forEach(function (candidate) {
           const trial = acceptedSlots.slice();
           trial[candidate.i] = proposedSlots[candidate.i];
-          const trialStack = measureStack(
+          const trialStack = measureHere(
             questions,
             fontPt,
             innerW,
@@ -314,7 +354,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
           );
           if (trialStack.totalH <= innerH) acceptedSlots = trial;
         });
-        picturedStack = measureStack(
+        picturedStack = measureHere(
           questions,
           fontPt,
           innerW,
@@ -348,13 +388,17 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       rectRadius: CARD_RADIUS
     });
 
-    slide.addText(label, {
-      x: innerX + CARD_PAD_X, y: cardY,
-      w: stack.labelTextW, h: c.h,
-      fontFace: FONT, fontSize: fontPt, bold: true,
-      color: COLOURS.title, align: 'right', valign: 'middle',
-      margin: 0, fit: FIT
-    });
+    // A lone question prints no number: there is nothing to tell it apart
+    // from. The measurement above already gave its width to the words.
+    if (!soleQuestion) {
+      slide.addText(label, {
+        x: innerX + CARD_PAD_X, y: cardY,
+        w: stack.labelTextW, h: c.h,
+        fontFace: FONT, fontSize: fontPt, bold: true,
+        color: COLOURS.title, align: 'right', valign: 'middle',
+        margin: 0, fit: FIT
+      });
+    }
 
     const answerGutterW = stack.answerMetrics
       ? stack.answerMetrics.w + ANSWER_BOX_GAP

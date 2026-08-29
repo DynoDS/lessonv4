@@ -85,7 +85,7 @@ The small header `instruction` is not the default task surface. Use it only for 
 
 A child who misses the small top-right header cue must not therefore miss the principal task.
 
-Never duplicate content already shown in another slot. The title counts as a slot. A title such as `Match it up` does not need an instruction that says `Match each word to its definition`. Let an instruction add only something the title does not say, usually the settled recording form, or leave it out.
+Never duplicate content already shown in another slot. The title counts as a slot, and so do the prompts a helper prints itself: a frame whose sections already ask `What does biome mean? Give one example.` does not also need a numbered box above it restating the same demands as prose - the frame IS the task stated, so the box above it is the duplicate, and the denser read of the two. When the source's task wording only restates what the chosen helper's own printed prompts ask, surfacing it once - through the helper - is the faithful rendering; keep a separate instruction line only for the part the helper does not say, usually the one sentence that gets children into the frame. A title such as `Match it up` does not need an instruction that says `Match each word to its definition`. Let an instruction add only something the title does not say, usually the settled recording form, or leave it out.
 
 A lettered or card task slot confers task identity. Put only genuine child tasks there. A success standard, briefing, reminder or description of the finished outcome is not another task and must not be wrapped in a lettered question card.
 
@@ -336,6 +336,8 @@ In task-centred lessons, the substantial task remains the centre of gravity. Ena
 
 Use the semantic roles in `teacher-slide-visual-profile.md` and the exact supported fields in `templates.md`. Prepared examples and visible-in-unit models stay black. Answer green remains an answer signal. Vocabulary and success criteria keep their established green roles. A category container takes its colour on the border through the documented `categoryColor` field, so the grouping reads as a border language rather than a painted panel. Ordinary question lists and success-criteria steps stay out of that palette. Use size, position and spacing before colour when prominence alone is the job.
 
+A colour treatment is a deck-wide decision, not a per-slide flourish. Colour teaches a child what kind of thing they are looking at only if the same kind gets the same treatment on every slide: a deck where the focal question is house blue on slide 9 and body black on slide 8 has spent the colour and lost the meaning, and reads as assembled by different hands. Decide once whether this deck's focal thinking questions carry `focus-blue`, then apply that decision to every one of them or to none; the same holds for any emphasis role - a deck that underlines `required-material` in one task underlines it in all of them. Half-applied roles are worse than unapplied ones.
+
 ## 14. Deck-level quality tells
 
 Before accepting the deck, read it in order and look specifically for these regression tells:
@@ -345,6 +347,8 @@ Before accepting the deck, read it in order and look specifically for these regr
 - the central picture, diagram or source smaller than its supporting prose;
 - task and material presented as two indistinguishable text blocks;
 - an instruction repeated in the title, header and question card;
+- an instruction box restating the prompts a frame below it already prints;
+- one role given two treatments - the focal question blue on one slide and black on the next;
 - a question-card slot used for explanation or success criteria;
 - a visual question answered by a detached text list;
 - a claim with no map, photo, diagram, table or source to judge it against;

@@ -6,6 +6,7 @@ const {
 } = require("../../../shared/educational-svg-asset");
 
 const { FONT, COLOURS, FIT } = require('../styles');
+const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { warn } = require('../warnings');
 const { drawMoney } = require('./money');
 const { drawImage, imageWillDraw } = require('./image');
@@ -23,7 +24,15 @@ const { splitAnswerRuns } = require('../answer-text');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.15;
-const FONT_SIZE        = 16;
+// The grow-fit ceiling, not a fixed size. The card used to pin its text at
+// 16pt with shrink-only autofit, so a one-word slide sat in a wide cream box
+// with small type and a lot of dead space: Daniel measured the same box
+// taking 40pt before the text outgrew it. Every other text surface in the
+// deck already grows through the fit pass; this card was the one left behind.
+// 40 matches the deck's largest ceiling (the question cards and the
+// lesson-cover LO), and the fit pass still shrinks a four-entry card to what
+// its rows can hold.
+const FONT_MAX         = 40;
 const FILL_COLOUR      = 'FFF9E6';
 const BORDER_COLOUR    = 'CCCCCC';
 const RECT_RADIUS      = 0.04;
@@ -165,21 +174,28 @@ function drawVocab(pptx, slide, zone, data, ctx) {
   const textColW   = boxW - visualColW;
   const rowH       = boxH / words.length;
 
+  // One fit group for the whole card, so every row lands on the same final
+  // size (the smallest any row can take) and the card reads as one set.
+  const textGroup = fitGroupId(zone, 'vocab-defn');
+
   words.forEach(function (item, i) {
     const rowY = boxY + i * rowH;
 
+    // A colon, not an em dash: the em dash is not part of this teacher's
+    // written voice anywhere a child reads (preferences.md, Written Voice).
     const runs = [
-      { text: (item.word || '') + ' ',
+      { text: item.word || '',
         options: { color: COLOURS.green, bold: true } },
-      { text: '— ' + (item.definition || ''),
+      { text: ': ' + (item.definition || ''),
         options: { color: COLOURS.body, bold: true } }
     ];
 
     slide.addText(runs, {
       x: boxX + PAD, y: rowY + ROW_PAD_Y,
       w: textColW - 2 * PAD, h: rowH - 2 * ROW_PAD_Y,
-      fontFace: FONT, fontSize: FONT_SIZE,
-      align: 'left', valign: 'middle', margin: 0, fit: FIT
+      fontFace: FONT, fontSize: FONT_MAX,
+      align: 'left', valign: 'middle', margin: 0, fit: FIT,
+      objectName: growFitObjectName(textGroup, FONT_MAX, 'vocab-' + i)
     });
 
     if (hasVisuals && resolved[i]) {

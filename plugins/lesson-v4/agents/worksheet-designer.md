@@ -60,6 +60,16 @@ writing lines at this year group's line height. Two dotted lines under a
 three-part prompt is a contradiction printed on the page, and the child
 resolves it by writing less than the task asked.
 
+Count lines against the width they will print at, not as an abstract number.
+One written thing is about a sentence, ten to twelve words in a child's
+handwriting, which is two lines in a half-width column (about 85mm) and one
+line at full width. So "write one or two sentences" in a half-width column is
+three or four lines, and the two lines that would have been honest at full
+width are half the room the task asked for. The engine's spare-height growth
+cannot rescue an undercounted answer - lines grow by at most half their
+natural height - so ask for the lines the demand needs and let growth be
+comfort, not the plan.
+
 **Every word bank is a separate labelled support block.** Put `Word bank` on its
 own line and present each option as a distinct choice. Never embed the bank
 choices inside an instruction or paragraph, including when the bank has only
@@ -78,6 +88,20 @@ same order holds for any stimulus a question depends on: a child must never
 meet `Is Rowan's claim supported?` on a page that has not yet shown them
 Rowan's claim. Zones fill in reading order, so hand content over in the order
 the dependencies need: stimulus, then the questions that lean on it.
+
+The one arrangement that sits outside that reading-order rule is the sheet
+built around a single shared evidence panel - a map with its photographs, a
+source set, a data table every question uses. There the teacher's preferred
+page (preferences.md, Worksheets) puts the question run down the LEFT column
+and the panel on the right beside it, with the panel carrying its one job line
+(`Use the map and photographs to answer every question.`). The panel is beside
+the whole run rather than before it, so the child holds their place in the
+questions and glances right at the evidence. Reading order still protects
+genuinely sequential material: a claim a question judges or a stem it
+completes is not a shared panel and stays ahead of its question. And when a
+question run splits across more than one zone, the zones must run down a
+column and then down the next - never left, right, left, right across the page
+- which the turned and mirrored layout variants always make available.
 
 ---
 

@@ -150,6 +150,55 @@ test("a row of cards is measured from its TALLEST card, not its average", () => 
   assert.ok(measure(uneven, COLUMN_MM) > measure(even, COLUMN_MM));
 });
 
+test("a card's photo is measured at its own aspect, not a guessed one", () => {
+  // The CSS draws a card's image at `width: 100%; height: auto` - the photo's
+  // real proportions. The estimate used a flat 0.6 whatever the file held, so
+  // a square or portrait photo drew far taller than it measured and the zone's
+  // `overflow: hidden` cut the bottom off the card. A real lesson shipped with
+  // Photo B sliced in half on every sheet that carried it.
+  const base = { title: "Photo A", imageHref: "data:image/png;base64,x" };
+  const landscape = {
+    helper: "card-row",
+    cards: [{ ...base, imageWidth: 1000, imageHeight: 600 }],
+  };
+  const square = {
+    helper: "card-row",
+    cards: [{ ...base, imageWidth: 800, imageHeight: 800 }],
+  };
+  const portrait = {
+    helper: "card-row",
+    cards: [{ ...base, imageWidth: 800, imageHeight: 1200 }],
+  };
+  const squareMm = measure(square, COLUMN_MM);
+  assert.ok(
+    squareMm > measure(landscape, COLUMN_MM),
+    "a square photo is taller on the page than a landscape one, so it must measure taller"
+  );
+  assert.ok(
+    measure(portrait, COLUMN_MM) > squareMm,
+    "a portrait photo is taller again"
+  );
+  // The height a photo takes tracks its own height-over-width exactly - that
+  // proportion IS the CSS's `height: auto`. Comparing differences between
+  // three aspects cancels everything that is not the picture, so this pins the
+  // estimate to the browser's arithmetic: (1.5 - 1.0) / (1.0 - 0.6) = 1.25.
+  const portraitMm = measure(portrait, COLUMN_MM);
+  const landscapeMm = measure(landscape, COLUMN_MM);
+  const ratio = (portraitMm - squareMm) / (squareMm - landscapeMm);
+  assert.ok(
+    Math.abs(ratio - 1.25) < 0.01,
+    `photo height must scale with the photo's own aspect; measured ${ratio.toFixed(2)}`
+  );
+
+  // A card whose natural size never arrived still measures something sane.
+  const unknown = { helper: "card-row", cards: [{ ...base }] };
+  const withoutImage = measure(
+    { helper: "card-row", cards: [{ title: "Photo A" }] },
+    COLUMN_MM
+  );
+  assert.ok(measure(unknown, COLUMN_MM) > withoutImage);
+});
+
 test("a card row can carry the dot that makes it half of a matching activity", () => {
   // Six plants along the foot of a page, each to be joined to a layer of the
   // diagram above. Without somewhere to aim, "draw a line from each plant" has

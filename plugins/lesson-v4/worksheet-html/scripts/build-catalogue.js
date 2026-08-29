@@ -104,7 +104,12 @@ const GREED = {
 // example has to carry the RESOLVED form, because a test has no photo on disk.
 // Printing that in the catalogue would teach the designer to write a field it
 // must never write, and bury it under ten kilobytes of base64 while doing so.
+// Recursive, because a picture can sit anywhere in the spec - a card in a
+// card-row, an entry in a bank - and a nested `imageHref` printed raw is the
+// same ten kilobytes of base64 teaching the same wrong field.
 function asWritten(spec) {
+  if (Array.isArray(spec)) return spec.map(asWritten);
+  if (!spec || typeof spec !== "object") return spec;
   const out = {};
   for (const [key, value] of Object.entries(spec)) {
     if (key === "imageHref") {
@@ -113,7 +118,7 @@ function asWritten(spec) {
     }
     // Both are read from the file's own header at build time.
     if (key === "imageWidth" || key === "imageHeight") continue;
-    out[key] = value;
+    out[key] = asWritten(value);
   }
   return out;
 }

@@ -1534,7 +1534,7 @@ Smallest usable: **80mm wide x 100mm tall**. Spare height: takes spare height re
 
 A row of small titled cards, each optionally carrying a picture: plants along the foot of a sheet, artefacts under a timeline.
 
-Smallest usable: **96mm wide x 44mm tall**. Spare height: never takes spare height.
+Smallest usable: **96mm wide x 88mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1544,7 +1544,8 @@ Smallest usable: **96mm wide x 44mm tall**. Spare height: never takes spare heig
   "cards": [
     {
       "title": "Cacao",
-      "caption": "Amazon River basin, southern Mexico"
+      "caption": "Amazon River basin, southern Mexico",
+      "imagePath": "plant.jpg  (the filename image-scout saved; the build inlines it)"
     },
     {
       "title": "Coffee",
