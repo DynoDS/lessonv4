@@ -111,12 +111,18 @@ not enter, consume or reduce those 16 Image Team places.
 
 ### Check the Educational SVG library is here before you use that route
 
-The Educational SVG drawings are a large shared asset set held at
-`[PLUGIN_ROOT]/educational-svg/`. An install of this plugin may not carry
-them. Confirm once, before the opportunity pass reaches any Educational SVG
-decision, that `[PLUGIN_ROOT]/educational-svg/search.js` is present.
+The Educational SVG drawings are a large shared asset set. An install of this
+plugin may not carry them, and a working copy may sit outside the package
+entirely, so the folder is not a fixed path to be assumed. Resolve it once,
+before the opportunity pass reaches any Educational SVG decision:
 
-If it is absent, the Educational SVG route is unavailable for the whole run.
+`node "[PLUGIN_ROOT]/scripts/publish-educational-svg.js" --resolve-root`
+
+`EDUCATIONAL_SVG_ROOT=<path>` gives this run's library home. Use it wherever
+this reference writes `[EDUCATIONAL_SVG_ROOT]`.
+
+`EDUCATIONAL_SVG_UNAVAILABLE` means that
+the Educational SVG route is unavailable for the whole run.
 Then, on every surface:
 
 - an ordinary P2 uses the emoji route when a clear, child-suitable emoji
@@ -374,15 +380,15 @@ Choose the picture that:
 4. remains clear at the intended small size;
 5. keeps its natural proportions and suits the other pictures in the set.
 
-These rules apply only when the library check above found
-`[PLUGIN_ROOT]/educational-svg/search.js`. Search the fixed shared library
-with one short concrete query and up to five useful alternatives:
+These rules apply only when the resolver above printed an
+`EDUCATIONAL_SVG_ROOT`. Search that library with one short concrete query and up
+to five useful alternatives:
 
-`node "[PLUGIN_ROOT]/educational-svg/search.js" --query "<concept>" --query "<useful-alternative>" --limit 12`
+`node "[EDUCATIONAL_SVG_ROOT]/search.js" --query "<concept>" --query "<useful-alternative>" --limit 12`
 
 Add `--style standard`, `--style cartoon` or `--style solid` only when the
-surrounding set needs that style. The location is fixed. The command makes one
-quick folder check and does not search the computer or use the network.
+surrounding set needs that style. The command reads only the resolved library
+folder; it does not search the computer or use the network.
 
 If it prints `EDUCATIONAL_SVG_UNAVAILABLE`, apply the failure rule below. This
 is an optional-picture outcome and must not stop the lesson.

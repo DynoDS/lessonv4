@@ -6,12 +6,30 @@ const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const DEFAULT_LIBRARY_ROOT = path.resolve(
-  __dirname,
-  "..",
-  "educational-svg",
-  "library"
-);
+
+// The drawings are a large shared asset set that an install of this plugin may
+// not carry, so where they live is not always inside the package. This variable
+// names the folder holding `search.js` and `library/`, which lets a working copy
+// sit anywhere while the published plugin keeps its bundled one and sets
+// nothing. It is one setting rather than a path repeated in guidance, because a
+// location every caller has to remember is a location some caller gets wrong.
+const LIBRARY_ROOT_VARIABLE = "LESSON_EDUCATIONAL_SVG_ROOT";
+const BUNDLED_LIBRARY_HOME = path.resolve(__dirname, "..", "educational-svg");
+
+function libraryHome() {
+  const configured = (process.env[LIBRARY_ROOT_VARIABLE] || "").trim();
+  return configured ? path.resolve(configured) : BUNDLED_LIBRARY_HOME;
+}
+
+function resolveLibraryHome() {
+  const home = libraryHome();
+  const searchScript = path.join(home, "search.js");
+  const library = path.join(home, "library");
+  if (!fs.existsSync(searchScript) || !fs.existsSync(library)) return null;
+  return home;
+}
+
+const DEFAULT_LIBRARY_ROOT = path.join(BUNDLED_LIBRARY_HOME, "library");
 
 function isWithin(base, candidate) {
   const relative = path.relative(base, candidate);
@@ -111,7 +129,9 @@ function publishEducationalSvgAsset(
     );
   }
 
-  const libraryRoot = path.resolve(options.libraryRoot || DEFAULT_LIBRARY_ROOT);
+  const libraryRoot = path.resolve(
+    options.libraryRoot || path.join(libraryHome(), "library")
+  );
   const { candidate, libraryId } = inspectLibrarySvg(
     path.resolve(candidateSvgPath),
     libraryRoot
@@ -189,6 +209,22 @@ function publishEducationalSvgAsset(
 
 function main() {
   const [, , candidateArg, workingDirArg, preferredSlug] = process.argv;
+
+  // Finding the library is the same question as publishing from it, so the file
+  // that owns the location answers both. A caller that had to work the folder
+  // out for itself is the caller that quietly looks in the wrong one.
+  if (candidateArg === "--resolve-root") {
+    const home = resolveLibraryHome();
+    if (!home) {
+      console.log(
+        `EDUCATIONAL_SVG_UNAVAILABLE: no search.js and library/ under ${libraryHome()}`
+      );
+      return;
+    }
+    console.log(`EDUCATIONAL_SVG_ROOT=${home}`);
+    return;
+  }
+
   if (!candidateArg || !workingDirArg || !preferredSlug) {
     console.error(
       "Usage: node publish-educational-svg.js <candidate.svg> <working-dir> <preferred-slug>"

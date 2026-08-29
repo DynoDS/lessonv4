@@ -38,7 +38,11 @@ test("resource designers resolve optional Educational SVG requests without a sco
     reference,
     /Do not spawn a separate Educational SVG resolver for any surface/
   );
-  assert.match(reference, /\[PLUGIN_ROOT\]\/educational-svg\/search\.js/);
+  // The library folder is resolved, never assumed: a working copy can sit
+  // outside the package, and a fixed path read that as "not installed".
+  assert.match(reference, /--resolve-root/);
+  assert.match(reference, /\[EDUCATIONAL_SVG_ROOT\]\/search\.js/);
+  assert.doesNotMatch(reference, /\[PLUGIN_ROOT\]\/educational-svg\/search\.js/);
   assert.doesNotMatch(reference, /\[PLUGIN_ROOT\]\/\.\.\/educational-svg/);
   assert.match(reference, /EDUCATIONAL_SVG_UNAVAILABLE/);
   assert.match(
