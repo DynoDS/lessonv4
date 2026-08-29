@@ -3,6 +3,7 @@
 const { bodyZone } = require('../layout');
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
+const { alignSplitHPair } = require('../split-pair');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const GAP_X         = 0.15;
@@ -25,6 +26,8 @@ function drawSplitH9010(pptx, slide, data, ctx) {
     secondaryZone = { x: bz.x,                        y: bz.y, w: secondaryW, h: bz.h, class: 'F' };
     primaryZone   = { x: bz.x + secondaryW + GAP_X,   y: bz.y, w: primaryW,   h: bz.h, class: 'A' };
   }
+
+  alignSplitHPair(primaryZone, data.primary, secondaryZone, data.secondary, ctx);
 
   if (data.primary)   drawContent(pptx, slide, primaryZone,   data.primary,   ctx);
   if (data.secondary) drawContent(pptx, slide, secondaryZone, data.secondary, ctx);

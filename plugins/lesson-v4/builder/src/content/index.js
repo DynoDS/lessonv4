@@ -428,6 +428,42 @@ function stringifyFallback(data) {
   return '';
 }
 
+// The natural drawn height of one content block in a zone: the card that
+// would appear (content plus its card padding), in slide inches. Split
+// templates use it to align a side-by-side pair the way the drawn slide will
+// actually look — a fill text card sized to its partner, a shorter member
+// centred on the pair — instead of leaving each zone to land wherever its own
+// hug puts it. Returns null when the content spans whatever it is given
+// (no registered measure, or the measure declined), which callers read as
+// "this side uses its whole zone".
+function measureContentExtent(zone, data, ctx) {
+  if (!ctx || !ctx.cardLook) return null;
+  if (!data || !data.type) return null;
+  const measure = MEASURE[data.type];
+  if (!measure) return null;
+  // A fill text's measure is null by contract (the card spans the zone), but
+  // its partner still needs the text's natural height to settle the pair, so
+  // the probe asks the hug question regardless of the declared mode.
+  const probe = data.type === 'text' && data.heightMode
+    ? Object.assign({}, data, { heightMode: 'hug' })
+    : data;
+  const pad = SELF_PADDED.has(data.type)
+    ? 0
+    : (zone.compactCards ? CARD_COMPACT : CARD).pad;
+  const inner = pad === 0 ? zone : Object.assign({}, zone, {
+    x: zone.x + pad, y: zone.y + pad,
+    w: zone.w - 2 * pad, h: zone.h - 2 * pad
+  });
+  let drawn;
+  try {
+    drawn = measure(inner, probe, ctx);
+  } catch {
+    return null;
+  }
+  if (!drawn || drawn.none || !(drawn.h > 0.3)) return null;
+  return { h: drawn.h + 2 * pad };
+}
+
 function drawFallback(slide, zone, label, ctx) {
   const PAD = 0.08;
   slide.addText(label || '[missing content]', {
@@ -440,4 +476,4 @@ function drawFallback(slide, zone, label, ctx) {
   });
 }
 
-module.exports = { drawContent, ZONE_COMPAT };
+module.exports = { drawContent, measureContentExtent, ZONE_COMPAT };

@@ -259,7 +259,7 @@ about **this slide**:
 
 | Reason | What you are saying |
 | --- | --- |
-| `full` | This slide's own content already fills it at a readable size. There is no spare room. |
+| `full` | This slide's own content already fills it at a readable size. There is no spare room. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card — the deck that declared twelve of seventeen slides `full` while the teacher saw dead space on most of them was reading its own stretched cards as fullness. |
 | `competes` | A picture would cover, shrink or crowd what a child has to read here. |
 | `would-mislead` | A drawing here would bias, answer or pre-empt the task. The rainforest photo beside "which biome?" is this. |
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |

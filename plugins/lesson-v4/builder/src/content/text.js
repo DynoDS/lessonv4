@@ -5,7 +5,7 @@ const {
   baseColourForRole,
   presentationRuns
 } = require('../presentation-text');
-const { growFitObjectName } = require('../text-fit');
+const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { drawSignal, signalWidth } = require('../signals');
 const {
   PICTURE_GAP,
@@ -52,6 +52,29 @@ const FALLBACK_CEILING = 24;
 const TEXT_ALIGNS = new Set(['left', 'center', 'right']);
 const TEXT_PLACEMENTS = new Set(['left', 'center', 'right']);
 const TEXT_HEIGHT_MODES = new Set(['hug', 'fill']);
+
+// A fill card is a deliberate span, so it must be full of readable type, not
+// dead white space around type sized for a hugged card. The fit pass grows a
+// fill block to the largest whole-point size its card can hold, up to a
+// ceiling; an explicit fontSize replaces the ceiling rather than the start
+// size, because a designer who names a size has already made the judgement.
+//
+// The ceiling is split by how much the block says. A short display line — a
+// vocabulary headword with its definition — reads well poster-sized: 60 is
+// where the teacher grew one when a full-height card left it at 28pt in
+// empty space. Running prose does not: sentences at 60 stop reading as
+// sentences, and 44 is just past where the teacher settled a three-sentence
+// answer block (40) when given the same room.
+const FILL_GROW_CEILING_DISPLAY = 60;
+const FILL_GROW_CEILING_PROSE   = 44;
+const FILL_DISPLAY_WORD_LIMIT   = 12;
+
+function fillGrowCeiling(value) {
+  const words = String(value).trim().split(/\s+/).filter(Boolean).length;
+  return words > FILL_DISPLAY_WORD_LIMIT
+    ? FILL_GROW_CEILING_PROSE
+    : FILL_GROW_CEILING_DISPLAY;
+}
 
 function textAlign(data) {
   const value = String(data.align || 'left').toLowerCase();
@@ -101,7 +124,7 @@ function optionalPictureLayout(zone, data, ctx, indent, fs, value) {
 function drawText(pptx, slide, zone, data, ctx) {
   let value = data.value || data.text || '';
   if (!value) return;
-  textHeightMode(data);
+  const heightMode = textHeightMode(data);
 
   const ceiling = data.fontSize || TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
   const color = data.color || data.colour || COLOURS.body;
@@ -139,7 +162,13 @@ function drawText(pptx, slide, zone, data, ctx) {
     margin: 0, fit: FIT,
     objectName: zone.textFitGroup
       ? growFitObjectName(zone.textFitGroup, ceiling, 'row-text')
-      : undefined
+      : (heightMode === 'fill'
+          ? growFitObjectName(
+              fitGroupId(zone, 'fill-text'),
+              data.fontSize || fillGrowCeiling(value),
+              'fill-text'
+            )
+          : undefined)
   });
 
   if (pictureLayout) {

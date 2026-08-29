@@ -216,9 +216,11 @@ Opinionated templates for specific teaching moves. Each shape carries meaning �
 
 **Purpose:** Compare/contrast teaching move. Two labelled white cards sit side by side, with a blue border on the left and an orange border on the right. The category borders help children track which is which at a glance without turning the whole card into a coloured block.
 
-**Slots:** `title`, `instruction`, `leftHeading`, `rightHeading`, `leftContent`, `rightContent`.
+**Slots:** `title`, `instruction`, `leftHeading`, `rightHeading`, `leftContent`, `rightContent`, `headingRole`.
 
-The default pairing is blue on `leftContent` and orange on `rightContent`. To carry a different established category pairing, set `categoryColor` on either content object to `blue`, `orange`, or `purple`; the heading and outer border follow it. Green is rejected because it is reserved for answers and vocabulary.
+The default pairing is blue on `leftContent` and orange on `rightContent`. To carry a different established category pairing, set `categoryColor` on either content object to `blue`, `orange`, or `purple`; the heading and outer border follow it. Green is rejected as a category because it is reserved for answers and vocabulary.
+
+When the two headings are taught vocabulary rather than opposing categories — `complete` / `incomplete`, `translucent` / `opaque` — set `headingRole: "vocabulary"`. Both headings then render in vocabulary green while the borders keep the template's pairing, so the words read as two equal vocabulary headwords instead of two competing categories. Do not also repeat the two headings in the header `instruction`; the headings already say it.
 
 **Use for:** simile vs metaphor, right vs wrong, active vs passive, stepped vs smooth pyramids.
 
@@ -534,9 +536,13 @@ These fields are supported on `text`, on object entries inside `bullets`, `numbe
 `heightMode` is optional:
 
 - omit it or use `"hug"` for the normal content-hugging text card;
-- use `"fill"` when a short answer/reference is deliberately paired with a taller neighbouring visual and should occupy the full height of its assigned zone.
+- use `"fill"` when the text is deliberately paired with a neighbouring visual or panel and should span the pair rather than hug its own lines.
 
-`fill` is an alignment treatment, not a way to create empty cards around ordinary prose. Use it only when the larger shared span improves a real paired relationship.
+`fill` never creates dead space, because the builder finishes the pairing itself. In a side-by-side split it measures both sides and sizes the fill card to the taller member of the pair — a fill card is never taller than the partner it is pairing with, so pairing with a half-height photo gives a half-height card, and only a full-height partner (a success-criteria panel, a stack) gives a full-height card. The type then grows to fill the card: up to 60pt for a short display line such as a vocabulary headword and definition, up to 44pt for running prose, always shrinking instead when the wording needs less. An explicit `fontSize` replaces that growth ceiling.
+
+So the choice `fill` makes is only this: should this text read at its own natural size (`hug`), or grow into the height of the thing beside it (`fill`)? An answer or definition beside a photograph, or a task beside its success criteria, usually reads better filled; a caption or short aside usually reads better hugged.
+
+In the same splits, a hugged member that measures shorter than its partner is vertically centred on the pair instead of being pinned to the top with a void underneath.
 
 Short `text` in an `E-narrow` zone may now grow to a 28pt ceiling and shrink only when the wording needs less.
 

@@ -3,6 +3,7 @@
 const { bodyZone } = require('../layout');
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
+const { alignSplitHPair } = require('../split-pair');
 const { warn } = require('../warnings');
 
 // ─── COORDINATES ──────────────────────────────────────────────
@@ -29,6 +30,8 @@ function drawSplitH5050(pptx, slide, data, ctx) {
     warn(ctx.slideIndex, 'split-h-50-50 received no content for its zones — expected `primary`/`secondary` (or `left`/`right`); the slide body is blank');
     return;
   }
+
+  alignSplitHPair(leftZone, leftContent, rightZone, rightContent, ctx);
 
   if (leftContent  != null) drawContent(pptx, slide, leftZone,  leftContent,  ctx);
   if (rightContent != null) drawContent(pptx, slide, rightZone, rightContent, ctx);

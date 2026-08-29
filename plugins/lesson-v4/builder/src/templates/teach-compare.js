@@ -1,6 +1,6 @@
 'use strict';
 
-const { FONT, FIT, CARD } = require('../styles');
+const { FONT, FIT, CARD, COLOURS } = require('../styles');
 const { categoryColourFor } = require('../category-colours');
 const { bodyZone } = require('../layout');
 const { drawHeader } = require('../headers');
@@ -24,16 +24,25 @@ function drawTeachCompare(pptx, slide, data, ctx) {
   const leftX = bz.x;
   const rightX = bz.x + cardW + CARD_GAP;
 
+  // When the two sides are taught vocabulary rather than opposing categories
+  // (complete / incomplete, translucent / opaque), the headings are vocabulary
+  // headwords and take the deck's vocabulary green instead of the template's
+  // category palette — blue-versus-orange over two vocabulary words reads as
+  // two competing categories when the words are equals.
+  const vocabHeadings =
+    String(data.headingRole || '').toLowerCase() === 'vocabulary';
+  const headingColor = vocabHeadings ? COLOURS.green : null;
+
   drawCard(pptx, slide, {
     x: leftX, y: bz.y, w: cardW, h: bz.h
   }, data.leftHeading, data.leftContent, {
-    categoryColor: LEFT_CATEGORY
+    categoryColor: LEFT_CATEGORY, headingColor: headingColor
   }, ctx);
 
   drawCard(pptx, slide, {
     x: rightX, y: bz.y, w: cardW, h: bz.h
   }, data.rightHeading, data.rightContent, {
-    categoryColor: RIGHT_CATEGORY
+    categoryColor: RIGHT_CATEGORY, headingColor: headingColor
   }, ctx);
 }
 
@@ -53,7 +62,7 @@ function drawCard(pptx, slide, card, heading, content, style, ctx) {
       x: card.x + CARD_PAD, y: card.y + CARD_PAD,
       w: card.w - 2 * CARD_PAD, h: HEADING_H,
       fontFace: FONT, fontSize: HEADING_FONT, bold: true,
-      color: categoryLine, align: 'center', valign: 'middle',
+      color: style.headingColor || categoryLine, align: 'center', valign: 'middle',
       underline: { style: 'sng' }, margin: 0, fit: FIT
     });
   }

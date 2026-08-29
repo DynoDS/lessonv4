@@ -12,6 +12,16 @@ The card should normally hug the content it contains. A white card is a boundary
 
 Before finalising a slide, ask of every ordinary card: could the same content sit in a smaller, tighter card and read better from the back of the room? If yes, the boundary is wrong.
 
+The boundary question is two-way: a card that is the right size can instead hold type that is too small for it. Dead space inside a card is repaired either by tightening the card (`hug`, `widthMode: "content"`) or by letting the type grow to the card (`heightMode: "fill"`, whose grow behaviour `templates.md` describes). Both readings are fine; small type floating in a large card is not.
+
+Width works the same way as height. A one-line lead-in or closing statement spanning the full slide in a card mostly made of empty width should hug its written width (`widthMode: "content"`). Peers that should read uniform — a numbered question set, a row of option cards — instead share one width, sized by the longest member, rather than each hugging separately.
+
+## Paragraph rhythm
+
+A text block that carries more than one idea breaks at each idea: one idea, then a paragraph break (`\n\n`), then the next. Three sentences making three separate points are three paragraphs, not one run-on block — a child re-enters a broken block at any line, but has to wade into a fused one from the top.
+
+The break is presentation, not wording: every word, order and punctuation mark stays exactly as authored. Do not break inside one continuous thought — a sentence and the example that completes it, or two clauses building a single point, stay together. The test: if a sentence stands as its own point, a child should meet it on its own line.
+
 ## Visible task structure
 
 Protected source wording may still carry visual syntax. When one source-authored task string contains consecutive phases of one coherent pupil task — find → explain, build → test, test → repair, make the product → annotate it — the phases must be visible before the child has to read every word.
@@ -62,6 +72,8 @@ When a shorter content group sits beside a taller peer such as a photograph, suc
 - align their top and bottom edges when they genuinely share those boundaries;
 - otherwise vertically centre the shorter group against the taller peer when that gives the pair one clear shared visual centre;
 - do not pin both zones to the top by habit and leave a large meaningless void below the shorter group.
+
+In the side-by-side split templates the builder settles this itself: it measures both sides, centres the shorter measured member on the pair, and sizes a `fill` text card to the taller member. Compositions outside those splits still carry this judgement by hand.
 
 Judge the group as a whole. A word bank plus its questions is one group. An instruction plus the picture it governs is one group. A task line plus the table pupils fill is one group.
 

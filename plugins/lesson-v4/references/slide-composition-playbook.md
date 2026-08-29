@@ -294,6 +294,10 @@ The starter is slide 1. It carries the Date and shortened displayed LO in the st
 
 Use the exact structured visual selected upstream. Keep one coherent card or comparison per genuine conceptual unit. A text-only card is complete when `kind: none` or no honest semantic visual exists. Do not add P3 merely because a vocabulary card is text-only.
 
+Vocabulary has two established shapes and both stay in use. The single `key-vocabulary` slide holds all the words as one quick reference — right when the words are brief reminders without individually strong visuals, or the teacher wants one glanceable slide to return to. One word per slide with its semantic visual is right when each word earns a picture or diagram that carries its meaning. Choose per lesson from what the words need; neither shape is the default that replaces the other. On per-word slides, a `fill` text pairs the definition with its picture at matched height (see the `text` contract).
+
+When two vocabulary words are taught as a contrast on `teach-compare`, set `headingRole: "vocabulary"` so both headwords take vocabulary green rather than the template's category palette — they are equals being defined, not competing categories.
+
 ### Teaching and pupil action
 
 A teaching slide keeps the teaching object visible. Notes may enrich it but do not hold a hidden second lesson. When a title asks a question, the answer idea is visible on the slide. Keep every structured `keyQuestions` entry visible in a readable treatment. A pupil-action slide makes the material, decision, response and active reference visible. When a non-null pupil instruction is not independently actionable, preserve it and return `PUPIL_INSTRUCTION_AMBIGUOUS` instead of repairing it through presentation wording.
@@ -338,6 +342,8 @@ Use the semantic roles in `teacher-slide-visual-profile.md` and the exact suppor
 
 A colour treatment is a deck-wide decision, not a per-slide flourish. Colour teaches a child what kind of thing they are looking at only if the same kind gets the same treatment on every slide: a deck where the focal question is house blue on slide 9 and body black on slide 8 has spent the colour and lost the meaning, and reads as assembled by different hands. Decide once whether this deck's focal thinking questions carry `focus-blue`, then apply that decision to every one of them or to none; the same holds for any emphasis role - a deck that underlines `required-material` in one task underlines it in all of them. Half-applied roles are worse than unapplied ones.
 
+Deck-wide consistency chooses how a role looks, never whether role-carrying wording gets its treatment at all. Wording that genuinely is a safety warning, a failed state, a taught vocabulary term or the action verbs of a multi-phase task carries its role wherever it appears; "none" is not a consistent answer for those, only for the optional judgement roles like `focus-blue`. A safety list rendered as five equal black lines has not been restrained, it has hidden the one line children must not miss.
+
 ## 14. Deck-level quality tells
 
 Before accepting the deck, read it in order and look specifically for these regression tells:
@@ -347,6 +353,7 @@ Before accepting the deck, read it in order and look specifically for these regr
 - the central picture, diagram or source smaller than its supporting prose;
 - task and material presented as two indistinguishable text blocks;
 - an instruction repeated in the title, header and question card;
+- a header cue that merely repeats what the body already labels (a `complete / incomplete` cue over a comparison whose two headings are `complete` and `incomplete`);
 - an instruction box restating the prompts a frame below it already prints;
 - one role given two treatments - the focal question blue on one slide and black on the next;
 - a question-card slot used for explanation or success criteria;

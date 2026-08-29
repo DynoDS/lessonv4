@@ -87,11 +87,11 @@ test("resource designers resolve optional Educational SVG requests without a sco
   assert.match(reference, /semantic vocabulary[\s\S]*text-only/);
   assert.match(reference, /failed P3 decoration/);
   // Optional pictures are settled inside the designer that owns the spec, so the
-  // orchestrator waits on the finished lesson.json and only then anchors any
-  // labelled diagram over a real photograph.
+  // orchestrator waits on the finished lesson.json (and its terminal pictures)
+  // and only then anchors any labelled diagram over a real photograph.
   assert.match(
     playbook,
-    /Wait for `lesson\.json`[\s\S]*labelled diagram over a photo, launch Diagram\s+Anchor/
+    /Wait until Slide Designer and all picture filenames referenced by `lesson\.json`[\s\S]*labelled diagram over a photo, launch Diagram\s+Anchor/
   );
   assert.doesNotMatch(playbook, /context-picture pass/i);
 });
