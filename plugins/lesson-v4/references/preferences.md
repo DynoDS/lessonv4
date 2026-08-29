@@ -252,9 +252,21 @@ The boundary: this is about a picture whose job is to carry a word's meaning. A 
 
 P1 is teaching-critical and always wins. P2 is helpful context attached to what
 it supports. P3 is relevant decoration with no teaching meaning and is first
-expendable. Deliberate empty space is allowed; do not add P3 merely to cure a
-sparse page. On serious material omit P3 before it makes the treatment cute,
-jokey or trivial.
+expendable.
+
+Two situations are what P3 is for. A slide that has done everything else right
+and still reads as a wall of text: a small relevant drawing tucked against a
+card, sitting behind a text box or resting in a corner makes it warmer to look at
+without asking a child to read one more thing. And a slide carrying no imagery at
+all, where the same small drawing stops the deck going flat. Reach for it in both,
+choose something that belongs to this lesson's subject rather than a general
+squiggle, and put it where the surface is already spare instead of making room
+for it.
+
+The limit is room that is already doing a job. Space left for the teacher to
+write into, for a diagram to be completed live, or for a child to work in is not
+a gap waiting to be filled. On serious material omit P3 before it makes the
+treatment cute, jokey or trivial.
 
 ---
 

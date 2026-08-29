@@ -187,7 +187,7 @@ problem.
 
 Each check exists because it is invisible to the build scripts, which validate structure, not appearance.
 
-**Figures that don't read.** Labels colliding or overlapping at particular data values, clipped text inside a drawn figure, a chart key too cramped to use, two elements drawn on top of each other. The builder guarantees each box fits its slot, not that the picture inside is readable.
+**Figures that don't read.** Labels colliding or overlapping at particular data values, clipped text inside a drawn figure, a chart key too cramped to use, two elements drawn on top of each other. The builder guarantees each box fits its slot, not that the picture inside is readable. An optional context picture or decoration deliberately overlapping a card is not this fault, because that layer is placed to sit against the composition; it becomes a fault only when it covers a word, a number, a table cell or part of a figure a child reads.
 
 **Rendering accidents.** Empty boxes where a character should be, a grey placeholder that shipped where a photo was needed, a figure that silently degraded to a stand-in, text cut off mid-word at a box edge. Read the rendered words as words too, closest at the seams where the builder joins separately-authored pieces - a question meeting its revealed answer, a label meeting its value - because a missing space at a seam ("in?South America") exists nowhere in the spec, only in the render, and the page magnifies it into a typo every child can see.
 

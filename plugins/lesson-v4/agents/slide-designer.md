@@ -271,6 +271,10 @@ The later anchor pass may move dots or drop a feature not actually visible in th
 
 ## Optional visual opportunity pass
 
+This has two moments, not one.
+
+While composing a light slide, ask whether a relevant P2 belongs before settling its template, and choose a template that leaves the picture somewhere to sit. A slide whose teaching content already has everything it needs at full readable size can afford a picture with a place of its own; a full slide cannot. Room is never arranged around a P3. Because the drawing is searched for later and may not exist, the template you choose must still look finished as text on its own.
+
 After the core geometry is sound, run one explicit whole-deck pass under the strict order P1 > P2 > P3.
 
 For every credible opportunity, record one decision:
@@ -279,6 +283,8 @@ For every credible opportunity, record one decision:
 2. P2 adds useful context without competing.
 3. P3 adds safe decoration without competing.
 4. No optional visual belongs here.
+
+A slide that has done everything else right and still reads as a wall of text, or that carries no imagery at all, is what P3 is for: one small relevant drawing behind a card, resting over a card's edge or tucked into a corner, in space the composition already left spare.
 
 Author relevant P2 before requesting it. Request zero only when no useful P2 or safe P3 opportunity exists. Read the relevant specialist section of `context-pictures.md` at that decision point. Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.
 

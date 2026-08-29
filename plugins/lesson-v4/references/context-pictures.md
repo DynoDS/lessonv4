@@ -10,7 +10,7 @@ meaning; P3 does not. P1 always wins over both, and P2 wins over P3.
 
 ## Slide Designer read route
 
-At Slide Designer startup, read this introduction, `The boundary`, and the whole-deck opportunity-pass rules in `Priority 2 source routes`. Do not load request JSON, resolver publication steps or other resource surfaces at startup.
+At Slide Designer startup, read this introduction, `The boundary`, `Where an optional picture sits on a slide`, and the whole-deck opportunity-pass rules in `Priority 2 source routes`. The placement section is needed at startup rather than later because a light slide may choose its template around a P2, and by the opportunity pass that choice has already been made. Do not load request JSON, resolver publication steps or other resource surfaces at startup.
 
 After the core slide geometry is settled, run the one whole-deck opportunity pass. If that pass selects an ordinary P2, semantic vocabulary P2 or P3 request, read `Request shape`, `How a designer searches and chooses`, the Slides part of `Timing by resource`, and the Slides line in `Surface-specific limits` before authoring or resolving it.
 
@@ -28,10 +28,17 @@ must still relate naturally to the lesson. A faint forest in the corner of a
 rainforest slide may be P3. A random star, squiggle, paint blob or unrelated
 object added merely because space exists is not.
 
-Both optional layers are nice to have. They never change the lesson's teaching,
-become part of the answer, shrink text, reduce writing space, crowd a diagram,
-change a template/layout/page count or delay a finished resource. P3 is the first
-thing moved, faded, replaced or removed when anything competes.
+Neither layer changes the lesson's teaching, becomes part of the answer, shrinks
+text, reduces writing space, crowds a diagram or delays a finished resource.
+Those protections are what make an optional picture safe to reach for: it cannot
+cost a child anything, so the question is only ever whether it helps.
+
+Where the two layers differ is their claim on space, and the difference is
+meaning. A P2 carries meaning, so it may hold a place of its own, and on a slide
+with genuine room to spare it may be weighed while the template is still being
+chosen. A P3 carries none, so no template, layout or page count is ever arranged
+around one: it goes where the surface is already spare. P3 stays the first thing
+moved, faded, replaced or removed when anything competes.
 
 On a slide, keeping the text size does not mean keeping the original line
 count. A picture may shorten the text column and make a question or fact wrap
@@ -42,13 +49,53 @@ individual picture instead.
 
 On slides, optional context pictures stay visually quieter than the words. The
 builder renders them at 50% transparency and sizes them from the usable height
-of their own row or card while preserving their natural proportions. A wide
+of their own row or card while preserving their natural proportions. A picture
+placed by its own frame is sized by that frame instead, at the same 50%. A wide
 picture is capped before it takes essential text room; if the same-size wording
 still cannot fit, that individual picture closes up. This treatment belongs
 only to the optional picture layer. Do not fade a photograph, map, diagram or
 other visual that carries the teaching. Printed resources also keep enough
 contrast to survive ordinary classroom printing rather than inheriting the
 slide transparency automatically.
+
+## Where an optional picture sits on a slide
+
+A picture beside the words is the ordinary case and the first to reach for: the
+text column narrows, the words rewrap around it, and the picture stays visually
+connected to the content it supports.
+
+A P2 may also hold a place of its own. Use that when the slide is genuinely
+light, meaning the teaching content already has everything it needs at full
+readable size and what is left over is real slide rather than the margin a
+diagram's own proportions happen to leave. A relevant drawing there does quietly
+what a photograph would do, and reads as chosen rather than as filler.
+
+This is the one point where an optional picture may affect the template. On a
+light slide, decide whether a P2 belongs before the template is settled, and pick
+one whose shape leaves it somewhere to sit. What this prevents is the common
+shape of the miss: three settled pieces of content take a three-part template,
+the geometry closes, and a picture that would genuinely have helped has nowhere
+left to go. The freedom carries the same check a nice-to-have photograph gets,
+because the drawing is searched for later and may not exist: choose a template
+that still looks finished as text on its own, so a slide whose picture never
+arrives reads as deliberate rather than holed.
+
+A P3 never gets a place made for it, because it carries no meaning to justify
+one. It goes where the slide is already spare: behind a text card, straddling a
+card's edge, tucked into a corner of the slide, or resting in the margin a card's
+shape already leaves. Overlapping content is normal and usually reads better than
+floating in open space, because it ties the drawing into the composition instead
+of leaving it adrift. Use `layer: "low"` to sit behind a card and `layer: "high"`
+to rest on top of one. Overlapping must never cover a word, a number, a table
+cell or any part of a figure a child reads.
+
+Size a free-standing optional picture for its job: small enough that the eye
+still lands on the teaching first, large enough to read as a drawing rather than
+a smudge. Several small ones can share a slide when they share a style and sit
+around the edges of the composition. What fails is a scatter of unrelated marks,
+which reads as clutter however relevant each one is on its own.
+
+---
 
 The lesson-designer makes no decision about this layer and writes no request for
 it. Each visual designer works from the pedagogy already settled upstream and
@@ -105,10 +152,16 @@ Use either an emoji or a hand-drawn Educational SVG picture.
 - Prefer an Educational SVG picture when the hand-drawn object gives a cleaner,
   calmer or more specific match. Search the shared local library after the
   resource's design is complete. The builder never guesses the picture.
+- While composing a light slide, ask whether a relevant P2 belongs before
+  settling its template, and choose one that leaves the picture somewhere to
+  sit. Only a slide with genuine room to spare qualifies, and only P2 does: room
+  is never arranged around a P3.
 - Across a normal visual deck, run one explicit opportunity pass after the core
   slide geometry is settled. Look at every non-vocabulary slide and decide
   whether P1 already carries the visual job, a useful P2 fits, a useful P3 fits,
-  or no relevant optional visual fits without competition.
+  or no relevant optional visual fits without competition. A slide that has done
+  everything else right and still reads as a wall of text, or carries no imagery
+  at all, is the case a P3 is for.
 - Author at least one relevant Educational SVG P2 or P3 request when that pass finds a
   plausible suitable object that does not take space from P1. One or two
   meaningful uses remains the normal target.
@@ -208,7 +261,7 @@ Semantic vocabulary P2
 }
 ```
 
-P3 decoration
+P3 decoration, as a wide accent behind the content
 
 ```json
 {
@@ -231,6 +284,34 @@ P3 decoration
   "imagePath": "icons/forest.png"
 }
 ```
+
+P3 decoration, as one small drawing resting on a card's edge
+
+```json
+{
+  "id": "decoration-banana-card-edge",
+  "kind": "educational-svg",
+  "concept": "banana",
+  "context": "A single banana resting over the lower right edge of the task card on a balanced-diet slide, clear of every word",
+  "avoid": ["bunch of bananas", "peeled banana", "cartoon face"],
+  "frame": {
+    "x": 0.86,
+    "y": 0.40,
+    "width": 0.10,
+    "height": 0.18
+  },
+  "layer": "high",
+  "rotation": 0,
+  "transparency": 50,
+  "educationalSvgId": "standard/ba/banana.svg",
+  "educationalSvgSlug": "banana",
+  "imagePath": "icons/banana.png"
+}
+```
+
+Both are valid P3. The first spreads a faint accent behind everything; the
+second is one small object sitting on top of a card in space the card's own
+shape already left over. Neither changed the layout to exist.
 
 Semantic vocabulary Educational SVG is meaning-carrying P2. It requires meaningful `alt`
 and has no `fallbackEmoji`. On slides and worksheets it closes to text-only when
