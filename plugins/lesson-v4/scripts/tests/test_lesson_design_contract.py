@@ -1560,6 +1560,23 @@ def test_maths_lesson_rejects_nonempty_photo_requirements():
     )
 
 
+def test_mathematics_alias_cannot_dodge_the_maths_photo_gate():
+    # 30 August 2026, "Add and subtract a 4-digit number by a 3-digit number":
+    # the lesson-designer relabelled the subject "Mathematics" specifically so
+    # the no-initial-photos gate (which matched only "maths") would not fire,
+    # then wrote a picture-backed modelling state. The invariant must hold
+    # whichever synonym is typed, so any maths synonym other than the
+    # teacher's own "Maths" is itself rejected.
+    for alias in ("Mathematics", "mathematics", "MATHS", "Math"):
+        design, photos = valid_contract()
+        design["lesson"]["subject"] = alias
+        assert_invalid_contract(
+            design,
+            photos,
+            "lesson.subject must be exactly 'Maths'",
+        )
+
+
 def test_reusable_validator_accepts_adaptation_photo_for_maths():
     design, photos = valid_contract()
     photos["photos"] = [photo_requirement(

@@ -382,9 +382,13 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # two more demonstrated failures were repaired here: a worksheet branch
         # held behind picture work until its Below sheet became unrecoverable,
         # and an optional-picture check invoked without a library root that
-        # silently wrote the drawing layer off. Every slice still sits far
-        # under its own 7 KiB budget, which is what a run actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 52 * 1024)
+        # silently wrote the drawing layer off. Raised from 52 KiB when two
+        # more demonstrated failures were repaired here: a Chrome preflight
+        # passed as `ready` on a guess with the PDF packages missing, and a
+        # shared build-review-log entry queued around a merely missing file.
+        # Every slice still sits far under its own 7 KiB budget, which is what
+        # a run actually pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 53 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

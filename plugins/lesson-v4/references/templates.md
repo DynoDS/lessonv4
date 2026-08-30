@@ -1742,7 +1742,7 @@ With a caption:
 { "type": "map", "map": "world", "caption": "World map" }
 ```
 
-**Available values:** `world`, `europe`, `africa`, `asia`, `south-america`, `north-america`, `oceania`, `uk` - present-day political outlines, real country borders, no labels, no shading.
+**Available values:** `world`, `world-with-antarctica`, `europe`, `africa`, `asia`, `south-america`, `north-america`, `oceania`, `uk` - present-day political outlines, real country borders, no labels, no shading. The plain `world` asset omits Antarctica; any lesson naming all seven continents uses `world-with-antarctica`.
 
 #### Marking places on the map
 
@@ -1797,6 +1797,36 @@ Harmless spellings of a map name still resolve to the same map: `south america`,
 The image keeps its true aspect ratio inside the zone. It is never stretched, since a distorted map draws countries the wrong shape.
 
 Zone class compatibility: fits A, B, C, D, E-wide, E-narrow (not F, not G - a map needs enough room for its borders to stay legible, the same floor as `image`).
+
+#### `presentation: "globe-to-flat"`
+
+A staged teaching explanation of why the flat map looks the way it does: the world on a globe, the same geography turned to the Pacific with the cut line shown, then the equirectangular map opened flat with matching patterned Pacific edges and arrows showing those edges join. Slides only - it explains the projection, so it cannot also carry `annotations`, `selectedCountry` or `basin`, and it requires `map: "world"`.
+
+```json
+{
+  "type": "map",
+  "map": "world",
+  "presentation": "globe-to-flat",
+  "revealStage": 3,
+  "notes": {
+    "globe": "A globe has no beginning or end.",
+    "cut": "Choose one cut through the Pacific Ocean.",
+    "flat": "Open the cut and lay the surface flat."
+  }
+}
+```
+
+- `revealStage` is 1, 2 or 3 - use three copies of the object across consecutive slides for a progressive reveal.
+- `suppressSecondPacific` defaults to `true`: one joined-edge Pacific explanation instead of two labels that can read as two oceans. Set `false` only when the teaching explicitly needs both edge labels.
+- `notes.globe`, `notes.cut` and `notes.flat` each hold one short teaching phrase; wording that cannot fit readably is refused.
+
+#### `presentation: "seven-continent-world"`
+
+The complete labelled seven-continent board map, on `map: "world-with-antarctica"`. It takes up to 7 `continentLabels`, 5 `oceanLabels` (`repeatAt` on the Pacific shows the same ocean at both edges), 5 named `seaLabels` (each with optional `labelAt` for a callout clear of the place, leadered back), and up to 12 numbered or lettered `clueMarkers` over continents, oceans or seas (`repeatAt` supported). Optional `focus: { "centre": [x, y], "span": s, "title": "..." }` shows a real-pixel sea zoom cropped from the same asset. `showEquator`, `showCompass` and `joinedEdges` add those cues. Every position is a fraction of the real map image. The complete labelled map needs a wide slide zone; the focus view is a crop of the same pixels, never a redrawn coastline.
+
+#### Worksheet form: `worksheetMode: "continents-and-oceans"`
+
+On worksheets the same real asset has a full-width landscape write-on form: exactly 7 compact numbered `continentMarkers`, exactly 5 lettered `oceanMarkers` with `repeatAt` on the Pacific, exactly 3 `seaInitialSpaces` (dashed write-on boxes on water), plus the Equator, compass and joined-edge cues. Its own 120-143mm height range keeps the full figure legible across landscape A4. The worked example lives in the worksheet catalogue. This form has its own strict marker contract and does not raise the ordinary map's 8-annotation ceiling.
 
 ### `stack`
 

@@ -45,7 +45,37 @@ const TEXT_PAD_Y        = 0.16;   // vertical inset of speech text inside the bu
 // should ever show and let the measured pass come down from there.
 const BUBBLE_FONT       = 34;
 const NAME_FONT         = 20;     // name label ceiling
+// Hugging floor: a bubble never shrinks below this, so a two-word claim still
+// reads as a speech bubble rather than a strip.
+const MIN_BUBBLE_H      = 0.9;
 // ─── END COORDINATES ──────────────────────────────────────────
+
+// How tall the speech needs its bubble to be, at the BUBBLE_FONT ceiling.
+// Same estimation convention as the other content helpers (CHAR_W_EM glyph
+// width), deliberately generous: if the words turn out wider than estimated,
+// the fit post-pass shrinks the text inside whatever box was drawn, exactly
+// as it always has. What this estimate buys is the SHAPE hugging its claim:
+// before it, the bubble always took the column's full height, and a two-line
+// claim sat over half a slide of blank white (water-cycle DECK-002,
+// 30 August 2026) with no supported control to repair it.
+const CHAR_W_EM  = 0.58;
+const LINE_H_EM  = 1.3;
+const HUG_SAFETY = 1.15;
+
+function estimateSpeechHeight(speech, innerW) {
+  // Inline markers style runs without printing; count only what a child reads.
+  const text = String(speech || '').replace(/\[\[|\]\]|\*\*|\|\|/g, '');
+  const glyphW = (BUBBLE_FONT * CHAR_W_EM) / 72;
+  const charsPerLine = Math.max(1, Math.floor(innerW / glyphW));
+  let lines = 1;
+  let len = 0;
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const add = (len ? 1 : 0) + word.length;
+    if (len > 0 && len + add > charsPerLine) { lines += 1; len = word.length; }
+    else len += add;
+  }
+  return lines * ((BUBBLE_FONT * LINE_H_EM) / 72) * HUG_SAFETY;
+}
 
 // Bundled character art lives beside the coins in assets/. Each entry records
 // the file, the default on-slide name, and the trimmed natural aspect (w / h)
@@ -126,11 +156,18 @@ function drawSpeechBubbles(pptx, slide, data, ctx, count) {
 }
 
 function drawBubble(pptx, slide, b) {
-  const bottom = b.y + b.h;
+  // The bubble hugs its claim. The bottom edge is fixed (the tail below it
+  // points at the figure), so the height it gives back comes off the TOP,
+  // where blank slide reads as breathing room rather than as an unfinished
+  // surface.
+  const neededH = estimateSpeechHeight(b.speech, b.w - 2 * TEXT_PAD_X) + 2 * TEXT_PAD_Y;
+  const h = Math.max(MIN_BUBBLE_H, Math.min(b.h, neededH));
+  const y = b.y + b.h - h;
+  const bottom = y + h;
 
   // Bubble body
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-    x: b.x, y: b.y, w: b.w, h: b.h,
+    x: b.x, y: y, w: b.w, h: h,
     rectRadius: BUBBLE_RADIUS,
     fill: { color: COLOURS.pureWhite },
     line: { color: COLOURS.body, width: LINE_W }
@@ -159,8 +196,8 @@ function drawBubble(pptx, slide, b) {
   // line renders as styled runs rather than literal brackets, asterisks, or
   // pipes — exactly as the same markers render in body text and steps.
   slide.addText(splitAnswerRuns(b.speech, true), {
-    x: b.x + TEXT_PAD_X, y: b.y + TEXT_PAD_Y,
-    w: b.w - 2 * TEXT_PAD_X, h: b.h - 2 * TEXT_PAD_Y,
+    x: b.x + TEXT_PAD_X, y: y + TEXT_PAD_Y,
+    w: b.w - 2 * TEXT_PAD_X, h: h - 2 * TEXT_PAD_Y,
     fontFace: FONT, fontSize: BUBBLE_FONT, bold: true,
     color: COLOURS.body, align: 'left', valign: 'top',
     margin: 0, fit: FIT

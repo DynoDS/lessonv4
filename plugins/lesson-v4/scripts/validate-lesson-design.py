@@ -1522,10 +1522,23 @@ def validate_design(
            "lesson.yearGroup must be an integer from 1 to 6")
     for key in ("subject", "lo", "displayedLo", "stickingPoint"):
         expect_string(lesson[key], f"lesson.{key}")
-    if lesson["subject"].casefold() == "maths":
+    # Canonical subject naming. On 30 August 2026 a designer relabelled a
+    # maths lesson "Mathematics" specifically to slip an initial photo past
+    # the gate below - the invariant must not depend on which synonym was
+    # typed, and every downstream label (filing folders, subject-file routing)
+    # expects the teacher's own "Maths".
+    if lesson["subject"].casefold() in {"maths", "mathematics", "math"}:
+        expect(
+            lesson["subject"] == "Maths",
+            f"lesson.subject must be exactly 'Maths', not '{lesson['subject']}' - "
+            "synonyms route and validate differently and are not accepted",
+        )
         expect(
             not initial_photo_ids,
-            "Maths lesson-design may not define initial photo-### requirements",
+            "Maths lesson-design may not define initial photo-### requirements - "
+            "maths visual tools are rendered, not photographed. A maths visual "
+            "the engine cannot draw goes through the helper check's substitute "
+            "route, never an initial photo requirement",
         )
     expect_positive_int(lesson["durationMinutes"], "lesson.durationMinutes")
     scope = expect_string(lesson["scope"], "lesson.scope")

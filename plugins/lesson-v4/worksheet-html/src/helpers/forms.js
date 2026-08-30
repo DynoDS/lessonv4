@@ -171,11 +171,41 @@ function columnMethodGeometry(spec) {
   return { width, cols: width + 1 };
 }
 
+// Place-value letters for the headings row, ones column outward. Seven places
+// covers every number a primary written method meets.
+const PLACE_VALUE_LETTERS = ["O", "T", "H", "Th", "TTh", "HTh", "M"];
+
+function placeValueHeadings(width) {
+  return PLACE_VALUE_LETTERS.slice(0, width).reverse();
+}
+
 function renderColumnMethodGrid(spec) {
+  // Headings are derived from the numbers' own width so they can never be
+  // wrong; an explicit list re-opens the mislabelling this refuses. Named
+  // refusal, not a silent no-op: a repair loop rebuilt pixel-identical pages
+  // twice on 30 August 2026 because unsupported fields were quietly ignored.
+  if (spec.columns !== undefined) {
+    throw new Error(
+      "COLUMN_METHOD_UNSUPPORTED: column-method-grid derives its place-value " +
+        "headings from the numbers - use showHeadings: true, not a columns list."
+    );
+  }
   const { operator, top, bottom } = spec;
   const { width, cols } = columnMethodGeometry(spec);
   const topDigits = padDigits(top, width);
   const bottomDigits = padDigits(bottom, width);
+
+  // `showHeadings: true` prints the place-value letters above the digit
+  // columns (T and O on a 2-digit grid, Th H T O on a 4-digit one), derived
+  // from the grid's own width so they can never disagree with the numbers.
+  // A worksheet that tells a child "the digits are aligned under T and O"
+  // must actually show the T and the O - a run on 30 August 2026 shipped
+  // Sheet A saying exactly that over headingless grids.
+  const headingRow = spec.showHeadings
+    ? `<div class="h-colgrid-row h-colgrid-headings">${colgridCell("")}${placeValueHeadings(width)
+        .map((label) => colgridCell(label))
+        .join("")}</div>`
+    : "";
 
   const topRow = `<div class="h-colgrid-row">${colgridCell("")}${topDigits.map((d) => colgridCell(d)).join("")}</div>`;
   const opRow = `<div class="h-colgrid-row">${colgridCell(operator)}${bottomDigits.map((d) => colgridCell(d)).join("")}</div>`;
@@ -184,13 +214,19 @@ function renderColumnMethodGrid(spec) {
 
   // The ceiling is applied here as well as in the measurement, so the drawn
   // grid and the height it was promised cannot disagree.
-  return `<div class="h-colgrid" style="--h-colgrid-cols:${cols}; max-width:${cols * COLGRID_CELL_MAX_MM}mm">${topRow}${opRow}${answerRow}${carryRow}</div>`;
+  return `<div class="h-colgrid" style="--h-colgrid-cols:${cols}; max-width:${cols * COLGRID_CELL_MAX_MM}mm">${headingRow}${topRow}${opRow}${answerRow}${carryRow}</div>`;
 }
 
 // Rows expressed as multiples of one SQUARE cell: a top-digit row, an
 // operator row, a full-height answer row, and a carry row drawn at half
 // height (the Word grid's own carry row is half its digit rows too).
 const COLGRID_ROWS_EQUIV = 3.5;
+// The optional headings row is text-only, drawn at half a cell's height.
+const COLGRID_HEADINGS_EQUIV = 0.5;
+
+function colgridRowsEquiv(spec) {
+  return COLGRID_ROWS_EQUIV + (spec.showHeadings ? COLGRID_HEADINGS_EQUIV : 0);
+}
 const COLGRID_CELL_MIN_MM = 14; // small enough to fit width, still big enough
                                  // for a child's handwritten digit
 
@@ -212,7 +248,7 @@ function columnMethodWidthMm(spec, widthMm) {
 function measureColumnMethodGrid(spec, widthMm) {
   const { cols } = columnMethodGeometry(spec);
   const cellMm = columnMethodWidthMm(spec, widthMm) / cols;
-  return cellMm * COLGRID_ROWS_EQUIV;
+  return cellMm * colgridRowsEquiv(spec);
 }
 
 function needsColumnMethodGrid(spec) {
@@ -221,7 +257,7 @@ function needsColumnMethodGrid(spec) {
     // A six-digit sum needs more columns, hence more width, than a
     // three-digit one; a constant per helper cannot know that.
     minWidthMm: cols * COLGRID_CELL_MIN_MM,
-    minHeightMm: COLGRID_CELL_MIN_MM * COLGRID_ROWS_EQUIV,
+    minHeightMm: COLGRID_CELL_MIN_MM * colgridRowsEquiv(spec),
   };
 }
 
@@ -293,6 +329,15 @@ const css = `
   }
   .h-colgrid-answer .h-colgrid-cell { border-top: var(--rule-heavy) solid var(--colour-ink); }
   .h-colgrid-carry .h-colgrid-cell { aspect-ratio: 2 / 1; border-color: var(--colour-tint); }
+  /* The headings row is a reference over the grid, not part of it: no border,
+     half a cell tall, letters in the support colour so they read as labels
+     rather than as digits already written in. */
+  .h-colgrid-headings .h-colgrid-cell {
+    aspect-ratio: 2 / 1;
+    border: none;
+    font-size: var(--type-note);
+    color: var(--colour-quiet);
+  }
 `;
 
 const helpers = {

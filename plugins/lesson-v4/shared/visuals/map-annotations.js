@@ -27,6 +27,10 @@ const ASSET_DIR = path.resolve(__dirname, '..', '..', 'builder', 'assets', 'maps
 // whenever a new file is added to builder/assets/maps/.
 const MAPS = Object.freeze({
   world:           { file: 'world.png', w: 1272, h: 647 },
+  // The seven-continent asset: same real geography, with Antarctica. The
+  // plain `world` asset omits Antarctica, so any lesson naming all seven
+  // continents draws from this one.
+  'world-with-antarctica': { file: 'world-with-antarctica.png', w: 1800, h: 900 },
   europe:          { file: 'europe.png', w: 554, h: 554 },
   africa:          { file: 'africa.png', w: 554, h: 554 },
   asia:            { file: 'asia.png', w: 624, h: 491 },

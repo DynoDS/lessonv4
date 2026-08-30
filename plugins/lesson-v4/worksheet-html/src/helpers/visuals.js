@@ -31,6 +31,7 @@ const pictogramSvg = require("../../../shared/visuals/pictogram-svg");
 const rainforestLayersSvg = require("../../../shared/visuals/rainforest-layers-svg");
 const balancedPatternPlateSvg = require("../../../shared/visuals/balanced-pattern-plate-svg");
 const realMapSvg = require("../../../shared/visuals/real-map-svg");
+const worldWriteOnMapSvg = require("../../../shared/visuals/world-write-on-map-svg");
 const reflectionGridSvg = require("../../../shared/visuals/reflection-grid-svg");
 const tallyChartSvg = require("../../../shared/visuals/tally-chart-svg");
 const translationShapeSvg = require("../../../shared/visuals/translation-shape-svg");
@@ -405,23 +406,48 @@ const helpers = {
     const MAX_HEIGHT_MM = 170;
     const DEFAULT_HEIGHT_MM = 110;
 
+    // The full-width landscape continents-and-oceans write-on form is wider
+    // and shallower than an ordinary map: 12 markers, Equator, compass and
+    // the joined Pacific edges need the page's full landscape width, and its
+    // own height range keeps it there.
+    const WRITE_ON_MIN_HEIGHT_MM = 120;
+    const WRITE_ON_MAX_HEIGHT_MM = 143;
+    const WRITE_ON_DEFAULT_HEIGHT_MM = 138;
+
+    function writeOnMode(spec) {
+      return spec.worksheetMode === "continents-and-oceans";
+    }
+
     function heightFor(spec) {
-      if (spec.heightMm === undefined) return DEFAULT_HEIGHT_MM;
+      const writeOn = writeOnMode(spec);
+      const min = writeOn ? WRITE_ON_MIN_HEIGHT_MM : MIN_HEIGHT_MM;
+      const max = writeOn ? WRITE_ON_MAX_HEIGHT_MM : MAX_HEIGHT_MM;
+      if (spec.heightMm === undefined) {
+        return writeOn ? WRITE_ON_DEFAULT_HEIGHT_MM : DEFAULT_HEIGHT_MM;
+      }
       const requested = Number(spec.heightMm);
-      if (
-        !Number.isFinite(requested) ||
-        requested < MIN_HEIGHT_MM ||
-        requested > MAX_HEIGHT_MM
-      ) {
+      if (!Number.isFinite(requested) || requested < min || requested > max) {
         throw new Error(
           `VISUAL_SIZE_UNSUPPORTED: map heightMm ` +
-            `${spec.heightMm} is outside ${MIN_HEIGHT_MM}-${MAX_HEIGHT_MM}mm.`
+            `${spec.heightMm} is outside ${min}-${max}mm.`
         );
       }
       return requested;
     }
 
     function mapSpec(spec) {
+      if (writeOnMode(spec)) {
+        return {
+          map: spec.map,
+          worksheetMode: spec.worksheetMode,
+          continentMarkers: spec.continentMarkers,
+          oceanMarkers: spec.oceanMarkers,
+          seaInitialSpaces: spec.seaInitialSpaces,
+          showEquator: spec.showEquator,
+          showCompass: spec.showCompass,
+          joinedEdges: spec.joinedEdges,
+        };
+      }
       return {
         map: spec.map,
         basin: spec.basin,
@@ -431,16 +457,20 @@ const helpers = {
       };
     }
 
+    function rendererFor(spec) {
+      return writeOnMode(spec) ? worldWriteOnMapSvg : realMapSvg;
+    }
+
     return {
       render: (spec) => {
         const heightMm = heightFor(spec);
-        const { svg } = realMapSvg.tightSvg(mapSpec(spec));
+        const { svg } = rendererFor(spec).tightSvg(mapSpec(spec));
         return `<div class="h-figure h-figure--fixed" style="height:${heightMm}mm">${svg}</div>`;
       },
       measure: (spec) => heightFor(spec),
       needs: (spec) => {
         const heightMm = heightFor(spec);
-        const { aspect } = realMapSvg.tightSvg(mapSpec(spec));
+        const { aspect } = rendererFor(spec).tightSvg(mapSpec(spec));
         // The width follows from the height it was given and the map's own real
         // proportions, so a map is never stretched to fill a zone.
         return {

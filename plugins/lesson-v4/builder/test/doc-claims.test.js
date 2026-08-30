@@ -685,11 +685,23 @@ test("the composition playbook makes task phases visible before full reading", (
     PLAYBOOK_MD.includes("### Make task phases visible before full reading"),
     "slide-composition-playbook.md lost its task-phase section"
   );
+  // The break rule itself was widened into Written Voice on 30 August 2026
+  // (it was task-only here, so scenarios and model answers shipped as
+  // unbroken blocks); the playbook now defers to that single owner and must
+  // keep doing so rather than growing a second copy of the rule.
   assert.ok(
     PLAYBOOK_MD.includes(
-      "preserve every word, order and punctuation mark but use a line break or paragraph break at the real action boundary"
+      "owned by Written Voice (House Style) in `preferences.md`"
     ),
-    "the playbook's phase-break rule no longer protects the source wording"
+    "the playbook no longer routes the phase-break rule to Written Voice"
+  );
+  const preferences = fs.readFileSync(
+    path.join(__dirname, "..", "..", "references", "preferences.md"),
+    "utf8"
+  );
+  assert.ok(
+    preferences.includes("a break only separates words that are already there"),
+    "Written Voice lost the constraint that protects the source wording"
   );
 });
 

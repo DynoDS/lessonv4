@@ -558,6 +558,9 @@ test("every helper draws the words its own example gives it", () => {
     "helper", "imagePath", "imageHref", "shape", "state", "phase", "unit",
     "variant", "kind", "orientation", "separator", "operator", "dot", "mode",
     "relationship", "highlight", "mirror", "labels", "type", "map", "configuration", "stage",
+    // Picks the map's write-on variant; a child reads the markers it draws,
+    // never the switch's own value.
+    "worksheetMode",
   ]);
 
   for (const [name, example] of Object.entries(examples)) {
@@ -643,6 +646,10 @@ test("a helper's example shows every field the helper reads", () => {
     // Turns the panel border off. The framed form is the one to reach for, and
     // the example shows that; the bare form is an inner detail of composing.
     "method-frame": ["frame"],
+    // Read only to REFUSE it by name: headings derive from the numbers'
+    // width, and an explicit letters list re-opens the mislabelling that
+    // derivation prevents. Showing it would invite exactly that.
+    "column-method-grid": ["columns"],
   };
 
   const examples = require("./helper-examples");

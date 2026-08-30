@@ -36,6 +36,27 @@ function measureInstruction(spec, widthMm) {
 const CONTEXT_PICTURE_MM = 5.5;
 const CONTEXT_PICTURE_SLOT_MM = 7;
 
+// A drawn or photographed context picture needs more ink than an emoji to be
+// recognisable. At the emoji size a line drawing renders around the height of
+// one body-text letter: on 30 August 2026 the Year 4 water-cycle sheet's
+// wet-pavement drawing printed as "a tiny grey squiggle" at desk distance and
+// the run stayed BLOCKED on it (WORKSHEETS-001), because no supported size
+// existed to repair to. An emoji is a glyph and stays readable at text size;
+// an image gets a taller slot, and the measurement below counts the extra
+// height so the zone cannot clip.
+const IMAGE_CONTEXT_PICTURE_MM = 11;
+const IMAGE_CONTEXT_PICTURE_SLOT_MM = 14;
+
+function pictureSlotMm(picture) {
+  if (!picture) return 0;
+  return picture.type === "image" ? IMAGE_CONTEXT_PICTURE_SLOT_MM : CONTEXT_PICTURE_SLOT_MM;
+}
+
+function pictureHeightMm(picture) {
+  if (!picture) return 0;
+  return picture.type === "image" ? IMAGE_CONTEXT_PICTURE_MM : CONTEXT_PICTURE_MM;
+}
+
 function questionText(item) {
   if (item && typeof item === "object" && !Array.isArray(item)) {
     return String(item.text == null ? "" : item.text);
@@ -102,13 +123,16 @@ function selectContextPictures(items, widths) {
       : null);
   }
 
-  const costsALine = (text, roomMm) =>
-    linesFor(text, Math.max(10, roomMm - CONTEXT_PICTURE_SLOT_MM)) > linesFor(text, roomMm);
+  const costsALine = (text, roomMm, slotMm) =>
+    linesFor(text, Math.max(10, roomMm - slotMm)) > linesFor(text, roomMm);
 
   selected = selected.map((picture, i) => {
     if (!picture) return null;
     const text = questionText(items[i]);
-    return costsALine(text, textWidthMm) || costsALine(text, otherWidthMm) ? null : picture;
+    const slotMm = pictureSlotMm(picture);
+    return costsALine(text, textWidthMm, slotMm) || costsALine(text, otherWidthMm, slotMm)
+      ? null
+      : picture;
   });
   return selected.some(Boolean) ? selected : null;
 }
@@ -120,7 +144,7 @@ function attr(value) {
 function pictureMarkup(picture) {
   if (!picture) return "";
   if (picture.type === "image") {
-    return `<span class="h-context-picture"><img src="${picture.href}" alt="${attr(picture.alt)}"></span>`;
+    return `<span class="h-context-picture h-context-picture--image"><img src="${picture.href}" alt="${attr(picture.alt)}"></span>`;
   }
   return `<span class="h-context-picture h-context-picture--emoji" role="img" aria-label="${attr(picture.alt)}">${esc(picture.value)}</span>`;
 }
@@ -162,9 +186,12 @@ const QUESTION_GAP_MM = SPACE.tight;
 // a row can take. Written once and used by the markup's own wrap decision, the
 // measurement and the width the text is laid out in, because the moment those
 // three disagree the zone clips.
-function questionTextWidths(widthMm, hasPicture, showNumbers) {
+function questionTextWidths(widthMm, picture, showNumbers) {
   const numberMm = showNumbers ? QUESTION_NUMBER_COL_MM + QUESTION_GAP_MM : 0;
-  const pictureMm = hasPicture ? CONTEXT_PICTURE_SLOT_MM + QUESTION_GAP_MM : 0;
+  // `picture` is the selected picture object (its type sets its slot), or a
+  // plain boolean where only presence at the emoji size is being asked about.
+  const slotMm = picture === true ? CONTEXT_PICTURE_SLOT_MM : pictureSlotMm(picture || null);
+  const pictureMm = slotMm ? slotMm + QUESTION_GAP_MM : 0;
 
   // The blank beneath the words: the words get the whole row bar the gutter.
   const belowMm = Math.max(10, widthMm - numberMm - pictureMm);
@@ -174,8 +201,8 @@ function questionTextWidths(widthMm, hasPicture, showNumbers) {
   return { belowMm, inlineMm };
 }
 
-function blankBelow(question, widthMm, hasPicture, showNumbers = true) {
-  const { belowMm, inlineMm } = questionTextWidths(widthMm, hasPicture, showNumbers);
+function blankBelow(question, widthMm, picture, showNumbers = true) {
+  const { belowMm, inlineMm } = questionTextWidths(widthMm, picture, showNumbers);
   return linesFor(question, inlineMm) > linesFor(question, belowMm);
 }
 
@@ -189,8 +216,8 @@ function blankBelow(question, widthMm, hasPicture, showNumbers = true) {
 // needs the whole row", so only prompts that are plainly short are moved.
 const SHORT_PROMPT_SHARE = 0.66;
 
-function promptIsShort(question, widthMm, hasPicture, showNumbers = true) {
-  const { inlineMm } = questionTextWidths(widthMm, hasPicture, showNumbers);
+function promptIsShort(question, widthMm, picture, showNumbers = true) {
+  const { inlineMm } = questionTextWidths(widthMm, picture, showNumbers);
   if (linesFor(question, inlineMm) > 1) return false;
   const charMm = 12 * PT_MM * 0.5; // body type, the width linesFor assumes
   return String(question).length * charMm <= inlineMm * SHORT_PROMPT_SHARE;
@@ -206,11 +233,11 @@ function renderQuestions(spec, widthMm = 100) {
     .map(
       (q, i) => `
       <li class="h-q${
-        blankBelow(questionText(q), widthMm, Boolean(pictures && pictures[i]), showNumbers)
+        blankBelow(questionText(q), widthMm, pictures && pictures[i], showNumbers)
           ? " h-q--blank-below"
           : ""
       }${
-        promptIsShort(questionText(q), widthMm, Boolean(pictures && pictures[i]), showNumbers)
+        promptIsShort(questionText(q), widthMm, pictures && pictures[i], showNumbers)
           ? " h-q--short"
           : ""
       }">
@@ -236,16 +263,20 @@ function measureQuestions(spec, widthMm) {
   return (
     stemMm(spec, widthMm) +
     spec.items.reduce((h, q, i) => {
-      const hasPicture = Boolean(pictures && pictures[i]);
-      const { belowMm, inlineMm } = questionTextWidths(widthMm, hasPicture, showNumbers);
+      const picture = pictures && pictures[i];
+      const { belowMm, inlineMm } = questionTextWidths(widthMm, picture, showNumbers);
       // A blank that drops beneath the prompt is a flex line of its own, and
       // the prompt above it then gets the full width back. That second line
       // costs its own height AND the row gap above it - the gap was missed, so
       // every question with a dropped blank was measured 2mm short.
-      const below = blankBelow(questionText(q), widthMm, hasPicture, showNumbers);
+      const below = blankBelow(questionText(q), widthMm, picture, showNumbers);
+      // An image picture is taller than a text line and stretches its flex
+      // row; the row costs whichever is taller, words or picture.
+      const textMm =
+        linesFor(questionText(q), below ? belowMm : inlineMm) * LINE_MM;
       return (
         h +
-        linesFor(questionText(q), below ? belowMm : inlineMm) * LINE_MM +
+        Math.max(textMm, pictureHeightMm(picture)) +
         (below ? QUESTION_GAP_MM + LINE_MM : 0) +
         gapMm
       );
@@ -323,9 +354,16 @@ function measureWrittenAnswers(spec, widthMm) {
   const baseTextWidth = widthMm - numberGutterMm;
   const pictures = selectContextPictures(spec.items, baseTextWidth);
   return stemMm(spec, widthMm) + spec.items.reduce((h, q, i) => {
+    const picture = pictures && pictures[i];
     const lines = Math.min(q.lines || 3, MAX_WRITING_LINES);
-    const textWidth = baseTextWidth - (pictures && pictures[i] ? CONTEXT_PICTURE_SLOT_MM : 0);
-    return h + linesFor(q.text, textWidth) * LINE_MM + lines * lineMm + gapMm;
+    const textWidth = baseTextWidth - pictureSlotMm(picture);
+    // The prompt row is as tall as its tallest flex item: the wrapped words,
+    // or an image picture at its readable size.
+    const promptMm = Math.max(
+      linesFor(q.text, textWidth) * LINE_MM,
+      pictureHeightMm(picture)
+    );
+    return h + promptMm + lines * lineMm + gapMm;
   }, 0);
 }
 
@@ -500,6 +538,17 @@ const css = `
     width: auto;
     height: auto;
     object-fit: contain;
+  }
+  /* A drawn/photographed picture at a size a child can actually recognise.
+     Emoji stay at text size above; see IMAGE_CONTEXT_PICTURE_MM. */
+  .h-context-picture--image {
+    flex: 0 0 ${IMAGE_CONTEXT_PICTURE_SLOT_MM}mm;
+    width: ${IMAGE_CONTEXT_PICTURE_SLOT_MM}mm;
+    height: ${IMAGE_CONTEXT_PICTURE_MM}mm;
+  }
+  .h-context-picture--image img {
+    max-width: ${IMAGE_CONTEXT_PICTURE_SLOT_MM}mm;
+    max-height: ${IMAGE_CONTEXT_PICTURE_MM}mm;
   }
   .h-context-picture--emoji {
     font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;

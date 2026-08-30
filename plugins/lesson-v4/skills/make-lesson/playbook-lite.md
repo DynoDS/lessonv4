@@ -442,9 +442,13 @@ Slide Designer and worksheet adaptation/routing work. Working Wall and stick-in
 design wait for `lesson.json` only when their prompts require it. Each worker
 owns only its named canonical specification.
 
-Run printable Chrome preflight once before worksheet, wall or stick-in builds.
-Pass its resulting `ready` or `unavailable` state to fixed builders rather than
-repeating browser recovery for every resource.
+Run printable Chrome preflight once before worksheet, wall or stick-in builds:
+`node "[PLUGIN_ROOT]/worksheet-html/scripts/ensure-chrome.js"`. Its last line
+decides the state: `CHROME: <path>` is `ready`, `ENSURE_CHROME_FAILED:` is
+`unavailable`, nothing else counts - a Chrome binary alone is not `ready`
+while the PDF packages are missing, and a guessed `ready` buys a failed
+build. Pass the state to fixed builders; do not repeat browser recovery per
+resource.
 
 Direct fixed builds write summaries under `[WORKING_DIR]/build-results/`.
 Require schema version 1, `ok: true`, the builder's success marker and every
@@ -1063,7 +1067,10 @@ prove: skip it, and do not treat its absence as a blocking fault. The picture
 results in the run report still tell the teacher what the lesson does without.
 
 Append genuine findings to the shared build review log when source access is
-available. Otherwise write the pending log entry in the working directory.
+available, creating the file with its `# Build review log` header if the
+checkout lacks one - a missing file is created, not queued around. Only when
+no writable checkout resolves, write the pending log entry in the working
+directory.
 
 ---
 

@@ -147,6 +147,21 @@ Difference alone is not a finding. Report only a meaningful contradiction,
 missing dependency or drift that could change learning, pupil action or
 understanding.
 
+**A claim about missing or altered characters is confirmed against the text
+layer, never transcribed from pixels.** Reading a render's words off page PNGs
+misreads at exactly the scale a wording finding sits at: narrow word spaces in
+the classroom font, at review DPI, transcribe as joined words that the printed
+page never shows. A run on 30 August 2026 reported a wall step as
+`Exchangeif the topis smaller.`, a repair replaced the two spaces with
+non-breaking spaces - characters with the same printed width, so the fix could
+not have changed what any child sees - and re-review pronounced it fixed.
+Before reporting that rendered wording drops, joins or changes characters,
+extract the surface's text layer (`python3 -c "import fitz;
+print(fitz.open(r'<pdf>')[<page>].get_text())"`) or crop the exact words at
+300 DPI, and report the drift only when that evidence shows it. Layout drift -
+wrong order, a truncated line, an overlapped box - is still judged from the
+page image, because there the picture is the evidence.
+
 When two resources disagree, compare both with `lesson-design.json`. Anchor the
 finding on the resource that moved away from the settled design. The slides do
 not win merely because they are the board resource. If both moved away, say so.

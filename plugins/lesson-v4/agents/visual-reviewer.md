@@ -125,6 +125,13 @@ Write a confirmation pass to the confirmation filename your spawn prompt gives y
    inspection, pass the kept PDF recorded in that manifest to `zoom-region.py`.
    Do not invent another rendering method.
 
+   Never pass `--dpi`: every manifest in one lesson renders at the script's
+   own default, because a repair is confirmed by comparing pages against the
+   prior manifest, and pages rendered at two DPIs never hash or diff
+   comparably (a run on 30 August 2026 lost exactly that comparison). When a
+   prior manifest somehow carries a non-default `dpi`, re-render the
+   confirmation at that recorded value rather than the default.
+
    If the render script exits with code 2 because no established route succeeds,
    write the review state as `UNVERIFIED` with the exact reason, and repeat that
    reason under `## Notes` so it survives the deterministic merge. Do not call that
@@ -180,7 +187,7 @@ Write a confirmation pass to the confirmation filename your spawn prompt gives y
 Three faults are **blocking**, and they block wherever they appear - a slide, a worksheet, a stick-in piece. Each one reaches the child as a worse lesson rather than a tidier page:
 
 - **a task that cannot be done as rendered** - options a child cannot tell apart, a prompt referring to something the page does not show, a label pointing at nothing, an answer space too small to use;
-- **substantial accidental dead space** - a blank band carrying no task and no visible workspace label, whether it sits below the last question, inside a region, in a table, beside an embedded figure, or along the edge of a slide;
+- **substantial accidental dead space** - a blank band carrying no task and no visible workspace label, whether it sits below the last question, inside a region, in a table, beside an embedded figure, or along the edge of a slide. The tell of *accidental* is structure reserved and then unfilled: a column held for an image that never came, a zone drawn and left empty, a panel whose content was pinned into one corner. The ragged right edge of left-set text is not dead space - lines end where their sentences end, and a card of short steps whose longest line reaches three-quarters across is a normal printed page, not a fault. A run on 30 August 2026 blocked a sound wall card over exactly that rag, diagnosing a reserved photo column that the renderer never draws;
 - **a representation left materially smaller than the space it was given**, while room to enlarge it sits unused.
 
 **P3 is first expendable.** Its one fault is covering something a child has to

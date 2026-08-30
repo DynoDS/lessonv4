@@ -444,30 +444,125 @@ Smallest usable: **145mm wide x 116mm tall**. Spare height: never takes spare he
 
 #### `map`
 
-A real map of a real place - one of the world and continent maps this package ships - with the lesson's own places, regions and rivers marked on top of it.
+A real map of a real place - one of the shipped world and continent maps - with the lesson's marks on top. `worksheetMode: "continents-and-oceans"` is the full-width landscape write-on world form, Antarctica included.
 
-Smallest usable: **80mm wide x 110mm tall**. Spare height: never takes spare height.
+Smallest usable: **260mm wide x 138mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "map",
-  "map": "south-america",
-  "heightMm": 110,
-  "basin": "Amazon basin",
-  "labels": {
-    "basin": "Amazon basin"
-  },
-  "annotations": [
+  "map": "world-with-antarctica",
+  "worksheetMode": "continents-and-oceans",
+  "heightMm": 138,
+  "continentMarkers": [
     {
-      "kind": "point",
+      "marker": "1",
       "at": [
-        0.62,
-        0.34
-      ],
-      "label": "Manaus",
-      "colour": "blue"
+        0.208,
+        0.25
+      ]
+    },
+    {
+      "marker": "2",
+      "at": [
+        0.333,
+        0.583
+      ]
+    },
+    {
+      "marker": "3",
+      "at": [
+        0.556,
+        0.222
+      ]
+    },
+    {
+      "marker": "4",
+      "at": [
+        0.556,
+        0.472
+      ]
+    },
+    {
+      "marker": "5",
+      "at": [
+        0.75,
+        0.278
+      ]
+    },
+    {
+      "marker": "6",
+      "at": [
+        0.875,
+        0.639
+      ]
+    },
+    {
+      "marker": "7",
+      "at": [
+        0.5,
+        0.933
+      ]
     }
-  ]
+  ],
+  "oceanMarkers": [
+    {
+      "marker": "A",
+      "at": [
+        0.417,
+        0.444
+      ]
+    },
+    {
+      "marker": "B",
+      "at": [
+        0.722,
+        0.611
+      ]
+    },
+    {
+      "marker": "C",
+      "at": [
+        0.069,
+        0.5
+      ],
+      "repeatAt": [
+        0.944,
+        0.5
+      ]
+    },
+    {
+      "marker": "D",
+      "at": [
+        0.5,
+        0.833
+      ]
+    },
+    {
+      "marker": "E",
+      "at": [
+        0.5,
+        0.083
+      ]
+    }
+  ],
+  "seaInitialSpaces": [
+    [
+      0.55,
+      0.305
+    ],
+    [
+      0.292,
+      0.41
+    ],
+    [
+      0.508,
+      0.19
+    ]
+  ],
+  "showEquator": true,
+  "showCompass": true,
+  "joinedEdges": true
 }
 ```
 
@@ -957,16 +1052,17 @@ Smallest usable: **61mm wide x 45mm tall**. Spare height: never takes spare heig
 
 #### `column-method-grid`
 
-Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row.
+Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row. `showHeadings: true` adds place-value letters above the columns, derived from the numbers' own width.
 
-Smallest usable: **70mm wide x 49mm tall**. Spare height: never takes spare height.
+Smallest usable: **70mm wide x 56mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "column-method-grid",
   "operator": "+",
   "top": 3456,
-  "bottom": 1278
+  "bottom": 1278,
+  "showHeadings": true
 }
 ```
 

@@ -273,6 +273,7 @@ module.exports = {
     operator: "+",
     top: 3456,
     bottom: 1278,
+    showHeadings: true,
   },
 
   // ─── the formal written methods ───
@@ -553,17 +554,37 @@ module.exports = {
   },
 
   map: {
-    // The base is the real south-america.png this package ships; everything
-    // else is a mark placed on it in fractions of that image. Omit heightMm and
-    // the helper uses its own default; a height that IS given and is outside
-    // what the sheet supports is refused rather than quietly replaced.
-    map: "south-america",
-    heightMm: 110,
-    basin: "Amazon basin",
-    labels: { basin: "Amazon basin" },
-    annotations: [
-      { kind: "point", at: [0.62, 0.34], label: "Manaus", colour: "blue" },
+    // The base is a real shipped map asset; everything else is a mark placed
+    // on it in fractions of that image. This worked example shows the
+    // full-width landscape continents-and-oceans write-on form: the
+    // world-with-antarctica asset, 7 numbered continent markers, 5 lettered
+    // ocean markers with the Pacific repeated at both edges, 3 dashed
+    // sea-initial spaces, and the Equator, compass and joined-edge cues.
+    // The ordinary annotated form (map: "south-america", basin, labels,
+    // annotations) still works exactly as before - omit worksheetMode.
+    map: "world-with-antarctica",
+    worksheetMode: "continents-and-oceans",
+    heightMm: 138,
+    continentMarkers: [
+      { marker: "1", at: [0.208, 0.25] },
+      { marker: "2", at: [0.333, 0.583] },
+      { marker: "3", at: [0.556, 0.222] },
+      { marker: "4", at: [0.556, 0.472] },
+      { marker: "5", at: [0.75, 0.278] },
+      { marker: "6", at: [0.875, 0.639] },
+      { marker: "7", at: [0.5, 0.933] },
     ],
+    oceanMarkers: [
+      { marker: "A", at: [0.417, 0.444] },
+      { marker: "B", at: [0.722, 0.611] },
+      { marker: "C", at: [0.069, 0.5], repeatAt: [0.944, 0.5] },
+      { marker: "D", at: [0.5, 0.833] },
+      { marker: "E", at: [0.5, 0.083] },
+    ],
+    seaInitialSpaces: [[0.55, 0.305], [0.292, 0.41], [0.508, 0.19]],
+    showEquator: true,
+    showCompass: true,
+    joinedEdges: true,
   },
 
   // ─── cause, effect and evidence ───

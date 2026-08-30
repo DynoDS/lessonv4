@@ -96,7 +96,7 @@ module.exports = {
   "sort-grid":
     "Named columns with blank rows for a child to sort items into, plus an optional word bank above.",
   "column-method-grid":
-    "Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row.",
+    "Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row. `showHeadings: true` adds place-value letters above the columns, derived from the numbers' own width.",
 
   // ─── matching ───
   "match-up":
@@ -184,7 +184,7 @@ module.exports = {
 
   // ─── geography ───
   map:
-    "A real map of a real place - one of the world and continent maps this package ships - with the lesson's own places, regions and rivers marked on top of it.",
+    "A real map of a real place - one of the shipped world and continent maps - with the lesson's marks on top. `worksheetMode: \"continents-and-oceans\"` is the full-width landscape write-on world form, Antarctica included.",
   "cause-path-grid":
     "Named steps across the top and a choice to make at each one, so a child traces a cause through to its effect rather than naming both ends.",
   "evidence-chain-frame":

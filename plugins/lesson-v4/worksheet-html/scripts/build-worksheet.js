@@ -22,6 +22,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { safeFilenameComponent } = require("../../shared/text/filename");
+const { sanitizeHouseStyle } = require("../../shared/text/house-style");
 
 const { renderSheet } = require("../src/render");
 
@@ -78,7 +79,11 @@ function readSpec(file) {
     throw new WorksheetError("SPEC_UNREADABLE", `Cannot read ${file}: ${e.message}`);
   }
   try {
-    return JSON.parse(raw);
+    // The same house-style pass every other builder runs on parse: the deck,
+    // wall and stick-in builds each sanitize their spec here, and this engine
+    // was the one gap — em dashes authored into a worksheet reached print
+    // while the same words on a slide were caught.
+    return sanitizeHouseStyle(JSON.parse(raw));
   } catch (e) {
     throw new WorksheetError("SPEC_INVALID", `${file} is not valid JSON: ${e.message}`);
   }

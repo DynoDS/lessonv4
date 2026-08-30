@@ -276,6 +276,21 @@ function validateLesson(lesson, lessonDir) {
     forEachValue(slide, 'steps', (steps) => {
       if (!Array.isArray(steps)) return;
       steps.forEach((step, stepIndex) => {
+        // The steps helper draws its own number badge, so a written ordinal
+        // at the front of the text prints twice: a child reads "1 stage 1:
+        // Say it or show it". The friendships deck of 30 August 2026 shipped
+        // exactly that on slides 8 and 9. The check catches "step N"/"stage N"
+        // prefixes and bare "1." / "(1)" ordinals; a step that merely begins
+        // with a number ("10 ones become 1 ten") is untouched.
+        const stepText = typeof step === 'string'
+          ? step
+          : (step && typeof step === 'object' && !Array.isArray(step) ? step.text : null);
+        if (
+          typeof stepText === 'string' &&
+          /^\s*(?:(?:step|stage)\s*\d+\s*[-:.)]|\(\d+\)|\d+[).:](?=\s))/i.test(stepText)
+        ) {
+          errors.push(`slide ${n}: step ${stepIndex + 1} begins "${stepText.slice(0, 24)}..." - the steps helper numbers each step itself, so a written "step N"/"stage N"/"1." prefix prints twice. Start the step at its first real word.`);
+        }
         if (!step || typeof step !== 'object' || Array.isArray(step)) return;
         if (typeof step.text !== 'string' || !step.text.trim()) {
           errors.push(`slide ${n}: step ${stepIndex + 1} uses the object form but has no readable "text" - write { "text": "...", "helper": "..." } so the instruction cannot disappear.`);
