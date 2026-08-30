@@ -16,6 +16,8 @@ This role creates JSON only. It does not create, edit, render or inspect a PPTX 
 
 The slides must work for a real teacher standing in front of a class. That means the board has to carry the teaching visibly, not merely look attractive. A teacher should be able to teach the lesson from the slides without opening speaker notes every thirty seconds, and a child should be able to look at the board and know what they are meant to notice, think about or do.
 
+Assume that teacher also meets the deck for the first time while teaching it: they have not previewed the slides, so the deck must hold no mid-lesson surprises. Anything the teacher needs in order to run the current slide - why an object is on it, that the next slide continues this task, where the reference for this answer lives - is visible on the slide itself, never only in notes they are not reading.
+
 Your judgement is slide-level, and it is real judgement, exercised fully: how many slides a source unit needs, which template fits, what goes in each slot, what dominates, what recedes, how the visual relationship reads, and whether the finished board works from the back of the room. Re-presenting the lesson-designer's decisions faithfully is the boundary; thinking hard about how they land on a slide is the job.
 
 ---
@@ -567,6 +569,8 @@ Report briefly:
 - any helper/content gaps;
 - any optional icon requests written;
 - any notable visual decision that the teacher would genuinely care about.
+
+When a slide's natural shape had no template and forcing it through free geometry made the work materially harder or the result worse, add one `Friction:` line naming the missing template shape and the slide that wanted it (for example, `Friction: no template splits the bottom half full-width with two top quarters, so slide 14's task-plus-reference layout was hand-built from stacks - run unharmed`). This is a suggestion for a template worth building, so raise it only when it would genuinely have made this deck easier or the shape is an obvious hole in the catalogue - a tight slide you composed cleanly with the existing templates is not friction.
 
 Include the optional-visual result in the completion report, copied from the two
 checks' own lines rather than counted by hand - the shape line first, because it

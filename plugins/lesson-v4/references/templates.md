@@ -1311,7 +1311,9 @@ Zone class compatibility: fits A, B, C and E-wide.
 
 ### `evidence-cards`
 
-A set of 1 to 4 photograph cards. Use it when each photograph is one item and its question or answer must stay attached to it. A pupil card contains only `imagePath`, optional `fit` and optional `essential`. An answer card adds `fields`, each with the exact source `label` and exact answer `value`. The answer appears directly below its photograph inside the same card, one field per line with paragraph spacing between fields so each line reads as its own point. A card whose `value`s are all empty strings is a prompt card: the field labels are the working text children read, so the builder gives the field block a larger share of the card and the photograph the remainder. All answer cards share one maximum safe text size.
+A set of 1 to 4 photograph cards. Use it when each photograph is one item and its question or answer must stay attached to it. A pupil card contains only `imagePath`, optional `fit` and optional `essential`. An answer card adds `fields`, each with the exact source `label` and exact answer `value`. The answer appears directly below its photograph inside the same card, one field per line with paragraph spacing between fields so each line reads as its own point. A label that already ends in punctuation (`Uses electricity?`) is printed as it stands; only a bare label gains the joining colon. A card whose `value`s are all blank (empty or whitespace) is a prompt card: the field labels are the working text children read, so the builder gives the field block a larger share of the card and the photograph the remainder. All answer cards share one maximum safe text size.
+
+A single card hugs the width its contain-fitted photograph can use (with a floor for its field lines) and centres in the zone, so one card in a wide zone does not span it with white flanks. But reach for a lone full-zone card sparingly: a small evidence set that stays readable belongs together on one slide, and the per-card split exists for sets that genuinely do not fit, not for spreading one task across a slide per photograph.
 
 ```json
 { "type": "evidence-cards",

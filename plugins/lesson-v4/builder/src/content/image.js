@@ -359,4 +359,19 @@ function measureImage(zone, data, ctx) {
   };
 }
 
-module.exports = { drawImage, imageWillDraw, measureImage, PICTURE_READABLE_FLOOR };
+// The width-per-height this image will contain-fit at, or null when that
+// cannot be predicted (cover fit, a file on disk with no measured dimensions).
+// A picture the run has not delivered yet answers PENDING_ASPECT, for the same
+// reason measureImage gives it one: the reserved space is what a composition
+// is judged against, and it must not change shape when the photo lands.
+function imageAspect(data, ctx) {
+  if (!imageWillDraw(data, ctx)) return null;
+  if (resolveFit(data, false) !== 'contain') return null;
+  const resolved = resolveImagePath(data.imagePath, ctx);
+  if (!resolved || !fs.existsSync(resolved)) return PENDING_ASPECT;
+  const dims = ctx && ctx.imageDims ? ctx.imageDims[data.imagePath] : null;
+  if (!dims || !(dims.w > 0) || !(dims.h > 0)) return null;
+  return dims.w / dims.h;
+}
+
+module.exports = { drawImage, imageWillDraw, measureImage, imageAspect, PICTURE_READABLE_FLOOR };

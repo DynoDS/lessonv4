@@ -22,10 +22,109 @@ function fail(signal, message) {
   process.exitCode = 1;
 }
 
+// The sheets adaptation.md directs must be in the spec, or their omission must
+// point at a photograph request that genuinely is not in the photo contract.
+// Without this, a designer that omitted the Below sheet because its adaptation
+// pictures "had not arrived" passed preflight, promotion then found no sheet
+// referencing those pictures and sourced none, and the sheet became
+// unrecoverable - the check said OK at the exact moment the loss was still
+// repairable.
+function checkDirectedSheets(worksheet, adaptationPath, photoReqPath) {
+  let adaptation;
+  try {
+    adaptation = fs.readFileSync(path.resolve(adaptationPath), "utf8");
+  } catch (error) {
+    fail("ADAPTATION_UNREADABLE", `--adaptation ${adaptationPath}: ${error.message}`);
+    return;
+  }
+
+  let contractIds = null;
+  if (photoReqPath) {
+    try {
+      const contract = JSON.parse(fs.readFileSync(path.resolve(photoReqPath), "utf8"));
+      contractIds = new Set(
+        (Array.isArray(contract.photos) ? contract.photos : [])
+          .map((p) => p && p.id)
+          .filter((id) => typeof id === "string")
+      );
+    } catch (error) {
+      fail("PHOTO_REQUIREMENTS_UNREADABLE", `--photo-requirements ${photoReqPath}: ${error.message}`);
+      return;
+    }
+  }
+
+  const directives = [
+    { phrase: "Generate separate Below adaptation", sheetKey: "below", label: "Below" },
+    { phrase: "Generate separate Greater Depth adaptation", sheetKey: "greaterDepth", label: "Greater Depth" },
+  ];
+  const sheets = worksheet.sheets || {};
+  const notes = (Array.isArray(worksheet.notes) ? worksheet.notes : []).map(String);
+
+  for (const directive of directives) {
+    if (!adaptation.includes(directive.phrase)) continue;
+    if (sheets[directive.sheetKey]) continue;
+
+    const gapNote = notes.find((note) =>
+      /WORKSHEET_CONTENT_GAP/i.test(note) &&
+      note.toLowerCase().includes(directive.label.toLowerCase())
+    );
+    if (!gapNote) {
+      fail(
+        "SHEET_DIRECTED_MISSING",
+        `adaptation.md says "${directive.phrase}" but the spec has no ` +
+          `sheets.${directive.sheetKey} and no WORKSHEET_CONTENT_GAP note naming it.`
+      );
+      continue;
+    }
+
+    if (contractIds) {
+      const namedIds = gapNote.match(/(?:adaptation-photo|photo)-\d+/g) || [];
+      const allPresent =
+        namedIds.length > 0 && namedIds.every((id) => contractIds.has(id));
+      if (allPresent) {
+        fail(
+          "CONTENT_GAP_UNFOUNDED",
+          `the ${directive.label} sheet was omitted over ${namedIds.join(", ")}, ` +
+            `but every one of those refs IS in the photo contract. An approved ` +
+            `request whose picture has not been published yet is the normal state ` +
+            `at design time - adaptation pictures are sourced only after ` +
+            `worksheet.json names them - so design the sheet to the promised ` +
+            `filenames instead of omitting it.`
+        );
+      } else if (namedIds.length === 0) {
+        fail(
+          "CONTENT_GAP_UNFOUNDED",
+          `the ${directive.label} sheet was omitted with a content-gap note that ` +
+            `names no photo ref, so the claim cannot be checked against the ` +
+            `contract. Name the missing ref, or design the sheet.`
+        );
+      } else {
+        console.warn(
+          `[directed-sheets] ${directive.label} sheet omitted over a ref genuinely ` +
+            `absent from the photo contract - the gap stands and goes back to its owner.`
+        );
+      }
+    } else {
+      console.warn(
+        `[directed-sheets] ${directive.label} sheet omitted with a content-gap note; ` +
+          `no --photo-requirements supplied, so the claim was not verified.`
+      );
+    }
+  }
+}
+
 function main() {
-  const fileArg = process.argv[2];
+  const argv = process.argv.slice(2);
+  let fileArg = null;
+  let adaptationArg = null;
+  let photoReqArg = null;
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === "--adaptation") { adaptationArg = argv[++i]; continue; }
+    if (argv[i] === "--photo-requirements") { photoReqArg = argv[++i]; continue; }
+    if (!fileArg) fileArg = argv[i];
+  }
   if (!fileArg) {
-    fail("SPEC_MISSING", "Usage: check-worksheet.js <worksheet.json>");
+    fail("SPEC_MISSING", "Usage: check-worksheet.js <worksheet.json> [--adaptation adaptation.md] [--photo-requirements contract.json]");
     return;
   }
 
@@ -36,6 +135,11 @@ function main() {
   } catch (error) {
     fail("SPEC_INVALID", `${file} is not valid worksheet JSON: ${error.message}`);
     return;
+  }
+
+  if (adaptationArg) {
+    checkDirectedSheets(worksheet, adaptationArg, photoReqArg);
+    if (process.exitCode === 1) return;
   }
 
   try {

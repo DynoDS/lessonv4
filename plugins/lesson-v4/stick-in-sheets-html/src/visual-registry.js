@@ -11,6 +11,7 @@ const gridMap = require("../../shared/visuals/grid-map-svg");
 const rainforestLayers = require("../../shared/visuals/rainforest-layers-svg");
 const worldGeographyMap = require("../../shared/visuals/world-geography-map-svg");
 const geographicalDescriptionFrame = require("../../shared/visuals/geographical-description-frame-svg");
+const recordingTable = require("../../shared/visuals/recording-table-svg");
 
 // A labelled diagram a child sticks in and writes the part names onto. The figure
 // is the SAME one the board shows (the slide's label-diagram), so the cut-out and
@@ -117,6 +118,13 @@ const VISUALS = {
     defaultWidthMm: 145,
     specFn: (s) => Object.assign({}, s, { mode: "task", showAnswers: false }),
   },
+  // 160mm wide: a write-on recording table is sized by the handwriting its
+  // response cells must hold - a Year 4 phrase per cell - so one or two tables
+  // sit on a landscape row and the cells stay big enough to write in. The
+  // module itself always renders the QUESTION form: any `||`-marked answer
+  // cell copied from a check slide is stripped to a blank write-on cell, so
+  // copying either the task or the answer table yields the same blank piece.
+  table: { tightSvg: recordingTable.tightSvg, defaultWidthMm: 160 },
 };
 
 // Row visuals: one child's piece is a strip of N figures, each with its own
@@ -174,6 +182,17 @@ function missingQuestionContent(item) {
     case "grid-map":
       if (!Array.isArray(s.features) || s.features.length === 0) {
         return "a grid map needs at least one feature to read off";
+      }
+      return null;
+    case "table":
+      // The headers are the question: a table without them would tile an
+      // unlabelled grid nobody can answer into. Rows carry the given item
+      // names, so an empty rows list is a table with nothing to decide about.
+      if (!Array.isArray(s.headers) || s.headers.filter((h) => filled(h)).length < 2) {
+        return "a recording table needs at least two column headers";
+      }
+      if (!Array.isArray(s.rows) || s.rows.length === 0) {
+        return "a recording table needs at least one row to record into";
       }
       return null;
     case "translation-shape":

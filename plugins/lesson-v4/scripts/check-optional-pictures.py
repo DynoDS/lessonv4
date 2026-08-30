@@ -117,7 +117,41 @@ def deck_optional_pictures(lesson: object) -> dict[int, list[str]]:
 
 
 SEARCH_SCRIPT = Path(__file__).resolve().parent / "search-educational-svg.js"
+RESOLVER_SCRIPT = Path(__file__).resolve().parent / "publish-educational-svg.js"
 INDEX_PATH = Path(__file__).resolve().parent.parent / "educational-svg" / "index.txt.gz"
+
+
+def resolve_library_root() -> tuple[Path | None, str]:
+    """Ask the resolver where this run's drawing library is.
+
+    The check used to trust its caller for this: no ``--library-root`` meant
+    "there is no library", every ``library-unavailable`` claim passed, and no
+    search evidence was re-run. That made one missing argument silently
+    downgrade the whole check - a run in which nobody ran the resolver at all
+    reported the library off and the pass record as verified. The library's
+    location is the resolver's question, so when the caller does not answer it,
+    ask the resolver directly rather than assuming the worst answer.
+    """
+    if not RESOLVER_SCRIPT.is_file():
+        return None, f"resolver script missing at {RESOLVER_SCRIPT}"
+    try:
+        completed = subprocess.run(
+            ["node", str(RESOLVER_SCRIPT), "--resolve-root"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return None, f"resolver could not run: {exc}"
+    for line in completed.stdout.splitlines():
+        if line.startswith("EDUCATIONAL_SVG_ROOT="):
+            root = Path(line.split("=", 1)[1].strip())
+            if root.is_dir():
+                return root, f"resolved by {RESOLVER_SCRIPT.name}"
+            return None, f"resolver named a root that does not exist: {root}"
+        if line.startswith("EDUCATIONAL_SVG_UNAVAILABLE"):
+            return None, line.strip()
+    return None, "resolver printed neither a root nor an unavailable line"
 
 
 def library_ids(library_root: Path) -> set[str]:
@@ -367,18 +401,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--lesson", required=True)
     parser.add_argument(
         "--library-root",
-        help="EDUCATIONAL_SVG_ROOT. Omit when the library is unavailable; "
-             "evidence is then recorded but not re-run.",
+        help="EDUCATIONAL_SVG_ROOT override. When omitted, the check runs the "
+             "resolver itself; the library is genuinely unavailable only when "
+             "the resolver says so, never because a caller forgot the flag.",
     )
     args = parser.parse_args(argv)
 
-    library_root = Path(args.library_root) if args.library_root else None
-    if library_root is not None and not library_root.is_dir():
-        print(
-            f"OPTIONAL_PICTURE_PASS_FAILED: library root does not exist: {library_root}",
-            file=sys.stderr,
-        )
-        return 1
+    if args.library_root:
+        library_root = Path(args.library_root)
+        library_source = "supplied by the caller"
+        if not library_root.is_dir():
+            print(
+                f"OPTIONAL_PICTURE_PASS_FAILED: library root does not exist: {library_root}",
+                file=sys.stderr,
+            )
+            return 1
+    else:
+        library_root, library_source = resolve_library_root()
 
     try:
         failures, actual, reason_counts = check(
@@ -396,11 +435,11 @@ def main(argv: list[str] | None = None) -> int:
     # is why "why did it not use the drawings?" has been so hard to answer after
     # the fact: nothing anybody kept recorded whether it could have.
     library_line = (
-        f"OPTIONAL_PICTURE_LIBRARY: verified against {library_root}"
+        f"OPTIONAL_PICTURE_LIBRARY: verified against {library_root} ({library_source})"
         if library_root is not None
         else "OPTIONAL_PICTURE_LIBRARY: UNAVAILABLE - this run had no drawing "
              "library, so no drawing was possible and no search evidence was "
-             "checked"
+             f"checked ({library_source})"
     )
     print(library_line)
 

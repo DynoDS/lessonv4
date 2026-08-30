@@ -378,9 +378,13 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # reviewer-local rebuild route landed with ~150 bytes of headroom left,
         # and from 48 KiB when two demonstrated failures were repaired here: a
         # brief that names a document rather than carrying the lesson, and a
-        # helper decision for a visual of a real place. Every slice still sits
-        # far under its own 7 KiB budget, which is what a run actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 50 * 1024)
+        # helper decision for a visual of a real place. Raised from 50 KiB when
+        # two more demonstrated failures were repaired here: a worksheet branch
+        # held behind picture work until its Below sheet became unrecoverable,
+        # and an optional-picture check invoked without a library root that
+        # silently wrote the drawing layer off. Every slice still sits far
+        # under its own 7 KiB budget, which is what a run actually pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 52 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

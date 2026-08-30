@@ -19,6 +19,7 @@ so. What is gone is answering for the whole deck at once, silently.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -42,7 +43,14 @@ def bare_slide() -> dict:
 
 
 class CheckRunner(unittest.TestCase):
-    def run_check(self, record: dict, lesson: dict, *, library: bool = False):
+    def run_check(
+        self,
+        record: dict,
+        lesson: dict,
+        *,
+        library: bool = False,
+        resolver: str = "unavailable",
+    ):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             record_path = root / "optional-picture-pass.json"
@@ -65,7 +73,25 @@ class CheckRunner(unittest.TestCase):
                 library_root = root / "library-root"
                 library_root.mkdir()
                 argv += ["--library-root", str(library_root)]
-            return subprocess.run(argv, capture_output=True, text=True)
+            # With no --library-root the check now asks the resolver, so the
+            # tests pin the resolver's answer through its own environment
+            # switches rather than inheriting whatever this machine has. A
+            # supplied --library-root skips the resolver entirely, and those
+            # tests still need the shipped index for the evidence search.
+            env = dict(os.environ)
+            if not library:
+                env.pop("LESSON_EDUCATIONAL_SVG_ROOT", None)
+                env["LESSON_EDUCATIONAL_SVG_OFFLINE"] = "1"
+                if resolver == "unavailable":
+                    env["LESSON_EDUCATIONAL_SVG_INDEX"] = str(root / "no-index.gz")
+                    env["LESSON_EDUCATIONAL_SVG_CACHE"] = str(root / "no-cache")
+                elif resolver == "available":
+                    cache = root / "warm-cache"
+                    (cache / "library" / "standard").mkdir(parents=True)
+                    env["LESSON_EDUCATIONAL_SVG_CACHE"] = str(cache)
+                else:
+                    raise AssertionError(f"unknown resolver state: {resolver}")
+            return subprocess.run(argv, capture_output=True, text=True, env=env)
 
 
 class EverySlideAnswersTests(CheckRunner):
@@ -280,6 +306,44 @@ class LibraryStateIsOnTheRecordTests(CheckRunner):
         result = self.run_check(record, deck(bare_slide()), library=True)
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("a drawing library was available", result.stderr)
+
+
+class TheCheckResolvesForItselfTests(CheckRunner):
+    """A forgotten --library-root must not silently mean "no library".
+
+    On 30 August 2026 a whole run's optional layer was written off exactly this
+    way: nobody ran the resolver, the check was invoked bare, and it reported
+    the library UNAVAILABLE on a machine where the resolver would have found
+    one. The location of the library is the resolver's question, so a bare
+    invocation now asks it directly.
+    """
+
+    def test_a_bare_invocation_finds_the_library_the_resolver_finds(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), resolver="available")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OPTIONAL_PICTURE_LIBRARY: verified against", result.stdout)
+
+    def test_a_library_unavailable_claim_fails_when_the_resolver_finds_one(self):
+        # The failed run's exact shape, one step deeper: with a library
+        # genuinely findable, a record claiming it was unavailable is the
+        # designer having skipped the resolver, and it must not pass.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "library-unavailable"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), resolver="available")
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("a drawing library was available", result.stderr)
+
+    def test_a_genuinely_unavailable_library_still_reads_unavailable(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "library-unavailable"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), resolver="unavailable")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OPTIONAL_PICTURE_LIBRARY: UNAVAILABLE", result.stdout)
 
 
 class ContractTests(unittest.TestCase):

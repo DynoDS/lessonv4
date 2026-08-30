@@ -59,6 +59,10 @@ Three habits keep any printed child-facing wording plain, on a worksheet, a stic
 
 **Repetition is allowed when it helps learning.** A useful anchor phrase, taught definition or stable wording may repeat across the lesson and resources. Do not rephrase merely to sound stylistically varied. Equally, do not make every sentence follow the same rhythm or template; resources should not sound assembled from one repeated AI pattern.
 
+**A label children answer against is the question a child would ask themselves.** Recording prompts - the fields of a classification card, the headed lines under a photograph - are read by a child deciding what to write, so phrase each one as that child's own question in words they already have: `How do you know?` reaches a Year 4 where `Visible clue:` asks them to decode a classifier first. A plain noun label is fine when it names a thing to fill in (`Object name`); it stops being fine when it names a category of thinking (`Visible clue`, `Criterion`, `Attribute`). The same prompt repeated across items stays identical - the plainness matters most where the child meets it alone.
+
+**A voiced claim stands alone.** A speech bubble is read apart from the stimulus that sets it up, so the claim names its subject (`This kettle...`, `The toothbrush isn't...`) rather than opening with a bare pronoun whose referent lives in another box.
+
 **Success criteria are concise actions, not miniature explanations.** Keep one action or idea per step. Use direct actionable verbs. The reasoning for a step belongs in the teaching that established it, not appended to the success-criteria line simply to make the line more complete.
 
 **Sentence stems help children start expressing thinking.** Use them when a child may know the idea but not know how to begin saying or writing it. A stem must not supply the judgement, answer, reason or conclusion the child is meant to decide. If the question asks who is incorrect, a stem such as `Jake is wrong because...` is not support; it has answered the first part for them.

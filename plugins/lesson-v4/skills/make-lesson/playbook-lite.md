@@ -490,6 +490,10 @@ python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --lesson "[WORKING_DIR]/lesson.json" \
   --library-root "[EDUCATIONAL_SVG_ROOT]"
 
+[EDUCATIONAL_SVG_ROOT] is the root your own resolver prints during the
+optional pass; drop the flag when it printed EDUCATIONAL_SVG_UNAVAILABLE.
+The check re-resolves for itself either way.
+
 Require: OPTIONAL_PICTURE_PASS_OK
 TERMINAL_STATE: COMPLETE
 ```
@@ -497,11 +501,13 @@ TERMINAL_STATE: COMPLETE
 Wait for both files and require both markers. Preserve every
 `BUILD_DIAGNOSTIC:` line for a focused Slide Designer repair.
 
-Run the optional-picture check yourself too, passing `--library-root` only when
-the resolver found one: it is what separates a pass weighed slide by slide from
-one thought about the whole deck, so the designer cannot close on its own word
-for it. Carry its `OPTIONAL_PICTURE_SHAPE` and `OPTIONAL_PICTURE_TOTALS` lines
-into the run report.
+Run the optional-picture check yourself too, with no `--library-root`: it runs
+the Educational SVG resolver itself, so the library is "unavailable" only when
+the resolver says so, never because this launch had no root value to pass. It
+is what separates a pass weighed slide by slide from one thought about the
+whole deck, so the designer cannot close on its own word for it. Carry its
+`OPTIONAL_PICTURE_LIBRARY`, `OPTIONAL_PICTURE_SHAPE` and
+`OPTIONAL_PICTURE_TOTALS` lines into the run report.
 
 ---
 
@@ -630,6 +636,13 @@ report adaptation omitted. Do not rerun unrelated branches.
 The schema offers no third state, so asking whether the lesson "needs" a
 worksheet invites a no it never offered - the silent skip that made the wall
 and stick-in spawns unconditional.
+
+**Launch the Worksheet Designer the moment adaptation's provisional contract is
+built (or adaptation is skipped); never hold it for picture work.** The
+dependency runs the other way: `promote-used` reads `worksheet.json` to decide
+which provisional adaptation photos get sourced at all. A worksheet branch
+parked behind slide or picture work can close the picture stage before the
+sheet needing those pictures exists, and the sheet is then unrecoverable.
 
 Before every attempt, obtain the exact worksheet photo-contract path through
 `photo-contract.py select-worksheet`. Launch Worksheet Designer directly:

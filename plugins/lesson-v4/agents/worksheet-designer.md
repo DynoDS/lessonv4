@@ -291,6 +291,17 @@ visual with no usable picture, apply the rule immediately below, and name the
 affected refs in your completion report. Never invent, substitute or quietly
 rewrite the task as text because of it.
 
+For adaptation photographs the dependency direction is absolute: they are
+sourced only AFTER your `worksheet.json` exists, because promotion reads your
+spec to decide which provisional entries become real pictures. A provisional
+entry with no published file is therefore the normal state at your design time,
+not a gap. Omitting a sheet because its adaptation pictures "have not arrived"
+inverts the pipeline and guarantees they never arrive - the promotion that
+would have sourced them finds no sheet referencing them and selects zero. A
+ref present in the contract you were given is an approved request; design the
+sheet to its promised filename. The content-gap rule below is only for a ref
+that is genuinely absent from that contract.
+
 When a required visual has no approved request, do not put the word or question
 on the page bare and do not redesign the task as text. Omit the affected sheet
 and return:
@@ -794,14 +805,30 @@ retypes, and the run has no way to show the teacher what changed. Write the edit
 atomically - through a temporary file, then moved into place, so a crash cannot
 leave half a file - and parse it again afterwards. `revising-in-place.md` has the
 rule and why it holds for every file a worker changes after writing it.
-Then run the exact, write-nothing gate:
+Then run the exact, write-nothing gate. When your assignment supplied
+`ADAPTATION_DESIGN`, pass it and your exact `PHOTO_REQUIREMENTS_PATH` so the
+gate can also hold the spec to the sheets the adaptation directed:
 
 ```
-node "[PLUGIN_ROOT]/worksheet-html/scripts/check-worksheet.js" "[WORKING_DIR]/worksheet.json"
+node "[PLUGIN_ROOT]/worksheet-html/scripts/check-worksheet.js" "[WORKING_DIR]/worksheet.json" \
+  --adaptation "[ADAPTATION_DESIGN when supplied]" \
+  --photo-requirements "[PHOTO_REQUIREMENTS_PATH]"
 ```
 
-Do not report completion until it prints `WORKSHEET_PREFLIGHT_OK`. This checks
-the chosen layout after automatic question numbering and year-group line
-sizing, and it checks that every pupil sheet has a complete answer-key section.
+Omit `--adaptation` (and `--photo-requirements`) only when no adaptation was
+supplied. Do not report completion until it prints `WORKSHEET_PREFLIGHT_OK`.
+This checks the chosen layout after automatic question numbering and
+year-group line sizing, it checks that every pupil sheet has a complete
+answer-key section, and with `--adaptation` it refuses a spec that dropped a
+directed Below or Greater Depth sheet over photographs the contract actually
+approves.
+
+When a sheet's natural shape had no zone or helper and forcing it through the
+available shapes made the work materially harder or the page worse, add one
+`Friction:` line to your completion report naming the missing shape and the
+sheet that wanted it. This is a suggestion for a layout or helper worth
+building, so raise it only when it would genuinely have made this sheet easier
+or the shape is an obvious hole - a tight page you composed cleanly with the
+existing shapes is not friction.
 `suggest.js` helps choose a shape; this final command proves the JSON you
 actually saved is still the shape and content that were measured.

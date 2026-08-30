@@ -166,7 +166,9 @@ Drop duplicate instructions and pure decoration before shrinking required conten
 
 Each split must preserve source-unit identity and order. Do not split one sentence into arbitrary fragments merely to satisfy layout. Split by a real visual or instructional boundary: stimulus then question, examples 1-2 then 3-4, one modelled visual per slide, or one readable half of a visual question set per slide.
 
-If pupils still use the same success criteria on each continuation slide, repeat the full exact criteria on each one. Its appearance on the first slide is not a reason to remove or compact it later.
+A split must also survive a teacher who has never seen the deck. The teacher teaches from the board without previewing it, so a continuation has to announce itself on the slides, not in the notes: the earlier slide must not read as the complete moment when the work actually finishes on the next one, and each continuation slide leads with what is new while repeating only what is still live. Two consecutive slides that render near-identically are a failed split - the teacher finishes the first, sees the "same" slide, and clicks past the half that held the reference or the task. When a template cannot hold a still-needed reference beside its task, prefer re-composing so it can (a side panel in a row usually does it) over inserting a reference-only interlude slide, which has no job of its own to show.
+
+If pupils still use the same success criteria on each continuation slide, repeat the full exact criteria on each one. Its appearance on the first slide is not a reason to remove or compact it later. Place a repeated success-criteria panel beside the task (a row) rather than as a full-width band beneath it when the stack is tight: growing a bottom panel's share squeezes the very task the criteria serve.
 
 ---
 
@@ -214,7 +216,7 @@ Use a Success Criteria Helper only when a step names the stable visible mark, mo
 
 Sticky knowledge appears only where the current unit references it. Follow the combined-panel and deduplication mechanics in `slide-success-criteria.md`; do not create a second box merely because the template has room.
 
-Do not insert a ceremonial success-criteria slide before the teaching unless the criteria itself is being taught, compared or constructed.
+Do not insert a ceremonial success-criteria slide before the teaching unless the criteria itself is being taught, compared or constructed. The same holds mid-lesson: a slide holding only a reference and criteria between a task's introduction and the task itself is an interlude with no job of its own - put the reference beside the task instead, and give every slide a visible reason to be on the screen.
 
 ---
 
@@ -274,6 +276,8 @@ When a slide introduces two to four categories or locations, give each a visual 
 
 Captions identify what an image cannot say on its own: a place, time, identity or technical name. Do not caption the obvious. Information children must act on belongs in a proper readable text slot, not in small italic caption text.
 
+Every picture on the slide needs a visible role. When the question names only one of a displayed pair - "why is the torch electrical?" over a kettle and a torch - the unnamed picture is there as the contrast, and the slide must say so where children can see it: a short caption naming what it shows ("Mains electricity reaches the kettle through its plug"), or a secondary prompt that brings it into the thinking ("How is this one different?"). The reason is usually already written in the speaker notes; a teacher who has not read them meets an unexplained object, and a child wonders why it is there. A picture that earns no visible role comes off the slide.
+
 When visual comparison matters, keep images at comparable scale and crop style. Do not make one item visually dominant unless the asymmetry is pedagogically meaningful.
 
 ---
@@ -313,6 +317,8 @@ For `taskStructure.kind: "sort"`, show every group as a destination and every it
 For `taskStructure.kind: "evidence-classification"`, use `evidence-cards` on the task and answer. Keep each photograph and all of its result fields inside one card. Split only between complete cards.
 
 If a structured set remains readable on one slide, keep it together. If it does not, use consecutive slides with the same `designUnitId`. Repeat exact group labels and every still-needed live reference. Do not remove a boundary clue to make the slide fit.
+
+"One clear teaching job" is the set's job, not each item's: a small set of two to four cards answering the same prompt is one teaching job, and it belongs on one slide when the cards stay readable there. One card per slide with the same instruction repeated above each is the same task stretched across the deck's opening - a class reads three photographs on one slide comfortably, and the check slide that later shows those same cards side by side is proof of the capacity. Match the check's grouping to the task's, so children compare the same arrangement they answered.
 
 ### Worked examples and physical demonstrations
 
@@ -366,6 +372,9 @@ Before accepting the deck, read it in order and look specifically for these regr
 - an answer slide whose answer words sit black inside green frames;
 - a statement-plus-question block coloured as one thing, or run together with no break at the telling-to-asking boundary;
 - a claim with no map, photo, diagram, table or source to judge it against;
+- a photograph that no question, caption or label on the slide ever mentions;
+- two consecutive slides that render near-identically, so a teacher would click past the second;
+- one small task repeated across a run of slides whose furniture is identical and mostly empty;
 - a My Turn visual that changes family on Our Turn or Your Turn;
 - a blank helper labelled with stage directions;
 - a sequence drawn where the relationship is actually comparison;

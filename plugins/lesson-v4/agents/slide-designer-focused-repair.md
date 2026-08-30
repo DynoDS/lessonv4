@@ -78,6 +78,8 @@ return your terminal state, and say which decision it needs.
 
 Change only the affected slide data and unavoidable consequences of that change. Leave unrelated slide objects semantically unchanged.
 
+Repair with the layout's own levers, not with side effects. When a reference panel or table is too small to read, the first move is re-shaping - a side panel in a row instead of a full-width band under the task, a tighter card, a different template - not growing its share of the stack, which squeezes the task the reference serves. And never repair through an undocumented accident of the renderer (a whitespace value that flips an allocation branch): a lever the contract does not name is a lever the next engine change silently removes.
+
 Use the exact output path, deterministic success check, allowed terminal state and expected marker supplied by this assignment. Do not substitute another check or relax a diagnostic. A failed check follows the assignment's existing failure contract; do not publish a candidate merely because it parses.
 
 Return only the assignment's required terminal state, marker and repair-impact fields, plus any permitted `Friction:` lines under the pipeline completion footer.
