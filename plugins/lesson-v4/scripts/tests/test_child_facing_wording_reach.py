@@ -10,6 +10,8 @@ STICK_IN_PEDAGOGY = ROOT / "references" / "stick-in-sheets-pedagogy.md"
 WALL_DESIGNER = ROOT / "agents" / "working-wall-designer.md"
 STICK_IN_DESIGNER = ROOT / "agents" / "stick-in-sheets-designer.md"
 WORKSHEET_DESIGNER = ROOT / "agents" / "worksheet-designer.md"
+LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
+OUTPUT_TEMPLATE = ROOT / "references" / "output-template.md"
 
 
 def flat(path: Path) -> str:
@@ -68,6 +70,56 @@ class ChildFacingWordingReachTests(unittest.TestCase):
             pedagogy,
         )
         self.assertIn("at the width it prints", pedagogy)
+
+    def test_written_voice_reaches_every_field_a_child_reads(self) -> None:
+        """A child reads the words, not the field name.
+
+        The full-strength wording rule named only `pupilInstruction` and
+        `pupilPrompt`, so the worksheet `generator` - which downstream prints
+        verbatim as the task - was governed by nothing. A real Year 4 class met
+        `Choose a job that is different from the lesson examples.` and answered
+        "Fireman".
+        """
+        lesson_designer = flat(LESSON_DESIGNER)
+        self.assertIn(
+            "every field whose words a child actually reads", lesson_designer
+        )
+        # The fields that print verbatim must be named, or the rule is a
+        # principle nobody can apply to a specific field.
+        for field in ("generator", "stimulus", "pupilAction", "support"):
+            with self.subTest(field=field):
+                self.assertIn(field, lesson_designer)
+
+    def test_generative_tasks_name_their_category(self) -> None:
+        """`Choose a job` asks a child to invent an abstraction."""
+        self.assertIn(
+            "A generative task names the category it is generating from",
+            flat(LESSON_DESIGNER),
+        )
+
+    def test_the_worked_first_example_is_documented(self) -> None:
+        """`firstRowWorked` existed in the schema with no guidance anywhere.
+
+        A field nobody explains is a field nobody fills, and this is the one
+        that would have shown a child what kind of thing to generate.
+        """
+        template = flat(OUTPUT_TEMPLATE)
+        self.assertIn("firstRowWorked", template)
+        self.assertIn(
+            "one complete worked example of the thing being generated", template
+        )
+        # And the surface that produced `Name:` from a planning note.
+        self.assertIn("it is NOT printed", template)
+
+    def test_authoring_a_label_loads_the_label_rule(self) -> None:
+        """Inventing a label from a described surface IS authoring."""
+        worksheet = flat(WORKSHEET_DESIGNER)
+        self.assertIn("writing a label counts", worksheet)
+        self.assertIn(
+            "A label children answer against is the question a child would ask "
+            "themselves",
+            worksheet,
+        )
 
 
 if __name__ == "__main__":

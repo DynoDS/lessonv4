@@ -259,9 +259,14 @@ const css = `
     color: var(--colour-question);
     padding-bottom: var(--space-tight);
   }
+  /* Cells are centred, horizontally and vertically. A table on a worksheet is
+     a grid a child reads across and writes into, and centring keeps a short
+     given value, a heading and an empty writing cell sitting on the same line
+     as each other instead of each hugging its own top-left corner. The caption
+     above stays left, because it is a line of prose rather than a cell. */
   .h-table th, .h-table td {
     border: var(--rule-line) solid var(--colour-ink);
-    padding: var(--inset-cell); text-align: left;
+    padding: var(--inset-cell); text-align: center; vertical-align: middle;
   }
   .h-table thead th { background: var(--colour-tint); }
 

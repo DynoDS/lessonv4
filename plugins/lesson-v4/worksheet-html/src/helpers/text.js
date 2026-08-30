@@ -179,6 +179,23 @@ function blankBelow(question, widthMm, hasPicture, showNumbers = true) {
   return linesFor(question, inlineMm) > linesFor(question, belowMm);
 }
 
+// A prompt short enough that its answer blank should sit beside the words
+// rather than out at the edge of the row.
+//
+// The margin matters: a prompt measured at close to the full line would, once
+// a real font is applied, sometimes need the room the blank is no longer
+// leaving it and wrap to a second line the arithmetic did not count. Two
+// thirds of the line keeps a clear gap between "this fits easily" and "this
+// needs the whole row", so only prompts that are plainly short are moved.
+const SHORT_PROMPT_SHARE = 0.66;
+
+function promptIsShort(question, widthMm, hasPicture, showNumbers = true) {
+  const { inlineMm } = questionTextWidths(widthMm, hasPicture, showNumbers);
+  if (linesFor(question, inlineMm) > 1) return false;
+  const charMm = 12 * PT_MM * 0.5; // body type, the width linesFor assumes
+  return String(question).length * charMm <= inlineMm * SHORT_PROMPT_SHARE;
+}
+
 function renderQuestions(spec, widthMm = 100) {
   const showNumbers = spec.showNumbers !== false;
   const pictures = selectContextPictures(
@@ -191,6 +208,10 @@ function renderQuestions(spec, widthMm = 100) {
       <li class="h-q${
         blankBelow(questionText(q), widthMm, Boolean(pictures && pictures[i]), showNumbers)
           ? " h-q--blank-below"
+          : ""
+      }${
+        promptIsShort(questionText(q), widthMm, Boolean(pictures && pictures[i]), showNumbers)
+          ? " h-q--short"
           : ""
       }">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
@@ -451,6 +472,18 @@ const css = `
      longest unbreakable word without it, and one long word would put the wrap
      back. */
   .h-text { flex: 1 1 0; min-width: 0; overflow-wrap: break-word; }
+
+  /* A SHORT prompt lets its blank sit straight after the words.
+     .h-text normally takes the whole row (flex 1 1 0) so a long prompt wraps
+     inside the room it is given rather than pushing the number, the words and
+     the blank onto three lines. The cost is that a three-word prompt ALSO
+     filled the row, so "The job:" printed at the left margin with its answer
+     line at the far right edge of the page and a child could not tell the line
+     belonged to it. Only a prompt that comfortably fits one line gets sized to
+     its own words, so the long-prompt behaviour that the measurement depends
+     on is untouched. A short prompt is one line either way, so the height
+     arithmetic does not move. */
+  .h-q--short .h-text { flex: 0 1 auto; }
   .h-context-picture {
     flex: 0 0 ${CONTEXT_PICTURE_SLOT_MM}mm;
     width: ${CONTEXT_PICTURE_SLOT_MM}mm;

@@ -921,6 +921,25 @@ instruction fields become overlapping printed lines.
 
 #### Child-generated worksheet
 
+`generator` is the task a child reads, printed verbatim. Written Voice applies
+to it at full strength: it names, in the child's own words, the category they
+are generating from, because a child cannot supply an example of a category
+they have to infer from the task's grammar.
+
+`recordingSurface` describes the shape of the answer space for the worksheet
+designer; it is NOT printed. So any label it implies has to be authored by
+someone, and a description such as "space for a name" becomes the printed word
+"Name:" unless this field says what the child should read. State the labels you
+want in the child's own words - a label is the question a child would ask
+themselves - or accept that the designer will write them.
+
+`firstRowWorked` is one complete worked example of the thing being generated,
+printed above the child's own attempt. Fill it whenever the category could be
+read more than one way, which is most generative tasks: it is the difference
+between a child inventing the right KIND of answer and a child inventing a
+different kind entirely. Use `null` only when the lesson has just modelled a
+worked example on the board that the sheet does not need to repeat.
+
 ```json
 {
   "id": "ws-generated-001",
