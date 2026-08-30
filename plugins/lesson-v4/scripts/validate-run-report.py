@@ -7,7 +7,8 @@ proves that record: the headings are all present in order, the package status
 is one of the four allowed values and never claims ``COMPLETE`` the evidence
 cannot support, every earned resource is accounted for, every delivered path
 exists, every picture the contract promised and the run did not publish is
-named, and retained friction evidence is reported.
+named, and the run's friction record - every obstacle, block and repair round,
+each tagged with the agent it came from - is reported.
 
     python3 validate-run-report.py \
         --working-dir PATH --output-dir PATH --report PATH
@@ -83,6 +84,20 @@ NOT_DELIVERED_RE = re.compile(r"^-\s*(?P<name>.+?):\s*NOT DELIVERED\s*-\s*(?P<re
 
 NONE_LINE_RE = re.compile(r"^-\s*none\.?\s*$", re.IGNORECASE)
 BULLET_RE = re.compile(r"^-\s*\S")
+
+# Every line of ``friction.md`` names the agent it came from and which of the
+# three record kinds it is. Untagged friction is what this shape exists to stop:
+# a run's obstacles used to arrive as loose sentences with no way to tell which
+# role met them, so nothing in the file could be traced back to a decision point
+# and the whole record read as noise. The orchestrator writes the tag, because
+# it is the only party that knows which spawn a line came back from.
+FRICTION_RECORD_RE = re.compile(
+    r"^AGENT:\s*(?P<role>[^|]*\S)\s*\|\s*(?P<kind>FRICTION|BLOCK|REPAIR):\s*(?P<body>\S.*)$"
+)
+# A repair round's verdict. A repair recorded without one is the case the file
+# most needs: "a repairer came in" and "the fault went away" are different
+# facts, and only the second closes an investigation.
+REPAIR_VERDICT_RE = re.compile(r"\bNOT FIXED\b|\bFIXED\b")
 
 
 def read_json(path: Path, label: str, failures: list[str]):
@@ -224,15 +239,63 @@ def report_obligations(working_dir: Path, failures: list[str]) -> dict[str, list
     friction_path = working_dir / "friction.md"
     if friction_path.is_file():
         try:
-            obligations["friction"] = [
+            lines = [
                 line.strip()
                 for line in friction_path.read_text(encoding="utf-8").splitlines()
                 if line.strip()
             ]
         except OSError as exc:
             failures.append(f"friction.md: not readable: {exc}")
+        else:
+            obligations["friction"] = lines
+            failures.extend(friction_record_failures(lines))
 
     return obligations
+
+
+def friction_record_failures(lines: list[str]) -> list[str]:
+    """Check the shape of the run's friction record.
+
+    The file collects three kinds of thing a later investigation needs together:
+    an obstacle a worker worked around, a block that stopped a role, and a repair
+    round that answered one. Each carries the agent it came from, a repair
+    carries whether it actually fixed anything, and a repair sits under the block
+    it answered - grouping is the point of collecting them in one file at all.
+    """
+    failures: list[str] = []
+    seen_block = False
+
+    for line in lines:
+        match = FRICTION_RECORD_RE.match(line)
+        if not match:
+            failures.append(
+                f"friction.md: {line!r} is not a tagged record. Every line reads "
+                "`AGENT: [role] | FRICTION|BLOCK|REPAIR: ...`, so every obstacle, "
+                "block and repair can be traced to the agent that met it."
+            )
+            continue
+
+        kind = match.group("kind")
+        if kind == "BLOCK":
+            seen_block = True
+            continue
+        if kind != "REPAIR":
+            continue
+
+        if not REPAIR_VERDICT_RE.search(match.group("body")):
+            failures.append(
+                f"friction.md: {line!r} is a repair record with no FIXED or NOT "
+                "FIXED verdict. A repair round that ran and a fault that went "
+                "away are different facts."
+            )
+        if not seen_block:
+            failures.append(
+                f"friction.md: {line!r} names no block above it. A repair record "
+                "sits under the BLOCK record it answered, so a block and "
+                "everything it caused read together."
+            )
+
+    return failures
 
 
 def require_obligations(

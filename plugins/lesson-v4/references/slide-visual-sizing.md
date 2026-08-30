@@ -63,6 +63,22 @@ the wrong shape: each of those decisions spends the axis the photograph needs.
 Give the pictures the height, and put the sentences in slim bands or on their own
 slide.
 
+**Read which axis is short before choosing the repair.** Only one of the
+available fixes can move a given case, and the other reads just as plausible.
+Pictures in a shallow band are stopped by height: taking one out of the row
+widens the survivors and leaves the short side exactly where it was, and so does
+swapping the row for a grid. Pictures in a long row across a deep zone are
+stopped by width: a taller zone does nothing, and the grid is the whole answer.
+When height is short and the pictures carry captions, the caption band is the
+biggest single lever on the slide — it costs the picture just over half an inch
+of its own short side, so a label the task does not need is half an inch back for
+free, while a label children read to do the task is a reason to find the height
+elsewhere. When both axes are short, no rearrangement inside that cell reaches
+the floor and the honest repair is a different template or the beat split across
+two slides. The build's own message names the binding axis, the shortfall in
+inches and the caption's cost, so read it rather than guessing and measuring
+again.
+
 **Pictures still being sourced show this honestly.** A picture that has not
 arrived draws as a grey square at exactly the size its cell guarantees, so a
 preview taken mid-run shows the same cramped composition the finished deck will.

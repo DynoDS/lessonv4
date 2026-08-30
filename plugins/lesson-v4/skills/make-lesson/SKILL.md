@@ -237,15 +237,15 @@ another narrative summary around it.
 FRICTION: If something got in the way of this job and you had to work around it
 (a capability the engine lacks, a tool or file that fought you, an instruction
 that contradicted what you found, or an asset that took several attempts to get),
-add one line per obstacle beginning `Friction:` and name the obstacle and
-workaround in one sentence. Opinions about lesson quality do not belong here. If
-there was no friction, add no friction line.
+add one line per obstacle beginning `Friction:`. In that one sentence say what
+you expected, what you actually met, and what you did instead - a line that names
+only the workaround leaves a reader unable to tell whether anything was wrong.
+End it with `- run unharmed` when your workaround reached the result the
+assignment asked for, or `- run harmed: [what the lesson lost]` when it did not.
+That verdict is what separates an obstacle worth engineering away from one that
+merely cost a second attempt. Opinions about lesson quality do not belong here.
+If there was no friction, add no friction line.
 ```
-
-When a worker returns, extract only lines whose raw text begins exactly
-`Friction:`. Preserve those lines in `[WORKING_DIR]/friction.md`, in return
-order, and include them in the final run report. If there were none, do not
-create an empty friction file.
 
 Exact assignment-specific completion markers remain authoritative. In
 particular:
@@ -256,6 +256,52 @@ particular:
   verbatim;
 - Working Wall Builder keeps its existing short structured Output Report;
 - any role whose assignment defines another exact short marker keeps that marker.
+
+### The run's friction record
+
+`[WORKING_DIR]/friction.md` is where this run's obstacles, blocks and repairs
+are collected, so that everything a later investigation needs sits in one file
+instead of spread across the report's sections. Every line names the agent it
+came from, because a friction record that cannot be traced to a role cannot be
+acted on, and the orchestrator is the only party that knows which spawn a line
+came back from. Write the tag yourself; do not ask workers for it.
+
+Three line kinds, each on one line:
+
+```text
+AGENT: [role] | FRICTION: [the worker's line, verbatim after `Friction:`]
+AGENT: [role] | BLOCK: [exact terminal marker or diagnostic signal] - [what the role judged was wrong, in its own words]
+AGENT: [role] | REPAIR: [the block it answered] - [exactly what it changed] - [FIXED or NOT FIXED]: [how that was confirmed, or what still stands]
+```
+
+`[role]` is the role file's own name - `slide-designer`,
+`worksheet-designer-focused-repair`, `image-scout` - or, for friction you met
+yourself running a deterministic command, the name of that job.
+
+When a worker returns, extract only lines whose raw text begins exactly
+`Friction:` and write one `FRICTION:` record per line, in return order.
+
+Write a `BLOCK:` record whenever a worker returns a failed terminal state, a
+bounded self-repair budget runs out, or a reviewer raises a finding that has to
+go back to an owner. Carry across whatever evidence that role returned about its
+own attempts, such as a Slide Designer's `Slide self-repair passes:` line: a
+block with the attempts attached says whether the engine or the route is what
+needs fixing, and a bare marker says only that something stopped.
+
+Write a `REPAIR:` record for every repair round you launch, whatever its result.
+A repair that changed nothing, or whose confirmation still shows the finding, is
+the most useful record in the file, because it is the one saying the route
+itself is not working. Take the change from the repairer's own `Changed:` field
+rather than describing it again.
+
+Keep each block and everything belonging to it together: the `BLOCK:` record
+first, then the `FRICTION:` and `REPAIR:` records that came out of it, before
+the next block. Friction belonging to no block goes at the end.
+
+Copy every line into the run report's `## Friction` section. That section is the
+run's investigation record and holds blocks that were later fixed; `## Blocking
+faults` still lists only what is still broken at delivery. If the run met no
+friction, no block and no repair, do not create the file.
 
 ---
 

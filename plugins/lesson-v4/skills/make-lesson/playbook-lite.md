@@ -885,7 +885,7 @@ Potential cross-resource impact: [specific relationships or None]
 Rebuild only that resource, rerun its deterministic check, rerender changed
 pages and confirm the same finding ID. Run a consistency confirmation only when
 the repair declares a real cross-resource impact. There is no third general
-repair round.
+repair round. Record the round in the run's friction file, whatever its result.
 
 For a picture finding, use the one-filename repair slice and prior picture
 receipt, finalise with `--replace yes`, then rebuild/review only affected
@@ -1025,9 +1025,8 @@ only transient worker results, work roots and orphan prompt/search scratch.
 Provenance proves the licence and history of pictures the run published, so it
 runs only when the picture stage attempted them. Under `PICTURE_STAGE:
 unavailable` or `none required` nothing was published and there is nothing to
-prove: skip it, and do not treat its absence as a blocking fault. The teacher
-still learns what the lesson does without from the run report's picture
-results, which name every promised picture the run did not publish.
+prove: skip it, and do not treat its absence as a blocking fault. The picture
+results in the run report still tell the teacher what the lesson does without.
 
 Append genuine findings to the shared build review log when source access is
 available. Otherwise write the pending log entry in the working directory.
@@ -1043,18 +1042,20 @@ Write `[WORKING_DIR]/run-report.md` with:
   builder;
 - excluded earned resources and exact reasons;
 - blocking faults, accepted minor findings and failed build attempts;
-- picture outcomes, and every helper gap: each visual answered with a
-  substitute, and every helper this run built and left waiting in
-  `pending-helper/`. Say in plain English what each waiting helper draws, name
-  its exact folder, and say that `/install-helper` over that folder installs it.
-  Nothing else surfaces it, so one the report omits is one nobody installs;
+- picture outcomes. A picture the contract promised and the run did not publish
+  is a missing picture whether one scout failed or the stage never started, so
+  name it, and the package is then not `COMPLETE`;
+- every helper gap: each visual answered with a substitute, and every helper
+  this run built and left waiting in `pending-helper/`. Say in plain English
+  what each waiting helper draws, name its exact folder, and say that
+  `/install-helper` over that folder installs it. Nothing else surfaces it, so
+  one the report omits is one nobody installs;
 - the worker-launch audit marker under `## Worker launches`, from
   `worker-launch.py audit` run immediately beforehand;
-- worker friction lines;
+- every line of `[WORKING_DIR]/friction.md`, the run's tagged record of
+  obstacles, blocks and repairs. It keeps blocks a repair closed; `Blocking
+  faults` above lists only what is still broken;
 - shared investigation-log status.
-
-Picture terminal receipts are evidence for picture provenance, not generic
-completion records.
 
 Run `validate-run-report.py` and require `RUN_REPORT_OK`. On failure, repair
 the report from the validator's printed failure list and re-run the check; it
@@ -1066,9 +1067,9 @@ teacher-facing report naming the topic, year, subject, objective, lesson scope,
 exact files, pedagogical highlights, design-review result, visual verdict and
 every teacher flag.
 
-Use actual summary output paths, never guessed filenames. A package missing an
-earned output is `PARTIAL`; an unresolved blocking fault is `BLOCKED`; missing
-required visual verification is `UNVERIFIED`. `BLOCKED` labels the record, not
+A package missing an earned output is `PARTIAL`; an unresolved blocking fault
+is `BLOCKED`; missing required visual verification is `UNVERIFIED`. Use exact
+summary output paths, never guessed filenames. `BLOCKED` labels the record, not
 the delivery: a blocked package still hands over every resource that built and
 passed its own checks, with the unresolved faults named first.
 
@@ -1098,10 +1099,6 @@ local folder and resolver error.
   only enough to resolve Phase-0 routing.
 - A teacher worksheet is the Expected/base sheet; generate only genuinely
   needed adaptations around it.
-- Missing pictures use the approved fallback or omission and are reported. A
-  picture the contract promised and the run did not publish is a missing
-  picture whether one scout failed or the whole stage never started, so it is
-  named in the run report and the package is not `COMPLETE`.
 - A generated worksheet is expected unless the teacher supplied one; an
   unexplained `not-needed` decision is a design fault.
 - Ambiguous or incomplete Lesson Designer output is not silently repaired by

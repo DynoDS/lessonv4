@@ -476,7 +476,11 @@ test('a picture cell too small to read from the back of the room is named', (t) 
   const sizeWarnings = getWarnings().filter((line) => /short side/.test(line));
   assert.equal(sizeWarnings.length, 1, 'named once, on the slide it belongs to');
   assert.match(sizeWarnings[0], /back of the room/);
-  assert.match(sizeWarnings[0], /non-essential/, 'and says how a supporting photo opts out');
+  assert.match(
+    sizeWarnings[0],
+    /essential: false/,
+    'and names the exact field a supporting photo opts out with'
+  );
 });
 
 test('the same cramped cell is named whether or not the picture arrived', (t) => {

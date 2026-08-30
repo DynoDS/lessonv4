@@ -382,7 +382,11 @@ class TestRunReport(RunReportCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_every_friction_line_must_be_copied(self):
-        friction = "Fixed-build friction: worksheet - Chrome unavailable; HTML retained."
+        friction = (
+            "AGENT: worksheet-builder | FRICTION: I expected the fixed build to "
+            "reach Chrome for the PDF; Chrome was unavailable, so I retained the "
+            "HTML - run harmed: no printable worksheet."
+        )
         (self.working / "friction.md").write_text(friction + "\n", encoding="utf-8")
         report = self.write_report(overrides={"outcome": "Package status: PARTIAL"})
         result = self.validate(report)
@@ -420,6 +424,107 @@ class TestRunReport(RunReportCase):
             overrides={"shared": f"Status: QUEUED\nPath: `{pending}`"}
         )
         result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class TestFrictionRecordIsTraceable(RunReportCase):
+    """The run's obstacles, blocks and repairs, collected so they can be worked on.
+
+    Friction used to arrive as loose sentences: "the validator rejected the
+    worksheet's mixed shape, so I corrected it", "the sandbox denied Python, so I
+    reran with elevated execution". Fifteen of those told a reader that a run had
+    been bumpy and nothing about which agent met what, whether anything was
+    actually wrong, or what the repairer who came in afterwards had done. Blocks
+    and repair rounds lived somewhere else again, so the one question worth
+    asking - which of these is worth engineering away - could not be asked of any
+    single file.
+
+    So every line names its agent and its kind, a repair carries a verdict, and a
+    repair sits under the block it answered.
+    """
+
+    def write_friction(self, *lines: str) -> None:
+        (self.working / "friction.md").write_text(
+            "\n".join(lines) + "\n", encoding="utf-8"
+        )
+
+    def report_with(self, *lines: str):
+        self.write_friction(*lines)
+        return self.write_report(
+            overrides={
+                "outcome": "Package status: PARTIAL",
+                "friction": "\n".join(f"- {line}" for line in lines),
+            }
+        )
+
+    def test_an_untagged_friction_line_is_rejected(self):
+        report = self.report_with(
+            "Friction: the sandbox denied Python, so I reran with elevated execution."
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("is not a tagged record", result.stdout)
+
+    def test_a_block_and_its_repair_read_together(self):
+        report = self.report_with(
+            "AGENT: slide-designer | BLOCK: VISUAL_SELF_CHECK_FAILED slides 13, 15 "
+            "- the required evidence photographs get 1.49 inches on their short "
+            "side, under the 1.6 inch board-distance floor.",
+            "AGENT: slide-designer | FRICTION: I expected a repair pass to widen "
+            "the photographs; height was what bound them, so widening changed "
+            "nothing - run harmed: three passes spent, fault unmoved.",
+            "AGENT: slide-designer-focused-repair | REPAIR: slides 13, 15 "
+            "photograph floor - split each slide's four photographs across two "
+            "consecutive slides - FIXED: the rebuilt deck reports 2.455 inches "
+            "on the short side.",
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_repair_without_a_verdict_is_rejected(self):
+        report = self.report_with(
+            "AGENT: slide-designer | BLOCK: VISUAL_SELF_CHECK_FAILED slide 13 "
+            "- photographs under the readable floor.",
+            "AGENT: slide-designer-focused-repair | REPAIR: slide 13 photograph "
+            "floor - moved the captions into the instruction line.",
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("no FIXED or NOT FIXED verdict", result.stdout)
+
+    def test_a_repair_that_fixed_nothing_is_a_valid_record(self):
+        """The most useful line in the file, so it must not be hard to write."""
+        report = self.report_with(
+            "AGENT: working-wall-designer | BLOCK: OPEN_LAYOUT_FINDING - the "
+            "renderer hard-codes sticky-knowledge photo sizing.",
+            "AGENT: working-wall-designer-focused-repair | REPAIR: open layout "
+            "finding - nothing; the sizing is not inside the owned specification "
+            "- NOT FIXED: the rebuilt wall reports the same finding.",
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_repair_with_no_block_above_it_is_rejected(self):
+        report = self.report_with(
+            "AGENT: slide-designer-focused-repair | REPAIR: slide 13 - split the "
+            "photographs across two slides - FIXED: rebuilt and rechecked.",
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("names no block above it", result.stdout)
+
+    def test_plain_friction_needs_no_block(self):
+        """The discrimination case: not every run that met friction was blocked."""
+        report = self.report_with(
+            "AGENT: image-scout | FRICTION: I expected the first Unsplash query "
+            "to return a usable kettle; the first two returned kitchens, so I "
+            "narrowed the query - run unharmed."
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_run_with_no_friction_file_still_passes(self):
+        result = self.validate(self.write_report())
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 

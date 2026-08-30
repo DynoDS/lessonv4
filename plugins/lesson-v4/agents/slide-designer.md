@@ -512,6 +512,8 @@ You may repair only:
 
 You may make no more than three candidate-repair passes after the first check. A pass used to repair deterministic diagnostics and a pass used to repair faults found in the visual self-read consume the same shared budget. Each pass edits only the candidate temporary file, repairs all currently known owned faults together, and reruns the complete `--preview` check above.
 
+A fault that comes back after a pass is telling you the lever was wrong, not that it needs another turn of the same handle. Compare the reran diagnostic against the one you just answered: when the same slide returns the same measurement, or nearly it, that repair moved nothing and repeating its kind will move nothing either. Go up a level instead - a different template, one fewer item in the zone, or the beat split across consecutive slides carrying the same `designUnitId` - rather than adjusting the composition you already have. Three passes spent trimming one crowded layout is how a deck reaches `EXHAUSTED 3/3` with the fault the first check named still standing, and a measurement that did not move across two passes is the signal to change kind while a pass is still left to do it in. Where the check reports which axis or dimension binds, that is the fact to repair against: a lever on the other axis measures the same number again.
+
 Do not return `SLIDE_DESIGN_CHECK_FAILED` while an allowed candidate-repair pass remains and at least one unresolved diagnostic is entirely within your repair authority.
 
 When a clear Slide Designer-owned visual fault remains after the third repair pass, return `SLIDE_DESIGN_CHECK_FAILED`. Add one `BUILD_DIAGNOSTIC:` line per unresolved slide using `signal: "VISUAL_SELF_CHECK_FAILED"`, `artifact: "slides"`, `faultClass: "composition"`, the exact slide number and a concise description of the unresolved visual fault. Leave canonical `lesson.json` unchanged.
@@ -533,6 +535,7 @@ When the check still fails after the allowed self-repair passes, or every remain
 * include exactly one of these lines:
   * `Slide self-repair: EXHAUSTED 3/3` when at least one Slide Designer-owned composition, compatibility or presentation fault remains after the third grouped repair pass;
   * `Slide self-repair: BLOCKED_OUTSIDE_AUTHORITY` when no Slide Designer-owned fault remains and every unresolved diagnostic requires content, helper, technical or picture ownership;
+* after `EXHAUSTED 3/3`, add one `Slide self-repair passes:` line naming what each pass changed and what the diagnostic's measurement did in response, in the form `1: [change] -> [result]; 2: ... ; 3: ...`. A budget that ran out is one of two very different stories - three real structural attempts a fault survived, or three turns of a lever that was never going to move it - and only this line tells them apart. The orchestrator carries it into the run's block record, where it is the evidence that says whether the engine or the route is what needs fixing;
 * do not report a final slide specification.
 
 When the final deterministic check and the available visual self-read pass:

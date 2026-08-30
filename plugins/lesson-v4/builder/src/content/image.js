@@ -109,23 +109,74 @@ function imageWillDraw(imageData, ctx) {
 // the fault is the allocation, and the allocation is the designer's to repair
 // while a repair is still cheap. `zone.cell` is the pre-hug allocation when the
 // card look has already shrunk the zone around the drawn picture.
+//
+// The message names WHICH AXIS BINDS, because only one of the available repairs
+// can move a given case and the other reads just as plausible. A row of
+// captioned photographs in a shallow band binds on height: taking a picture out
+// of the row makes the survivors wider and leaves the short side exactly where
+// it was. A designer that reaches for the wrong lever spends a repair pass
+// measuring the same number again, and a bounded self-repair budget is spent
+// three times over on a composition nothing has touched - which is how a deck
+// reached `EXHAUSTED 3/3` still 0.11" short. Reporting the binding axis, the
+// shortfall and what the caption costs turns three guesses into one repair.
 function checkPictureCellSize(zone, data, ctx) {
   if (!ctx || !data || data.essential === false) return;
   if (!data.imagePath) return;
   if (resolveFit(data, false) !== 'contain') return;
   const cell = zone.cell || zone;
   const caption = data.caption || '';
+  const captionCost = caption.length > 0 ? (CAPTION_H + CAPTION_GAP) : 0;
   const frameW = cell.w - 2 * PAD;
-  const frameH = cell.h - 2 * PAD - (caption.length > 0 ? (CAPTION_H + CAPTION_GAP) : 0);
+  const frameH = cell.h - 2 * PAD - captionCost;
   const guaranteed = Math.min(frameW, frameH);
   if (!(guaranteed > 0) || guaranteed >= PICTURE_READABLE_FLOOR) return;
+
+  const short = (n) => n.toFixed(2);
+  const shortfall = short(PICTURE_READABLE_FLOOR - guaranteed);
+  const opening =
+    `image "${data.imagePath}" is guaranteed only ${short(guaranteed)}" on its ` +
+    `short side, so a photograph of any shape renders below the ` +
+    `${PICTURE_READABLE_FLOOR}" a class can read from the back of the room. `;
+
+  // Height and width are both short of the floor: neither axis alone is the
+  // story, and a designer told only about one will fix it and meet the other.
+  const bothBind =
+    frameW < PICTURE_READABLE_FLOOR && frameH < PICTURE_READABLE_FLOOR;
+
+  let diagnosis;
+  if (bothBind) {
+    diagnosis =
+      `Both axes are short: the cell is ${short(cell.w)}" by ${short(cell.h)}"` +
+      (captionCost ? `, and the caption under the picture takes ${short(captionCost)}" of the height` : '') +
+      `. A cell this size cannot hold a picture children work from whatever ` +
+      `you rearrange inside it, so this needs a different template or the beat ` +
+      `split across two slides, not a smaller adjustment.`;
+  } else if (frameH < frameW) {
+    diagnosis =
+      `Height is what binds: the cell is ${short(cell.h)}" tall` +
+      (captionCost ? `, and the caption under the picture takes ${short(captionCost)}" of that` : '') +
+      `. Find this picture ${shortfall}" more height - a taller zone, fewer ` +
+      `rows stacked down it, or the beat split across two slides` +
+      (captionCost
+        ? `; a label the task does not need is ${short(captionCost)}" back on its own`
+        : '') +
+      `. Fewer pictures side by side will not move it, because each one is ` +
+      `already stopped by the height.`;
+  } else {
+    diagnosis =
+      `Width is what binds: the cell is ${short(cell.w)}" wide. Find this ` +
+      `picture ${shortfall}" more width - a wider zone, fewer pictures side ` +
+      `by side, or the same set laid out as a grid rather than one long row. ` +
+      `A taller zone will not move it, because each picture is already ` +
+      `stopped by the width.`;
+  }
+
   warn(
     ctx.slideIndex,
-    `image "${data.imagePath}" has a picture space only ${guaranteed.toFixed(2)}" ` +
-      `on its short side, so a photograph of any shape renders below the ` +
-      `${PICTURE_READABLE_FLOOR}" a class can read from the back of the room. ` +
-      'Give the picture a taller or wider zone, put fewer pictures in this zone, ' +
-      'or mark it non-essential if it is only supporting context.'
+    opening +
+      diagnosis +
+      ' A picture that is only supporting context belongs here at this size ' +
+      'and should say so with `essential: false`.'
   );
 }
 
