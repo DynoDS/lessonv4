@@ -92,6 +92,9 @@ function measureDataTable(spec, widthMm = 100) {
 // perfectly fine. The cost of that choice is that a sheet wanting sentences has
 // to say so, which is why the field is named for what the CHILD does rather
 // than for a size.
+//
+// `writing` also takes an array, one entry per column, for the common table
+// that mixes demands: ["word", "tick", "word", "sentence"]. See columnWriting.
 const WRITING = {
   tick: { columnMm: 16, rowMm: 9 },
   word: { columnMm: 30, rowMm: 12 },
@@ -99,7 +102,36 @@ const WRITING = {
 };
 
 function writingFor(spec) {
+  if (Array.isArray(spec.writing)) {
+    // The widest column decides the row height, because one row is one height.
+    let widest = WRITING.tick;
+    for (const name of spec.writing) {
+      const size = WRITING[name] || WRITING.word;
+      if (size.rowMm > widest.rowMm) widest = size;
+    }
+    return widest;
+  }
   return WRITING[spec.writing] || WRITING.word;
+}
+
+// What each column needs, in order.
+//
+// A recording table usually mixes demands: "Electrical or not" takes a tick,
+// "Power source" takes a word, "What makes it work" takes a sentence. One size
+// for the whole table forces the honest choice to be dishonest somewhere -
+// size it for the sentence and the tick columns waste width the page does not
+// have, size it for the word and the page tells the child to explain in a box
+// too small to explain in. So `writing` also takes an ARRAY, one entry per
+// column, and only the columns that need room get it.
+//
+// A string still means what it always did: that size for every column.
+function columnWriting(spec) {
+  const columns = spec.columns || [];
+  if (Array.isArray(spec.writing)) {
+    return columns.map((_, i) => WRITING[spec.writing[i]] || WRITING.word);
+  }
+  const single = WRITING[spec.writing] || WRITING.word;
+  return columns.map(() => single);
 }
 
 function recordingRows(spec) {
@@ -108,7 +140,17 @@ function recordingRows(spec) {
 }
 
 function renderRecordingTable(spec) {
-  const head = spec.columns.map((c) => `<th>${esc(c)}</th>`).join("");
+  // Share the width out in proportion to what each column is for, so a
+  // sentence column is visibly the place a sentence goes and a tick column
+  // does not sit there looking like one.
+  const sizes = columnWriting(spec);
+  const totalMm = sizes.reduce((total, size) => total + size.columnMm, 0) || 1;
+  const head = spec.columns
+    .map(
+      (c, i) =>
+        `<th style="width:${((sizes[i].columnMm / totalMm) * 100).toFixed(1)}%">${esc(c)}</th>`
+    )
+    .join("");
   const body = recordingRows(spec)
     .map((row) => {
       const cells = spec.columns.map((_, i) => {
@@ -231,7 +273,10 @@ const helpers = {
     // four-column recording table came to be sliced down its right-hand edge
     // with the fit check reporting no problem.
     needs: (spec) => ({
-      minWidthMm: Math.max(80, (spec.columns || []).length * writingFor(spec).columnMm),
+      minWidthMm: Math.max(
+        80,
+        columnWriting(spec).reduce((total, size) => total + size.columnMm, 0)
+      ),
       // Its own rows, at the height whatever the child is writing needs. A flat
       // 35mm said a six-row table needed no more height than a two-row one, and
       // that a table of sentences needed no more than a table of ticks.

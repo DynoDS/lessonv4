@@ -37,7 +37,7 @@ module.exports = {
   "data-table":
     "Values HANDED to the child to read from: a price list, a timetable, a set of results. Nobody writes in it.",
   "recording-table":
-    "A table the CHILD completes: any cells may be supplied and the remaining cells stay tall and blank for writing.",
+    "A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column.",
 
   // ─── visuals ───
   "bar-chart":

@@ -143,9 +143,9 @@ Smallest usable: **70mm wide x 25mm tall**. Spare height: never takes spare heig
 
 #### `recording-table`
 
-A table the CHILD completes: any cells may be supplied and the remaining cells stay tall and blank for writing.
+A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column.
 
-Smallest usable: **90mm wide x 57mm tall**. Spare height: takes spare height first (it is writing space).
+Smallest usable: **134mm wide x 87mm tall**. Spare height: takes spare height first (it is writing space).
 
 ```json
 {
@@ -155,6 +155,11 @@ Smallest usable: **90mm wide x 57mm tall**. Spare height: takes spare height fir
     "Material",
     "What happened",
     "Why"
+  ],
+  "writing": [
+    "word",
+    "sentence",
+    "sentence"
   ],
   "rows": [
     [

@@ -73,6 +73,10 @@ module.exports = {
   "recording-table": {
     caption: "Test three more materials",
     columns: ["Material", "What happened", "Why"],
+    // One entry per column, because these columns want different amounts:
+    // the material is a word, what happened and why are sentences. A bare
+    // string ("word", "tick", "sentence") still sizes every column alike.
+    writing: ["word", "sentence", "sentence"],
     rows: [
       ["Foil", null, "It did not absorb water"],
       ["Cling film", null, null],

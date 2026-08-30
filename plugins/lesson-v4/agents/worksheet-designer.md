@@ -425,11 +425,15 @@ output even when every word on it is right. Four habits keep a page composed:
   the engine's `(1a)` `(1b)` numbering marking the parts. Repeating an
   identical header, caption or instruction for every part spends the page on
   furniture; a fact stated once serves every item.
-- **Response space matches the thinking.** Choose each answer space - a
-  recording-table's `writing` size, a written-answer's `lines` - from the most
-  demanding thing the `response` field asks for, not the least. "Explain" or
-  "what makes it work" is never a word-size cell, and a tick column never gets
-  sentence width.
+- **Response space matches the thinking, column by column.** Choose each answer
+  space - a recording-table's `writing`, a written-answer's `lines` - from the
+  most demanding thing the `response` field asks for, not the least. "Explain"
+  or "what makes it work" is never a word-size cell. Size a recording table per
+  column (`"writing": ["word", "tick", "word", "sentence"]`), because one size
+  for the whole table has to be wrong somewhere: all-sentence spends width the
+  tick columns never use and can cost the page its layout, all-word prints a
+  box too small for the explaining it asks for. A bare string remains right
+  when every column genuinely takes the same thing.
 
 **Mark each question with `question: true` and never write a number.** The engine
 counts them in reading order, in one format. A question you could not build costs
