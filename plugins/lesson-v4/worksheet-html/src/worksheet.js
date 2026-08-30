@@ -205,9 +205,15 @@ function makeNumberer() {
         return out;
       }
 
+      // A container - a `row`, a nested `stack` - is not a question boundary,
+      // so it must carry the flag through. Dropping it here reset the state at
+      // every level of nesting: a single-item helper sitting directly under a
+      // numbered question was correctly suppressed, while the same helper one
+      // level deeper started its own run again, and a question holding a
+      // two-column recording surface printed "(1)" four times over.
       const out = {};
       for (const [key, value] of Object.entries(node)) {
-        out[key] = walk(value, zoneId);
+        out[key] = walk(value, zoneId, insideNumberedQuestion);
       }
       return out;
     };
