@@ -202,6 +202,60 @@ function standInForPending(node, pendingPaths) {
   return out;
 }
 
+// The class's own sheet cannot go missing quietly.
+//
+// `SHEET_DIRECTED_MISSING` covers Below and Greater Depth, because adaptation.md
+// names them. Nothing covered Expected, and Expected is the sheet most of the
+// class uses: a spec carrying only a Below sheet passed preflight, built, and
+// produced a lesson pack whose main worksheet simply was not there, with the
+// reason sitting in a `notes` entry that no later step reads.
+//
+// A page-plan gap is a real and correct thing for the designer to return - the
+// content genuinely may not fit an A4 side - but it is a decision for the
+// lesson designer, and returning it has to STOP the run rather than thin the
+// pack. So the gap note is required (it carries the reasoning) and it is still
+// a failure, which is what routes it back to the owner who can settle it.
+function checkExpectedSheet(worksheet) {
+  const designPath = worksheet && worksheet.meta && worksheet.meta.lessonDesignPath;
+  if (!designPath) return;
+
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(path.resolve(designPath), "utf8"));
+  } catch {
+    console.warn(
+      "[expected-sheet] lesson-design.json could not be read from " +
+        `meta.lessonDesignPath, so the Expected sheet requirement was not checked.`
+    );
+    return;
+  }
+
+  const block = design && design.worksheet;
+  if (!block || block.status !== "generated") return;
+  if (block.resourceMode === "shared-frame" && worksheet.sheets && worksheet.sheets.expected) {
+    return;
+  }
+  if (worksheet.sheets && worksheet.sheets.expected) return;
+
+  const notes = (Array.isArray(worksheet.notes) ? worksheet.notes : []).map(String);
+  const gapNote = notes.find(
+    (note) => /PAGE_PLAN_GAP|WORKSHEET_CONTENT_GAP/i.test(note) && /expected/i.test(note)
+  );
+
+  fail(
+    "EXPECTED_SHEET_MISSING",
+    `lesson-design.json generates an Expected worksheet, but the spec has no ` +
+      `sheets.expected. ` +
+      (gapNote
+        ? `The gap is stated - "${gapNote.slice(0, 160)}" - and it is the lesson ` +
+          `designer's to settle: name a removal order in the worksheet block's ` +
+          `fitPriority, or reduce the amount, then rebuild this sheet. The class ` +
+          `sheet cannot be dropped on a note alone.`
+        : `No PAGE_PLAN_GAP or WORKSHEET_CONTENT_GAP note names Expected either, ` +
+          `so nothing records why the class's own sheet is absent.`)
+  );
+}
+
 function main() {
   const argv = process.argv.slice(2);
   let fileArg = null;
@@ -225,6 +279,9 @@ function main() {
     fail("SPEC_INVALID", `${file} is not valid worksheet JSON: ${error.message}`);
     return;
   }
+
+  checkExpectedSheet(worksheet);
+  if (process.exitCode === 1) return;
 
   if (adaptationArg) {
     checkDirectedSheets(worksheet, adaptationArg, photoReqArg);
