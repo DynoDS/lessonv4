@@ -4,6 +4,15 @@
 
 The 70 helpers, what each is for, and a working example of each.
 
+**How Worksheet Designer reads this catalogue.** Scan the family headings and
+the one-line purpose under each helper name, so you know what exists and can
+recognise the shape you need. Do not read every example and smallest-usable
+line at run start: that is most of this file, and the detail is only useful
+once a helper is a real candidate. When one becomes a candidate, read that
+helper's complete entry before its first use, and reopen it later only for a
+field or a size you have not already used. A designer that reads the whole
+catalogue before choosing anything spends its run on helpers it never picks.
+
 **The example is the contract.** It is a real spec, and check-render draws every
 one of them at four widths on every run, so it cannot describe a field that does
 not exist or miss one that does. Copy its shape and change the content.
