@@ -343,6 +343,41 @@ test('semantic colour stays with the teacher profile and exact field contracts',
   assert.match(SLIDE_DESIGNER_MD, /Use `teacher-slide-visual-profile.md` for visual judgement/);
 });
 
+test('the asking-versus-telling colour grammar holds across every colour owner', () => {
+  // Blue asks, black tells, and a mixed block splits at the boundary. The rule
+  // lives in the profile; the playbook, templates contract, reviewer reference
+  // and preferences copy must all carry the same grammar or a run reads
+  // whichever file it opens first and the decks come out inconsistent.
+  assert.match(TEACHER_PROFILE_MD, /asking versus telling/);
+  assert.match(TEACHER_PROFILE_MD, /The boundary is the sentence, not the block/);
+  assert.match(PLAYBOOK_MD, /asking versus telling/);
+  assert.match(VISUAL_REVIEW_DECK_MD, /asking versus telling/);
+  assert.match(PREFERENCES_MD, /Black tells, blue asks/);
+  assert.ok(
+    !TEACHER_PROFILE_MD.includes('do not make routine starter questions or every task question blue'),
+    'the retired one-focal-question restriction must not resurface in the profile'
+  );
+});
+
+test('the composition regressions from the electrical-appliances deck stay fixed', () => {
+  // Vocabulary returns to one key-vocabulary slide.
+  assert.match(PLAYBOOK_MD, /Vocabulary is presented on one `key-vocabulary` slide/);
+  assert.ok(!PLAYBOOK_MD.includes('two established shapes'));
+  // Sort task slides: big item bank, hugged destinations.
+  assert.match(PLAYBOOK_MD, /the item bank takes the slide's spare height/);
+  // Labelled parallel fields render as real headings, not fused text cards.
+  assert.match(PLAYBOOK_MD, /headings look like headings/);
+  // Short labels can never fill a tall card.
+  assert.match(TEACHER_PROFILE_MD, /A two- or three-word label/);
+  // The bubble holds only spoken words; the judging question titles the slide.
+  const SPEECH_MD = fs.readFileSync(
+    path.join(__dirname, '..', '..', 'references', 'slide-speech-and-characters.md'),
+    'utf8'
+  );
+  assert.match(SPEECH_MD, /The bubble holds only the spoken words/);
+  assert.match(SPEECH_MD, /It is never printed/);
+});
+
 test("template reference matches image fit and grouping helper contracts", () => {
   for (const token of [
     "Cover preserves natural proportions",

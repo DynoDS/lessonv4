@@ -362,7 +362,18 @@ function validateLesson(lesson, lessonDir) {
     const answerLabel = String(slide.title || slide.heading || '');
     if (/answer/i.test(answerLabel)) {
       const strings = collectStrings(slide);
-      if (!strings.some((s) => s.includes('||'))) {
+      // A sort-board reveals natively: its placed items print in answer green
+      // with no marker (markers inside it are banned and would render
+      // literally), so a sort-board answer slide already satisfies the reveal.
+      // Warning it anyway is what pushed a designer to add `||` to sort items,
+      // hit SLIDE_MARKER_LITERAL, revert, and ship the answers black.
+      const hasGreenHelper = (function scan(node) {
+        if (Array.isArray(node)) return node.some(scan);
+        if (!node || typeof node !== 'object') return false;
+        if (node.type === 'sort-board') return true;
+        return Object.keys(node).some((key) => scan(node[key]));
+      })(slide);
+      if (!hasGreenHelper && !strings.some((s) => s.includes('||'))) {
         warnings.push(`slide ${n} ("${answerLabel}") looks like an answer slide but carries no "||" reveal marker anywhere, so the answers would render plain black at question size instead of answer green. On a labelled diagram put the marker inside the label ("1||North America"). The one fair exception is a model-answer slide whose whole body IS the answer, where there is no question to reveal it against.`);
       }
     }

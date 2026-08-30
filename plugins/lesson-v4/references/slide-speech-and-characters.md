@@ -12,7 +12,7 @@ Match the count to the lesson rather than to a template reached for by habit: wh
 
 The title stays open so the child has to inspect before deciding. A single attempt the class judges reads as "What advice would you give Priya?" or "Has Priya got this right? How do you know?". Never use "Who is right?" on a one-voice slide because it promises a contest a one-voice slide does not contain. Never use a verdict-revealing title such as "Fix it" or "What did Priya get wrong?", which announces the fault before the child has looked and collapses judging into locating a guaranteed error.
 
-Use the source-unit label or another Slide Designer-owned presentation heading only when it preserves this openness. Do not paraphrase a source-authored claim or question to manufacture a more dramatic title.
+When the source carries its own judging question, that question is the title: `Is Dev right?` beats a descriptive label like `Dev's claim`, because it points children at the judging rather than announcing the exhibit. Use the source-unit label or another Slide Designer-owned presentation heading only when it preserves this openness. Do not paraphrase a source-authored claim or question to manufacture a more dramatic title.
 
 ## The named characters
 
@@ -21,6 +21,16 @@ The named class characters are Mr Sear, Miss Brooker and Bailey; every speaker i
 ## Each voice in its own bubble, lines verbatim
 
 Put each person's words in their own character's bubble so they are addressed to the child, rather than flattening them into a plain list or question. Use every source-authored line verbatim. Those words are teaching content, so never invent, combine, trim or reword what a character says.
+
+## The bubble holds only the spoken words
+
+A source task line often arrives fused: `Dev says: 'A laptop belongs in the mains group because its charger has a plug.' Is Dev right? Explain.` That one string carries three different things, and only one of them is speech. Decompose it mechanically, changing no words inside any piece:
+
+- The quoted claim - and nothing else - goes in the bubble. A bubble is the character speaking, so it holds only words the character would actually say, in their own voice. `Dev says:` inside Dev's own bubble makes him narrate himself in the third person, and a task instruction in his mouth makes him set his own test.
+- The attribution (`Dev says:`) is already carried by the named portrait under the bubble. It is never printed.
+- The judging question (`Is Dev right? Explain.`) is the pupils' task, not Dev's speech. It becomes the slide's open title (`Is Dev right?`) and, where wording remains (`Explain.` / `Explain how you know.`), a separate task line in question blue outside the bubble.
+
+This decomposition is a sanctioned mechanical transformation, like automatic question labels: each piece keeps its exact wording, and only where it sits changes.
 
 ## When the debated statement is a diagram
 

@@ -12,6 +12,8 @@ So pick each beat on both axes, and think about the shape across the lesson rath
 - **Work with** (apply the idea to a fresh instance, sort where the criterion has to be found, correct an error, choose between two positions and say why, rank and justify). The child holds the idea and does something to it.
 - **Reason with** (explain a cause, compare two things on a criterion they select, judge a claim that is true-but-misleading, transfer the idea to a situation the lesson never showed them, generate a new example and defend it).
 
+**A placement alone is thin evidence; a one-line why upgrades it cheaply.** A sort, match or classify beat whose only output is placements can be passed by luck or half-knowledge. Where the placement decisions carry the learning, add the short justification prompt - `How do you know?`, `Which clue told you?` - so the check shows the reasoning behind a placement, not just the placements. Skip it when the same reasoning is already demanded inside the beat or in the one that follows.
+
 **Check the lesson for worthwhile thinking without forcing an arc.** A sequence may move up and down in demand, and a final check may return to central knowledge. Notice when every activity remains unnecessarily shallow and the objective supports more worthwhile thinking, but do not require every successive beat to be harder.
 
 **Success evidence depends on the task.** Do not require roughly 80% success through every Do beat or lesson type. For a defined repeatable skill, roughly 80% at release is a planning expectation. A diagnostic question may deliberately reveal widespread misunderstanding, and many incorrect answers can be useful evidence. The live teacher responds to the actual class.

@@ -722,3 +722,86 @@ test('a circuit symbol bank card hugs the contained bank', () => {
   assert.equal(shapes.length, 1, 'one card around the contained bank');
   assert.ok(shapes[0].h < 2.2, 'the five-symbol bank hugs a strip, not the 5in zone');
 });
+
+// ─── Regression: the 30 Aug 2026 electrical-appliances deck ──────────────────
+
+const { drawText } = require('../src/content/text');
+
+test('completed sort prints its placed items in answer green', () => {
+  const { texts } = capture(drawSortBoard, ZONE, {
+    groups: [
+      { label: 'Uses electricity', items: ['Table lamp', 'Battery torch'] },
+      { label: 'Does not use electricity', items: ['Bike', 'Wooden spoon'] }
+    ]
+  });
+  const headings = texts.filter((entry) => /__sort-heading-/.test(entry.objectName || ''));
+  const items = texts.filter((entry) => /__sort-item-/.test(entry.objectName || ''));
+  assert.equal(items.length, 4);
+  assert.ok(
+    items.every((entry) => entry.color === '00B050'),
+    'the placed items are the revealed answers, so their words are answer green'
+  );
+  assert.ok(
+    headings.every((entry) => entry.color === '0070C0'),
+    'category headings keep the organising blue'
+  );
+});
+
+test('a sticky fact in a portrait zone takes a top star and full-width text', () => {
+  const portrait = { x: 1, y: 0.5, w: 3, h: 6, class: 'C' };
+  const { texts, images } = capture(drawText, portrait, {
+    value: '✨ An appliance can use mains electricity, a battery or both.'
+  });
+  assert.equal(images.length, 1, 'the star draws once');
+  assert.equal(texts.length, 1);
+  const star = images[0];
+  const text = texts[0];
+  assert.ok(star.y < text.y, 'the star sits above the words, not beside them');
+  assert.ok(
+    Math.abs((star.x + star.w / 2) - (portrait.x + portrait.w / 2)) < 0.05,
+    'the star centres on the card'
+  );
+  assert.ok(
+    text.w > portrait.w - 0.25,
+    'the words keep the full card width instead of being pushed right'
+  );
+  assert.ok(!String(text.content).includes('✨'), 'the typed star comes off the words');
+});
+
+test('a sticky fact in a landscape zone keeps its left star and indent', () => {
+  const landscape = { x: 1, y: 0.5, w: 6, h: 2, class: 'C' };
+  const { texts, images } = capture(drawText, landscape, {
+    value: '✨ An appliance can use mains electricity, a battery or both.'
+  });
+  assert.equal(images.length, 1);
+  const star = images[0];
+  const text = texts[0];
+  assert.ok(text.x > landscape.x + star.w - 0.05, 'the words start after the star');
+  assert.ok(Math.abs(text.y - (landscape.y + 0.08)) < 0.01, 'no top inset in landscape');
+});
+
+test('an all-blank evidence card gives its prompt lines more of the card, spaced', (t) => {
+  const image = temporaryImage(t);
+  const ctx = { slideIndex: 0, imageDims: { [image]: { w: 100, h: 100 } } };
+  const fields = [
+    { label: 'Object name', value: '' },
+    { label: 'Power source', value: '' },
+    { label: 'Evidence', value: '' }
+  ];
+  const prompt = capture(drawEvidenceCards, ZONE, { items: [{ imagePath: image, fields }] }, ctx);
+  const answered = capture(drawEvidenceCards, ZONE, {
+    items: [{
+      imagePath: image,
+      fields: fields.map((f) => ({ ...f, value: 'Toaster' }))
+    }]
+  }, ctx);
+  const promptText = prompt.texts.find((entry) => /__evidence-answer-/.test(entry.objectName || ''));
+  const answeredText = answered.texts.find((entry) => /__evidence-answer-/.test(entry.objectName || ''));
+  assert.ok(promptText && answeredText);
+  assert.ok(
+    promptText.h > answeredText.h,
+    'blank prompts are the working text, so they take more of the card than a filled answer strip'
+  );
+  assert.ok(promptText.paraSpaceAfter > 0, 'fields render with paragraph spacing');
+  assert.ok(answeredText.paraSpaceAfter > 0);
+});

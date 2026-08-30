@@ -19,15 +19,29 @@ const PAD = 0.08;
 
 // A text block opening with ✨ is a sticky-knowledge line, same language as a
 // ✨-led steps item: the drawn star from the signal set marks it and the typed
-// character comes off the rendered words. The star is the marker for the whole
-// block, so it centres on the block's height however many lines the fact runs.
-const STAR_H_MAX = 0.40;
-const STAR_GAP   = 0.10;
+// character comes off the rendered words. In a landscape zone the star sits at
+// the left, centred on the block's height. In a portrait zone - a sidebar card
+// taller than it is wide - a left star steals scarce width and pushes every
+// line of the fact off-centre, so there the star sits centred above the words
+// and the text keeps the full card width.
+const STAR_H_MAX     = 0.40;
+const STAR_TOP_H_MAX = 0.80;
+const STAR_GAP       = 0.10;
 
 function starIndent(zoneH) {
   const h = Math.min(STAR_H_MAX, Math.max(0.2, zoneH - 2 * PAD) * 0.8);
   const w = signalWidth('star', h);
   return w ? { h: h, w: w, indent: w + STAR_GAP } : null;
+}
+
+function starTopInset(zone) {
+  const h = Math.min(STAR_TOP_H_MAX, Math.max(0.2, zone.h - 2 * PAD) * 0.2);
+  const w = signalWidth('star', h);
+  return w ? { h: h, w: w, inset: h + STAR_GAP } : null;
+}
+
+function isPortrait(zone) {
+  return zone.h > zone.w;
 }
 
 function isSticky(value) {
@@ -132,15 +146,28 @@ function drawText(pptx, slide, zone, data, ctx) {
   const align = textAlign(data);
 
   let indent = 0;
+  let topInset = 0;
   if (isSticky(value)) {
-    const star = starIndent(zone.h);
-    if (star) {
-      drawSignal(slide, 'star', {
-        x: zone.x + PAD,
-        y: zone.y + (zone.h - star.h) / 2, h: star.h
-      });
-      value = String(value).replace(/^\s*✨\s*/, '');
-      indent = star.indent;
+    if (isPortrait(zone)) {
+      const star = starTopInset(zone);
+      if (star) {
+        drawSignal(slide, 'star', {
+          x: zone.x + (zone.w - star.w) / 2,
+          y: zone.y + PAD, h: star.h
+        });
+        value = String(value).replace(/^\s*✨\s*/, '');
+        topInset = star.inset;
+      }
+    } else {
+      const star = starIndent(zone.h);
+      if (star) {
+        drawSignal(slide, 'star', {
+          x: zone.x + PAD,
+          y: zone.y + (zone.h - star.h) / 2, h: star.h
+        });
+        value = String(value).replace(/^\s*✨\s*/, '');
+        indent = star.indent;
+      }
     }
   }
 
@@ -155,8 +182,8 @@ function drawText(pptx, slide, zone, data, ctx) {
   // is passed as the base so a coloured line (a blue question, a green prompt)
   // keeps that colour on its unmarked words.
   slide.addText(presentationRuns(value, true, color, data), {
-    x: zone.x + PAD + indent, y: zone.y + PAD,
-    w: zone.w - 2 * PAD - indent - pictureSlotW, h: zone.h - 2 * PAD,
+    x: zone.x + PAD + indent, y: zone.y + PAD + topInset,
+    w: zone.w - 2 * PAD - indent - pictureSlotW, h: zone.h - 2 * PAD - topInset,
     fontFace: FONT, fontSize: ceiling, bold: true,
     color: displayColor, align: align, valign: 'middle',
     margin: 0, fit: FIT,
@@ -194,14 +221,20 @@ function measureText(zone, data, ctx) {
   if (textHeightMode(data) === 'fill') return null;
   const fs = data.fontSize || TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
   const lineH  = fs / 72 * 1.32;
-  // A sticky line loses width to its star, so the estimate charges for the
-  // widest star the block could take - generous, per this function's contract.
-  const stickyIndent = isSticky(value) ? signalWidth('star', STAR_H_MAX) + STAR_GAP : 0;
+  // A sticky line pays for its star where the star will actually sit: width
+  // in a landscape zone, height in a portrait one - generous either way, per
+  // this function's contract.
+  const sticky = isSticky(value);
+  const portrait = isPortrait(zone);
+  const stickyIndent = sticky && !portrait
+    ? signalWidth('star', STAR_H_MAX) + STAR_GAP
+    : 0;
   const baseW = Math.max(0.5, zone.w - 2 * PAD - stickyIndent);
   const pictureLayout = optionalPictureLayout(zone, data, ctx, stickyIndent, fs, value);
   const availW = Math.max(0.5, baseW - (pictureLayout ? pictureLayout.slotW : 0));
   const lines = estimateLines(value, fs, availW);
-  const estH = lines * lineH + 2 * PAD + 0.04;
+  const estH = lines * lineH + 2 * PAD + 0.04 +
+    (sticky && portrait ? STAR_TOP_H_MAX + STAR_GAP : 0);
   // An equalised row's text cards measure their full sub-zone: every peer
   // reports the same rect, so every card hugs the same height and the row
   // reads as one family of equal boxes.

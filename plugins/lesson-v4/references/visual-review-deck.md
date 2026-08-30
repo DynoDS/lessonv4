@@ -45,7 +45,7 @@ Read `teacher-slide-visual-profile.md` before this section.
 
 **Success-criteria identity.** The same procedural success criteria should keep the green panel and compact white step-card identity across templates. A flat divided rendering of the same criteria beside white-card versions is a local visual inconsistency.
 
-**Semantic colour.** `focus-blue` is valid for one focal thinking question. Alternating blue-purple peer prompts are optional. `task-action` may expose action verbs inside a multi-phase instruction. `problem-state` red, `safety-warning` red, vocabulary green and answer green must retain their distinct meanings.
+**Semantic colour.** The deck's grammar is asking versus telling: child-facing questions and instructions carry house blue; explanation and statements stay black; a block doing both splits at the boundary with only the asking blue. A question left black, or a whole mixed statement-plus-question block coloured blue, is a fault. Alternating blue-purple peer prompts are optional. `task-action` may expose action verbs inside a multi-phase instruction. `problem-state` red, `safety-warning` red, vocabulary green and answer green must retain their distinct meanings, and on an answer slide the answer words themselves are green, not just an outline around them.
 
 ### Photograph fit and answer attachment
 

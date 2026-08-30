@@ -98,6 +98,9 @@ function drawSortBoard(pptx, slide, zone, data) {
         line: { color: COLOURS.green, width: 1.25 },
         rectRadius: PANEL_RADIUS
       });
+      // The placed items ARE the revealed answers - a sort-board only ever
+      // renders a completed sort - so the item words take answer green, not
+      // just the box outline. No reveal marker is needed (or allowed) here.
       slide.addText(item, {
         x: x + PANEL_PAD,
         y: itemY,
@@ -106,7 +109,7 @@ function drawSortBoard(pptx, slide, zone, data) {
         fontFace: FONT,
         fontSize: ITEM_FONT_MAX,
         bold: true,
-        color: COLOURS.body,
+        color: COLOURS.green,
         align: 'center',
         valign: 'middle',
         margin: 0,

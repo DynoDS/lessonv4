@@ -9,8 +9,15 @@ const PAD = 0.12;
 const CARD_GAP = 0.18;
 const CARD_PAD = 0.12;
 const ANSWER_GAP = 0.10;
+// A card whose fields are all blank is a prompt card: the field labels are the
+// working text children read across the room, so they take more of the card
+// than a completed answer strip does, and the photograph gives up the room.
 const ANSWER_RATIO = 0.38;
+const PROMPT_RATIO = 0.52;
 const ANSWER_FONT_MAX = 36;
+// Each field is its own point for a child's eye to land on, so the lines get
+// paragraph spacing rather than stacking as one fused block.
+const FIELD_PARA_SPACE = 8;
 
 function normaliseItems(data) {
   return (Array.isArray(data.items) ? data.items : []).map(function (item) {
@@ -56,7 +63,10 @@ function drawEvidenceCards(pptx, slide, zone, data, ctx) {
     const x = innerX + col * (cardW + CARD_GAP);
     const y = innerY + row * (cardH + CARD_GAP);
     const hasAnswer = item.fields.length > 0;
-    const answerH = hasAnswer ? cardH * ANSWER_RATIO : 0;
+    const isPrompt = hasAnswer && item.fields.every(function (field) {
+      return field.value === '';
+    });
+    const answerH = hasAnswer ? cardH * (isPrompt ? PROMPT_RATIO : ANSWER_RATIO) : 0;
     const imageH = cardH - 2 * CARD_PAD - answerH - (hasAnswer ? ANSWER_GAP : 0);
 
     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
@@ -95,6 +105,7 @@ function drawEvidenceCards(pptx, slide, zone, data, ctx) {
       valign: 'middle',
       margin: 0,
       breakLine: false,
+      paraSpaceAfter: FIELD_PARA_SPACE,
       fit: FIT,
       objectName: growFitObjectName(
         answerGroup,

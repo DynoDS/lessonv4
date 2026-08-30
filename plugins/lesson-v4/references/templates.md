@@ -496,7 +496,7 @@ own text column and add a line when the full set still fits at that same font.
 `colorRole` is one of:
 
 - `default` - existing base colour;
-- `focus-blue` - one focal thinking question in house blue;
+- `focus-blue` - a question children answer or an instruction they act on, in house blue (the asking-versus-telling grammar in `teacher-slide-visual-profile.md` → Semantic colour);
 - `peer-blue` - house blue for one item in a compact equal-status peer set;
 - `peer-purple` - house purple for one item in a compact equal-status peer set.
 
@@ -540,7 +540,7 @@ These fields are supported on `text`, on object entries inside `bullets`, `numbe
 
 `fill` never creates dead space, because the builder finishes the pairing itself. In a side-by-side split it measures both sides and sizes the fill card to the taller member of the pair — a fill card is never taller than the partner it is pairing with, so pairing with a half-height photo gives a half-height card, and only a full-height partner (a success-criteria panel, a stack) gives a full-height card. The type then grows to fill the card: up to 60pt for a short display line such as a vocabulary headword and definition, up to 44pt for running prose, always shrinking instead when the wording needs less. An explicit `fontSize` replaces that growth ceiling.
 
-So the choice `fill` makes is only this: should this text read at its own natural size (`hug`), or grow into the height of the thing beside it (`fill`)? An answer or definition beside a photograph, or a task beside its success criteria, usually reads better filled; a caption or short aside usually reads better hugged.
+So the choice `fill` makes is only this: should this text read at its own natural size (`hug`), or grow into the height of the thing beside it (`fill`)? An answer or definition beside a photograph, or a task beside its success criteria, usually reads better filled; a caption or short aside usually reads better hugged. A two- or three-word label (`Uses electricity`, `Battery`) can never fill a tall card - it hits the ceiling as one line and the rest of the card stays empty - so short labels always hug.
 
 In the same splits, a hugged member that measures shorter than its partner is vertically centred on the pair instead of being pinned to the top with a void underneath.
 
@@ -571,7 +571,7 @@ of text. It is not a way to place free decoration on an empty part of a slide.
 
 When two items are genuinely separate pieces of content (especially different types, e.g. a text label above a table), prefer a `stack` of content objects instead. `stack` items always render with visible vertical spacing between them; `\n\n` is for within-one-text-block paragraph breaks.
 
-**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question/focus or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. A role's treatment is a deck-wide decision (the playbook's Colour section): a deck whose focal question is blue on one slide and black on the next has spent the colour and lost its meaning, so colour every focal question or none.
+**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question/instruction or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. The blue is asking-versus-telling (the playbook's Colour section): every child-facing question and instruction carries it, explanation and statements stay black, and a block that does both splits at the boundary - colour only the asking sentence (via a separate block or a `[[ ]]` span), never the whole mixed block.
 
 Green answer text is not an ordinary emphasis option. Do not set text `color` to `00B050` and do not use `||`, `{{green}}` or `{{answer-green}}` on a teaching slide. Prepared examples and `visible-in-unit` models remain body black. Use answer green only on an answer/reveal slide. Vocabulary and success criteria keep their established green treatments.
 
@@ -1295,7 +1295,7 @@ Zone class compatibility: fits A, B, C, D, E-wide, E-narrow, G.
 
 ### `sort-board`
 
-A completed structured sort with 2 to 6 category panels. Use it for `answer.structure.kind: "sort"`, not for the unsorted pupil bank. Each group is `{ "label", "items" }`. All item labels across every category share one maximum safe size, so a short category cannot become larger than a category with a longer label. The panels use the full zone instead of leaving large empty category areas around small chips.
+A completed structured sort with 2 to 6 category panels. Use it for `answer.structure.kind: "sort"`, not for the unsorted pupil bank. Each group is `{ "label", "items" }`. The placed items are the revealed answers, so the builder prints their words in answer green inside the green-outlined boxes - write plain labels with no `||` or `{{ }}` markers. All item labels across every category share one maximum safe size, so a short category cannot become larger than a category with a longer label. The panels use the full zone instead of leaving large empty category areas around small chips.
 
 ```json
 { "type": "sort-board",
@@ -1311,7 +1311,7 @@ Zone class compatibility: fits A, B, C and E-wide.
 
 ### `evidence-cards`
 
-A set of 1 to 4 photograph cards. Use it when each photograph is one item and its question or answer must stay attached to it. A pupil card contains only `imagePath`, optional `fit` and optional `essential`. An answer card adds `fields`, each with the exact source `label` and exact answer `value`. The answer appears directly below its photograph inside the same card. All answer cards share one maximum safe text size.
+A set of 1 to 4 photograph cards. Use it when each photograph is one item and its question or answer must stay attached to it. A pupil card contains only `imagePath`, optional `fit` and optional `essential`. An answer card adds `fields`, each with the exact source `label` and exact answer `value`. The answer appears directly below its photograph inside the same card, one field per line with paragraph spacing between fields so each line reads as its own point. A card whose `value`s are all empty strings is a prompt card: the field labels are the working text children read, so the builder gives the field block a larger share of the card and the photograph the remainder. All answer cards share one maximum safe text size.
 
 ```json
 { "type": "evidence-cards",

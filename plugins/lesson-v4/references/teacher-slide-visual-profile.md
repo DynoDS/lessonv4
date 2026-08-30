@@ -14,6 +14,8 @@ Before finalising a slide, ask of every ordinary card: could the same content si
 
 The boundary question is two-way: a card that is the right size can instead hold type that is too small for it. Dead space inside a card is repaired either by tightening the card (`hug`, `widthMode: "content"`) or by letting the type grow to the card (`heightMode: "fill"`, whose grow behaviour `templates.md` describes). Both readings are fine; small type floating in a large card is not.
 
+The grow repair only works when there are enough words to grow. A two- or three-word label - `Uses electricity`, `Battery` - reaches the grow ceiling as one line and still leaves the rest of a tall card empty, so `fill` can never repair a short label in a tall zone. A short label hugs, and the zone height it gives back goes to the content children actually read at length. The give-away in a preview is a big white box with one small centred line in it: that box wanted `hug`, or wanted less height in the first place.
+
 Width works the same way as height. A one-line lead-in or closing statement spanning the full slide in a card mostly made of empty width should hug its written width (`widthMode: "content"`). Peers that should read uniform — a numbered question set, a row of option cards — instead share one width, sized by the longest member, rather than each hugging separately.
 
 ## Paragraph rhythm
@@ -21,6 +23,8 @@ Width works the same way as height. A one-line lead-in or closing statement span
 A text block that carries more than one idea breaks at each idea: one idea, then a paragraph break (`\n\n`), then the next. Three sentences making three separate points are three paragraphs, not one run-on block — a child re-enters a broken block at any line, but has to wade into a fused one from the top.
 
 The break is presentation, not wording: every word, order and punctuation mark stays exactly as authored. Do not break inside one continuous thought — a sentence and the example that completes it, or two clauses building a single point, stay together. The test: if a sentence stands as its own point, a child should meet it on its own line.
+
+The telling-to-asking boundary is always a break. A statement followed by the question or instruction it sets up splits there, and the asking takes its blue per Semantic colour - the same boundary drives both the break and the colour, so a child sees at a glance which words are for them to act on.
 
 ## Visible task structure
 
@@ -92,16 +96,19 @@ Two neighbouring objects do not earn equal space merely because there are two of
 
 ## Semantic colour
 
-- Black carries ordinary teacher explanation, supporting prose, statements, takeaways, success-criteria body text and reminder body text by default.
-- House blue organises slide titles, short option labels, category names and other secondary organising labels.
-- A single focal thinking question may use `focus-blue` when it is the question children should orient their thinking around on that teaching slide. Do not use `focus-blue` merely because a sentence is important, and do not make routine starter questions or every task question blue.
+The deck's core colour grammar is asking versus telling.
+
+- Black carries ordinary teacher explanation, supporting prose, statements, takeaways, success-criteria body text and reminder body text. When the board is just talking to children - telling them things - the words are black.
+- House blue carries the words that ask children something or tell them to do something: a question they answer, an instruction they act on. It also organises slide titles, short option labels, category names and other secondary organising labels. When the board turns to the child - `Which fan needed electricity?`, `Explain how you know.` - those words are blue.
+- The boundary is the sentence, not the block. A block that first tells and then asks splits at that boundary: the telling stays black, the asking goes blue, and a paragraph break sits between them so a child sees where the explanation stops and their job starts. `A kettle and a lamp are both appliances.` is black; `What is electricity doing in each one?` follows on its own line in blue. Never colour a whole mixed block blue for the question buried inside it - that hides the question instead of lifting it.
+- The treatment is deck-wide: every child-facing question and pupil instruction carries it, not a favoured few. The carrying fields are `color` or `focus-blue` for a whole line and `[[ ]]` for a span inside a line.
 - `peer-blue` and `peer-purple` exist only for a compact set of two or more equal-status peer prompts where alternating colour helps children keep the prompts visually separate. Start with house blue and run the set `peer-blue`, `peer-purple`, `peer-blue`, `peer-purple`. The pattern separates equal-status prompts; it must never imply correctness, sequence, difficulty or category meaning.
 - `task-action` marks an existing action verb or short action phrase such as `Build`, `Test`, `Record`, `Compare` or `Explain` when exposing those verbs makes a multi-phase task easier to scan. Several `task-action` spans may appear in one instruction. Do not colour every verb in ordinary prose.
 - `problem-state` red is reserved for source wording that names a genuine failed or wrong state.
 - `safety-warning` red is reserved for an exact source-authored safety warning. Safety and failure are different semantic roles even though both use the problem-red palette.
-- Vocabulary green marks taught terms inside otherwise black task text and the established vocabulary/success-criteria treatments. Answer green belongs only to answers being revealed or marked.
+- Vocabulary green marks taught terms inside otherwise black task text and the established vocabulary/success-criteria treatments. Answer green belongs only to answers being revealed or marked - and on an answer slide it belongs on the answer words themselves. A green outline around black words is a frame, not an answer treatment.
 
-Use size, position and spacing before colour when prominence alone is the job.
+Use size, position and spacing, not colour, when prominence alone is the job of a black explanatory line.
 
 ## Task-to-object attachment
 

@@ -258,7 +258,11 @@ The referent, not the portrait, is the hero when reading it is the work.
 
 Render a set of discrete labels as discrete objects. A word bank, option set, property-label set or sorting bank should normally use `chip-bank`, not one text line joined by commas or middots. Children need to see separate choices, not fake bullets flattened into prose.
 
+Render labelled parallel fields as a structure whose headings look like headings. When content is the same set of labels repeated across one or more items - a completed classification (`Object name` / `Power source` / `Electricity's job`), a flow with named stages, an attribute comparison - use `table` (the labels become a real header row) or the matching frame helper (`method-frame` prints each label beside its space). Never build it from plain text cards with the label fused into the value: `"Object name\nKettle"` centred in a card renders label and value as one black blob, so the labels stop reading as headings at all and every card carries its own copy of them. A heading is a heading only when it sits in its own visual position - a header row, a frame label, a distinct top line - not when it is merely the first words of the content.
+
 For a structured sort, make the action visible in the geometry. Groups look like destinations. Label-only items look movable or selectable. Evidence items look like separate cards and keep each clue or photograph attached to the item it describes. On the completed sort, the items use the category areas at the largest shared safe size. The task must not look like a paragraph followed by decoration.
+
+On the sort's task slide, the items being sorted are the load-bearing reading content - they are what children name, weigh and place, so the item bank takes the slide's spare height and its chips grow board-sized. Each empty destination hugs its label: nothing lands inside it on the board, so a destination stretched tall to fill the zone is dead space wearing a border, not a drop zone. Two hugged destinations with a large item bank above them read correctly; two huge empty boxes under a strip of small chips read backwards.
 
 Use the available width before accepting a stranded final chip. A full-width bank of six or fewer short labels should normally use `maxRows: 1` when the scratch build keeps the complete shared label size readable. For two empty sort destinations, anchor the first destination from the left edge and the second from the right edge.
 
@@ -294,7 +298,7 @@ The starter is slide 1. It carries the Date and shortened displayed LO in the st
 
 Use the exact structured visual selected upstream. Keep one coherent card or comparison per genuine conceptual unit. A text-only card is complete when `kind: none` or no honest semantic visual exists. Do not add P3 merely because a vocabulary card is text-only.
 
-Vocabulary has two established shapes and both stay in use. The single `key-vocabulary` slide holds all the words as one quick reference — right when the words are brief reminders without individually strong visuals, or the teacher wants one glanceable slide to return to. One word per slide with its semantic visual is right when each word earns a picture or diagram that carries its meaning. Choose per lesson from what the words need; neither shape is the default that replaces the other. On per-word slides, a `fill` text pairs the definition with its picture at matched height (see the `text` contract).
+Vocabulary is presented on one `key-vocabulary` slide: all the lesson's words as a single glanceable reference the class returns to, each card carrying its word, definition and visual. Do not spread the words across one-word-per-slide vocabulary slides - a run of them slows the open of the lesson and scatters into four slides the reference children need in one place. When one word genuinely needs teaching rather than introducing, that teaching is a Teach beat with its own slide in the sequence, in addition to - never instead of - the word's card on the vocabulary slide.
 
 When two vocabulary words are taught as a contrast on `teach-compare`, set `headingRole: "vocabulary"` so both headwords take vocabulary green rather than the template's category palette — they are equals being defined, not competing categories.
 
@@ -338,11 +342,11 @@ In task-centred lessons, the substantial task remains the centre of gravity. Ena
 
 ### Colour
 
-Use the semantic roles in `teacher-slide-visual-profile.md` and the exact supported fields in `templates.md`. Prepared examples and visible-in-unit models stay black. Answer green remains an answer signal. Vocabulary and success criteria keep their established green roles. A category container takes its colour on the border through the documented `categoryColor` field, so the grouping reads as a border language rather than a painted panel. Ordinary question lists and success-criteria steps stay out of that palette. Use size, position and spacing before colour when prominence alone is the job.
+Use the semantic roles in `teacher-slide-visual-profile.md` and the exact supported fields in `templates.md`. The core grammar is asking versus telling: words that ask children something or tell them to do something carry house blue; words that explain, state or remind stay black; a block that does both splits at the boundary, telling black, asking blue, with a paragraph break between them. Prepared examples and visible-in-unit models stay black. Answer green remains an answer signal, on the answer words themselves. Vocabulary and success criteria keep their established green roles. A category container takes its colour on the border through the documented `categoryColor` field, so the grouping reads as a border language rather than a painted panel. Ordinary question lists and success-criteria steps stay out of that palette. Use size, position and spacing, not colour, when a black explanatory line only needs prominence.
 
-A colour treatment is a deck-wide decision, not a per-slide flourish. Colour teaches a child what kind of thing they are looking at only if the same kind gets the same treatment on every slide: a deck where the focal question is house blue on slide 9 and body black on slide 8 has spent the colour and lost the meaning, and reads as assembled by different hands. Decide once whether this deck's focal thinking questions carry `focus-blue`, then apply that decision to every one of them or to none; the same holds for any emphasis role - a deck that underlines `required-material` in one task underlines it in all of them. Half-applied roles are worse than unapplied ones.
+A colour treatment is a deck-wide decision, not a per-slide flourish. Colour teaches a child what kind of thing they are looking at only if the same kind gets the same treatment on every slide: a deck where the question is house blue on slide 9 and body black on slide 8 has spent the colour and lost the meaning, and reads as assembled by different hands. Every child-facing question and pupil instruction carries the blue; the same holds for any emphasis role - a deck that underlines `required-material` in one task underlines it in all of them. Half-applied roles are worse than unapplied ones.
 
-Deck-wide consistency chooses how a role looks, never whether role-carrying wording gets its treatment at all. Wording that genuinely is a safety warning, a failed state, a taught vocabulary term or the action verbs of a multi-phase task carries its role wherever it appears; "none" is not a consistent answer for those, only for the optional judgement roles like `focus-blue`. A safety list rendered as five equal black lines has not been restrained, it has hidden the one line children must not miss.
+Deck-wide consistency chooses how a role looks, never whether role-carrying wording gets its treatment at all. Wording that genuinely is a question or instruction to children, a safety warning, a failed state, a taught vocabulary term or the action verbs of a multi-phase task carries its role wherever it appears; "none" is not a consistent answer for those, only for the optional judgement roles like the peer colours. A safety list rendered as five equal black lines has not been restrained, it has hidden the one line children must not miss.
 
 ## 14. Deck-level quality tells
 
@@ -358,6 +362,9 @@ Before accepting the deck, read it in order and look specifically for these regr
 - one role given two treatments - the focal question blue on one slide and black on the next;
 - a question-card slot used for explanation or success criteria;
 - a visual question answered by a detached text list;
+- a table's job done by a row of text cards with the headings fused into the values;
+- an answer slide whose answer words sit black inside green frames;
+- a statement-plus-question block coloured as one thing, or run together with no break at the telling-to-asking boundary;
 - a claim with no map, photo, diagram, table or source to judge it against;
 - a My Turn visual that changes family on Our Turn or Your Turn;
 - a blank helper labelled with stage directions;
