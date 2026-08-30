@@ -23,6 +23,68 @@ function fail(signal, message) {
   process.exitCode = 1;
 }
 
+// Every imagePath the spec names, with the file it resolves to.
+function imagePathsIn(node, baseDir, found = []) {
+  if (Array.isArray(node)) {
+    for (const item of node) imagePathsIn(item, baseDir, found);
+    return found;
+  }
+  if (!node || typeof node !== "object") return found;
+  if (typeof node.imagePath === "string") {
+    const resolved = path.isAbsolute(node.imagePath)
+      ? node.imagePath
+      : path.join(baseDir, node.imagePath);
+    found.push({ imagePath: node.imagePath, resolved });
+  }
+  for (const value of Object.values(node)) imagePathsIn(value, baseDir, found);
+  return found;
+}
+
+// An adaptation photograph is sourced only AFTER this spec names it - promotion
+// reads the spec to decide which provisional entries are worth sourcing. So at
+// preflight the correct state for such a picture is "approved, not yet on
+// disk", and failing it here made a correctly-built Below sheet unable to pass
+// its own gate: the sheet was omitted, promotion then found nothing to source,
+// and the pictures never arrived. That is the sequencing trap that lost a Below
+// sheet on 30 August 2026.
+//
+// So a missing file is only a fault when the spec invented the path. A path the
+// photo contract lists is a promise the build will wait on, and the build still
+// refuses to draw a picture that never arrives.
+function pendingApprovedPictures(worksheet, specDir, photoReqPath) {
+  const named = imagePathsIn(worksheet, specDir);
+  const missing = named.filter((entry) => !fs.existsSync(entry.resolved));
+  if (!missing.length) return { pending: [], unapproved: [] };
+
+  let approved = new Set();
+  if (photoReqPath) {
+    try {
+      const contract = JSON.parse(fs.readFileSync(path.resolve(photoReqPath), "utf8"));
+      approved = new Set(
+        (Array.isArray(contract.photos) ? contract.photos : [])
+          .map((photo) => photo && photo.filename)
+          .filter((name) => typeof name === "string")
+          .map((name) => name.replace(/\\/g, "/"))
+      );
+    } catch {
+      // An unreadable contract is reported by the caller's own check; here it
+      // simply means nothing can be treated as approved.
+    }
+  }
+
+  const isApproved = (entry) => {
+    const asked = entry.imagePath.replace(/\\/g, "/");
+    return [...approved].some(
+      (name) => name === asked || name.endsWith(`/${asked}`) || asked.endsWith(`/${name}`)
+    );
+  };
+
+  return {
+    pending: missing.filter(isApproved),
+    unapproved: missing.filter((entry) => !isApproved(entry)),
+  };
+}
+
 // The sheets adaptation.md directs must be in the spec, or their omission must
 // point at a photograph request that genuinely is not in the photo contract.
 // Without this, a designer that omitted the Below sheet because its adaptation
@@ -114,6 +176,32 @@ function checkDirectedSheets(worksheet, adaptationPath, photoReqPath) {
   }
 }
 
+// A 1x1 transparent PNG, inline. It stands in ONLY inside this preflight, so a
+// pending picture does not stop the page being measured; nothing is written and
+// the build still reads the real file.
+const STAND_IN_HREF =
+  "data:image/png;base64," +
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+
+function standInForPending(node, pendingPaths) {
+  if (!pendingPaths.size) return node;
+  if (Array.isArray(node)) return node.map((item) => standInForPending(item, pendingPaths));
+  if (!node || typeof node !== "object") return node;
+  const out = {};
+  for (const [key, value] of Object.entries(node)) {
+    out[key] = standInForPending(value, pendingPaths);
+  }
+  if (typeof out.imagePath === "string" && pendingPaths.has(out.imagePath) && !out.imageHref) {
+    delete out.imagePath;
+    out.imageHref = STAND_IN_HREF;
+    // A square is the shape a worksheet crop is requested at, and it is the
+    // shape least likely to flatter a layout that a real picture would break.
+    out.naturalWidth = 1000;
+    out.naturalHeight = 1000;
+  }
+  return out;
+}
+
 function main() {
   const argv = process.argv.slice(2);
   let fileArg = null;
@@ -158,7 +246,31 @@ function main() {
     for (const warning of optionalVisuals.warnings) {
       console.warn(`[decoration] ${warning}`);
     }
-    worksheet = resolveImages(optionalVisuals.worksheet, specDir);
+
+    // A picture the contract approved but the pipeline has not published yet
+    // stands in at its promised shape, so the rest of the spec can still be
+    // measured. An invented path is left to fail through resolveImages below.
+    const { pending } = pendingApprovedPictures(
+      optionalVisuals.worksheet,
+      specDir,
+      photoReqArg
+    );
+    const pendingPaths = new Set(pending.map((entry) => entry.imagePath));
+    if (pendingPaths.size) {
+      for (const entry of pending) {
+        console.warn(
+          `[pending-picture] "${entry.imagePath}" is an approved request that has ` +
+            `not been published yet. That is the normal state at design time, ` +
+            `because promotion reads this spec to decide which pictures to source. ` +
+            `The build waits for the real file.`
+        );
+      }
+    }
+
+    worksheet = resolveImages(
+      standInForPending(optionalVisuals.worksheet, pendingPaths),
+      specDir
+    );
     answerKeyOf(worksheet);
     const refused = checkWorksheet(worksheet);
     if (refused.length) {

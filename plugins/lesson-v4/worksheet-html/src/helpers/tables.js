@@ -59,12 +59,53 @@ function renderDataTable(spec) {
     ${spec.note ? `<p class="h-data-note">${esc(spec.note)}</p>` : ""}`;
 }
 
+// A cell's text wraps inside its own column, not across the table, so the
+// width that decides how many lines it takes is the COLUMN's - and the column
+// loses a little to its own padding.
+const CELL_PAD_MM = 3;
+
+function cellTextWidthMm(columnMm) {
+  return Math.max(8, columnMm - CELL_PAD_MM);
+}
+
+// One row, priced by its tallest cell.
+//
+// Both tables used to price every row at one line, whatever was in it. A row
+// is as tall as its tallest cell, so a given cell holding a sentence made the
+// table taller than the engine had promised, and because the error only ever
+// runs one way the page passed its fit check and then clipped in the browser.
+// The flat height stays the floor, so a blank or tick row is unchanged; the
+// extra lines are what is added, at the height of a line of body text.
+function rowHeightMm(cells, columnWidthsMm, flatRowMm) {
+  let lines = 1;
+  cells.forEach((cell, i) => {
+    if (cell === undefined || cell === null || String(cell) === "") return;
+    const width = cellTextWidthMm(columnWidthsMm[i] ?? columnWidthsMm[0] ?? 30);
+    lines = Math.max(lines, linesFor(String(cell), width));
+  });
+  if (lines === 1) return flatRowMm;
+  // The flat height is a FLOOR, not a base to stack lines on top of: a row of
+  // blank writing cells is 12mm because that is room to write in, and a cell
+  // whose text has grown past 12mm no longer needs that room added again. So
+  // wrapped text is priced as its own lines plus the cell's padding, and the
+  // taller of the two wins.
+  const padMm = Math.max(0, Math.min(flatRowMm - LINE_MM, 2.5));
+  return Math.max(flatRowMm, lines * LINE_MM + padMm);
+}
+
 function measureDataTable(spec, widthMm = 100) {
   const rowMm = spec.compact ? DATA_ROW_COMPACT_MM : DATA_ROW_MM;
   const capMm = spec.caption ? (spec.compactCaption ? NOTE_LINE_MM : LINE_MM * 1.4) : 0;
   const noteMm = spec.note ? linesFor(spec.note, widthMm) * NOTE_LINE_MM + 1 : 0;
-  const headerRows = dataColumns(spec).length ? 1 : 0;
-  return capMm + rowMm * (spec.rows.length + headerRows) + noteMm + 4;
+  const columns = dataColumns(spec);
+  const headerRows = columns.length ? 1 : 0;
+  // A data table shares its width evenly; nothing in the spec says otherwise.
+  const share = columns.length ? widthMm / columns.length : widthMm;
+  const widths = (columns.length ? columns : [null]).map(() => share);
+  let bodyMm = 0;
+  for (const row of spec.rows) bodyMm += rowHeightMm(row, widths, rowMm);
+  const headMm = headerRows ? rowHeightMm(columns, widths, rowMm) : 0;
+  return capMm + headMm + bodyMm + noteMm + 4;
 }
 
 // ─── recording table ─────────────────────────────────────────────────────
@@ -179,11 +220,33 @@ function renderRecordingTable(spec) {
     </div>`;
 }
 
-function measureRecordingTable(spec) {
+// The floor a recording table can always reach: its rows at their flat height,
+// with nothing wrapped. This is what `needs` states, deliberately, because a
+// minimum measured at the table's NARROWEST width would be the tallest it ever
+// gets, and a helper that demands its own worst case is refused from every
+// zone that could have held it. Honest wrapping belongs in `measure`, which is
+// asked at the width the zone actually gives.
+function flatRecordingHeightMm(spec) {
   const capMm = spec.caption ? LINE_MM * 1.4 : 0;
   return (
     capMm + LINE_MM * 1.6 + writingFor(spec).rowMm * recordingRows(spec).length + 4
   );
+}
+
+function measureRecordingTable(spec, widthMm) {
+  const capMm = spec.caption ? LINE_MM * 1.4 : 0;
+  const flatRowMm = writingFor(spec).rowMm;
+  const sizes = columnWriting(spec);
+  // Without a width there is nothing to wrap against, so fall back to the
+  // table's own smallest usable width - the narrowest it is ever drawn at,
+  // which is also where its given cells wrap hardest.
+  const total = sizes.reduce((sum, size) => sum + size.columnMm, 0) || 1;
+  const available = typeof widthMm === "number" && widthMm > 0 ? widthMm : total;
+  const widths = sizes.map((size) => (size.columnMm / total) * available);
+  const headMm = rowHeightMm(spec.columns || [], widths, LINE_MM * 1.6);
+  let bodyMm = 0;
+  for (const row of recordingRows(spec)) bodyMm += rowHeightMm(row, widths, flatRowMm);
+  return capMm + headMm + bodyMm + 4;
 }
 
 const css = `
@@ -280,7 +343,7 @@ const helpers = {
       // Its own rows, at the height whatever the child is writing needs. A flat
       // 35mm said a six-row table needed no more height than a two-row one, and
       // that a table of sentences needed no more than a table of ticks.
-      minHeightMm: measureRecordingTable(spec),
+      minHeightMm: flatRecordingHeightMm(spec),
     }),
     greed: 3, // taller rows are more room to write, which is a real gain
   },
