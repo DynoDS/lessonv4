@@ -522,13 +522,41 @@ When the complete content does not fit:
    unchanged.
 2. **Remove optional context only.** An optional context picture may disappear
    when it does not change the learning.
-3. **Apply an upstream pre-authorised reduction.** Use only an item or element
+3. **Drop a printed reference the child already has in front of them.** A
+   reference is a thing to consult - a filled example chart, a classification
+   diagram, an anchor image - and it is the one printed element whose removal
+   costs a child nothing when the same thing is on the board or the working
+   wall throughout the lesson. Reprinting it there spends a quarter of the page
+   saying what the room already says.
+
+   You may take one off on your own judgement, including one marked required,
+   when all three hold: no question's wording depends on reading it *from the
+   sheet* ("use the chart above" is such a dependency, and so is a question
+   that names a value only the reference carries); the child demonstrably meets
+   it elsewhere in this lesson, which you establish from the lesson design's
+   own slides, representations or working-wall entries rather than assuming it;
+   and the page genuinely does not fit with it. Record it in a top-level
+   `notes` entry - the channel that reaches the teacher - naming the reference,
+   where the child still meets it, and that the page would not otherwise fit.
+   The teacher is the one person who can put it back, and they cannot miss what
+   they were never told was missing.
+
+   This is the one substantive removal that is yours, and it stops there. A
+   question, an activity, a word bank, a sentence stem, a scaffold a child
+   needs to access the work, or the sheet's only representation of an idea are
+   never yours to drop, however tempting the millimetres. If removing it would
+   change what a child can do rather than what they can look up, it is not a
+   reference and this step does not apply.
+4. **Apply an upstream pre-authorised reduction.** Use only an item or element
    explicitly named in the source's `Fit priority`, following the stated order.
    Record the authorised reduction in `notes`.
-4. **Return the gap upstream.** If no authorised reduction exists, or the
+5. **Return the gap upstream.** If no authorised reduction exists, or the
    authorised reduction is insufficient, return `PAGE_PLAN_GAP` to the
    pedagogical owner. Do not decide which required question, activity, support
-   or visual is expendable.
+   or visual is expendable. Reaching this step means every move above was
+   genuinely unavailable, and it stops the worksheets rather than thinning
+   them, so say plainly in the gap what you tried and what the page is short
+   by.
 
 A sheet normally remains one page with readable type and usable response space.
 
