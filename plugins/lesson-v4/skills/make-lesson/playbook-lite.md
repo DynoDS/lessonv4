@@ -880,6 +880,7 @@ Return these exact repair-impact fields with the normal terminal marker:
 Changed: [exact changed content]
 Unchanged: [exact protected content]
 Potential cross-resource impact: [specific relationships or None]
+Repair scope: REPAIR_SCOPE_OK
 ```
 
 Rebuild only that resource, rerun its deterministic check, rerender changed

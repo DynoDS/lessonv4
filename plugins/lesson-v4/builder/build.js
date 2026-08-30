@@ -18,6 +18,7 @@ const { capacityWarnings } = require('./src/content/capacity');
 const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
 const { verifyPictures } = require('./src/verify-pictures');
+const { verifyMarkers } = require('./src/verify-markers');
 const { sanitizeHouseStyle } = require('../shared/text/house-style');
 const { withoutDecorations } = require("../shared/decorations");
 const {
@@ -369,10 +370,28 @@ async function main() {
     );
   }
 
+  // An inline marker that no helper read is projected at the class as its own
+  // characters. It blocks for the same reason a missing picture does: it is
+  // invisible in the build output, it is nonsense on the board, and the teacher
+  // cannot fix it without editing the deck. The fault is the designer's and it
+  // is one string long, so stopping here costs a repair pass and shipping costs
+  // a lesson.
+  const markers = await runMarkerCheck(tempOutputPath);
+  for (const fault of markers.faults) {
+    console.error(`  ✗ ${fault.message}`);
+    diagnostic(
+      'SLIDE_MARKER_LITERAL',
+      'composition',
+      { slide: fault.slide, path: fault.part },
+      fault.message
+    );
+  }
+
   const publishable =
     autofit.status === 'AUTOFIT_OK' &&
     failedSlides.length === 0 &&
-    pictures.faults.length === 0;
+    pictures.faults.length === 0 &&
+    markers.faults.length === 0;
 
   if (!publishable) {
     if (pictures.faults.length) {
@@ -475,6 +494,22 @@ async function runPictureCheck(pptxPath) {
         '), so open it and confirm every picture is showing before you teach from it.'
     );
     return { faults: [], pictures: 0, media: 0 };
+  }
+}
+
+// The same shape, and for the same reason: a marker left as text is worth
+// blocking, and a check that could not run is not.
+async function runMarkerCheck(pptxPath) {
+  try {
+    return await verifyMarkers(pptxPath);
+  } catch (err) {
+    note(
+      'the inline answer markers in this deck could not be checked (' +
+        (err && err.message ? err.message : err) +
+        '), so open it and confirm no || or ** is showing as text before you ' +
+        'teach from it.'
+    );
+    return { faults: [], slides: 0, runs: 0 };
   }
 }
 

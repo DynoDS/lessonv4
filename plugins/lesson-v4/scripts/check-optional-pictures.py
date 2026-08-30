@@ -165,6 +165,17 @@ def check_evidence(
         return
 
     if library_root is None:
+        # Without a library there is no search to have run, so this verdict
+        # cannot be paid for at all. Letting it through is how a deck with no
+        # drawings in it passes as a deck the library was searched for and had
+        # nothing to offer - the two states then read identically ever after,
+        # which is exactly what makes a missing library impossible to notice.
+        failures.append(
+            f"{label} is nothing-fits, but no drawing library was available to "
+            "this run, so no search could have happened. A slide the library "
+            "could not be asked about is `library-unavailable`, not "
+            "`nothing-fits`"
+        )
         return
 
     returned = run_search(library_root, queries)
@@ -280,6 +291,15 @@ def check(
                 )
                 continue
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
+            if reason == "library-unavailable" and library_root is not None:
+                failures.append(
+                    f"slide {number} is recorded as library-unavailable, but a "
+                    f"drawing library was available to this run at "
+                    f"{library_root}. That reason describes the machine, not "
+                    "this slide, so it cannot be true of one slide and false of "
+                    "the deck around it"
+                )
+                continue
             if reason in EVIDENCED_REASONS:
                 check_evidence(entry, label, library_root, failures)
 
@@ -326,6 +346,22 @@ def main(argv: list[str] | None = None) -> int:
     except PassError as exc:
         print(f"OPTIONAL_PICTURE_PASS_FAILED: {exc}", file=sys.stderr)
         return 1
+
+    # Said on every run, pass or fail, because it is the fact that makes the
+    # rest of this output readable. A deck with no drawings in it is a good deck
+    # when the library had nothing for these slides and a broken one when there
+    # was no library to ask, and until this line existed the two printed the
+    # same `OPTIONAL_PICTURE_PASS_OK` and reached the teacher identically. That
+    # is why "why did it not use the drawings?" has been so hard to answer after
+    # the fact: nothing anybody kept recorded whether it could have.
+    library_line = (
+        f"OPTIONAL_PICTURE_LIBRARY: verified against {library_root}"
+        if library_root is not None
+        else "OPTIONAL_PICTURE_LIBRARY: UNAVAILABLE - this run had no drawing "
+             "library, so no drawing was possible and no search evidence was "
+             "checked"
+    )
+    print(library_line)
 
     if failures:
         print("OPTIONAL_PICTURE_PASS_FAILED", file=sys.stderr)

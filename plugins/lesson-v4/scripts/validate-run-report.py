@@ -484,6 +484,29 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
         obligations["picture"],
         failures,
     )
+
+    # ── Whether there was a drawing library to search ────────────────────
+    #
+    # A deck with no Educational SVG in it is a good deck when the library was
+    # searched and had nothing for these slides, and a broken one when there was
+    # no library on the machine to ask. Both used to close as a clean run and
+    # read identically ever after, so the question "why did it not use the
+    # drawings?" could not be answered from anything the run left behind, and
+    # the answer kept being sought in the guidance, where the fault was not.
+    # `check-optional-pictures.py` now says which happened on every run; this is
+    # what stops that line dying in a terminal.
+    lesson_spec = read_json(working / "lesson.json", "lesson.json", [])
+    deck_ran = isinstance(lesson_spec, dict) and bool(lesson_spec.get("slides"))
+    if deck_ran and "OPTIONAL_PICTURE_LIBRARY:" not in sections.get(
+        "## Picture results", ""
+    ):
+        failures.append(
+            "picture results: this run built a deck, so the section must carry "
+            "the `OPTIONAL_PICTURE_LIBRARY:` line from `check-optional-"
+            "pictures.py`, verbatim. A deck with no drawings means one thing "
+            "when the library was there and another when it was not, and "
+            "nothing else on the record tells them apart."
+        )
     require_obligations(
         "friction",
         sections.get("## Friction", ""),

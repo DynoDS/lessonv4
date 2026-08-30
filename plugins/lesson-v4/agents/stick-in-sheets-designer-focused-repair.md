@@ -34,6 +34,35 @@ Do not read unrelated stick-in reference sections merely because the creation-mo
 
 If the triggered narrow reading still does not establish a safe in-authority correction, read `[PLUGIN_ROOT]/agents/stick-in-sheets-designer.md` once and continue this same focused-repair attempt. The supplied `FOCUSED REPAIR` scope remains binding after that expansion; do not turn the attempt into a fresh stick-in discovery pass.
 
+## Prove the repair kept the work
+
+Before you change a byte, keep a copy of what you were given:
+
+```bash
+python3 -c "import shutil,sys; shutil.copyfile(sys.argv[1], sys.argv[2])"   "[WORKING_DIR]/stick-in-sheets.json" "[WORKING_DIR]/stick-in-sheets.json.before-repair"
+```
+
+When the repair is finished, before you return:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-repair-scope.py"   --before "[WORKING_DIR]/stick-in-sheets.json.before-repair"   --after "[WORKING_DIR]/stick-in-sheets.json"
+```
+
+Require `REPAIR_SCOPE_OK` and return that line with your repair-impact fields.
+
+`REPAIR_SCOPE_FAILED` names a content object that arrived and did not leave. You
+may move one, split it across pages or slides, hand it a different template or
+rebuild the layout around it; what you may not do is finish with fewer of the
+things children read, work from or write into than you were handed. A slide
+asking children to compare two objects went into a repair carrying a two-row
+recording table and came out carrying one column of boxes: every check passed,
+because what was left fitted beautifully, and the comparison was gone.
+
+Put back what went missing and repair the presentation around it. If the honest
+repair really does change what children are asked to do, that is the lesson
+designer's decision and not yours to make here: leave the finding unrepaired,
+return your terminal state, and say which decision it needs.
+
 ## Repair and check
 
 Change only the affected item data and unavoidable consequences of that change. Leave unrelated items semantically unchanged. Do not alter the matching board figure to make the printed piece easier to repair; if the board itself is wrong, preserve the existing cross-resource ownership route.

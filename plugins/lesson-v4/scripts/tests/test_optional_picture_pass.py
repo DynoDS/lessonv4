@@ -215,6 +215,69 @@ class EvidenceAgainstTheRealLibraryTests(CheckRunner):
         self.assertEqual(result.returncode, 0, result.stderr)
 
 
+class LibraryStateIsOnTheRecordTests(CheckRunner):
+    """Whether there was a library to search is a fact the run has to keep.
+
+    A deck with no drawings in it is a good deck when the library was searched
+    and had nothing for these slides, and a broken one when there was no library
+    to ask. Both printed the same `OPTIONAL_PICTURE_PASS_OK` and reached the
+    teacher identically, so "why did it not use the drawings?" could not be
+    answered from anything the run left behind - which is what kept sending the
+    answer back to the guidance, where the fault was not.
+    """
+
+    def test_the_library_state_is_printed_when_there_is_no_library(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "library-unavailable"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OPTIONAL_PICTURE_LIBRARY: UNAVAILABLE", result.stdout)
+
+    @unittest.skipUnless(LIBRARY_AVAILABLE, "the drawing library is not on this machine")
+    def test_the_library_state_names_the_library_that_was_searched(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OPTIONAL_PICTURE_LIBRARY: verified against", result.stdout)
+
+    def test_nothing_fits_cannot_be_claimed_with_no_library(self):
+        """The exact shape of a deck that reads as considered and was not.
+
+        `nothing-fits` asserts a search. With no library on the machine no search
+        can have happened, so the claim is unpayable however plausible its search
+        terms look - and it used to pass, because the evidence check simply
+        returned when it had no library to check against.
+        """
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["desk fan", "electric fan"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("no drawing library was available", result.stderr)
+        self.assertIn("library-unavailable", result.stderr)
+
+    def test_library_unavailable_is_the_honest_answer_with_no_library(self):
+        """The discrimination case: the same empty deck, answered truthfully."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "library-unavailable"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    @unittest.skipUnless(LIBRARY_AVAILABLE, "the drawing library is not on this machine")
+    def test_library_unavailable_cannot_be_claimed_when_the_library_is_there(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "library-unavailable"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("a drawing library was available", result.stderr)
+
+
 class ContractTests(unittest.TestCase):
     def test_the_designer_and_the_orchestrator_both_run_it(self):
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")

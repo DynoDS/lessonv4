@@ -75,6 +75,11 @@ class RunReportCase(unittest.TestCase):
             "accepted": "- None.",
             "build": "- None.",
             "launches": "WORKER_LAUNCH_AUDIT_OK: 6 named workers launched at their declared model and effort",
+            # A deck was built, so the record has to say whether there was a
+            # drawing library to search. It is its own part because most tests
+            # override the picture bullets and every one of them still owes
+            # this line.
+            "library": "OPTIONAL_PICTURE_LIBRARY: verified against /srv/educational-svg",
             "picture": "- None.",
             "helper": "- None.",
             "friction": "- None.",
@@ -90,7 +95,7 @@ class RunReportCase(unittest.TestCase):
             f"## Accepted minor issues\n\n{parts['accepted']}\n\n"
             f"## Build attempts\n\n{parts['build']}\n\n"
             f"## Worker launches\n\n{parts['launches']}\n\n"
-            f"## Picture results\n\n{parts['picture']}\n\n"
+            f"## Picture results\n\n{parts['library']}\n\n{parts['picture']}\n\n"
             f"## Helper gaps\n\n{parts['helper']}\n\n"
             f"## Friction\n\n{parts['friction']}\n\n"
             f"## Shared investigation log\n\n{parts['shared']}\n"
@@ -422,6 +427,52 @@ class TestRunReport(RunReportCase):
         pending.write_text("- [ ] one queued line\n", encoding="utf-8")
         report = self.write_report(
             overrides={"shared": f"Status: QUEUED\nPath: `{pending}`"}
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class TestDrawingLibraryStateReachesTheRecord(RunReportCase):
+    """Whether there was a drawing library to search is part of the record.
+
+    A deck with no Educational SVG in it is a good deck when the library was
+    searched and had nothing for these slides, and a broken one when there was
+    no library on the machine to ask. Both closed as a clean run and read the
+    same afterwards, so a teacher asking "why did it not use the drawings?"
+    could not find out from anything the run kept - and the answer kept being
+    sought in the guidance, where the fault was not.
+    """
+
+    def test_a_deck_run_without_the_library_line_is_rejected(self):
+        report = self.write_report(overrides={"library": ""})
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("OPTIONAL_PICTURE_LIBRARY", result.stdout)
+
+    def test_an_unavailable_library_is_a_perfectly_valid_thing_to_record(self):
+        """The record stays honest; it does not withhold a package over this."""
+        report = self.write_report(
+            overrides={
+                "library": (
+                    "OPTIONAL_PICTURE_LIBRARY: UNAVAILABLE - this run had no "
+                    "drawing library, so no drawing was possible and no search "
+                    "evidence was checked"
+                )
+            }
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_run_that_built_no_deck_owes_no_library_line(self):
+        """The discrimination case: no slides, no optional-picture pass."""
+        self.write_json(self.working / "lesson.json", {"slides": []})
+        report = self.write_report(
+            overrides={
+                "outcome": "Package status: PARTIAL",
+                "library": "",
+                "delivered": f"- worksheets: `{self.worksheets_out}`",
+                "excluded": "- Slides: NOT DELIVERED - no slide beats were earned.",
+            }
         )
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

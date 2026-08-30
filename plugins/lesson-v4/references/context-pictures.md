@@ -284,6 +284,24 @@ library had nothing better, which is the same claim as `nothing-fits`, so a
 That is the exact failure this catches: an emoji weather strip typed onto the one
 slide that wanted a picture, on a deck where the library was never opened.
 
+**`nothing-fits` and `library-unavailable` are answers to different questions,
+and the machine settles which one you are allowed.** `nothing-fits` asserts a
+search; with no library there was nothing to search, so the check refuses it and
+asks for `library-unavailable` instead. `library-unavailable` describes the
+machine rather than the slide, so with a library present the check refuses that
+too: it cannot be true of one slide and false of the deck around it. This is why
+the resolver runs as the first act of the pass rather than at the first slide
+that wants a drawing - the answer it gives decides which vocabulary the whole
+pass is entitled to.
+
+The check prints `OPTIONAL_PICTURE_LIBRARY:` on every run, saying whether it
+verified your evidence against a real library or had none to verify against, and
+that line is carried into the run report. A deck with no drawings in it means one
+thing when the library was searched and had nothing for these slides, and quite
+another when there was no library to ask; without that line the two read
+identically ever afterwards, and "why did it not use the drawings?" becomes a
+question about the guidance when it was never a question about the guidance.
+
 Run the check before promoting the deck:
 
 ```bash
