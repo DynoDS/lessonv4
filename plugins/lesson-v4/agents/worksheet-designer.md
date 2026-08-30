@@ -398,6 +398,39 @@ When one QUESTION is several things - a diagram, a prompt, and somewhere to
 write - use `stack` or `row` inside the zone. That is one numbered question and
 no arrangement of zones makes it three.
 
+**Compose the page; do not transcribe the hand-off.** The lesson design speaks
+in fields - `pupilAction`, `pupilPrompt`, `support`, `stimulus`,
+`recordingSurface` - because fields are how decisions are recorded. A child
+reads none of them; they read one page. The fields are your ingredients, never
+your layout: a field does not become a printed element just because it arrived
+as a separate string, and a page assembled field by field reads as machine
+output even when every word on it is right. Four habits keep a page composed:
+
+- **One voice per task.** `pupilAction`, a prompt's `pupilPrompt` and its
+  `support` usually describe the same task from three angles. Print the one
+  complete instruction a child acts on (usually the `pupilPrompt`), fold in
+  anything from the others that changes what the child actually does, and let
+  restatements go unprinted. Stacked `instruction` helpers saying overlapping
+  things bury the one that matters. The boundary: `support` that tells a child
+  what to do when stuck is worth printing - small, and beside the thing it
+  supports, not as another line in the instruction stack.
+- **Parallel cases separate.** A stimulus carrying several parallel cases -
+  four object clues, three claims to test, five readings to classify - renders
+  as one visual unit per case: a card each, a row each, a labelled paragraph
+  each, so a child working case by case finds their case at a glance.
+  `source-text` is for a genuine continuous passage read start to finish,
+  never for parallel cases fused into one block of prose.
+- **Shared structure appears once.** When the parts of a question-group share
+  the same response columns, they are one table: one header, one row per part,
+  the engine's `(1a)` `(1b)` numbering marking the parts. Repeating an
+  identical header, caption or instruction for every part spends the page on
+  furniture; a fact stated once serves every item.
+- **Response space matches the thinking.** Choose each answer space - a
+  recording-table's `writing` size, a written-answer's `lines` - from the most
+  demanding thing the `response` field asks for, not the least. "Explain" or
+  "what makes it work" is never a word-size cell, and a tick column never gets
+  sentence width.
+
 **Mark each question with `question: true` and never write a number.** The engine
 counts them in reading order, in one format. A question you could not build costs
 its place in the sequence and nothing else, so the child's sheet still reads 1, 2,
@@ -414,6 +447,13 @@ For an Expected `lesson-design.json` content block whose `kind` is `question-gro
 For a `question-group`, preserve its part order.
 
 For `frame`, `stimulus-set` and `child-generated`, honour that structured shape directly; do not convert it into a question list.
+
+Honouring the shape does not strip the number. A `child-generated` task that
+shares its page with other tasks carries `question: true` on the one object
+holding its generator prompt and recording surface, so a child can be sent to
+it by number and the answer key can say what to accept. The unnumbered case is
+the single whole-page activity described in step 1, where the page IS the task
+and a number would carve it into steps.
 
 For a `stimulus-set`, every nested prompt may carry its own `visualRequirements`, `representationRefs`, `stickyKnowledgeRefs` and `photoRefs`. Resolve those prompt-level requirements in addition to any outer stimulus-set refs; do not over-apply an outer visual to every prompt when only one prompt references it.
 
@@ -564,7 +604,7 @@ answer. For an open task with no printed number, use a clear label such as
 For genuinely open reasoning, give an example plus the acceptance condition
 (`"Answers vary; for example ... Accept any answer that ..."`). Copy supplied
 answers faithfully, calculate deterministic answers, and use the adaptation's
-answer blocks for its sheets. Do not reverse-engineer an Expected answer from its question. Use the item's structured `answer`. `answer.kind: none` produces no teacher answer; `exact`, `model` and `standard` feed the answer-key route with the supplied `content` and any `acceptanceCondition`. Worksheet answer delivery is always teacher-only. The final JSON is not complete while any pupil
+answer blocks for its sheets. Do not reverse-engineer an Expected answer from its question. Use the item's structured `answer`. `answer.kind: none` supplies no answer content: when such a task carries a printed number its entry states what a correct response must show and what to accept, and when it has no printed number it takes no entry. `exact`, `model` and `standard` feed the answer-key route with the supplied `content` and any `acceptanceCondition`. Worksheet answer delivery is always teacher-only. The final JSON is not complete while any pupil
 sheet lacks its own answer section or any numbered question lacks an entry.
 
 The builder writes this mechanically to `[Topic] - Answers.txt` with Below,
@@ -635,6 +675,11 @@ Render the upstream pedagogical decision faithfully.
    opens with one (`**Compare two methods**:`, `**Reverse / working
    backwards**:`). Those are scaffolds for whoever wrote the adaptation, not
    words for a child. Keep everything after them verbatim.
+
+   Verbatim governs the words, never the typography. Splitting a stimulus at
+   its own case boundaries so each case gets its own card or row changes no
+   wording and is composition, which is yours (see Compose the page). What
+   this rule forbids is rewording, adding or dropping words inside a prompt.
 
 2. **Honour the lesson's TEACHING REPRESENTATIONS section, and the configuration
    it names.** A part-whole model is a family, not one object: blank, whole

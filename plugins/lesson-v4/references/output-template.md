@@ -911,6 +911,14 @@ Use multipart structure only for one connected pupil job, under the existing ped
 }
 ```
 
+`stimulus` is child-facing. When it holds several parallel cases (four object
+clues, three claims to test), author one case per paragraph, separated by
+blank lines, each opening with its own subject: the worksheet-designer renders
+one visual unit per case, and cases fused into a single paragraph reach the
+child as one block of prose. `pupilAction` states the block's one action once;
+do not restate it inside each prompt's `pupilPrompt`, because overlapping
+instruction fields become overlapping printed lines.
+
 #### Child-generated worksheet
 
 ```json

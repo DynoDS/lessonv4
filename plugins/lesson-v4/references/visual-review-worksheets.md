@@ -23,11 +23,14 @@ decision and Wave 5 worksheet mechanics already own that decision.
 Do not judge whether hierarchical items such as `(1a)` and `(1b)` ought to have
 been designed as one coherent pedagogical assessment job. Check only their
 rendered usability and the ordinary answer/key and page-layout properties owned
-by visual review.
+by visual review. How the parts were grouped is upstream's decision; how the
+group was rendered stays in scope, so parts sharing identical response columns
+drawn as separate tables with repeated headers is a composition fault to raise,
+not a grouping question to leave alone.
 
 Identify every substantial pale or empty area as either functional pupil workspace (writing, annotation, plotting, drawing, calculation, sorting, recording or manipulation) or accidental dead space, then apply the blocking rule above. Do not approve from the build's headroom report alone: it measures how much room each part was given, not whether the blank paper beside it is workspace or waste, and that judgement is yours to make from the render.
 
-**Whether it reads as a coherent children's activity.** The page needs a compact title, a clear visual or working structure, enough genuine thinking and adequate response space for what each prompt demands. A title followed by a long numbered list with answer lines is a composition fault when a diagram, evidence panel, card sort, shared stimulus or working surface would make the learning clearer. Repeated pastel panels, thick coloured number strips, oversized headings or many rounded containers are faults when they consume space without organising learning. Do not mistake coloured text for visual design, and do not approve merely because nothing clips.
+**Whether it reads as a coherent children's activity.** The page needs a compact title, a clear visual or working structure, enough genuine thinking and adequate response space for what each prompt demands. A title followed by a long numbered list with answer lines is a composition fault when a diagram, evidence panel, card sort, shared stimulus or working surface would make the learning clearer. Repeated pastel panels, thick coloured number strips, oversized headings or many rounded containers are faults when they consume space without organising learning. Transcription shapes are composition faults too, however cleanly they render: several parallel cases fused into one paragraph a child must mine, consecutive instruction lines restating each other, an identical table header or caption repeated for every part where one shared table would organise the set, and a task a child must do carrying no question number while its neighbours are numbered. Do not mistake coloured text for visual design, and do not approve merely because nothing clips.
 
 **Response space against prompt demand.** Read each written prompt and count what it asks the child to produce: `explain two ways, then identify one more` is three written things, and two dotted lines beneath it is a fault even though nothing clips, because the page itself tells the child to write less than the task asked.
 

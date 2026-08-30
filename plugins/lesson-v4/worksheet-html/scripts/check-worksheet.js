@@ -11,6 +11,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { resolveImages } = require("../src/images");
 const { prepareWorksheetDecorations } = require("../src/decorations");
+const { compositionAdvisories } = require("../src/composition");
 const {
   answerKeyOf,
   checkWorksheet,
@@ -140,6 +141,13 @@ function main() {
   if (adaptationArg) {
     checkDirectedSheets(worksheet, adaptationArg, photoReqArg);
     if (process.exitCode === 1) return;
+  }
+
+  // Advisory only, never an exit code: composition is a judgement about a
+  // printed page, and this makes sure the judgement happens while the spec is
+  // still the designer's to change.
+  for (const advisory of compositionAdvisories(worksheet)) {
+    console.warn(`[composition] ${advisory}`);
   }
 
   try {
