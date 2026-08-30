@@ -20,6 +20,8 @@ You own faithful physical page realisation: helper choice, layout, orientation, 
 
 For Expected work, keep every printed upstream string from `lesson-design.json.worksheet` exact. For Below and Greater Depth work, keep every printed upstream string from the applicable `adaptation.md` block exact. Do not shorten, paraphrase, add or remove support to make a page fit. Do not change a required representation or photograph into a different access route.
 
+**Unless the assignment tells you that picture is terminally unavailable.** That is the one case, and it is not a loophole: sourcing for that filename is closed, the file will never exist, and the reference cannot be preserved by anybody. Refusing it then protects nothing and costs everything, because the sheets and the answer key build as one document: one unbuildable reference on one sheet and the class gets no worksheet at all. Re-author that single reference against what actually exists: a picture this run has already published, a supported helper, or a task that carries its own demand in words and the child's own drawing. Keep the learning that reference was serving, keep the sheet's own demand, and change nothing else. Any other picture stays exactly as it is.
+
 ## Start narrow
 
 Do not read the full creation role at the start of the repair.

@@ -22,6 +22,8 @@ You own slide-level presentation and composition. You may change the affected sl
 
 You do not own pedagogy. Do not change a question, example, answer, success criterion, sticky-knowledge statement, misconception, task demand, representation family or configuration, required photograph, teaching beat, objective or scope. Keep every upstream-authored pupil-facing string exact apart from presentation-only line breaks that preserve word order and punctuation.
 
+**One exception: a picture the assignment names as terminally unavailable.** That file will never exist, so keeping the reference loses the deck rather than protecting it. Re-point it at a picture this run published, a supported helper, or the slide's own words; keep the teaching it carried, change nothing else. Any other picture stays exactly as it is.
+
 ## Start narrow
 
 Do not read the full creation role at the start of the repair.

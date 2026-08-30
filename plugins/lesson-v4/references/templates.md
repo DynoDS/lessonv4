@@ -1282,7 +1282,9 @@ A longer bank that wraps to several rows, in the green (support) variant:
 
 **`maxRows` field (optional):** a positive whole number that limits the bank to that many rows. The helper reduces the complete bank through one shared font size until it meets the limit. If it cannot meet the limit at the readable floor, the build stops with `CHIP_BANK_ROW_CAPACITY`. Use `"maxRows": 1` for a short full-width bank that should stay on one line.
 
-**`title` field (optional):** a heading printed above the bank (e.g. "Word bank"), in the variant's colour. Omit it when the bank needs no heading.
+**`title` field (optional):** a heading printed above the bank (e.g. "Word bank"), in the variant's colour. The heading takes a reserved band roughly half an inch deep out of the zone before any pill is placed, so a titled bank in a thin band can end up with no room at all for its chips. Omit it when the bank needs no heading.
+
+**Give the bank a band it can stand in.** The pills shrink with the space available, but only down to a readable floor; below that the bank cannot be made smaller, and it used to draw past the bottom of its zone and off the slide with nothing said. It now stops with `CHIP_BANK_HEIGHT_CAPACITY`, naming the shortfall and the height that would clear it. In a `stack`, that height is set by this block's `weight` against its siblings, and a wide short picture beside a bank usually wants a smaller share than it looks like it needs, because a `contain` picture cannot use extra height anyway.
 
 **`variant` field (optional, default `blue`):** the colour identity, picked from the house palette so a bank reads as part of the set.
 - `blue` — neutral default (sticky-blue fill, blue outline + text). Use for a property-label set or a general option set.

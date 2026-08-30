@@ -145,6 +145,32 @@ Write a confirmation pass to the confirmation filename your spawn prompt gives y
 
    `--box` is the region as fractions of the page - left,top,right,bottom, each 0 to 1 - which is what your eye can estimate from the page image without knowing its pixel size (a cramped key in the bottom-left is roughly `0.05,0.72,0.35,0.96`). Then Read the crop. The detail is genuinely there in the PDF; the page PNG simply rendered it too small to trust, so a look at the crop replaces a guess with a fact. Zoom the handful of regions a call actually hangs on, not every page - a page you can already read clearly needs no crop.
 
+   **Before you record that something is missing, prove it is missing.** "The
+   panel is empty", "the heading is absent", "the criteria did not render" is
+   the one class of finding you cannot settle by looking harder at the thing,
+   because on your reading of the page there is nothing there to look at. It is
+   also the easiest to get wrong, because a page you have once read as blank
+   keeps reading as blank. This has already cost a run: a success-criteria panel
+   carrying its green heading and six white step cards was reported as an empty
+   bordered area, a repair round went on changing a spec key that was never
+   wrong, and the repair was then recorded as visually confirmed against a panel
+   that had been correct from the start. The deck was fine; the review was not.
+
+   Two cheap facts settle it before you write anything down.
+
+   - **Crop that region on its own** with `zoom-region.py`. Content you can name
+     out of the crop is content that rendered.
+   - **Read what the build said about it.** A builder that could not draw
+     specified content names it - a warning, a diagnostic, a signal against that
+     page - and a build that says it dropped nothing dropped nothing. Content
+     the spec supplies, against a build that raised nothing, is on the page.
+
+   When both say the content is there, the fault was in the looking: drop the
+   finding and move on. Record an absence as `BLOCKING` only when the crop shows
+   the space genuinely empty. None of this applies to content that is plainly
+   present but unreadable, clipped, colliding or too small - those you judge by
+   looking, as everywhere else.
+
    **Crop again when the first crop does not settle it.** One look is not a budget. If the crop came back still ambiguous, or landed off-centre, or answered the question you asked and raised a sharper one beside it, re-crop: tighter on the element, wider to bring in the label it has to agree with, or over the neighbouring region the first crop revealed. Each crop costs one call and returns a fact, which is a better trade than a paragraph of reasoning about what a blurry shape probably is. Carry on until you can state what the page shows in a plain sentence, and only then decide fault or note. The one thing that does not improve with another crop is a page break, which the renderer places approximately - no resolution fixes an approximation, so that one stays a note.
 
 ---

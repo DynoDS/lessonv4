@@ -90,6 +90,36 @@ class ChildFacingWordingReachTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.assertIn(field, lesson_designer)
 
+    def test_the_slide_fields_that_print_to_the_class_are_named(self) -> None:
+        """Two board fields print verbatim and neither was on the list.
+
+        `content.example` on a My Turn is what the whiteboard shows while the
+        teacher models, and a real Year 4 deck showed the class `Begin with one
+        clip deliberately left loose, trace the broken path`. `answer.content`
+        under `answer-slide` delivery is the reveal children read, and the same
+        deck showed them `A clear labelled pictorial drawing that matches the
+        chosen working circuit`. Both were written to the teacher because
+        nothing said they were read by anyone else.
+        """
+        lesson_designer = flat(LESSON_DESIGNER)
+
+        self.assertIn("content.example", lesson_designer)
+        self.assertIn(
+            "IS what the board carries while you model", lesson_designer
+        )
+        # The stage directions need somewhere to go, or the rule just deletes
+        # information the teacher needs.
+        self.assertIn("belong in speakerNotes", lesson_designer)
+
+        self.assertIn("answer.content", lesson_designer)
+        self.assertIn(
+            "the answer a child would say out loud", lesson_designer
+        )
+        self.assertIn(
+            "acceptanceCondition` is where marking language lives",
+            lesson_designer,
+        )
+
     def test_generative_tasks_name_their_category(self) -> None:
         """`Choose a job` asks a child to invent an abstraction."""
         self.assertIn(

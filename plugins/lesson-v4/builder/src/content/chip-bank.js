@@ -137,6 +137,28 @@ function drawChipBank(pptx, slide, zone, data) {
     chipH = Math.max(CHIP_H_MIN, (innerH - (rows.length - 1) * CHIP_GAP_Y) / rows.length);
     blockH = rows.length * chipH + (rows.length - 1) * CHIP_GAP_Y;
   }
+  // The clamp above has a floor, so a band too short for one readable pill
+  // cannot be made to fit by shrinking. What used to happen then was that the
+  // pills drew from the top of the band at their floor height and simply
+  // carried on past it: on a starter slide whose stack left the bank 0.07in,
+  // a whole word bank was drawn hanging off the bottom edge of the slide with
+  // nothing said, and every check downstream passed because the spec was
+  // sound. A bank drawn where nobody can read it is not a smaller bank, so it
+  // is refused by name here and the shortfall is stated, the way an
+  // undersized picture cell already is: the lever is the stack weight that set
+  // this band's height, or the title the band is also carrying.
+  if (blockH > innerH + 0.005) {
+    const shortfall = (blockH - innerH).toFixed(2);
+    throw new Error(
+      `CHIP_BANK_HEIGHT_CAPACITY: ${chips.length} chips need ` +
+      `${blockH.toFixed(2)}in of height at the readable font floor but the zone ` +
+      `leaves ${Math.max(0, innerH).toFixed(2)}in` +
+      (title ? ` once the "${title}" title band is taken out` : '') +
+      `, so the bank is ${shortfall}in short and would draw outside its zone. ` +
+      `Raise this block's share of the stack (or drop the title) to give the bank ` +
+      `at least ${(blockH + 2 * PAD + (title ? TITLE_H + TITLE_GAP : 0)).toFixed(2)}in.`
+    );
+  }
 
   // Centre the whole block vertically in the available height.
   let rowY = innerY + Math.max(0, (innerH - blockH) / 2);

@@ -86,14 +86,18 @@ function titleBarHtml(text, fillColour, style, fittedPt, size, orientation) {
 // Div with background fill, border weight from style.sizes.panelBorderEighths
 // (eighths of a point), padding matching the cell margins (360 dxa default,
 // ~6.35mm).
+// `wall-panel` centres the panel's own children when the panel is taller than
+// they are. A panel that is the card's whole body also carries `wall-body`, so
+// it grows to the bottom of the page rather than stopping at its text.
 function panelHtml(innerHtml, fillColour, borderColour, style, size, orientation, opts = {}) {
   const borderEighths = opts.borderEighths || style.sizes.panelBorderEighths || 24;
   const borderMm = mm(borderEighths / 8 / 72);
   const paddingDxa = opts.paddingDxa != null ? opts.paddingDxa : 360;
   const paddingMm = mm(paddingDxa / 1440);
   const widthStyle = opts.widthMm != null ? `width:${opts.widthMm}mm;` : "width:100%;";
+  const classes = opts.widthMm != null ? "wall-panel" : "wall-body wall-panel";
   return (
-    `<div style="box-sizing:border-box;${widthStyle}background:${hash(fillColour)};` +
+    `<div class="${classes}" style="box-sizing:border-box;${widthStyle}background:${hash(fillColour)};` +
     `border:${borderMm}mm solid ${hash(borderColour)};padding:${paddingMm}mm;">${innerHtml}</div>`
   );
 }
@@ -140,7 +144,11 @@ function panelWithVisualHtml(innerHtml, visual, visualLabel, fillColour, borderC
         `</div>`;
     }
     const labelHtml = visualLabel ? `<div style="margin-top:${mm(90 / 1440)}mm;">${captionHtml(visualLabel)}</div>` : "";
-    return `<div>${panelEl}${visualHtml}${labelHtml}</div>`;
+    return (
+      `<div class="wall-body" style="display:flex;flex-direction:column;">` +
+      panelEl + visualHtml + labelHtml +
+      `</div>`
+    );
   }
 
   // Side-by-side (and dominant, which is the same arithmetic with a small
@@ -170,8 +178,8 @@ function panelWithVisualHtml(innerHtml, visual, visualLabel, fillColour, borderC
   const labelHtml = visualLabel ? captionHtml(visualLabel) : "";
 
   return (
-    `<div style="display:flex;align-items:flex-start;width:100%;">` +
-    `<div style="width:${panelWidthMm}mm;flex:none;">${panelEl}</div>` +
+    `<div class="wall-body" style="display:flex;align-items:stretch;width:100%;">` +
+    `<div style="width:${panelWidthMm}mm;flex:none;display:flex;">${panelEl}</div>` +
     `<div style="width:${spacerMm}mm;flex:none;"></div>` +
     `<div style="width:${mm(visualWidthIn)}mm;flex:none;align-self:center;box-sizing:border-box;padding:${paddingMm}mm 0;text-align:center;">${visualInner}${labelHtml}</div>` +
     `</div>`
@@ -195,7 +203,7 @@ function twoUpPanelsHtml(leftInnerHtml, leftFill, leftBorder, rightInnerHtml, ri
     `<div style="box-sizing:border-box;width:${halfMm}mm;background:${hash(fill)};` +
     `border:${borderMm}mm solid ${hash(border)};padding:${paddingMm}mm;">${innerHtml}</div>`;
   return (
-    `<div style="display:flex;align-items:stretch;width:100%;">` +
+    `<div class="wall-body" style="display:flex;align-items:stretch;width:100%;">` +
     cell(leftInnerHtml, leftFill, leftBorder) +
     `<div style="width:${spacerMm}mm;flex:none;"></div>` +
     cell(rightInnerHtml, rightFill, rightBorder) +
@@ -235,6 +243,23 @@ body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
   z-index: 1;
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+/* A card used to be laid out at the height of its own text and left whatever
+   the page had spare as a blank white band across the bottom - about a fifth
+   of an A3 sheet on a four-step worked example, room the panel and the
+   photograph could both have used. The title bar keeps its natural height;
+   the card's body takes the rest of the page. */
+.page-core > * { flex: 0 0 auto; }
+.page-core > .wall-body { flex: 1 1 auto; min-height: 0; }
+.wall-body > .wall-panel { flex: 1 1 auto; min-height: 0; }
+/* A panel taller than its own content centres that content rather than
+   pinning it to the top and reopening the same band inside the panel. */
+.wall-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .decoration-layer {
   position: absolute;

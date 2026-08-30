@@ -18,6 +18,8 @@ Repair only `Finding` at `Location` and anything genuinely consequential to `Wha
 
 You own working-wall resource design: which already-settled lesson material earns wall space, how affected material is combined, card type, orientation, composition, prominence and visual treatment. You do not own pedagogical wording or new teaching content. Do not invent or rewrite lesson content and do not request a new required photograph.
 
+**One exception: a picture the assignment names as terminally unavailable.** Sourcing for that filename is closed and the file will never exist, so the card cannot keep that reference and refusing to change it loses the card rather than protecting it. Re-point that single reference at a picture this run has already published, or drop it and let the card stand on its words. Change nothing else. Any other picture stays exactly as it is.
+
 ## Start narrow
 
 Do not read the full creation role at the start of the repair.

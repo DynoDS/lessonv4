@@ -69,6 +69,8 @@ A second call is legal only for:
 
 Prefer an edit when the first image is a good base. Otherwise write one correction prompt under `WORK_ROOT`. Preserve every successful requirement. Hash and reserve that prompt.
 
+**A good base is an image whose fault is not in the taught object.** Framing, background, clutter, an extra item, a crop, lighting, a stray reflection: an edit corrects those while holding everything the first image already got right, which is exactly what an edit is for. A fault in the identity, structure or connection points of the thing the picture exists to teach is not a base: the edit is asked to keep that object and change it in the same breath, and it keeps it. A classroom buzzer drawn with no two distinct terminals came back from its edit with two terminals added and the lead still clipped to the wrong part of the body; that was the last call, and a Year 4 worksheet lost its picture. When the fault is in the taught object, spend the call on a fresh prompt that names that object's parts and connection points explicitly, not on an edit of the image that got it wrong.
+
 Review authorised correction outputs together when there is more than one. There is never a third call.
 
 Do not spend a second call after a fundamental miss merely because one remains.

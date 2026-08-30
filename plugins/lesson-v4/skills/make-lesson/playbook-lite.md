@@ -546,12 +546,25 @@ Picture provenance is completed after visual review, not here.
 
 ---
 
+**`unsatisfied` and `omitted` are terminal, and terminal means never coming.**
+That filename's ledger is spent, so the one-filename repair above has nothing
+left to run for it, and any specification still naming it loses its whole build.
+Each track reconciles its own specification against these receipts before
+building.
+
+---
+
 **Track A trigger:**
 
 Wait until Slide Designer and all picture filenames referenced by `lesson.json`
 are terminal. When the resolved state is `PICTURE_STAGE: unavailable` or
 `none required`, no terminal receipt is coming and there is nothing to wait
 for: build the slides from the specification the designer already wrote.
+
+Reconcile first: for any picture filename `lesson.json` names whose terminal
+receipt reads `unsatisfied` or `omitted`, run one focused Slide Designer repair
+before the build, telling it the filename is terminally unavailable and that
+re-pointing that one reference is the repair, not a scope breach.
 
 If the lesson uses a labelled diagram over a photo, launch Diagram Anchor
 against the final published image and update only anchor coordinates.
@@ -728,6 +741,13 @@ unpublished, and the worksheet branch continues to a built sheet.
 **Track B trigger:** wait until every picture filename referenced by
 `worksheet.json` is terminal before building. Under `PICTURE_STAGE: unavailable`
 or `none required`, or a promotion that reported zero, nothing is coming.
+
+**Terminal includes `unsatisfied` and `omitted`, and those never arrive.**
+Reconcile before building: for each such filename `worksheet.json` names, run
+one focused Worksheet Designer repair, telling it the filename is terminally
+unavailable and that re-authoring that one question against what exists is the
+repair, not a scope breach. The sheets are one document, so one unreconciled
+reference loses all three and the answer key.
 
 ---
 

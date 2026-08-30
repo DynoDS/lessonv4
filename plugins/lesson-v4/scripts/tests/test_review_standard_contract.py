@@ -58,6 +58,27 @@ class ReviewStandardTests(unittest.TestCase):
             self.assertIn("review-evidence.md", text)
             self.assertIn("before writing any finding", text)
 
+    def test_an_absence_must_be_proved_before_it_is_recorded(self):
+        """A finding that content is missing is the one you cannot look harder at.
+
+        A Year 4 deck's success-criteria panel rendered its green heading, five
+        numbered step cards and a sticky-knowledge reminder. The reviewer
+        recorded it as "an empty bordered area: its heading, five numbered
+        criteria and sticky-knowledge reminder are all absent", a repair round
+        was spent changing a spec key that was never wrong, and the repair was
+        written up as visually confirmed. Rebuilding the pre-repair spec puts
+        the same full panel on the page, so nothing was ever missing. Two cheap
+        facts - a crop of that region, and what the build said it dropped -
+        settle it before the finding is written.
+        """
+        text = read(VISUAL_REVIEWER)
+        self.assertIn("Before you record that something is missing", text)
+        self.assertIn("zoom-region.py", text)
+        self.assertIn("a build that says it dropped nothing dropped nothing", text)
+        self.assertIn("drop the\n   finding", text)
+        # It must not swallow the faults that ARE judged by looking.
+        self.assertIn("unreadable, clipped, colliding or too small", text)
+
 
 if __name__ == "__main__":
     unittest.main()
