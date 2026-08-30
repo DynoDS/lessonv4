@@ -386,9 +386,12 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # more demonstrated failures were repaired here: a Chrome preflight
         # passed as `ready` on a guess with the PDF packages missing, and a
         # shared build-review-log entry queued around a merely missing file.
-        # Every slice still sits far under its own 7 KiB budget, which is what
-        # a run actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 53 * 1024)
+        # Raised from 53 KiB for the content-gap picture wave, after a whole
+        # geography lesson blocked with the picture pipeline's rescue ladder
+        # sitting unused because nothing reopened the contract for a gap
+        # found after the freeze. Every slice still sits far under its own
+        # 7 KiB budget, which is what a run actually pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 54 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

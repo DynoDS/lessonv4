@@ -353,7 +353,9 @@ only when a `build` decision exists.
 ### The picture route
 
 Open here and closed after Phase 2, because the contract is not frozen yet and a
-picture added now is sourced in the same wave as the rest. Take it with one
+picture added now is sourced in the same wave as the rest. It reopens exactly
+once more for a content gap a designer finds later: the content-gap picture
+wave in Phase 3. Take it with one
 focused Lesson Designer revision over the three canonical design files: add the
 visual as a `controlled-ai` picture with a complete generation prompt, drop the
 representation use that has no helper, change nothing else, stay within the
@@ -829,6 +831,24 @@ deck that is built and checked goes to review while the worksheet branch is
 still designing. Phase 3.5 carries the launch: run its route probe once, then
 launch each reviewer as its build is accepted. Only the cross-resource
 consistency review and the deterministic merge wait for every branch.
+
+**The content-gap picture wave.** `SLIDE_CONTENT_GAP` or
+`WORKSHEET_CONTENT_GAP` - a live helper cannot draw a load-bearing visual
+faithfully and no authorised photo covers it - does not end the resource. The
+picture ladder (real search on Wikimedia and Unsplash, then authorised
+controlled generation with its visual checks) is a rescue route, not only a
+service for pictures the design promised up front; a teacher finding a blocked
+lesson in the morning is the worse outcome. Run one focused Lesson Designer
+revision over the three canonical design files: add the missing visual as a
+picture requirement, real-first with an authorised fallback (a real place's
+geography publishes only after its visual check confirms it), point the
+affected representation use at that filename, change nothing else, keep the
+picture cap. Re-run the design validator and photo-cap check, snapshot the
+revision as the next wave number, and run the supplemental-wave mechanics over
+that snapshot, naming already-terminal filenames so nothing finished reopens.
+Relaunch the blocked designer on the published picture. One wave per run; a
+gap that survives it excludes as before, the pending helper still built for
+`/install-helper`.
 
 Once the last branch settles, every earned resource must be either built with an
 accepted summary or excluded with a reason. A resource that is neither by that
