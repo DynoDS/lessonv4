@@ -273,43 +273,15 @@ The later anchor pass may move dots or drop a feature not actually visible in th
 
 This has two moments, not one.
 
-While composing a light slide, ask whether a relevant P2 belongs before settling its template, and choose a template that leaves the picture somewhere to sit. A slide whose teaching content already has everything it needs at full readable size can afford a picture with a place of its own; a full slide cannot. Room is never arranged around a P3. Because the drawing is searched for later and may not exist, the template you choose must still look finished as text on its own.
+While composing a light slide, ask whether a relevant P2 belongs before settling its template, and choose a template that leaves the picture somewhere to sit yet would still look finished as text on its own, because the drawing is searched for later and may not exist. Room is never arranged around a P3.
 
-After the core geometry is sound, run one explicit whole-deck pass under the strict order P1 > P2 > P3.
+After the core geometry is sound, run one explicit whole-deck pass under the strict order P1 > P2 > P3. Resolve the Educational SVG library as the first act of the pass. Go slide by slide, every slide, and write one line each into `[WORKING_DIR]/optional-picture-pass.json` as you go. `context-pictures.md` owns the judgement - what counts as room, what competes, when a P2 or P3 belongs, the record's shape, the five reason codes and the evidence a declined slide owes - so read its specialist sections at the decision points it names. Judge each slide on its own rather than against a deck quota. The questions you are answering, per slide:
 
-Go slide by slide, every slide, and write one line each into
-`[WORKING_DIR]/optional-picture-pass.json` as you go. The record's shape, the
-five reason codes and the evidence a declined slide owes are in
-`context-pictures.md`; the questions you are answering are these:
+1. **Has this slide room to spare?** Room is physical: space its own content is not using at a readable size. This is the only question that decides whether the slide is a candidate. A photograph on this slide does not answer question 1 - P1 beating P2 settles what a picture may *displace*. It never settles whether the slide has room. A picture on another slide answers nothing at all: There is no deck budget, so each slide's answer belongs to that slide. Competing is physical and judged on this slide alone.
+2. **If it has room, what relevant drawing belongs in it?** Search the library before settling on anything - an emoji typed in without a search is a slide the pass skipped. A slide that still reads as a wall of text, or carries no imagery at all, is what P3 is for.
+3. **If nothing belongs, record which of the five reasons is true.** Every reason is a claim about this slide; a deck-level judgement never zeroes this layer.
 
-1. **Has this slide room to spare?** Room is physical: space its own content is
-   not using at a readable size. This is the only question that decides whether
-   the slide is a candidate.
-2. **If it has room, what relevant drawing belongs in it?** A P2 when it helps a
-   child recognise, locate or understand something here; a P3 when the slide
-   reads flat and there is nothing to explain.
-3. **If nothing belongs, which of the five reasons is true?**
-
-**A photograph on this slide does not answer question 1.** P1 beating P2 settles
-what a picture may *displace* and whether a second picture saying the same thing
-is wanted. It never settles whether the slide has room, and a slide with a strong
-photograph and a wide empty margin has room. Treating P1's presence as the end of
-the pass is how a deck came back with seventeen slides and no drawing on any of
-them.
-
-**A picture on another slide answers nothing at all.** There is no deck budget:
-one slide's picture neither earns nor spends anything anywhere else. Each slide's
-answer belongs to that slide, which is why a normal deck's shape comes out uneven
-- 2, 0, 1, 0, 0, 3, 1 - rather than flat.
-
-Competing is physical and judged on this slide alone: covering, shrinking or
-crowding what a child must read here. The deck's P1 visuals, however strong or
-frequent, never veto another slide's optional picture; `context-pictures.md`
-owns the full definition.
-
-A slide that has done everything else right and still reads as a wall of text, or that carries no imagery at all, is what P3 is for: one small relevant drawing behind a card, resting over a card's edge or tucked into a corner, in space the composition already left spare.
-
-Author relevant P2 before requesting it. Request zero only when no useful P2 or safe P3 opportunity exists. Resolve the Educational SVG library as the first act of the pass, and search it for each optional picture before settling on one: an emoji is the fallback for an item the library has nothing for, not a cheaper equal, so an emoji typed in without a search is a slide the pass skipped. "The deck is already visual enough" is a deck-level judgement, and a deck-level judgement never zeroes this layer. Judge each slide on its own rather than against a deck quota, and vary both the drawings and where they sit: a normal deck carries several, and the same drawing in the same corner slide after slide reads as a template rather than a decision. Read the relevant specialist section of `context-pictures.md` at that decision point. Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.
+Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.
 
 P3 is always the first thing to remove when it competes with content, task, answer, reference or readability.
 

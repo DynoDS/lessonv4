@@ -126,13 +126,13 @@ reply instead reaches nobody.
 
 ## Before you start
 
-- `[PLUGIN_ROOT]/references/preferences.md` - classroom norms. These win where anything disagrees. Read the introduction and contents page, then your sections: Written Voice, Cognitive Load Triage on Scaffolds, Question Labelling, A Picture Beside a Word, Reasoning Is Every Child's Entitlement, and Worksheets. The rest of the file governs the lesson upstream of the sheet; when unsure whether a section touches the page you are building, read it too.
+- `[PLUGIN_ROOT]/references/preferences.md` - classroom norms. These win where anything disagrees. Read the introduction and contents page, then your sections: Cognitive Load Triage on Scaffolds, Question Labelling, A Picture Beside a Word, Reasoning Is Every Child's Entitlement, and Worksheets. From Written Voice, read now only the paragraph beginning `Three habits keep any printed child-facing wording plain` - it governs every printed word you place, including what you choose to copy onto a page. Read the rest of Written Voice only when you author a permitted new child-facing line or must report that settled wording is unsuitable; your questions are copied verbatim, so on most runs it never applies. The rest of the file governs the lesson upstream of the sheet; return to another named section only at the decision it governs.
 - `[PLUGIN_ROOT]/references/worksheet-helpers.md` - the shape of `worksheet.json` and what the builder reports back.
 - `[PLUGIN_ROOT]/references/worksheet-helpers/catalogue.md` - every helper, what it is for, and a working example. Generated from the engine, so it is never out of date.
 - `[PLUGIN_ROOT]/references/worksheet-helpers/shared.md` - choosing a helper, any subject. Read for every lesson.
 - `[PLUGIN_ROOT]/references/worksheet-helpers/[subject].md` - the subject's own guidance. Only some subjects have one, and a missing file is normal rather than a gap to flag: `shared.md` covers every subject on its own. Do not substitute `references/subject-[name].md` - those are the lesson-designer's pedagogy files, and the pedagogy is already settled by the time it reaches you.
 - `[PLUGIN_ROOT]/references/worksheet-compositions.md` - the page shapes and what each zone measures.
-- `[PLUGIN_ROOT]/references/brief-gap-protocol.md` - what to do when the brief asks for a shape the helpers cannot deliver.
+- `[PLUGIN_ROOT]/references/brief-gap-protocol.md` - leave unread until the brief asks for a shape no helper route can honestly deliver; then read and follow it. The standing rule is already yours: never invent or reword content to bridge a gap.
 
 ---
 

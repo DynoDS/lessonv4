@@ -231,12 +231,10 @@ The pass has an output, and it is not the deck. It is
 `[WORKING_DIR]/optional-picture-pass.json`: one entry for every slide, written as
 you go, and checked before the deck is promoted.
 
-This exists because the pass used to leave no trace. A designer that weighed
-seventeen slides one at a time and a designer that had a single thought about the
-whole deck produced the identical file, so nothing downstream could tell them
-apart and the honest version was never the cheaper one. Writing a line per slide
-is what makes the slide-by-slide rule a thing you do rather than a thing you
-claim.
+Writing a line per slide, as you go, is what makes the slide-by-slide rule a
+thing you do rather than a thing you claim: a single thought about the whole
+deck cannot be written in this shape, and the check reads the record before the
+deck is promoted.
 
 ```json
 {
@@ -259,7 +257,7 @@ about **this slide**:
 
 | Reason | What you are saying |
 | --- | --- |
-| `full` | This slide's own content already fills it at a readable size. There is no spare room. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card — the deck that declared twelve of seventeen slides `full` while the teacher saw dead space on most of them was reading its own stretched cards as fullness. |
+| `full` | This slide's own content already fills it at a readable size. There is no spare room. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card, not fullness. |
 | `competes` | A picture would cover, shrink or crowd what a child has to read here. |
 | `would-mislead` | A drawing here would bias, answer or pre-empt the task. The rainforest photo beside "which biome?" is this. |
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |

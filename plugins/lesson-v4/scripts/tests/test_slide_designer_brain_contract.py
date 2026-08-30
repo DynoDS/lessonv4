@@ -355,6 +355,25 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "deck-level judgement never zeroes this layer",
         )
 
+    def test_pass_judgement_has_one_owner_and_the_agent_defers_to_it(self) -> None:
+        # The agent frames the pass - when it runs, the record it writes, the
+        # per-slide questions - and keeps its anchor rules. The full judgement
+        # (what counts as room, what competes, zero evidence, deck variety) is
+        # owned by context-pictures.md rather than taught a second time in the
+        # agent, where the two copies drifted.
+        self.assertIn("`context-pictures.md` owns the judgement", self.agent)
+        self.assertNotIn("a normal deck carries several", self.agent)
+        self.assertNotIn("reads as a template rather than a decision", self.agent)
+        self.assertIn("Expect a normal deck to carry several", self.context)
+
+    def test_incident_stories_live_in_tests_not_runtime_prompts(self) -> None:
+        # The seventeen-slide deck is regression history. Its lessons are held
+        # as rules ("A photograph on this slide does not answer question 1")
+        # and as deterministic checks; the story itself stays in the tests and
+        # the checker docstrings, not in the context every future run pays for.
+        self.assertNotIn("seventeen", self.agent)
+        self.assertNotIn("seventeen", self.context)
+
     def test_the_completion_report_names_both_routes_from_the_check(self) -> None:
         # Reporting only the drawing count hides an all-emoji layer, which is
         # exactly what a skipped pass looks like from the outside.

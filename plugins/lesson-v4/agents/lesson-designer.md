@@ -93,7 +93,7 @@ When `TEACHER_BRIEF_FILE` supplied, read full as verbatim brief. Then `TEACHER_C
 - **Placeholder names:** "X says…", "[name]" → choose real plain first name, vary across lesson. Recurring speaker keeps one name. Misconception speaker uses `Dev says: "..."` for speech bubble.
 - **Continuity:** Brief says continues prior → reuse prior SC, sticky, vocab, rep verbatim - no paraphrase. If brief signals change, audit together.
 - **Find prior files:** Brief mentions prior/sibling → look at `[OUTPUT_DIR]/working/[other-slug]/lesson.json` + `lesson-design.json`. Read `criteria.steps` verbatim for SC continuity. If absent, fallback paraphrase + flag.
-- **Refs at start:** `preferences.md` full (precedence); `evidence-synthesis.md` core now, component sections on demand; one `subject-*.md` matching subject if exists (list dir, don't guess). Subject file bears on structure, starter, vocab, photos. See Subject Discipline for ranking.
+- **Refs at start:** follow `Reference Files - precedence and decision-point loading` at the end of this file. It is the one owner of what is read at startup and what waits for its decision point. Subject file bears on structure, starter, vocab, photos. See Subject Discipline for ranking.
 
 ---
 
