@@ -32,16 +32,28 @@ compatibility builder-agent files remain packaged for direct or legacy use.
 
 Every filename has at most two AI calls in its immutable ledger. Final resource visual review still checks crop, teaching meaning, task fit and set consistency.
 
-Optional P2 and P3 drawings come from the `educational-svg` library. It is a
-large asset set, so an install need not carry it and a working copy may sit
-outside the package. `publish-educational-svg.js --resolve-root` finds it,
-looking at `LESSON_EDUCATIONAL_SVG_ROOT`, then the running package, then
-`~/Projects/lessonv4/educational-svg`, and accepting a folder only when both
-`search.js` and `library/` are there. Each visual designer searches the resolved
-library after its core design is settled, previews the best candidates, and
-publishes only the selected SVG. The search uses no network or separate server.
-If no library is found, the optional drawing is replaced or removed and the
-lesson continues.
+Optional P2 and P3 drawings come from the Educational SVG library: 135,607
+drawings living in their own repository, [DynoDS/educational-svg][svg-repo].
+That repository is fetched, never cloned. This package ships only the index of
+drawing names, which is all a search needs, and each chosen drawing is pulled on
+its own into `~/.educational-svg` and kept there. So installing this plugin
+downloads under a megabyte of library rather than 940 MB of it, and the cache
+outlives every reinstall.
+
+`publish-educational-svg.js --resolve-root` reports where this run's drawings
+live: a full local copy when `LESSON_EDUCATIONAL_SVG_ROOT` names one, otherwise
+the fetching library. Each visual designer searches after its core design is
+settled, previews the candidates the search brought over, and publishes only the
+selected SVG. If no library is available, the optional drawing is replaced or
+removed and the lesson continues.
+
+Adding drawings means committing them to the library repository and rebuilding
+the index here with `scripts/build-educational-svg-index.js`. Never copy the
+library into this package: its files would enter this repository's history
+permanently, and every install afterwards would download them whether or not
+they were still present.
+
+[svg-repo]: https://github.com/DynoDS/educational-svg
 
 ## What's in this repo
 

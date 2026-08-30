@@ -120,33 +120,36 @@ test("active SVG content is refused", () => {
   );
 });
 
-test("the default library is used when shipped and named plainly when it is not", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "lr-educational-svg-packaged-"));
-  const candidate = path.join(
-    __dirname,
-    "..",
-    "educational-svg",
-    "library",
-    "standard",
-    "ro",
-    "robin.svg"
-  );
+test("with nothing configured, publishing reads the cache the search fills", () => {
+  // Publishing never fetches. The search brought the drawing over in order to
+  // show it, so by here the file is on this machine, and keeping publication
+  // off the network is what stops a lesson stalling at its very last step.
+  const cache = fs.mkdtempSync(path.join(os.tmpdir(), "lr-educational-svg-cache-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "lr-educational-svg-default-"));
+  const candidate = path.join(cache, "library", "standard", "ro", "robin.svg");
+  fs.mkdirSync(path.dirname(candidate), { recursive: true });
+  fs.writeFileSync(candidate, SVG_A);
   const rasterize = (_source, output) => fs.writeFileSync(output, PNG);
 
-  if (fs.existsSync(candidate)) {
-    const result = publishEducationalSvgAsset(candidate, root, "robin", { rasterize });
+  const previous = process.env.LESSON_EDUCATIONAL_SVG_CACHE;
+  process.env.LESSON_EDUCATIONAL_SVG_CACHE = cache;
+  try {
+    delete require.cache[require.resolve("../scripts/publish-educational-svg")];
+    const publish = require("../scripts/publish-educational-svg").publishEducationalSvgAsset;
+
+    const result = publish(candidate, root, "robin", { rasterize });
     assert.equal(result.educationalSvgId, "standard/ro/robin.svg");
     assert.equal(result.imagePath, "icons/robin.png");
-    return;
-  }
 
-  // Without that drawing, publishing must fail with a reason a reader can act
-  // on, not an obscure module or path error. Which reason depends on whether a
-  // library resolved at all: the packaged copy may be absent while a working
-  // copy elsewhere is found, and then it is one drawing that is missing rather
-  // than the whole library.
-  assert.throws(
-    () => publishEducationalSvgAsset(candidate, root, "robin", { rasterize }),
-    /Educational SVG (library is unavailable|drawing does not exist)/
-  );
+    // And a drawing nobody fetched is named plainly, not as a path error.
+    const missing = path.join(cache, "library", "standard", "we", "wren.svg");
+    assert.throws(
+      () => publish(missing, root, "wren", { rasterize }),
+      /Educational SVG drawing does not exist/
+    );
+  } finally {
+    if (previous === undefined) delete process.env.LESSON_EDUCATIONAL_SVG_CACHE;
+    else process.env.LESSON_EDUCATIONAL_SVG_CACHE = previous;
+    delete require.cache[require.resolve("../scripts/publish-educational-svg")];
+  }
 });

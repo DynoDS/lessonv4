@@ -27,8 +27,6 @@ from tempfile import TemporaryDirectory
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "check-optional-pictures.py"
-LIBRARY = ROOT.parents[1] / "educational-svg"
-LIBRARY_AVAILABLE = (LIBRARY / "search.js").is_file() and (LIBRARY / "library").is_dir()
 
 
 def deck(*slides: dict) -> dict:
@@ -57,7 +55,16 @@ class CheckRunner(unittest.TestCase):
                 "--lesson", str(lesson_path),
             ]
             if library:
-                argv += ["--library-root", str(LIBRARY)]
+                # A library root is a place drawings are kept, and it is empty
+                # here on purpose. What the evidence check reads is the index
+                # this package ships, so these tests run the same way on every
+                # machine with no drawings and no network. They used to be
+                # skipped unless one particular checkout happened to be present,
+                # which meant the guarantee held on one computer and nowhere
+                # else - the same shape of fault as the resolver's.
+                library_root = root / "library-root"
+                library_root.mkdir()
+                argv += ["--library-root", str(library_root)]
             return subprocess.run(argv, capture_output=True, text=True)
 
 
@@ -184,7 +191,6 @@ class EvidenceTests(CheckRunner):
         self.assertEqual(result.returncode, 0, result.stderr)
 
 
-@unittest.skipUnless(LIBRARY_AVAILABLE, "the drawing library is not on this machine")
 class EvidenceAgainstTheRealLibraryTests(CheckRunner):
     def test_a_rejection_that_is_not_in_the_library_fails(self):
         # A drawing you never saw cannot be one you rejected. The identifier has
@@ -234,7 +240,6 @@ class LibraryStateIsOnTheRecordTests(CheckRunner):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("OPTIONAL_PICTURE_LIBRARY: UNAVAILABLE", result.stdout)
 
-    @unittest.skipUnless(LIBRARY_AVAILABLE, "the drawing library is not on this machine")
     def test_the_library_state_names_the_library_that_was_searched(self):
         record = {"schemaVersion": 1, "slides": [
             {"slide": 1, "decision": "none", "reason": "full"},
@@ -268,7 +273,6 @@ class LibraryStateIsOnTheRecordTests(CheckRunner):
         result = self.run_check(record, deck(bare_slide()))
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    @unittest.skipUnless(LIBRARY_AVAILABLE, "the drawing library is not on this machine")
     def test_library_unavailable_cannot_be_claimed_when_the_library_is_there(self):
         record = {"schemaVersion": 1, "slides": [
             {"slide": 1, "decision": "none", "reason": "library-unavailable"},

@@ -252,14 +252,15 @@ def test_runtime_contract_does_not_require_project_codex_agents():
     assert not matches, "\n".join(matches)
 
 # A plugin file an instruction tells a worker to run, whose absence the plugin
-# documents as an ordinary degrade rather than a fault. The library is a large
-# optional asset set, so an install may legitimately not carry it.
-OPTIONAL_INSTRUCTED_PATHS = {
-    "educational-svg/search.js": (
-        ROOT / "references" / "context-pictures.md",
-        "the Educational SVG route is unavailable for the whole run",
-    ),
-}
+# documents as an ordinary degrade rather than a fault.
+#
+# There are none. The one entry here was the drawing library's search script,
+# exempted because the library was too large for an install to carry. The
+# drawings now live in their own repository and the package ships only the
+# search and the index, so every file the instructions name is a file the
+# package really has - and an instruction pointing at a missing script is once
+# again a plain fault rather than a documented shrug.
+OPTIONAL_INSTRUCTED_PATHS: dict[str, tuple[Path, str]] = {}
 
 INSTRUCTED_PATH_RE = re.compile(
     r"\[PLUGIN_ROOT\]/([A-Za-z0-9._/-]+\.(?:py|js|mjs|cjs|json|md))"

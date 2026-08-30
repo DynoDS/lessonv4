@@ -35,6 +35,7 @@ What it removes is the ability to answer for the whole deck at once, silently.
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 import re
 import subprocess
@@ -115,12 +116,51 @@ def deck_optional_pictures(lesson: object) -> dict[int, list[str]]:
     return found
 
 
+SEARCH_SCRIPT = Path(__file__).resolve().parent / "search-educational-svg.js"
+INDEX_PATH = Path(__file__).resolve().parent.parent / "educational-svg" / "index.txt.gz"
+
+
+def library_ids(library_root: Path) -> set[str]:
+    """Every drawing this run could have looked at.
+
+    The shipped index is the catalogue. The folder is only ever a union with it,
+    because drawings now arrive one at a time: a cache holds what this run
+    happened to fetch, so judging "is it in the library" by what is on disk
+    would call a drawing the designer saw and rejected an hour ago a drawing
+    that was never there.
+    """
+    ids: set[str] = set()
+
+    if INDEX_PATH.is_file():
+        try:
+            with gzip.open(INDEX_PATH, "rt", encoding="utf-8") as handle:
+                ids.update(line.strip() for line in handle if line.strip())
+        except OSError:
+            pass
+
+    library = library_root / "library"
+    if library.is_dir():
+        for style in ("standard", "cartoon", "solid"):
+            style_root = library / style
+            if not style_root.is_dir():
+                continue
+            for prefix in style_root.iterdir():
+                if not prefix.is_dir():
+                    continue
+                for entry in prefix.iterdir():
+                    if entry.is_file() and entry.suffix.lower() == ".svg":
+                        ids.add(f"{style}/{prefix.name}/{entry.name}")
+
+    return ids
+
+
 def run_search(library_root: Path, queries: list[str]) -> list[str]:
     """Ask the real library what those searches return. Empty list when it cannot run."""
-    script = library_root / "search.js"
-    if not script.is_file():
+    if not SEARCH_SCRIPT.is_file():
         return []
-    argv = ["node", str(script)]
+    # --no-fetch because checking evidence is a deterministic step: it reads the
+    # index this package ships and must give the same answer with no network.
+    argv = ["node", str(SEARCH_SCRIPT), "--no-fetch"]
     for query in queries:
         argv += ["--query", query]
     argv += ["--limit", "24"]
@@ -178,6 +218,7 @@ def check_evidence(
         )
         return
 
+    known = library_ids(library_root)
     returned = run_search(library_root, queries)
     if not returned:
         # The library genuinely returned nothing for those terms. The verdict
@@ -203,7 +244,7 @@ def check_evidence(
                 "id. Copy the `libraryId` the search printed"
             )
             continue
-        if not (library_root / "library" / library_id).is_file():
+        if library_id not in known:
             failures.append(
                 f"{label}.rejected names {library_id!r}, which is not in the "
                 "library. A drawing you did not see cannot be one you rejected"

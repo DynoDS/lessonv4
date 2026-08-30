@@ -123,21 +123,23 @@ not enter, consume or reduce those 16 Image Team places.
 
 ### Check the Educational SVG library is here before you use that route
 
-The Educational SVG drawings are a large shared asset set. An install of this
-plugin may not carry them, and a working copy may sit outside the package
-entirely, so the folder is not a fixed path to be assumed. Resolve it once, as
-the first act of the opportunity pass, before any slide's optional picture is
-decided. Not when a decision reaches the library: a designer that never looks
-never runs the check, and then reports a deck with no drawings in it as though
-the library had been consulted and found wanting.
+The Educational SVG drawings are a large shared asset set that no install
+carries. The package ships the index of all 135,607 drawings; the drawings
+themselves live in their own repository and arrive one at a time, as they are
+chosen, into a cache on this machine. So the folder is not a fixed path to be
+assumed, and whether the library can be reached at all is a fact about this run.
+Resolve it once, as the first act of the opportunity pass, before any slide's
+optional picture is decided. Not when a decision reaches the library: a designer
+that never looks never runs the check, and then reports a deck with no drawings
+in it as though the library had been consulted and found wanting.
 
 `node "[PLUGIN_ROOT]/scripts/publish-educational-svg.js" --resolve-root`
 
 `EDUCATIONAL_SVG_ROOT=<path>` gives this run's library home. Use it wherever
-this reference writes `[EDUCATIONAL_SVG_ROOT]`. The resolver looks at an explicit
-setting, the running package and the conventional checkout in that order, so a
-library normally needs no configuration and its absence from the package is not
-by itself an answer.
+this reference writes `[EDUCATIONAL_SVG_ROOT]`. The resolver takes a configured
+local copy when there is one and otherwise the fetching library, so a library
+normally needs no configuration at all and the absence of drawing files from the
+package is not by itself an answer.
 
 `EDUCATIONAL_SVG_UNAVAILABLE` means that
 the Educational SVG route is unavailable for the whole run.
@@ -183,7 +185,7 @@ cannot say what the search returned, you have not made the choice yet.
   teaching text or an answer is still the picture a child reads the meaning
   from, so it meets the same test. A relevant emoji lifting an otherwise
   text-only line is decoration and is unaffected.
-- Search the shared local library once the resource's design is complete, and
+- Search the shared drawing library once the resource's design is complete, and
   take the drawing whenever one fits: it is cleaner, calmer and more specific
   than the glyph a device happens to ship. The builder never guesses the
   picture.
@@ -261,7 +263,7 @@ about **this slide**:
 | `competes` | A picture would cover, shrink or crowd what a child has to read here. |
 | `would-mislead` | A drawing here would bias, answer or pre-empt the task. The rainforest photo beside "which biome?" is this. |
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |
-| `library-unavailable` | The library is not on this machine. |
+| `library-unavailable` | The library was not available to this run at all, as the resolver reported. |
 
 **There is no code for a deck-level answer, and that is deliberate.** "The deck
 is already visual enough", "I used one on slide 4 already", and "this slide has a
@@ -530,14 +532,22 @@ Choose the picture that:
 5. keeps its natural proportions and suits the other pictures in the set.
 
 These rules apply only when the resolver above printed an
-`EDUCATIONAL_SVG_ROOT`. Search that library with one short concrete query and up
-to five useful alternatives:
+`EDUCATIONAL_SVG_ROOT`. Search with one short concrete query and up to five
+useful alternatives:
 
-`node "[EDUCATIONAL_SVG_ROOT]/search.js" --query "<concept>" --query "<useful-alternative>" --limit 12`
+`node "[PLUGIN_ROOT]/scripts/search-educational-svg.js" --query "<concept>" --query "<useful-alternative>" --limit 12`
 
 Add `--style standard`, `--style cartoon` or `--style solid` only when the
-surrounding set needs that style. The command reads only the resolved library
-folder; it does not search the computer or use the network.
+surrounding set needs that style. The search reads the packaged index, so the
+ranking is the same on every machine, and the command then brings the drawings
+it names onto this one. Each candidate's `sourcePath` is a real file by the time
+you read it: hand those paths straight to the preview sheet below.
+
+A drawing that could not be brought over is left out of `candidates` and named
+on its own `EDUCATIONAL_SVG_NOT_FETCHED` line. Treat it as a drawing that is not
+available for this item and choose among the rest. Do not put a `libraryId` from
+one of those lines into a specification, and do not name one in `rejected`,
+because you never saw it.
 
 If it prints `EDUCATIONAL_SVG_UNAVAILABLE`, apply the failure rule below. This
 is an optional-picture outcome and must not stop the lesson.
@@ -577,7 +587,7 @@ birthday question may make the birthday-cake candle the best choice. A search
 for two words can also return the wrong half of the phrase, so the resolver
 always looks at the drawing before accepting it.
 
-Use the local search once with an honest set of alternatives. If the library is
+Use the search once with an honest set of alternatives. If the library is
 unavailable, the search has no suitable candidate, preview inspection rejects
 the candidates, or publication fails, apply the surface's existing fallback:
 

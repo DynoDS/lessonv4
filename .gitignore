@@ -1,0 +1,10 @@
+# A working copy of the Educational SVG drawings, if one is checked out beside
+# the plugin. The drawings belong to DynoDS/educational-svg and are fetched as
+# they are chosen; committing them here would put 135,610 files into this
+# repository's history permanently, and every plugin install would download
+# them for ever after, whether or not they were still in the folder.
+/educational-svg/
+
+__pycache__/
+*.pyc
+.pytest_cache/

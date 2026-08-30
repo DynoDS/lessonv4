@@ -2,77 +2,30 @@
 "use strict";
 
 const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-// The drawings are a large shared asset set that an install of this plugin may
-// not carry, so where they live is not always inside the package. This variable
-// names the folder holding `search.js` and `library/`, which lets a working copy
-// sit anywhere while the published plugin keeps its bundled one and sets
-// nothing. It is one setting rather than a path repeated in guidance, because a
-// location every caller has to remember is a location some caller gets wrong.
-const LIBRARY_ROOT_VARIABLE = "LESSON_EDUCATIONAL_SVG_ROOT";
-const BUNDLED_LIBRARY_HOME = path.resolve(__dirname, "..", "educational-svg");
-
-// The conventional location beside a source checkout, mirroring the source-root
-// convention in verify-plugin-root.py. Absent is a normal answer, not a fault.
-const LIBRARY_CONVENTIONS = ["Projects/lessonv4/educational-svg"];
-
-function libraryCandidates() {
-  const candidates = [];
-
-  const configured = (process.env[LIBRARY_ROOT_VARIABLE] || "").trim();
-  if (configured) {
-    candidates.push({ label: `$${LIBRARY_ROOT_VARIABLE}`, dir: path.resolve(configured) });
-  }
-
-  candidates.push({ label: "the running package", dir: BUNDLED_LIBRARY_HOME });
-
-  const home = os.homedir();
-  for (const relative of LIBRARY_CONVENTIONS) {
-    candidates.push({
-      label: `~/${relative}`,
-      dir: path.resolve(home, ...relative.split("/")),
-    });
-  }
-
-  return candidates;
-}
-
-function isUsableLibrary(dir) {
-  // Both halves or neither. A folder with a search script and no drawings is
-  // not a smaller library, it is a broken one, and using it half-way would
-  // report every picture as simply not found.
-  return (
-    fs.existsSync(path.join(dir, "search.js")) &&
-    fs.existsSync(path.join(dir, "library"))
-  );
-}
-
-function resolveLibraryHome() {
-  // Order: an explicit setting, the copy a published install ships, then the
-  // conventional checkout. Waiting on a setting alone would leave the whole
-  // optional-picture layer switched off on every machine that never set one,
-  // which is the failure the setting was added to prevent.
-  const notes = [];
-  const seen = new Set();
-  for (const { label, dir } of libraryCandidates()) {
-    if (seen.has(dir)) continue;
-    seen.add(dir);
-    if (isUsableLibrary(dir)) return { home: dir, label, notes };
-    notes.push(`${label}: no search.js and library/ under ${dir}`);
-  }
-  return { home: null, label: null, notes };
-}
+// Where the library is, and whether there is one, is the shared module's
+// question rather than this file's. Publishing only ever reads a drawing that
+// is already on this machine - the search fetched it in order to show it - so
+// the default here is worked out without touching the network.
+const {
+  cacheRoot,
+  hasDrawings,
+  LOCAL_ROOT_VARIABLE,
+  resolveLibrary,
+} = require("../shared/educational-svg-library");
 
 function libraryHome() {
-  return resolveLibraryHome().home || BUNDLED_LIBRARY_HOME;
+  const configured = (process.env[LOCAL_ROOT_VARIABLE] || "").trim();
+  if (configured) {
+    const local = path.resolve(configured);
+    if (hasDrawings(local)) return local;
+  }
+  return cacheRoot();
 }
-
-const DEFAULT_LIBRARY_ROOT = path.join(BUNDLED_LIBRARY_HOME, "library");
 
 function isWithin(base, candidate) {
   const relative = path.relative(base, candidate);
@@ -259,19 +212,19 @@ function publishEducationalSvgAsset(
   );
 }
 
-function main() {
+async function main() {
   const [, , candidateArg, workingDirArg, preferredSlug] = process.argv;
 
   // Finding the library is the same question as publishing from it, so the file
   // that owns the location answers both. A caller that had to work the folder
   // out for itself is the caller that quietly looks in the wrong one.
   if (candidateArg === "--resolve-root") {
-    const { home, label, notes } = resolveLibraryHome();
-    if (!home) {
+    const { root, label, notes } = await resolveLibrary({});
+    if (!root) {
       console.log(`EDUCATIONAL_SVG_UNAVAILABLE: ${notes.join("; ")}`);
       return;
     }
-    console.log(`EDUCATIONAL_SVG_ROOT=${home}`);
+    console.log(`EDUCATIONAL_SVG_ROOT=${root}`);
     console.log(`EDUCATIONAL_SVG_SOURCE: ${label}`);
     return;
   }
@@ -292,12 +245,10 @@ function main() {
 }
 
 if (require.main === module) {
-  try {
-    main();
-  } catch (error) {
+  main().catch((error) => {
     console.error(error && error.message ? error.message : error);
     process.exit(1);
-  }
+  });
 }
 
 module.exports = { publishEducationalSvgAsset };

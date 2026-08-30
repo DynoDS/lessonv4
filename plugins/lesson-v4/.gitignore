@@ -1,5 +1,12 @@
 node_modules/
 
+# The Educational SVG drawings, if a working copy is put here. They belong to
+# DynoDS/educational-svg and are fetched one at a time; committing them would
+# put 135,610 files into this repository's history permanently, and every
+# install would download them for ever after, whether or not they were still
+# in the folder. Only educational-svg/index.txt.gz is committed.
+educational-svg/library/
+
 # Generated PPTX outputs
 *.pptx
 
