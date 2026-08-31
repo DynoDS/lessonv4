@@ -30,7 +30,7 @@ compatibility builder-agent files remain packaged for direct or legacy use.
 3. **Fulfil.** One `image-scout` per batch searches and visually judges real candidates, then continues to authorised AI generation after a checked real-search gate. Authentic evidence never reaches AI; outages never count as exhaustion.
 4. **Finalise.** Workers stage only. The deterministic finaliser validates the whole result, derives source attribution/licence or exact AI history, publishes accepted rows independently, writes terminal receipts, and releases each filename. Provenance rechecks canonical hashes before transient cleanup.
 
-Every filename has at most two AI calls in its immutable ledger. Final resource visual review still checks crop, teaching meaning, task fit and set consistency.
+Every filename has at most two AI calls in its immutable ledger. The scout's own batch review is where crop, teaching meaning and set coherence are judged; after the deck is built, the Slide Designer looks at it once more to check each photograph reads in the room it was given.
 
 Optional P2 and P3 drawings come from the Educational SVG library: 135,607
 drawings living in their own repository, [DynoDS/educational-svg][svg-repo].

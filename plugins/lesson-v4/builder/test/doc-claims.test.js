@@ -44,10 +44,6 @@ const DESIGN_REVIEWER_MD = fs.readFileSync(
   path.join(__dirname, "..", "..", "agents", "design-reviewer.md"),
   "utf8"
 );
-const VISUAL_REVIEWER_MD = fs.readFileSync(
-  path.join(__dirname, "..", "..", "agents", "visual-reviewer.md"),
-  "utf8"
-);
 const SLIDE_VISUAL_SIZING_MD = fs.readFileSync(
   path.join(__dirname, "..", "..", "references", "slide-visual-sizing.md"),
   "utf8"
@@ -117,10 +113,6 @@ const SLIDE_SUCCESS_CRITERIA_MD = fs.readFileSync(
 );
 const PLAYBOOK_MD = fs.readFileSync(
   path.join(__dirname, "..", "..", "references", "slide-composition-playbook.md"),
-  "utf8"
-);
-const VISUAL_REVIEW_DECK_MD = fs.readFileSync(
-  path.join(__dirname, "..", "..", "references", "visual-review-deck.md"),
   "utf8"
 );
 const CHECK_SLIDE_DESIGN_JS = fs.readFileSync(
@@ -345,13 +337,12 @@ test('semantic colour stays with the teacher profile and exact field contracts',
 
 test('the asking-versus-telling colour grammar holds across every colour owner', () => {
   // Blue asks, black tells, and a mixed block splits at the boundary. The rule
-  // lives in the profile; the playbook, templates contract, reviewer reference
-  // and preferences copy must all carry the same grammar or a run reads
-  // whichever file it opens first and the decks come out inconsistent.
+  // lives in the profile; the playbook and the preferences copy must carry the
+  // same grammar or a run reads whichever file it opens first and the decks
+  // come out inconsistent.
   assert.match(TEACHER_PROFILE_MD, /asking versus telling/);
   assert.match(TEACHER_PROFILE_MD, /The boundary is the sentence, not the block/);
   assert.match(PLAYBOOK_MD, /asking versus telling/);
-  assert.match(VISUAL_REVIEW_DECK_MD, /asking versus telling/);
   assert.match(PREFERENCES_MD, /Black tells, blue asks/);
   assert.ok(
     !TEACHER_PROFILE_MD.includes('do not make routine starter questions or every task question blue'),
@@ -561,16 +552,20 @@ test("context pictures require an explicit slide opportunity pass without creati
   );
 });
 
-test("deck visual review checks main-task prominence alignment active work surfaces and group distinction", () => {
+test("the deck's composition criteria survive in the profile the designer applies", () => {
+  // These four were held twice: once in the profile the Slide Designer reads
+  // while composing, and once in a separate reviewer's own checklist. The
+  // checklist is gone, so the profile is the only copy left and every one of
+  // them has to still be in it.
   for (const token of [
-    "Main task prominence.",
-    "Whole-composition alignment.",
-    "Active work surface dominance.",
-    "Parallel-group distinction."
+    "## Main task prominence and the header cue",
+    "## Whole-composition alignment and useful space",
+    "The active pupil-working surface normally wins space over a supporting setup picture.",
+    "## Parallel-group distinction"
   ]) {
     assert.ok(
-      VISUAL_REVIEW_DECK_MD.includes(token),
-      `visual-review-deck.md is missing: ${token}`
+      TEACHER_PROFILE_MD.includes(token),
+      `teacher-slide-visual-profile.md is missing: ${token}`
     );
   }
 });
@@ -739,19 +734,34 @@ test("the teacher slide visual profile pins its calibration rules", () => {
   );
 });
 
-test("the deck reviewer calibrates against the teacher's visual profile", () => {
+test("the deck calibrates against the teacher's visual profile", () => {
+  // A separate reviewer used to hold its own calibration section pointing at
+  // the profile. With that reviewer gone, the Slide Designer's own passes are
+  // the only route to it, so the route has to be in the role file.
   assert.ok(
-    VISUAL_REVIEW_DECK_MD.includes("### Teacher visual-profile calibration"),
-    "visual-review-deck.md lost its calibration section"
+    SLIDE_DESIGNER_MD.includes("teacher-slide-visual-profile.md"),
+    "slide-designer.md no longer names the visual profile it calibrates against"
   );
   assert.ok(
-    VISUAL_REVIEW_DECK_MD.includes("teacher-slide-visual-profile.md"),
-    "the deck reviewer no longer names the visual profile it calibrates against"
+    TEACHER_PROFILE_MD.includes("## Final teacher pass"),
+    "the profile lost the pass the designer applies"
   );
-  assert.ok(
-    VISUAL_REVIEWER_MD.includes("teacher-slide-visual-profile.md"),
-    "visual-reviewer.md no longer routes the deck to the visual profile"
-  );
+});
+
+test("the built-deck look keeps the photograph rules nothing else held", () => {
+  // Crop fit, distortion and answer attachment could only ever be judged with
+  // the real photograph present, so they lived in the reviewer's own deck
+  // reference and nowhere else. They move with the job.
+  const look = SLIDE_DESIGNER_MD.split("## The built-deck look")[1];
+  assert.ok(look, "slide-designer.md has no built-deck look section");
+  for (const token of [
+    "Under `contain`, the whole photograph stays visible at its natural proportions",
+    "a centred crop fills the frame",
+    "wider, thinner, taller or shorter than the real object",
+    "each photograph carries its own"
+  ]) {
+    assert.ok(look.includes(token), `the built-deck look is missing: ${token}`);
+  }
 });
 
 test("the slide self-check can retain a private preview deck for the render pass", () => {
@@ -794,9 +804,13 @@ test("the visual self-read renders the preview and reads it back", () => {
   );
   assert.ok(
     SLIDE_DESIGNER_MD.includes(
-      "This is one lightweight creator-QA pass, not the independent final Deck Visual Review."
+      "This is the composition pass, made against a deck whose photographs have not arrived."
     ),
-    "Slide Designer self-read can drift into a duplicate full visual-review pass"
+    "the self-read no longer says what it is judging, and what it cannot yet see"
+  );
+  assert.ok(
+    !SLIDE_DESIGNER_MD.includes("Deck Visual Reviewer"),
+    "the self-read still defers a judgement to a reviewer that no longer exists"
   );
 });
 

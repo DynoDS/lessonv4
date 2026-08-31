@@ -1,6 +1,6 @@
 # Teacher slide visual profile
 
-This is the teacher's stable visual-judgement layer for the slide deck. The Slide Designer reads it in full on every run and keeps its judgement in its own context; the Deck Visual Reviewer reads it for deck review. It calibrates how a settled lesson is *presented* on the board — card boundaries, visible task structure, semantic colour, repeated-reference identity — and it never reopens the pedagogy. When it disagrees with a settled design decision, the design decision wins and the disagreement is reported, not silently repaired.
+This is the teacher's stable visual-judgement layer for the slide deck. The Slide Designer reads it in full on every run and keeps its judgement in its own context, both while composing and when it returns to look at the built deck. It calibrates how a settled lesson is *presented* on the board — card boundaries, visible task structure, semantic colour, repeated-reference identity — and it never reopens the pedagogy. When it disagrees with a settled design decision, the design decision wins and the disagreement is reported, not silently repaired.
 
 ## Card boundary
 

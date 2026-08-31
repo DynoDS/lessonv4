@@ -39,7 +39,6 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.context = read("references", "context-pictures.md")
         self.preferences = read("references", "preferences.md")
         self.designer = read("agents", "slide-designer.md")
-        self.reviewer = read("agents", "visual-reviewer.md")
 
     def test_retired_rules_are_gone(self) -> None:
         """Each of these forbade exactly the placement the teacher asked for."""
@@ -89,11 +88,18 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn('"layer": "low"', self.context)
         self.assertIn('"layer": "high"', self.context)
 
-    def test_deliberate_overlap_is_not_a_visual_review_fault(self) -> None:
-        self.assertIn("deliberately overlapping a card is not this fault", self.reviewer)
+    def test_deliberate_overlap_is_not_a_fault_at_the_built_deck_look(self) -> None:
+        """The rule outlived the reviewer that used to carry it.
+
+        A separate reviewer used to hold "overlap by itself is never the
+        fault"; the Slide Designer's built-deck look is now the only pass that
+        sees a P3 sitting on a card, so the boundary has to travel with it or
+        the layer gets flagged for working exactly as designed.
+        """
+        self.assertIn("deliberately overlapping a card is the layer working as designed", self.designer)
         self.assertIn(
             "covers a word, a number, a table cell or part of a figure a child reads",
-            self.reviewer,
+            self.designer,
         )
 
     def test_use_is_judged_per_slide_not_against_a_deck_quota(self) -> None:
@@ -138,28 +144,19 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn("is not competition and never zeroes the layer", self.context)
         self.assertIn("no task asks a child to read it", self.context)
 
-    def test_the_reviewer_judges_legibility_and_nothing_else(self) -> None:
+    def test_the_built_deck_look_judges_legibility_and_nothing_else(self) -> None:
         """Taste findings on a layer that teaches nothing crowd out real faults.
 
-        The reviewer used to weigh relevance, cosmetic awkwardness and whether a
-        slide had missed an opportunity. All three are opinions about a layer
-        that costs a child nothing, and how much of it a deck uses is the
-        teacher's call rather than a fault to report.
+        The retired reviewer used to weigh relevance, cosmetic awkwardness and
+        whether a slide had missed an opportunity. All three are opinions about
+        a layer that costs a child nothing, and how much of it a deck uses is
+        the teacher's call rather than a fault to report. The one pass that now
+        looks at the built deck inherits the restraint along with the job.
         """
-        review = read("references", "visual-review-deck.md")
-        self.assertIn("exactly one fault: a picture covering something a child has to read", review)
-        self.assertIn("overlap by itself is never the fault", review)
-        for retired in (
-            "check relevance, subordination and non-obstruction",
-            "Harmless cosmetic awkwardness is MINOR at most",
-            "a MINOR finding may name that missed opportunity",
-        ):
-            with self.subTest(retired=retired):
-                self.assertNotIn(retired, review)
-
-        reviewer = read("agents", "visual-reviewer.md")
-        self.assertIn("judge legibility rather than taste", reviewer)
-        self.assertIn("the choice of drawing itself are never findings", reviewer)
+        self.assertIn("overlap by itself is never the fault", self.designer.lower())
+        self.assertIn("Judge legibility rather than taste", self.designer)
+        self.assertIn("the choice of drawing itself", self.designer)
+        self.assertIn("are never faults here", self.designer)
 
     def test_previews_are_compared_on_one_sheet(self) -> None:
         """One look per drawing is the cost that kept a deck down to one or two."""
@@ -175,8 +172,8 @@ class OptionalPicturePlacementTests(unittest.TestCase):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.context)
         self.assertIn("P3 is always the first thing to remove", self.designer)
-        self.assertIn("Missing P3, deliberate sparseness", self.reviewer)
-        self.assertIn("are never findings", self.reviewer)
+        self.assertIn("missing P3, deliberate sparseness", self.designer)
+        self.assertIn("are never faults here", self.designer)
 
 
 if __name__ == "__main__":

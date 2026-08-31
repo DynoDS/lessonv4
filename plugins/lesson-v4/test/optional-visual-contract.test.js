@@ -156,21 +156,16 @@ test("working-wall authorities agree that P3 never earns wall-worthiness", () =>
   assert.match(builder, /non-fatal|does not fail/i);
 });
 
-test("review contract makes contextual P3-only repair first", () => {
-  const reviewer = read("agents/visual-reviewer.md");
-  assert.match(reviewer, /smallest sound P3-only repair/);
-  // The repairs are the ones that clear an obstruction. Swapping in a different
-  // drawing was on this list, but a different drawing at the same size and place
-  // covers exactly what the first one did, so it never was a repair for the one
-  // fault this layer can have.
-  assert.match(reviewer, /move it.*smaller.*fade it further.*remove it/s);
-  assert.doesNotMatch(reviewer, /replacing the source/);
-  assert.match(reviewer, /Removal is always valid/);
-  assert.doesNotMatch(reviewer, /repair in this order/i);
-});
-
-test("visual consistency does not demand decorative parity", () => {
-  const reviewer = read("agents/visual-consistency-reviewer.md");
-  assert.match(reviewer, /P3/);
-  assert.match(reviewer, /not.*carry-across|no cross-resource.*decoration/s);
+test("the built-deck look makes the smallest P3-only repair first", () => {
+  // The one pass that sees a decoration obstructing something is now the Slide
+  // Designer's look at the built deck, so the repair ladder travels with it.
+  // Swapping in a different drawing was on this list once, but a different
+  // drawing at the same size and place covers exactly what the first one did.
+  const designer = read("agents/slide-designer.md");
+  const look = designer.split("## The built-deck look")[1];
+  assert.ok(look, "slide-designer.md has no built-deck look section");
+  assert.match(look, /smallest sound P3-only repair/);
+  assert.match(look, /move it.*smaller.*fade it further.*remove it/s);
+  assert.doesNotMatch(look, /replacing the source/);
+  assert.match(look, /Removal is always valid/);
 });

@@ -610,8 +610,10 @@ Slides, worksheets and stick-in sheets use this order:
 3. that designer authors the P2 and supported P3 requests selected by the pass;
 4. that same designer resolves every unresolved Educational SVG request in its spec;
 5. the designer runs its existing final validation and closes its result;
-6. the deterministic builder renders the local files;
-7. the normal visual reviewer treats P3 as first expendable.
+6. the deterministic builder renders the local files, dropping an unresolvable
+   P3 with the non-fatal `OPTIONAL_DECORATION_OMITTED` notice rather than
+   failing the resource. P3 is the layer that is expendable first, and it is
+   expendable without anyone deciding so.
 
 If one of those specifications contains only emojis or no unresolved Educational SVG
 request, skip the resolution step.

@@ -90,18 +90,14 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "phase3": (
         "## Phase 3 — Service Each Branch as It Lands",
-        "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
-    ),
-    "visual-review": (
-        "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
-        "### The focused owner-repair round",
+        "## Phase 3.5 — The Focused Owner-Repair Round",
     ),
     "focused-repair": (
-        "### The focused owner-repair round",
-        "### Deterministic final merge",
+        "## Phase 3.5 — The Focused Owner-Repair Round",
+        "## Phase 3.6 — Deterministic Finalisation",
     ),
-    "finalize-review": (
-        "### Deterministic final merge",
+    "finalize": (
+        "## Phase 3.6 — Deterministic Finalisation",
         "## Phase 4 — Final Assembly and Report",
     ),
     "delivery": (
@@ -139,6 +135,15 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         )
         return completed
 
+    def slice_text(self, name: str) -> str:
+        """One slice as text with newlines normalised, for wording assertions."""
+        return (
+            self.run_slice(name)
+            .stdout.decode("utf-8")
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+        )
+
     def test_every_runtime_slice_matches_playbook_bytes(self) -> None:
         data = PLAYBOOK.read_bytes()
 
@@ -160,10 +165,9 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         bullets. Each of those bullets is keyed on an event the orchestrator
         can only recognise once it already holds the slice naming it, so a
         host reading strictly slice by slice read the playbook top to bottom
-        instead: per-artefact visual review collapsed into one batch at the
-        end, and Track B stopped at the Adaptation Designer because the step
-        that launches the Worksheet Designer sat in a slice nothing told it to
-        load. The successor travels with the slice for that reason.
+        instead, and Track B stopped at the Adaptation Designer because the
+        step that launches the Worksheet Designer sat in a slice nothing told
+        it to load. The successor travels with the slice for that reason.
         """
         for name in BOUNDS:
             with self.subTest(slice=name):
@@ -192,23 +196,43 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             with self.subTest(slice=name):
                 self.assertTrue(steps)
 
-    def test_a_finished_build_sends_its_own_artefact_to_review(self) -> None:
-        """Reviewing one artefact needs that artefact and nothing else.
+    def test_every_track_can_reach_the_one_repair_route(self) -> None:
+        """Each track raises its own build and picture faults, alone.
 
-        The reported failure was every review running in one batch after the
-        last branch finished, which costs the whole review round in wall-clock
-        and delays every repair behind it. Each slice that ends with an
-        accepted build has to say so where the orchestrator is standing.
+        A track slice says "run one focused Slide Designer repair" but the
+        mapping from an owner to its compact repair role file lives only in the
+        focused-repair slice, which no track ever loaded: the orchestrator was
+        left to guess a filename. Each track that can raise a fault must name
+        the slice that resolves its owner.
         """
         for name in ("slides-finalize", "worksheet-render", "other-resources"):
             with self.subTest(slice=name):
                 nxt = self.run_slice(name).stdout.decode("utf-8").split(
                     "## NEXT: what this slice hands you"
                 )[1]
-                self.assertIn("visual-review", nxt)
+                self.assertIn("focused-repair", nxt)
 
-        deck = self.run_slice("slides-finalize").stdout.decode("utf-8")
-        self.assertIn("do not hold it for the worksheet", deck)
+    def test_a_built_and_checked_branch_waits_for_no_sibling(self) -> None:
+        """Nothing after a branch's own check compares it to another resource.
+
+        While a cross-resource consistency pass existed, a finished build still
+        had a stage ahead of it that needed every sibling. With that pass gone,
+        a slice that implies waiting would idle a whole track for nothing.
+        """
+        for name in ("slides-finalize", "worksheet-render"):
+            with self.subTest(slice=name):
+                text = self.run_slice(name).stdout.decode("utf-8")
+                self.assertIn("ends here", text)
+
+        phase3 = self.slice_text("phase3")
+        self.assertIn("Nothing waits on a sibling", phase3)
+        self.assertIn(
+            "Only the deterministic\nfinalisation waits for every branch",
+            phase3,
+        )
+        self.assertIn("finalize", phase3.split(
+            "## NEXT: what this slice hands you"
+        )[1])
 
     def test_adaptation_hands_on_to_the_worksheet_designer(self) -> None:
         """Adaptation writes `adaptation.md`; it never produces a sheet.
@@ -436,83 +460,81 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 )
                 self.assertIn(expected_route, focused)
 
-    def test_focused_repair_slice_routes_designer_findings_to_the_lesson_designer(
-        self,
-    ) -> None:
-        # Regression: `DESIGNER REPAIR REQUIRED` existed in the reviewer's
-        # vocabulary, the evidence reference and the merge script's blocking
-        # rule, but named no owner anywhere in the runtime the orchestrator
-        # reads. A lesson whose promised photographs never published therefore
-        # produced findings with nowhere to go, and the only reachable end was
-        # a blocked package. The route back to the Lesson Designer, and its
-        # authority limits, must be in the slice a run actually loads.
-        focused = (
-            self.run_slice("focused-repair")
-            .stdout.decode("utf-8")
-            .replace("\r\n", "\n")
-            .replace("\r", "\n")
-        )
+    def test_the_repair_round_names_the_faults_that_reach_it(self) -> None:
+        """The route survived the reviewer that used to be its main caller.
+
+        Three deterministic checks raise a fault an owner can repair: a
+        semantic build diagnostic, a picture reference the terminal receipts
+        say will never be honoured, and a helper-delivery failure. The slice
+        has to say so, or a route with no visible caller reads as dead.
+        """
+        focused = self.slice_text("focused-repair")
 
         for token in (
-            "### When the repair is a design decision",
-            "`DESIGNER REPAIR REQUIRED`",
-            "[PLUGIN_ROOT]/agents/lesson-designer.md",
-            "PICTURES_THAT_WILL_NOT_ARRIVE",
-            "Run this route once per lesson, with every `DESIGNER REPAIR "
-            "REQUIRED` finding in\nthe same launch",
-            "Do not change the objective",
-            "do not add a picture requirement",
-            "Require exactly: LESSON_DESIGN_OK",
-            "This is not the route for an ordinary layout fault",
+            "a semantic build diagnostic",
+            "a picture reference the\nreceipts say will never be honoured",
+            "a helper-delivery failure",
+            "raised by a deterministic check that names the resource",
         ):
             with self.subTest(token=token):
                 self.assertIn(token, focused)
 
-    def test_finalize_review_slice_carries_the_unrepaired_declaration_contract(
-        self,
-    ) -> None:
-        # The merge now refuses a verdict while a blocking finding has no
-        # repair on record. The orchestrator must meet that refusal with a
-        # repair round or an honest declaration, so both, and the warning
-        # against declaring a round that was merely skipped, belong in the
-        # slice that owns the merge command.
-        finalize = (
-            self.run_slice("finalize-review")
-            .stdout.decode("utf-8")
-            .replace("\r\n", "\n")
-            .replace("\r", "\n")
+    def test_one_repair_is_confirmed_by_its_own_rebuild(self) -> None:
+        """Nothing re-reviews a repaired resource, so the rebuild must close it.
+
+        The confirmation used to be a second reviewer pass over the repaired
+        artefact. Without one, a repair that changed a spec and never rebuilt
+        would reach delivery indistinguishable from a repair that worked.
+        """
+        focused = self.slice_text("focused-repair")
+
+        self.assertIn("that rerun is the\nrepair's confirmation", focused)
+        self.assertIn("There is no second round for the same fault", focused)
+        self.assertIn(
+            "Record the round in the run's\nfriction file, whatever its result",
+            focused,
         )
 
+    def test_a_declared_cross_resource_impact_reaches_the_teacher(self) -> None:
+        """Nothing downstream compares two resources any more.
+
+        A repair that changes something a sibling mirrors used to trigger a
+        consistency confirmation. The declaration still has to go somewhere,
+        or the one relationship a repair can silently break goes unnamed.
+        """
+        focused = self.slice_text("focused-repair")
+
+        self.assertIn("nothing downstream now compares the two", focused)
+        self.assertIn("run report as a teacher flag", focused)
+
+    def test_finalize_slice_proves_the_pictures_and_writes_the_record(
+        self,
+    ) -> None:
+        """Finalisation is deterministic: no verdict, no judgement, no merge.
+
+        This slice used to open by merging review findings into a package
+        verdict. What has to survive that removal is the licence and history
+        proof for every published picture, and the shared build review log.
+        """
+        finalize = self.slice_text("finalize")
+
         for token in (
-            "The merge refuses to write a verdict while a finding is still "
-            "blocking and no\nrepair is on record for it",
-            "--unrepaired [FINDING-ID]=owner-unavailable:",
-            "--unrepaired [FINDING-ID]=no-owner-authority:",
-            "Declare only what is true.",
-            "the answer is that finding's repair round, not a declaration",
+            "Nothing further judges the package",
+            'finalize-picture-assignment.py" provenance',
+            "Require `PICTURE_PROVENANCE_OK` before removing transient picture work",
+            "Append genuine findings to the shared build review log",
         ):
             with self.subTest(token=token):
                 self.assertIn(token, finalize)
 
-    def test_visual_review_slice_sends_every_blocking_finding_to_a_repair_round(
-        self,
-    ) -> None:
-        visual = (
-            self.run_slice("visual-review")
-            .stdout.decode("utf-8")
-            .replace("\r\n", "\n")
-            .replace("\r", "\n")
-        )
-
-        self.assertIn(
-            "A finding the reviewer classified\n`DESIGNER REPAIR REQUIRED` "
-            "routes through that same slice to a different owner.",
-            visual,
-        )
-        self.assertIn(
-            "Every blocking finding gets a repair round",
-            visual,
-        )
+        # The merge and its verdict vocabulary must be gone, not reworded.
+        for retired in (
+            "merge-visual-reviews.py",
+            "--unrepaired",
+            "## Verdict",
+        ):
+            with self.subTest(retired=retired):
+                self.assertNotIn(retired, finalize)
 
     def test_focused_repair_entrypoints_are_compact_and_keep_owner_models(
         self,

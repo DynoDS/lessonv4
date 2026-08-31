@@ -36,13 +36,12 @@ The pipeline splits work across three layers:
    specifications; deterministic commands build the direct fixed resources;
    the retained Working Wall builder performs its required physical-output
    judgement.
-3. **Delivery** — gather the validated outputs, complete the review route
-   and tell the teacher what was made.
+3. **Delivery** — once every branch has settled, prove the pictures, write the
+   record and tell the teacher what was made.
 
 The resource-design agents never make pedagogical decisions. They read the
 approved pedagogical contract and specify their own resource. Validated canonical
-files, picture evidence and review findings carry continuity. Conversation
-history does not.
+files and picture evidence carry continuity. Conversation history does not.
 
 ---
 
@@ -208,9 +207,8 @@ Do not pass `TEACHER_BRIEF_FILE`, `TEACHER_CLARIFICATION_FILES`,
 `ORCHESTRATOR_CONTEXT_FILE`, `LESSON_PLAN_INPUT` or
 `TEACHER_WORKSHEET_INPUT` to `slide-designer`, `worksheet-designer`,
 `working-wall-designer`, `working-wall-builder`, `stick-in-sheets-designer`,
-`image-scout`,
-`diagram-anchor`, `visual-reviewer`, `visual-consistency-reviewer`,
-deterministic command jobs or any other downstream renderer/reviewer.
+`image-scout`, `diagram-anchor`, deterministic command jobs or any other
+downstream renderer.
 
 ---
 
@@ -432,17 +430,14 @@ starting one branch never finishes the others.
 
 The order of work belongs to those blocks rather than to a list here, because a
 list here can only key each slice to an event ("before the first Worksheet
-Designer job", "before the first visual-review launch") that you cannot
-recognise until you are holding the slice that names it. Two failures come from
-exactly that gap, so treat both as things NEXT tells you and a linear read of
-the playbook will not:
+Designer job", "before the first repair round") that you cannot recognise until
+you are holding the slice that names it. Two failures come from exactly that
+gap, so treat both as things NEXT tells you and a linear read of the playbook
+will not:
 
-- **A finished artefact goes to visual review straight away.** The reviewer for
-  a build that has been accepted starts while other branches are still
-  designing. Reviewing one artefact needs that artefact alone, so holding it for
-  the slowest sibling costs the whole review round and every repair behind it.
-  Only the cross-resource consistency pass and the deterministic merge wait for
-  everything.
+- **A branch that has built and checked its resource is finished.** It does not
+  wait for a sibling, and no later stage compares one resource against another.
+  Only the deterministic finalisation waits for everything.
 - **A designer that produces an intermediate file has not produced its
   resource.** Adaptation writes `adaptation.md`; the sheet still has to be
   designed and built after it.

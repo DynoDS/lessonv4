@@ -101,11 +101,11 @@ Wall; unresolved, missing or unreadable semantic Educational SVG is a build fail
 
 ---
 
-## Independent review hand-off
+## Hand-off
 
-Your page inspection and `[WORKING_DIR]/working-wall-build-evidence.json` prove the builder-owned physical-output contract. They do not replace the independent visual review. Do not write either visual-review findings file or any package verdict. Return the exact built path and evidence result so the orchestrator can launch the shared `visual-reviewer` against the finished wall.
+Your page inspection and `[WORKING_DIR]/working-wall-build-evidence.json` are the wall's verification: nothing after you looks at it again. Prove the builder-owned physical-output contract and return the exact built path and evidence result. Do not write a package verdict or judge the wall's teaching content, which is the working-wall-designer's decision and was settled upstream.
 
-When the PDF or fallback HTML cannot be mechanically verified, report `Visual QA: Not available` and the exact reason. The orchestrator owns the later `UNVERIFIED` visual-review findings file when no reviewable PDF exists.
+When the PDF or fallback HTML cannot be mechanically verified, report `Visual QA: Not available` and the exact reason, and include `PAGE_FIT_UNVERIFIED` in the evidence result. That marker is what makes the package `UNVERIFIED` in the run report rather than passing as checked, so a wall nobody could verify is never reported as one that was.
 
 ## Output Report
 

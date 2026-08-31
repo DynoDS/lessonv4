@@ -138,52 +138,128 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("Never refuse to write `lesson.json`", slides)
         self.assertIn("on your first pass", slides)
 
-    def test_final_resource_visual_review_remains_in_playbook(self):
-        text = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(encoding="utf-8")
-        self.assertIn("Visual Review", text)
-        self.assertIn("visual-review.md", text)
-        self.assertIn("**Start each artefact's visual reviewer here", text)
+    def test_the_built_deck_look_is_the_one_pass_over_a_finished_artefact(self):
+        """Two independent reviewers were removed; one look replaced them.
 
-    def test_visual_review_starts_per_artefact_not_after_every_branch(self):
+        The composition pass runs against grey placeholder squares, so before
+        this look existed nobody ever saw a slide with its real photograph in
+        it. The trigger has to sit in the track that builds the deck, because
+        that is where the orchestrator is standing when the build lands.
+        """
+        playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
+            encoding="utf-8"
+        )
+        designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+
+        self.assertIn("**The built-deck look.**", playbook)
+        self.assertIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
+        self.assertIn("slide_designer_built_deck_look", playbook)
+        # It costs a worker, so it runs only where it can find something.
+        self.assertIn(
+            "only when at least one picture filename `lesson.json` names has a\n"
+            "`published` terminal receipt",
+            playbook,
+        )
+
+        self.assertIn("## The built-deck look", designer)
+        self.assertIn("BUILT_DECK_LOOK: [CLEAR, REPAIRED, FLAGGED or UNAVAILABLE]", designer)
+        self.assertIn("One repair pass and one rebuild", designer)
+
+    def test_the_removed_reviewers_leave_nothing_behind(self):
+        """A route to an agent that no longer exists stalls a run silently.
+
+        `visual-reviewer` and `visual-consistency-reviewer` were retired along
+        with their references, their merge script and the review phase. Any
+        surviving instruction to launch one, or to read a file only they wrote,
+        is a hand-off into nothing.
+        """
+        agents = {path.name for path in (ROOT / "agents").glob("*.md")}
+        self.assertNotIn("visual-reviewer.md", agents)
+        self.assertNotIn("visual-consistency-reviewer.md", agents)
+
+        for name in (
+            "review-evidence.md",
+            "visual-review-deck.md",
+            "visual-review-worksheets.md",
+            "visual-review-working-wall.md",
+            "visual-review-stick-in-sheets.md",
+        ):
+            with self.subTest(reference=name):
+                self.assertFalse((ROOT / "references" / name).exists())
+
+        for name in ("merge-visual-reviews.py", "zoom-region.py"):
+            with self.subTest(script=name):
+                self.assertFalse((ROOT / "scripts" / name).exists())
+
+        runtime = (ROOT / "scripts" / "make-lesson-runtime.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn('"visual-review"', runtime)
+
+        # Only the shared build review log, which is a historical record and
+        # deliberately keeps what past runs found, may still name them.
+        live = [
+            path
+            for pattern in ("agents/*.md", "skills/**/*.md", "references/*.md",
+                            "scripts/*.py", "commands/*.md")
+            for path in ROOT.glob(pattern)
+            if path.name != "build-review-log.md"
+        ]
+        # Both spellings: the role's filename, and its prose name. A file
+        # naming "the Visual Reviewer" in a sentence routes a run just as
+        # surely as one naming `visual-reviewer.md`, and the hyphenated check
+        # alone let exactly that survive in a repair role's entry conditions.
+        retired = (
+            "visual-reviewer",
+            "visual-consistency-reviewer",
+            "merge-visual-reviews",
+            "zoom-region",
+            "review-evidence.md",
+            "visual reviewer",
+            "visual consistency reviewer",
+            "designer repair required",
+        )
+        for path in live:
+            text = path.read_text(encoding="utf-8").lower()
+            for token in retired:
+                with self.subTest(file=path.name, token=token):
+                    self.assertNotIn(token, text)
+
+    def test_a_finished_branch_does_not_wait_for_its_siblings(self):
         """A per-artefact trigger competing with a whole-pipeline gate loses.
 
         The gate won on a real run: the slide deck was built and checked, and
-        its reviewer still waited for the worksheet branch, costing a whole
-        review round and delaying every repair behind it.
+        the pass that judged it still waited for the worksheet branch. With the
+        cross-resource comparison gone there is nothing left that could need
+        two resources, so nothing may still read as "hold until every branch
+        ends".
         """
         playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
             encoding="utf-8"
         )
         skill = (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(encoding="utf-8")
-        runtime = (ROOT / "scripts" / "make-lesson-runtime.py").read_text(encoding="utf-8")
+        runtime = (ROOT / "scripts" / "make-lesson-runtime.py").read_text(
+            encoding="utf-8"
+        )
 
-        # Nothing may still read as "hold every reviewer until every branch ends".
         self.assertNotIn("Wait for All Branches", playbook)
         self.assertNotIn("after all builders", playbook)
-        self.assertNotIn("Before visual review, every earned resource", playbook)
 
         self.assertIn("## Phase 3 — Service Each Branch as It Lands", playbook)
-        self.assertIn(
-            "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
-            playbook,
-        )
-        self.assertIn(
-            "A finished artefact's own visual reviewer is one of those dependants",
-            playbook,
-        )
-        self.assertIn("That trigger is per artefact, not per pipeline", playbook)
         flat_playbook = " ".join(playbook.split())
-        flat_skill = " ".join(skill.split())
         self.assertIn(
-            "Only the cross-resource consistency review and the deterministic "
-            "merge wait for every branch",
+            "A branch that has built its resource and passed that resource's "
+            "check is finished.",
+            flat_playbook,
+        )
+        self.assertIn(
+            "Only the deterministic finalisation waits for every branch",
             flat_playbook,
         )
 
-        # The prose above states the principle. What makes a run act on it is
-        # the successor block the runtime reader appends to each slice that
-        # ends with an accepted build, because that is where the orchestrator
-        # is standing when the build lands. Prose alone lost this once already.
+        # Prose states the principle; the successor block is what makes a run
+        # act on it, because that is where the orchestrator is standing.
+        flat_skill = " ".join(skill.split())
         self.assertIn(
             "every slice ends with a `## NEXT` block naming what it hands you",
             flat_skill,
@@ -207,14 +283,12 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
                 trailer = stdout.split(
                     "## NEXT: what this slice hands you"
                 )[1]
-                self.assertIn("visual-review", trailer)
+                self.assertIn("focused-repair", trailer)
 
         # The slice markers are the playbook's own headings, so they move together.
         self.assertIn("## Phase 3 — Service Each Branch as It Lands", runtime)
-        self.assertIn(
-            "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
-            runtime,
-        )
+        self.assertIn("## Phase 3.5 — The Focused Owner-Repair Round", runtime)
+        self.assertIn("## Phase 3.6 — Deterministic Finalisation", runtime)
 
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ The per-filename lifetime is at most two ImageGen calls. An interrupted call or 
 
 Save the returned local file or returned media payload under the entry's AI folder in `WORK_ROOT`.
 
-Immediately call `record-generated`. A staged output remains `generated_unreviewed` until visual review completes.
+Immediately call `record-generated`. A staged output remains `generated_unreviewed` until your own batch review below has looked at it. Nothing downstream reviews it for you, so a staged image you never opened reaches the lesson exactly as it came back.
 
 If the call returns neither a readable path nor a savable payload, complete the attempt as rejected with exact fault `imagegen_output_unavailable`. Report that terminal reason. Do not use a second call to recreate missing output.
 

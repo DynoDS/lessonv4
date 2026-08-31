@@ -359,9 +359,18 @@ class ContractTests(unittest.TestCase):
         # separates a real pass from a claimed one.
         self.assertIn("Run the optional-picture check yourself", playbook)
 
-    def test_the_deck_reviewer_may_read_the_record(self):
-        reviewer = (ROOT / "agents" / "visual-reviewer.md").read_text(encoding="utf-8")
-        self.assertIn("optional-picture-pass.json", reviewer)
+    def test_the_built_deck_look_reads_the_record(self):
+        """The look is a fresh spawn: it did not write the record it needs.
+
+        Whoever looks at the built deck has to tell an optional decoration
+        resting on a card from a picture in the way of something a child reads.
+        That distinction is in the pass record, and the earlier composition
+        pass that wrote it is a different worker with a different context.
+        """
+        designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+        look = designer.split("## The built-deck look", 1)[1]
+        self.assertIn("optional-picture-pass.json", look)
+        self.assertIn("this spawn did not write it", look)
 
 
 if __name__ == "__main__":

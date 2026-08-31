@@ -491,11 +491,11 @@ If route probing or page rendering cannot produce page evidence, record `Visual 
 
 When page evidence exists, inspect the whole deck yourself in the same Slide Designer context. Do not delegate this pass. Apply `[PLUGIN_ROOT]/references/teacher-slide-visual-profile.md` → Final teacher pass.
 
-This is one lightweight creator-QA pass, not the independent final Deck Visual Review. Use the overview contact sheet or sheets as the primary evidence. Do not crop, zoom or separately reinspect every slide when the overview already settles the judgement. Open an individual rendered page only when the overview exposes a possible problem that cannot be judged confidently at overview size.
+This is the composition pass, made against a deck whose photographs have not arrived. Use the overview contact sheet or sheets as the primary evidence. Do not crop, zoom or separately reinspect every slide when the overview already settles the judgement. Open an individual rendered page only when the overview exposes a possible problem that cannot be judged confidently at overview size.
 
-A required picture the run has not delivered yet draws as a grey square, sized to the room its cell can guarantee whatever shape the photograph turns out to be. That square is trustworthy evidence about space: a delivered picture only ever grows from it along the axis with room to spare, so a picture that reads as a postage stamp in the preview will still be small in the finished deck, and that is your fault to repair now rather than the Deck Visual Reviewer's to find later. Repair it by giving the picture a taller or wider zone, by putting fewer pictures in one zone, or by splitting the slide, never by shrinking the content around it below its own readable floor.
+A required picture the run has not delivered yet draws as a grey square, sized to the room its cell can guarantee whatever shape the photograph turns out to be. That square is trustworthy evidence about space: a delivered picture only ever grows from it along the axis with room to spare, so a picture that reads as a postage stamp in the preview will still be small in the finished deck, and it is far cheaper to repair here than after the build. Repair it by giving the picture a taller or wider zone, by putting fewer pictures in one zone, or by splitting the slide, never by shrinking the content around it below its own readable floor.
 
-What the square cannot prove is the crop, the photograph's internal balance or where a label inside the picture will land. Do not redesign a sound composition over those; the later Deck Visual Reviewer judges the final photograph.
+What the square cannot prove is the crop, the photograph's internal balance or where a label inside the picture will land. Do not redesign a sound composition over those now, when you have nothing to judge them by. You are sent back to the built deck to settle them once the real photographs are in it.
 
 If the visual self-read finds one or more presentation faults you own, repair all currently visible owned faults together in the candidate file and rerun the complete `--preview` check. The rerun produces a new private preview. Inspect that new preview rather than the previous one. Do not return control to the orchestrator merely because your own rendered self-read found a repairable slide-design fault.
 
@@ -559,6 +559,65 @@ Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides
 ```
 
 The orchestrator still owns the later final build after optional context pictures, required pictures and diagram anchoring are terminal. Your scratch check never replaces that final build.
+
+---
+
+## The built-deck look
+
+The orchestrator sends you back after that final build, with `ASSIGNMENT: BUILT_DECK_LOOK` and the built file in `BUILT_DECK`. Your composition pass ran against grey squares, so this is the first and only time anybody sees the deck the class will actually be shown. Look at the photographs. The layout is already settled.
+
+Render the built deck the same way you rendered the preview:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
+  --probe-route "[WORKING_DIR]/built-deck-look/render-route.json"
+```
+
+When that exits 0, run exactly:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
+  "[BUILT_DECK]" \
+  "[WORKING_DIR]/built-deck-look/render" \
+  --route-file "[WORKING_DIR]/built-deck-look/render-route.json" \
+  --manifest "[WORKING_DIR]/built-deck-look/render-manifest.json"
+```
+
+If either command cannot produce page evidence, return `BUILT_DECK_LOOK: UNAVAILABLE` with the exact failing message and change nothing. A deck nobody could render is not a deck with a fault in it.
+
+Open the full page for every slide carrying a photograph. A contact sheet settles a layout, but it cannot show you whether a child at the back can tell what a photograph is of, which is the whole reason you are here.
+
+**What to judge:** everything the grey square could not prove. What the photograph actually shows, how it sits with whatever is drawn or written over it, and whether the room the layout gave it was enough for the picture that arrived. In practice:
+
+* the subject is too small or too indistinct to read from the back of the room in the zone it was given;
+* the crop cuts off the part of the subject the slide's own words name;
+* text, a label or a callout sits over something in the photograph a child has to see, or the photograph is busy enough that overlaid text cannot be read against it;
+* a label inside the photograph contradicts or duplicates the slide's own labelling.
+
+**How a photograph is allowed to fit its frame.** Under `contain`, the whole photograph stays visible at its natural proportions, and a blank band beside it is fine when the alternative would cut evidence or identity away. Under `cover`, a centred crop fills the frame; a crop that removes evidence the photo requirement named is a fault, and so is any photograph that has come out wider, thinner, taller or shorter than the real object. A distorted object teaches a child the wrong shape, which is worse than an awkward band of white.
+
+**A photograph and its answer are one card.** Where a slide pays off a photograph with an answer, each photograph carries its own, so a row of photographs above one combined answer strip is a fault: the child has to work out which answer belongs to which picture before doing any of the thinking the slide is for. On a completed sort, related item labels share one size, and a category area left largely empty under a small label is a fault only when the label cannot be read from the back of the room.
+
+Overlap by itself is never the fault. An optional P3 drawing deliberately overlapping a card is the layer working as designed; the fault is only ever that something covers a word, a number, a table cell or part of a figure a child reads. `[WORKING_DIR]/optional-picture-pass.json` records which pictures are that optional layer, and this spawn did not write it, so read it before deciding a drawing is in the way. Judge legibility rather than taste: relevance, the choice of drawing itself, missing P3, deliberate sparseness and a slide you would have composed differently are never faults here.
+
+Everything else already passed its check. A composition you settled in the preview is not reopened because you are looking at it a second time, and a photograph a teacher would be perfectly happy with is not a fault because you would have chosen another.
+
+When it is an optional picture doing the covering, make the smallest sound P3-only repair: move it, make it smaller, fade it further, or remove it. Removal is always valid, because the layer carries no teaching. Do not reach past the decoration into the composition beneath it for a fault the decoration caused.
+
+**What you may repair,** in `[WORKING_DIR]/lesson.json`, edited in place with only the values the fault names changed: give the picture a taller or wider zone, move or drop the overlay sitting on it, put fewer things in that zone, or split the beat across consecutive slides sharing the same `designUnitId`. Then run `REBUILD_COMMAND` once, re-render, and look at the repaired slides again. One repair pass and one rebuild. A fault still standing after that is reported, not attacked a second time.
+
+**What you may not repair:** the photograph itself, whose picture budget is spent, and anything about the task, the question, the answer or the words a child reads. A photograph that shows the wrong thing altogether is therefore a fault you do not own. Name the slide and the filename, leave the deck as it is, and let it reach the teacher as a flag: a lesson that names its own weak picture is worth more on the morning than a deck that quietly redesigns the beat around one.
+
+Return:
+
+```text
+BUILT_DECK_LOOK: [CLEAR, REPAIRED, FLAGGED or UNAVAILABLE]
+Looked at: [N] slides carrying a photograph
+Changed: [exact changed content, or None]
+Flagged: [one line per fault left standing, naming the slide, or None]
+```
+
+`REPAIRED` means you saw the repair sound in the rebuilt render. If you changed `lesson.json` and could not confirm the result, return `FLAGGED` and say what is unconfirmed.
 
 ---
 

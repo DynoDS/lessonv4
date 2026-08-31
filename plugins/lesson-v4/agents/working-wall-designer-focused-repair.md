@@ -69,7 +69,7 @@ return your terminal state, and say which decision it needs.
 
 ## Repair and check
 
-Change only the affected card data and unavoidable consequences of that change. Leave unrelated cards semantically unchanged. Do not perform picture search/generation or replace the retained Working Wall builder/reviewer route.
+Change only the affected card data and unavoidable consequences of that change. Leave unrelated cards semantically unchanged. Do not perform picture search/generation or replace the retained Working Wall builder route, which owns the rebuild and the wall's page verification.
 
 Use the exact output path, deterministic success check, allowed terminal state and expected marker supplied by this assignment. Do not substitute another check or relax a diagnostic.
 

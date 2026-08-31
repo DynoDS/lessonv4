@@ -57,7 +57,6 @@ required. Missing optional agents skip only their resource or review:
 - no `adaptation-designer`: build only the expected-range worksheet;
 - no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
   that output and exclude it as NOT DELIVERED naming the missing role;
-- no visual reviewer: keep the build but report its review as `UNVERIFIED`;
 - no image scout: omit unresolved pictures under the normal degradation rule.
 
 Check fixed builders only when their resource is earned. Never spawn a model to
@@ -556,7 +555,7 @@ focused repair slice from its assignment, finding file and prior terminal
 receipt, launch one fresh image scout, and finalise with `--replace yes`. Never
 reopen a passing sibling.
 
-Picture provenance is completed after visual review, not here.
+Picture provenance is completed at the deterministic finalisation, not here.
 
 ---
 
@@ -597,6 +596,49 @@ python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" slides \
 Require `ok: true` and the exact output paths in the summary. On a semantic
 build diagnostic, run one focused Slide Designer repair and rebuild once.
 
+**The built-deck look.** The Slide Designer's own preview is rendered before the
+picture stage finishes, so every photograph in it is a grey placeholder square.
+That square proves how much room a picture has and nothing at all about the
+picture that lands in it, so this is the first and only time anybody sees the
+deck the class will actually be shown. Send the Slide Designer back to look at
+it.
+
+Run this only when at least one picture filename `lesson.json` names has a
+`published` terminal receipt. A deck whose visuals are all drawn by helpers was
+already seen whole in the preview; a second look at it finds nothing and costs a
+worker.
+
+```text
+You are the slide designer, looking at the built deck now that its photographs
+have arrived. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/slide-designer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+ASSIGNMENT: BUILT_DECK_LOOK
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+SLIDE_SPEC: [WORKING_DIR]/lesson.json
+BUILT_DECK: [exact .pptx path from the slide build summary]
+REBUILD_COMMAND: [the exact run-fixed-resource.py slides command above]
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson.json
+
+Follow "The built-deck look" in your role file. Judge only what a placeholder
+square could not have shown you. Leave every other slide exactly as it is.
+
+TERMINAL_STATE: COMPLETE
+```
+
+Use the `slide_designer_built_deck_look` task name so the launch audit still
+matches it to its role. One look, and at most one repair-and-rebuild for a fault
+the designer owns; there is no second round. Record the round in the run's
+friction file whether it repaired anything or not, because a look that found
+nothing is the evidence that the deck was seen.
 
 ---
 
@@ -834,11 +876,11 @@ Wait through the host's ordinary multi-worker wait once for all active branches.
 Do not poll each worker serially. As each worker completes, run its
 deterministic check and release only its genuine dependants. A failed branch does not invalidate a clean independent branch.
 
-**A finished artefact's own visual reviewer is one of those dependants**, so a
-deck that is built and checked goes to review while the worksheet branch is
-still designing. Phase 3.5 carries the launch: run its route probe once, then
-launch each reviewer as its build is accepted. Only the cross-resource
-consistency review and the deterministic merge wait for every branch.
+**A branch that has built its resource and passed that resource's check is
+finished.** Nothing waits on a sibling: the deck's own built-deck look runs
+inside Track A while the worksheet branch is still designing, and no stage after
+this one compares one resource against another. Only the deterministic
+finalisation waits for every branch.
 
 **The content-gap picture wave.** `SLIDE_CONTENT_GAP` or
 `WORKSHEET_CONTENT_GAP` - a live helper cannot draw a load-bearing visual
@@ -865,56 +907,17 @@ is the honest record of a branch that ended, not a fault to repair here.
 
 ---
 
-## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)
+## Phase 3.5 — The Focused Owner-Repair Round
 
-Probe this machine's render routes once before any reviewer starts, and hand the
-file to every reviewer as `RENDER_ROUTE_FILE`. Nothing else probes it, and a
-reviewer without it returns `UNVERIFIED` for an artefact that was fine.
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/render-pages.py" --probe-route "[WORKING_DIR]/render-route.json"
-```
-
-Render every delivered surface through that established route.
-**Start each artefact's visual reviewer here, after its final build is present.**
-That trigger is per artefact, not per pipeline: the first accepted build starts
-its reviewer immediately, and the rest follow one at a time as they land.
-Launch one Visual Reviewer per resource concurrently. Each receives only
-approved `lesson-design.json`, that resource's own specification, its final
-render manifest/pages, its artefact-specific review module, and, for a
-resource built by `run-fixed-resource.py`, that build's exact command and
-summary path as `REBUILD_COMMAND` for finishing its own safe local repairs.
-The working wall gets no `REBUILD_COMMAND`; its rebuild stays with the
-retained builder. Each writes one `findings-[resource].md` file.
-
-Stable finding IDs persist through repairs. A fault the role permits the
-reviewer to repair locally is finished inside that same review: spec edit,
-`REBUILD_COMMAND` rerun, re-render, confirm, `FIXED` with evidence. Do not
-route a finding the reviewer has already fixed and confirmed into the
-focused-repair round or a separate confirmation pass; check the refreshed
-build summary still reports `ok: true` and carry its output paths forward. A
-material content/layout fault the reviewer could not repair locally routes
-once to the resource's existing owner using the focused-repair entrypoint. A finding the reviewer classified
-`DESIGNER REPAIR REQUIRED` routes through that same slice to a different owner.
-Every blocking finding gets a repair round: load the focused-repair slice as
-soon as the first one exists, and do not decide from here that a finding is
-unrepairable. Do not reopen passing content.
-
-When two or more comparable resources exist, build the deterministic consistency
-overview and launch Visual Consistency Reviewer once. Missing or stale evidence
-causes rerender of only the named resource, not a full pipeline replay.
-
-Use `PASS`, `BLOCKED` or `UNVERIFIED` exactly. Never relabel unavailable review
-as pass.
-
----
-
-### The focused owner-repair round
+This is the one repair route the pipeline has, and every track above sends the
+same three faults into it: a semantic build diagnostic, a picture reference the
+receipts say will never be honoured, and a helper-delivery failure. Each of
+those is raised by a deterministic check that names the resource, so the round
+starts with the fault already identified and its owner already known.
 
 Use the compact focused-repair role for the named owner when present, otherwise
-its full creation role. Give it the finding ID, exact artefact/location,
-required change, protected passing content, potential cross-resource impact and
-existing build diagnostic.
+its full creation role. Give it the exact artefact/location, the required
+change, the protected passing content and the existing build diagnostic.
 
 - `slide-designer`: use `[PLUGIN_ROOT]/agents/slide-designer-focused-repair.md`;
   if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/slide-designer.md`.
@@ -930,14 +933,14 @@ Launch the selected role directly.
 Add this line to every repair prompt, whichever owner it goes to:
 
 ```text
-Edit the named file in place: change the values this finding names and leave
+Edit the named file in place: change the values this repair names and leave
 every other byte as it is. Do not delete and recreate it, and do not re-emit the
 whole file to alter part of it. See [PLUGIN_ROOT]/references/revising-in-place.md.
 ```
 
 A repairer that rewrites the whole specification re-decides every passing thing
 it retypes, which is what `Already passed - leave unchanged` exists to protect,
-and the confirmation pass cannot then tell a repair from a silent redesign.
+and the rebuilt resource cannot then tell a repair from a silent redesign.
 
 Return these exact repair-impact fields with the normal terminal marker:
 
@@ -948,129 +951,29 @@ Potential cross-resource impact: [specific relationships or None]
 Repair scope: REPAIR_SCOPE_OK
 ```
 
-Rebuild only that resource, rerun its deterministic check, rerender changed
-pages and confirm the same finding ID. Run a consistency confirmation only when
-the repair declares a real cross-resource impact. There is no third general
-repair round. Record the round in the run's friction file, whatever its result.
+Rebuild only that resource and rerun its deterministic check: that rerun is the
+repair's confirmation, and a repair whose rebuild still fails has not worked.
+There is no second round for the same fault. Record the round in the run's
+friction file, whatever its result.
 
-For a picture finding, use the one-filename repair slice and prior picture
-receipt, finalise with `--replace yes`, then rebuild/review only affected
-resources. That route replaces a picture that published and is wrong. A picture
-that never published at all is a different fault, and it is the designer route
-below.
+A repair that declares a real cross-resource impact has changed something
+another resource mirrors, and nothing downstream now compares the two. Carry the
+declaration verbatim into the run report as a teacher flag, so the one person
+who will see both resources knows where to look.
 
----
-
-### When the repair is a design decision
-
-A finding the reviewer classified `DESIGNER REPAIR REQUIRED` names a change the
-resource owner is barred from making: the honest repair alters what children are
-asked to do, not how the page shows it. The commonest case is a picture the
-contract promised and the run could not publish, on a beat whose task depends on
-seeing it. The slide or worksheet owner cannot conjure the picture and may not
-change the task, so the finding has no home among the four owners above and
-returns to the Lesson Designer, who chose the beat.
-
-This is not the route for an ordinary layout fault, however stubborn. The
-resource owner above keeps every fault whose repair leaves the task, the
-question and the answer as designed.
-
-Run this route once per lesson, with every `DESIGNER REPAIR REQUIRED` finding in
-the same launch, whether they came from one resource or four. One designer
-holding all of them re-plans the lesson coherently for the cost of one round; a
-launch per finding re-plans the same lesson many times over and can leave the
-repaired beats disagreeing with each other.
-
-There is no compact repair entrypoint for this role. Launch `lesson-designer`
-directly:
-
-```text
-You are the lesson designer, repairing the design faults one visual review
-found. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/lesson-designer.md
-
-PLUGIN_ROOT: [PLUGIN_ROOT]
-WORKING_DIR: [WORKING_DIR]
-OUTPUT_DIR: [OUTPUT_DIR]
-
-AUTHORITATIVE_INPUTS:
-LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
-PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
-DESIGNER_REPAIR_FINDINGS: [every DESIGNER REPAIR REQUIRED finding block verbatim]
-PICTURES_THAT_WILL_NOT_ARRIVE: [one exact filename per promised picture with no
-published terminal receipt, or None]
-
-OWNED_OUTPUTS:
-- [WORKING_DIR]/lesson-design.json
-- [WORKING_DIR]/design-decisions.md
-- [WORKING_DIR]/photo-requirements.json
-
-Re-plan only the beats the findings name, so that the lesson works with what
-this run can actually deliver. You may change those beats' tasks, reshape or
-drop a picture-dependent activity, and use a representation the run already
-holds. Do not change the objective, do not touch a beat no finding names, and
-do not add a picture requirement: the picture stage has closed, so a new one
-would reach the teacher unpublished exactly as these did.
-
-Do not run the scaffold builder. It writes the empty scaffold and would discard
-the finished design.
-
-SUCCESS_CHECK:
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  "[WORKING_DIR]/lesson-design.json" \
-  "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_OK
-
-TERMINAL_STATE: COMPLETE
-```
-
-No `--initial-photo-namespace` here: the canonical contract may already carry
-adaptation photos promoted in Phase 2.
-
-Return the same three repair-impact fields with that terminal state.
-
-Run the design validator yourself after it returns. Then re-run only the
-resource designers whose specification the changed beats touch, rebuild those
-resources, and confirm the affected pages against the same finding IDs. A
-finding the designer resolved by removing the requirement altogether closes
-under the authorised-removal rule in `review-evidence.md`.
-
-A run reaching this route is already past `COMPLETE`: the teacher is owed the
-picture the contract promised whatever the re-plan achieves. What this round
-buys is the difference between a deck the class cannot use and a lesson that
-teaches without the picture, which is the difference the teacher meets in the
-morning.
-
-If `lesson-designer` is absent, or this one round leaves a finding unresolved,
-that finding stays blocking and is declared at the merge.
+For a picture that published and is wrong, use the one-filename repair slice and
+the prior picture receipt, finalise with `--replace yes`, then rebuild only the
+resources naming that filename. A picture that never published at all is the
+different fault the tracks reconcile before they build, where the resource owner
+re-points that one reference and keeps the learning it was serving.
 
 ---
 
-### Deterministic final merge
+## Phase 3.6 — Deterministic Finalisation
 
-Run `merge-visual-reviews.py` with only findings and confirmations that exist,
-writing `[WORKING_DIR]/visual-review.md`.
-Use `--consistency-required` only when two or more comparable resources required
-the specialist comparison. Read `## Verdict` exactly.
-
-The merge refuses to write a verdict while a finding is still blocking and no
-repair is on record for it, because a skipped repair round and a failed one
-otherwise reach delivery looking identical. The confirmation pass that
-re-reviewed a repair is that record, whatever its result. Where no repairer
-could be put in front of a finding, say so:
-
-```text
---unrepaired [FINDING-ID]=owner-unavailable: [the role that is missing, or that
-  could not be run to a result after its one infrastructure retry]
---unrepaired [FINDING-ID]=no-owner-authority: [the change no available owner may make]
-```
-
-Declare only what is true. The reason prints beside the finding in
-`visual-review.md` and carries into the run report, so a declaration standing in
-for a repair round that was simply skipped tells the teacher a fault was
-unfixable when nobody had tried. When the merge names an undeclared blocking
-finding, the answer is that finding's repair round, not a declaration.
+Every branch has now either built its resource and passed that resource's check
+or been excluded with a reason. Nothing further judges the package: this phase
+proves what the pictures were, tidies the transient work and writes the record.
 
 Run picture provenance once from the final schema-2 requirements and
 `[WORKING_DIR]/orchestration-receipts/picture-terminal/`:
@@ -1110,7 +1013,9 @@ Write `[WORKING_DIR]/run-report.md` with:
 - delivered resources with exact paths from fixed build summaries or the wall
   builder;
 - excluded earned resources and exact reasons;
-- blocking faults, accepted minor findings and failed build attempts;
+- blocking faults, accepted minor issues and failed build attempts. A minor
+  issue here is one a check or a designer raised and something judged harmless:
+  a retained build warning, or a fault the built-deck look saw and let stand;
 - picture outcomes. A picture the contract promised and the run did not publish
   is a missing picture whether one scout failed or the stage never started, so
   name it, and the package is then not `COMPLETE`;
@@ -1133,26 +1038,29 @@ validation keeps the record honest, it never withholds the record: if the check
 still fails after two repair passes, send the teacher report anyway and include
 the exact `RUN_REPORT_FAILED` output. Then send a short
 teacher-facing report naming the topic, year, subject, objective, lesson scope,
-exact files, pedagogical highlights, design-review result, visual verdict and
-every teacher flag.
+exact files, pedagogical highlights, design-review result and every teacher
+flag.
 
 A package missing an earned output is `PARTIAL`; an unresolved blocking fault
-is `BLOCKED`; missing required visual verification is `UNVERIFIED`. Use exact
+is `BLOCKED`; a wall the builder could not verify against its page contract,
+which reaches the report as `PAGE_FIT_UNVERIFIED`, is `UNVERIFIED`. Use exact
 summary output paths, never guessed filenames. `BLOCKED` labels the record, not
 the delivery: a blocked package still hands over every resource that built and
 passed its own checks, with the unresolved faults named first.
 
 ### Report format
 
-Keep the teacher report concise. Always include a `Reviewer flags` section,
-using `None` when empty. Worksheet pupil sheets and answer key remain separate.
+Keep the teacher report concise. Always include a `Teacher flags` section, using
+`None` when empty. It carries the design reviewer's unresolved findings, any
+declared cross-resource impact from a repair, and anything the built-deck look
+let stand. Worksheet pupil sheets and answer key remain separate.
 State when a two-lesson scope covers Lesson 1 only and name deferred learning.
 
 ---
 
 ## Phase 5 — SharePoint Sync
 
-After review and repair settle, build the explicit sync list from exact delivered
+Once every branch has settled, build the explicit sync list from exact delivered
 paths. Run `run-fixed-resource.py sharepoint` directly with the resolved term,
 year, week, subject/day and one `--file` per exact basename. Require schema 1
 `ok: true`, `DESTINATION=` and `STATUS=COPIED`.

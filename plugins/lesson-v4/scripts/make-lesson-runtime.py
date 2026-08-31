@@ -68,18 +68,14 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "phase3": (
         "## Phase 3 — Service Each Branch as It Lands",
-        "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
-    ),
-    "visual-review": (
-        "## Phase 3.5 — Visual Check and Repair (per artefact, as each build lands)",
-        "### The focused owner-repair round",
+        "## Phase 3.5 — The Focused Owner-Repair Round",
     ),
     "focused-repair": (
-        "### The focused owner-repair round",
-        "### Deterministic final merge",
+        "## Phase 3.5 — The Focused Owner-Repair Round",
+        "## Phase 3.6 — Deterministic Finalisation",
     ),
-    "finalize-review": (
-        "### Deterministic final merge",
+    "finalize": (
+        "## Phase 3.6 — Deterministic Finalisation",
         "## Phase 4 — Final Assembly and Report",
     ),
     "delivery": (
@@ -94,14 +90,17 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
 # A bounded slice used to end at its own `---` and say nothing about what
 # followed, so the only record of the pipeline's shape was the skill's list of
 # "load slice X immediately before Y" bullets. Those bullets are keyed on
-# events - the first visual-review launch, the first Worksheet Designer job -
-# that an orchestrator can only recognise once it already holds the slice
-# naming them, which is circular. A host with a large accumulated context
-# usually reconstructs the order anyway; a host reading strictly slice by slice
-# runs the document top to bottom instead, so per-artefact review collapses
-# into one batch at the end and a track whose next step sits in an unloaded
-# slice simply stops. Naming the successor here puts it in the one component
-# every host must call, and delivers it at the moment it is needed.
+# events - the first Worksheet Designer job, the first repair round - that an
+# orchestrator can only recognise once it already holds the slice naming them,
+# which is circular. A host with a large accumulated context usually
+# reconstructs the order anyway; a host reading strictly slice by slice runs the
+# document top to bottom instead, and a track whose next step sits in an
+# unloaded slice simply stops. Naming the successor here puts it in the one
+# component every host must call, and delivers it at the moment it is needed.
+#
+# Every track can reach `focused-repair`, because the mapping from a named owner
+# to its compact repair role lives only there, and each track raises its own
+# build and picture faults without ever loading a sibling's slice.
 NEXT_STEPS: dict[str, tuple[str, ...]] = {
     "execution": (
         "Load `setup`: establish what this package ships and gather the brief.",
@@ -135,9 +134,10 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "Load `slides-finalize` once every picture assignment is terminal.",
     ),
     "slides-finalize": (
-        "The deck is built. Load `visual-review` and start the deck's reviewer"
-        " on this build now - do not hold it for the worksheet, wall or"
-        " stick-in branches, which review independently.",
+        "The deck is built, and looked at once its photographs are in it. Track"
+        " A ends here; nothing downstream compares it to another resource.",
+        "Load `focused-repair` for a build diagnostic, a terminally unavailable"
+        " picture reference or a fault the built-deck look owns.",
         "The other tracks continue in parallel; this slice ends Track A only.",
     ),
     "worksheet-routing": (
@@ -153,33 +153,29 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         " be designed.",
     ),
     "worksheet-render": (
-        "The worksheets are built. Load `visual-review` and start the"
-        " worksheets reviewer on this build now, alongside any reviewer"
-        " already running.",
+        "The worksheets are built. Track B ends here.",
+        "Load `focused-repair` for a build diagnostic or a terminally"
+        " unavailable picture reference.",
     ),
     "other-resources": (
-        "Each of these builds is reviewable on its own. As the wall build and"
-        " the stick-in build are accepted, load `visual-review` and start that"
-        " artefact's reviewer immediately.",
-        "A track that ends with an empty spec earns no build and no reviewer;"
-        " record it and carry on.",
+        "Each of these builds settles on its own. Track D ends when the wall"
+        " builder returns its evidence result; Track F ends when the stick-in"
+        " build is accepted.",
+        "Load `focused-repair` for a build diagnostic on either.",
+        "A track that ends with an empty spec earns no build; record it and"
+        " carry on.",
     ),
     "phase3": (
-        "Load `visual-review` for each artefact whose build has been accepted"
-        " and is not yet under review.",
-        "Load `finalize-review` only once every branch has settled.",
-    ),
-    "visual-review": (
-        "Load `focused-repair` as soon as one finding needs an owner other"
-        " than the reviewer.",
-        "Load `finalize-review` when every artefact has reviewed and every"
-        " blocking finding has a repair on record.",
+        "Load `focused-repair` for any branch whose deterministic check named"
+        " a fault its owner can repair.",
+        "Load `finalize` only once every branch has settled - built and"
+        " checked, or excluded with its reason.",
     ),
     "focused-repair": (
-        "Re-review the repaired artefact, then load `finalize-review` when"
-        " nothing is left open.",
+        "Rebuild that one resource and rerun its own check. That rerun is the"
+        " confirmation; return to the track the fault came from.",
     ),
-    "finalize-review": (
+    "finalize": (
         "Load `delivery` for final assembly, the teacher report and sync.",
     ),
     "delivery": (

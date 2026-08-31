@@ -1917,10 +1917,18 @@ def test_task_centred_reference_has_one_pupil_action_source():
     assert "`childTask`" not in text
 
 
-def test_visual_consistency_requires_exact_canonical_success_criteria():
-    text = (ROOT / "agents" / "visual-consistency-reviewer.md").read_text(encoding="utf-8")
-    assert "A compatible paraphrase is still drift" in text
-    assert "Natural shorter wording or compatible rephrasing is allowed" not in text
+def test_success_criteria_stay_exact_at_the_role_that_copies_them():
+    """A shorter-but-compatible rewording is drift, and drift is now uncaught.
+
+    A separate consistency reviewer used to compare the wall's steps against
+    the board's. Nothing does now, so the rule has to hold at the only role
+    that retypes the criteria onto another surface.
+    """
+    text = (ROOT / "agents" / "working-wall-designer.md").read_text(encoding="utf-8")
+    assert "Success criteria steps in particular must be verbatim" in text
+    assert "same number of steps, same wording, same punctuation" in text
+    assert "Do not summarise the SC into shorter steps for the wall" in text
+    assert "never reword the steps" in text
 
 
 def test_worksheet_designer_protects_all_printed_upstream_text():

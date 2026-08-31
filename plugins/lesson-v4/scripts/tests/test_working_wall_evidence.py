@@ -168,10 +168,14 @@ class TestWorkingWallEvidence(WorkingWallEvidenceFixture):
         self.assertIn("working-wall-build-evidence.json", text)
         self.assertIn("WORKING_WALL_EVIDENCE_OK", text)
         self.assertIn("Do not report `Built` unless", text)
+        # Nothing looks at the wall after this builder, so its own inspection
+        # has to be stated as the wall's verification rather than as a
+        # first pass handing on to an independent reviewer.
         self.assertIn(
-            "They do not replace the independent visual review.",
+            "are the wall's verification: nothing after you looks at it again",
             text,
         )
+        self.assertIn("PAGE_FIT_UNVERIFIED", text)
         self.assertNotIn(RETIRED_WALL_FINDINGS_NAME, text)
         self.assertNotIn("findings-working-wall.md", text)
 
