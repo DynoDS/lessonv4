@@ -88,13 +88,14 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn('"layer": "low"', self.context)
         self.assertIn('"layer": "high"', self.context)
 
-    def test_deliberate_overlap_is_not_a_fault_at_the_built_deck_look(self) -> None:
-        """The rule outlived the reviewer that used to carry it.
+    def test_deliberate_overlap_is_not_a_fault_at_the_confirming_render(self) -> None:
+        """The rule has outlived two owners now.
 
-        A separate reviewer used to hold "overlap by itself is never the
-        fault"; the Slide Designer's built-deck look is now the only pass that
-        sees a P3 sitting on a card, so the boundary has to travel with it or
-        the layer gets flagged for working exactly as designed.
+        A separate reviewer held "overlap by itself is never the fault", then
+        the Slide Designer's built-deck look did. Both are gone. The confirming
+        render the designer takes after resolving its own layer is the only pass
+        that sees a P3 sitting on a card, so the boundary travels with it or the
+        layer gets flagged for working exactly as designed.
         """
         self.assertIn("deliberately overlapping a card is the layer working as designed", self.designer)
         self.assertIn(
@@ -140,18 +141,60 @@ class OptionalPicturePlacementTests(unittest.TestCase):
             "Competing is physical and judged on this slide alone", self.designer
         )
 
+    def test_a_framed_picture_is_stated_to_move_nothing(self) -> None:
+        """The fact that makes a full-looking slide still a candidate.
+
+        The reference described a picture beside words rewrapping the text
+        column, which is true of the inline route and of nothing else. Read as
+        the whole story it makes every framed picture look like a claim on
+        space, so "the slide is full" reads as an answer for both routes. It is
+        an answer for one.
+        """
+        self.assertIn(
+            "nothing on the slide moves, resizes or reflows because of it",
+            self.context,
+        )
+        self.assertIn("it is asking whether any part of the slide is clear", self.context)
+        self.assertIn(
+            'Answering that slide with "it is full" describes the inline route',
+            self.context,
+        )
+
+    def test_a_strong_central_visual_is_not_competition(self) -> None:
+        """Three slides were declined for having a good main picture on them.
+
+        The old competing test read "covers, shrinks, crowds or pulls the eye
+        off". The first three are physical and measurable. The fourth is not,
+        and it is the one that let a dominant teaching visual close the layer on
+        slides with a clear column beside it.
+        """
+        self.assertNotIn("pulls the eye off something", self.context)
+        self.assertIn("a strong central teaching visual, however dominant", self.context)
+        self.assertIn("Attention is not a resource this layer spends", self.context)
+        self.assertIn(
+            "neither does a strong central visual", self.designer
+        )
+
+    def test_the_pass_asks_how_many_not_whether(self) -> None:
+        """One slot per slide gives a flat deck however well each slide is judged."""
+        self.assertIn("Ask how many, not whether", self.context)
+        self.assertIn(
+            "How many of those clear places hold a relevant drawing?", self.designer
+        )
+        self.assertIn("never when a count is reached", self.designer)
+
     def test_deck_level_reasons_never_zero_the_layer(self) -> None:
         self.assertIn("is not competition and never zeroes the layer", self.context)
         self.assertIn("no task asks a child to read it", self.context)
 
-    def test_the_built_deck_look_judges_legibility_and_nothing_else(self) -> None:
+    def test_the_confirming_render_judges_legibility_and_nothing_else(self) -> None:
         """Taste findings on a layer that teaches nothing crowd out real faults.
 
         The retired reviewer used to weigh relevance, cosmetic awkwardness and
         whether a slide had missed an opportunity. All three are opinions about
         a layer that costs a child nothing, and how much of it a deck uses is
         the teacher's call rather than a fault to report. The one pass that now
-        looks at the built deck inherits the restraint along with the job.
+        sees the drawings in position inherits the restraint along with the job.
         """
         self.assertIn("overlap by itself is never the fault", self.designer.lower())
         self.assertIn("Judge legibility rather than taste", self.designer)

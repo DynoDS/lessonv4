@@ -29,6 +29,17 @@ naming the searches run and at least one real drawing turned down; this script
 re-runs those searches and checks those drawings exist. A rejection you never
 looked at cannot be written, because its identifier comes out of the search.
 
+That left two answers still costing nothing. `full` and `competes` were pure
+assertion, so a pass under any pressure simply reached for them instead, and a
+twelve-slide deck came back declining seven slides on nothing but its own word -
+four of them slides with half the board free. Both are claims about the drawn
+page, so both are now settled by the drawn page: ``measure-slide-room.py`` reads
+the rendered preview and reports each slide's clear rectangles, and a slide
+recorded `full` or `competes` with a drawing-sized clear rectangle on it fails
+here, named. On a machine that cannot render there is no measurement and both
+reasons stand on the designer's word, which is the one case where they should,
+because nobody could look.
+
 Nothing here demands a picture on any slide. A full slide stays bare and says so.
 What it removes is the ability to answer for the whole deck at once, silently.
 """
@@ -54,8 +65,10 @@ REASONS = {
     "nothing-fits": "the library was searched for this slide and nothing suitable came back",
     "library-unavailable": "the drawing library is not on this machine",
 }
-# The two reasons that must be paid for with evidence rather than asserted.
+# The reason that must be paid for with search evidence rather than asserted.
 EVIDENCED_REASONS = {"nothing-fits"}
+# The two reasons that are claims about the drawn page, and are settled by it.
+ROOM_CHECKED_REASONS = {"full", "competes"}
 
 LIBRARY_ID_RE = re.compile(r"^(standard|cartoon|solid)/[^/]+/[^/]+\.svg$")
 
@@ -285,10 +298,72 @@ def check_evidence(
             )
 
 
+def read_room(path: Path) -> dict[int, dict]:
+    """What the render says each slide's clear space actually is.
+
+    Keyed by 1-based slide number, exactly as the pass record is, so a slide's
+    claim and its measurement meet on the same number.
+    """
+    record = read_json(path, "slide-room.json")
+    if not isinstance(record, dict):
+        raise PassError("slide-room.json root must be an object")
+    slides = record.get("slides")
+    if not isinstance(slides, list):
+        raise PassError("slide-room.json.slides must be an array")
+    measured: dict[int, dict] = {}
+    for entry in slides:
+        if not isinstance(entry, dict):
+            raise PassError("slide-room.json has a malformed slide entry")
+        number = entry.get("slide")
+        if not isinstance(number, int) or number < 1:
+            raise PassError("slide-room.json entries need a 1-based `slide`")
+        measured[number] = entry
+    return measured
+
+
+def room_refusal(number: int, reason: str, measurement: dict) -> str | None:
+    """The measured page contradicting a claim that this slide had no room.
+
+    Only ever refuses on a clear rectangle big enough to hold a real drawing, and
+    the measurement counts a card, a photograph, a figure and a word all as
+    occupied - so the space it finds is space nothing is using at all.
+    """
+    areas = measurement.get("readableAreas")
+    if not isinstance(areas, int) or areas < 1:
+        return None
+    largest = measurement.get("largestClear")
+    where = ""
+    if isinstance(largest, dict):
+        width = largest.get("widthInches")
+        height = largest.get("heightInches")
+        x = largest.get("xInches")
+        y = largest.get("yInches")
+        if all(isinstance(value, (int, float)) for value in (width, height, x, y)):
+            where = (
+                f' The largest is {width}" by {height}", at {x}" across and '
+                f'{y}" down.'
+            )
+    plural = "area" if areas == 1 else "separate areas"
+    if reason == "full":
+        return (
+            f"slide {number} is recorded as full, but the rendered page has "
+            f"{areas} {plural} of clear space big enough for a drawing.{where} "
+            "Fullness is what the content needs, not what its boxes span, and a "
+            "framed picture moves nothing beneath it"
+        )
+    return (
+        f"slide {number} is recorded as competes, but the rendered page has "
+        f"{areas} {plural} of clear space big enough for a drawing.{where} "
+        "Competing means covering, shrinking or crowding something a child "
+        "reads; a drawing placed in space nothing is using covers nothing"
+    )
+
+
 def check(
     pass_path: Path,
     lesson_path: Path,
     library_root: Path | None,
+    room: dict[int, dict] | None = None,
 ) -> tuple[list[str], dict[int, list[str]], dict[str, int]]:
     record = read_json(pass_path, "optional-picture-pass.json")
     lesson = read_json(lesson_path, "lesson.json")
@@ -375,6 +450,13 @@ def check(
                     "the deck around it"
                 )
                 continue
+            if reason in ROOM_CHECKED_REASONS and room is not None:
+                measurement = room.get(number)
+                if measurement is not None:
+                    refusal = room_refusal(number, reason, measurement)
+                    if refusal:
+                        failures.append(refusal)
+                        continue
             if reason in EVIDENCED_REASONS:
                 check_evidence(entry, label, library_root, failures)
 
@@ -405,6 +487,13 @@ def main(argv: list[str] | None = None) -> int:
              "resolver itself; the library is genuinely unavailable only when "
              "the resolver says so, never because a caller forgot the flag.",
     )
+    parser.add_argument(
+        "--room",
+        help="slide-room.json from measure-slide-room.py. With it, `full` and "
+             "`competes` are settled against the rendered page instead of being "
+             "taken on the record's word. Omit only when the run produced no "
+             "render evidence to measure.",
+    )
     args = parser.parse_args(argv)
 
     if args.library_root:
@@ -420,8 +509,9 @@ def main(argv: list[str] | None = None) -> int:
         library_root, library_source = resolve_library_root()
 
     try:
+        room = read_room(Path(args.room)) if args.room else None
         failures, actual, reason_counts = check(
-            Path(args.pass_record), Path(args.lesson), library_root
+            Path(args.pass_record), Path(args.lesson), library_root, room
         )
     except PassError as exc:
         print(f"OPTIONAL_PICTURE_PASS_FAILED: {exc}", file=sys.stderr)
@@ -442,6 +532,21 @@ def main(argv: list[str] | None = None) -> int:
              f"checked ({library_source})"
     )
     print(library_line)
+
+    # Said on every run for the same reason as the library line above: a deck
+    # that declined most of its slides as full means one thing when the drawn
+    # pages agreed and quite another when nobody measured them, and without this
+    # line the two read identically afterwards.
+    if room is None:
+        print(
+            "OPTIONAL_PICTURE_ROOM: UNMEASURED - no rendered pages were "
+            "measured, so `full` and `competes` stand on the record's word"
+        )
+    else:
+        print(
+            f"OPTIONAL_PICTURE_ROOM: verified against {len(room)} measured "
+            f"page(s) from {Path(args.room).resolve()}"
+        )
 
     if failures:
         print("OPTIONAL_PICTURE_PASS_FAILED", file=sys.stderr)

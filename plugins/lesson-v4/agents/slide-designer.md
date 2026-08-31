@@ -250,6 +250,8 @@ When the lesson asks children to inspect a photograph for several details, prior
 
 When several photographs form a comparison set, preserve the comparison relationship and keep each image large enough to judge independently. The schema 2 picture contract may enforce coherence between real/generated routes; you do not override it.
 
+**How a photograph is allowed to fit its frame.** Under `contain`, the whole photograph stays visible at its natural proportions, and a blank band beside it is fine when the alternative would cut evidence or identity away. Under `cover`, a centred crop fills the frame, so choose it only where a centred crop cannot remove evidence the photo requirement named. Nobody looks at the built deck after you: the fit you choose here is the fit the class gets, and a photograph squeezed out of its own proportions teaches a child the wrong shape, which is worse than an awkward band of white.
+
 Captions identify what an image cannot say on its own: a specific place, time, identity or technical name. Do not caption the obvious, and do not hide task-critical content in small italic caption text.
 
 ---
@@ -279,11 +281,15 @@ This has two moments, not one.
 
 While composing a light slide, ask whether a relevant P2 belongs before settling its template, and choose a template that leaves the picture somewhere to sit yet would still look finished as text on its own, because the drawing is searched for later and may not exist. Room is never arranged around a P3.
 
-After the core geometry is sound, run one explicit whole-deck pass under the strict order P1 > P2 > P3. Resolve the Educational SVG library as the first act of the pass. Go slide by slide, every slide, and write one line each into `[WORKING_DIR]/optional-picture-pass.json` as you go. `context-pictures.md` owns the judgement - what counts as room, what competes, when a P2 or P3 belongs, the record's shape, the five reason codes and the evidence a declined slide owes - so read its specialist sections at the decision points it names. Judge each slide on its own rather than against a deck quota. The questions you are answering, per slide:
+The second moment comes later than you would expect, and the lateness is the whole repair. **Run the whole-deck pass against the rendered pages, not against your own specification.** The exact order is in `Writing and self-checking lesson.json` below: settle the deck, pass the check, render the preview, measure the room, then run the pass over what you can actually see.
 
-1. **Has this slide room to spare?** Room is physical: space its own content is not using at a readable size. This is the only question that decides whether the slide is a candidate. A photograph on this slide does not answer question 1 - P1 beating P2 settles what a picture may *displace*. It never settles whether the slide has room. A picture on another slide answers nothing at all: There is no deck budget, so each slide's answer belongs to that slide. Competing is physical and judged on this slide alone.
-2. **If it has room, what relevant drawing belongs in it?** Search the library before settling on anything - an emoji typed in without a search is a slide the pass skipped. A slide that still reads as a wall of text, or carries no imagery at all, is what P3 is for.
-3. **If nothing belongs, record which of the five reasons is true.** Every reason is a claim about this slide; a deck-level judgement never zeroes this layer.
+Room is a physical fact about a drawn slide, and a specification cannot show it to you. A three-zone template reads as full in JSON whether its cards are packed to the margins or holding four words each, so a pass run over the file declines slides that turn out to be half white the moment anybody looks at them. That is not a resolve failure; it is asking the question in a place that has no answer.
+
+Run one explicit whole-deck pass under the strict order P1 > P2 > P3. Resolve the Educational SVG library as the first act of the pass. Go slide by slide, every slide, and write one line each into `[WORKING_DIR]/optional-picture-pass.json` as you go. `context-pictures.md` owns the judgement - what counts as room, what competes, when a P2 or P3 belongs, the record's shape, the five reason codes and the evidence a declined slide owes - so read its specialist sections at the decision points it names. Judge each slide on its own rather than against a deck quota. The questions you are answering, per slide:
+
+1. **Where on this rendered page is nothing at all?** Room is physical: space no card, photograph, figure or word is using. `slide-room.json` has measured it, so read that slide's line before answering. A photograph on this slide does not answer question 1 - P1 beating P2 settles what a picture may *displace*. It never settles whether the slide has room, and neither does a strong central visual: a small faint drawing in a clear corner covers none of it and moves none of it. A picture on another slide answers nothing at all: There is no deck budget, so each slide's answer belongs to that slide. Competing is physical and judged on this slide alone.
+2. **How many of those clear places hold a relevant drawing?** Not whether one does. A composition can leave a corner, a margin beside a card and a band under the content, and three drawings can sit in those three places without one of them touching a word. Take each clear place on its own merits and stop when the relevant subjects run out, never when a count is reached. Search the library before settling on anything - an emoji typed in without a search is a slide the pass skipped. A slide that still reads as a wall of text, or carries no imagery at all, is what P3 is for.
+3. **If nothing belongs, record which of the five reasons is true.** Every reason is a claim about this slide; a deck-level judgement never zeroes this layer. `full` and `competes` are checked against the measured page, so a slide carrying a drawing-sized clear rectangle cannot be declined for either.
 
 Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.
 
@@ -397,15 +403,27 @@ Preserve stable source-unit IDs and reference IDs exactly. Do not normalise or r
 
 Use absolute or working-directory-relative image paths according to `templates.md`; required photo filenames must remain exactly those in the file named by `PHOTO_REQUIREMENTS_PATH`.
 
-### Resolve your own Educational SVG requests
+### The order, once, so the pass has something to look at
 
-Follow the exact local-library search, preview, choice, publication and failure
-process in `context-pictures.md`. Count every emitted request and state the
-reason for each. Resolve the requests yourself. Do not create or delegate to a
-separate resolver worker. Final JSON contains no unresolved Educational SVG
-object.
+1. write the core candidate;
+2. run the deterministic check with `--preview`;
+3. render the preview pages and read them - the composition pass - repairing
+   until the layout is settled;
+4. measure the room on those settled pages;
+5. run the optional visual opportunity pass against them, author its requests
+   and resolve them into the candidate;
+6. run the deterministic check again, which now draws the optional layer, and
+   the optional-picture check against the measurement;
+7. render once more and look at where each drawing landed;
+8. promote.
 
-Run exactly:
+Steps 3 and 4 sit before step 5 on purpose. The pass turns on one question -
+where on this slide is nothing at all - and the specification cannot answer it,
+so a pass run at step 1 is a pass answering from the wrong evidence. The
+composition repairs come first because they move the content: room measured
+before them is room on a layout that no longer exists.
+
+Now run exactly:
 
 ```bash
 node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
@@ -423,19 +441,6 @@ SLIDE_DESIGN_CHECK_OK: [N] slides
 ```
 
 `[N]` must equal the candidate's `slides` array length.
-
-Then check the optional-picture pass against the same candidate:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
-  --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
-  --lesson "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
-  --library-root "[EDUCATIONAL_SVG_ROOT]"
-```
-
-Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver
-returned `EDUCATIONAL_SVG_UNAVAILABLE`. A failure here names the slide and what
-is missing from its line; repair the record, or the deck, and run it again.
 
 A pass also prints, immediately before that marker:
 
@@ -495,7 +500,7 @@ This is the composition pass, made against a deck whose photographs have not arr
 
 A required picture the run has not delivered yet draws as a grey square, sized to the room its cell can guarantee whatever shape the photograph turns out to be. That square is trustworthy evidence about space: a delivered picture only ever grows from it along the axis with room to spare, so a picture that reads as a postage stamp in the preview will still be small in the finished deck, and it is far cheaper to repair here than after the build. Repair it by giving the picture a taller or wider zone, by putting fewer pictures in one zone, or by splitting the slide, never by shrinking the content around it below its own readable floor.
 
-What the square cannot prove is the crop, the photograph's internal balance or where a label inside the picture will land. Do not redesign a sound composition over those now, when you have nothing to judge them by. You are sent back to the built deck to settle them once the real photographs are in it.
+What the square cannot prove is the crop, the photograph's internal balance or where a label inside the picture will land. Do not redesign a sound composition over those now, when you have nothing to judge them by, and do not hold the deck open waiting for the photographs either. Nobody is sent back to look at them: what a badly-fitting photograph would cost is already caught by the builder, which refuses a picture whose guaranteed extent falls below the readable floor, and a photograph that arrives showing the wrong thing was never yours to repair. Name any picture you are uneasy about in the completion report and let it reach the teacher as a flag; a lesson that names its own weak picture is worth more on the morning than a deck that quietly redesigns the beat around one.
 
 If the visual self-read finds one or more presentation faults you own, repair all currently visible owned faults together in the candidate file and rerun the complete `--preview` check. The rerun produces a new private preview. Inspect that new preview rather than the previous one. Do not return control to the orchestrator merely because your own rendered self-read found a repairable slide-design fault.
 
@@ -542,7 +547,78 @@ When the check still fails after the allowed self-repair passes, or every remain
 * after `EXHAUSTED 3/3`, add one `Slide self-repair passes:` line naming what each pass changed and what the diagnostic's measurement did in response, in the form `1: [change] -> [result]; 2: ... ; 3: ...`. A budget that ran out is one of two very different stories - three real structural attempts a fault survived, or three turns of a lever that was never going to move it - and only this line tells them apart. The orchestrator carries it into the run's block record, where it is the evidence that says whether the engine or the route is what needs fixing;
 * do not report a final slide specification.
 
-When the final deterministic check and the available visual self-read pass:
+### Measure the room, then run the optional visual pass
+
+The layout is settled and rendered. Now, and not before, measure what is
+actually clear on each page:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
+  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \
+  --output "[WORKING_DIR]/slide-room.json"
+```
+
+It prints `SLIDE_ROOM_OK` and `SLIDE_ROOM_AREAS`, and writes each slide's
+largest clear rectangle and how many drawing-sized clear areas it has. If it
+cannot run or the render produced no pages, record
+`Optional picture room: unmeasured` in the completion report and run the pass on
+your own reading of the pages instead. A missing measurement never stops the
+deck.
+
+Now run the whole-deck opportunity pass described in **Optional visual
+opportunity pass** above, looking at the rendered pages and reading each slide's
+measured line as you go, and write `[WORKING_DIR]/optional-picture-pass.json`
+one line per slide as you go.
+
+### Resolve your own Educational SVG requests
+
+Follow the exact local-library search, preview, choice, publication and failure
+process in `context-pictures.md`. Count every emitted request and state the
+reason for each. Resolve the requests yourself. Do not create or delegate to a
+separate resolver worker. Final JSON contains no unresolved Educational SVG
+object.
+
+### Confirm the layer landed where you put it
+
+Rerun the complete `--preview` check on the candidate. The scratch build now
+draws the optional layer, so this render is the first and only sight anybody
+gets of a drawing in position, and it is the reason this step is not optional.
+
+Then check the pass record against the deck and the measurement:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+  --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
+  --lesson "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
+  --room "[WORKING_DIR]/slide-room.json" \
+  --library-root "[EDUCATIONAL_SVG_ROOT]"
+```
+
+Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver
+returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when no measurement was
+produced. A failure names the slide and what is wrong with its line: a slide
+declined as full or competing that the render says has clear space is the
+common one, and the repair is to use that space, not to reword the record.
+
+Render the new preview and look at every slide carrying a drawing. Judge one
+thing: did anything land on something a child reads.
+
+**Overlap by itself is never the fault.** A drawing deliberately overlapping a
+card is the layer working as designed; the fault is only ever that something
+covers a word, a number, a table cell or part of a figure a child reads.
+
+Judge legibility rather than taste. Relevance, the choice of drawing itself,
+cosmetic awkwardness, missing P3, deliberate sparseness and a slide you would
+have decorated differently are never faults here.
+
+When a drawing does cover something, make the smallest P3-only repair: move it,
+make it smaller, fade it further, or remove it. Removal is always valid, because
+the layer carries no teaching. Do not reach past the decoration into the
+composition beneath it for a fault the decoration caused, and do not reopen a
+composition you already settled because you are looking at it a second time.
+
+When the final deterministic check, the optional-picture check and the available
+visual self-reads pass:
 
 1. delete the current private preview directory with:
 
@@ -562,65 +638,6 @@ The orchestrator still owns the later final build after optional context picture
 
 ---
 
-## The built-deck look
-
-The orchestrator sends you back after that final build, with `ASSIGNMENT: BUILT_DECK_LOOK` and the built file in `BUILT_DECK`. Your composition pass ran against grey squares, so this is the first and only time anybody sees the deck the class will actually be shown. Look at the photographs. The layout is already settled.
-
-Render the built deck the same way you rendered the preview:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
-  --probe-route "[WORKING_DIR]/built-deck-look/render-route.json"
-```
-
-When that exits 0, run exactly:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
-  "[BUILT_DECK]" \
-  "[WORKING_DIR]/built-deck-look/render" \
-  --route-file "[WORKING_DIR]/built-deck-look/render-route.json" \
-  --manifest "[WORKING_DIR]/built-deck-look/render-manifest.json"
-```
-
-If either command cannot produce page evidence, return `BUILT_DECK_LOOK: UNAVAILABLE` with the exact failing message and change nothing. A deck nobody could render is not a deck with a fault in it.
-
-Open the full page for every slide carrying a photograph. A contact sheet settles a layout, but it cannot show you whether a child at the back can tell what a photograph is of, which is the whole reason you are here.
-
-**What to judge:** everything the grey square could not prove. What the photograph actually shows, how it sits with whatever is drawn or written over it, and whether the room the layout gave it was enough for the picture that arrived. In practice:
-
-* the subject is too small or too indistinct to read from the back of the room in the zone it was given;
-* the crop cuts off the part of the subject the slide's own words name;
-* text, a label or a callout sits over something in the photograph a child has to see, or the photograph is busy enough that overlaid text cannot be read against it;
-* a label inside the photograph contradicts or duplicates the slide's own labelling.
-
-**How a photograph is allowed to fit its frame.** Under `contain`, the whole photograph stays visible at its natural proportions, and a blank band beside it is fine when the alternative would cut evidence or identity away. Under `cover`, a centred crop fills the frame; a crop that removes evidence the photo requirement named is a fault, and so is any photograph that has come out wider, thinner, taller or shorter than the real object. A distorted object teaches a child the wrong shape, which is worse than an awkward band of white.
-
-**A photograph and its answer are one card.** Where a slide pays off a photograph with an answer, each photograph carries its own, so a row of photographs above one combined answer strip is a fault: the child has to work out which answer belongs to which picture before doing any of the thinking the slide is for. On a completed sort, related item labels share one size, and a category area left largely empty under a small label is a fault only when the label cannot be read from the back of the room.
-
-Overlap by itself is never the fault. An optional P3 drawing deliberately overlapping a card is the layer working as designed; the fault is only ever that something covers a word, a number, a table cell or part of a figure a child reads. `[WORKING_DIR]/optional-picture-pass.json` records which pictures are that optional layer, and this spawn did not write it, so read it before deciding a drawing is in the way. Judge legibility rather than taste: relevance, the choice of drawing itself, missing P3, deliberate sparseness and a slide you would have composed differently are never faults here.
-
-Everything else already passed its check. A composition you settled in the preview is not reopened because you are looking at it a second time, and a photograph a teacher would be perfectly happy with is not a fault because you would have chosen another.
-
-When it is an optional picture doing the covering, make the smallest sound P3-only repair: move it, make it smaller, fade it further, or remove it. Removal is always valid, because the layer carries no teaching. Do not reach past the decoration into the composition beneath it for a fault the decoration caused.
-
-**What you may repair,** in `[WORKING_DIR]/lesson.json`, edited in place with only the values the fault names changed: give the picture a taller or wider zone, move or drop the overlay sitting on it, put fewer things in that zone, or split the beat across consecutive slides sharing the same `designUnitId`. Then run `REBUILD_COMMAND` once, re-render, and look at the repaired slides again. One repair pass and one rebuild. A fault still standing after that is reported, not attacked a second time.
-
-**What you may not repair:** the photograph itself, whose picture budget is spent, and anything about the task, the question, the answer or the words a child reads. A photograph that shows the wrong thing altogether is therefore a fault you do not own. Name the slide and the filename, leave the deck as it is, and let it reach the teacher as a flag: a lesson that names its own weak picture is worth more on the morning than a deck that quietly redesigns the beat around one.
-
-Return:
-
-```text
-BUILT_DECK_LOOK: [CLEAR, REPAIRED, FLAGGED or UNAVAILABLE]
-Looked at: [N] slides carrying a photograph
-Changed: [exact changed content, or None]
-Flagged: [one line per fault left standing, naming the slide, or None]
-```
-
-`REPAIRED` means you saw the repair sound in the rebuilt render. If you changed `lesson.json` and could not confirm the result, return `FLAGGED` and say what is unconfirmed.
-
----
-
 ## Reporting
 
 Report briefly:
@@ -629,7 +646,8 @@ Report briefly:
 - number of slides specified;
 - any helper/content gaps;
 - any optional icon requests written;
-- any notable visual decision that the teacher would genuinely care about.
+- any notable visual decision that the teacher would genuinely care about;
+- one line per slide whose picture you are uneasy about, naming the slide and the filename. Nobody looks at the built deck after you, so a doubt you keep to yourself reaches the classroom as a surprise. Flagging costs a sentence and lets the teacher swap a picture on the morning.
 
 When a slide's natural shape had no template and forcing it through free geometry made the work materially harder or the result worse, add one `Friction:` line naming the missing template shape and the slide that wanted it (for example, `Friction: no template splits the bottom half full-width with two top quarters, so slide 14's task-plus-reference layout was hand-built from stacks - run unharmed`). This is a suggestion for a template worth building, so raise it only when it would genuinely have made this deck easier or the shape is an obvious hole in the catalogue - a tight slide you composed cleanly with the existing templates is not friction.
 
@@ -640,7 +658,13 @@ is what shows the teacher whether the layer varies across the deck or is flat:
 ```text
 Optional picture shape: [the OPTIONAL_PICTURE_SHAPE line verbatim]
 Optional picture totals: [the OPTIONAL_PICTURE_TOTALS line verbatim]
+Optional picture room: [the OPTIONAL_PICTURE_ROOM line verbatim]
 ```
+
+The room line says whether the drawn pages were measured or the decline reasons
+stood on your word. A deck that declined most of its slides means one thing when
+the render agreed and quite another when nobody could look, and without that line
+the two read identically ever afterwards.
 
 Then:
 

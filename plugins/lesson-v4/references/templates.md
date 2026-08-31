@@ -533,14 +533,17 @@ These fields are supported on `text`, on object entries inside `bullets`, `numbe
 
 ### `text`
 
-`heightMode` is optional:
+`heightMode` is optional, and **the default is what almost every text card should use.** Omit it, or use `"hug"`, and the card wraps closely around its own words at their natural size. Ordinary body text, a pupil instruction, a prompt, a question, a caption, a teaching sentence: all hug. Say nothing and you get the right answer.
 
-- omit it or use `"hug"` for the normal content-hugging text card;
-- use `"fill"` when the text is deliberately paired with a neighbouring visual or panel and should span the pair rather than hug its own lines.
+`fill` is the rare exception, and it exists for one job: making a short reference card stand to the same height as the visual beside it, so the pair reads as one deliberate thing rather than two objects that happen to be adjacent. A diagram beside its concise explanation is the shape. A worked answer beside the photograph it answers is the shape. In both, the text is short, the neighbour is tall, and the two are meant to be read together.
+
+That is the whole of it. `fill` is not an alignment tool and not a way to tidy a ragged edge: a hugged member that measures shorter than its partner is already vertically centred on the pair rather than pinned to the top with a void underneath, so the untidiness `fill` looks like the cure for does not exist. Reaching for it on ordinary instructions inflates their type past the size the slide's hierarchy intended and makes a secondary card shout as loudly as the teaching.
+
+Use `"fill"` only when all three are true: the text is short, its neighbour in the same split is a genuinely taller visual or panel, and the two are meant to read as a pair. If any one of those is false, hug.
 
 `fill` never creates dead space, because the builder finishes the pairing itself. In a side-by-side split it measures both sides and sizes the fill card to the taller member of the pair — a fill card is never taller than the partner it is pairing with, so pairing with a half-height photo gives a half-height card, and only a full-height partner (a success-criteria panel, a stack) gives a full-height card. The type then grows to fill the card: up to 60pt for a short display line such as a vocabulary headword and definition, up to 44pt for running prose, always shrinking instead when the wording needs less. An explicit `fontSize` replaces that growth ceiling.
 
-So the choice `fill` makes is only this: should this text read at its own natural size (`hug`), or grow into the height of the thing beside it (`fill`)? An answer or definition beside a photograph, or a task beside its success criteria, usually reads better filled; a caption or short aside usually reads better hugged. A two- or three-word label (`Uses electricity`, `Battery`) can never fill a tall card - it hits the ceiling as one line and the rest of the card stays empty - so short labels always hug.
+A two- or three-word label (`Uses electricity`, `Battery`) can never fill a tall card - it hits the ceiling as one line and the rest of the card stays empty - so short labels always hug.
 
 In the same splits, a hugged member that measures shorter than its partner is vertically centred on the pair instead of being pinned to the top with a void underneath.
 

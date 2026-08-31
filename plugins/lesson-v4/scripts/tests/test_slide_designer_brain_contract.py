@@ -259,10 +259,16 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         self.assertIn("Do not add a generic \"Answer\" slide for open discussion work", self.agent)
 
     def test_optional_visual_pass_has_one_owner_and_one_timing(self) -> None:
+        # The timing moved on 31 Aug 2026. The pass turns on whether a slide has
+        # clear space, which is a fact about a drawn page, and running it over
+        # the specification meant answering from evidence that cannot show it.
         self.assertIn(
-            "After the core slide geometry is settled, run the one whole-deck opportunity pass",
+            "After the core deck has passed its check and its preview has been "
+            "rendered, run the one whole-deck opportunity pass against those "
+            "rendered pages",
             self.context,
         )
+        self.assertNotIn("After the core slide geometry is settled, run the one", self.context)
         # The reviewer checks the pass; it does not run one. Until the pass wrote
         # a record there was nothing to check it against, so the profile now
         # names the record rather than asking for a verification it could not do.

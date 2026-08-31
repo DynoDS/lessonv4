@@ -12,7 +12,7 @@ meaning; P3 does not. P1 always wins over both, and P2 wins over P3.
 
 At Slide Designer startup, read this introduction, `The boundary`, `Where an optional picture sits on a slide`, and the whole-deck opportunity-pass rules in `Priority 2 source routes`, including `The pass writes a record, one line per slide` - the record is written as the pass goes, so reading it afterwards is reading it too late. The placement section is needed at startup rather than later because a light slide may choose its template around a P2, and by the opportunity pass that choice has already been made. Do not load request JSON, resolver publication steps or other resource surfaces at startup.
 
-After the core slide geometry is settled, run the one whole-deck opportunity pass. If that pass selects an ordinary P2, semantic vocabulary P2 or P3 request, read `Request shape`, `How a designer searches and chooses`, the Slides part of `Timing by resource`, and the Slides line in `Surface-specific limits` before authoring or resolving it.
+After the core deck has passed its check and its preview has been rendered, run the one whole-deck opportunity pass against those rendered pages. If that pass selects an ordinary P2, semantic vocabulary P2 or P3 request, read `Request shape`, `How a designer searches and chooses`, the Slides part of `Timing by resource`, and the Slides line in `Surface-specific limits` before authoring or resolving it.
 
 The Slide Designer does not read the Worksheet, Working Wall or Stick-in surface rules during a slide run.
 
@@ -40,24 +40,54 @@ chosen. A P3 carries none, so no template, layout or page count is ever arranged
 around one: it goes where the surface is already spare. P3 stays the first thing
 moved, faded, replaced or removed when anything competes.
 
-"Competes" is physical and local. An optional picture competes when it covers,
-shrinks, crowds or pulls the eye off something on its own slide or page that a
-child must read or use. Judge it one surface at a time, against that surface's
-spare space. What does not count as competing: the P1 visuals a deck leans on
-appearing on many slides, or on this one; the drawing sharing its subject with
-a P1 visual; a wish to keep the deck visually uniform around its teaching
-visuals; or a worry that a decoration might be read as recommending the thing
-it shows, since a P3 asserts nothing and no task asks a child to read it. A
-deck anchored by one or two strong P1 references is the normal case, not a
-special one: those references are why the optional layer stays quiet beside
-them, never why the whole deck goes without it.
+### Two routes, and only one of them can be crowded out
 
-On a slide, keeping the text size does not mean keeping the original line
-count. A picture may shorten the text column and make a question or fact wrap
-onto an extra line when the complete set still fits comfortably at the same
-font size. The nearby card may grow only by the height that wrapping genuinely
-needs. If that would crowd the set or make anything smaller, remove that
-individual picture instead.
+An optional picture reaches a surface by one of two routes. Almost every wrong
+decline is a fact about the inline route used to answer for the framed one.
+
+**Inline** is the picture beside the words, inside a `text`,
+`numbered-questions` or `question-cards` item. It takes part of the text
+column, so the words rewrap around it and the card may grow by the height that
+wrapping needs. Keeping the text size does not mean keeping the original line
+count: a question or fact may wrap onto an extra line when the complete set
+still fits comfortably at the same font size, and the card may grow only by the
+height that wrapping genuinely needs. If that would crowd the set or make
+anything smaller, remove that individual picture. This is the route a full
+slide genuinely closes, because with no spare width in the column there is
+nowhere for the words to go.
+
+**Framed** is the picture placed by its own frame: a free-standing P2, or any
+P3 in a `decorations` array. It carries its own coordinates on the physical
+surface and is drawn in front of or behind what is already there, so **nothing
+on the slide moves, resizes or reflows because of it.** The composition beneath
+a framed picture is exactly the composition that was there without it. That is
+what makes this route so hard to block: it is not asking the slide for room, it
+is asking whether any part of the slide is clear.
+
+So a slide whose content leaves no spare column can still take a framed
+picture, in a corner, over a card's edge, or faintly behind one. Answering that
+slide with "it is full" describes the inline route and says nothing at all
+about the framed one.
+
+"Competes" is physical and local. An optional picture competes when it covers,
+shrinks or crowds something on its own slide or page that a child must read or
+use. Judge it one surface at a time, against that surface's spare space. What
+does not count as competing: the P1 visuals a deck leans on appearing on many
+slides, or on this one; a strong central teaching visual, however dominant,
+since a small faint drawing in a clear corner takes nothing from it and moves
+none of it; the drawing sharing its subject with a P1 visual; a wish to keep
+the deck visually uniform around its teaching visuals; or a worry that a
+decoration might be read as recommending the thing it shows, since a P3 asserts
+nothing and no task asks a child to read it. A deck anchored by one or two
+strong P1 references is the normal case, not a special one: those references
+are why the optional layer stays quiet beside them, never why the whole deck
+goes without it.
+
+**Attention is not a resource this layer spends.** A framed picture renders at
+50% transparency, sized small, in space the composition already left over.
+"It would pull the eye off the main visual" is not a competing test and never
+was a physical one: a picture that genuinely took the eye that way is too big,
+and the repair is to make it smaller, never to leave the slide bare.
 
 On slides, optional context pictures stay visually quieter than the words. The
 builder renders them at 50% transparency and sizes them from the usable height
@@ -193,12 +223,19 @@ cannot say what the search returned, you have not made the choice yet.
   settling its template, and choose one that leaves the picture somewhere to
   sit. Only a slide with genuine room to spare qualifies, and only P2 does: room
   is never arranged around a P3.
-- Across a normal visual deck, run one explicit opportunity pass after the core
-  slide geometry is settled. Look at every non-vocabulary slide and decide
-  whether P1 already carries the visual job, a useful P2 fits, a useful P3 fits,
-  or no relevant optional visual fits without competition. A slide that has done
-  everything else right and still reads as a wall of text, or carries no imagery
-  at all, is the case a P3 is for.
+- Across a normal visual deck, run one explicit opportunity pass **against the
+  rendered pages**, once the core geometry is settled and the preview has been
+  built and rendered. Room is a physical fact about a drawn slide, and it is the
+  only fact this pass turns on, so it is judged by looking rather than by
+  reading the specification back. A slide whose boxes span the whole canvas can
+  still be mostly white when it is drawn, and a pass run before the render calls
+  that slide full and never finds out otherwise. Look at every non-vocabulary
+  slide and decide what the clear parts of it will hold.
+- Ask how many, not whether. A slide's clear space is not one slot: a
+  composition can leave a corner, a margin beside a card and a band under the
+  content, and three relevant drawings can sit in those three places without any
+  of them touching a word. Take each clear area on its own merits and stop when
+  the relevant subjects run out, never when a count is reached.
 - Decide slide by slide rather than against a whole-deck quota. Each slide's
   answer belongs to that slide: what P1 already carries there, whether a
   relevant P2 helps there, and whether the finished slide reads flat enough to
@@ -259,8 +296,8 @@ about **this slide**:
 
 | Reason | What you are saying |
 | --- | --- |
-| `full` | This slide's own content already fills it at a readable size. There is no spare room. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card, not fullness. |
-| `competes` | A picture would cover, shrink or crowd what a child has to read here. |
+| `full` | On the rendered page, no part of this slide is clear enough to hold a drawing without covering something. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card, not fullness. A slide whose template has three zones is not full because it has three zones. |
+| `competes` | A picture would cover, shrink or crowd what a child has to read here. This is the answer for a slide whose only clear areas are too small or too broken up to hold a drawing; it is never the answer for a slide with a strong central visual and a clear corner. |
 | `would-mislead` | A drawing here would bias, answer or pre-empt the task. The rainforest photo beside "which biome?" is this. |
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |
 | `library-unavailable` | The library was not available to this run at all, as the resolver reported. |
@@ -272,6 +309,34 @@ can be written down. A photograph settles whether a P2 saying the same thing is
 wanted; it says nothing about whether this slide has room to spare, which is the
 only question the pass asks. There is no deck budget: a picture on one slide
 neither earns nor spends anything on another.
+
+**`full` and `competes` are paid for by the render, not asserted.** They were
+the two free answers: `nothing-fits` had to name real searches and real
+rejections, so a pass under pressure simply used the other two instead, and a
+deck could decline most of its slides on nothing but its own word. Both are now
+claims about the drawn page, and the drawn page is measured:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
+  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \
+  --output "[WORKING_DIR]/slide-room.json"
+```
+
+It reads the rendered pages and reports, for each slide, the largest clear
+rectangle and how many separate clear areas of readable size it has. Clear means
+background: a card, a photograph, a figure and a word all count as occupied, so
+the measurement only ever understates the room, and space behind a card that a
+`layer: "low"` drawing could genuinely use is counted as taken. Read the numbers
+before writing a `full` or `competes` line, and use them the way you use a
+search result for `nothing-fits`: as the thing that settles it. A slide the
+measurement says has two readable clear areas is a slide with room, whatever the
+specification looked like.
+
+The check reads the same file, so a slide recorded `full` or `competes` while
+the render shows readable clear space fails, and names the space. A machine with
+no render route produces no measurement, and then both reasons stand on your
+word exactly as before - which is the one case where they should, because
+nobody could look.
 
 **`nothing-fits` is paid for, not asserted.** Name the searches you ran in
 `searched`. Where those searches return drawings, name in `rejected` at least one
@@ -310,11 +375,13 @@ Run the check before promoting the deck:
 python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
   --lesson "[the candidate lesson.json]" \
+  --room "[WORKING_DIR]/slide-room.json" \
   --library-root "[EDUCATIONAL_SVG_ROOT]"
 ```
 
 Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver
-returned `EDUCATIONAL_SVG_UNAVAILABLE`.
+returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when the render
+produced no measurement.
 
 It also prints `OPTIONAL_PICTURE_SHAPE` - the per-slide counts in order, like
 `2,0,1,0,0,3,1`. That shape is the variety, made visible: a deck should read
@@ -604,16 +671,24 @@ resource from building.
 
 ## Timing by resource
 
-Slides, worksheets and stick-in sheets use this order:
-1. the visual designer settles the core resource;
-2. for slides, the Slide Designer runs the explicit whole-deck P2/P3 opportunity pass before deciding that no request is needed;
-3. that designer authors the P2 and supported P3 requests selected by the pass;
-4. that same designer resolves every unresolved Educational SVG request in its spec;
-5. the designer runs its existing final validation and closes its result;
-6. the deterministic builder renders the local files, dropping an unresolvable
+Slides use this order, and the render sits in the middle of it on purpose:
+1. the Slide Designer settles the core deck and passes its check;
+2. it renders that preview and measures the room on the drawn pages;
+3. it runs the explicit whole-deck P2/P3 opportunity pass against those pages,
+   writing the record as it goes;
+4. it authors the P2 and supported P3 requests the pass selected;
+5. it resolves every unresolved Educational SVG request in the spec;
+6. it reruns the check, which now draws the optional layer, and looks at that
+   render to confirm no drawing landed on a word;
+7. it closes its result;
+8. the deterministic builder renders the local files, dropping an unresolvable
    P3 with the non-fatal `OPTIONAL_DECORATION_OMITTED` notice rather than
    failing the resource. P3 is the layer that is expendable first, and it is
    expendable without anyone deciding so.
+
+Worksheets and stick-in sheets use the shorter order: the designer settles the
+core resource, authors its requests, resolves them, runs its existing final
+validation and closes, and the builder renders as above.
 
 If one of those specifications contains only emojis or no unresolved Educational SVG
 request, skip the resolution step.

@@ -250,11 +250,19 @@ function runSlideDesignCheck(inputPath, options = {}) {
   let scratchOutputPath = null;
 
   try {
+    // The scratch build draws whatever the candidate actually carries,
+    // decorations included. It used to skip them unconditionally, which meant
+    // the optional layer was never rendered anywhere the designer could see it:
+    // the preview it inspects had none, and the only pass that ever saw one in
+    // position was a later spawn that ran only when a photograph had landed. A
+    // deck could therefore ship a drawing sitting on a word without any check or
+    // any eye having looked at it once. Nothing needs deciding here - before the
+    // optional pass the candidate has no decorations and this is byte-identical
+    // to skipping them; after it, the designer sees its own layer.
     const child = spawnSync(
       process.execPath,
       [
         buildPath,
-        '--skip-optional-decorations',
         jsonPath,
         scratchDir,
       ],

@@ -116,7 +116,11 @@ test('a clean scratch build passes, hides its Wrote line and deletes its deck', 
       `'use strict';\n` +
         `const fs = require('node:fs');\n` +
         `const path = require('node:path');\n` +
-        `const outputDir = process.argv[4];\n` +
+        // node, script, lesson.json, outputDir. The check used to insert
+        // --skip-optional-decorations ahead of these, which pushed the output
+        // directory to argv[4]; it no longer skips the optional layer, so the
+        // scratch build sees the same arguments the real build does.
+        `const outputDir = process.argv[3];\n` +
         `const outputPath = path.join(outputDir, 'Scratch Check.pptx');\n` +
         `fs.mkdirSync(outputDir, { recursive: true });\n` +
         `fs.writeFileSync(outputPath, 'scratch');\n` +
@@ -150,7 +154,11 @@ test('runSlideDesignCheck passes the exact frozen photo contract to the build', 
         `const fs = require('node:fs');\n` +
         `const path = require('node:path');\n` +
         `fs.writeFileSync(${JSON.stringify(observedPath)}, process.env.PHOTO_REQUIREMENTS_PATH || '');\n` +
-        `const outputDir = process.argv[4];\n` +
+        // node, script, lesson.json, outputDir. The check used to insert
+        // --skip-optional-decorations ahead of these, which pushed the output
+        // directory to argv[4]; it no longer skips the optional layer, so the
+        // scratch build sees the same arguments the real build does.
+        `const outputDir = process.argv[3];\n` +
         `const outputPath = path.join(outputDir, 'Scratch Check.pptx');\n` +
         `fs.writeFileSync(outputPath, 'scratch');\n` +
         `console.log('Wrote: ' + outputPath);\n`
@@ -242,7 +250,11 @@ test('a blocking capacity diagnostic cannot pass merely because the builder exit
       `'use strict';\n` +
         `const fs = require('node:fs');\n` +
         `const path = require('node:path');\n` +
-        `const outputDir = process.argv[4];\n` +
+        // node, script, lesson.json, outputDir. The check used to insert
+        // --skip-optional-decorations ahead of these, which pushed the output
+        // directory to argv[4]; it no longer skips the optional layer, so the
+        // scratch build sees the same arguments the real build does.
+        `const outputDir = process.argv[3];\n` +
         `const outputPath = path.join(outputDir, 'Scratch Check.pptx');\n` +
         `fs.writeFileSync(outputPath, 'scratch');\n` +
         `console.log('BUILD_DIAGNOSTIC: {"signal":"SUCCESS_CRITERIA_CAPACITY","artifact":"slides","faultClass":"composition","location":{"slide":1,"path":"successCriteria"},"message":"too much"}');\n` +
@@ -270,7 +282,11 @@ test('a preview check retains the checked deck in a private preview directory', 
       `'use strict';\n` +
         `const fs = require('node:fs');\n` +
         `const path = require('node:path');\n` +
-        `const outputDir = process.argv[4];\n` +
+        // node, script, lesson.json, outputDir. The check used to insert
+        // --skip-optional-decorations ahead of these, which pushed the output
+        // directory to argv[4]; it no longer skips the optional layer, so the
+        // scratch build sees the same arguments the real build does.
+        `const outputDir = process.argv[3];\n` +
         `const outputPath = path.join(outputDir, 'Scratch Check.pptx');\n` +
         `fs.mkdirSync(outputDir, { recursive: true });\n` +
         `fs.writeFileSync(outputPath, 'scratch');\n` +

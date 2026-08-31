@@ -1,6 +1,6 @@
 # Teacher slide visual profile
 
-This is the teacher's stable visual-judgement layer for the slide deck. The Slide Designer reads it in full on every run and keeps its judgement in its own context, both while composing and when it returns to look at the built deck. It calibrates how a settled lesson is *presented* on the board — card boundaries, visible task structure, semantic colour, repeated-reference identity — and it never reopens the pedagogy. When it disagrees with a settled design decision, the design decision wins and the disagreement is reported, not silently repaired.
+This is the teacher's stable visual-judgement layer for the slide deck. The Slide Designer reads it in full on every run and keeps its judgement in its own context, both while composing and at each of its rendered self-reads. It calibrates how a settled lesson is *presented* on the board — card boundaries, visible task structure, semantic colour, repeated-reference identity — and it never reopens the pedagogy. When it disagrees with a settled design decision, the design decision wins and the disagreement is reported, not silently repaired.
 
 ## Card boundary
 
@@ -12,7 +12,7 @@ The card should normally hug the content it contains. A white card is a boundary
 
 Before finalising a slide, ask of every ordinary card: could the same content sit in a smaller, tighter card and read better from the back of the room? If yes, the boundary is wrong.
 
-The boundary question is two-way: a card that is the right size can instead hold type that is too small for it. Dead space inside a card is repaired either by tightening the card (`hug`, `widthMode: "content"`) or by letting the type grow to the card (`heightMode: "fill"`, whose grow behaviour `templates.md` describes). Both readings are fine; small type floating in a large card is not.
+The boundary question is two-way: a card that is the right size can instead hold type that is too small for it. Dead space inside a card is normally repaired by tightening the card (`hug`, `widthMode: "content"`), which is the default and the answer for ordinary text. Letting the type grow to the card instead (`heightMode: "fill"`, whose grow behaviour `templates.md` describes) is the answer only where short text is deliberately paired with a taller visual beside it and the two are meant to read as one thing; `templates.md` sets that condition and it is narrow. These are not two tastes to choose between. Small type floating in a large card is the fault; inflating an ordinary instruction until it shouts is not the cure.
 
 The grow repair only works when there are enough words to grow. A two- or three-word label - `Uses electricity`, `Battery` - reaches the grow ceiling as one line and still leaves the rest of a tall card empty, so `fill` can never repair a short label in a tall zone. A short label hugs, and the zone height it gives back goes to the content children actually read at length. The give-away in a preview is a big white box with one small centred line in it: that box wanted `hug`, or wanted less height in the first place.
 

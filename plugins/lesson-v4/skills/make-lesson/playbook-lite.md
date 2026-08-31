@@ -487,6 +487,7 @@ PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson.json
 - [WORKING_DIR]/optional-picture-pass.json
+- [WORKING_DIR]/slide-room.json
 
 This worker creates JSON only. Do not load or use the global `Presentations`
 skill. The fixed slide builder creates the PowerPoint after this worker
@@ -501,26 +502,33 @@ Require: Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides
 python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
   --lesson "[WORKING_DIR]/lesson.json" \
+  --room "[WORKING_DIR]/slide-room.json" \
   --library-root "[EDUCATIONAL_SVG_ROOT]"
 
 [EDUCATIONAL_SVG_ROOT] is the root your own resolver prints during the
 optional pass; drop the flag when it printed EDUCATIONAL_SVG_UNAVAILABLE.
-The check re-resolves for itself either way.
+The check re-resolves for itself either way. Drop --room only when your
+render produced no measurement.
 
 Require: OPTIONAL_PICTURE_PASS_OK
 TERMINAL_STATE: COMPLETE
 ```
 
-Wait for both files and require both markers. Preserve every
-`BUILD_DIAGNOSTIC:` line for a focused Slide Designer repair.
+Wait for all three files and require both markers. `slide-room.json` is absent
+only when this machine had no render route; treat that as a quieter run, not a
+fault. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
+repair.
 
-Run the optional-picture check yourself too, with no `--library-root`: it runs
-the Educational SVG resolver itself, so the library is "unavailable" only when
-the resolver says so, never because this launch had no root value to pass. It
-is what separates a pass weighed slide by slide from one thought about the
-whole deck, so the designer cannot close on its own word for it. Carry its
-`OPTIONAL_PICTURE_LIBRARY`, `OPTIONAL_PICTURE_SHAPE` and
-`OPTIONAL_PICTURE_TOTALS` lines into the run report.
+Run the optional-picture check yourself too, with no `--library-root` and with
+`--room "[WORKING_DIR]/slide-room.json"` when that file exists. It runs the
+Educational SVG resolver itself, so the library is "unavailable" only when the
+resolver says so, never because this launch had no root value to pass, and it
+settles `full` and `competes` against the rendered pages rather than against the
+record's own word. Between them those are what separate a pass weighed slide by
+slide from one thought about the whole deck, so the designer cannot close on its
+own word for either. Carry its `OPTIONAL_PICTURE_LIBRARY`,
+`OPTIONAL_PICTURE_ROOM`, `OPTIONAL_PICTURE_SHAPE` and `OPTIONAL_PICTURE_TOTALS`
+lines into the run report.
 
 ---
 
@@ -596,49 +604,21 @@ python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" slides \
 Require `ok: true` and the exact output paths in the summary. On a semantic
 build diagnostic, run one focused Slide Designer repair and rebuild once.
 
-**The built-deck look.** The Slide Designer's own preview is rendered before the
-picture stage finishes, so every photograph in it is a grey placeholder square.
-That square proves how much room a picture has and nothing at all about the
-picture that lands in it, so this is the first and only time anybody sees the
-deck the class will actually be shown. Send the Slide Designer back to look at
-it.
+**Nothing looks at the built deck, and nothing needs to.** There was a second
+Slide Designer spawn here that rendered the finished deck and looked at its
+photographs. It is gone. Do not reinstate it, and do not invent an equivalent.
 
-Run this only when at least one picture filename `lesson.json` names has a
-`published` terminal receipt. A deck whose visuals are all drawn by helpers was
-already seen whole in the preview; a second look at it finds nothing and costs a
-worker.
+Its one real catch - a photograph too small or too squeezed for the space it was
+given - is deterministic and already made: the builder refuses a picture whose
+guaranteed extent falls below the readable floor, whether or not anybody looks.
+Everything else it was allowed to find, it was not allowed to repair: the
+photograph itself was never the designer's to change, so a wrong picture reached
+the teacher as a flag either way. The Slide Designer now names any picture it is
+uneasy about in its own completion report, and that flag carries into the run
+report.
 
-```text
-You are the slide designer, looking at the built deck now that its photographs
-have arrived. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/slide-designer.md
-
-PLUGIN_ROOT: [PLUGIN_ROOT]
-WORKING_DIR: [WORKING_DIR]
-OUTPUT_DIR: [OUTPUT_DIR]
-
-ASSIGNMENT: BUILT_DECK_LOOK
-
-AUTHORITATIVE_INPUTS:
-LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-SLIDE_SPEC: [WORKING_DIR]/lesson.json
-BUILT_DECK: [exact .pptx path from the slide build summary]
-REBUILD_COMMAND: [the exact run-fixed-resource.py slides command above]
-
-OWNED_OUTPUTS:
-- [WORKING_DIR]/lesson.json
-
-Follow "The built-deck look" in your role file. Judge only what a placeholder
-square could not have shown you. Leave every other slide exactly as it is.
-
-TERMINAL_STATE: COMPLETE
-```
-
-Use the `slide_designer_built_deck_look` task name so the launch audit still
-matches it to its role. One look, and at most one repair-and-rebuild for a fault
-the designer owns; there is no second round. Record the round in the run's
-friction file whether it repaired anything or not, because a look that found
-nothing is the evidence that the deck was seen.
+What the spawn did cost was a whole worker on a healthy run, re-reading a
+52KB role file to confirm work that had already passed its check.
 
 ---
 
@@ -891,9 +871,9 @@ Do not poll each worker serially. As each worker completes, run its
 deterministic check and release only its genuine dependants. A failed branch does not invalidate a clean independent branch.
 
 **A branch that has built its resource and passed that resource's check is
-finished.** Nothing waits on a sibling: the deck's own built-deck look runs
-inside Track A while the worksheet branch is still designing, and no stage after
-this one compares one resource against another. Only the deterministic
+finished.** Nothing waits on a sibling: Track A's build lands while the
+worksheet branch is still designing, and no stage after this one compares one
+resource against another. Only the deterministic
 finalisation waits for every branch.
 
 **The content-gap picture wave.** `SLIDE_CONTENT_GAP` or
@@ -1029,7 +1009,7 @@ Write `[WORKING_DIR]/run-report.md` with:
 - excluded earned resources and exact reasons;
 - blocking faults, accepted minor issues and failed build attempts. A minor
   issue here is one a check or a designer raised and something judged harmless:
-  a retained build warning, or a fault the built-deck look saw and let stand;
+  a retained build warning, or a picture a designer flagged and left standing;
 - picture outcomes. A picture the contract promised and the run did not publish
   is a missing picture whether one scout failed or the stage never started, so
   name it, and the package is then not `COMPLETE`;
@@ -1066,8 +1046,9 @@ passed its own checks, with the unresolved faults named first.
 
 Keep the teacher report concise. Always include a `Teacher flags` section, using
 `None` when empty. It carries the design reviewer's unresolved findings, any
-declared cross-resource impact from a repair, and anything the built-deck look
-let stand. Worksheet pupil sheets and answer key remain separate.
+declared cross-resource impact from a repair, and every picture a designer
+flagged as one it was uneasy about. Worksheet pupil sheets and answer key remain
+separate.
 State when a two-lesson scope covers Lesson 1 only and name deferred learning.
 
 ---

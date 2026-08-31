@@ -156,16 +156,33 @@ test("working-wall authorities agree that P3 never earns wall-worthiness", () =>
   assert.match(builder, /non-fatal|does not fail/i);
 });
 
-test("the built-deck look makes the smallest P3-only repair first", () => {
-  // The one pass that sees a decoration obstructing something is now the Slide
-  // Designer's look at the built deck, so the repair ladder travels with it.
-  // Swapping in a different drawing was on this list once, but a different
-  // drawing at the same size and place covers exactly what the first one did.
+test("the drawing-landed confirmation makes the smallest P3-only repair first", () => {
+  // The one pass that sees a decoration obstructing something is the Slide
+  // Designer's own confirming render, taken after it has authored and resolved
+  // the layer. Swapping in a different drawing was on this list once, but a
+  // different drawing at the same size and place covers exactly what the first
+  // one did.
   const designer = read("agents/slide-designer.md");
-  const look = designer.split("## The built-deck look")[1];
-  assert.ok(look, "slide-designer.md has no built-deck look section");
-  assert.match(look, /smallest sound P3-only repair/);
+  const look = designer.split("### Confirm the layer landed where you put it")[1];
+  assert.ok(look, "slide-designer.md has no drawing-landed confirmation");
+  assert.match(look, /smallest P3-only repair/);
   assert.match(look, /move it.*smaller.*fade it further.*remove it/s);
   assert.doesNotMatch(look, /replacing the source/);
   assert.match(look, /Removal is always valid/);
+});
+
+test("the confirming render is the first sight of a drawing in position", () => {
+  // The scratch build skipped decorations unconditionally, so the preview the
+  // designer inspected never contained its own optional layer, and the only
+  // pass that ever saw one was a second spawn gated on a photograph having
+  // landed. A deck could ship a drawing sitting on a word with no check and no
+  // eye having looked at it once.
+  const check = read("builder/scripts/check-slide-design.js");
+  assert.doesNotMatch(
+    check,
+    /'--skip-optional-decorations'/,
+    "the scratch build is skipping the optional layer again"
+  );
+  const designer = read("agents/slide-designer.md");
+  assert.match(designer, /now draws the optional layer/);
 });

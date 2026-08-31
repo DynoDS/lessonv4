@@ -138,32 +138,51 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("Never refuse to write `lesson.json`", slides)
         self.assertIn("on your first pass", slides)
 
-    def test_the_built_deck_look_is_the_one_pass_over_a_finished_artefact(self):
-        """Two independent reviewers were removed; one look replaced them.
+    def test_track_a_is_one_worker_from_design_to_report(self):
+        """Two reviewers went, then the look that replaced them went too.
 
-        The composition pass runs against grey placeholder squares, so before
-        this look existed nobody ever saw a slide with its real photograph in
-        it. The trigger has to sit in the track that builds the deck, because
-        that is where the orchestrator is standing when the build lands.
+        The look re-read a 52KB role file to confirm a deck that had already
+        passed its check. Its one catch that mattered - a photograph too small
+        for the zone it was given - is enforced in the builder, whether or not
+        anybody looks, and the photograph itself was never the designer's to
+        repair, so a wrong picture reached the teacher as a flag either way.
+
+        What the designer needed instead was to see its own optional drawings in
+        position, and it now does: the scratch build draws them and the designer
+        renders that deck itself, inside the one spawn.
         """
         playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
             encoding="utf-8"
         )
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+        check = (
+            ROOT / "builder" / "scripts" / "check-slide-design.js"
+        ).read_text(encoding="utf-8")
 
-        self.assertIn("**The built-deck look.**", playbook)
-        self.assertIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
-        self.assertIn("slide_designer_built_deck_look", playbook)
-        # It costs a worker, so it runs only where it can find something.
-        self.assertIn(
-            "only when at least one picture filename `lesson.json` names has a\n"
-            "`published` terminal receipt",
-            playbook,
+        self.assertNotIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
+        self.assertNotIn("slide_designer_built_deck_look", playbook)
+        self.assertNotIn("## The built-deck look", designer)
+        # A removed stage that is merely undocumented gets reinvented.
+        self.assertIn("Do not reinstate it", playbook)
+
+        self.assertIn("### Confirm the layer landed where you put it", designer)
+        self.assertNotIn("'--skip-optional-decorations'", check)
+
+    def test_a_track_a_worker_launch_still_has_only_two_shapes(self):
+        """The audit matches a launch to a role by its task name.
+
+        Track A launches the designer, and a focused repair when a fault it owns
+        survives. Any third Track A task name is a stage that came back.
+        """
+        playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
+            encoding="utf-8"
         )
-
-        self.assertIn("## The built-deck look", designer)
-        self.assertIn("BUILT_DECK_LOOK: [CLEAR, REPAIRED, FLAGGED or UNAVAILABLE]", designer)
-        self.assertIn("One repair pass and one rebuild", designer)
+        skill = (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("slide_designer_focused_repair", skill)
+        self.assertNotIn("slide_designer_built", playbook)
+        self.assertNotIn("slide_designer_built", skill)
 
     def test_the_removed_reviewers_leave_nothing_behind(self):
         """A route to an agent that no longer exists stalls a run silently.

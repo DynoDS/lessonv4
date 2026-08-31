@@ -50,6 +50,7 @@ class CheckRunner(unittest.TestCase):
         *,
         library: bool = False,
         resolver: str = "unavailable",
+        room: list[dict] | None = None,
     ):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -62,6 +63,13 @@ class CheckRunner(unittest.TestCase):
                 "--pass-record", str(record_path),
                 "--lesson", str(lesson_path),
             ]
+            if room is not None:
+                room_path = root / "slide-room.json"
+                room_path.write_text(
+                    json.dumps({"schemaVersion": 1, "slides": room}),
+                    encoding="utf-8",
+                )
+                argv += ["--room", str(room_path)]
             if library:
                 # A library root is a place drawings are kept, and it is empty
                 # here on purpose. What the evidence check reads is the index
@@ -346,6 +354,97 @@ class TheCheckResolvesForItselfTests(CheckRunner):
         self.assertIn("OPTIONAL_PICTURE_LIBRARY: UNAVAILABLE", result.stdout)
 
 
+def measured(slide: int, areas: int, *, width: float = 3.0, height: float = 2.4) -> dict:
+    if areas < 1:
+        return {"slide": slide, "clearFraction": 0.04, "largestClear": None,
+                "readableAreas": 0}
+    return {
+        "slide": slide,
+        "clearFraction": 0.4,
+        "largestClear": {
+            "widthInches": width, "heightInches": height,
+            "xInches": 0.0, "yInches": 0.0, "areaFraction": 0.2,
+        },
+        "readableAreas": areas,
+    }
+
+
+class TheDrawnPageSettlesFullAndCompetesTests(CheckRunner):
+    """The two answers that cost nothing to write.
+
+    `nothing-fits` had to name real searches and real rejections, so a pass
+    under pressure reached for the other two instead. A twelve-slide deck came
+    back declining seven slides on `full` and `competes` alone, four of them
+    with half the board free. Both are claims about the drawn page, so the drawn
+    page now settles them.
+    """
+
+    def test_full_fails_when_the_render_shows_clear_space(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide()), room=[measured(1, 2)]
+        )
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("recorded as full", result.stderr)
+        self.assertIn("2 separate areas", result.stderr)
+        self.assertIn('3.0" by 2.4"', result.stderr)
+
+    def test_competes_fails_when_the_render_shows_clear_space(self):
+        # The reported shape: a slide with a strong central visual and a clear
+        # column beside it, declined because the visual was strong.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "competes"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide()), room=[measured(1, 1)]
+        )
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("recorded as competes", result.stderr)
+        self.assertIn("covers nothing", result.stderr)
+
+    def test_a_genuinely_full_slide_still_passes(self):
+        """The discrimination case. Nothing here puts a picture on a slide."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide()), room=[measured(1, 0)]
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OPTIONAL_PICTURE_ROOM: verified against", result.stdout)
+
+    def test_would_mislead_is_not_a_claim_about_room(self):
+        """A drawing that answers the task is wrong however much space there is."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide()), room=[measured(1, 3)]
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_without_a_measurement_the_two_reasons_stand_on_the_record(self):
+        """A machine with no render route must not fail every declined slide."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("OPTIONAL_PICTURE_ROOM: UNMEASURED", result.stdout)
+
+    def test_a_slide_the_measurement_missed_stands_on_the_record(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+            {"slide": 2, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide(), bare_slide()), room=[measured(1, 0)]
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
 class ContractTests(unittest.TestCase):
     def test_the_designer_and_the_orchestrator_both_run_it(self):
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
@@ -359,18 +458,52 @@ class ContractTests(unittest.TestCase):
         # separates a real pass from a claimed one.
         self.assertIn("Run the optional-picture check yourself", playbook)
 
-    def test_the_built_deck_look_reads_the_record(self):
-        """The look is a fresh spawn: it did not write the record it needs.
+    def test_the_pass_runs_against_the_rendered_pages(self):
+        """The whole failure was asking a question in a place with no answer.
 
-        Whoever looks at the built deck has to tell an optional decoration
-        resting on a card from a picture in the way of something a child reads.
-        That distinction is in the pass record, and the earlier composition
-        pass that wrote it is a different worker with a different context.
+        `full` means no part of this slide is clear, which is a fact about a
+        drawn page. The pass used to run over the specification, where a
+        three-zone template reads the same whether its cards are packed to the
+        margins or holding four words each, and decks came back declining
+        slides that were half white when anyone looked.
         """
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
-        look = designer.split("## The built-deck look", 1)[1]
-        self.assertIn("optional-picture-pass.json", look)
-        self.assertIn("this spawn did not write it", look)
+        self.assertIn(
+            "Run the whole-deck pass against the rendered pages", designer
+        )
+        self.assertIn("measure-slide-room.py", designer)
+        # The composition repairs move the content, so room measured before
+        # them is room on a layout that no longer exists.
+        order = designer.split("### The order, once", 1)[1].split("###", 1)[0]
+        self.assertLess(
+            order.index("render the preview pages"),
+            order.index("measure the room"),
+        )
+        self.assertLess(
+            order.index("measure the room"),
+            order.index("run the optional visual opportunity pass"),
+        )
+
+    def test_the_second_spawn_that_looked_at_the_deck_is_gone(self):
+        """One worker designs, builds, checks, looks and reports.
+
+        The built-deck look re-read a 52KB role file to confirm work that had
+        already passed its check. Its one real catch - a photograph too small
+        for its zone - is enforced by the builder's readable floor instead.
+        """
+        designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+        playbook = (
+            ROOT / "skills" / "make-lesson" / "playbook-lite.md"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("## The built-deck look", designer)
+        self.assertNotIn("BUILT_DECK_LOOK", designer)
+        self.assertNotIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
+        self.assertNotIn("slide_designer_built_deck_look", playbook)
+        self.assertIn("Do not reinstate it", playbook)
+        # The judgement the removed section carried has to survive somewhere the
+        # designer still reads, because it now sees its own drawings rendered.
+        self.assertIn("Overlap by itself is never the fault", designer)
+        self.assertIn("Judge legibility rather than taste", designer)
 
 
 if __name__ == "__main__":

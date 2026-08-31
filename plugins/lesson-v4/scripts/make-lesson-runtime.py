@@ -134,10 +134,10 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "Load `slides-finalize` once every picture assignment is terminal.",
     ),
     "slides-finalize": (
-        "The deck is built, and looked at once its photographs are in it. Track"
-        " A ends here; nothing downstream compares it to another resource.",
-        "Load `focused-repair` for a build diagnostic, a terminally unavailable"
-        " picture reference or a fault the built-deck look owns.",
+        "The deck is built. Track A ends here; nothing downstream compares it"
+        " to another resource, and nothing looks at it again.",
+        "Load `focused-repair` for a build diagnostic or a terminally"
+        " unavailable picture reference.",
         "The other tracks continue in parallel; this slice ends Track A only.",
     ),
     "worksheet-routing": (

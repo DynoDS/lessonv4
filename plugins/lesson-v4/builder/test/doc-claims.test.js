@@ -490,9 +490,17 @@ test('stack alignment stays owned by the profile and template contract', () => {
 });
 
 test('context pictures own the optional pass and the core keeps the execution and report cues', () => {
+  // The pass runs after the render, not after the geometry. Whether a slide has
+  // clear space is a fact about a drawn page, and a specification cannot show
+  // it: a three-zone template reads identically whether its cards are packed to
+  // the margins or holding four words each.
   assert.match(
     CONTEXT_PICTURES_MD,
-    /After the core slide geometry is settled, run the one whole-deck opportunity pass/
+    /run the one whole-deck opportunity pass against those rendered pages/
+  );
+  assert.doesNotMatch(
+    CONTEXT_PICTURES_MD,
+    /After the core slide geometry is settled, run the one/
   );
   assert.match(SLIDE_DESIGNER_MD, /strict order P1 > P2 > P3/);
   assert.match(SLIDE_DESIGNER_MD, /Optional visual pass:/);
@@ -605,7 +613,7 @@ test("template catalogue documents fill-height text and 28pt narrow text", () =>
   );
   assert.ok(
     TEMPLATES_MD.includes(
-      'use `"fill"`'
+      'Use `"fill"` only when all three are true'
     )
   );
   assert.ok(
@@ -748,20 +756,55 @@ test("the deck calibrates against the teacher's visual profile", () => {
   );
 });
 
-test("the built-deck look keeps the photograph rules nothing else held", () => {
-  // Crop fit, distortion and answer attachment could only ever be judged with
-  // the real photograph present, so they lived in the reviewer's own deck
-  // reference and nowhere else. They move with the job.
-  const look = SLIDE_DESIGNER_MD.split("## The built-deck look")[1];
-  assert.ok(look, "slide-designer.md has no built-deck look section");
+test("the photograph fit rules survived the built-deck look being removed", () => {
+  // Crop fit and distortion used to live only in a second Slide Designer spawn
+  // that rendered the finished deck. That spawn is gone: its one real catch is
+  // already deterministic in the builder's readable floor, and the photograph
+  // itself was never the designer's to repair. What had to survive is the half
+  // the designer decides up front - which fit to ask for - because nobody looks
+  // at the deck afterwards to catch a wrong one.
+  assert.ok(
+    !SLIDE_DESIGNER_MD.includes("## The built-deck look"),
+    "the built-deck look spawn is back in the role file"
+  );
+  const ORCHESTRATOR_MD = fs.readFileSync(
+    path.join(__dirname, '..', '..', 'skills', 'make-lesson', 'playbook-lite.md'),
+    'utf8'
+  );
+  assert.ok(
+    !ORCHESTRATOR_MD.includes("ASSIGNMENT: BUILT_DECK_LOOK"),
+    "the orchestrator is launching the built-deck look again"
+  );
+  assert.match(ORCHESTRATOR_MD, /Do not reinstate it/);
   for (const token of [
     "Under `contain`, the whole photograph stays visible at its natural proportions",
     "a centred crop fills the frame",
-    "wider, thinner, taller or shorter than the real object",
-    "each photograph carries its own"
+    "Nobody looks at the built deck after you",
+    "Never place several photographs above one combined answer strip"
   ]) {
-    assert.ok(look.includes(token), `the built-deck look is missing: ${token}`);
+    assert.ok(
+      SLIDE_DESIGNER_MD.includes(token),
+      `slide-designer.md is missing: ${token}`
+    );
   }
+});
+
+test("hug is the default and fill is the named exception", () => {
+  // Fill was documented as one of two readings a designer could pick between,
+  // with "a task beside its success criteria" as an example, which is most
+  // slides. It was then used as a general alignment tool and inflated ordinary
+  // instructions to the size of the teaching.
+  assert.ok(TEMPLATES_MD.includes("the default is what almost every text card should use"));
+  assert.ok(TEMPLATES_MD.includes("`fill` is not an alignment tool"));
+  assert.ok(TEMPLATES_MD.includes("If any one of those is false, hug."));
+  assert.ok(
+    !TEMPLATES_MD.includes("usually reads better filled"),
+    "templates.md still recommends fill for the ordinary case"
+  );
+  assert.ok(
+    !TEACHER_PROFILE_MD.includes("Both readings are fine"),
+    "the profile still offers fill and hug as equal tastes"
+  );
 });
 
 test("the slide self-check can retain a private preview deck for the render pass", () => {
