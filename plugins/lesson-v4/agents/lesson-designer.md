@@ -293,6 +293,8 @@ Pre-empting before practise avoids encoding wrong rule. Diagnosing via question 
 
 Giving misconception voice - two people disagree, children judge - worth when wrong rule sensible child would genuinely hold and explaining why it fails is itself part of what want them learn. Wrong idea stated confidently then rebutted sticks better than correct method alone. When choose this, write both speakers lines and "who is right, and why?" prompt as actual child-facing words in beat where happens - confident wrong, clear correct, decision. Those words are what children reason with and what slide will carry, so yours to author here, not slide maker.
 
+**Weight each misconception's footprint to how much it blocks today's objective.** The dominant sticking point may thread through the lesson, because the lesson is built on it. A genuine but secondary correction gets one clean touch - a script line, one Watch out - and is done; when it also claims a sticky slot, a teaching question, a comparison and a worksheet claim, the correction has become a second lesson the objective is paying for. Spotting a fixable wrong idea makes it interesting to you, not central to the class. The tell: more lesson real estate on the side correction than on the objective's own sticking point.
+
 Note choice for each and reason.
 
 ### Apply Slide

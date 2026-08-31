@@ -26,6 +26,7 @@ Report or correct a defect only when the evidence shows that the design will mat
 - assessment evidence;
 - teacher delivery;
 - safety, sensitivity or authenticity;
+- the teacher's voice in child-facing and spoken words;
 - faithful downstream production.
 
 A different sound design choice is not a defect.
@@ -38,6 +39,8 @@ Use the existing four outcomes:
 4. **Acceptable variation:** leave it alone and do not report it.
 
 Do not produce minor improvement suggestions. Do not report polish that has no material teaching or learning effect.
+
+A child-facing or spoken string in the wrong register is not polish. Every authored string ships verbatim - no downstream agent is permitted to reword it - so a script in curriculum-writer English or a model answer with machine rhythm reaches the class exactly as written, and today the teacher edits it out by hand. Repair it in the voice sweep as a bounded correction; do not report it as a finding or leave it as acceptable variation.
 
 ## Trust deterministic validation
 
@@ -155,12 +158,21 @@ Check:
 
 ### 4. Language, load and teacher usability
 
-Apply Written Voice as a comprehension test, not a shortening test. Apply `teacher-voice.md` as the voice test: run its Final pre-flight check over child-facing strings, and read the numbered section for a resource kind (model answer, worked example, success criteria) when a string of that kind feels off.
+Apply Written Voice as a comprehension test, not a shortening test.
+
+**Then sweep the voice, string by string.** The designer writes these words at the end of a long run and cannot hear its own drift, so this sweep is the one place the register is checked by someone who did not write it - a general "the voice seemed fine" is not the sweep. Walk the child-facing and spoken strings of the review view in order - every script, explanation, definition, question, task instruction, success criterion, sticky fact, model answer and worksheet string - and put each through `teacher-voice.md` → Final pre-flight check, opening the numbered section for the kind of string in hand when one feels off. Where a string genuinely misses the guide, repair it in place: same meaning, same teaching, same difficulty, the teacher's register. The misses that reach classes, from real lessons:
+
+- a script in written-report English the teacher would never say aloud: `Trace where the electricity comes from in each photograph. One source reaches an appliance through a socket, while another sits inside it.` - a teacher says `Look at where each one gets its electricity from. The toaster uses the mains, the torch uses a battery - and the laptop is the tricky one.`;
+- adjacent sentences sharing one shape and length (`Carbohydrates are our main source of energy. Protein helps us grow and repair. Vitamins and minerals help the body work well.`) - each true, together machine-rhythmed;
+- a model answer leaning on one repeated construction (`The pitta provides... Hummus and yoghurt provide... The vegetables and orange provide...`), which is the guide's §8 anti-AI check failing on the most-copied surface in the lesson;
+- an easy playful opportunity the content handed over and nothing took. The guide's §4 owns that judgement - add the small line only where the content genuinely invites it, and never force one.
+
+Repair only genuine misses: a string that already sounds like the teacher is left alone, and rewriting sound strings to taste is the same fault in the other direction. Never reword planning metadata - `teacherInfo`, `lookFor`, `acceptanceCondition`, a `reason`, a representation's `purpose` or `requiredFeatures`, `slideDesignNotes`, `flagsForTeacher` - those are not voice surfaces. Record each repair under Corrections made like any other bounded correction.
 
 Check:
 
 - pupil wording is clear, natural, accurate and age-appropriate;
-- a model answer reads as strong, attainable pupil writing rather than adult prose, and its adjacent sentences do not share one mechanical shape, length and rhythm;
+- a model answer reads as strong, attainable pupil writing rather than adult prose;
 - necessary subject vocabulary is taught and supported;
 - vocabulary definitions are useful to children;
 - sticky knowledge is accurate, stable and worth carrying;
@@ -233,7 +245,8 @@ Check:
 - Apply against learning actually taught;
 - full and displayed objectives;
 - open tasks against any answer or standard;
-- task-specific `lookFor` wording.
+- task-specific `lookFor` wording;
+- teacher-facing caveats against the wording they constrain. A boundary the design itself records must be honoured by the child-facing strings it governs: a `teacherInfo` saying `a single lunch cannot prove a whole diet is balanced; keep the wording about patterns over time` beside a task saying `explain why the whole lunch is balanced` is a defect however sound each looks alone, because the designer has documented the limit and then shipped the wording that crosses it.
 
 Do not recheck identifier or reference legality.
 

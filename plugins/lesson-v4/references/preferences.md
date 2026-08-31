@@ -318,6 +318,8 @@ When the recognition turns on two independent attributes the child reads separat
 
 What can earn this optional draw-live suggestion is the *named set of categories itself*: the five quadrilaterals with the properties that identify each, the word classes, the named angles, the labelled reference later lessons look up. The *method* for deriving or applying it does not carry forward, even when it is given a reference-like title. A "Read the properties" or "How to name it" panel written as steps is a procedure, and titling it a reference does not make it wall knowledge. So this marking goes on the labelled category set only, and a method stays on screen unmarked, including in a lesson where one concept is a process (its steps unmarked) and another is a recognition (its named set marked).
 
+**A count inside a criterion comes from the curriculum, the guidance or the task's real demand - never invented to make judging easier.** Children learn the count as the concept. `Add two fruit or vegetable portions.` teaches that a balanced lunch means two portions, when UK guidance sets no per-meal rule at all; `Use three adjectives.` teaches that good description is adjective arithmetic. The tell is the one the worksheet response rule already uses: if work that meets the concept but not the number would read as wrong, the number is doing the marking. A count that genuinely is the demand stays - `Give two reasons.` when weighing more than one reason is the objective, steps numbered because the method has that many.
+
 ---
 
 ## The Apply Slide
