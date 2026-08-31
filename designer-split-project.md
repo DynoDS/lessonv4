@@ -127,5 +127,18 @@ the architecture, or the comparison shows nothing.
   all the words from day one (settled 6), and the review splits in two with a
   bounded escape hatch (settled 7). The two technical calls were then taken:
   build alongside the old route behind a switch (settled 8) and keep the
-  words-writer at full effort for the first test (settled 9). Next: open
-  decision 1, the first test lesson and its bar, then implementation.
+  words-writer at full effort for the first test (settled 9). Daniel then
+  chose balanced diet first with the four-digit maths lesson as the safety
+  check (settled 10).
+- **31 Aug 2026, later.** The route is built and shipped as 4.2.47, old
+  route untouched, all tests green. What exists: the design checker gained a
+  stage mode that accepts `__LESSON_WORDING_FILL__:` wording specs and a
+  strict mode that refuses any survivor, so a half-written lesson can never
+  build; four new roles (`lesson-architect`, `lesson-author`,
+  `decision-reviewer`, `wording-reviewer`, the first and last two riding on
+  the existing designer and reviewer files); a `design-split` playbook slice
+  holding the four-step route, triggered only by the teacher explicitly
+  asking (for example `use the split route` in the brief) and rejoining the
+  normal pipeline at the helper check. Next: Daniel runs the balanced diet
+  brief in Codex with `use the split route` added, then the four-digit
+  maths brief the same way, and judges both against settled 10.

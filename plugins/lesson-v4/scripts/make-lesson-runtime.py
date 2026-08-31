@@ -80,6 +80,10 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "delivery": (
         "## Phase 4 — Final Assembly and Report",
+        "## The split route - design and wording as two passes (off by default)",
+    ),
+    "design-split": (
+        "## The split route - design and wording as two passes (off by default)",
         None,
     ),
 }
@@ -180,6 +184,10 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
     ),
     "delivery": (
         "This is the last slice. The run ends with the teacher report.",
+    ),
+    "design-split": (
+        "Load `helpers` once the Wording Reviewer has returned APPROVED over"
+        " the fully worded design; everything from Phase 1.5 on is unchanged.",
     ),
 }
 

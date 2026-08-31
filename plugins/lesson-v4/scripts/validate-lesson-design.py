@@ -122,6 +122,110 @@ UNIT_OPTIONAL_FIELDS = {"taskStructure"}
 SCAFFOLD_PLACEHOLDER = "__LESSON_DESIGN_FILL__"
 PLACEHOLDER_REPORT_LIMIT = 10
 
+# The split route fills the design in two passes: the decider writes every
+# child-facing or spoken string as a wording spec - this marker, then the
+# meaning the final words must carry - and the words pass replaces each spec
+# with the finished wording. Stage validation accepts a marked spec in place
+# of finished wording; strict validation refuses any surviving marker, so a
+# half-written lesson can never reach a build.
+WORDING_MARKER = "__LESSON_WORDING_FILL__:"
+WORDING_MARKER_BARE = "__LESSON_WORDING_FILL__"
+
+_wording_stage = False
+
+
+def is_wording_spec(value: Any) -> bool:
+    """True when this string is a wording spec and specs are allowed now.
+
+    Content checks call this to skip rules about finished wording - a
+    register prefix, a word cap, an exact-match rule - that a spec cannot and
+    need not satisfy. Structural checks never skip.
+    """
+    return (
+        _wording_stage
+        and isinstance(value, str)
+        and value.lstrip().startswith(WORDING_MARKER)
+    )
+
+
+def collect_wording_marker_faults(
+    node: Any,
+    path: str,
+    found: list[str],
+    *,
+    wording_stage: bool,
+    specs: list[str],
+) -> None:
+    if isinstance(node, str):
+        if WORDING_MARKER_BARE not in node:
+            return
+        if not wording_stage:
+            found.append(
+                f"{path} still holds a wording spec, not finished wording"
+            )
+            return
+        stripped = node.lstrip()
+        if not stripped.startswith(WORDING_MARKER):
+            found.append(
+                f"{path} buries the wording marker inside other text - a spec "
+                f"starts with {WORDING_MARKER} and nothing before it"
+            )
+        elif not stripped[len(WORDING_MARKER):].strip():
+            found.append(
+                f"{path} is a wording marker with nothing after it - a spec "
+                "with no meaning gives the words pass nothing to write from"
+            )
+        else:
+            specs.append(path)
+        return
+
+    if isinstance(node, dict):
+        for key, value in node.items():
+            collect_wording_marker_faults(
+                value, f"{path}.{key}", found,
+                wording_stage=wording_stage, specs=specs,
+            )
+        return
+
+    if isinstance(node, list):
+        for index, value in enumerate(node):
+            collect_wording_marker_faults(
+                value, f"{path}[{index}]", found,
+                wording_stage=wording_stage, specs=specs,
+            )
+
+
+def check_wording_markers(
+    design: Any, photos: Any, *, wording_stage: bool
+) -> None:
+    found: list[str] = []
+    specs: list[str] = []
+    collect_wording_marker_faults(
+        design, "lesson-design.json", found,
+        wording_stage=wording_stage, specs=specs,
+    )
+    # The photograph contract is planning material, never child-facing
+    # wording, so a marker there is a fault in either mode.
+    photo_specs: list[str] = []
+    collect_wording_marker_faults(
+        photos, "photo-requirements.json", found,
+        wording_stage=False, specs=photo_specs,
+    )
+
+    if found:
+        shown = found[:PLACEHOLDER_REPORT_LIMIT]
+        remainder = len(found) - len(shown)
+        tail = f", and {remainder} more" if remainder else ""
+        raise ContractError("; ".join(shown) + tail)
+
+    if wording_stage and not specs:
+        raise ContractError(
+            "wording-stage validation found no wording specs - the decider "
+            "appears to have written finished wording itself; every "
+            "child-facing or spoken string belongs to the words pass and is "
+            f"written here as `{WORDING_MARKER} [what the words must carry]`"
+        )
+
 
 class ContractError(ValueError):
     pass
@@ -551,7 +655,7 @@ def validate_speaker_notes(raw: Any, path: str) -> None:
                 not any(marker in notes[key] for marker in forbidden_answer_markers),
                 f"{path}.{key} must not duplicate the structured answer marker",
             )
-    if notes["script"] is not None:
+    if notes["script"] is not None and not is_wording_spec(notes["script"]):
         prefix = "Say to children:"
         expect(notes["script"].startswith(prefix), f"{path}.script must begin with 'Say to children:'")
         expect(notes["script"][len(prefix):].strip(), f"{path}.script must contain words after 'Say to children:'")
@@ -1488,9 +1592,27 @@ def validate_design(
     photos: Any,
     *,
     initial_photo_namespace: bool = False,
+    wording_stage: bool = False,
+) -> None:
+    global _wording_stage
+    _wording_stage = wording_stage
+    try:
+        _validate_design_body(
+            design, photos, initial_photo_namespace=initial_photo_namespace
+        )
+    finally:
+        _wording_stage = False
+
+
+def _validate_design_body(
+    design: Any,
+    photos: Any,
+    *,
+    initial_photo_namespace: bool = False,
 ) -> None:
     reject_unresolved_scaffold_placeholders(design, "lesson-design.json")
     reject_unresolved_scaffold_placeholders(photos, "photo-requirements.json")
+    check_wording_markers(design, photos, wording_stage=_wording_stage)
 
     root = expect_dict(design, "lesson-design.json")
     expect_exact_keys(root, TOP_LEVEL_FIELDS, TOP_LEVEL_FIELDS, "lesson-design.json")
@@ -1569,11 +1691,12 @@ def validate_design(
 
     orientation = expect_string(root["teacherOrientation"], "teacherOrientation")
     orientation_prefix = "Teacher orientation:"
-    expect(orientation.startswith(orientation_prefix), "teacherOrientation must begin 'Teacher orientation:'")
-    expect(
-        orientation[len(orientation_prefix):].strip(),
-        "teacherOrientation must contain orientation text after 'Teacher orientation:'",
-    )
+    if not is_wording_spec(orientation):
+        expect(orientation.startswith(orientation_prefix), "teacherOrientation must begin 'Teacher orientation:'")
+        expect(
+            orientation[len(orientation_prefix):].strip(),
+            "teacherOrientation must contain orientation text after 'Teacher orientation:'",
+        )
 
     rep_items, rep_by_id = collect_registry(
         root["representations"], "representations", "id", ID_PATTERNS["representation"]
@@ -1948,14 +2071,18 @@ def validate_design(
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     initial_photo_namespace = False
-    if args and args[0] == "--initial-photo-namespace":
-        initial_photo_namespace = True
+    wording_stage = False
+    while args and args[0] in ("--initial-photo-namespace", "--wording-stage"):
+        if args[0] == "--initial-photo-namespace":
+            initial_photo_namespace = True
+        else:
+            wording_stage = True
         args = args[1:]
 
     if len(args) != 2:
         print(
             "Usage: python3 validate-lesson-design.py [--initial-photo-namespace] "
-            "<lesson-design.json> <photo-requirements.json>",
+            "[--wording-stage] <lesson-design.json> <photo-requirements.json>",
             file=sys.stderr,
         )
         return 2
@@ -1967,12 +2094,15 @@ def main(argv: list[str] | None = None) -> int:
             design,
             photos,
             initial_photo_namespace=initial_photo_namespace,
+            wording_stage=wording_stage,
         )
     except (OSError, json.JSONDecodeError, ContractError) as exc:
         print(f"LESSON_DESIGN_INVALID: {exc}", file=sys.stderr)
         return 1
 
-    print("LESSON_DESIGN_OK")
+    # Distinct markers so a stage receipt can never be mistaken for a fully
+    # worded, buildable design.
+    print("LESSON_DESIGN_WORDING_STAGE_OK" if wording_stage else "LESSON_DESIGN_OK")
     return 0
 
 

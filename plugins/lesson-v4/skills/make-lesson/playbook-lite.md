@@ -84,7 +84,10 @@ host inference in `orchestrator-context.md`; it never overrides teacher text.
 A separately supplied lesson plan remains `LESSON_PLAN_INPUT`; a supplied
 worksheet remains `TEACHER_WORKSHEET_INPUT`. Do not paste either into the brief.
 Only Lesson Designer, Design Reviewer and Adaptation Designer may read raw
-teacher-authored files.
+teacher-authored files; on the split route, Lesson Architect and Decision
+Reviewer stand in the first two places, and the Lesson Author and Wording
+Reviewer never receive them - the approved design must carry everything the
+words need.
 
 **A brief that names a document is a pointer, not the lesson.** The brief file
 keeps its exact words, but a designer handed only the pointer has to find and
@@ -110,6 +113,13 @@ builder owns its wall-family archive.
 ---
 
 ## Phase 1 — Run the Lesson Designer (Sequential, Blocking)
+
+**The split route.** When the teacher's message explicitly asks for the split
+route (for example `use the split route`), do not run this phase or Phase
+1.25: load the `design-split` slice and follow it instead. It produces the
+same three approved canonical files and rejoins the pipeline at Phase 1.5.
+It is a test route, off by default; never choose it from anything but the
+teacher's own words.
 
 Launch `lesson-designer` directly, using the launch fields printed by
 `worker-launch.py spec` for this role. Do not read its settings out of the role
@@ -1102,3 +1112,172 @@ local folder and resolver error.
 
 The lesson design remains the single pedagogical source of truth. Downstream
 roles coordinate through validated files, not conversations or scheduler state.
+
+---
+
+## The split route - design and wording as two passes (off by default)
+
+This route replaces Phase 1 and Phase 1.25 only, and runs only when the
+teacher's message explicitly asks for it. The Lesson Architect makes every
+pedagogical decision and writes each child-facing string as a wording spec;
+the Decision Reviewer judges the decisions while they are still compact; the
+Lesson Author writes the finished words once, in a fresh context; the
+Wording Reviewer checks the words. It ends with the same three approved
+canonical files, and the run rejoins the normal pipeline at Phase 1.5 with
+nothing downstream changed - including later focused Lesson Designer
+revisions, which operate on the fully worded design exactly as on the normal
+route.
+
+Ask `worker-launch.py spec` once for all four roles: `lesson-architect`,
+`decision-reviewer`, `lesson-author`, `wording-reviewer`.
+
+### Split step 1 - Lesson Architect (sequential, blocking)
+
+Launch exactly as Phase 1 launches the Lesson Designer - the same
+authoritative inputs including the teacher-authored files, the same owned
+outputs, the same BUILD_SCAFFOLD_ONCE block - with two substitutions: the
+role file is `[PLUGIN_ROOT]/agents/lesson-architect.md`, and the success
+check is the stage validator:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace --wording-stage \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
+```
+
+Phase 1's recovery applies unchanged - one fresh clean-context attempt on a
+failed check, then BLOCKED with the diagnosis - and so does the photo-cap
+check with its one focused revision; that revision goes to a fresh
+`lesson-architect`, proved with the stage validator above.
+
+### Split step 2 - Decision Reviewer (sequential, blocking)
+
+```text
+You are the decision reviewer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/decision-reviewer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt
+[the same optional teacher inputs supplied to the Lesson Architect]
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+- [WORKING_DIR]/design-decisions.md
+- [WORKING_DIR]/photo-requirements.json
+- [WORKING_DIR]/design-review.md
+
+SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace --wording-stage \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
+
+ALLOWED_TERMINAL_STATES:
+- APPROVED
+- REDESIGN REQUIRED
+```
+
+There is no review packet on this route: do not run
+`design-review-packet.py`. After return, run the stage validator yourself and
+use the exact Result in `design-review.md`.
+
+For `APPROVED`, continue. For `REDESIGN REQUIRED`, hand the complete
+diagnosis to a fresh `lesson-architect` over the current canonical files,
+exactly as Phase 1.25 hands one to the Lesson Designer, with the same limit
+of two semantic redesign passes and the same ending: after the budget,
+continue from the current validated files and carry the unresolved findings
+verbatim into the run report's blocking faults and the teacher flags.
+
+### Split step 3 - Lesson Author (sequential, blocking)
+
+```text
+You are the lesson author. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/lesson-author.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+
+SUCCESS_CHECK:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_OK
+
+ALLOWED_TERMINAL_STATES:
+- COMPLETE
+- WORDING_GAPS
+- LESSON_WORDING_CHECK_FAILED
+```
+
+On `WORDING_GAPS`, run one focused `lesson-architect` revision over the
+current canonical files carrying every `WORDING_GAP:` line verbatim -
+complete the named specs in place, change nothing else, prove with the stage
+validator - then launch one fresh `lesson-author`. One gap round per run: a
+second `WORDING_GAPS` ends the route as a failed check ends Phase 1, with
+the gap lines as the diagnosis, because two rounds mean the design is not
+carrying its own decisions and a third author cannot fix that.
+
+On `LESSON_WORDING_CHECK_FAILED`, or a failed orchestrator success check,
+launch one fresh clean-context `lesson-author` with the current files and
+the exact failures. If that also fails, go to Phase 4 and report `BLOCKED`
+with the failures and deliver `design-decisions.md` and the diagnosis.
+
+### Split step 4 - Wording Reviewer (sequential, blocking)
+
+```text
+You are the wording reviewer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/wording-reviewer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+- [WORKING_DIR]/design-review.md
+
+SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_OK
+
+ALLOWED_TERMINAL_STATES:
+- APPROVED
+```
+
+Its corrections live in the files; its alarms live in its report's
+`## Flags for the teacher`, and every one carries into the run report's
+teacher flags like any Phase 1.25 flag. After return, run the strict
+validator yourself.
+
+Then close as Phase 1.25 closes: append genuine corrections and remaining
+teacher choices to the shared build review log when `PLUGIN_SOURCE_ROOT` is
+available, run `worker-launch.py audit --host codex`, and continue to Phase
+1.5. Everything from there on is unchanged.
