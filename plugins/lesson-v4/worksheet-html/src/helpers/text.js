@@ -671,6 +671,7 @@ const helpers = {
     greed: 0,
   },
   questions: {
+    requires: ["items"],
     render: renderQuestions,
     measure: measureQuestions,
     // Questions stay narrow-friendly: the text wraps, so width costs lines
@@ -679,6 +680,7 @@ const helpers = {
     greed: 0, // never stretch the gaps between questions
   },
   "written-answers": {
+    requires: ["items"],
     render: renderWrittenAnswers,
     measure: measureWrittenAnswers,
     needs: heightFromContent(measureWrittenAnswers, 70),

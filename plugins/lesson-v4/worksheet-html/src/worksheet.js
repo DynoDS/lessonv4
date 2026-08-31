@@ -25,7 +25,7 @@
 // file, expected always present - carries over untouched.
 
 const { checkFit } = require("./render");
-const { renderContent } = require("./helpers");
+const { renderContent, requiredSets } = require("./helpers");
 const { canonicalQuestionLabel, formatQuestionLabel } = require("./labels");
 
 // Any width will do: the question is whether the words are ON the page, and a
@@ -763,6 +763,48 @@ function comparableHtml(html) {
     .toLowerCase();
 }
 
+// A question with nothing in it to act on.
+//
+// The words reach the page and the frame is drawn; the set inside it is empty.
+// "Circle the complete circuit" with no options printed, "draw a line from each
+// word to the right part" over a photograph carrying no dots. See
+// `requiredSets` in helpers/index.js for why this is declared per helper rather
+// than inferred: a blank Venn is a frame the child fills, and an empty set of
+// options is a question nobody can answer.
+function emptySetProblems(sheet) {
+  const problems = [];
+
+  const walk = (node, zoneId) => {
+    if (Array.isArray(node)) {
+      node.forEach((n) => walk(n, zoneId));
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+
+    if (typeof node.helper === "string") {
+      for (const field of requiredSets(node.helper)) {
+        const value = node[field];
+        if (Array.isArray(value) && value.length === 0) {
+          problems.push(
+            `EMPTY_SET: zone "${zoneId}" (${node.helper}) has an empty ${field}, ` +
+              `so the page prints the frame and nothing to act on. Fill ${field} ` +
+              `in, or use a helper whose job the content actually is. If an ` +
+              `upstream step emptied it, that step is the repair.`
+          );
+        }
+      }
+    }
+
+    for (const value of Object.values(node)) walk(value, zoneId);
+  };
+
+  for (const id of Object.keys(sheet.spec.zones || {}).sort()) {
+    walk(sheet.spec.zones[id], id);
+  }
+
+  return problems;
+}
+
 function unprintedTextProblems(sheet) {
   const problems = [];
 
@@ -876,7 +918,8 @@ function checkWorksheet(worksheet) {
         sheet.badZones.length ||
         sheet.tooTight.length ||
         sheet.wordBanks.length ||
-        sheet.unprinted.length
+        sheet.unprinted.length ||
+        sheet.emptySets.length
     );
 }
 
@@ -905,6 +948,7 @@ function problemsWith(sheet) {
     tooTight: badZones.length ? [] : checkFit(sheet.spec),
     wordBanks: badZones.length ? [] : wordBankProblems(sheet),
     unprinted: badZones.length ? [] : unprintedTextProblems(sheet),
+    emptySets: badZones.length ? [] : emptySetProblems(sheet),
   };
 }
 

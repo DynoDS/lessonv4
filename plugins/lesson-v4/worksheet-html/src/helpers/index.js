@@ -178,6 +178,30 @@ function fills(helperName) {
   return Boolean(found && found.fills);
 }
 
+// The sets a helper cannot be a question without.
+//
+// Some helpers exist to draw a SET of things: the options a child chooses
+// between, the dots on a photograph, the cards in a row. Handed an empty set
+// they draw the frame and nothing in it, and the page prints an instruction
+// with nothing to act on. It fits, it looks finished, and the child cannot
+// start.
+//
+// That is not hypothetical either. One science sheet shipped with
+// `"options": []` under "Circle the complete circuit" and `"labels": []` under
+// "Draw a line from each word to the right part" - three questions across two
+// sheets that no child could do, on pages that passed every check.
+//
+// Declared per helper rather than guessed, because an empty set is sometimes
+// exactly right: a Venn or a Carroll diagram with no shapes is a blank sorting
+// frame, which is the commonest way either is used. The engine cannot tell
+// those apart from the outside, so each helper says which of its sets are the
+// activity itself. A helper that names none is never checked, so adding one
+// costs a line and forgetting one costs nothing that was not already true.
+function requiredSets(helperName) {
+  const found = REGISTRY[helperName];
+  return (found && found.requires) || [];
+}
+
 // The fitting rule, and the whole point of zones knowing their millimetres: a
 // zone can answer this before anything is drawn. It takes the whole content
 // spec, not just the helper's name, because the answer depends on what is in it.
@@ -218,6 +242,7 @@ module.exports = {
   measure,
   greed,
   fills,
+  requiredSets,
   GROWTH_CEILING,
   helperNames,
   helperCss,

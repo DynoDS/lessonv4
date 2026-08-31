@@ -1574,7 +1574,7 @@ Smallest usable: **61mm wide x 32mm tall**. Spare height: never takes spare heig
 
 #### `sort-grid`
 
-Named columns with blank rows for a child to sort items into, plus an optional word bank above.
+Named columns a child sorts items into, or - with one row - a box to draw in under those names, growing into whatever room its zone has.
 
 Smallest usable: **80mm wide x 76mm tall**. Spare height: takes spare height first (it is writing space).
 

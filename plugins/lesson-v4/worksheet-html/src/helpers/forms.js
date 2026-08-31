@@ -348,12 +348,14 @@ const css = `
 
 const helpers = {
   "multiple-choice": {
+    requires: ["options"],
     render: renderMultipleChoice,
     measure: measureMultipleChoice,
     needs: needsMultipleChoice,
     greed: 0, // a fixed set of options does not read better bigger
   },
   "sort-grid": {
+    requires: ["columns"],
     render: renderSortGrid,
     measure: measureSortGrid,
     needs: needsSortGrid,

@@ -805,6 +805,20 @@ unavailable and that re-authoring that one question against what exists is the
 repair, not a scope breach. The sheets are one document, so one unreconciled
 reference loses all three and the answer key.
 
+**If `worksheet.json` holds a labelled diagram over a photo, launch Diagram
+Anchor against it before building**, exactly as Track A does for `lesson.json`,
+and pass the worksheet spec as the file to anchor. The dots are percentages the
+designer wrote before the picture existed, so unanchored they sit wherever they
+were guessed - and a worksheet's dots are not decoration: they are what a child
+draws their line to, so a sheet built without this pass can print "label the
+parts" over a photograph carrying nothing to label.
+
+This was missing, and only Track A ran the pass. A Year 4 science sheet shipped
+with `"labels": []` on both its photographs, and three questions across two
+sheets could not be done. The build now refuses that (`EMPTY_SET`), so a skipped
+pass costs a refusal rather than a class's worksheets - but the refusal is the
+net, not the fix, and the fix is running the pass here.
+
 ---
 
 Build worksheets directly:

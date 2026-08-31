@@ -821,6 +821,7 @@ const helpers = {
     greed: 0, // a displayed statement is the size it is
   },
   "order-numbers": {
+    requires: ["numbers"],
     render: renderOrderNumbers,
     measure: measureOrderNumbers,
     needs: needsOrderNumbers,
@@ -848,6 +849,7 @@ const helpers = {
     greed: 0,
   },
   "circle-the-answer": {
+    requires: ["options"],
     render: renderCircleTheAnswer,
     measure: measureCircleTheAnswer,
     needs: needsCircleTheAnswer,

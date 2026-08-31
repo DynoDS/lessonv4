@@ -772,6 +772,7 @@ const css = `
 
 const helpers = {
   "speech-scene": {
+    requires: ["turns"],
     render: renderSpeechScene,
     measure: measureSpeechScene,
     needs: needsSpeechScene,
@@ -780,6 +781,7 @@ const helpers = {
     greed: 1,
   },
   "fact-file": {
+    requires: ["fields"],
     render: renderFactFile,
     measure: measureFactFile,
     needs: needsFactFile,

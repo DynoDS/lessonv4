@@ -580,6 +580,7 @@ const helpers = {
   ),
 
   "label-diagram": {
+    requires: ["labels"],
     render: renderLabelDiagram,
     measure: measureLabelDiagram,
     needs: needsLabelDiagram,

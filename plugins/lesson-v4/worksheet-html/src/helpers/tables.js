@@ -336,6 +336,7 @@ const css = `
 
 const helpers = {
   "data-table": {
+    requires: ["rows"],
     render: renderDataTable,
     measure: measureDataTable,
     // A column a child only reads can be narrow.
@@ -350,6 +351,7 @@ const helpers = {
     greed: 0,
   },
   "recording-table": {
+    requires: ["columns"],
     render: renderRecordingTable,
     measure: measureRecordingTable,
     // A column a child WRITES in cannot be narrow: there has to be room for

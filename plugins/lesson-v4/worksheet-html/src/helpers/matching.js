@@ -622,6 +622,7 @@ const css = `
 
 const helpers = {
   "match-up": {
+    requires: ["left", "right"],
     render: renderMatchUp,
     measure: measureMatchUp,
     needs: needsMatchUp,
@@ -631,6 +632,7 @@ const helpers = {
     greed: 2,
   },
   "card-row": {
+    requires: ["cards"],
     render: renderCardRow,
     measure: measureCardRow,
     needs: needsCardRow,
@@ -639,6 +641,7 @@ const helpers = {
     greed: 0,
   },
   timeline: {
+    requires: ["eras"],
     render: renderTimeline,
     measure: measureTimeline,
     needs: needsTimeline,

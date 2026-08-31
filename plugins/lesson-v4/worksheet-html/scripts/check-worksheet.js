@@ -355,7 +355,11 @@ function main() {
         // does the whole round trip again to learn something that was already
         // known, so every fault the build refuses is reported here too. Both
         // carry their own signal at the front of the message.
-        for (const problem of [...sheet.wordBanks, ...sheet.unprinted]) {
+        for (const problem of [
+          ...sheet.wordBanks,
+          ...sheet.unprinted,
+          ...sheet.emptySets,
+        ]) {
           const named = /^([A-Z_]+):\s*([\s\S]*)$/.exec(problem);
           fail(
             named ? named[1] : "CONTENT_INVALID",

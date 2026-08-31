@@ -873,6 +873,113 @@ test("text the engine reshapes on the way to the page still counts as printed", 
   assert.deepEqual(problems, []);
 });
 
+// ─── a question with nothing in it to act on ─────────────────────────────
+//
+// A helper handed an empty set draws the frame and nothing in it. One science
+// sheet shipped with `"options": []` under "Circle the complete circuit" and
+// `"labels": []` under "Draw a line from each word to the right part in
+// Circuit A": three questions across two sheets that no child could do, on
+// pages that fitted, rendered and looked finished.
+
+test("a set of options a child chooses between cannot be empty", () => {
+  const problems = checkWorksheet({
+    meta: { lesson: "X", yearGroup: 4 },
+    sheets: {
+      expected: {
+        layout: "full",
+        zones: {
+          a: {
+            question: true,
+            stack: [
+              { helper: "instruction", text: "Circle the complete circuit." },
+              { helper: "circle-the-answer", options: [] },
+            ],
+          },
+        },
+      },
+    },
+  });
+
+  assert.equal(problems.length, 1);
+  assert.match(problems[0].emptySets.join(" "), /EMPTY_SET/);
+  assert.match(problems[0].emptySets.join(" "), /circle-the-answer/);
+});
+
+test("a photograph asked to be labelled cannot carry no labels", () => {
+  // The one an anchoring pass can cause on its own, by dropping every dot it
+  // could not place. Its own instructions forbid emptying a diagram; this is
+  // the check that holds it to them.
+  const problems = checkWorksheet({
+    meta: { lesson: "X", yearGroup: 4 },
+    sheets: {
+      expected: {
+        layout: "full",
+        zones: {
+          a: {
+            question: true,
+            helper: "label-diagram",
+            text: "Label the parts of the circuit.",
+            imagePath: "circuit.png",
+            labels: [],
+          },
+        },
+      },
+    },
+  });
+
+  assert.match(problems[0].emptySets.join(" "), /EMPTY_SET.*label-diagram/);
+});
+
+test("a blank sorting frame is not an empty question", () => {
+  // The discrimination case, and the reason this is declared per helper rather
+  // than inferred. A Carroll diagram with no shapes on it is not a broken
+  // question: it is the frame, and sorting into it is the work. Refusing it
+  // would refuse the commonest way the helper is used.
+  const problems = checkWorksheet({
+    meta: { lesson: "X", yearGroup: 4 },
+    sheets: {
+      expected: {
+        layout: "full",
+        zones: {
+          a: {
+            question: true,
+            helper: "carroll",
+            rowLabel: "has wings",
+            rowNotLabel: "no wings",
+            colLabel: "lays eggs",
+            colNotLabel: "does not lay eggs",
+            shapes: [],
+          },
+        },
+      },
+    },
+  });
+
+  assert.deepEqual(problems, []);
+});
+
+test("every helper's own example satisfies the sets it says it needs", () => {
+  // Generalisation. A helper that declares a required set and ships an example
+  // without it is claiming something its own contract breaks, and the failure
+  // would surface on a real sheet rather than here.
+  const { requiredSets } = require("../src/helpers");
+  const EXAMPLES = require("./helper-examples");
+
+  const broken = [];
+  for (const [name, spec] of Object.entries(EXAMPLES)) {
+    for (const field of requiredSets(name)) {
+      const value = spec[field];
+      if (value === undefined) {
+        broken.push(`${name} requires ${field} and its example has none`);
+      } else if (Array.isArray(value) && value.length === 0) {
+        broken.push(`${name} requires ${field} and its example leaves it empty`);
+      }
+    }
+  }
+
+  assert.deepEqual(broken, []);
+});
+
 test("telling a child to use a word bank that is not there is refused", () => {
   const problems = checkWorksheet({
     meta: { lesson: "X", yearGroup: 4 },

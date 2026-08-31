@@ -20,7 +20,7 @@ Not from what the page looks like. A helper is chosen by the action:
 | sorts into groups | `sort-grid`, `venn`, `carroll` |
 | picks from options | `multiple-choice`, `circle-the-answer`, `chip-bank` |
 | completes a taught method | `method-frame`, the grid helpers |
-| draws or plots | `blank-surface`, `coordinate-grid`, `storyboard` |
+| draws or plots | `sort-grid` (one row), `blank-surface`, `coordinate-grid`, `storyboard` |
 | writes at length in a shape | `writing-frame`, `fact-file`, `speech-scene` |
 | judges or answers what a named person says | `speech-scene` |
 
@@ -93,6 +93,27 @@ catalogue example; anything else is worth checking there first.
 Leave it out when the questions speak for themselves. A line saying "Answer
 these questions" above some questions is one more thing for a child to read
 before starting.
+
+---
+
+## Somewhere to draw
+
+**A box a child draws in is a `sort-grid` with one row.** The column names head
+the box, so the headings do the instructing: `Uses electricity` and `Works by
+hand` over two halves, or one named box on its own. That is the whole task
+stated without a second instruction line under it.
+
+It is also the one helper that keeps growing. Every other writing helper stops
+at half again its natural height, because a ruled line reaches its useful size
+and passes it, and a box a child draws in does not. So a sort grid given a side
+of a page takes the side, and a stack holding both a drawing box and some
+writing lines gives the room to the box and leaves the lines the size the
+question asked for.
+
+`blank-surface` is the bare surface with no headings - a number line to
+construct, an empty bar - and `storyboard` is numbered boxes in sequence with
+writing under each. Reach for the sort grid when what the child draws belongs
+under a NAME.
 
 ---
 
@@ -187,6 +208,25 @@ names this file, so the numbers here are current rather than remembered.
 and its height follows, so a wider zone holds a TALLER picture and the page total
 grows. That is why "too narrow" on a picture-led sheet usually means one picture
 too many rather than the wrong shape.
+
+**A name has to be attached to the thing it names, never floated above it.**
+When the questions call something `Circuit A` or `Photograph B`, that name is
+part of the picture and not a line near it. Two ways attach it: a `card-row`,
+where each card carries its own `title` over its own image, and a
+`label-diagram`, where a `given: true` label prints the name on a leader line
+pointing at the thing. Both stay aligned however the page reflows.
+
+What does not work is an `instruction` helper per name in a `row` above the
+picture. A row divides its width by the shapes inside it, not by where things
+sit in a photograph, so the words land wherever the arithmetic puts them: a real
+sheet printed `Circuit A` and `Circuit B` above a single photograph of both, and
+neither word sat over its circuit.
+
+The card row is the answer when the members are named separately, and it needs
+**one picture per member** - so a stimulus of four lettered objects is four
+picture requests, not one group shot. One shot holding several named things can
+only be labelled from inside, by a `label-diagram`, and a wide one runs out of
+margin for the labels long before it runs out of room for the picture.
 
 ---
 

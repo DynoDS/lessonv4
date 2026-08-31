@@ -94,7 +94,7 @@ module.exports = {
   "multiple-choice":
     "A stem, a tick instruction, then each option on its own line beside a tick box.",
   "sort-grid":
-    "Named columns with blank rows for a child to sort items into, plus an optional word bank above.",
+    "Named columns a child sorts items into, or - with one row - a box to draw in under those names, growing into whatever room its zone has.",
   "column-method-grid":
     "Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row. `showHeadings: true` adds place-value letters above the columns, derived from the numbers' own width.",
 
