@@ -74,6 +74,23 @@ class TeacherVoiceGuideTests(unittest.TestCase):
         # TVC-001: a normal hyphen, never an em dash, in pupil-facing text.
         self.assertIn("em dashes and en dashes", voice)
 
+    def test_guide_is_year_neutral_and_owns_the_age_judgement(self) -> None:
+        """The guide was drafted against Year 4 lessons, and the teacher asked
+        for the tailoring to come out (31 Aug 2026): agents follow the
+        teacher's voice, and the same voice serves every primary year. The
+        KS1/KS2 paragraph moved here from Written Voice so age-of-register
+        has one owner."""
+        voice = flat(VOICE)
+        self.assertNotIn("Year 4", voice)
+        self.assertNotIn("Daniel", voice)
+        self.assertIn("age changes the support, not the humanity", voice)
+        preferences = flat(PREFERENCES)
+        self.assertNotIn(
+            "**KS1 and KS2 change the support, not the humanity.**",
+            preferences,
+        )
+        self.assertIn("owns that judgement", preferences)
+
     def test_guide_routes_selectively_and_names_its_boundary(self) -> None:
         """A 600-line guide read whole on every run crowds out its own rules,
         and two voice owners drift apart. The guide loads by section and says

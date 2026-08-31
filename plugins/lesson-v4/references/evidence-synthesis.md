@@ -2,7 +2,7 @@
 
 Purpose: a decision-support document for an AI agent designing lesson PowerPoints. Organised by lesson component. Each section gives the principle, the cognitive mechanism, classroom implications, common failure modes, and key sources.
 
-This file supplies conditional evidence and possible mechanisms. It does not automatically govern a lesson or override `preferences.md`. The lesson designer actively uses the evidence where it is relevant and its conditions fit, and follows Daniel's settled classroom decisions where the two differ.
+This file supplies conditional evidence and possible mechanisms. It does not automatically govern a lesson or override `preferences.md`. The lesson designer actively uses the evidence where it is relevant and its conditions fit, and follows the teacher's settled classroom decisions where the two differ.
 
 A recurring lens across the components is cognitive load theory (Sweller): working memory is tiny (roughly 4 elements, seconds of duration) and is the bottleneck through which every new idea must pass before reaching long-term memory. Every design decision either protects that bottleneck or wastes it. Willingham's corollary — "memory is the residue of thought" — means pupils remember what their working memory actually processed, not what the teacher intended.
 

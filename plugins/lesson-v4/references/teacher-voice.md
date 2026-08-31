@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Use this guide when writing pupil-facing teaching resources in the teacher's voice, especially KS2 / Year 4 lesson slides, worksheets, questions, worked examples, model answers, success criteria, sentence stems and task instructions.
+Use this guide when writing pupil-facing teaching resources in the teacher's voice: lesson slides, worksheets, questions, worked examples, model answers, success criteria, sentence stems and task instructions.
 
 This is a **runtime voice guide**, not the calibration evidence archive. Apply these rules as defaults, but do not let "voice" override good teaching, factual accuracy, age-appropriateness, safeguarding, clarity or the specific purpose of the resource.
 
@@ -19,7 +19,7 @@ This guide owns **how the voice sounds**. What the words must **achieve** is own
 
 When authoring anything a child reads or hears, read sections 1-4, 15 and 17. Read the numbered section for the kind of thing you are writing at the moment you write it: a model answer opens §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison prompt §12, a practical lesson §13. Read §16's calibrated examples only when wording remains uncertain after that.
 
-The calibration behind this guide is Year 4. For another year group keep the same voice, and let Written Voice's KS1/KS2 and access rules set the vocabulary and support level.
+The voice is the same across the primary years: age changes the support, not the humanity. KS1 normally needs more familiar vocabulary, more concrete meaning and stronger reading-access support. KS2 can carry richer vocabulary and more complex thought. Neither phase has a sentence-length target: do not make KS1 robotic by chopping every explanation into tiny sentences, and do not make KS2 abstract or academic merely because the children are older. Year 3 may need either treatment according to the material and the class. Written Voice's access rules (Below resources, Greater Depth) still apply at full strength.
 
 ---
 
@@ -228,7 +228,7 @@ When the underlying idea is abstract or difficult, lighter language can reduce u
 Example:
 > Claudius had something to prove.
 
-may be more useful for Year 4 than:
+may be more useful than:
 > Claudius wanted to strengthen his political position as emperor.
 
 when the history itself is already conceptually demanding.
@@ -359,7 +359,7 @@ A model answer is a **separate register**.
 Do not simply write the teacher's spoken voice as if a pupil said it.
 
 Aim for:
-- a strong, attainable answer for the year group (the calibration evidence is Year 4);
+- a strong, attainable answer for the year group;
 - enough subject knowledge to model success;
 - natural pupil-plausible phrasing;
 - useful subject vocabulary;
@@ -625,7 +625,7 @@ Why it fits:
 > Rainforests are important for two main reasons. They provide habitats for many species and absorb carbon dioxide from the atmosphere, helping to regulate the Earth's climate.
 
 Why it fits:
-- strong Year 4 model;
+- a strong, attainable model for the year group;
 - subject vocabulary is not artificially simplified;
 - varied construction;
 - does not sound like a teacher speech.
