@@ -656,6 +656,7 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
                 "method-comparison",
                 "establish-reference",
                 "criteria-teaching",
+                "bounded-attempt",
             },
             f"{path}.mode invalid: {mode}",
         )

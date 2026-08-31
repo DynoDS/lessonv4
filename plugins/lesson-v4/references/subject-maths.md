@@ -112,7 +112,9 @@ Why it matters here specifically: the strongest children can often just do it an
 
 ## The positions this file takes
 
-Every subject has arguments inside it, and this file takes the teacher's side on two so a lesson never wobbles between philosophies.
+Every subject has arguments inside it, and this file takes the teacher's side on three so a lesson never wobbles between philosophies.
+
+**A maths skill lesson opens with the model.** The Skill-based route allows a bounded first attempt at the target before any modelling; maths does not use it. The attempt earns its place only where failure is visible to the child, and a wrong written method fails silently — the child's answer looks as plausible as a right one, so the attempt rehearses the error instead of creating the question the teaching answers. My Turn → Our Turn → Your Turn stays the maths rhythm, with the Our Turn omitted only under the route's own omission test.
 
 **The room may split by security, but the resource does not prescribe that grouping.** Some schools keep every child on the same task and differentiate only by depth. This room may use a carpet group, independent practice, and greater depth extending; the live teacher decides whether to use that routine and when different children move on.
 

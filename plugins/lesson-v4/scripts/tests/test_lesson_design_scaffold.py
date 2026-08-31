@@ -786,6 +786,115 @@ def test_content_envelopes_match_validator_required_fields_exactly():
                 assert value == scaffold.PLACEHOLDER, (kind, field)
 
 
+def test_skill_concept_may_omit_our_turn():
+    """The reported failure: the scaffold demanded one our-turn per concept
+    while the route prose and the final validator both allow omitting it,
+    so a designer could never produce the model-then-release shape."""
+    request = skill_request()
+    request["teachingSequence"] = [
+        {"kind": "my-turn", "conceptIndex": 1},
+        {"kind": "our-turn", "conceptIndex": 1},
+        {"kind": "your-turn", "conceptIndex": 1},
+        {"kind": "my-turn", "conceptIndex": 2},
+        {"kind": "your-turn", "conceptIndex": 2},
+    ]
+
+    scaffold.validate_request(request)
+
+    design, _ = scaffold.build_scaffold(request)
+    kinds = [
+        unit["kind"]
+        for unit in design["teachingSequence"]
+    ]
+    assert kinds == [
+        "my-turn",
+        "our-turn",
+        "your-turn",
+        "my-turn",
+        "your-turn",
+    ]
+
+
+def test_omitting_your_turn_is_still_rejected():
+    """Discrimination case: only the our-turn became optional."""
+    request = skill_request()
+    request["teachingSequence"] = [
+        {"kind": "my-turn", "conceptIndex": 1},
+        {"kind": "your-turn", "conceptIndex": 1},
+        {"kind": "my-turn", "conceptIndex": 2},
+        {"kind": "our-turn", "conceptIndex": 2},
+    ]
+
+    try:
+        scaffold.validate_request(request)
+    except scaffold.ScaffoldError as exc:
+        assert "requires one your-turn" in str(exc)
+    else:
+        raise AssertionError(
+            "skill request missing a your-turn unexpectedly validated"
+        )
+
+
+def test_our_turn_for_the_wrong_concept_is_still_rejected():
+    request = skill_request()
+    request["teachingSequence"] = [
+        {"kind": "my-turn", "conceptIndex": 1},
+        {"kind": "our-turn", "conceptIndex": 2},
+        {"kind": "your-turn", "conceptIndex": 1},
+        {"kind": "my-turn", "conceptIndex": 2},
+        {"kind": "your-turn", "conceptIndex": 2},
+    ]
+
+    try:
+        scaffold.validate_request(request)
+    except scaffold.ScaffoldError as exc:
+        assert (
+            "our-turn must use conceptIndex 1"
+            in str(exc)
+        )
+    else:
+        raise AssertionError(
+            "misattributed our-turn unexpectedly validated"
+        )
+
+
+def test_bounded_attempt_is_a_valid_prepare_mode():
+    """The circuit-lesson gap: a safe first try at the target could not be
+    expressed inside the Skill-based route, forcing modelling-first even
+    when the route reference now permits a bounded attempt."""
+    validator.validate_content(
+        "prepare",
+        {
+            "mode": "bounded-attempt",
+            "activity": (
+                "Using the tray of equipment, try to make "
+                "the bulb light."
+            ),
+        },
+        "probe",
+        set(),
+    )
+
+
+def test_unknown_prepare_mode_is_still_rejected():
+    try:
+        validator.validate_content(
+            "prepare",
+            {
+                "mode": "free-exploration",
+                "activity": "explore the equipment",
+            },
+            "probe",
+            set(),
+        )
+    except validator.ContractError as exc:
+        assert "mode invalid" in str(exc)
+    else:
+        raise AssertionError(
+            "unknown prepare mode unexpectedly validated"
+        )
+
+
 def test_unknown_unit_kind_is_a_scaffold_error_not_a_bare_placeholder():
     try:
         scaffold.content_scaffold("made-up-kind")

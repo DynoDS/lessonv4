@@ -4,7 +4,7 @@ Use this file when the lesson-designer has chosen **Skill-based** teaching for a
 
 The structure choice itself is made in the main agent's Structure Decision section. By the time this file is read, the structure decision and the boundary tests have already been applied — what follows is execution detail for the chosen rhythm.
 
-A short pattern investigation or method comparison may come before direct modelling when it genuinely helps children notice the structure. It remains part of the Skill-based route: the procedure is then explicitly explained, modelled and secured rather than left for novices to invent through unguided trial and error.
+A short pattern investigation or method comparison may come before direct modelling when it genuinely helps children notice the structure. So may a **bounded first attempt** at the target itself — a few minutes with the real equipment or task before any model: *Can you make the bulb light?* Use it only when the attempt is safe, cheap and quick to reset, the goal is self-evident, and success or failure is visible to the child without the teacher judging it. The attempt teaches nothing by itself and is not discovery; its job is to give the full modelling that follows immediately something real to explain, so the child whose bulb stayed dark hears "the loop must be complete" as the answer to a question they already have. Do not use it where a wrong attempt looks fine to the child or quietly rehearses an error — a circuit fails visibly, a written calculation method fails silently — and `subject-maths.md` owns the maths position (maths lessons open with the model). Either way it remains part of the Skill-based route: the procedure is then explicitly explained, modelled and secured rather than left for novices to invent through unguided trial and error.
 
 ---
 
@@ -74,7 +74,9 @@ Keep each example close enough to My Turn to practise the same learning and diff
 
 **When the example lives in a multi-item visual (a tally chart with rows, a pictogram with rows, a bar chart with bars, a frequency table, a set of shapes) and the work is reading a value off that chart — whether finding every row's value or answering one named row at a time — a fresh Our Turn means a fresh visual with new data, not different rows of the My Turn's chart.** Two shapes of this trap: modelling two rows in My Turn and saving the other two for the Our Turn (a fill-every-row task like finding each frequency), or reading one row in My Turn — "how many books on Tuesday?" — then a different row in the Our Turn — "how many on Wednesday?" — off the same chart. Both look like two examples but are one: the whole chart, every row, is on screen throughout the My Turn, so the row the Our Turn turns to was never new, and children read off a chart they have already watched the teacher read. It lands as the same question answered twice. So give the Our Turn its own chart with a new context and new numbers, carrying the same cases the My Turn taught plus the error-prone one (for a tally chart, a row whose remainder is four marks, which looks like a fifth bundle). Model the full first chart in My Turn so it stands as a complete worked example, then move to the fresh chart for the guided practice. (One shared dataset *across* turns is right only when the dataset is a fixed thing children read repeatedly and the *question changes to a genuinely different move* between turns — a "use this chart to answer" interpretation concept where My Turn finds a difference and Our Turn finds a total, so the child applies a new operation rather than repeating the same read on a new row. It is wrong when each turn runs the same read-off skill on a different item of the same visible chart.)
 
-Plan enough Our Turn work for the concept's likely difficulty. If the concept looks tricky, include several fresh guided attempts rather than defaulting to one. The live teacher may skip planned guided examples when the real class is ready. Omit Our Turn only when guided practice is genuinely unnecessary because the learning is already secure enough; do not use that exception to jump from one model to independent work on genuinely new or difficult learning.
+Plan enough Our Turn work for the concept's likely difficulty. If the concept looks tricky, include several fresh guided attempts rather than defaulting to one. The live teacher may skip planned guided examples when the real class is ready. Include an Our Turn unless guided participation would remove no barrier the model and success criteria have not already removed — because the learning is already secure enough, or because of the recording case below; do not use either exception to jump from one model to independent work on genuinely new or difficult learning.
+
+**When a concept records what children have just done, one model then release is the default.** A lesson sometimes ends by having children represent their own first-hand work — drawing the circuit they built, writing up the method they just used. That recording is still its own concept with its own success criteria when it carries genuinely new learning, but it does not automatically earn a full second cycle: each child is holding the real thing they made, which is richer guided context than any fresh shared example, so model the representation once on the teacher's example and release children onto their own. Add an Our Turn there only when the representation itself carries a hard new convention (formal notation, a symbol system) that one model will predictably fail to secure.
 
 **Your Turn** — enough meaningful independent practice for the target action, cases and response cost. A compact table or sort may contain many brief decisions, while one whole passage, investigation step or constructed representation may be one substantial performance. Do not force three to six printed questions, a fixed easy-to-hard staircase or a harder final item. The practice must still be sufficient to establish and demonstrate the learning. Follow definite-answer work with an answer slide.
 
@@ -186,10 +188,13 @@ A preparation beat before My Turn, when genuinely needed, is an explicit source 
 - `method-comparison`
 - `establish-reference`
 - `criteria-teaching`
+- `bounded-attempt`
 
 Use no preparation unit when the lesson should move straight into My Turn. This preserves the existing route's optional explanation, bounded pattern/method work, recognition-set establishment and the rare case where the criteria themselves genuinely need teaching.
 
-For each concept, use zero or more preparation units when genuinely needed, then **one or more My Turn source units** for the genuinely distinct modelled moves/cases children need to see, followed by exactly one Our Turn and exactly one Your Turn.
+`bounded-attempt` carries the brief first try at the target itself, under the conditions in this file's opening section; put the exact challenge children are given in `activity`.
+
+For each concept, use zero or more preparation units when genuinely needed, then **one or more My Turn source units** for the genuinely distinct modelled moves/cases children need to see, followed by at most one Our Turn and exactly one Your Turn. The Our Turn is present unless the omission test in the Our Turn section applies; omitting it is a purposeful decision, not a shortcut.
 
 Each My Turn source unit represents one pedagogically distinct modelled move and therefore carries its own `content`, `modellingState`, `representationRefs`, `speakerNotes` and `answer`. Do not create multiple My Turn source units merely because Slide Designer may later split one modelled move across several physical slides.
 
@@ -239,7 +244,7 @@ Your Turn:
 }
 ```
 
-Do not copy success-criteria wording into these `content` objects. Define it once under `successCriteria`, attach it to the concept, and copy the same `successCriteriaRefs` onto **every** My Turn plus the one Our Turn and one Your Turn for that concept.
+Do not copy success-criteria wording into these `content` objects. Define it once under `successCriteria`, attach it to the concept, and copy the same `successCriteriaRefs` onto **every** My Turn plus the Our Turn (when present) and the one Your Turn for that concept.
 
 Do not describe a helper again inside `content`. Define the representation once and attach the exact `representationRefs` use to each turn.
 

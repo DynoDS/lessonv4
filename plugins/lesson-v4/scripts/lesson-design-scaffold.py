@@ -427,17 +427,18 @@ def validate_route_shape(
                 ),
             )
 
-            require(
+            if (
                 index < len(sequence)
                 and sequence[index]["kind"] == "our-turn"
-                and sequence[index]["conceptIndex"] == concept_index,
-                (
-                    "Skill-based conceptIndex "
-                    f"{concept_index} requires one our-turn "
-                    "after its my-turn move(s)"
-                ),
-            )
-            index += 1
+            ):
+                require(
+                    sequence[index]["conceptIndex"] == concept_index,
+                    (
+                        "Skill-based our-turn must use "
+                        f"conceptIndex {concept_index}"
+                    ),
+                )
+                index += 1
 
             require(
                 index < len(sequence)
@@ -446,7 +447,7 @@ def validate_route_shape(
                 (
                     "Skill-based conceptIndex "
                     f"{concept_index} requires one your-turn "
-                    "after its our-turn"
+                    "after its my-turn move(s) and optional our-turn"
                 ),
             )
             index += 1

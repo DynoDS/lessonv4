@@ -127,6 +127,8 @@ Use the selected teaching-route reference.
 
 For Skill-based lessons, check that distinct independent cases are prepared, processes are modelled rather than merely displayed, guided and independent examples are fresh, and support enables rather than supplies the intended performance.
 
+For a hands-on Skill-based objective — one where children handle equipment or perform the target physically — also count the teacher-led beats before children first touch or perform the target. Each delay must remove a specific safety, knowledge or procedural barrier; a run of modelling and guided beats that merely defers a safe, self-checking activity is a purposeful design defect, because the route offers both a bounded-attempt opening and an omittable Our Turn. And where two concepts run consecutive full cycles, check whether the second is a genuinely separate procedure or a recording of the first that the route says needs only one model and release.
+
 For Content-based lessons, check that each knowledge chunk is manageable, has a worthwhile takeaway, is processed after teaching, and contributes to final practice.
 
 For Dialogic lessons, check that pupils receive knowledge before judgement, the question permits several defensible positions, harmful or false claims are corrected, and synthesis does not invent class views or force one predetermined answer.
