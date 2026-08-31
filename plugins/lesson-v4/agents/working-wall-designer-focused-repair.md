@@ -32,7 +32,7 @@ Read reference material only under these triggers:
 
 - For card prominence, readability, orientation, composition or wall-distance faults, read the affected rules in `[PLUGIN_ROOT]/references/working-wall-visual-language.md`.
 - For a card wording convention, title convention, sentence-stem convention or worked-example convention, read the affected rules in `[PLUGIN_ROOT]/references/working-wall-preferences.md`.
-- For a finding that explicitly names a general house preference, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`.
+- For a finding that explicitly names a general house preference, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`. For a finding that names `teacher-voice.md`, read only its named section.
 
 Do not read unrelated wall reference sections merely because the creation-mode role would normally read them.
 

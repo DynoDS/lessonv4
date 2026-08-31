@@ -34,7 +34,7 @@ Read at startup:
 
 Read before the first affected decision:
 
-- `preferences.md` Written Voice only when you must author narrow child-facing furniture or report a wording fault. Do not use it to rewrite exact source-authored text.
+- `preferences.md` Written Voice only when you must author narrow child-facing furniture or report a wording fault. Do not use it to rewrite exact source-authored text. At the same trigger read the core sections of `teacher-voice.md`, so the furniture you author sounds like the teacher rather than a template.
 - `preferences.md` Question Labelling before assigning or rendering any question number.
 - `preferences.md` A Picture Beside a Word and Vocabulary before composing a vocabulary or semantic word-picture slide.
 - `preferences.md` Success Criteria and Sticky Knowledge, plus the relevant part of `slide-success-criteria.md`, when a source unit has `successCriteriaRefs` or `stickyKnowledgeRefs`. Read only the inline-helper rule when the first affected unit has `inline:true`.

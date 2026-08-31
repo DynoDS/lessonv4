@@ -28,7 +28,7 @@ Read reference material only under these triggers:
 
 - For the write-on test, supported visual shape, tag, sizing or item-spec fault, read only the affected rules and spec section in `[PLUGIN_ROOT]/references/stick-in-sheets-pedagogy.md`.
 - For an optional context-picture fault, read the affected rules in `[PLUGIN_ROOT]/references/context-pictures.md`.
-- For a finding that explicitly names Written Voice or Question Labelling, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`.
+- For a finding that explicitly names Written Voice or Question Labelling, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`. For a finding that names `teacher-voice.md`, read only its named section.
 
 Do not read unrelated stick-in reference sections merely because the creation-mode role would normally read them.
 

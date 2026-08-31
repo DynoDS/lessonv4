@@ -41,7 +41,7 @@ Read reference material only under these triggers:
 - For success-criteria or sticky-knowledge placement, read the affected rules in `[PLUGIN_ROOT]/references/slide-success-criteria.md`.
 - For a speaking character, voiced claim, misconception, disagreement or advice-to-a-character treatment, read the affected rules in `[PLUGIN_ROOT]/references/slide-speech-and-characters.md`.
 - For an optional context-picture fault, read the affected rules in `[PLUGIN_ROOT]/references/context-pictures.md`.
-- For a finding that explicitly names a house slide preference, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`.
+- For a finding that names a section of `[PLUGIN_ROOT]/references/preferences.md` or of `teacher-voice.md`, read only that section.
 
 Do not read unrelated reference sections merely because the creation-mode role would normally read them.
 

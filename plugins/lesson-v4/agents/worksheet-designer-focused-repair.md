@@ -35,7 +35,7 @@ Read reference material only under these triggers:
 - For page shape, zone allocation, orientation, dead space or workspace faults, read the affected layout contract in `[PLUGIN_ROOT]/references/worksheet-compositions.md`.
 - For helper selection, helper fields or helper fit, read the affected rules in `[PLUGIN_ROOT]/references/worksheet-helpers.md` and only the affected helper entry in `[PLUGIN_ROOT]/references/worksheet-helpers/catalogue.md`.
 - For a subject-specific helper constraint, read `[PLUGIN_ROOT]/references/worksheet-helpers/[subject].md` only when that file exists for the current subject.
-- For a finding that explicitly names a worksheet house preference, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`.
+- For a finding that explicitly names a worksheet house preference, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`. For a finding that names `teacher-voice.md`, read only its named section.
 
 Do not read unrelated helper catalogue entries or reference sections merely because the creation-mode role would normally read them.
 

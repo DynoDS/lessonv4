@@ -155,11 +155,12 @@ Check:
 
 ### 4. Language, load and teacher usability
 
-Apply Written Voice as a comprehension test, not a shortening test.
+Apply Written Voice as a comprehension test, not a shortening test. Apply `teacher-voice.md` as the voice test: run its Final pre-flight check over child-facing strings, and read the numbered section for a resource kind (model answer, worked example, success criteria) when a string of that kind feels off.
 
 Check:
 
 - pupil wording is clear, natural, accurate and age-appropriate;
+- a model answer reads as strong, attainable pupil writing rather than adult prose, and its adjacent sentences do not share one mechanical shape, length and rhythm;
 - necessary subject vocabulary is taught and supported;
 - vocabulary definitions are useful to children;
 - sticky knowledge is accurate, stable and worth carrying;
@@ -170,7 +171,7 @@ Check:
 - routine classroom management remains teacher-owned;
 - scripts, slide content, answers, success criteria and instructions agree.
 
-Read the full `Written Voice (House Style)` section only when exact wording is genuinely in doubt.
+Read the full `Written Voice (House Style)` section only when exact wording is genuinely in doubt; the same restraint applies to `teacher-voice.md` beyond its pre-flight check and the section a doubtful string calls for.
 
 Keep em dashes and en dashes out of child-facing and parent-facing text. In the same pass, check child-facing and spoken text calls the class `children`, `you` or `we` rather than `kids`, `pupils` or `students` (a genuinely different meaning stays, such as the pupil of an eye), and that no praise line (`Well done!`, `Great job!`) sits on a slide or in the notes.
 

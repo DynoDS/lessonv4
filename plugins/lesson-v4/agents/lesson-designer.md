@@ -59,7 +59,7 @@ Write last, after design complete. Plain English, no pedagogy jargon. Audience t
 
 Every note: **script** first, then optional **teacher info**, then optional **Look for:**. Slide 1 orientation precedes script.
 
-**Script:** Open `Say to children:` with speakable words teacher can read aloud verbatim. Apply `preferences.md` → Written Voice. Natural, direct, warm, confident. Precise subject vocab when helps. Occasional natural teacher phrases allowed when fit, not mannerism. No praise lines - live teacher's job. Reassurance (`don't worry if this feels tricky`) may live in script, never on slide. My Turn/Teach/Apply = modelling narration; Our Turn/Do = guided questions; Your Turn rarely needs script.
+**Script:** Open `Say to children:` with speakable words teacher can read aloud verbatim. Apply `preferences.md` → Written Voice and `teacher-voice.md` §2: the script is the fuller conversational register the slide must not carry - the slide keeps the tighter version, never the reverse. Natural, direct, warm, confident. Precise subject vocab when helps. Occasional natural teacher phrases allowed when fit, not mannerism. No praise lines - live teacher's job. Reassurance (`don't worry if this feels tricky`) may live in script, never on slide. My Turn/Teach/Apply = modelling narration; Our Turn/Do = guided questions; Your Turn rarely needs script.
 
 Answers/models live only in structured `answer` object. Don't repeat in script/teacherInfo/lookFor. `answer.delivery` decides rendering: `teacher-only`, `answer-slide`, `visible-in-unit` (only for Prepared example), `none`.
 
@@ -491,7 +491,7 @@ When decisions, lesson-design.json, photo-requirements.json written, run one fin
 
 Fix at source, update block where fix changes decision. Then done.
 
-Run `preferences.md` → Written Voice read-back over every child-facing string and script. Comprehension check, not shorten everything. Preserve clear connected prose when carries one idea naturally; reform abstract, overloaded, generic, narrating lesson, or generated-sounding.
+Run `preferences.md` → Written Voice read-back over every child-facing string and script. Comprehension check, not shorten everything. Preserve clear connected prose when carries one idea naturally; reform abstract, overloaded, generic, narrating lesson, or generated-sounding. Then run `teacher-voice.md` → Final pre-flight check over the same strings - it is the voice test the read-back is not, and model answers are where it earns its keep.
 
 Parse JSONs and run validator per Output Format. Don't return hand-off failing it.
 
@@ -512,6 +512,7 @@ Read a named section from its heading to the next heading of the same level.
 **At the decision point:**
 
 - Read `Written Voice` core rules and read-back before authoring child-facing wording or scripts. Read its calibration examples only when wording remains uncertain.
+- Read `teacher-voice.md` at the same point: its routing note names the core sections, and the numbered section for the kind of thing being written (a model answer, a worked example, success criteria) loads at the moment of writing it. Read its calibrated examples (§16) only when wording remains uncertain.
 - Read the relevant preference section before deciding the starter, vocabulary, sticky knowledge, success criteria, Apply or Reflect, reasoning, support and release, source use or worksheet.
 - Read `The Teach → Do → Teach → Do Rhythm` only when the chosen structure uses that rhythm.
 - Read `Cognitive Load Triage on Scaffolds` when deciding what is visible, blank, constructable or pre-filled.
