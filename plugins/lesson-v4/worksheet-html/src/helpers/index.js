@@ -116,6 +116,7 @@ const {
   measureContent,
   needsContent,
   greedContent,
+  fillsContent,
   describeContent,
   inspectContent,
 } = makeCompose({
@@ -123,6 +124,7 @@ const {
   measure,
   needs: (spec) => entry(spec.helper).needs(spec),
   greed,
+  fills,
 });
 
 // Every helper's CSS, gathered for the renderer to drop into the page.
@@ -150,6 +152,30 @@ function measure(spec, widthMm) {
 function greed(helperName) {
   const found = REGISTRY[helperName];
   return found && found.greed !== undefined ? found.greed : 1;
+}
+
+// Does spare height keep paying off, or does this helper reach a size past
+// which more is worse?
+//
+// `greed` says a helper CAN use spare height. It does not say how much, and
+// the two are different questions with different answers. Ruled writing lines
+// gain from being roomier and then stop: a line twice as tall as a child's
+// handwriting is not more room to answer in, it is an invitation to write an
+// essay the question never asked for. A box a child DRAWS in is the opposite -
+// the space is the whole content, and every millimetre is more drawing.
+//
+// One cap for both is wrong whichever number it takes. Half again was chosen
+// for the lines, and it is why a drawing box told to take a whole side of a
+// page came out 20mm tall with 140mm blank under it.
+//
+// So a helper whose content IS the space says `fills: true` and has no
+// ceiling. Everything else keeps the half-again cap, which is the number the
+// writing lines were tuned to and stays their default.
+const GROWTH_CEILING = 0.5; // of the helper's own natural height
+
+function fills(helperName) {
+  const found = REGISTRY[helperName];
+  return Boolean(found && found.fills);
 }
 
 // The fitting rule, and the whole point of zones knowing their millimetres: a
@@ -184,12 +210,15 @@ module.exports = {
   measureContent,
   needsContent,
   greedContent,
+  fillsContent,
   describeContent,
   inspectContent,
   renderHelper,
   fits,
   measure,
   greed,
+  fills,
+  GROWTH_CEILING,
   helperNames,
   helperCss,
   REGISTRY,

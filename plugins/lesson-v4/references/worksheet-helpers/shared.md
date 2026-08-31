@@ -80,10 +80,15 @@ question, not a quota to fill.
 
 About a third of the helpers take a `text`: the quiet line above the activity
 that says what to do. The catalogue's example for each helper shows whether it
-has one, and a `text` written onto a helper that has none is silently dropped;
-where the helper cannot carry it, put an `instruction` above it in the stack.
-One short line. Two is one too many at the top of a page whose room belongs
-to the questions.
+has one; where the helper cannot carry it, put an `instruction` above it in the
+stack. One short line. Two is one too many at the top of a page whose room
+belongs to the questions.
+
+The build refuses a sheet whose pupil wording does not reach the page:
+`TEXT_NOT_PRINTED` names the zone, the helper and the field. It used to be
+silent, and a `note` on two recording tables cost one lesson the line telling
+children what a power source was. Every field a helper reads is in the
+catalogue example; anything else is worth checking there first.
 
 Leave it out when the questions speak for themselves. A line saying "Answer
 these questions" above some questions is one more thing for a child to read

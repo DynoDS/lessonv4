@@ -76,7 +76,7 @@ const REFERENCE_WIDTH_MM = 100;
 // Each takes the same shape as a helper's own, so a group and a helper are
 // interchangeable everywhere. That is what lets them nest.
 
-function makeCompose({ render, measure, needs, greed }) {
+function makeCompose({ render, measure, needs, greed, fills = () => false }) {
   // A row divides its width the way a layout divides a page: by proportion.
   // `parts` sets them explicitly. Left unset, the default is NOT equal shares.
   //
@@ -250,11 +250,22 @@ function makeCompose({ render, measure, needs, greed }) {
     }
 
     if (isStack(content)) {
+      // Who takes the spare when the stack has more height than its parts
+      // asked for. Normally every part that can use height shares it. But a
+      // part whose content IS the space (a box to draw in) has no ceiling,
+      // where writing lines beside it do - so when the stack holds both, the
+      // room goes to the one that keeps gaining and the lines stay the size
+      // the question asked for.
+      //
+      // Shared equally, a sheet with a question above a drawing box printed
+      // half the leftover as a hole under the question's two ruled lines and
+      // gave the box half the space it should have had.
+      const someFill = items.some((item) => fillsContent(item));
       const cells = items
-        .map(
-          (item) =>
-            `<div class="h-stack-item${greedContent(item) > 0 ? " h-stack-item--grows" : ""}">${renderContent(item, widthMm)}</div>`
-        )
+        .map((item) => {
+          const grows = someFill ? fillsContent(item) : greedContent(item) > 0;
+          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}">${renderContent(item, widthMm)}</div>`;
+        })
         .join("");
       return `<div class="h-stack">${cells}</div>`;
     }
@@ -336,6 +347,14 @@ function makeCompose({ render, measure, needs, greed }) {
     const items = itemsOf(content);
     if (!items.length) return greed(content.helper);
     return Math.max(...items.map(greedContent));
+  }
+
+  // A group has no ceiling if any part of it has none: the room can go to that
+  // part and stop at the others.
+  function fillsContent(content) {
+    const items = itemsOf(content);
+    if (!items.length) return fills(content.helper);
+    return items.some(fillsContent);
   }
 
   // What to call this in an error message. Nested groups are bracketed, and
@@ -428,6 +447,7 @@ function makeCompose({ render, measure, needs, greed }) {
     measureContent,
     needsContent,
     greedContent,
+    fillsContent,
     describeContent,
     inspectContent,
   };
@@ -439,11 +459,23 @@ const css = `
      sheet. It sits in a fixed gutter rather than flowing with the text so that
      question 10 starts where question 1 started: numbering that shifts left
      part way down a page reads as two sheets stapled together. */
-  .h-numbered { display: flex; align-items: flex-start; height: 100%; }
+  /* The BODY stretches to the zone; only the NUMBER is pinned to the top.
+     Both were pinned, and it meant numbering a question changed its layout: a
+     sorting grid or a recording table given a whole side of the page filled it
+     while the content was unnumbered, then collapsed to the height of its own
+     heading the moment the same content became question 3, leaving the rest of
+     the side blank. Every other link in the chain already passes the zone's
+     real height down - the zone is drawn at a stated height, the stack and the
+     greedy helpers are told to fill it - and this was the one that handed down
+     "as tall as your text" instead. A helper that claims spare height should
+     get it wherever it sits, and a numbered question is still a question. */
+  .h-numbered { display: flex; align-items: stretch; height: 100%; }
   .h-numbered-n {
     flex: 0 0 ${NUMBER_GUTTER_MM}mm;
     font-size: var(--type-body); font-weight: bold;
     color: var(--colour-ink); line-height: 1.35;
+    /* Beside the question's FIRST line, never centred down its side. */
+    align-self: flex-start;
   }
   .h-numbered-body { flex: 1; min-width: 0; min-height: 0; }
 

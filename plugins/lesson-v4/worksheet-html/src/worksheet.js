@@ -25,7 +25,12 @@
 // file, expected always present - carries over untouched.
 
 const { checkFit } = require("./render");
+const { renderContent } = require("./helpers");
 const { canonicalQuestionLabel, formatQuestionLabel } = require("./labels");
+
+// Any width will do: the question is whether the words are ON the page, and a
+// helper prints the same words however wide its zone is.
+const REFERENCE_WIDTH_MM = 120;
 
 // Least to most challenging, so the printed file reads top-down and splitting
 // it into piles is one cut after another rather than a sort.
@@ -710,6 +715,101 @@ const PUPIL_TEXT_FIELDS = new Set([
   "hint",
 ]);
 
+// ─── words the designer wrote that never reach the paper ─────────────────
+//
+// A helper reads the fields it knows and ignores the rest, in silence. So a
+// field written onto a helper that has no such field simply evaporates: the
+// sheet renders perfectly, the fit check passes, the PDF looks finished, and
+// the words are gone. Nothing anywhere says so.
+//
+// It is not hypothetical and it is not rare. One science lesson shipped with
+// `note` on two recording tables - "For power source, write mains, battery,
+// both or not electrical", and "Choose an appliance that isn't already in
+// photographs A to D". A recording table had no note. Children were asked for
+// a power source with no clue what one should look like, and a teacher marking
+// the sheet had no idea a line was missing. The engine's own reference had
+// long warned designers that "a text written onto a helper that has none is
+// silently dropped", which is the right fact in the wrong place: a rule a
+// designer must remember, guarding something the build can simply check.
+//
+// This is the check. It asks the only question that matters - did these words
+// reach the page? - and it asks it of the rendered HTML, so it holds for every
+// helper, including ones not written yet, and for any cause: a wrong field
+// name, a typo, a helper that quietly stopped printing something.
+//
+// Deliberately blunt about HOW text is printed. Whitespace, tags, entities and
+// the engine's own inline markup are all normalised away, because a false
+// refusal costs a class its worksheets and a missed mangling costs a proofread.
+const WRITE_IN_BLANK = /_{2,}/g; // printed as a write-in box, not as underscores
+const INLINE_EMPHASIS = /\*\*/g; // methods.js turns **this** into <strong>
+
+function comparableText(value) {
+  return String(value)
+    .replace(INLINE_EMPHASIS, "")
+    .replace(WRITE_IN_BLANK, "")
+    .replace(/\s+/g, "")
+    .toLowerCase();
+}
+
+function comparableHtml(html) {
+  return String(html)
+    .replace(/<[^>]*>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(WRITE_IN_BLANK, "")
+    .replace(/\s+/g, "")
+    .toLowerCase();
+}
+
+function unprintedTextProblems(sheet) {
+  const problems = [];
+
+  for (const id of Object.keys(sheet.spec.zones || {}).sort()) {
+    const content = sheet.spec.zones[id];
+    let printed;
+    try {
+      printed = comparableHtml(renderContent(content, REFERENCE_WIDTH_MM));
+    } catch (e) {
+      // A zone that cannot draw itself is already reported as a bad zone, and
+      // that is the fault worth fixing first.
+      continue;
+    }
+
+    const walk = (node) => {
+      if (Array.isArray(node)) {
+        node.forEach(walk);
+        return;
+      }
+      if (!node || typeof node !== "object") return;
+      for (const [key, value] of Object.entries(node)) {
+        if (
+          typeof value === "string" &&
+          PUPIL_TEXT_FIELDS.has(key) &&
+          value.trim() &&
+          comparableText(value) &&
+          !printed.includes(comparableText(value))
+        ) {
+          problems.push(
+            `TEXT_NOT_PRINTED: zone "${id}" (${helperName(node)}) sets ${key} to ` +
+              `${JSON.stringify(value)}, and those words are not on the printed ` +
+              `page. Check ${key} against this helper's entry in the catalogue: ` +
+              `a field a helper does not read is ignored in silence. Where the ` +
+              `helper cannot carry the line, put an instruction above it in the ` +
+              `stack.`
+          );
+        }
+        walk(value);
+      }
+    };
+
+    walk(content);
+  }
+
+  return problems;
+}
+
 function wordBankProblems(sheet) {
   const problems = [];
   let hasRealBank = false;
@@ -772,7 +872,11 @@ function checkWorksheet(worksheet) {
   return sheetsOf(worksheet)
     .map((sheet) => ({ ...sheet, ...problemsWith(sheet) }))
     .filter(
-      (sheet) => sheet.badZones.length || sheet.tooTight.length || sheet.wordBanks.length
+      (sheet) =>
+        sheet.badZones.length ||
+        sheet.tooTight.length ||
+        sheet.wordBanks.length ||
+        sheet.unprinted.length
     );
 }
 
@@ -800,6 +904,7 @@ function problemsWith(sheet) {
     badZones,
     tooTight: badZones.length ? [] : checkFit(sheet.spec),
     wordBanks: badZones.length ? [] : wordBankProblems(sheet),
+    unprinted: badZones.length ? [] : unprintedTextProblems(sheet),
   };
 }
 

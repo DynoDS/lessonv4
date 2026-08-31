@@ -784,6 +784,95 @@ test("a word bank typed into a prompt is refused", () => {
   assert.match(problems[0].wordBanks.join(" "), /WORD_BANK_INLINE/);
 });
 
+// ─── words the designer wrote that the page never prints ─────────────────
+//
+// A helper reads the fields it knows and ignores the rest without a word. One
+// science lesson shipped with `note` on two recording tables - "For power
+// source, write mains, battery, both or not electrical" - and a recording
+// table had no note. The sheet fitted, the PDF looked finished, and children
+// were asked for a power source with no clue what one should look like.
+//
+// The engine's reference had warned designers about it for months, which is
+// the right fact in the wrong place: a rule a designer must remember, guarding
+// something the build can simply check.
+
+test("a field the helper does not read is refused, not dropped in silence", () => {
+  const problems = checkWorksheet({
+    meta: { lesson: "X", yearGroup: 4 },
+    sheets: {
+      expected: {
+        layout: "full",
+        zones: {
+          a: {
+            question: true,
+            helper: "multiple-choice",
+            text: "Which of these uses electricity?",
+            options: ["A kettle", "A hammer"],
+            select: "one",
+            // multiple-choice has no `note`. Before this check it evaporated.
+            note: "Look at the plug before you decide.",
+          },
+        },
+      },
+    },
+  });
+
+  assert.equal(problems.length, 1);
+  assert.match(problems[0].unprinted.join(" "), /TEXT_NOT_PRINTED/);
+  assert.match(problems[0].unprinted.join(" "), /Look at the plug/);
+});
+
+test("the same words on a helper that does print them are accepted", () => {
+  // The discrimination case. `note` is not the fault; a note that never
+  // reaches the page is. A recording table prints one, so this is a clean
+  // sheet and must not be refused.
+  const problems = checkWorksheet({
+    meta: { lesson: "X", yearGroup: 4 },
+    sheets: {
+      expected: {
+        layout: "full",
+        zones: {
+          a: {
+            question: true,
+            helper: "recording-table",
+            columns: ["Object", "Power source"],
+            rowLabels: ["A", "B"],
+            writing: ["word", "word"],
+            note: "Look at the plug before you decide.",
+          },
+        },
+      },
+    },
+  });
+
+  assert.deepEqual(problems, []);
+});
+
+test("text the engine reshapes on the way to the page still counts as printed", () => {
+  // Generalisation. The check normalises the engine's own inline markup and
+  // its write-in blanks, because a false refusal costs a class its worksheets.
+  // A stem's underscores print as a write-in box and its **bold** prints as a
+  // strong tag; neither is a dropped line.
+  const problems = checkWorksheet({
+    meta: { lesson: "X", yearGroup: 4 },
+    sheets: {
+      expected: {
+        layout: "full",
+        zones: {
+          a: {
+            question: true,
+            helper: "method-frame",
+            text: "Use the adjusting strategy to work out **148 + 99**.",
+            steps: ["Round 99 to 100", "Add", "Adjust"],
+          },
+        },
+      },
+    },
+  });
+
+  assert.deepEqual(problems, []);
+});
+
 test("telling a child to use a word bank that is not there is refused", () => {
   const problems = checkWorksheet({
     meta: { lesson: "X", yearGroup: 4 },

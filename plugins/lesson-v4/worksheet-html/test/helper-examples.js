@@ -82,6 +82,11 @@ module.exports = {
       ["Cling film", null, null],
       ["Your choice", null, null],
     ],
+    // Small print under the table, usually saying what to WRITE in a column.
+    // A data table has always carried one; this table accepted the field and
+    // printed nothing, so a lesson asking for a power source gave no clue what
+    // one looks like. Same field, same place, same styling on both tables now.
+    note: "Test each material the same way: same water, same time.",
   },
 
   // ─── drawn by the shared visual modules ───

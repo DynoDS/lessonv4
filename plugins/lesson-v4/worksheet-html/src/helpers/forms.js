@@ -302,6 +302,12 @@ const css = `
   }
   .h-sortgrid-table .h-write { height: ${SORT_WRITE_ROW_MM}mm; }
   .h-sortgrid-table thead th { background: var(--colour-tint); }
+  /* Columns a child sorts INTO are equal, because the groups are equal. Left
+     to the browser they are sized by how long each HEADING happens to be, so a
+     box headed "Your drawing" and "What electricity helps it do" came out a
+     35mm sliver beside a 65mm column - the child given least room for the part
+     that needed most. The heading names the group; it does not measure it. */
+  .h-sortgrid-table { table-layout: fixed; }
 
   /* Same as the recording table: this helper claims spare height (greed 3), so
      it has to actually take it, or the extra becomes a hole under the grid.
@@ -352,6 +358,10 @@ const helpers = {
     measure: measureSortGrid,
     needs: needsSortGrid,
     greed: 3, // taller rows are more room to sort words into, a real gain
+    // And the gain does not stop. The cells ARE the activity - a child sorts
+    // words into them, or draws in them - so every millimetre is more of the
+    // work, where a writing line reaches its useful size and passes it.
+    fills: true,
   },
   "column-method-grid": {
     render: renderColumnMethodGrid,

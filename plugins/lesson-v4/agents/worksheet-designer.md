@@ -89,22 +89,32 @@ meet `Is Rowan's claim supported?` on a page that has not yet shown them
 Rowan's claim. Zones fill in reading order, so hand content over in the order
 the dependencies need: stimulus, then the questions that lean on it.
 
-The one arrangement that sits outside that reading-order rule is the sheet
-built around a single shared evidence panel - a map with its photographs, a
-source set, a data table every question uses. There the teacher's preferred
-page (preferences.md, Worksheets) puts the question run down the LEFT column
-and the panel on the right beside it, with the panel carrying its one job line
-(`Use the map and photographs to answer every question.`). The panel is beside
-the whole run rather than before it, so the child holds their place in the
-questions and glances right at the evidence. Reading order still protects
-genuinely sequential material: a claim a question judges or a stem it
-completes is not a shared panel and stays ahead of its question. And wherever
-the questions sit, (1) starts at the top left of the page and the run flows so
-a child who has just finished one question can see the next without hunting -
-usually down a column, though a long question filling one side with the next
-beside it reads fine. What fails that test is a run ping-ponging left, right,
-left, right between short zones; the turned and mirrored layout variants
-always offer a followable arrangement instead.
+**That holds across columns too, and it is the commonest way a two-column
+sheet goes wrong.** A stimulus and the questions that read it share a column,
+stimulus first. A shared panel every question works from - a map with its
+photographs, a source set, a data table - is a stimulus like any other: it goes
+above its questions, in their column, carrying its one job line (`Look at these
+photographs.`). What belongs in the OTHER column is what the run does not need:
+a drawing task, an independent extension, a question that starts fresh. The
+test is whether a child answering question 2 has to cross the page to see what
+question 2 is about. A lettered set is one block while you are at it - split A,
+B and C from D and the table headed `A to D` has its fourth row somewhere else
+on the page.
+
+Reading order still protects genuinely sequential material: a claim a question
+judges or a stem it completes stays ahead of its question. And the page begins
+top left with whatever the questions read from, with the run flowing so a child
+who has just finished one question can see the next without hunting - usually
+down a column, though a long question filling one side with the next beside it
+reads fine. What fails that test is a run ping-ponging left, right, left, right
+between short zones; the turned and mirrored layout variants always offer a
+followable arrangement instead.
+
+The teacher settled this on 31 August 2026, rejecting a science sheet whose
+question 1 sat top left with the photographs it asked about top right, and
+rebuilding it as photographs, then questions, with the drawing task alone on
+the other side. `preferences.md` (Worksheets) carries the decision and the
+superseded panel-on-the-right arrangement it replaced.
 
 ---
 

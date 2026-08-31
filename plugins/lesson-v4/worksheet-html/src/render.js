@@ -22,6 +22,8 @@ const {
   renderContent,
   measureContent,
   greedContent,
+  fillsContent,
+  GROWTH_CEILING,
   describeContent,
   fits,
   helperCss,
@@ -65,6 +67,8 @@ function measureTree(node, spec, widthMm) {
       content,
       natural,
       greed: content ? greedContent(content) : 0,
+      // No useful ceiling: this zone's content IS the space it is given.
+      fills: content ? fillsContent(content) : false,
       height: natural,
     };
   }
@@ -136,6 +140,16 @@ function recomputeHeights(node) {
   return node.height;
 }
 
+// How much a zone may grow past what it asked for.
+//
+// Half again by default, which is the number the writing lines were tuned to:
+// a line gets roomier and never becomes an invitation to write an essay. A
+// zone whose content IS the space has no such point - see `fills` in
+// helpers/index.js - so it is capped only by the page.
+function ceilingFor(leaf) {
+  return leaf.fills ? Infinity : leaf.natural * GROWTH_CEILING;
+}
+
 // Hand the leftover height to whatever can genuinely use it, capped so nothing
 // is inflated. Anything still spare is left at the FOOT of the page, which is
 // where a teacher trims it off, rather than pooled between two question blocks.
@@ -192,21 +206,75 @@ function growToFit(measured, availableMm) {
   // What is left after tolerance is what the greedy helpers may claim.
   const afterMargins = availableMm - measured.height;
   const greedTotal = leaves.reduce((s, l) => s + l.greed, 0);
-  if (greedTotal <= 0 || afterMargins <= 0) {
-    return { spare: afterMargins, short: 0 };
+  if (greedTotal > 0 && afterMargins > 0) {
+    for (const l of leaves) {
+      if (!l.greed) continue;
+      const share = (afterMargins * l.greed) / greedTotal;
+      // The margin is kept on top of the growth, not replaced by it: growth is
+      // room the helper asked for, tolerance is room the estimate might need.
+      l.height = l.natural + l.margin + Math.min(share, ceilingFor(l));
+    }
+    recomputeHeights(measured);
   }
 
-  for (const l of leaves) {
-    if (!l.greed) continue;
-    const share = (afterMargins * l.greed) / greedTotal;
-    // The margin is kept on top of the growth, not replaced by it: growth is
-    // room the helper asked for, tolerance is room the estimate might need.
-    l.height = l.natural + l.margin + Math.min(share, l.natural * 0.5);
-  }
-
-  recomputeHeights(measured);
+  fillShortColumns(measured);
 
   return { spare: availableMm - measured.height, short: 0 };
+}
+
+// The room a short column has that nothing else on the page can reach.
+//
+// Columns sit side by side, so a row of them is as tall as its TALLEST child
+// and a shorter one leaves a rectangle of paper underneath. That rectangle is
+// not page spare. The page spare above it was already nil, because the tall
+// column used all of it, and no zone beside it can move down into it either -
+// they are already at full height. Left alone it prints as a hole under the
+// last question in that column, which is the same fault the tightness report
+// names when a picture sits over blank paper, reached from the other side.
+//
+// How it showed up: a drawing box on the right of a sheet whose left column
+// ran the full depth came out 20mm tall with 140mm of blank paper beneath it,
+// on a page telling the child to draw two things.
+//
+// So each column's own leftover is offered to whatever inside it can use
+// height. It can never turn a sheet that fitted into one that does not,
+// because the room is inside a box the parent row already occupies.
+//
+// Each zone still keeps its own ceiling. A column's leftover is room, not a
+// reason to make a writing line twice the size the question asked for - so the
+// room goes first to a zone whose content IS the space, and what nothing will
+// take is left blank at the foot of the column, exactly as page spare is left
+// at the foot of the page.
+function fillShortColumns(node) {
+  if (node.kind === "leaf") return;
+  node.children.forEach(fillShortColumns);
+  if (node.kind !== "cols") return;
+
+  for (const child of node.children) {
+    const room = node.height - child.height;
+    // A hair of rounding is not a hole.
+    if (room <= 0.5) continue;
+
+    const leaves = [];
+    eachLeaf(child, (l) => leaves.push(l));
+    // A zone with no ceiling takes this room ahead of one that has a size past
+    // which more is worse. Only when nothing in the column fills does the room
+    // go to the merely greedy, and then only up to their own cap.
+    const takers = leaves.filter((l) => l.fills && l.greed > 0);
+    const claimants = takers.length ? takers : leaves.filter((l) => l.greed > 0);
+    // Nothing in this column can use height. The blank is honest: a teacher
+    // trims it, and inflating a chart or a fixed drawing would be worse.
+    if (!claimants.length) continue;
+
+    const greedTotal = claimants.reduce((s, l) => s + l.greed, 0);
+    for (const l of claimants) {
+      const share = (room * l.greed) / greedTotal;
+      const alreadyGrown = l.height - l.natural - (l.margin || 0);
+      const headroom = Math.max(0, ceilingFor(l) - alreadyGrown);
+      l.height += Math.min(share, headroom);
+    }
+    recomputeHeights(child);
+  }
 }
 
 // Walk the measured tree top down, handing out real rectangles.

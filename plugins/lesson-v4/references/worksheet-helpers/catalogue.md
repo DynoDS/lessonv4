@@ -154,7 +154,7 @@ Smallest usable: **70mm wide x 25mm tall**. Spare height: never takes spare heig
 
 A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column.
 
-Smallest usable: **134mm wide x 87mm tall**. Spare height: takes spare height first (it is writing space).
+Smallest usable: **134mm wide x 92mm tall**. Spare height: takes spare height first (it is writing space).
 
 ```json
 {
@@ -186,7 +186,8 @@ Smallest usable: **134mm wide x 87mm tall**. Spare height: takes spare height fi
       null,
       null
     ]
-  ]
+  ],
+  "note": "Test each material the same way: same water, same time."
 }
 ```
 

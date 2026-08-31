@@ -210,6 +210,12 @@ function renderRecordingTable(spec) {
   // outside the table's own box: setting the table to the full height of the
   // zone then pushed the caption past the bottom edge and the last row was
   // clipped. A data table keeps its <caption>, since it never stretches.
+  // The note is the line of small print that says what to WRITE in a column
+  // ("write mains, battery, both or not electrical"). A data table has carried
+  // one from the start; this table did not, and the field was accepted in
+  // silence - so a sheet asking for a power source printed no clue what a
+  // power source should look like, twice on one lesson, and nothing said so.
+  // Same field, same place, same styling as its twin.
   return `
     <div class="h-record-block">
       ${spec.caption ? `<p class="h-record-caption">${esc(spec.caption)}</p>` : ""}
@@ -217,6 +223,7 @@ function renderRecordingTable(spec) {
         <thead><tr>${head}</tr></thead>
         <tbody>${body}</tbody>
       </table>
+      ${spec.note ? `<p class="h-record-note">${esc(spec.note)}</p>` : ""}
     </div>`;
 }
 
@@ -228,8 +235,12 @@ function renderRecordingTable(spec) {
 // asked at the width the zone actually gives.
 function flatRecordingHeightMm(spec) {
   const capMm = spec.caption ? LINE_MM * 1.4 : 0;
+  // One line for the note here, because `needs` is the floor and a note is
+  // never shorter than a line. `measure` prices how it really wraps.
+  const noteMm = spec.note ? NOTE_LINE_MM + 1 : 0;
   return (
-    capMm + LINE_MM * 1.6 + writingFor(spec).rowMm * recordingRows(spec).length + 4
+    capMm + LINE_MM * 1.6 + writingFor(spec).rowMm * recordingRows(spec).length +
+    noteMm + 4
   );
 }
 
@@ -246,7 +257,8 @@ function measureRecordingTable(spec, widthMm) {
   const headMm = rowHeightMm(spec.columns || [], widths, LINE_MM * 1.6);
   let bodyMm = 0;
   for (const row of recordingRows(spec)) bodyMm += rowHeightMm(row, widths, flatRowMm);
-  return capMm + headMm + bodyMm + 4;
+  const noteMm = spec.note ? linesFor(spec.note, available) * NOTE_LINE_MM + 1 : 0;
+  return capMm + headMm + bodyMm + noteMm + 4;
 }
 
 const css = `
@@ -286,13 +298,17 @@ const css = `
     color: var(--colour-quiet);
     padding-bottom: var(--space-hair);
   }
-  /* Small print under the table: a source, a unit, a "figures are rounded". */
-  .h-data-note {
+  /* Small print under the table: a source, a unit, a "figures are rounded".
+     Under a recording table it is usually what to WRITE in a column, so it
+     must not stretch with the table above it - hence flex: none. */
+  .h-data-note,
+  .h-record-note {
     margin: var(--space-hair) 0 0;
     font-size: var(--type-note);
     color: var(--colour-quiet);
     line-height: 1.35;
   }
+  .h-record-note { flex: none; }
 
   /* Cells the child fills: tall enough to write in, and left empty. */
   /* Height comes from the markup, because it depends on what the child

@@ -350,6 +350,18 @@ function main() {
         for (const problem of sheet.tooTight) {
           fail("SHEET_DOES_NOT_FIT", `${sheet.label} - ${problem}`);
         }
+        // Content faults, which this preflight used to pass over in silence.
+        // A designer whose sheet is called clean here and refused by the build
+        // does the whole round trip again to learn something that was already
+        // known, so every fault the build refuses is reported here too. Both
+        // carry their own signal at the front of the message.
+        for (const problem of [...sheet.wordBanks, ...sheet.unprinted]) {
+          const named = /^([A-Z_]+):\s*([\s\S]*)$/.exec(problem);
+          fail(
+            named ? named[1] : "CONTENT_INVALID",
+            `${sheet.label} - ${named ? named[2] : problem}`
+          );
+        }
       }
       return;
     }
