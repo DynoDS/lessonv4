@@ -106,6 +106,10 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "design-split": (
         "## The split route - design and wording as two passes (off by default)",
+        "### Split step 3 - Lesson Author (sequential, blocking)",
+    ),
+    "design-split-words": (
+        "### Split step 3 - Lesson Author (sequential, blocking)",
         None,
     ),
 }
@@ -420,9 +424,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # found after the freeze. Raised from 54 KiB when the split route
         # landed as its own end-of-file slice: a normal run never loads it,
         # and a split run loads it instead of running Phase 1/1.25's text,
-        # so what any one run pays did not grow. Every slice still sits far
-        # under its own 7 KiB budget, which is what a run actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 60 * 1024)
+        # so what any one run pays did not grow. Raised from 60 KiB when the
+        # split route gained its worksheet stage and divided into two
+        # end-of-file slices, on the same per-run arithmetic. Every slice
+        # still sits under its own 7 KiB budget, which is what a run pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 64 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

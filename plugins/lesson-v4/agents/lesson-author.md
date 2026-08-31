@@ -38,10 +38,12 @@ calibrated examples only when a wording stays uncertain.
 
 ## Writing the words
 
-Replace every `__LESSON_WORDING_FILL__:` string with finished wording,
-editing the file in place per
+Replace every `__LESSON_WORDING_FILL__:` string outside the top-level
+`worksheet` object with finished wording, editing the file in place per
 `[PLUGIN_ROOT]/references/revising-in-place.md`. Change the marked values and
-leave every other byte as it is.
+leave every other byte as it is. The worksheet's specs are not yours: the
+Worksheet Content Designer writes that sheet after you, against the finished
+wording you are producing now - touch nothing inside `worksheet`.
 
 Each spec states the meaning, values and purpose the words must carry. Carry
 all of it, add nothing, drop nothing: same teaching, same difficulty, same
@@ -79,20 +81,22 @@ quietly invented decision costs it the review that cannot see the invention.
 
 ## Finish and prove it
 
-When every spec is written (or gap-recorded), run the Written Voice
-read-back and the `teacher-voice.md` final pre-flight over the strings you
-wrote - you are the fresh eyes this check was always meant to have. Then
-parse the JSON and run:
+When every spec outside `worksheet` is written (or gap-recorded), run the
+Written Voice read-back and the `teacher-voice.md` final pre-flight over the
+strings you wrote - you are the fresh eyes this check was always meant to
+have. Then parse the JSON and run:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace --wording-stage --wording-scope worksheet "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"
 ```
 
-With no gaps, require exactly `LESSON_DESIGN_OK`; repair validator failures
-in grouped passes, re-running once per pass, at most three passes. The
-validator holds mechanical limits a repair written for meaning will cross - a
-capped length, a required opening - so rewrite your own wording to the same
-meaning inside the limit. Then return `COMPLETE`.
+With no gaps, require exactly `LESSON_DESIGN_WORDING_STAGE_OK` - it accepts
+remaining specs only inside `worksheet` and fails on any you left elsewhere;
+repair validator failures in grouped passes, re-running once per pass, at
+most three passes. The validator holds mechanical limits a repair written
+for meaning will cross - a capped length, a required opening - so rewrite
+your own wording to the same meaning inside the limit. Then return
+`COMPLETE`.
 
 With gaps, strict validation will rightly fail on the specs you left; do not
 fight it. Return `WORDING_GAPS` followed by every `WORDING_GAP:` line

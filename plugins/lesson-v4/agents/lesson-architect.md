@@ -54,6 +54,24 @@ When the contract requires two strings to be the same line - the Dialogic
 Talk question and its Stimulus question - give both the identical spec, so
 the requirement survives into the words pass.
 
+## The worksheet stops at its brief
+
+The Worksheet Content Designer writes the sheet's actual content later, in
+its own fresh context, against the finished board wording - that is how the
+sheet stays genuinely fresh from the lesson. So decide the sheet's job
+completely and stop there: `status`, `resourceMode`, `use`,
+`activityArchitecture`, `sheetShape`, `demand`, `answerKeyMode`, the
+reference lists, `fitPriority` as intent, and the visual evidence in the
+photo contract. Write `contentBlocks` as stand-ins that carry the brief:
+one block per planned performance group, of the kind the decided shape
+requires, each child-facing string a spec stating the instance requirements
+and freshness constraints rather than values - `one fresh two-digit
+addition unlike any board example; the child answers and shows the
+partition` - and each answer a spec of its logic. Choosing the sheet's
+actual values, items and exact wording is that designer's job; use the base
+role's Worksheet section for the brief-level judgements and leave its
+instance-authoring craft to the role that now applies it.
+
 ## What you skip from the base role
 
 Skip everything in the base role about how finished words must sound: the

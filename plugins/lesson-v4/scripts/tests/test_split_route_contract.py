@@ -19,12 +19,14 @@ WORKER_LAUNCH = ROOT / "scripts" / "worker-launch.py"
 ARCHITECT = ROOT / "agents" / "lesson-architect.md"
 AUTHOR = ROOT / "agents" / "lesson-author.md"
 DECISION_REVIEWER = ROOT / "agents" / "decision-reviewer.md"
+WORKSHEET_CONTENT = ROOT / "agents" / "worksheet-content-designer.md"
 WORDING_REVIEWER = ROOT / "agents" / "wording-reviewer.md"
 
 SPLIT_ROLES = (
     "lesson-architect",
     "decision-reviewer",
     "lesson-author",
+    "worksheet-content-designer",
     "wording-reviewer",
 )
 
@@ -58,25 +60,38 @@ class SplitRouteSliceTests(unittest.TestCase):
         # The normal route is untouched.
         self.assertIn("Launch `lesson-designer` directly", design)
 
-    def test_the_split_slice_is_served_complete_with_a_next_block(self):
+    def test_the_split_slices_are_served_complete_with_next_blocks(self):
         split = slice_text("design-split")
         for marker in (
             "LESSON_DESIGN_WORDING_STAGE_OK",
-            "WORDING_GAPS",
             "agents/lesson-architect.md",
             "agents/decision-reviewer.md",
-            "agents/lesson-author.md",
-            "agents/wording-reviewer.md",
             "rejoins the pipeline at Phase 1.5",
+            "design-split-words",
             "## NEXT",
         ):
             self.assertIn(marker, split)
-        # Steps run in pipeline order.
         self.assertLess(
             split.index("Split step 1"), split.index("Split step 2")
         )
+
+        words = slice_text("design-split-words")
+        for marker in (
+            "WORDING_GAPS",
+            "WORKSHEET_GAPS",
+            "--wording-scope worksheet",
+            "agents/lesson-author.md",
+            "agents/worksheet-content-designer.md",
+            "agents/wording-reviewer.md",
+            "run the strict validator yourself once more",
+            "## NEXT",
+        ):
+            self.assertIn(marker, words)
         self.assertLess(
-            split.index("Split step 3"), split.index("Split step 4")
+            words.index("Split step 3"), words.index("Split step 4")
+        )
+        self.assertLess(
+            words.index("Split step 4"), words.index("Split step 5")
         )
 
     def test_the_delivery_slice_does_not_swallow_the_split_section(self):
@@ -96,12 +111,15 @@ class OrchestratorKnowsTheNewRolesTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("`lesson-architect` and `decision-reviewer` stand in", skill)
-        # And is still withheld from the roles that only word an approved design.
-        self.assertIn("`lesson-author`, `wording-reviewer`", skill)
+        # And is still withheld from the roles that only express an approved design.
+        self.assertIn(
+            "`lesson-author`, `worksheet-content-designer` and\n`wording-reviewer` do not receive them",
+            skill,
+        )
 
     def test_a_missing_split_role_falls_back_to_the_normal_route(self):
-        setup = slice_text("setup")
-        self.assertIn("the split route needs all four", setup)
+        setup = " ".join(slice_text("setup").split())
+        self.assertIn("the split route needs all five", setup)
         self.assertIn("run the normal Phase 1 route instead", setup)
 
     def test_the_two_split_reviews_do_not_overwrite_each_other(self):
@@ -154,8 +172,24 @@ class SplitRoleContractTests(unittest.TestCase):
         self.assertIn("__LESSON_WORDING_FILL__", text)
         self.assertIn("WORDING_GAP:", text)
         self.assertIn("Never invent the missing decision", text)
-        self.assertIn("LESSON_DESIGN_OK", text)
+        # The worksheet's words belong to its own designer, and the author's
+        # own check is scoped so a string it left unwritten fails here, not
+        # three workers later.
+        self.assertIn("touch nothing inside `worksheet`", text)
+        self.assertIn("--wording-scope worksheet", text)
+        self.assertIn("LESSON_DESIGN_WORDING_STAGE_OK", text)
         self.assertIn("LESSON_WORDING_CHECK_FAILED", text)
+
+    def test_the_worksheet_content_designer_owns_only_the_worksheet(self):
+        text = WORKSHEET_CONTENT.read_text(encoding="utf-8")
+        self.assertIn("Edit only inside the top-level `worksheet` object", text)
+        self.assertIn("The photograph contract is not yours", text)
+        self.assertIn("WORKSHEET_GAP:", text)
+        self.assertIn("LESSON_DESIGN_OK", text)
+        self.assertIn("WORKSHEET_CHECK_FAILED", text)
+        # Freshness is judged against the finished board wording, which is
+        # why this role runs after the author.
+        self.assertIn("freshness baseline", text)
 
     def test_the_decision_reviewer_reviews_specs_with_the_stage_validator(self):
         text = DECISION_REVIEWER.read_text(encoding="utf-8")

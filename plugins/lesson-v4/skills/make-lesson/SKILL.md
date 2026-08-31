@@ -164,9 +164,10 @@ authority over. On the normal route those roles are:
 - `adaptation-designer`.
 
 On the split route, `lesson-architect` and `decision-reviewer` stand in the
-first two places. `lesson-author` and `wording-reviewer` do not receive them:
-their job is the wording of an approved design, and a design that cannot tell
-them what to write is a gap to report, never a brief to reinterpret.
+first two places. `lesson-author`, `worksheet-content-designer` and
+`wording-reviewer` do not receive them: their job is expressing an approved
+design, and a design that cannot tell them what to write is a gap to report,
+never a brief to reinterpret.
 
 The original teacher message is persisted at:
 
@@ -213,8 +214,8 @@ Do not paste either file into `teacher-brief.txt`.
 
 Do not pass `TEACHER_BRIEF_FILE`, `TEACHER_CLARIFICATION_FILES`,
 `ORCHESTRATOR_CONTEXT_FILE`, `LESSON_PLAN_INPUT` or
-`TEACHER_WORKSHEET_INPUT` to `lesson-author`, `wording-reviewer`,
-`slide-designer`, `worksheet-designer`,
+`TEACHER_WORKSHEET_INPUT` to `lesson-author`, `worksheet-content-designer`,
+`wording-reviewer`, `slide-designer`, `worksheet-designer`,
 `working-wall-designer`, `working-wall-builder`, `stick-in-sheets-designer`,
 `image-scout`, `diagram-anchor`, deterministic command jobs or any other
 downstream renderer.

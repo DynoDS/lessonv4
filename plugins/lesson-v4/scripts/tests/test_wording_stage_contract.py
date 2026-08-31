@@ -152,6 +152,48 @@ def test_a_design_with_no_specs_fails_stage_validation():
         raise AssertionError("unmarked design unexpectedly passed stage mode")
 
 
+def mark_worksheet_only(design: dict) -> dict:
+    """The state the Lesson Author hands to the Worksheet Content Designer:
+    every string finished except the worksheet's own."""
+    design = copy.deepcopy(design)
+    marked_ws = {"worksheet": copy.deepcopy(design["worksheet"])}
+    mark_tree(marked_ws)
+    design["worksheet"] = marked_ws["worksheet"]
+    return design
+
+
+def test_scoped_stage_mode_accepts_specs_only_in_the_worksheet():
+    design, photos = contract.valid_contract()
+    module.validate_design(
+        mark_worksheet_only(design), photos,
+        wording_stage=True, wording_scope="worksheet",
+    )
+
+
+def test_scoped_stage_mode_refuses_a_spec_outside_the_scope():
+    # A lesson spec surviving the author must fail its own check, not slip
+    # through to be discovered downstream.
+    design, photos = contract.valid_contract()
+    design = mark_worksheet_only(design)
+    design["teacherOrientation"] = spec("orientation the author never wrote")
+    try:
+        module.validate_design(
+            design, photos, wording_stage=True, wording_scope="worksheet"
+        )
+    except module.ContractError as exc:
+        assert "outside `lesson-design.json.worksheet`" in str(exc), str(exc)
+    else:
+        raise AssertionError("out-of-scope spec unexpectedly validated")
+
+
+def test_scoped_stage_mode_accepts_zero_specs():
+    # A provided-by-teacher worksheet has no strings at all to leave.
+    design, photos = contract.valid_contract()
+    module.validate_design(
+        design, photos, wording_stage=True, wording_scope="worksheet"
+    )
+
+
 def test_stage_validation_still_enforces_decision_rules():
     # Wording may be a spec; decisions are still held to the full contract.
     design, photos = contract.valid_contract()

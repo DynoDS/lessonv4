@@ -132,6 +132,7 @@ WORDING_MARKER = "__LESSON_WORDING_FILL__:"
 WORDING_MARKER_BARE = "__LESSON_WORDING_FILL__"
 
 _wording_stage = False
+_wording_scope: str | None = None
 
 
 def is_wording_spec(value: Any) -> bool:
@@ -155,6 +156,7 @@ def collect_wording_marker_faults(
     *,
     wording_stage: bool,
     specs: list[str],
+    scope_prefix: str | None = None,
 ) -> None:
     if isinstance(node, str):
         if WORDING_MARKER_BARE not in node:
@@ -175,6 +177,12 @@ def collect_wording_marker_faults(
                 f"{path} is a wording marker with nothing after it - a spec "
                 "with no meaning gives the words pass nothing to write from"
             )
+        elif scope_prefix is not None and not path.startswith(scope_prefix):
+            found.append(
+                f"{path} still holds a wording spec outside `{scope_prefix}` - "
+                "this stage may leave specs only there, and has not finished "
+                "its own strings"
+            )
         else:
             specs.append(path)
         return
@@ -184,6 +192,7 @@ def collect_wording_marker_faults(
             collect_wording_marker_faults(
                 value, f"{path}.{key}", found,
                 wording_stage=wording_stage, specs=specs,
+                scope_prefix=scope_prefix,
             )
         return
 
@@ -192,17 +201,25 @@ def collect_wording_marker_faults(
             collect_wording_marker_faults(
                 value, f"{path}[{index}]", found,
                 wording_stage=wording_stage, specs=specs,
+                scope_prefix=scope_prefix,
             )
 
 
 def check_wording_markers(
-    design: Any, photos: Any, *, wording_stage: bool
+    design: Any,
+    photos: Any,
+    *,
+    wording_stage: bool,
+    wording_scope: str | None = None,
 ) -> None:
+    scope_prefix = (
+        f"lesson-design.json.{wording_scope}" if wording_scope else None
+    )
     found: list[str] = []
     specs: list[str] = []
     collect_wording_marker_faults(
         design, "lesson-design.json", found,
-        wording_stage=wording_stage, specs=specs,
+        wording_stage=wording_stage, specs=specs, scope_prefix=scope_prefix,
     )
     # The photograph contract is planning material, never child-facing
     # wording, so a marker there is a fault in either mode.
@@ -218,7 +235,9 @@ def check_wording_markers(
         tail = f", and {remainder} more" if remainder else ""
         raise ContractError("; ".join(shown) + tail)
 
-    if wording_stage and not specs:
+    # A scoped stage tolerates zero specs: the scoped subtree may have none
+    # to leave (a provided-by-teacher worksheet has no strings at all).
+    if wording_stage and wording_scope is None and not specs:
         raise ContractError(
             "wording-stage validation found no wording specs - the decider "
             "appears to have written finished wording itself; every "
@@ -1593,15 +1612,18 @@ def validate_design(
     *,
     initial_photo_namespace: bool = False,
     wording_stage: bool = False,
+    wording_scope: str | None = None,
 ) -> None:
-    global _wording_stage
+    global _wording_stage, _wording_scope
     _wording_stage = wording_stage
+    _wording_scope = wording_scope
     try:
         _validate_design_body(
             design, photos, initial_photo_namespace=initial_photo_namespace
         )
     finally:
         _wording_stage = False
+        _wording_scope = None
 
 
 def _validate_design_body(
@@ -1612,7 +1634,10 @@ def _validate_design_body(
 ) -> None:
     reject_unresolved_scaffold_placeholders(design, "lesson-design.json")
     reject_unresolved_scaffold_placeholders(photos, "photo-requirements.json")
-    check_wording_markers(design, photos, wording_stage=_wording_stage)
+    check_wording_markers(
+        design, photos,
+        wording_stage=_wording_stage, wording_scope=_wording_scope,
+    )
 
     root = expect_dict(design, "lesson-design.json")
     expect_exact_keys(root, TOP_LEVEL_FIELDS, TOP_LEVEL_FIELDS, "lesson-design.json")
@@ -2072,17 +2097,28 @@ def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     initial_photo_namespace = False
     wording_stage = False
-    while args and args[0] in ("--initial-photo-namespace", "--wording-stage"):
+    wording_scope: str | None = None
+    while args and args[0] in (
+        "--initial-photo-namespace", "--wording-stage", "--wording-scope"
+    ):
         if args[0] == "--initial-photo-namespace":
             initial_photo_namespace = True
-        else:
+            args = args[1:]
+        elif args[0] == "--wording-stage":
             wording_stage = True
-        args = args[1:]
+            args = args[1:]
+        else:
+            if len(args) < 2:
+                print("--wording-scope needs a value", file=sys.stderr)
+                return 2
+            wording_scope = args[1]
+            args = args[2:]
 
-    if len(args) != 2:
+    if len(args) != 2 or (wording_scope and not wording_stage):
         print(
             "Usage: python3 validate-lesson-design.py [--initial-photo-namespace] "
-            "[--wording-stage] <lesson-design.json> <photo-requirements.json>",
+            "[--wording-stage [--wording-scope <top-level-field>]] "
+            "<lesson-design.json> <photo-requirements.json>",
             file=sys.stderr,
         )
         return 2
@@ -2095,6 +2131,7 @@ def main(argv: list[str] | None = None) -> int:
             photos,
             initial_photo_namespace=initial_photo_namespace,
             wording_stage=wording_stage,
+            wording_scope=wording_scope,
         )
     except (OSError, json.JSONDecodeError, ContractError) as exc:
         print(f"LESSON_DESIGN_INVALID: {exc}", file=sys.stderr)

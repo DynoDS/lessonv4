@@ -94,6 +94,21 @@ blueprint file format was rejected for the reason under Settled below.
    Trying the lower setting is a separate experiment once the split is proven,
    and the run report already records what each worker ran at.
 
+10a. **The worksheet has its own content designer on the split route**
+    (Daniel, 31 Aug 2026: "lets make worksheets seperate too", choosing to
+    build ahead of test evidence). The architect decides the sheet's brief -
+    role, shape, evidence goal, demand, protected content, visual evidence -
+    and writes its blocks as specced stand-ins; the early review approves
+    that brief; the author writes the lesson's words and proves it left
+    specs only inside the worksheet (the checker's scoped stage mode); then
+    the worksheet content designer, in its own fresh context, decides the
+    instances and writes the sheet's words against the finished board
+    wording, under the strict gate. Reason: freshness is judged against
+    what the board actually says, so the sheet is written after the words
+    and by a brain that has done nothing else that run. Accepted cost: the
+    first test now measures more changes at once, which Daniel accepted by
+    ordering the build.
+
 10. **Balanced diet is the first test, four-digit plus or minus three-digit
     is the safety check** (Daniel, 31 Aug 2026). Balanced diet first because
     its failures were all wording written at the tired end of a long run, so
@@ -135,12 +150,9 @@ priority order, with the reason each still matters:
    old route for good.
 5. **Try the author at a lower effort** (settled 9 deferred this), now that a
    proven baseline exists to compare against.
-6. **Consider the worksheet content split** - the external advice's second
-   stage, a worksheet content designer branching off the approved design.
-   Open, not agreed: revisit only with evidence from real runs that the
-   worksheet is still where wording or evidence slips, because a stage costs
-   a hand-off and this project's rule is to add one only when the existing
-   shape cannot carry the requirement.
+6. ~~Consider the worksheet content split~~ **Done, 4.2.49.** Daniel chose
+   to build it ahead of test evidence rather than wait (31 Aug 2026), so the
+   first test now measures the full architecture. See settled 11.
 
 ## Test lessons for before and after
 
@@ -185,6 +197,15 @@ the architecture, or the comparison shows nothing.
   writes `design-review-decisions.md`, and both reach the run report).
   **The lesson for the rest of this project:** a new route is not wired
   until every always-loaded rule that names roles by name has been re-read
-  against it. Next: Daniel runs the balanced diet brief in Codex with `use
-  the split route` added, then the four-digit maths brief the same way, and
-  judges both against settled 10.
+  against it.
+- **31 Aug 2026, worksheet stage (4.2.49).** Daniel ordered the worksheet
+  content split built now (settled 10a). The route is now five steps across
+  two lazily loaded slices; the checker gained a scoped stage mode
+  (`--wording-scope worksheet`) so the author proves it left specs only in
+  the worksheet; the orchestrator holds a closing strict gate whatever path
+  the route took. Not done, and why: retiring the old route and slimming the
+  90KB designer file both wait for the test runs, because the old route
+  still serves every normal lesson and slimming the file it reads would
+  change both routes at once. Next: Daniel runs the balanced diet brief in
+  Codex with `use the split route` added, then the four-digit maths brief
+  the same way, and judges both against settled 10.

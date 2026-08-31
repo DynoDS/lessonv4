@@ -55,11 +55,11 @@ required. Missing optional agents skip only their resource or review:
 
 - no `design-reviewer`: use the validated design and report review skipped;
 - no `adaptation-designer`: build only the expected-range worksheet;
-- the split route needs all four of `lesson-architect`, `decision-reviewer`,
-  `lesson-author` and `wording-reviewer`. When the teacher asked for it and
-  any one is missing, run the normal Phase 1 route instead and say in the
-  report which role was missing: half a split route would hand a class a
-  lesson whose words nobody wrote;
+- the split route needs all five of `lesson-architect`, `decision-reviewer`,
+  `lesson-author`, `worksheet-content-designer` and `wording-reviewer`. When
+  the teacher asked for it and any one is missing, run the normal Phase 1
+  route instead and say in the report which role was missing: half a split
+  route would hand a class a lesson whose words nobody wrote;
 - no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
   that output and exclude it as NOT DELIVERED naming the missing role;
 - no image scout: omit unresolved pictures under the normal degradation rule.
@@ -90,9 +90,9 @@ A separately supplied lesson plan remains `LESSON_PLAN_INPUT`; a supplied
 worksheet remains `TEACHER_WORKSHEET_INPUT`. Do not paste either into the brief.
 Only Lesson Designer, Design Reviewer and Adaptation Designer may read raw
 teacher-authored files; on the split route, Lesson Architect and Decision
-Reviewer stand in the first two places, and the Lesson Author and Wording
-Reviewer never receive them - the approved design must carry everything the
-words need.
+Reviewer stand in the first two places, and the Lesson Author, Worksheet
+Content Designer and Wording Reviewer never receive them - the approved
+design must carry everything the words need.
 
 **A brief that names a document is a pointer, not the lesson.** The brief file
 keeps its exact words, but a designer handed only the pointer has to find and
@@ -1123,16 +1123,20 @@ roles coordinate through validated files, not conversations or scheduler state.
 ## The split route - design and wording as two passes (off by default)
 
 This route replaces Phase 1 and Phase 1.25 only, and runs only when the
-teacher's message explicitly asks for it. Architect decides and writes each
-child-facing string as a wording spec; Decision Reviewer judges the compact
-design; Author writes the finished words once in a fresh context; Wording
-Reviewer checks them. It ends with the same three approved canonical files
+teacher's message explicitly asks for it. Architect decides, writing each
+child-facing string as a wording spec and the worksheet as a specced brief;
+Decision Reviewer judges the compact design; Author writes the finished
+lesson words once in a fresh context; Worksheet Content Designer writes the
+sheet's instances and words against that finished wording; Wording Reviewer
+checks all the words. It ends with the same three approved canonical files
 and rejoins the pipeline at Phase 1.5, nothing downstream changed - later
 focused Lesson Designer revisions included, which meet a fully worded design
 exactly as on the normal route.
 
-Ask `worker-launch.py spec` once for all four roles: `lesson-architect`,
-`decision-reviewer`, `lesson-author`, `wording-reviewer`.
+Ask `worker-launch.py spec` once for all five roles: `lesson-architect`,
+`decision-reviewer`, `lesson-author`, `worksheet-content-designer`,
+`wording-reviewer`. Steps 1 and 2 are this slice; the `design-split-words`
+slice carries steps 3 to 5.
 
 ### Split step 1 - Lesson Architect (sequential, blocking)
 
@@ -1225,10 +1229,12 @@ OWNED_OUTPUTS:
 
 SUCCESS_CHECK:
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace \
+  --initial-photo-namespace --wording-stage --wording-scope worksheet \
   "[WORKING_DIR]/lesson-design.json" \
   "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_OK
+Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
+This accepts remaining specs only inside `worksheet`, whose own designer
+runs next, and fails on any string the author left unwritten elsewhere.
 
 ALLOWED_TERMINAL_STATES:
 - COMPLETE
@@ -1249,7 +1255,57 @@ launch one fresh clean-context `lesson-author` with the current files and
 the exact failures. If that also fails, go to Phase 4 and report `BLOCKED`
 with the failures and deliver `design-decisions.md` and the diagnosis.
 
-### Split step 4 - Wording Reviewer (sequential, blocking)
+### Split step 4 - Worksheet Content Designer (sequential, blocking)
+
+Skip this step only when `worksheet.status` is `provided-by-teacher` - the
+teacher's own sheet stands, and adaptation still runs downstream in Track B
+as normal.
+
+```text
+You are the worksheet content designer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/worksheet-content-designer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+
+SUCCESS_CHECK:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_OK
+
+ALLOWED_TERMINAL_STATES:
+- COMPLETE
+- WORKSHEET_GAPS
+- WORKSHEET_CHECK_FAILED
+```
+
+On `WORKSHEET_GAPS`, run one focused `lesson-architect` revision over the
+current canonical files carrying every `WORKSHEET_GAP:` line verbatim -
+revise only the worksheet brief and, where the gap names one, the photo
+contract, prove with the stage validator - then launch one fresh
+`worksheet-content-designer`. One gap round per run, ending as the author's
+does.
+
+On `WORKSHEET_CHECK_FAILED`, or a failed success check whose failures name
+only paths inside `worksheet`, launch one fresh clean-context
+`worksheet-content-designer` with the current files and the exact failures;
+a failure naming a path outside `worksheet` is a string the author left
+unwritten, and goes to one fresh `lesson-author` round instead, then this
+step reruns. If recovery fails, go to Phase 4 and report `BLOCKED` with the
+failures.
+
+### Split step 5 - Wording Reviewer (sequential, blocking)
 
 ```text
 You are the wording reviewer. Read your agent instructions at:
@@ -1284,7 +1340,10 @@ Its corrections live in the files; its alarms live in its report's
 teacher flags like any Phase 1.25 flag. After return, run the strict
 validator yourself.
 
-Then close as Phase 1.25 closes: append genuine corrections and remaining
-teacher choices to the shared build review log when `PLUGIN_SOURCE_ROOT` is
+Then close: run the strict validator yourself once more and require exactly
+`LESSON_DESIGN_OK` - this is the route's gate whatever path led here, and a
+design that fails it goes back to whichever owner the failing paths name
+rather than forward. Append genuine corrections and remaining teacher
+choices to the shared build review log when `PLUGIN_SOURCE_ROOT` is
 available, run `worker-launch.py audit --host codex`, and continue to Phase
 1.5. Everything from there on is unchanged.

@@ -28,6 +28,15 @@ inspects is yours: curriculum boundary, route, modelling and independence,
 the misconception arc and its end, assessment validity, worksheet evidence,
 sources and visual meaning, cross-section consistency, decision drift.
 
+**The worksheet arrives as a brief, and that is its finished state here.**
+Its architecture fields are decided and its `contentBlocks` are stand-ins
+whose specs carry instance requirements, not values - the Worksheet Content
+Designer writes the actual sheet after the words pass. Judge the base role's
+worksheet checks at that level: the evidence goal, the honesty of its role,
+the architecture against the thinking, the freshness constraints the specs
+demand. Absent instances are not a finding; a brief that would let a
+copyable or stale sheet satisfy it is.
+
 One check is yours alone. **A spec must be complete enough that writing its
 words requires no new decision.** A spec missing its example values, its
 answer logic, or what the child must notice hands that decision to the
