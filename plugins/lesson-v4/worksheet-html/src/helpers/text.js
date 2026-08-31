@@ -302,6 +302,50 @@ function stemMm(spec, widthMm) {
 
 const MAX_WRITING_LINES = 6;
 
+// A child's written sentence is about ten to twelve words, and in a
+// primary-school hand that is roughly this much line, end to end. It is the
+// number the designers were told to do arithmetic with by hand ("two lines in
+// a half-width column, one at full width"), moved into the engine so the
+// arithmetic is done against the width the zone actually has rather than the
+// width a designer guessed at. 150 reproduces exactly that hand rule at the
+// widths a real zone offers once its number gutter is off: one line per
+// sentence across a full page (about 168mm usable), two per sentence in a
+// half-width column (about 78mm).
+const SENTENCE_RUN_MM = 150;
+
+// The ruled lines an item gets, from either of the two ways of asking.
+//
+// `sentences` states the DEMAND - how many written things the prompt asks for
+// ("explain two ways, then identify one more" is three) - and the engine
+// turns that into lines at this zone's real width, so the same question gets
+// two lines at full width and four in a half-width column without anyone
+// re-counting. `lines` remains the exact count for when the designer wants a
+// specific one. Both at once is a contradiction: one of them is wrong, and
+// the engine cannot know which, so it refuses rather than guessing.
+function writingLinesFor(q, widthMm) {
+  if (q.sentences !== undefined && q.lines !== undefined) {
+    throw new Error(
+      "WRITTEN_ANSWERS_OVERSPECIFIED: an item gives sentences AND lines. " +
+        "State the demand with sentences and let the engine size the lines, " +
+        "or state an exact lines count - not both."
+    );
+  }
+  if (q.sentences !== undefined) {
+    const n = Number(q.sentences);
+    if (!Number.isInteger(n) || n < 1) {
+      throw new Error(
+        `WRITTEN_ANSWERS_SENTENCES_INVALID: sentences must be a whole number ` +
+          `of written things, 1 or more (got ${JSON.stringify(q.sentences)}).`
+      );
+    }
+    return Math.min(
+      MAX_WRITING_LINES,
+      Math.ceil((n * SENTENCE_RUN_MM) / Math.max(40, widthMm))
+    );
+  }
+  return Math.min(q.lines || 3, MAX_WRITING_LINES);
+}
+
 function renderWrittenAnswers(spec, widthMm = 100) {
   const showNumbers = spec.showNumbers !== false;
   const numberGutterMm = showNumbers ? 6 : 0;
@@ -311,7 +355,7 @@ function renderWrittenAnswers(spec, widthMm = 100) {
 
   const items = spec.items
     .map((q, i) => {
-      const lines = Math.min(q.lines || 3, MAX_WRITING_LINES);
+      const lines = writingLinesFor(q, widthMm - numberGutterMm);
       const ruled = Array.from(
         { length: lines },
         () => `<span class="h-line" style="height:${lineMm}mm"></span>`
@@ -355,7 +399,7 @@ function measureWrittenAnswers(spec, widthMm) {
   const pictures = selectContextPictures(spec.items, baseTextWidth);
   return stemMm(spec, widthMm) + spec.items.reduce((h, q, i) => {
     const picture = pictures && pictures[i];
-    const lines = Math.min(q.lines || 3, MAX_WRITING_LINES);
+    const lines = writingLinesFor(q, baseTextWidth);
     const textWidth = baseTextWidth - pictureSlotMm(picture);
     // The prompt row is as tall as its tallest flex item: the wrapped words,
     // or an image picture at its readable size.

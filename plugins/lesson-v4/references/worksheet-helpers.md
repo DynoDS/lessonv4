@@ -43,8 +43,8 @@ artefact and cannot drift apart.
     "adaptationPath": "/abs/path/adaptation.md"
   },
   "sheets": {
-    "below":        { "layout": "full",          "zones": { "a": { } } },
-    "expected":     { "layout": "band-two-cols", "zones": { "a": { }, "b": { }, "c": { } } },
+    "below":        { "layout": "auto",          "zones": [ { }, { } ] },
+    "expected":     { "layout": "auto",          "zones": [ { }, { }, { } ] },
     "greaterDepth": { "layout": "halves-side", "orientation": "landscape",
                       "zones": { "a": { }, "b": { } } }
   },
@@ -112,15 +112,43 @@ them. A single-sheet worksheet carries no code, since there are no piles.
 
 | Field | |
 |---|---|
-| `layout` | required. A page shape from `worksheet-compositions.md`. |
-| `orientation` | `portrait` (default) or `landscape`. Per sheet: a landscape sort beside a portrait set of questions is a normal lesson. |
-| `zones` | required. One entry per lettered zone the layout has. |
+| `layout` | required. `"auto"` for the normal case — the engine chooses the shape. Or a named page shape from `worksheet-compositions.md`, when the teaching wants a particular arrangement. |
+| `orientation` | `portrait` (default for a named layout) or `landscape`. Per sheet: a landscape sort beside a portrait set of questions is a normal lesson. With `"auto"`, stating one constrains the choice to it; omitting it lets the engine try both. |
+| `zones` | required. With `"auto"`: an ARRAY of zone contents in reading order. With a named layout: an object with one entry per lettered zone. |
 
 A layout's zones are lettered `a`, `b`, `c`… and the letters mean position and
 nothing else. **A zone knows it is 180mm by 70mm. It does not know what goes in
 it.** There is no stimulus zone and no reasoning zone; naming a zone after a
 teaching job ties every layout to one kind of lesson, which is the mistake this
 engine was rebuilt to end.
+
+#### Automatic layout
+
+`"layout": "auto"` hands the shape question to the engine, which tries every
+layout in the library at both orientations and takes the one closest to
+comfortably full — the same ranking `suggest.js` prints, so asking the tool
+first and copying its top line in by hand buys nothing. The zones array is the
+content in reading order, one entry per zone (an entry is usually a `stack` of
+several helpers), and the first entry lands in the first zone of whatever
+shape wins: content order is never rearranged to chase a fit, the geometry
+moves instead.
+
+The build and the preflight both say which shape was chosen, per sheet:
+
+```text
+AUTO_LAYOUT: Expected drawn in "band-two-cols" (portrait), 87% full.
+```
+
+When no layout holds the content, the refusal is `SHEET_DOES_NOT_FIT` carrying
+the same millimetre verdict `suggest.js` gives — how far over, and which item
+costs the most — so the two cases stay tellable apart: content a different
+grouping rescues, and a brief genuinely bigger than a page.
+
+Auto is for the normal case, and a NAMED layout remains the way to insist:
+pedagogy that wants one big shared grid rather than six small ones, a page
+whose flanks must point inward at a middle, a deliberately sparse sheet. The
+two-page exception below never uses auto — where content splits across paper
+is the designer's decision, so each of its pages names its layout.
 
 ### Optional physical-page decorations
 
@@ -262,6 +290,8 @@ reported rather than just the first.
 | `PDF_SKIPPED` + `Built HTML: <path>` per sheet | This machine cannot make a PDF yet (no Chrome, or packages not installed - the message says which), and `scripts/ensure-chrome.js` usually fixes it: it installs the packages and fetches a headless Chrome over the network. Until then the HTML files are the worksheet: self-contained, printed from Chrome at 100% scale. Not a failure, and not verified either. |
 | `PAGE_FIT_UNVERIFIED` | Prints beside `PDF_SKIPPED`. No browser, so no page was measured as it will actually print: the HTML is partial, unverified output. A technical state of the machine, not a fault in the worksheet. |
 | `Sheets: ...` | Which sheets went into it. |
+| `AUTO_LAYOUT: ...` | Which shape the engine chose for an auto sheet, and how full it runs. Information, not a fault: the designer left the choice to the engine and this is the engine saying what it chose. |
+| `AUTO_LAYOUT_INVALID` | The auto contract was broken: a zones array under a named layout, a zones object under `"auto"`, an empty array, or `"auto"` inside the two-page exception. The message says which and what to write instead. |
 | `Page fit: ✓ ...` | One page per sheet, measured in a real browser after the fonts loaded. Prints only when every page drew and nothing clipped. |
 | `ZONE_SPEC_INVALID` | A zone could not be drawn. Names the sheet and the zone, and the reason follows on the same line: a field the helper could not read, a helper name that does not exist (`UNKNOWN_HELPER: "..."` with the known names), or a layout name that does not exist (`UNKNOWN_LAYOUT`, which names every zone at once because the whole sheet has no shape - fix the sheet's `layout`, not the zones). **Fix what the line names.** |
 | `SHEET_DOES_NOT_FIT` | Every zone draws, but the page will not hold them. **Choose a different layout, or move something off the sheet.** Also covers real clipping found in the rendered page, which names the sheet, the page and the zone. |

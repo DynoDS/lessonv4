@@ -10,6 +10,15 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
+// The one browser build these worksheets are tuned against. Millimetres matter
+// on a printed page, and two Chrome releases can wrap the same sentence a
+// fraction differently - so ensure-chrome.js downloads exactly this build
+// rather than whatever "stable" means on the day, and a downloaded shell is
+// preferred below over whatever Chrome happens to be installed. Move this
+// version deliberately: bump it, run `npm test` and `npm run check-render`,
+// and look at the rendered pages before shipping.
+const PINNED_CHROME_VERSION = "152.0.7977.64";
+
 // Where ensure-chrome.js puts a downloaded chrome-headless-shell. The version
 // number is part of the folder name and changes with every release, so the
 // cache is searched rather than listed as a fixed path.
@@ -43,12 +52,18 @@ function downloadedCandidates(dir = CACHE_DIR) {
   return found;
 }
 
-// Ordered by how likely each is to be the one a person actually uses.
-// CHROME_PATH wins outright so a sandbox or CI box can name its own.
+// CHROME_PATH wins outright so a sandbox or CI box can name its own. After
+// that, a shell ensure-chrome.js downloaded wins over whatever Chrome is
+// installed: the downloaded one is the pinned build every machine can share,
+// while an installed Chrome updates itself on its own schedule and two
+// machines rarely hold the same one. The installed Chromes remain as the
+// fallback, so a machine that never downloaded anything still prints.
 function candidatePaths() {
   const fromEnv = process.env.CHROME_PATH;
   return [
     ...(fromEnv ? [fromEnv] : []),
+    // A headless shell that ensure-chrome.js downloaded earlier.
+    ...downloadedCandidates(),
     // Windows
     "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
@@ -61,8 +76,6 @@ function candidatePaths() {
     "/snap/bin/chromium",
     // macOS
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    // A headless shell that ensure-chrome.js downloaded earlier.
-    ...downloadedCandidates(),
   ].filter(Boolean);
 }
 
@@ -170,24 +183,40 @@ const RENDERED_FIT_PROBE = `(() => {
   return problems;
 })()`;
 
+// One Chrome process, handed around instead of started over.
+//
+// Launching Chrome is the expensive part of printing a page - hundreds of
+// milliseconds of process start against tens of rendering - and a worksheet
+// build prints every sheet plus up to three reshape retries each, so paying
+// the launch once per PAGE multiplied the slowest step by a dozen. A caller
+// with several pages launches once, prints them all, and closes it.
+async function launchBrowser() {
+  // Required here rather than at the top so that finding Chrome, and building
+  // HTML-only on a machine without it, never needs the packages installed.
+  const puppeteer = require("puppeteer-core");
+  return puppeteer.launch({
+    executablePath: findChrome(),
+    headless: true,
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  });
+}
+
 // The HTML owns its own margins, so the PDF is printed edge to edge. This
 // keeps one source of truth for page geometry: src/page.js, in millimetres.
 //
 // `opts.inspectFit` additionally reads the rendered geometry back and returns
 // `{ pdf, fitProblems }` instead of a bare buffer. It is opt-in because the
 // twenty other scripts that print a page want the buffer they have always had.
+//
+// `opts.browser` prints through a browser the caller launched (and still
+// owns): only the page is closed here. Without it, one is launched and closed
+// around this single print, which is what every one-page caller wants.
 async function htmlToPdf(html, opts = {}) {
-  // Required here rather than at the top so that finding Chrome, and building
-  // HTML-only on a machine without it, never needs the packages installed.
-  const puppeteer = require("puppeteer-core");
-  const browser = await puppeteer.launch({
-    executablePath: findChrome(),
-    headless: true,
-    args: ["--no-sandbox", "--disable-dev-shm-usage"],
-  });
+  const browser = opts.browser || (await launchBrowser());
 
+  let page;
   try {
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
 
     // Fonts decide how wide every word is, and "load" does not wait for them.
@@ -218,8 +247,19 @@ async function htmlToPdf(html, opts = {}) {
     const buffer = Buffer.from(pdf);
     return opts.inspectFit ? { pdf: buffer, fitProblems } : buffer;
   } finally {
-    await browser.close();
+    if (opts.browser) {
+      if (page) await page.close();
+    } else {
+      await browser.close();
+    }
   }
 }
 
-module.exports = { findChrome, htmlToPdf, candidatePaths, downloadedCandidates };
+module.exports = {
+  findChrome,
+  htmlToPdf,
+  launchBrowser,
+  candidatePaths,
+  downloadedCandidates,
+  PINNED_CHROME_VERSION,
+};

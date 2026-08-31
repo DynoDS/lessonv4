@@ -28,13 +28,22 @@ end. Choose the shape that holds the content, then decide what goes where.
 
 ## Choosing one
 
-**Ask the engine rather than reading this list end to end.**
+**Normally, don't.** A sheet written with `"layout": "auto"` and its zones
+as an array in reading order has its shape chosen by the engine: every layout
+here is tried at both orientations and the one closest to comfortably full
+wins. Comfortably full, not fullest, because heights are estimates and a
+browser draws the real page a shade taller or shorter - a shape with room to
+spare absorbs the difference, while a shape filled to the brim clips and is
+refused.
 
-Write the sheet's contents to a JSON file (a bare array, or
-`{ "items": [...] }`), then:
+**Choose by hand when the teaching wants a particular arrangement** - one big
+shared grid rather than six small ones, flanks pointing inward at a middle, a
+deliberately short sheet. Then ask the engine for the ranked options rather
+than reading this list end to end: write the zone contents to a JSON file (a
+bare array, or `{ "items": [...] }`), then:
 
 ```
-node worksheet-html/scripts/suggest.js <content.json>
+node worksheet-html/scripts/suggest.js <content.json> <yearGroup>
 ```
 
 **One entry per ZONE, in reading order - not one per helper.** Each entry is
@@ -43,13 +52,11 @@ helpers and a two-column sheet is two entries. Asking about a zone's helpers
 one at a time asks about one-zone layouts instead, and the answer will not
 match what the build then measures.
 
-It returns every shape that holds the content, best first, where best means most
-comfortably full rather than fullest. Its heights are estimates and a browser
-draws the real page a shade taller or shorter, so a shape with room to spare
-absorbs the difference while a shape filled to the brim clips and is refused.
-It is doing arithmetic against each helper's stated minimum,
-which is the part worth handing over; which of the shapes it offers suits the
-TEACHING is the part it cannot answer, and that is the designer's to choose.
+It returns every shape that holds the content, best first, where best means
+most comfortably full. It is doing arithmetic against each helper's stated
+minimum, which is the part worth handing over; which of the shapes it offers
+suits the TEACHING is the part it cannot answer, and that is the designer's
+to choose.
 
 The sizes below are what the suggestion is measured against, so they are here to
 check a judgement rather than to be searched.

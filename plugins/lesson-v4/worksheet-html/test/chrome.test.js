@@ -9,7 +9,13 @@ const os = require("node:os");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
 
-const { findChrome, htmlToPdf, downloadedCandidates } = require("../src/chrome");
+const {
+  findChrome,
+  htmlToPdf,
+  launchBrowser,
+  downloadedCandidates,
+  PINNED_CHROME_VERSION,
+} = require("../src/chrome");
 const { renderSheet } = require("../src/render");
 
 // A4 in PostScript points. Chrome rounds, so compare within a point.
@@ -65,6 +71,43 @@ test("a page declaring one A4 sheet produces exactly one page", async () => {
   const pdf = await htmlToPdf("<p>hello</p>");
   const doc = await PDFDocument.load(pdf);
   assert.equal(doc.getPageCount(), 1);
+});
+
+test("a caller's browser is borrowed, not closed: several pages, one Chrome", async () => {
+  // The worksheet build prints every sheet plus its reshape retries through
+  // one launch. If htmlToPdf ever goes back to closing the browser it was
+  // handed, the second print here dies with a disconnected browser.
+  const browser = await launchBrowser();
+  try {
+    const first = await htmlToPdf("<p>one</p>", { browser });
+    const second = await htmlToPdf("<p>two</p>", { browser, inspectFit: true });
+    assert.ok(first.length > 0);
+    assert.ok(second.pdf.length > 0);
+    assert.deepEqual(second.fitProblems, []);
+    assert.ok(browser.connected, "the shared browser should survive both prints");
+  } finally {
+    await browser.close();
+  }
+});
+
+test("the renderer pin is a real version and ensure-chrome downloads exactly it", () => {
+  // Two machines printing through two Chrome releases wrap the same sentence
+  // differently, and millimetres matter here - so the download is pinned, and
+  // this guard fails if the pin decays into "stable" again or the two files
+  // stop sharing one constant.
+  assert.match(
+    PINNED_CHROME_VERSION,
+    /^\d+\.\d+\.\d+\.\d+$/,
+    "PINNED_CHROME_VERSION must be a full four-part build, not a channel name"
+  );
+  const src = fs.readFileSync(
+    path.join(__dirname, "..", "scripts", "ensure-chrome.js"),
+    "utf8"
+  );
+  assert.ok(
+    src.includes("chrome-headless-shell@${PINNED_CHROME_VERSION}"),
+    "ensure-chrome.js no longer downloads the pinned build from src/chrome.js"
+  );
 });
 
 test("a full-page data table can use the available height for every supplied row", async () => {

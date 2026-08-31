@@ -223,7 +223,13 @@ function makeNumberer() {
       return out;
     };
 
-    // Zone order is the reading order: a, then b, then c.
+    // Zone order is the reading order: a, then b, then c - or, for an auto
+    // sheet not yet resolved to a layout, the array's own order, which is the
+    // same reading order by definition. Array keys must not go through the
+    // string sort ("10" sorts before "2").
+    if (Array.isArray(zones)) {
+      return zones.map((zone, i) => walk(zone, String(i)));
+    }
     const out = {};
     for (const id of Object.keys(zones).sort()) out[id] = walk(zones[id], id);
     return out;
@@ -270,7 +276,8 @@ function questionCount(zones) {
     for (const value of Object.values(node)) walk(value);
   };
 
-  for (const id of Object.keys(zones || {}).sort()) walk(zones[id]);
+  if (Array.isArray(zones)) zones.forEach(walk);
+  else for (const id of Object.keys(zones || {}).sort()) walk(zones[id]);
   return count;
 }
 
@@ -343,6 +350,154 @@ class WorksheetError extends Error {
     super(message);
     this.signal = signal;
   }
+}
+
+// ─── automatic layout choice ─────────────────────────────────────────────
+//
+// The machine already ranks every layout by comfort (suggestLayouts), and the
+// designer was already told to take the top answer unless the teaching says
+// otherwise. So for the normal case the round trip - write the content out,
+// run the tool, copy its first line back in - taught the designer nothing and
+// cost a step that could go wrong. `"layout": "auto"` hands the whole
+// question to the engine.
+//
+// An auto sheet writes its zones as an ARRAY in reading order, not an object,
+// because zone names belong to a layout and the sheet does not know its
+// layout yet. Content order is still not negotiable: the first entry lands in
+// the first zone of whatever shape is chosen, exactly as the fit checker has
+// always filled zones.
+//
+// A named layout stays exactly what it was: the designer's deliberate choice,
+// used whenever the teaching wants a particular arrangement. Auto is the
+// default case, not the only case.
+//
+// Resolution needs pictures already resolved (a photograph has no height
+// until its file is read), so the scripts resolve images first - the same
+// order the fit check has always required.
+function resolveAutoSheet(sheet, meta) {
+  if (!sheet || typeof sheet !== "object") return { sheet, choice: null };
+
+  if (Array.isArray(sheet.pages)) {
+    if (sheet.pages.some((page) => page && page.layout === "auto")) {
+      throw new WorksheetError(
+        "AUTO_LAYOUT_INVALID",
+        'layout "auto" cannot be used inside the two-page exception. Its ' +
+          "pages split one piece of content across two sheets of paper, and " +
+          "where that split falls is the designer's decision: name each " +
+          "page's layout."
+      );
+    }
+    return { sheet, choice: null };
+  }
+
+  if (sheet.layout !== "auto") {
+    if (Array.isArray(sheet.zones)) {
+      throw new WorksheetError(
+        "AUTO_LAYOUT_INVALID",
+        `layout ${JSON.stringify(sheet.layout)} names its zones (a, b, c...), ` +
+          "so zones must be an object keyed by those names. A zones ARRAY " +
+          'goes with "layout": "auto", where the engine chooses the shape ' +
+          "and assigns the names itself."
+      );
+    }
+    return { sheet, choice: null };
+  }
+
+  const items = sheet.zones;
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new WorksheetError(
+      "AUTO_LAYOUT_INVALID",
+      'with "layout": "auto", zones is an array of zone contents in reading ' +
+        "order - one entry per zone, so an entry is usually a stack of " +
+        "several helpers. " +
+        (Array.isArray(items)
+          ? "This one is empty."
+          : "This one is an object keyed by zone names, which only a named layout has.")
+    );
+  }
+
+  // Required lazily: suggest.js requires this file the same way, and both
+  // requires sit inside functions so neither module loads half of the other.
+  const { suggestLayouts } = require("./suggest");
+  const orientation =
+    sheet.orientation === "landscape" || sheet.orientation === "portrait"
+      ? sheet.orientation
+      : undefined;
+
+  const result = suggestLayouts(items, {
+    yearGroup: meta && meta.yearGroup,
+    orientation,
+    extra: { title: sheet.title, lo: sheet.lo },
+  });
+
+  if (!result.fits.length) {
+    // The refusal carries the same millimetre verdict the suggest tool
+    // prints, because the person reading it has the same decision to make:
+    // is this a shape problem or a brief bigger than a page?
+    const lines = result.verdict && result.verdict.lines ? result.verdict.lines : [];
+    const examples = result.refused
+      .slice(0, 2)
+      .map((r) => `${r.layout} (${r.orientation}): ${r.why[0]}`);
+    throw new WorksheetError(
+      "SHEET_DOES_NOT_FIT",
+      `layout "auto": no layout in the library holds these ${items.length} ` +
+        `zones. ${[...lines, ...examples].join(" ")}`
+    );
+  }
+
+  const best = result.fits[0];
+  const zones = {};
+  best.zones.forEach((id, i) => {
+    zones[id] = items[i];
+  });
+
+  const { layout, orientation: _requested, zones: _items, ...rest } = sheet;
+  return {
+    sheet: { ...rest, layout: best.layout, orientation: best.orientation, zones },
+    choice: {
+      layout: best.layout,
+      name: best.name,
+      orientation: best.orientation,
+      fillPct: best.fillPct,
+      verdict: best.verdict,
+    },
+  };
+}
+
+// Every auto sheet in a worksheet resolved at once, with the choices reported
+// back so a build can say out loud which shape each sheet was given. The
+// scripts call this once, right after images are resolved; sheetsOf also
+// resolves lazily, so a caller that skips this still gets a drawable sheet.
+function resolveAutoLayouts(worksheet) {
+  if (!worksheet || typeof worksheet !== "object") return { worksheet, choices: [] };
+  const sheets = worksheet.sheets || {};
+  const meta = worksheet.meta || {};
+  const choices = [];
+  const out = {};
+  let changed = false;
+
+  for (const [key, sheet] of Object.entries(sheets)) {
+    let resolved;
+    try {
+      resolved = resolveAutoSheet(sheet, meta);
+    } catch (error) {
+      if (error instanceof WorksheetError) {
+        error.message = `${SHEET_LABELS[key] || key} - ${error.message}`;
+        error.location = { sheet: key };
+      }
+      throw error;
+    }
+    out[key] = resolved.sheet;
+    if (resolved.choice) {
+      choices.push({ sheet: key, label: SHEET_LABELS[key] || key, ...resolved.choice });
+      changed = true;
+    }
+  }
+
+  return {
+    worksheet: changed ? { ...worksheet, sheets: out } : worksheet,
+    choices,
+  };
 }
 
 // The physical pages one pupil level occupies. Almost always one.
@@ -461,7 +616,10 @@ function sheetsOf(worksheet) {
 
   const out = [];
   for (const key of present) {
-    const sheet = sheets[key];
+    // An auto sheet that reached here unresolved (a caller going straight to
+    // the library) still resolves; the scripts have normally done it already,
+    // in which case this is a straight pass-through.
+    const { sheet } = resolveAutoSheet(sheets[key], meta);
     const pages = pagesOf(sheet);
     // One numberer for the whole level: the approved two-page pair carries on
     // 1, 2, 3, 4 rather than starting again on page 2, and the next level gets
@@ -993,6 +1151,8 @@ module.exports = {
   renderAnswerKey,
   questionCount,
   numbered,
+  resolveAutoSheet,
+  resolveAutoLayouts,
   // Exported so `suggest` can prepare content exactly as a build does. It used
   // to measure raw zones, which quietly made it a DIFFERENT question from the
   // one the build answers: writing lines were measured at the youngest year's

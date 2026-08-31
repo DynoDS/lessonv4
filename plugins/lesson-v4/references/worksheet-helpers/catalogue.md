@@ -4,14 +4,17 @@
 
 The 70 helpers, what each is for, and a working example of each.
 
-**How Worksheet Designer reads this catalogue.** Scan the family headings and
-the one-line purpose under each helper name, so you know what exists and can
-recognise the shape you need. Do not read every example and smallest-usable
-line at run start: that is most of this file, and the detail is only useful
-once a helper is a real candidate. When one becomes a candidate, read that
-helper's complete entry before its first use, and reopen it later only for a
-field or a size you have not already used. A designer that reads the whole
-catalogue before choosing anything spends its run on helpers it never picks.
+**How Worksheet Designer reads this catalogue.** Read the Index just below -
+one line per helper - and pick the two to five that could carry what your
+sheet needs. Then read only those helpers' complete entries (each starts at a
+`####` heading carrying the helper's name) before first use, and reopen an
+entry later only for a
+field or a size you have not already used. The full entries are most of this
+file and almost all of them describe helpers this lesson will not use, so a
+designer that reads past the index before choosing spends its run on helpers
+it never picks. The index is for finding candidates; it is not the contract -
+fields and sizes live only in the full entry, so never write a spec from an
+index line alone.
 
 **The example is the contract.** It is a real spec, and check-render draws every
 one of them at four widths on every run, so it cannot describe a field that does
@@ -34,6 +37,108 @@ The one place a shown example differs from the tested one: a photograph is
 written as `imagePath`, a filename. The build reads that file and carries the
 picture inside the sheet, so the sheet still shows it after being moved or
 emailed. Never write `imageHref` yourself.
+
+## Index
+
+**Text and questions**
+
+- `section-label` - The mode-of-work heading a block sits under: Fluency, Practise, Apply.
+- `instruction` - A quiet child-facing direction that needs no question number or answer space.
+- `questions` - One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.
+- `written-answers` - A question answered in the child's own words, with ruled lines under it.
+- `source-text` - A passage, account or extract the child reads and works from.
+
+**Tables**
+
+- `data-table` - Values HANDED to the child to read from: a price list, a timetable, a set of results.
+- `recording-table` - A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column.
+
+**Charts and diagrams**
+
+- `bar-chart` - A bar chart to read off.
+- `line-graph` - A titled time-series line graph with numbered axes.
+- `pictogram` - A row-of-symbols pictogram with a key, where one symbol stands for several.
+- `tally-chart` - A tally table: bundles of five drawn as marks rather than the number written out.
+- `venn` - Sorting into two overlapping properties.
+- `carroll` - A 2x2 sorting grid: the same idea as a Venn, read off a grid instead of overlapping rings.
+- `label-diagram` - A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on.
+- `rainforest-layers` - The rainforest cross-section, labelled by layer.
+- `balanced-pattern-plate` - A neutral proportional food-group plate.
+- `map` - A real map of a real place - one of the shipped world and continent maps - with the lesson's marks on top.
+- `grid-map` - A four-figure grid-reference map, usually the whole point of its sheet.
+- `process-chain` - Boxes joined by arrows: a food chain, a life cycle, the order of events.
+- `circuit-diagram` - One series circuit or a row of them in the standard symbols, each carrying its own state.
+- `classification-key` - A branching yes/no identification key down to named living things.
+
+**Shape, space and measure**
+
+- `shape` - A 2D shape with its measurements written on the sides: the picture a child reads to find a perimeter, area or missing length.
+- `triangle` - A classified triangle: filled body, tick marks, and an optional right-angle square or angle arcs.
+- `angle` - A classified angle: two arms and a marking arc or right-angle square.
+- `line-pair` - The parallel, perpendicular or neither pair.
+- `turn-diagram` - Angle as a turn: two rays from a vertex with a curved arrow sweeping between them.
+- `ruler` - A ruler printed at TRUE SIZE for a child to measure against.
+- `clock-row` - A row of analogue clock faces, each with hands set or left blank for the child to draw.
+- `coordinate-grid` - A numbered first-quadrant grid a child plots on.
+- `reflection-grid` - A dot lattice with a mirror line and a shape to reflect.
+- `translation-shape` - A numbered grid carrying a shape and its slid image, joined by an arrow.
+- `geoboard` - A dotty-paper peg grid for drawing polygons on.
+- `triangle-square` - The SATs part-whole puzzle: two triangles joined by lines to a square, the arrow pointing into the square.
+
+**Number and calculation**
+
+- `number-line` - A labelled number line carrying marked or blank jumps, boxes to write in, and an object bracket.
+- `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
+- `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
+- `part-whole-money` - A whole bubble with parts beneath it, joined by lines.
+- `column-method-grid` - Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row.
+- `short-multiplication-grid` - Column multiplication by a single digit, with a thick-topped answer row and a carry row.
+- `long-multiplication-grid` - The long multiplication shape: one partial product row per digit of the multiplier, then the total.
+- `bus-stop-grid` - Short division: the answer row on top under the roof, the divisor outside the wall to the left.
+- `long-division-grid` - The same bus stop with a blank working box beneath, for the child to show the subtract-and-bring-down steps.
+- `method-frame` - A taught mental strategy printed as a fill-in method: labelled lines inside a panel, with boxes where the child writes.
+- `number-pyramid` - Each brick is the sum of the two below it.
+- `times-table-grid` - The multiplication-facts grid: headers across and down, products in the body, blanks to find.
+- `place-value-chart` - Place names across the top, a row per number.
+- `place-value-counter-chart` - Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.
+- `digit-cards` - A row of cards, one digit each, handed to the child to make numbers from.
+
+**Fractions and money**
+
+- `stacked-fraction` - A fraction written properly, numerator sitting on a rule above the denominator, with a question stem.
+- `fraction-sequence` - The same stacked fractions as a bare row, for use inside a compound question.
+- `fraction-bar` - One or more bars divided into equal parts, some shaded.
+- `coin-strip` - A row of coins and notes drawn at their real sizes relative to each other, over a line for the total.
+
+**Comparing and ordering**
+
+- `compare-row` - Two values with an empty box between them, for less-than, greater-than and equals work.
+- `inequality-with-boxes` - A displayed statement with some digits left as boxes to fill, so the child chooses numbers that make it true.
+- `order-numbers` - Numbers to order on a card, with one blank per number underneath and the separator between them.
+- `order-table` - The same ordering task laid out as a two-row table: values on top, an empty cell under each.
+- `data-table-with-ordering` - A stem, a table of results, a row of blanks to order them into, and room to explain.
+
+**Choosing, sorting and joining**
+
+- `multiple-choice` - A stem, a tick instruction, then each option on its own line beside a tick box.
+- `circle-the-answer` - A prompt, the options to circle, and room to explain the choice.
+- `chip-bank` - A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text.
+- `sort-grid` - Named columns a child sorts items into, or - with one row - a box to draw in under those names, growing into whatever room its zone has.
+- `match-up` - Two columns of cards with a dot on each facing edge, for the child to draw the joining line.
+- `card-row` - A row of small titled cards, each optionally carrying a picture: plants along the foot of a sheet, artefacts under a timeline.
+- `timeline` - A line across the page with named bands along it and dated points beneath, for placing events or artefacts onto.
+
+**Writing and talk**
+
+- `writing-frame` - Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque.
+- `storyboard` - Numbered boxes to draw in with writing lines beneath: a journey, a life cycle, a story retold in order.
+- `fact-file` - Named slots a child fills in.
+- `speech-scene` - Turns of a conversation: a figure, and a bubble either printed to read or empty to fill.
+
+**Cause, effect and evidence**
+
+- `cause-path-grid` - Named steps across the top and a choice to make at each one, so a child traces a cause through to its effect rather than naming both ends.
+- `evidence-chain-frame` - A set of possible actions, and for each piece of evidence the ones a child decides should stop now.
 
 ## Text and questions
 
@@ -83,9 +188,9 @@ Smallest usable: **60mm wide x 27mm tall**. Spare height: never takes spare heig
 
 #### `written-answers`
 
-A question answered in the child's own words, with ruled lines under it.
+A question answered in the child's own words, with ruled lines under it. Say how many written things the prompt demands (`sentences`) and the engine sizes the lines to the zone; `lines` sets an exact count.
 
-Smallest usable: **70mm wide x 41mm tall**. Spare height: takes spare height first (it is writing space).
+Smallest usable: **70mm wide x 33mm tall**. Spare height: takes spare height first (it is writing space).
 
 ```json
 {
@@ -95,7 +200,7 @@ Smallest usable: **70mm wide x 41mm tall**. Spare height: takes spare height fir
   "items": [
     {
       "text": "Explain how you know the answer is a multiple of four.",
-      "lines": 3
+      "sentences": 2
     }
   ]
 }

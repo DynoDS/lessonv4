@@ -15,6 +15,7 @@ const { compositionAdvisories } = require("../src/composition");
 const {
   answerKeyOf,
   checkWorksheet,
+  resolveAutoLayouts,
   WorksheetError,
 } = require("../src/worksheet");
 
@@ -288,13 +289,6 @@ function main() {
     if (process.exitCode === 1) return;
   }
 
-  // Advisory only, never an exit code: composition is a judgement about a
-  // printed page, and this makes sure the judgement happens while the spec is
-  // still the designer's to change.
-  for (const advisory of compositionAdvisories(worksheet)) {
-    console.warn(`[composition] ${advisory}`);
-  }
-
   try {
     // Inside the try, so a photograph the spec names but the disk lacks exits
     // as a named IMAGE_MISSING like the build's, not a raw stack trace.
@@ -340,6 +334,27 @@ function main() {
       process.exitCode = 1;
       return;
     }
+
+    // A sheet that said `"layout": "auto"` gets its shape here, the same way
+    // and at the same point the build gives it one, so this gate checks the
+    // exact page the build will draw.
+    const resolvedAuto = resolveAutoLayouts(worksheet);
+    worksheet = resolvedAuto.worksheet;
+    for (const choice of resolvedAuto.choices) {
+      console.log(
+        `AUTO_LAYOUT: ${choice.label} -> "${choice.layout}" ` +
+          `(${choice.orientation}), ${choice.fillPct}% full.`
+      );
+    }
+
+    // Advisory only, never an exit code: composition is a judgement about a
+    // printed page, and this makes sure the judgement happens while the spec
+    // is still the designer's to change. After auto resolution, so an
+    // advisory names the zone a designer can actually find on the page.
+    for (const advisory of compositionAdvisories(worksheet)) {
+      console.warn(`[composition] ${advisory}`);
+    }
+
     answerKeyOf(worksheet);
     const refused = checkWorksheet(worksheet);
     if (refused.length) {

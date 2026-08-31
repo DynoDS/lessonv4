@@ -42,7 +42,7 @@ module.exports = {
     question: true,
     text: "Answer in full sentences.",
     items: [
-      { text: "Explain how you know the answer is a multiple of four.", lines: 3 },
+      { text: "Explain how you know the answer is a multiple of four.", sentences: 2 },
     ],
   },
   "section-label": {

@@ -262,6 +262,19 @@ test("the generated catalogue and compositions documents match the engine (works
     `catalogue.md's own count is not ${names.length} - run npm run catalogue`
   );
 
+  // The index is how the designer finds candidates without paging the whole
+  // file, so a helper missing from it is a helper the designer stops using.
+  assert.ok(
+    catalogue.includes("## Index"),
+    "catalogue.md has lost its Index section - run npm run catalogue"
+  );
+  for (const name of names) {
+    assert.ok(
+      catalogue.includes("- `" + name + "` - "),
+      `the catalogue index has no line for ${name} - run npm run catalogue`
+    );
+  }
+
   const compositions = fs.readFileSync(path.join(refDir, "worksheet-compositions.md"), "utf8");
   assert.ok(
     compositions.includes(`${LAYOUTS.length} shapes and ${VARIANTS.length} variants`),

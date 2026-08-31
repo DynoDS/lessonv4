@@ -27,7 +27,9 @@ module.exports = {
   questions:
     "One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.",
   "written-answers":
-    "A question answered in the child's own words, with ruled lines under it.",
+    "A question answered in the child's own words, with ruled lines under it. " +
+    "Say how many written things the prompt demands (`sentences`) and the " +
+    "engine sizes the lines to the zone; `lines` sets an exact count.",
   "section-label":
     "The mode-of-work heading a block sits under: Fluency, Practise, Apply. Marks the kind of thinking, never the topic. Put it at the top of a stack.",
   "source-text":

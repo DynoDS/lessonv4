@@ -60,15 +60,17 @@ writing lines at this year group's line height. Two dotted lines under a
 three-part prompt is a contradiction printed on the page, and the child
 resolves it by writing less than the task asked.
 
-Count lines against the width they will print at, not as an abstract number.
-One written thing is about a sentence, ten to twelve words in a child's
-handwriting, which is two lines in a half-width column (about 85mm) and one
-line at full width. So "write one or two sentences" in a half-width column is
-three or four lines, and the two lines that would have been honest at full
-width are half the room the task asked for. The engine's spare-height growth
-cannot rescue an undercounted answer - lines grow by at most half their
-natural height - so ask for the lines the demand needs and let growth be
-comfort, not the plan.
+State a written answer's room as the demand, not a line count. A
+`written-answers` item takes `sentences`: how many written things the prompt
+asks for, counted from its wording - `explain two ways, then identify one
+more` is three. The engine turns that into ruled lines at the width the zone
+actually prints, so the same question gets more lines in a half-width column
+than at full width without you re-counting, and the count stays honest when
+the layout changes underneath it. An exact `lines` count remains for the case
+the demand is not sentence-shaped - a single working line under a
+calculation, a one-word answer - and the engine's spare-height growth stays
+what it always was: comfort on top of an honest count, never a rescue for a
+missing one.
 
 **Every word bank is a separate labelled support block.** Put `Word bank` on its
 own line and present each option as a distinct choice. Never embed the bank
@@ -138,10 +140,10 @@ reply instead reaches nobody.
 
 - `[PLUGIN_ROOT]/references/preferences.md` - classroom norms. These win where anything disagrees. Read the introduction and contents page, then your sections: Cognitive Load Triage on Scaffolds, Question Labelling, A Picture Beside a Word, Reasoning Is Every Child's Entitlement, and Worksheets. From Written Voice, read now only the paragraph beginning `Three habits keep any printed child-facing wording plain` - it governs every printed word you place, including what you choose to copy onto a page. Read the rest of Written Voice only when you put words on a page that upstream did not write for a child - and **writing a label counts**. Turning a described recording surface into printed labels is authoring child-facing wording, even though it feels like realising a described shape: "space for a name" became the printed word `Name:` on a real sheet that way, and `one shared line above for the job` became `The job:`, which names a category of thinking rather than a thing to fill in. The paragraph beginning `A label children answer against is the question a child would ask themselves` governs every one of those, so open it before you name a single field. Also read the rest when you must report that settled wording is unsuitable. Whenever a trigger sends you to the rest of Written Voice to author, read the core sections of `[PLUGIN_ROOT]/references/teacher-voice.md` with it - how a new line sounds is calibrated there. Your questions are copied verbatim, so this applies to the labels and headings around them rather than to the questions themselves. The rest of the file governs the lesson upstream of the sheet; return to another named section only at the decision it governs.
 - `[PLUGIN_ROOT]/references/worksheet-helpers.md` - the shape of `worksheet.json` and what the builder reports back.
-- `[PLUGIN_ROOT]/references/worksheet-helpers/catalogue.md` - every helper, what it is for, and a working example. Generated from the engine, so it is never out of date. **Scan it, do not read it through.** Take in the family headings and each helper's one-line purpose so you know what exists; read a helper's full entry - its example, fields and smallest usable size - when it becomes a real candidate, and reopen it only for a field or size you have not already used. It is the largest file you are given and most of it describes helpers this lesson will not use.
+- `[PLUGIN_ROOT]/references/worksheet-helpers/catalogue.md` - every helper, what it is for, and a working example. Generated from the engine, so it is never out of date. **Read its opening notes and the Index - one line per helper - and stop there.** From the Index, pick the two to five helpers that could carry what the sheet needs, then read only those candidates' full entries (each starts at a `####` heading) before first use, reopening one later only for a field or size you have not already used. Everything past the Index is most of the file and describes helpers this lesson will not use; the Index finds candidates, and only the full entry is the contract to write a spec from.
 - `[PLUGIN_ROOT]/references/worksheet-helpers/shared.md` - choosing a helper, any subject. Read for every lesson.
 - `[PLUGIN_ROOT]/references/worksheet-helpers/[subject].md` - the subject's own guidance. Only some subjects have one, and a missing file is normal rather than a gap to flag: `shared.md` covers every subject on its own. Do not substitute `references/subject-[name].md` - those are the lesson-designer's pedagogy files, and the pedagogy is already settled by the time it reaches you.
-- `[PLUGIN_ROOT]/references/worksheet-compositions.md` - the page shapes and what each zone measures. Read its opening sections; the shape tables that follow are there to check a judgement, not to be read end to end. `suggest.js` does that arithmetic for you against the real helpers, so ask the engine rather than searching 47 variants by eye.
+- `[PLUGIN_ROOT]/references/worksheet-compositions.md` - the page shapes and what each zone measures. Read its opening sections; the shape tables that follow are there to check a judgement, not to be read end to end. The engine normally chooses the shape itself (`"layout": "auto"`, step 2), so open the tables only when you are choosing a layout by hand for a teaching reason.
 - `[PLUGIN_ROOT]/references/brief-gap-protocol.md` - leave unread until the brief asks for a shape no helper route can honestly deliver; then read and follow it. The standing rule is already yours: never invent or reword content to bridge a gap.
 
 ---
@@ -332,72 +334,66 @@ approved two-page exception, put decorations on each `pages[]` object, never
 beside the pages array. Zero is normal. Read `context-pictures.md` before writing
 one.
 
-### 2. Let the engine offer the shapes
+### 2. Let the engine choose the shape
 
-Write the sheet's contents to a JSON file beside your `worksheet.json` (a bare
-array, or `{ "items": [...] }`), then:
+For the normal case, do not choose a layout at all. Write the sheet with
+`"layout": "auto"` and its zones as an ARRAY in reading order:
+
+```json
+{ "layout": "auto", "zones": [ { "stack": [ ... ] }, { "stack": [ ... ] } ] }
+```
+
+The engine tries every layout in the library at both orientations and takes
+the one closest to comfortably full - the exact ranking `suggest.js` prints,
+applied by the preflight gate and the build identically, so nothing is lost by
+not running the tool yourself. The build reports the choice out loud
+(`AUTO_LAYOUT: Expected drawn in "band-two-cols" (portrait), 87% full.`), and
+"comfortably full" is deliberate: heights are estimates, a browser draws the
+real page a fraction taller or shorter, and a page with spare room absorbs
+that difference where a page filled to the brim clips and is refused.
+
+**One entry per ZONE, in reading order - not one per helper.** An entry is
+exactly what that zone will hold, so it is usually a `stack` of several
+helpers, and a two-column sheet's array has two entries. Three entries asks
+for a three-zone shape: split one zone's stack into separate entries and you
+have asked for a different page from the one you meant.
+
+**Content stays in the order you hand it over. The library moves instead.**
+Zones fill in reading order, first entry into the first zone, and that is
+deliberate: a fluency set often gets harder as it goes, and a later question
+can depend on an earlier one being done, so reordering to chase a fit would
+break the teaching silently. You never need to shuffle content to help a fit
+along - the library carries every shape mirrored top-to-bottom, mirrored
+left-to-right, and turned on its side, so if your biggest item is second,
+a shape whose biggest zone is second already exists and has already been
+tried.
+
+**Its numbers ARE the build's numbers.** Same measurements, same helpers, same
+millimetres - so there is nothing to be learned by building a sheet to find
+out whether it fits. A spec the gate accepts will render; one it refuses would
+have been refused after the build too. Never build a page in order to measure
+it.
+
+**Name a layout yourself only when the teaching wants a particular
+arrangement.** The engine cannot tell that a grid a child plots on wants to be
+one big shared grid rather than six small ones, that a page's flanks should
+point inward at a middle, or that a deliberately short sheet is short on
+purpose. There, choose: run
 
 ```
 node "[PLUGIN_ROOT]/worksheet-html/scripts/suggest.js" "<content.json>" "<YEAR_GROUP>"
 ```
 
-Always pass the year group. A writing line is 8mm for Years 1 to 3 and 6mm for
-Years 4 to 6, so a Year 4 sheet asked without it comes back measured on the
-younger line and the answer is a different sheet's.
-
-**One entry per ZONE, in reading order - not one per helper.** Each entry is
-exactly what that zone's content will be in `worksheet.json`, so an entry is
-usually a `stack` holding several helpers, and the whole file for a two-column
-sheet is two entries. Three entries means you are asking about a
-three-zone layout. Split one zone's stack into separate entries and you are
-asking a different question from the one the build will answer, and the answers
-will not match.
-
-It returns every layout that holds the content, **best first, where best means
-most comfortably full rather than fullest**. It is doing arithmetic against each
-helper's stated minimum, which is worth handing over.
-
-That ranking is not a nicety. The heights it works from are estimates, and a
-browser draws the real page a fraction taller or shorter than any estimate; a
-page with spare room absorbs that difference and a page filled to the brim
-cannot, so it clips and the sheet is refused. The list used to be ordered
-fullest first, which put the shape nearest the edge at the top and cost real
-lessons their worksheets. Take from the top unless the teaching says otherwise,
-and treat a layout marked `tight` as a warning rather than an achievement.
-
-**Its numbers ARE the build's numbers.** Same measurements, same helpers, same
-millimetres — this is the build's own fit check, asked before a page exists.
-So there is nothing to be learned by building the sheet to find out whether it
-fits: a layout it accepts will render, and a layout it refuses would have been
-refused after the build too. Never build a page in order to measure it.
-
-**Content stays in the order you hand it over. The library moves instead.**
-Zones fill in reading order, first item into the first zone, and that is
-deliberate: a fluency set often gets harder as it goes, and a later question can
-depend on an earlier one being done, so reordering to chase a fit would break the
-teaching silently. You therefore never need to shuffle your content and ask
-again. If your biggest item is second, there is a shape whose biggest zone is
-second — the library carries every shape mirrored top-to-bottom, mirrored
-left-to-right, and turned on its side, generated rather than hand-written, so the
-arrangement exists whether or not anyone thought to draw it. One run of the tool
-has already tried all of them at both orientations.
-
-So a second run is only ever worth it after you have CHANGED THE CONTENT. Two
-runs on the same items in a different order is the same question asked twice.
-
-The reply names the layout AND the orientation (`halves-side (landscape)`), and
-both are part of the answer: the same shape at the other orientation is a
-different set of millimetres. Put what it gives you into the sheet unchanged.
-
-Question numbering is included in the suggestion arithmetic. A printed number
-has a real left gutter, so a zone that fits before numbering may be too narrow
-afterwards. Do not strip `question: true` from the content file you pass to
-`suggest.js`; that marker is how the tool measures the final numbered width.
-
-**Which of those suits the teaching is yours.** The engine cannot tell that a
-grid a child plots on wants to be one big shared grid rather than six small
-ones, or that a fluency block reads better as a rhythm of the same shape
-repeated. Take its list, then choose.
+with the same zone entries in a JSON file (a bare array, or
+`{ "items": [...] }`) to see every shape that holds them, ranked. Always pass
+the year group - a writing line is 8mm for Years 1 to 3 and 6mm for Years 4
+to 6, so an answer measured without it is a different sheet's - and keep
+`question: true` on the content you pass, because a printed number has a real
+left gutter and the tool measures the final numbered width. The reply names
+the layout AND the orientation (`halves-side (landscape)`), and both are part
+of the answer: the same shape the other way round is a different set of
+millimetres. Put the pair you choose into the sheet as a named `layout` with
+lettered zones, unchanged.
 
 ### 3. Fill the zones
 
@@ -501,7 +497,10 @@ The engine checks every zone before it draws anything, and refuses a sheet it
 cannot render honestly. A refusal is information: the layout is wrong for this
 content, or a helper needs more room than you gave it.
 
-Change the layout. Never talk yourself into a smaller picture to get past it.
+On a named layout, change the layout. On an auto sheet the engine has already
+tried every shape at both orientations, so its refusal says something about
+the content - regroup the zones, or follow the ladder below. Either way,
+never talk yourself into a smaller picture to get past it.
 
 **When no layout in the library holds it, the brief is bigger than a page and
 that is the finding.** Not a puzzle to keep re-cutting: three or four refusals
@@ -510,9 +509,10 @@ and the refusal message tells you plainly - a page has 267mm of height in
 portrait and 180mm in landscape, so content asking for 500mm is not a layout
 problem.
 
-**Read the verdict the tool prints when nothing fits, and act on which kind it
-is.** It names the closest shape and how far short it falls, in millimetres, and
-the two cases call for opposite moves:
+**Read the verdict that comes back when nothing fits, and act on which kind it
+is.** Whether it arrives from `suggest.js` or as an auto sheet's
+`SHEET_DOES_NOT_FIT`, it names the closest shape and how far short it falls,
+in millimetres, and the two cases call for opposite moves:
 
 - **Over on HEIGHT, with no shape inside the page** - cutting is what is left.
   Rearranging zones moves height around a page; it does not create any.
@@ -917,5 +917,6 @@ sheet that wanted it. This is a suggestion for a layout or helper worth
 building, so raise it only when it would genuinely have made this sheet easier
 or the shape is an obvious hole - a tight page you composed cleanly with the
 existing shapes is not friction.
-`suggest.js` helps choose a shape; this final command proves the JSON you
-actually saved is still the shape and content that were measured.
+This final command resolves any `"auto"` layout exactly as the build will,
+prints the shape it chose, and proves the JSON you actually saved is the page
+that will print.

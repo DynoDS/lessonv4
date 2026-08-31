@@ -38,6 +38,7 @@ const {
   checkWorksheet,
   answerKeyOf,
   renderAnswerKey,
+  resolveAutoLayouts,
   WorksheetError,
 } = require("../src/worksheet");
 const { resolveImages } = require("../src/images");
@@ -117,7 +118,7 @@ async function main() {
   // Collected rather than thrown, so one failure names every picture the spec
   // asks for and cannot have. A repair round can then clear them together.
   const imageProblems = [];
-  const worksheet = resolveImages(optionalVisuals.worksheet, specDir, imageProblems);
+  let worksheet = resolveImages(optionalVisuals.worksheet, specDir, imageProblems);
   const outDir = outArg || path.dirname(path.resolve(specPath));
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -127,6 +128,28 @@ async function main() {
       fail(item.signal, item.message, "technical", item.location);
     }
     return;
+  }
+
+  // A sheet that said `"layout": "auto"` gets its shape here, after pictures
+  // are real (a photograph has no height until its file is read) and before
+  // anything measures or numbers the sheet. Said out loud per sheet: the
+  // shape was the engine's choice, and the designer reading the log is
+  // entitled to know which one it made.
+  try {
+    const resolvedAuto = resolveAutoLayouts(worksheet);
+    worksheet = resolvedAuto.worksheet;
+    for (const choice of resolvedAuto.choices) {
+      console.log(
+        `AUTO_LAYOUT: ${choice.label} drawn in "${choice.layout}" ` +
+          `(${choice.orientation}), ${choice.fillPct}% full.`
+      );
+    }
+  } catch (e) {
+    if (e instanceof WorksheetError) {
+      fail(e.signal, e.message, "composition", e.location || {});
+      return;
+    }
+    throw e;
   }
 
   // Answers are a different audience. Validate complete coverage before pupil
@@ -234,16 +257,24 @@ async function main() {
       "Browser rendering unavailable; rendered page fit was not measured."
     );
   } else {
-    const { htmlToPdf } = require("../src/chrome");
+    const { htmlToPdf, launchBrowser } = require("../src/chrome");
     const { roomierArrangements } = require("../src/suggest");
     const pdfs = [];
     const clipped = [];
     const reshaped = [];
 
+    // One Chrome for the whole build. Every sheet, and every reshape retry,
+    // prints through this one process: launching Chrome per page was the
+    // slowest line in the build multiplied by up to a dozen, for identical
+    // output.
+    const browser = await launchBrowser();
+    try {
+
     for (const r of rendered) {
       let { pdf, fitProblems } = await htmlToPdf(r.html, {
         landscape: r.sheet.spec.orientation === "landscape",
         inspectFit: true,
+        browser,
       });
 
       // The arithmetic said it fitted and the browser disagreed, which means an
@@ -274,6 +305,7 @@ async function main() {
           const retry = await htmlToPdf(retryHtml, {
             landscape: option.orientation === "landscape",
             inspectFit: true,
+            browser,
           });
           if ((retry.fitProblems || []).length) continue;
 
@@ -294,6 +326,10 @@ async function main() {
       for (const problem of fitProblems || []) {
         clipped.push({ sheet: r.sheet, problem });
       }
+    }
+
+    } finally {
+      await browser.close();
     }
 
     // Said out loud, every time. A page that was rearranged to print is still a

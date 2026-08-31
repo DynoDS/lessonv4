@@ -32,7 +32,7 @@ Read the exact photo-requirements file supplied by the spawn prompt only when th
 
 Read reference material only under these triggers:
 
-- For page shape, zone allocation, orientation, dead space or workspace faults, read the affected layout contract in `[PLUGIN_ROOT]/references/worksheet-compositions.md`.
+- For page shape, zone allocation, orientation, dead space or workspace faults, read the affected layout contract in `[PLUGIN_ROOT]/references/worksheet-compositions.md`. A sheet whose `layout` is `"auto"` holds its zones as an array in reading order and had its shape chosen by the engine: repair the content or its grouping and the build re-chooses the shape itself. Write a named layout with lettered zones only when the finding is that the chosen arrangement fails the teaching, so the choice must stop being the engine's.
 - For helper selection, helper fields or helper fit, read the affected rules in `[PLUGIN_ROOT]/references/worksheet-helpers.md` and only the affected helper entry in `[PLUGIN_ROOT]/references/worksheet-helpers/catalogue.md`.
 - For a subject-specific helper constraint, read `[PLUGIN_ROOT]/references/worksheet-helpers/[subject].md` only when that file exists for the current subject.
 - For a finding that explicitly names a worksheet house preference, read only that named section of `[PLUGIN_ROOT]/references/preferences.md`. For a finding that names `teacher-voice.md`, read only its named section.

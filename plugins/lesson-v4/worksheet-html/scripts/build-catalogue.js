@@ -123,6 +123,14 @@ function asWritten(spec) {
   return out;
 }
 
+// The index line is the helper's identity, not its whole story: the first
+// sentence of the purpose, which every purpose leads with. The detail lives
+// in the full entry, where it is read only once the helper is a candidate.
+function firstSentence(text) {
+  const match = /^[\s\S]*?[.!?](?=\s|$)/.exec(String(text).trim());
+  return (match ? match[0] : String(text).trim()).replace(/\s+/g, " ");
+}
+
 function entry(name) {
   const helper = REGISTRY[name];
   const example = { helper: name, ...examples[name] };
@@ -168,14 +176,17 @@ function main() {
     "",
     `The ${names.length} helpers, what each is for, and a working example of each.`,
     "",
-    "**How Worksheet Designer reads this catalogue.** Scan the family headings and",
-    "the one-line purpose under each helper name, so you know what exists and can",
-    "recognise the shape you need. Do not read every example and smallest-usable",
-    "line at run start: that is most of this file, and the detail is only useful",
-    "once a helper is a real candidate. When one becomes a candidate, read that",
-    "helper's complete entry before its first use, and reopen it later only for a",
-    "field or a size you have not already used. A designer that reads the whole",
-    "catalogue before choosing anything spends its run on helpers it never picks.",
+    "**How Worksheet Designer reads this catalogue.** Read the Index just below -",
+    "one line per helper - and pick the two to five that could carry what your",
+    "sheet needs. Then read only those helpers' complete entries (each starts at a",
+    "`####` heading carrying the helper's name) before first use, and reopen an",
+    "entry later only for a",
+    "field or a size you have not already used. The full entries are most of this",
+    "file and almost all of them describe helpers this lesson will not use, so a",
+    "designer that reads past the index before choosing spends its run on helpers",
+    "it never picks. The index is for finding candidates; it is not the contract -",
+    "fields and sizes live only in the full entry, so never write a spec from an",
+    "index line alone.",
     "",
     "**The example is the contract.** It is a real spec, and check-render draws every",
     "one of them at four widths on every run, so it cannot describe a field that does",
@@ -200,6 +211,17 @@ function main() {
     "emailed. Never write `imageHref` yourself.",
     "",
   ];
+
+  // The index: every helper on one line, so choosing candidates is one read
+  // of one screen rather than a page-through of the whole file.
+  out.push("## Index", "");
+  for (const [family, list] of FAMILIES) {
+    out.push(`**${family}**`, "");
+    for (const name of list) {
+      out.push(`- \`${name}\` - ${firstSentence(purposes[name])}`);
+    }
+    out.push("");
+  }
 
   for (const [family, list] of FAMILIES) {
     out.push(`## ${family}`, "");
