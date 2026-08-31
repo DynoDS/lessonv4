@@ -231,5 +231,87 @@ class AuditTests(unittest.TestCase):
         self.assertIn("WORKER_LAUNCH_AUDIT_UNAVAILABLE", result.stdout)
 
 
+class SessionChoiceTests(unittest.TestCase):
+    """Which session file the audit reads when the caller names none.
+
+    Every worker writes its own session file, so the newest file on disk stops
+    being the orchestrator's the moment the first worker starts. Reading the
+    newest one therefore read a record of a session that launched nothing, and a
+    completed lesson reported its own launch settings as uncertifiable while the
+    real record sat a few files back.
+    """
+
+    def setUp(self) -> None:
+        self.home = Path(__file__).resolve().parent / "_worker_launch_home"
+        self.sessions = self.home / "sessions" / "2026" / "08" / "31"
+        self.sessions.mkdir(parents=True, exist_ok=True)
+
+    def tearDown(self) -> None:
+        for path in sorted(self.home.rglob("*"), reverse=True):
+            path.unlink() if path.is_file() else path.rmdir()
+        self.home.rmdir()
+
+    def worker_session(self, name: str, text: str) -> Path:
+        path = self.sessions / name
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def audit(self) -> subprocess.CompletedProcess:
+        import os
+
+        environment = dict(os.environ, CODEX_HOME=str(self.home))
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "audit"],
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+
+    def touch_in_order(self, paths: list[Path]) -> None:
+        """Give the files ascending modification times, oldest first."""
+        import os
+
+        for index, path in enumerate(paths):
+            stamp = 1_700_000_000 + index
+            os.utime(path, (stamp, stamp))
+
+    def test_the_orchestrator_record_is_found_behind_its_workers(self) -> None:
+        orchestrator = write_session(
+            self.sessions / "rollout-2026-08-31T09-39-29-a.jsonl",
+            [
+                {
+                    "task_name": "lesson_designer",
+                    "model": "gpt-5.6-sol",
+                    "reasoning_effort": "xhigh",
+                    "fork_turns": "none",
+                }
+            ],
+        )
+        worker = self.worker_session(
+            "rollout-2026-08-31T11-01-15-b.jsonl",
+            json.dumps({"type": "message", "text": "Launch it with spawn_agent."}) + "\n",
+        )
+        self.touch_in_order([orchestrator, worker])
+
+        result = self.audit()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("WORKER_LAUNCH_AUDIT_OK: 1 named workers", result.stdout)
+        self.assertIn(orchestrator.name, result.stdout)
+
+    def test_a_run_that_truly_launched_nothing_still_says_so(self) -> None:
+        """Discrimination: the search must not invent a record. With no launch
+        anywhere, the audit reports what it always did."""
+        only = self.worker_session(
+            "rollout-2026-08-31T11-01-15-b.jsonl",
+            json.dumps({"type": "message", "text": "No launches here."}) + "\n",
+        )
+        self.touch_in_order([only])
+
+        result = self.audit()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("WORKER_LAUNCH_AUDIT_UNAVAILABLE", result.stdout)
+        self.assertIn(only.name, result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

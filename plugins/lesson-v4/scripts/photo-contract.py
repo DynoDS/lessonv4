@@ -217,6 +217,27 @@ def collect_strings(value) -> set[str]:
     return found
 
 
+def reference_forms(filename: str) -> set[str]:
+    """Every spelling of one approved filename a specification may carry.
+
+    A worksheet names a picture the only way its renderer can read one: the
+    approved `filename`, written into `imagePath`. Promotion used to look for the
+    contract `id` alone, which no rendering specification ever carries, so a
+    worksheet that referenced three adaptation photographs promoted none of them.
+    The supplemental picture wave then had nothing to source, and the build
+    blocked on pictures that had been in the contract the whole time.
+
+    Only spellings that mean the same file count: the filename as written, with
+    Windows separators, and without a leading "./". Nothing is matched on a bare
+    basename, because two folders may hold the same name.
+    """
+    plain = filename.replace("\\", "/")
+    forms = {plain, plain.replace("/", "\\")}
+    if plain.startswith("./"):
+        forms.update(reference_forms(plain[2:]))
+    return forms
+
+
 def run_photo_cap(path: Path) -> None:
     script = Path(__file__).resolve().parent / "check-photo-cap.py"
     completed = subprocess.run(
@@ -310,7 +331,11 @@ def cmd_promote_used(args) -> int:
         and isinstance(photo.get("id"), str)
         and PHOTO_ID_RE.fullmatch(photo["id"])
     ]
-    used = [photo for photo in provisional_adaptation if photo["id"] in strings]
+    used = [
+        photo
+        for photo in provisional_adaptation
+        if photo["id"] in strings or reference_forms(photo["filename"]) & strings
+    ]
     base = require_schema2(read_json(canonical_path, "canonical photo requirements"), "canonical photo requirements") if canonical_path.exists() else initial
     merged, new_ids, new_filenames = merge_photos(base, used)
 

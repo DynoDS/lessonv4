@@ -109,9 +109,18 @@ class UnavailablePictureRouteTests(unittest.TestCase):
 
     def test_the_builder_splits_image_missing_by_who_can_fix_it(self):
         text = flat(WORKSHEET_BUILDER)
-        self.assertIn("whether that filename already has a terminal picture receipt", text)
+        self.assertIn("whether it already has a terminal picture receipt", text)
         self.assertIn("the picture route is a dead end", text)
         self.assertIn("the worksheet-designer re-authors that one reference", text)
+
+    def test_the_builder_reports_every_missing_picture_not_only_the_first(self):
+        """A sheet naming three unsourced photographs used to hear about them
+        one build at a time, and the run's single repair round could never
+        catch up: no worksheet and no answer key. The build now prints them
+        all, so the role that reads the build must pass them all on."""
+        text = flat(WORKSHEET_BUILDER)
+        self.assertIn("for **every** unreadable picture", text)
+        self.assertIn("report every one it printed", text)
 
     def test_every_focused_repair_role_carries_the_one_exception(self):
         for path in (WORKSHEET_REPAIR, SLIDE_REPAIR, WALL_REPAIR):

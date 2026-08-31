@@ -2031,21 +2031,34 @@ def test_photo_promotion_semantically_validates_after_merge():
     assert promote.index("run_photo_cap(candidate)") < promote.index("run_lesson_design_validator") < promote.index("atomic_write_bytes(canonical_path")
 
 
-def promoted_adaptation_ids(provisional_ids, worksheet_refs):
-    """Mirror deterministic promote-used identity selection: only exact
-    adaptation-photo IDs referenced by the accepted worksheet are promoted."""
+def promoted_adaptation_ids(provisional, worksheet_refs):
+    """Mirror deterministic promote-used identity selection.
+
+    A photo is promoted when the accepted worksheet names it - by its
+    adaptation-photo ID, or by the approved filename its renderer actually
+    reads. Matching the ID alone promoted nothing from a real worksheet, whose
+    `imagePath` can only carry the filename.
+    """
     strings = set(worksheet_refs)
-    return [photo_id for photo_id in provisional_ids if photo_id in strings]
+    return [
+        photo["id"]
+        for photo in provisional
+        if photo["id"] in strings or photo["filename"] in strings
+    ]
 
 
 def test_supplemental_plan_owns_only_filenames_the_final_worksheet_uses():
     provisional = [
-        "adaptation-photo-001",
-        "adaptation-photo-002",
-        "adaptation-photo-003",
+        {"id": "adaptation-photo-001", "filename": "generated/desk-fan.png"},
+        {"id": "adaptation-photo-002", "filename": "generated/torch.png"},
+        {"id": "adaptation-photo-003", "filename": "generated/vacuum.png"},
     ]
-    worksheet_refs = ["adaptation-photo-002"]
-    assert promoted_adaptation_ids(provisional, worksheet_refs) == ["adaptation-photo-002"]
+    assert promoted_adaptation_ids(provisional, ["adaptation-photo-002"]) == [
+        "adaptation-photo-002"
+    ]
+    assert promoted_adaptation_ids(provisional, ["generated/torch.png"]) == [
+        "adaptation-photo-002"
+    ]
 
     skill = read(SKILL)
     flat = " ".join(skill.split())
@@ -2054,7 +2067,7 @@ def test_supplemental_plan_owns_only_filenames_the_final_worksheet_uses():
         "promote only adaptation photos actually referenced by the accepted "
         "worksheet" in flat
     )
-    assert 'used = [photo for photo in provisional_adaptation if photo["id"] in strings]' in helper
+    assert 'if photo["id"] in strings or reference_forms(photo["filename"]) & strings' in helper
 
 
 def test_design_reviewer_leaves_post_review_validation_to_orchestrator():

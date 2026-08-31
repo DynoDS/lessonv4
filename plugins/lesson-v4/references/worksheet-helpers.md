@@ -265,7 +265,7 @@ reported rather than just the first.
 | `Page fit: ✓ ...` | One page per sheet, measured in a real browser after the fonts loaded. Prints only when every page drew and nothing clipped. |
 | `ZONE_SPEC_INVALID` | A zone could not be drawn. Names the sheet and the zone, and the reason follows on the same line: a field the helper could not read, a helper name that does not exist (`UNKNOWN_HELPER: "..."` with the known names), or a layout name that does not exist (`UNKNOWN_LAYOUT`, which names every zone at once because the whole sheet has no shape - fix the sheet's `layout`, not the zones). **Fix what the line names.** |
 | `SHEET_DOES_NOT_FIT` | Every zone draws, but the page will not hold them. **Choose a different layout, or move something off the sheet.** Also covers real clipping found in the rendered page, which names the sheet, the page and the zone. |
-| `IMAGE_MISSING` | A photograph the spec names could not be read. Names the file. |
+| `IMAGE_MISSING` | A photograph the spec names could not be read. One line per unreadable picture, each naming its sheet, zone and file, so a spec missing several is one failure to fix rather than one failure per rebuild. |
 | `ANSWER_KEY_MISSING` | A populated pupil sheet has no top-level `answerKey` entry. Names the sheets. |
 | `ANSWER_KEY_INCOMPLETE` | The key exists but misses a question the sheet prints. Names the sheet and the label. |
 | `ANSWER_KEY_EXTRA` | The key answers a question the sheet does not print. Names the label and lists what the sheet does print. |

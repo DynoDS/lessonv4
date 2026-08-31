@@ -219,6 +219,117 @@ class PhotoContractTests(unittest.TestCase):
         self.assertIn(f'working / "{receipt_name}"', gate)
         self.assertIn(f'--receipt "[WORKING_DIR]/{receipt_name}"', playbook)
 
+    def promote(self, root, worksheet_spec, adaptation_photos):
+        """Run promote-used the way the playbook runs it, and return the count."""
+        adaptation = root / "adaptation.md"
+        adaptation.write_text(adaptation_document(adaptation_photos), encoding="utf-8")
+        provisional = root / "adaptation-photo-provisional.json"
+        receipts = root / "orchestration-receipts"
+        receipts.mkdir(parents=True, exist_ok=True)
+        build_args = type("Args", (), {
+            "initial": str(root / "phase2-initial-photo-requirements.json"),
+            "adaptation": str(adaptation),
+            "output": str(provisional),
+            "lesson_design": None,
+            "receipt": str(receipts / "adaptation-photo-provisional.json"),
+        })()
+        photo_contract.cmd_build_provisional(build_args)
+
+        worksheet = root / "worksheet.json"
+        worksheet.write_text(json.dumps(worksheet_spec), encoding="utf-8")
+        receipt = receipts / "photo-requirements-w-1.json"
+        promote_args = type("Args", (), {
+            "initial": str(root / "phase2-initial-photo-requirements.json"),
+            "provisional": str(provisional),
+            "adaptation": str(adaptation),
+            "worksheet": str(worksheet),
+            "canonical": str(root / "photo-requirements.json"),
+            "lesson_design": None,
+            "receipt": str(receipt),
+            "requirements_snapshot": str(root / "photo-requirements-w-1.json"),
+        })()
+        photo_contract.cmd_promote_used(promote_args)
+        return json.loads(receipt.read_text(encoding="utf-8"))["newFilenames"]
+
+    def test_a_worksheet_promotes_the_pictures_it_names_by_filename(self):
+        """The Year 4 appliances run: three adaptation photographs approved,
+        three referenced by the Below sheet, none promoted, and no worksheet.
+
+        A rendering specification names a picture the only way its engine can
+        read one, through the approved filename in `imagePath`. Matching on the
+        contract id alone therefore selected nothing, the supplemental picture
+        wave had nothing to source, and the build blocked on pictures that had
+        been in the contract all along.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.freeze(root)
+            approved = [
+                full_photo("adaptation-photo-001", "generated/desk-fan.png"),
+                full_photo("adaptation-photo-002", "generated/torch.png"),
+                full_photo("adaptation-photo-003", "generated/vacuum.png"),
+            ]
+            worksheet = {"sheets": {"below": {"zones": {"a": {"cards": [
+                {"imagePath": "generated/desk-fan.png"},
+                {"imagePath": "generated/torch.png"},
+                {"imagePath": "generated/vacuum.png"},
+            ]}}}}}
+            self.assertEqual(
+                sorted(self.promote(root, worksheet, approved)),
+                ["generated/desk-fan.png", "generated/torch.png", "generated/vacuum.png"],
+            )
+
+    def test_an_approved_picture_the_sheet_never_uses_is_still_not_promoted(self):
+        """Discrimination: promotion sources what the sheet asks for, not the
+        whole provisional contract. An adaptation photo the accepted worksheet
+        dropped must not cost a picture out of the lesson's cap."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.freeze(root)
+            approved = [
+                full_photo("adaptation-photo-001", "generated/desk-fan.png"),
+                full_photo("adaptation-photo-002", "generated/torch.png"),
+            ]
+            worksheet = {"sheets": {"below": {"zones": {"a": {
+                "cards": [{"imagePath": "generated/torch.png"}]
+            }}}}}
+            self.assertEqual(
+                self.promote(root, worksheet, approved), ["generated/torch.png"]
+            )
+
+    def test_a_worksheet_that_still_names_ids_promotes_the_same_pictures(self):
+        """Generalisation: the id remains a valid reference, so a specification
+        that carries both spellings, or only the id, is unaffected."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.freeze(root)
+            approved = [full_photo("adaptation-photo-001", "generated/desk-fan.png")]
+            worksheet = {"sheets": {"below": {"zones": {"a": {
+                "photoRefs": ["adaptation-photo-001"]
+            }}}}}
+            self.assertEqual(
+                self.promote(root, worksheet, approved), ["generated/desk-fan.png"]
+            )
+
+    def test_a_windows_written_path_names_the_same_approved_picture(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.freeze(root)
+            approved = [full_photo("adaptation-photo-001", "generated/desk-fan.png")]
+            worksheet = {"sheets": {"below": {"zones": {"a": {
+                "cards": [{"imagePath": "generated\\desk-fan.png"}]
+            }}}}}
+            self.assertEqual(
+                self.promote(root, worksheet, approved), ["generated/desk-fan.png"]
+            )
+
+    def test_a_bare_basename_is_not_treated_as_a_reference(self):
+        """Two folders may hold the same name, so only spellings that mean the
+        same file count. A loose match here would promote the wrong picture."""
+        self.assertNotIn(
+            "desk-fan.png", photo_contract.reference_forms("generated/desk-fan.png")
+        )
+
     def test_latest_supplemental_snapshot_is_selected_from_valid_receipt(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); snapshot = root / "snapshot.json"; snapshot.write_text(json.dumps({"schema_version": 2, "lesson_name": "lesson", "photos": []}), encoding="utf-8")

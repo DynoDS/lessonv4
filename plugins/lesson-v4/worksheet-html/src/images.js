@@ -129,13 +129,26 @@ function embedImage(filePath) {
 // image-scout saves and what the diagram-anchor agent reads when it moves the
 // dots onto the real features. Keeping the same name means a worksheet spec can
 // go through the anchoring step unchanged.
-function resolveImages(node, baseDir) {
-  if (Array.isArray(node)) return node.map((item) => resolveImages(item, baseDir));
+//
+// `problems` is an optional array. Without it the first unreadable picture
+// throws, which is right for a caller that only needs to know the spec is not
+// buildable. With it, every unreadable picture is recorded and the walk carries
+// on, so a build names all of them in one failure.
+//
+// That difference decided a lesson. A sheet naming three pictures that were
+// never sourced reported the first, a repair round removed it, the rebuild
+// reported the second, and the run's one allowed repair was already spent: no
+// worksheet, no answer key. The faults were all present at the first build and
+// nothing but the reporting stopped them being fixed together.
+function resolveImages(node, baseDir, problems) {
+  if (Array.isArray(node)) {
+    return node.map((item) => resolveImages(item, baseDir, problems));
+  }
   if (!node || typeof node !== "object") return node;
 
   const out = {};
   for (const [key, value] of Object.entries(node)) {
-    out[key] = resolveImages(value, baseDir);
+    out[key] = resolveImages(value, baseDir, problems);
   }
 
   if (typeof out.imagePath === "string" && !out.imageHref) {
@@ -150,6 +163,19 @@ function resolveImages(node, baseDir) {
       // the complete emoji set or to no pictures; required photographs and
       // labelled diagrams still fail loudly through the normal path.
       if (out.kind === "educational-svg" && /^IMAGE_MISSING:/.test(String(err.message || err))) {
+        return out;
+      }
+      if (Array.isArray(problems)) {
+        const message = String((err && err.message) || err);
+        const named = /^([A-Z_]{3,}):\s*([\s\S]*)$/.exec(message);
+        problems.push({
+          imagePath: out.imagePath,
+          signal: named ? named[1] : "IMAGE_MISSING",
+          message: named ? named[2].replace(/\s+/g, " ").trim() : message,
+        });
+        // Left unresolved on purpose: `imagePath` with no `imageHref` is what
+        // the build already walks for to name the sheet and zone each fault
+        // sits in.
         return out;
       }
       throw err;

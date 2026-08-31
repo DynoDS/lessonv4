@@ -114,13 +114,18 @@ async function main() {
   for (const warning of optionalVisuals.warnings) {
     console.warn(`[decoration] ${warning}`);
   }
-  const worksheet = resolveImages(optionalVisuals.worksheet, specDir);
+  // Collected rather than thrown, so one failure names every picture the spec
+  // asks for and cannot have. A repair round can then clear them together.
+  const imageProblems = [];
+  const worksheet = resolveImages(optionalVisuals.worksheet, specDir, imageProblems);
   const outDir = outArg || path.dirname(path.resolve(specPath));
   fs.mkdirSync(outDir, { recursive: true });
 
-  const unresolved = unresolvedImages(worksheet);
+  const unresolved = unresolvedImages(worksheet, imageProblems);
   if (unresolved.length) {
-    for (const where of unresolved) fail("IMAGE_MISSING", where);
+    for (const item of unresolved) {
+      fail(item.signal, item.message, "technical", item.location);
+    }
     return;
   }
 
@@ -414,23 +419,60 @@ function pdfBlocker() {
 //
 // A helper handed an unresolved path draws an empty frame and says nothing, so
 // this is the difference between a build that refuses and a teacher handing out
-// a sheet with a hole in it. Named by sheet and zone, like every other fault.
-function unresolvedImages(worksheet) {
+// a sheet with a hole in it. Named by sheet and zone, like every other fault,
+// and ALL of them: a spec missing three pictures is three faults in one report,
+// not one fault three builds running.
+//
+// `problems` carries what the resolver already learned about each path - the
+// file was absent, the format is unknown, the size unreadable - so the signal
+// stays exact instead of collapsing to IMAGE_MISSING for all three.
+function unresolvedImages(worksheet, problems) {
+  const reason = new Map((problems || []).map((p) => [p.imagePath, p]));
   const found = [];
+  const seen = new Set();
 
-  const walk = (node, where) => {
-    if (Array.isArray(node)) return node.forEach((n) => walk(n, where));
+  const walk = (node, sheet, zone) => {
+    if (Array.isArray(node)) return node.forEach((n) => walk(n, sheet, zone));
     if (!node || typeof node !== "object") return;
     if (typeof node.imagePath === "string" && !node.imageHref) {
-      found.push(`${where}: "${node.imagePath}" could not be read.`);
+      const key = [sheet, zone, node.imagePath].join(" | ");
+      if (!seen.has(key)) {
+        seen.add(key);
+        const detail = reason.get(node.imagePath);
+        found.push({
+          signal: detail ? detail.signal : "IMAGE_MISSING",
+          message:
+            `${sheet} zone "${zone}": ` +
+            (detail
+              ? detail.message
+              : `"${node.imagePath}" could not be read.`),
+          location: { sheet, zone, imagePath: node.imagePath },
+        });
+      }
     }
-    for (const value of Object.values(node)) walk(value, where);
+    for (const value of Object.values(node)) walk(value, sheet, zone);
   };
 
+  const located = new Set();
   for (const [key, sheet] of Object.entries(worksheet.sheets || {})) {
     for (const [id, content] of Object.entries((sheet && sheet.zones) || {})) {
-      walk(content, `${key} zone "${id}"`);
+      walk(content, key, id);
     }
+  }
+  for (const item of found) located.add(item.location.imagePath);
+
+  // A picture the resolver refused that sits outside any sheet zone - a cover,
+  // a header, a spec shape this walk does not know - is still a picture that
+  // cannot be drawn. Reported without a location rather than not reported: the
+  // throwing path never let one of these through, and neither does this one.
+  for (const problem of problems || []) {
+    if (located.has(problem.imagePath)) continue;
+    located.add(problem.imagePath);
+    found.push({
+      signal: problem.signal,
+      message: problem.message,
+      location: { imagePath: problem.imagePath },
+    });
   }
   return found;
 }

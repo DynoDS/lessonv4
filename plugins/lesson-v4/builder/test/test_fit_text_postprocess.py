@@ -170,6 +170,149 @@ def test_appliance_detective_reaches_the_measured_shared_maxima():
         assert by_group["meaning-column"][0] >= 28
 
 
+PROMPT_FIELDS = [
+    "What is it?",
+    "Is it an electrical appliance?",
+    "How is it powered?",
+    "What job does it do?",
+]
+
+
+def add_field_box(slide, name, fields, x, y, w, h, size, space_after_pt, breaks=True):
+    """A card's field prompt, written the way the evidence-card helper writes it.
+
+    `breaks=False` writes the same words as one flowing run, which is what the
+    measurement used to think it was looking at either way.
+    """
+    shape = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+    shape.name = name
+    frame = shape.text_frame
+    frame.clear()
+    paragraph = frame.paragraphs[0]
+    text = ("\n" if breaks else " ").join(fields)
+    run = paragraph.add_run()
+    run.text = text
+    run.font.name = "Comic Sans MS"
+    run.font.bold = True
+    run.font.size = Pt(size)
+    if space_after_pt:
+        paragraph.space_after = Pt(space_after_pt)
+    frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+    frame.margin_left = 0
+    frame.margin_right = 0
+    frame.margin_top = 0
+    frame.margin_bottom = 0
+    return shape
+
+
+def test_hard_line_breaks_are_measured_as_the_lines_they_draw():
+    """The Year 4 appliances deck: four field prompts, and "What job does it
+    do?" printed below the card it belonged in. Every deterministic check passed
+    because the measurement packed the four prompts across their own line breaks
+    and counted five lines where PowerPoint drew seven."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "prompt-card.pptx"
+        presentation = Presentation()
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        add_field_box(
+            slide, "prompt", PROMPT_FIELDS, 0.2, 0.2, 4.083, 2.941, 32, 8
+        )
+        presentation.save(deck)
+
+        MODULE.process(str(deck), floor_pt=10)
+
+        checked = Presentation(deck)
+        shape = next(s for s in checked.slides[0].shapes if s.has_text_frame)
+        chosen = run_sizes(shape)[0]
+        assert chosen < 32, f"the overflowing prompt was left at {chosen}pt"
+        assert chosen >= 10
+        # And the size it chose is the largest that really fits: one point more
+        # does not.
+        assert MODULE.measure_shape(shape, chosen + 1, chosen + 1)["hit_floor"]
+
+
+def test_the_same_words_without_breaks_keep_their_size():
+    """Discrimination: the fix must not shrink text that genuinely fits. The
+    same words as one flowing line wrap to five lines and fill the box."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "flowing.pptx"
+        presentation = Presentation()
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        add_field_box(
+            slide,
+            "flowing",
+            PROMPT_FIELDS,
+            0.2,
+            0.2,
+            4.083,
+            2.941,
+            32,
+            0,
+            breaks=False,
+        )
+        presentation.save(deck)
+
+        MODULE.process(str(deck), floor_pt=10)
+
+        checked = Presentation(deck)
+        shape = next(s for s in checked.slides[0].shapes if s.has_text_frame)
+        assert run_sizes(shape)[0] == 32
+
+
+def test_paragraph_spacing_is_height_the_fitter_counts():
+    """Space after a paragraph is real height no font size shrinks. Two boxes,
+    identical but for a full inch of paragraph spacing, must not measure the
+    same."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "spacing.pptx"
+        presentation = Presentation()
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        plain = add_field_box(
+            slide, "plain", PROMPT_FIELDS, 0.2, 0.2, 4.083, 2.941, 32, 0
+        )
+        spaced = add_field_box(
+            slide, "spaced", PROMPT_FIELDS, 5.0, 0.2, 4.083, 2.941, 32, 72
+        )
+        presentation.save(deck)
+
+        checked = Presentation(deck)
+        shapes = {s.name: s for s in checked.slides[0].shapes if s.has_text_frame}
+        plain_fit = MODULE.measure_shape(shapes["plain"], 32, 10)["best"]
+        spaced_fit = MODULE.measure_shape(shapes["spaced"], 32, 10)["best"]
+        assert spaced_fit < plain_fit
+
+
+def test_a_line_break_element_counts_as_a_line():
+    """pptxgenjs writes a newline character; hand-built and template text uses
+    an <a:br/> element. Both start a line, so both are counted."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "br.pptx"
+        presentation = Presentation()
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        shape = slide.shapes.add_textbox(Inches(0.2), Inches(0.2), Inches(4.0), Inches(2.0))
+        frame = shape.text_frame
+        frame.clear()
+        paragraph = frame.paragraphs[0]
+        for index, field in enumerate(PROMPT_FIELDS):
+            if index:
+                paragraph.add_line_break()
+            run = paragraph.add_run()
+            run.text = field
+            run.font.name = "Comic Sans MS"
+            run.font.size = Pt(20)
+        presentation.save(deck)
+
+        checked = Presentation(deck)
+        target = next(s for s in checked.slides[0].shapes if s.has_text_frame)
+        lines = MODULE.paragraph_lines(
+            target.text_frame.paragraphs[0], MODULE.FONT_REGULAR
+        )
+        assert len(lines) == len(PROMPT_FIELDS)
+        assert [
+            "".join(text for text, _ in line) for line in lines
+        ] == PROMPT_FIELDS
+
+
 if __name__ == "__main__":
     failed = 0
     for name, function in sorted(globals().items()):

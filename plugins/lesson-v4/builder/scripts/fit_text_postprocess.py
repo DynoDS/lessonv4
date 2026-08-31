@@ -259,6 +259,10 @@ def widest_unbroken_word(runs, pt):
 def best_fit_size(paragraphs_info, width_emu, height_emu, font_file, max_pt, floor_pt):
     """Binary search the largest integer pt (between floor_pt and max_pt) that fits.
 
+    Each entry is (lines, line_spacing, spacing_pt): the lines PowerPoint is
+    forced to start inside that paragraph, the paragraph's line spacing, and the
+    fixed space it reserves above and below itself.
+
     Returns (best_pt, hit_floor). hit_floor is True when no size >= floor_pt fits —
     the caller should log an overload warning.
     """
@@ -268,12 +272,15 @@ def best_fit_size(paragraphs_info, width_emu, height_emu, font_file, max_pt, flo
     def fits(pt):
         base_line_h = _real_line_height_emu(font_file, pt)
         total_h = 0
-        for runs, ls in paragraphs_info:
-            if widest_unbroken_word(runs, pt) > usable_w:
-                return False
-            n = wrap_runs(runs, usable_w, pt)
+        for lines, ls, spacing_pt in paragraphs_info:
+            n = 0
+            for runs in lines:
+                if widest_unbroken_word(runs, pt) > usable_w:
+                    return False
+                n += wrap_runs(runs, usable_w, pt)
+            n = max(n, 1)
             para_h = base_line_h + (n - 1) * int(base_line_h * ls)
-            total_h += int(para_h * LINE_HEIGHT_SAFETY)
+            total_h += int(para_h * LINE_HEIGHT_SAFETY) + points_to_emu(spacing_pt)
         return total_h <= usable_h
 
     lo, hi, best = int(floor_pt), int(max_pt), None
@@ -287,6 +294,76 @@ def best_fit_size(paragraphs_info, width_emu, height_emu, font_file, max_pt, flo
     if best is None:
         return floor_pt, True
     return best, False
+
+
+def points_to_emu(pt):
+    return int(float(pt) / 72.0 * 914400)
+
+
+# A line PowerPoint has to start whatever the width allows: an <a:br/> element,
+# or a newline character sitting inside a run's own text. Both reach a slide the
+# same way and both are invisible to word-splitting.
+HARD_BREAK_RE = re.compile("\r\n|[\r\n\x0b\u2028\u2029]")
+_A_NS = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+
+
+def paragraph_lines(paragraph, default_font):
+    """The paragraph's runs, grouped into the lines the renderer must start.
+
+    A paragraph is not always one flowing block that wraps only where it runs out
+    of width. A field prompt written as "What is it? \\n Is it powered? \\n ..."
+    carries hard breaks, and PowerPoint starts a new line at each one.
+
+    Measuring across those breaks packs words onto lines the renderer will never
+    put together, so the box measures shorter than it draws: autofit calls the
+    text fitting, leaves it at full size, and the last line is cut off below the
+    card. Grouping the runs here is what makes the measurement the same shape as
+    the render.
+    """
+    lines = [[]]
+    saw_run = False
+    for child in paragraph._p:
+        tag = child.tag
+        if tag == _A_NS + "br":
+            lines.append([])
+            continue
+        if tag not in (_A_NS + "r", _A_NS + "fld"):
+            continue
+        saw_run = True
+        properties = child.find(_A_NS + "rPr")
+        bold = properties is not None and properties.get("b") == "1"
+        italic = properties is not None and properties.get("i") == "1"
+        font_file = pick_font_file(bold, italic)
+        text_element = child.find(_A_NS + "t")
+        text = text_element.text if text_element is not None and text_element.text else ""
+        for index, part in enumerate(HARD_BREAK_RE.split(text)):
+            if index:
+                lines.append([])
+            if part:
+                lines[-1].append((part, font_file))
+    if not saw_run:
+        return [[(paragraph.text or "", default_font)]]
+    return lines
+
+
+def paragraph_spacing_pt(paragraph):
+    """The fixed space a paragraph reserves above and below itself, in points.
+
+    pptxgenjs writes these as absolute points, and they are real height in the
+    box that no font size will shrink. Left uncounted, a four-field prompt looked
+    like it had a spare tenth of an inch it did not have. The last paragraph's
+    space-after is counted too: PowerPoint reserves it, and counting it errs
+    toward shrinking, which is the safe side of this measurement.
+    """
+    total = 0.0
+    for value in (paragraph.space_before, paragraph.space_after):
+        if value is None:
+            continue
+        try:
+            total += float(value.pt)
+        except (AttributeError, TypeError, ValueError):
+            continue
+    return total
 
 
 def inspect_runs(tf):
@@ -338,19 +415,13 @@ def measure_shape(shape, ceiling, floor_pt):
         return None
     font_file = pick_font_file(bold, italic)
 
-    def runs_for(paragraph):
-        runs = [
-            (run.text or "", pick_font_file(bool(run.font.bold), bool(run.font.italic)))
-            for run in paragraph.runs
-        ]
-        return runs if runs else [(paragraph.text or "", font_file)]
-
     paragraphs_info = [
         (
-            runs_for(paragraph),
+            paragraph_lines(paragraph, font_file),
             paragraph.line_spacing
             if isinstance(paragraph.line_spacing, float)
             else DEFAULT_LINE_SPACING,
+            paragraph_spacing_pt(paragraph),
         )
         for paragraph in tf.paragraphs
     ]

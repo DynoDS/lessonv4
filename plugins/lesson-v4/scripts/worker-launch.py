@@ -169,14 +169,60 @@ def codex_home() -> Path:
     return Path(os.environ.get("CODEX_HOME") or (Path.home() / ".codex"))
 
 
+# How many recent session files to look through for the one that launched this
+# run's workers. A lesson launches around a dozen workers and each writes its own
+# file, so the orchestrator's record is never far back; the bound keeps a machine
+# with thousands of saved sessions from reading all of them.
+AUDIT_SCAN_LIMIT = 60
+
+
+def records_launches(path: Path) -> bool:
+    """Whether this session file holds any worker launch at all.
+
+    Every worker is handed instructions that talk about spawning, so the word
+    alone appears in files that launched nothing. Only a recorded call counts,
+    which is what `spawn_calls` reads; the quoted-name scan is a cheap way to
+    skip the files that cannot hold one before paying to parse them.
+    """
+    try:
+        with path.open(encoding="utf-8", errors="replace") as handle:
+            if not any('"spawn_agent"' in line for line in handle):
+                return False
+    except OSError:
+        return False
+    try:
+        return bool(spawn_calls(path))
+    except OSError:
+        return False
+
+
 def newest_session() -> Path | None:
+    """The session that launched this run's workers - not simply the newest file.
+
+    Every worker writes its own rollout, so the moment the first one starts, the
+    newest file on disk belongs to a worker rather than to the orchestrator that
+    launched it. A worker launches nobody, so its record holds no launches, and
+    taking the newest file made the audit report every Codex run's launch
+    settings as uncertifiable while the real record sat one file back.
+
+    Recent files are read newest-first and the first one holding a launch is the
+    orchestrator's. When none does, the newest is returned so the caller reports
+    what it always did: a run that truly launched nothing.
+    """
     sessions = codex_home() / "sessions"
     if not sessions.is_dir():
         return None
-    rollouts = list(sessions.rglob("rollout-*.jsonl"))
+    rollouts = sorted(
+        sessions.rglob("rollout-*.jsonl"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
     if not rollouts:
         return None
-    return max(rollouts, key=lambda path: path.stat().st_mtime)
+    for path in rollouts[:AUDIT_SCAN_LIMIT]:
+        if records_launches(path):
+            return path
+    return rollouts[0]
 
 
 def spawn_calls(session: Path) -> list[dict]:

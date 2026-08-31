@@ -324,10 +324,22 @@ function main() {
       }
     }
 
+    // Collected, not thrown, so a spec naming several pictures it cannot have
+    // hears about all of them at once. Reporting the first alone cost a run its
+    // worksheets: each repair round removed one and uncovered the next.
+    const imageProblems = [];
     worksheet = resolveImages(
       standInForPending(optionalVisuals.worksheet, pendingPaths),
-      specDir
+      specDir,
+      imageProblems
     );
+    if (imageProblems.length) {
+      for (const problem of imageProblems) {
+        console.log(`${problem.signal}: ${problem.message}`);
+      }
+      process.exitCode = 1;
+      return;
+    }
     answerKeyOf(worksheet);
     const refused = checkWorksheet(worksheet);
     if (refused.length) {
