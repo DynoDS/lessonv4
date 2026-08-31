@@ -94,10 +94,20 @@ blueprint file format was rejected for the reason under Settled below.
    Trying the lower setting is a separate experiment once the split is proven,
    and the run report already records what each worker ran at.
 
+10. **Balanced diet is the first test, four-digit plus or minus three-digit
+    is the safety check** (Daniel, 31 Aug 2026). Balanced diet first because
+    its failures were all wording written at the tired end of a long run, so
+    it measures exactly what the split claims to fix; the maths lesson second
+    because it is the least wordy subject and would catch a split that only
+    suits wordy ones. Same briefs as the original runs. The bar: the lesson
+    teaches the same or better, the words sound like Daniel without hand
+    rewriting, and nothing already approved gets re-argued. Speed is a bonus,
+    not the test. Daniel judges the voice; checks judge everything else.
+
 ## Open decisions, in order
 
-1. **First test lesson and the bar for switching.** Which lesson runs first,
-   and what result counts as good enough.
+None. Every decision is settled; what remains is implementation, the two
+test runs, and then the switch-over judgement against settled 10.
 
 ## Test lessons for before and after
 
