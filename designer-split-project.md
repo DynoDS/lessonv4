@@ -109,6 +109,39 @@ blueprint file format was rejected for the reason under Settled below.
 None. Every decision is settled; what remains is implementation, the two
 test runs, and then the switch-over judgement against settled 10.
 
+## What remains after a successful first test
+
+A good result on the two test lessons proves the shape, not the finish. In
+priority order, with the reason each still matters:
+
+1. **Switch over and retire the old route.** Remove the trigger, make the
+   split the only route, and stop shipping two ways of designing a lesson.
+   Until then every failure has to be diagnosed against whichever route
+   produced it.
+2. **Actually slim the decider.** This is the win the first build does not
+   yet deliver, and the honest gap in it. `lesson-architect.md` is 4KB but
+   opens `lesson-designer.md` (90KB) in full, so the deciding worker still
+   carries everything; only the words pass got a genuinely fresh, small
+   context. Once the split is proven, the wording craft in the designer file
+   - the register rules, the voice tells, the read-back, the child-facing
+   examples written to teach tone - moves out to `lesson-author.md` where it
+   is used, and the architect keeps the deciding half. Do this only after the
+   route is proven, and as its own change, so a regression has one cause.
+3. **Lift the growth freeze** (settled 4) once 1 and 2 are done, and let
+   wording failures be answered in the author file, which is where they now
+   belong and where a rule can be short because its file is short.
+4. **Run the other three test lessons** - circuit symbols, electrical
+   appliances, rainforest - as the wider regression check before retiring the
+   old route for good.
+5. **Try the author at a lower effort** (settled 9 deferred this), now that a
+   proven baseline exists to compare against.
+6. **Consider the worksheet content split** - the external advice's second
+   stage, a worksheet content designer branching off the approved design.
+   Open, not agreed: revisit only with evidence from real runs that the
+   worksheet is still where wording or evidence slips, because a stage costs
+   a hand-off and this project's rule is to add one only when the existing
+   shape cannot carry the requirement.
+
 ## Test lessons for before and after
 
 Lessons that each exposed a distinct real failure, to be re-run on the same
