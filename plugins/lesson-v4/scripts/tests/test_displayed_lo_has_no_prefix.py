@@ -25,11 +25,22 @@ class DisplayedLoHasNoPrefixTests(unittest.TestCase):
     `LO: To [verb] [object]`, so the prefix read as part of the stored value,
     while the schema shows `"displayedLo": "To ..."`. Three descriptions of
     one thing, two of them wrong about where the prefix comes from.
+
+    Since 4.2.46 the invariant is also enforced: the lesson-design validator
+    rejects a stored prefix, so a slip becomes a validator failure inside the
+    designer's bounded repair passes instead of a slide the class reads twice.
+    The behavioural test lives in test_lesson_design_contract.py.
     """
 
     def test_the_builder_still_owns_the_prefix(self) -> None:
         """If this ever stops being true, the guidance below is wrong."""
         self.assertIn("'LO: ' + lo", HEADERS.read_text(encoding="utf-8"))
+
+    def test_the_validator_owns_the_enforcement(self) -> None:
+        validator = (ROOT / "scripts" / "validate-lesson-design.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("no 'LO:' prefix", validator)
 
     def test_the_schema_stores_the_objective_without_the_prefix(self) -> None:
         self.assertIn('"displayedLo": "To ..."', flat(TEMPLATE))

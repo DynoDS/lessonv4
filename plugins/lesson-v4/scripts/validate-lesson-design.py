@@ -1527,6 +1527,16 @@ def validate_design(
            "lesson.yearGroup must be an integer from 1 to 6")
     for key in ("subject", "lo", "displayedLo", "stickingPoint"):
         expect_string(lesson[key], f"lesson.{key}")
+    # The slide builder prints the board line as 'LO: ' + displayedLo, so a
+    # stored prefix reaches a class as 'LO: LO: To ...' (shipped once, Y4
+    # Science, 31 Aug 2026). The rule lived only in agent prose; every design
+    # route already runs this validator, so it is the enforcement point.
+    expect(
+        not lesson["displayedLo"].lstrip().casefold().startswith("lo:"),
+        "lesson.displayedLo must hold the objective alone with no 'LO:' prefix - "
+        "the slide builder adds 'LO: ' itself, so a stored prefix reaches the "
+        "class as 'LO: LO: ...'",
+    )
     # Canonical subject naming. On 30 August 2026 a designer relabelled a
     # maths lesson "Mathematics" specifically to slip an initial photo past
     # the gate below - the invariant must not depend on which synonym was

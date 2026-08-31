@@ -538,6 +538,23 @@ def test_valid_skill_contract_passes():
     module.validate_design(design, photos)
 
 
+def test_displayed_lo_must_not_carry_the_lo_prefix():
+    # The builder adds 'LO: ' itself; a stored prefix once shipped to a class
+    # as 'LO: LO: To name electrical appliances'.
+    assert_invalid(
+        lambda design, photos: design["lesson"].update(
+            displayedLo="LO: To add two-digit numbers"
+        ),
+        "must hold the objective alone with no 'LO:' prefix",
+    )
+    assert_invalid(
+        lambda design, photos: design["lesson"].update(
+            displayedLo="  lo: to add two-digit numbers"
+        ),
+        "must hold the objective alone with no 'LO:' prefix",
+    )
+
+
 def test_valid_skill_contract_allows_optional_our_turn():
     concept_items = [{"id": "concept-001"}]
     module.validate_route_sequence(
