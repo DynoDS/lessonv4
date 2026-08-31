@@ -181,10 +181,17 @@ If the picture cap exceeds 16, run one focused Lesson Designer revision against
 the current three canonical design files. Preserve learning-critical picture
 jobs, edit only the picture prioritisation and genuinely consequential content,
 do not add `adaptation-photo-###`, and do not rewrite the initial scaffold
-request. Re-run the design validator and photo-cap check. The 16-picture cap is
-also enforced inside the design validator, so a contract still over the cap
-after that one revision cannot validate either: treat it as a failed success
-check and use the same one fresh-attempt recovery, not further revision passes.
+request. Re-run the design validator and photo-cap check. A design still over
+its budget after that one revision cannot validate either: treat it as a failed
+success check and use the same one fresh-attempt recovery, not further revision
+passes.
+
+16 is the **design** budget, not the run's ceiling. A stage after the design
+that genuinely needs a picture the designer could not foresee - a helper's
+`controlled-ai` visual, a repair, an adaptation - checks against the run
+ceiling of 24 instead (`check-photo-cap.py --stage run`, which the photo
+contract already passes). Do not send a real late need back to be cut to
+protect a number that was only ever there to bound the initial design.
 
 Carry every `flagsForTeacher` entry into the final report.
 
@@ -358,9 +365,10 @@ once more for a content gap a designer finds later: the content-gap picture
 wave in Phase 3. Take it with one
 focused Lesson Designer revision over the three canonical design files: add the
 visual as a `controlled-ai` picture with a complete generation prompt, drop the
-representation use that has no helper, change nothing else, stay within the
-16-picture cap. Re-run the design validator, the photo-cap check and the helper
-check. A UK three-pin plug and socket is this route's shape: one real object, the
+representation use that has no helper, change nothing else, and stay within the
+run ceiling of 24 rather than the 16 design budget, because this picture is
+exactly the late need that ceiling exists to allow. Re-run the design
+validator, the photo-cap check and the helper check. A UK three-pin plug and socket is this route's shape: one real object, the
 same every time, that no renderer should own.
 
 Record the exact `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP` only when neither

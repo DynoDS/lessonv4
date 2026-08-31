@@ -239,9 +239,12 @@ def reference_forms(filename: str) -> set[str]:
 
 
 def run_photo_cap(path: Path) -> None:
+    # Every call here happens after the design is settled, when an adaptation
+    # or a later need is adding a picture the designer could not have known
+    # about, so these check the run ceiling rather than the design budget.
     script = Path(__file__).resolve().parent / "check-photo-cap.py"
     completed = subprocess.run(
-        [sys.executable, str(script), str(path)],
+        [sys.executable, str(script), str(path), "--stage", "run"],
         capture_output=True,
         text=True,
     )

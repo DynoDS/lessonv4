@@ -1330,8 +1330,12 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
     expect_string(root["lesson_name"], "photo-requirements.json.lesson_name")
     items = root["photos"]
     expect(isinstance(items, list), "photo-requirements.json.photos must be a list")
-    if len(items) > 16:
-        raise ContractError("photo-requirements.json may contain at most 16 photos")
+    # 16 is the lesson designer's budget; the run may reach 24 once a helper,
+    # a repair or an adaptation adds a picture the design could not foresee.
+    # This validator also runs after those merges, so it enforces the run
+    # ceiling and check-photo-cap.py holds the design budget at its own gate.
+    if len(items) > 24:
+        raise ContractError("photo-requirements.json may contain at most 24 photos")
 
     by_id: dict[str, dict] = {}
     by_filename: dict[str, dict] = {}

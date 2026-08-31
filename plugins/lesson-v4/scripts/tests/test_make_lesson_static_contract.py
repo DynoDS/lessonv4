@@ -422,7 +422,10 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertIn("a fixed depiction of one real thing", helpers)
         self.assertIn("UK three-pin plug and socket", helpers)
         self.assertIn("`controlled-ai`", helpers)
-        self.assertIn("16-picture cap", helpers)
+        # A helper's late picture is exactly the need the run ceiling exists
+        # to allow, so this route is measured against 24, not the 16 the
+        # designer budgeted to.
+        self.assertIn("run ceiling of 24 rather than the 16 design budget", helpers)
         # The gap record stays available, but only after both routes are shut.
         self.assertIn("only when neither", helpers)
 

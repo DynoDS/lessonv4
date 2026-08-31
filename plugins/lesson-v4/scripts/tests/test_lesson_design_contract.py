@@ -507,7 +507,13 @@ def test_image_team_cap_is_authoritative_and_current_aware():
 
     assert PHOTO_CAP.is_file()
     assert "Keep count at or below 16." in output_template
-    assert "photo-requirements.json may contain at most 16 photos" in validator
+    # 16 is the lesson designer's budget. The validator also runs after an
+    # adaptation merge, so it enforces the run ceiling instead; capping it at
+    # the design budget made that ceiling unreachable and sent a genuine late
+    # picture back to be cut (Y4 appliances lesson, 31 Aug 2026).
+    assert "photo-requirements.json may contain at most 24 photos" in validator
+    assert "MAX_PHOTOS = 16" in read(PHOTO_CAP)
+    assert "RUN_MAX_PHOTOS = 24" in read(PHOTO_CAP)
     assert "check-photo-cap.py" in skill
     assert (
         "If the picture cap exceeds 16, run one focused Lesson Designer "
