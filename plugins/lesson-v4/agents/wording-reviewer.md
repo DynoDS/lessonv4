@@ -67,7 +67,10 @@ python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namesp
 
 Require exactly `LESSON_DESIGN_OK`; skip it only when you repaired nothing.
 
-Use the base role's report shape at `[WORKING_DIR]/design-review.md`, with
+Use the base role's report shape at `[WORKING_DIR]/design-review.md`. The
+Decision Reviewer's earlier report sits beside it at
+`design-review-decisions.md`; leave that file alone, and do not repeat its
+findings as your own. Write it with
 `## Redesign required` always `None.` here. The only Result this role
 returns is `APPROVED`; what would have been anything else lives in the
 corrections you made and the flags you raised.

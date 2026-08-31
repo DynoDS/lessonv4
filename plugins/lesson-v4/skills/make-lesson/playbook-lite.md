@@ -55,6 +55,11 @@ required. Missing optional agents skip only their resource or review:
 
 - no `design-reviewer`: use the validated design and report review skipped;
 - no `adaptation-designer`: build only the expected-range worksheet;
+- the split route needs all four of `lesson-architect`, `decision-reviewer`,
+  `lesson-author` and `wording-reviewer`. When the teacher asked for it and
+  any one is missing, run the normal Phase 1 route instead and say in the
+  report which role was missing: half a split route would hand a class a
+  lesson whose words nobody wrote;
 - no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
   that output and exclude it as NOT DELIVERED naming the missing role;
 - no image scout: omit unresolved pictures under the normal degradation rule.
@@ -1118,26 +1123,24 @@ roles coordinate through validated files, not conversations or scheduler state.
 ## The split route - design and wording as two passes (off by default)
 
 This route replaces Phase 1 and Phase 1.25 only, and runs only when the
-teacher's message explicitly asks for it. The Lesson Architect makes every
-pedagogical decision and writes each child-facing string as a wording spec;
-the Decision Reviewer judges the decisions while they are still compact; the
-Lesson Author writes the finished words once, in a fresh context; the
-Wording Reviewer checks the words. It ends with the same three approved
-canonical files, and the run rejoins the normal pipeline at Phase 1.5 with
-nothing downstream changed - including later focused Lesson Designer
-revisions, which operate on the fully worded design exactly as on the normal
-route.
+teacher's message explicitly asks for it. Architect decides and writes each
+child-facing string as a wording spec; Decision Reviewer judges the compact
+design; Author writes the finished words once in a fresh context; Wording
+Reviewer checks them. It ends with the same three approved canonical files
+and rejoins the pipeline at Phase 1.5, nothing downstream changed - later
+focused Lesson Designer revisions included, which meet a fully worded design
+exactly as on the normal route.
 
 Ask `worker-launch.py spec` once for all four roles: `lesson-architect`,
 `decision-reviewer`, `lesson-author`, `wording-reviewer`.
 
 ### Split step 1 - Lesson Architect (sequential, blocking)
 
-Launch exactly as Phase 1 launches the Lesson Designer - the same
-authoritative inputs including the teacher-authored files, the same owned
-outputs, the same BUILD_SCAFFOLD_ONCE block - with two substitutions: the
-role file is `[PLUGIN_ROOT]/agents/lesson-architect.md`, and the success
-check is the stage validator:
+Launch exactly as Phase 1 launches the Lesson Designer - same authoritative
+inputs including the teacher-authored files, same owned outputs, same
+BUILD_SCAFFOLD_ONCE block - substituting the role file
+`[PLUGIN_ROOT]/agents/lesson-architect.md` and the stage validator as the
+success check:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
@@ -1173,7 +1176,7 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson-design.json
 - [WORKING_DIR]/design-decisions.md
 - [WORKING_DIR]/photo-requirements.json
-- [WORKING_DIR]/design-review.md
+- [WORKING_DIR]/design-review-decisions.md
 
 SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
@@ -1189,7 +1192,11 @@ ALLOWED_TERMINAL_STATES:
 
 There is no review packet on this route: do not run
 `design-review-packet.py`. After return, run the stage validator yourself and
-use the exact Result in `design-review.md`.
+use the exact Result in `design-review-decisions.md`. Both split reviews reach
+the teacher: carry this one's corrections and flags into the run report
+alongside the Wording Reviewer's, naming which review each came from, because
+a decision corrected before the words existed is invisible in the finished
+lesson and the teacher would otherwise never learn it was made.
 
 For `APPROVED`, continue. For `REDESIGN REQUIRED`, hand the complete
 diagnosis to a fresh `lesson-architect` over the current canonical files,

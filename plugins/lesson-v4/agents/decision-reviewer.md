@@ -53,6 +53,11 @@ python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namesp
 Require exactly `LESSON_DESIGN_WORDING_STAGE_OK`. The base role's rule
 stands: a correction that will not validate is not a bounded correction.
 
+Write your report to `[WORKING_DIR]/design-review-decisions.md`, not to
+`design-review.md`: the Wording Reviewer writes that one later in the run,
+and a shared filename would erase your record of what was corrected and
+flagged before the words existed - the run report carries both.
+
 The report shape, the outcome values (`APPROVED` / `REDESIGN REQUIRED`) and
 the correction boundaries are unchanged from the base role. `Owner: Lesson
 Designer` in the base role's report shape reads `Owner: Lesson Architect`

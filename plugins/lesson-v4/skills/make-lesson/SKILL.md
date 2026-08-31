@@ -153,12 +153,20 @@ not a fault and never stops a run.
 Raw teacher-authored input is durable run state, not a general worker-prompt
 footer.
 
-Only these three semantic roles may receive the raw teacher-authored message
-files:
+Only the roles that settle or judge the lesson itself may receive the raw
+teacher-authored message files, because only they can act on what the teacher
+asked for; every other role works from the approved design, and handing one
+the brief invites it to re-decide settled teaching from a source it has no
+authority over. On the normal route those roles are:
 
 - `lesson-designer`;
 - `design-reviewer`;
 - `adaptation-designer`.
+
+On the split route, `lesson-architect` and `decision-reviewer` stand in the
+first two places. `lesson-author` and `wording-reviewer` do not receive them:
+their job is the wording of an approved design, and a design that cannot tell
+them what to write is a gap to report, never a brief to reinterpret.
 
 The original teacher message is persisted at:
 
@@ -205,7 +213,8 @@ Do not paste either file into `teacher-brief.txt`.
 
 Do not pass `TEACHER_BRIEF_FILE`, `TEACHER_CLARIFICATION_FILES`,
 `ORCHESTRATOR_CONTEXT_FILE`, `LESSON_PLAN_INPUT` or
-`TEACHER_WORKSHEET_INPUT` to `slide-designer`, `worksheet-designer`,
+`TEACHER_WORKSHEET_INPUT` to `lesson-author`, `wording-reviewer`,
+`slide-designer`, `worksheet-designer`,
 `working-wall-designer`, `working-wall-builder`, `stick-in-sheets-designer`,
 `image-scout`, `diagram-anchor`, deterministic command jobs or any other
 downstream renderer.

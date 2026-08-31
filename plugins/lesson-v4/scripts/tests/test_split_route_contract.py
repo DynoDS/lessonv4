@@ -67,7 +67,7 @@ class SplitRouteSliceTests(unittest.TestCase):
             "agents/decision-reviewer.md",
             "agents/lesson-author.md",
             "agents/wording-reviewer.md",
-            "rejoins the normal pipeline at Phase 1.5",
+            "rejoins the pipeline at Phase 1.5",
             "## NEXT",
         ):
             self.assertIn(marker, split)
@@ -81,6 +81,63 @@ class SplitRouteSliceTests(unittest.TestCase):
 
     def test_the_delivery_slice_does_not_swallow_the_split_section(self):
         self.assertNotIn("Split step 1", slice_text("delivery"))
+
+
+class OrchestratorKnowsTheNewRolesTests(unittest.TestCase):
+    """The always-loaded skill file outranks any slice, so the split route's
+    roles have to be reachable from it. Its allow-list named exactly three
+    roles, which would have denied the brief to the route's own decider while
+    the slice said to hand it over - the higher, always-present rule winning
+    a contradiction the slice could not see.
+    """
+
+    def test_the_brief_reaches_the_split_route_decider_and_reviewer(self):
+        skill = (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("`lesson-architect` and `decision-reviewer` stand in", skill)
+        # And is still withheld from the roles that only word an approved design.
+        self.assertIn("`lesson-author`, `wording-reviewer`", skill)
+
+    def test_a_missing_split_role_falls_back_to_the_normal_route(self):
+        setup = slice_text("setup")
+        self.assertIn("the split route needs all four", setup)
+        self.assertIn("run the normal Phase 1 route instead", setup)
+
+    def test_the_two_split_reviews_do_not_overwrite_each_other(self):
+        """Both reviews reach the teacher.
+
+        They ran in sequence over one run and both wrote `design-review.md`,
+        so the early review's corrections and flags were erased by the later
+        one - and a decision corrected before any words existed leaves no
+        trace in the finished lesson, so the teacher would never learn of it.
+        """
+        decision = DECISION_REVIEWER.read_text(encoding="utf-8")
+        wording = WORDING_REVIEWER.read_text(encoding="utf-8")
+        split = slice_text("design-split")
+
+        self.assertIn("design-review-decisions.md", decision)
+        self.assertIn("not to\n`design-review.md`", decision)
+        # The later review keeps the canonical name and leaves the other alone.
+        self.assertIn("leave that file alone", wording)
+        # The orchestrator owns getting both into the report.
+        self.assertIn("Both split reviews reach\nthe teacher", split)
+        self.assertIn("design-review-decisions.md", split)
+
+    def test_the_audit_resolves_split_roles_from_their_task_names(self):
+        # role_for reads the agents directory live; a launch named for one of
+        # these must not land in WORKER_LAUNCH_AUDIT_UNCHECKED.
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(
+            "worker_launch", WORKER_LAUNCH
+        )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for role in SPLIT_ROLES:
+            task = module.task_name_for(role)
+            self.assertEqual(module.role_for(task), role)
+            self.assertEqual(module.role_for(f"{task}_2"), role)
 
 
 class SplitRoleContractTests(unittest.TestCase):
