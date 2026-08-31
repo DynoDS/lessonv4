@@ -139,6 +139,19 @@ the architecture, or the comparison shows nothing.
   the existing designer and reviewer files); a `design-split` playbook slice
   holding the four-step route, triggered only by the teacher explicitly
   asking (for example `use the split route` in the brief) and rejoining the
-  normal pipeline at the helper check. Next: Daniel runs the balanced diet
-  brief in Codex with `use the split route` added, then the four-digit
-  maths brief the same way, and judges both against settled 10.
+  normal pipeline at the helper check.
+- **31 Aug 2026, wiring audit (4.2.48).** Daniel asked whether the
+  orchestrator actually knows how to run the new roles. Tracing it found
+  three real gaps, all now fixed and pinned by tests: the always-loaded
+  `SKILL.md` named exactly three roles that may receive the teacher's brief,
+  which outranks any slice and would have denied it to the split route's own
+  decider; a brief asking for the route on an install missing any of the
+  four roles had no fallback (it now runs the normal route and says which
+  role was missing); and both split reviews wrote `design-review.md`, so the
+  early review's record was erased by the later one (the early one now
+  writes `design-review-decisions.md`, and both reach the run report).
+  **The lesson for the rest of this project:** a new route is not wired
+  until every always-loaded rule that names roles by name has been re-read
+  against it. Next: Daniel runs the balanced diet brief in Codex with `use
+  the split route` added, then the four-digit maths brief the same way, and
+  judges both against settled 10.
