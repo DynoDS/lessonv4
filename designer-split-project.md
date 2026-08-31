@@ -58,26 +58,27 @@ blueprint file format was rejected for the reason under Settled below.
    failure being fixed. Limit: a failure that genuinely cannot wait and
    cannot be enforced in code may still add guidance, with a note here.
 5. **Daniel's pipeline keeps working throughout.** He teaches with it daily
-   and installs from main. Whatever the rollout route (open decision 3), no
+   and installs from main. Whatever the rollout route (open decision 2), no
    state may be published where a normal lesson run is broken.
+6. **The words-writer takes all the words from day one** - slides, spoken
+   script and worksheet questions alike (Daniel, 31 Aug 2026). Reason: one
+   writer means one voice and one owner, and the worksheet is where tired
+   end-of-run wording has hurt most. Accepted cost: a bigger first version,
+   so the first test lesson carries more weight.
 
 ## Open decisions, in order
 
-1. **Worksheet words.** Does the words-writer take all the words from day
-   one (slides, spoken script, worksheet questions), or start with slides and
-   script only? Recommendation: all from day one, so there is one voice and
-   one owner; the worksheet is where wording slips have hurt most.
-2. **What happens to the review.** Today one reviewer checks everything after
+1. **What happens to the review.** Today one reviewer checks everything after
    design. The compact early review of decisions is settled; open is what the
    after-wording check looks like: the current reviewer trimmed to wording
    and local fixes, or kept whole at first and trimmed later.
-3. **How the switch happens.** Side-by-side testing while the old route keeps
+2. **How the switch happens.** Side-by-side testing while the old route keeps
    serving real lessons, or switch over and test on real runs. This sets the
    git route (branch versus staged commits), which is a technical consequence,
    not a question for Daniel.
-4. **First test lesson and the bar for switching.** Which lesson runs first,
+3. **First test lesson and the bar for switching.** Which lesson runs first,
    and what result counts as good enough.
-5. **How hard the words-writer thinks.** Same maximum effort as the designer,
+4. **How hard the words-writer thinks.** Same maximum effort as the designer,
    or one notch down for speed, since it expresses settled decisions rather
    than making them. The external advice suggested testing the lower notch.
 
@@ -95,4 +96,5 @@ the architecture, or the comparison shows nothing.
   advice verified against the repository (its evidence held; its blueprint
   format and generated decisions record were rejected). The one enforcement
   fix shipped separately as 4.2.46. Daniel said yes to the project and asked
-  for this tracking file. Next: open decision 1, put to Daniel.
+  for this tracking file. Decision made the same day: the words-writer takes
+  all the words from day one (settled 6). Next: open decision 1, the review.
