@@ -299,7 +299,25 @@ Keep every essential picture's route to an image intact. An essential `ordinary-
 
 After a JSON correction, serialise through the host JSON library, parse the written file again, and read back every changed field.
 
-The orchestrator owns post-review validation. Do not run `design-review-packet.py verify` yourself.
+### Prove your own edits still validate
+
+You inherit a design that has already passed deterministic validation, so once you edit it you are the author of whatever it now contains. Trusting deterministic validation means trusting it about the design you were given, not about the wording you have just written over it.
+
+When you have made your last correction, run:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+```
+
+Require exactly `LESSON_DESIGN_OK`. Run it once at the end rather than after each correction, and skip it entirely when you corrected nothing.
+
+Any failure it names is your edit. The validator holds mechanical limits you are not asked to carry in your head - a `lookFor` capped at 25 words, a `script` that has to keep its `Say to children:` opening, a definition that has to stay inside its shape - and a repair written for meaning will cross one without feeling wrong. Rewrite your own wording to the same meaning inside the limit and run the check again.
+
+**A correction that will not validate is not a bounded correction.** Restore the wording you found, then decide the defect again with that in view: leave it alone if it was acceptable variation, or return `REDESIGN REQUIRED` if it genuinely blocks the learning. Never hand back a design that fails this check. The orchestrator can only answer a failed check by sending the whole design back for repair, which delays every resource in the lesson so that one sentence can be shortened, and shortening it here costs you a minute.
+
+This is the validator over the file you edited, and it is yours. `design-review-packet.py verify` is the separate check of the review packet itself; the orchestrator owns that one, and you do not run it.
 
 ## Output
 

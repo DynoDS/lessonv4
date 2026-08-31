@@ -2084,10 +2084,30 @@ def test_supplemental_plan_owns_only_filenames_the_final_worksheet_uses():
     assert 'if photo["id"] in strings or reference_forms(photo["filename"]) & strings' in helper
 
 
-def test_design_reviewer_leaves_post_review_validation_to_orchestrator():
+def test_design_reviewer_leaves_the_packet_check_to_the_orchestrator():
+    """The reviewer does not run the packet check. It does run the validator
+    over the file it edited.
+
+    This used to assert a blanket "The orchestrator owns post-review
+    validation", which the reviewer read as covering its own corrections too:
+    on the Y4 series-circuit run (31 Aug 2026) it returned `APPROVED` with a
+    `lookFor` it had widened to 31 words against a 25-word limit, and the
+    package was lost to the repair round that followed. The boundary is now
+    split rather than blanket - see
+    test_reviewer_hands_back_a_valid_design.py.
+    """
     text = (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8")
-    assert "The orchestrator owns post-review validation." in text
-    assert "Do not run `design-review-packet.py verify` yourself." in text
+    flat = " ".join(text.split())
+    assert "Do not run `design-review-packet.py verify` yourself." not in text
+    assert (
+        "`design-review-packet.py verify` is the separate check of the review "
+        "packet itself; the orchestrator owns that one, and you do not run it."
+        in flat
+    )
+    assert (
+        "This is the validator over the file you edited, and it is yours."
+        in flat
+    )
 
 
 def test_representation_capability_metadata_is_configuration_level_everywhere():

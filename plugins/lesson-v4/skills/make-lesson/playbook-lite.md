@@ -240,6 +240,16 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/photo-requirements.json
 - [WORKING_DIR]/design-review.md
 
+SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_OK
+The design handed to you already passed this check, so any failure is a
+correction you wrote. Repair your own wording, or restore what you found and
+decide the defect again. Do not return a design that fails it.
+
 ORCHESTRATOR_CHECK_AFTER_RETURN:
 Write the four owned outputs and return the exact Result value from
 design-review.md. Do not run design-review-packet.py verify. The orchestrator owns that check.
@@ -262,9 +272,23 @@ canonical design files, require `APPROVED` or `REDESIGN REQUIRED` in
 If `verify` fails after a completed review, do not discard or re-run the
 review. Re-run `validate-lesson-design.py --initial-photo-namespace` yourself:
 when it passes, continue on the exact `Result` in `design-review.md` and record
-the packet failure in the run report; when it fails, the review pass has
-corrupted the canonical files, so route the validator's failures through the
-Phase 1 fresh-attempt recovery.
+the packet failure in the run report.
+
+When it fails, the fault is in the review pass's own corrections, because the
+design validated before the reviewer opened it. Send it back to the pass that
+wrote it. Launch one focused clean-context `design-reviewer` job carrying the
+current canonical files, the exact validator failure lines and the in-place
+editing rule from Phase 3.5, and tell it to repair only the fields the validator
+names, keep the meaning of its own correction, and leave the `Result` in
+`design-review.md` as it stands. Then re-run `design-review-packet.py verify`.
+Only when that repair also fails has the review pass genuinely corrupted the
+design, and only then does the Phase 1 fresh-attempt recovery apply.
+
+The reviewer owns this repair because it is the only party holding what the
+corrected wording had to mean, and because a `lookFor` six words over its limit
+is a minute's work for the pass that wrote it against a whole fresh design
+attempt for a Lesson Designer that never saw the string. Record the round in the
+run's friction file like any other repair.
 
 For `APPROVED`, continue. For `REDESIGN REQUIRED`, give Lesson Designer the
 current canonical files plus the complete diagnosis. Preserve named passing
