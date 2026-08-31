@@ -24,8 +24,13 @@ class ScienceContentBoundaryTests(unittest.TestCase):
     lesson whose objective never needed electricity defined. And a
     photographs-only lesson carried `Electricity can cause serious injury or
     death. Never touch electrical appliances with wet hands.` as sticky
-    knowledge, because the safety rule said when a precaution must appear and
-    never said when one must not.
+    knowledge, because safety wording was treated as exempt from the
+    extra-wording-must-earn-its-place test that governs everything else.
+
+    The teacher rejected a first repair that banned safety outside safety
+    objectives (31 Aug 2026): a shadows lesson that sends children outside
+    earns `never look directly at the sun` as sticky knowledge, so the rule
+    is the earning test, not a ban.
     """
 
     def test_electricity_is_described_by_what_it_does(self) -> None:
@@ -46,23 +51,31 @@ class ScienceContentBoundaryTests(unittest.TestCase):
         )
         self.assertIn("not an account of what electricity is", science)
 
-    def test_safety_has_a_non_trigger_as_well_as_a_trigger(self) -> None:
+    def test_safety_wording_earns_its_place_like_any_other(self) -> None:
         science = flat(SCIENCE)
         self.assertIn(
-            "Handling is the trigger, and its absence is the boundary.",
+            "Safety wording is not exempt from earning its place.", science
+        )
+        # The earning test, not a ban keyed on the objective.
+        self.assertIn(
+            "what these children will actually do because of this lesson",
             science,
+        )
+        self.assertIn(
+            "what a child would do differently for having met it", science
         )
         # The real over-application, kept as the counter-example.
         self.assertIn(
-            "`Electricity can cause serious injury or death` over a slide of "
-            "photographs",
+            "`Electricity can cause serious injury or death` as sticky "
+            "knowledge",
             science,
         )
         # Why over-warning harms: it trains children to skim warnings.
-        self.assertIn("safety wording is background noise", science)
+        self.assertIn("safety lines as background noise", science)
+        # The discrimination case that killed the first, banning, repair.
+        self.assertIn("never look directly at the sun", science)
         self.assertIn(
-            "never takes a sticky knowledge slot, a success criterion or an "
-            "assessed outcome unless safety is itself the objective",
+            "though nobody handles anything and safety is not the objective",
             science,
         )
 
