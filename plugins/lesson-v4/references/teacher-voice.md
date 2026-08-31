@@ -90,6 +90,18 @@ For example:
 
 This can sound authentically like the teacher when spoken even if the slide itself should be tighter.
 
+### Fuller means more spoken, not more polished
+
+Speaker notes are not longer slide copy. They are the words as said, so the test is to read them aloud: if you cannot hear the teacher saying it to this class, sentence by sentence, the note is authored prose in the wrong register, however grammatical it is.
+
+The tell is a chain of tidy directives, each carrying a trailing qualifier clause:
+
+> Select materials that complete the circuit. Your explanation needs to show how each choice affects the flow, rather than simply naming the component. Finish by stating how the circuit could be extended without losing brightness.
+
+A teacher gives one instruction at a time and turns the caveat into a question:
+
+> Choose the materials that complete the circuit. For each one, say what it does. Then think - could we add another bulb and keep it bright?
+
 ### Default relationship
 
 **Short/direct can become the slide. Fuller/conversational can expand it in the notes. Do not normally reverse this relationship.**
@@ -140,6 +152,13 @@ Examples:
 - amusing historical situations;
 - deliberately "breaking" a circuit after making it work.
 
+The hook is not always the content being amusing. The lesson's own misconception is often the easiest opportunity: take the wrong rule seriously for a moment and let its absurdity show.
+
+Good:
+> One apple isn't a magic "balanced diet" button!
+
+The joke lands on the wrong idea, so it teaches while it amuses - and a wrong rule is present in most lessons, which is why a lesson with no quirky content is not a lesson with no opportunities.
+
 Good:
 > The Romans didn't travel all the way to Britain for the weather!
 
@@ -167,6 +186,8 @@ Procedural content often works best without humour:
 Serious does **not** have to mean solemn.
 
 A warm, normal, matter-of-fact lesson can still contain tiny harmless moments of lightness if they make the room feel human.
+
+The safest lightness in a sensitive lesson usually targets the wrong idea being corrected: a gently exaggerated misconception makes fun of an idea, and nobody in the room is an idea. The issue itself is never the joke.
 
 However:
 - never make the actual sensitive issue the joke;
@@ -281,6 +302,8 @@ The method reminder earns the extra words.
 
 Question wording must preserve the thinking pupils are meant to do.
 
+The commonest leak is a question that presupposes the verdict. `What has Sam got wrong?`, `What is Sam forgetting?`, `What has Sam missed?` all announce that Sam's claim fails before the child has judged it; the verb changes, the leak is the same. The test: could this question be asked, word for word, if the claim were actually right? `Is Sam correct? Explain your answer.` works either way. `What is Sam forgetting?` only works if Sam is wrong, so it has done the judging for the child.
+
 Bad:
 > What has Sam got wrong?
 
@@ -288,6 +311,8 @@ if pupils are first supposed to decide whether Sam is wrong.
 
 Better:
 > Is Sam correct? Explain your answer.
+
+The presupposition is legitimate only when the error's existence is given and the task is finding, explaining or correcting it - `find the mistake in this working` - because there the judgement was never the thinking being asked for.
 
 ## Use pupil-clear language
 
@@ -388,6 +413,8 @@ Before finalising, ask:
 
 Human-sounding does **not** mean dumbing down the vocabulary.
 
+When an accuracy boundary shapes the answer - a claim that must stay cautious - translate the caution into the child's own words rather than importing the guidance document's phrasing. A child writes `could be part of a balanced diet`; `could contribute to a balanced diet` is the adult document showing through, and it reads as adult polish however correct it is.
+
 ---
 
 # 9. Worked examples
@@ -435,6 +462,14 @@ Prefer:
 Do not default to:
 > I can use expanded noun phrases.
 
+Criteria are read and used by the child, so they are written in the child's own words. A criterion can be short, imperative, specific and actionable and still fail by being planning language:
+
+> Judge balance using the pattern across a day or week.
+
+is a curriculum document's sentence. The child's step is:
+
+> Think about what someone eats across a whole day or week.
+
 Extra wording is useful when the criterion itself needs scaffolding.
 
 For a struggling class:
@@ -474,7 +509,7 @@ Natural comparison prompts include:
 > What could we add to make this a stronger answer?
 
 Again, the pedagogical check matters:
-- do not tell pupils a claim is wrong before they have judged it;
+- do not tell pupils a claim is wrong before they have judged it, including by presupposition (`What is she forgetting?` has already judged - see §6);
 - do not use teacher-facing terminology pupils may not understand;
 - preserve the actual thinking.
 
@@ -563,6 +598,7 @@ Avoid these unless the context clearly justifies them:
 - unnecessary rhetorical flourishes;
 - formal vocabulary merely to sound academic;
 - slogan-like wording used for effect rather than teaching;
+- invented compound modifiers a teacher wouldn't say (`a varied-looking lunch` for `a lunch with lots of different foods`);
 - excessive teacher-talk written directly onto slides;
 - forced humour;
 - forced "fun" labels;
@@ -680,10 +716,10 @@ Before finalising pupil-facing material, quickly check:
 
 1. **Does this sound natural, or suspiciously polished?**
 2. **Could I remove words without losing useful teaching?**
-3. **Does the sentence belong on the slide, or would I actually say it aloud?**
+3. **Does the sentence belong on the slide, or would I actually say it aloud? A script or note must pass as speech: hear the teacher saying it, sentence by sentence.**
 4. **Have I kept useful subject vocabulary where it helps?**
 5. **If I've added scaffolding, what barrier is it solving?**
-6. **Have I accidentally given away the answer?**
+6. **Have I accidentally given away the answer - or presupposed the verdict the child is meant to reach?**
 7. **Is the wording clear to the pupil, not merely clear to a teacher?**
 8. **If humour is present, did the content genuinely invite it?**
 9. **If an obvious playful opportunity exists, have I missed it?**

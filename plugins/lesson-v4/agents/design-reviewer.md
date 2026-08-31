@@ -145,6 +145,7 @@ Check:
 
 - the task requires the thinking named by the objective;
 - the lesson has a coherent centre: the dominant sticking point or blocking misconception is exposed, resolved and tested again, or a clearly named central difficulty serves that role when no genuine misconception exists;
+- the retesting of that centre has an end: count the response moments, beats and worksheet prompts alike, that elicit essentially the same corrective answer, and when a later one can be passed by repeating the sentence given two moments earlier, the centre has decayed into a catchphrase and its time belongs to the parts of the objective still untaught. A lesson most of whose response moments rehearse the correction has narrowed its objective to the sticking point, which is a purposeful design defect, not polish;
 - a child cannot succeed by copying, reformatting, reading a visible answer or following a predictable answer pattern;
 - a hinge or checking question cannot be answered from an incidental picture cue, wording cue, answer position or immediate repetition; the correct response must depend on the relationship, decision or method being assessed;
 - reasoning is part of core learning when the objective supports it;
@@ -196,6 +197,7 @@ Check:
 - the work is intellectually fresh from modelled and Your Turn work;
 - procedural fluency may use new values when carrying out the procedure is the target;
 - reasoning, inference, explanation and decisions change a load-bearing feature;
+- an improve-or-extend prompt works on a stimulus that genuinely lacks something in the lesson's taught terms, so a strong answer can demonstrate the taught rationale rather than only a true fact;
 - the activity architecture matches the thinking;
 - the amount of work is proportionate to response cost;
 - instances form a useful sequence rather than a random list;
@@ -259,6 +261,8 @@ Compare the finished design with the recorded purposeful decisions and teacher b
 Make a local correction only when one clear bounded change restores the settled lesson.
 
 Carry a correction through every affected question, answer, script, worksheet item and related field.
+
+Then judge the repaired string as if you had met it cold: it must pass every check that condemned the original and still exemplify the lesson's own taught rationale. A repair that clears the reported fault while failing a neighbouring check has moved the defect, not removed it - an answer corrected to add a missing food group is still weak when the nutrient job it explains is one the case already had. When every candidate repair fails a different check, the defect is upstream in the stimulus: correct the stimulus when that is one bounded change, and return `REDESIGN REQUIRED` when it is not.
 
 Do not locally:
 
