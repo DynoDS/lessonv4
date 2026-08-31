@@ -115,5 +115,57 @@ class VoiceReachesEveryStringTests(unittest.TestCase):
                       "electricity to work.", voice)
 
 
+class ScriptTeachesRatherThanDirectsTests(unittest.TestCase):
+    """Two script lines survived the 4.2.29 register repair unchanged, across
+    two runs of the Y4 appliances lesson:
+
+        "Use that to decide whether Dev's rule holds."
+        "Use the photographs as evidence and use the success criteria to
+         check each decision."
+
+    Neither is a contraction or abstraction fault, so the two tells added then
+    could not catch either. The fault is different in kind: the script narrates
+    what the child should do with the materials instead of saying the thing the
+    teacher is there to say, so deleting it would cost the class nothing.
+    """
+
+    def test_a_third_tell_covers_directing_instead_of_teaching(self) -> None:
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn("Three tells that it has drifted", designer)
+        self.assertIn(
+            "a script that directs children around the resources instead of "
+            "teaching them anything",
+            designer,
+        )
+
+    def test_both_surviving_lines_are_named_with_their_repair(self) -> None:
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn(
+            "Use the photographs as evidence and use the success criteria to "
+            "check each decision",
+            designer,
+        )
+        self.assertIn(
+            "Remember, having a plug isn't what makes something electrical",
+            designer,
+        )
+        # The adult idiom, folded in beside the abstraction it belongs with.
+        self.assertIn("decide whether Dev's rule holds", designer)
+        self.assertIn("so, is Dev right?", designer)
+
+    def test_the_tell_is_checkable_rather_than_an_adjective(self) -> None:
+        """"Sound natural" is what failed twice; a deletion test can be run."""
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn(
+            "if this script were deleted, what would the class actually lose?",
+            designer,
+        )
+
+    def test_the_first_two_tells_survive(self) -> None:
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn("do not all receive", designer)
+        self.assertIn("what provides the power", designer)
+
+
 if __name__ == "__main__":
     unittest.main()
