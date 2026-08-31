@@ -116,7 +116,7 @@ Check:
 - two substantial new demands are not stacked into one lesson without enough teaching, practice and checking for both;
 - any lesson split is honest and visible;
 - the lesson fits the stated duration without rushing or dropping learning;
-- direct teacher requirements and supplied-resource requirements are followed.
+- direct teacher requirements and supplied-resource requirements are followed, where a direct requirement is one the teacher marked as required (a `Must include` list, an explicit `you must use X`) or a fact of the commission. A brief's suggested activity, word, misconception or approach that the designer judged and left out is not a finding, and neither is a supplied plan's activity reworked or replaced - the designer owns how the objective is taught. Judge the lesson in front of you, not its coverage of the brief.
 
 ### 2. Route, modelling and independence
 

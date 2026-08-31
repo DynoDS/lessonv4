@@ -180,6 +180,17 @@ Each teacher-authored file contains only the teacher's exact message text. Do
 not place a heading, quote wrapper, metadata, summary or inferred context inside
 one of these files.
 
+**`Must include` is how the teacher marks something as binding.** The
+lesson-designer treats a `Must include` list, or wording that plainly requires
+something (`you must use this text`), as a requirement it has to honour, and
+treats everything else in the brief or a supplied plan as material to judge -
+including a plan's `Use this` / `Tell the children` phrasing, which is how plans
+are written rather than a demand. That is deliberate: the designer is meant to
+build the best lesson for the objective, not to cover the brief. Pass any
+`Must include` through verbatim like the rest of the message, and never add,
+infer, relabel or reword one the teacher did not write - inventing one turns a
+suggestion the teacher was happy to lose into a requirement nobody can decline.
+
 Useful context inferred by the orchestrator is separate:
 
 ```text
