@@ -50,16 +50,20 @@ authorise the generic orchestration controller.
 
 ## Before Each Run: Know What Exists
 
-Check the named agents under `[PLUGIN_ROOT]/agents/`. `lesson-designer` is
-required. Missing optional agents skip only their resource or review:
+Check the named agents under `[PLUGIN_ROOT]/agents/`. `lesson-architect` and
+`lesson-author` are required - no design exists without the first and no
+finished words without the second - and the architect's base craft file
+`agents/lesson-designer.md` must exist for it to read. Missing optional
+agents skip only their resource or review:
 
-- no `design-reviewer`: use the validated design and report review skipped;
+- no `decision-reviewer`: continue on the stage-validated design and report
+  the decisions review skipped;
+- no `wording-reviewer`: deliver the authored design and report the words
+  check skipped;
+- no `worksheet-content-designer`: the Lesson Author writes the worksheet's
+  specs as well (Phase 1.3 says how), and the report names the missing
+  specialist;
 - no `adaptation-designer`: build only the expected-range worksheet;
-- the split route needs all five of `lesson-architect`, `decision-reviewer`,
-  `lesson-author`, `worksheet-content-designer` and `wording-reviewer`. When
-  the teacher asked for it and any one is missing, run the normal Phase 1
-  route instead and say in the report which role was missing: half a split
-  route would hand a class a lesson whose words nobody wrote;
 - no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
   that output and exclude it as NOT DELIVERED naming the missing role;
 - no image scout: omit unresolved pictures under the normal degradation rule.
@@ -88,11 +92,10 @@ host inference in `orchestrator-context.md`; it never overrides teacher text.
 
 A separately supplied lesson plan remains `LESSON_PLAN_INPUT`; a supplied
 worksheet remains `TEACHER_WORKSHEET_INPUT`. Do not paste either into the brief.
-Only Lesson Designer, Design Reviewer and Adaptation Designer may read raw
-teacher-authored files; on the split route, Lesson Architect and Decision
-Reviewer stand in the first two places, and the Lesson Author, Worksheet
-Content Designer and Wording Reviewer never receive them - the approved
-design must carry everything the words need.
+Only Lesson Architect, Decision Reviewer and Adaptation Designer may read
+raw teacher-authored files; the Lesson Author, Worksheet Content Designer
+and Wording Reviewer never receive them - the approved design must carry
+everything the words need.
 
 **A brief that names a document is a pointer, not the lesson.** The brief file
 keeps its exact words, but a designer handed only the pointer has to find and
@@ -117,22 +120,27 @@ builder owns its wall-family archive.
 
 ---
 
-## Phase 1 — Run the Lesson Designer (Sequential, Blocking)
+## Phase 1 — Design the Lesson (Lesson Architect, Sequential, Blocking)
 
-**The split route.** When the teacher's message explicitly asks for the split
-route (for example `use the split route`), do not run this phase or Phase
-1.25: load the `design-split` slice and follow it instead. It produces the
-same three approved canonical files and rejoins the pipeline at Phase 1.5.
-It is a test route, off by default; never choose it from anything but the
-teacher's own words.
+The design chain is five sequential roles: `lesson-architect` decides the
+whole lesson and writes every child-facing or spoken string as a wording
+spec - `__LESSON_WORDING_FILL__:` plus the meaning the words must carry,
+with the worksheet decided to its brief and its blocks as specced
+stand-ins; `decision-reviewer` judges the compact design (Phase 1.25);
+`lesson-author`, `worksheet-content-designer` and `wording-reviewer` write
+and check the finished words (Phase 1.3). Nothing after Phase 1.3 ever
+meets a spec: the strict validator refuses one, so a half-written lesson
+cannot build.
 
-Launch `lesson-designer` directly, using the launch fields printed by
-`worker-launch.py spec` for this role. Do not read its settings out of the role
-file yourself.
+Ask `worker-launch.py spec` once here for all five roles and copy the
+printed fields verbatim into each launch; do not read settings out of role
+files yourself.
+
+Launch the Lesson Architect directly:
 
 ```text
-You are the lesson designer. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/lesson-designer.md
+You are the lesson architect. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/lesson-architect.md
 
 PLUGIN_ROOT: [PLUGIN_ROOT]
 WORKING_DIR: [WORKING_DIR]
@@ -162,27 +170,27 @@ check. Once any field is filled, running it again would discard the design.
 
 SUCCESS_CHECK:
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace \
+  --initial-photo-namespace --wording-stage \
   "[WORKING_DIR]/lesson-design.json" \
   "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_OK
+Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
 
 TERMINAL_STATE: COMPLETE
 ```
 
 After return, require the four outputs and run the success check yourself. Do
-not re-run the scaffold builder: it writes the empty scaffold and would discard
-the finished design.
+not re-run the scaffold builder: it writes the empty scaffold and would
+discard the finished design.
 
-A designer that cannot reach `LESSON_DESIGN_OK` within its bounded repair
-passes returns `LESSON_DESIGN_CHECK_FAILED` with the validator's failure lines.
-Treat that, or a failed orchestrator success check, as one recoverable fault:
-launch one fresh clean-context Lesson Designer attempt with the current saved
-files and the exact validator failures. If that attempt also fails the
-validator, nothing downstream can build from an invalid design: go to Phase 4,
-report `BLOCKED` with the exact failures, and deliver `design-decisions.md`
-and the diagnosis, so an unattended run ends with evidence the teacher can act
-on rather than silence.
+An architect that cannot reach its check within its bounded repair passes
+returns `LESSON_DESIGN_CHECK_FAILED` with the validator's failure lines.
+Treat that, or a failed orchestrator success check, as one recoverable
+fault: launch one fresh clean-context `lesson-architect` attempt with the
+current saved files and the exact validator failures. If that attempt also
+fails the validator, nothing downstream can build from an invalid design: go
+to Phase 4, report `BLOCKED` with the exact failures, and deliver
+`design-decisions.md` and the diagnosis, so an unattended run ends with
+evidence the teacher can act on rather than silence.
 
 Then run:
 
@@ -191,17 +199,17 @@ python3 "[PLUGIN_ROOT]/scripts/check-photo-cap.py" \
   "[WORKING_DIR]/photo-requirements.json"
 ```
 
-If the picture cap exceeds 16, run one focused Lesson Designer revision against
-the current three canonical design files. Preserve learning-critical picture
-jobs, edit only the picture prioritisation and genuinely consequential content,
-do not add `adaptation-photo-###`, and do not rewrite the initial scaffold
-request. Re-run the design validator and photo-cap check. A design still over
-its budget after that one revision cannot validate either: treat it as a failed
-success check and use the same one fresh-attempt recovery, not further revision
-passes.
+If the picture cap exceeds 16, run one focused `lesson-architect` revision
+against the current three canonical design files. Preserve learning-critical
+picture jobs, edit only the picture prioritisation and genuinely
+consequential content, do not add `adaptation-photo-###`, and do not rewrite
+the initial scaffold request. Re-run the stage validator and photo-cap check.
+A design still over its budget after that one revision cannot validate
+either: treat it as a failed success check and use the same one
+fresh-attempt recovery, not further revision passes.
 
 16 is the **design** budget, not the run's ceiling. A stage after the design
-that genuinely needs a picture the designer could not foresee - a helper's
+that genuinely needs a picture the architect could not foresee - a helper's
 `controlled-ai` visual, a repair, an adaptation - checks against the run
 ceiling of 24 instead (`check-photo-cap.py --stage run`, which the photo
 contract already passes). Do not send a real late need back to be cut to
@@ -211,30 +219,16 @@ Carry every `flagsForTeacher` entry into the final report.
 
 ---
 
-## Phase 1.25 — Review the Design (Sequential, Blocking)
+## Phase 1.25 — Review the Decisions (Sequential, Blocking)
 
-Skip only when `design-reviewer` is absent. Otherwise prepare its compact view
-directly:
-
-```text
-python3 "[PLUGIN_ROOT]/scripts/design-review-packet.py" prepare \
-  --plugin-root "[PLUGIN_ROOT]" \
-  --working-dir "[WORKING_DIR]" \
-  --teacher-brief "[WORKING_DIR]/teacher-brief.txt" \
-  [one --teacher-clarification per file] \
-  [--orchestrator-context ...] \
-  [--lesson-plan-input ...] \
-  [--teacher-worksheet-input ...] \
-  --preflight-output "[WORKING_DIR]/design-review-preflight.json" \
-  --reference-output "[WORKING_DIR]/design-review-reference.md" \
-  --view-output "[WORKING_DIR]/design-review-view.md"
-```
-
-Require `DESIGN_REVIEW_PREFLIGHT_OK`, then launch the reviewer directly:
+Skip only when `decision-reviewer` is absent: continue on the stage-validated
+design and report the decisions review skipped. Otherwise launch it directly
+against the canonical files. There is no review packet: do not run
+`design-review-packet.py`.
 
 ```text
-You are the design reviewer. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/design-reviewer.md
+You are the decision reviewer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/decision-reviewer.md
 
 PLUGIN_ROOT: [PLUGIN_ROOT]
 WORKING_DIR: [WORKING_DIR]
@@ -244,15 +238,195 @@ AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
 DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
 PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
-DESIGN_REVIEW_REFERENCE: [WORKING_DIR]/design-review-reference.md
-DESIGN_REVIEW_VIEW: [WORKING_DIR]/design-review-view.md
 TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt
-[the same optional teacher inputs supplied to Lesson Designer]
+[the same optional teacher inputs supplied to the Lesson Architect]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson-design.json
 - [WORKING_DIR]/design-decisions.md
 - [WORKING_DIR]/photo-requirements.json
+- [WORKING_DIR]/design-review-decisions.md
+
+SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace --wording-stage \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
+The design handed to you already passed this check, so any failure is a
+correction you wrote. Repair your own wording, or restore what you found and
+decide the defect again. Do not return a design that fails it.
+
+ALLOWED_TERMINAL_STATES:
+- APPROVED
+- REDESIGN REQUIRED
+```
+
+After return, run the stage validator yourself and use the exact Result in
+`design-review-decisions.md`. When that after-return validation fails, the
+fault is in the review pass's own corrections, because the design validated
+before the reviewer opened it. Send it back to the pass that wrote it:
+launch one focused clean-context `decision-reviewer` job carrying the
+current canonical files and the exact validator failure lines, telling it to
+repair only the fields the validator names, keep the meaning of its own
+correction, and leave the `Result` in `design-review-decisions.md` as it
+stands - do not discard or re-run the review. Only when that repair also
+fails has the review pass genuinely corrupted the design, and only then does
+the Phase 1 fresh-attempt recovery apply. Record the round in the run's
+friction file like any other repair. Both reviews in the design chain reach the
+teacher: carry this one's corrections and flags into the run report alongside
+the Wording Reviewer's, naming which review each came from, because a
+decision corrected before the words existed is invisible in the finished
+lesson and the teacher would otherwise never learn it was made.
+
+For `APPROVED`, continue. For `REDESIGN REQUIRED`, hand the complete
+diagnosis to a fresh `lesson-architect` over the current canonical files.
+Preserve named passing content, edit the same paths, do not rewrite the
+initial scaffold request, and re-run stage validation, the photo cap and the
+independent review. Permit at most two semantic redesign passes;
+infrastructure retries do not consume this semantic budget.
+
+If the review after the final permitted redesign still requires redesign, the
+review loop ends there: two complete diagnoses have been spent, and a third
+pass re-argues the same judgement at token cost instead of improving the
+lesson. Continue the chain from the current stage-validated files and carry
+the reviewer's unresolved findings verbatim into the run report's blocking
+faults and the teacher flags. This route can never end `COMPLETE`, and the
+teacher report must lead with the unresolved findings: a run that builds the
+lesson and names the dispute gives the teacher something to judge in the
+morning, where stopping delivers nothing.
+
+---
+
+## Phase 1.3 — Write the Words and the Worksheet (Sequential, Blocking)
+
+The approved design's strings are specs. This phase turns them into the
+finished lesson: the Lesson Author writes every string outside the
+worksheet, the Worksheet Content Designer writes the sheet against that
+finished wording, and the Wording Reviewer checks the words. Decisions are
+settled; nothing in this phase re-judges the lesson.
+
+### The Lesson Author
+
+```text
+You are the lesson author. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/lesson-author.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+
+SUCCESS_CHECK:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace --wording-stage --wording-scope worksheet \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
+This accepts remaining specs only inside `worksheet`, whose own designer
+runs next, and fails on any string the author left unwritten elsewhere.
+
+ALLOWED_TERMINAL_STATES:
+- COMPLETE
+- WORDING_GAPS
+- LESSON_WORDING_CHECK_FAILED
+```
+
+If `worksheet-content-designer` is absent (known from Before Each Run), the
+Lesson Author writes the worksheet's specs as well: tell it so in the
+prompt, drop `--wording-scope worksheet` from its success check, skip the
+Worksheet Content Designer step, and name the missing specialist in the run
+report.
+
+On `WORDING_GAPS`, run one focused `lesson-architect` revision over the
+current canonical files carrying every `WORDING_GAP:` line verbatim -
+complete the named specs in place, change nothing else, prove with the stage
+validator - then launch one fresh `lesson-author`. One gap round per run: a
+second `WORDING_GAPS` ends the chain as a failed check ends Phase 1, with
+the gap lines as the diagnosis, because two rounds mean the design is not
+carrying its own decisions and a third author cannot fix that.
+
+On `LESSON_WORDING_CHECK_FAILED`, or a failed orchestrator success check,
+launch one fresh clean-context `lesson-author` with the current files and
+the exact failures. If that also fails, go to Phase 4 and report `BLOCKED`
+with the failures and deliver `design-decisions.md` and the diagnosis.
+
+### The Worksheet Content Designer
+
+Skip this step only when `worksheet.status` is `provided-by-teacher` - the
+teacher's own sheet stands, and adaptation still runs downstream in Track B
+as normal.
+
+```text
+You are the worksheet content designer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/worksheet-content-designer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
+
+SUCCESS_CHECK:
+python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+  --initial-photo-namespace \
+  "[WORKING_DIR]/lesson-design.json" \
+  "[WORKING_DIR]/photo-requirements.json"
+Require exactly: LESSON_DESIGN_OK
+
+ALLOWED_TERMINAL_STATES:
+- COMPLETE
+- WORKSHEET_GAPS
+- WORKSHEET_CHECK_FAILED
+```
+
+On `WORKSHEET_GAPS`, run one focused `lesson-architect` revision over the
+current canonical files carrying every `WORKSHEET_GAP:` line verbatim -
+revise only the worksheet brief and, where the gap names one, the photo
+contract, prove with the stage validator - then launch one fresh
+`worksheet-content-designer`. One gap round per run, ending as the author's
+does.
+
+On `WORKSHEET_CHECK_FAILED`, or a failed success check whose failures name
+only paths inside `worksheet`, launch one fresh clean-context
+`worksheet-content-designer` with the current files and the exact failures;
+a failure naming a path outside `worksheet` is a string the author left
+unwritten, and goes to one fresh `lesson-author` round instead, then this
+step reruns. If recovery fails, go to Phase 4 and report `BLOCKED` with the
+failures.
+
+### The Wording Reviewer
+
+Skip only when the role is absent: report the words check skipped.
+
+```text
+You are the wording reviewer. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/wording-reviewer.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json
 - [WORKING_DIR]/design-review.md
 
 SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
@@ -262,76 +436,31 @@ python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
   "[WORKING_DIR]/photo-requirements.json"
 Require exactly: LESSON_DESIGN_OK
 The design handed to you already passed this check, so any failure is a
-correction you wrote. Repair your own wording, or restore what you found and
-decide the defect again. Do not return a design that fails it.
-
-ORCHESTRATOR_CHECK_AFTER_RETURN:
-Write the four owned outputs and return the exact Result value from
-design-review.md. Do not run design-review-packet.py verify. The orchestrator owns that check.
+correction you wrote. Repair your own wording, or restore what you found.
+Do not return a design that fails it.
 
 ALLOWED_TERMINAL_STATES:
 - APPROVED
-- REDESIGN REQUIRED
 ```
 
-After return, run `design-review-packet.py verify` with the prepared preflight,
-reference, view and review, writing `design-review-postflight.json`. Require
-`DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.
+Its corrections live in the files; its alarms live in its report's
+`## Flags for the teacher`, and every one carries into the run report's
+teacher flags like any review flag. A strict validation that fails right
+after this reviewer returns is its own correction: one focused
+clean-context `wording-reviewer` repair naming only the failing fields,
+keeping its report as it stands, before any wider recovery.
 
-If the packet helper is absent, or `prepare` fails deterministically after its
-one infrastructure retry, run the same reviewer directly against the three
-canonical design files, require `APPROVED` or `REDESIGN REQUIRED` in
-`design-review.md`, and run `validate-lesson-design.py
---initial-photo-namespace` afterwards.
-
-If `verify` fails after a completed review, do not discard or re-run the
-review. Re-run `validate-lesson-design.py --initial-photo-namespace` yourself:
-when it passes, continue on the exact `Result` in `design-review.md` and record
-the packet failure in the run report.
-
-When it fails, the fault is in the review pass's own corrections, because the
-design validated before the reviewer opened it. Send it back to the pass that
-wrote it. Launch one focused clean-context `design-reviewer` job carrying the
-current canonical files, the exact validator failure lines and the in-place
-editing rule from Phase 3.5, and tell it to repair only the fields the validator
-names, keep the meaning of its own correction, and leave the `Result` in
-`design-review.md` as it stands. Then re-run `design-review-packet.py verify`.
-Only when that repair also fails has the review pass genuinely corrupted the
-design, and only then does the Phase 1 fresh-attempt recovery apply.
-
-The reviewer owns this repair because it is the only party holding what the
-corrected wording had to mean, and because a `lookFor` six words over its limit
-is a minute's work for the pass that wrote it against a whole fresh design
-attempt for a Lesson Designer that never saw the string. Record the round in the
-run's friction file like any other repair.
-
-For `APPROVED`, continue. For `REDESIGN REQUIRED`, give Lesson Designer the
-current canonical files plus the complete diagnosis. Preserve named passing
-content, edit the same paths, do not rewrite the initial scaffold request, and
-re-run design validation, photo cap and independent review. Permit at most two
-semantic redesign passes; infrastructure retries do not consume this semantic
-budget.
-
-If the review after the final permitted redesign still requires redesign, the
-review loop ends there: two complete diagnoses have been spent, and a third
-pass re-argues the same judgement at token cost instead of improving the
-lesson. Continue the pipeline from the current canonical files, which still
-pass deterministic validation, and carry the reviewer's unresolved findings
-verbatim into the run report's blocking faults and the teacher flags. This
-route can never end `COMPLETE`, and the teacher report must lead with the
-unresolved findings: a run that builds the lesson and names the dispute gives
-the teacher something to judge in the morning, where stopping delivers
-nothing.
-
-Append genuine corrections and remaining teacher choices to the shared build
-review log when `PLUGIN_SOURCE_ROOT` is available. Read routing values directly
-from the approved `lesson-design.json`, never from prose.
-
-With the design approved, run
-`python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex` and read
-the result. A design or review worker that ran below its declared setting is
-worth redoing here, where one worker repeats; after Phase 2 the same fault costs
-the whole package. Continue either way and carry the marker to the run report.
+Then close the design chain: run the strict validator yourself once more and
+require exactly `LESSON_DESIGN_OK` - this is the chain's gate whatever path
+led here, and a design that fails it goes back to whichever owner the
+failing paths name rather than forward. Append genuine corrections and
+remaining teacher choices to the shared build review log when
+`PLUGIN_SOURCE_ROOT` is available. Run
+`python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex` and
+read the result: a design-chain worker that ran below its declared setting
+is worth redoing here, where one worker repeats; after Phase 2 the same
+fault costs the whole package. Continue either way and carry the marker to
+the run report.
 
 ---
 
@@ -401,7 +530,7 @@ Open here and closed after Phase 2, because the contract is not frozen yet and a
 picture added now is sourced in the same wave as the rest. It reopens exactly
 once more for a content gap a designer finds later: the content-gap picture
 wave in Phase 3. Take it with one
-focused Lesson Designer revision over the three canonical design files: add the
+focused `lesson-architect` revision over the three canonical design files: add the
 visual as a `controlled-ai` picture with a complete generation prompt, drop the
 representation use that has no helper, change nothing else, and stay within the
 run ceiling of 24 rather than the 16 design budget, because this picture is
@@ -921,7 +1050,7 @@ faithfully and no authorised photo covers it - does not end the resource. The
 picture ladder (real search on Wikimedia and Unsplash, then authorised
 controlled generation with its visual checks) is a rescue route, not only a
 service for pictures the design promised up front; a teacher finding a blocked
-lesson in the morning is the worse outcome. Run one focused Lesson Designer
+lesson in the morning is the worse outcome. Run one focused `lesson-architect`
 revision over the three canonical design files: add the missing visual as a
 picture requirement, real-first with an authorised fallback (a real place's
 geography publishes only after its visual check confirms it), point the
@@ -1112,238 +1241,8 @@ local folder and resolver error.
   needed adaptations around it.
 - A generated worksheet is expected unless the teacher supplied one; an
   unexplained `not-needed` decision is a design fault.
-- Ambiguous or incomplete Lesson Designer output is not silently repaired by
+- Ambiguous or incomplete design-chain output is not silently repaired by
   the host.
 
 The lesson design remains the single pedagogical source of truth. Downstream
 roles coordinate through validated files, not conversations or scheduler state.
-
----
-
-## The split route - design and wording as two passes (off by default)
-
-This route replaces Phase 1 and Phase 1.25 only, and runs only when the
-teacher's message explicitly asks for it. Architect decides, writing each
-child-facing string as a wording spec and the worksheet as a specced brief;
-Decision Reviewer judges the compact design; Author writes the finished
-lesson words once in a fresh context; Worksheet Content Designer writes the
-sheet's instances and words against that finished wording; Wording Reviewer
-checks all the words. It ends with the same three approved canonical files
-and rejoins the pipeline at Phase 1.5, nothing downstream changed - later
-focused Lesson Designer revisions included, which meet a fully worded design
-exactly as on the normal route.
-
-Ask `worker-launch.py spec` once for all five roles: `lesson-architect`,
-`decision-reviewer`, `lesson-author`, `worksheet-content-designer`,
-`wording-reviewer`. Steps 1 and 2 are this slice; the `design-split-words`
-slice carries steps 3 to 5.
-
-### Split step 1 - Lesson Architect (sequential, blocking)
-
-Launch exactly as Phase 1 launches the Lesson Designer - same authoritative
-inputs including the teacher-authored files, same owned outputs, same
-BUILD_SCAFFOLD_ONCE block - substituting the role file
-`[PLUGIN_ROOT]/agents/lesson-architect.md` and the stage validator as the
-success check:
-
-```text
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace --wording-stage \
-  "[WORKING_DIR]/lesson-design.json" \
-  "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
-```
-
-Phase 1's recovery applies unchanged - one fresh clean-context attempt on a
-failed check, then BLOCKED with the diagnosis - and so does the photo-cap
-check with its one focused revision; that revision goes to a fresh
-`lesson-architect`, proved with the stage validator above.
-
-### Split step 2 - Decision Reviewer (sequential, blocking)
-
-```text
-You are the decision reviewer. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/decision-reviewer.md
-
-PLUGIN_ROOT: [PLUGIN_ROOT]
-WORKING_DIR: [WORKING_DIR]
-OUTPUT_DIR: [OUTPUT_DIR]
-
-AUTHORITATIVE_INPUTS:
-LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
-PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
-TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt
-[the same optional teacher inputs supplied to the Lesson Architect]
-
-OWNED_OUTPUTS:
-- [WORKING_DIR]/lesson-design.json
-- [WORKING_DIR]/design-decisions.md
-- [WORKING_DIR]/photo-requirements.json
-- [WORKING_DIR]/design-review-decisions.md
-
-SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace --wording-stage \
-  "[WORKING_DIR]/lesson-design.json" \
-  "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
-
-ALLOWED_TERMINAL_STATES:
-- APPROVED
-- REDESIGN REQUIRED
-```
-
-There is no review packet on this route: do not run
-`design-review-packet.py`. After return, run the stage validator yourself and
-use the exact Result in `design-review-decisions.md`. Both split reviews reach
-the teacher: carry this one's corrections and flags into the run report
-alongside the Wording Reviewer's, naming which review each came from, because
-a decision corrected before the words existed is invisible in the finished
-lesson and the teacher would otherwise never learn it was made.
-
-For `APPROVED`, continue. For `REDESIGN REQUIRED`, hand the complete
-diagnosis to a fresh `lesson-architect` over the current canonical files,
-exactly as Phase 1.25 hands one to the Lesson Designer, with the same limit
-of two semantic redesign passes and the same ending: after the budget,
-continue from the current validated files and carry the unresolved findings
-verbatim into the run report's blocking faults and the teacher flags.
-
-### Split step 3 - Lesson Author (sequential, blocking)
-
-```text
-You are the lesson author. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/lesson-author.md
-
-PLUGIN_ROOT: [PLUGIN_ROOT]
-WORKING_DIR: [WORKING_DIR]
-OUTPUT_DIR: [OUTPUT_DIR]
-
-AUTHORITATIVE_INPUTS:
-LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
-PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
-
-OWNED_OUTPUTS:
-- [WORKING_DIR]/lesson-design.json
-
-SUCCESS_CHECK:
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace --wording-stage --wording-scope worksheet \
-  "[WORKING_DIR]/lesson-design.json" \
-  "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_WORDING_STAGE_OK
-This accepts remaining specs only inside `worksheet`, whose own designer
-runs next, and fails on any string the author left unwritten elsewhere.
-
-ALLOWED_TERMINAL_STATES:
-- COMPLETE
-- WORDING_GAPS
-- LESSON_WORDING_CHECK_FAILED
-```
-
-On `WORDING_GAPS`, run one focused `lesson-architect` revision over the
-current canonical files carrying every `WORDING_GAP:` line verbatim -
-complete the named specs in place, change nothing else, prove with the stage
-validator - then launch one fresh `lesson-author`. One gap round per run: a
-second `WORDING_GAPS` ends the route as a failed check ends Phase 1, with
-the gap lines as the diagnosis, because two rounds mean the design is not
-carrying its own decisions and a third author cannot fix that.
-
-On `LESSON_WORDING_CHECK_FAILED`, or a failed orchestrator success check,
-launch one fresh clean-context `lesson-author` with the current files and
-the exact failures. If that also fails, go to Phase 4 and report `BLOCKED`
-with the failures and deliver `design-decisions.md` and the diagnosis.
-
-### Split step 4 - Worksheet Content Designer (sequential, blocking)
-
-Skip this step only when `worksheet.status` is `provided-by-teacher` - the
-teacher's own sheet stands, and adaptation still runs downstream in Track B
-as normal.
-
-```text
-You are the worksheet content designer. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/worksheet-content-designer.md
-
-PLUGIN_ROOT: [PLUGIN_ROOT]
-WORKING_DIR: [WORKING_DIR]
-OUTPUT_DIR: [OUTPUT_DIR]
-
-AUTHORITATIVE_INPUTS:
-LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
-PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
-
-OWNED_OUTPUTS:
-- [WORKING_DIR]/lesson-design.json
-
-SUCCESS_CHECK:
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace \
-  "[WORKING_DIR]/lesson-design.json" \
-  "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_OK
-
-ALLOWED_TERMINAL_STATES:
-- COMPLETE
-- WORKSHEET_GAPS
-- WORKSHEET_CHECK_FAILED
-```
-
-On `WORKSHEET_GAPS`, run one focused `lesson-architect` revision over the
-current canonical files carrying every `WORKSHEET_GAP:` line verbatim -
-revise only the worksheet brief and, where the gap names one, the photo
-contract, prove with the stage validator - then launch one fresh
-`worksheet-content-designer`. One gap round per run, ending as the author's
-does.
-
-On `WORKSHEET_CHECK_FAILED`, or a failed success check whose failures name
-only paths inside `worksheet`, launch one fresh clean-context
-`worksheet-content-designer` with the current files and the exact failures;
-a failure naming a path outside `worksheet` is a string the author left
-unwritten, and goes to one fresh `lesson-author` round instead, then this
-step reruns. If recovery fails, go to Phase 4 and report `BLOCKED` with the
-failures.
-
-### Split step 5 - Wording Reviewer (sequential, blocking)
-
-```text
-You are the wording reviewer. Read your agent instructions at:
-[PLUGIN_ROOT]/agents/wording-reviewer.md
-
-PLUGIN_ROOT: [PLUGIN_ROOT]
-WORKING_DIR: [WORKING_DIR]
-OUTPUT_DIR: [OUTPUT_DIR]
-
-AUTHORITATIVE_INPUTS:
-LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
-DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
-PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
-
-OWNED_OUTPUTS:
-- [WORKING_DIR]/lesson-design.json
-- [WORKING_DIR]/design-review.md
-
-SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace \
-  "[WORKING_DIR]/lesson-design.json" \
-  "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_OK
-
-ALLOWED_TERMINAL_STATES:
-- APPROVED
-```
-
-Its corrections live in the files; its alarms live in its report's
-`## Flags for the teacher`, and every one carries into the run report's
-teacher flags like any Phase 1.25 flag. After return, run the strict
-validator yourself.
-
-Then close: run the strict validator yourself once more and require exactly
-`LESSON_DESIGN_OK` - this is the route's gate whatever path led here, and a
-design that fails it goes back to whichever owner the failing paths name
-rather than forward. Append genuine corrections and remaining teacher
-choices to the shared build review log when `PLUGIN_SOURCE_ROOT` is
-available, run `worker-launch.py audit --host codex`, and continue to Phase
-1.5. Everything from there on is unchanged.

@@ -93,7 +93,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
 
         # An invalid design gets one fresh recovery attempt, then an evidence-rich stop.
         self.assertIn("LESSON_DESIGN_CHECK_FAILED", playbook)
-        self.assertIn("one fresh clean-context Lesson Designer attempt", playbook)
+        self.assertIn("one fresh clean-context `lesson-architect` attempt", playbook)
 
         # BLOCKED labels the record; built resources are still delivered and synced.
         self.assertIn("`BLOCKED` labels the record, not the delivery", playbook)
@@ -196,7 +196,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             3,
         )
         self.assertIn(
-            "ORCHESTRATOR_CHECK_AFTER_RETURN:",
+            "After return, run the stage validator yourself",
             text,
         )
 
@@ -228,8 +228,11 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "## Central design evidence",
             reviewer,
         )
-        self.assertIn("After return, run `design-review-packet.py verify`", playbook)
         self.assertIn(
+            "There is no review packet: do not run\n`design-review-packet.py`.",
+            playbook,
+        )
+        self.assertNotIn(
             "Do not run design-review-packet.py verify. "
             "The orchestrator owns that check.",
             playbook,
@@ -242,7 +245,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             encoding="utf-8"
         )
         start = text.index(
-            "You are the lesson designer. "
+            "You are the lesson architect. "
             "Read your agent instructions at:"
         )
         end = text.index("TERMINAL_STATE: COMPLETE", start)
@@ -260,7 +263,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "LESSON_DESIGN_SCAFFOLD_OK",
             "python3 \"[PLUGIN_ROOT]/scripts/"
             "validate-lesson-design.py\"",
-            "LESSON_DESIGN_OK",
+            "LESSON_DESIGN_WORDING_STAGE_OK",
         ]
         positions = [
             prompt.index(marker)
@@ -280,7 +283,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         """
         text = PLAYBOOK.read_text(encoding="utf-8")
         start = text.index(
-            "You are the lesson designer. "
+            "You are the lesson architect. "
             "Read your agent instructions at:"
         )
         end = text.index("TERMINAL_STATE: COMPLETE", start)

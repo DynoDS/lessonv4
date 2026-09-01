@@ -20,14 +20,18 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "setup": (
         "## Before Each Run: Know What Exists",
-        "## Phase 1 — Run the Lesson Designer (Sequential, Blocking)",
+        "## Phase 1 — Design the Lesson (Lesson Architect, Sequential, Blocking)",
     ),
     "design": (
-        "## Phase 1 — Run the Lesson Designer (Sequential, Blocking)",
-        "## Phase 1.25 — Review the Design (Sequential, Blocking)",
+        "## Phase 1 — Design the Lesson (Lesson Architect, Sequential, Blocking)",
+        "## Phase 1.25 — Review the Decisions (Sequential, Blocking)",
     ),
     "design-review": (
-        "## Phase 1.25 — Review the Design (Sequential, Blocking)",
+        "## Phase 1.25 — Review the Decisions (Sequential, Blocking)",
+        "## Phase 1.3 — Write the Words and the Worksheet (Sequential, Blocking)",
+    ),
+    "design-words": (
+        "## Phase 1.3 — Write the Words and the Worksheet (Sequential, Blocking)",
         "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)",
     ),
     "helpers": (
@@ -80,14 +84,6 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "delivery": (
         "## Phase 4 — Final Assembly and Report",
-        "## The split route - design and wording as two passes (off by default)",
-    ),
-    "design-split": (
-        "## The split route - design and wording as two passes (off by default)",
-        "### Split step 3 - Lesson Author (sequential, blocking)",
-    ),
-    "design-split-words": (
-        "### Split step 3 - Lesson Author (sequential, blocking)",
         None,
     ),
 }
@@ -114,13 +110,19 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "Load `setup`: establish what this package ships and gather the brief.",
     ),
     "setup": (
-        "Load `design` and run the Lesson Designer.",
+        "Load `design` and run the Lesson Architect.",
     ),
     "design": (
-        "Load `design-review` once the Lesson Designer has returned.",
+        "Load `design-review` once the Lesson Architect has returned.",
     ),
     "design-review": (
-        "Load `helpers` once a design is approved, before any renderer.",
+        "Load `design-words` once the decisions are approved, or once the"
+        " redesign budget is spent and the chain continues with its findings"
+        " carried.",
+    ),
+    "design-words": (
+        "Load `helpers` once the closing strict validation prints"
+        " LESSON_DESIGN_OK; everything from Phase 1.5 on is unchanged.",
     ),
     "helpers": (
         "Load `phase2-core` and open the rendering phase.",
@@ -188,14 +190,6 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
     ),
     "delivery": (
         "This is the last slice. The run ends with the teacher report.",
-    ),
-    "design-split": (
-        "Load `design-split-words` once the Decision Reviewer has approved"
-        " the compact design.",
-    ),
-    "design-split-words": (
-        "Load `helpers` once the closing strict validation prints"
-        " LESSON_DESIGN_OK; everything from Phase 1.5 on is unchanged.",
     ),
 }
 

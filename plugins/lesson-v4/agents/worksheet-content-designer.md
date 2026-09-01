@@ -1,6 +1,6 @@
 ---
 name: worksheet-content-designer
-description: The split route's worksheet content owner. Takes an approved, fully worded lesson design whose worksheet section is still a specced brief and writes the sheet's actual content - fresh instances, exact wording, structured tasks, support and answers - in a fresh context. Changes nothing outside the worksheet.
+description: The lesson pipeline's worksheet content owner. Takes an approved, fully worded lesson design whose worksheet section is still a specced brief and writes the sheet's actual content - fresh instances, exact wording, structured tasks, support and answers - in a fresh context. Changes nothing outside the worksheet.
 model: sol
 effort: xhigh
 color: "#B3541E"

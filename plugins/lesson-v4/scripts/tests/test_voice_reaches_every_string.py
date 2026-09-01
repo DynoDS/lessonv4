@@ -6,6 +6,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
+# When the pipeline split deciding from wording, the register craft these
+# tests pin moved to the role that now writes every finished string. The
+# failures they guard are wording-time failures, so they are pinned where
+# the wording is written.
+AUTHOR = ROOT / "agents" / "lesson-author.md"
 PREFERENCES = ROOT / "references" / "preferences.md"
 VOICE = ROOT / "references" / "teacher-voice.md"
 
@@ -55,48 +60,43 @@ class VoiceReachesEveryStringTests(unittest.TestCase):
 
     def test_the_script_route_reaches_how_it_sounds(self) -> None:
         """Cause two. The script was routed to §2 alone, which governs what
-        belongs in a script rather than how it reads - and the split was the
-        one thing the lesson got right."""
-        designer = flat(LESSON_DESIGNER)
-        self.assertIn("`teacher-voice.md` §§1-3", designer)
-        self.assertIn("§1 and §3 settle HOW IT SOUNDS", designer)
+        belongs in a script rather than how it reads. What belongs where is
+        the decider's; how it reads now lives with the words writer."""
+        author = flat(AUTHOR)
+        self.assertIn("§§1 and 3 for a spoken script", author)
         # The tells, or the rule is an adjective again.
-        self.assertIn("do not all receive", designer)
-        self.assertIn("what provides the power", designer)
+        self.assertIn("do not all receive", author)
+        self.assertIn("what provides the power", author)
+        # And the decider keeps the split itself: script versus slide.
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn(
+            "the script carries the fuller conversational register", designer
+        )
 
     def test_the_tells_fire_per_component_not_once_at_the_top(self) -> None:
         """Cause three. Voice is a property of every string, so a single
         start-of-run read decays; the worksheet clue set written last was the
-        worst rhythm failure in the lesson."""
-        designer = flat(LESSON_DESIGNER)
-        self.assertIn("Four tells the register has slipped", designer)
-        self.assertIn(
-            "Voice is a property of every string, not a decision made once",
-            designer,
-        )
-        # It must sit inside the per-component read-back to fire repeatedly.
-        components = designer[designer.index("Read every component as child"):]
-        self.assertLess(
-            components.index("Four tells the register has slipped"),
-            components.index("Calculation questions normally full equations"),
-        )
+        worst rhythm failure in the lesson. The words writer checks each
+        string as it goes."""
+        author = flat(AUTHOR)
+        self.assertIn("check each string against them as you go", author)
         for tell in (
-            "a full form where speech contracts",
-            "no verb doing the work",
-            "a planning word standing where the child needs the thing",
-            "adjacent sentences built to the same shape and length",
+            "A full form where speech contracts",
+            "No verb doing the work",
+            "A planning word standing where the child needs the thing",
+            "Adjacent sentences built to the same shape and length",
         ):
             with self.subTest(tell=tell):
-                self.assertIn(tell, designer)
+                self.assertIn(tell, author)
 
     def test_definitions_and_scripts_are_named_in_the_loading_route(self) -> None:
         """The routing named model answers, worked examples and success
         criteria and stopped there, so §5 had no trigger anywhere."""
-        designer = flat(LESSON_DESIGNER)
-        self.assertIn("§5 a vocabulary definition or explanation", designer)
-        self.assertIn("§§1 and 3 a spoken script", designer)
+        author = flat(AUTHOR)
+        self.assertIn("§5 for a definition or explanation", author)
+        self.assertIn("§§1 and 3 for a spoken script", author)
         self.assertIn(
-            "Definitions and scripts are the two most often missed", designer
+            "Definitions and scripts are the two most often missed", author
         )
 
     def test_the_vocabulary_decision_point_carries_the_pointer(self) -> None:
@@ -130,13 +130,14 @@ class ScriptTeachesRatherThanDirectsTests(unittest.TestCase):
     """
 
     def test_a_third_tell_covers_directing_instead_of_teaching(self) -> None:
+        # The decider must spec the idea the script exists to hand over, or
+        # the fault is unfixable downstream; stage directions are its tell.
         designer = flat(LESSON_DESIGNER)
-        self.assertIn("Three tells that it has drifted", designer)
-        self.assertIn(
-            "a script that directs children around the resources instead of "
-            "teaching them anything",
-            designer,
-        )
+        self.assertIn("stage directions rather than teaching", designer)
+        # And the words writer re-runs the same test over the sentence it
+        # actually wrote.
+        author = flat(AUTHOR)
+        self.assertIn("a **script** must still teach", author)
 
     def test_both_surviving_lines_are_named_with_their_repair(self) -> None:
         designer = flat(LESSON_DESIGNER)
@@ -146,25 +147,35 @@ class ScriptTeachesRatherThanDirectsTests(unittest.TestCase):
             designer,
         )
         self.assertIn(
-            "Remember, having a plug isn't what makes something electrical",
+            "having a plug isn't what makes something electrical",
             designer,
         )
-        # The adult idiom, folded in beside the abstraction it belongs with.
-        self.assertIn("decide whether Dev's rule holds", designer)
-        self.assertIn("so, is Dev right?", designer)
+        # The adult idiom, folded in beside the abstraction it belongs with -
+        # a wording-time fault, pinned where the wording is written.
+        author = flat(AUTHOR)
+        self.assertIn("decide whether Dev's rule holds", author)
+        self.assertIn("so, is Dev right?", author)
 
     def test_the_tell_is_checkable_rather_than_an_adjective(self) -> None:
-        """"Sound natural" is what failed twice; a deletion test can be run."""
+        """"Sound natural" is what failed twice; a deletion test can be run,
+        and both halves of the split run it - the decider over its spec, the
+        words writer over its sentence."""
         designer = flat(LESSON_DESIGNER)
         self.assertIn(
             "if this script were deleted, what would the class actually lose?",
             designer,
         )
+        author = flat(AUTHOR)
+        self.assertIn(
+            "could be deleted and the class would lose nothing but the "
+            "running order",
+            author,
+        )
 
     def test_the_first_two_tells_survive(self) -> None:
-        designer = flat(LESSON_DESIGNER)
-        self.assertIn("do not all receive", designer)
-        self.assertIn("what provides the power", designer)
+        author = flat(AUTHOR)
+        self.assertIn("do not all receive", author)
+        self.assertIn("what provides the power", author)
 
 
 if __name__ == "__main__":

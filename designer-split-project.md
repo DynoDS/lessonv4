@@ -51,12 +51,14 @@ blueprint file format was rejected for the reason under Settled below.
 3. **A words-writer that cannot express a decision reports the gap.** It
    names precisely what blocks it and hands back; it never redesigns
    silently. Reason: silent redesign is the drift the split exists to remove.
-4. **Growth freeze on the designer's instructions.** Until the split is
-   tested, wording-drift failures in `agents/lesson-designer.md` are answered
-   with enforcement (validator, code, tests) or left for this project, not
-   with new guidance paragraphs. Reason: the file's growth is itself the
-   failure being fixed. Limit: a failure that genuinely cannot wait and
-   cannot be enforced in code may still add guidance, with a note here.
+4. **Growth freeze on the designer's instructions.** LIFTED at the
+   switch-over (settled 12), replaced by a placement rule: a wording failure
+   is answered in `lesson-author.md` or `worksheet-content-designer.md`, a
+   deciding failure in `lesson-designer.md` (the architect's base craft
+   file), and enforcement in code stays preferred over guidance everywhere.
+   Reason the freeze existed: every failure used to land in one 90KB file;
+   with the jobs split, each rule can live in the small file whose reader
+   uses it.
 5. **Daniel's pipeline keeps working throughout.** He teaches with it daily
    and installs from main. Whatever the rollout route (settled 8), no
    state may be published where a normal lesson run is broken.
@@ -119,40 +121,47 @@ blueprint file format was rejected for the reason under Settled below.
     rewriting, and nothing already approved gets re-argued. Speed is a bonus,
     not the test. Daniel judges the voice; checks judge everything else.
 
+12. **The chain is the pipeline** (Daniel, 31 Aug 2026: "im not testing.
+    dont worrt lets just keep going. retiring the old route by slimminh next
+    and then do whatever is after that too. ive got backups if all goes
+    wrong"). Daniel explicitly reopened the test gate (settled 8 and 10) and
+    ordered the switch-over without the test runs, accepting the risk with
+    backups in hand. Done in 4.2.50: the old Phase 1/1.25 launches are
+    retired and the five-step chain is Phases 1, 1.25 and 1.3; the wording
+    craft (script register tells, the four voice tells, the read-back and
+    pre-flight, the teacher-voice loading routes) moved from the designer
+    file into `lesson-author.md`; `lesson-designer.md` remains as the
+    architect's base craft file, decisions only, and is no longer launched;
+    later-phase focused revisions belong to the architect, which may write
+    small finished wording in place there; the reviewer hand-back principle
+    (a broken correction goes back to the reviewer that wrote it) carried
+    into both reviews. Settled 10's bar still stands as the judgement for
+    the first real runs - it just no longer gates the code.
+
 ## Open decisions, in order
 
 None. Every decision is settled; what remains is implementation, the two
 test runs, and then the switch-over judgement against settled 10.
 
-## What remains after a successful first test
+## What remains
 
-A good result on the two test lessons proves the shape, not the finish. In
-priority order, with the reason each still matters:
+The construction is finished (settled 12): the chain is the pipeline, the
+old route is retired, the wording craft moved to the writers, the freeze is
+lifted. Still open, none of it buildable at a desk:
 
-1. **Switch over and retire the old route.** Remove the trigger, make the
-   split the only route, and stop shipping two ways of designing a lesson.
-   Until then every failure has to be diagnosed against whichever route
-   produced it.
-2. **Actually slim the decider.** This is the win the first build does not
-   yet deliver, and the honest gap in it. `lesson-architect.md` is 4KB but
-   opens `lesson-designer.md` (90KB) in full, so the deciding worker still
-   carries everything; only the words pass got a genuinely fresh, small
-   context. Once the split is proven, the wording craft in the designer file
-   - the register rules, the voice tells, the read-back, the child-facing
-   examples written to teach tone - moves out to `lesson-author.md` where it
-   is used, and the architect keeps the deciding half. Do this only after the
-   route is proven, and as its own change, so a regression has one cause.
-3. **Lift the growth freeze** (settled 4) once 1 and 2 are done, and let
-   wording failures be answered in the author file, which is where they now
-   belong and where a rule can be short because its file is short.
-4. **Run the other three test lessons** - circuit symbols, electrical
-   appliances, rainforest - as the wider regression check before retiring the
-   old route for good.
-5. **Try the author at a lower effort** (settled 9 deferred this), now that a
-   proven baseline exists to compare against.
-6. ~~Consider the worksheet content split~~ **Done, 4.2.49.** Daniel chose
-   to build it ahead of test evidence rather than wait (31 Aug 2026), so the
-   first test now measures the full architecture. See settled 11.
+1. **Run real lessons.** The chain has never run end to end. Daniel's first
+   runs are now the live proof, with rollback being a reinstall of the
+   previous version (the tracking log and git history name every step).
+   The five test lessons remain the best regression set: balanced diet,
+   four-digit plus or minus three-digit, circuit symbols, electrical
+   appliances, rainforest.
+2. **Try the author at a lower effort** (settled 9 deferred this) once a
+   few real runs give a baseline to compare against.
+3. **Optional later tidies, evidence first:** fold `lesson-architect.md` and
+   its base `lesson-designer.md` into one file once the chain has survived
+   real runs; move the base file's `### Worksheet` instance craft into a
+   reference owned by the worksheet content designer. Both are churn with no
+   behaviour change, so they wait for a quiet moment, not a patch night.
 
 ## Test lessons for before and after
 
@@ -209,3 +218,15 @@ the architecture, or the comparison shows nothing.
   change both routes at once. Next: Daniel runs the balanced diet brief in
   Codex with `use the split route` added, then the four-digit maths brief
   the same way, and judges both against settled 10.
+- **31 Aug 2026, switch-over (4.2.50).** Daniel ordered the whole remaining
+  plan done without the test runs (settled 12). The chain is now the only
+  pipeline: Phase 1 launches the architect, Phase 1.25 the decision review,
+  Phase 1.3 the author, worksheet content designer and wording reviewer,
+  with the orchestrator's strict gate closing the chain. The wording craft
+  moved out of the old designer file into the author; the old designer file
+  stays as the architect's base craft file and is never launched; the review
+  packet is retired from the chain; the growth freeze is lifted in favour of
+  the placement rule in settled 4. Rollback if a run misbehaves: reinstall
+  the previous version from the marketplace after reverting main, and the
+  4.2.49 commit is the last two-route state. Next: Daniel's first real run
+  is the live proof; judge it against settled 10's bar.

@@ -516,7 +516,7 @@ def test_image_team_cap_is_authoritative_and_current_aware():
     assert "RUN_MAX_PHOTOS = 24" in read(PHOTO_CAP)
     assert "check-photo-cap.py" in skill
     assert (
-        "If the picture cap exceeds 16, run one focused Lesson Designer "
+        "If the picture cap exceeds 16, run one focused `lesson-architect` "
         "revision" in flat
     )
     assert "photo-contract.py promote-used" in flat
@@ -1899,15 +1899,15 @@ def test_helper_preflight_includes_transitive_representation_uses():
 def test_design_reviewer_durable_contract_includes_all_mutable_inputs():
     text = read(SKILL)
     flat = " ".join(text.split())
-    start = flat.index("You are the design reviewer.")
+    start = flat.index("You are the decision reviewer.")
     owned = flat.index("OWNED_OUTPUTS:", start)
-    end = flat.index("ORCHESTRATOR_CHECK_AFTER_RETURN:", owned)
+    end = flat.index("SUCCESS_CHECK", owned)
     block = flat[owned:end]
     for name in (
         "[WORKING_DIR]/lesson-design.json",
         "[WORKING_DIR]/design-decisions.md",
         "[WORKING_DIR]/photo-requirements.json",
-        "[WORKING_DIR]/design-review.md",
+        "[WORKING_DIR]/design-review-decisions.md",
     ):
         assert name in block, name
 
@@ -1963,7 +1963,7 @@ def test_phase_one_worker_and_orchestrator_both_validate_initial_contract():
     )[0]
     assert "validate-lesson-design.py" in worker_check
     assert "--initial-photo-namespace" in worker_check
-    assert "LESSON_DESIGN_OK" in worker_check
+    assert "LESSON_DESIGN_WORDING_STAGE_OK" in worker_check
 
     assert (
         "After return, require the four outputs and run the success check "

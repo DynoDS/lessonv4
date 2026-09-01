@@ -42,14 +42,18 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "setup": (
         "## Before Each Run: Know What Exists",
-        "## Phase 1 — Run the Lesson Designer (Sequential, Blocking)",
+        "## Phase 1 — Design the Lesson (Lesson Architect, Sequential, Blocking)",
     ),
     "design": (
-        "## Phase 1 — Run the Lesson Designer (Sequential, Blocking)",
-        "## Phase 1.25 — Review the Design (Sequential, Blocking)",
+        "## Phase 1 — Design the Lesson (Lesson Architect, Sequential, Blocking)",
+        "## Phase 1.25 — Review the Decisions (Sequential, Blocking)",
     ),
     "design-review": (
-        "## Phase 1.25 — Review the Design (Sequential, Blocking)",
+        "## Phase 1.25 — Review the Decisions (Sequential, Blocking)",
+        "## Phase 1.3 — Write the Words and the Worksheet (Sequential, Blocking)",
+    ),
+    "design-words": (
+        "## Phase 1.3 — Write the Words and the Worksheet (Sequential, Blocking)",
         "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)",
     ),
     "helpers": (
@@ -102,14 +106,6 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "delivery": (
         "## Phase 4 — Final Assembly and Report",
-        "## The split route - design and wording as two passes (off by default)",
-    ),
-    "design-split": (
-        "## The split route - design and wording as two passes (off by default)",
-        "### Split step 3 - Lesson Author (sequential, blocking)",
-    ),
-    "design-split-words": (
-        "### Split step 3 - Lesson Author (sequential, blocking)",
         None,
     ),
 }
@@ -319,7 +315,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             design,
         )
         self.assertNotIn(
-            "launch the reviewer directly",
+            "You are the decision reviewer",
             design,
         )
         self.assertNotIn(
@@ -333,7 +329,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             )
         )
         self.assertIn(
-            "launch the reviewer directly",
+            "You are the decision reviewer",
             review,
         )
         self.assertIn(

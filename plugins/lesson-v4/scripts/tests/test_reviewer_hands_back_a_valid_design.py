@@ -204,10 +204,10 @@ class ReviewerRunsTheValidatorOverItsOwnEdits(unittest.TestCase):
             "Do not return a design that fails it.",
             playbook,
         )
-        # The orchestrator-side check it must not be confused with survives.
+        # The review packet is retired from the chain; the reviewer must not
+        # be sent hunting for it.
         self.assertIn(
-            "Do not run design-review-packet.py verify. The orchestrator owns "
-            "that check.",
+            "There is no review packet: do not run `design-review-packet.py`.",
             playbook,
         )
 
@@ -223,11 +223,18 @@ class AFailedHandBackIsRepairedByThePassThatCausedIt(unittest.TestCase):
             playbook,
         )
         self.assertIn(
-            "Launch one focused clean-context `design-reviewer` job",
+            "launch one focused clean-context `decision-reviewer` job",
             playbook,
         )
         self.assertIn(
             "repair only the fields the validator names", playbook
+        )
+        # The same principle for the words check: its broken correction is
+        # its own to shorten, never the author's or a wider recovery's.
+        self.assertIn(
+            "one focused clean-context `wording-reviewer` repair naming only "
+            "the failing fields",
+            playbook,
         )
 
     def test_the_review_result_is_not_re_litigated(self) -> None:
@@ -235,7 +242,8 @@ class AFailedHandBackIsRepairedByThePassThatCausedIt(unittest.TestCase):
         cheap route becomes a third full review."""
         playbook = flat(PLAYBOOK)
         self.assertIn(
-            "leave the `Result` in `design-review.md` as it stands", playbook
+            "leave the `Result` in `design-review-decisions.md` as it stands",
+            playbook,
         )
         self.assertIn(
             "do not discard or re-run the review", playbook

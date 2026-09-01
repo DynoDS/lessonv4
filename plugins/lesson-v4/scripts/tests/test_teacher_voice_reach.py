@@ -133,9 +133,15 @@ class TeacherVoiceRoutingTests(unittest.TestCase):
 
     def test_lesson_designer_runs_the_voice_check_at_completion(self) -> None:
         """The pre-flight is the voice test the Written Voice read-back is
-        not; without it the model-answer register has no check anywhere."""
+        not; without it the model-answer register has no check anywhere.
+        Since the pipeline split, the finished wording is written by the
+        lesson-author and worksheet-content-designer, so the check lives at
+        their completion, not the decider's."""
         self.assertIn(
-            "Final pre-flight check", flat(AGENTS / "lesson-designer.md")
+            "final pre-flight", flat(AGENTS / "lesson-author.md")
+        )
+        self.assertIn(
+            "final pre-flight", flat(AGENTS / "worksheet-content-designer.md")
         )
 
 

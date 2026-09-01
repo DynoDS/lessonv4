@@ -12,7 +12,11 @@ This plugin splits the work cleanly instead:
 
 | Agent | Role |
 |---|---|
-| `lesson-designer` | Pedagogy only — structure, sequence, examples, misconceptions. Writes a compact decisions record plus the authoritative structured lesson-design.json contract. |
+| `lesson-architect` | Pedagogy only — structure, sequence, examples, misconceptions, worksheet brief, picture contract. Writes a compact decisions record plus the authoritative lesson-design.json contract with every child-facing string as a wording spec. Reads `lesson-designer.md` as its base craft file. |
+| `decision-reviewer` | Judges every pedagogical decision while the design is still compact, before any finished words exist. |
+| `lesson-author` | Writes the finished lesson wording once, in the teacher's voice, from the approved specs. Changes no decision. |
+| `worksheet-content-designer` | Writes the worksheet's instances, wording, support and answers against the finished board wording. |
+| `wording-reviewer` | Checks the authored words say what was decided and sound like the teacher; repairs wording in place. |
 | `slide-designer` | Takes the Lesson Design, picks templates, maps content into slots, writes speaker notes, resolves its own optional Educational SVG requests, and outputs a structured spec. |
 | `image-scout` | Unified picture worker — searches approved real sources, visually checks candidates, continues to authorised AI generation in the same session, stages outputs, and writes a compact result. |
 | `working-wall-designer` | Selects wall-worthy cards, resolves its own Educational SVG P2/P3 requests, applies the resolved-picture-or-remove gate, and writes final builder-ready `working-wall.json`. |
@@ -25,7 +29,7 @@ compatibility builder-agent files remain packaged for direct or legacy use.
 
 ## How pictures are obtained
 
-1. **Contract.** Lesson Designer writes one complete schema 2 picture contract and Design Reviewer independently checks teaching evidence, authenticity, source fitness, fallback meaning, generation controls and comparison-set coherence.
+1. **Contract.** The Lesson Architect writes one complete schema 2 picture contract and the Decision Reviewer independently checks teaching evidence, authenticity, source fitness, fallback meaning, generation controls and comparison-set coherence.
 2. **Compile.** `compile-picture-assignments.py compile` validates the frozen contract, derives routes and search schedules, computes the fewest valid small batches, and renders immutable AI prompts. `validate-image-scout.py manifest` then re-derives the same partition independently and must report `PICTURE_MANIFEST_OK`. The host launches one unified `image-scout` directly for each emitted assignment.
 3. **Fulfil.** One `image-scout` per batch searches and visually judges real candidates, then continues to authorised AI generation after a checked real-search gate. Authentic evidence never reaches AI; outages never count as exhaustion.
 4. **Finalise.** Workers stage only. The deterministic finaliser validates the whole result, derives source attribution/licence or exact AI history, publishes accepted rows independently, writes terminal receipts, and releases each filename. Provenance rechecks canonical hashes before transient cleanup.
@@ -60,7 +64,7 @@ they were still present.
 ```
 .
 ├── agents/
-│   └── lesson-designer.md            Pedagogy agent — pure pedagogical decisions
+│   └── lesson-designer.md            The deciding craft, read by lesson-architect as its base
 ├── references/
 │   ├── preferences.md                Teacher's preferences (classroom norms, slide philosophy, pride lessons)
 │   └── evidence-synthesis.md         Evidence base: Rosenshine, Sweller, Willingham, EEF, Lemov, etc.
@@ -70,9 +74,9 @@ they were still present.
 
 Example lesson outputs are not included in this snapshot; a representative regression set covering the five lesson structures is restored separately as part of the optimisation baseline.
 
-## The lesson-designer in one paragraph
+## The design chain in one paragraph
 
-Takes year group + learning objective (plus any extra context the teacher provides). Decides the cognitive demand, picks a lesson structure (Skill-based / Content-based / Discovery / Dialogic / Task-Centred), designs the starter so it connects backwards to prior or prerequisite knowledge, selects 3–5 vocabulary words by activity test, identifies 1–3 sticky facts and places them contextually, sequences the teaching as either MT/OT/YT (skills) or Teach→Do→Teach→Do (content), handles 2–3 canonical misconceptions, decides whether an Apply slide is earned. It settles a compact decisions record first, then serialises the authoritative `lesson-design.json` contract plus `photo-requirements.json` for downstream resource designers.
+Takes year group + learning objective (plus any extra context the teacher provides). Decides the cognitive demand, picks a lesson structure (Skill-based / Content-based / Discovery / Dialogic / Task-Centred), designs the starter so it connects backwards to prior or prerequisite knowledge, selects 3–5 vocabulary words by activity test, identifies 1–3 sticky facts and places them contextually, sequences the teaching as either MT/OT/YT (skills) or Teach→Do→Teach→Do (content), handles 2–3 canonical misconceptions, decides whether an Apply slide is earned. It settles a compact decisions record first, then serialises the authoritative `lesson-design.json` contract plus `photo-requirements.json`, with every child-facing string as a wording spec; a decision review approves the compact design, the lesson-author and worksheet-content-designer write the finished words in fresh contexts, and the wording-reviewer checks them before anything is built.
 
 ## Design principles (shared across all agents)
 

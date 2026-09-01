@@ -1,10 +1,13 @@
-"""The split route ships wired, resolvable and off by default.
+"""The design chain is the pipeline, wired end to end.
 
-Design and wording as two passes: lesson-architect decides and writes
+Design and wording as separate passes: lesson-architect decides and writes
 wording specs, decision-reviewer judges the compact design, lesson-author
-writes the finished words in a fresh context, wording-reviewer checks the
-words. The normal route must be untouched, and nothing may choose the split
-route except the teacher's own words.
+writes the finished lesson words in a fresh context, worksheet-content-
+designer writes the sheet against that finished wording, wording-reviewer
+checks the words. Built first as an opt-in route beside the old single
+Lesson Designer; switched over on Daniel's instruction, 31 Aug 2026, with
+the old launch retired and `agents/lesson-designer.md` kept as the
+architect's base craft file.
 """
 from __future__ import annotations
 
@@ -22,7 +25,7 @@ DECISION_REVIEWER = ROOT / "agents" / "decision-reviewer.md"
 WORKSHEET_CONTENT = ROOT / "agents" / "worksheet-content-designer.md"
 WORDING_REVIEWER = ROOT / "agents" / "wording-reviewer.md"
 
-SPLIT_ROLES = (
+CHAIN_ROLES = (
     "lesson-architect",
     "decision-reviewer",
     "lesson-author",
@@ -38,44 +41,51 @@ def slice_text(name: str) -> str:
     ).stdout
 
 
-class SplitRouteRolesResolveTests(unittest.TestCase):
-    def test_all_four_roles_resolve_launch_settings(self) -> None:
+class ChainRolesResolveTests(unittest.TestCase):
+    def test_all_five_roles_resolve_launch_settings(self) -> None:
         result = subprocess.run(
             [sys.executable, str(WORKER_LAUNCH), "spec", "--host", "codex"]
-            + [arg for role in SPLIT_ROLES for arg in ("--role", role)],
+            + [arg for role in CHAIN_ROLES for arg in ("--role", role)],
             capture_output=True, text=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        for role in SPLIT_ROLES:
+        for role in CHAIN_ROLES:
             self.assertIn(role.replace("-", "_"), result.stdout)
 
+    def test_the_audit_resolves_chain_roles_from_their_task_names(self):
+        # role_for reads the agents directory live; a launch named for one of
+        # these must not land in WORKER_LAUNCH_AUDIT_UNCHECKED.
+        import importlib.util
 
-class SplitRouteSliceTests(unittest.TestCase):
-    def test_the_design_slice_carries_the_trigger_and_the_normal_route(self):
-        design = slice_text("design")
-        # The trigger, and its guard against silent adoption.
-        self.assertIn("load the `design-split` slice", design)
-        self.assertIn("off by default", design)
-        self.assertIn("teacher's own words", design)
-        # The normal route is untouched.
-        self.assertIn("Launch `lesson-designer` directly", design)
-
-    def test_the_split_slices_are_served_complete_with_next_blocks(self):
-        split = slice_text("design-split")
-        for marker in (
-            "LESSON_DESIGN_WORDING_STAGE_OK",
-            "agents/lesson-architect.md",
-            "agents/decision-reviewer.md",
-            "rejoins the pipeline at Phase 1.5",
-            "design-split-words",
-            "## NEXT",
-        ):
-            self.assertIn(marker, split)
-        self.assertLess(
-            split.index("Split step 1"), split.index("Split step 2")
+        spec = importlib.util.spec_from_file_location(
+            "worker_launch", WORKER_LAUNCH
         )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for role in CHAIN_ROLES:
+            task = module.task_name_for(role)
+            self.assertEqual(module.role_for(task), role)
+            self.assertEqual(module.role_for(f"{task}_2"), role)
 
-        words = slice_text("design-split-words")
+
+class ChainSliceTests(unittest.TestCase):
+    def test_the_design_slice_launches_the_architect(self):
+        design = slice_text("design")
+        self.assertIn("You are the lesson architect", design)
+        self.assertIn("LESSON_DESIGN_WORDING_STAGE_OK", design)
+        # The old single-designer launch is retired, not merely renamed.
+        self.assertNotIn("You are the lesson designer", design)
+        self.assertNotIn("split route", design)
+
+    def test_the_review_slice_launches_the_decision_reviewer(self):
+        review = slice_text("design-review")
+        self.assertIn("You are the decision reviewer", review)
+        self.assertIn("design-review-decisions.md", review)
+        # The review packet is retired from the chain.
+        self.assertIn("There is no review packet", review)
+
+    def test_the_words_slice_carries_all_three_writing_steps_in_order(self):
+        words = slice_text("design-words")
         for marker in (
             "WORDING_GAPS",
             "WORKSHEET_GAPS",
@@ -88,41 +98,51 @@ class SplitRouteSliceTests(unittest.TestCase):
         ):
             self.assertIn(marker, words)
         self.assertLess(
-            words.index("Split step 3"), words.index("Split step 4")
+            words.index("The Lesson Author"),
+            words.index("The Worksheet Content Designer"),
         )
         self.assertLess(
-            words.index("Split step 4"), words.index("Split step 5")
+            words.index("The Worksheet Content Designer"),
+            words.index("The Wording Reviewer"),
         )
 
-    def test_the_delivery_slice_does_not_swallow_the_split_section(self):
-        self.assertNotIn("Split step 1", slice_text("delivery"))
 
-
-class OrchestratorKnowsTheNewRolesTests(unittest.TestCase):
-    """The always-loaded skill file outranks any slice, so the split route's
-    roles have to be reachable from it. Its allow-list named exactly three
-    roles, which would have denied the brief to the route's own decider while
-    the slice said to hand it over - the higher, always-present rule winning
-    a contradiction the slice could not see.
+class OrchestratorKnowsTheChainTests(unittest.TestCase):
+    """The always-loaded skill file outranks any slice, so what it says about
+    roles must describe the chain that actually runs. Its allow-list once
+    named only the retired single designer, which would have denied the brief
+    to the chain's own decider - the higher, always-present rule winning a
+    contradiction the slice could not see.
     """
 
-    def test_the_brief_reaches_the_split_route_decider_and_reviewer(self):
+    def test_the_brief_reaches_the_decider_and_reviewer_only(self):
         skill = (ROOT / "skills" / "make-lesson" / "SKILL.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn("`lesson-architect` and `decision-reviewer` stand in", skill)
-        # And is still withheld from the roles that only express an approved design.
+        self.assertIn("- `lesson-architect`;", skill)
+        self.assertIn("- `decision-reviewer`;", skill)
         self.assertIn(
-            "`lesson-author`, `worksheet-content-designer` and\n`wording-reviewer` do not receive them",
+            "`lesson-author`, `worksheet-content-designer` and "
+            "`wording-reviewer` do not\nreceive them",
             skill,
         )
+        # The retired launch name must not linger anywhere role-authoritative.
+        self.assertNotIn("- `lesson-designer`;", skill)
 
-    def test_a_missing_split_role_falls_back_to_the_normal_route(self):
+    def test_missing_roles_degrade_honestly(self):
         setup = " ".join(slice_text("setup").split())
-        self.assertIn("the split route needs all five", setup)
-        self.assertIn("run the normal Phase 1 route instead", setup)
+        self.assertIn(
+            "`lesson-architect` and `lesson-author` are required", setup
+        )
+        # The architect's base craft file is part of the requirement.
+        self.assertIn("base craft file", setup)
+        self.assertIn(
+            "the Lesson Author writes the worksheet's specs as well", setup
+        )
+        self.assertIn("report the decisions review skipped", setup)
+        self.assertIn("report the words check skipped", setup)
 
-    def test_the_two_split_reviews_do_not_overwrite_each_other(self):
+    def test_the_two_reviews_do_not_overwrite_each_other(self):
         """Both reviews reach the teacher.
 
         They ran in sequence over one run and both wrote `design-review.md`,
@@ -132,40 +152,43 @@ class OrchestratorKnowsTheNewRolesTests(unittest.TestCase):
         """
         decision = DECISION_REVIEWER.read_text(encoding="utf-8")
         wording = WORDING_REVIEWER.read_text(encoding="utf-8")
-        split = slice_text("design-split")
+        review = slice_text("design-review")
 
         self.assertIn("design-review-decisions.md", decision)
         self.assertIn("not to\n`design-review.md`", decision)
         # The later review keeps the canonical name and leaves the other alone.
         self.assertIn("leave that file alone", wording)
         # The orchestrator owns getting both into the report.
-        self.assertIn("Both split reviews reach\nthe teacher", split)
-        self.assertIn("design-review-decisions.md", split)
+        self.assertIn("Both reviews in the design chain reach the\nteacher", review)
 
-    def test_the_audit_resolves_split_roles_from_their_task_names(self):
-        # role_for reads the agents directory live; a launch named for one of
-        # these must not land in WORKER_LAUNCH_AUDIT_UNCHECKED.
-        import importlib.util
-
-        spec = importlib.util.spec_from_file_location(
-            "worker_launch", WORKER_LAUNCH
-        )
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        for role in SPLIT_ROLES:
-            task = module.task_name_for(role)
-            self.assertEqual(module.role_for(task), role)
-            self.assertEqual(module.role_for(f"{task}_2"), role)
+    def test_later_phase_revisions_go_to_the_architect(self):
+        # The single designer's focused revisions (photo cap, helper picture
+        # route, content-gap wave) belong to the architect now, which carries
+        # the one carve-out letting it write small finished wording in place.
+        playbook = (
+            ROOT / "skills" / "make-lesson" / "playbook-lite.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("focused `lesson-architect` revision", playbook)
+        self.assertNotIn("focused Lesson Designer revision", playbook)
+        architect = ARCHITECT.read_text(encoding="utf-8")
+        self.assertIn("The one place you write finished wording", architect)
 
 
-class SplitRoleContractTests(unittest.TestCase):
+class ChainRoleContractTests(unittest.TestCase):
     def test_the_architect_rides_on_the_designer_and_specs_wording(self):
         text = ARCHITECT.read_text(encoding="utf-8")
         self.assertIn("agents/lesson-designer.md", text)
         self.assertIn("__LESSON_WORDING_FILL__", text)
         self.assertIn("LESSON_DESIGN_WORDING_STAGE_OK", text)
-        # Sound belongs to the author; the architect must not open the guide.
-        self.assertIn("do not open that file", text)
+        # Sound belongs to the writers; the decider never opens the guide.
+        self.assertIn("Do not open `teacher-voice.md`", text)
+
+    def test_the_base_craft_file_knows_it_is_not_launched(self):
+        text = (ROOT / "agents" / "lesson-designer.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("Not launched directly", text)
+        self.assertIn("lesson-architect reads this file as its base role", text)
 
     def test_the_author_writes_words_and_never_decides(self):
         text = AUTHOR.read_text(encoding="utf-8")
@@ -180,6 +203,14 @@ class SplitRoleContractTests(unittest.TestCase):
         self.assertIn("LESSON_DESIGN_WORDING_STAGE_OK", text)
         self.assertIn("LESSON_WORDING_CHECK_FAILED", text)
 
+    def test_the_decision_reviewer_reviews_specs_with_the_stage_validator(self):
+        text = DECISION_REVIEWER.read_text(encoding="utf-8")
+        self.assertIn("agents/design-reviewer.md", text)
+        self.assertIn("--wording-stage", text)
+        self.assertIn("REDESIGN REQUIRED", text)
+        # Spec completeness is this reviewer's own check.
+        self.assertIn("no new decision", text)
+
     def test_the_worksheet_content_designer_owns_only_the_worksheet(self):
         text = WORKSHEET_CONTENT.read_text(encoding="utf-8")
         self.assertIn("Edit only inside the top-level `worksheet` object", text)
@@ -190,14 +221,6 @@ class SplitRoleContractTests(unittest.TestCase):
         # Freshness is judged against the finished board wording, which is
         # why this role runs after the author.
         self.assertIn("freshness baseline", text)
-
-    def test_the_decision_reviewer_reviews_specs_with_the_stage_validator(self):
-        text = DECISION_REVIEWER.read_text(encoding="utf-8")
-        self.assertIn("agents/design-reviewer.md", text)
-        self.assertIn("--wording-stage", text)
-        self.assertIn("REDESIGN REQUIRED", text)
-        # Spec completeness is this reviewer's own check.
-        self.assertIn("no new decision", text)
 
     def test_the_wording_reviewer_repairs_words_and_cannot_redesign(self):
         text = WORDING_REVIEWER.read_text(encoding="utf-8")

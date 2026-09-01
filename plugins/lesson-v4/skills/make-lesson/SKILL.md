@@ -4,7 +4,7 @@ description: >
   Create a complete lesson package for UK primary schools — lesson design document,
   PowerPoint, worksheets with a separate answer key, and, when they earn one, working
   wall and stick-in sheets - from a year group and learning objective. Pure pedagogy is
-  decided by the lesson-designer; every artefact is rendered downstream from that single
+  decided by the design chain; every artefact is rendered downstream from that single
   source of truth. Use this skill
   whenever a teacher asks to plan a lesson, make a lesson PowerPoint, build lesson
   resources, or produce a lesson pack.
@@ -30,8 +30,12 @@ Your job is to:
 
 The pipeline splits work across three layers:
 
-1. **Pedagogy** — `lesson-designer` settles the lesson and writes
-   `design-decisions.md`, `lesson-design.json` and `photo-requirements.json`.
+1. **Pedagogy** — the design chain settles the lesson and writes
+   `design-decisions.md`, `lesson-design.json` and `photo-requirements.json`:
+   `lesson-architect` decides everything and specs the wording,
+   `decision-reviewer` judges the compact design, `lesson-author` and
+   `worksheet-content-designer` write the finished words, `wording-reviewer`
+   checks them.
 2. **Rendering** — named semantic resource designers write checked
    specifications; deterministic commands build the direct fixed resources;
    the retained Working Wall builder performs its required physical-output
@@ -157,17 +161,16 @@ Only the roles that settle or judge the lesson itself may receive the raw
 teacher-authored message files, because only they can act on what the teacher
 asked for; every other role works from the approved design, and handing one
 the brief invites it to re-decide settled teaching from a source it has no
-authority over. On the normal route those roles are:
+authority over. Those roles are:
 
-- `lesson-designer`;
-- `design-reviewer`;
+- `lesson-architect`;
+- `decision-reviewer`;
 - `adaptation-designer`.
 
-On the split route, `lesson-architect` and `decision-reviewer` stand in the
-first two places. `lesson-author`, `worksheet-content-designer` and
-`wording-reviewer` do not receive them: their job is expressing an approved
-design, and a design that cannot tell them what to write is a gap to report,
-never a brief to reinterpret.
+`lesson-author`, `worksheet-content-designer` and `wording-reviewer` do not
+receive them: their job is expressing an approved design, and a design that
+cannot tell them what to write is a gap to report, never a brief to
+reinterpret.
 
 The original teacher message is persisted at:
 
@@ -189,7 +192,7 @@ not place a heading, quote wrapper, metadata, summary or inferred context inside
 one of these files.
 
 **`Must include` is how the teacher marks something as binding.** The
-lesson-designer treats a `Must include` list, or wording that plainly requires
+lesson-architect treats a `Must include` list, or wording that plainly requires
 something (`you must use this text`), as a requirement it has to honour, and
 treats everything else in the brief or a supplied plan as material to judge -
 including a plan's `Use this` / `Tell the children` phrasing, which is how plans
