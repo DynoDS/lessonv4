@@ -1,7 +1,7 @@
 {
-  "name": "lessonv4",
+  "name": "lessonv4-split",
   "interface": {
-    "displayName": "Lesson v4"
+    "displayName": "Lesson v4 (split test)"
   },
   "plugins": [
     {
