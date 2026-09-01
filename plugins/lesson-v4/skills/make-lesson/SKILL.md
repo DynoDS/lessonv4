@@ -354,6 +354,31 @@ or spawning workers. Report the verifier's error exactly. Do not search parent
 directories, inspect unrelated repositories, use `pwd` as the package root, or
 fall back to another installed or source copy.
 
+### When the verified root disappears mid-run
+
+The installed package is versioned by folder, so an update published while a
+run is working replaces the verified `PLUGIN_ROOT` directory with a sibling
+under the new version number. That is a routine update arriving, not damage to
+the run: every artefact that already passed its deterministic check was
+checked, and a patch release does not un-check it.
+
+When a command fails because `PLUGIN_ROOT` no longer resolves:
+
+1. Re-obtain one `PLUGIN_ROOT_CANDIDATE` exactly as at start-up and re-verify
+   it with its own `verify-plugin-root.py`. On success, adopt the new verified
+   value for every remaining step and worker.
+2. Every artefact that passed its deterministic check stands. Re-run a check
+   under the new root only where the check had not yet passed when the root
+   changed.
+3. A worker that fails because its prompt carried the old path is an
+   infrastructure failure: use its one infrastructure retry, with the new root.
+4. Record one `FRICTION:` line naming both versions.
+
+Stopping branches to avoid "mixing versions" is the failure, not the caution: a
+real run lost its working wall, stick-in sheets and filing to a patch release
+that changed none of them. Stop only when the re-verification itself fails, and
+report that exactly as a start-up verification failure.
+
 `PLUGIN_SOURCE_ROOT` is separate. It means a writable git checkout of this
 package, the copy a source-writing step may edit. **A lesson run never writes
 to it.** Nothing a run produces - a helper included - goes into the package or

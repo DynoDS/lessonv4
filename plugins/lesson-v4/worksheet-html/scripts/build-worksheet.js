@@ -32,6 +32,51 @@ const { renderSheet } = require("../src/render");
 // content rather than its shape - which is a designer's decision, not this
 // script's.
 const MAX_RESHAPES = 3;
+
+// How many times the browser's own measurements are fed back before reshaping.
+// One round settles the ordinary case (an estimate a few pixels short); the
+// second catches a zone whose first correction uncovered a second clipped
+// zone. More rounds than that is not an estimate error any more.
+const MAX_MEASURED_CORRECTIONS = 2;
+
+// CSS millimetres to CSS pixels: the browser lays out at 96dpi.
+const PX_PER_MM = 96 / 25.4;
+
+// The most a single zone may be grown on the browser's word. A hairline
+// estimate error is a few millimetres; a zone that wants more than this has a
+// content problem the designer should see, not a measurement problem the
+// engine should absorb.
+const MAX_CORRECTION_MM = 8;
+
+// What the browser's fit probe says each clipped zone needs, in millimetres,
+// on top of what it has already been given. Null when nothing correctable
+// remains: a width overflow cannot be fixed with height, and a zone already
+// grown to the cap has stopped being a measurement problem.
+function measuredCorrections(fitProblems, already) {
+  const wanted = {};
+  for (const problem of fitProblems || []) {
+    if (!problem.zone) continue;
+    const has = already[problem.zone] || 0;
+    if (has >= MAX_CORRECTION_MM) continue;
+    let mm;
+    if (problem.kind === "zone-overflow") {
+      const deficit = problem.scrollHeight - problem.clientHeight;
+      const wide = problem.scrollWidth > problem.clientWidth + 1;
+      if (deficit <= 0) {
+        if (wide) continue; // width-only: height cannot buy it out.
+        mm = 1;
+      } else {
+        mm = deficit / PX_PER_MM + 1; // the measured shortfall plus a hair
+      }
+    } else {
+      // A child clipped or outside the zone, with no measured deficit: a
+      // small nudge is worth one try before the reshape spends a render.
+      mm = 2;
+    }
+    wanted[problem.zone] = Math.min(MAX_CORRECTION_MM, has + mm);
+  }
+  return Object.keys(wanted).length ? wanted : null;
+}
 const { tightnessOf, describeTightness } = require("../src/tightness");
 const {
   sheetsOf,
@@ -262,6 +307,7 @@ async function main() {
     const pdfs = [];
     const clipped = [];
     const reshaped = [];
+    const corrected = [];
 
     // One Chrome for the whole build. Every sheet, and every reshape retry,
     // prints through this one process: launching Chrome per page was the
@@ -276,11 +322,54 @@ async function main() {
         inspectFit: true,
         browser,
       });
+      const corrections = {};
 
       // The arithmetic said it fitted and the browser disagreed, which means an
-      // estimate ran a hair short. Before that costs a class its worksheets,
-      // draw the SAME content again in a roomier arrangement of the same page
-      // and see whether the browser is happy with that one.
+      // estimate ran a hair short. The browser has just measured EXACTLY how
+      // short, zone by zone - so before anything else, hand each clipped zone
+      // the millimetres it proved it needs and draw the same page again. The
+      // extra is paid out of genuine page slack (the same purse as the safety
+      // margins), the designer's chosen shape is kept, and nothing is trimmed,
+      // shrunk or reworded. A page with no slack to give refuses the
+      // correction, and the reshape below still gets its turn.
+      //
+      // This exists because a hundred square 6px taller than its estimate cost
+      // a real lesson its whole worksheet set: the reshape retries re-dealt
+      // the same underestimate into other shapes, every shape clipped the same
+      // way, and the run's one focused repair was spent guessing at pixels it
+      // had never seen.
+      for (
+        let round = 0;
+        round < MAX_MEASURED_CORRECTIONS && (fitProblems || []).length;
+        round += 1
+      ) {
+        const wanted = measuredCorrections(fitProblems, corrections);
+        if (!wanted) break;
+        Object.assign(corrections, wanted);
+        let retryHtml;
+        try {
+          retryHtml = renderSheet(r.sheet.spec, { extraZoneMm: corrections });
+        } catch {
+          break; // no slack left to pay the correction from: try a reshape.
+        }
+        const retry = await htmlToPdf(retryHtml, {
+          landscape: r.sheet.spec.orientation === "landscape",
+          inspectFit: true,
+          browser,
+        });
+        if ((retry.fitProblems || []).length) {
+          fitProblems = retry.fitProblems;
+          continue;
+        }
+        fs.writeFileSync(r.htmlPath, retryHtml);
+        pdf = retry.pdf;
+        fitProblems = [];
+        corrected.push({ sheet: r.sheet, zones: { ...corrections } });
+      }
+
+      // Still clipped after the browser's own numbers were honoured: draw the
+      // SAME content again in a roomier arrangement of the same page and see
+      // whether the browser is happy with that one.
       //
       // This is not the engine bending to make a page pass. Nothing is trimmed,
       // shrunk, reworded, moved to a second page or dropped: every question,
@@ -330,6 +419,27 @@ async function main() {
 
     } finally {
       await browser.close();
+    }
+
+    // Said out loud, every time, like the reshapes below: the page kept its
+    // shape and its content, but a zone was drawn taller than the arithmetic
+    // asked, and the record should say so.
+    for (const fix of corrected) {
+      const grown = Object.entries(fix.zones)
+        .map(([zone, mm]) => `"${zone}" +${mm.toFixed(1)}mm`)
+        .join(", ");
+      console.log(
+        `ZONE_CORRECTED: ${fix.sheet.label} page ${fix.sheet.page} - the browser ` +
+          `measured content a hair taller than the estimate, so its zone was ` +
+          `given the difference from the page's spare room (${grown}). Same ` +
+          `content, same shape, verified clean.`
+      );
+      diagnostic(
+        "ZONE_CORRECTED",
+        "composition",
+        { sheet: fix.sheet.key, page: fix.sheet.page },
+        `Zones grown to the browser's own measurement: ${grown}.`
+      );
     }
 
     // Said out loud, every time. A page that was rearranged to print is still a

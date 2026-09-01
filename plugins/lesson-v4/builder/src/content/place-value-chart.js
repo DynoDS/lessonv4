@@ -777,10 +777,34 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
   );
   const headerH  = HEADER_H * scale;
   const usedH    = naturalH * scale;
+
+  // Refuse a zone the chart cannot fit even at its smallest readable size.
+  //
+  // The scale stops shrinking at 0.65 so the digits stay readable from the
+  // carpet, which means a zone shorter than the chart's floor height cannot be
+  // satisfied - and the centring below would then push the chart's top above
+  // the zone. On one real lesson that sent a five-row chart's tables to a
+  // negative y, which the PPTX writer serialised as an invalid coordinate, and
+  // PowerPoint offered to "repair" the deck. Refusing by name here means the
+  // slide-design check reports the fault with its slide number while the spec
+  // can still be repaired, instead of a finished file nobody can open.
+  //
+  // The whole zone (pads included) is the boundary, not the inner box: an
+  // overflow small enough to live in the pads harms nothing and is kept.
+  if (!headerOnly && usedH > zone.h) {
+    throw new Error(
+      `PLACE_VALUE_CHART_DOES_NOT_FIT: this chart needs at least ` +
+      `${usedH.toFixed(2)}in of height at its smallest readable size ` +
+      `(${dataRows.length} row(s)${hasCounters ? ' with counters' : ''}), but ` +
+      `its zone offers ${zone.h.toFixed(2)}in. Give it a taller zone, fewer ` +
+      `rows, or drop the counters.`
+    );
+  }
+
   // A full chart centres in its zone. A bare header strip sits at the TOP of it:
   // the strip is a reference in a side rail, and a reference belongs where the eye
   // lands first, not floating halfway down a tall thin column.
-  const startY   = headerOnly ? innerY : innerY + (innerH - usedH) / 2;
+  const startY   = headerOnly ? innerY : Math.max(zone.y, innerY + (innerH - usedH) / 2);
   const rowH     = NATURAL_ROW_H * scale;
   const counterH = hasCounters ? COUNTER_ROW_H * scale : 0;
   const headerFont = Math.round(HEADER_FONT_SIZE * scale);

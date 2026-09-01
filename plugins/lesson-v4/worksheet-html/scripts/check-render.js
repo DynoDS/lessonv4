@@ -26,6 +26,28 @@ const { renderSheet, checkFit } = require("../src/render");
 const { helperNames } = require("../src/helpers");
 const EXAMPLES = require("../test/helper-examples");
 
+// Second examples for helpers whose estimate can be honest in the shared
+// example and wrong at another size. helper-examples.js keeps exactly one
+// example per helper because a dozen tests and galleries read it; these run
+// here only, where size is the very thing under test.
+const EXTRA_EXAMPLES = {
+  // A hundred square: the row count that exposed a per-row estimate error the
+  // two-row shared example's cushion had been absorbing. Ten single-line rows,
+  // a compact caption and a note is the exact shape that arrived from the
+  // browser 6px clipped and cost a lesson its worksheet set.
+  "data-table": [
+    {
+      caption: "Use this number square to help you.",
+      rows: Array.from({ length: 10 }, (_, r) =>
+        Array.from({ length: 10 }, (_, c) => String(r * 10 + c + 1))
+      ),
+      compact: true,
+      compactCaption: true,
+      note: "↑ 10 less: move up one row    ↓ 10 more: move down one row",
+    },
+  ],
+};
+
 const PX_PER_MM = 96 / 25.4;
 
 // An estimate that runs OVER leaves a little white space, which is harmless.
@@ -67,12 +89,21 @@ async function main() {
       continue;
     }
 
+    // A helper may carry several examples, because an estimate can be honest
+    // in a small one and wrong in a large one. A per-row error of a third of a
+    // millimetre hid inside a two-row table's cushion and compounded to 3.5mm
+    // on a ten-row hundred square - which is how a worksheet the checks had
+    // passed arrived clipped from the browser.
+    const variants = [EXAMPLES[name], ...(EXTRA_EXAMPLES[name] || [])];
+
+    for (const [vi, example] of variants.entries()) {
+    const label = variants.length > 1 ? `${name}#${vi + 1}` : name;
     for (const c of CASES) {
       const spec = {
         title: name,
         layout: c.layout,
         orientation: "portrait",
-        zones: { [c.zone]: { helper: name, ...EXAMPLES[name] } },
+        zones: { [c.zone]: { helper: name, ...example } },
       };
 
       // A helper refused at this width is the engine working, not a fault.
@@ -101,7 +132,7 @@ async function main() {
 
       if (overMm > CLIP_TOLERANCE_MM) {
         clipped.push(
-          `${name} (${c.name} width): content is ${overMm.toFixed(1)}mm taller ` +
+          `${label} (${c.name} width): content is ${overMm.toFixed(1)}mm taller ` +
             `than the zone, so the bottom ${overMm.toFixed(1)}mm is cut off`
         );
       } else if (unusedMm > SLACK_REPORT_MM) {
@@ -109,10 +140,11 @@ async function main() {
         // estimate runs high, or the helper claimed spare height (greed) and
         // then did not stretch to use it, leaving a gap under itself.
         slack.push(
-          `${name} (${c.name} width): the zone is ${unusedMm.toFixed(0)}mm ` +
+          `${label} (${c.name} width): the zone is ${unusedMm.toFixed(0)}mm ` +
             `taller than what it holds`
         );
       }
+    }
     }
   }
 

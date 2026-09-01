@@ -71,7 +71,10 @@ Read in this order:
 
 1. Read `TEACHER_BRIEF_FILE` in full.
 2. Read each supplied teacher clarification in listed order.
-3. Read any supplied lesson plan or teacher worksheet.
+3. Read any supplied lesson plan or teacher worksheet. When one is a Word or
+   PDF document you extract with Python, run it as `python -X utf8` - on
+   Windows the console's default encoding rejects the first maths symbol or
+   curly quote in the document, and the extraction dies mid-read.
 4. Read lower-confidence orchestrator context only after teacher-authored input.
 5. Read `[WORKING_DIR]/design-review-reference.md`.
 6. Read the selected subject reference named there, when one exists.

@@ -86,7 +86,11 @@ test("a compact data table of short cells is unchanged", () => {
     rows: [["1", "2"], ["3", "4"]],
   };
   const LINE_MM = 12 * 0.3528 * 1.35;
-  const expected = LINE_MM * 1.35 * 3 + 4; // header + 2 rows, compact height
+  // Header + 2 rows at the calibrated row price: the browser's line box
+  // (LINE_MM * 1.05), 1mm of padding above and below, one collapsed border.
+  // The old price (LINE_MM * 1.35) ran a third of a millimetre short per row,
+  // which compounded on a ten-row hundred square and clipped it.
+  const expected = (LINE_MM * 1.05 + 2 * 1 + 0.4) * 3 + 4;
   assert.ok(
     Math.abs(data.measure(dt, 174) - expected) < 0.01,
     `compact data tables must not move: ${data.measure(dt, 174)} vs ${expected}`

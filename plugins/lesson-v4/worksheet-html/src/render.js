@@ -507,7 +507,15 @@ function measureFill(spec) {
   };
 }
 
-function renderSheet(spec) {
+// `opts.extraZoneMm` is the browser correcting the arithmetic: a map of zone
+// id to extra millimetres, taken from a rendered page that measured a zone's
+// real content taller than its estimate. The extra is added to the zone's
+// natural height BEFORE growth, so it is paid for out of genuine page slack
+// exactly as the safety margins are - and a page with no slack left still
+// refuses, through the same shortfall check as always. Every estimate in this
+// engine is a guess at how a browser draws; this is the one place the
+// browser's own answer is allowed to overrule the guess.
+function renderSheet(spec, opts = {}) {
   const problems = checkFit(spec);
   if (problems.length) {
     throw new Error(`SHEET_DOES_NOT_FIT:\n  ${problems.join("\n  ")}`);
@@ -521,6 +529,17 @@ function renderSheet(spec) {
 
   // Measure the tree, let what can grow grow, then place real rectangles.
   const measured = measureTree(tree, sheet, area.widthMm);
+  const extra = opts.extraZoneMm || {};
+  if (Object.keys(extra).length) {
+    eachLeaf(measured, (leaf) => {
+      const more = Number(extra[leaf.id]);
+      if (Number.isFinite(more) && more > 0) {
+        leaf.natural += more;
+        leaf.height = leaf.natural;
+      }
+    });
+    recomputeHeights(measured);
+  }
   const naturalMm = measured.height; // before anything is allowed to grow
   const { short } = growToFit(measured, area.heightMm);
 

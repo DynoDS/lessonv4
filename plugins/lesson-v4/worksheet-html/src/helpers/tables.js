@@ -4,6 +4,7 @@
 // you want is simply: who writes in the cells?
 
 const { LINE_MM, NOTE_LINE_MM, esc, linesFor } = require("./shared");
+const { SPACE, RULE } = require("../tokens");
 
 // ─── data table ──────────────────────────────────────────────────────────
 // Values HANDED to the child to read from: a price list, a timetable, a set of
@@ -19,8 +20,21 @@ const { LINE_MM, NOTE_LINE_MM, esc, linesFor } = require("./shared");
 // engine exists to refuse. A designer who compacts a nine-row timetable has
 // looked at it and judged it still readable. So `compact` is an authored input
 // and nothing in the fitting path ever sets it.
-const DATA_ROW_MM = LINE_MM * 1.6;
-const DATA_ROW_COMPACT_MM = LINE_MM * 1.35;
+// A row is priced at what the CSS actually spends on it: the browser's own
+// line box for a table cell (a shade taller than prose leading, hence the
+// 1.05), the vertical padding above and below the text, and one collapsed
+// border. The old prices were multiples of LINE_MM chosen by eye - 1.6 for a
+// plain row, 1.35 for a compact one - and the compact multiple ran about a
+// third of a millimetre SHORT per row. On a five-row table the measure's flat
+// 4mm cushion swallowed that; on a ten-row hundred square it compounded to
+// 3.5mm, sailed past the page's safety margin, and the browser found the last
+// row clipped after every arithmetic check had said the sheet fit - which
+// cost a real lesson its whole worksheet set. Both paddings are 1mm vertically
+// in tokens.js (compact only tightens horizontally), so the two prices differ
+// only in name; they are kept separate so a future CSS change to one cannot
+// silently misprice the other.
+const DATA_ROW_MM = LINE_MM * 1.05 + 2 * SPACE.hair + RULE.line;
+const DATA_ROW_COMPACT_MM = LINE_MM * 1.05 + 2 * SPACE.hair + RULE.line;
 const DATA_COL_MIN_MM = 24;
 const DATA_COL_COMPACT_MIN_MM = 20;
 
@@ -95,7 +109,14 @@ function rowHeightMm(cells, columnWidthsMm, flatRowMm) {
 
 function measureDataTable(spec, widthMm = 100) {
   const rowMm = spec.compact ? DATA_ROW_COMPACT_MM : DATA_ROW_MM;
-  const capMm = spec.caption ? (spec.compactCaption ? NOTE_LINE_MM : LINE_MM * 1.4) : 0;
+  // The caption costs its line box plus the padding beneath it - the compact
+  // one dropped the padding and priced a line at note size exactly, so a
+  // captioned table started a millimetre behind before a row was counted.
+  const capMm = spec.caption
+    ? (spec.compactCaption
+        ? NOTE_LINE_MM * 1.05 + SPACE.hair
+        : LINE_MM * 1.4)
+    : 0;
   const noteMm = spec.note ? linesFor(spec.note, widthMm) * NOTE_LINE_MM + 1 : 0;
   const columns = dataColumns(spec);
   const headerRows = columns.length ? 1 : 0;

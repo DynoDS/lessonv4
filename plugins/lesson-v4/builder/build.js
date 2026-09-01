@@ -20,6 +20,7 @@ const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
 const { verifyPictures } = require('./src/verify-pictures');
 const { verifyMarkers } = require('./src/verify-markers');
+const { verifyGeometry } = require('./src/verify-geometry');
 const { sanitizeHouseStyle } = require('../shared/text/house-style');
 const { withoutDecorations } = require("../shared/decorations");
 const {
@@ -405,11 +406,26 @@ async function main() {
     );
   }
 
+  // A coordinate no presentation program can read blocks for the same reason:
+  // the deck would open with "PowerPoint found a problem with content", which
+  // is a broken resource wearing a success marker.
+  const geometry = await runGeometryCheck(tempOutputPath);
+  for (const fault of geometry.faults) {
+    console.error(`  ✗ ${fault.message}`);
+    diagnostic(
+      'SLIDE_GEOMETRY_INVALID',
+      'technical',
+      { slide: fault.slide, path: fault.part },
+      fault.message
+    );
+  }
+
   const publishable =
     autofit.status === 'AUTOFIT_OK' &&
     failedSlides.length === 0 &&
     pictures.faults.length === 0 &&
-    markers.faults.length === 0;
+    markers.faults.length === 0 &&
+    geometry.faults.length === 0;
 
   if (!publishable) {
     if (pictures.faults.length) {
@@ -512,6 +528,22 @@ async function runPictureCheck(pptxPath) {
         '), so open it and confirm every picture is showing before you teach from it.'
     );
     return { faults: [], pictures: 0, media: 0 };
+  }
+}
+
+// The same shape again: an invalid coordinate is worth blocking, and a check
+// that could not run is not.
+async function runGeometryCheck(pptxPath) {
+  try {
+    return await verifyGeometry(pptxPath);
+  } catch (err) {
+    note(
+      'the shape coordinates in this deck could not be checked (' +
+        (err && err.message ? err.message : err) +
+        '), so open it and confirm PowerPoint does not offer to repair it ' +
+        'before you teach from it.'
+    );
+    return { faults: [], slides: 0, coordinates: 0 };
   }
 }
 
