@@ -211,6 +211,26 @@ function colourFor(value, label) {
   return COLOURS[key];
 }
 
+// A line's direction. `true` is the ordinary case, an arrowhead at the last
+// point, because a route is usually travelled one way. `"both"` is for a link
+// that genuinely runs in both directions - trade between two places, a migration
+// that returns - and saying so takes a word rather than a second annotation
+// pointing the other way.
+const ARROWS = new Set(['end', 'both']);
+
+function arrowFor(value, label) {
+  if (value === undefined || value === null || value === false) return null;
+  if (value === true) return 'end';
+  const key = String(value).trim().toLowerCase();
+  if (!ARROWS.has(key)) {
+    throw new Error(
+      'MAP_ANNOTATION_INVALID: ' + label + ' arrow ' + JSON.stringify(value) +
+        ' is not a direction. Use true (a head at the end), "both", or leave it off.'
+    );
+  }
+  return key;
+}
+
 // Resolve and validate the annotation list for one map object. Returns [] when
 // none were asked for. Throws, by name, on anything a renderer would otherwise
 // have to guess at.
@@ -274,6 +294,17 @@ function resolveAnnotations(data) {
     if (item.shaded && kind !== 'area') {
       throw new Error('MAP_ANNOTATION_INVALID: ' + label + ' is shaded, which only an area can be; a line encloses nothing.');
     }
+    // Which way it went. Half of what a primary map is asked to show is
+    // movement - where a people came from, which way a river flows, a trade
+    // route, a journey - and a line without a head draws the path while leaving
+    // out the very thing the lesson is teaching.
+    const arrow = arrowFor(item.arrow, label);
+    if (arrow && kind !== 'line') {
+      throw new Error(
+        'MAP_ANNOTATION_INVALID: ' + label + ' has an arrow, which only a line can carry. ' +
+          'An area is a place rather than a journey, and a point has no direction.'
+      );
+    }
     const points = item.points.map(function (p, j) { return point(p, label + ' point ' + (j + 1), mapKey); });
     const centre = points.reduce(function (acc, p) {
       return [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length];
@@ -287,6 +318,7 @@ function resolveAnnotations(data) {
     return {
       kind, points, label: text, colour, anchor: centre,
       shaded: item.shaded === true,
+      arrow,
       labelAt: labelAt || clear
     };
   });

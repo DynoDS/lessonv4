@@ -8,7 +8,7 @@ const { warn } = require('../warnings');
 const { drawMissingImage } = require('../images/placeholder');
 const { longPathSafe } = require('../images/resolve');
 const requireGlobal = require('../require-global');
-const { polyline } = require('./_geom');
+const { polyline, arrow } = require('./_geom');
 const shared = require('../../../shared/visuals/map-annotations');
 const sevenContinentMap = require('../../../shared/visuals/seven-continent-world-map-svg');
 
@@ -442,6 +442,18 @@ function drawAnnotations(pptx, slide, marks, fx, fy, fw, fh) {
       const pathPoints = mark.kind === 'area' ? points.concat([points[0]]) : points;
       polyline(pptx, slide, pathPoints, { lineColor: 'FFFFFF', width: MARK_HALO_PT });
       polyline(pptx, slide, pathPoints, { lineColor: mark.colour, width: MARK_LINE_PT, dash: mark.kind === 'area' ? 'dash' : undefined });
+      // The head goes on as its own final segment, because a PowerPoint
+      // freeform carries no arrowhead. Drawn over the last leg of the line it
+      // has just traced, so the point of the head lands exactly where the route
+      // ends rather than near it.
+      if (mark.arrow) {
+        const last = points[points.length - 1];
+        const before = points[points.length - 2];
+        arrow(pptx, slide, before.x, before.y, last.x, last.y, { color: mark.colour, width: MARK_LINE_PT });
+        if (mark.arrow === 'both') {
+          arrow(pptx, slide, points[1].x, points[1].y, points[0].x, points[0].y, { color: mark.colour, width: MARK_LINE_PT });
+        }
+      }
     }
   });
 }

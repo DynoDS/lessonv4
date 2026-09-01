@@ -29,6 +29,8 @@
 //                           (topLeft = row-is AND col-is; bottomRight = row-isNOT AND col-isNOT)
 //                    label  the shape's name shown in the chip (e.g. "Square")
 
+const highlight = require('./figure-highlight');
+
 // ─── CONSTANTS (geometry units; the whole drawing scales on placement) ────
 const CELL_W      = 440;         // each cell's width
 const CELL_H      = 320;         // each cell's height
@@ -98,11 +100,23 @@ function resolveShapes(data) {
   return out;
 }
 
+// The parts a lesson can point at, and the plain-English names it may use for
+// them. A teacher says "the ones that are both" rather than "topLeft", and the
+// grid means its row label AND its column label together, so those readings are
+// the aliases.
+const HIGHLIGHT_PARTS = [
+  { key: 'topLeft', aliases: ['both', 'is-is', 'top-left'] },
+  { key: 'topRight', aliases: ['row-only', 'is-is-not', 'top-right'] },
+  { key: 'bottomLeft', aliases: ['column-only', 'is-not-is', 'bottom-left'] },
+  { key: 'bottomRight', aliases: ['neither', 'is-not-is-not', 'bottom-right'] }
+];
+
 function cacheKey(data) {
   const shapes = resolveShapes(data);
   const sk = shapes.map(function (s) { return s.cell + ':' + s.label; }).join(';');
+  const hi = [...highlight.resolveHighlight(data, HIGHLIGHT_PARTS, 'Carroll diagram')].sort().join(',');
   return 'carroll:' + (data.rowLabel || '') + '|' + (data.rowNotLabel || '') + '|' +
-    (data.colLabel || '') + '|' + (data.colNotLabel || '') + '|' + sk;
+    (data.colLabel || '') + '|' + (data.colNotLabel || '') + '|' + sk + '|' + hi;
 }
 
 // Top-left corner of each cell in grid space (grid origin = (SIDE_BAND_W, TOP_BAND_H)).
@@ -120,6 +134,7 @@ function cellOrigin(cell) {
 
 function tightSvg(data) {
   const shapes = resolveShapes(data);
+  const marked = highlight.resolveHighlight(data, HIGHLIGHT_PARTS, 'Carroll diagram');
   const f = function (n) { return Number(n).toFixed(2); };
 
   // The whole picture is the labelled grid plus a hair of margin — tight by
@@ -196,6 +211,20 @@ function tightSvg(data) {
         parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${CHIP_TEXT_C}" text-anchor="middle" dominant-baseline="middle">${esc(s.label)}</text>`);
         chipTop += CHIP_H + CHIP_VGAP;
       });
+    });
+  }
+
+  // Pointing at a cell, last of all so the veil covers that cell's chips and the
+  // ring is drawn over the grid lines rather than under them.
+  if (marked.size) {
+    CELLS.forEach(function (cell) {
+      const o = cellOrigin(cell);
+      const box = { x: X(o.x), y: Y(o.y), w: CELL_W, h: CELL_H };
+      const fade = highlight.opacityFor(marked, cell);
+      if (fade < 1) {
+        parts.push(`<rect x="${f(box.x)}" y="${f(box.y)}" width="${CELL_W}" height="${CELL_H}" fill="#FFFFFF" fill-opacity="${(1 - fade).toFixed(2)}"/>`);
+      }
+      parts.push(highlight.ringSvg(marked, cell, box, Math.max(w, h)));
     });
   }
 

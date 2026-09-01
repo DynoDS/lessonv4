@@ -24,6 +24,8 @@
 //                represents (e.g. 10 → one circle = 10); `label` is the unit
 //                word shown in the key (e.g. "books"). Defaults: per 1, label "".
 
+const highlight = require('./figure-highlight');
+
 // ─── CONSTANTS (SVG user units; the chart is rescaled per engine by aspect) ──
 const ICON_R      = 22;     // symbol (circle) radius
 const ICON_GAP    = 12;     // horizontal gap between symbols in a row
@@ -82,6 +84,8 @@ function symbolsFor(value, per) {
 function tightSvg(data) {
   const categories = Array.isArray(data.categories) ? data.categories : [];
   const values = Array.isArray(data.values) ? data.values : [];
+  // A pictogram's parts are its categories, named as the lesson names them.
+  const marked = highlight.resolveHighlight(data, categories.map(String), 'pictogram');
   const title = data.title || '';
   const { per, label } = resolveKey(data);
 
@@ -171,6 +175,22 @@ function tightSvg(data) {
   parts.push(`<text x="${f(OX + firstCx + ICON_R + KEY_TEXT_GAP)}" y="${f(keyCy)}" text-anchor="start" dominant-baseline="central" font-family="Comic Sans MS" font-size="${KEY_FS}" fill="${TEXT_COLOUR}">${escapeXml(keyText)}</text>`);
   anchors.key = pct(OX + firstCx, keyCy);
 
+  // Pointing at one category, drawn last so the veil covers that row's symbols
+  // and the ring sits over everything. The key row is never faded: it is how the
+  // symbols are read at all, so dimming it would make the lit row unreadable.
+  if (marked.size) {
+    for (let i = 0; i < categories.length; i++) {
+      const key = String(categories[i]);
+      const top = OY + titleH + i * rowH;
+      const box = { x: OX, y: top, w: w - 2 * OX, h: rowH };
+      const fade = highlight.opacityFor(marked, key);
+      if (fade < 1) {
+        parts.push(`<rect x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" fill="#FFFFFF" fill-opacity="${(1 - fade).toFixed(2)}"/>`);
+      }
+      parts.push(highlight.ringSvg(marked, key, box, Math.max(w, h)));
+    }
+  }
+
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="0 0 ${f(w)} ${f(h)}">${parts.join('')}</svg>`;
   return { svg, aspect: w / h, w, h, anchors };
 }
@@ -179,7 +199,8 @@ function cacheKey(data) {
   const categories = Array.isArray(data.categories) ? data.categories : [];
   const values = Array.isArray(data.values) ? data.values : [];
   const { per, label } = resolveKey(data);
-  return `pictogram:${data.title || ''}:${categories.join(',')}:${values.join(',')}:${per}:${label}`;
+  const hi = [...highlight.resolveHighlight(data, categories.map(String), 'pictogram')].sort().join(',');
+  return `pictogram:${data.title || ''}:${categories.join(',')}:${values.join(',')}:${per}:${label}:${hi}`;
 }
 
 module.exports = { tightSvg, cacheKey };

@@ -54,6 +54,41 @@ The case this rule was written from: a Year 4 rainforest lesson needed a world-t
 
 ---
 
+## Then decide: what will a teacher want to point at?
+
+Ask it before the helper is built, because it is almost always yes. A teacher at the board talks about part of the picture: this bar, the overlap, that cell, this row, where the rainforests are. A figure that cannot be pointed at forces the lesson to say in words what the picture could have shown, and the class looks at the wrong thing while the teacher explains which part they meant.
+
+This was left to each helper for a long time and it went the way that always goes. Six figures grew a way to do it and each invented its own word - `annotations`, `highlightSquare`, `highlight`, `emphasiseVertices` - and the other fifty could not be pointed at all. One idea, six spellings, fifty gaps.
+
+**There are two kinds of marking and they must not be confused.**
+
+**Positional** - the picture is fixed and real, so a mark is placed AT A POSITION and the position means something. A map, a photograph. This is `shared/visuals/map-annotations.js`: dots, lines, regions, shading, a key, and positions given in real degrees where the picture's own grid is known. Only a figure whose content does not move may use it.
+
+**Semantic** - the picture is drawn from the lesson's own data, so it is laid out at render time and moves whenever the data does. Here a mark NAMES A PART and the figure works out where that part currently is. This is `shared/visuals/figure-highlight.js`, and it is what almost every drawn figure needs.
+
+Putting a position on a drawn figure is the failure this distinction exists to stop. A ring placed 40% across a bar chart looks right, and then a value changes, the bars re-scale, and the ring is round the wrong bar with nothing anywhere saying so. Naming the part cannot drift, because the figure resolves the name every time it draws.
+
+**Giving a drawn figure its marking.** Declare the parts it has, resolve them, then use the two shared calls as it draws:
+
+```js
+const highlight = require('./figure-highlight');
+
+// The parts, and the plain-English names a teacher may use for them. Aliases
+// matter: a teacher says "both", not "topLeft".
+const HIGHLIGHT_PARTS = [{ key: 'topLeft', aliases: ['both'] }, /* … */];
+
+const marked = highlight.resolveHighlight(data, HIGHLIGHT_PARTS, 'Carroll diagram');
+// … then, per part, as the figure draws:
+highlight.opacityFor(marked, key)          // 1, or faded when something else is lit
+highlight.ringSvg(marked, key, box, long)  // '' unless this part is the one
+```
+
+Where the parts are rows or bars, the part names are the lesson's own labels rather than a fixed list, so `resolveHighlight` takes the labels straight from the data. Where a part is a region rather than a box - a Venn's overlap, a shaded area - fill it instead of ringing it; a rectangle drawn round the overlap encloses most of both circles and names the wrong thing. Add the resolved highlight to the helper's `cacheKey` or two different highlights will share one cached picture.
+
+Four things are already settled for you and should not be re-decided per figure: the highlight colour, the fade the other parts get, that an unknown part name is refused by name rather than ignored, and that highlighting every part is refused because it points at nothing. One treatment everywhere is the point - a class learns to read it once.
+
+**Where it does not apply.** A figure with no parts worth naming (a single angle, one shape to name), and a write-on form, where the child's own mark is the answer and a printed ring would give it away.
+
 ## First decide: which renderer(s) does this helper serve?
 
 A visual can be drawn by up to **four code renderers** — four surfaces in all, and a helper only reaches the ones you wire it into. This single decision is what most often goes wrong: a figure gets built for the board and the sheet, the wall (or the stick-in pack) is forgotten, and nothing errors — the wall just ships words where the picture should be, and the gap surfaces weeks later when a teacher looks at the display. So make the decision deliberately, by asking of each surface *where a child or teacher actually meets this visual*:

@@ -39,6 +39,8 @@
 // watches the teacher produce) and the full column on an answer slide. A plain
 // total (no marker) stays black, so questions and given values are unchanged.
 
+const highlight = require('./figure-highlight');
+
 // ─── CONSTANTS (SVG user units; the chart is rescaled per engine by aspect) ──
 const FS          = 30;    // body / cell font size
 const HEADER_FS   = 30;    // header-row font size
@@ -135,9 +137,19 @@ function layoutMarks(count) {
   return { strokes, width };
 }
 
+// A tally chart's parts are its categories, named by their own row labels, so a
+// lesson points at "Dogs" rather than at row 2. Naming the row means the mark
+// follows if the rows are ever reordered.
+function highlightParts(data) {
+  return (Array.isArray(data && data.rows) ? data.rows : [])
+    .map(function (row) { return String((row && row.label) != null ? row.label : ''); })
+    .filter(Boolean);
+}
+
 function tightSvg(data) {
   const headers = Array.isArray(data.headers) ? data.headers : [];
   const rows = Array.isArray(data.rows) ? data.rows : [];
+  const marked = highlight.resolveHighlight(data, highlightParts(data), 'tally chart');
   const title = data.title || '';
   const showTotals = showTotalsResolved(data);
   const blank = data.blank === true;
@@ -232,6 +244,21 @@ function tightSvg(data) {
 
   const w = tableW + GRID_W;     // include the outer stroke
   const h = totalH + GRID_W;
+
+  // Pointing at one category, drawn last so the veil covers that row's marks and
+  // total and the ring sits over the grid lines.
+  if (marked.size) {
+    for (let r = 0; r < rows.length; r++) {
+      const key = String((rows[r] && rows[r].label) != null ? rows[r].label : '');
+      const box = { x: colXs[0], y: gridTop + headerH + r * bodyRowH, w: tableW, h: bodyRowH };
+      const fade = highlight.opacityFor(marked, key);
+      if (fade < 1) {
+        parts.push(`<rect x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" fill="#FFFFFF" fill-opacity="${(1 - fade).toFixed(2)}"/>`);
+      }
+      parts.push(highlight.ringSvg(marked, key, box, Math.max(w, h)));
+    }
+  }
+
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="${f(-GRID_W / 2)} 0 ${f(w)} ${f(h)}">${parts.join('')}</svg>`;
   return { svg, aspect: w / h, w, h };
 }
@@ -266,7 +293,8 @@ function cacheKey(data) {
   const headers = Array.isArray(data.headers) ? data.headers : [];
   const rows = Array.isArray(data.rows) ? data.rows : [];
   const rowKey = rows.map((r) => `${r && r.label != null ? r.label : ''}=${tallyCount(r)}/${r && r.total != null ? r.total : ''}`).join('|');
-  return `tally:${data.title || ''}:${headers.join(',')}:${showTotalsResolved(data) ? '1' : '0'}:${data.blank === true ? 'b' : 'f'}:${rowKey}`;
+  const hi = [...highlight.resolveHighlight(data, highlightParts(data), 'tally chart')].sort().join(',');
+  return `tally:${data.title || ''}:${headers.join(',')}:${showTotalsResolved(data) ? '1' : '0'}:${data.blank === true ? 'b' : 'f'}:${rowKey}:${hi}`;
 }
 
 module.exports = { tightSvg, tallyMarksSvg, cacheKey };

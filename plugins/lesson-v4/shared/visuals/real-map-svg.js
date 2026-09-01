@@ -128,6 +128,14 @@ function tightSvg(spec) {
   const dot = Math.max(2.5, long * DOT_FRACTION);
 
   const assetPath = shared.assetPathFor(s.key);
+  const heads = s.annotations.map(function (mark, index) {
+    if (!mark.arrow) return '';
+    const head = '<marker id="head-' + index + '" markerWidth="5" markerHeight="5" refX="4.2" refY="2.5" orient="auto" markerUnits="strokeWidth">' +
+      '<path d="M0 0 L5 2.5 L0 5 Z" fill="#' + mark.colour + '"/></marker>';
+    if (mark.arrow !== 'both') return head;
+    return head + '<marker id="tail-' + index + '" markerWidth="5" markerHeight="5" refX="4.2" refY="2.5" orient="auto-start-reverse" markerUnits="strokeWidth">' +
+      '<path d="M0 0 L5 2.5 L0 5 Z" fill="#' + mark.colour + '"/></marker>';
+  }).join('');
   const hatches = s.annotations.map(function (mark, index) {
     if (!mark.shaded) return '';
     const size = Math.max(10, long * 0.03);
@@ -138,7 +146,7 @@ function tightSvg(spec) {
       '" stroke="#' + mark.colour + '" stroke-width="' + f(size * 0.28) + '" stroke-opacity="0.85"/></pattern>';
   }).join('');
   const parts = [
-    hatches ? '<defs>' + hatches + '</defs>' : '',
+    (hatches || heads) ? '<defs>' + hatches + heads + '</defs>' : '',
     '<image x="0" y="0" width="' + w + '" height="' + h + '" href="' + dataUri(s.entry, assetPath) + '"/>'
   ];
   const labelItems = [];
@@ -168,8 +176,11 @@ function tightSvg(spec) {
         parts.push('<polygon points="' + pts + '" fill="url(#hatch-' + index + ')" stroke="none"/>');
       }
       parts.push('<polyline points="' + pts + '" fill="none" stroke="' + HALO + '" stroke-width="' + f(stroke * HALO_MULTIPLE) + '" stroke-linejoin="round"/>');
+      const heads = mark.arrow
+        ? ' marker-end="url(#head-' + index + ')"' + (mark.arrow === 'both' ? ' marker-start="url(#tail-' + index + ')"' : '')
+        : '';
       parts.push('<polyline points="' + pts + '" fill="none" stroke="#' + mark.colour + '" stroke-width="' + f(stroke) +
-        (mark.kind === 'area' && !mark.shaded ? '" stroke-dasharray="' + f(stroke * 3) + ' ' + f(stroke * 2) : '') + '" stroke-linejoin="round"/>');
+        (mark.kind === 'area' && !mark.shaded ? '" stroke-dasharray="' + f(stroke * 3) + ' ' + f(stroke * 2) : '') + '" stroke-linejoin="round"' + heads + '/>');
     }
     labelItems.push({
       text: mark.label,

@@ -29,6 +29,8 @@
 //              child sees that "outside" is a real place; suppressed once any
 //              shape is placed (the chips themselves show the regions).
 
+const highlight = require('./figure-highlight');
+
 // ─── CONSTANTS (geometry units; the whole drawing scales on placement) ────
 const BOX_W       = 1000;        // universe box width
 const BOX_H       = 700;         // universe box height (top band holds one- or two-line labels)
@@ -71,6 +73,46 @@ const CHIP_TEXT_C    = '#000000';   // placed-chip text
 // ─── END CONSTANTS ────────────────────────────────────────────────────────
 
 const REGIONS = ['leftOnly', 'rightOnly', 'overlap', 'outside'];
+
+// A Venn's parts are REGIONS, not boxes, so pointing at one fills it rather than
+// ringing it: a rectangle drawn round the overlap encloses most of both circles
+// and names the wrong thing. The fill is built from the circles themselves with
+// a mask, so the shape shown is exactly the region, whatever the geometry.
+const HIGHLIGHT_PARTS = [
+  { key: 'leftOnly', aliases: ['left', 'left-only', 'only-left'] },
+  { key: 'rightOnly', aliases: ['right', 'right-only', 'only-right'] },
+  { key: 'overlap', aliases: ['both', 'middle', 'intersection'] },
+  { key: 'outside', aliases: ['neither', 'outside-both'] }
+];
+
+// One region, as a shape to paint plus the mask that trims it to exactly that
+// region. Every region is "this shape, minus the parts of it that belong to
+// somebody else", which a mask says directly: white shows, black hides.
+function regionFill(region, id, geom) {
+  const { X, Y, cxL, cxR, cy, f } = geom;
+  const circle = (cx, fill) => `<circle cx="${f(X(cx))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="${fill}"/>`;
+  const box = (fill) => `<rect x="${f(X(0))}" y="${f(Y(0))}" width="${f(BOX_W)}" height="${f(BOX_H)}" rx="${BOX_RX}" fill="${fill}"/>`;
+
+  let paint;
+  let mask;
+  if (region === 'overlap') {
+    paint = circle(cxL, `#${highlight.RING}`);
+    mask = circle(cxR, 'white');
+  } else if (region === 'leftOnly') {
+    paint = circle(cxL, `#${highlight.RING}`);
+    mask = circle(cxL, 'white') + circle(cxR, 'black');
+  } else if (region === 'rightOnly') {
+    paint = circle(cxR, `#${highlight.RING}`);
+    mask = circle(cxR, 'white') + circle(cxL, 'black');
+  } else {
+    paint = box(`#${highlight.RING}`);
+    mask = box('white') + circle(cxL, 'black') + circle(cxR, 'black');
+  }
+  return {
+    def: `<mask id="${id}">${mask}</mask>`,
+    use: paint.replace('/>', ` mask="url(#${id})" fill-opacity="0.30"/>`)
+  };
+}
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -126,7 +168,8 @@ function resolveShapes(data) {
 function cacheKey(data) {
   const shapes = resolveShapes(data);
   const sk = shapes.map(function (s) { return s.region + ':' + s.label; }).join(';');
-  const hints = data.showRegionHints === false ? '0' : '1';
+  const hints = (data.showRegionHints === false ? '0' : '1') +
+    '|' + [...highlight.resolveHighlight(data, HIGHLIGHT_PARTS, 'Venn diagram')].sort().join(',');
   return 'venn:' + (data.label1 || '') + '|' + (data.label2 || '') + '|' + hints + '|' + sk;
 }
 
@@ -153,6 +196,7 @@ function regionAnchor(region) {
 
 function tightSvg(data) {
   const shapes = resolveShapes(data);
+  const marked = highlight.resolveHighlight(data, HIGHLIGHT_PARTS, 'Venn diagram');
   const showHints = data.showRegionHints !== false && shapes.length === 0;
   const { cxL, cxR, cy } = circleCentres();
   const f = function (n) { return Number(n).toFixed(2); };
@@ -170,6 +214,22 @@ function tightSvg(data) {
 
   // Universe box.
   parts.push(`<rect x="${f(X(0))}" y="${f(Y(0))}" width="${f(BOX_W)}" height="${f(BOX_H)}" rx="${BOX_RX}" fill="#FFFFFF" stroke="${BOX_COLOUR}" stroke-width="${BOX_STROKE}"/>`);
+
+  // Pointing at a region: painted under the circle outlines and the chips, so
+  // the diagram still reads as a Venn with one region lit rather than as a
+  // coloured blob with a Venn somewhere behind it.
+  if (marked.size) {
+    const geom = { X, Y, cxL, cxR, cy, f };
+    const defs = [];
+    const fills = [];
+    [...marked].forEach(function (region, i) {
+      const built = regionFill(region, 'venn-region-' + i, geom);
+      defs.push(built.def);
+      fills.push(built.use);
+    });
+    parts.push('<defs>' + defs.join('') + '</defs>');
+    parts.push.apply(parts, fills);
+  }
 
   // Translucent circle fills first (so the overlap reads as the two colours stacked).
   parts.push(`<circle cx="${f(X(cxL))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="${CIRCLE_FILL_L}" fill-opacity="${CIRCLE_FILL_OP}"/>`);

@@ -273,14 +273,30 @@ function annotationSvg(mark, rect, index) {
     out.push('<path d="' + d + ' Z" fill="url(#hatch-' + index + ')" stroke="none"/>');
   }
   out.push('<path d="' + d + '" fill="none" stroke="#FFFFFF" stroke-width="' + (stroke * 2.2).toFixed(1) + '" stroke-linejoin="round"/>');
+  const heads = mark.arrow
+    ? ' marker-end="url(#head-' + index + ')"' + (mark.arrow === 'both' ? ' marker-start="url(#tail-' + index + ')"' : '')
+    : '';
   out.push('<path d="' + d + '" fill="none" stroke="#' + mark.colour + '" stroke-width="' + stroke.toFixed(1) +
     (mark.kind === 'area' && !mark.shaded ? '" stroke-dasharray="' + (stroke * 3).toFixed(1) + ' ' + (stroke * 2).toFixed(1) : '') +
-    '" stroke-linejoin="round"/>');
+    '" stroke-linejoin="round"' + heads + '/>');
   return out.join('');
 }
 
 // The hatch each shaded region is filled with, and the identical swatch its key
 // entry shows. Hatched rather than solid so the map underneath still reads.
+// One arrowhead per marked line, in that line's own colour, so a blue river and
+// an orange journey do not end in the same head.
+function arrowDefs(marks) {
+  return marks.map(function (mark, index) {
+    if (!mark.arrow) return '';
+    const head = '<marker id="head-' + index + '" markerWidth="5" markerHeight="5" refX="4.2" refY="2.5" orient="auto" markerUnits="strokeWidth">' +
+      '<path d="M0 0 L5 2.5 L0 5 Z" fill="#' + mark.colour + '"/></marker>';
+    if (mark.arrow !== 'both') return head;
+    return head + '<marker id="tail-' + index + '" markerWidth="5" markerHeight="5" refX="4.2" refY="2.5" orient="auto-start-reverse" markerUnits="strokeWidth">' +
+      '<path d="M0 0 L5 2.5 L0 5 Z" fill="#' + mark.colour + '"/></marker>';
+  }).join('');
+}
+
 function hatchDefs(marks) {
   return marks.map(function (mark, index) {
     if (!mark.shaded) return '';
@@ -364,7 +380,7 @@ function tightSvg(spec) {
   const keyH = s.key.length ? KEY_H : 0;
   const h = (s.focus ? 900 : 900 + (s.joinedEdges ? FOOTER_H : 0)) + keyH;
   const parts = [
-    '<defs>' + hatchDefs(s.annotations) + keyHatchDefs(s.key) + '<pattern id="pacific-edge" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="14" height="14" fill="#DDEBF7"/><rect width="5" height="14" fill="#0070C0"/></pattern><marker id="edge-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#0070C0"/></marker><marker id="focus-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#C65911"/></marker><clipPath id="zoom-clip"><rect x="1190" y="105" width="570" height="650" rx="18"/></clipPath></defs>'
+    '<defs>' + hatchDefs(s.annotations) + arrowDefs(s.annotations) + keyHatchDefs(s.key) + '<pattern id="pacific-edge" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="14" height="14" fill="#DDEBF7"/><rect width="5" height="14" fill="#0070C0"/></pattern><marker id="edge-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#0070C0"/></marker><marker id="focus-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#C65911"/></marker><clipPath id="zoom-clip"><rect x="1190" y="105" width="570" height="650" rx="18"/></clipPath></defs>'
   ];
   const rect = s.focus ? { x: 20, y: 175, w: 1080, h: 540 } : { x: 0, y: 0, w: 1800, h: 900 };
   mapLayer(s, uri, rect, parts);

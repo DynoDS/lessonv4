@@ -1341,6 +1341,34 @@ Four cards fit as a 2 by 2 grid. Two cards fit side by side. More than four card
 
 Zone class compatibility: fits A, B, C and E-wide.
 
+### Pointing at part of a figure: `highlight`
+
+A teacher at the board talks about one part of the picture. `highlight` names that part, and the figure lights it and fades the rest, so a class looks at the thing being discussed instead of hunting for it while you describe which bit you mean.
+
+```json
+{ "type": "venn", "label1": "has a right angle", "label2": "has 4 equal sides", "highlight": "overlap" }
+{ "type": "carroll", "…": "…", "highlight": "both" }
+{ "type": "tally-chart", "…": "…", "highlight": "Cats" }
+{ "type": "pictogram", "…": "…", "highlight": ["Dogs", "Fish"] }
+```
+
+**Name the part, never a position.** These figures are drawn from your own data and laid out at render time, so there is no "40% across" to point at: change a value and the picture moves. Naming the part is what makes the mark follow.
+
+The parts each figure has:
+
+| Figure | Parts |
+| --- | --- |
+| `venn` | `leftOnly`, `rightOnly`, `overlap`, `outside` (also `left`, `right`, `both`, `neither`) |
+| `carroll` | `topLeft`, `topRight`, `bottomLeft`, `bottomRight` (also `both`, `row-only`, `column-only`, `neither`) |
+| `tally-chart` | each row's own label |
+| `pictogram` | each category's own name |
+
+One part or several (`"overlap"` or `["Dogs", "Fish"]`). A name the figure does not have is refused by name and told what its parts are, rather than drawing nothing. Highlighting every part is refused too, because a picture with nothing faded points at nothing.
+
+Use it on a teaching slide where you are discussing one part, and on an answer slide to show which part the answer was in. Leave it off on a task slide where finding the part *is* the question, and off any write-on form, where a printed ring hands the child the answer.
+
+A map is the other kind and works differently, because the world does not move: there a mark is placed at a real position. See `map` and its `annotations`.
+
 ### `venn`
 
 A **Venn sorting diagram** — two overlapping labelled circles inside a rectangular box (the "universe"), the tool a child uses to sort shapes by **two criteria at once**. Each circle carries one property; a shape that fits BOTH goes in the **overlap** where the circles cross, and a shape that fits NEITHER goes **outside both circles but inside the box** — the two ideas this helper exists to make visible. The left circle and its label are house blue, the right circle and its label house orange, so the overlap reads as the two colours stacked and "which circle is which" is never in doubt.
@@ -1766,6 +1794,7 @@ With a caption:
 
 - `kind` is exactly `point` (a dot on a place), `line` (a river, a route, a border you are tracing), or `area` (a region, closed for you: a dashed outline by default, or hatched with `"shaded": true`).
 - `point` takes `at`; `line` and `area` take `points` (at least two, and at least three for an area).
+- **`"arrow": true`** on a `line` puts an arrowhead at its last point; `"arrow": "both"` puts one at each end. Use it whenever the teaching is about movement or direction - where a people came from, which way a river flows, a journey, a trade route - because a line without a head draws the path and leaves out the thing the lesson is teaching. `"both"` is for a link that genuinely runs both ways; it saves drawing a second line back. Only a line takes an arrow: an area is a place rather than a journey, and a point has no direction.
 - **`"shaded": true`** on an `area` fills it with a hatch in its own colour instead of outlining it. Use it when the region *is* the thing being taught (where rainforests are, which countries a desert crosses); leave it off when you mean "somewhere in here". Hatched rather than solid on purpose, so the coastlines, rivers and borders underneath stay readable, and so it survives a grey photocopy. Shading needs the picture composed before it reaches the slide, so it works on `presentation: "seven-continent-world"` and on printed sheets; the plain slide map draws PowerPoint shapes and refuses shading by name rather than quietly giving you an outline.
 - `label` is optional. Labels are laid out against each other, so two marks near the same place do not print on top of one another; a label that has to move away from its mark gets a leader line back to it. A region's label sits just clear of the region rather than across it.
 - `labelAt` optionally places a label yourself, in the same fractions.

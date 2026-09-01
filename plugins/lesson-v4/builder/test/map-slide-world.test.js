@@ -208,6 +208,43 @@ test('a route that cannot fill refuses the shading rather than drawing an outlin
   );
 });
 
+test('a line can say which way it went', () => {
+  // Movement is half of what a primary map is asked to show - where a people
+  // came from, which way a river flows, a trade route - and a line without a
+  // head draws the path while leaving out the thing being taught.
+  const svg = world.tightSvg({
+    map: 'world-with-antarctica', presentation: 'seven-continent-world',
+    annotations: [
+      { kind: 'line', arrow: true, label: 'To Britain', points: [{ lon: 8, lat: 58 }, { lon: -2, lat: 54 }] },
+      { kind: 'line', arrow: 'both', colour: 'blue', label: 'Trade', points: [{ lon: -9, lat: 39 }, { lon: -60, lat: 10 }] }
+    ]
+  }).svg;
+  assert.match(svg, /<marker id="head-0"/);
+  assert.match(svg, /marker-end="url\(#head-0\)"/);
+  assert.match(svg, /<marker id="tail-1"/, 'a two-way link gets a head at each end');
+  assert.match(svg, /marker-start="url\(#tail-1\)"/);
+});
+
+test('only a line can carry an arrow', () => {
+  assert.throws(
+    () => maps.resolveAnnotations({
+      map: 'world-with-antarctica',
+      annotations: [{ kind: 'area', arrow: true, points: [[0.2, 0.5], [0.3, 0.5], [0.3, 0.6]] }]
+    }),
+    /MAP_ANNOTATION_INVALID.*only a line can carry/s
+  );
+});
+
+test('a direction that is not a direction is refused by name', () => {
+  assert.throws(
+    () => maps.resolveAnnotations({
+      map: 'world-with-antarctica',
+      annotations: [{ kind: 'line', arrow: 'sideways', points: [[0.2, 0.5], [0.3, 0.5]] }]
+    }),
+    /MAP_ANNOTATION_INVALID.*not a direction/s
+  );
+});
+
 test('oversized label and clue sets are refused instead of shrinking unreadably', () => {
   assert.throws(
     () => world.resolve({ ...LABELLED, continentLabels: LABELLED.continentLabels.concat({ text: 'Extra', at: [0.5, 0.5] }) }),

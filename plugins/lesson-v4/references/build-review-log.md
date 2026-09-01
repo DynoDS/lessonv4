@@ -1,5 +1,43 @@
 # Build review log
 
+## 2026-09-01 - Marking a figure, package-wide
+
+- Only six of 57 figures could be pointed at, and each of the six had invented its own word for it.
+  *Addressed 1 Sep 2026, after Daniel asked what else the engine should learn to
+  draw. A survey of every figure found marking on the map (`annotations`), the
+  grid map (`highlightSquare`), the rainforest layers (`highlight`), the
+  place-value chart, the geoboard (`emphasiseVertices`) and a labelled photo -
+  one idea, six spellings, and fifty figures a teacher could not point at at all.
+  Nothing in `helper-authoring.md` mentioned marking, which is why a new helper
+  kept arriving without it.*
+- The survey turned up a distinction worth writing down: there are two kinds of marking and confusing them would be silently wrong.
+  *POSITIONAL marking belongs to a picture that is fixed and real - a map, a
+  photograph - where a mark sits at a position and the position means something.
+  SEMANTIC marking belongs to a figure the engine draws from the lesson's own
+  data, where the layout moves whenever the data does, so a mark must NAME a part
+  and let the figure find it. A ring placed 40% across a bar chart survives every
+  check and ends up round the wrong bar the moment a value changes. The six
+  existing implementations had all got this right by instinct; none of them had
+  said so. `shared/visuals/figure-highlight.js` now owns the semantic half: one
+  colour, one fade, one word (`highlight`), an unknown part name refused by name
+  rather than ignored, and highlighting every part refused because it points at
+  nothing. Wired into venn, carroll, tally-chart and pictogram, which between
+  them reach the board, the sheet, the wall and the child's book from one change
+  each.*
+- The map could draw a route but not which way anything went.
+  *Added 1 Sep 2026. `arrow: true` on a line puts a head at its end and
+  `arrow: "both"` at each end, on the board, the printed sheet and the world map
+  presentation. Movement is half of what a primary map is asked to show - a
+  migration, a river's flow, a trade route, an invasion - and a line without a
+  head draws the path while omitting the teaching. Only a line takes one: an area
+  is a place rather than a journey and a point has no direction.*
+- Still to do: bar chart and line graph.
+  *Recorded 1 Sep 2026 rather than rushed. They are the two most-used figures of
+  the set and they want highlighting most, but each has three separate
+  implementations (a PowerPoint-native slide renderer, a worksheet renderer and
+  the shared SVG the wall draws), so wiring them is a different size of job from
+  the four done here and deserves its own pass.*
+
 ## 2026-09-01 - Year 4 Geography Lesson 1 (rebuild)
 
 - The rainforest distribution map came back `unsatisfied` after two searches, and the run was about to build slides 6, 7 and 8 without it. Slide 6 is called "Spot the rainforest pattern".
