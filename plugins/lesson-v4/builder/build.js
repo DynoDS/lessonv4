@@ -15,6 +15,7 @@ const { validateLesson, friendlyParseError } = require('./src/validate');
 const { slideCheckpointState, checkpointMessage } = require('./src/slide-checkpoint');
 const { preflightLayouts } = require('./src/layout-preflight');
 const { capacityWarnings } = require('./src/content/capacity');
+const { zoneFillWarnings, clearZoneFill } = require('./src/content/_zone-fill');
 const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
 const { verifyPictures } = require('./src/verify-pictures');
@@ -268,6 +269,10 @@ async function main() {
     );
   }
 
+  // The preflight already drew every slide once, so anything a figure recorded
+  // about its slot is a duplicate of what the real draw is about to record.
+  clearZoneFill();
+
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
     slide.background = { color: SUBJECT_COLOURS[lesson.subject] || COLOURS.bg };
@@ -289,6 +294,21 @@ async function main() {
       slide.addNotes(String(coreSlideData.speakerNotes));
     }
   });
+
+  // Whether each contained figure actually used the room it was given. Reported
+  // after the draw because it is measured on the drawn rectangle, and advisory
+  // for the same reason the capacity checks are: a better-shaped slot is a
+  // composition decision, and the alternative - stretching the picture - is
+  // never the answer.
+  for (const warning of zoneFillWarnings()) {
+    note(`slide ${warning.slide} ${warning.field}: ${warning.message}`);
+    diagnostic(
+      warning.signal,
+      'composition',
+      { slide: warning.slide, path: warning.field },
+      warning.message
+    );
+  }
 
   const sanitizedName = safeFilenameComponent(lessonName, 'Untitled Lesson');
   const outputPath = path.join(outputDir, `${sanitizedName}.pptx`);

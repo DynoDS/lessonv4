@@ -9,6 +9,7 @@ const { drawMissingImage } = require('../images/placeholder');
 const { longPathSafe } = require('../images/resolve');
 const requireGlobal = require('../require-global');
 const { polyline, arrow } = require('./_geom');
+const { checkZoneFill } = require('./_zone-fill');
 const shared = require('../../../shared/visuals/map-annotations');
 const sevenContinentMap = require('../../../shared/visuals/seven-continent-world-map-svg');
 
@@ -497,6 +498,10 @@ function drawMap(pptx, slide, zone, data, ctx) {
   else { fittedH = frameH; fittedW = frameH * imgAspect; }
   const fittedX = frameX + (frameW - fittedW) / 2;
   const fittedY = frameY + (frameH - fittedH) / 2;
+
+  // A map keeps its true shape, so a slot shaped unlike it leaves the rest
+  // empty and the map ends up a fraction of the size the slide had room for.
+  checkZoneFill(ctx, zone, { w: fittedW, h: fittedH }, `the ${key} map`);
 
   if (prepared && prepared.png) {
     slide.addImage({ data: 'image/png;base64,' + prepared.png.toString('base64'), x: fittedX, y: fittedY, w: fittedW, h: fittedH });

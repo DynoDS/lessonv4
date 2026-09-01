@@ -8,6 +8,7 @@ const { resolveFit } = require('../images/fit');
 const { drawMissingImage } = require('../images/placeholder');
 const { resolveForEmbed } = require('../images/resolve');
 const { warn } = require('../warnings');
+const { checkZoneFill } = require('./_zone-fill');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD            = 0.12;
@@ -250,6 +251,10 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
 
   if (fit === 'contain') {
     const fitted = containRect(frame, dims.w / dims.h);
+    // Contained means the picture keeps its true shape, so a frame shaped unlike
+    // it leaves the rest empty. `cover` is exempt because it fills by design, and
+    // an inset is exempt because being small in a corner is the whole point of one.
+    if (!isInset) checkZoneFill(ctx, frame, fitted, 'this photograph');
     slide.addImage({
       path: resolved,
       x: fitted.x,

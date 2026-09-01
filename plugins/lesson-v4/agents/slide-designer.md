@@ -217,6 +217,8 @@ Do not reconstruct an answer from the question when a structured answer exists. 
 
 Follow `slide-composition-playbook.md` for the answer-slide quality rules: answer everything asked, in the form asked; retain the representation and evidence when they carry the answer; and do not crush the reveal by mechanically repeating the question into a small slot.
 
+**When the question was asked ON a figure, the answer is shown ON that figure, not only in words beside it.** A starter marked one continent and asked for it, the ocean to its east and the continent to its north-west; the answer slide named all three in green and left the map showing the single original mark. A child who guessed wrongly had nothing to check against, and the one place the answer was actually visible - the map - stayed silent. So carry the answer onto the picture: mark the ocean and the second continent too, trace the route the question asked for, shade the region it named. The words stay; the picture stops being a leftover from the question. This is not a licence to mark the question slide as well - what is unmarked there is usually what the child has to work out, and marking it hands over the task.
+
 ### 6. Place source references exactly
 
 When a unit names success-criteria or sticky-knowledge references, read the conditional reference before composing that unit.

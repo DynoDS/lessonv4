@@ -1,5 +1,36 @@
 # Build review log
 
+## 2026-09-01 - Year 4 Geography Lesson 1 (rebuilt deck, read)
+
+- Maps came out a fraction of the size their cards had room for, and nothing measured it.
+  *Addressed 1 Sep 2026. The opening map filled 46% of its card and the
+  world-to-continent zoom 33% of its, with the rest white. The containment is
+  right - stretching a map draws countries the wrong shape - but when the slot's
+  proportions are far from the picture's, containing it leaves the remainder
+  empty and nobody was looking at that number. Worse, the optional-picture pass
+  then decorated the space, because to that pass empty space is an opportunity
+  rather than a symptom: slide 9 got a grey map pin in the room its map should
+  have been using. `FIGURE_ZONE_UNDERFILLED` now reports any contained figure
+  covering under 60% of its slot, names the axis being given away and both
+  shapes, and says plainly that stretching is not the repair. Advisory like the
+  capacity checks beside it, because a better-shaped slot is a composition
+  decision. Replaying the deck raises it on seven figures across six slides and
+  stays silent on the rainforest slide, whose card already fits its map.*
+- The starter's answer slide named three things and left the map marking one.
+  *Addressed 1 Sep 2026 in the Slide Designer. The question marked one continent
+  and asked for it, the ocean to its east and the continent to its north-west;
+  leaving the other two unmarked on the QUESTION slide is correct, because
+  finding them by direction is the geography. The answer slide then printed all
+  three in green over the same single mark, so a child who guessed wrongly had
+  nothing to check against and the one place the answer was visible stayed
+  silent. An answer asked on a figure is now shown on that figure.*
+- The one continent that was marked was hard to see.
+  *Addressed 1 Sep 2026 in templates.md. A thin dashed outline round South
+  America on a map at half its card's width is a line a class has to hunt for,
+  and a starter whose first job is finding the thing being asked about has failed
+  before the question starts. Where the mark is what the question turns on,
+  shade it: shading survives being small, an outline does not.*
+
 ## 2026-09-01 - Marking a figure, package-wide
 
 - Only six of 57 figures could be pointed at, and each of the six had invented its own word for it.
