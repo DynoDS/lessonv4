@@ -27,6 +27,10 @@ TOP_LEVEL_FIELDS = {
     "flagsForTeacher",
 }
 
+# Fields a design may carry without every saved design and fixture having to
+# grow them at once. Present, they are validated as strictly as the rest.
+OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities"}
+
 STRUCTURES = {
     "Skill-based",
     "Content-based",
@@ -41,6 +45,13 @@ MODELLING_STATES = {
     "Physical-demonstration support",
 }
 INTERACTIONS = {"view", "teacher-completes", "pupil-uses", "pupil-writes-on"}
+# The decision a lesson records about each printed extra it might earn. A
+# resource designer is launched on `candidate` and `uncertain` (and when the
+# block is absent altogether); only a validated `none` lets the run skip it.
+RESOURCE_DECISIONS = {"candidate", "none", "uncertain"}
+# Task shapes that leave a figure in the child's book to sort or classify into,
+# which is the stick-in pedagogy's own test for a printed piece.
+WRITE_ON_TASK_KINDS = {"sort", "evidence-classification"}
 ANSWER_KINDS = {"exact", "model", "standard", "none"}
 ANSWER_DELIVERIES = {"teacher-only", "answer-slide", "visible-in-unit", "none"}
 MAIN_ANSWER_SLIDE_KINDS = {
@@ -1483,6 +1494,65 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
     return items, by_id
 
 
+def write_on_evidence(unit: dict[str, Any]) -> str | None:
+    """Why this source unit looks like a moment a child marks a figure on.
+
+    None when nothing in the unit says so. The stick-in pedagogy's own test is
+    whether the child writes onto a figure they could not redraw by hand; the
+    two facts the contract records that point at it are a representation the
+    pupil writes on and a task that sorts or classifies into a structure.
+    """
+    for ref in unit.get("representationRefs") or []:
+        if isinstance(ref, dict) and ref.get("interaction") == "pupil-writes-on":
+            return f"children write on {ref.get('ref')} (interaction pupil-writes-on)"
+    task = unit.get("taskStructure")
+    if isinstance(task, dict) and task.get("kind") in WRITE_ON_TASK_KINDS:
+        return f"its task is a {task.get('kind')} children record into"
+    return None
+
+
+def validate_resource_opportunities(
+    raw: Any,
+    units: list[dict[str, Any]],
+) -> None:
+    """The lesson's own record of which printed extras it might earn.
+
+    The decision gates a whole model worker, so a `none` has to be one the
+    lesson's own moments do not contradict: the validator refuses a stick-in
+    `none` while any unit carries write-on evidence, and names the unit, so
+    the skip can never be quieter than the lesson.
+    """
+    block = expect_dict(raw, "resourceOpportunities")
+    expect_exact_keys(block, {"stickIn", "workingWall"}, {"stickIn", "workingWall"}, "resourceOpportunities")
+    unit_ids = {unit["sourceUnitId"] for unit in units}
+    for key in ("stickIn", "workingWall"):
+        path = f"resourceOpportunities.{key}"
+        entry = expect_dict(block[key], path)
+        fields = {"decision", "sourceUnitIds", "reason"}
+        expect_exact_keys(entry, fields, fields, path)
+        decision = expect_string(entry["decision"], f"{path}.decision")
+        expect(decision in RESOURCE_DECISIONS, f"{path}.decision invalid: {decision}")
+        source_ids = validate_ref_list(entry["sourceUnitIds"], f"{path}.sourceUnitIds", unit_ids)
+        reason = expect_string(entry["reason"], f"{path}.reason")
+        if decision == "candidate":
+            expect(bool(source_ids), f"{path}.decision candidate must name at least one sourceUnitId")
+        elif decision == "none":
+            expect(not source_ids, f"{path}.decision none must carry an empty sourceUnitIds list")
+            expect(
+                len(reason.split()) >= 4,
+                f"{path}.reason must say in a sentence why the book alone carries this lesson",
+            )
+    stick_in = block["stickIn"]
+    if stick_in["decision"] == "none":
+        for unit in units:
+            evidence = write_on_evidence(unit)
+            expect(
+                evidence is None,
+                f"resourceOpportunities.stickIn.decision none is contradicted by "
+                f"{unit['sourceUnitId']} ({unit['label']}): {evidence}; record candidate or uncertain",
+            )
+
+
 def validate_design(
     design: Any,
     photos: Any,
@@ -1493,7 +1563,12 @@ def validate_design(
     reject_unresolved_scaffold_placeholders(photos, "photo-requirements.json")
 
     root = expect_dict(design, "lesson-design.json")
-    expect_exact_keys(root, TOP_LEVEL_FIELDS, TOP_LEVEL_FIELDS, "lesson-design.json")
+    expect_exact_keys(
+        root,
+        TOP_LEVEL_FIELDS | OPTIONAL_TOP_LEVEL_FIELDS,
+        TOP_LEVEL_FIELDS,
+        "lesson-design.json",
+    )
     expect(type(root["schemaVersion"]) is int and root["schemaVersion"] == 1, "schemaVersion must be integer 1")
 
     photo_items, photo_by_id = validate_photo_contract_v2(
@@ -1915,6 +1990,12 @@ def validate_design(
             raise ContractError(
                 "worksheet.answerKeyMode is required but every worksheet answer kind is none"
             )
+
+    if "resourceOpportunities" in root:
+        validate_resource_opportunities(
+            root["resourceOpportunities"],
+            [starter, *sequence, *([ending["beat"]] if included else [])],
+        )
 
     slide_notes = expect_list(root["slideDesignNotes"], "slideDesignNotes")
     for index, note in enumerate(slide_notes):

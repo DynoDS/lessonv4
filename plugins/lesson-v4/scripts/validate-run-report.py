@@ -111,6 +111,15 @@ def read_json(path: Path, label: str, failures: list[str]):
         return None
 
 
+def design_skipped_stick_in(design) -> bool:
+    """Whether the approved lesson itself recorded that no stick-in piece is earned."""
+    if not isinstance(design, dict):
+        return False
+    block = design.get("resourceOpportunities")
+    entry = block.get("stickIn") if isinstance(block, dict) else None
+    return isinstance(entry, dict) and entry.get("decision") == "none"
+
+
 def earned_resources(working_dir: Path) -> list[str]:
     """Resources this run earned, derived from the specifications themselves."""
     earned: list[str] = []
@@ -453,10 +462,19 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
             )
 
     # ── Every always-run designer decision is on the record ──────────────
+    design = read_json(working / "lesson-design.json", "lesson-design.json", [])
     for name, filename, key in DECIDED_RESOURCES:
         spec = read_json(working / filename, filename, [])
         decided = isinstance(spec, dict) and isinstance(spec.get(key), list)
         if not decided and name not in excluded_names and name not in delivered_names:
+            if name == "stick-in sheets" and design_skipped_stick_in(design):
+                failures.append(
+                    "stick-in sheets: the approved design recorded none, so no "
+                    "designer ran; list it under Excluded resources as "
+                    "`- stick-in sheets: NOT DELIVERED - not needed: <the design's reason>` "
+                    "so the teacher can see the decision."
+                )
+                continue
             failures.append(
                 f"{name}: no decision is on record. Its designer runs on every "
                 f"lesson and answers with {filename} (an empty {key} list is a "

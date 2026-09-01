@@ -676,6 +676,17 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         if value not in (None, []):
             append_review_json(lines, label, value)
 
+    opportunities = design.get("resourceOpportunities")
+    if opportunities:
+        lines.extend(["## Resource opportunities", ""])
+        for key, label in (("stickIn", "Stick-in sheets"), ("workingWall", "Working wall")):
+            entry = opportunities[key]
+            units = ", ".join(f"`{unit}`" for unit in entry["sourceUnitIds"]) or "none named"
+            lines.append(
+                f"- {label}: **{entry['decision']}** ({units}) - {entry['reason']}"
+            )
+        lines.append("")
+
     lines.extend(["## Planned photographs", ""])
     for row in photo_requirements["photos"]:
         lines.extend(

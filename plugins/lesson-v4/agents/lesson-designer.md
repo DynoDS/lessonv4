@@ -396,6 +396,10 @@ Keep answer.content null when answer.structure present. Don't repeat structured 
 
 **Shared working tool vs per-child:** distinction in preferences.md → Worksheets. For shared-frame, set worksheet.resourceMode to "shared-frame" (requires status==generated, use==required-task-resource, sheetShape.kind==frame, exactly one top-level frame content block, empty worksheet-level SC/sticky refs); record reason. Declaration lets pipeline build sheet once and skip adaptation, keeps printed frame to modelled shape alone. For per-child, leave resourceMode unset and worksheet differentiates into Expected/Below/Greater-Depth.
 
+### Printed extras: stick-in piece and wall
+
+Record in `resourceOpportunities` whether this lesson has a moment worth a printed stick-in piece, and whether it has something a working wall would hold. You already hold every fact those decisions turn on, and each `candidate` or `uncertain` launches a specialist to design the thing, while a validated `none` lets the run skip a worker that would only have walked your design to find nothing. The stick-in test is one question, applied to every moment: does the child write onto a figure they could not redraw by hand (a Venn, a grid, a diagram to label, a headed recording table), rather than write an answer the board already carries? Open `stick-in-sheets-pedagogy.md` → The write-on moments for the boundary cases when a moment is not clear-cut. Name the moments as `sourceUnitIds` for a `candidate`; write `none` only when every moment leaves the child recording answers in their own hand, and say so in the reason, because the validator refuses a `none` while any unit has children writing on a representation or sorting into a task. When you genuinely cannot tell, `uncertain` costs a worker and `none` risks a piece a class needed, so `uncertain` is the honest answer.
+
 ### Answers, models and checking support
 
 Provide answers/models selectively. Starter with definite answers uses answer-slide. Main independent slide work with definite answers uses answer-slide; means Your Turn, Practise, Use Learning, Do the Task, Apply or Reflect when beat contains work children complete independently. Exact-answer Do beats, Our Turn, smaller checks use teacher-only. Smaller beat may use answer-slide only when answer.kind is model or standard and shared modelled answer/comparison standard genuinely improves teaching/checking. Every answer whose kind is not none remains available for speaker-note composition. Worksheet answers stay in worksheet's own route. Open discussion and genuinely open outcomes use none unless model/standard genuinely helps. Don't create merely to fill field. Don't assign marking process.
@@ -556,5 +560,6 @@ Read a named section from its heading to the next heading of the same level.
 - Read `reasoning-prompts.md` when Apply or worksheet reasoning is being designed.
 - Read `test-question-bank.md` only when starter retrieval matches a bank skill.
 - Once structure is chosen, read exactly one matching `teaching-sequence-*.md` file.
+- Read `stick-in-sheets-pedagogy.md` → The write-on moments only when recording `resourceOpportunities.stickIn` and a moment is not clear-cut.
 - After decisions are settled, read `lesson-design-scaffold.md` on the normal scaffold route.
 - Use `output-template.md` selectively for exact field shapes or allowed values. Read it in full only when no scaffold command is supplied.

@@ -927,9 +927,11 @@ invent it. Mention the omission only when the approved design requested one.
 
 Launch Working Wall Designer on every run, directly with approved
 `lesson-design.json`, `lesson.json` and the applicable photo contract.
-Wall-worthiness is the designer's judgement, never decided here: no
-lesson-design field records it, and a designer that finds nothing wall-worthy
-writes `cards: []` with its rationale for the run report. It owns only `working-wall.json`. After its deterministic
+Wall-worthiness is the designer's judgement, never decided here: the
+design's `workingWall` entry in `resourceOpportunities` is evidence being
+gathered for a later gate and never skips this launch, and a designer that
+finds nothing wall-worthy writes `cards: []` with its rationale for the run
+report. It owns only `working-wall.json`. After its deterministic
 check, launch the retained Working Wall Builder only when `cards` is
 non-empty. The builder runs the fixed wall script and returns its short Output
 Report. One wall diagnostic permits one focused wall-owner repair and rebuild.
@@ -937,11 +939,27 @@ Preserve its exact returned output path.
 
 ### Track E — Stick-in Spec (stick-in-sheets-designer, runs after slide-designer; in parallel with Tracks B, D and the rest of A)
 
-Launch the stick-in designer on every run, directly with approved
+Read the approved design's own decision first:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/resource-opportunities.py" stick-in \
+  --lesson-design "[WORKING_DIR]/lesson-design.json"
+```
+
+On `STICK_IN_LAUNCH`, launch the stick-in designer directly with approved
 `lesson-design.json`, `lesson.json` and applicable picture contract. The
 write-on test is the designer's judgement, never decided here; a lesson with
 no write-on moment gets an empty `items` list with a short rationale. It owns
 only `stick-in-sheets.json`. Require its role validator.
+
+On `STICK_IN_SKIP: [reason]`, the reviewed lesson recorded that no moment
+earns a piece and the validator found no unit contradicting it, so no worker
+is launched and Track F ends. Carry the reason verbatim into the run report
+under Excluded resources as `- stick-in sheets: NOT DELIVERED - not needed:
+[reason]`, and tell the teacher in one line. The command answers `LAUNCH`
+for a `candidate`, an `uncertain`, a design without the field, or a `none`
+the lesson's own moments contradict; the orchestrator never judges the
+question itself.
 
 ### Track F — Stick-in Sheets (fixed build, runs after stick-in-sheets-designer)
 

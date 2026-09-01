@@ -192,6 +192,10 @@ A placeholder in a generated worksheet's `activityArchitecture`, `fitPriority`, 
 
 If the generated scaffold does not support the structure you actually decided, fix the scaffold request and rerun the scaffold before filling it. Do not hand-edit mechanical IDs to force an invalid request through.
 
+## Resource opportunities
+
+The scaffold also generates the `resourceOpportunities` envelope, one entry for `stickIn` and one for `workingWall`, each with placeholder `decision`, `sourceUnitIds` and `reason`. Fill them from the decisions record like every other field: `sourceUnitIds` becomes `[]` or the exact IDs of the moments that earn the piece. The shape and the allowed decisions are in `output-template.md` under Resource opportunities.
+
 ## Output-template fallback
 
 The generated scaffold owns mechanical shape on the normal initial make-lesson route.

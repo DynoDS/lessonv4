@@ -465,10 +465,13 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # invented maps on a geography board. Raised from 55 KiB for four lines
         # holding `gap` to its meaning: a rainforest lesson recorded its
         # distribution map unsatisfied and was about to drop the beat, when the
-        # real world map with the belts shaded on it was the beat. Every slice
-        # still sits far under its own 7 KiB budget, which is what a run
+        # real world map with the belts shaded on it was the beat. Raised from
+        # 56 KiB when the stick-in launch started reading the reviewed design's
+        # own decision: a worker that found nothing to print on two lessons in
+        # three now runs only when the lesson says there may be a piece. Every
+        # slice still sits far under its own 7 KiB budget, which is what a run
         # actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 56 * 1024)
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 57 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

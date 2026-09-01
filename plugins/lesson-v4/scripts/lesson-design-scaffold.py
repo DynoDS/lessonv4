@@ -1297,6 +1297,17 @@ def build_scaffold(
         "teachingSequence": sequence,
         "ending": ending,
         "worksheet": worksheet,
+        # The lesson's own word on the printed extras it might earn. Both are
+        # filled like every other field; the stick-in one gates a worker, so
+        # the validator refuses a `none` the lesson's moments contradict.
+        "resourceOpportunities": {
+            key: {
+                "decision": PLACEHOLDER,
+                "sourceUnitIds": PLACEHOLDER,
+                "reason": PLACEHOLDER,
+            }
+            for key in ("stickIn", "workingWall")
+        },
         "slideDesignNotes": [PLACEHOLDER],
         "flagsForTeacher": [PLACEHOLDER],
     }

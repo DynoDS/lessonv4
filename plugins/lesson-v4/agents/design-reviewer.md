@@ -159,6 +159,7 @@ Check:
 - misconceptions are addressed where they could block learning;
 - assessment opportunities reveal useful evidence;
 - the recorded outcome makes the subject learning visible;
+- the recorded resource opportunities match the lesson's own moments: a stick-in `none` while a moment has children marking a figure they could not redraw by hand is a finding, because it skips the worker that would have printed the piece, and a `candidate` naming a moment where children only write answers is one too;
 - an Apply task changes the thinking rather than only adding more work;
 - a named test question is practised at the same structure, scale, response form and demand, with fresh content.
 

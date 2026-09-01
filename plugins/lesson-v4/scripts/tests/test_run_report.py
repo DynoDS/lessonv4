@@ -175,6 +175,45 @@ class TestRunReport(RunReportCase):
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def stick_in_skipped_by_design(self):
+        """The approved design said none, so no stick-in designer ran."""
+        (self.working / "stick-in-sheets.json").unlink()
+        self.write_json(
+            self.working / "lesson-design.json",
+            {
+                "resourceOpportunities": {
+                    "stickIn": {
+                        "decision": "none",
+                        "sourceUnitIds": [],
+                        "reason": "Every moment leaves children writing answers in their own hand.",
+                    },
+                    "workingWall": {"decision": "uncertain", "sourceUnitIds": [], "reason": "Maybe."},
+                }
+            },
+        )
+
+    def test_a_stick_in_the_design_skipped_is_reported_as_not_needed(self):
+        """A skip the reviewed lesson decided is COMPLETE, once the teacher can see it."""
+        self.stick_in_skipped_by_design()
+        report = self.write_report(
+            overrides={
+                "excluded": (
+                    "- stick-in sheets: NOT DELIVERED - not needed: every moment "
+                    "leaves children writing answers in their own hand."
+                ),
+            }
+        )
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("RUN_REPORT_OK", result.stdout)
+
+    def test_a_stick_in_the_design_skipped_must_still_be_on_the_record(self):
+        self.stick_in_skipped_by_design()
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("the approved design recorded none", result.stdout)
+        self.assertIn("not needed:", result.stdout)
+
     def test_empty_decision_files_need_no_report_entry(self):
         """cards: [] and items: [] are answered decisions, not omissions."""
         result = self.validate(self.write_report())

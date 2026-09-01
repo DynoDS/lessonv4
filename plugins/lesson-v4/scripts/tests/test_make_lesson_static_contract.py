@@ -105,16 +105,17 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         # An unresolved filing destination degrades to local delivery.
         self.assertIn("plan local-only delivery", playbook)
 
-    def test_wall_and_stick_in_designers_are_spawned_every_run(self):
-        """Wall-worthiness and the write-on test belong to their designers.
+    def test_wall_designer_is_spawned_every_run_and_stick_in_reads_the_design(self):
+        """Wall-worthiness belongs to its designer; the stick-in gate is the design's.
 
         The regressed wording, "If the approved lesson earns a wall", handed
         the orchestrator a judgement it has no criteria for and no signal to
-        answer (lesson-design.json records no wall decision), so runs silently
-        skipped the spawn and lessons shipped without walls nobody had decided
-        against. Both designers answer cheaply with an empty spec when the
-        lesson earns nothing, so the spawn is unconditional and only the
-        builders gate on spec content.
+        answer, so runs silently skipped the spawn and lessons shipped without
+        walls nobody had decided against. The wall spawn stays unconditional.
+        The stick-in designer found nothing to print on two of three lessons
+        in a day, so the reviewed design now records that decision and a
+        deterministic command reads it; the orchestrator still never judges
+        the question, and only a validated `none` skips the worker.
         """
         import subprocess
         result = subprocess.run(
@@ -123,7 +124,9 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         )
         text = " ".join(result.stdout.split())
         self.assertIn("Launch Working Wall Designer on every run", text)
-        self.assertIn("Launch the stick-in designer on every run", text)
+        self.assertIn("resource-opportunities.py", text)
+        self.assertIn("On `STICK_IN_LAUNCH`, launch the stick-in designer", text)
+        self.assertIn("the orchestrator never judges the question itself", text)
         self.assertIn("only when `cards` is non-empty", text)
         self.assertIn("non-empty `items` list", text)
         playbook = " ".join(PLAYBOOK.read_text(encoding="utf-8").split())

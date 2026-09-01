@@ -986,6 +986,19 @@ For a provided worksheet, do not manufacture generated Expected content. Use:
 
 `use` may still be `required-task-resource` when that is what the teacher-supplied sheet actually is.
 
+### Resource opportunities
+
+The lesson's own word on the two printed extras it might earn, so a resource designer is launched when there may be something to make and skipped when the approved design says there is not. Use exactly:
+
+```json
+{
+  "stickIn": { "decision": "candidate", "sourceUnitIds": ["lesson-section/teaching-sequence/unit-004"], "reason": "..." },
+  "workingWall": { "decision": "uncertain", "sourceUnitIds": [], "reason": "..." }
+}
+```
+
+`decision` is exactly `candidate`, `none` or `uncertain`. `candidate` names at least one source unit; `none` names no unit and gives, in a sentence, why the child's book alone carries the lesson; `uncertain` gives its reason and launches the specialist as `candidate` does. Only a validated stick-in `none` skips the stick-in designer, and the validator refuses one while any unit has children writing on a representation or sorting into a task structure, naming the unit. The wall entry is recorded for evidence and never skips the wall designer.
+
 ### Slide design notes
 
 `slideDesignNotes` is only for a genuine cross-slide rendering constraint that cannot be expressed through source-unit content or refs.
