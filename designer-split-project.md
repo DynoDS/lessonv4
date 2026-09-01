@@ -254,3 +254,27 @@ the architecture, or the comparison shows nothing.
   What remains: slimming the architect's loaded context, lower writer
   effort, and speed measurement - all need real runs first. The chain has
   still never run end to end.
+- **1 Sep 2026, first real run and its verdict.** The chain ran end to end
+  on the Y4 circuits brief (about 90 minutes, all snapshots and gates
+  working; artefacts in lesson-output/working/ in Daniel's checkout). An
+  external review of the lesson found real faults and located each one
+  cleanly by owner, which is the split doing its diagnostic job: architect
+  or decision-reviewer misses (starter and vocabulary gave away the bounded
+  attempt's answer; connection order taught as the invariant instead of the
+  complete loop; the buzzer overloading the lesson; `series` never taught;
+  battery both deferred and taught) and author or wording-review misses
+  (12-14 word success-criteria steps; `output component` reaching child
+  text; a prohibition about untaught circuit symbols). Notably, the OLD
+  route's earlier run of the same brief did better on the steps and the
+  deferrals, so this run cost the switch its evidence and Daniel reverted
+  to main. Seven durable repairs went to MAIN as 4.2.52 (bounded-attempt
+  spoiler audit; steps-encode-the-invariant with a 12-word validator cap;
+  the objective's own term must be taught; trimmedVocabulary consistency
+  sweep; science equipment must not falsify the taught rule; positive-form
+  instructions; category-abstraction voice tell). **At merge time:** most
+  arrive automatically (route file, science file, design-reviewer base);
+  the validator's step cap needs a hand-merge into this branch's staged
+  validator; the four-tells example belongs in `lesson-author.md` here, not
+  the slimmed base file. Settled 9 superseded on this evidence: the author
+  and worksheet content designer now declare `effort: high` - they express
+  settled decisions, the run was slow, and both reviewers stay at xhigh.

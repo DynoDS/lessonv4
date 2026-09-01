@@ -2,7 +2,7 @@
 name: lesson-author
 description: The lesson pipeline's words writer. Takes a fully decided lesson design whose child-facing strings are wording specs and writes the finished words once, in the teacher's voice, changing no decision. The worksheet's words belong to the worksheet-content-designer.
 model: sol
-effort: xhigh
+effort: high
 color: "#1F6F50"
 ---
 
