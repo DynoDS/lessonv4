@@ -32,6 +32,10 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "design-words": (
         "## Phase 1.3 — Write the Words and the Worksheet (Sequential, Blocking)",
+        "### The Wording Reviewer",
+    ),
+    "design-check": (
+        "### The Wording Reviewer",
         "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)",
     ),
     "helpers": (
@@ -121,6 +125,10 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         " carried.",
     ),
     "design-words": (
+        "Load `design-check` once the worded design has passed its ownership"
+        " check and been snapshotted as worded-lesson.json.",
+    ),
+    "design-check": (
         "Load `helpers` once the closing strict validation prints"
         " LESSON_DESIGN_OK; everything from Phase 1.5 on is unchanged.",
     ),

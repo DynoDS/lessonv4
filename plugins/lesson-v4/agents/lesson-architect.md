@@ -72,6 +72,14 @@ actual values, items and exact wording is that designer's job; use the base
 role's Worksheet section for the brief-level judgements and leave its
 instance-authoring craft to the role that now applies it.
 
+The one exception is a photograph-backed task: the photograph contract is
+yours and freezes before the sheet is written, so choosing the sheet's
+photographs IS choosing those instances. Choose them deliberately - the
+evidence each photo must show, the contrasts the set carries - and say so
+in the block's spec; the Worksheet Content Designer authors the prompts,
+support and answers around the pictures you chose, and a sheet that needs
+different pictures is its `WORKSHEET_GAP`, not its edit.
+
 ## Sound is not yours
 
 The base role carries the deciding craft; how finished words sound belongs
@@ -80,18 +88,26 @@ Written Voice section - a spec states what a string must carry and where
 content belongs (script versus slide, answer object versus script), never
 how the sentence will run.
 
-## The one place you write finished wording
+## Late revisions never make you the words writer
 
 A later pipeline stage may send you a bounded focused revision over a fully
 worded design - a picture the cap forced out, a content-gap picture, a
-worksheet brief a gap line names. Revise in place, change only what the
-revision names, and where that small change needs a new or altered
-child-facing string, write it as finished wording matched to the register
-of the strings around it - the design is past its words passes, and
-reopening them for one sentence costs the run more than it protects. Prove
-the revision with the strict validator (`--initial-photo-namespace`, no
-stage flag) when the design you were handed was fully worded, and with the
-stage validator when it still carries specs.
+worksheet brief a gap line names. Revise in place and change only what the
+revision names. Contract mechanics, picture fields and planning text are
+yours to finish; any new or altered child-facing string is not - write it
+as a wording spec, exactly as in the main pass, and say in your completion
+report that a spec now stands at that path. The orchestrator runs one
+focused Lesson Author pass over it before anything rebuilds; the strict
+validator refuses a surviving spec, so the route cannot be skipped
+silently. The reason is the same one this whole chain exists for: wording
+written by the deciding role, without the voice guides, at the end of a
+long run, is the drift the split removes - and a "small" string can still
+be a script, a model answer or a task instruction.
+
+Prove a revision that added no spec with the strict validator
+(`--initial-photo-namespace`, no stage flag) when the design you were
+handed was fully worded, and with the stage validator when it still carries
+specs.
 
 ## Validation
 

@@ -131,6 +131,65 @@ PLACEHOLDER_REPORT_LIMIT = 10
 WORDING_MARKER = "__LESSON_WORDING_FILL__:"
 WORDING_MARKER_BARE = "__LESSON_WORDING_FILL__"
 
+# The ownership map for the two-pass design chain, canonical here so the
+# validator - not a prompt and not a test - decides what the architect must
+# leave as a wording spec and where a spec may never appear. A field absent
+# from both sets is neutral: the walk neither requires nor forbids a spec
+# there, which is the safe posture for fields whose audience is uncertain.
+#
+# String fields whose value a child reads or hears, by key name. At the
+# architect's stage every non-empty one must be a spec, or the architect has
+# written finished wording the fresh-context writers were meant to write.
+WORDING_KEYS = {
+    "script",
+    "teacherOrientation",
+    "definition",
+    "text",
+    "example",
+    "task",
+    "headline",
+    "prompt",
+    "question",
+    "discussionQuestion",
+    "checkpointQuestion",
+    "investigationBrief",
+    "pupilInstruction",
+    "pupilPrompt",
+    "stimulus",
+    "pupilAction",
+    "groupPrompt",
+    "whatGoesHere",
+    "firstRowWorked",
+    "generator",
+    "heading",
+    "detail",
+}
+WORDING_LIST_KEYS = {
+    "keyQuestions",
+    "guidedQuestions",
+    "sentenceStems",
+    "steps",
+}
+# Planning and decision metadata a child never meets. A spec here is a
+# routing mistake: the architect writes these final, in planning language.
+PLANNING_KEYS = {
+    "teacherInfo",
+    "lookFor",
+    "acceptanceCondition",
+    "purpose",
+    "description",
+    "reason",
+    "connection",
+    "format",
+    "focus",
+    "activity",
+    "evidenceProduced",
+    "slideDesignNotes",
+    "flagsForTeacher",
+    "requiredFeatures",
+}
+ANSWER_SHAPE_KEYS = {"kind", "content", "acceptanceCondition", "delivery"}
+
 _wording_stage = False
 _wording_scope: str | None = None
 
@@ -157,9 +216,26 @@ def collect_wording_marker_faults(
     wording_stage: bool,
     specs: list[str],
     scope_prefix: str | None = None,
+    key: str | None = None,
+    wording_owned: bool = False,
 ) -> None:
     if isinstance(node, str):
+        in_scope = scope_prefix is None or path.startswith(scope_prefix)
         if WORDING_MARKER_BARE not in node:
+            # A finished string standing where the decider owed a spec: the
+            # decider has written wording the fresh-context writers were
+            # meant to write, which defeats the reset the chain exists for.
+            if (
+                wording_stage
+                and in_scope
+                and wording_owned
+                and node.strip()
+            ):
+                found.append(
+                    f"{path} must still be a wording spec at this stage - "
+                    "the decider writes the meaning as "
+                    f"`{WORDING_MARKER} ...`, and the writers write the words"
+                )
             return
         if not wording_stage:
             found.append(
@@ -177,31 +253,50 @@ def collect_wording_marker_faults(
                 f"{path} is a wording marker with nothing after it - a spec "
                 "with no meaning gives the words pass nothing to write from"
             )
-        elif scope_prefix is not None and not path.startswith(scope_prefix):
+        elif not in_scope:
             found.append(
                 f"{path} still holds a wording spec outside `{scope_prefix}` - "
                 "this stage may leave specs only there, and has not finished "
                 "its own strings"
+            )
+        elif key in PLANNING_KEYS:
+            found.append(
+                f"{path} is a wording spec in planning metadata - a child "
+                "never meets this field, so the decider writes it final, in "
+                "planning language"
             )
         else:
             specs.append(path)
         return
 
     if isinstance(node, dict):
-        for key, value in node.items():
+        is_answer = ANSWER_SHAPE_KEYS <= set(node) <= (
+            ANSWER_SHAPE_KEYS | {"structure"}
+        )
+        for child_key, value in node.items():
+            owned = child_key in WORDING_KEYS or (
+                is_answer
+                and child_key == "content"
+                and node.get("kind") != "none"
+            )
             collect_wording_marker_faults(
-                value, f"{path}.{key}", found,
+                value, f"{path}.{child_key}", found,
                 wording_stage=wording_stage, specs=specs,
                 scope_prefix=scope_prefix,
+                key=child_key,
+                wording_owned=owned,
             )
         return
 
     if isinstance(node, list):
+        items_owned = key in WORDING_LIST_KEYS
         for index, value in enumerate(node):
             collect_wording_marker_faults(
                 value, f"{path}[{index}]", found,
                 wording_stage=wording_stage, specs=specs,
                 scope_prefix=scope_prefix,
+                key=key,
+                wording_owned=items_owned,
             )
 
 

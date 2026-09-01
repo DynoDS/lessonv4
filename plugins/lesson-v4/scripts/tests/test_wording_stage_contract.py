@@ -22,44 +22,12 @@ import test_lesson_design_contract as contract
 module = contract.module
 MARKER = module.WORDING_MARKER
 
-# String fields whose value a child reads or hears, by key name. Item labels,
-# vocabulary terms and photo fields stay decided by the decider, so they are
-# deliberately absent.
-WORDING_STRING_KEYS = {
-    "script",
-    "teacherOrientation",
-    "definition",
-    "text",
-    "example",
-    "task",
-    "headline",
-    "takeaway",
-    "prompt",
-    "question",
-    "discussionQuestion",
-    "checkpointQuestion",
-    "investigationBrief",
-    "pupilInstruction",
-    "pupilPrompt",
-    "stimulus",
-    "pupilAction",
-    "groupPrompt",
-    "whatGoesHere",
-    "firstRowWorked",
-    "generator",
-    "heading",
-    "detail",
-}
-
-# List fields holding child-facing strings.
-WORDING_LIST_KEYS = {
-    "keyQuestions",
-    "guidedQuestions",
-    "sentenceStems",
-    "steps",
-}
-
-ANSWER_KEYS = {"kind", "content", "acceptanceCondition", "delivery"}
+# The ownership map is the validator's, not this test's: the validator is
+# what enforces it at runtime, so a drift between the two would mean the
+# test checked a map nobody runs.
+WORDING_STRING_KEYS = module.WORDING_KEYS
+WORDING_LIST_KEYS = module.WORDING_LIST_KEYS
+ANSWER_KEYS = module.ANSWER_SHAPE_KEYS
 
 
 def spec(value: str) -> str:
@@ -140,14 +108,48 @@ def test_a_marker_buried_mid_string_is_refused():
         raise AssertionError("buried marker unexpectedly validated")
 
 
+def test_a_half_specced_design_fails_stage_validation():
+    # One marker used to satisfy stage mode while the decider quietly wrote
+    # the rest of the wording itself, bypassing the fresh-context writers.
+    design, photos = contract.valid_contract()
+    design = marked(design)
+    design["vocabulary"][0]["definition"] = (
+        "A fully finished definition written by the decider."
+    )
+    try:
+        module.validate_design(design, photos, wording_stage=True)
+    except module.ContractError as exc:
+        assert "must still be a wording spec at this stage" in str(exc), str(exc)
+        assert "definition" in str(exc), str(exc)
+    else:
+        raise AssertionError("half-specced design unexpectedly validated")
+
+
+def test_a_spec_in_planning_metadata_is_refused():
+    # Planning fields are the decider's to write final; a spec there routes
+    # a teacher-facing note through the child-wording pass.
+    design, photos = contract.valid_contract()
+    design = marked(design)
+    design["teachingSequence"][2]["speakerNotes"]["lookFor"] = (
+        f"{MARKER} what to look for while children work"
+    )
+    try:
+        module.validate_design(design, photos, wording_stage=True)
+    except module.ContractError as exc:
+        assert "planning metadata" in str(exc), str(exc)
+    else:
+        raise AssertionError("planning-field spec unexpectedly validated")
+
+
 def test_a_design_with_no_specs_fails_stage_validation():
     # A decider that marked nothing wrote the finished wording itself, which
-    # defeats the fresh-context words pass the split exists for.
+    # defeats the fresh-context words pass the split exists for. The walk
+    # names every finished string standing where a spec was owed.
     design, photos = contract.valid_contract()
     try:
         module.validate_design(design, photos, wording_stage=True)
     except module.ContractError as exc:
-        assert "found no wording specs" in str(exc), str(exc)
+        assert "must still be a wording spec at this stage" in str(exc), str(exc)
     else:
         raise AssertionError("unmarked design unexpectedly passed stage mode")
 
@@ -187,11 +189,49 @@ def test_scoped_stage_mode_refuses_a_spec_outside_the_scope():
 
 
 def test_scoped_stage_mode_accepts_zero_specs():
-    # A provided-by-teacher worksheet has no strings at all to leave.
+    # A provided-by-teacher worksheet has no strings at all to leave, so the
+    # authored design legitimately carries no specs anywhere.
     design, photos = contract.valid_contract()
+    design["worksheet"].update({
+        "status": "provided-by-teacher",
+        "resourceMode": "per-child",
+        "activityArchitecture": None,
+        "sheetShape": None,
+        "demand": None,
+        "successCriteriaRefs": [],
+        "stickyKnowledgeRefs": [],
+        "fitPriority": None,
+        "centralWriteOnVisualException": None,
+        "contentBlocks": [],
+        "answerKeyMode": "not-applicable",
+        "providedWorksheet": {
+            "source": "teacher-supplied.pdf",
+            "skillMatch": "Aligned with LO",
+            "duplicateCheck": "No slide example duplicates its values.",
+            "notes": "",
+        },
+    })
     module.validate_design(
         design, photos, wording_stage=True, wording_scope="worksheet"
     )
+
+
+def test_scoped_stage_mode_requires_worksheet_strings_to_stay_specs():
+    # After the author, a generated worksheet's own strings must still be
+    # specs: finished worksheet wording at that point means the author wrote
+    # the sheet the worksheet content designer owns.
+    design, photos = contract.valid_contract()
+    try:
+        module.validate_design(
+            design, photos, wording_stage=True, wording_scope="worksheet"
+        )
+    except module.ContractError as exc:
+        assert "worksheet" in str(exc), str(exc)
+        assert "must still be a wording spec" in str(exc), str(exc)
+    else:
+        raise AssertionError(
+            "finished worksheet wording unexpectedly passed scoped stage mode"
+        )
 
 
 def test_stage_validation_still_enforces_decision_rules():

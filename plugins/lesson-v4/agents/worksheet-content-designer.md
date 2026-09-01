@@ -58,9 +58,11 @@ Keep the existing block id style and keep ids unique. Maintain
 approved priorities - a protected list naming stand-ins protects nothing.
 
 The photograph contract is not yours. Use the `photoRefs` the design already
-carries; a sheet that genuinely needs a picture the contract does not hold,
-or a brief you cannot honour without changing shape, role or demand, is a
-gap, not a licence:
+carries - and for a photograph-backed task, treat the chosen photographs as
+the chosen instances: the Architect picked them when it wrote the contract,
+your job is the prompts, support and answers around them. A sheet that
+genuinely needs a picture the contract does not hold, or a brief you cannot
+honour without changing shape, role or demand, is a gap, not a licence:
 
 ```text
 WORKSHEET_GAP: [what the approved brief cannot deliver, and why, precisely]

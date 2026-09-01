@@ -230,3 +230,27 @@ the architecture, or the comparison shows nothing.
   the previous version from the marketplace after reverting main, and the
   4.2.49 commit is the last two-route state. Next: Daniel's first real run
   is the live proof; judge it against settled 10's bar.
+- **31 Aug 2026, hardening (4.2.51).** Daniel brought a second external AI
+  review of the switched-over chain. Verified against the code: its four
+  serious findings were all real, and all are now closed deterministically.
+  (1) The approved specs were destroyed by in-place writing - the chain now
+  freezes `approved-lesson-spec.json` after the decision review, the wording
+  reviewer checks the finished words against it, and every writer retry
+  restores its baseline first instead of retrying over a half-edited file.
+  (2) The written worksheet had no semantic reviewer - the wording reviewer
+  gained a bounded worksheet implementation check (freshness from the final
+  board, medium kept, support not answer-giving, answers demonstrating the
+  rationale). (3) A half-specced design passed stage validation - the
+  ownership map now lives in the validator itself: every child-facing field
+  must be a spec at the decider's stage, and a spec in planning metadata is
+  refused. (4) Writer lanes were prompts, not checks - a new ownership
+  checker diffs each writer's output against its baseline and refuses
+  changes outside its lane, including any touch of the photo contract.
+  Also done: the architect's late-wording carve-out replaced (it specs, a
+  focused author pass words); the worksheet content designer made required
+  and the contradictory author fallback removed; photo-backed worksheet
+  instances ruled as architect-chosen; a small deterministic review-report
+  check replacing the retired packet's useful part. Deferred with reasons in
+  What remains: slimming the architect's loaded context, lower writer
+  effort, and speed measurement - all need real runs first. The chain has
+  still never run end to end.

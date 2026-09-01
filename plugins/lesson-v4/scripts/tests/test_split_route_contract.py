@@ -84,7 +84,7 @@ class ChainSliceTests(unittest.TestCase):
         # The review packet is retired from the chain.
         self.assertIn("There is no review packet", review)
 
-    def test_the_words_slice_carries_all_three_writing_steps_in_order(self):
+    def test_the_words_slices_carry_the_writing_steps_in_order(self):
         words = slice_text("design-words")
         for marker in (
             "WORDING_GAPS",
@@ -92,8 +92,10 @@ class ChainSliceTests(unittest.TestCase):
             "--wording-scope worksheet",
             "agents/lesson-author.md",
             "agents/worksheet-content-designer.md",
-            "agents/wording-reviewer.md",
-            "run the strict validator yourself once more",
+            # The specs survive the writers, and every retry restores first.
+            "approved-lesson-spec.json",
+            "DESIGN_SNAPSHOT_OK",
+            "DESIGN_OWNERSHIP_OK",
             "## NEXT",
         ):
             self.assertIn(marker, words)
@@ -101,10 +103,16 @@ class ChainSliceTests(unittest.TestCase):
             words.index("The Lesson Author"),
             words.index("The Worksheet Content Designer"),
         )
-        self.assertLess(
-            words.index("The Worksheet Content Designer"),
-            words.index("The Wording Reviewer"),
-        )
+
+        check = slice_text("design-check")
+        for marker in (
+            "agents/wording-reviewer.md",
+            "APPROVED_SPEC: [WORKING_DIR]/approved-lesson-spec.json",
+            "check-review-report.py",
+            "run the strict validator yourself once more",
+            "## NEXT",
+        ):
+            self.assertIn(marker, check)
 
 
 class OrchestratorKnowsTheChainTests(unittest.TestCase):
@@ -131,14 +139,16 @@ class OrchestratorKnowsTheChainTests(unittest.TestCase):
 
     def test_missing_roles_degrade_honestly(self):
         setup = " ".join(slice_text("setup").split())
+        # All three writers of the finished lesson are required: the author
+        # is forbidden to write the worksheet, so a missing worksheet
+        # designer has no honest fallback.
         self.assertIn(
-            "`lesson-architect` and `lesson-author` are required", setup
+            "`lesson-architect`, `lesson-author` and "
+            "`worksheet-content-designer` are required",
+            setup,
         )
         # The architect's base craft file is part of the requirement.
         self.assertIn("base craft file", setup)
-        self.assertIn(
-            "the Lesson Author writes the worksheet's specs as well", setup
-        )
         self.assertIn("report the decisions review skipped", setup)
         self.assertIn("report the words check skipped", setup)
 
@@ -170,8 +180,14 @@ class OrchestratorKnowsTheChainTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("focused `lesson-architect` revision", playbook)
         self.assertNotIn("focused Lesson Designer revision", playbook)
+        # A late revision's new child-facing string is specced and worded by
+        # a focused author pass, never written by the deciding role.
         architect = ARCHITECT.read_text(encoding="utf-8")
-        self.assertIn("The one place you write finished wording", architect)
+        self.assertIn("Late revisions never make you the words writer", architect)
+        flat = " ".join(playbook.split())
+        self.assertIn(
+            "one focused `lesson-author` pass over the named paths", flat
+        )
 
 
 class ChainRoleContractTests(unittest.TestCase):

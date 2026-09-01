@@ -50,19 +50,17 @@ authorise the generic orchestration controller.
 
 ## Before Each Run: Know What Exists
 
-Check the named agents under `[PLUGIN_ROOT]/agents/`. `lesson-architect` and
-`lesson-author` are required - no design exists without the first and no
-finished words without the second - and the architect's base craft file
-`agents/lesson-designer.md` must exist for it to read. Missing optional
-agents skip only their resource or review:
+Check the named agents under `[PLUGIN_ROOT]/agents/`. `lesson-architect`,
+`lesson-author` and `worksheet-content-designer` are required - no design
+without the first, no finished words without the second, and no worksheet
+without the third, whose job the author is forbidden to do - and the
+architect's base craft file `agents/lesson-designer.md` must exist for it to
+read. Missing optional agents skip only their resource or review:
 
 - no `decision-reviewer`: continue on the stage-validated design and report
   the decisions review skipped;
 - no `wording-reviewer`: deliver the authored design and report the words
   check skipped;
-- no `worksheet-content-designer`: the Lesson Author writes the worksheet's
-  specs as well (Phase 1.3 says how), and the report names the missing
-  specialist;
 - no `adaptation-designer`: build only the expected-range worksheet;
 - no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
   that output and exclude it as NOT DELIVERED naming the missing role;
@@ -132,9 +130,9 @@ and check the finished words (Phase 1.3). Nothing after Phase 1.3 ever
 meets a spec: the strict validator refuses one, so a half-written lesson
 cannot build.
 
-Ask `worker-launch.py spec` once here for all five roles and copy the
-printed fields verbatim into each launch; do not read settings out of role
-files yourself.
+Ask `worker-launch.py spec` once here, naming the three required roles and
+whichever of the two reviewers exist, and copy the printed fields verbatim
+into each launch; do not read settings out of role files yourself.
 
 Launch the Lesson Architect directly:
 
@@ -262,8 +260,17 @@ ALLOWED_TERMINAL_STATES:
 - REDESIGN REQUIRED
 ```
 
-After return, run the stage validator yourself and use the exact Result in
-`design-review-decisions.md`. When that after-return validation fails, the
+After return, run the stage validator yourself, then prove the report before
+routing on it:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/check-review-report.py" \
+  --report "[WORKING_DIR]/design-review-decisions.md" \
+  --allowed-results "APPROVED,REDESIGN REQUIRED"
+Require exactly: REVIEW_REPORT_OK: [the Result]
+```
+
+Use that exact Result. When the after-return validation fails, the
 fault is in the review pass's own corrections, because the design validated
 before the reviewer opened it. Send it back to the pass that wrote it:
 launch one focused clean-context `decision-reviewer` job carrying the
@@ -304,9 +311,49 @@ The approved design's strings are specs. This phase turns them into the
 finished lesson: the Lesson Author writes every string outside the
 worksheet, the Worksheet Content Designer writes the sheet against that
 finished wording, and the Wording Reviewer checks the words. Decisions are
-settled; nothing in this phase re-judges the lesson.
+settled; this phase expresses them.
+
+**Freeze the approved design first.** The writers edit the canonical file in
+place, which destroys the approved specs at the moment they become the
+reference the words are checked against - and leaves a failed retry nothing
+to restart from. So snapshot before any writer runs:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/check-design-ownership.py" snapshot \
+  --design "[WORKING_DIR]/lesson-design.json" \
+  --photos "[WORKING_DIR]/photo-requirements.json" \
+  --out-design "[WORKING_DIR]/approved-lesson-spec.json" \
+  --out-photos "[WORKING_DIR]/approved-photo-contract.json"
+Require exactly: DESIGN_SNAPSHOT_OK
+```
+
+`approved-lesson-spec.json` is never edited. Restoring a writer's
+baseline over the canonical file uses the same snapshot command with the
+paths reversed, and every retry below starts from a restore, never from a
+half-edited file.
+
+After each writer returns and passes its validator, prove it stayed in its
+lane before anything moves on:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/check-design-ownership.py" check \
+  --stage [author|worksheet|review] \
+  --baseline "[the writer's baseline snapshot]" \
+  --current "[WORKING_DIR]/lesson-design.json" \
+  --photos-baseline "[WORKING_DIR]/approved-photo-contract.json" \
+  --photos-current "[WORKING_DIR]/photo-requirements.json"
+Require exactly: DESIGN_OWNERSHIP_OK
+```
+
+`DESIGN_OWNERSHIP_VIOLATION` names what was touched that was not that
+writer's. Restore the writer's baseline over the canonical file and launch
+one fresh clean-context attempt of the same role; a second violation ends
+the chain as a failed check ends Phase 1, with the violation lines as the
+diagnosis.
 
 ### The Lesson Author
+
+Baseline: `approved-lesson-spec.json` (stage `author`).
 
 ```text
 You are the lesson author. Read your agent instructions at:
@@ -339,30 +386,39 @@ ALLOWED_TERMINAL_STATES:
 - LESSON_WORDING_CHECK_FAILED
 ```
 
-If `worksheet-content-designer` is absent (known from Before Each Run), the
-Lesson Author writes the worksheet's specs as well: tell it so in the
-prompt, drop `--wording-scope worksheet` from its success check, skip the
-Worksheet Content Designer step, and name the missing specialist in the run
-report.
+On `WORDING_GAPS`: restore `approved-lesson-spec.json` over the canonical
+file, then run one focused `lesson-architect` revision carrying every
+`WORDING_GAP:` line verbatim - complete the named specs in place over the
+all-spec state, change nothing else, prove with the unscoped stage
+validator - re-snapshot the approved files, and launch one fresh
+`lesson-author`. One gap round per run: a second `WORDING_GAPS` ends the
+chain as a failed check ends Phase 1, with the gap lines as the diagnosis,
+because two rounds mean the design is not carrying its own decisions and a
+third author cannot fix that.
 
-On `WORDING_GAPS`, run one focused `lesson-architect` revision over the
-current canonical files carrying every `WORDING_GAP:` line verbatim -
-complete the named specs in place, change nothing else, prove with the stage
-validator - then launch one fresh `lesson-author`. One gap round per run: a
-second `WORDING_GAPS` ends the chain as a failed check ends Phase 1, with
-the gap lines as the diagnosis, because two rounds mean the design is not
-carrying its own decisions and a third author cannot fix that.
+On `LESSON_WORDING_CHECK_FAILED`, or a failed orchestrator success check:
+restore `approved-lesson-spec.json` over the canonical file and launch one
+fresh clean-context `lesson-author` with the exact failures - a retry over
+the half-edited file has no specs left to write from. If that also fails,
+go to Phase 4 and report `BLOCKED` with the failures and deliver
+`design-decisions.md` and the diagnosis.
 
-On `LESSON_WORDING_CHECK_FAILED`, or a failed orchestrator success check,
-launch one fresh clean-context `lesson-author` with the current files and
-the exact failures. If that also fails, go to Phase 4 and report `BLOCKED`
-with the failures and deliver `design-decisions.md` and the diagnosis.
+After the ownership check passes, snapshot the authored state once:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/check-design-ownership.py" snapshot \
+  --design "[WORKING_DIR]/lesson-design.json" \
+  --photos "[WORKING_DIR]/photo-requirements.json" \
+  --out-design "[WORKING_DIR]/authored-lesson.json" \
+  --out-photos "[WORKING_DIR]/authored-photo-contract.json"
+```
 
 ### The Worksheet Content Designer
 
-Skip this step only when `worksheet.status` is `provided-by-teacher` - the
-teacher's own sheet stands, and adaptation still runs downstream in Track B
-as normal.
+Baseline: `authored-lesson.json` (stage `worksheet`). Skip this step only
+when `worksheet.status` is `provided-by-teacher` - the teacher's own sheet
+stands, and adaptation still runs downstream in Track B as normal; the
+authored snapshot then serves as the worded baseline below.
 
 ```text
 You are the worksheet content designer. Read your agent instructions at:
@@ -393,24 +449,31 @@ ALLOWED_TERMINAL_STATES:
 - WORKSHEET_CHECK_FAILED
 ```
 
-On `WORKSHEET_GAPS`, run one focused `lesson-architect` revision over the
+On `WORKSHEET_GAPS`: run one focused `lesson-architect` revision over the
 current canonical files carrying every `WORKSHEET_GAP:` line verbatim -
 revise only the worksheet brief and, where the gap names one, the photo
-contract, prove with the stage validator - then launch one fresh
-`worksheet-content-designer`. One gap round per run, ending as the author's
-does.
+contract, prove with the scoped stage validator (`--wording-stage
+--wording-scope worksheet`) - refresh both the approved and authored
+snapshots so the record matches the revised brief, then launch one fresh
+`worksheet-content-designer`. One gap round per run, ending as the
+author's does.
 
 On `WORKSHEET_CHECK_FAILED`, or a failed success check whose failures name
-only paths inside `worksheet`, launch one fresh clean-context
-`worksheet-content-designer` with the current files and the exact failures;
-a failure naming a path outside `worksheet` is a string the author left
-unwritten, and goes to one fresh `lesson-author` round instead, then this
-step reruns. If recovery fails, go to Phase 4 and report `BLOCKED` with the
-failures.
+only paths inside `worksheet`: restore `authored-lesson.json` over the
+canonical file and launch one fresh clean-context
+`worksheet-content-designer` with the exact failures. A failure naming a
+path outside `worksheet` is a string the author left unwritten, and goes to
+the author's restore-and-retry route instead, then this step reruns. If
+recovery fails, go to Phase 4 and report `BLOCKED` with the failures.
+
+After the ownership check passes, snapshot the worded state once, as
+`worded-lesson.json` (same command, new output name); when this step was
+skipped, copy `authored-lesson.json` to `worded-lesson.json` instead.
 
 ### The Wording Reviewer
 
-Skip only when the role is absent: report the words check skipped.
+Baseline: `worded-lesson.json` (stage `review`). Skip only when the role is
+absent: report the words check skipped.
 
 ```text
 You are the wording reviewer. Read your agent instructions at:
@@ -422,6 +485,7 @@ OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+APPROVED_SPEC: [WORKING_DIR]/approved-lesson-spec.json
 DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
 PHOTO_REQUIREMENTS: [WORKING_DIR]/photo-requirements.json
 
@@ -443,12 +507,23 @@ ALLOWED_TERMINAL_STATES:
 - APPROVED
 ```
 
+After return, prove the report before using it:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/check-review-report.py" \
+  --report "[WORKING_DIR]/design-review.md" \
+  --allowed-results "APPROVED"
+Require exactly: REVIEW_REPORT_OK: APPROVED
+```
+
 Its corrections live in the files; its alarms live in its report's
 `## Flags for the teacher`, and every one carries into the run report's
 teacher flags like any review flag. A strict validation that fails right
 after this reviewer returns is its own correction: one focused
 clean-context `wording-reviewer` repair naming only the failing fields,
-keeping its report as it stands, before any wider recovery.
+keeping its report as it stands, before any wider recovery. Its ownership
+check (stage `review`, baseline `worded-lesson.json`) runs like the
+others, with the same restore-and-retry on a violation.
 
 Then close the design chain: run the strict validator yourself once more and
 require exactly `LESSON_DESIGN_OK` - this is the chain's gate whatever path
@@ -534,7 +609,10 @@ focused `lesson-architect` revision over the three canonical design files: add t
 visual as a `controlled-ai` picture with a complete generation prompt, drop the
 representation use that has no helper, change nothing else, and stay within the
 run ceiling of 24 rather than the 16 design budget, because this picture is
-exactly the late need that ceiling exists to allow. Re-run the design
+exactly the late need that ceiling exists to allow. A revision over a worded
+design writes any new child-facing string as a wording spec and says so; run
+one focused `lesson-author` pass over the named paths before validating -
+the strict validator refuses a surviving spec either way. Re-run the design
 validator, the photo-cap check and the helper check. A UK three-pin plug and socket is this route's shape: one real object, the
 same every time, that no renderer should own.
 
@@ -1055,7 +1133,9 @@ revision over the three canonical design files: add the missing visual as a
 picture requirement, real-first with an authorised fallback (a real place's
 geography publishes only after its visual check confirms it), point the
 affected representation use at that filename, change nothing else, keep the
-picture cap. Re-run the design validator and photo-cap check, snapshot the
+picture cap. A new child-facing string is written as a wording spec and
+declared; one focused `lesson-author` pass words the named paths before
+validation. Re-run the design validator and photo-cap check, snapshot the
 revision as the next wave number, and run the supplemental-wave mechanics over
 that snapshot, naming already-terminal filenames so nothing finished reopens.
 Relaunch the blocked designer on the published picture. One wave per run; a
