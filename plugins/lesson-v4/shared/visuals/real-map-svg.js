@@ -166,7 +166,10 @@ function tightSvg(spec) {
 
   // Labels last, so no stroke is ever drawn across the words, and laid out
   // against each other so two marks near the same place do not stack up.
-  const placed = shared.layoutLabels(labelItems, labelSizer(w, h, fontSize));
+  const placed = shared.refuseCrowdedLabels(
+    shared.layoutLabels(labelItems, labelSizer(w, h, fontSize)),
+    'the printed ' + s.key + ' map'
+  );
   const labels = placed
     .map(function (item) { return drawLeader(item, w, h, fontSize); })
     .concat(placed.map(function (item) { return drawLabel(item, w, h, fontSize); }));

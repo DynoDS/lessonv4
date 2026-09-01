@@ -20,6 +20,41 @@ test("renderPieceHtml falls back to the visual's default width", async () => {
   assert.strictEqual(piece.widthMm, 118);
 });
 
+const WORLD_MAP_SPEC = {
+  continentMarkers: [
+    { marker: "1", at: [0.208, 0.25] }, { marker: "2", at: [0.333, 0.583] },
+    { marker: "3", at: [0.556, 0.222] }, { marker: "4", at: [0.556, 0.472] },
+    { marker: "5", at: [0.75, 0.278] }, { marker: "6", at: [0.875, 0.639] },
+    { marker: "7", at: [0.5, 0.933] },
+  ],
+  oceanMarkers: [
+    { marker: "A", at: [0.417, 0.444] }, { marker: "B", at: [0.722, 0.611] },
+    { marker: "C", at: [0.069, 0.5], repeatAt: [0.944, 0.5] },
+    { marker: "D", at: [0.5, 0.833] }, { marker: "E", at: [0.5, 0.083] },
+  ],
+  seaInitialSpaces: [[0.55, 0.305], [0.292, 0.41], [0.508, 0.19]],
+};
+
+test("the world map a child labels in their book is the real shipped one", async () => {
+  // This piece used to be a schematic world drawn from typed coordinates, so a
+  // class was taught from the real map on the board and then tested on a
+  // different world in their books. Both are now the same asset.
+  const piece = await renderPieceHtml({ visual: "map", spec: WORLD_MAP_SPEC });
+  assert.strictEqual(piece.widthMm, 150);
+  assert.ok(piece.html.includes("data:image/png;base64,"), "the land must come from the shipped image");
+});
+
+test("a labelled teaching map copied across still prints as a write-on piece", async () => {
+  // The registry forces the write-on form, so an answer map pasted in from the
+  // slide cannot become thirty pre-labelled copies.
+  const piece = await renderPieceHtml({
+    visual: "map",
+    spec: { ...WORLD_MAP_SPEC, map: "south-america", worksheetMode: "annotated" },
+  });
+  assert.ok(piece.html.includes("<svg"));
+  assert.ok(!/>Africa</.test(piece.html), "no continent may be named for the child");
+});
+
 test("renderPieceHtml rejects an unknown visual", async () => {
   await assert.rejects(() => renderPieceHtml({ visual: "nope", spec: {} }), /Unknown stick-in visual/);
 });

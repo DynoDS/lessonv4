@@ -149,21 +149,35 @@ for (const p of PRIMITIVES) {
 }
 
 // ── TRUTH SOURCE: every primitive says where its picture's correctness comes
-// from. `depicts: 'data'` means the drawing is right when it matches the lesson's
-// numbers, labels or an agreed convention - a bar chart, a Venn, a circuit
-// symbol. Anything else names the real source the form is taken from:
-// `asset:<folder under builder/assets>` or `projection:<named projection>`.
+// from, and there are exactly two honest answers.
+//
+//   depicts: 'data'          the drawing is right when it matches the lesson's
+//                            own numbers, labels or an agreed convention - a bar
+//                            chart, a Venn, a circuit symbol.
+//   depicts: 'asset:<folder under builder/assets>'
+//                            the drawing is right because the shape comes out of
+//                            a real file this package ships, with everything the
+//                            lesson adds drawn ON TOP of it.
 //
 // This exists because a helper that DEPICTS a real thing - a coastline, a
 // border, a real object - cannot be right by construction the way a bar chart
 // can. A drawn-by-eye continent renders cleanly, passes every other check, and
-// teaches a child the wrong world. The guard cannot judge whether a drawing is
-// accurate; it can insist the author says out loud what it is drawn from, so
-// "I made these coordinates up" has to be written down before it can ship.
-// Projections whose coordinates are real. Adding one here is a statement that
-// the figure's geometry comes from real longitude/latitude (or another surveyed
-// coordinate system), not from points chosen to look right.
-const REAL_PROJECTIONS = new Set(['equirectangular-lonlat']);
+// teaches a child the wrong world.
+//
+// `projection:<name>` used to be a third answer and has been withdrawn, because
+// it never answered the question. A projection says how coordinates are
+// TRANSFORMED; it says nothing about where they came from. So a schematic world
+// map whose continent outlines were typed out to look about right declared
+// `projection:equirectangular-lonlat` - a genuinely real projection, over
+// invented coordinates - and passed this guard for as long as it existed. It
+// then drew the opening eight slides of a Year 4 lesson about where the Amazon
+// actually is. Narrowing the accepted projection names could not have caught it:
+// the name was already correct. Only the source can be checked, and a file on
+// disk is the only source that can be.
+//
+// Real coordinates still reach the page - the globe-to-flat presentation
+// reprojects the shipped equirectangular world into an orthographic globe - but
+// what it projects is the ASSET, so it declares asset:maps like everything else.
 
 {
   const ASSET_ROOT = path.join(ROOT, 'builder', 'assets');
@@ -174,7 +188,7 @@ const REAL_PROJECTIONS = new Set(['equirectangular-lonlat']);
         `manifest "${p.id}" does not say what its picture is drawn from.
 ` +
         `      → add depicts: 'data' when the drawing is right by matching the lesson's own data or an agreed convention, ` +
-        `or depicts: 'asset:<folder>' / 'projection:<name>' when it depicts a real place or object.`
+        `or depicts: 'asset:<folder>' when it depicts a real place or object.`
       );
       continue;
     }
@@ -189,25 +203,20 @@ const REAL_PROJECTIONS = new Set(['equirectangular-lonlat']);
       continue;
     }
     if (depicts.startsWith('projection:')) {
-      // A named projection is a named projection. This used to accept anything
-      // after the colon, and the first thing to meet the guard declared
-      // `projection:amazon-location-teaching-schematic` - a hand-drawn map
-      // wearing the word that was supposed to mean "registered to real
-      // coordinates". An escape hatch that takes any string is not a control.
-      const name = depicts.slice('projection:'.length);
-      if (REAL_PROJECTIONS.has(name)) continue;
       problems.push(
-        `manifest "${p.id}" claims projection "${name}", which is not a real projection this package draws from.
+        `manifest "${p.id}" claims ${JSON.stringify(depicts)}, and a projection is no longer a source here.
 ` +
-        `      → known projections: ${[...REAL_PROJECTIONS].join(', ')}. A schematic drawn by hand is not a projection: ` +
-        `either build the figure on a real asset, or declare depicts: 'data' and stop presenting it as a real place.`
+        `      → a projection describes a transform, not where the coordinates came from, so a real projection over ` +
+        `made-up coordinates passed this guard and drew a hand-typed world map. Build the figure on a shipped asset ` +
+        `and declare depicts: 'asset:<folder under builder/assets>', or declare depicts: 'data' and stop presenting ` +
+        `it as a real place.`
       );
       continue;
     }
     problems.push(
       `manifest "${p.id}" has depicts: ${JSON.stringify(depicts)}, which names no real source.
 ` +
-      `      → use 'data', 'asset:<folder under builder/assets>', or 'projection:<named projection>'.`
+      `      → use 'data' or 'asset:<folder under builder/assets>'.`
     );
   }
 }

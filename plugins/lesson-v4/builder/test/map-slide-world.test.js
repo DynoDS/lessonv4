@@ -77,6 +77,28 @@ test('a sea focus is a crop of the same embedded real map', () => {
   assert.equal((svg.match(/data:image\/png;base64/g) || []).length, 2, 'overview and zoom must embed the same asset');
 });
 
+test('the Tropics are drawn where those latitudes really are on the real asset', () => {
+  // The rainforest-distribution teaching that used to live on a schematic map
+  // drawn from typed coordinates. The asset is a full equirectangular world, so
+  // the Equator is exactly half way down it and each Tropic exactly 23.5/90 of
+  // the way from there to a pole - arithmetic on the real image rather than a
+  // line put where it looks about right.
+  const spec = { map: 'world-with-antarctica', presentation: 'seven-continent-world', showTropics: true };
+  const svg = world.tightSvg(spec).svg;
+  assert.match(svg, />Tropic of Cancer</);
+  assert.match(svg, />Tropic of Capricorn</);
+  assert.match(svg, />Equator</, 'the Tropics only teach anything with the Equator between them');
+
+  const ys = [...svg.matchAll(/<line x1="0" y1="([\d.]+)"/g)].map((m) => Number(m[1])).sort((a, b) => a - b);
+  assert.deepEqual(ys, [332.5, 450, 567.5], 'Cancer, Equator and Capricorn on a 900-unit tall world');
+});
+
+test('the Equator can still be shown on its own', () => {
+  const svg = world.tightSvg({ map: 'world-with-antarctica', presentation: 'seven-continent-world', showEquator: true }).svg;
+  assert.match(svg, />Equator</);
+  assert.doesNotMatch(svg, />Tropic of/);
+});
+
 test('oversized label and clue sets are refused instead of shrinking unreadably', () => {
   assert.throws(
     () => world.resolve({ ...LABELLED, continentLabels: LABELLED.continentLabels.concat({ text: 'Extra', at: [0.5, 0.5] }) }),

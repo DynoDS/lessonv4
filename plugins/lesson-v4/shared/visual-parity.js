@@ -18,19 +18,25 @@
 // flag-variant, lists them as an array.
 //
 // Each entry also declares `depicts` - where the drawing's correctness comes
-// from. `'data'` means the picture is right when it matches the lesson's own
-// numbers, labels or an agreed convention: a bar chart, a Venn, a number line, a
-// circuit symbol. Anything else names the real source the FORM is taken from,
-// as `asset:<folder under builder/assets>` or `projection:<named projection>`.
+// from - and there are exactly two answers. `'data'` means the picture is right
+// when it matches the lesson's own numbers, labels or an agreed convention: a
+// bar chart, a Venn, a number line, a circuit symbol. `asset:<folder under
+// builder/assets>` means the FORM comes out of a real file this package ships.
 //
 // The distinction matters because a helper that depicts a REAL thing - a
 // coastline, a border, a real object - cannot be right by construction the way a
 // bar chart can. A continent drawn from coordinates picked by eye renders
 // cleanly, passes every check here, and teaches a child a world that does not
 // exist. So a figure of a real thing is built on the real thing: the shipped
-// asset, or a stated projection of real coordinates, with anything the lesson
-// adds drawn ON TOP as an annotation. The guard cannot judge accuracy; it holds
-// the author to naming the source.
+// asset, with anything the lesson adds drawn ON TOP as an annotation.
+//
+// There is deliberately no third answer. `projection:<name>` was one until a
+// schematic world map declared the real projection `equirectangular-lonlat`
+// over continent outlines somebody had typed to look about right, and drew the
+// opening slides of a lesson about where the Amazon is. A projection is how
+// coordinates are transformed, never where they came from, so it can never
+// stand as evidence. The guard cannot judge accuracy; it holds the author to
+// naming a source that exists on disk.
 //
 // What the guard does with this:
 //   - FORWARD  — every key here must be live in that renderer. A `false` is honoured;
@@ -117,9 +123,6 @@ const PRIMITIVES = [
   { id: 'blank-surface', depicts: 'data',   slides: 'blank-surface',   worksheets: 'blank-surface', wall: false,          stickin: false,
     note: 'wall/stickin:false — the draw-your-own surface IS the worksheet/board write space; in the book the equivalent write-on is draw-box-row.' },
   { id: 'grid-map', depicts: 'data',        slides: 'grid-map',        worksheets: 'grid-map',                      wall: 'grid-map',        stickin: 'grid-map' },
-  { id: 'world-geography-map', depicts: 'projection:equirectangular-lonlat', slides: 'world-geography-map', worksheets: false, wall: false, stickin: 'world-geography-map',
-    geometrySource: 'shared/visuals/world-geography-map-svg.js',
-    note: 'Board + stick-in by the commissioned surface decision. The board uses three configurations: blank continent retrieval, exact-key biome examples, and rainforest distribution with the Equator and Tropics. The stick-in registry forces the blank continent-retrieval configuration so the child can write all seven names and circle South America. worksheets:false because this brief commissions the small cut-and-glue write-on route rather than a separate worksheet question helper. wall:false because neither the retrieval task nor the configurable teaching overlays are a stable all-unit display anchor.' },
   { id: 'rainforest-layers', depicts: 'data', slides: 'rainforest-layers', worksheets: 'rainforest-layers', wall: 'rainforest-layers', stickin: 'rainforest-layers',
     note: 'The central teaching visual of a rainforest layers lesson: four stacked bands (emergent / canopy / understorey / forest floor) whose TINT carries the light gradient, brightest at the top to near dark at the floor. All four, and none of them is optional here. The gradient is the idea the lesson rests on, so the child has to meet the same picture everywhere: taught on the board across several slides (highlight dims two layers so half the diagram can be discussed at a time), read from on the sheet, anchored on the wall all unit, and labelled by the child in their own book. The board/sheet/wall forms are the LABELLED read-and-answer figure; the stick-in is the WRITE-ON form (`blank`), the same bands and trees with a ruled line beside each for the child to name the layers, which is why it reaches the stick-in pack and so the book. UK spelling "understorey" is baked into the shared module, so no engine can ship the American spelling.' },
   { id: 'geographical-description-frame', depicts: 'data', slides: 'geographical-description-frame', worksheets: false, wall: false, stickin: 'geographical-description-frame',
@@ -211,9 +214,9 @@ const PRIMITIVES = [
   //    visuals built and used on the board only; a wall/sheet/stick-in version would
   //    not be the same artefact (a diamond-nine is a live ranking activity, an area
   //    grid a worked model the teacher builds), so each is honestly board-only.
-  { id: 'map', depicts: 'asset:maps',             slides: 'map',             worksheets: 'map',  wall: false, stickin: false,
+  { id: 'map', depicts: 'asset:maps',             slides: 'map',             worksheets: 'map',  wall: false, stickin: 'map',
     geometrySource: 'shared/visuals/map-annotations.js',
-    note: 'The only route in this package to a real place. It draws no land: it places one of the stock continent/world images from builder/assets/maps and puts the marks a lesson needs ON TOP - a dot on a city, a dashed area round a region, a line along a river - each given in fractions of the real image, so board and sheet mark the identical geography on the identical map. Board and paper both, because a lesson that locates something on the board asks a child to find it again on the sheet, and two different pictures of the same place is exactly the drift a shared source prevents. Country shading (the Brazil fill) is a pixel fill of the asset and stays slide-only; on paper the country is named with a point annotation instead. Slides also carry two presentations: globe-to-flat (the staged projection explanation on the world asset) and seven-continent-world (the complete labelled board map on world-with-antarctica, with continent/ocean/sea labels, clue markers, a real-pixel sea focus crop, Equator, compass and joined-edge cues). Worksheets carry worksheetMode continents-and-oceans, the full-width landscape write-on form of the same world-with-antarctica asset (7 continent + 5 ocean markers, 3 sea-initial spaces, same cues). All three embed the shipped PNG; the focus view crops the same pixels; every label, clue and cue is an overlay only - no coastline is ever redrawn. The full-size Success Criteria audit is retained because geographic detail, labels and edge continuity require full-size reading space. wall:false because a stock map carrying one lesson worth of marks is teaching, not a unit-long display anchor; stickin:false because this map is read from rather than written on, and the write-on map is the blank retrieval form of world-geography-map.' },
+    note: 'The only route in this package to a real place, and now the ONLY map of the real world it holds at all. It draws no land: it places one of the stock continent/world images from builder/assets/maps and puts the marks a lesson needs ON TOP - a dot on a city, a dashed area round a region, a line along a river - each given in fractions of the real image, so board, sheet and glued-in piece mark the identical geography on the identical map. Country shading (the Brazil fill) is a pixel fill of the asset and stays slide-only; on paper the country is named with a point annotation instead. Slides also carry two presentations: globe-to-flat (the staged projection explanation on the world asset) and seven-continent-world (the complete labelled board map on world-with-antarctica, with continent/ocean/sea labels, clue markers, a real-pixel sea focus crop, compass, joined-edge cues, and the Equator and both Tropics computed from the asset\'s own equirectangular geometry). Worksheets and the stick-in pack carry worksheetMode continents-and-oceans, the full-width landscape write-on form of the same world-with-antarctica asset (7 continent + 5 ocean markers, 3 sea-initial spaces, same cues); stickin arrived when the schematic world-geography-map was removed, so the map a child labels in their book is the real one they were taught from rather than a second, hand-drawn world. All of it embeds the shipped PNG; the focus view crops the same pixels; every label, clue and cue is an overlay only - no coastline is ever redrawn. The full-size Success Criteria audit is retained because geographic detail, labels and edge continuity require full-size reading space. wall:false because a stock map carrying one lesson worth of marks is teaching, not a unit-long display anchor.' },
   { id: 'circuit-symbol-bank', depicts: 'data', slides: 'circuit-symbol-bank', worksheets: false, wall: false, stickin: false,
     geometrySource: 'shared/visuals/circuit-diagram-svg.js',
     note: 'The component-symbol key of a circuit lesson: individually identifiable standard symbols (cell, lamp, wire, open/closed switch) each carrying its own child-facing name, for the slide that teaches or consults the symbol map itself. Board-only like the callout above — it is a presentation-shaped board reference, not a figure a child reproduces, so it fails the write-on test a stick-in piece has to pass; a sheet teaches the same symbols by naming parts on its own labelled diagram, and the wall already carries the finished circuit via circuit-diagram. The geometry sits beside the circuit in shared/visuals/circuit-diagram-svg.js so the reference and the loop it keys cannot drift apart in a symbol the two render differently.' },
@@ -271,7 +274,6 @@ const SUCCESS_CRITERIA_AUDIT = Object.freeze({
   pictogram: { classification: 'full-size', reason: 'Its key and symbol value are task-specific.' },
   'blank-surface': { classification: 'unsuitable', reason: 'A tiny empty box is decoration, not guidance.' },
   'grid-map': { classification: 'full-size', reason: 'Eastings, northings and features need task detail.' },
-  'world-geography-map': { classification: 'full-size', reason: 'Continental outlines, distribution patterns, latitude lines and the matching key require full-size reading space.' },
   'rainforest-layers': { classification: 'full-size', reason: 'The layered reference picture needs its labels and gradient.' },
   'geographical-description-frame': { classification: 'unsuitable', reason: 'Its value is the readable three-part prompt and writing space; miniaturising an empty frame would not cue an action.' },
   'recording-table': { classification: 'unsuitable', reason: 'Its value is the readable headers and writing cells; a miniature empty grid cues nothing.' },

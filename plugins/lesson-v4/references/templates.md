@@ -65,7 +65,6 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `area-grid` | A squared grid with one or more labelled rectangular patches drawn on it, every square countable. Use for "each square = 1m², find the area of each patch" area-by-counting work — the multi-patch case a single `shaded-fraction` bar can't show |
 | `reflection-grid` | A dot grid with a mirror line and a shape on one side; set `showReflection` to add the reflected shape in green on the answer slide. The mirror runs vertical, horizontal, or on either 45° **diagonal** (`diagonal-up`/`diagonal-down`). Use for "reflect this shape in the mirror line" symmetry work, where the unnumbered dots and equal-distance reflection are the point |
 | `grid-map` | A schematic river-town map on a **numbered four-figure grid** — eastings along the bottom, northings up the side, the numbers sitting ON the grid lines at the corners (read along the bottom, then up the side). A blue river winds through with a meander, features sit inside their squares, and an optional ring marks one square's bottom-left corner. Use for "read the human/physical features and four-figure grid references off the map" geography/maths work; the `highlightSquare` ring models reading a reference on the Teach slide |
-| `world-geography-map` | A north-up seven-continent world map in three deliberate configurations: blank continent retrieval, four-biome examples with an exact key, or tropical-rainforest distribution with the Equator and both Tropics. Use when the geography itself must stay accurate and consistent between the board and a child's write-on map |
 | `geographical-description-frame` | A blank three-part writing frame headed Biome, Location, and Features from evidence. It prompts for a biome meaning and example, a continent and more than one country, and two features linked to map or photograph evidence |
 | `rainforest-layers` | A cross section of a tropical rainforest — four stacked bands, top to bottom: emergent (a few very tall widely spaced trees), canopy (an unbroken roof of overlapping treetops), understorey (thin trunks and large leaves), forest floor (dark ground, leaf litter and roots). The **band tint is the light gradient**, brightest at the top and near dark at the floor, so the diagram teaches the light idea just by looking right. Toggle `labels`, `heights` and `light` (sun, arrows thinning band by band, "about 2 rays in every 100"); `notes` prints a short phrase under a layer's name, which is where what a layer is *like* belongs rather than in a text panel beside the picture; `highlight` takes a pair of layer names and dims the other two, so the same diagram carries a whole lesson slide by slide; `blank` gives the write-on form. Use for any "describe the layers of a rainforest" geography work |
 | `balanced-pattern-plate` | A neutral broad proportional food-group plate: larger fruit-and-vegetable and starchy-carbohydrate areas, smaller protein and dairy-or-alternative areas, and a very small oils-and-spreads area. The five proportions are the fixed thing the picture teaches and no field changes them; everything you set is words. Each group takes its own label and up to four short examples, and the drawing measures them, so a longer label wraps, shrinks, and moves out to a labelled card beside the plate rather than being clipped. `mode: "practice"` keeps the identical sectors and turns whichever groups you name into pupil-decision spaces. Water sits beside it; foods high in fat, salt or sugar have a separate "less often / small amounts" cue. Never use calorie, weight-loss, moral, or bad-food labels. |
@@ -1774,7 +1773,11 @@ With a caption:
 
 Anything wrong is refused by name rather than drawn wrongly: `MAP_ANNOTATION_UNSUPPORTED` for a kind that does not exist, `MAP_ANNOTATION_INVALID` for a coordinate outside the map, too few points, an unknown colour, or more marks than the map can carry.
 
+**How many labels fit is decided by the slot, not by the ceiling of 8.** A board label is sized to be read from the back of the room whatever size the map ended up, so eight country pills that sit cleanly on a full-width South America are most of the picture on the same map in a sidebar. When the layout cannot place them all clear of one another, the build stops with `MAP_LABELS_DO_NOT_FIT`, naming the labels it could not place. Fix it by carrying fewer marks on that map, giving the map a wider zone, or splitting the marks across two maps — never by leaving them stacked, which prints a pile of pills over the geography a child was asked to read.
+
 **Place a mark by looking at the real map, and check it by looking at the render.** A dot a few millimetres out is visible and fixable; there is deliberately no way to draw the land itself, because a coastline drawn by eye looks exactly as confident as a real one and is wrong by hundreds of miles.
+
+**This is the package's only map of the real world, and drawing over it is what it is for.** Highlighting a continent, tracing a river, ringing a region or naming a set of countries is a per-lesson `annotations` list on the shipped asset — nothing is added to the package and no new helper is needed. What the engine will not do is invent geography it does not ship: a world biome distribution, a climate-zone map, a population map, a historical border. Those come from the picture route as a real map image, recorded as a `substitute` in the helper check with the contract filename that supplies it. A schematic world map drawn from typed coordinates was removed from this package for exactly that reason: it rendered beautifully, said nothing true, and filled eight opening slides of a lesson about where the Amazon is.
 
 #### The two built-in overlays
 
@@ -1827,7 +1830,9 @@ A staged teaching explanation of why the flat map looks the way it does: the wor
 
 #### `presentation: "seven-continent-world"`
 
-The complete labelled seven-continent board map, on `map: "world-with-antarctica"`. It takes up to 7 `continentLabels`, 5 `oceanLabels` (`repeatAt` on the Pacific shows the same ocean at both edges), 5 named `seaLabels` (each with optional `labelAt` for a callout clear of the place, leadered back), and up to 12 numbered or lettered `clueMarkers` over continents, oceans or seas (`repeatAt` supported). Optional `focus: { "centre": [x, y], "span": s, "title": "..." }` shows a real-pixel sea zoom cropped from the same asset. `showEquator`, `showCompass` and `joinedEdges` add those cues. Every position is a fraction of the real map image. The complete labelled map needs a wide slide zone; the focus view is a crop of the same pixels, never a redrawn coastline.
+The complete labelled seven-continent board map, on `map: "world-with-antarctica"`. It takes up to 7 `continentLabels`, 5 `oceanLabels` (`repeatAt` on the Pacific shows the same ocean at both edges), 5 named `seaLabels` (each with optional `labelAt` for a callout clear of the place, leadered back), and up to 12 numbered or lettered `clueMarkers` over continents, oceans or seas (`repeatAt` supported). Optional `focus: { "centre": [x, y], "span": s, "title": "..." }` shows a real-pixel zoom cropped from the same asset — this is how a slide goes from the whole world to one continent without a second, different-looking map. `showCompass` and `joinedEdges` add those cues. Every position is a fraction of the real map image. The complete labelled map needs a wide slide zone; the focus view is a crop of the same pixels, never a redrawn coastline.
+
+`showEquator` draws the Equator, and `showTropics` draws the Tropic of Cancer and the Tropic of Capricorn with it (it turns the Equator on too, since the three only teach anything together). All three are computed from the asset's own equirectangular geometry rather than placed by eye, so the line sits where that latitude really is. This is the picture for "why is this biome found in this band of the world?" — climate, rainforest and desert distribution lessons — with the places themselves marked as `annotations` or supplied as a real thematic map through the picture route.
 
 #### Worksheet form: `worksheetMode: "continents-and-oceans"`
 
@@ -2297,32 +2302,6 @@ with someone else's numbers.
 
 **`eastings`:** the numbers along the **bottom**, one per vertical grid line, left → right — consecutive whole numbers; N numbers make N−1 columns of squares. **`northings`:** the numbers up the **side**, one per horizontal grid line, bottom → top. **`river`:** `[[easting, northing], …]` points (fractions allowed, e.g. `[31.3, 54.7]`) drawn as a smooth blue river; start near the top-left and run down and off a bottom edge, threading a point or two through one square to make a visible meander. **`roads` (optional):** a list of paths, each `[[easting, northing], …]`, drawn as a solid grey road. **`features`:** `[{ name, square: [easting, northing], type, icon? }]`; each feature is drawn inside the cell whose **bottom-left corner** is its `square`, with `type` `"physical"` or `"human"` (the answer the child decides — never coloured in) and an optional `icon` glyph above the name (omit it for a neutral dot). **`highlightSquare` (optional):** `[easting, northing]` — rings that square's bottom-left corner for modelling a reference. **`label` (optional):** a caption beneath the map. The map fills its zone by its true aspect (no deadspace); give it a wide slot so the numbers and labels read from the back of the room.
 
-### `world-geography-map`
-
-A configurable, conventional **north-up world map** with recognisable outlines for North America, South America, Europe, Africa, Asia, Oceania and Antarctica. It has three configurations, each with one clear classroom job:
-
-```json
-{ "type": "world-geography-map", "configuration": "continent-retrieval" }
-```
-
-`continent-retrieval` draws seven empty, ruled label spaces and no pre-filled continent names. Use it on the board for retrieval or print it as a stick-in map for children to label and circle South America themselves. A teaching slide may set `"highlightSouthAmerica": true` to add an orange dashed ring; the blank spaces still stay blank.
-
-```json
-{ "type": "world-geography-map", "configuration": "biome-examples", "labels": true }
-```
-
-`biome-examples` shades geographically placed examples across continents and prints an exact matching four-part key: **Tropical forest, Desert, Savannah, Tundra**. Colour and pattern both distinguish the four, so the key survives greyscale printing. These are example regions, not claims that a whole continent has one biome.
-
-```json
-{ "type": "world-geography-map", "configuration": "rainforest-pattern",
-  "labels": true, "showLatitudeLines": true }
-```
-
-`rainforest-pattern` marks tropical-rainforest areas in Central America, the Amazon basin, west/central Africa, South and South-East Asia, Indonesia/New Guinea and north-east Australia. The Equator, Tropic of Cancer and Tropic of Capricorn are shown by default. The map deliberately leaves much land inside the Tropics unshaded, making clear that **not all tropical land is rainforest**.
-
-**`labels` (default off):** adds continent names only in the two reference configurations; it is ignored in `continent-retrieval`, which never answers its own task. **`showLatitudeLines`:** defaults on in `rainforest-pattern` and may be turned off; set it explicitly in another configuration only when the latitude lines are part of that slide's teaching. **`highlightSouthAmerica`:** adds the teaching ring without changing any label. **`label`:** optional caption beneath the map. The map is cropped to its ocean frame and legend and placed by its true aspect, so it fills a wide slide zone without distortion.
-
-Zone class compatibility: fits A, B, C, D, E-wide, E-narrow and G. It is a wide map, so A, C or E-wide keeps the key and latitude labels most readable.
 
 ### `geographical-description-frame`
 

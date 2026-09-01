@@ -9,7 +9,7 @@ const coordinateGrid = require("../../shared/visuals/coordinate-grid-svg");
 const translationShape = require("../../shared/visuals/translation-shape-svg");
 const gridMap = require("../../shared/visuals/grid-map-svg");
 const rainforestLayers = require("../../shared/visuals/rainforest-layers-svg");
-const worldGeographyMap = require("../../shared/visuals/world-geography-map-svg");
+const worldWriteOnMap = require("../../shared/visuals/world-write-on-map-svg");
 const geographicalDescriptionFrame = require("../../shared/visuals/geographical-description-frame-svg");
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 
@@ -96,18 +96,19 @@ const VISUALS = {
     defaultWidthMm: 125,
     specFn: (s) => Object.assign({}, s, { blank: s.blank !== false }),
   },
-  // 150mm wide: a child has to write seven continent names on the ruled spaces,
-  // so the handwriting lines, not the coastline stroke, set the usable size.
-  // The registry forces retrieval mode and blank labels even if a labelled
-  // teaching spec is copied by mistake; highlightSouthAmerica is also removed so
-  // the child can carry out the requested circling themselves.
-  "world-geography-map": {
-    tightSvg: worldGeographyMap.tightSvg,
+  // 150mm wide: the child writes continent and ocean names beside the numbered
+  // and lettered markers, so the handwriting, not the coastline stroke, sets the
+  // usable size. The base is the real shipped world map - the same asset the
+  // board and the worksheet draw - so the map a child labels in their book is
+  // the map they were taught from, and its coastlines are the world's rather
+  // than anyone's idea of it. The registry forces the write-on world form even
+  // if a labelled teaching map was copied across by mistake.
+  map: {
+    tightSvg: worldWriteOnMap.tightSvg,
     defaultWidthMm: 150,
     specFn: (s) => Object.assign({}, s, {
-      configuration: "continent-retrieval",
-      labels: false,
-      highlightSouthAmerica: false,
+      map: worldWriteOnMap.MAP_KEY,
+      worksheetMode: "continents-and-oceans",
     }),
   },
   // 145mm wide: this is a handwriting frame, so the ruled lines set the minimum

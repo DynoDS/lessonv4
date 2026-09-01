@@ -238,7 +238,7 @@ function resolveAnnotations(data) {
 // worksheet engine place the identical labels.
 
 const LEADER_THRESHOLD = 0.045;   // how far a pill may drift before it earns a leader line
-const CANDIDATE_STEPS = [0, 0.05, 0.10, 0.16, 0.23, 0.31];
+const CANDIDATE_STEPS = [0, 0.05, 0.10, 0.16, 0.23, 0.31, 0.40, 0.50];
 const CANDIDATE_SIDES = [
   [0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]
 ];
@@ -276,9 +276,12 @@ function layoutLabels(items, sizeFor) {
         }
       }
     }
-    // Nowhere clear: keep the preferred spot rather than pushing the label off
-    // the picture. A crowded map is the designer's call to thin out, and the
-    // check is looking at it.
+    // Nowhere clear. The pill still gets a position so the caller can say which
+    // labels are the problem, and it is marked `crowded` so nobody draws it as
+    // though it fitted. Pushing it somewhere anyway is the failure this records:
+    // ten country pills on a sidebar-sized South America printed on top of one
+    // another and hid the map they were naming.
+    const crowded = !box;
     if (!box) box = boxAt(preferred, size.w, size.h);
     placed.push(box);
 
@@ -289,9 +292,31 @@ function layoutLabels(items, sizeFor) {
       colour: item.colour,
       box,
       centre,
+      crowded,
       leader: drift > LEADER_THRESHOLD ? [item.anchor.slice(), centre] : null
     };
   });
+}
+
+// Whether a set of labels fits is a fact about the map's DRAWN size, not about
+// how many labels were asked for. The same eight countries that read cleanly on
+// a full-width South America are unreadable on the same map in a sidebar,
+// because a pill sized to be legible from the back of the room is then most of
+// the map's width. So the count ceiling above cannot settle this and the layout
+// has to be the thing that answers.
+//
+// Refuse rather than draw. A stacked pile of labels renders without error, looks
+// deliberate, and hides the geography a child was asked to read - and the map is
+// usually the whole point of the slide. The repair is the designer's: fewer
+// marks, or a bigger slot for the map.
+function refuseCrowdedLabels(placed, where) {
+  const crowded = (placed || []).filter(function (item) { return item && item.crowded; });
+  if (!crowded.length) return placed;
+  throw new Error(
+    'MAP_LABELS_DO_NOT_FIT: ' + crowded.map(function (item) { return JSON.stringify(item.text); }).join(', ') +
+      ' could not be placed clear of the other labels on ' + where + '. ' +
+      'Reduce the marks this map carries, or give the map a wider zone, or split them across two maps.'
+  );
 }
 
 module.exports = {
@@ -307,6 +332,7 @@ module.exports = {
   checkOverlaySupport,
   resolveAnnotations,
   layoutLabels,
+  refuseCrowdedLabels,
   AMAZON_BASIN_SOUTH_AMERICA,
   BRAZIL_SEED_SOUTH_AMERICA,
   BRAZIL_LABEL_SOUTH_AMERICA,

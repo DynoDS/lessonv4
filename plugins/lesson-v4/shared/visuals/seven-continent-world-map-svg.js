@@ -21,6 +21,20 @@ const MAX_OCEAN_LABELS = 5;
 const MAX_SEA_LABELS = 5;
 const MAX_CLUE_MARKERS = 12;
 
+// The shipped asset is a full equirectangular world: 1800 x 900, -180 to 180 by
+// -90 to 90. So a line of latitude is arithmetic on the real image rather than a
+// line drawn where it looks about right, which is the only reason this module is
+// allowed to draw one at all.
+const LATITUDES = [
+  { key: 'equator', lat: 0, text: 'Equator' },
+  { key: 'cancer', lat: 23.5, text: 'Tropic of Cancer' },
+  { key: 'capricorn', lat: -23.5, text: 'Tropic of Capricorn' }
+];
+
+function latitudeFraction(lat) {
+  return (90 - lat) / 180;
+}
+
 function esc(value) {
   return String(value == null ? '' : value)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -120,7 +134,8 @@ function resolve(spec) {
     seaLabels: textItems(d.seaLabels, 'seaLabels', MAX_SEA_LABELS),
     clueMarkers: clueMarkers(d.clueMarkers),
     focus: focusSpec(d.focus),
-    showEquator: d.showEquator === true,
+    showEquator: d.showEquator === true || d.showTropics === true,
+    showTropics: d.showTropics === true,
     showCompass: d.showCompass !== false,
     joinedEdges: d.joinedEdges === true
   };
@@ -195,10 +210,13 @@ function placedLabels(s, rect, mapW, mapH) {
   add(s.continentLabels, 'continent', LABEL_FONT);
   add(s.oceanLabels, 'ocean', LABEL_FONT);
   add(s.seaLabels, 'sea', SEA_FONT);
-  const placed = maps.layoutLabels(inputs, function (text) {
-    const item = inputs.find(function (candidate) { return candidate.text === text; });
-    return labelSize(text, item ? item.fontSize : LABEL_FONT, mapW, mapH);
-  });
+  const placed = maps.refuseCrowdedLabels(
+    maps.layoutLabels(inputs, function (text) {
+      const item = inputs.find(function (candidate) { return candidate.text === text; });
+      return labelSize(text, item ? item.fontSize : LABEL_FONT, mapW, mapH);
+    }),
+    'the seven-continent world map'
+  );
   return placed.map(function (item, index) { return Object.assign(item, inputs[index]); });
 }
 
@@ -213,13 +231,18 @@ function markerSvg(item, at, rect) {
 
 function mapLayer(s, uri, rect, parts) {
   parts.push('<image x="' + rect.x + '" y="' + rect.y + '" width="' + rect.w + '" height="' + rect.h + '" href="' + uri + '"/>');
-  if (s.showEquator) {
-    const y = rect.y + rect.h / 2;
+  const drawn = LATITUDES.filter(function (line) {
+    if (line.key === 'equator') return s.showEquator;
+    return s.showTropics;
+  });
+  drawn.forEach(function (line, index) {
+    const y = rect.y + latitudeFraction(line.lat) * rect.h;
+    const labelX = rect.x + rect.w * (index % 2 === 0 ? 0.20 : 0.74);
+    const halfWidth = 8 + line.text.length * 6.2;
     parts.push('<line x1="' + rect.x + '" y1="' + y + '" x2="' + (rect.x + rect.w) + '" y2="' + y + '" stroke="#C65911" stroke-width="4" stroke-dasharray="18 12"/>');
-    const equatorX = rect.x + rect.w * 0.20;
-    parts.push('<rect x="' + (equatorX - 64) + '" y="' + (y - 29) + '" width="128" height="31" rx="12" fill="#FFFFFF" fill-opacity="0.94"/>');
-    parts.push('<text x="' + equatorX + '" y="' + (y - 6) + '" text-anchor="middle" font-family="' + FONT + '" font-size="22" font-weight="bold" fill="#C65911">Equator</text>');
-  }
+    parts.push('<rect x="' + (labelX - halfWidth) + '" y="' + (y - 29) + '" width="' + (halfWidth * 2) + '" height="31" rx="12" fill="#FFFFFF" fill-opacity="0.94"/>');
+    parts.push('<text x="' + labelX + '" y="' + (y - 6) + '" text-anchor="middle" font-family="' + FONT + '" font-size="22" font-weight="bold" fill="#C65911">' + esc(line.text) + '</text>');
+  });
   if (s.joinedEdges) {
     parts.push('<rect x="' + rect.x + '" y="' + rect.y + '" width="' + EDGE_BAND_W + '" height="' + rect.h + '" fill="url(#pacific-edge)"/>');
     parts.push('<rect x="' + (rect.x + rect.w - EDGE_BAND_W) + '" y="' + rect.y + '" width="' + EDGE_BAND_W + '" height="' + rect.h + '" fill="url(#pacific-edge)"/>');

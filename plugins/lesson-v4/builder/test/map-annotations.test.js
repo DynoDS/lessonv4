@@ -68,29 +68,48 @@ test('the map primitive declares that it draws from the real asset folder', () =
   assert.equal(entry.depicts, 'asset:maps');
 });
 
-test('a made-up projection name does not pass as a real source', () => {
-  // Tested for real: while this change was being made, another run met the new
-  // guard and satisfied it with depicts: 'projection:amazon-location-teaching-schematic'
-  // on a hand-drawn map. An escape hatch that accepts any string after the colon
-  // is not a control, so the projection has to be one the package actually draws
-  // from.
+test('a projection is not a source, however real the projection is', () => {
+  // The guard used to accept `projection:<name>` from a known set, and a
+  // schematic world map passed it by declaring `equirectangular-lonlat` - a
+  // genuinely real projection, applied to continent outlines somebody had typed
+  // out to look about right. It then drew the opening eight slides of a lesson
+  // about where the Amazon is. Narrowing the allowed names could not have caught
+  // that, because the name was already correct: a projection says how
+  // coordinates are transformed and nothing at all about where they came from.
+  // So the prefix is refused outright and the only source is a file on disk.
   const source = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'check-parity.js'), 'utf8');
-  assert.match(source, /REAL_PROJECTIONS/);
-  assert.match(source, /equirectangular-lonlat/);
-  assert.doesNotMatch(
+  assert.doesNotMatch(source, /REAL_PROJECTIONS/, 'an allowlist of projections is not a control');
+  assert.match(
     source,
-    /depicts\.startsWith\('projection:'\) && depicts\.length/,
-    'the projection prefix must be checked against a known set, not merely be non-empty'
+    /startsWith\('projection:'\)\)\s*\{\s*problems\.push/,
+    'any projection: depicts must go straight to a problem'
   );
 });
 
-test('every primitive says where its picture is drawn from', () => {
+test('every primitive is drawn from the lesson data or from a shipped file, and nothing else', () => {
   for (const p of shared.PRIMITIVES) {
     assert.ok(
-      p.depicts === 'data' || /^asset:.+/.test(p.depicts) || /^projection:.+/.test(p.depicts),
-      `${p.id} has depicts ${JSON.stringify(p.depicts)}`
+      p.depicts === 'data' || /^asset:.+/.test(p.depicts),
+      `${p.id} has depicts ${JSON.stringify(p.depicts)}; the only sources are 'data' and 'asset:<folder>'`
     );
   }
+});
+
+test('no renderer can draw a world map that is not built on a shipped asset', () => {
+  // The concrete outcome of the rule above. `map` is the one primitive that
+  // depicts real geography, and every surface that shows the world reaches it.
+  // A second world map wired in beside it is the failure to catch, whatever it
+  // is called: two pictures of the world in one package means a child can be
+  // taught from one and tested on the other.
+  const geographic = shared.PRIMITIVES.filter((p) => p.depicts === 'asset:maps');
+  assert.deepEqual(geographic.map((p) => p.id), ['map']);
+
+  // And it reaches the board, the sheet and the child's book, so no surface has
+  // to go looking for a second one.
+  const [entry] = geographic;
+  assert.equal(entry.slides, 'map');
+  assert.equal(entry.worksheets, 'map');
+  assert.equal(entry.stickin, 'map');
 });
 
 // ── Marks on top of it ──────────────────────────────────────────────────────
@@ -214,6 +233,109 @@ test('a region label sits clear of the region it names', () => {
   // A pill dropped on the centroid covers the very shape a child is looking for.
   assert.ok(area.labelAt[1] < 0.40, 'the label should sit above the region, not across it');
   assert.deepEqual(area.anchor.map((n) => Number(n.toFixed(3))), [0.35, 0.475]);
+});
+
+// ── Labels that cannot fit are refused, not stacked ─────────────────────────
+
+// The map from slide 15 of a Year 4 Amazon deck, exactly as the run wrote it:
+// the two built-in South America overlays plus the eight countries the basin
+// crosses. Ten label pills in all.
+const AMAZON_COUNTRIES_SPEC = {
+  type: 'map',
+  map: 'south-america',
+  selectedCountry: 'Brazil',
+  basin: 'Amazon basin',
+  labels: { country: 'Brazil', basin: 'Amazon rainforest' },
+  annotations: [
+    { kind: 'point', at: [0.29, 0.42], label: 'Peru', colour: 'black' },
+    { kind: 'point', at: [0.31, 0.20], label: 'Colombia', colour: 'black' },
+    { kind: 'point', at: [0.40, 0.55], label: 'Bolivia', colour: 'black' },
+    { kind: 'point', at: [0.47, 0.12], label: 'Venezuela', colour: 'black' },
+    { kind: 'point', at: [0.59, 0.15], label: 'Guyana', colour: 'black' },
+    { kind: 'point', at: [0.63, 0.17], label: 'Suriname', colour: 'black' },
+    { kind: 'point', at: [0.25, 0.28], label: 'Ecuador', colour: 'black' },
+    { kind: 'point', at: [0.68, 0.18], label: 'French Guiana', colour: 'black' }
+  ]
+};
+
+function stubSlide() {
+  const pptx = { ShapeType: { roundRect: 'roundRect', ellipse: 'ellipse', line: 'line', custGeom: 'custGeom' } };
+  const slide = { addImage() {}, addShape() {}, addText() {} };
+  return { pptx, slide };
+}
+
+function drawAt(zone) {
+  const { drawMap } = require('../src/content/map');
+  const { pptx, slide } = stubSlide();
+  drawMap(pptx, slide, zone, AMAZON_COUNTRIES_SPEC, { slideIndex: 15, mapImages: {} });
+}
+
+// Half of a body-sidebar body row - the slot the failing slide actually gave
+// this map. South America's tall proportions then fit it about 2.4in wide, and a
+// label pill is 0.82 to 1.62in, so ten of them were never going to fit.
+const THE_SLOT_IT_HAD = { x: 0.22, y: 1.45, w: 4.34, h: 3.48 };
+
+test('ten labels on the slot this map actually had are refused, not printed on top of each other', () => {
+  // What shipped: the same ten pills, each sized to be read from the back of the
+  // room, drawn into half a body row where they could not all be placed clear.
+  // Nothing errored; the slide simply arrived with the country names piled over
+  // the map they were naming, and the map was the point of the slide.
+  assert.throws(() => drawAt(THE_SLOT_IT_HAD), /MAP_LABELS_DO_NOT_FIT/);
+});
+
+test('the refusal names the labels it could not place and what to do', () => {
+  try {
+    drawAt(THE_SLOT_IT_HAD);
+    assert.fail('expected the crowded map to be refused');
+  } catch (error) {
+    assert.match(error.message, /French Guiana|Suriname|Guyana/);
+    assert.match(error.message, /wider zone|two maps|fewer|Reduce/);
+  }
+});
+
+test('the identical map given the whole body still draws', () => {
+  // The discrimination case, and the reason this is a fit check rather than a
+  // lower ceiling on how many marks a map may carry. Nothing is wrong with the
+  // ten marks themselves: a ceiling would have failed this slide too, and the
+  // lesson would have lost country labels it was right to want. The fault was
+  // always the room, so given the room it passes.
+  assert.doesNotThrow(() => drawAt({ x: 0.22, y: 0.6, w: 12.89, h: 6.65 }));
+});
+
+test('the layout says which labels it could not place, rather than piling them up', () => {
+  // The mechanism the two renderers share. Pills this large cannot all sit clear
+  // of one another anywhere on the map, so the layout marks the ones it gave up
+  // on and the caller refuses instead of drawing them.
+  const size = () => ({ w: 0.62, h: 0.30 });
+  const items = ['One', 'Two', 'Three', 'Four', 'Five'].map((text) => ({
+    text, anchor: [0.5, 0.5], preferred: [0.5, 0.5], colour: '333333'
+  }));
+  const placed = maps.layoutLabels(items, size);
+  assert.ok(placed.some((item) => item.crowded), 'some label had nowhere clear to go');
+  assert.throws(() => maps.refuseCrowdedLabels(placed, 'a test map'), /MAP_LABELS_DO_NOT_FIT/);
+});
+
+test('a layout that did fit is handed straight back', () => {
+  const size = () => ({ w: 0.20, h: 0.06 });
+  const placed = maps.layoutLabels(
+    [
+      { text: 'Manaus', anchor: [0.30, 0.30], preferred: [0.30, 0.30], colour: '333333' },
+      { text: 'Belem', anchor: [0.70, 0.60], preferred: [0.70, 0.60], colour: '333333' }
+    ],
+    size
+  );
+  assert.equal(maps.refuseCrowdedLabels(placed, 'a test map'), placed);
+});
+
+test('the printed sheet draws the same ten marks, because its labels scale with the map', () => {
+  // Deliberately not a failure. On paper the label is sized as a fraction of the
+  // map image, so the sheet does not inherit the board's problem, and the guard
+  // must not invent one: the same spec that is refused in a sidebar prints.
+  const built = realMap.tightSvg(
+    Object.assign({}, AMAZON_COUNTRIES_SPEC, { selectedCountry: undefined })
+  );
+  assert.match(built.svg, />French Guiana</);
+  assert.match(built.svg, />Amazon rainforest</);
 });
 
 // ── The printed sheet draws the same real map ───────────────────────────────

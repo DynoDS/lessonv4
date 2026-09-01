@@ -1,5 +1,41 @@
 # Build review log
 
+## 2026-09-01 - Year 4 Geography Lesson 1 (deck review)
+
+- Slides 1, 2, 6, 7, 8 and the practice slides drew a schematic world map instead of a real one, and it looked good enough that nobody questioned it until the finished deck was read.
+  *Addressed 1 Sep 2026, and the fault was not the routing. `world-geography-map`
+  drew its continents from longitude/latitude pairs typed to look about right,
+  which is the one thing `map-annotations.js` says the package will never do. It
+  shipped anyway because the parity guard accepted `projection:<name>` as a
+  source and the helper declared `projection:equirectangular-lonlat` - a
+  genuinely real projection over invented coordinates. No allowlist of
+  projection names could have caught that: the name was already correct. A
+  projection is how coordinates are transformed, never where they came from, so
+  the prefix is now refused outright and the only sources are `data` and
+  `asset:<folder>` - something on disk. The helper is deleted from every
+  registry. Its three configurations go to the routes that can be right about
+  the world: continent retrieval to the real write-on world map (now also the
+  stick-in piece, so the map in a child's book is the one on the board), the
+  Equator and both Tropics to `seven-continent-world` where they are computed
+  from the asset's own equirectangular geometry, and biome or rainforest
+  distribution to the picture route as a real thematic map, which the
+  `substitute` check added earlier the same day now holds to a contract
+  filename. Regression tests in `map-annotations.test.js`,
+  `map-slide-world.test.js` and `render-visual.test.js`.*
+- Slide 15's South America map was unreadable: ten label pills printed on top of one another across the map they were naming.
+  *Addressed 1 Sep 2026. The marks were fine and a lower ceiling would have been
+  the wrong fix - eight countries plus two overlays is a reasonable thing to
+  want. The map simply had half a body row, so South America's proportions fitted
+  it about 2.4in wide, and a board label pill is 0.82 to 1.62in because it has to
+  read from the back of the room. The layout searched for clear positions,
+  failed, and fell back to the preferred spot for every one it could not place -
+  silently. It now marks what it could not place and the renderer refuses with
+  `MAP_LABELS_DO_NOT_FIT`, naming the labels and the three ways out. The same
+  spec given the whole body still draws, which is the point: the fault was the
+  room, so the check is about the room.*
+- The picture route was confirmed working as Daniel wants it and was left alone: a real source is preferred, `ordinary-real` falls back to generation, and a failed picture stage degrades to `PICTURE_STAGE: unavailable` and designs the deck without it rather than stopping the lesson.
+  *No change, 1 Sep 2026.*
+
 ## 2026-09-01 - Year 4 Geography Lesson 1
 
 - The installed package changed from 4.2.56 to 4.2.57 during the run; canonical outputs survived and the newer verified package completed the deterministic checks.

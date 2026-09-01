@@ -389,10 +389,17 @@ function drawMapPill(pptx, slide, text, box, colour) {
   });
 }
 
-function drawMapLabels(pptx, slide, items, fx, fy, fw, fh) {
-  const placed = shared.layoutLabels(items, function (text) {
-    return { w: pillWidth(text) / fw, h: LABEL_H / fh };
-  });
+function drawMapLabels(pptx, slide, items, fx, fy, fw, fh, where) {
+  // The pill is sized in inches, because a label on the board is read from the
+  // back of the room whatever size the map ended up. So the same labels that fit
+  // a full-width map cannot fit that map in a sidebar, and the layout is what
+  // finds that out.
+  const placed = shared.refuseCrowdedLabels(
+    shared.layoutLabels(items, function (text) {
+      return { w: pillWidth(text) / fw, h: LABEL_H / fh };
+    }),
+    where
+  );
   const boxes = placed.map(function (item) {
     return { item, box: { x: fx + item.box.x * fw, y: fy + item.box.y * fh, w: item.box.w * fw, h: item.box.h * fh } };
   });
@@ -489,7 +496,10 @@ function drawMap(pptx, slide, zone, data, ctx) {
     marks.forEach(function (mark) {
       if (mark.label) labelItems.push({ text: mark.label, anchor: mark.anchor, preferred: mark.labelAt, colour: mark.colour });
     });
-    drawMapLabels(pptx, slide, labelItems, fittedX, fittedY, fittedW, fittedH);
+    drawMapLabels(
+      pptx, slide, labelItems, fittedX, fittedY, fittedW, fittedH,
+      `the ${key} map at ${fittedW.toFixed(2)}in wide`
+    );
   }
 
   if (hasCaption) {
