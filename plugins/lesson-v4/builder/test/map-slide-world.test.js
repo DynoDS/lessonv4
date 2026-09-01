@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const world = require('../../shared/visuals/seven-continent-world-map-svg');
+const maps = require('../../shared/visuals/map-annotations');
 
 const LABELLED = {
   map: 'world-with-antarctica',
@@ -97,6 +98,114 @@ test('the Equator can still be shown on its own', () => {
   const svg = world.tightSvg({ map: 'world-with-antarctica', presentation: 'seven-continent-world', showEquator: true }).svg;
   assert.match(svg, />Equator</);
   assert.doesNotMatch(svg, />Tropic of/);
+});
+
+// ── Marks on the real world map ─────────────────────────────────────────────
+
+const RAINFOREST = {
+  map: 'world-with-antarctica',
+  presentation: 'seven-continent-world',
+  showTropics: true,
+  key: [{ text: 'Tropical rainforest', colour: 'green' }],
+  annotations: [
+    { kind: 'area', shaded: true, colour: 'green', label: 'Amazon',
+      points: [{ lon: -74, lat: 2 }, { lon: -60, lat: 4 }, { lon: -50, lat: -1 }, { lon: -63, lat: -12 }] },
+    { kind: 'area', shaded: true, colour: 'green', label: 'Congo',
+      points: [{ lon: 9, lat: 3 }, { lon: 20, lat: 4 }, { lon: 28, lat: 1 }, { lon: 15, lat: -6 }] }
+  ]
+};
+
+test('the world map draws the marks it is given instead of dropping them', () => {
+  // It used to ignore `annotations` outright and say nothing, so a rainforest
+  // lesson handed this map its rainforests and got a bare world back. That
+  // silence is why the lesson had nowhere left to put them.
+  const resolved = world.resolve(RAINFOREST);
+  assert.equal(resolved.annotations.length, 2);
+  const svg = world.tightSvg(RAINFOREST).svg;
+  assert.match(svg, />Amazon</);
+  assert.match(svg, />Congo</);
+});
+
+test('a shaded region is hatched over the real map, not filled solid over it', () => {
+  const svg = world.tightSvg(RAINFOREST).svg;
+  assert.match(svg, /<pattern id="hatch-0"/, 'each shaded region gets its own hatch');
+  assert.match(svg, /fill="url\(#hatch-0\)"/);
+  // Hatched rather than solid so the coastline and borders underneath survive.
+  assert.match(svg, /fill-opacity="0\.16"/);
+});
+
+test('the key names what the shading means, in the same hatch', () => {
+  const svg = world.tightSvg(RAINFOREST).svg;
+  assert.match(svg, />Tropical rainforest</);
+  assert.match(svg, /<pattern id="keyhatch-0"/);
+  assert.match(svg, /fill="url\(#keyhatch-0\)"/);
+  // The key needs its own band, so the picture grows rather than the map shrinking.
+  assert.ok(world.tightSvg(RAINFOREST).h > world.tightSvg({ ...RAINFOREST, key: [] }).h);
+});
+
+test('degrees land where those degrees really are', () => {
+  // The whole reason to accept degrees. A fraction is a guess about a picture
+  // that only a render can check; a degree is a fact about the world, and the
+  // conversion against a full equirectangular asset is exact.
+  const svg = world.tightSvg({
+    map: 'world-with-antarctica', presentation: 'seven-continent-world',
+    annotations: [
+      { kind: 'point', at: { lon: 0, lat: 0 }, label: 'Origin' },
+      { kind: 'point', at: { lon: -180, lat: 90 }, label: 'Top left' }
+    ]
+  }).svg;
+  // 1800 x 900: 0E 0N is the exact centre, 180W 90N the exact top-left corner.
+  assert.match(svg, /<circle cx="900\.0" cy="450\.0"/);
+  assert.match(svg, /<circle cx="0\.0" cy="0\.0"/);
+});
+
+test('degrees are refused on a map whose edges nobody recorded', () => {
+  // Every other shipped map is a crop with unknown bounds, so a degree there
+  // would be converted against numbers this package does not have. That is worse
+  // than a fraction, because it looks precise.
+  assert.throws(
+    () => maps.resolveAnnotations({
+      map: 'south-america',
+      annotations: [{ kind: 'point', at: { lon: -60, lat: -3 }, label: 'Manaus' }]
+    }),
+    /MAP_ANNOTATION_UNSUPPORTED.*world-with-antarctica/s
+  );
+});
+
+test('half a coordinate is refused rather than read as a fraction', () => {
+  assert.throws(
+    () => maps.resolveAnnotations({
+      map: 'world-with-antarctica',
+      annotations: [{ kind: 'point', at: { lon: -60 } }]
+    }),
+    /MAP_ANNOTATION_INVALID.*both lon and lat/s
+  );
+});
+
+test('only an area can be shaded', () => {
+  assert.throws(
+    () => maps.resolveAnnotations({
+      map: 'world-with-antarctica',
+      annotations: [{ kind: 'line', shaded: true, points: [[0.1, 0.1], [0.2, 0.2]] }]
+    }),
+    /MAP_ANNOTATION_INVALID.*encloses nothing/s
+  );
+});
+
+test('a route that cannot fill refuses the shading rather than drawing an outline', () => {
+  // The plain slide map draws PowerPoint shapes, which take no hatch. Quietly
+  // returning an outline would say "somewhere in here" where the lesson asked
+  // for "this whole area is the thing".
+  const { drawMap } = require('../src/content/map');
+  const pptx = { ShapeType: { roundRect: 'roundRect', ellipse: 'ellipse', line: 'line', custGeom: 'custGeom' } };
+  const slide = { addImage() {}, addShape() {}, addText() {} };
+  assert.throws(
+    () => drawMap(pptx, slide, { x: 0.2, y: 0.6, w: 12, h: 6 }, {
+      type: 'map', map: 'world-with-antarctica',
+      annotations: [{ kind: 'area', shaded: true, label: 'Amazon', points: [[0.2, 0.5], [0.3, 0.5], [0.3, 0.6]] }]
+    }, { slideIndex: 1, mapImages: {} }),
+    /MAP_SHADING_UNSUPPORTED.*seven-continent-world/s
+  );
 });
 
 test('oversized label and clue sets are refused instead of shrinking unreadably', () => {

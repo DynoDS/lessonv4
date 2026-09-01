@@ -412,6 +412,23 @@ function drawMapLabels(pptx, slide, items, fx, fy, fw, fh, where) {
   boxes.forEach(function (entry) { drawMapPill(pptx, slide, entry.item.text, entry.box, entry.item.colour); });
 }
 
+// The plain slide map draws its marks as PowerPoint shapes over the asset, and a
+// PowerPoint line cannot carry a hatch fill. So shading is refused here by name
+// rather than quietly coming out as a bare outline: the whole point of shading a
+// region is that the region reads as filled, and an outline says something else.
+// The seven-continent-world presentation composes its picture as a drawing
+// before it reaches the slide, which is why shading works there.
+function refuseUndrawableShading(marks) {
+  const shaded = marks.filter(function (mark) { return mark.shaded; });
+  if (!shaded.length) return;
+  throw new Error(
+    'MAP_SHADING_UNSUPPORTED: ' + shaded.map(function (m) { return JSON.stringify(m.label || m.kind); }).join(', ') +
+      ' asked to be shaded, which this map route draws as shapes on the slide and cannot fill. ' +
+      'Use presentation "seven-continent-world" on map "world-with-antarctica", which composes the ' +
+      'shading, the key and the latitude lines into one picture, or drop `shaded` for a dashed outline.'
+  );
+}
+
 function drawAnnotations(pptx, slide, marks, fx, fy, fw, fh) {
   marks.forEach(function (mark) {
     if (mark.kind === 'point') {
@@ -476,6 +493,7 @@ function drawMap(pptx, slide, zone, data, ctx) {
   }
 
   if (!special) {
+    refuseUndrawableShading(marks);
     const basin = normaliseOverlayName(data.basin);
     if (key === 'south-america' && basin === 'amazon basin') {
       const points = shared.AMAZON_BASIN_SOUTH_AMERICA.map(function (point) { return fractionPoint(point, fittedX, fittedY, fittedW, fittedH); });

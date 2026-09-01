@@ -128,7 +128,17 @@ function tightSvg(spec) {
   const dot = Math.max(2.5, long * DOT_FRACTION);
 
   const assetPath = shared.assetPathFor(s.key);
+  const hatches = s.annotations.map(function (mark, index) {
+    if (!mark.shaded) return '';
+    const size = Math.max(10, long * 0.03);
+    return '<pattern id="hatch-' + index + '" width="' + f(size) + '" height="' + f(size) + '" patternUnits="userSpaceOnUse">' +
+      '<rect width="' + f(size) + '" height="' + f(size) + '" fill="#' + mark.colour + '" fill-opacity="0.16"/>' +
+      '<path d="M' + f(-size * 0.3) + ' ' + f(size) + ' L' + f(size) + ' ' + f(-size * 0.3) +
+      ' M' + f(size * 0.25) + ' ' + f(size * 1.3) + ' L' + f(size * 1.3) + ' ' + f(size * 0.25) +
+      '" stroke="#' + mark.colour + '" stroke-width="' + f(size * 0.28) + '" stroke-opacity="0.85"/></pattern>';
+  }).join('');
   const parts = [
+    hatches ? '<defs>' + hatches + '</defs>' : '',
     '<image x="0" y="0" width="' + w + '" height="' + h + '" href="' + dataUri(s.entry, assetPath) + '"/>'
   ];
   const labelItems = [];
@@ -145,16 +155,21 @@ function tightSvg(spec) {
     });
   }
 
-  s.annotations.forEach(function (mark) {
+  s.annotations.forEach(function (mark, index) {
     if (mark.kind === 'point') {
       parts.push('<circle cx="' + f(mark.at[0] * w) + '" cy="' + f(mark.at[1] * h) + '" r="' + f(dot) +
         '" fill="#' + mark.colour + '" stroke="' + HALO + '" stroke-width="' + f(stroke * 0.7) + '"/>');
     } else {
       const list = mark.kind === 'area' ? mark.points.concat([mark.points[0]]) : mark.points;
       const pts = polyPoints(list, w, h);
+      // A shaded region prints hatched, not solid: the sheet is photocopied in
+      // grey and a solid fill takes the coastline and the rivers with it.
+      if (mark.shaded) {
+        parts.push('<polygon points="' + pts + '" fill="url(#hatch-' + index + ')" stroke="none"/>');
+      }
       parts.push('<polyline points="' + pts + '" fill="none" stroke="' + HALO + '" stroke-width="' + f(stroke * HALO_MULTIPLE) + '" stroke-linejoin="round"/>');
       parts.push('<polyline points="' + pts + '" fill="none" stroke="#' + mark.colour + '" stroke-width="' + f(stroke) +
-        (mark.kind === 'area' ? '" stroke-dasharray="' + f(stroke * 3) + ' ' + f(stroke * 2) : '') + '" stroke-linejoin="round"/>');
+        (mark.kind === 'area' && !mark.shaded ? '" stroke-dasharray="' + f(stroke * 3) + ' ' + f(stroke * 2) : '') + '" stroke-linejoin="round"/>');
     }
     labelItems.push({
       text: mark.label,

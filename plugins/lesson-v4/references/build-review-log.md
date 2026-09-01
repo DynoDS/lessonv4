@@ -1,5 +1,44 @@
 # Build review log
 
+## 2026-09-01 - Year 4 Geography Lesson 1 (rebuild)
+
+- The rainforest distribution map came back `unsatisfied` after two searches, and the run was about to build slides 6, 7 and 8 without it. Slide 6 is called "Spot the rainforest pattern".
+  *Addressed 1 Sep 2026. Daniel's objection was the right one: the deleted
+  schematic map produced a good teaching picture, and the only thing wrong with
+  it was the fake coastlines. Everything else - shaded rainforest belts, a key,
+  the Tropics, continent names - was correct and wanted. So the picture moved
+  onto the real map rather than being lost with the helper that drew it badly.
+  Three things were missing and all three were omissions rather than limits. The
+  seven-continent world presentation ignored `annotations` outright and said
+  nothing, so a lesson could hand it rainforests and get a bare world back; it
+  now draws them. An `area` could only be outlined, which says "somewhere in
+  here" where the lesson means "this whole area is the thing"; `shaded: true`
+  now hatches it, hatched rather than solid so the coastlines and borders
+  underneath survive a grey photocopy. And there was no key, so nothing could
+  say what a shading meant; `key` adds a band under the map using the same
+  hatch. The plain slide map draws PowerPoint shapes and cannot fill, so it
+  refuses shading by name rather than quietly returning an outline.*
+- Positions on the world map can now be given in real degrees, and should be.
+  *Added 1 Sep 2026, because "how trustworthy is this?" is the right question to
+  ask of a region placed by eye and the honest answer was "not very". A picture
+  fraction is a guess only a render can check; a first attempt at the Amazon in
+  fractions landed in the Pacific. Degrees are a fact this kind of author knows
+  well, and `world-with-antarctica` is a full equirectangular world, so the
+  conversion is exact arithmetic. Verified by rendering London, Cairo, Manaus and
+  Sydney from their real coordinates: all four land on the right place. Degrees
+  are refused by name on every other shipped map, because those are crops whose
+  edges nobody recorded, and a degree converted against numbers we do not have is
+  worse than a fraction since it looks precise.*
+- The fallback ladder gave up several rungs early: a dead picture went almost straight to words.
+  *Addressed 1 Sep 2026. The Slide Designer's degradation route had two rungs, a
+  faithful helper then the slide's own words, and the missing middle rung is the
+  one that matters most: a real base the package already holds, marked up. A
+  lesson usually needs a visual showing where or what something is rather than a
+  picture of it, and marks are what do that. The ladder now names that rung
+  explicitly and says words are last. The helper check's `gap` decision carries
+  the same test in four lines, because "no published picture exists" was being
+  read as "this cannot be shown".*
+
 ## 2026-09-01 - Year 4 Geography Lesson 1 (deck review)
 
 - Slides 1, 2, 6, 7, 8 and the practice slides drew a schematic world map instead of a real one, and it looked good enough that nobody questioned it until the finished deck was read.
@@ -261,3 +300,8 @@ improvement pass folds those in.
   takes its layout before the rest of the slide. The orchestrator's check stays
   as the independent backstop. Regression:
   `scripts/tests/test_helper_delivery_at_the_designer_gate.py`.*
+
+## 2026-09-01 — Year 4 Maths: reverse-boundary modelling before independence
+
+- The first design required pupils to find 10 or 100 less across a thousand in independent work without first modelling the distinct reverse-exchange case.
+  *Addressed in the lesson design: the non-boundary model was retained, while the boundary model now uses 2,005 to teach reverse exchange and placeholder zeros before related guided and independent questions. The independent design review then approved the sequence.*

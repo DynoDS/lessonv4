@@ -16,6 +16,7 @@ const MARKER_FONT = 25;
 const COMPASS_R = 48;
 const EDGE_BAND_W = 22;
 const FOOTER_H = 92;
+const KEY_H = 84;
 const MAX_CONTINENT_LABELS = 7;
 const MAX_OCEAN_LABELS = 5;
 const MAX_SEA_LABELS = 5;
@@ -133,6 +134,13 @@ function resolve(spec) {
     oceanLabels,
     seaLabels: textItems(d.seaLabels, 'seaLabels', MAX_SEA_LABELS),
     clueMarkers: clueMarkers(d.clueMarkers),
+    // Marks on the world map. These used to be dropped here without a word: the
+    // presentation was written for naming continents and oceans, so it ignored
+    // `annotations` entirely, and a lesson that asked for the rainforests to be
+    // shaded got a bare map and no error. That silence is why a rainforest
+    // lesson had nowhere to put its rainforests.
+    annotations: maps.resolveAnnotations(d),
+    key: maps.resolveKey(d),
     focus: focusSpec(d.focus),
     showEquator: d.showEquator === true || d.showTropics === true,
     showTropics: d.showTropics === true,
@@ -210,6 +218,20 @@ function placedLabels(s, rect, mapW, mapH) {
   add(s.continentLabels, 'continent', LABEL_FONT);
   add(s.oceanLabels, 'ocean', LABEL_FONT);
   add(s.seaLabels, 'sea', SEA_FONT);
+  // A mark's own label joins the same layout rather than being drawn where it
+  // asked, so a shaded region's name cannot land on top of a continent name.
+  s.annotations.forEach(function (mark) {
+    if (!mark.label) return;
+    inputs.push({
+      text: mark.label,
+      anchor: mark.anchor,
+      preferred: mark.labelAt || mark.anchor,
+      kind: 'mark',
+      colour: mark.colour,
+      fontSize: SEA_FONT,
+      repeatAt: null
+    });
+  });
   const placed = maps.refuseCrowdedLabels(
     maps.layoutLabels(inputs, function (text) {
       const item = inputs.find(function (candidate) { return candidate.text === text; });
@@ -229,8 +251,70 @@ function markerSvg(item, at, rect) {
     '<text x="' + p.x.toFixed(1) + '" y="' + (p.y + MARKER_FONT * 0.36).toFixed(1) + '" text-anchor="middle" font-family="' + FONT + '" font-size="' + MARKER_FONT + '" font-weight="bold" fill="#1A1A1A">' + esc(item.marker) + '</text>';
 }
 
+// A mark drawn on the map, in the same fractions everything else here uses. The
+// order matters: shading first so it sits under the coastline strokes and the
+// latitude lines, outlines next, dots last, and every label after all of them.
+function annotationSvg(mark, rect, index) {
+  const at = (p) => project(p, rect);
+  if (mark.kind === 'point') {
+    const p = at(mark.at);
+    const r = Math.max(7, rect.h * 0.014);
+    return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="' + r.toFixed(1) +
+      '" fill="#' + mark.colour + '" stroke="#FFFFFF" stroke-width="' + (r * 0.45).toFixed(1) + '"/>';
+  }
+  const list = mark.kind === 'area' ? mark.points.concat([mark.points[0]]) : mark.points;
+  const d = list.map(function (p, i) {
+    const q = at(p);
+    return (i ? 'L' : 'M') + q.x.toFixed(1) + ' ' + q.y.toFixed(1);
+  }).join(' ');
+  const stroke = Math.max(3, rect.h * 0.005);
+  const out = [];
+  if (mark.shaded) {
+    out.push('<path d="' + d + ' Z" fill="url(#hatch-' + index + ')" stroke="none"/>');
+  }
+  out.push('<path d="' + d + '" fill="none" stroke="#FFFFFF" stroke-width="' + (stroke * 2.2).toFixed(1) + '" stroke-linejoin="round"/>');
+  out.push('<path d="' + d + '" fill="none" stroke="#' + mark.colour + '" stroke-width="' + stroke.toFixed(1) +
+    (mark.kind === 'area' && !mark.shaded ? '" stroke-dasharray="' + (stroke * 3).toFixed(1) + ' ' + (stroke * 2).toFixed(1) : '') +
+    '" stroke-linejoin="round"/>');
+  return out.join('');
+}
+
+// The hatch each shaded region is filled with, and the identical swatch its key
+// entry shows. Hatched rather than solid so the map underneath still reads.
+function hatchDefs(marks) {
+  return marks.map(function (mark, index) {
+    if (!mark.shaded) return '';
+    return '<pattern id="hatch-' + index + '" width="18" height="18" patternUnits="userSpaceOnUse">' +
+      '<rect width="18" height="18" fill="#' + mark.colour + '" fill-opacity="0.16"/>' +
+      '<path d="M-5 18 L18 -5 M4 23 L23 4" stroke="#' + mark.colour + '" stroke-width="5" stroke-opacity="0.85"/>' +
+      '</pattern>';
+  }).join('');
+}
+
+function keySvg(entries, rect, y) {
+  if (!entries.length) return '';
+  const cellW = Math.min(430, rect.w / entries.length);
+  const startX = rect.x + (rect.w - cellW * entries.length) / 2;
+  return entries.map(function (entry, i) {
+    const x = startX + i * cellW;
+    return '<rect x="' + x.toFixed(1) + '" y="' + y + '" width="46" height="34" rx="6" fill="url(#keyhatch-' + i + ')" stroke="#333333" stroke-width="2.5"/>' +
+      '<text x="' + (x + 60).toFixed(1) + '" y="' + (y + 26) + '" font-family="' + FONT +
+      '" font-size="26" font-weight="bold" fill="#1A1A1A">' + esc(entry.text) + '</text>';
+  }).join('');
+}
+
+function keyHatchDefs(entries) {
+  return entries.map(function (entry, i) {
+    return '<pattern id="keyhatch-' + i + '" width="18" height="18" patternUnits="userSpaceOnUse">' +
+      '<rect width="18" height="18" fill="#' + entry.colour + '" fill-opacity="0.16"/>' +
+      '<path d="M-5 18 L18 -5 M4 23 L23 4" stroke="#' + entry.colour + '" stroke-width="5" stroke-opacity="0.85"/>' +
+      '</pattern>';
+  }).join('');
+}
+
 function mapLayer(s, uri, rect, parts) {
   parts.push('<image x="' + rect.x + '" y="' + rect.y + '" width="' + rect.w + '" height="' + rect.h + '" href="' + uri + '"/>');
+  s.annotations.forEach(function (mark, index) { parts.push(annotationSvg(mark, rect, index)); });
   const drawn = LATITUDES.filter(function (line) {
     if (line.key === 'equator') return s.showEquator;
     return s.showTropics;
@@ -249,9 +333,12 @@ function mapLayer(s, uri, rect, parts) {
   }
   const labels = placedLabels(s, rect, rect.w, rect.h);
   labels.forEach(function (item) {
-    const colour = item.kind === 'continent' ? '#C65911' : item.kind === 'sea' ? '#2E7D45' : '#0070C0';
+    const colour = item.kind === 'mark' ? '#' + item.colour
+      : item.kind === 'continent' ? '#C65911' : item.kind === 'sea' ? '#2E7D45' : '#0070C0';
+    const fill = item.kind === 'mark' ? '#FFFFFF'
+      : item.kind === 'continent' ? '#FFF2CC' : item.kind === 'sea' ? '#E2F0D9' : '#DDEBF7';
     parts.push(drawLeader(item, rect, colour));
-    parts.push(drawPill(item, rect, item.fontSize, item.kind === 'continent' ? '#FFF2CC' : item.kind === 'sea' ? '#E2F0D9' : '#DDEBF7', colour));
+    parts.push(drawPill(item, rect, item.fontSize, fill, colour));
     if (item.repeatAt) {
       const repeated = maps.layoutLabels([{ text: item.text, anchor: item.repeatAt, preferred: item.repeatAt }], function (text) { return labelSize(text, item.fontSize, rect.w, rect.h); })[0];
       parts.push(drawPill(Object.assign(repeated, { text: item.text }), rect, item.fontSize, '#DDEBF7', '#0070C0'));
@@ -274,9 +361,10 @@ function tightSvg(spec) {
   const s = resolve(spec);
   const uri = dataUri(s.entry);
   const w = 1800;
-  const h = s.focus ? 900 : 900 + (s.joinedEdges ? FOOTER_H : 0);
+  const keyH = s.key.length ? KEY_H : 0;
+  const h = (s.focus ? 900 : 900 + (s.joinedEdges ? FOOTER_H : 0)) + keyH;
   const parts = [
-    '<defs><pattern id="pacific-edge" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="14" height="14" fill="#DDEBF7"/><rect width="5" height="14" fill="#0070C0"/></pattern><marker id="edge-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#0070C0"/></marker><marker id="focus-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#C65911"/></marker><clipPath id="zoom-clip"><rect x="1190" y="105" width="570" height="650" rx="18"/></clipPath></defs>'
+    '<defs>' + hatchDefs(s.annotations) + keyHatchDefs(s.key) + '<pattern id="pacific-edge" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="14" height="14" fill="#DDEBF7"/><rect width="5" height="14" fill="#0070C0"/></pattern><marker id="edge-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#0070C0"/></marker><marker id="focus-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#C65911"/></marker><clipPath id="zoom-clip"><rect x="1190" y="105" width="570" height="650" rx="18"/></clipPath></defs>'
   ];
   const rect = s.focus ? { x: 20, y: 175, w: 1080, h: 540 } : { x: 0, y: 0, w: 1800, h: 900 };
   mapLayer(s, uri, rect, parts);
@@ -298,6 +386,7 @@ function tightSvg(spec) {
     parts.push('<path d="M1776 920 C1520 980 1190 980 1050 940" fill="none" stroke="#0070C0" stroke-width="5" marker-end="url(#edge-arrow)"/>');
     parts.push('<text x="900" y="972" text-anchor="middle" font-family="' + FONT + '" font-size="25" font-weight="bold" fill="#0070C0">These patterned edges join: one Pacific Ocean</text>');
   }
+  if (keyH) parts.push(keySvg(s.key, { x: 0, w }, h - keyH + 24));
   return {
     svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '">' + parts.join('') + '</svg>',
     aspect: w / h,

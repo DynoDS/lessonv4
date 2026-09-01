@@ -255,10 +255,17 @@ Your prompt carries a `PICTURE_STAGE:` line. It separates two situations that lo
 
 `attempting` or `none required` is the ordinary case above. The promised files are simply not published yet. Design to the promised filenames, hold the geometry the picture will need, and change nothing because a file is absent.
 
-`unavailable` means the picture stage was resolved and stopped before it ran: no filename in that contract will ever be published, this run or later. Design the deck once, without them, on your first pass. For each affected beat, in this order:
+`unavailable` means the picture stage was resolved and stopped before it ran: no filename in that contract will ever be published, this run or later. Design the deck once, without them, on your first pass.
 
-1. carry the same evidence with a representation the deck can draw itself, when the helper catalogue holds one that is genuinely faithful;
-2. otherwise keep the beat, its teaching job and its wording, compose the slide so the task still works without the image, and let the speaker script describe what children would have seen.
+**A missing picture is not a missing slide, and words are the last rung, not the second.** Work down this list for each affected beat and stop at the first rung that carries the teaching. The rung that gets skipped is the second one, and skipping it is how a beat that had three good options left ends up as a sentence.
+
+1. **A helper that draws it faithfully.** Take it when the catalogue holds one whose correctness is a fact about the lesson's own data rather than about the world.
+
+2. **A real base the package already holds, marked up.** This is the rung to reach for hardest, because a lesson usually does not need a picture *of* the thing so much as a picture that *shows where or what* it is, and the marks are what do that. The package ships real world and continent maps, and the marking system exists to draw on them: dots on places, lines along rivers and routes, outlined regions, hatched shaded regions with a key naming what the shading means, latitude lines, and a zoom into a crop of the same real pixels. Positions on the world map may be given in real degrees, so a region lands where those degrees actually are rather than where a fraction guessed. So "no published map of where tropical rainforests are" does not end the beat: the real world map, the belts shaded on it, and a key saying `Tropical rainforest` is that beat, and it is stronger than a stock map because it shows only what this lesson is teaching. The same reasoning applies to any published picture this run *did* get: a photograph can carry a labelled diagram over it.
+
+3. **The beat, without the image.** Keep its teaching job and its wording, compose the slide so the task still works, and let the speaker script describe what children would have seen. Reach this only when the first two genuinely cannot carry it, and say which picture is missing in your completion report so the teacher knows.
+
+Never let a dead picture delete a beat, silently shrink what the slide asks of children, or turn a "spot the pattern" task into a "here is the pattern" statement. If a beat asks children to read something off a picture and no rung can show it, that is worth reporting in words, not absorbing quietly.
 
 Never invent a substitute photograph, semantic-match another file, promote an emoji into a required photograph's place, or delete the learning the picture was carrying. Never refuse to write `lesson.json`: an unavailable picture stage is a thinner deck, not a blocked one.
 

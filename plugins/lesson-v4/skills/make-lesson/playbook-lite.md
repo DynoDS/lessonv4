@@ -373,6 +373,11 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
   dead end, and it is the only decision that leaves a required visual with
   nothing behind it.
 
+**"No published picture exists" is not yet a `gap`.** The shipped maps take
+shaded regions, a key and latitude lines in real degrees, so a world rainforest
+distribution is `covered` by the real map with the belts shaded on it. Write
+`gap` only when the land, the source or the exact depiction is what is needed.
+
 **`substitute` is a promise about the photo contract, not a note about
 helpers.** It says the picture route supplies this visual, so it is finished
 only when a filename for it reaches the contract, and `picture` is where that

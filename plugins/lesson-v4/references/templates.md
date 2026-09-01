@@ -1764,8 +1764,9 @@ With a caption:
 }
 ```
 
-- `kind` is exactly `point` (a dot on a place), `line` (a river, a route, a border you are tracing), or `area` (a dashed outline round a region, closed for you).
+- `kind` is exactly `point` (a dot on a place), `line` (a river, a route, a border you are tracing), or `area` (a region, closed for you: a dashed outline by default, or hatched with `"shaded": true`).
 - `point` takes `at`; `line` and `area` take `points` (at least two, and at least three for an area).
+- **`"shaded": true`** on an `area` fills it with a hatch in its own colour instead of outlining it. Use it when the region *is* the thing being taught (where rainforests are, which countries a desert crosses); leave it off when you mean "somewhere in here". Hatched rather than solid on purpose, so the coastlines, rivers and borders underneath stay readable, and so it survives a grey photocopy. Shading needs the picture composed before it reaches the slide, so it works on `presentation: "seven-continent-world"` and on printed sheets; the plain slide map draws PowerPoint shapes and refuses shading by name rather than quietly giving you an outline.
 - `label` is optional. Labels are laid out against each other, so two marks near the same place do not print on top of one another; a label that has to move away from its mark gets a leader line back to it. A region's label sits just clear of the region rather than across it.
 - `labelAt` optionally places a label yourself, in the same fractions.
 - `colour` is exactly `orange`, `blue`, `green` or `black`. Omit it for orange.
@@ -1775,9 +1776,38 @@ Anything wrong is refused by name rather than drawn wrongly: `MAP_ANNOTATION_UNS
 
 **How many labels fit is decided by the slot, not by the ceiling of 8.** A board label is sized to be read from the back of the room whatever size the map ended up, so eight country pills that sit cleanly on a full-width South America are most of the picture on the same map in a sidebar. When the layout cannot place them all clear of one another, the build stops with `MAP_LABELS_DO_NOT_FIT`, naming the labels it could not place. Fix it by carrying fewer marks on that map, giving the map a wider zone, or splitting the marks across two maps — never by leaving them stacked, which prints a pile of pills over the geography a child was asked to read.
 
+#### Give a position in degrees when you can
+
+On `map: "world-with-antarctica"`, any position may be written as `{ "lon": -60, "lat": -3 }` instead of a picture fraction, and the engine converts it exactly. Prefer it. A fraction is a guess about a picture that only a render can check, and a region eyeballed that way lands in the sea often enough to matter. A degree is a fact about the world, and one you know well: the Amazon basin runs about 5N to 15S and 75W to 45W, and that number is far more reliable than "about a quarter of the way across".
+
+```json
+{
+  "type": "map",
+  "map": "world-with-antarctica",
+  "presentation": "seven-continent-world",
+  "showTropics": true,
+  "key": [{ "text": "Tropical rainforest", "colour": "green" }],
+  "annotations": [
+    { "kind": "area", "shaded": true, "colour": "green", "label": "Amazon",
+      "points": [{ "lon": -74, "lat": 2 }, { "lon": -60, "lat": 4 },
+                 { "lon": -50, "lat": -1 }, { "lon": -63, "lat": -12 }] }
+  ]
+}
+```
+
+Degrees work on `world-with-antarctica` only, because it is the one shipped map whose edges this package has recorded: a full equirectangular world from 180W to 180E and 90N to 90S. Every other map is a crop with unrecorded bounds, so degrees on those are refused by name rather than converted against numbers nobody has. Use picture fractions there.
+
+#### `key`
+
+`key` is a list of up to four `{ "text": ..., "colour": ... }` entries printed in a band under the map, each showing the same hatch its shaded regions use. A shaded map needs one: the child has to match a pattern to a word, and a caption cannot do that. The band is added below the map rather than taken out of it, so the map does not shrink to make room.
+
 **Place a mark by looking at the real map, and check it by looking at the render.** A dot a few millimetres out is visible and fixable; there is deliberately no way to draw the land itself, because a coastline drawn by eye looks exactly as confident as a real one and is wrong by hundreds of miles.
 
-**This is the package's only map of the real world, and drawing over it is what it is for.** Highlighting a continent, tracing a river, ringing a region or naming a set of countries is a per-lesson `annotations` list on the shipped asset — nothing is added to the package and no new helper is needed. What the engine will not do is invent geography it does not ship: a world biome distribution, a climate-zone map, a population map, a historical border. Those come from the picture route as a real map image, recorded as a `substitute` in the helper check with the contract filename that supplies it. A schematic world map drawn from typed coordinates was removed from this package for exactly that reason: it rendered beautifully, said nothing true, and filled eight opening slides of a lesson about where the Amazon is.
+**This is the package's only map of the real world, and drawing over it is what it is for.** Highlighting a continent, tracing a river, shading where a biome is, ringing a region or naming a set of countries is a per-lesson `annotations` list on the shipped asset. Nothing is added to the package and no new helper is needed, so this is normally faster and better than hunting for a published map: a stock map carries everything its maker chose to show, while marks you place carry exactly what this lesson teaches and nothing else.
+
+So **a distribution map you cannot find is usually not a dead end.** "Where are the world's tropical rainforests" is the real world map, the belts shaded on it in degrees, the Tropics drawn, and a key saying `Tropical rainforest`. Reach for a published map when the pattern is genuinely beyond what marks can show, or when the source itself is the point (a historical map, a named survey, a map a child must critique).
+
+What the engine will not do is invent the land: coastlines, borders, the shape of a country. Those come from the shipped asset or from a published map through the picture route, recorded as a `substitute` in the helper check with the contract filename that supplies it. A schematic world map drawn from typed coordinates was removed from this package for exactly that reason: it rendered beautifully, said nothing true, and filled eight opening slides of a lesson about where the Amazon is. The marks are the part you place; the world is the part you are given.
 
 #### The two built-in overlays
 

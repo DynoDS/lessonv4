@@ -133,10 +133,67 @@ function fraction(value, label) {
   return n;
 }
 
-function point(value, label) {
+// -- Degrees, where the map's own grid is known -------------------------------
+//
+// A point can be given as a fraction of the picture, or in real degrees. The
+// difference matters more than it looks.
+//
+// A fraction is a guess about a picture: "about a quarter of the way across".
+// Nobody can check it except by rendering the map and looking, and a region
+// eyeballed that way lands in the sea often enough to matter.
+//
+// Degrees are a fact about the world, and one that is known well: the Amazon
+// basin runs roughly 5N to 15S and 75W to 45W, and that is the sort of number
+// this kind of author gets right. Turning degrees into a position is then exact
+// arithmetic rather than a judgement, PROVIDED the map's own grid is known.
+//
+// It is known for exactly one shipped asset. `world-with-antarctica` is a full
+// equirectangular world: 1800 x 900 covering -180 to 180 and 90 to -90, so
+// longitude and latitude map onto it linearly. Every other shipped map is a crop
+// whose edges nobody has recorded, so degrees on those would be a conversion
+// against numbers this module does not have, which is worse than a fraction
+// because it looks precise. Those refuse by name.
+const DEGREE_MAPS = Object.freeze({ 'world-with-antarctica': { west: -180, east: 180, north: 90, south: -90 } });
+
+function degreesToFraction(lon, lat, mapKey, label) {
+  const grid = DEGREE_MAPS[normaliseMapKey(mapKey)];
+  if (!grid) {
+    throw new Error(
+      'MAP_ANNOTATION_UNSUPPORTED: ' + label + ' is given in degrees, but this package has not recorded the ' +
+        'edges of the ' + JSON.stringify(String(mapKey || '')) + ' map, so degrees cannot be placed on it. ' +
+        'Maps that take degrees: ' + Object.keys(DEGREE_MAPS).join(', ') +
+        '. On any other map, give the position as a fraction of the picture instead.'
+    );
+  }
+  const lonN = Number(lon);
+  const latN = Number(lat);
+  if (!Number.isFinite(lonN) || lonN < -180 || lonN > 180) {
+    throw new Error('MAP_ANNOTATION_INVALID: ' + label + ' lon must be a number from -180 to 180; received ' + JSON.stringify(lon) + '.');
+  }
+  if (!Number.isFinite(latN) || latN < -90 || latN > 90) {
+    throw new Error('MAP_ANNOTATION_INVALID: ' + label + ' lat must be a number from -90 to 90; received ' + JSON.stringify(lat) + '.');
+  }
+  return [
+    (lonN - grid.west) / (grid.east - grid.west),
+    (grid.north - latN) / (grid.north - grid.south)
+  ];
+}
+
+// One position, given either way. `{ lon, lat }` is self-labelling on purpose:
+// a bare pair of numbers can be read as either, and a longitude silently taken
+// for a fraction is a mark on the wrong continent.
+function point(value, label, mapKey) {
+  if (value && typeof value === 'object' && !Array.isArray(value) &&
+      (value.lon !== undefined || value.lat !== undefined)) {
+    if (value.lon === undefined || value.lat === undefined) {
+      throw new Error('MAP_ANNOTATION_INVALID: ' + label + ' needs both lon and lat.');
+    }
+    return degreesToFraction(value.lon, value.lat, mapKey, label);
+  }
   if (!Array.isArray(value) || value.length !== 2) {
     throw new Error(
-      'MAP_ANNOTATION_INVALID: ' + label + ' must be a two-number [x, y] pair; received ' + JSON.stringify(value) + '.'
+      'MAP_ANNOTATION_INVALID: ' + label + ' must be a two-number [x, y] pair of picture fractions, ' +
+        'or { "lon": ..., "lat": ... } in degrees; received ' + JSON.stringify(value) + '.'
     );
   }
   return [fraction(value[0], label + ' x'), fraction(value[1], label + ' y')];
@@ -192,10 +249,11 @@ function resolveAnnotations(data) {
 
     const text = item.label === undefined || item.label === null ? '' : String(item.label);
     const colour = colourFor(item.colour, label);
-    const labelAt = item.labelAt === undefined || item.labelAt === null ? null : point(item.labelAt, label + ' labelAt');
+    const mapKey = data && data.map;
+    const labelAt = item.labelAt === undefined || item.labelAt === null ? null : point(item.labelAt, label + ' labelAt', mapKey);
 
     if (kind === 'point') {
-      const at = point(item.at, label + ' at');
+      const at = point(item.at, label + ' at', mapKey);
       return { kind, at, label: text, colour, anchor: at, labelAt: labelAt || [at[0], Math.max(0, at[1] - LABEL_CLEARANCE)] };
     }
 
@@ -205,7 +263,18 @@ function resolveAnnotations(data) {
         'MAP_ANNOTATION_INVALID: ' + label + ' of kind ' + kind + ' needs at least ' + minPoints + ' points in points.'
       );
     }
-    const points = item.points.map(function (p, j) { return point(p, label + ' point ' + (j + 1)); });
+    // A shaded region reads as "this whole area IS the thing", which an outline
+    // does not: a dashed ring round the Amazon says "somewhere in here". The
+    // shading is hatched rather than solid so the coastline, the rivers and the
+    // borders underneath stay visible, because the point of putting it on a real
+    // map is that the child can still see the real map.
+    if (item.shaded !== undefined && typeof item.shaded !== 'boolean') {
+      throw new Error('MAP_ANNOTATION_INVALID: ' + label + ' shaded must be true or false.');
+    }
+    if (item.shaded && kind !== 'area') {
+      throw new Error('MAP_ANNOTATION_INVALID: ' + label + ' is shaded, which only an area can be; a line encloses nothing.');
+    }
+    const points = item.points.map(function (p, j) { return point(p, label + ' point ' + (j + 1), mapKey); });
     const centre = points.reduce(function (acc, p) {
       return [acc[0] + p[0] / points.length, acc[1] + p[1] / points.length];
     }, [0, 0]);
@@ -215,7 +284,42 @@ function resolveAnnotations(data) {
     // should be. The leader line then joins the two back up.
     const top = points.reduce(function (min, p) { return Math.min(min, p[1]); }, 1);
     const clear = [centre[0], Math.max(0, top - LABEL_CLEARANCE)];
-    return { kind, points, label: text, colour, anchor: centre, labelAt: labelAt || clear };
+    return {
+      kind, points, label: text, colour, anchor: centre,
+      shaded: item.shaded === true,
+      labelAt: labelAt || clear
+    };
+  });
+}
+
+// -- The key -----------------------------------------------------------------
+//
+// A shaded map needs to say what the shading means, and a caption cannot do it:
+// the child has to match a colour and pattern to a word. Each entry names one
+// shading and what it stands for, drawn in the same house colour and the same
+// hatch the regions use, so the swatch in the key is literally the same fill.
+const MAX_KEY_ENTRIES = 4;
+
+function resolveKey(data) {
+  const raw = data && data.key;
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw)) throw new Error('MAP_KEY_INVALID: key must be an array of { text, colour } entries.');
+  if (raw.length > MAX_KEY_ENTRIES) {
+    throw new Error(
+      'MAP_KEY_INVALID: ' + raw.length + ' key entries asked for; a map a child reads from the back of the room ' +
+        'carries at most ' + MAX_KEY_ENTRIES + '.'
+    );
+  }
+  return raw.map(function (item, i) {
+    const label = 'key entry ' + (i + 1);
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      throw new Error('MAP_KEY_INVALID: ' + label + ' must be an object.');
+    }
+    const text = String(item.text == null ? '' : item.text).trim();
+    if (!text || text.length > 34) {
+      throw new Error('MAP_KEY_INVALID: ' + label + ' text must be 1-34 characters.');
+    }
+    return { text, colour: colourFor(item.colour, label) };
   });
 }
 
@@ -331,6 +435,10 @@ module.exports = {
   assetPathFor,
   checkOverlaySupport,
   resolveAnnotations,
+  resolveKey,
+  degreesToFraction,
+  DEGREE_MAPS,
+  MAX_KEY_ENTRIES,
   layoutLabels,
   refuseCrowdedLabels,
   AMAZON_BASIN_SOUTH_AMERICA,
