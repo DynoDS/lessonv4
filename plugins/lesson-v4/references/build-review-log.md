@@ -119,6 +119,14 @@ improvement pass folds those in.
   preference rather than a rule because the teacher named cases where the other
   order is right. Regressions: `builder/test/statement-side.test.js` and
   `scripts/tests/test_reading_order_left_to_right.py`.*
+  *Corrected same day: the first wording said "the thing they read first goes
+  left, and the question about it goes right", which the teacher rejected on
+  reading it back - he did not want every question pushed right on every slide.
+  It was also the wrong account of the fault: what failed was not a question on
+  the left, it was a question that could not be read until the claim had been.
+  The preference is now about that dependency alone, says in terms that it does
+  not mean questions-right or teaching-left, and carries a question that is
+  correctly on the left as its counterexample.*
 - The Expected worksheet put its three steps in a 30% left column, pushing the
   photograph and all three questions into the 70% beside them and leaving a tall
   empty band under four short lines.

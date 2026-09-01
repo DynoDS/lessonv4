@@ -31,21 +31,46 @@ class ReadingOrderTests(unittest.TestCase):
     it does not govern.
     """
 
-    def test_the_slide_preference_is_stated_with_its_reason(self) -> None:
+    def test_the_slide_preference_is_about_dependency_not_content_type(self) -> None:
+        """The first draft of this said "the thing they read first goes left,
+        and the question about it goes right", and the teacher rejected it the
+        moment he read it back: "I dont want it to say all questions must be on
+        right and all teacher stuff on left". He was right, and the wording was
+        wrong about the lesson too. What made those three slides fail was not
+        that a question sat left; it was that the question could not be read
+        until the claim had been. That is the rule, and it says nothing about
+        which kind of content takes which side."""
         preferences = flat(PREFERENCES)
-        self.assertIn("Left to right is the order the slide is used in.", preferences)
-        self.assertIn("the thing they read first goes left", preferences)
+        self.assertIn(
+            "When one half of a slide cannot be read until the other has been",
+            preferences,
+        )
+        self.assertIn("This is about that dependency, and about nothing else.", preferences)
+
+    def test_the_slide_preference_refuses_the_side_reading_of_itself(self) -> None:
+        """Guard against the drift back. A model reading this must not be able
+        to take "questions go right" from it, and the counterexample has to be
+        a question that is right on the left."""
+        preferences = flat(PREFERENCES)
+        self.assertIn("It does not say questions go on the right", preferences)
+        self.assertIn("it does not say teacher material goes on the left", preferences)
+        self.assertIn("belongs wherever the slide reads best, the left included", preferences)
+
+    def test_a_diagram_with_its_explanation_beside_it_is_not_an_exception(self) -> None:
+        """The common two-column slide has the visual left and words right, and
+        a rule that made that an exception would be fighting most of the deck."""
+        self.assertIn(
+            "that is this same rule rather than an exception to it: the words "
+            "are the half that depends",
+            flat(PREFERENCES),
+        )
 
     def test_the_slide_preference_is_not_written_as_a_mandate(self) -> None:
         """A hard rule here would misfire: a question in the title, a stacked
         pair, or a visual whose shape decides the side are all fine."""
         preferences = flat(PREFERENCES)
-        self.assertIn("This is a preference, not a rule to force.", preferences)
-        self.assertIn(
-            "a layout that genuinely reads better the other way round is the "
-            "right layout",
-            preferences,
-        )
+        self.assertIn("And it is a preference.", preferences)
+        self.assertIn("none of those are this rule's business", preferences)
 
     def test_the_speech_templates_can_actually_obey_it(self) -> None:
         """The designer could not have fixed this deck: the template hard-coded

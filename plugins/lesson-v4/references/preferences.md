@@ -426,21 +426,28 @@ Existing task-action verbs may use house blue when that treatment reveals the ph
 
 **Use the whole slide, and give the eye somewhere to land.** A slide that fills its canvas and steers the eye teaches better than a sparse, flat one, and two habits carry most of it. First, size text to the room it has: a short key sentence shrunk into a corner with empty space around it reads as a half-finished slide, so let it grow to fill its zone rather than sit small and faint. Second, keep no slide one flat colour — a wall of black reads as something to wade through, and a wall of one tint (a whole body painted blue, say) is the same wall in a different shade. Colour is for *separating* what matters from what supports it: the key phrase or the question stands out, the rest recedes, so a child's eye lands on the important thing first. On an otherwise text-only slide, one relevant emoji per line is the lightest way to lift it. This is taste rather than a formula — the test is whether the slide looks made for a child to glance at, not typed out for them to read.
 
-**Left to right is the order the slide is used in.** A slide often carries two
-things: something the class reads, is told or is shown, and a question they then
-discuss. That is the rhythm of the beat - teacher first, question next, children
-talk, move on - and a two-column slide should lay it out in that order, because
-children read left to right. So the thing they read first goes left, and the
-question about it goes right. A question sitting to the left of the claim,
-diagram or photograph it is asking about arrives before its own subject, and a
-child reads it twice: once without knowing what it means, once after finding the
-other half.
+**When one half of a slide cannot be read until the other has been, put the one
+it depends on where a child starts.** Some pairs carry an order inside them: a
+question naming something ("Is Dev right?", "What does this graph show?") needs
+that thing already met; a sentence explaining a diagram needs the diagram; a
+second example being compared needs the first. Split such a pair across two
+columns backwards and the child reads it twice - once with nothing to attach it
+to, once after hunting down the other half.
 
-This is a preference, not a rule to force. Plenty of slides have no such pair,
-or have the question in the title, or put the visual where its shape demands, or
-stack the two rather than splitting them, and a layout that genuinely reads
-better the other way round is the right layout. It is the default to reach for
-when both halves exist and either arrangement would fit.
+**This is about that dependency, and about nothing else.** It does not say
+questions go on the right, and it does not say teacher material goes on the
+left. A question that stands on its own - "What do you already know about
+diets?", "What do you notice?" - depends on nothing and belongs wherever the
+slide reads best, the left included. A large diagram usually earns the left for
+its size, with the words about it beside it, and that is this same rule rather
+than an exception to it: the words are the half that depends. The only thing
+being ruled out is a genuine dependency laid out in reverse.
+
+**And it is a preference.** A slide with no such pair, a question carried in the
+title, a pair that reads better stacked than split, a visual whose shape decides
+its column: none of those are this rule's business. Reach for it when both
+halves are on the slide, one truly cannot be understood before the other, and
+either arrangement would fit.
 
 ### Lesson Designer visual-need boundary
 
