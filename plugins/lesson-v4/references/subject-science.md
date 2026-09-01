@@ -40,6 +40,8 @@ The practical may come before, during or after explanation. Investigate first wh
 
 Give the practical a clear main purpose. Avoid overloading children by making both the scientific idea and the enquiry method completely new at the same time. This is a safeguard, not an absolute ban: both may develop together when the task remains manageable and the designer can show how each is supported.
 
+**Equipment must not be able to falsify the rule being taught.** When a generalisation is the learning - *a complete loop makes the circuit work* - every piece of equipment children test it with must obey it in their hands. A polarity-sensitive buzzer that stays silent on a perfectly complete loop shows the class their new rule failing, and no script recovers that cleanly mid-lesson. Prefer equipment that always obeys the rule for the independent test; where a fussier component genuinely earns a place (a worthwhile variation, a later challenge), its failure mode goes in `teacherInfo` and it stays out of the moment where the rule itself is being proven. Weigh every equipment variation against this and against lesson time: a second output device that adds handling, swapping and testing without changing the thinking is real estate the objective is paying for.
+
 ## Decide how much enquiry responsibility children take
 
 Increase responsibility for planning and enquiry decisions as children gain age and experience. Treat year-group expectations as guidance rather than a ceiling. A capable younger class may make sensible choices, and an older class may receive support when needed.

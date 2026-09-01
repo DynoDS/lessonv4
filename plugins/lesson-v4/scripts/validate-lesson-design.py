@@ -1616,6 +1616,19 @@ def validate_design(
             expect(bool(steps), f"{path}.content.steps must not be empty")
             for i, step in enumerate(steps):
                 expect_string(step, f"{path}.content.steps[{i}]")
+                # Steps are board reference a child glances at mid-task; the
+                # guidance aims for 2-5 words and a 13-word step is a
+                # mini-instruction, not a step (Y4 circuits, 1 Sep 2026:
+                # "Connect the lamp or buzzer back to the cell to close the
+                # loop"). Generous cap so a genuinely needed longer step
+                # survives; wordiness is caught here, not carried in heads.
+                words = len(step.split())
+                expect(
+                    words <= 12,
+                    f"{path}.content.steps[{i}] is {words} words; a how-to "
+                    "step is a short verb-first action (aim 2-5 words, cap "
+                    "12) - say the action, not the instructions around it",
+                )
         elif sc_type == "reference-table":
             expect_exact_keys(content, {"columns", "rows"}, {"columns", "rows"}, f"{path}.content")
             columns = expect_list(content["columns"], f"{path}.content.columns")

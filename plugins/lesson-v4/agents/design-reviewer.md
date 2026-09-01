@@ -249,6 +249,11 @@ Check:
 - Apply against learning actually taught;
 - full and displayed objectives;
 - open tasks against any answer or standard;
+- `trimmedVocabulary` against the lesson: a distinction the design records as
+  deliberately deferred must not be taught, defined or policed anywhere in
+  it - a `battery` deferral beside a cell definition teaching the battery
+  distinction, and a starter note refusing the word, is the design
+  disagreeing with itself, however sound each piece looks alone;
 - task-specific `lookFor` wording;
 - teacher-facing caveats against the wording they constrain. A boundary the design itself records must be honoured by the child-facing strings it governs: a `teacherInfo` saying `a single lunch cannot prove a whole diet is balanced; keep the wording about patterns over time` beside a task saying `explain why the whole lunch is balanced` is a defect however sound each looks alone, because the designer has documented the limit and then shipped the wording that crosses it.
 
