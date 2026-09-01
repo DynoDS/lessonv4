@@ -69,18 +69,16 @@ frozen mid-revision is the wrong one for the whole of Phase 2.
 
 ## Close the decision
 
-Re-record the use as `substitute`, with a reason naming the helper now waiting,
-then re-run the check:
+Re-record the use as `substitute`, with a reason naming the helper now waiting
+and, in `picture`, the contract filename this run's picture route produced for
+it. A `build` still standing fails by design: by this point it is `substitute`,
+because no helper built in this run is live in this run, so its visual comes
+from a real picture and that picture has to be in the contract.
 
-```bash
-python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" \
-  verdict --lesson-design "[WORKING_DIR]/lesson-design.json" \
-  --verdict "[WORKING_DIR]/helper-check.json"
-```
-
-Require `HELPER_COVERAGE_OK`. A `build` still standing fails by design: by this
-point it is `substitute`, because no helper built in this run is live in this
-run.
+The verdict command itself lives in the runtime's own "Close the check" step,
+which every run reaches. Do not run a second copy from here: this route is read
+only on a `build`, and a check written where only some runs can see it is how
+the substitutes on an ordinary run went unchecked in the first place.
 
 ## Say it in the report
 

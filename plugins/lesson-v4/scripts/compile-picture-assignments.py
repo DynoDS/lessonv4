@@ -482,7 +482,14 @@ def compile_command(args) -> int:
         "filenames": [p["filename"] for p in photos],
     }
     write_json_immutable(Path(args.summary_output).resolve(), summary)
-    print(f"PICTURE_ASSIGNMENTS_OK: {len(batches)} assignments")
+    # Both counts, because they are different numbers and the orchestrator has
+    # to report the second. The picture stage's state line is "attempting [N]
+    # pictures", and a run that had only the assignment count in front of it
+    # told four designers a contract of five photographs was attempting two.
+    print(
+        f"PICTURE_ASSIGNMENTS_OK: {len(batches)} assignments, "
+        f"{len(photos)} pictures"
+    )
     print(f"MANIFEST={manifest_path}")
     print(f"SUMMARY={Path(args.summary_output).resolve()}")
     return 0

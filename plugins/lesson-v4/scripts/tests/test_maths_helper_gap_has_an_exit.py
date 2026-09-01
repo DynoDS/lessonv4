@@ -71,7 +71,7 @@ class MathsHelperGapHasAnExitTests(unittest.TestCase):
         """The rescue route must not name a subject it excludes."""
         playbook = flat(PLAYBOOK)
         route = playbook[playbook.index("### The picture route"):]
-        route = route[: route.index("Record the exact `SLIDE_HELPER_GAP`")]
+        route = route[: route.index("Record the decision as `gap`")]
         self.assertIn("add the visual as a `controlled-ai` picture", route)
         self.assertNotIn("Maths", route)
 

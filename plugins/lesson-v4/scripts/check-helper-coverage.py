@@ -28,6 +28,22 @@ fails loudly at the boundary instead of quietly in a classroom.
 A `substitute` decision is honest and allowed - the picture route exists for
 exactly the visual no helper should ever draw - but it must be written down
 with its reason, so an absence is a recorded choice and never a silence.
+
+A reason alone turned out not to be enough. `substitute` does not mean "no
+helper draws this"; it means "the picture route supplies this instead", and the
+route only supplies anything when a picture requirement for it reaches the photo
+contract. A Year 4 geography run recorded two substitutes whose reasons each
+said the approved contract supplied the map, froze a contract holding neither,
+and left the slide designer a hole it filled with the nearest live map helper -
+a coastline drawn from chosen coordinates, on a lesson about where the Amazon
+actually is. Every check passed. So `substitute` now names the picture that
+supplies it and the verdict resolves that filename in the contract, which fires
+before the freeze, while adding the picture still costs one revision.
+
+`gap` is the fourth answer, for the visual no helper draws and no picture can
+honestly supply. It is the outcome the playbook already called
+`SLIDE_HELPER_GAP`, given a slot here so a genuine dead end has somewhere to go
+that is not a substitute promising a picture nobody can source.
 """
 from __future__ import annotations
 
@@ -38,7 +54,7 @@ import re
 import sys
 from pathlib import Path
 
-DECISIONS = ("covered", "build", "substitute")
+DECISIONS = ("covered", "build", "substitute", "gap")
 
 # Each surface, the registry file that decides what it can draw, and the
 # JavaScript object inside it that holds the keys. Reading the registry is the
@@ -203,10 +219,41 @@ def read_decisions(verdict_path: Path) -> list[dict]:
     return decisions
 
 
-def run_verdict(root: Path, design_path: Path, verdict_path: Path) -> int:
+def contract_filenames(photo_requirements: Path) -> set[str]:
+    """Every filename the photo contract promises to source."""
+    data = load_json(photo_requirements, "photo requirements")
+    photos = data.get("photos")
+    if not isinstance(photos, list):
+        raise CoverageError("photo requirements must have a photos array")
+    return {
+        str(photo["filename"]).replace("\\", "/")
+        for photo in photos
+        if isinstance(photo, dict) and isinstance(photo.get("filename"), str)
+    }
+
+
+def promises(named: str, contracted: set[str]) -> bool:
+    """The contract holds this picture, allowing for a folder prefix either way."""
+    asked = named.replace("\\", "/")
+    return any(
+        name == asked or name.endswith(f"/{asked}") or asked.endswith(f"/{name}")
+        for name in contracted
+    )
+
+
+def run_verdict(
+    root: Path,
+    design_path: Path,
+    verdict_path: Path,
+    photo_requirements: Path | None = None,
+) -> int:
     uses = load_uses(design_path)
     decisions = read_decisions(verdict_path)
     failures: list[str] = []
+    gaps: list[str] = []
+    contracted = (
+        contract_filenames(photo_requirements) if photo_requirements else None
+    )
 
     recorded: dict[tuple[str, str, str], dict] = {}
     for index, decision in enumerate(decisions):
@@ -253,9 +300,38 @@ def run_verdict(root: Path, design_path: Path, verdict_path: Path) -> int:
             if not isinstance(helper_key, str) or not helper_key.strip():
                 failures.append(f"{label} is {verdict} but names no helperKey")
                 continue
-        if verdict in ("build", "substitute"):
+        if verdict in ("build", "substitute", "gap"):
             if not isinstance(reason, str) or not reason.strip():
                 failures.append(f"{label} is {verdict} but records no reason")
+        if verdict == "substitute":
+            # The half a reason cannot carry. `substitute` is a promise that the
+            # picture route supplies this visual, and only a filename in the
+            # contract makes that promise checkable.
+            picture = decision.get("picture")
+            if not isinstance(picture, str) or not picture.strip():
+                failures.append(
+                    f"{label} is substitute but names no picture: give the "
+                    "`picture` filename the photo contract sources for this "
+                    "visual. If no picture can honestly supply it, this is a "
+                    "gap, not a substitute"
+                )
+            elif contracted is None:
+                failures.append(
+                    f"{label} is substitute, so this run has a picture to "
+                    "resolve: pass --photo-requirements so the named filename "
+                    "can be checked against the contract"
+                )
+            elif not promises(picture, contracted):
+                failures.append(
+                    f"{label} is substitute on {picture!r}, which the photo "
+                    "contract does not promise. The picture route has not run "
+                    "yet: revise the design to add this picture, then check "
+                    "again. A substitute whose picture never enters the "
+                    "contract leaves the renderer the same nothing a missing "
+                    "helper does, and it fills that silently"
+                )
+        if verdict == "gap":
+            gaps.append(f"{label}: {reason if isinstance(reason, str) else ''}")
         if verdict == "covered":
             if surface not in REGISTRIES:
                 failures.append(f"{label} has no known registry for its surface")
@@ -278,6 +354,11 @@ def run_verdict(root: Path, design_path: Path, verdict_path: Path) -> int:
         for line in failures:
             print(f"- {line}", file=sys.stderr)
         return 1
+    # A gap passes, because a dead end honestly recorded is the right outcome
+    # and stopping the run over it delivers the teacher nothing. It is printed
+    # so it reaches the run report rather than resting in a file nobody reads.
+    for line in gaps:
+        print(f"HELPER_GAP: {line}")
     print(f"HELPER_COVERAGE_OK {len(required)}")
     return 0
 
@@ -339,6 +420,7 @@ def main(argv=None) -> int:
     parser.add_argument("--plugin-root")
     parser.add_argument("--lesson-design")
     parser.add_argument("--verdict")
+    parser.add_argument("--photo-requirements")
     parser.add_argument("--spec")
     parser.add_argument("--surface")
     args = parser.parse_args(argv)
@@ -353,7 +435,12 @@ def main(argv=None) -> int:
     if args.mode == "verdict":
         if not args.lesson_design or not args.verdict:
             raise CoverageError("verdict needs --lesson-design and --verdict")
-        return run_verdict(root, Path(args.lesson_design), Path(args.verdict))
+        return run_verdict(
+            root,
+            Path(args.lesson_design),
+            Path(args.verdict),
+            Path(args.photo_requirements) if args.photo_requirements else None,
+        )
 
     if not args.verdict or not args.spec or not args.surface:
         raise CoverageError("delivery needs --verdict, --spec and --surface")

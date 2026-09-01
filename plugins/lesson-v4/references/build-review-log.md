@@ -1,5 +1,41 @@
 # Build review log
 
+## 2026-09-01 - Year 4 Geography Lesson 1
+
+- The installed package changed from 4.2.56 to 4.2.57 during the run; canonical outputs survived and the newer verified package completed the deterministic checks.
+  *No engine fault, 1 Sep 2026: the package was reinstalled by hand mid-run. The run's own recovery was correct.*
+- A promised substitute map route was recorded in helper coverage but no corresponding map filenames appeared in the photo contract, so slides fell back to the nearest live map compositions.
+  *Addressed 1 Sep 2026, and the cause was two faults in one place. The verdict
+  check that would have caught it lived only in `references/helper-route.md`,
+  which is read only when a decision says `build`; this run's decisions were all
+  `covered` and `substitute`, so the check never ran. And even when it did run,
+  `substitute` needed only a reason, so a reason asserting "the approved picture
+  contract supplies the exact teaching map" passed while the contract held
+  nothing. The check's closing step now sits on the path every run takes
+  (playbook Phase 1.5, "Close the check"), `substitute` names its contract
+  filename in `picture` and the check resolves it against
+  `photo-requirements.json`, and a new `gap` decision gives the genuine dead end
+  somewhere to go that does not promise a picture nobody will source. Replaying
+  this run's own `helper-check.json` against its contract now fails on both map
+  decisions, before the freeze. Regression tests in `test_helper_coverage.py`.*
+- One authentic worksheet riverfront photograph remained unsatisfied; focused repair successfully converted only that evidence card to text while preserving the confirmed aerial photograph and the intended reasoning task.
+  *No change, 1 Sep 2026: working as designed. A documented Manaus riverfront is
+  exactly the picture that must not be generated, `fallback_action: unsatisfied`
+  said so, and the reconciliation route re-authored the one question. The route
+  cost one focused repair and kept the sheet.*
+- The Below worksheet exposed a 13-pixel rendered overflow not caught by JSON preflight; merging two adjacent instruction helpers fixed it without changing pupil-facing content.
+  *No change, 1 Sep 2026: preflight measures the modelled page and the build
+  measures the browser-rendered one, and 13 px of real-render overflow is only
+  visible to the second. Moving a Chrome render into preflight would charge every
+  design attempt for a fault one focused repair closed. Revisit if rendered
+  overflow becomes a repeat finding rather than a single 13 px miss.*
+- The run report's picture stage read `attempting 2 pictures` for a contract of five.
+  *Addressed 1 Sep 2026: `PICTURE_ASSIGNMENTS_OK` printed only the assignment
+  count, and coherent pictures pack into one assignment, so the only number in
+  front of the orchestrator was the wrong one - and that line goes verbatim into
+  four designers' prompts. The marker now prints both counts and the playbook
+  names which one the state line takes.*
+
 Lesson runs append genuine engine findings here when a writable source
 checkout resolves; the improvement pass reads them, fixes the engine, and
 records what became of each entry. A run that cannot reach this file writes a

@@ -282,6 +282,30 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             self.assertIs(summary["ok"], True)
             self.assertEqual(summary["schema_version"], 2)
 
+    def test_the_marker_gives_the_picture_count_as_well_as_the_batch_count(self):
+        """The picture stage's state line says "attempting [N] pictures".
+
+        Coherent photographs pack into one assignment, so the two numbers
+        differ. A run holding only the assignment count told four designers a
+        contract of five photographs was attempting two, and each of them
+        composed against a picture budget the run never had.
+        """
+        import io, contextlib
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); req = root / "requirements.json"
+            photos = [
+                photo("a.jpg", group="G", coherent="all-real"),
+                photo("b.jpg", group="G", coherent="all-real"),
+                photo("c.jpg", group="G", coherent="all-real"),
+            ]
+            req.write_text(json.dumps(requirements(photos)) + "\n", encoding="utf-8")
+            args = type("Args", (), {"requirements": str(req), "expected_filename": [], "expected_prefix": "p", "output_dir": str(root / "assignments"), "working_dir": str(root), "summary_output": str(root / "summary.json")})()
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                compiler.compile_command(args)
+            printed = out.getvalue()
+            self.assertIn("PICTURE_ASSIGNMENTS_OK: 1 assignments, 3 pictures", printed)
+
 
 class EssentialPictureAlwaysHasARouteTests(unittest.TestCase):
     """A required picture must have some authorised way to become an image.

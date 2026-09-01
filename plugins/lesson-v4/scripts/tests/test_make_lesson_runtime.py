@@ -413,9 +413,13 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # Raised from 53 KiB for the content-gap picture wave, after a whole
         # geography lesson blocked with the picture pipeline's rescue ladder
         # sitting unused because nothing reopened the contract for a gap
-        # found after the freeze. Every slice still sits far under its own
-        # 7 KiB budget, which is what a run actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 54 * 1024)
+        # found after the freeze. Raised from 54 KiB when the helper check's
+        # closing step moved onto the path every run takes: it had lived only
+        # in the build-gated helper route, so an ordinary run never ran it, and
+        # two substitutes claiming a picture the contract did not hold put two
+        # invented maps on a geography board. Every slice still sits far under
+        # its own 7 KiB budget, which is what a run actually pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 55 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

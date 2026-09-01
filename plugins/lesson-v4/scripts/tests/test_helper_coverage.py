@@ -83,6 +83,7 @@ class HelperCoverageTests(unittest.TestCase):
         self.design_path = self.dir / "lesson-design.json"
         self.design_path.write_text(json.dumps(design()), encoding="utf-8")
         self.verdict_path = self.dir / "helper-check.json"
+        self.contract_path = self.dir / "photo-requirements.json"
 
     def tearDown(self) -> None:
         self.temp.cleanup()
@@ -93,14 +94,29 @@ class HelperCoverageTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def verdict(self) -> subprocess.CompletedProcess:
-        return run(
+    def write_contract(self, *filenames: str) -> None:
+        self.contract_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 2,
+                    "photos": [{"id": f"photo-{i:03d}", "filename": name}
+                               for i, name in enumerate(filenames, 1)],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    def verdict(self, contract: bool = False) -> subprocess.CompletedProcess:
+        args = [
             "verdict",
             "--lesson-design",
             str(self.design_path),
             "--verdict",
             str(self.verdict_path),
-        )
+        ]
+        if contract:
+            args += ["--photo-requirements", str(self.contract_path)]
+        return run(*args)
 
     # ── the decision exists ───────────────────────────────────────────────
 
@@ -170,20 +186,110 @@ class HelperCoverageTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("records no reason", result.stderr)
 
-    def test_substitute_with_a_reason_is_an_honest_answer(self):
+    def substitute(self, picture: str | None = "photos/plate.jpg") -> dict:
+        decision = {
+            "representationId": "rep-001",
+            "configuration": "blank",
+            "requiredSurface": "slides",
+            "decision": "substitute",
+            "reason": "one fixed real object, generated for this lesson",
+        }
+        if picture is not None:
+            decision["picture"] = picture
+        return decision
+
+    def test_substitute_with_its_picture_in_the_contract_is_an_honest_answer(self):
         """The picture route is legitimate and must not be squeezed out."""
+        self.write_verdict(self.substitute())
+        self.write_contract("photos/plate.jpg")
+        result = self.verdict(contract=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HELPER_COVERAGE_OK", result.stdout)
+
+    # ── the substitute's picture actually reaches the contract ────────────
+    #
+    # The Year 4 geography failure. Two substitutes each gave a reason saying
+    # the approved contract supplied the map; the contract supplied neither,
+    # and the deck drew coastlines from chosen coordinates instead. A reason is
+    # a claim about a file, so the file is what gets checked.
+
+    def test_a_substitute_whose_picture_is_not_in_the_contract_fails(self):
+        self.write_verdict(self.substitute())
+        self.write_contract("photos/something-else.jpg")
+        result = self.verdict(contract=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("HELPER_COVERAGE_FAILED", result.stderr)
+        self.assertIn("the photo contract does not promise", result.stderr)
+
+    def test_a_substitute_that_names_no_picture_fails(self):
+        """The exact shape of the failure: reason present, picture asserted."""
+        self.write_verdict(self.substitute(picture=None))
+        self.write_contract("photos/plate.jpg")
+        result = self.verdict(contract=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("names no picture", result.stderr)
+
+    def test_a_substitute_cannot_be_checked_without_the_contract(self):
+        """Dropping the flag must not be a way back to the old silence."""
+        self.write_verdict(self.substitute())
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("pass --photo-requirements", result.stderr)
+
+    def test_a_contract_folder_prefix_still_resolves(self):
+        """A filename written without its folder is the same promise."""
+        self.write_verdict(self.substitute(picture="plate.jpg"))
+        self.write_contract("wikimedia/plate.jpg")
+        result = self.verdict(contract=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    # ── the honest dead end has somewhere to go ───────────────────────────
+
+    def test_a_gap_passes_and_is_reported(self):
+        """Neither route can run. Forcing a substitute here would invent a
+        picture nobody can source, so the run records the absence and says so."""
         self.write_verdict(
             {
                 "representationId": "rep-001",
                 "configuration": "blank",
                 "requiredSurface": "slides",
-                "decision": "substitute",
-                "reason": "one fixed real object, generated for this lesson",
+                "decision": "gap",
+                "reason": "no helper draws it and no authentic photograph exists",
             }
         )
         result = self.verdict()
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HELPER_GAP: rep-001/blank/slides", result.stdout)
         self.assertIn("HELPER_COVERAGE_OK", result.stdout)
+
+    def test_a_gap_needs_its_reason(self):
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "gap",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("records no reason", result.stderr)
+
+    # ── the check is on the path every run takes ──────────────────────────
+
+    def test_the_runtime_closes_the_check_on_every_run(self):
+        """Why the geography run's substitutes were never checked at all.
+
+        The verdict command lived only in helper-route.md, which is read only
+        when a decision says `build`. A run whose decisions were all `covered`
+        and `substitute` never ran it, so the requirement stated in the runtime
+        held nothing.
+        """
+        playbook = PLAYBOOK.read_text(encoding="utf-8")
+        self.assertIn('check-helper-coverage.py" verdict', playbook)
+        self.assertIn("--photo-requirements", playbook)
+        route = HELPER_ROUTE.read_text(encoding="utf-8")
+        self.assertNotIn("verdict --lesson-design", route)
 
     def test_a_live_helper_key_passes(self):
         self.write_verdict(
@@ -413,7 +519,13 @@ class HelperRouteContractTests(unittest.TestCase):
                       "BUILD OR GROW:", "DEPICTS:", "SURFACES:"):
             self.assertIn(field, text)
         self.assertIn("pending-helper/", text)
-        self.assertIn("HELPER_COVERAGE_OK", text)
+        # The route closes its decision as a substitute that names its picture,
+        # and hands the check itself back to the runtime, which every run
+        # reaches. A second copy here is what made the check invisible to the
+        # runs that never take this route.
+        self.assertIn("`substitute`", text)
+        self.assertIn("picture", text)
+        self.assertNotIn("check-helper-coverage.py", text)
 
     def test_the_route_never_writes_to_the_package_or_publishes(self):
         # A helper is commissioned mid-lesson, from one lesson's need, and nobody

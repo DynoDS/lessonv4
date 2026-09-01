@@ -367,7 +367,21 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
   helper is built for a later lesson, so this visual still takes the picture
   route.
 - `substitute` - no helper should draw it: a fixed depiction of one real thing
-  this lesson alone needs. Give the `reason` and take the picture route.
+  this lesson alone needs. Give the `reason`, take the picture route, and name
+  in `picture` the exact contract filename that route produced.
+- `gap` - neither route can supply it. Give the `reason`. This is the recorded
+  dead end, and it is the only decision that leaves a required visual with
+  nothing behind it.
+
+**`substitute` is a promise about the photo contract, not a note about
+helpers.** It says the picture route supplies this visual, so it is finished
+only when a filename for it reaches the contract, and `picture` is where that
+filename goes. A reason claiming the contract already covers it is a different
+claim and nothing can check it: a geography run wrote exactly that for two maps,
+froze a contract holding neither, and the deck filled both holes with the
+nearest live map helper - coastlines drawn from chosen coordinates, on a lesson
+about where a real forest is. When the picture route cannot run, the honest
+answer is `gap`, not a substitute whose picture nobody will source.
 
 ### The helper route
 
@@ -394,9 +408,31 @@ exactly the late need that ceiling exists to allow. Re-run the design
 validator, the photo-cap check and the helper check. A UK three-pin plug and socket is this route's shape: one real object, the
 same every time, that no renderer should own.
 
-Record the exact `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP` only when neither
-route can run. Do not silently replace a missing visual with an unfaithful
-picture, an approximate emoji or generic decoration.
+Record the decision as `gap` only when neither route can run, and carry the
+matching `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP` into the run report. Do
+not silently replace a missing visual with an unfaithful picture, an approximate
+emoji or generic decoration.
+
+### Close the check
+
+Run this after both routes have finished, on every run:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" verdict \
+  --lesson-design "[WORKING_DIR]/lesson-design.json" \
+  --verdict "[WORKING_DIR]/helper-check.json" \
+  --photo-requirements "[WORKING_DIR]/photo-requirements.json"
+```
+
+Require `HELPER_COVERAGE_OK`, and carry any `HELPER_GAP:` line to the report.
+
+Here is the last point at which a missing picture costs one design revision
+rather than a lesson: afterwards the contract is frozen, the sourcing wave has
+sailed, and a designer meeting the hole can only compose around it.
+
+Run it whatever the decisions say. The command used to sit only in the helper
+route, which is read only on a `build`, so the ordinary run - all `covered` and
+`substitute` - never ran it, and the requirement stated here held nothing.
 
 ---
 
@@ -450,7 +486,9 @@ python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
 
 Require `PICTURE_ASSIGNMENTS_OK`, then validate the emitted `manifest.json` with
 `validate-image-scout.py manifest` and require `PICTURE_MANIFEST_OK`. Together
-these two markers give the state `PICTURE_STAGE: attempting [N] pictures`.
+these two markers give the state `PICTURE_STAGE: attempting [N] pictures`, where
+`[N]` is the marker's **pictures** count, never its assignments count: pictures
+that must look alike pack into one assignment, so the two differ.
 
 If either command fails, no photograph in the contract will arrive. That is a
 degradation, not a stop: the state becomes `PICTURE_STAGE: unavailable - [the
@@ -935,6 +973,11 @@ that snapshot, naming already-terminal filenames so nothing finished reopens.
 Relaunch the blocked designer on the published picture. One wave per run; a
 gap that survives it excludes as before, the pending helper still built for
 `/install-helper`.
+
+Re-record that use in `helper-check.json` as the wave leaves it: `substitute`
+naming the published filename in `picture`, or `gap` with its reason. The
+delivery check reads that file, so a use still recorded as drawn by a helper the
+specification no longer uses fails a resource the wave repaired correctly.
 
 Once the last branch settles, every earned resource must be either built with an
 accepted summary or excluded with a reason. A resource that is neither by that
