@@ -89,6 +89,16 @@ const CHILDREN = {
 // Speakers that don't name a character fill in this order, left to right.
 const DEFAULT_ORDER = ['mr-sear', 'miss-brooker', 'bailey'];
 
+// Which side of the body the statement column takes. Children read left to
+// right, so the side decides what they meet first: the thing being judged, or
+// the question about it. A slide whose speaker holds the claim wants the
+// speaker first and the question after it; a slide whose statement IS the thing
+// being judged wants the statement first. Left is the default because the
+// statement is usually the object of the judgement.
+function statementSide(data) {
+  return data && data.statementSide === 'right' ? 'right' : 'left';
+}
+
 function drawSpeechBubbles(pptx, slide, data, ctx, count) {
   drawHeader(slide, data, ctx);
   const bz = bodyZone(data.headerStyle);
@@ -112,10 +122,15 @@ function drawSpeechBubbles(pptx, slide, data, ctx, count) {
   if (sideStatement) {
     let ratio = (typeof data.statementRatio === 'number') ? data.statementRatio : SIDE_STATEMENT_RATIO;
     ratio = Math.max(0.3, Math.min(0.6, ratio));
-    const leftW = bz.w * ratio - SIDE_STATEMENT_GAP / 2;
-    drawContent(pptx, slide, { x: bz.x, y: bz.y, w: leftW, h: bz.h, class: 'E-wide' }, statement, ctx);
-    speakerAreaX = bz.x + leftW + SIDE_STATEMENT_GAP;
-    speakerAreaW = bz.w - leftW - SIDE_STATEMENT_GAP;
+    const statementW = bz.w * ratio - SIDE_STATEMENT_GAP / 2;
+    const speakersW = bz.w - statementW - SIDE_STATEMENT_GAP;
+    const statementFirst = statementSide(data) === 'left';
+    drawContent(pptx, slide, {
+      x: statementFirst ? bz.x : bz.x + speakersW + SIDE_STATEMENT_GAP,
+      y: bz.y, w: statementW, h: bz.h, class: 'E-wide'
+    }, statement, ctx);
+    speakerAreaX = statementFirst ? bz.x + statementW + SIDE_STATEMENT_GAP : bz.x;
+    speakerAreaW = speakersW;
   } else {
     let ratio = (typeof data.statementRatio === 'number')
       ? data.statementRatio
@@ -233,13 +248,14 @@ function drawFigure(pptx, slide, f, ctx) {
 
 // A single speaker reads best side-by-side rather than as one bubble stretched
 // across the whole slide: the thing being voiced about (the shape a child judges,
-// the prompt) sits on the left, and the one character speaks from the right — the
-// natural home for a lesson where ONE child makes a claim the class tests, or
-// Bailey asks the question a child is afraid to ask. With no statement, the single
+// the prompt) sits beside the one character speaking - the natural home for a
+// lesson where ONE child makes a claim the class tests, or Bailey asks the
+// question a child is afraid to ask. `statementSide` decides which of the two a
+// child meets first; see `statementSide` above. With no statement, the single
 // speaker simply centres in the body.
-const SOLO_GAP        = 0.45;   // gap between the statement and the speaker column
-const SOLO_LEFT_RATIO = 0.55;   // default share the statement takes on the left
-const SOLO_COL_FRAC   = 0.6;    // speaker column width as a fraction of the body when alone
+const SOLO_GAP             = 0.45;  // gap between the statement and the speaker column
+const SOLO_STATEMENT_RATIO = 0.55;  // default share the statement column takes
+const SOLO_COL_FRAC        = 0.6;   // speaker column width as a fraction of the body when alone
 
 function drawSpeechBubbles1(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
@@ -266,12 +282,16 @@ function drawSpeechBubbles1(pptx, slide, data, ctx) {
   }
 
   if (statement) {
-    let ratio = (typeof data.statementRatio === 'number') ? data.statementRatio : SOLO_LEFT_RATIO;
+    let ratio = (typeof data.statementRatio === 'number') ? data.statementRatio : SOLO_STATEMENT_RATIO;
     ratio = Math.max(0.3, Math.min(0.7, ratio));
-    const leftW  = bz.w * ratio - SOLO_GAP / 2;
-    const rightW = bz.w - leftW - SOLO_GAP;
-    drawContent(pptx, slide, { x: bz.x, y: bz.y, w: leftW, h: bz.h, class: 'E-wide' }, statement, ctx);
-    drawSpeaker(bz.x + leftW + SOLO_GAP, bz.y, rightW, bz.h);
+    const statementW = bz.w * ratio - SOLO_GAP / 2;
+    const speakerW   = bz.w - statementW - SOLO_GAP;
+    const statementFirst = statementSide(data) === 'left';
+    drawContent(pptx, slide, {
+      x: statementFirst ? bz.x : bz.x + speakerW + SOLO_GAP,
+      y: bz.y, w: statementW, h: bz.h, class: 'E-wide'
+    }, statement, ctx);
+    drawSpeaker(statementFirst ? bz.x + statementW + SOLO_GAP : bz.x, bz.y, speakerW, bz.h);
   } else {
     const colW = bz.w * SOLO_COL_FRAC;
     drawSpeaker(bz.x + (bz.w - colW) / 2, bz.y, colW, bz.h);

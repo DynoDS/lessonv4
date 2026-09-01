@@ -412,8 +412,9 @@ python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery   --verdict "[
 
 Require `HELPER_DELIVERY_OK`. A failure means a use recorded as drawn by a helper
 is drawn by it nowhere in the specification: the silent substitution this check
-exists to catch. Repair through that surface's focused designer repair, rebuild,
-re-check.
+exists to catch. Each designer now runs this same check at its own gate, so a
+failure here is a designer that skipped it; repair through that surface's focused
+designer repair, rebuild, re-check.
 
 Freeze the approved initial photo contract once:
 
@@ -505,6 +506,7 @@ OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+HELPER_CHECK: [WORKING_DIR]/helper-check.json
 PHOTO_REQUIREMENTS_PATH: [WORKING_DIR]/phase2-initial-photo-requirements.json
 PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 
@@ -522,6 +524,12 @@ node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
   "[WORKING_DIR]/lesson.json"
 
 Require: Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides
+
+python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
+  --verdict "[WORKING_DIR]/helper-check.json" \
+  --spec "[WORKING_DIR]/lesson.json" --surface slides
+
+Require: HELPER_DELIVERY_OK
 
 python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
@@ -712,9 +720,9 @@ worksheet invites a no it never offered.
 **Launch the Worksheet Designer the moment adaptation's provisional contract is
 built (or adaptation is skipped); never hold it for picture work.** The
 dependency runs the other way: `promote-used` reads `worksheet.json` to decide
-which provisional adaptation photos get sourced at all. A worksheet branch
-parked behind slide or picture work can close the picture stage before the
-sheet needing those pictures exists, and the sheet is then unrecoverable.
+which provisional adaptation photos get sourced at all, so a branch parked
+behind picture work closes the picture stage before the sheet needing those
+pictures exists, and that sheet is then unrecoverable.
 
 Before every attempt, obtain the exact worksheet photo-contract path through
 `photo-contract.py select-worksheet`. Launch Worksheet Designer directly:
@@ -729,6 +737,7 @@ OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
 LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+HELPER_CHECK: [WORKING_DIR]/helper-check.json
 PHOTO_REQUIREMENTS_PATH: [selected contract path]
 PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 [ADAPTATION_DESIGN when accepted]
@@ -738,7 +747,8 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/worksheet.json
 
 SUCCESS_CHECK:
-Run the worksheet specification validator named by your role.
+Run the worksheet specification validator and the helper-delivery check
+named by your role. Require WORKSHEET_PREFLIGHT_OK and HELPER_DELIVERY_OK.
 TERMINAL_STATE: COMPLETE
 ```
 
@@ -787,9 +797,8 @@ python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
 ```
 
 Require `PICTURE_ASSIGNMENTS_OK`, then validate the manifest with the **same
-filename list**. The snapshot also holds every picture Phase 2 finished, and the
-validator re-derives the partition from what the wave says it owns, so
-validating without it rejects a correct manifest and loses the sheet:
+filename list**. The snapshot also holds every picture Phase 2 finished, so
+validating without the list rejects a correct manifest and loses the sheet:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/validate-image-scout.py" manifest \
@@ -822,12 +831,12 @@ repair, not a scope breach. The sheets are one document, so one unreconciled
 reference loses all three and the answer key.
 
 **If `worksheet.json` holds a labelled diagram over a photo, launch Diagram
-Anchor against it before building**, exactly as Track A does for `lesson.json`,
-and pass the worksheet spec as the file to anchor. The dots are percentages the
-designer wrote before the picture existed, so unanchored they sit wherever they
-were guessed - and a worksheet's dots are not decoration: they are what a child
-draws their line to, so a sheet built without this pass can print "label the
-parts" over a photograph carrying nothing to label.
+Anchor against it before building**, as Track A does, passing the worksheet spec
+as the file to anchor. The dots are percentages the designer wrote before the
+picture existed, so unanchored they sit wherever they were guessed - and a
+worksheet's dots are what a child draws their line to, so a sheet built without
+this pass can print "label the parts" over a photograph carrying nothing to
+label.
 
 The build refuses an unanchored set (`EMPTY_SET`), but that refusal costs the
 whole sheet set, so the net is not the fix: run the pass.

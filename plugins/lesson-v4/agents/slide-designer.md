@@ -50,6 +50,7 @@ Read before the first affected decision:
 Read from the working directory:
 
 - `lesson-design.json`, which is the authoritative pedagogical contract.
+- `helper-check.json`, which records, per representation use, whether the engine already draws it and under which `helperKey`. A `covered` decision is a promise this deck keeps, not a suggestion: see Deliver the helper that was promised.
 - the exact file named by `PHOTO_REQUIREMENTS_PATH`, which is the authoritative photograph contract for this attempt. Reference only listed filenames. Do not open a different photograph contract. Read it against the `PICTURE_STAGE:` state in your prompt: under `unavailable` it still tells you what each beat needed, but none of it will arrive.
 
 Do not read the teacher's original brief to reinterpret the settled lesson design.
@@ -179,6 +180,29 @@ Choose the surface from the learning relationship. Then protect the smallest loa
 When `representationRefs` or `modellingState` is present, read the named conditional references before composing the affected slide. Preserve identity, configuration, colour, orientation, role and prepared-versus-live state exactly. Do not improve, swap or reinterpret a source-authored representation.
 
 Use only fields and configurations documented by the selected helper contract. If no documented route preserves a load-bearing requirement, follow the gap route below.
+
+#### Deliver the helper that was promised
+
+Every `helper-check.json` decision with `decision: "covered"` and
+`requiredSurface: "slides"` must appear in `lesson.json` under the exact
+`helperKey` it names. That decision is where the run already answered "can the
+engine draw this?", and the rest of the pipeline was allowed to proceed on the
+answer.
+
+**A hand-built lookalike does not satisfy it.** Boxes and connecting lines
+arranged to resemble a concept map are not the `concept-map` helper: they carry
+none of its sizing, spacing or overflow behaviour, they drift the moment the
+content changes, and the deck quietly ships a substitute for the visual the
+lesson depends on. The check below refuses that, and refusing it late costs the
+run a repair worker and a rebuild.
+
+Give a promised helper its layout priority before anything else on the slide.
+Choose the zone that lets it be read, then compose the remaining content around
+it. The failure this prevents is the ordinary one: a slide laid out first, the
+helper found not to fit the strip it was left, and a hand-built substitute
+chosen because it does. If the helper genuinely cannot be read in any zone the
+slide can offer, the slide is the wrong shape for it - change the template or
+split the slide - and only a route that no template can hold is a helper gap.
 
 ### 5. Use answers from the structured answer object only
 
@@ -441,6 +465,23 @@ SLIDE_DESIGN_CHECK_OK: [N] slides
 ```
 
 `[N]` must equal the candidate's `slides` array length.
+
+Then run exactly, against the same candidate:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
+  --verdict "[WORKING_DIR]/helper-check.json" \
+  --spec "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
+  --surface slides
+```
+
+Require `HELPER_DELIVERY_OK [N]`. It reads the specification only, so it costs
+nothing and it runs here rather than after the build for one reason: a
+`HELPER_DELIVERY_FAILED` you find now is a slide you re-compose inside your own
+repair budget, and the same failure found after the build costs the run a
+separate repair worker and a second render. Treat it as a composition
+diagnostic you own. Do not repair it by editing `helper-check.json`, which is
+not yours, and do not promote a candidate that fails it.
 
 A pass also prints, immediately before that marker:
 

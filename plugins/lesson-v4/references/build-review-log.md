@@ -105,3 +105,36 @@ improvement pass folds those in.
   lines has no piece to be. The designer's refusal to weaken the task was the
   right call. Adding that piece is a helper-builder job, not a repair, and is
   left as a deliberate choice rather than folded into this pass.*
+
+## 2026-09-01 — Year 4 PSHE balanced diet: teacher review of the finished outputs
+
+- Three `speech-bubbles-1` slides put the judging question in the left column
+  with the claim it asks about in the bubble on the right, so a child met the
+  question before its own subject.
+  *Addressed 1 Sep 2026: the template hard-coded the statement to the left and
+  offered no side at all, so no designer could have fixed it. `statementSide`
+  (`left` default, `right` available) now exists on the whole speech-bubble
+  family; `slide-speech-and-characters.md` says which shape takes which side,
+  and `preferences.md` carries the general reading-order preference, stated as a
+  preference rather than a rule because the teacher named cases where the other
+  order is right. Regressions: `builder/test/statement-side.test.js` and
+  `scripts/tests/test_reading_order_left_to_right.py`.*
+- The Expected worksheet put its three steps in a 30% left column, pushing the
+  photograph and all three questions into the 70% beside them and leaving a tall
+  empty band under four short lines.
+  *Addressed 1 Sep 2026: `side-70-30` already existed, so this was guidance, not
+  mechanism. The settled column rules said where a stimulus goes and what the
+  other column is for, and never covered support material. `preferences.md`
+  (Worksheets) and the worksheet designer now put steps, success criteria, word
+  banks and reminders in the right-hand column, with the discriminating
+  exception for a step list a child works through before answering.*
+- `rep-001/body-jobs` was recorded as covered by `concept-map` and the deck
+  shipped a hand-built lookalike; only the orchestrator's post-build delivery
+  check caught it, costing a repair worker and a rebuild.
+  *Addressed 1 Sep 2026: the check reads the specification only and never needed
+  the build. `helper-check.json` is now an authoritative input to both the slide
+  and worksheet designers, each runs the delivery check at its own gate, and each
+  is told that a hand-built lookalike is not delivery and that a promised helper
+  takes its layout before the rest of the slide. The orchestrator's check stays
+  as the independent backstop. Regression:
+  `scripts/tests/test_helper_delivery_at_the_designer_gate.py`.*

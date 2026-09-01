@@ -118,6 +118,13 @@ rebuilding it as photographs, then questions, with the drawing task alone on
 the other side. `preferences.md` (Worksheets) carries the decision and the
 superseded panel-on-the-right arrangement it replaced.
 
+Support a child glances at while working - steps, success criteria, a word bank,
+a reminder - goes in the right-hand column. It is not what the page begins with,
+so it must not take the top-left corner the stimulus owns: a narrow steps panel
+on the left pushes the whole task into the width that is left and strands an
+empty band under it. A step list a child works *through* before answering is part
+of the task, not support, and goes above its questions in their own column.
+
 ---
 
 ## How you work
@@ -920,3 +927,20 @@ existing shapes is not friction.
 This final command resolves any `"auto"` layout exactly as the build will,
 prints the shape it chose, and proves the JSON you actually saved is the page
 that will print.
+
+Then run exactly:
+
+```
+python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
+  --verdict "[WORKING_DIR]/helper-check.json" \
+  --spec "[WORKING_DIR]/worksheet.json" \
+  --surface worksheets
+```
+
+Require `HELPER_DELIVERY_OK`. Every `helper-check.json` decision recorded
+`covered` for the worksheet surface named the `helperKey` the engine draws that
+visual with, and this holds the sheet to it. A hand-built arrangement that looks
+like the helper is not the helper: it carries none of its sizing or fitting
+behaviour, and the sheet ships a substitute for a visual the lesson depends on.
+Repair it by using the named helper, here, where it is still a composition
+decision of yours. Do not edit `helper-check.json`, which is not yours.

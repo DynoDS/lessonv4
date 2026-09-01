@@ -32,6 +32,16 @@ A source task line often arrives fused: `Dev says: 'A laptop belongs in the main
 
 This decomposition is a sanctioned mechanical transformation, like automatic question labels: each piece keeps its exact wording, and only where it sits changes.
 
+**Then put that task line after the claim, not before it.** Children read left to
+right, so a column carrying "Is Dev right? Explain." to the left of Dev's bubble
+asks the question before its subject exists. On the speech-bubble templates set
+`statementSide: "right"` for this shape, so a child meets the claim, then the
+question about it. The default `left` is for the other shape, where the statement
+is the thing being judged (the Carroll diagram, the parallelogram, the plotted
+point) and the character responds to it: there the statement genuinely is what
+they read first. The test is what a child has to have read before the other half
+makes sense, never which slot the wording arrived in.
+
 ## When the debated statement is a diagram
 
 When the shared statement the characters are debating is itself a diagram children must read to decide, that diagram is the slide's P1 central content. This includes a Carroll diagram whose placement they judge, a number line whose value they read, a graph two children disagree about, or any figure the disagreement turns on.

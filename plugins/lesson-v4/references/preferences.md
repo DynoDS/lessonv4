@@ -426,6 +426,22 @@ Existing task-action verbs may use house blue when that treatment reveals the ph
 
 **Use the whole slide, and give the eye somewhere to land.** A slide that fills its canvas and steers the eye teaches better than a sparse, flat one, and two habits carry most of it. First, size text to the room it has: a short key sentence shrunk into a corner with empty space around it reads as a half-finished slide, so let it grow to fill its zone rather than sit small and faint. Second, keep no slide one flat colour — a wall of black reads as something to wade through, and a wall of one tint (a whole body painted blue, say) is the same wall in a different shade. Colour is for *separating* what matters from what supports it: the key phrase or the question stands out, the rest recedes, so a child's eye lands on the important thing first. On an otherwise text-only slide, one relevant emoji per line is the lightest way to lift it. This is taste rather than a formula — the test is whether the slide looks made for a child to glance at, not typed out for them to read.
 
+**Left to right is the order the slide is used in.** A slide often carries two
+things: something the class reads, is told or is shown, and a question they then
+discuss. That is the rhythm of the beat - teacher first, question next, children
+talk, move on - and a two-column slide should lay it out in that order, because
+children read left to right. So the thing they read first goes left, and the
+question about it goes right. A question sitting to the left of the claim,
+diagram or photograph it is asking about arrives before its own subject, and a
+child reads it twice: once without knowing what it means, once after finding the
+other half.
+
+This is a preference, not a rule to force. Plenty of slides have no such pair,
+or have the question in the title, or put the visual where its shape demands, or
+stack the two rather than splitting them, and a layout that genuinely reads
+better the other way round is the right layout. It is the default to reach for
+when both halves exist and either arrangement would fit.
+
 ### Lesson Designer visual-need boundary
 
 **Foundation subject Teach and task-framing slides earn meaningful visual support.** In PSHE, RE, History, Geography and Science, slides that present categories, locations, comparisons, sequences, or the task children are about to investigate should use meaningful visual differentiation when it improves understanding rather than defaulting to plain text columns. The visual treatment may be a labelled diagram, photograph, map, timeline, source, object, shape, icon, emoji or another representation that fits the learning; it does not need to give every individual item its own picture. Text can be the teaching object when the text itself is what children are studying, and a separate picture should not be forced where it adds nothing. The test is which representation teaches the content best. Task-framing slides in particular fail this test often: the question, the success criteria, and any useful visual or teaching object for the real context, with the wider task description living in speaker notes, is enough to set up the task. Children don't need both a paraphrase of the question AND the success criteria on screen — the SC is what tells them what good looks like. What lives in the notes here is the teacher's *framing* — the orientation, the why-it-matters, the longer description of what's ahead. A task the children actually carry out at this beat is a different thing and stays on the slide: when the beat asks them to write a prediction, the prediction prompt and its sentence stem go on screen, because writing it is something the child *does*, not something the teacher says. The line to hold is framing-in-notes, task-on-slide — trimming the framing keeps the slide a glance, and keeping the task visible keeps it doable when the notes go unread.
@@ -498,6 +514,10 @@ This pricing is a check, not the measurement. The worksheet designer measures th
 The teacher settled this over two sheets. On 29 August 2026 he rejected a stimulus on the left with (1) beside it on the right. On 31 August 2026 he rejected the reverse on his own science sheet - (1) top left with the photographs it asks about top right - and rebuilt it as: `Look at these photographs`, the photographs, then (1) and (2) under them, with the drawing task alone on the other side. Both rejections say one thing, and it is not about which side (1) sits on: **do not put the questions in one column and the material they work from in another.**
 
 This supersedes the earlier "shared evidence panel" arrangement recorded here, which had the question run down the left and a map, source set or data table in a panel on the right. That is the shape he rejected. A panel every question works from is a stimulus, and it goes above its questions in their own column.
+
+**Support material goes in the right-hand column, never the left.** Steps, success criteria, a word bank, a reminder or a worked reference are things a child glances across at while working, not things they read before starting. Put them on the right and let the work start at the left margin where the child's eye and pen already are. A narrow steps panel on the left is the shape to avoid: it takes the top-left corner the stimulus was supposed to own, pushes the whole task into the remaining width, and leaves a tall empty band under four short lines. The teacher settled this on 1 September 2026 on a PSHE sheet whose three steps sat in a 30% left column with the lunch photograph and every question squeezed into the 70% beside them: the same page with the columns the other way round gives the task its full run and keeps the steps in view.
+
+The exception is a step list a child must work *through* in order before they can answer anything, which is part of the task rather than support beside it: that belongs above the questions in their own column, like any other thing the questions read from.
 
 **A lettered or numbered stimulus set is one block.** Photographs A to D are one thing a child reads, so they sit together. Splitting them - A, B and C in one zone and D inside a later question - leaves a table headed "A to D" whose fourth row is somewhere else on the page.
 

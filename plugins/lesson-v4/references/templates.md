@@ -335,7 +335,9 @@ Reach for these when the slide's job is to *put words in a character's mouth*: s
 
 **Use for:** one child voicing a claim, prediction, or misconception the class then tests ("Priya says this parallelogram has two lines of symmetry, so what advice would you give her?"); Bailey asking the question a child is afraid to ask; a single thought worked aloud to the class.
 
-**Slots:** `title`, `instruction`, `statement`, `speakers` (a single-entry array), plus optional `statementRatio` (0.3–0.7 — the share the left statement takes, default 0.55). The statement reads at size on the left, so when it is a shape children judge (a geoboard parallelogram) they can actually see what is being claimed. With no `statement`, the lone speaker centres in the body.
+**Slots:** `title`, `instruction`, `statement`, `speakers` (a single-entry array), plus optional `statementRatio` (0.3–0.7 — the share the statement column takes, default 0.55) and optional `statementSide` (`"left"` default, or `"right"`). The statement reads at size in its own column, so when it is a shape children judge (a geoboard parallelogram) they can actually see what is being claimed. With no `statement`, the lone speaker centres in the body.
+
+`statementSide` decides which column a child meets first, and the rule is what they have to read first, not which slot it is. Keep the default `left` when the statement is the thing being judged and the speaker responds to it. Set `right` when the speaker's own words are the thing being judged and the statement is the question about them: "Is Dev right? Explain." beside a claim reads as a question with its subject still to come when it sits on the left. `speech-bubbles-2` and `speech-bubbles-3` take the same field for their side-statement column.
 
 #### `speech-bubbles-2`
 
