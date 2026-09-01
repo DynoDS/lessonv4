@@ -119,11 +119,13 @@ the other side. `preferences.md` (Worksheets) carries the decision and the
 superseded panel-on-the-right arrangement it replaced.
 
 Support a child glances at while working - steps, success criteria, a word bank,
-a reminder - goes in the right-hand column. It is not what the page begins with,
-so it must not take the top-left corner the stimulus owns: a narrow steps panel
-on the left pushes the whole task into the width that is left and strands an
-empty band under it. A step list a child works *through* before answering is part
-of the task, not support, and goes above its questions in their own column.
+a reminder - comes after the work in the reading order, normally the right-hand
+column and sometimes a band below. Which of those you use is latitude. What is
+not is the top-left corner: it belongs to whatever the questions read from, and a
+narrow support panel that takes it pushes the whole task into the width that is
+left and strands an empty band under it. A step list a child works *through*
+before answering is not support at all - it is part of the task, and goes above
+its questions in their own column.
 
 ---
 

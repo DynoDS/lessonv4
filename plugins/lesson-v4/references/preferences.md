@@ -426,28 +426,31 @@ Existing task-action verbs may use house blue when that treatment reveals the ph
 
 **Use the whole slide, and give the eye somewhere to land.** A slide that fills its canvas and steers the eye teaches better than a sparse, flat one, and two habits carry most of it. First, size text to the room it has: a short key sentence shrunk into a corner with empty space around it reads as a half-finished slide, so let it grow to fill its zone rather than sit small and faint. Second, keep no slide one flat colour — a wall of black reads as something to wade through, and a wall of one tint (a whole body painted blue, say) is the same wall in a different shade. Colour is for *separating* what matters from what supports it: the key phrase or the question stands out, the rest recedes, so a child's eye lands on the important thing first. On an otherwise text-only slide, one relevant emoji per line is the lightest way to lift it. This is taste rather than a formula — the test is whether the slide looks made for a child to glance at, not typed out for them to read.
 
-**When one half of a slide cannot be read until the other has been, put the one
-it depends on where a child starts.** Some pairs carry an order inside them: a
-question naming something ("Is Dev right?", "What does this graph show?") needs
-that thing already met; a sentence explaining a diagram needs the diagram; a
-second example being compared needs the first. Split such a pair across two
-columns backwards and the child reads it twice - once with nothing to attach it
-to, once after hunting down the other half.
+**Children take a slide in from the top left, so lay it out in the order it is
+used.** The rhythm of a teaching beat is: the class reads or hears the thing -
+the claim, the statement, the worked line, the photograph - and then meets the
+question about it. Put the two on the slide in that order. A question met before
+its subject gets read twice: once with nothing to attach it to, once after
+hunting down the other half.
 
-**This is about that dependency, and about nothing else.** It does not say
-questions go on the right, and it does not say teacher material goes on the
-left. A question that stands on its own - "What do you already know about
-diets?", "What do you notice?" - depends on nothing and belongs wherever the
-slide reads best, the left included. A large diagram usually earns the left for
-its size, with the words about it beside it, and that is this same rule rather
-than an exception to it: the words are the half that depends. The only thing
-being ruled out is a genuine dependency laid out in reverse.
+**It is the order that matters, not the sides.** Left then right carries it; top
+then bottom carries it just as well, and often better when the thing being read
+is wide or the question is short. This is not a rule that questions live on the
+right or that teacher material lives on the left. A question standing on its own
+- "What do you already know about diets?", "What do you notice?" - has nothing
+in front of it to depend on and belongs wherever the slide reads best, top left
+included.
+
+**The same scan path is why support sits late.** Success criteria, a steps list,
+a word bank or a reminder are things a child glances across at while working
+rather than reads first, so they come after the work in the scan: normally the
+right-hand side, sometimes below. The Worksheets section says the same thing
+about a printed page, for the same reason.
 
 **And it is a preference.** A slide with no such pair, a question carried in the
-title, a pair that reads better stacked than split, a visual whose shape decides
-its column: none of those are this rule's business. Reach for it when both
-halves are on the slide, one truly cannot be understood before the other, and
-either arrangement would fit.
+title, a visual whose shape decides its column: none of those are this rule's
+business. Reach for it when both halves are on the slide, one genuinely cannot
+be understood before the other, and more than one arrangement would fit.
 
 ### Lesson Designer visual-need boundary
 
@@ -522,9 +525,11 @@ The teacher settled this over two sheets. On 29 August 2026 he rejected a stimul
 
 This supersedes the earlier "shared evidence panel" arrangement recorded here, which had the question run down the left and a map, source set or data table in a panel on the right. That is the shape he rejected. A panel every question works from is a stimulus, and it goes above its questions in their own column.
 
-**Support material goes in the right-hand column, never the left.** Steps, success criteria, a word bank, a reminder or a worked reference are things a child glances across at while working, not things they read before starting. Put them on the right and let the work start at the left margin where the child's eye and pen already are. A narrow steps panel on the left is the shape to avoid: it takes the top-left corner the stimulus was supposed to own, pushes the whole task into the remaining width, and leaves a tall empty band under four short lines. The teacher settled this on 1 September 2026 on a PSHE sheet whose three steps sat in a 30% left column with the lunch photograph and every question squeezed into the 70% beside them: the same page with the columns the other way round gives the task its full run and keeps the steps in view.
+**Support comes after the work in the reading order, not before it.** Steps, success criteria, a word bank, a reminder or a worked reference are things a child glances across at while working rather than reads before starting, so they sit later in the scan than the work does: normally the right-hand column, sometimes a band below. This is the scan-path preference from Slide Philosophy applied to a printed page, and it carries the same latitude - what matters is that the work comes first, not which side the support lands on.
 
-The exception is a step list a child must work *through* in order before they can answer anything, which is part of the task rather than support beside it: that belongs above the questions in their own column, like any other thing the questions read from.
+The part that is not latitude is the top-left corner, which belongs to whatever the questions read from. A narrow support panel that takes it pushes the whole task into the width that is left and strands an empty band under a few short lines. The teacher rejected exactly that on 1 September 2026, on a PSHE sheet whose three steps sat in a 30% left column with the lunch photograph and all three questions squeezed into the 70% beside them; the same page with the columns the other way round gives the task its full run and still keeps the steps in view.
+
+A step list a child must work *through* in order before they can answer anything is not support at all: it is part of the task, and goes above the questions in their own column like anything else they read from.
 
 **A lettered or numbered stimulus set is one block.** Photographs A to D are one thing a child reads, so they sit together. Splitting them - A, B and C in one zone and D inside a later question - leaves a table headed "A to D" whose fourth row is somewhere else on the page.
 

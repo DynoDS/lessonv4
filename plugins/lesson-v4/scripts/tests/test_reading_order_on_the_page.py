@@ -17,7 +17,7 @@ def flat(path: Path) -> str:
 
 
 class ReadingOrderTests(unittest.TestCase):
-    """A child reads left to right, and two surfaces ignored it.
+    """Two surfaces laid a beat out against the order it is used in.
 
     The teacher flagged this on 1 September 2026 across one lesson's outputs.
     On the deck, three speech-bubble slides put "Is Dev right? Explain." in the
@@ -31,38 +31,51 @@ class ReadingOrderTests(unittest.TestCase):
     it does not govern.
     """
 
-    def test_the_slide_preference_is_about_dependency_not_content_type(self) -> None:
-        """The first draft of this said "the thing they read first goes left,
-        and the question about it goes right", and the teacher rejected it the
-        moment he read it back: "I dont want it to say all questions must be on
-        right and all teacher stuff on left". He was right, and the wording was
-        wrong about the lesson too. What made those three slides fail was not
-        that a question sat left; it was that the question could not be read
-        until the claim had been. That is the rule, and it says nothing about
-        which kind of content takes which side."""
+    def test_the_slide_preference_is_a_rhythm_not_a_side(self) -> None:
+        """Written twice before it was right.
+
+        The first draft said "the thing they read first goes left, and the
+        question about it goes right". The teacher rejected it on reading it
+        back - "I dont want it to say all questions must be on right and all
+        teacher stuff on left" - and then gave the actual principle: the rhythm
+        he wants is claim or teaching first, question second, and that "doesnt
+        neccessarily mean left and right. It could be top then bottom." The
+        left-right habit is downstream of how children access a slide at all,
+        which is from the top left.
+        """
         preferences = flat(PREFERENCES)
         self.assertIn(
-            "When one half of a slide cannot be read until the other has been",
+            "Children take a slide in from the top left, so lay it out in the "
+            "order it is used.",
             preferences,
         )
-        self.assertIn("This is about that dependency, and about nothing else.", preferences)
+        self.assertIn("It is the order that matters, not the sides.", preferences)
+        self.assertIn("top then bottom carries it just as well", preferences)
 
     def test_the_slide_preference_refuses_the_side_reading_of_itself(self) -> None:
         """Guard against the drift back. A model reading this must not be able
         to take "questions go right" from it, and the counterexample has to be
-        a question that is right on the left."""
+        a question that is right where the scan starts."""
         preferences = flat(PREFERENCES)
-        self.assertIn("It does not say questions go on the right", preferences)
-        self.assertIn("it does not say teacher material goes on the left", preferences)
-        self.assertIn("belongs wherever the slide reads best, the left included", preferences)
-
-    def test_a_diagram_with_its_explanation_beside_it_is_not_an_exception(self) -> None:
-        """The common two-column slide has the visual left and words right, and
-        a rule that made that an exception would be fighting most of the deck."""
         self.assertIn(
-            "that is this same rule rather than an exception to it: the words "
-            "are the half that depends",
-            flat(PREFERENCES),
+            "not a rule that questions live on the right or that teacher "
+            "material lives on the left",
+            preferences,
+        )
+        self.assertIn("belongs wherever the slide reads best, top left included", preferences)
+
+    def test_the_success_criteria_habit_is_derived_not_a_separate_rule(self) -> None:
+        """The teacher's own account: "this is why i normally have success
+        criteria right". It follows from the scan path, so it must be written as
+        a consequence rather than as a second unexplained convention - and it
+        must reach the worksheet page by the same reasoning."""
+        preferences = flat(PREFERENCES)
+        self.assertIn("The same scan path is why support sits late.", preferences)
+        self.assertIn("normally the right-hand side, sometimes below", preferences)
+        self.assertIn(
+            "The Worksheets section says the same thing about a printed page, "
+            "for the same reason.",
+            preferences,
         )
 
     def test_the_slide_preference_is_not_written_as_a_mandate(self) -> None:
@@ -92,32 +105,44 @@ class ReadingOrderTests(unittest.TestCase):
             speech,
         )
 
-    def test_worksheet_support_material_has_a_side_at_last(self) -> None:
+    def test_worksheet_support_material_is_placed_by_the_same_scan_path(self) -> None:
         """The existing column rules said where a stimulus goes and what the
         other column is for, and never covered support material, so the steps
         took the corner the stimulus owns."""
         preferences = flat(PREFERENCES)
         self.assertIn(
-            "Support material goes in the right-hand column, never the left.",
+            "Support comes after the work in the reading order, not before it.",
             preferences,
         )
         self.assertIn("success criteria", preferences)
         self.assertIn("Support a child glances at while working", flat(WORKSHEET_DESIGNER))
 
+    def test_the_worksheet_rule_is_firm_only_where_the_sheet_actually_broke(self) -> None:
+        """First written as "goes in the right-hand column, never the left".
+        The teacher asked for it softened, having twice said he does not want
+        mandates. The softening is not a retreat: the side is genuinely
+        latitude, and the thing that broke the sheet - support taking the corner
+        the page starts from - stays firm. Splitting them keeps the rule
+        enforceable where it matters and quiet where it does not."""
+        for path in (PREFERENCES, WORKSHEET_DESIGNER):
+            with self.subTest(path=path.name):
+                text = flat(path)
+                self.assertNotIn("never the left", text)
+                self.assertIn("sometimes a band below", text)
+                self.assertIn("latitude", text)
+                self.assertIn("top-left corner", text)
+
     def test_a_worked_through_step_list_is_not_support(self) -> None:
         """Discrimination: steps a child must complete in order before they can
         answer are part of the task and stay above their questions."""
-        for path in (PREFERENCES, WORKSHEET_DESIGNER):
-            with self.subTest(path=path.name):
-                self.assertIn("work", flat(path))
         self.assertIn(
-            "A step list a child works *through* before answering is part of "
-            "the task, not support",
+            "A step list a child works *through* before answering is not "
+            "support at all - it is part of the task",
             flat(WORKSHEET_DESIGNER),
         )
         self.assertIn(
-            "a step list a child must work *through* in order before they can "
-            "answer anything",
+            "A step list a child must work *through* in order before they can "
+            "answer anything is not support at all",
             flat(PREFERENCES),
         )
 
