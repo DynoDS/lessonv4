@@ -513,17 +513,30 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
     # the answer kept being sought in the guidance, where the fault was not.
     # `check-optional-pictures.py` now says which happened on every run; this is
     # what stops that line dying in a terminal.
+    #
+    # The one honest alternative is a deck built without its optional layer
+    # because the Slide Decorator failed or never returned: the layer carries
+    # no teaching, so the deck ships, and the record says so under accepted
+    # minor issues with `SLIDE_DECORATION_OMITTED:` rather than pretending a
+    # check ran that had no record to read.
     lesson_spec = read_json(working / "lesson.json", "lesson.json", [])
     deck_ran = isinstance(lesson_spec, dict) and bool(lesson_spec.get("slides"))
-    if deck_ran and "OPTIONAL_PICTURE_LIBRARY:" not in sections.get(
-        "## Picture results", ""
+    decoration_omitted = "SLIDE_DECORATION_OMITTED:" in sections.get(
+        "## Accepted minor issues", ""
+    )
+    if (
+        deck_ran
+        and not decoration_omitted
+        and "OPTIONAL_PICTURE_LIBRARY:" not in sections.get("## Picture results", "")
     ):
         failures.append(
             "picture results: this run built a deck, so the section must carry "
             "the `OPTIONAL_PICTURE_LIBRARY:` line from `check-optional-"
-            "pictures.py`, verbatim. A deck with no drawings means one thing "
-            "when the library was there and another when it was not, and "
-            "nothing else on the record tells them apart."
+            "pictures.py`, verbatim, unless `## Accepted minor issues` carries "
+            "`SLIDE_DECORATION_OMITTED:` because the Slide Decorator did not "
+            "finish. A deck with no drawings means one thing when the library "
+            "was there and another when it was not, and nothing else on the "
+            "record tells them apart."
         )
     require_obligations(
         "friction",

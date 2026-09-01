@@ -118,9 +118,12 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, text)
-        # Both model workers whose prompt names a photo contract carry the state.
+        # Every model worker whose prompt names a photo contract carries the
+        # state: the Slide Designer, the Slide Decorator (whose scratch check
+        # draws the promised photographs at their guaranteed room) and the
+        # Worksheet Designer.
         self.assertEqual(
-            text.count("PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]"), 2
+            text.count("PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]"), 3
         )
 
     def test_designers_are_told_which_absent_picture_means_which_thing(self):
@@ -148,8 +151,12 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         repair, so a wrong picture reached the teacher as a flag either way.
 
         What the designer needed instead was to see its own optional drawings in
-        position, and it now does: the scratch build draws them and the designer
-        renders that deck itself, inside the one spawn.
+        position, and the pass that places them now does: the scratch build
+        draws them and the Slide Decorator renders that deck itself. That pass
+        runs in its own worker since 1 Sept 2026 so the wall and stick-in
+        designers can start on the settled composition, but it is the same
+        pass at the same point over the same private preview, never a look at
+        the built deck.
         """
         playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
             encoding="utf-8"
@@ -165,7 +172,11 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         # A removed stage that is merely undocumented gets reinvented.
         self.assertIn("Do not reinstate it", playbook)
 
-        self.assertIn("### Confirm the layer landed where you put it", designer)
+        decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
+        self.assertIn("## Confirm the layer landed where you put it", decorator)
+        self.assertNotIn("Confirm the layer landed where you put it", designer)
+        self.assertIn("SLIDE_DECORATION_OK", playbook)
+        self.assertIn("The Slide Decorator is not that spawn", playbook)
         self.assertNotIn("'--skip-optional-decorations'", check)
 
     def test_a_track_a_worker_launch_still_has_only_two_shapes(self):

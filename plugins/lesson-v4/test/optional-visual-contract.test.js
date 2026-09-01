@@ -17,12 +17,17 @@ test("resource designers resolve optional Educational SVG requests without a sco
   const playbook = read("skills/make-lesson/playbook-lite.md");
   const reference = read("references/context-pictures.md");
   const readme = read("README.md");
+  // The slides' optional layer is resolved by the Slide Decorator, the pass
+  // in its own worker since 1 Sept 2026; the Slide Designer composes and
+  // leaves room but authors no request.
+  const decorator = read("agents/slide-decorator.md");
   const slide = read("agents/slide-designer.md");
   const worksheet = read("agents/worksheet-designer.md");
   const stickIn = read("agents/stick-in-sheets-designer.md");
   const wall = read("agents/working-wall-designer.md");
 
-  for (const designer of [slide, worksheet, stickIn, wall]) {
+  assert.doesNotMatch(slide, /Resolve your own Educational SVG requests/i);
+  for (const designer of [decorator, worksheet, stickIn, wall]) {
     assert.match(designer, /Resolve your own Educational SVG requests/i);
     assert.match(designer, /local-library search|local library/i);
     assert.match(designer, /no unresolved Educational SVG/i);
@@ -88,12 +93,13 @@ test("resource designers resolve optional Educational SVG requests without a sco
   assert.match(reference, /ordinary P2[\s\S]*emoji fallback/);
   assert.match(reference, /semantic vocabulary[\s\S]*text-only/);
   assert.match(reference, /failed P3 decoration/);
-  // Optional pictures are settled inside the designer that owns the spec, so the
-  // orchestrator waits on the finished lesson.json (and its terminal pictures)
-  // and only then anchors any labelled diagram over a real photograph.
+  // Optional pictures are settled by the decorator on the promoted spec, so
+  // the orchestrator waits on the finished lesson.json (its decoration and
+  // its terminal pictures) and only then anchors any labelled diagram over a
+  // real photograph.
   assert.match(
     playbook,
-    /Wait until Slide Designer and all picture filenames referenced by `lesson\.json`[\s\S]*labelled diagram over a photo, launch Diagram\s+Anchor/
+    /Wait until Slide Designer, the Slide Decorator \(or its degrade\) and all\s+picture filenames referenced by `lesson\.json`[\s\S]*labelled diagram over a photo, launch Diagram\s+Anchor/
   );
   assert.doesNotMatch(playbook, /context-picture pass/i);
 });
@@ -162,9 +168,9 @@ test("the drawing-landed confirmation makes the smallest P3-only repair first", 
   // the layer. Swapping in a different drawing was on this list once, but a
   // different drawing at the same size and place covers exactly what the first
   // one did.
-  const designer = read("agents/slide-designer.md");
-  const look = designer.split("### Confirm the layer landed where you put it")[1];
-  assert.ok(look, "slide-designer.md has no drawing-landed confirmation");
+  const decorator = read("agents/slide-decorator.md");
+  const look = decorator.split("## Confirm the layer landed where you put it")[1];
+  assert.ok(look, "slide-decorator.md has no drawing-landed confirmation");
   assert.match(look, /smallest P3-only repair/);
   assert.match(look, /move it.*smaller.*fade it further.*remove it/s);
   assert.doesNotMatch(look, /replacing the source/);
@@ -183,6 +189,6 @@ test("the confirming render is the first sight of a drawing in position", () => 
     /'--skip-optional-decorations'/,
     "the scratch build is skipping the optional layer again"
   );
-  const designer = read("agents/slide-designer.md");
-  assert.match(designer, /now draws the optional layer/);
+  const decorator = read("agents/slide-decorator.md");
+  assert.match(decorator, /now draws the optional layer/);
 });

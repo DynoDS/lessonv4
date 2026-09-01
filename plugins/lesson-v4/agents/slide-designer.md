@@ -30,7 +30,7 @@ Read at startup:
 - `[PLUGIN_ROOT]/references/teacher-slide-visual-profile.md`: read in full. It is the canonical owner of the teacher's stable visual preferences and the final rendered teacher pass.
 - `[PLUGIN_ROOT]/references/templates.md`: follow its progressive lookup route. Read only its startup sections now.
 - `[PLUGIN_ROOT]/references/slide-composition-playbook.md`: read in full. It owns concrete slide composition and surface execution.
-- `[PLUGIN_ROOT]/references/context-pictures.md`: read its introduction, boundary and opportunity-pass route. Read its specialist sections only when the pass reaches that decision.
+- `[PLUGIN_ROOT]/references/context-pictures.md`: read its introduction, `The boundary` and `Where an optional picture sits on a slide`, so a light slide can leave a P2 somewhere to sit. The whole-deck opportunity pass itself belongs to the Slide Decorator, which runs after you promote; its request, search and resolution sections are not read here.
 
 Read before the first affected decision:
 
@@ -43,7 +43,6 @@ Read before the first affected decision:
 - `slide-speech-and-characters.md` when a unit contains a speaking character, voiced claim, misconception, disagreement or advice-to-a-character move.
 - `[PLUGIN_ROOT]/references/slide-visual-sizing.md` immediately before choosing the template, zone, row or stack for the first load-bearing visual, diagram or set of helpers.
 - the exact candidate template contract and every helper field contract in `templates.md` immediately before first use. Reopen a contract only when a later slide uses a different mode or field combination.
-- the specialist section of `context-pictures.md` only when the optional pass reaches that picture type.
 - `brief-gap-protocol.md` only when no documented route can preserve a required slide.
 - `adaptation.md` only when the orchestrator explicitly requires a shared visual adaptation.
 
@@ -310,23 +309,11 @@ The later anchor pass may move dots or drop a feature not actually visible in th
 
 ## Optional visual opportunity pass
 
-This has two moments, not one.
+This has two moments, and only the first is yours.
 
 While composing a light slide, ask whether a relevant P2 belongs before settling its template, and choose a template that leaves the picture somewhere to sit yet would still look finished as text on its own, because the drawing is searched for later and may not exist. Room is never arranged around a P3.
 
-The second moment comes later than you would expect, and the lateness is the whole repair. **Run the whole-deck pass against the rendered pages, not against your own specification.** The exact order is in `Writing and self-checking lesson.json` below: settle the deck, pass the check, render the preview, measure the room, then run the pass over what you can actually see.
-
-Room is a physical fact about a drawn slide, and a specification cannot show it to you. A three-zone template reads as full in JSON whether its cards are packed to the margins or holding four words each, so a pass run over the file declines slides that turn out to be half white the moment anybody looks at them. That is not a resolve failure; it is asking the question in a place that has no answer.
-
-Run one explicit whole-deck pass under the strict order P1 > P2 > P3. Resolve the Educational SVG library as the first act of the pass. Go slide by slide, every slide, and write one line each into `[WORKING_DIR]/optional-picture-pass.json` as you go. `context-pictures.md` owns the judgement - what counts as room, what competes, when a P2 or P3 belongs, the record's shape, the five reason codes and the evidence a declined slide owes - so read its specialist sections at the decision points it names. Judge each slide on its own rather than against a deck quota. The questions you are answering, per slide:
-
-1. **Where on this rendered page is nothing at all?** Room is physical: space no card, photograph, figure or word is using. `slide-room.json` has measured it, so read that slide's line before answering. A photograph on this slide does not answer question 1 - P1 beating P2 settles what a picture may *displace*. It never settles whether the slide has room, and neither does a strong central visual: a small faint drawing in a clear corner covers none of it and moves none of it. A picture on another slide answers nothing at all: There is no deck budget, so each slide's answer belongs to that slide. Competing is physical and judged on this slide alone.
-2. **How many of those clear places hold a relevant drawing?** Not whether one does. A composition can leave a corner, a margin beside a card and a band under the content, and three drawings can sit in those three places without one of them touching a word. Take each clear place on its own merits and stop when the relevant subjects run out, never when a count is reached. Search the library before settling on anything - an emoji typed in without a search is a slide the pass skipped. A slide that still reads as a wall of text, or carries no imagery at all, is what P3 is for.
-3. **If nothing belongs, record which of the five reasons is true.** Every reason is a claim about this slide; a deck-level judgement never zeroes this layer. `full` and `competes` are checked against the measured page, so a slide carrying a drawing-sized clear rectangle cannot be declined for either.
-
-Resolve your own requests. Do not create or delegate to a new agent or a separate Educational SVG resolver worker.
-
-P3 is always the first thing to remove when it competes with content, task, answer, reference or readability.
+The second moment - the whole-deck pass that places drawings - is run by the Slide Decorator over the rendered pages after you promote `lesson.json`. It moved out of this role because the Working Wall and Stick-in designers copy text and figures that are settled before a single drawing is placed, so waiting for the drawings held those branches for nothing they use. What you owe that pass is the evidence it works from: a settled, checked composition and the room measurement below. You do not author picture requests, write `optional-picture-pass.json` or search the library.
 
 ## Composition authority
 
@@ -443,18 +430,15 @@ Use absolute or working-directory-relative image paths according to `templates.m
 3. render the preview pages and read them - the composition pass - repairing
    until the layout is settled;
 4. measure the room on those settled pages;
-5. run the optional visual opportunity pass against them, author its requests
-   and resolve them into the candidate;
-6. run the deterministic check again, which now draws the optional layer, and
-   the optional-picture check against the measurement;
-7. render once more and look at where each drawing landed;
-8. promote.
+5. promote.
 
-Steps 3 and 4 sit before step 5 on purpose. The pass turns on one question -
-where on this slide is nothing at all - and the specification cannot answer it,
-so a pass run at step 1 is a pass answering from the wrong evidence. The
-composition repairs come first because they move the content: room measured
-before them is room on a layout that no longer exists.
+The Slide Decorator then takes the promoted deck and will run the optional
+visual opportunity pass against those same pages. Steps 3 and 4 sit in that
+order on purpose. The pass turns on one question - where on this slide is
+nothing at all - and the specification cannot answer it, so room measured
+from the file is measured from the wrong evidence. The composition repairs
+come first because they move the content: room measured before them is room
+on a layout that no longer exists.
 
 Now run exactly:
 
@@ -498,10 +482,10 @@ A pass also prints, immediately before that marker:
 SLIDE_DESIGN_OPTIONAL_PICTURES: [D] educational-svg, [E] emoji
 ```
 
-That is the optional visual layer as it actually stands in the candidate, by
-route. Copy both numbers into the completion report. Read it as a check on
-your own pass too: `0 educational-svg` beside a non-zero emoji count means the
-library was never searched for those items, and the pass is not finished.
+That is the optional visual layer as it stands in the candidate, by route.
+Your candidate carries none yet, so it normally reads `0 educational-svg, 0
+emoji`; the Slide Decorator adds the layer after you promote. Copy the line
+into the completion report as it stands.
 
 A successful preview check also prints exactly one line of each form before the success marker:
 
@@ -597,7 +581,7 @@ When the check still fails after the allowed self-repair passes, or every remain
 * after `EXHAUSTED 3/3`, add one `Slide self-repair passes:` line naming what each pass changed and what the diagnostic's measurement did in response, in the form `1: [change] -> [result]; 2: ... ; 3: ...`. A budget that ran out is one of two very different stories - three real structural attempts a fault survived, or three turns of a lever that was never going to move it - and only this line tells them apart. The orchestrator carries it into the run's block record, where it is the evidence that says whether the engine or the route is what needs fixing;
 * do not report a final slide specification.
 
-### Measure the room, then run the optional visual pass
+### Measure the room, then promote
 
 The layout is settled and rendered. Now, and not before, measure what is
 actually clear on each page:
@@ -609,66 +593,15 @@ python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
 ```
 
 It prints `SLIDE_ROOM_OK` and `SLIDE_ROOM_AREAS`, and writes each slide's
-largest clear rectangle and how many drawing-sized clear areas it has. If it
-cannot run or the render produced no pages, record
-`Optional picture room: unmeasured` in the completion report and run the pass on
-your own reading of the pages instead. A missing measurement never stops the
+largest clear rectangle and how many drawing-sized clear areas it has. The
+Slide Decorator reads that file slide by slide before it answers whether a
+page has room, so it is measured here, on the settled layout, and never on
+one that later moves. If it cannot run or the render produced no pages, record
+`Optional picture room: unmeasured` in the completion report and continue.
+A missing measurement never stops the
 deck.
 
-Now run the whole-deck opportunity pass described in **Optional visual
-opportunity pass** above, looking at the rendered pages and reading each slide's
-measured line as you go, and write `[WORKING_DIR]/optional-picture-pass.json`
-one line per slide as you go.
-
-### Resolve your own Educational SVG requests
-
-Follow the exact local-library search, preview, choice, publication and failure
-process in `context-pictures.md`. Count every emitted request and state the
-reason for each. Resolve the requests yourself. Do not create or delegate to a
-separate resolver worker. Final JSON contains no unresolved Educational SVG
-object.
-
-### Confirm the layer landed where you put it
-
-Rerun the complete `--preview` check on the candidate. The scratch build now
-draws the optional layer, so this render is the first and only sight anybody
-gets of a drawing in position, and it is the reason this step is not optional.
-
-Then check the pass record against the deck and the measurement:
-
-```bash
-python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
-  --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
-  --lesson "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
-  --room "[WORKING_DIR]/slide-room.json" \
-  --library-root "[EDUCATIONAL_SVG_ROOT]"
-```
-
-Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver
-returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when no measurement was
-produced. A failure names the slide and what is wrong with its line: a slide
-declined as full or competing that the render says has clear space is the
-common one, and the repair is to use that space, not to reword the record.
-
-Render the new preview and look at every slide carrying a drawing. Judge one
-thing: did anything land on something a child reads.
-
-**Overlap by itself is never the fault.** A drawing deliberately overlapping a
-card is the layer working as designed; the fault is only ever that something
-covers a word, a number, a table cell or part of a figure a child reads.
-
-Judge legibility rather than taste. Relevance, the choice of drawing itself,
-cosmetic awkwardness, missing P3, deliberate sparseness and a slide you would
-have decorated differently are never faults here.
-
-When a drawing does cover something, make the smallest P3-only repair: move it,
-make it smaller, fade it further, or remove it. Removal is always valid, because
-the layer carries no teaching. Do not reach past the decoration into the
-composition beneath it for a fault the decoration caused, and do not reopen a
-composition you already settled because you are looking at it a second time.
-
-When the final deterministic check, the optional-picture check and the available
-visual self-reads pass:
+When the final deterministic check and the visual self-read pass:
 
 1. delete the current private preview directory with:
 
@@ -684,7 +617,7 @@ visual self-reads pass:
 Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides
 ```
 
-The orchestrator still owns the later final build after optional context pictures, required pictures and diagram anchoring are terminal. Your scratch check never replaces that final build.
+The orchestrator launches the Slide Decorator, the Working Wall Designer and the Stick-in designer on this file the moment it passes, and still owns the later final build after the optional layer, required pictures and diagram anchoring are terminal. Your scratch check never replaces that final build.
 
 ---
 
@@ -695,41 +628,17 @@ Report briefly:
 - the exact `Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides` line for a final result;
 - number of slides specified;
 - any helper/content gaps;
-- any optional icon requests written;
 - any notable visual decision that the teacher would genuinely care about;
 - one line per slide whose picture you are uneasy about, naming the slide and the filename. Nobody looks at the built deck after you, so a doubt you keep to yourself reaches the classroom as a surprise. Flagging costs a sentence and lets the teacher swap a picture on the morning.
 
 When a slide's natural shape had no template and forcing it through free geometry made the work materially harder or the result worse, add one `Friction:` line naming the missing template shape and the slide that wanted it (for example, `Friction: no template splits the bottom half full-width with two top quarters, so slide 14's task-plus-reference layout was hand-built from stacks - run unharmed`). This is a suggestion for a template worth building, so raise it only when it would genuinely have made this deck easier or the shape is an obvious hole in the catalogue - a tight slide you composed cleanly with the existing templates is not friction.
 
-Include the optional-visual result in the completion report, copied from the two
-checks' own lines rather than counted by hand - the shape line first, because it
-is what shows the teacher whether the layer varies across the deck or is flat:
+State the room measurement in one line, because it is what the Slide
+Decorator's pass stands on:
 
 ```text
-Optional picture shape: [the OPTIONAL_PICTURE_SHAPE line verbatim]
-Optional picture totals: [the OPTIONAL_PICTURE_TOTALS line verbatim]
-Optional picture room: [the OPTIONAL_PICTURE_ROOM line verbatim]
+Optional picture room: [the SLIDE_ROOM_AREAS line verbatim, or `unmeasured`]
 ```
-
-The room line says whether the drawn pages were measured or the decline reasons
-stood on your word. A deck that declined most of its slides means one thing when
-the render agreed and quite another when nobody could look, and without that line
-the two read identically ever afterwards.
-
-Then:
-
-```text
-Optional visual pass: [D] Educational SVG P2/P3 requests authored, [E] emoji.
-When D + E is 0, immediately follow it with:
-Optional visual zero reason: [short reason].
-When D is 0 and E is not, immediately follow it with:
-Optional visual library result: [what the library search returned for those
-items].
-```
-
-Both numbers, always. A deck's optional layer can be entirely emoji, which is
-what a pass that never opened the library looks like from the outside, and
-reporting only the drawing count hides exactly that.
 
 Do not narrate template-by-template choices. The JSON is the detailed output.
 

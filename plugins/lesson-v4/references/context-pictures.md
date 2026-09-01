@@ -8,13 +8,17 @@ P2 is a helpful context picture attached to a word, question, fact or example.
 P3 is relevant decoration attached to the physical slide/page. P2 may carry
 meaning; P3 does not. P1 always wins over both, and P2 wins over P3.
 
-## Slide Designer read route
+## Slide Designer and Slide Decorator read route
 
-At Slide Designer startup, read this introduction, `The boundary`, `Where an optional picture sits on a slide`, and the whole-deck opportunity-pass rules in `Priority 2 source routes`, including `The pass writes a record, one line per slide` - the record is written as the pass goes, so reading it afterwards is reading it too late. The placement section is needed at startup rather than later because a light slide may choose its template around a P2, and by the opportunity pass that choice has already been made. Do not load request JSON, resolver publication steps or other resource surfaces at startup.
+The slides' optional layer is shared between two roles. The Slide Designer composes the deck and leaves room; the Slide Decorator runs the pass that fills it, in its own worker, after the composition has passed its checks. The split exists because the Working Wall and Stick-in designers copy text and figures that are settled before any drawing is placed, so nothing they use was waiting on the drawings.
+
+At Slide Designer startup, read this introduction, `The boundary` and `Where an optional picture sits on a slide`. The placement section is needed at startup rather than later because a light slide may choose its template around a P2, and by the opportunity pass that choice has already been made. The designer reads nothing further here: it authors no requests and writes no record.
+
+At Slide Decorator startup, read this introduction, `The boundary`, `Where an optional picture sits on a slide`, and the whole-deck opportunity-pass rules in `Priority 2 source routes`, including `The pass writes a record, one line per slide` - the record is written as the pass goes, so reading it afterwards is reading it too late. Do not load request JSON, resolver publication steps or other resource surfaces at startup.
 
 After the core deck has passed its check and its preview has been rendered, run the one whole-deck opportunity pass against those rendered pages. If that pass selects an ordinary P2, semantic vocabulary P2 or P3 request, read `Request shape`, `How a designer searches and chooses`, the Slides part of `Timing by resource`, and the Slides line in `Surface-specific limits` before authoring or resolving it.
 
-The Slide Designer does not read the Worksheet, Working Wall or Stick-in surface rules during a slide run.
+Neither slide role reads the Worksheet, Working Wall or Stick-in surface rules during a slide run.
 
 ## The boundary
 
@@ -253,7 +257,7 @@ cannot say what the search returned, you have not made the choice yet.
   every plausible use would compete with P1 or P2, physically and on its own
   slide. A deck-level reason - visual consistency, the strength or number of
   the P1 visuals, the sensitivity of the subject - is not competition and never
-  zeroes the layer. Record that zero reason in the Slide Designer completion
+  zeroes the layer. Record that zero reason in the Slide Decorator completion
   report.
 - Zero drawings is not the same as zero optional pictures, and the second is the
   one that has to be explained. A deck whose optional layer is entirely emoji has
@@ -673,9 +677,11 @@ resource from building.
 
 Slides use this order, and the render sits in the middle of it on purpose:
 1. the Slide Designer settles the core deck and passes its check;
-2. it renders that preview and measures the room on the drawn pages;
-3. it runs the explicit whole-deck P2/P3 opportunity pass against those pages,
-   writing the record as it goes;
+2. it renders that preview, measures the room on the drawn pages, and promotes
+   `lesson.json`; the wall and stick-in designers start on that file now;
+3. the Slide Decorator renders the promoted deck and runs the explicit
+   whole-deck P2/P3 opportunity pass against those pages, writing the record
+   as it goes;
 4. it authors the P2 and supported P3 requests the pass selected;
 5. it resolves every unresolved Educational SVG request in the spec;
 6. it reruns the check, which now draws the optional layer, and looks at that

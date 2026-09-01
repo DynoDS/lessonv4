@@ -573,7 +573,6 @@ PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson.json
-- [WORKING_DIR]/optional-picture-pass.json
 - [WORKING_DIR]/slide-room.json
 
 This worker creates JSON only. Do not load or use the global `Presentations`
@@ -591,6 +590,48 @@ python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
   --spec "[WORKING_DIR]/lesson.json" --surface slides
 
 Require: HELPER_DELIVERY_OK
+TERMINAL_STATE: COMPLETE
+```
+
+Wait for both files and require both markers. `slide-room.json` is absent
+only when this machine had no render route; treat that as a quieter run, not a
+fault. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
+repair.
+
+**The moment `lesson.json` passes, three workers start together:** the Slide
+Decorator below, the Working Wall Designer (Track D) and the stick-in route
+(Track E). The wall and stick-in designers copy text and figures that are
+settled now, before any drawing is placed, so holding them for the decoration
+pass held them for nothing they use.
+
+**The decoration pass.** Launch the Slide Decorator directly:
+
+```text
+You are the slide decorator. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/slide-decorator.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+WORKING_DIR: [WORKING_DIR]
+OUTPUT_DIR: [OUTPUT_DIR]
+
+AUTHORITATIVE_INPUTS:
+LESSON_JSON: [WORKING_DIR]/lesson.json
+SLIDE_ROOM: [WORKING_DIR]/slide-room.json  (absent when nothing could render)
+PHOTO_REQUIREMENTS_PATH: [WORKING_DIR]/phase2-initial-photo-requirements.json
+PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson.json  (picture and decoration fields only)
+- [WORKING_DIR]/optional-picture-pass.json
+
+This worker creates JSON only. Do not load or use the global `Presentations`
+skill. Composition is closed: change nothing but picture and decoration fields.
+
+SUCCESS_CHECK:
+node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
+  "[WORKING_DIR]/lesson.json"
+
+Require: SLIDE_DESIGN_CHECK_OK: [N] slides
 
 python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
@@ -599,29 +640,34 @@ python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --library-root "[EDUCATIONAL_SVG_ROOT]"
 
 [EDUCATIONAL_SVG_ROOT] is the root your own resolver prints during the
-optional pass; drop the flag when it printed EDUCATIONAL_SVG_UNAVAILABLE.
-The check re-resolves for itself either way. Drop --room only when your
-render produced no measurement.
+pass; drop the flag when it printed EDUCATIONAL_SVG_UNAVAILABLE. The check
+re-resolves for itself either way. Drop --room only when no measurement
+exists.
 
 Require: OPTIONAL_PICTURE_PASS_OK
-TERMINAL_STATE: COMPLETE
+TERMINAL_STATE: Slide decoration check: SLIDE_DECORATION_OK: [N] slides
 ```
 
-Wait for all three files and require both markers. `slide-room.json` is absent
-only when this machine had no render route; treat that as a quieter run, not a
-fault. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
-repair.
+After return, require the record and the marker, and run the slide-design
+check yourself. Run the optional-picture check yourself too, with no
+`--library-root` and with `--room "[WORKING_DIR]/slide-room.json"` when that
+file exists. It runs the Educational SVG resolver itself, so the library is
+"unavailable" only when the resolver says so, never because this launch had
+no root value to pass, and it settles `full` and `competes` against the
+rendered pages rather than against the record's own word. Between them those
+are what separate a pass weighed slide by slide from one thought about the
+whole deck, so the decorator cannot close on its own word for either. Carry
+its `OPTIONAL_PICTURE_LIBRARY`, `OPTIONAL_PICTURE_ROOM`,
+`OPTIONAL_PICTURE_SHAPE` and `OPTIONAL_PICTURE_TOTALS` lines into the run
+report.
 
-Run the optional-picture check yourself too, with no `--library-root` and with
-`--room "[WORKING_DIR]/slide-room.json"` when that file exists. It runs the
-Educational SVG resolver itself, so the library is "unavailable" only when the
-resolver says so, never because this launch had no root value to pass, and it
-settles `full` and `competes` against the rendered pages rather than against the
-record's own word. Between them those are what separate a pass weighed slide by
-slide from one thought about the whole deck, so the designer cannot close on its
-own word for either. Carry its `OPTIONAL_PICTURE_LIBRARY`,
-`OPTIONAL_PICTURE_ROOM`, `OPTIONAL_PICTURE_SHAPE` and `OPTIONAL_PICTURE_TOTALS`
-lines into the run report.
+**A decorator that fails, stalls or never returns degrades, never blocks.**
+The layer carries no teaching. After its one infrastructure retry, build the
+settled `lesson.json` the designer promoted, exactly as it stands, write one
+`FRICTION:` line naming what the decorator returned, and put
+`SLIDE_DECORATION_OMITTED: [reason]` under the run report's accepted minor
+issues in place of the optional-picture lines. Do not spend a focused repair
+on it and do not hold the slide build for a second attempt.
 
 ---
 
@@ -670,8 +716,8 @@ building.
 
 **Track A trigger:**
 
-Wait until Slide Designer and all picture filenames referenced by `lesson.json`
-are terminal. When the resolved state is `PICTURE_STAGE: unavailable` or
+Wait until Slide Designer, the Slide Decorator (or its degrade) and all
+picture filenames referenced by `lesson.json` are terminal. When the resolved state is `PICTURE_STAGE: unavailable` or
 `none required`, no terminal receipt is coming and there is nothing to wait
 for: build the slides from the specification the designer already wrote.
 
@@ -712,6 +758,11 @@ report.
 
 What the spawn did cost was a whole worker on a healthy run, re-reading a
 52KB role file to confirm work that had already passed its check.
+
+The Slide Decorator is not that spawn. It runs the optional drawing pass the
+Slide Designer used to run last, at the same point and over the same private
+preview, in a worker of its own so the wall and stick-in branches need not
+wait for it. It looks at nothing after the build and judges no photograph.
 
 ---
 
@@ -929,7 +980,9 @@ invent it. Mention the omission only when the approved design requested one.
 
 ### Track D — Working Wall (working-wall-designer → working-wall-builder, runs after slide-designer; in parallel with Tracks B and the rest of A)
 
-Launch Working Wall Designer on every run, after preparing its packet:
+Launch Working Wall Designer on every run, the moment the Slide Designer's
+`lesson.json` passes its checks (beside the Slide Decorator, never after it),
+after preparing its packet:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare   --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --lesson "[WORKING_DIR]/lesson.json"   --photo-requirements "[applicable photo contract]"   --view-output "[WORKING_DIR]/working-wall-view.md"   --reference-output "[WORKING_DIR]/working-wall-reference.md"   --receipt-output "[WORKING_DIR]/working-wall-packet.receipt.json"
@@ -956,7 +1009,9 @@ its exact returned output path.
 
 ### Track E — Stick-in Spec (stick-in-sheets-designer, runs after slide-designer; in parallel with Tracks B, D and the rest of A)
 
-Read the approved design's own decision first:
+Start this track when the Slide Designer's `lesson.json` passes its checks,
+beside the Slide Decorator and Track D. Read the approved design's own
+decision first:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/resource-opportunities.py" stick-in \

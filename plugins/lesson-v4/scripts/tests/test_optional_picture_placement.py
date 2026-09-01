@@ -39,6 +39,9 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.context = read("references", "context-pictures.md")
         self.preferences = read("references", "preferences.md")
         self.designer = read("agents", "slide-designer.md")
+        # The pass that places drawings runs in the Slide Decorator, its own
+        # worker, since 1 Sept 2026; the designer keeps the first moment only.
+        self.decorator = read("agents", "slide-decorator.md")
 
     def test_retired_rules_are_gone(self) -> None:
         """Each of these forbade exactly the placement the teacher asked for."""
@@ -63,7 +66,7 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         for marker in ("still reads as a wall of text", "no imagery at all"):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.preferences)
-                self.assertIn(marker, self.designer)
+                self.assertIn(marker, self.decorator)
 
     def test_p3_has_somewhere_concrete_to_go(self) -> None:
         for placement in (
@@ -97,10 +100,10 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         that sees a P3 sitting on a card, so the boundary travels with it or the
         layer gets flagged for working exactly as designed.
         """
-        self.assertIn("deliberately overlapping a card is the layer working as designed", self.designer)
+        self.assertIn("deliberately overlapping a card is the layer working as designed", self.decorator)
         self.assertIn(
             "covers a word, a number, a table cell or part of a figure a child reads",
-            self.designer,
+            self.decorator,
         )
 
     def test_use_is_judged_per_slide_not_against_a_deck_quota(self) -> None:
@@ -114,7 +117,7 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertNotIn("One or two meaningful uses remains the normal target", self.context)
         self.assertIn("Decide slide by slide rather than against a whole-deck quota", self.context)
         self.assertIn("Expect a normal deck to carry several", self.context)
-        self.assertIn("Judge each slide on its own rather than against a deck quota", self.designer)
+        self.assertIn("Judge each slide on its own rather than against a deck quota", self.decorator)
 
     def test_variety_is_required_and_sameness_named_as_the_failure(self) -> None:
         self.assertIn("Vary what is used and where it sits", self.context)
@@ -138,7 +141,7 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn("Judge it one surface at a time", self.context)
         self.assertIn("never why the whole deck goes without it", self.context)
         self.assertIn(
-            "Competing is physical and judged on this slide alone", self.designer
+            "Competing is physical and judged on this slide alone", self.decorator
         )
 
     def test_a_framed_picture_is_stated_to_move_nothing(self) -> None:
@@ -172,16 +175,16 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn("a strong central teaching visual, however dominant", self.context)
         self.assertIn("Attention is not a resource this layer spends", self.context)
         self.assertIn(
-            "neither does a strong central visual", self.designer
+            "neither does a strong central visual", self.decorator
         )
 
     def test_the_pass_asks_how_many_not_whether(self) -> None:
         """One slot per slide gives a flat deck however well each slide is judged."""
         self.assertIn("Ask how many, not whether", self.context)
         self.assertIn(
-            "How many of those clear places hold a relevant drawing?", self.designer
+            "How many of those clear places hold a relevant drawing?", self.decorator
         )
-        self.assertIn("never when a count is reached", self.designer)
+        self.assertIn("never when a count is reached", self.decorator)
 
     def test_deck_level_reasons_never_zero_the_layer(self) -> None:
         self.assertIn("is not competition and never zeroes the layer", self.context)
@@ -196,10 +199,10 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         the teacher's call rather than a fault to report. The one pass that now
         sees the drawings in position inherits the restraint along with the job.
         """
-        self.assertIn("overlap by itself is never the fault", self.designer.lower())
-        self.assertIn("Judge legibility rather than taste", self.designer)
-        self.assertIn("the choice of drawing itself", self.designer)
-        self.assertIn("are never faults here", self.designer)
+        self.assertIn("overlap by itself is never the fault", self.decorator.lower())
+        self.assertIn("Judge legibility rather than taste", self.decorator)
+        self.assertIn("the choice of drawing itself", self.decorator)
+        self.assertIn("are never faults here", self.decorator)
 
     def test_previews_are_compared_on_one_sheet(self) -> None:
         """One look per drawing is the cost that kept a deck down to one or two."""
@@ -214,9 +217,9 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         ):
             with self.subTest(marker=marker):
                 self.assertIn(marker, self.context)
-        self.assertIn("P3 is always the first thing to remove", self.designer)
-        self.assertIn("missing P3, deliberate sparseness", self.designer)
-        self.assertIn("are never faults here", self.designer)
+        self.assertIn("P3 is always the first thing to remove", self.decorator)
+        self.assertIn("missing P3, deliberate sparseness", self.decorator)
+        self.assertIn("are never faults here", self.decorator)
 
 
 if __name__ == "__main__":

@@ -446,17 +446,24 @@ class TheDrawnPageSettlesFullAndCompetesTests(CheckRunner):
 
 
 class ContractTests(unittest.TestCase):
-    def test_the_designer_and_the_orchestrator_both_run_it(self):
+    def test_the_decorator_and_the_orchestrator_both_run_it(self):
+        # The pass moved from the Slide Designer into the Slide Decorator, its
+        # own worker, so the wall and stick-in designers could start on the
+        # settled deck. The check moved with it; the designer no longer owns
+        # the record.
+        decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
         playbook = (
             ROOT / "skills" / "make-lesson" / "playbook-lite.md"
         ).read_text(encoding="utf-8")
-        for text in (designer, playbook):
+        for text in (decorator, playbook):
             self.assertIn("check-optional-pictures.py", text)
             self.assertIn("OPTIONAL_PICTURE_PASS_OK", text)
-        # The designer cannot close on its own word for the one thing that
+        self.assertNotIn("check-optional-pictures.py", designer)
+        # The decorator cannot close on its own word for the one thing that
         # separates a real pass from a claimed one.
         self.assertIn("Run the optional-picture check yourself", playbook)
+        self.assertIn("SLIDE_DECORATION_OK", playbook)
 
     def test_the_pass_runs_against_the_rendered_pages(self):
         """The whole failure was asking a question in a place with no answer.
@@ -468,10 +475,15 @@ class ContractTests(unittest.TestCase):
         slides that were half white when anyone looked.
         """
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
+        decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
         self.assertIn(
-            "Run the whole-deck pass against the rendered pages", designer
+            "Run the whole-deck pass against the rendered pages", decorator
         )
+        # The designer measures the room on its settled pages; the decorator
+        # reads that measurement and renders the promoted deck before it asks
+        # whether any page has room.
         self.assertIn("measure-slide-room.py", designer)
+        self.assertIn("slide-room.json", decorator)
         # The composition repairs move the content, so room measured before
         # them is room on a layout that no longer exists.
         order = designer.split("### The order, once", 1)[1].split("###", 1)[0]
@@ -480,8 +492,8 @@ class ContractTests(unittest.TestCase):
             order.index("measure the room"),
         )
         self.assertLess(
-            order.index("measure the room"),
-            order.index("run the optional visual opportunity pass"),
+            decorator.index("Render the settled deck first"),
+            decorator.index("Now run one explicit whole-deck pass"),
         )
 
     def test_the_second_spawn_that_looked_at_the_deck_is_gone(self):
@@ -500,10 +512,14 @@ class ContractTests(unittest.TestCase):
         self.assertNotIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
         self.assertNotIn("slide_designer_built_deck_look", playbook)
         self.assertIn("Do not reinstate it", playbook)
-        # The judgement the removed section carried has to survive somewhere the
-        # designer still reads, because it now sees its own drawings rendered.
-        self.assertIn("Overlap by itself is never the fault", designer)
-        self.assertIn("Judge legibility rather than taste", designer)
+        # The judgement the removed section carried has to survive somewhere
+        # the role that sees the drawings rendered still reads: the Slide
+        # Decorator, which is that pass in its own worker and not a review of
+        # the built deck.
+        decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
+        self.assertIn("Overlap by itself is never the fault", decorator)
+        self.assertIn("Judge legibility rather than taste", decorator)
+        self.assertIn("The Slide Decorator is not that spawn", playbook)
 
 
 if __name__ == "__main__":

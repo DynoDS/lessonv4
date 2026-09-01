@@ -36,6 +36,12 @@ const SLIDE_DESIGNER_MD = fs.readFileSync(
   path.join(__dirname, "..", "..", "agents", "slide-designer.md"),
   "utf8"
 );
+// The whole-deck optional pass runs in the Slide Decorator, its own worker
+// since 1 Sept 2026, so the pass's own cues are pinned there.
+const SLIDE_DECORATOR_MD = fs.readFileSync(
+  path.join(__dirname, "..", "..", "agents", "slide-decorator.md"),
+  "utf8"
+);
 const LESSON_DESIGNER_MD = fs.readFileSync(
   path.join(__dirname, "..", "..", "agents", "lesson-designer.md"),
   "utf8"
@@ -502,26 +508,29 @@ test('context pictures own the optional pass and the core keeps the execution an
     CONTEXT_PICTURES_MD,
     /After the core slide geometry is settled, run the one/
   );
-  assert.match(SLIDE_DESIGNER_MD, /strict order P1 > P2 > P3/);
-  assert.match(SLIDE_DESIGNER_MD, /Optional visual pass:/);
-  assert.match(SLIDE_DESIGNER_MD, /Optional visual zero reason:/);
+  assert.match(SLIDE_DECORATOR_MD, /strict order P1 > P2 > P3/);
+  assert.match(SLIDE_DECORATOR_MD, /Optional visual pass:/);
+  assert.match(SLIDE_DECORATOR_MD, /Optional visual zero reason:/);
+  // The designer keeps the first moment: leave a light slide room for a P2.
+  assert.match(SLIDE_DESIGNER_MD, /ask whether a relevant P2 belongs before settling its template/);
+  assert.match(SLIDE_DESIGNER_MD, /Room is never arranged around a P3/);
 
   // "P1 already carries the meaning" used to be the first of four answers, which
   // turned a photograph into a full stop: a deck came back with seventeen slides
   // and no drawing on any of them, explained as most slides already having
   // strong P1 visuals. A photograph settles what a picture may displace, never
   // whether the slide has room to spare.
-  assert.doesNotMatch(SLIDE_DESIGNER_MD, /P1 already carries the meaning/);
+  assert.doesNotMatch(SLIDE_DECORATOR_MD, /P1 already carries the meaning/);
   assert.match(
-    SLIDE_DESIGNER_MD,
+    SLIDE_DECORATOR_MD,
     /A photograph on this slide does not answer question 1/
   );
-  assert.match(SLIDE_DESIGNER_MD, /There is no deck budget/);
+  assert.match(SLIDE_DECORATOR_MD, /There is no deck budget/);
 
   // The pass leaves a record, which is what makes slide-by-slide a thing that
   // happened rather than a thing that was claimed.
-  assert.match(SLIDE_DESIGNER_MD, /optional-picture-pass\.json/);
-  assert.match(SLIDE_DESIGNER_MD, /OPTIONAL_PICTURE_PASS_OK/);
+  assert.match(SLIDE_DECORATOR_MD, /optional-picture-pass\.json/);
+  assert.match(SLIDE_DECORATOR_MD, /OPTIONAL_PICTURE_PASS_OK/);
   assert.match(
     CONTEXT_PICTURES_MD,
     /The pass writes a record, one line per slide/

@@ -6,6 +6,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 AGENT = ROOT / "agents" / "slide-designer.md"
+# The whole-deck optional pass moved into its own worker on 1 Sept 2026, so
+# the Working Wall and Stick-in designers could start on the settled deck
+# instead of waiting for drawings they never copy. The pass judgement is
+# pinned on that role; the designer keeps only the first moment.
+DECORATOR = ROOT / "agents" / "slide-decorator.md"
 PREFERENCES = ROOT / "references" / "preferences.md"
 PROFILE = ROOT / "references" / "teacher-slide-visual-profile.md"
 TEMPLATES = ROOT / "references" / "templates.md"
@@ -32,6 +37,7 @@ def section(text: str, start: str, end: str) -> str:
 class SlideDesignerBrainContractTests(unittest.TestCase):
     def setUp(self) -> None:
         self.agent = read(AGENT)
+        self.decorator = read(DECORATOR)
         self.preferences = read(PREFERENCES)
         self.profile = read(PROFILE)
         self.templates = read(TEMPLATES)
@@ -278,7 +284,7 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
 
     def test_optional_pass_preserves_priority_and_no_delegation(self) -> None:
         self.assert_tokens(
-            self.agent,
+            self.decorator,
             "strict order P1 > P2 > P3",
             "P3 is always the first thing to remove",
             "Do not create or delegate to a new agent or a separate Educational SVG resolver worker",
@@ -289,16 +295,16 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         # which made a photograph a full stop rather than an answer about what a
         # picture may displace. A deck came back with seventeen slides and no
         # drawing on any of them, explained as "most slides already had strong P1".
-        self.assertNotIn("P1 already carries the meaning", self.agent)
+        self.assertNotIn("P1 already carries the meaning", self.decorator)
         self.assert_tokens(
-            self.agent,
+            self.decorator,
             "A photograph on this slide does not answer question 1",
             "It never settles whether the slide has room",
         )
 
     def test_a_picture_elsewhere_is_not_a_budget(self) -> None:
         self.assert_tokens(
-            self.agent,
+            self.decorator,
             "A picture on another slide answers nothing at all",
             "There is no deck budget",
         )
@@ -307,7 +313,7 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         # The pass used to leave no trace, so a slide-by-slide weighing and one
         # thought about the whole deck produced the identical artefact.
         self.assert_tokens(
-            self.agent,
+            self.decorator,
             "optional-picture-pass.json",
             "check-optional-pictures.py",
             "OPTIONAL_PICTURE_PASS_OK",
@@ -356,7 +362,7 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "a pass that never opened the library",
         )
         self.assert_tokens(
-            self.agent,
+            self.decorator,
             "an emoji typed in without a search is a slide the pass skipped",
             "deck-level judgement never zeroes this layer",
         )
@@ -367,9 +373,9 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         # (what counts as room, what competes, zero evidence, deck variety) is
         # owned by context-pictures.md rather than taught a second time in the
         # agent, where the two copies drifted.
-        self.assertIn("`context-pictures.md` owns the judgement", self.agent)
-        self.assertNotIn("a normal deck carries several", self.agent)
-        self.assertNotIn("reads as a template rather than a decision", self.agent)
+        self.assertIn("`context-pictures.md` owns the judgement", self.decorator)
+        self.assertNotIn("a normal deck carries several", self.decorator)
+        self.assertNotIn("reads as a template rather than a decision", self.decorator)
         self.assertIn("Expect a normal deck to carry several", self.context)
 
     def test_incident_stories_live_in_tests_not_runtime_prompts(self) -> None:
@@ -384,11 +390,14 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         # Reporting only the drawing count hides an all-emoji layer, which is
         # exactly what a skipped pass looks like from the outside.
         self.assert_tokens(
-            self.agent,
+            self.decorator,
             "SLIDE_DESIGN_OPTIONAL_PICTURES",
             "Educational SVG P2/P3 requests authored, [E] emoji",
             "Optional visual library result",
         )
+        # The designer copies the same route line, which on its own deck reads
+        # zero and zero: the layer is added after it promotes.
+        self.assertIn("SLIDE_DESIGN_OPTIONAL_PICTURES", self.agent)
 
     def test_slide_gap_route_has_one_current_owner(self) -> None:
         self.assert_tokens(

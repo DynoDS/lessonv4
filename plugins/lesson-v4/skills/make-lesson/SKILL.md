@@ -205,7 +205,7 @@ Do not paste either file into `teacher-brief.txt`.
 
 Do not pass `TEACHER_BRIEF_FILE`, `TEACHER_CLARIFICATION_FILES`,
 `ORCHESTRATOR_CONTEXT_FILE`, `LESSON_PLAN_INPUT` or
-`TEACHER_WORKSHEET_INPUT` to `slide-designer`, `worksheet-designer`,
+`TEACHER_WORKSHEET_INPUT` to `slide-designer`, `slide-decorator`, `worksheet-designer`,
 `working-wall-designer`, `working-wall-builder`, `stick-in-sheets-designer`,
 `image-scout`, `diagram-anchor`, deterministic command jobs or any other
 downstream renderer.

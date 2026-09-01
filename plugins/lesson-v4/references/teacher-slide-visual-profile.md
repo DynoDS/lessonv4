@@ -169,7 +169,7 @@ After the deterministic check passes, the Slide Designer renders the checked pre
 - check focal-question colour, task-action emphasis, peer colour and safety/problem colour against their semantic roles;
 - check that parallel groups have one visible discriminator when their distinction matters;
 - check repeated-reference identity;
-- read `[WORKING_DIR]/optional-picture-pass.json` beside the rendered slides and check the earlier optional P2/P3 pass against what is actually on the page: the record is the pass's own account of every slide, so a slide declined as `full` or `competes` that renders with obvious room to spare, or a slide declined as `would-mislead` whose task no drawing could give away, is a line that does not match its page. Until this record existed the pass left no trace and this check could not really be made;
+- leave the optional P2/P3 layer alone: the Slide Decorator runs that pass after this one, over the same rendered pages, and it is the decorator that reads `[WORKING_DIR]/optional-picture-pass.json` beside its own render to check the earlier optional P2/P3 pass against what is actually on the page. The record is the pass's own account of every slide, so a slide declined as `full` or `competes` that renders with obvious room to spare, or a slide declined as `would-mislead` whose task no drawing could give away, is a line that does not match its page. Until this record existed the pass left no trace and this check could not really be made;
 - repair only faults the Slide Designer owns, on the candidate file, and rerun the complete check with a fresh preview;
 - when a clear owned fault survives the shared repair budget, fail the check with the named diagnostics instead of promoting a deck the teacher will have to fight.
 
