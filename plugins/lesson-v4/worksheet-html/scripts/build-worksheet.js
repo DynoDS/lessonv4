@@ -26,57 +26,10 @@ const { sanitizeHouseStyle } = require("../../shared/text/house-style");
 
 const { renderSheet } = require("../src/render");
 
-// How many roomier arrangements are worth drawing before a clipped sheet is
-// refused for real. Each one costs a browser render, and a sheet that three
-// measured, roomier shapes cannot draw cleanly has something wrong with its
-// content rather than its shape - which is a designer's decision, not this
-// script's.
-const MAX_RESHAPES = 3;
-
-// How many times the browser's own measurements are fed back before reshaping.
-// One round settles the ordinary case (an estimate a few pixels short); the
-// second catches a zone whose first correction uncovered a second clipped
-// zone. More rounds than that is not an estimate error any more.
-const MAX_MEASURED_CORRECTIONS = 2;
-
-// CSS millimetres to CSS pixels: the browser lays out at 96dpi.
-const PX_PER_MM = 96 / 25.4;
-
-// The most a single zone may be grown on the browser's word. A hairline
-// estimate error is a few millimetres; a zone that wants more than this has a
-// content problem the designer should see, not a measurement problem the
-// engine should absorb.
-const MAX_CORRECTION_MM = 8;
-
-// What the browser's fit probe says each clipped zone needs, in millimetres,
-// on top of what it has already been given. Null when nothing correctable
-// remains: a width overflow cannot be fixed with height, and a zone already
-// grown to the cap has stopped being a measurement problem.
-function measuredCorrections(fitProblems, already) {
-  const wanted = {};
-  for (const problem of fitProblems || []) {
-    if (!problem.zone) continue;
-    const has = already[problem.zone] || 0;
-    if (has >= MAX_CORRECTION_MM) continue;
-    let mm;
-    if (problem.kind === "zone-overflow") {
-      const deficit = problem.scrollHeight - problem.clientHeight;
-      const wide = problem.scrollWidth > problem.clientWidth + 1;
-      if (deficit <= 0) {
-        if (wide) continue; // width-only: height cannot buy it out.
-        mm = 1;
-      } else {
-        mm = deficit / PX_PER_MM + 1; // the measured shortfall plus a hair
-      }
-    } else {
-      // A child clipped or outside the zone, with no measured deficit: a
-      // small nudge is worth one try before the reshape spends a render.
-      mm = 2;
-    }
-    wanted[problem.zone] = Math.min(MAX_CORRECTION_MM, has + mm);
-  }
-  return Object.keys(wanted).length ? wanted : null;
-}
+// Whether a printed page actually fits is settled in src/settle-fit.js: the
+// browser's own measurements are fed back into the zones that ran short, then a
+// roomier shape is tried, and only then is a sheet refused.
+const { settleSheetFit } = require("../src/settle-fit");
 const { tightnessOf, describeTightness } = require("../src/tightness");
 const {
   sheetsOf,
@@ -303,7 +256,6 @@ async function main() {
     );
   } else {
     const { htmlToPdf, launchBrowser } = require("../src/chrome");
-    const { roomierArrangements } = require("../src/suggest");
     const pdfs = [];
     const clipped = [];
     const reshaped = [];
@@ -317,102 +269,22 @@ async function main() {
     try {
 
     for (const r of rendered) {
-      let { pdf, fitProblems } = await htmlToPdf(r.html, {
-        landscape: r.sheet.spec.orientation === "landscape",
-        inspectFit: true,
+      // The browser's verdict, and what was done about it, come back from one
+      // place: the zones that ran a hair short are grown by exactly what the
+      // browser measured, then a roomier arrangement of the same page is
+      // tried, then the sheet is refused. The content and its words are the
+      // same in every case; only the record of which route it took differs.
+      const settled = await settleSheetFit({
+        spec: r.sheet.spec,
+        html: r.html,
+        htmlToPdf,
         browser,
       });
-      const corrections = {};
-
-      // The arithmetic said it fitted and the browser disagreed, which means an
-      // estimate ran a hair short. The browser has just measured EXACTLY how
-      // short, zone by zone - so before anything else, hand each clipped zone
-      // the millimetres it proved it needs and draw the same page again. The
-      // extra is paid out of genuine page slack (the same purse as the safety
-      // margins), the designer's chosen shape is kept, and nothing is trimmed,
-      // shrunk or reworded. A page with no slack to give refuses the
-      // correction, and the reshape below still gets its turn.
-      //
-      // This exists because a hundred square 6px taller than its estimate cost
-      // a real lesson its whole worksheet set: the reshape retries re-dealt
-      // the same underestimate into other shapes, every shape clipped the same
-      // way, and the run's one focused repair was spent guessing at pixels it
-      // had never seen.
-      for (
-        let round = 0;
-        round < MAX_MEASURED_CORRECTIONS && (fitProblems || []).length;
-        round += 1
-      ) {
-        const wanted = measuredCorrections(fitProblems, corrections);
-        if (!wanted) break;
-        Object.assign(corrections, wanted);
-        let retryHtml;
-        try {
-          retryHtml = renderSheet(r.sheet.spec, { extraZoneMm: corrections });
-        } catch {
-          break; // no slack left to pay the correction from: try a reshape.
-        }
-        const retry = await htmlToPdf(retryHtml, {
-          landscape: r.sheet.spec.orientation === "landscape",
-          inspectFit: true,
-          browser,
-        });
-        if ((retry.fitProblems || []).length) {
-          fitProblems = retry.fitProblems;
-          continue;
-        }
-        fs.writeFileSync(r.htmlPath, retryHtml);
-        pdf = retry.pdf;
-        fitProblems = [];
-        corrected.push({ sheet: r.sheet, zones: { ...corrections } });
-      }
-
-      // Still clipped after the browser's own numbers were honoured: draw the
-      // SAME content again in a roomier arrangement of the same page and see
-      // whether the browser is happy with that one.
-      //
-      // This is not the engine bending to make a page pass. Nothing is trimmed,
-      // shrunk, reworded, moved to a second page or dropped: every question,
-      // every writing line and every picture is exactly what the designer
-      // wrote, in exactly the order they wrote it. Only which rectangle each
-      // zone occupies changes, and only to a shape that was already measured
-      // and already accepted. A version is kept only if a browser then draws it
-      // with nothing clipped, so what ships is still a page that was verified
-      // rather than one that was hoped about.
-      //
-      // The alternative was what actually happened: a sheet 6px over, one
-      // focused repair spent guessing at it, and a teacher waking up to a
-      // lesson with no worksheets and no answer key.
-      if ((fitProblems || []).length) {
-        for (const option of roomierArrangements(r.sheet.spec).slice(0, MAX_RESHAPES)) {
-          let retryHtml;
-          try {
-            retryHtml = renderSheet(option.spec);
-          } catch {
-            continue; // measured as fitting, refused when drawn: try the next.
-          }
-          const retry = await htmlToPdf(retryHtml, {
-            landscape: option.orientation === "landscape",
-            inspectFit: true,
-            browser,
-          });
-          if ((retry.fitProblems || []).length) continue;
-
-          fs.writeFileSync(r.htmlPath, retryHtml);
-          pdf = retry.pdf;
-          fitProblems = [];
-          reshaped.push({
-            sheet: r.sheet,
-            from: r.sheet.spec.layout,
-            to: option.layout,
-            fillPct: option.fillPct,
-          });
-          break;
-        }
-      }
-
-      pdfs.push(pdf);
-      for (const problem of fitProblems || []) {
+      if (settled.html !== r.html) fs.writeFileSync(r.htmlPath, settled.html);
+      if (settled.correction) corrected.push({ sheet: r.sheet, zones: settled.correction });
+      if (settled.reshape) reshaped.push({ sheet: r.sheet, ...settled.reshape });
+      pdfs.push(settled.pdf);
+      for (const problem of settled.fitProblems) {
         clipped.push({ sheet: r.sheet, problem });
       }
     }
