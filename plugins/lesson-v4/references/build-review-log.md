@@ -106,6 +106,27 @@ improvement pass folds those in.
   right call. Adding that piece is a helper-builder job, not a repair, and is
   left as a deliberate choice rather than folded into this pass.*
 
+## 2026-09-01 — Year 4 Maths: the helper-gap picture route was closed to maths
+
+- A maths run stopped at the design gate with `LESSON_DESIGN_INVALID: Maths
+  lesson-design may not define initial photo-### requirements`. The helper check
+  had found a visual the engine could not draw; its documented rescue is the
+  picture route, which adds a `controlled-ai` picture and re-runs the design
+  validator. The validator refused it and pointed at "the helper check's
+  substitute route" as the alternative - which is that same picture route. The
+  lesson could neither add the picture nor pass the gate, and every maths lesson
+  meeting a drawing gap would have stopped identically.
+  *Addressed 1 Sep 2026: the ban is removed from `validate-lesson-design.py` and
+  `lesson-design-scaffold.py`, and from the two references that stated it as
+  fact. The teacher settled the question: maths can have photographs. What the
+  ban was protecting is real and is kept, moved to where it can actually be
+  seen: no subject photographs a tool the engine draws, stated in
+  `lesson-designer.md` with the two legitimate maths cases named (a real-world
+  referent, and a picture the rescue route produced), and checked in
+  `design-reviewer.md`. The subject-name rule ("Maths", not "Mathematics")
+  stays on its own account, for filing and routing. Regression:
+  `scripts/tests/test_maths_helper_gap_has_an_exit.py`.*
+
 ## 2026-09-01 — Year 4 PSHE balanced diet: teacher review of the finished outputs
 
 - Three `speech-bubbles-1` slides put the judging question in the left column

@@ -470,6 +470,10 @@ A kettle photographed whole with its disconnected three-pin plug in frame, or a 
 
 Direct comparison set must be all real or all generated. An essential set of ordinary objects is `all-generated` with `controlled-ai` members, which also guarantees the matched framing and lighting a comparison needs. Never author set that can become mixed evidence.
 
+**Never photograph a tool the engine draws.** A number line, place-value chart, bar model, array, fraction wall, coordinate grid, Venn or clock face is drawn, every time, so it looks the same in every lesson and stays legible at any size. A photograph of one is a worse version of a thing the engine already does properly, and it breaks the visual consistency a child navigates by. This holds in every subject, and it bites hardest in maths, where nearly every visual is such a tool: a maths lesson normally has no photographs at all for that reason.
+
+**"Normally none" is not "never".** Maths may ask for a photograph, and the two cases where it should are worth naming. The first is a real-world referent the maths is about rather than a maths tool: a real measuring jug at eye level, a real supermarket shelf label, a real staircase for angle, real coins in a hand. The second is the helper check's own rescue route: when the engine turns out not to be able to draw a visual the lesson depends on, that visual becomes a picture requirement like any other subject's, and the design gate accepts it. What it must not become is a photograph of the tool the engine could have drawn - if a helper covers it, use the helper.
+
 ## Output Format
 
 Write three canonical files to working dir:

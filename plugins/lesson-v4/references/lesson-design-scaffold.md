@@ -79,7 +79,10 @@ The values in the request are decisions already made by the Lesson Designer. The
 
 `vocabularyCount`, `trimmedVocabularyCount`, `successCriteriaCount`, `stickyKnowledgeCount`, `misconceptionCount` and `photoCount` are zero or positive integers. They are counts of decisions already made, not targets to fill.
 
-For Maths, `photoCount` must be 0.
+Maths is usually 0, because its visual tools are drawn by the engine rather than
+photographed, but it is not required to be: a maths lesson may ask for a
+photograph the engine cannot draw. See the Photographs section of the
+lesson-designer agent for when one earns its place.
 
 ## Representations
 

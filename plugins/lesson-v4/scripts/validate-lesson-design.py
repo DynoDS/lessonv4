@@ -1527,23 +1527,26 @@ def validate_design(
            "lesson.yearGroup must be an integer from 1 to 6")
     for key in ("subject", "lo", "displayedLo", "stickingPoint"):
         expect_string(lesson[key], f"lesson.{key}")
-    # Canonical subject naming. On 30 August 2026 a designer relabelled a
-    # maths lesson "Mathematics" specifically to slip an initial photo past
-    # the gate below - the invariant must not depend on which synonym was
-    # typed, and every downstream label (filing folders, subject-file routing)
-    # expects the teacher's own "Maths".
+    # Canonical subject naming, so every downstream label (filing folders,
+    # subject-file routing) gets the teacher's own "Maths".
+    #
+    # This used to also refuse every photo-### requirement on a maths lesson.
+    # The intent was right - a number line, bar model or place-value chart is
+    # drawn by the engine, never photographed - but the rule was a subject-wide
+    # ban on a whole mechanism, and it closed the one exit the run has when the
+    # engine cannot draw something: the helper check's picture route ends in a
+    # photo requirement, so a maths lesson that hit a drawing gap could neither
+    # add the picture nor pass the gate. The teacher settled it on 1 September
+    # 2026: maths can have photographs. What must not happen is photographing a
+    # tool the engine draws, and that is not a subject rule and not something a
+    # validator can see - it is the helper check's job, enforced for every
+    # subject by the delivery check, and a judgement the designer and reviewer
+    # hold.
     if lesson["subject"].casefold() in {"maths", "mathematics", "math"}:
         expect(
             lesson["subject"] == "Maths",
             f"lesson.subject must be exactly 'Maths', not '{lesson['subject']}' - "
             "synonyms route and validate differently and are not accepted",
-        )
-        expect(
-            not initial_photo_ids,
-            "Maths lesson-design may not define initial photo-### requirements - "
-            "maths visual tools are rendered, not photographed. A maths visual "
-            "the engine cannot draw goes through the helper check's substitute "
-            "route, never an initial photo requirement",
         )
     expect_positive_int(lesson["durationMinutes"], "lesson.durationMinutes")
     scope = expect_string(lesson["scope"], "lesson.scope")

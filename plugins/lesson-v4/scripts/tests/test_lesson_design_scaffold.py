@@ -406,21 +406,16 @@ def test_generated_scaffold_is_rejected_until_every_placeholder_is_resolved():
         )
 
 
-def test_math_scaffold_request_rejects_initial_photos():
+def test_math_scaffold_request_accepts_an_initial_photo():
+    # Removed with the matching ban in the design validator on 1 September 2026.
+    # A maths lesson whose helper check found the engine could not draw a
+    # needed visual takes the picture route like any other subject, and the
+    # scaffold has to be able to declare it. Photographing an engine-drawn
+    # maths tool is still wrong; a count here could never tell the difference.
     request = skill_request()
     request["photoCount"] = 1
 
-    try:
-        scaffold.validate_request(request)
-    except scaffold.ScaffoldError as exc:
-        assert (
-            "Maths scaffold request must use photoCount 0"
-            in str(exc)
-        )
-    else:
-        raise AssertionError(
-            "Maths request with a photo unexpectedly validated"
-        )
+    scaffold.validate_request(request)
 
 
 def test_route_mismatch_is_rejected_before_files_are_written():

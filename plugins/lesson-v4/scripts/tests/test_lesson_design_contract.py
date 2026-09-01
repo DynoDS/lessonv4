@@ -1550,29 +1550,39 @@ def test_initial_photo_ids_are_sequential_in_array_order():
         raise AssertionError("non-sequential initial photo ID unexpectedly validated")
 
 
-def test_maths_lesson_rejects_nonempty_photo_requirements():
+def test_maths_lesson_may_define_a_photo_requirement():
+    # The validator used to refuse every photo-### requirement on a maths
+    # lesson. The intent was right - the engine draws number lines and bar
+    # models, it does not photograph them - but the rule banned the mechanism
+    # rather than the mistake, and it closed the only exit the run has when the
+    # engine cannot draw something: the helper check's picture route ends in a
+    # photo requirement, so on 1 September 2026 a Year 4 maths lesson could
+    # neither add the picture that route produced nor pass the design gate.
+    # "LESSON_DESIGN_INVALID ... maths visual tools are rendered, not
+    # photographed" pointed at a substitute route that does not exist.
+    #
+    # The teacher settled it: maths can have photographs. Photographing a tool
+    # the engine draws is still wrong, but that is not a subject rule and no
+    # validator can see it - it is the helper check's job, held for every
+    # subject by the delivery check, and a judgement the designer and reviewer
+    # carry.
     design, photos = valid_contract()
     design["starter"]["photoRefs"] = ["photo-001"]
     photos["photos"] = [photo_requirement(
         "photo-001",
-        "Decorative maths photograph",
-        "unsplash/maths.jpg",
-        pedagogical_constraint="Should not exist under CURRENT maths contract.",
+        "A real measuring jug at eye level, filled to a marked scale line",
+        "unsplash/measuring-jug.jpg",
+        pedagogical_constraint="A real-world referent the engine cannot draw.",
     )]
-    assert_invalid_contract(
-        design,
-        photos,
-        "Maths lesson-design may not define initial photo-### requirements",
-    )
+    module.validate_design(design, photos, initial_photo_namespace=True)
 
 
-def test_mathematics_alias_cannot_dodge_the_maths_photo_gate():
+def test_the_maths_subject_name_is_still_held_to_one_spelling():
     # 30 August 2026, "Add and subtract a 4-digit number by a 3-digit number":
     # the lesson-designer relabelled the subject "Mathematics" specifically so
-    # the no-initial-photos gate (which matched only "maths") would not fire,
-    # then wrote a picture-backed modelling state. The invariant must hold
-    # whichever synonym is typed, so any maths synonym other than the
-    # teacher's own "Maths" is itself rejected.
+    # the then no-initial-photos gate would not fire. That gate is gone, but the
+    # naming rule it exposed is worth keeping on its own account: filing folders
+    # and subject-file routing both expect the teacher's own "Maths".
     for alias in ("Mathematics", "mathematics", "MATHS", "Math"):
         design, photos = valid_contract()
         design["lesson"]["subject"] = alias
@@ -2196,7 +2206,8 @@ def test_working_wall_and_final_report_use_canonical_structure_names():
 def test_empty_photo_list_keeps_non_photo_visual_support_available():
     text = (ROOT / "references" / "output-template.md").read_text(encoding="utf-8")
     designer = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
-    assert "Maths always has an empty `photos` list because its visual tools are rendered directly." in text
+    assert "Maths usually has an empty `photos` list because its visual tools are rendered directly" in text
+    assert "always has an empty `photos` list" not in text
     assert "When word names idea no picture can honestly carry" in designer
     assert '"kind": "none"' in designer
     assert '"kind": "built-in"' in designer

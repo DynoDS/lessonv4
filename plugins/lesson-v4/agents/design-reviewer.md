@@ -228,9 +228,12 @@ For each planned photograph and load-bearing representation, check:
 - fallback meaning;
 - generation risks;
 - coherent-group meaning;
-- whether a child can interpret the intended teaching evidence.
+- whether a child can interpret the intended teaching evidence;
+- whether it is photographing a tool the engine draws.
 
 A decorative image is not automatically a defect. It becomes a concern only when it displaces, contradicts or weakens necessary teaching evidence.
+
+**The drawn-tool check.** A number line, place-value chart, bar model, array, fraction wall, coordinate grid, Venn or clock face is the engine's to draw, and a photograph of one is a worse version of a thing already done properly. Raise it as a correction naming the helper that should draw it. This applies in every subject; maths is only where it comes up most, and a maths lesson is entitled to a photograph of a real-world referent (a real measuring jug, real coins, a real shelf label) or to a picture the helper check's rescue route produced when the engine turned out not to be able to draw something. The fault is the substitution, never the subject.
 
 ## Cross-section consistency
 

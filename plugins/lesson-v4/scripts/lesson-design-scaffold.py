@@ -690,7 +690,7 @@ def validate_request(raw: Any) -> dict[str, Any]:
         "yearGroup must be an integer from 1 to 6",
     )
 
-    subject = text(
+    text(
         request["subject"],
         "subject",
     )
@@ -1025,15 +1025,11 @@ def validate_request(raw: Any) -> dict[str, Any]:
                 ),
             )
 
-    if subject.casefold() == "maths":
-        require(
-            request["photoCount"] == 0,
-            (
-                "Maths scaffold request must use "
-                "photoCount 0"
-            ),
-        )
-
+    # A maths scaffold used to be required to declare photoCount 0. Removed on
+    # 1 September 2026 with the matching ban in the design validator: it made a
+    # maths lesson unable to take the picture the helper check's own rescue
+    # route produces. Photographing an engine-drawn maths tool is still wrong;
+    # it is caught where it can actually be seen, not by a count here.
     return request
 
 
