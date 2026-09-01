@@ -1,0 +1,32 @@
+{
+  "topic": "Where in the world are tropical rainforests?",
+  "yearGroup": "Year 4",
+  "lessonSlug": "year-4-geography-lesson-1",
+  "rationaleNote": "A single photograph-led Amazon overview earns wall space because it gives children a durable, self-contained reminder of the place's visible features and its cross-border extent. The map-led location sequence and full three-part model remain on the lesson materials because their final visual supports are not available as reusable wall assets.",
+  "cards": [
+    {
+      "type": "heroCallouts",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "The Amazon",
+      "heroPhoto": "wikimedia/amazon-canopy-aerial.jpg",
+      "heroCaption": "Forest canopy",
+      "groups": [
+        {
+          "title": "Where it is",
+          "items": [
+            "The Amazon rainforest crosses national borders."
+          ]
+        },
+        {
+          "title": "What it is like",
+          "items": [
+            "The Amazon has dense forest, huge rivers and places where people live."
+          ]
+        }
+      ]
+    }
+  ]
+}

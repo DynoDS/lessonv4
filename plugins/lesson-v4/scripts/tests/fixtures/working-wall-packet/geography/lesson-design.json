@@ -1,0 +1,816 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Content-based",
+    "yearGroup": 4,
+    "subject": "Geography",
+    "lo": "To describe and give examples of a biome and find the location and some features of the Amazon rainforest.",
+    "displayedLo": "To describe biomes, give examples and locate and describe the Amazon rainforest",
+    "durationMinutes": 45,
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "Children may treat biome as another word for rainforest and may read the Brazil label as if it contains the whole Amazon."
+  },
+  "teacherOrientation": "Teacher orientation: Children retrieve South America's place on a world map, learn what a biome is, notice the global tropical-rainforest pattern, then zoom in to locate and describe the Amazon from maps and real photographs. They produce a three-part description using biome, location and feature evidence. The tricky move is separating what a photograph can show about a biome from what a map can prove about location; this is taught in the final Teach beat and tested in Apply.",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "Starter",
+    "kind": "starter",
+    "conceptRef": null,
+    "content": {
+      "activity": "Retrieve continents and oceans from a world map with South America highlighted.",
+      "connection": "Makes the known world location visible before the lesson zooms in to the Amazon rainforest.",
+      "format": "Three short map questions.",
+      "testQuestionPath": null
+    },
+    "pupilInstruction": "Use the world map. Name the highlighted continent, the ocean to its east and the continent to its north-west.",
+    "taskStructure": null,
+    "modellingState": null,
+    "representationRefs": [
+      {
+        "ref": "rep-001",
+        "configuration": "starter-continent-retrieval",
+        "interaction": "pupil-uses"
+      }
+    ],
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "misconceptionRefs": [],
+    "photoRefs": [],
+    "speakerNotes": {
+      "script": "Say to children: Start with the shape you know. Which continent is picked out? Now look at the water on its eastern side. Finally, which continent sits up and to the left? Keep those three places in mind. They'll help when we zoom in.",
+      "teacherInfo": null,
+      "lookFor": null
+    },
+    "answer": {
+      "kind": "exact",
+      "content": "South America; Atlantic Ocean; North America.",
+      "acceptanceCondition": null,
+      "delivery": "answer-slide"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "biome",
+      "definition": "A biome is a large region with a similar climate, landscape, plants and animals.",
+      "visual": {
+        "kind": "representation",
+        "representationRef": "rep-001",
+        "configuration": "world-biomes"
+      }
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "climate",
+      "definition": "Climate is the usual pattern of weather in a place over many years.",
+      "visual": {
+        "kind": "none"
+      }
+    },
+    {
+      "id": "vocab-003",
+      "sourceUnitId": "lesson-section/vocabulary/unit-003",
+      "term": "Equator",
+      "definition": "The Equator is an imaginary line around the middle of Earth.",
+      "visual": {
+        "kind": "representation",
+        "representationRef": "rep-001",
+        "configuration": "tropical-rainforest-pattern"
+      }
+    },
+    {
+      "id": "vocab-004",
+      "sourceUnitId": "lesson-section/vocabulary/unit-004",
+      "term": "tropical rainforest",
+      "definition": "A tropical rainforest is a biome that stays warm and wet and has dense, tall vegetation.",
+      "visual": {
+        "kind": "none"
+      }
+    }
+  ],
+  "trimmedVocabulary": [
+    {
+      "term": "lines of latitude",
+      "reason": "The Equator is the only latitude line children use to reason about today's distribution pattern, so the broader map-language term adds no extra job."
+    },
+    {
+      "term": "Tropic of Cancer",
+      "reason": "Naming the northern tropical boundary is not required by the objective and would turn the location chunk into a line-naming drill."
+    },
+    {
+      "term": "Tropic of Capricorn",
+      "reason": "Naming the southern tropical boundary is not required by the objective and would turn the location chunk into a line-naming drill."
+    }
+  ],
+  "representations": [
+    {
+      "id": "rep-001",
+      "name": "World biome maps",
+      "purpose": "Make biome categories and the global tropical-rainforest pattern visible on a world frame children can interrogate.",
+      "configurations": [
+        {
+          "id": "starter-continent-retrieval",
+          "description": "A simple world map for continent retrieval, with South America highlighted and no answer labels printed on the target continent or adjacent ocean.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "recognisable outlines of all seven continents",
+            "South America highlighted as the only coloured continent",
+            "North America visible north-west of South America",
+            "the Atlantic Ocean clearly visible east of South America",
+            "no printed labels that reveal South America, North America or Atlantic Ocean before the answer"
+          ]
+        },
+        {
+          "id": "world-biomes",
+          "description": "A simplified world map showing broad approximate biome regions with a clear six-category key.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "all seven continents recognisable and labelled",
+            "a clear key for tropical rainforest, desert, savannah or grassland, temperate forest, boreal forest and tundra",
+            "each biome colour used consistently on the map and in the key",
+            "broad distributions marked as approximate rather than precise political boundaries",
+            "the Amazon region shown within the wider tropical-rainforest category rather than as its own biome"
+          ]
+        },
+        {
+          "id": "tropical-rainforest-pattern",
+          "description": "The same world frame showing only tropical-rainforest regions and the Equator so children can read the distribution pattern.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "all continents recognisable and labelled",
+            "the Equator drawn and labelled across the middle of the map",
+            "tropical-rainforest areas highlighted across Central and South America, Africa, Asia and Oceania",
+            "all non-tropical-rainforest areas quiet enough that the pattern is immediate",
+            "a small note that the shaded areas show a broad distribution"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rep-002",
+      "name": "Nested Amazon location maps",
+      "purpose": "Locate the Amazon outward from the world children know and show that the rainforest crosses national borders within South America.",
+      "configurations": [
+        {
+          "id": "world-to-south-america",
+          "description": "A linked world-to-continent map that highlights South America, then enlarges it while preserving its orientation.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "a small world map with South America highlighted",
+            "a larger South America outline connected by a clear zoom cue",
+            "the Equator shown on both maps in the same orientation",
+            "the Atlantic Ocean labelled on the eastern side",
+            "no Amazon extent yet, so continent location is secured before the closer map"
+          ]
+        },
+        {
+          "id": "amazon-extent-countries",
+          "description": "A clear political map of northern South America with the Amazon rainforest's approximate extent shaded across country borders.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "Brazil, Peru, Colombia, Bolivia, Venezuela, Guyana, Suriname and Ecuador labelled clearly",
+            "French Guiana labelled distinctly as a French territory",
+            "national borders visible beneath or beside the rainforest shading",
+            "the Amazon rainforest's broad approximate extent shown crossing several countries",
+            "Brazil visibly contains the largest share without implying that the whole rainforest is inside Brazil",
+            "the Atlantic coast and Equator retained as orientation anchors"
+          ]
+        }
+      ]
+    }
+  ],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "steps",
+      "drawLive": false,
+      "content": {
+        "steps": [
+          "Explain what a biome is and give two examples.",
+          "Locate the Amazon rainforest in South America.",
+          "Describe its features using map and photograph evidence."
+        ]
+      }
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "A biome is a large region with a similar climate, landscape, plants and animals."
+    },
+    {
+      "id": "sk-002",
+      "text": "Most tropical rainforests grow close to the Equator in places with a warm, wet climate."
+    },
+    {
+      "id": "sk-003",
+      "text": "The Amazon rainforest is in South America, spreads across several countries and has its largest part in Brazil."
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mc-001",
+      "belief": "Biome is another word for rainforest, so every biome is a rainforest.",
+      "correctiveFact": "Tropical rainforest is one example of a biome; deserts, tundra and grasslands are other biome types.",
+      "strategy": "Teach the broad category with a world biome map, then judge Dev's plausible claim before using the word in the independent description.",
+      "reason": "This wrong rule blocks the first part of the objective and stops children giving valid examples."
+    },
+    {
+      "id": "mc-002",
+      "belief": "The Amazon rainforest is only in Brazil because Brazil contains its largest part.",
+      "correctiveFact": "The Amazon rainforest crosses several South American countries, although its largest part is in Brazil.",
+      "strategy": "Use a nested location map, test Dev's Brazil-only claim and retest the boundary with fresh map evidence on the worksheet.",
+      "reason": "This is the dominant location error and would let a child name one country without understanding the rainforest's real extent."
+    }
+  ],
+  "concepts": [],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "What is a biome?",
+      "kind": "teach",
+      "conceptRef": null,
+      "content": {
+        "headline": "A biome is a broad type of region.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-001"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "Why can places far apart still belong to the same biome?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "world-biomes",
+          "interaction": "view"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: A biome isn't one named place. It's a large region where the climate and landscape are similar, so similar plants and animals can live there. Tropical rainforest is one biome. Desert, tundra, grassland and different kinds of forest are biomes too. On this map, places with the same colour can be thousands of miles apart. So why might they still belong to the same biome?",
+        "teacherInfo": "The biome boundaries are broad approximations; avoid presenting them as sharp political borders.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "Places far apart can belong to the same biome when they have a similar climate and landscape, with similar plants and animals.",
+        "acceptanceCondition": "Accept an explanation that links the shared biome to similar conditions rather than distance or country borders.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "Is a biome always a rainforest?",
+      "kind": "do",
+      "conceptRef": null,
+      "content": {
+        "activity": "Judge a plausible claim that confuses one biome example with the whole category.",
+        "format": "Talk and explain.",
+        "task": "Dev says, \"Biome is another word for rainforest.\" Is Dev right? Explain."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "world-biomes",
+          "interaction": "pupil-uses"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Dev has used a real geography word, but has he made the category too small? Use the key on the map. Find at least one biome that is clearly not a rainforest, then decide.",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "Dev isn't right. Tropical rainforest is one type of biome. Deserts, tundra and grasslands are other examples.",
+        "acceptanceCondition": "Accept a correction that names tropical rainforest as one biome and gives at least one valid different example.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "Spot the rainforest pattern",
+      "kind": "observe",
+      "conceptRef": null,
+      "content": {
+        "activity": "Inspect a world map showing tropical-rainforest areas and the Equator before the explanation is given.",
+        "focus": "Where the shaded tropical-rainforest areas sit in relation to the Equator.",
+        "evidenceProduced": "A noticed pattern that most shaded areas cluster in a broad band close to the Equator."
+      },
+      "pupilInstruction": "Look at the shaded areas and the Equator. What pattern do you notice?",
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "tropical-rainforest-pattern",
+          "interaction": "pupil-uses"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Don't name countries yet. Follow the Equator across the whole map and compare it with the shaded areas. What keeps happening? Are the rainforests scattered anywhere, or do they form a pattern?",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "Why are tropical rainforests near the Equator?",
+      "kind": "teach",
+      "conceptRef": null,
+      "content": {
+        "headline": "Tropical rainforests need a warm, wet climate.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-002"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "How could this map help you predict the climate of another tropical rainforest?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "tropical-rainforest-pattern",
+          "interaction": "view"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: The sun's energy is strongest around the Equator, so places there stay warm. In tropical rainforest regions, warm, moist air rises and brings lots of rain. That gives the biome its warm, wet climate and supports dense vegetation. The map doesn't tell us every day's weather, but it does help us predict the usual climate.",
+        "teacherInfo": "Do not imply that every place on the Equator is wet; the highlighted distribution shows where warm and wet conditions combine.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "If another tropical rainforest is close to the Equator, I would expect its climate to be warm and wet.",
+        "acceptanceCondition": "Accept a prediction that links the tropical-rainforest distribution to a warm and wet climate.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-005",
+      "label": "Which continents have tropical rainforests?",
+      "kind": "do",
+      "conceptRef": null,
+      "content": {
+        "activity": "Read the distribution map to identify the continents containing tropical-rainforest areas.",
+        "format": "Map reading and naming.",
+        "task": "Use the shaded map. Which continents have tropical-rainforest areas?"
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "tropical-rainforest-pattern",
+          "interaction": "pupil-uses"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Trace each shaded patch back to its continent. Watch Central America carefully: it belongs to North America. Keep going until you've found the continent for every shaded region.",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "North America, South America, Africa, Asia and Oceania.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+      "label": "Where is the Amazon rainforest?",
+      "kind": "teach",
+      "conceptRef": null,
+      "content": {
+        "headline": "The Amazon rainforest crosses national borders.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-003"
+        },
+        "teachingText": null,
+        "keyQuestions": []
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-002",
+          "configuration": "world-to-south-america",
+          "interaction": "view"
+        },
+        {
+          "ref": "rep-002",
+          "configuration": "amazon-extent-countries",
+          "interaction": "view"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-003"
+      ],
+      "misconceptionRefs": [
+        "mc-002"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: We know where South America is, so now we'll zoom in. South America sits between the Pacific and Atlantic Oceans. The shaded area is the Amazon rainforest. Most of it is in Brazil, but follow the shading over the borders: it reaches into several other countries too. A rainforest follows its climate and landscape; it doesn't stop because a political border has been drawn.",
+        "teacherInfo": "The shaded extent is approximate and should not be read as a precise legal or ecological boundary.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-007",
+      "label": "Is the Amazon only in Brazil?",
+      "kind": "do",
+      "conceptRef": null,
+      "content": {
+        "activity": "Judge a plausible Brazil-only claim using the country borders and rainforest extent on the map.",
+        "format": "Map evidence explanation.",
+        "task": "Dev says, \"The Amazon rainforest is in Brazil, so it can't be in any other country.\" Is Dev right? Use the map to explain."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-002",
+          "configuration": "amazon-extent-countries",
+          "interaction": "pupil-uses"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-002"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Dev is right that Brazil matters, but does the map show more than that? Follow the shaded rainforest to each border. Does the shading stop, or does it carry on? Use what you can see, not just a country fact you remember.",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "Dev isn't right. The largest part is in Brazil, but the shaded area crosses into Peru, Colombia and several other South American countries.",
+        "acceptanceCondition": "Accept an explanation that uses the shading crossing at least one national border; children do not need to list every country.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-008",
+      "label": "What is the Amazon rainforest like?",
+      "kind": "teach",
+      "conceptRef": null,
+      "content": {
+        "headline": "Geographers describe places from evidence.",
+        "takeaway": {
+          "kind": "text",
+          "text": "The Amazon has dense forest, huge rivers and places where people live."
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "What would we miss if we used only the forest-canopy photograph?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-003"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001",
+        "photo-002",
+        "photo-003"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: One photograph can be truthful and still leave most of a place out. The aerial view shows a wide, dense canopy. The river photograph shows how enormous the waterways are, and the third photograph reminds us that people live and travel here too. Put the sources together and the Amazon becomes a place, not a single picture of trees.",
+        "teacherInfo": "Keep this at the level of broad visible features; rainforest layers and detailed community life belong to later lessons in the supplied sequence.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "We would miss the huge rivers and the places where people live. One canopy photograph can't show the whole place.",
+        "acceptanceCondition": "Accept an answer that identifies at least one feature shown by another source and explains the limit of a single photograph.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-009",
+      "label": "Which source proves it?",
+      "kind": "do",
+      "conceptRef": null,
+      "content": {
+        "activity": "Select the strongest photograph evidence for human presence and name the visible clue.",
+        "format": "Source choice and one-line justification.",
+        "task": "Which photograph is the strongest evidence that people live in the Amazon? What can you see that proves it?"
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001",
+        "photo-002",
+        "photo-003"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Choose the source that gives the clearest evidence, then point to the clue. Saying 'I know people live there' isn't enough; the photograph has to do some work in your answer.",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The settlement photograph is the strongest evidence because it shows buildings and boats beside the river.",
+        "acceptanceCondition": "Accept the human-presence photograph with a visible clue such as buildings, boats, roads or people.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-010",
+      "label": "Practise",
+      "kind": "practise",
+      "conceptRef": null,
+      "content": {
+        "activity": "Write a three-part geographical description that combines biome knowledge, nested location and visible Amazon features.",
+        "format": "Three-part description using maps and photographs.",
+        "task": "What is a biome? Give two examples.\n\nWhere is the Amazon rainforest?\n\nWhat features can you see in the map and photographs?"
+      },
+      "pupilInstruction": "Use the maps and photographs to write your Amazon description.",
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "world-biomes",
+          "interaction": "pupil-uses"
+        },
+        {
+          "ref": "rep-002",
+          "configuration": "amazon-extent-countries",
+          "interaction": "pupil-uses"
+        }
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001",
+        "mc-002"
+      ],
+      "photoRefs": [
+        "photo-001",
+        "photo-002",
+        "photo-003"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Build the picture in three moves. First, explain the big category: what a biome is and two examples. Then place the Amazon in the world and inside South America. Finish with the place itself. Which features can the map or photographs actually prove?",
+        "teacherInfo": null,
+        "lookFor": "Look for: biome plus examples; South America and several countries; features tied to map or photograph evidence."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "A biome is a large region with a similar climate, landscape, plants and animals. Tropical rainforest and desert are two examples.\n\nThe Amazon rainforest is a tropical rainforest biome in South America. It spreads across several countries, and its largest part is in Brazil.\n\nThe photographs show dense green forest, a huge river and places where people live. The map also shows that the rainforest covers a very large area.",
+        "acceptanceCondition": "Accept another accurate description that defines biome, gives two valid examples, locates the Amazon in South America across several countries and supports broad features with the sources.",
+        "delivery": "answer-slide"
+      }
+    }
+  ],
+  "ending": {
+    "included": true,
+    "kind": "Apply",
+    "reason": "Earned because it shifts from describing the Amazon to judging whether biome evidence can prove the identity of a named place.",
+    "beat": {
+      "sourceUnitId": "lesson-section/apply/unit-001",
+      "label": "Apply",
+      "kind": "apply",
+      "conceptRef": null,
+      "content": {
+        "activity": "Lena says, \"This photograph proves the forest is the Amazon because it is dense and green.\" Does the photograph prove that? Explain what else you would need."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: The photograph does show something useful. Dense, green forest is evidence for a tropical rainforest biome. But tropical rainforests grow in several parts of the world. Has Lena proved this named place, or only the biome? What other source would settle the location?",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The photograph doesn't prove that it is the Amazon. It may show a tropical rainforest, but tropical rainforests grow in several parts of the world. I would need a map, a place label or reliable source information to show where the photograph was taken.",
+        "acceptanceCondition": "Accept an explanation that separates biome evidence from location evidence and names a map, place label or reliable source detail.",
+        "delivery": "answer-slide"
+      }
+    }
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": {
+      "coreActionAndEvidence": "Use one fresh South America map and two fresh Amazon photographs to define biome, give examples, locate the rainforest across borders and describe visible features.",
+      "amount": "One coherent stimulus panel with a map and two photographs, followed by four written responses: definition, examples, map judgement and evidence-based description.",
+      "variationAndBoundaryPlan": "The map uses the taught nested-location language but the photographs are new. The fresh location claim asks children to prove that the rainforest extends beyond Brazil using cross-border shading, and the feature task keeps broad description separate from later rainforest-layer content.",
+      "organisation": "Place the map and both photographs together at the top of the task column, then run the four prompts directly beneath the sources they use."
+    },
+    "sheetShape": {
+      "kind": "stimulus-set",
+      "reason": "One source panel is worked hard by four connected prompts, keeping evidence close to the questions while fitting one A4 page."
+    },
+    "demand": "Children retrieve the biome category, read a map against a plausible claim and combine fresh visual evidence into an accurate description of a named place.",
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "fitPriority": {
+      "protected": [
+        "the complete South America map directly above the location claim",
+        "both fresh Amazon photographs kept together and large enough for visible evidence",
+        "all four prompts with usable handwriting space"
+      ],
+      "preAuthorisedRemoval": []
+    },
+    "centralWriteOnVisualException": null,
+    "contentBlocks": [
+      {
+        "id": "ws-stimulus-001",
+        "kind": "stimulus-set",
+        "stimulus": "Use the map and both photographs.",
+        "relationship": "The map locates the Amazon rainforest. The photographs show different parts of the place.",
+        "pupilAction": "Answer each question with evidence from the source it names.",
+        "representationRefs": [
+          {
+            "ref": "rep-002",
+            "configuration": "amazon-extent-countries",
+            "interaction": "pupil-uses"
+          }
+        ],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [
+          "photo-004",
+          "photo-005"
+        ],
+        "prompts": [
+          {
+            "id": "ws-stimulus-001-prompt-01",
+            "pupilPrompt": "What is a biome?",
+            "response": "One clear definition; space for two lines.",
+            "support": "Think about what places in one biome have in common.",
+            "visualRequirements": "No extra visual is needed for this prompt.",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "model",
+              "content": "A biome is a large region with a similar climate, landscape, plants and animals.",
+              "acceptanceCondition": "Accept a definition that includes a large region and at least climate plus one other shared feature.",
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-stimulus-001-prompt-02",
+            "pupilPrompt": "Name two examples of biomes.",
+            "response": "Two biome names; space for one line.",
+            "support": "",
+            "visualRequirements": "No extra visual is needed for this prompt.",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "Any two valid examples, such as tropical rainforest, desert, tundra, savannah or grassland, temperate forest, or boreal forest.",
+              "acceptanceCondition": "Accept any two accurate biome examples.",
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-stimulus-001-prompt-03",
+            "pupilPrompt": "Niko says, \"Someone can be in the Amazon rainforest without being in Brazil.\" Is Niko right? Use the map in your answer.",
+            "response": "A judgement and map-based explanation that locates the rainforest; space for three lines.",
+            "support": "Start with the continent. Use the country borders and the shaded area.",
+            "visualRequirements": "Keep the South America map directly above this question, with the shading and borders readable.",
+            "representationRefs": [
+              {
+                "ref": "rep-002",
+                "configuration": "amazon-extent-countries",
+                "interaction": "pupil-uses"
+              }
+            ],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "model",
+              "content": "Niko is right. The Amazon rainforest is in South America. Its largest part is in Brazil, but the map shows shaded rainforest in other countries, including Peru and Colombia.",
+              "acceptanceCondition": "Accept an answer that names South America, accepts the claim and uses shaded rainforest in at least one country outside Brazil as evidence.",
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-stimulus-001-prompt-04",
+            "pupilPrompt": "Describe two features of the Amazon rainforest. Use the photographs as evidence.",
+            "response": "Two features with visible evidence; space for four lines.",
+            "support": "Say what you can see before you explain what it shows about the place.",
+            "visualRequirements": "Keep both photographs together directly above this question and large enough to see vegetation, water, buildings or boats.",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [
+              "photo-004",
+              "photo-005"
+            ],
+            "answer": {
+              "kind": "model",
+              "content": "The Amazon has dense green vegetation because the aerial photograph shows trees covering a huge area. It also has large rivers and places where people live, shown by the wide water, boats and buildings in the second photograph.",
+              "acceptanceCondition": "Accept two accurate broad features, each supported by something visible in either photograph.",
+              "delivery": "teacher-only"
+            }
+          }
+        ]
+      }
+    ],
+    "answerKeyMode": "required",
+    "providedWorksheet": null
+  },
+  "slideDesignNotes": [
+    "Keep the world → South America → Amazon zoom explicit and preserve the same orientation, Equator treatment and map language across each step.",
+    "Present the three Amazon photographs as equal geographical sources rather than decorative crops; keep enough of each frame for the feature evidence to remain visible.",
+    "Keep broad Lesson 1 features separate from rainforest layers, plant adaptations and detailed community life, which the supplied sequence teaches later."
+  ],
+  "flagsForTeacher": [
+    "None."
+  ]
+}

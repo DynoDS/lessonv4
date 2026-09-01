@@ -1,0 +1,202 @@
+{
+  "schema_version": 2,
+  "lesson_name": "Where in the world are tropical rainforests?",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A real wide aerial photograph of intact Amazon rainforest canopy in the Amazon basin",
+      "pedagogical_constraint": "The frame must show a broad, continuous canopy in the Amazon basin, not a generic jungle close-up and not an area dominated by recent clearing.",
+      "teaching_requirement": "Provide authentic evidence for the Amazon's dense vegetation and immense forest cover.",
+      "load_bearing_evidence": [
+        "a wide area of dense closed tree canopy",
+        "the photograph is reliably identified as being in the Amazon basin",
+        "no dominant road, plantation, large cleared field or urban skyline",
+        "enough landscape context to show scale rather than one tree"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/amazon-canopy-aerial.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A generated forest could not serve as evidence for what the real Amazon rainforest looks like.",
+      "generation_prompt": null,
+      "coherent_group": "amazon-slide-evidence",
+      "coherent_mode": "all-real",
+      "coherent_visual_invariants": [
+        "each image is a real photograph reliably located in the Amazon basin",
+        "wide landscape framing preserves geographical context",
+        "the load-bearing feature remains clear when three sources are shown together",
+        "no added labels, arrows, watermarks or text inside the image"
+      ]
+    },
+    {
+      "id": "photo-002",
+      "subject": "A real wide photograph of a major Amazon River channel or large tributary running through rainforest",
+      "pedagogical_constraint": "The waterway must appear broad and be surrounded mainly by Amazon rainforest, with a reliable Amazon-basin location.",
+      "teaching_requirement": "Provide authentic evidence that enormous rivers are a major physical feature of the Amazon rainforest.",
+      "load_bearing_evidence": [
+        "a wide river channel large enough to dominate the landscape",
+        "dense rainforest on one or both banks",
+        "the photograph is reliably identified as being in the Amazon basin",
+        "a broad view that shows the relationship between river and forest"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/amazon-river-and-forest.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A generated river scene could not serve as evidence for the scale and appearance of a real Amazon waterway.",
+      "generation_prompt": null,
+      "coherent_group": "amazon-slide-evidence",
+      "coherent_mode": "all-real",
+      "coherent_visual_invariants": [
+        "each image is a real photograph reliably located in the Amazon basin",
+        "wide landscape framing preserves geographical context",
+        "the load-bearing feature remains clear when three sources are shown together",
+        "no added labels, arrows, watermarks or text inside the image"
+      ]
+    },
+    {
+      "id": "photo-003",
+      "subject": "A real riverside settlement or city in the Amazon basin with buildings and boats visible beside the water",
+      "pedagogical_constraint": "The frame must clearly show human presence within an Amazon-basin landscape without presenting the whole region as either untouched forest or one vast city.",
+      "teaching_requirement": "Counter a single-jungle lens by showing that people live and travel in the Amazon rainforest region.",
+      "load_bearing_evidence": [
+        "several clearly visible buildings",
+        "boats, a landing place or another visible sign of river travel",
+        "a broad river or forested riverbank in the same frame",
+        "the photograph is reliably identified as an Amazon-basin settlement or city"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/amazon-riverside-settlement.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A generated settlement would invent evidence about how and where real people live in the Amazon basin.",
+      "generation_prompt": null,
+      "coherent_group": "amazon-slide-evidence",
+      "coherent_mode": "all-real",
+      "coherent_visual_invariants": [
+        "each image is a real photograph reliably located in the Amazon basin",
+        "wide landscape framing preserves geographical context",
+        "the load-bearing feature remains clear when three sources are shown together",
+        "no added labels, arrows, watermarks or text inside the image"
+      ]
+    },
+    {
+      "id": "photo-004",
+      "subject": "A fresh real aerial photograph of an Amazon river winding through dense rainforest",
+      "pedagogical_constraint": "The river and continuous forest must both remain distinct in a worksheet-sized crop, and the source must reliably identify the Amazon-basin location.",
+      "teaching_requirement": "Give the worksheet fresh visual evidence for dense vegetation, extensive forest cover and large waterways.",
+      "load_bearing_evidence": [
+        "a clearly visible winding or branching river",
+        "dense green forest covering most of the frame",
+        "a wide aerial perspective that shows scale",
+        "the photograph is reliably identified as being in the Amazon basin"
+      ],
+      "use": "worksheet",
+      "essential": true,
+      "filename": "wikimedia/amazon-worksheet-river-aerial.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A generated aerial scene could not provide truthful fresh evidence about the real Amazon landscape.",
+      "generation_prompt": null,
+      "coherent_group": "amazon-worksheet-evidence",
+      "coherent_mode": "all-real",
+      "coherent_visual_invariants": [
+        "each image is a real photograph reliably located in the Amazon basin",
+        "near-square or landscape crops remain legible on one A4 page",
+        "the two sources show different attributes of the place",
+        "no added labels, arrows, watermarks or text inside the image"
+      ]
+    },
+    {
+      "id": "photo-005",
+      "subject": "A fresh real photograph of the Manaus riverfront or another documented Amazon-basin city beside a broad river",
+      "pedagogical_constraint": "Buildings, boats or port activity and the broad river must all remain clear in a worksheet-sized crop; the location must be reliably documented.",
+      "teaching_requirement": "Give the worksheet fresh evidence that the Amazon rainforest region includes major waterways and places where people live and travel.",
+      "load_bearing_evidence": [
+        "a broad river occupying a substantial part of the frame",
+        "several buildings or a recognisable urban riverfront",
+        "boats, port structures or another visible sign of river travel",
+        "a reliable Manaus or Amazon-basin location"
+      ],
+      "use": "worksheet",
+      "essential": true,
+      "filename": "wikimedia/amazon-worksheet-manaus-riverfront.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A generated city scene would invent evidence about a real named place in the Amazon basin.",
+      "generation_prompt": null,
+      "coherent_group": "amazon-worksheet-evidence",
+      "coherent_mode": "all-real",
+      "coherent_visual_invariants": [
+        "each image is a real photograph reliably located in the Amazon basin",
+        "near-square or landscape crops remain legible on one A4 page",
+        "the two sources show different attributes of the place",
+        "no added labels, arrows, watermarks or text inside the image"
+      ]
+    },
+    {
+      "id": "photo-006",
+      "subject": "A real published world map showing the global distribution of tropical rainforest",
+      "pedagogical_constraint": "The map must use recognisable real-world geography and clearly show tropical rainforest distribution across Central and South America, Africa, Asia and Oceania; it must not be a schematic coastline drawn from guessed coordinates.",
+      "teaching_requirement": "Provide truthful geographical evidence for where tropical rainforests occur, used consistently across slides 6, 7 and 8 alongside the real map helper's Equator and Tropics.",
+      "load_bearing_evidence": [
+        "recognisable world geography from a published map source",
+        "tropical rainforest distribution visible across Central and South America, Africa, Asia and Oceania",
+        "a clear key or unambiguous single-category shading",
+        "sufficient resolution for a full-width classroom slide"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/world-tropical-rainforest-distribution-map.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "If no reliable published map can be sourced, record a gap; do not invent rainforest regions on the real base map.",
+      "generation_prompt": null,
+      "coherent_group": "world-thematic-maps",
+      "coherent_mode": "all-real",
+      "coherent_visual_invariants": [
+        "each image is a real published thematic map",
+        "world geography remains recognisable and undistorted",
+        "the key and distribution remain legible at classroom scale",
+        "no generated or hand-drawn coastlines"
+      ]
+    },
+    {
+      "id": "photo-007",
+      "subject": "A real published world biome map with a clear key",
+      "pedagogical_constraint": "The map must use recognisable real-world geography and distinguish tropical rainforest, desert, savannah or grassland, temperate forest, boreal forest and tundra with a clear consistent key.",
+      "teaching_requirement": "Provide the accurate world biome map used consistently across slides 4, 5, 13 and 15.",
+      "load_bearing_evidence": [
+        "recognisable world geography from a published map source",
+        "six required biome categories visible or clearly reconcilable to the lesson vocabulary",
+        "a legible key with colours used consistently on the map",
+        "sufficient resolution for a full-width classroom slide"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/world-biomes-map.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "If no reliable published map can be sourced, record a gap; do not invent biome regions on the real base map.",
+      "generation_prompt": null,
+      "coherent_group": "world-thematic-maps",
+      "coherent_mode": "all-real",
+      "coherent_visual_invariants": [
+        "each image is a real published thematic map",
+        "world geography remains recognisable and undistorted",
+        "the key and distribution remain legible at classroom scale",
+        "no generated or hand-drawn coastlines"
+      ]
+    }
+  ]
+}

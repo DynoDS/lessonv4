@@ -1,0 +1,1197 @@
+{
+ "lessonName": "Where in the world are tropical rainforests?",
+ "yearGroup": "Year 4",
+ "subject": "Geography",
+ "lo": "To describe biomes, give examples and locate and describe the Amazon rainforest",
+ "slides": [
+  {
+   "template": "split-v-80-20",
+   "headerStyle": "starter",
+   "lo": "To describe biomes, give examples and locate and describe the Amazon rainforest",
+   "heading": "Starter",
+   "primarySide": "top",
+   "primary": {
+    "type": "map",
+    "map": "world-with-antarctica",
+    "presentation": "seven-continent-world",
+    "annotations": [
+     {
+      "kind": "area",
+      "colour": "orange",
+      "points": [
+       {
+        "lon": -77,
+        "lat": 8
+       },
+       {
+        "lon": -62,
+        "lat": 10
+       },
+       {
+        "lon": -50,
+        "lat": 2
+       },
+       {
+        "lon": -39,
+        "lat": -12
+       },
+       {
+        "lon": -52,
+        "lat": -31
+       },
+       {
+        "lon": -68,
+        "lat": -52
+       },
+       {
+        "lon": -74,
+        "lat": -20
+       }
+      ]
+     }
+    ]
+   },
+   "secondary": {
+    "type": "text",
+    "value": "Use the world map. Name the highlighted continent, the ocean to its east and the continent to its north-west.",
+    "colorRole": "focus-blue",
+    "align": "center"
+   },
+   "designUnitId": "lesson-section/starter/unit-001",
+   "speakerNotes": "Teacher orientation: Children retrieve South America's place on a world map, learn what a biome is, notice the global tropical-rainforest pattern, then zoom in to locate and describe the Amazon from maps and real photographs. They produce a three-part description using biome, location and feature evidence. The tricky move is separating what a photograph can show about a biome from what a map can prove about location; this is taught in the final Teach beat and tested in Apply.\n\nSay to children: Start with the shape you know. Which continent is picked out? Now look at the water on its eastern side. Finally, which continent sits up and to the left? Keep those three places in mind. They'll help when we zoom in.\n\nAnswer to question(s) on this slide: South America; Atlantic Ocean; North America."
+  },
+  {
+   "template": "split-v-80-20",
+   "headerStyle": "title",
+   "title": "Starter",
+   "primarySide": "top",
+   "primary": {
+    "type": "map",
+    "map": "world-with-antarctica",
+    "presentation": "seven-continent-world",
+    "annotations": [
+     {
+      "kind": "area",
+      "colour": "orange",
+      "points": [
+       {
+        "lon": -77,
+        "lat": 8
+       },
+       {
+        "lon": -62,
+        "lat": 10
+       },
+       {
+        "lon": -50,
+        "lat": 2
+       },
+       {
+        "lon": -39,
+        "lat": -12
+       },
+       {
+        "lon": -52,
+        "lat": -31
+       },
+       {
+        "lon": -68,
+        "lat": -52
+       },
+       {
+        "lon": -74,
+        "lat": -20
+       }
+      ]
+     }
+    ]
+   },
+   "secondary": {
+    "type": "text",
+    "value": "||South America; Atlantic Ocean; North America.",
+    "align": "center"
+   },
+   "designUnitId": "lesson-section/starter/unit-001"
+  },
+  {
+   "template": "body-sidebar",
+   "headerStyle": "title",
+   "title": "What is a biome?",
+   "banner": {
+    "type": "text",
+    "value": "A biome is a broad type of region.",
+    "align": "center"
+   },
+   "body": {
+    "type": "map",
+    "map": "world-with-antarctica",
+    "presentation": "seven-continent-world",
+    "key": [
+     {
+      "text": "Tropical rainforest",
+      "colour": "green"
+     },
+     {
+      "text": "Hot desert",
+      "colour": "orange"
+     },
+     {
+      "text": "Tundra",
+      "colour": "blue"
+     },
+     {
+      "text": "Grassland",
+      "colour": "black"
+     }
+    ],
+    "annotations": [
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "green",
+      "label": "Amazon",
+      "points": [
+       {
+        "lon": -73,
+        "lat": 1
+       },
+       {
+        "lon": -61,
+        "lat": 3
+       },
+       {
+        "lon": -51,
+        "lat": -2
+       },
+       {
+        "lon": -54,
+        "lat": -9
+       },
+       {
+        "lon": -67,
+        "lat": -12
+       },
+       {
+        "lon": -73,
+        "lat": -5
+       }
+      ]
+     },
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "green",
+      "points": [
+       {
+        "lon": 11,
+        "lat": 3
+       },
+       {
+        "lon": 20,
+        "lat": 4
+       },
+       {
+        "lon": 26,
+        "lat": 0
+       },
+       {
+        "lon": 24,
+        "lat": -6
+       },
+       {
+        "lon": 15,
+        "lat": -6
+       },
+       {
+        "lon": 11,
+        "lat": -1
+       }
+      ]
+     },
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "orange",
+      "label": "Sahara",
+      "points": [
+       {
+        "lon": -8,
+        "lat": 27
+       },
+       {
+        "lon": 11,
+        "lat": 31
+       },
+       {
+        "lon": 28,
+        "lat": 26
+       },
+       {
+        "lon": 25,
+        "lat": 19
+       },
+       {
+        "lon": 8,
+        "lat": 18
+       },
+       {
+        "lon": -5,
+        "lat": 20
+       }
+      ]
+     },
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "orange",
+      "points": [
+       {
+        "lon": 119,
+        "lat": -22
+       },
+       {
+        "lon": 134,
+        "lat": -21
+       },
+       {
+        "lon": 140,
+        "lat": -28
+       },
+       {
+        "lon": 132,
+        "lat": -34
+       },
+       {
+        "lon": 119,
+        "lat": -31
+       }
+      ]
+     },
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "blue",
+      "points": [
+       {
+        "lon": -133,
+        "lat": 67
+       },
+       {
+        "lon": -117,
+        "lat": 73
+       },
+       {
+        "lon": -104,
+        "lat": 70
+       },
+       {
+        "lon": -111,
+        "lat": 63
+       },
+       {
+        "lon": -125,
+        "lat": 61
+       }
+      ]
+     },
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "blue",
+      "points": [
+       {
+        "lon": 60,
+        "lat": 66
+       },
+       {
+        "lon": 90,
+        "lat": 70
+       },
+       {
+        "lon": 125,
+        "lat": 68
+       },
+       {
+        "lon": 120,
+        "lat": 62
+       },
+       {
+        "lon": 75,
+        "lat": 61
+       }
+      ]
+     },
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "black",
+      "label": "Grassland",
+      "points": [
+       {
+        "lon": -109,
+        "lat": 49
+       },
+       {
+        "lon": -96,
+        "lat": 48
+       },
+       {
+        "lon": -96,
+        "lat": 34
+       },
+       {
+        "lon": -103,
+        "lat": 30
+       },
+       {
+        "lon": -107,
+        "lat": 38
+       }
+      ]
+     },
+     {
+      "kind": "area",
+      "shaded": true,
+      "colour": "black",
+      "points": [
+       {
+        "lon": 48,
+        "lat": 50
+       },
+       {
+        "lon": 75,
+        "lat": 51
+       },
+       {
+        "lon": 80,
+        "lat": 45
+       },
+       {
+        "lon": 65,
+        "lat": 42
+       },
+       {
+        "lon": 50,
+        "lat": 44
+       }
+      ]
+     }
+    ],
+    "previousRepresentation": {
+     "type": "image",
+     "imagePath": "wikimedia/world-biomes-map.jpg"
+    },
+    "caption": "Examples of biome regions. Continents contain several different biomes."
+   },
+   "sidebar": {
+    "type": "stack",
+    "verticalAlign": "center",
+    "items": [
+     {
+      "type": "text",
+      "value": "✨ A biome is a large region with a similar climate, landscape, plants and animals."
+     },
+     {
+      "type": "text",
+      "value": "Why can places far apart still belong to the same biome?",
+      "colorRole": "focus-blue",
+      "align": "center"
+     }
+    ]
+   },
+   "designUnitId": "lesson-section/teaching-sequence/unit-001",
+   "speakerNotes": "Say to children: A biome isn't one named place. It's a large region where the climate and landscape are similar, so similar plants and animals can live there. Tropical rainforest is one biome. Desert, tundra, grassland and different kinds of forest are biomes too. On this map, places with the same colour can be thousands of miles apart. So why might they still belong to the same biome?\n\nThe biome boundaries are broad approximations; avoid presenting them as sharp political borders.\n\nAnswer/model for this slide: Places far apart can belong to the same biome when they have a similar climate and landscape, with similar plants and animals."
+  },
+  {
+   "template": "speech-bubbles-1",
+   "headerStyle": "title",
+   "title": "Is Dev right? Explain.",
+   "statementSide": "right",
+   "statementRatio": 0.64,
+   "statement": {
+    "type": "stack",
+    "items": [
+     {
+      "type": "map",
+      "map": "world-with-antarctica",
+      "presentation": "seven-continent-world",
+      "key": [
+       {
+        "text": "Tropical rainforest",
+        "colour": "green"
+       },
+       {
+        "text": "Hot desert",
+        "colour": "orange"
+       },
+       {
+        "text": "Tundra",
+        "colour": "blue"
+       },
+       {
+        "text": "Grassland",
+        "colour": "black"
+       }
+      ],
+      "annotations": [
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "green",
+        "label": "Amazon",
+        "points": [
+         {
+          "lon": -73,
+          "lat": 1
+         },
+         {
+          "lon": -61,
+          "lat": 3
+         },
+         {
+          "lon": -51,
+          "lat": -2
+         },
+         {
+          "lon": -54,
+          "lat": -9
+         },
+         {
+          "lon": -67,
+          "lat": -12
+         },
+         {
+          "lon": -73,
+          "lat": -5
+         }
+        ]
+       },
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "green",
+        "points": [
+         {
+          "lon": 11,
+          "lat": 3
+         },
+         {
+          "lon": 20,
+          "lat": 4
+         },
+         {
+          "lon": 26,
+          "lat": 0
+         },
+         {
+          "lon": 24,
+          "lat": -6
+         },
+         {
+          "lon": 15,
+          "lat": -6
+         },
+         {
+          "lon": 11,
+          "lat": -1
+         }
+        ]
+       },
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "orange",
+        "label": "Sahara",
+        "points": [
+         {
+          "lon": -8,
+          "lat": 27
+         },
+         {
+          "lon": 11,
+          "lat": 31
+         },
+         {
+          "lon": 28,
+          "lat": 26
+         },
+         {
+          "lon": 25,
+          "lat": 19
+         },
+         {
+          "lon": 8,
+          "lat": 18
+         },
+         {
+          "lon": -5,
+          "lat": 20
+         }
+        ]
+       },
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "orange",
+        "points": [
+         {
+          "lon": 119,
+          "lat": -22
+         },
+         {
+          "lon": 134,
+          "lat": -21
+         },
+         {
+          "lon": 140,
+          "lat": -28
+         },
+         {
+          "lon": 132,
+          "lat": -34
+         },
+         {
+          "lon": 119,
+          "lat": -31
+         }
+        ]
+       },
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "blue",
+        "points": [
+         {
+          "lon": -133,
+          "lat": 67
+         },
+         {
+          "lon": -117,
+          "lat": 73
+         },
+         {
+          "lon": -104,
+          "lat": 70
+         },
+         {
+          "lon": -111,
+          "lat": 63
+         },
+         {
+          "lon": -125,
+          "lat": 61
+         }
+        ]
+       },
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "blue",
+        "points": [
+         {
+          "lon": 60,
+          "lat": 66
+         },
+         {
+          "lon": 90,
+          "lat": 70
+         },
+         {
+          "lon": 125,
+          "lat": 68
+         },
+         {
+          "lon": 120,
+          "lat": 62
+         },
+         {
+          "lon": 75,
+          "lat": 61
+         }
+        ]
+       },
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "black",
+        "label": "Grassland",
+        "points": [
+         {
+          "lon": -109,
+          "lat": 49
+         },
+         {
+          "lon": -96,
+          "lat": 48
+         },
+         {
+          "lon": -96,
+          "lat": 34
+         },
+         {
+          "lon": -103,
+          "lat": 30
+         },
+         {
+          "lon": -107,
+          "lat": 38
+         }
+        ]
+       },
+       {
+        "kind": "area",
+        "shaded": true,
+        "colour": "black",
+        "points": [
+         {
+          "lon": 48,
+          "lat": 50
+         },
+         {
+          "lon": 75,
+          "lat": 51
+         },
+         {
+          "lon": 80,
+          "lat": 45
+         },
+         {
+          "lon": 65,
+          "lat": 42
+         },
+         {
+          "lon": 50,
+          "lat": 44
+         }
+        ]
+       }
+      ],
+      "previousRepresentation": {
+       "type": "image",
+       "imagePath": "wikimedia/world-biomes-map.jpg"
+      },
+      "caption": "Examples of biome regions. Continents contain several different biomes."
+     },
+     {
+      "type": "text",
+      "value": "Is Dev right? Explain.",
+      "colorRole": "focus-blue",
+      "align": "center"
+     }
+    ]
+   },
+   "speakers": [
+    {
+     "name": "Dev",
+     "child": "mr-sear",
+     "speech": "Biome is another word for rainforest."
+    }
+   ],
+   "decorations": [
+    {
+     "id": "decoration-biome-globe",
+     "kind": "educational-svg",
+     "concept": "globe",
+     "context": "A small globe beside a claim about biomes as broad world regions",
+     "avoid": [
+      "planet icon with no continents",
+      "cartoon face"
+     ],
+     "frame": {
+      "x": 0.84,
+      "y": 0.68,
+      "width": 0.1,
+      "height": 0.17
+     },
+     "layer": "high",
+     "rotation": 4,
+     "transparency": 50,
+     "educationalSvgId": "standard/gl/globe.svg",
+     "educationalSvgSlug": "globe",
+     "imagePath": "icons/globe.png"
+    }
+   ],
+   "designUnitId": "lesson-section/teaching-sequence/unit-002",
+   "speakerNotes": "Say to children: Dev has used a real geography word, but has he made the category too small? Use the key on the map. Find at least one biome that is clearly not a rainforest, then decide.\n\nAnswer/model for this slide: Dev isn't right. Tropical rainforest is one type of biome. Deserts, tundra and grasslands are other examples."
+  },
+  {
+   "template": "split-h-70-30",
+   "headerStyle": "title",
+   "title": "Practise",
+   "primarySide": "left",
+   "primary": {
+    "type": "stack",
+    "items": [
+     {
+      "type": "text",
+      "value": "Use the maps and photographs to write your Amazon description.",
+      "colorRole": "focus-blue",
+      "align": "center",
+      "weight": 0.5
+     },
+     {
+      "type": "text",
+      "value": "What is a biome? Give two examples.\n\nWhere is the Amazon rainforest?",
+      "colorRole": "focus-blue",
+      "align": "center",
+      "weight": 0.8
+     },
+     {
+      "type": "row",
+      "items": [
+       {
+        "type": "map",
+        "weight": 0.55,
+        "map": "world-with-antarctica",
+        "presentation": "seven-continent-world",
+        "key": [
+         {
+          "text": "Tropical rainforest",
+          "colour": "green"
+         },
+         {
+          "text": "Hot desert",
+          "colour": "orange"
+         },
+         {
+          "text": "Tundra",
+          "colour": "blue"
+         },
+         {
+          "text": "Grassland",
+          "colour": "black"
+         }
+        ],
+        "annotations": [
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "green",
+          "label": "Amazon",
+          "points": [
+           {
+            "lon": -73,
+            "lat": 1
+           },
+           {
+            "lon": -61,
+            "lat": 3
+           },
+           {
+            "lon": -51,
+            "lat": -2
+           },
+           {
+            "lon": -54,
+            "lat": -9
+           },
+           {
+            "lon": -67,
+            "lat": -12
+           },
+           {
+            "lon": -73,
+            "lat": -5
+           }
+          ]
+         },
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "green",
+          "points": [
+           {
+            "lon": 11,
+            "lat": 3
+           },
+           {
+            "lon": 20,
+            "lat": 4
+           },
+           {
+            "lon": 26,
+            "lat": 0
+           },
+           {
+            "lon": 24,
+            "lat": -6
+           },
+           {
+            "lon": 15,
+            "lat": -6
+           },
+           {
+            "lon": 11,
+            "lat": -1
+           }
+          ]
+         },
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "orange",
+          "label": "Sahara",
+          "points": [
+           {
+            "lon": -8,
+            "lat": 27
+           },
+           {
+            "lon": 11,
+            "lat": 31
+           },
+           {
+            "lon": 28,
+            "lat": 26
+           },
+           {
+            "lon": 25,
+            "lat": 19
+           },
+           {
+            "lon": 8,
+            "lat": 18
+           },
+           {
+            "lon": -5,
+            "lat": 20
+           }
+          ]
+         },
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "orange",
+          "points": [
+           {
+            "lon": 119,
+            "lat": -22
+           },
+           {
+            "lon": 134,
+            "lat": -21
+           },
+           {
+            "lon": 140,
+            "lat": -28
+           },
+           {
+            "lon": 132,
+            "lat": -34
+           },
+           {
+            "lon": 119,
+            "lat": -31
+           }
+          ]
+         },
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "blue",
+          "points": [
+           {
+            "lon": -133,
+            "lat": 67
+           },
+           {
+            "lon": -117,
+            "lat": 73
+           },
+           {
+            "lon": -104,
+            "lat": 70
+           },
+           {
+            "lon": -111,
+            "lat": 63
+           },
+           {
+            "lon": -125,
+            "lat": 61
+           }
+          ]
+         },
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "blue",
+          "points": [
+           {
+            "lon": 60,
+            "lat": 66
+           },
+           {
+            "lon": 90,
+            "lat": 70
+           },
+           {
+            "lon": 125,
+            "lat": 68
+           },
+           {
+            "lon": 120,
+            "lat": 62
+           },
+           {
+            "lon": 75,
+            "lat": 61
+           }
+          ]
+         },
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "black",
+          "label": "Grassland",
+          "points": [
+           {
+            "lon": -109,
+            "lat": 49
+           },
+           {
+            "lon": -96,
+            "lat": 48
+           },
+           {
+            "lon": -96,
+            "lat": 34
+           },
+           {
+            "lon": -103,
+            "lat": 30
+           },
+           {
+            "lon": -107,
+            "lat": 38
+           }
+          ]
+         },
+         {
+          "kind": "area",
+          "shaded": true,
+          "colour": "black",
+          "points": [
+           {
+            "lon": 48,
+            "lat": 50
+           },
+           {
+            "lon": 75,
+            "lat": 51
+           },
+           {
+            "lon": 80,
+            "lat": 45
+           },
+           {
+            "lon": 65,
+            "lat": 42
+           },
+           {
+            "lon": 50,
+            "lat": 44
+           }
+          ]
+         }
+        ],
+        "previousRepresentation": {
+         "type": "image",
+         "imagePath": "wikimedia/world-biomes-map.jpg"
+        },
+        "caption": "Examples of biome regions. Continents contain several different biomes."
+       },
+       {
+        "type": "map",
+        "weight": 1.45,
+        "map": "south-america",
+        "selectedCountry": "Brazil",
+        "basin": "Amazon basin",
+        "labels": {
+         "country": "Brazil",
+         "basin": "Amazon rainforest"
+        },
+        "annotations": [
+         {
+          "kind": "point",
+          "at": [
+           0.29,
+           0.42
+          ],
+          "label": "Peru",
+          "colour": "black"
+         },
+         {
+          "kind": "point",
+          "at": [
+           0.31,
+           0.2
+          ],
+          "label": "Colombia",
+          "colour": "black"
+         },
+         {
+          "kind": "point",
+          "at": [
+           0.4,
+           0.55
+          ],
+          "label": "Bolivia",
+          "colour": "black"
+         },
+         {
+          "kind": "point",
+          "at": [
+           0.47,
+           0.12
+          ],
+          "label": "Venezuela",
+          "colour": "black"
+         },
+         {
+          "kind": "point",
+          "at": [
+           0.59,
+           0.15
+          ],
+          "label": "Guyana",
+          "colour": "black"
+         },
+         {
+          "kind": "point",
+          "at": [
+           0.63,
+           0.17
+          ],
+          "label": "Suriname",
+          "colour": "black"
+         },
+         {
+          "kind": "point",
+          "at": [
+           0.25,
+           0.28
+          ],
+          "label": "Ecuador",
+          "colour": "black"
+         },
+         {
+          "kind": "point",
+          "at": [
+           0.68,
+           0.18
+          ],
+          "label": "French Guiana",
+          "colour": "black"
+         }
+        ],
+        "caption": "The Amazon rainforest crosses country borders in South America."
+       }
+      ],
+      "weight": 4
+     }
+    ]
+   },
+   "secondary": {
+    "type": "sc-panel",
+    "content": {
+     "type": "steps",
+     "steps": [
+      "Explain what a biome is and give two examples.",
+      "Locate the Amazon rainforest in South America.",
+      "Describe its features using map and photograph evidence."
+     ]
+    }
+   },
+   "designUnitId": "lesson-section/teaching-sequence/unit-010",
+   "speakerNotes": "Say to children: Build the picture in three moves. First, explain the big category: what a biome is and two examples. Then place the Amazon in the world and inside South America. Finish with the place itself. Which features can the map or photographs actually prove?\n\nAnswer/model for this slide: A biome is a large region with a similar climate, landscape, plants and animals. Tropical rainforest and desert are two examples.\n\nThe Amazon rainforest is a tropical rainforest biome in South America. It spreads across several countries, and its largest part is in Brazil.\n\nThe photographs show dense green forest, a huge river and places where people live. The map also shows that the rainforest covers a very large area.\n\nLook for: biome plus examples; South America and several countries; features tied to map or photograph evidence."
+  },
+  {
+   "template": "body-sidebar",
+   "headerStyle": "title",
+   "title": "Practise",
+   "banner": {
+    "type": "text",
+    "value": "Use the maps and photographs to write your Amazon description.",
+    "colorRole": "focus-blue",
+    "align": "center"
+   },
+   "body": {
+    "type": "stack",
+    "items": [
+     {
+      "type": "text",
+      "value": "What features can you see in the map and photographs?",
+      "colorRole": "focus-blue",
+      "align": "center",
+      "weight": 0.55
+     },
+     {
+      "type": "row",
+      "weight": 2.2,
+      "items": [
+       {
+        "type": "image",
+        "imagePath": "wikimedia/amazon-canopy-aerial.jpg",
+        "fit": "contain",
+        "essential": true,
+        "caption": "Forest canopy"
+       },
+       {
+        "type": "image",
+        "imagePath": "wikimedia/amazon-river-and-forest.jpg",
+        "fit": "contain",
+        "essential": true,
+        "caption": "River and forest"
+       },
+       {
+        "type": "image",
+        "imagePath": "wikimedia/amazon-riverside-settlement.jpg",
+        "fit": "contain",
+        "essential": true,
+        "caption": "Riverside settlement"
+       }
+      ]
+     }
+    ]
+   },
+   "sidebar": {
+    "type": "sc-panel",
+    "content": {
+     "type": "steps",
+     "steps": [
+      "Explain what a biome is and give two examples.",
+      "Locate the Amazon rainforest in South America.",
+      "Describe its features using map and photograph evidence."
+     ]
+    }
+   },
+   "decorations": [
+    {
+     "id": "decoration-practise-binoculars",
+     "kind": "educational-svg",
+     "concept": "binoculars",
+     "context": "Binoculars beside the task that asks children to inspect photograph evidence",
+     "avoid": [
+      "telescope",
+      "cartoon animal"
+     ],
+     "frame": {
+      "x": 0.49,
+      "y": 0.75,
+      "width": 0.08,
+      "height": 0.12
+     },
+     "layer": "high",
+     "rotation": 3,
+     "transparency": 50,
+     "educationalSvgId": "standard/bi/binoculars.svg",
+     "educationalSvgSlug": "binoculars",
+     "imagePath": "icons/binoculars.png"
+    }
+   ],
+   "designUnitId": "lesson-section/teaching-sequence/unit-010",
+   "speakerNotes": "Say to children: Build the picture in three moves. First, explain the big category: what a biome is and two examples. Then place the Amazon in the world and inside South America. Finish with the place itself. Which features can the map or photographs actually prove?\n\nAnswer/model for this slide: A biome is a large region with a similar climate, landscape, plants and animals. Tropical rainforest and desert are two examples.\n\nThe Amazon rainforest is a tropical rainforest biome in South America. It spreads across several countries, and its largest part is in Brazil.\n\nThe photographs show dense green forest, a huge river and places where people live. The map also shows that the rainforest covers a very large area.\n\nLook for: biome plus examples; South America and several countries; features tied to map or photograph evidence."
+  }
+ ]
+}

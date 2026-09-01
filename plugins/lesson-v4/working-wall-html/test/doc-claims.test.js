@@ -18,6 +18,8 @@
 //   references/working-wall-visual-language.md  the primitive list
 
 const test = require("node:test");
+// A heading line, with the newline on each side that makes it a heading.
+const NL = String.fromCharCode(10);
 const assert = require("node:assert");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -55,12 +57,14 @@ test("banner type shrinks with word length as preferences.md describes", () => {
 });
 
 test("every live wall primitive is named in both designer-facing documents", () => {
-  const designer = read(path.join(agentsDir, "working-wall-designer.md"));
+  // The contracts file is what the designer reads: working-wall-packet.py cuts
+  // its `### <primitive>` sections into the designer's reference packet.
+  const contracts = read(path.join(refDir, "working-wall-card-contracts.md"));
   const visualLanguage = read(path.join(refDir, "working-wall-visual-language.md"));
   for (const key of Object.keys(VISUAL_KEY_FNS)) {
     assert.ok(
-      designer.includes(key),
-      `working-wall-designer.md never names the live primitive "${key}" - a designer cannot use what it has not been told exists`
+      contracts.includes(NL + "### " + key + NL),
+      `working-wall-card-contracts.md has no "### ${key}" section - a designer cannot use what it has not been told exists`
     );
     assert.ok(
       visualLanguage.includes(key),
@@ -205,11 +209,11 @@ test("every live card type is named in the designer agent", () => {
   assert.ok(block, "build.js no longer has a RENDERERS map this guard can read");
   const types = [...block[1].matchAll(/^\s*([A-Za-z]+):/gm)].map((m) => m[1]);
   assert.ok(types.length >= 15, `only ${types.length} card types parsed from build.js`);
-  const designer = read(path.join(agentsDir, "working-wall-designer.md"));
+  const contracts = read(path.join(refDir, "working-wall-card-contracts.md"));
   for (const t of types) {
     assert.ok(
-      designer.includes(t),
-      `working-wall-designer.md never names the live card type "${t}"`
+      contracts.includes(NL + "### " + t + NL),
+      `working-wall-card-contracts.md has no "### ${t}" section, so the designer's packet cannot offer it`
     );
   }
 });

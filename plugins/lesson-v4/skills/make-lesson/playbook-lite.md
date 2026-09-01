@@ -929,17 +929,30 @@ invent it. Mention the omission only when the approved design requested one.
 
 ### Track D — Working Wall (working-wall-designer → working-wall-builder, runs after slide-designer; in parallel with Tracks B and the rest of A)
 
-Launch Working Wall Designer on every run, directly with approved
-`lesson-design.json`, `lesson.json` and the applicable photo contract.
+Launch Working Wall Designer on every run, after preparing its packet:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare   --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --lesson "[WORKING_DIR]/lesson.json"   --photo-requirements "[applicable photo contract]"   --view-output "[WORKING_DIR]/working-wall-view.md"   --reference-output "[WORKING_DIR]/working-wall-reference.md"   --receipt-output "[WORKING_DIR]/working-wall-packet.receipt.json"
+```
+
+Require `WORKING_WALL_PACKET_OK`. The view holds every string and figure a
+card can carry, byte for byte; the reference holds the rules and only the
+card contracts this lesson triggers. That is what replaced two complete
+reference files and a hunt through the lesson. Name the two packet files as
+authoritative inputs beside `lesson-design.json`, `lesson.json` and the
+photo contract. If prepare fails after its one infrastructure retry, launch
+the designer on the full files anyway and write one `FRICTION:` line: a
+missing packet costs reading, never the wall.
+
 Wall-worthiness is the designer's judgement, never decided here: the
 design's `workingWall` entry in `resourceOpportunities` is evidence being
 gathered for a later gate and never skips this launch, and a designer that
 finds nothing wall-worthy writes `cards: []` with its rationale for the run
-report. It owns only `working-wall.json`. After its deterministic
-check, launch the retained Working Wall Builder only when `cards` is
-non-empty. The builder runs the fixed wall script and returns its short Output
-Report. One wall diagnostic permits one focused wall-owner repair and rebuild.
-Preserve its exact returned output path.
+report. It owns only `working-wall.json`. After its deterministic check,
+launch the retained Working Wall Builder only when `cards` is non-empty. The
+builder runs the fixed wall script and returns its short Output Report. One
+wall diagnostic permits one focused wall-owner repair and rebuild. Preserve
+its exact returned output path.
 
 ### Track E — Stick-in Spec (stick-in-sheets-designer, runs after slide-designer; in parallel with Tracks B, D and the rest of A)
 
