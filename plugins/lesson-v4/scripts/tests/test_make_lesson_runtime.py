@@ -212,6 +212,51 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 )[1]
                 self.assertIn("focused-repair", nxt)
 
+    def test_no_slice_is_stranded_behind_a_door_nothing_opens(self) -> None:
+        """A slice no NEXT block names is a slice the run never loads.
+
+        `phase3` was exactly that, and `finalize` sat behind it, so by this
+        table's own rule - a branch no NEXT block names has ended - the run
+        ended when its last track did, with the pictures unproven, the report
+        unwritten and the lesson unfiled. Hosts with a large accumulated
+        context inferred the rest and finished anyway, which is why it went
+        unnoticed for so long: what the hole actually cost was speed. The
+        instruction to service whichever branch has landed lived behind the
+        same unopened door, so a run walked one track to its end while another
+        track's finished work waited, and a geography run's worksheets landed
+        about twelve minutes late for want of a command taking seconds.
+        """
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("make_lesson_runtime", SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        tick = chr(96)
+        named = {
+            name
+            for name in module.SLICE_BOUNDS
+            for steps in module.NEXT_STEPS.values()
+            for step in steps
+            if tick + name + tick in step
+        }
+        # `execution` is the entry point the skill loads by name.
+        stranded = sorted(set(module.SLICE_BOUNDS) - named - {"execution"})
+        self.assertEqual(stranded, [], f"no NEXT block names: {stranded}")
+
+    def test_the_tracks_are_serviced_as_they_land_not_read_end_to_end(self) -> None:
+        """The orchestrator opens three tracks and then reads one document.
+
+        Nothing told it to come back. Finalising a returned picture batch and
+        building adaptation's provisional contract are seconds of deterministic
+        work that each unblock a whole branch, and both sat waiting on an
+        unrelated Slide Designer. The rule has to arrive before the first track
+        is opened, so it lives where the tracks are opened.
+        """
+        opened = self.run_slice("phase2-core").stdout.decode("utf-8")
+        self.assertIn("not a running order", opened)
+        self.assertIn("as soon as it returns", opened)
+
     def test_a_built_and_checked_branch_waits_for_no_sibling(self) -> None:
         """Nothing after a branch's own check compares it to another resource.
 

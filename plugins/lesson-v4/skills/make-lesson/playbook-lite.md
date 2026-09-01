@@ -514,6 +514,20 @@ Slide Designer and worksheet adaptation/routing work. Working Wall and stick-in
 design wait for `lesson.json` only when their prompts require it. Each worker
 owns only its named canonical specification.
 
+**The tracks below are reference for whichever branch has landed, not a running
+order.** Each is written end to end because its own steps are ordered; reading
+one to its end while a sibling's finished work waits serialises branches you
+opened in parallel. When any worker returns, run its check and release its
+dependants before going back to what you were reading.
+
+Releasing is normally seconds of deterministic work - finalise the returned
+picture batch, build adaptation's provisional contract, launch the next
+designer - and each one frees a whole branch. A geography run left five sourced
+photographs unpublished for fourteen minutes and adaptation's contract unbuilt
+for twelve, then ran both in seconds once an unrelated Slide Designer returned.
+The worksheet branch waits on that contract and finished last, so the package
+landed twelve minutes late on a fifty-seven minute run.
+
 Run printable Chrome preflight once before worksheet, wall or stick-in builds:
 `node "[PLUGIN_ROOT]/worksheet-html/scripts/ensure-chrome.js"`. Its last line
 decides the state: `CHROME: <path>` is `ready`, `ENSURE_CHROME_FAILED:` is
@@ -816,9 +830,9 @@ Require `PHOTO_CONTRACT_PROMOTED`.
 **The supplemental picture wave** - whenever `PHOTO_CONTRACT_PROMOTED` reports
 one or more, and the Phase 2 picture stage is not `unavailable`:
 
-The Phase 2 wave could not compile these: the adaptation had not been written
-when it ran. Without this wave every adaptation picture is promised to the
-worksheet and never sourced.
+Phase 2 could not compile these; the adaptation was not written when it ran.
+Without this wave every adaptation picture is promised to the sheet and never
+sourced.
 
 Compile from the immutable snapshot the promotion just wrote, never from
 canonical `photo-requirements.json`, which a later wave rewrites, and name each
@@ -847,15 +861,15 @@ python3 "[PLUGIN_ROOT]/scripts/validate-image-scout.py" manifest \
   [the same --expected-filename lines the compile used]
 ```
 
-Require `PICTURE_MANIFEST_OK`. Then run
-the Phase 2 picture stage again, unchanged, over this manifest: one `image-scout`
-per assignment, `validate-image-scout.py result` requiring `PICTURE_RESULT_OK`,
-and `finalize-picture-assignment.py assignment --replace no` on each valid batch.
-Its terminal receipts join the same provenance run at the merge.
+Require `PICTURE_MANIFEST_OK`, then run the Phase 2 picture stage again,
+unchanged, over this manifest: one `image-scout` per assignment,
+`PICTURE_RESULT_OK` on each result, and `finalize-picture-assignment.py
+assignment --replace no` on each valid batch. Its terminal receipts join the
+same provenance run at the merge.
 
 A compile or manifest failure degrades this wave as Phase 2 degrades: the
-pictures are not attempted, each is named in the run report as promised and
-unpublished, and the worksheet branch continues to a built sheet.
+pictures are not attempted, each is named in the report as promised and
+unpublished, and the branch continues to a built sheet.
 
 **Track B trigger:** wait until every picture filename referenced by
 `worksheet.json` is terminal before building. Under `PICTURE_STAGE: unavailable`
@@ -869,8 +883,8 @@ repair, not a scope breach. The sheets are one document, so one unreconciled
 reference loses all three and the answer key.
 
 **If `worksheet.json` holds a labelled diagram over a photo, launch Diagram
-Anchor against it before building**, as Track A does, passing the worksheet spec
-as the file to anchor. The dots are percentages the designer wrote before the
+Anchor against it before building**, passing the worksheet spec as the file to
+anchor. The dots are percentages the designer wrote before the
 picture existed, so unanchored they sit wherever they were guessed - and a
 worksheet's dots are what a child draws their line to, so a sheet built without
 this pass can print "label the parts" over a photograph carrying nothing to
@@ -947,8 +961,9 @@ one focused stick-in designer repair and one rebuild.
 ## Phase 3 — Service Each Branch as It Lands
 
 Wait through the host's ordinary multi-worker wait once for all active branches.
-Do not poll each worker serially. As each worker completes, run its
-deterministic check and release only its genuine dependants. A failed branch does not invalidate a clean independent branch.
+Do not poll each worker serially. Service whichever branch has landed, as Phase
+2 sets out, and release only its genuine dependants. A failed branch does not
+invalidate a clean independent branch.
 
 **A branch that has built its resource and passed that resource's check is
 finished.** Nothing waits on a sibling: Track A's build lands while the

@@ -101,6 +101,15 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
 # Every track can reach `focused-repair`, because the mapping from a named owner
 # to its compact repair role lives only there, and each track raises its own
 # build and picture faults without ever loading a sibling's slice.
+#
+# Every track also ends at `phase3`, and that route was missing. No block named
+# it, and `finalize` is reachable only through it, so by this table's own rule -
+# a branch no NEXT block names has ended - the run ended when its last track
+# did, with nothing to prove the pictures, write the report or file the
+# lesson. Hosts carrying a large context inferred the rest and finished anyway,
+# which is exactly why the hole survived: the failure it produced was not a
+# missing report but a slower run, because the servicing discipline that keeps
+# branches from serialising also lived behind that unnamed door.
 NEXT_STEPS: dict[str, tuple[str, ...]] = {
     "execution": (
         "Load `setup`: establish what this package ships and gather the brief.",
@@ -124,6 +133,10 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "Track B: load `worksheet-routing`.",
         "Tracks D-F: load `other-resources` for the working wall and the"
         " stick-in sheets.",
+        "These three are reference for whichever track has just landed, not a"
+        " running order. Service a returned worker as soon as it returns; a"
+        " track read to its end while a sibling's finished work waits is a"
+        " branch serialised for nothing.",
     ),
     "slides-design": (
         "Load `pictures` when the resolved state is"
@@ -139,6 +152,8 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "Load `focused-repair` for a build diagnostic or a terminally"
         " unavailable picture reference.",
         "The other tracks continue in parallel; this slice ends Track A only.",
+        "Return to any track with work waiting; load `phase3` when all have"
+        " ended.",
     ),
     "worksheet-routing": (
         "Per-child sheet: load `worksheet-adaptation`.",
@@ -156,6 +171,8 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "The worksheets are built. Track B ends here.",
         "Load `focused-repair` for a build diagnostic or a terminally"
         " unavailable picture reference.",
+        "Return to any track with work waiting; load `phase3` when all have"
+        " ended.",
     ),
     "other-resources": (
         "Each of these builds settles on its own. Track D ends when the wall"
@@ -164,6 +181,8 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "Load `focused-repair` for a build diagnostic on either.",
         "A track that ends with an empty spec earns no build; record it and"
         " carry on.",
+        "Return to any track with work waiting; load `phase3` when all have"
+        " ended.",
     ),
     "phase3": (
         "Load `focused-repair` for any branch whose deterministic check named"

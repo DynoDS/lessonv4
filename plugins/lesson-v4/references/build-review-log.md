@@ -29,6 +29,20 @@
   visible to the second. Moving a Chrome render into preflight would charge every
   design attempt for a fault one focused repair closed. Revisit if rendered
   overflow becomes a repeat finding rather than a single 13 px miss.*
+- The run opened its branches in parallel and then serviced them one at a time. Five sourced photographs sat unpublished for 14 minutes and adaptation's provisional contract unbuilt for 12, both then running in seconds the moment an unrelated Slide Designer returned.
+  *Addressed 1 Sep 2026, and the dependency graph was never the problem. The
+  runtime's `phase3` slice - the one carrying "service each branch as it lands"
+  - was named by no NEXT block, and `finalize` sits only behind it, so by the
+  routing's own rule (a branch no NEXT block names has ended) the run ended when
+  its last track did. A host with a large context inferred the tail and finished
+  anyway, which is why this read as a slow run rather than a missing report. The
+  three track-end slices now name `phase3`, and the servicing rule has moved
+  forward into `phase2-core`, where it arrives before the first track opens
+  rather than after the last one closes. Regression tests
+  `test_no_slice_is_stranded_behind_a_door_nothing_opens` and
+  `test_the_tracks_are_serviced_as_they_land_not_read_end_to_end`. Worth
+  measuring on the next run: the worksheet branch is the run's longest pole and
+  was held about 12 minutes of a 57 minute run.*
 - The run report's picture stage read `attempting 2 pictures` for a contract of five.
   *Addressed 1 Sep 2026: `PICTURE_ASSIGNMENTS_OK` printed only the assignment
   count, and coherent pictures pack into one assignment, so the only number in
