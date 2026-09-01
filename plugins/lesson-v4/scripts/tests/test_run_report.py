@@ -129,6 +129,24 @@ class TestRunReport(RunReportCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("worker launches", result.stdout)
 
+    def test_the_worker_timeline_is_carried_under_the_audit_marker(self):
+        """The audit now prints a WORKER_TIMELINE block after its marker and
+        the playbook copies both verbatim; a report carrying the block is the
+        normal case, not a deviation."""
+        self.write_report(
+            {
+                "launches": (
+                    "WORKER_LAUNCH_AUDIT_OK: 6 named workers launched at their declared model and effort\n"
+                    "WORKER_TIMELINE: session=C:/sessions/rollout-a.jsonl\n"
+                    "  lesson-designer  lesson_designer  launched 18:57:51  returned 19:12:47  ran 14m 57s  waited 0m 11s\n"
+                    "WORKER_TIMELINE_TOTAL: span 55m 8s from first launch to last serviced; "
+                    "critical path lesson_designer (15m 8s launch to serviced); 1 workers, 1 returned"
+                )
+            }
+        )
+        result = self.validate()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_a_failed_audit_is_an_acceptable_thing_to_report(self):
         """The record stays honest; it does not withhold a package over this."""
         report = self.write_report(

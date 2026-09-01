@@ -4,7 +4,11 @@ This is the active runtime playbook. It deliberately avoids a generic job
 controller. The host launches named workers directly, waits through the host's
 normal worker lifecycle, and runs deterministic checks at meaningful file
 boundaries. Do not create orchestration job specs, completion events, worker
-snapshots, transition receipts, scheduler audits or latency reports.
+snapshots, transition receipts, scheduler audits or latency reports. The one
+timing record a run keeps is the `WORKER_TIMELINE:` block that
+`worker-launch.py audit` prints from the host's own log: it costs the
+orchestrator nothing to produce, it is copied once into the run report, and
+it is what says whether a change made runs faster.
 
 ## Lightweight execution protocol
 
@@ -1141,8 +1145,9 @@ Write `[WORKING_DIR]/run-report.md` with:
   what each waiting helper draws, name its exact folder, and say that
   `/install-helper` over that folder installs it. Nothing else surfaces it, so
   one the report omits is one nobody installs;
-- the worker-launch audit marker under `## Worker launches`, from
-  `worker-launch.py audit` run immediately beforehand;
+- the worker-launch audit marker and the `WORKER_TIMELINE:` block it prints
+  under `## Worker launches`, both from `worker-launch.py audit` run
+  immediately beforehand and copied verbatim;
 - every line of `[WORKING_DIR]/friction.md`, the run's tagged record of
   obstacles, blocks and repairs. It keeps blocks a repair closed; `Blocking
   faults` above lists only what is still broken;

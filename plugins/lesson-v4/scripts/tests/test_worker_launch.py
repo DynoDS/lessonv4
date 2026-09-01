@@ -313,5 +313,92 @@ class SessionChoiceTests(unittest.TestCase):
         self.assertIn(only.name, result.stdout)
 
 
+class TimelineTests(unittest.TestCase):
+    """Where a run's time went, read from the host's own record.
+
+    Three runs on 1 September 2026 were timed by reading file modification
+    times off the working folder after the fact, which is how a twelve-minute
+    unserviced wait was found. The record already held every launch, every
+    final answer and every orchestrator action with a timestamp; nothing read
+    it. The fixture is a cut-down orchestrator record in the host's real shape:
+    one worker whose finished result sat through a wait and a listing before
+    the orchestrator acted, and one that never returned at all.
+    """
+
+    FIXTURE = Path(__file__).resolve().parent / "fixtures" / "rollout-timeline.jsonl"
+
+    @staticmethod
+    def local(iso: str) -> str:
+        from datetime import datetime
+
+        return datetime.fromisoformat(iso).astimezone().strftime("%H:%M:%S")
+
+    def timeline(self) -> subprocess.CompletedProcess:
+        return run("timeline", "--session", str(self.FIXTURE))
+
+    def test_a_serviced_worker_shows_how_long_it_ran_and_how_long_it_waited(self) -> None:
+        result = self.timeline()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn(f"WORKER_TIMELINE: session={self.FIXTURE}", result.stdout)
+        launched = self.local("2026-09-01T13:00:26+00:00")
+        returned = self.local("2026-09-01T13:06:46+00:00")
+        self.assertRegex(
+            result.stdout,
+            r"adaptation-designer +adaptation_designer +"
+            rf"launched {launched}  returned {returned}  ran 6m 20s  waited 11m 42s",
+        )
+
+    def test_a_wait_or_a_listing_is_not_servicing(self) -> None:
+        """The orchestrator went back to sleep at 13:06:50 and looked at the
+        agent list at 13:12:55; neither acted on the result. The first real
+        action was the contract build at 13:18:28."""
+        result = self.timeline()
+        self.assertIn("waited 11m 42s", result.stdout)
+        self.assertNotIn("waited 0m 4s", result.stdout)
+
+    def test_a_worker_that_never_returned_prints_dashes_not_guesses(self) -> None:
+        result = self.timeline()
+        launched = self.local("2026-09-01T13:00:20+00:00")
+        self.assertRegex(
+            result.stdout,
+            rf"slide-designer +slide_designer +launched {launched}  returned -  ran -  waited -",
+        )
+        self.assertIn("2 workers, 1 returned", result.stdout)
+
+    def test_the_total_names_the_span_and_the_critical_path(self) -> None:
+        result = self.timeline()
+        self.assertIn(
+            "WORKER_TIMELINE_TOTAL: span 18m 8s from first launch to last serviced; "
+            "critical path adaptation_designer (18m 2s launch to serviced); "
+            "2 workers, 1 returned",
+            result.stdout,
+        )
+
+    def test_the_audit_prints_the_same_block_after_its_own_markers(self) -> None:
+        result = run("audit", "--session", str(self.FIXTURE))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = result.stdout.splitlines()
+        marker = next(i for i, line in enumerate(lines) if line.startswith("WORKER_LAUNCH_AUDIT_OK"))
+        block = next(i for i, line in enumerate(lines) if line.startswith("WORKER_TIMELINE:"))
+        self.assertLess(marker, block, "the timeline follows the audit marker, never precedes it")
+        self.assertIn("WORKER_LAUNCH_AUDIT_OK: 2 named workers", result.stdout)
+        self.assertTrue(lines[-1].startswith("WORKER_TIMELINE_TOTAL:"))
+
+    def test_a_record_with_no_launches_says_so(self) -> None:
+        tmp = Path(__file__).resolve().parent / "_worker_timeline_tmp.jsonl"
+        tmp.write_text(json.dumps({"type": "message", "text": "nothing"}) + "\n", encoding="utf-8")
+        try:
+            result = run("timeline", "--session", str(tmp))
+        finally:
+            tmp.unlink()
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("WORKER_TIMELINE_UNAVAILABLE: no launches recorded", result.stdout)
+
+    def test_another_host_keeps_no_record(self) -> None:
+        result = run("timeline", "--host", "claude")
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("WORKER_TIMELINE_UNAVAILABLE", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

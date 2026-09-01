@@ -18,6 +18,16 @@ right model?" has an answer that is not the orchestrator's own word.
 
     python3 worker-launch.py spec --role slide-designer [--host codex]
     python3 worker-launch.py audit [--host codex] [--session PATH]
+    python3 worker-launch.py timeline [--host codex] [--session PATH]
+
+``timeline`` removes the guessing about where a run's time went. The host's
+record timestamps every launch, every worker's final answer and every command
+the orchestrator ran, so the same file that proves the launch settings also
+says how long each worker ran and how long its finished result then sat before
+the orchestrator acted on it. ``audit`` prints the timeline after its markers;
+``timeline`` prints it alone, so any saved session can be measured for a
+before-and-after comparison. Before this, run timings were reconstructed from
+file modification times after the fact.
 
 Standard library only. Writes nothing.
 """
@@ -28,6 +38,7 @@ import json
 import os
 import re
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
 AGENTS_DIR = Path(__file__).resolve().parents[1] / "agents"
@@ -264,6 +275,168 @@ def role_for(task_name: str) -> str | None:
     return None
 
 
+# ── Timeline ────────────────────────────────────────────────────────────────
+#
+# Three kinds of line in the orchestrator's record carry the timing:
+#
+#   - a `spawn_agent` function_call, whose arguments name the worker: launched;
+#   - an `agent_message` from `/root/<worker>` to `/root`: the worker's final
+#     answer arriving, so returned;
+#   - any other tool call the orchestrator makes afterwards: the first one
+#     after a return is when that result was serviced. A `wait_agent` is not
+#     servicing anything, it is going back to sleep, so it does not count;
+#     that is exactly the wait this block exists to make visible.
+
+# Orchestrator calls that are waiting or looking rather than acting.
+NON_SERVICING_CALLS = {"wait_agent", "list_agents"}
+
+
+def parse_timestamp(value) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def timeline_events(session: Path) -> dict:
+    """Launches, returns and orchestrator actions, each with a timestamp."""
+    launches: dict[str, datetime] = {}
+    returns: dict[str, datetime] = {}
+    actions: list[datetime] = []
+
+    with session.open(encoding="utf-8", errors="replace") as handle:
+        for line in handle:
+            try:
+                record = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(record, dict):
+                continue
+            when = parse_timestamp(record.get("timestamp"))
+            payload = record.get("payload")
+            if when is None or not isinstance(payload, dict):
+                continue
+            kind = payload.get("type")
+            name = payload.get("name")
+
+            if kind == "function_call" and name == "spawn_agent":
+                try:
+                    arguments = json.loads(payload.get("arguments") or "{}")
+                except (TypeError, ValueError):
+                    arguments = {}
+                task = arguments.get("task_name")
+                if isinstance(task, str) and task and task not in launches:
+                    launches[task] = when
+                actions.append(when)
+            elif kind in ("function_call", "custom_tool_call"):
+                if name not in NON_SERVICING_CALLS:
+                    actions.append(when)
+            elif kind == "agent_message":
+                author = payload.get("author")
+                if (
+                    isinstance(author, str)
+                    and author.startswith("/root/")
+                    and payload.get("recipient") == "/root"
+                ):
+                    task = author[len("/root/"):]
+                    if task and task not in returns:
+                        returns[task] = when
+
+    actions.sort()
+    return {"launches": launches, "returns": returns, "actions": actions}
+
+
+def clock(when: datetime | None) -> str:
+    return when.astimezone().strftime("%H:%M:%S") if when else "-"
+
+
+def span(delta: timedelta | None) -> str:
+    if delta is None:
+        return "-"
+    seconds = max(0, int(round(delta.total_seconds())))
+    return f"{seconds // 60}m {seconds % 60}s"
+
+
+def timeline_rows(events: dict) -> list[dict]:
+    rows = []
+    for task, launched in sorted(events["launches"].items(), key=lambda item: item[1]):
+        returned = events["returns"].get(task)
+        serviced = None
+        if returned is not None:
+            serviced = next((when for when in events["actions"] if when > returned), None)
+        rows.append(
+            {
+                "task": task,
+                "role": role_for(task) or "-",
+                "launched": launched,
+                "returned": returned,
+                "serviced": serviced,
+                "ran": (returned - launched) if returned else None,
+                "waited": (serviced - returned) if (returned and serviced) else None,
+            }
+        )
+    return rows
+
+
+def print_timeline(session: Path) -> None:
+    """Print the WORKER_TIMELINE block for one session. Never raises."""
+    try:
+        events = timeline_events(session)
+    except OSError as error:
+        print(f"WORKER_TIMELINE_UNAVAILABLE: {session}: {error}")
+        return
+    rows = timeline_rows(events)
+    if not rows:
+        print(f"WORKER_TIMELINE_UNAVAILABLE: no launches recorded in {session.name}")
+        return
+
+    print(f"WORKER_TIMELINE: session={session}")
+    role_width = max(len(row["role"]) for row in rows)
+    task_width = max(len(row["task"]) for row in rows)
+    for row in rows:
+        print(
+            f"  {row['role']:{role_width}}  {row['task']:{task_width}}  "
+            f"launched {clock(row['launched'])}  returned {clock(row['returned'])}  "
+            f"ran {span(row['ran'])}  waited {span(row['waited'])}"
+        )
+
+    serviced = [row for row in rows if row["serviced"] is not None]
+    returned = [row for row in rows if row["returned"] is not None]
+    first_launch = min(row["launched"] for row in rows)
+    if serviced:
+        last_serviced = max(row["serviced"] for row in serviced)
+        total = span(last_serviced - first_launch)
+        critical = max(serviced, key=lambda row: row["serviced"] - row["launched"])
+        critical_text = (
+            f"{critical['task']} ({span(critical['serviced'] - critical['launched'])} "
+            "launch to serviced)"
+        )
+    else:
+        total = "-"
+        critical_text = "-"
+    print(
+        f"WORKER_TIMELINE_TOTAL: span {total} from first launch to last serviced; "
+        f"critical path {critical_text}; {len(rows)} workers, {len(returned)} returned"
+    )
+
+
+def timeline_command(args: argparse.Namespace) -> int:
+    if args.host != "codex":
+        print(f"WORKER_TIMELINE_UNAVAILABLE: {args.host} keeps no readable launch record")
+        return 0
+    session = Path(args.session) if args.session else newest_session()
+    if session is None or not session.is_file():
+        print(
+            "WORKER_TIMELINE_UNAVAILABLE: no host launch record found under "
+            f"{codex_home() / 'sessions'}"
+        )
+        return 0
+    print_timeline(session)
+    return 0
+
+
 def audit_command(args: argparse.Namespace) -> int:
     if args.host != "codex":
         print(
@@ -333,12 +506,16 @@ def audit_command(args: argparse.Namespace) -> int:
             f"WORKER_LAUNCH_AUDIT_FAILED: {len(faults)} of {checked} named workers "
             "did not launch at their declared model and effort"
         )
+        print_timeline(session)
         return 1
 
     print(
         f"WORKER_LAUNCH_AUDIT_OK: {checked} named workers launched at their "
         "declared model and effort"
     )
+    # The same record says where the run's time went. Printed after the
+    # markers so nothing that reads them has to change.
+    print_timeline(session)
     return 0
 
 
@@ -355,6 +532,11 @@ def main(argv: list[str] | None = None) -> int:
     audit.add_argument("--host", default="codex")
     audit.add_argument("--session", default=None)
     audit.set_defaults(func=audit_command)
+
+    timeline = sub.add_parser("timeline", help="print where a run's time went")
+    timeline.add_argument("--host", default="codex")
+    timeline.add_argument("--session", default=None)
+    timeline.set_defaults(func=timeline_command)
 
     args = parser.parse_args(argv)
     try:
