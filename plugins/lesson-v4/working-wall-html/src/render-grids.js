@@ -14,6 +14,7 @@ const {
 const {
   pickVisual,
   pickRainbowColour,
+  cardLabel,
   defaultBodyPt,
   minBodyPt,
 } = require("./visuals");
@@ -109,7 +110,7 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
       rowMinHeights,
       // A3-only builder: use the fixed A3 value below.
       titleAreaInches: 1.4 + tablePhotoHeight + (tablePhoto ? 0.2 : 0),
-      label: card.title || card.type,
+      label: cardLabel(card),
       maxLinesPerCell: card.rows.length <= 2 ? 3 : 2,
     }
   );

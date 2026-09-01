@@ -102,6 +102,103 @@ test("a vocab-chip card past 12 chips is refused, not silently clipped", async (
   );
 });
 
+// A Year 4 PSHE wall was lost twice to body text a few characters over the
+// two-line cap. The refusal named no card, no item and no target, so the one
+// permitted repair was a guess, and the designer had never been told a
+// character budget at all - only that the builder shrinks to 36pt. These two
+// tests hold the measured budgets to the renderer and keep the refusal aimed.
+function wallDir(prefix) {
+  const os = require("node:os");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  fs.mkdirSync(path.join(dir, "photos"));
+  fs.copyFileSync(
+    path.join(__dirname, "..", "test-fixtures-a3", "photos", "pizza.jpg"),
+    path.join(dir, "photos", "pizza.jpg")
+  );
+  return dir;
+}
+
+async function itemOfLengthBuilds(dir, length, withPicture) {
+  const { build } = require("../build.js");
+  const card = {
+    type: "stickyKnowledge",
+    page: { size: "A3", orientation: "landscape" },
+    title: "Remember",
+    items: [{ text: "x ".repeat(120).slice(0, length).trim() }],
+  };
+  if (withPicture) card.photo = "photos/pizza.jpg";
+  const specPath = path.join(dir, "working-wall.json");
+  fs.writeFileSync(specPath, JSON.stringify({ topic: "Budget", cards: [card] }));
+  const warn = console.warn;
+  const log = console.log;
+  console.warn = () => {};
+  console.log = () => {};
+  try {
+    await build(specPath, dir);
+    return true;
+  } catch (err) {
+    return false;
+  } finally {
+    console.warn = warn;
+    console.log = log;
+  }
+}
+
+test("the per-item character budgets the designer documents are the real ones", async () => {
+  const dir = wallDir("wall-budget-");
+  assert.equal(await itemOfLengthBuilds(dir, 62, true), true, "a 62-character item on a picture card should build");
+  assert.equal(await itemOfLengthBuilds(dir, 63, true), false, "63 characters should be one over the picture-card budget");
+  assert.equal(await itemOfLengthBuilds(dir, 106, false), true, "a 106-character item on a full-width card should build");
+  assert.equal(await itemOfLengthBuilds(dir, 107, false), false, "107 characters should be one over the full-width budget");
+  for (const doc of [
+    path.join(agentsDir, "working-wall-designer.md"),
+    path.join(refDir, "working-wall-preferences.md"),
+  ]) {
+    const text = read(doc);
+    assert.ok(text.includes("62 characters"), `${path.basename(doc)} no longer quotes the 62-character budget`);
+    assert.ok(text.includes("106 characters"), `${path.basename(doc)} no longer quotes the 106-character budget`);
+  }
+});
+
+test("an over-long body item is refused by name, item and overage", async () => {
+  const { build } = require("../build.js");
+  const dir = wallDir("wall-diag-");
+  // The exact worked-example card that lost the 1 September 2026 wall.
+  const spec = {
+    topic: "Diagnostic Test",
+    cards: [
+      {
+        type: "workedExample",
+        page: { size: "A3", orientation: "landscape" },
+        title: "Improve a lunch",
+        photo: "photos/pizza.jpg",
+        items: [
+          { label: "Step 1", text: "Spot the food groups." },
+          {
+            label: "Worked example",
+            text: "Add hummus and peppers: protein for growth; vitamins and minerals.",
+          },
+        ],
+      },
+    ],
+  };
+  const specPath = path.join(dir, "working-wall.json");
+  fs.writeFileSync(specPath, JSON.stringify(spec));
+  await assert.rejects(
+    () => build(specPath, dir),
+    (err) => {
+      const message = String(err && err.message);
+      // Which card, which item, how long it is, and what to cut it to. Without
+      // all four the single permitted repair is aimed at nothing, which is how
+      // two runs in a row shipped with no wall at all.
+      assert.match(message, /workedExample "Improve a lunch"/, "the refusal must name the card");
+      assert.match(message, /item 2 is 82 characters/, "the refusal must name the item and its length");
+      assert.match(message, /Cut it to 62 characters or fewer/, "the refusal must name the target");
+      return true;
+    }
+  );
+});
+
 test("every live card type is named in the designer agent", () => {
   const src = read(path.join(__dirname, "..", "build.js"));
   const block = src.match(/const RENDERERS = \{([\s\S]*?)\n\};/);

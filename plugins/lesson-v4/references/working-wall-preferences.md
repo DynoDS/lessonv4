@@ -256,6 +256,17 @@ Maths-only:
 
 ---
 
+## How much text one body item holds
+
+At A3 landscape, an item that will not fit two lines at the 36pt floor fails the
+build rather than shrinking further. Counting the item's label plus two
+characters for the separator, the budget is about **62 characters** on a card
+carrying a photograph or picture, and about **106 characters** on a card with no
+picture. Titles, chips, table cells and mnemonic letters are fitted separately
+and are not measured against this.
+
+---
+
 ## When to combine items on one card
 
 Default is one item per card. Combine only when:

@@ -246,6 +246,33 @@ def validate_requirements(document: dict) -> list[dict]:
     return photos
 
 
+def select_expected(photos: list[dict], expected_filenames) -> list[dict]:
+    """Narrow validated requirements to the filenames one wave owns.
+
+    A supplemental wave compiles only the pictures a later designer promised,
+    against a merged snapshot that also carries every already-finished picture.
+    The compiler and its independent validator must narrow that snapshot
+    identically, or the wave's manifest is measured against a partition it
+    never claimed and a correct manifest is rejected. An empty selection means
+    the whole contract, which is what Phase 2 asks for.
+    """
+    wanted = list(expected_filenames or [])
+    if not wanted:
+        if not photos:
+            raise AssignmentError("at least one picture filename is required")
+        return photos
+    if len(set(wanted)) != len(wanted):
+        raise AssignmentError("--expected-filename contains a duplicate")
+    by_name = {photo["filename"]: photo for photo in photos}
+    missing = [name for name in wanted if name not in by_name]
+    if missing:
+        raise AssignmentError(f"requirements do not contain expected filename {missing[0]}")
+    chosen = [photo for photo in photos if photo["filename"] in set(wanted)]
+    if not chosen:
+        raise AssignmentError("at least one picture filename is required")
+    return chosen
+
+
 def source_schedule(photo: dict) -> list[dict]:
     if photo["acquisition_mode"] == "controlled-ai":
         return []
@@ -425,18 +452,7 @@ def write_json_immutable(path: Path, value: dict) -> None:
 def compile_command(args) -> int:
     requirements_path = Path(args.requirements).resolve()
     requirements = read_json(requirements_path, "requirements")
-    photos = validate_requirements(requirements)
-    if args.expected_filename:
-        wanted = list(args.expected_filename)
-        if len(set(wanted)) != len(wanted):
-            raise AssignmentError("--expected-filename contains a duplicate")
-        by_name = {p["filename"]: p for p in photos}
-        missing = [f for f in wanted if f not in by_name]
-        if missing:
-            raise AssignmentError(f"requirements do not contain expected filename {missing[0]}")
-        photos = [p for p in photos if p["filename"] in set(wanted)]
-    if not photos:
-        raise AssignmentError("at least one picture filename is required")
+    photos = select_expected(validate_requirements(requirements), args.expected_filename)
     prefix = args.expected_prefix
     output_dir = Path(args.output_dir).resolve()
     working_dir = Path(args.working_dir).resolve()

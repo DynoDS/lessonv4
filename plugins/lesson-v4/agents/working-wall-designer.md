@@ -479,6 +479,32 @@ A card type only earns a place when it passes **all** its criteria — and every
 
 ---
 
+## Write to the card's character budget
+
+A body item that cannot fit two lines at the 36pt floor does not shrink: the
+build refuses, and the run allows one repair before the whole wall is dropped.
+Two runs have now lost their wall to a sentence three characters too long, so
+treat the budget as part of writing the card, not as trimming done afterwards.
+
+At A3 landscape each body item, counting its label plus two characters for the
+separator, gets:
+
+- about **62 characters** on a card carrying a photograph or a picture, because
+  the picture takes 40% of the sheet;
+- about **106 characters** on a card with no picture, which keeps the full width.
+
+A worked-example step or sticky-knowledge statement that runs past its budget is
+not a formatting problem to fix later: it is a sentence that was never going to
+read from the back of the room. Write it short first. Where the wording genuinely
+will not compress, split it across two items or drop the card's picture, and let
+the build's refusal message, which names the card, the item and the exact
+overage, aim the repair.
+
+This budget applies to body items. Titles, chips, table cells and mnemonic
+letters have their own fitting and are not measured against it.
+
+---
+
 ## Combining Items on a Single Card
 
 The default is one item per card with maximum text size. Two (rarely three) items may go on one card only when **all** of the following hold:

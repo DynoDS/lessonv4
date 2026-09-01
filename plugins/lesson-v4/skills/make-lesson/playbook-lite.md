@@ -707,8 +707,7 @@ report adaptation omitted. Do not rerun unrelated branches.
   that produced none ends this track.
 
 The schema offers no third state, so asking whether the lesson "needs" a
-worksheet invites a no it never offered - the silent skip that made the wall
-and stick-in spawns unconditional.
+worksheet invites a no it never offered.
 
 **Launch the Worksheet Designer the moment adaptation's provisional contract is
 built (or adaptation is skipped); never hold it for picture work.** The
@@ -787,8 +786,21 @@ python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
   --summary-output "[WORKING_DIR]/picture-assignments/w-[N]-summary.json"
 ```
 
-Require `PICTURE_ASSIGNMENTS_OK`, validate the emitted `manifest.json` with
-`validate-image-scout.py manifest` and require `PICTURE_MANIFEST_OK`. Then run
+Require `PICTURE_ASSIGNMENTS_OK`, then validate the manifest with the **same
+filename list**. The snapshot also holds every picture Phase 2 finished, and the
+validator re-derives the partition from what the wave says it owns, so
+validating without it rejects a correct manifest and loses the sheet:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/validate-image-scout.py" manifest \
+  --requirements "[WORKING_DIR]/photo-requirements-w-[N].json" \
+  --manifest "[WORKING_DIR]/picture-assignments/w-[N]/manifest.json" \
+  --working-dir "[WORKING_DIR]" \
+  --expected-prefix w \
+  [the same --expected-filename lines the compile used]
+```
+
+Require `PICTURE_MANIFEST_OK`. Then run
 the Phase 2 picture stage again, unchanged, over this manifest: one `image-scout`
 per assignment, `validate-image-scout.py result` requiring `PICTURE_RESULT_OK`,
 and `finalize-picture-assignment.py assignment --replace no` on each valid batch.
@@ -817,11 +829,8 @@ were guessed - and a worksheet's dots are not decoration: they are what a child
 draws their line to, so a sheet built without this pass can print "label the
 parts" over a photograph carrying nothing to label.
 
-This was missing, and only Track A ran the pass. A Year 4 science sheet shipped
-with `"labels": []` on both its photographs, and three questions across two
-sheets could not be done. The build now refuses that (`EMPTY_SET`), so a skipped
-pass costs a refusal rather than a class's worksheets - but the refusal is the
-net, not the fix, and the fix is running the pass here.
+The build refuses an unanchored set (`EMPTY_SET`), but that refusal costs the
+whole sheet set, so the net is not the fix: run the pass.
 
 ---
 

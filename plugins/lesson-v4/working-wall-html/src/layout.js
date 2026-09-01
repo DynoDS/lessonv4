@@ -94,12 +94,38 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
     return { fits: heightInches <= availHeight, height: heightInches, lines: totalLines };
   };
 
+  // A refusal that says only "something is too long" costs the whole wall: the
+  // route allows one focused repair, and a repair aimed at nothing is a guess.
+  // Name the card, the item, and the budget it has to come under.
+  const diagnose = (pt) => {
+    const charsPerLine = Math.max(1, Math.floor((availWidth * 72) / (pt * charWidthRatio)));
+    const budget = charsPerLine * maxLinesPerItem;
+    const where = opts.label ? `${opts.label}` : "this card";
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
+      const obj = (typeof item === "string") ? { text: item } : (item || {});
+      const text = obj.text || "";
+      const labelLen = obj.label ? obj.label.length + 2 : 0;
+      const adjLen = text.length + labelLen;
+      const longestWord = Math.max(longestWordLen(text), labelLen);
+      if (longestWord > charsPerLine) {
+        return `${where}: item ${index + 1} contains a ${longestWord}-character run that cannot break, and only ${charsPerLine} characters fit on a line at ${pt}pt. Split that word or shorten the item's label.`;
+      }
+      if (Math.ceil(adjLen / charsPerLine) > maxLinesPerItem) {
+        return `${where}: item ${index + 1} is ${adjLen} characters including its label, and ${budget} is the most that fits in ${maxLinesPerItem} lines at ${pt}pt (${charsPerLine} per line). Cut it to ${budget} characters or fewer: "${String(text).slice(0, 60)}${text.length > 60 ? "…" : ""}".`;
+      }
+    }
+    const measured = fitAt(pt);
+    const over = measured.height != null ? (measured.height - availHeight) : null;
+    return `${where}: ${items.length} items need ${measured.height != null ? measured.height.toFixed(1) : "more"}in of panel at ${pt}pt and ${availHeight.toFixed(1)}in is available${over != null ? ` (${over.toFixed(1)}in over)` : ""}. Each item may hold ${budget} characters; remove an item or shorten the longest.`;
+  };
+
   for (let pt = defaultPt; pt >= minPt; pt -= 4) {
     if (fitAt(pt).fits) return pt;
   }
   const floor = fitAt(minPt);
   if (!floor.fits) {
-    console.warn(`[autofit] linear body at floor ${minPt}pt overflows ${size} ${orientation} or breaks the ${maxLinesPerItem}-line cap — split into fewer items or shorten the longest item.`);
+    console.warn(`[autofit] linear body at floor ${minPt}pt does not fit ${size} ${orientation}: ${diagnose(minPt)}`);
   }
   return minPt;
 }
@@ -158,13 +184,40 @@ function fitReferenceTableSize(columns, rows, columnWidthsDxa, defaultPt, minPt,
     return { fits: total <= availHeight, height: total };
   };
 
+  // Same reason as the linear body: one repair, so it has to know which cell
+  // and by how much. Column widths differ, so the budget is per column.
+  const diagnose = (pt) => {
+    const headerPt = Math.max(1, Math.round(pt * headerRatio));
+    const colInches = columnWidthsDxa.map((d) => d / 1440);
+    const budgetFor = (colIdx, atPt) => {
+      const usable = Math.max(0.1, colInches[colIdx] - cellPaddingW);
+      return Math.max(1, Math.floor((usable * 72) / (atPt * charWidthRatio))) * maxLinesPerCell;
+    };
+    const where = opts.label ? `${opts.label}` : "this table";
+    const cells = [
+      ...columns.map((text, colIdx) => ({ text, colIdx, atPt: headerPt, at: "the header row" })),
+      ...rows.flatMap((row, rowIdx) =>
+        row.map((text, colIdx) => ({ text, colIdx, atPt: pt, at: `row ${rowIdx + 1}` }))
+      ),
+    ];
+    for (const cell of cells) {
+      if (!isFinite(linesInCell(cell.text, colInches[cell.colIdx], cell.atPt))) {
+        const budget = budgetFor(cell.colIdx, cell.atPt);
+        const name = columns[cell.colIdx] ? `"${columns[cell.colIdx]}"` : `${cell.colIdx + 1}`;
+        return `${where}: the cell in ${cell.at}, column ${name}, is ${String(cell.text || "").length} characters and that column holds ${budget} in ${maxLinesPerCell} lines at ${cell.atPt}pt. Cut it to ${budget} characters or fewer: "${String(cell.text || "").slice(0, 60)}${String(cell.text || "").length > 60 ? "…" : ""}".`;
+      }
+    }
+    const measured = fitAt(pt);
+    const budgets = columns.map((c, i) => `${c || i + 1}: ${budgetFor(i, pt)}`).join(", ");
+    return `${where}: ${rows.length} rows need ${measured.height != null ? measured.height.toFixed(1) : "more"}in and ${availHeight.toFixed(1)}in is available at ${pt}pt. Remove a row, or shorten cells to their column budgets (${budgets}).`;
+  };
+
   for (let pt = defaultPt; pt >= minPt; pt -= 4) {
     if (fitAt(pt).fits) return pt;
   }
   const floor = fitAt(minPt);
   if (!floor.fits) {
-    const label = opts.label ? ` "${opts.label}"` : "";
-    console.warn(`[autofit] reference table${label} at floor ${minPt}pt overflows ${size} ${orientation} or a single word/cell exceeds the ${maxLinesPerCell}-line cap — shorten cell text, split rows, or upgrade page size.`);
+    console.warn(`[autofit] reference table at floor ${minPt}pt does not fit ${size} ${orientation}: ${diagnose(minPt)}`);
   }
   return minPt;
 }

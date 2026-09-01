@@ -171,7 +171,12 @@ def validate_manifest(args) -> None:
     manifest = read_json(Path(args.manifest), "manifest")
     requirements_path = Path(args.requirements).resolve()
     compiler = load_compiler()
-    requirements = compiler.validate_requirements(read_json(requirements_path, "requirements"))
+    # Narrow with the compiler's own selector, so a wave that owns part of a
+    # merged snapshot is measured against the partition it actually compiled.
+    requirements = compiler.select_expected(
+        compiler.validate_requirements(read_json(requirements_path, "requirements")),
+        args.expected_filename,
+    )
     if not isinstance(manifest, dict) or manifest.get("schema_version") != 2 or manifest.get("kind") != "image":
         raise ValidationError("manifest must be schema 2 image")
     ref = manifest.get("requirements")
@@ -200,7 +205,7 @@ def validate_manifest(args) -> None:
         seen.extend(row["filenames"])
     expected_names = [photo["filename"] for photo in requirements]
     if len(seen) != len(expected_names) or set(seen) != set(expected_names):
-        raise ValidationError("manifest omits, adds, or duplicates requirements")
+        raise ValidationError("manifest omits, adds, or duplicates the requirements it owns")
     print(f"PICTURE_MANIFEST_OK: {len(assignments)} assignments")
 
 
@@ -595,6 +600,10 @@ def parser():
     manifest.add_argument("--manifest", required=True)
     manifest.add_argument("--working-dir", required=True)
     manifest.add_argument("--expected-prefix", choices=("p", "w"), required=True)
+    # Mirrors the compile side: name every filename a supplemental wave owns, so
+    # the partition re-derived here is the one that was compiled. Omit it for a
+    # whole-contract wave.
+    manifest.add_argument("--expected-filename", action="append", default=[])
     manifest.set_defaults(func=validate_manifest)
     result = sub.add_parser("result")
     result.add_argument("--assignment", required=True)

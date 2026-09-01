@@ -89,8 +89,20 @@ function badgeInches(bodyPt) {
 
 // ─── Visual buffer lookup ───────────────────────────────────────────────
 
+// The card's own name, so an autofit refusal points at a card the designer can
+// find in working-wall.json rather than at "a linear body somewhere".
+function cardLabel(card) {
+  if (!card) return "this card";
+  const title = typeof card.title === "string" ? card.title.trim() : "";
+  const type = card.type || "card";
+  return title ? `${type} "${title}"` : type;
+}
+
 function stackedBodyOpts(card, panelFraction) {
-  return (card && card.visual && panelFraction < 1.0) ? { maxLinesPerItem: 4 } : {};
+  const label = { label: cardLabel(card) };
+  return (card && card.visual && panelFraction < 1.0)
+    ? { ...label, maxLinesPerItem: 4 }
+    : label;
 }
 
 function panelFractionFor(card, ctx, hasPhoto) {
@@ -157,6 +169,7 @@ module.exports = {
   wideVisualReserveInches,
   pickVisual,
   defaultVisualLabel,
+  cardLabel,
   stackedBodyOpts,
   defaultBodyPt,
   minBodyPt,

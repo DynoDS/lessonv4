@@ -56,3 +56,52 @@ improvement pass folds those in.
   *Addressed 30 Aug 2026: the preflight was passed as `ready` on a guess; the
   playbook now names the exact preflight command and output-to-state mapping
   (`skills/make-lesson/playbook-lite.md`).*
+
+## 2026-08-31 — Year 4 PSHE: What is a balanced diet and why does having one matter?
+
+- The working-wall nutrient reference table could not fit its required body-job wording within the builder's fixed two-line A3 table-cell cap. The permitted focused repair found no in-scope JSON change; the wall was excluded while the deck and differentiated worksheets passed review.
+  *Addressed 1 Sep 2026 with the 1 Sep working-wall entry below: this is the
+  same fault in the table renderer. The refusal now names the offending cell,
+  its length and its column's character budget, so a repair aims at a number
+  instead of guessing (`working-wall-html/src/layout.js`).*
+- The Below worksheet's first build overflowed two zones; changing only that sheet to a landscape four-quarter layout resolved the clipping. Visual review then replaced one short response rule with a full-width handwriting line and confirmed all three pupil sheets and the separate answer key.
+  *No engine change 1 Sep 2026: the run's own repair budget resolved this and
+  the sheets shipped. Nothing to fix upstream.*
+- Deck slide 6 initially merged setup and pupil-task colour semantics; a focused repair separated black setup text from the house-blue task, and confirmation found no regression.
+  *No engine change 1 Sep 2026: repaired in-run and confirmed.*
+
+## 2026-09-01 — Year 4 PSHE: What is a balanced diet and why does having one matter?
+
+- Compiling an adaptation-only supplemental picture manifest from the merged requirements snapshot succeeded, but `validate-image-scout.py manifest` rejected it because it compares against the full deterministic partition and has no expected-filename filter. The Below sheet was therefore omitted; the Expected worksheet and answer key still built.
+  *Addressed 1 Sep 2026: this was not a one-lesson accident. The compile side
+  could narrow a snapshot to the filenames a wave owns and the validator could
+  not, so every supplemental wave was unvalidatable and every adaptation
+  picture in every lesson was promised to a worksheet and never sourced. Both
+  sides now share one selector (`select_expected` in
+  `scripts/compile-picture-assignments.py`), the manifest subcommand takes the
+  same `--expected-filename` list, and the playbook spells out the command
+  rather than leaving its arguments to be guessed. Regression:
+  `scripts/tests/test_supplemental_wave_manifest.py`.*
+- A subsequent zero-photo `promote-used` receipt did not remove the now-unused adaptation photos from the canonical contract. Provenance succeeded against the immutable initial contract, which exactly matched the four published pictures.
+  *Investigated 1 Sep 2026: not a fault, and it was downstream of the entry
+  above. Retention is the safe rule: a promoted filename can already have been
+  published, and dropping it from canonical would orphan a picture's
+  provenance. The worksheet only stopped referencing those two photographs
+  because the wave that should have sourced them could not run.*
+- The working-wall A3 layout again failed its 36pt/two-line cap after the single permitted focused repair, so no wall PDF was delivered.
+  *Addressed 1 Sep 2026: the refusal said only that something at the floor size
+  was too long. It named no card, no item and no target, so the one permitted
+  repair was a guess, and it guessed wrong twice. Reproduced from the run's own
+  `working-wall.json`: the sticky card was three characters over budget. The
+  autofit refusal now names the card, the item, its length and the exact
+  character budget, and the designer is given the budgets up front
+  (62 characters on a card with a picture, 106 without) rather than only the
+  36pt floor. `working-wall-html/src/layout.js`, `agents/working-wall-designer.md`,
+  `references/working-wall-preferences.md`; the numbers are pinned to the
+  renderer by `working-wall-html/test/doc-claims.test.js`.*
+- Stick-in support could not reproduce the photograph-plus-three-response lunch-review frame and was omitted rather than weakened.
+  *Open 1 Sep 2026: confirmed genuine - the stick-in renderer carries a
+  photograph only inside a `labelDiagram`, so a photograph above plain response
+  lines has no piece to be. The designer's refusal to weaken the task was the
+  right call. Adding that piece is a helper-builder job, not a repair, and is
+  left as a deliberate choice rather than folded into this pass.*
