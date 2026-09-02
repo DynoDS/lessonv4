@@ -146,6 +146,8 @@ When two parallel rows or stacks must read as separate groups, use one restraine
 
 A single flat colour gives the eye nothing to land on. Colour earns its place by separating roles, not by flooding a whole slide.
 
+**Repeated reference material recedes; the current move leads.** Across a run of slides that share a reference (a success criteria panel, a word bank, a chart, a sticky fact), the reference keeps one consistent, quieter place and proportion, and the thing that has changed since the last slide is the largest and first-read element: the new task, the new material, the thing children just made now being worked on. A teacher skimming the deck reads the change between slides, so when the repeated panel is the dominant element on three consecutive slides they see three copies of one slide, and the lesson's biggest move (my rule, then our group's rules, then our class agreement) is the small part of the screen. Receding is position and proportion, never truncation: the reference stays complete and readable, per §9.
+
 ---
 
 ## 6. Space-pressure order
@@ -374,6 +376,7 @@ Before accepting the deck, read it in order and look specifically for these regr
 - a claim with no map, photo, diagram, table or source to judge it against;
 - a photograph that no question, caption or label on the slide ever mentions;
 - two consecutive slides that render near-identically, so a teacher would click past the second;
+- the same reference panel dominating three consecutive slides while the thing that changed between them sits small;
 - one small task repeated across a run of slides whose furniture is identical and mostly empty;
 - a My Turn visual that changes family on Our Turn or Your Turn;
 - a blank helper labelled with stage directions;
@@ -398,6 +401,7 @@ For every slide, ask:
 4. Is the material they work from large enough to use?
 5. Does every attached reference remain visible and readable?
 6. Have I repeated, invented or silently rewritten anything?
+7. What changed since the last slide, and is that the first thing the eye lands on?
 7. Does the visual relationship match the learning relationship?
 8. Would the answer slide let a child check the work they were actually asked to produce?
 9. Could optional content disappear and make the slide better?

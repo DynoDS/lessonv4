@@ -151,7 +151,7 @@ Check:
 - the task requires the thinking named by the objective;
 - the lesson has a coherent centre: the dominant sticking point or blocking misconception is exposed, resolved and tested again, or a clearly named central difficulty serves that role when no genuine misconception exists;
 - the retesting of that centre has an end: count the response moments, beats and worksheet prompts alike, that elicit essentially the same corrective answer, and when a later one can be passed by repeating the sentence given two moments earlier, the centre has decayed into a catchphrase and its time belongs to the parts of the objective still untaught. A lesson most of whose response moments rehearse the correction has narrowed its objective to the sticking point, which is a purposeful design defect, not polish;
-- the lesson reads as one line: read the beats in order and name what each hands to the next. A beat carrying a second job that has no beat of its own, or a run of teacher-presented beats with no pupil action between them, is a purposeful design defect, not polish (`preferences.md` → The Teach → Do → Teach → Do Rhythm);
+- each major beat changes the state of the lesson and the next builds from it: read the beats in order and name what each changes and what later depends on it. A major beat that could move elsewhere with nothing lost gets the challenge, and the answer is either a legitimate place beside the spine (vocabulary, a routine, a safeguarding note, setup) or a finding; do not answer it by demanding forced links. A beat carrying a second job that has no beat of its own, or a run of teacher-presented beats with no pupil action between them, is a purposeful design defect, not polish (`preferences.md` → The Teach → Do → Teach → Do Rhythm);
 - a child cannot succeed by copying, reformatting, reading a visible answer or following a predictable answer pattern;
 - a hinge or checking question cannot be answered from an incidental picture cue, wording cue, answer position or immediate repetition; the correct response must depend on the relationship, decision or method being assessed;
 - reasoning is part of core learning when the objective supports it;
@@ -167,6 +167,8 @@ Check:
 ### 4. Language, load and teacher usability
 
 Apply Written Voice as a comprehension test, not a shortening test.
+
+Read the source-unit labels alone, in order, as the slide titles they become: they should tell the lesson's story. A label naming a slot rather than a move (`Still part of the lesson`, `Apply`) is a bounded correction under `preferences.md` → Slide Headings; write the move a child is making.
 
 **Then sweep the voice, string by string.** The designer writes these words at the end of a long run and cannot hear its own drift, so this sweep is the one place the register is checked by someone who did not write it - a general "the voice seemed fine" is not the sweep. Walk the child-facing and spoken strings of the review view in order - every script, explanation, definition, question, task instruction, success criterion, sticky fact, model answer and worksheet string - and put each through `teacher-voice.md` → Final pre-flight check, opening the numbered section for the kind of string in hand when one feels off. Where a string genuinely misses the guide, repair it in place: same meaning, same teaching, same difficulty, the teacher's register. The misses that reach classes, from real lessons:
 

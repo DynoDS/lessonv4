@@ -119,7 +119,8 @@ Understand the arc first. Identify:
 - which units depend on a required photograph;
 - which units have success criteria or sticky knowledge available;
 - which units contain voices or claims that need a real referent;
-- which units are intentionally sparse because the teacher is modelling physically or talking over one central visual.
+- which units are intentionally sparse because the teacher is modelling physically or talking over one central visual;
+- what each unit changes since the one before it, and which reference it carries over unchanged, because the change is what its slide must let lead and the carried reference is what recedes.
 
 Do not pick templates while reading the first unit. A deck gets repetitive when the designer chooses each slide locally without seeing the sequence. The visual rhythm of the whole lesson matters.
 

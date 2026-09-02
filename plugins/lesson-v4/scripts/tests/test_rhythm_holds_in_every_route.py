@@ -41,6 +41,8 @@ LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
 DESIGN_REVIEWER = ROOT / "agents" / "design-reviewer.md"
 PREFERENCES = ROOT / "references" / "preferences.md"
 TASK_CENTRED = ROOT / "references" / "teaching-sequence-task-centred.md"
+PLAYBOOK = ROOT / "references" / "slide-composition-playbook.md"
+SLIDE_DESIGNER = ROOT / "agents" / "slide-designer.md"
 
 sys.path.insert(0, str(SCRIPTS / "tests"))
 
@@ -195,28 +197,110 @@ class RhythmHasAnOwnerOnEveryRouteTests(unittest.TestCase):
         self.assertIn("in any route", trigger)
 
 
-class LessonReadsAsOneLineTests(unittest.TestCase):
-    """The teacher should be able to flick through the deck and see where it
-    is going. Nothing in the system asked for that before."""
+class EachBeatChangesTheStateOfTheLessonTests(unittest.TestCase):
+    """Flicked through as a deck, the PSHE lesson could be assembled in the
+    head but the slides did not carry the story: the starter's discovery
+    disappeared, the safety teaching read as an information section, Kai and
+    the question box could have moved elsewhere with nothing lost, and the
+    biggest move of the lesson (my rule, our rules, our agreement) was the
+    small part of three near-identical slides. The first repair (4.2.74) had
+    written "a lesson reads as one line" and asked the designer for a row of
+    arrows, which labels the order without making one beat depend on the
+    last. The teacher's own framing replaces it: each major beat changes the
+    state of the lesson and the next builds from that change, the move test is
+    a challenge rather than a fault, and repeated reference material recedes
+    while the current move leads."""
 
-    def test_preferences_names_the_line_and_its_two_tells(self) -> None:
+    def test_preferences_owns_the_state_change_principle(self) -> None:
         text = flat(PREFERENCES)
-        self.assertIn("A lesson reads as one line", text)
-        self.assertIn("A beat carrying a second job that has no beat of its own", text)
+        self.assertNotIn("A lesson reads as one line", text)
+        self.assertIn(
+            "Each major beat changes the state of the lesson, and what follows builds from that change",
+            text,
+        )
+        self.assertIn(
+            "what children now know, notice, can do, have decided, are wondering or have produced",
+            text,
+        )
+        self.assertIn("a beat carrying a second job that has no beat of its own", text)
         self.assertIn("a run of slides that are all the teacher talking", text)
-        # The limit: an order of beats, not a story-shaped device.
-        self.assertIn("not for a narrative device or a story-shaped hook", text)
 
-    def test_lesson_designer_settles_and_records_the_line(self) -> None:
+    def test_the_move_test_is_a_challenge_with_a_stated_boundary(self) -> None:
+        """Vocabulary, a routine, a safeguarding note or setup may sit beside
+        the spine, and no beat is made to produce an artefact for linking."""
+        text = flat(PREFERENCES)
+        self.assertIn("The test is movability", text)
+        self.assertIn("That is a challenge to answer, not an automatic fault", text)
+        self.assertIn(
+            "vocabulary, a routine, a safeguarding note or setup can legitimately sit beside the spine",
+            text,
+        )
+        self.assertIn(
+            "a beat is never made to produce an artefact so that the next beat has something to name",
+            text,
+        )
+        self.assertIn("forced linking imposes one lesson shape on every subject", text)
+
+    def test_lesson_designer_settles_and_records_the_state_changes(self) -> None:
         text = flat(LESSON_DESIGNER)
-        self.assertIn("the line of the lesson: the beats in order", text)
-        self.assertIn("the lesson line as one row of arrows, beat by beat", text)
+        self.assertNotIn("the lesson line as one row of arrows", text)
+        self.assertIn("what each major beat changes", text)
+        self.assertIn(
+            "the change it makes and the later beat that depends on it, with the link carried in that later beat's own words",
+            text,
+        )
+        self.assertIn("never forced linking", text)
 
-    def test_reviewer_reads_the_beats_as_a_line(self) -> None:
+    def test_reviewer_reads_the_beats_as_state_changes(self) -> None:
         text = flat(DESIGN_REVIEWER)
-        self.assertIn("the lesson reads as one line", text)
+        self.assertNotIn("the lesson reads as one line", text)
+        self.assertIn("name what each changes and what later depends on it", text)
+        self.assertIn("do not answer it by demanding forced links", text)
         self.assertIn("arrives one idea at a time with children using each before the next is taught", text)
         self.assertIn("carries nothing else", text)
+
+
+class TitlesTellTheStoryTests(unittest.TestCase):
+    """`Still part of the lesson` passed every check that existed, because no
+    rule said what a title is for. One owner: Slide Headings in preferences,
+    with the designer's unit label named as the seed of the title."""
+
+    def test_slide_headings_owns_the_skim_title_rule(self) -> None:
+        text = flat(PREFERENCES)
+        self.assertIn("Read the titles alone, in order: they should tell the lesson's story", text)
+        self.assertIn("`Still part of the lesson` names a slot", text)
+
+    def test_lesson_designer_labels_name_the_move_and_read_slide_headings(self) -> None:
+        text = flat(LESSON_DESIGNER)
+        self.assertIn("A source unit's `label` becomes its slide title", text)
+        self.assertIn("never the slot it fills", text)
+        self.assertIn("Read `Slide Headings` before writing source-unit labels", text)
+
+    def test_reviewer_reads_labels_in_order_as_titles(self) -> None:
+        text = flat(DESIGN_REVIEWER)
+        self.assertIn("Read the source-unit labels alone, in order, as the slide titles they become", text)
+
+
+class ReferenceRecedesAndTheMoveLeadsTests(unittest.TestCase):
+    def test_playbook_states_the_hierarchy_rule_with_its_limit(self) -> None:
+        text = flat(PLAYBOOK)
+        self.assertIn("Repeated reference material recedes; the current move leads", text)
+        self.assertIn("Receding is position and proportion, never truncation", text)
+
+    def test_playbook_tells_and_read_back_carry_it(self) -> None:
+        text = flat(PLAYBOOK)
+        self.assertIn(
+            "the same reference panel dominating three consecutive slides while the thing that changed between them sits small",
+            text,
+        )
+        self.assertIn(
+            "7. What changed since the last slide, and is that the first thing the eye lands on?",
+            text,
+        )
+
+    def test_slide_designer_sequence_read_notices_the_change(self) -> None:
+        text = flat(SLIDE_DESIGNER)
+        self.assertIn("what each unit changes since the one before it", text)
 
 
 if __name__ == "__main__":

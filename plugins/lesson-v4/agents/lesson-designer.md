@@ -45,6 +45,8 @@ More context makes decisions better; does not transfer responsibility. If plan s
 
 Use standard classroom names: success criteria, vocabulary, starter, reference table, steps. No metaphors for structural components. Content can be vivid; role name stays standard in every layer: heading, panel label, speaker notes, child-facing phrasing. One name top to bottom.
 
+A source unit's `label` becomes its slide title, and the titles alone, read in order, should tell the lesson's story: name the move a child is making (`Does our agreement work?`, `Build our agreement`), never the slot it fills (`Still part of the lesson`, `Apply`). `preferences.md` → Slide Headings owns the form.
+
 ---
 
 ## Teacher Orientation - starter slide speaker notes top
@@ -413,7 +415,7 @@ Before choosing or polishing activities, settle the lesson's learning chain:
 - the evidence that will show whether the objective was met;
 - the representation, photograph, source or working surface genuinely needed;
 - anything deliberately omitted because it adds activity without improving learning;
-- the line of the lesson: the beats in order, each one step handing on to the next, so a teacher flicking through the deck can say where it is going (`preferences.md` → The Teach → Do → Teach → Do Rhythm).
+- what each major beat changes (what children now know, notice, can do, have decided, are wondering or have produced) and which later beat builds from that change, so a teacher flicking through the deck feels each slide follow from the last (`preferences.md` → The Teach → Do → Teach → Do Rhythm).
 
 An activity earns its place only when it teaches, practises, reveals or assesses something in this chain.
 
@@ -428,7 +430,7 @@ Then give one short decision per line, with its reason, covering only:
 - the independent assessment evidence, including why it cannot be passed by a surface cue or copied answer path;
 - the success-criteria form and the fresh worksheet evidence children produce;
 - any load-bearing representation, source, photograph or safety constraint and the teaching job it protects;
-- the lesson line as one row of arrows, beat by beat, with every beat one step on it - a beat carrying a second job that has no beat of its own is the tell that something has no home yet;
+- for each major beat, the change it makes and the later beat that depends on it, with the link carried in that later beat's own words; a beat nothing depends on gets the movability challenge and either a stated place beside the spine (vocabulary, a routine, a safeguarding note, setup) or a repair, never forced linking;
 - deliberate omissions and `flagsForTeacher`, or `None`.
 
 Do not duplicate mechanical IDs, JSON field names, answer-delivery values, worksheet page-fit data, or picture acquisition/provenance fields in this record. Their canonical JSON files and deterministic validators own them. A second prose copy adds drift and completion work without protecting the lesson.
@@ -541,6 +543,7 @@ Read a named section from its heading to the next heading of the same level.
 - Read the relevant preference section before deciding the starter, vocabulary, sticky knowledge, success criteria, Apply or Reflect, reasoning, support and release, source use or worksheet.
 - Read `Cognitive Load Triage on Scaffolds` when deciding what is visible, blank, constructable or pre-filled.
 - Read the Lesson Designer parts of `Slide Philosophy`: `Lesson Designer content boundaries`, `Lesson Designer visual-need boundary` and `Speaker notes hand-off`. Do not read `Slide Designer presentation rules`.
+- Read `Slide Headings` before writing source-unit labels.
 - Read `Pride Lessons` only when a real calibration example is needed.
 - Use the contents of `evidence-synthesis.md` to open only the evidence sections needed for an uncertain component or trade-off.
 - Read `do-beats.md` core guidance and only the needed registers when a beat needs a short processing form, in any structure.
