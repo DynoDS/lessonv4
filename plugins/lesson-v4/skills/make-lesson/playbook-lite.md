@@ -1266,11 +1266,11 @@ Write `[WORKING_DIR]/run-report.md` with:
 
 - outcome: `COMPLETE`, `PARTIAL`, `BLOCKED` or `UNVERIFIED`;
 - delivered resources with exact paths from fixed build summaries or the wall
-  builder;
+  builder, each path in backticks;
 - excluded earned resources and exact reasons;
 - blocking faults, accepted minor issues and failed build attempts. A minor
-  issue here is one a check or a designer raised and something judged harmless:
-  a retained build warning, or a picture a designer flagged and left standing;
+  issue is one a check or designer raised and something judged harmless: a
+  retained build warning, or a picture a designer flagged and left standing;
 - picture outcomes. A picture the contract promised and the run did not publish
   is a missing picture whether one scout failed or the stage never started, so
   name it, and the package is then not `COMPLETE`. When the early adaptation
@@ -1278,9 +1278,9 @@ Write `[WORKING_DIR]/run-report.md` with:
   early picture the sheet dropped is a cost, not a missing picture;
 - every helper gap: each visual answered with a substitute, and every helper
   this run built and left waiting in `pending-helper/`. Say in plain English
-  what each waiting helper draws, name its exact folder, and say that
-  `/install-helper` over that folder installs it. Nothing else surfaces it, so
-  one the report omits is one nobody installs;
+  what each waiting helper draws, name its folder, and say `/install-helper`
+  over that folder installs it. Nothing else surfaces it, so one the report
+  omits is one nobody installs;
 - the worker-launch audit marker and the `WORKER_TIMELINE:` block it prints
   under `## Worker launches`, both from `worker-launch.py audit` run
   immediately beforehand and copied verbatim;
@@ -1290,44 +1290,43 @@ Write `[WORKING_DIR]/run-report.md` with:
 - shared investigation-log status.
 
 Run `validate-run-report.py` and require `RUN_REPORT_OK`. On failure, repair
-the report from the validator's printed failure list and re-run the check; it
-reports every failure at once, so one repair pass is normally enough. Report
-validation keeps the record honest, it never withholds the record: if the check
-still fails after two repair passes, send the teacher report anyway and include
-the exact `RUN_REPORT_FAILED` output. Then send a short
+the report from its printed failure list and re-run the check; it reports every
+failure at once, so one pass is normally enough. Validation keeps the record
+honest, it never withholds it: if the check still fails after two repair passes,
+send the teacher report anyway with the exact `RUN_REPORT_FAILED` output. Then
+send a short
 teacher-facing report naming the topic, year, subject, objective, lesson scope,
 exact files, pedagogical highlights, design-review result and every teacher
 flag.
 
-A package missing an earned output is `PARTIAL`; an unresolved blocking fault
-is `BLOCKED`; a wall the builder could not verify against its page contract,
-which reaches the report as `PAGE_FIT_UNVERIFIED`, is `UNVERIFIED`. Use exact
-summary output paths, never guessed filenames. `BLOCKED` labels the record, not
-the delivery: a blocked package still hands over every resource that built and
+A package missing an earned output is `PARTIAL`; an unresolved blocking fault is
+`BLOCKED`; a wall the builder could not verify against its page contract, which
+reaches the report as `PAGE_FIT_UNVERIFIED`, is `UNVERIFIED`. Use exact summary
+output paths, never guessed filenames. `BLOCKED` labels the record, not the
+delivery: a blocked package still hands over every resource that built and
 passed its own checks, with the unresolved faults named first.
 
 ### Report format
 
 Keep the teacher report concise. Always include a `Teacher flags` section, using
 `None` when empty. It carries the design reviewer's unresolved findings, any
-declared cross-resource impact from a repair, and every picture a designer
-flagged as one it was uneasy about. Worksheet pupil sheets and answer key remain
-separate.
-State when a two-lesson scope covers Lesson 1 only and name deferred learning.
+declared cross-resource impact from a repair, and every picture a designer was
+uneasy about. Worksheet pupil sheets and answer key remain separate. State when
+a two-lesson scope covers Lesson 1 only and name deferred learning.
 
 ---
 
 ## Phase 5 — SharePoint Sync
 
 Once every branch has settled, build the explicit sync list from exact delivered
-paths. Run `run-fixed-resource.py sharepoint` directly with the resolved term,
-year, week, subject/day and one `--file` per exact basename. Require schema 1
-`ok: true`, `DESTINATION=` and `STATUS=COPIED`.
+paths. Run `run-fixed-resource.py sharepoint` directly with `--term-file`, the
+resolved term, year, week, subject/day and one `--file` per exact basename.
+Require schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`.
 
 Sync the delivered files whatever the package outcome: the run report, not the
-sync, is where faults are told. If the mapped drive is unavailable or the
-filing destination never resolved, retain local outputs and report the exact
-local folder and resolver error.
+sync, is where faults are told. If the mapped drive is unavailable or the filing
+destination never resolved, retain local outputs and report the exact local
+folder and resolver error.
 
 ### Edge cases
 

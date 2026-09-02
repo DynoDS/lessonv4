@@ -23,6 +23,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const { markersIn } = require('../src/verify-markers');
+const { splitAnswerRuns } = require('../src/answer-text');
 
 const BUILD = path.join(__dirname, '..', 'build.js');
 
@@ -63,6 +64,62 @@ test('a marker a helper cannot read blocks the deck', () => {
   // authored the string rather than to whoever maintains the engine.
   assert.match(result.output, /"faultClass":"composition"/);
   assert.match(result.output, /No PowerPoint was written/);
+});
+
+test('a marker split over a line break is caught, not waved through', () => {
+  // The hole this check used to have. A line break starts a new <a:p>, so a
+  // span opening on one line and closing on the next reaches the XML as two
+  // runs holding one unpaired half each. Unpaired is deliberately literal, so
+  // run-by-run both halves looked innocent and the build said "No warnings"
+  // over a slide about to show [[ and ]] to a class.
+  const result = build(
+    lesson([
+      SORT_BOARD(['[[Which rule helps?\nName it and explain why.]]']),
+    ])
+  );
+
+  assert.notEqual(result.status, 0, 'a split marker must not publish');
+  assert.match(result.output, /SLIDE_MARKER_LITERAL/);
+  assert.match(result.output, /split over a line break/);
+  assert.match(result.output, /"faultClass":"composition"/);
+  assert.match(result.output, /No PowerPoint was written/);
+});
+
+test('a span crossing a paragraph break colours as one span', () => {
+  // The fix that removes the reason to author the split in the first place.
+  // `table` reads markers, and the span now survives the line break instead of
+  // printing its own brackets.
+  const runs = splitAnswerRuns(
+    '[[Which rule helps?\nName it and explain why.]]',
+    false,
+    '000000'
+  );
+
+  assert.deepEqual(
+    runs.map((run) => [run.text, run.options.color]),
+    [
+      ['Which rule helps?', '0070C0'],
+      ['\n', '000000'],
+      ['Name it and explain why.', '0070C0'],
+    ]
+  );
+});
+
+test('the reveal marker stays per line', () => {
+  // `||` must not start spanning lines with the others: a field list reveals an
+  // answer after every field and each new line starts back in the base colour.
+  const runs = splitAnswerRuns('Object: ||Hairdryer\nPower: ||Mains', false, '000000');
+
+  assert.deepEqual(
+    runs.map((run) => [run.text, run.options.color]),
+    [
+      ['Object: ', '000000'],
+      ['Hairdryer', '00B050'],
+      ['\n', '000000'],
+      ['Power: ', '000000'],
+      ['Mains', '00B050'],
+    ]
+  );
 });
 
 test('the same marker inside a helper that reads it publishes clean', () => {

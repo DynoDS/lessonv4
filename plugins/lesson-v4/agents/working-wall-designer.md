@@ -108,7 +108,11 @@ Zero is normal.
 
 7. **Empty output is valid output.** If nothing passes the wall-worthy test, write `cards: []` with a clear `rationaleNote` explaining why — discovery lessons with no durable procedure, short lessons whose sticky knowledge is too vague, lessons that review rather than introduce. The orchestrator will note "Working wall: none earned" in the final report. Do not produce cards to fill a quota.
 
-8. **Read the lesson — do not invent.** Reference tables, worked examples, sticky knowledge, sentence stems, and misconceptions all come from `lesson-design.json` and the lesson's reference materials. Copy text faithfully where it fits. Do not paraphrase to improve the wording, reorder steps, or add new content. `misconceptions: []` is a valid explicit statement that no misconception card can be sourced from the lesson design. Do not heuristically invent one. If the lesson uses a 3-column reference table, the wall card uses the same 3 columns. **Exception: worked-example modelled sentences may be condensed for the wall** when the lesson's version exceeds the 2-line cap (see preferences) — keep the same characters, same conjunction/operation, same setting, but tighten the language. Everything else stays verbatim.
+8. **Read the lesson — do not invent.** Reference tables, worked examples, sticky knowledge, sentence stems, and misconceptions all come from `lesson-design.json` and the lesson's reference materials. Copy text faithfully where it fits. Do not paraphrase to improve the wording, reorder steps, or add new content. `misconceptions: []` is a valid explicit statement that no misconception card can be sourced from the lesson design. Do not heuristically invent one. If the lesson uses a 3-column reference table, the wall card uses the same 3 columns.
+
+   **Prose a child reads may be condensed to fit; a contract a child checks against may not.** The verbatim rule protects the things a child compares board against wall and would stop trusting if the two diverged: success criteria steps, reference-table columns, a misconception's "Don't" and "Do" pair. Free-standing prose that no child is matching word for word — a worked-example modelled sentence, a sticky-knowledge statement, a vocabulary definition, a sentence stem's framing — may be tightened to come inside the card's budget, keeping the same meaning, the same characters, the same operation or setting, and every protection the sentence carries. "Tell a trusted adult if you're worried about yourself or someone else." is 70 characters against a 62-character card; "Tell a trusted adult if you're worried about anyone." is the same instruction and fits.
+
+   Condensing is the *first* move when an item overruns, not the last. A one-sentence fact that goes eight characters over is not a card that failed to earn its place: it is a sentence with eight characters of slack in it. Reach for the shorter wording before you drop the picture, and drop the card only when the meaning genuinely cannot survive the budget — a safety line lost off the wall is a real cost to a real class, and "it was three characters too long" is not a reason a teacher would accept. When you do condense, say so in `rationaleNote` with the lesson's original wording, so the teacher can see what changed.
 
    **Success criteria steps in particular must be verbatim.** When a worked-example card carries the procedure, the step text must match the lesson's success criteria exactly — same number of steps, same wording, same punctuation. Children see the SC on the slides during teaching and on the wall during practice; if the two diverge, they stop trusting either. Do not summarise the SC into shorter steps for the wall, do not omit a step because it feels redundant on a card. If the lesson has both a "past" SC and a "to" SC (or any pair of variant SCs), pick the one your worked-example is showing and copy that SC in full — do not blend or simplify across variants. The 2-line cap exception above does NOT extend to SC steps; if the full SC won't fit at the wall's fixed A3 size, remove non-SC extras from that card; if it still will not fit, omit the card, but never reword the steps.
 
@@ -299,10 +303,25 @@ separator, gets:
 
 A worked-example step or sticky-knowledge statement that runs past its budget is
 not a formatting problem to fix later: it is a sentence that was never going to
-read from the back of the room. Write it short first. Where the wording genuinely
-will not compress, split it across two items or drop the card's picture, and let
-the build's refusal message, which names the card, the item and the exact
-overage, aim the repair.
+read from the back of the room. Write it short first, and let the build's refusal
+message, which names the card, the item and the exact overage, aim the repair.
+
+When an item does overrun, work down this order and stop at the first move that
+succeeds:
+
+1. **Condense the wording** to the 62-character budget, keeping the meaning and
+   every protection intact (rule 8). This is nearly always enough: the overage is
+   usually a handful of characters, and ordinary prose has that much slack.
+2. **Split it across two items** where the sentence holds two separable parts.
+3. **Drop the card** — and only here. Note in `rationaleNote` what was lost and
+   why the wording could not carry the meaning any shorter.
+
+Dropping the card's picture is *not* on this list. The visual gate (rule 2) means
+a card with no qualifying picture does not go on the wall at all, so trading the
+picture for the wider 106-character budget loses the card by a different route.
+The 106-character figure describes families that legitimately carry no picture,
+such as the step-by-step success-criteria card; it is not a budget an ordinary
+card can unlock by giving up its visual.
 
 This budget applies to body items. Titles, chips, table cells and mnemonic
 letters have their own fitting and are not measured against it.

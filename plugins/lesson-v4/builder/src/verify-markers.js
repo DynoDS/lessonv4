@@ -66,6 +66,31 @@ function shorten(text) {
   return clean.length > 60 ? `${clean.slice(0, 57)}...` : clean;
 }
 
+// One shape's worth of XML at a time, so runs are only ever rejoined with the
+// runs they are actually drawn beside. Joining a whole slide would pair a `[[`
+// in one text box with a `]]` in another that has nothing to do with it. Used
+// only for the rejoined pass; the run-by-run pass reads the whole slide, so a
+// helper whose text sits outside a shape still gets checked.
+function shapesIn(xml) {
+  return xml.match(/<p:sp>[\s\S]*?<\/p:sp>/g) || [];
+}
+
+function fault(slide, part, markers, text, splitAcrossLines) {
+  const where = splitAcrossLines
+    ? `slide ${slide} shows the ${markers.join(' and ')} marker as text, ` +
+      `split over a line break: "${shorten(text)}". The marker opens on one ` +
+      `line and closes on another, so the helper drawing it read neither half ` +
+      `and both sets of characters project at the class. Keep a marked span ` +
+      `on one line, or move the string to a helper that reads markers.`
+    : `slide ${slide} shows the ${markers.join(' and ')} marker as text: ` +
+      `"${shorten(text)}". The helper drawing this string does not read ` +
+      `inline markers, so the characters project at the class instead of ` +
+      `colouring the answer. Move the string to a helper that reads them, ` +
+      `or write the words plainly and let the slide's own colour do the ` +
+      `work.`;
+  return { slide, part, markers, text: shorten(text), message: where };
+}
+
 async function verifyMarkers(pptxPath, deps) {
   const JSZip = (deps && deps.JSZip) || loadJSZip();
   const fs = (deps && deps.fs) || require('fs');
@@ -83,6 +108,10 @@ async function verifyMarkers(pptxPath, deps) {
   for (const part of parts) {
     const slide = Number(SLIDE_PART.exec(part)[1]);
     const xml = await zip.file(part).async('string');
+
+    // Every run on the slide, whatever element holds it, so this check's
+    // coverage never depends on where a helper happens to put its text.
+    const seen = new Set();
     let match;
     TEXT_RUN.lastIndex = 0;
     while ((match = TEXT_RUN.exec(xml)) !== null) {
@@ -90,19 +119,28 @@ async function verifyMarkers(pptxPath, deps) {
       const text = unescapeXml(match[1]);
       const found = markersIn(text);
       if (!found.length) continue;
-      faults.push({
-        slide,
-        part,
-        markers: found,
-        text: shorten(text),
-        message:
-          `slide ${slide} shows the ${found.join(' and ')} marker as text: ` +
-          `"${shorten(text)}". The helper drawing this string does not read ` +
-          `inline markers, so the characters project at the class instead of ` +
-          `colouring the answer. Move the string to a helper that reads them, ` +
-          `or write the words plainly and let the slide's own colour do the ` +
-          `work.`,
-      });
+      found.forEach((name) => seen.add(name));
+      faults.push(fault(slide, part, found, text));
+    }
+
+    // Then the pairs that are only visible once a shape's runs are put back
+    // together. A line break in the authored string starts a new <a:p>, so
+    // "[[Which rule helps?\nName it and explain why.]]" reaches the XML as two
+    // runs holding one unpaired half each. Unpaired is documented as
+    // deliberately literal, so run by run both halves looked innocent and the
+    // build said "No warnings" over a slide about to show [[ and ]] to a class.
+    for (const shape of shapesIn(xml)) {
+      const texts = [];
+      let run;
+      TEXT_RUN.lastIndex = 0;
+      while ((run = TEXT_RUN.exec(shape)) !== null) {
+        texts.push(unescapeXml(run[1]));
+      }
+      if (texts.length < 2) continue;
+      const joined = texts.join('\n');
+      const split = markersIn(joined).filter((name) => !seen.has(name));
+      if (!split.length) continue;
+      faults.push(fault(slide, part, split, joined, true));
     }
   }
 

@@ -100,14 +100,16 @@ Practical implications when writing items:
 |---|---|
 | Worked-example step | ≤ 60 characters — "Read the conjunction — what job does it do?" fits; longer steps need splitting. |
 | Worked-example modelled answer | ≤ 70 characters — full sentences with one main clause, one subordinate clause, and a strong noun. Drop adjectives the lesson used for flavour. |
-| Sticky-knowledge item | ≤ 50 characters per line, max 2 lines = ≤ 100 characters total. |
+| Sticky-knowledge item | ≤ 62 characters on a card carrying a picture, which is nearly all of them. The 100-character figure this guide once gave is the no-picture width, and an ordinary card cannot reach it: the visual gate means a card without a picture does not go on the wall. |
 | Sentence-stem item | ≤ 80 characters including the blank. |
 | Misconception "Don't" / "Do" | ≤ 50 characters each side. |
 | Reference table cell | ≤ 30 characters — and check the longest single word fits (no narrow-column hyphens). |
 
 The builder's autofit may shrink the body, but the readable floor is a hard release gate. If autofit reaches the floor and a warning fires, the build has failed: shorten faithful display text, simplify the layout, or remove the card, then rebuild and verify before delivery. Never ship an overflow warning for correction on a later run.
 
-**5. Worked-example sentences may be condensed for the wall.** The lesson-designer's modelled sentence might be long and atmospheric for the lesson itself ("Mia stepped through the glowing portal because she could hear her brother calling from the other side."). On the wall, a tighter version with the same characters and the same conjunction is fine ("Mia stepped through the portal because she heard her brother calling."). Same Mia, same portal, same *because*, half the length. The wall is not a transcript of the lesson — it is a glanceable reminder of what the lesson taught.
+**5. Prose a child reads may be condensed for the wall; a contract a child checks against may not.** What has to stay word for word is what a child compares board against wall: success criteria steps, reference-table columns, a misconception's "Don't"/"Do" pair. Free-standing prose nobody is matching word for word — a modelled sentence, a sticky-knowledge fact, a vocabulary definition — may be tightened to fit the card, keeping the meaning and every protection it carries. A safety line is prose, not a contract: "Tell a trusted adult if you're worried about yourself or someone else." (70 characters, over budget) says the same thing as "Tell a trusted adult if you're worried about anyone." (51, fits), and the shorter one is on the wall where a child can use it. Condense first, before dropping anything.
+
+The clearest case is a worked example. The lesson-designer's modelled sentence might be long and atmospheric for the lesson itself ("Mia stepped through the glowing portal because she could hear her brother calling from the other side."). On the wall, a tighter version with the same characters and the same conjunction is fine ("Mia stepped through the portal because she heard her brother calling."). Same Mia, same portal, same *because*, half the length. The wall is not a transcript of the lesson — it is a glanceable reminder of what the lesson taught.
 
 ---
 

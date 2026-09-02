@@ -556,3 +556,61 @@ mixed-block check only sees a blue block that both tells and asks, so splitting
 the block into two blue objects gets past it. The discrimination now lives in
 the visual profile's Semantic colour - blue is about what a child does *now, on
 this slide*, and a rule of conduct phrased as an imperative is still telling.
+
+## 2026-09-02 - Year 4 PSHE agreement
+Run: C:/Users/Daniel/Projects/lessonv4/lesson-output/working/to-create-our-rse-and-pshe-agreement
+Design review approved without corrections.
+AGENT: lesson-designer | FRICTION: The guidance requested separately presentable actions, but the Task-Centred scaffold allowed only one task and one conclusion unit; I preserved the stages as explicit sequences for separate physical slides - run unharmed
+AGENT: slide-designer | FRICTION: Expected inline blue spans to cross paragraph breaks, but they printed literally; separate spans per paragraph rendered correctly - run unharmed
+AGENT: working-wall-designer | FRICTION: Expected both settled safety reminders to fit as wall cards; the help-seeking reminder exceeded the readable two-line limit, so it remains on the slides - run harmed: it is not on the working wall.
+
+AGENT: delivery | FRICTION: The report parser split unquoted paths at spaces and the sync wrapper required a term-file argument alongside the resolved term; I quoted the report paths and supplied the term file, then both checks passed - run unharmed
+
+### Addressed 2 September 2026
+
+- **A blue span could not cross a paragraph break, and nothing caught it.**
+  *Fixed in `answer-text.js`. The builder split text into lines first and only
+  then looked for markers inside each line, so a span opening on one line and
+  closing on the next matched nothing and printed its own `[[` and `]]` at the
+  class. Markers are now scanned across the whole string, with each newline kept
+  as its own base-colour run; `||` stays per line, because a field list must
+  start each line back in the base colour. The safety net had the matching hole:
+  a line break starts a new `<a:p>`, so the two halves reached the XML as
+  separate runs, each holding one unpaired half, and unpaired is documented as
+  deliberately literal. `verify-markers.js` now rejoins the runs within a shape
+  before looking. A sort board carrying the split span built clean and said "No
+  warnings" before this; it is now refused by name.*
+- **A safety reminder was dropped from the wall for being eight characters too
+  long.** *Fixed in the Working Wall Designer and its preferences. "Tell a
+  trusted adult if you're worried about yourself or someone else." is 70
+  characters against a 62-character card. Every route out was closed at once:
+  sticky knowledge was "verbatim, everything else", only worked examples could
+  be condensed, and the budget section's other escape - drop the card's picture
+  for the wider 106-character width - is forbidden by the visual gate, which
+  keeps a picture-less card off the wall entirely. Dropping the card was the
+  only legal move left, so the agent was right and the rules were wrong. The
+  verbatim rule now protects what a child checks board against wall (success
+  criteria steps, reference columns, a misconception's Don't/Do pair) and
+  releases free-standing prose nobody matches word for word - a modelled
+  sentence, a sticky fact, a definition - to be condensed with its meaning and
+  protections intact. Condensing is named as the first move when an item
+  overruns, dropping the card as the last, and dropping the picture is struck off
+  the list as the dead end it always was. The preferences table's "≤ 100
+  characters" for a sticky item was the no-picture width and was quietly telling
+  designers 70 was fine; it now reads 62. "Tell a trusted adult if you're worried
+  about anyone." carries the same instruction and both reminders now fit.*
+- **The report's path check named a fragment and not the fault.** *Fixed in
+  `validate-run-report.py`. An unquoted path was split at its spaces, so the
+  failure read `path does not exist: .../To` while the file sat there. It now
+  says to wrap the path in backticks and why, when the bullet had no backticked
+  path. The playbook says "each path in backticks" and `--term-file` in the sync
+  call; the reasoning lives in the failure messages rather than in text every run
+  loads, which kept the playbook under its size budget with more headroom than it
+  started with.*
+- **The task-centred stages were a route, not an obstacle.** *Noted in
+  `teaching-sequence-task-centred.md`. Propose → combine → agree belongs in
+  `launch.steps`, and the slide designer gives a stage that needs the board its
+  own slide, which is what happened here on slides 12 to 14. The single
+  `do-task` is deliberate - it keeps the doing reading as the centrepiece rather
+  than fragmenting into short practice beats - so the scaffold is unchanged and
+  the file now says this is the intended route.*

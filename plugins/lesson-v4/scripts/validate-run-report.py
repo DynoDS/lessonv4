@@ -536,10 +536,22 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
         if not tokens:
             failures.append(f"delivered resources: {bullet!r} names no path.")
             continue
+        # A path left unquoted is split at its spaces, so the token reported is
+        # a fragment ("...PSHE agreement" arrives as ".../To") and the real file
+        # is sitting there. Say so in the failure rather than leaving the author
+        # to work out that the missing file is a quoting fault.
+        unquoted = not BACKTICK_SPAN_RE.search(bullet)
         for token in tokens:
             if not path_exists(token, working, output):
+                hint = (
+                    "; wrap the path in backticks - lesson filenames carry "
+                    "spaces, and an unquoted one is read as several broken "
+                    "paths"
+                    if unquoted
+                    else ""
+                )
                 failures.append(
-                    f"delivered resources: path does not exist: {token}"
+                    f"delivered resources: path does not exist: {token}{hint}"
                 )
 
     # Every retained picture failure and friction record must be reported.

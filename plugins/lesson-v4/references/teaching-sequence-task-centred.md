@@ -109,7 +109,9 @@ Do the task:
 }
 ```
 
-`launch` is `null` only when children can begin from the question alone. Use a separate `plan-checkpoint` source unit only when planning produces a genuinely distinct artefact/beat before the doing. When CURRENT's planning/checkpoint is deliberately folded into one continuous sustained task, keep the lesson as one `do-task` and put the exact planning commitment in `planWithinTask` plus the exact gate question in `checkpointQuestion`. Those two fields are both `null` or both non-null.
+`launch` is `null` only when children can begin from the question alone.
+
+**A task with several stages stays one `do-task`, and `steps` is where the stages live.** Making a class agreement runs propose → combine → agree; a design-and-make runs sketch → build → test. Each stage is its own entry in `launch.steps`, in the order children work through them, and the slide designer gives a stage that needs the board its own slide. That is the intended route, not a workaround for a scaffold that only allows one task: the single `do-task` is what keeps the doing reading as the centrepiece instead of fragmenting into a run of short practice beats. Reach for a separate `plan-checkpoint` unit only when planning produces a distinct artefact before the doing begins. Use a separate `plan-checkpoint` source unit only when planning produces a genuinely distinct artefact/beat before the doing. When CURRENT's planning/checkpoint is deliberately folded into one continuous sustained task, keep the lesson as one `do-task` and put the exact planning commitment in `planWithinTask` plus the exact gate question in `checkpointQuestion`. Those two fields are both `null` or both non-null.
 
 When `runsBeyondToday` is `true`, `todayEndsAt` is a non-empty string naming the natural stopping point. When it is `false`, `todayEndsAt` is `null`.
 

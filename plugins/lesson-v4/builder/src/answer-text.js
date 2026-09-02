@@ -61,79 +61,76 @@ function splitAnswerRuns(text, bold, baseColor) {
   const base = { color: baseColor || COLOURS.body, bold: !!bold };
   const runs = [];
 
-  const pushPlain = function (value) {
-    if (value !== '') {
-      runs.push({
-        text: value,
-        options: { color: base.color, bold: base.bold }
-      });
-    }
+  const push = function (value, options) {
+    if (value !== '') runs.push({ text: value, options: options });
   };
 
-  const pushInline = function (value) {
-    const re =
-      /\*\*([\s\S]+?)\*\*|\[\[([\s\S]+?)\]\]|\{\{([\s\S]+?)\}\}|<<([\s\S]+?)>>/g;
-    let last = 0;
-    let match;
-    while ((match = re.exec(value)) !== null) {
-      pushPlain(value.slice(last, match.index));
-      if (match[1] !== undefined) {
-        runs.push({
-          text: match[1],
-          options: { color: base.color, bold: true }
-        });
-      } else if (match[2] !== undefined) {
-        runs.push({
-          text: match[2],
-          options: { color: FOCUS_BLUE, bold: true }
-        });
-      } else if (match[3] !== undefined) {
-        runs.push({
-          text: match[3],
-          options: { color: COLOURS.green, bold: true }
-        });
-      } else if (match[4] !== undefined) {
-        runs.push({
-          text: match[4],
-          options: { color: SUPPLIED_ORANGE, bold: true }
-        });
+  // A marked span is scanned across the whole string, not line by line, so a
+  // question that runs over a paragraph break can still be coloured as one
+  // question. Splitting into lines first and hunting markers inside each line
+  // left the opening `[[` on one line and the closing `]]` on another, so
+  // neither matched and both printed at the class as characters. Each newline
+  // inside a span is still emitted as its own base-colour run, so the break
+  // survives and only the words take the colour.
+  const pushSpan = function (value, colour, bold) {
+    const parts = value.split('\n');
+    parts.forEach(function (part, index) {
+      push(part, { color: colour, bold: bold });
+      if (index < parts.length - 1) {
+        push('\n', { color: base.color, bold: base.bold });
       }
-      last = re.lastIndex;
-    }
-    pushPlain(value.slice(last));
+    });
   };
 
-  // The reveal marker is per line: a field list such as
+  // The reveal marker stays per line: a field list such as
   // "Object: ||Hairdryer\nPower source: ||Mains electricity" reveals an
   // answer after every field, and each new line starts back in the base
   // colour so the labels stay black while every answer lifts green.
-  const lines = str.split('\n');
-  lines.forEach(function (line, lineIndex) {
-    const revealIndex = line.indexOf('||');
-    if (revealIndex === -1) {
-      pushInline(line);
-    } else {
-      const head = line.slice(0, revealIndex);
-      const tail = line.slice(revealIndex + 2);
-      pushInline(head);
-      if (tail !== '') {
-        const needsSpace =
-          head !== '' &&
-          !/\s$/.test(head) &&
-          !/^\s/.test(tail);
-        runs.push({
-          text: needsSpace ? ' ' + tail : tail,
-          options: { color: COLOURS.green, bold: base.bold }
-        });
+  const pushPlain = function (value) {
+    const lines = value.split('\n');
+    lines.forEach(function (line, lineIndex) {
+      const revealIndex = line.indexOf('||');
+      if (revealIndex === -1) {
+        push(line, { color: base.color, bold: base.bold });
+      } else {
+        const head = line.slice(0, revealIndex);
+        const tail = line.slice(revealIndex + 2);
+        push(head, { color: base.color, bold: base.bold });
+        if (tail !== '') {
+          const needsSpace =
+            head !== '' &&
+            !/\s$/.test(head) &&
+            !/^\s/.test(tail);
+          push(needsSpace ? ' ' + tail : tail, {
+            color: COLOURS.green,
+            bold: base.bold
+          });
+        }
       }
+      if (lineIndex < lines.length - 1) {
+        push('\n', { color: base.color, bold: base.bold });
+      }
+    });
+  };
+
+  const re =
+    /\*\*([\s\S]+?)\*\*|\[\[([\s\S]+?)\]\]|\{\{([\s\S]+?)\}\}|<<([\s\S]+?)>>/g;
+  let last = 0;
+  let match;
+  while ((match = re.exec(str)) !== null) {
+    pushPlain(str.slice(last, match.index));
+    if (match[1] !== undefined) {
+      pushSpan(match[1], base.color, true);
+    } else if (match[2] !== undefined) {
+      pushSpan(match[2], FOCUS_BLUE, true);
+    } else if (match[3] !== undefined) {
+      pushSpan(match[3], COLOURS.green, true);
+    } else if (match[4] !== undefined) {
+      pushSpan(match[4], SUPPLIED_ORANGE, true);
     }
-    if (lineIndex < lines.length - 1) {
-      runs.push({
-        text: '\n',
-        options: { color: base.color, bold: base.bold }
-      });
-    }
-  });
+    last = re.lastIndex;
+  }
+  pushPlain(str.slice(last));
 
   if (runs.length === 0) return '';
   if (
