@@ -55,8 +55,9 @@ PREFERENCE_REVIEW_ROUTES = (
     (
         "The Teach → Do → Teach → Do Rhythm",
         "Read when two teacher-presented beats run with no pupil action "
-        "between them, in any route, or when a beat carries a second job "
-        "that has no beat of its own.",
+        "between them, in any route, when a Do beat practises a different "
+        "idea from the one its own Teach just taught, or when a beat "
+        "carries a second job that has no beat of its own.",
     ),
     (
         "Slide Philosophy",

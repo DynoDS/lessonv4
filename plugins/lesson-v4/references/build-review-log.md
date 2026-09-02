@@ -614,3 +614,46 @@ AGENT: delivery | FRICTION: The report parser split unquoted paths at spaces and
   `do-task` is deliberate - it keeps the doing reading as the centrepiece rather
   than fragmenting into short practice beats - so the scaffold is unchanged and
   the file now says this is the intended route.*
+
+## 2026-09-02 - Year 4 History: continuities and changes in children's lives (4.2.82)
+
+- **The Teach taught primary and secondary sources; the Do practised something
+  else entirely.** *Fixed in `preferences.md` for every route. The lesson's
+  first two pairs were strong - observation and deduction taught, then a fresh
+  Roman carving to deduce from; continuity, change and comparing the same part
+  of life taught, then a Tudor schoolroom to compare with the class's own room.
+  The third pair broke. Its explanation defined a primary source, defined a
+  secondary source, and said a later explanation helps interpret an older one;
+  its Do asked whether one boy's portrait shows what he wore and what every
+  Tudor child wore. That is a real, committed, whole-class task about the scope
+  of a single source, and scope was never taught. Primary and secondary were
+  never used. Every existing check passed it, because `Questioning is not doing`
+  and the reviewer's bullet both ask whether the beat is a use at all, and this
+  one was. The rhythm section now carries the pairing test as its own rule
+  beside them - is it a use of `this`? - with the boundary that a Do may still
+  carry earlier learning forward, and the reviewer's routing card opens the
+  section for a mismatched pair rather than only for two teacher beats in a
+  row.*
+- **A Teach block's heading named one move while its teaching taught two
+  others.** *Fixed in the same section. `headline`, `explanation` and the
+  following Do are three fields, each true on its own, and nothing read them
+  against each other, so `Ask what the source helps us find out` could sit above
+  a definition of primary and secondary sources and look complete. The
+  `One concept per Teach block` rule now says the three surfaces have to agree
+  about what the one thing is, and to read them back to back.*
+- **Nine new abstractions in forty-five minutes, and the vocabulary cap did not
+  see them.** *Fixed in `How Much Fits in One Lesson`. Source, observation,
+  deduction, continuity, change, primary, secondary and what one source cannot
+  prove all arrived before the Roman, Tudor and Victorian content did. The set
+  stayed inside five cards only because terms were paired onto them, which is
+  the cap's own permitted move being used to hide the load. The section covered
+  only the knowledge-plus-product kind of overload; it now names too many new
+  ideas as the second kind, gives the measure as how many abstractions a child
+  holds at once, and names both tells.*
+- **The objective said children's lives; the lesson taught children's learning.**
+  *Noted in the Lesson Designer's `Date + LO`. One thread taught properly is
+  usually the better lesson and the objective is the teacher's to keep, so the
+  answer is not to edit either. The designer now names in `flagsForTeacher`
+  which strand the lesson covers and what the others would need, because the
+  teacher assesses against the objective line and cannot see the narrowing from
+  it.*

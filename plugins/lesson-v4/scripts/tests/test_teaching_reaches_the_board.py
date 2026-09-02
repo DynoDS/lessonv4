@@ -218,7 +218,7 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
         designer = flat(LESSON_DESIGNER)
         self.assertIn("Every Do beat: every child uses the chunk and leaves something the teacher can see", designer)
         self.assertIn("Demand climbs across lesson", designer)
-        self.assertIn("Match the form to what was just taught", flat(CONTENT_BASED))
+        self.assertIn("Then match the form to what was just taught", flat(CONTENT_BASED))
 
 
 class GivingInstructionsIsNotLaunchingTests(unittest.TestCase):
