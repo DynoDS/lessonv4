@@ -312,6 +312,26 @@ def cmd_build_provisional(args) -> int:
         "adaptationPhotoIds": new_ids,
         "adaptationFilenames": new_filenames,
     }
+    # The early adaptation picture wave sources these pictures beside the
+    # Worksheet Designer, before the sheet has said which it uses. A wave
+    # compiles against a requirements file whose bytes its receipts hash, and
+    # the provisional file is rewritten whenever adaptation runs again, so the
+    # wave takes an immutable copy: written once, refused if it ever differs,
+    # and named in this receipt so the finaliser can tell an early-sourced
+    # picture from a stray one.
+    snapshot_arg = getattr(args, "requirements_snapshot", None)
+    if snapshot_arg:
+        snapshot = Path(snapshot_arg)
+        data = output.read_bytes()
+        if snapshot.exists():
+            if snapshot.read_bytes() != data:
+                raise PhotoContractError(
+                    f"early-wave snapshot already exists with different bytes: {snapshot}"
+                )
+        else:
+            atomic_write_bytes(snapshot, data)
+        receipt["requirementsSnapshot"] = str(snapshot.resolve())
+        receipt["requirementsSnapshotSha256"] = sha256_bytes(data)
     atomic_write_json(Path(args.receipt), receipt)
     print(f"PHOTO_CONTRACT_PROVISIONAL_OK {len(new_ids)}")
     return 0
@@ -355,6 +375,16 @@ def cmd_promote_used(args) -> int:
         if candidate.exists():
             candidate.unlink()
 
+    # A promoted picture the early adaptation wave already finished has a
+    # terminal receipt, and compiling it again would either reopen a finished
+    # picture or be refused by the finaliser for not matching that receipt.
+    # So the receipt says which promoted filenames are still to source; the
+    # supplemental wave compiles those and only those.
+    terminal_filenames = [
+        name for name in new_filenames
+        if terminal_receipt_state(canonical_path.parent, name) is not None
+    ]
+    pending_filenames = [name for name in new_filenames if name not in terminal_filenames]
     receipt = {
         "schemaVersion": 1,
         "baseInitialPhotoSha256": sha256_file(initial_path),
@@ -363,6 +393,8 @@ def cmd_promote_used(args) -> int:
         "mergedPhotoSha256": sha256_file(canonical_path),
         "newPhotoIds": new_ids,
         "newFilenames": new_filenames,
+        "pendingFilenames": pending_filenames,
+        "terminalFilenames": terminal_filenames,
     }
     snapshot = Path(args.requirements_snapshot)
     atomic_write_bytes(snapshot, canonical_path.read_bytes())
@@ -370,7 +402,33 @@ def cmd_promote_used(args) -> int:
     receipt["requirementsSnapshotSha256"] = sha256_file(snapshot)
     atomic_write_json(Path(args.receipt), receipt)
     print(f"PHOTO_CONTRACT_PROMOTED {len(new_ids)}")
+    print(f"PHOTO_CONTRACT_PENDING_PICTURES {len(pending_filenames)}")
     return 0
+
+
+TERMINAL_STATES = {"published", "omitted", "unsatisfied"}
+
+
+def terminal_receipt_state(working_dir: Path, filename: str) -> str | None:
+    """The terminal state a picture already reached, or None when it has none.
+
+    The finaliser writes one receipt per filename under the working folder,
+    named by the filename's hash. A receipt that says published, omitted or
+    unsatisfied is final; a failed publication is not, and neither is a receipt
+    that cannot be read.
+    """
+    path = (
+        working_dir
+        / "orchestration-receipts"
+        / "picture-terminal"
+        / f"{hashlib.sha256(filename.encode('utf-8')).hexdigest()}.json"
+    )
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    state = data.get("terminalState") if isinstance(data, dict) else None
+    return state if state in TERMINAL_STATES else None
 
 
 def valid_receipt(path: Path) -> dict | None:
@@ -507,6 +565,8 @@ def parser() -> argparse.ArgumentParser:
     provisional.add_argument("--output", required=True)
     provisional.add_argument("--lesson-design")
     provisional.add_argument("--receipt", required=True)
+    # The immutable copy the early adaptation picture wave compiles from.
+    provisional.add_argument("--requirements-snapshot")
     provisional.set_defaults(func=cmd_build_provisional)
 
     promote = sub.add_parser("promote-used")

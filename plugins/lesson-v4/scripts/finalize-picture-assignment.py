@@ -290,6 +290,44 @@ def receipt_matches_final_contract(
         raise FinalizeError(f"terminal receipt photo contract is stale or changed: {filename}")
 
 
+def early_wave_snapshot(args, working: Path) -> tuple[Path, dict[str, dict]] | None:
+    """The immutable contract the early adaptation wave compiled from.
+
+    The early wave sources every picture an adaptation asked for while the
+    Worksheet Designer is still deciding which ones the sheet will carry, so at
+    finalisation a receipt can belong to a picture the final contract never
+    took. Those receipts are real evidence of real work (and of a licence the
+    run must keep), not stray files: this is what lets provenance tell the two
+    apart. Absent, or given a path that is not a schema-2 contract inside the
+    working folder, and every receipt outside the final contract is stray, as
+    it always was.
+    """
+    text = getattr(args, "early_wave_snapshot", None)
+    if not text:
+        return None
+    snapshot = Path(text).resolve()
+    if not inside(snapshot, working) or not snapshot.is_file():
+        raise FinalizeError(f"early-wave snapshot is not a file inside the lesson working directory: {snapshot}")
+    document = read_json(snapshot, "early-wave snapshot")
+    if document.get("schema_version") != 2 or not isinstance(document.get("photos"), list):
+        raise FinalizeError(f"early-wave snapshot is not schema 2: {snapshot}")
+    photos = {
+        photo["filename"]: photo
+        for photo in document["photos"]
+        if isinstance(photo, dict) and isinstance(photo.get("filename"), str)
+    }
+    return snapshot, photos
+
+
+def receipt_bound_to(receipt: dict, snapshot: Path) -> bool:
+    reference = receipt.get("requirements")
+    return (
+        isinstance(reference, dict)
+        and isinstance(reference.get("path"), str)
+        and Path(reference["path"]).resolve() == snapshot
+    )
+
+
 def provenance_command(args) -> int:
     requirements_path = Path(args.requirements).resolve(); requirements = read_json(requirements_path, "requirements")
     if requirements.get("schema_version") != 2 or not isinstance(requirements.get("photos"), list): raise FinalizeError("requirements must be schema 2")
@@ -301,30 +339,41 @@ def provenance_command(args) -> int:
     }
     if len(final_by_filename) != len(expected):
         raise FinalizeError("final requirements contain invalid or duplicate filenames")
+    working = Path(args.working_dir).resolve()
+    early = early_wave_snapshot(args, working)
     receipt_dir = Path(args.terminal_receipts_dir).resolve(); paths = sorted(receipt_dir.glob("*.json")); by_name = {}
+    # Receipts the early wave wrote for pictures the final contract never took.
+    unused: dict[str, dict] = {}
     for path in paths:
         receipt = read_json(path, "terminal receipt")
         if receipt.get("schemaVersion") != 2 or not isinstance(receipt.get("filename"), str): raise FinalizeError(f"invalid terminal receipt: {path}")
         filename = receipt["filename"]
         if receipt.get("terminalState") not in {"published", "omitted", "unsatisfied", "picture_publish_failed"}:
             raise FinalizeError(f"invalid terminal state for {filename}")
+        expected_name = hashlib.sha256(filename.encode("utf-8")).hexdigest() + ".json"
+        if path.name != expected_name: raise FinalizeError(f"stale terminal receipt filename: {path}")
         if filename not in final_by_filename:
-            raise FinalizeError(f"extra terminal evidence: {filename}")
+            # Only a receipt the early wave wrote, against the early snapshot,
+            # for a picture that snapshot holds, is an unused early picture.
+            # Anything else outside the final contract is what it always was.
+            if early is None or filename not in early[1] or not receipt_bound_to(receipt, early[0]):
+                raise FinalizeError(f"extra terminal evidence: {filename}")
+            receipt_matches_final_contract(receipt, filename, early[1][filename], working)
+            if filename in unused: raise FinalizeError(f"duplicate terminal evidence: {filename}")
+            unused[filename] = receipt
+            continue
         receipt_matches_final_contract(
             receipt,
             filename,
             final_by_filename[filename],
-            Path(args.working_dir).resolve(),
+            working,
         )
         if filename in by_name: raise FinalizeError(f"duplicate terminal evidence: {filename}")
-        expected_name = hashlib.sha256(filename.encode("utf-8")).hexdigest() + ".json"
-        if path.name != expected_name: raise FinalizeError(f"stale terminal receipt filename: {path}")
         by_name[filename] = receipt
     missing = [name for name in expected if name not in by_name]; extra = [name for name in by_name if name not in expected]
     if missing: raise FinalizeError("missing terminal evidence: " + ", ".join(missing))
     if extra: raise FinalizeError("extra terminal evidence: " + ", ".join(extra))
     rows = []
-    working = Path(args.working_dir).resolve()
     for filename in expected:
         receipt = by_name[filename]
         verify_receipt_provenance(receipt, filename)
@@ -335,8 +384,38 @@ def provenance_command(args) -> int:
             if canonical != expected_canonical or not canonical.is_file() or sha256(canonical) != publication.get("canonicalSha256"):
                 raise FinalizeError(f"canonical hash evidence is stale for {filename}")
         rows.append({"filename": filename, "terminalState": receipt.get("terminalState"), "canonicalPath": canonical_text, "canonicalSha256": publication.get("canonicalSha256"), "provenance": receipt.get("provenance"), "terminalReason": receipt.get("terminalReason")})
+
+    # An early picture the sheet did not take keeps every piece of evidence it
+    # earned (its receipt, its search summary or AI ledger) and loses only the
+    # published file, which nothing now references: left in place it would be a
+    # picture in the lesson folder that no resource uses and no record names.
+    # The receipt still proves what was fetched and under what licence, and
+    # the row below says the file was removed on purpose.
+    unused_rows = []
+    for filename in sorted(unused):
+        receipt = unused[filename]
+        verify_receipt_provenance(receipt, filename)
+        publication = receipt.get("publication", {})
+        removed = False
+        if receipt.get("terminalState") == "published":
+            canonical = (working / PurePosixPath(filename)).resolve()
+            if canonical.is_file():
+                if sha256(canonical) != publication.get("canonicalSha256"):
+                    raise FinalizeError(f"canonical hash evidence is stale for unused early picture {filename}")
+                canonical.unlink()
+                removed = True
+            print(f"PICTURE_UNUSED_REMOVED: {filename}")
+        unused_rows.append({"filename": filename, "terminalState": receipt.get("terminalState"), "canonicalPath": None, "canonicalSha256": publication.get("canonicalSha256"), "canonicalRemoved": removed, "provenance": receipt.get("provenance"), "terminalReason": receipt.get("terminalReason")})
+
     payload = {"schema_version": 2, "kind": "picture-provenance", "requirements": {"path": str(requirements_path), "sha256": sha256(requirements_path)}, "rows": rows}
-    atomic_json(Path(args.output).resolve(), payload); summary = {"schema_version": 2, "ok": True, "rows": len(rows), "output": str(Path(args.output).resolve())}
+    summary = {"schema_version": 2, "ok": True, "rows": len(rows), "output": str(Path(args.output).resolve())}
+    if early is not None:
+        early_used = [name for name in expected if receipt_bound_to(by_name[name], early[0])]
+        payload["earlyWave"] = {"snapshot": str(early[0]), "sourcedEarly": len(early_used) + len(unused_rows), "used": early_used, "unused": [row["filename"] for row in unused_rows]}
+        payload["unusedRows"] = unused_rows
+        summary["earlyWave"] = {"sourcedEarly": len(early_used) + len(unused_rows), "used": len(early_used), "unused": len(unused_rows)}
+        print(f"PICTURE_EARLY_WAVE: {len(early_used) + len(unused_rows)} sourced early, {len(early_used)} used, {len(unused_rows)} unused")
+    atomic_json(Path(args.output).resolve(), payload)
     if args.summary_output:
         summary["schemaVersion"] = 1
         atomic_json(Path(args.summary_output).resolve(), summary)
@@ -351,6 +430,10 @@ def parser():
     assignment.add_argument("--expected-filename", action="append", default=[]); assignment.add_argument("--replace", choices=("no", "yes"), required=True); assignment.set_defaults(func=assignment_command)
     provenance = sub.add_parser("provenance")
     for option in ("requirements", "terminal-receipts-dir", "working-dir", "output", "summary-output"): provenance.add_argument("--" + option, required=True)
+    # The immutable contract the early adaptation picture wave compiled from,
+    # when that wave ran; it is what lets an early-sourced picture the sheet
+    # never took be accounted for rather than refused as stray evidence.
+    provenance.add_argument("--early-wave-snapshot")
     provenance.set_defaults(func=provenance_command)
     return root
 

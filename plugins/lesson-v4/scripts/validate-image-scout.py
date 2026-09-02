@@ -599,7 +599,7 @@ def parser():
     manifest.add_argument("--requirements", required=True)
     manifest.add_argument("--manifest", required=True)
     manifest.add_argument("--working-dir", required=True)
-    manifest.add_argument("--expected-prefix", choices=("p", "w"), required=True)
+    manifest.add_argument("--expected-prefix", choices=("p", "a", "w"), required=True)
     # Mirrors the compile side: name every filename a supplemental wave owns, so
     # the partition re-derived here is the one that was compiled. Omit it for a
     # whole-contract wave.

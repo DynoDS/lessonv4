@@ -217,15 +217,49 @@ def helper_obligations(working_dir: Path) -> list[str]:
     return owed
 
 
+def early_wave_evidence(working_dir: Path) -> tuple[Path | None, set[str]]:
+    """The early adaptation wave's snapshot and the filenames it could source.
+
+    The wave sources every picture the adaptation asked for while the sheet is
+    still being designed, against an immutable copy of the provisional contract
+    that build-provisional names in its receipt. A receipt bound to that copy
+    for a picture the final contract never took is an early picture the sheet
+    dropped: real work, honestly recorded, and not a picture the lesson owed.
+    """
+    receipt = read_json(
+        working_dir / "orchestration-receipts" / "adaptation-photo-provisional.json",
+        "adaptation provisional receipt",
+        [],
+    )
+    if not isinstance(receipt, dict):
+        return None, set()
+    text = receipt.get("requirementsSnapshot")
+    if not isinstance(text, str) or not text:
+        return None, set()
+    snapshot = Path(text)
+    contract = read_json(snapshot, "early-wave snapshot", [])
+    if not isinstance(contract, dict) or not isinstance(contract.get("photos"), list):
+        return None, set()
+    names = {
+        photo.get("filename")
+        for photo in contract["photos"]
+        if isinstance(photo, dict) and isinstance(photo.get("filename"), str)
+    }
+    return snapshot.resolve(), names
+
+
 def report_obligations(working_dir: Path, failures: list[str]) -> dict[str, list[str]]:
     obligations = {
         "picture": [],
         "friction": [],
+        "earlyWaveRan": False,
     }
 
     receipts_dir = working_dir / "orchestration-receipts"
     picture_dir = receipts_dir / "picture-terminal"
     published: set[str] = set()
+    early_snapshot, early_names = early_wave_evidence(working_dir)
+    promised = promised_filenames(working_dir)
     if picture_dir.is_dir():
         for path in sorted(picture_dir.glob("*.json")):
             payload = read_json(path, str(path), failures)
@@ -234,14 +268,28 @@ def report_obligations(working_dir: Path, failures: list[str]) -> dict[str, list
             filename = payload.get("filename")
             if not isinstance(filename, str) or not filename:
                 continue
+            reference = payload.get("requirements")
+            bound_early = (
+                early_snapshot is not None
+                and isinstance(reference, dict)
+                and isinstance(reference.get("path"), str)
+                and Path(reference["path"]).resolve() == early_snapshot
+            )
+            if bound_early:
+                obligations["earlyWaveRan"] = True
             if payload.get("terminalState") == PICTURE_PUBLISHED_STATE:
                 published.add(filename)
             elif payload.get("terminalState") in PICTURE_FAILURE_STATES:
+                # An early picture the sheet never took is not a picture the
+                # lesson owed, whatever became of it; the PICTURE_EARLY_WAVE
+                # line is where that cost is reported.
+                if bound_early and filename in early_names and filename not in promised:
+                    continue
                 obligations["picture"].append(filename)
 
     # A promised picture with no published receipt never reached the lesson,
     # however far the picture stage got.
-    for filename in promised_filenames(working_dir):
+    for filename in promised:
         if filename not in published and filename not in obligations["picture"]:
             obligations["picture"].append(filename)
 
@@ -538,6 +586,22 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
             "was there and another when it was not, and nothing else on the "
             "record tells them apart."
         )
+    # ── What the early adaptation picture wave cost ───────────────────────
+    #
+    # The wave sources adaptation pictures beside the Worksheet Designer, so a
+    # picture the sheet then drops was fetched for nothing. That is the price
+    # of the minutes it saves, and the teacher who pays for pictures is the one
+    # who decides whether it is worth it, so a run that took the early route
+    # says so on the record with the one line provenance prints for it.
+    if obligations["earlyWaveRan"] and "PICTURE_EARLY_WAVE:" not in sections.get("## Picture results", ""):
+        failures.append(
+            "picture results: this run sourced adaptation pictures early, so the "
+            "section must carry the `PICTURE_EARLY_WAVE:` line that "
+            "`finalize-picture-assignment.py provenance` printed, verbatim: how "
+            "many were sourced early, how many the sheet used and how many it "
+            "did not is what the early route cost, and it belongs on the record."
+        )
+
     require_obligations(
         "friction",
         sections.get("## Friction", ""),

@@ -797,8 +797,13 @@ python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
   --adaptation "[WORKING_DIR]/adaptation.md" \
   --output "[WORKING_DIR]/adaptation-photo-provisional.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
+  --requirements-snapshot "[WORKING_DIR]/photo-requirements-a-[N].json" \
   --receipt "[WORKING_DIR]/orchestration-receipts/adaptation-photo-provisional.json"
 ```
+
+Number the snapshot from 1 like the `w` waves; an adaptation run again after a
+redesign takes the next number, because the snapshot is immutable and the
+command refuses to overwrite one with different bytes.
 
 Adaptation may add only `adaptation-photo-###` entries; it may not mutate the
 frozen initial entries.
@@ -816,6 +821,44 @@ longer be a wiring mistake wearing the face of a lesson that needed none.
 If adaptation fails deterministically, preserve the expected worksheet route and
 report adaptation omitted. Do not rerun unrelated branches.
 
+**The early adaptation picture wave** - whenever `PHOTO_CONTRACT_PROVISIONAL_OK`
+reports one or more, and the Phase 2 picture stage is `attempting`:
+
+Launch the Worksheet Designer first, then start this wave beside it. The
+adaptation has just named every picture its sheets could want, and the sheet
+that decides which of them it keeps takes ten minutes or more to design. Waiting
+for that answer before searching put a four to nine minute picture search on
+the end of the worksheet chain, where it was the last thing the run did; sourcing
+now, in parallel, takes it off the end. The price is a picture the sheet then
+drops: fetched, kept as evidence, never used. That cost is reported, never hidden.
+
+Compile from the immutable snapshot build-provisional just wrote, naming only
+the adaptation filenames from its receipt (`adaptationFilenames`), so the
+frozen initial pictures Phase 2 already finished are not reopened:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
+  --requirements "[WORKING_DIR]/photo-requirements-a-[N].json" \
+  --expected-prefix a \
+  [one --expected-filename per adaptationFilenames entry in the provisional receipt] \
+  --output-dir "[WORKING_DIR]/picture-assignments/a-[N]" \
+  --working-dir "[WORKING_DIR]" \
+  --summary-output "[WORKING_DIR]/picture-assignments/a-[N]-summary.json"
+```
+
+Require `PICTURE_ASSIGNMENTS_OK`, validate the manifest with the same filename
+list and `--expected-prefix a`, require `PICTURE_MANIFEST_OK`, then run the
+Phase 2 picture stage unchanged over this manifest: one `image-scout` per
+assignment under the same limits (four at once, no more than two direct-AI
+batches), `PICTURE_RESULT_OK` on each result, and `finalize-picture-assignment.py
+assignment --replace no` on each valid batch as it returns. Its terminal
+receipts join the same provenance run at the merge, where an early picture the
+sheet did not take is accounted for and its published file removed.
+
+A compile or manifest failure degrades this wave only: the pictures wait for the
+supplemental wave below, which then sources whatever the sheet promotes, exactly
+as before this wave existed.
+
 ---
 
 **Worksheet Designer** — launch whenever the role exists, reading
@@ -831,10 +874,9 @@ worksheet invites a no it never offered.
 
 **Launch the Worksheet Designer the moment adaptation's provisional contract is
 built (or adaptation is skipped); never hold it for picture work.** The
-dependency runs the other way: `promote-used` reads `worksheet.json` to decide
-which provisional adaptation photos get sourced at all, so a branch parked
-behind picture work closes the picture stage before the sheet needing those
-pictures exists, and that sheet is then unrecoverable.
+dependency runs the other way: `promote-used` reads `worksheet.json` to settle
+which pictures the sheet keeps, so a sheet parked behind picture work is a
+sheet nothing can finish.
 
 Before every attempt, obtain the exact worksheet photo-contract path through
 `photo-contract.py select-worksheet`. Launch Worksheet Designer directly:
@@ -887,22 +929,23 @@ Require `PHOTO_CONTRACT_PROMOTED`.
 
 ---
 
-**The supplemental picture wave** - whenever `PHOTO_CONTRACT_PROMOTED` reports
-one or more, and the Phase 2 picture stage is not `unavailable`:
+**The supplemental picture wave** - whenever `PHOTO_CONTRACT_PENDING_PICTURES`
+reports one or more, and the Phase 2 picture stage is not `unavailable`:
 
-Phase 2 could not compile these; the adaptation was not written when it ran.
-Without this wave every adaptation picture is promised to the sheet and never
-sourced.
+The promotion receipt's `pendingFilenames` are the promoted pictures with no
+terminal receipt yet. The early wave normally finishes every picture the sheet
+keeps, so the list is usually empty; it holds only what that wave could not
+attempt or never saw.
 
 Compile from the immutable snapshot the promotion just wrote, never from
 canonical `photo-requirements.json`, which a later wave rewrites, and name each
-promoted filename so no finished picture is reopened:
+pending filename so no finished picture is reopened:
 
 ```text
 python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
   --requirements "[WORKING_DIR]/photo-requirements-w-[N].json" \
   --expected-prefix w \
-  [one --expected-filename per newFilenames entry in the promotion receipt] \
+  [one --expected-filename per pendingFilenames entry in the promotion receipt] \
   --output-dir "[WORKING_DIR]/picture-assignments/w-[N]" \
   --working-dir "[WORKING_DIR]" \
   --summary-output "[WORKING_DIR]/picture-assignments/w-[N]-summary.json"
@@ -1172,6 +1215,7 @@ python3 "[PLUGIN_ROOT]/scripts/finalize-picture-assignment.py" provenance \
   --requirements "[WORKING_DIR]/photo-requirements.json" \
   --terminal-receipts-dir "[WORKING_DIR]/orchestration-receipts/picture-terminal" \
   --working-dir "[WORKING_DIR]" \
+  [--early-wave-snapshot "[WORKING_DIR]/photo-requirements-a-[N].json" when the early adaptation wave compiled] \
   --output "[WORKING_DIR]/picture-provenance.json" \
   --summary-output "[WORKING_DIR]/picture-provenance-summary.json"
 ```
@@ -1179,6 +1223,14 @@ python3 "[PLUGIN_ROOT]/scripts/finalize-picture-assignment.py" provenance \
 Require `PICTURE_PROVENANCE_OK` before removing transient picture work. Keep
 requirements snapshots, assignments, terminal receipts and provenance. Delete
 only transient worker results, work roots and orphan prompt/search scratch.
+
+When the early adaptation wave compiled, pass its snapshot: that is what lets
+provenance recognise a receipt for a picture the sheet never took as early work
+rather than stray evidence. It keeps that picture's receipt, search summary and
+AI ledger, removes only its published file (nothing references it), and prints
+one `PICTURE_EARLY_WAVE: [N] sourced early, [M] used, [K] unused` line. Copy
+that line verbatim into the run report's picture results; it is what the early
+route cost, and the teacher who pays for pictures is the one who judges it.
 
 Provenance proves the licence and history of pictures the run published, so it
 runs only when the picture stage attempted them. Under `PICTURE_STAGE:
@@ -1207,7 +1259,9 @@ Write `[WORKING_DIR]/run-report.md` with:
   a retained build warning, or a picture a designer flagged and left standing;
 - picture outcomes. A picture the contract promised and the run did not publish
   is a missing picture whether one scout failed or the stage never started, so
-  name it, and the package is then not `COMPLETE`;
+  name it, and the package is then not `COMPLETE`. When the early adaptation
+  wave ran, carry its `PICTURE_EARLY_WAVE:` line from provenance verbatim: an
+  early picture the sheet dropped is a cost, not a missing picture;
 - every helper gap: each visual answered with a substitute, and every helper
   this run built and left waiting in `pending-helper/`. Say in plain English
   what each waiting helper draws, name its exact folder, and say that

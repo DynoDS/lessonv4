@@ -475,10 +475,15 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # carry. Raised from 58 KiB when the slide decoration pass moved into
         # its own worker, launched beside the wall and stick-in designers the
         # moment the composition passes: the Track A prompt for that worker
-        # and its degrade route are what the playbook gained. Every slice
-        # still sits far under its own 7 KiB budget, which is what a run
-        # actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 61 * 1024)
+        # and its degrade route are what the playbook gained. Raised from
+        # 61 KiB when the early adaptation picture wave landed in Track B: the
+        # adaptation's pictures are now sourced beside the Worksheet Designer
+        # instead of after it, which took a four to nine minute search off the
+        # end of the worksheet chain, and the wave's compile, its bookkeeping
+        # of what the sheet then dropped, and the cost line the report owes
+        # are what the playbook gained. Every slice still sits under its own
+        # 7 KiB budget, which is what a run actually pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 64 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

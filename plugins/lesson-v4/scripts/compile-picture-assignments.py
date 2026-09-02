@@ -27,6 +27,24 @@ class AssignmentError(ValueError):
     pass
 
 
+def run_ceiling() -> int:
+    """The most pictures one run may carry, owned by check-photo-cap.py.
+
+    A wave compiles from a merged snapshot: the frozen design contract plus
+    every picture an adaptation or a later need added. The design budget is 16,
+    but those additions are exactly what the run ceiling of 24 exists to allow,
+    and a compiler that stopped at 16 refused a valid seventeenth picture's
+    whole wave. One number, read from the script that defines it.
+    """
+    import importlib.util
+
+    script = Path(__file__).resolve().parent / "check-photo-cap.py"
+    spec = importlib.util.spec_from_file_location("check_photo_cap", script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return int(module.RUN_MAX_PHOTOS)
+
+
 def nonempty(value) -> bool:
     return isinstance(value, str) and bool(value.strip())
 
@@ -217,8 +235,8 @@ def validate_requirements(document: dict) -> list[dict]:
     if set(document) != {"schema_version", "lesson_name", "photos"} or not nonempty(document.get("lesson_name")):
         raise AssignmentError("photo requirements must contain schema_version, lesson_name and photos")
     photos = document["photos"]
-    if not isinstance(photos, list) or len(photos) > 16:
-        raise AssignmentError("photo requirements photos must be a list of at most 16")
+    if not isinstance(photos, list) or len(photos) > run_ceiling():
+        raise AssignmentError(f"photo requirements photos must be a list of at most {run_ceiling()}")
     ids: set[str] = set(); filenames: set[str] = set(); semantic: set[str] = set(); groups: dict[str, list[dict]] = {}
     for index, photo in enumerate(photos):
         _validate_photo(photo, index)
@@ -549,7 +567,8 @@ def parser() -> argparse.ArgumentParser:
     sub = root.add_subparsers(dest="command", required=True)
     compile_parser = sub.add_parser("compile")
     compile_parser.add_argument("--requirements", required=True)
-    compile_parser.add_argument("--expected-prefix", choices=("p", "w"), required=True)
+    # p: the Phase 2 wave; a: the early adaptation wave; w: a supplemental wave.
+    compile_parser.add_argument("--expected-prefix", choices=("p", "a", "w"), required=True)
     compile_parser.add_argument("--expected-filename", action="append", default=[])
     compile_parser.add_argument("--output-dir", required=True)
     compile_parser.add_argument("--working-dir", required=True)

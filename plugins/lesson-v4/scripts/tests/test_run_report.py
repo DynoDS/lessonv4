@@ -489,6 +489,60 @@ class TestRunReport(RunReportCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
+class TestEarlyAdaptationWaveReachesTheRecord(RunReportCase):
+    """An early-sourced picture the sheet dropped is a cost, not a missing picture."""
+
+    def early_wave(self, dropped_state: str) -> None:
+        contract = {
+            "schema_version": 2,
+            "lesson_name": "electrical appliances",
+            "photos": [{"id": "adaptation-photo-001", "filename": "generated/below.png"}],
+        }
+        snapshot = self.write_json(self.working / "photo-requirements-a-1.json", contract)
+        self.write_json(
+            self.working / "orchestration-receipts" / "adaptation-photo-provisional.json",
+            {"schemaVersion": 1, "requirementsSnapshot": str(snapshot.resolve())},
+        )
+        # The final contract never took the picture: the sheet dropped it.
+        self.write_json(
+            self.working / "photo-requirements.json",
+            {"schema_version": 2, "lesson_name": "electrical appliances", "photos": []},
+        )
+        import hashlib
+        self.write_json(
+            self.working / "orchestration-receipts" / "picture-terminal"
+            / (hashlib.sha256(b"generated/below.png").hexdigest() + ".json"),
+            {
+                "schemaVersion": 2,
+                "filename": "generated/below.png",
+                "terminalState": dropped_state,
+                "requirements": {"path": str(snapshot.resolve()), "sha256": "x"},
+            },
+        )
+
+    def test_a_run_that_sourced_early_must_say_what_it_cost(self):
+        self.early_wave("published")
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("PICTURE_EARLY_WAVE:", result.stdout)
+
+        report = self.write_report(overrides={
+            "picture": "PICTURE_EARLY_WAVE: 1 sourced early, 0 used, 1 unused",
+        })
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_an_early_picture_the_sheet_dropped_is_not_a_missing_picture(self):
+        """Even one the scout could not source: the lesson never owed it."""
+        self.early_wave("unsatisfied")
+        report = self.write_report(overrides={
+            "outcome": "Package status: COMPLETE",
+            "picture": "PICTURE_EARLY_WAVE: 1 sourced early, 0 used, 1 unused",
+        })
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
 class TestDrawingLibraryStateReachesTheRecord(RunReportCase):
     """Whether there was a drawing library to search is part of the record.
 
