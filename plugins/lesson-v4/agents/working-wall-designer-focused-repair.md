@@ -75,4 +75,12 @@ Change only the affected card data and unavoidable consequences of that change. 
 
 Use the exact output path, deterministic success check, allowed terminal state and expected marker supplied by this assignment. Do not substitute another check or relax a diagnostic.
 
+When the finding is a capacity or layout overrun, confirm your repair cleared it before you return, so a rebuild is not spent finding out:
+
+```bash
+node "[PLUGIN_ROOT]/working-wall-html/build.js" "[WORKING_DIR]/working-wall.json" --validate-only
+```
+
+`WORKING_WALL_LAYOUT_OK` means the wall will build. A second `Layout validation failed:` line means the repair did not reach the budget the message names, and it is cheaper to keep going here than to hand the builder a spec that will fail again.
+
 Return only the assignment's required terminal state, marker and repair-impact fields, plus any permitted `Friction:` lines under the pipeline completion footer.

@@ -20,6 +20,7 @@ const {
   pictureMetrics,
   drawContentPicture
 } = require('../content-picture');
+const { textBoxWidthIn } = require('../glyph-width');
 
 // A stack of question cards, each with an auto blue "(1) (2) (3)" label.
 //
@@ -37,13 +38,21 @@ const {
 //   a card hugs its question   its height comes from how many lines that question
 //                              wraps onto, so a one-line question gets a one-line
 //                              card however much room the zone has spare;
-//   the type takes the room    the font grows until the stack fills the height it
-//                              has been given, so a short set comes out large.
+//   the type takes the room    the font grows until the set fills the room it has
+//                              been given, so a short set comes out large.
 //
-// The cards share one width - the widest any question needs - so the stack reads as
-// a column rather than a ragged edge, and that width comes from the questions
+// The cards share one width - the widest any question needs - so the set reads as
+// a block rather than a ragged edge, and that width comes from the questions
 // rather than the zone, so a set of short questions no longer sits inside boxes
 // three times wider than the words in them.
+//
+// "The room" means both axes, and for a long time it only meant the height. A set
+// of three short questions in the wide, shallow zone under a task instruction was
+// sized by dividing that zone's HEIGHT three ways, so "6,032", "6,302", "6,320"
+// came out at 16pt in a narrow column with two thirds of the zone's width sitting
+// empty beside them. Where the questions are short enough to keep one line each in
+// a narrower column, they are laid out in full rows instead, and the font is then
+// bounded by the room the zone actually has rather than by its height alone.
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD           = 0.15;   // inset from the zone edge, inches
@@ -61,21 +70,11 @@ const CARD_FONT_MAX = 40;     // question font ceiling, points. Set to the large
                               // of the room without a question ever coming out
                               // bigger than a title.
 const LINE_H_RATIO  = 1.30;   // line height as a multiple of font size
-const CHAR_W_EM     = 0.43;   // Comic Sans bold character width estimate, ems,
-                              // calibrated for explicit phase breaks: a question
-                              // the designer split into lines at the real action
-                              // boundaries must measure to the width of its
-                              // LONGEST line, not its whole paragraph, or the
-                              // card the break was meant to earn never shrinks.
-                              // Slightly under the measured ~0.55 on purpose:
-                              // the card then hugs the longest line instead of
-                              // rounding up to the next line's width, and the
-                              // grow-fit pass carries any slack the estimate
-                              // leaves.
-const PICTURE_CHAR_W_EM = 0.56; // measured fit used only after the bare stack is safe
-const LABEL_CHAR_W_EM = 0.48; // parentheses and digits are narrower than body text
 const LABEL_GAP_EM  = 0.24;   // small visible gap after "(1)" without a wide label column
 const QUESTION_PICTURE_MAX_W = 1.55; // height leads; this only restrains very wide artwork
+const MIN_COLUMN_W  = 1.2;    // narrowest column a card may be laid out in, inches.
+                              // A one-character question technically fits a
+                              // sliver; a row of slivers is not a question set.
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 function stripLeadingLabel(text) {
@@ -101,14 +100,20 @@ function deckContinuesNumbering(ctx) {
   return found;
 }
 
-// The plain reading length: the colour markers are instructions to the renderer,
-// not characters on the board, so counting them would size an answer card wider
-// than the question card it sits beneath.
-function plainLength(text) {
+// The words as the board shows them: the colour markers are instructions to the
+// renderer, not characters on the board, so measuring them would size a card
+// wider than the question printed inside it.
+function plainText(text) {
   return String(text)
     .replace(/\|\|/g, ' ')
-    .replace(/\*\*|\[\[|\]\]|\{\{|\}\}|<<|>>/g, '')
-    .length;
+    .replace(/\*\*|\[\[|\]\]|\{\{|\}\}|<<|>>/g, '');
+}
+
+// The width the BOX around one written line needs at a given size, measured
+// against the real advance widths of the font the deck names and the inset the
+// fit pass reserves (see ../glyph-width.js). Every card in here is drawn bold.
+function lineWidth(text, fontPt) {
+  return textBoxWidthIn(plainText(text), fontPt, true);
 }
 
 // Measure the whole stack at a candidate font size: the shared card width (the
@@ -120,10 +125,12 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
   // the number would have taken.
   const noLabel = !!(options && options.noLabel);
   // The label column is priced from the widest label the set will print, so a set
-  // running past (9) does not have its numbers clipped.
-  const labelTextW = noLabel
-    ? 0
-    : ((String(questions.length).length + 2) * LABEL_CHAR_W_EM) * fontPt / 72;
+  // running past (9) does not have its numbers clipped. `widestLabel` is the real
+  // last label, because a set that starts at (8) prints "(10)" while its own
+  // length says one digit.
+  const widestLabel =
+    (options && options.widestLabel) || '(' + questions.length + ')';
+  const labelTextW = noLabel ? 0 : textBoxWidthIn(widestLabel, fontPt, true);
   const labelGapW = noLabel ? 0 : LABEL_GAP_EM * fontPt / 72;
   const labelW = labelTextW + labelGapW;
   const answerMetrics = answerBoxes ? answerBoxMetrics(fontPt) : null;
@@ -134,9 +141,6 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
       : 0;
   });
 
-  const charWEm = options && Number.isFinite(Number(options.charWEm))
-    ? Number(options.charWEm)
-    : CHAR_W_EM;
   const minimumCardHeights = options && Array.isArray(options.minimumCardHeights)
     ? options.minimumCardHeights
     : [];
@@ -146,7 +150,7 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
   // carrying the room each shorter phase needs.
   const naturalLines = questions.map(function (q) {
     return String(q.text).split('\n').map(function (line) {
-      return (plainLength(line) * fontPt * charWEm) / 72;
+      return lineWidth(line, fontPt);
     });
   });
   const textWidths = naturalLines.map(function (lines, i) {
@@ -191,6 +195,56 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
   };
 }
 
+// The height one card needs when its question stays on a single line.
+function oneLineCardHeight(fontPt) {
+  return (fontPt * LINE_H_RATIO) / 72 + 2 * CARD_PAD_Y;
+}
+
+// Column counts that leave no ragged tail: either the columns divide the set
+// exactly, or the whole set goes on one row. A grid with a half-empty last row
+// reads as a stack that ran out rather than a deliberate block, so it is not
+// offered even when it would fit a point or two larger.
+function fullRowColumnCounts(count) {
+  const options = [];
+  for (let columns = 2; columns <= count; columns += 1) {
+    if (columns === count || count % columns === 0) options.push(columns);
+  }
+  return options;
+}
+
+// The largest-type arrangement of the same cards in full rows, or null when
+// going wide wins nothing.
+//
+// Only a set whose questions each keep ONE line in the narrower column is
+// offered a grid: a question forced to wrap there is harder to read however
+// large the type, and a question the designer broke into phases with `\n` is
+// already multi-line by choice. Pictures and answer boxes keep the single
+// column, whose measurement they are built around.
+function widerArrangement(questions, options) {
+  const { measure, innerW, innerH, ceilingPt, currentPt } = options;
+  if (questions.length < 2 || currentPt >= ceilingPt) return null;
+
+  let best = null;
+  fullRowColumnCounts(questions.length).forEach(function (columns) {
+    const columnW = (innerW - CARD_GAP * (columns - 1)) / columns;
+    if (columnW < MIN_COLUMN_W) return;
+    const rows = Math.ceil(questions.length / columns);
+    for (let fontPt = ceilingPt; fontPt > currentPt; fontPt -= 1) {
+      if (best && fontPt <= best.fontPt) break;
+      const cardH = oneLineCardHeight(fontPt);
+      if (rows * cardH + CARD_GAP * (rows - 1) > innerH) continue;
+      const stack = measure(questions, fontPt, columnW, false);
+      const wraps = stack.cards.some(function (card) {
+        return card.h > cardH + 0.001;
+      });
+      if (wraps || stack.w > columnW + 0.001) continue;
+      best = { columns: columns, fontPt: fontPt, stack: stack };
+      break;
+    }
+  });
+  return best;
+}
+
 function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   const answerBoxes = data.answerBoxes === true;
   const entries = (Array.isArray(data.questions) ? data.questions : [])
@@ -224,10 +278,11 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   // "(1)" so the run the later slides continue stays whole.
   const soleQuestion =
     questions.length === 1 && startAt === 1 && !deckContinuesNumbering(ctx);
+  const widestLabel = '(' + (startAt + questions.length - 1) + ')';
   const measureHere = function (qs, font, w, ab, opts) {
     return measureStack(
       qs, font, w, ab,
-      Object.assign({}, opts, { noLabel: soleQuestion })
+      Object.assign({}, opts, { noLabel: soleQuestion, widestLabel: widestLabel })
     );
   };
 
@@ -272,15 +327,14 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   // Pictures shorten the text column and can add a line. The set keeps every
   // requested picture at the largest font at which the complete pictured set
   // still fits - the bare stack's font when the pictures fit there, one point
-  // smaller for each point the honest picture estimate needs. Dropping to the
-  // lowest-cost subset of pictures is the last resort, spent only when no
-  // font down to the floor can carry the complete set.
+  // smaller for each point the pictures need. Dropping to the lowest-cost subset
+  // of pictures is the last resort, spent only when no font down to the floor
+  // can carry the complete set.
   if (!scaledForOverflow && questions.some(function (q) { return !!q.picture; })) {
     const baseStack = stack;
     const pictureMeasureOptions = function (slots) {
       return {
         pictureSlots: slots,
-        charWEm: PICTURE_CHAR_W_EM,
         minimumCardHeights: baseStack.cards.map(function (card) { return card.h; })
       };
     };
@@ -299,10 +353,10 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
     );
 
     if (picturedStack.totalH > innerH) {
-      // The bare-stack font was chosen on the optimistic width estimate, and
-      // the honest picture estimate adds lines the bare stack never priced.
-      // Before spending pictures, give the set the largest SMALLER font at
-      // which the complete pictured set still fits.
+      // The bare stack was measured without the picture columns, and taking that
+      // width away can add a line the bare stack never priced. Before spending
+      // pictures, give the set the largest SMALLER font at which the complete
+      // pictured set still fits.
       let trialFont = fontPt - 1;
       let stepped = null;
       while (trialFont >= fontFloor) {
@@ -311,7 +365,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
           trialFont,
           innerW,
           answerBoxes,
-          { pictureSlots: acceptedSlots, charWEm: PICTURE_CHAR_W_EM }
+          { pictureSlots: acceptedSlots }
         );
         if (trialStack.totalH <= innerH) {
           stepped = { font: trialFont, stack: trialStack };
@@ -374,15 +428,58 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
     }
   }
 
-  const blockH = cards.reduce(function (s, c) { return s + c.h; }, 0)
-               + CARD_GAP * (cards.length - 1);
-  let cardY = innerY + Math.max(0, (innerH - blockH) / 2);
+  // The set has now taken all the height it can. Before drawing, see whether the
+  // same cards laid out in full rows would take type the zone's WIDTH has been
+  // holding for it all along - the case a wide, shallow zone under a task
+  // instruction creates every time it carries a short question set.
+  let columns = 1;
+  const wider = (answerBoxes || questions.some(function (q) { return !!q.picture; }))
+    ? null
+    : widerArrangement(questions, {
+        measure: measureHere,
+        innerW: innerW,
+        innerH: innerH,
+        ceilingPt: CARD_FONT_MAX,
+        currentPt: fontPt
+      });
+  if (wider) {
+    columns = wider.columns;
+    fontPt = wider.fontPt;
+    stack = wider.stack;
+    cards = wider.stack.cards;
+  }
+
+  const rowCount = Math.ceil(cards.length / columns);
+  const rowHeights = [];
+  for (let row = 0; row < rowCount; row += 1) {
+    rowHeights.push(
+      cards
+        .slice(row * columns, row * columns + columns)
+        .reduce(function (m, c) { return Math.max(m, c.h); }, 0)
+    );
+  }
+  const blockH = rowHeights.reduce(function (s, h) { return s + h; }, 0)
+               + CARD_GAP * (rowCount - 1);
+  const blockW = columns * stack.w + CARD_GAP * (columns - 1);
+  // A single column keeps its long-standing left edge; a grid is centred, so a
+  // row of cards sits under the middle of the task rather than off to one side.
+  const blockX = columns > 1
+    ? innerX + Math.max(0, (innerW - blockW) / 2)
+    : innerX;
+  const rowTops = [];
+  let runningY = innerY + Math.max(0, (innerH - blockH) / 2);
+  rowHeights.forEach(function (h) {
+    rowTops.push(runningY);
+    runningY += h + CARD_GAP;
+  });
 
   cards.forEach(function (c, i) {
     const label = '(' + (startAt + i) + ')';
+    const cardX = blockX + (i % columns) * (stack.w + CARD_GAP);
+    const cardY = rowTops[Math.floor(i / columns)];
 
     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-      x: innerX, y: cardY, w: stack.w, h: c.h,
+      x: cardX, y: cardY, w: stack.w, h: c.h,
       fill: { color: CARD_FILL },
       line: { color: CARD_LINE, width: CARD_LINE_W },
       rectRadius: CARD_RADIUS
@@ -390,9 +487,17 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
 
     // A lone question prints no number: there is nothing to tell it apart
     // from. The measurement above already gave its width to the words.
+    //
+    // The number stays OUT of the question's grow-fit group on purpose. Its box
+    // is drawn to exactly one label, so it can never grow, and a member that
+    // cannot grow caps a group that settles on its smallest member - which would
+    // spend a readable question to make the number beside it match. Honest width
+    // measurement is what keeps the two together: the 16pt "(4)" against a 12pt
+    // question came from a question box narrower than its own words, not from
+    // the number being sized apart.
     if (!soleQuestion) {
       slide.addText(label, {
-        x: innerX + CARD_PAD_X, y: cardY,
+        x: cardX + CARD_PAD_X, y: cardY,
         w: stack.labelTextW, h: c.h,
         fontFace: FONT, fontSize: fontPt, bold: true,
         color: COLOURS.title, align: 'right', valign: 'middle',
@@ -414,9 +519,9 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       );
       drawContentPicture(slide, c.picture, {
         x: pictureOnRight
-          ? innerX + stack.w - CARD_PAD_X - (ownPictureSlotW - PICTURE_GAP)
+          ? cardX + stack.w - CARD_PAD_X - (ownPictureSlotW - PICTURE_GAP)
             + ((ownPictureSlotW - PICTURE_GAP) - metrics.w) / 2
-          : innerX + CARD_PAD_X + stack.labelW
+          : cardX + CARD_PAD_X + stack.labelW
             + ((ownPictureSlotW - PICTURE_GAP) - metrics.w) / 2,
         y: cardY + (c.h - metrics.h) / 2,
         w: metrics.w,
@@ -428,7 +533,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
     const baseColor = baseColourForRole(COLOURS.body, source.colorRole);
 
     slide.addText(presentationRuns(c.text, true, baseColor, source), {
-      x: innerX + CARD_PAD_X + stack.labelW
+      x: cardX + CARD_PAD_X + stack.labelW
         + (pictureOnRight ? 0 : ownPictureSlotW), y: cardY,
       w: stack.w - 2 * CARD_PAD_X - stack.labelW - answerGutterW - ownPictureSlotW, h: c.h,
       fontFace: FONT, fontSize: fontPt, bold: true,
@@ -445,14 +550,12 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       const boxH = Math.max(0.28, Math.min(stack.answerMetrics.h, c.h - 0.08));
       const boxW = Math.min(stack.answerMetrics.w, boxH);
       drawAnswerBox(pptx, slide, {
-        x: innerX + stack.w - ANSWER_BOX_EDGE_INSET - boxW,
+        x: cardX + stack.w - ANSWER_BOX_EDGE_INSET - boxW,
         y: cardY + (c.h - boxH) / 2,
         w: boxW,
         h: boxH
       }, c.answer, c.revealed, { fontSize: stack.answerMetrics.fontSize });
     }
-
-    cardY += c.h + CARD_GAP;
   });
 }
 

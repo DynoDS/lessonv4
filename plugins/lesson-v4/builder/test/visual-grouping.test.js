@@ -553,12 +553,17 @@ test('bullets grow to a back-row-readable size in a short wide strip', () => {
 });
 
 test('an explicit phase break earns a narrower card than the flat paragraph', () => {
+  // 12in of column, not 10: a card is now measured against the real advance
+  // widths of Comic Sans rather than an average character, and these phases
+  // genuinely need about 9.1in at 24pt. At 10in both the flat paragraph and its
+  // longest phase clamp to the column, so the hug this test is about would have
+  // nowhere to show.
   const flat = measureQuestionStack([
     'Write the missing labels and join the circuit in a loop. Explain why each part of the circuit is needed. Say what happens to the lamp when the switch opens.'
-  ], 24, 10);
+  ], 24, 12);
   const broken = measureQuestionStack([
     'Write the missing labels and join the circuit in a loop.\nExplain why each part of the circuit is needed.\nSay what happens to the lamp when the switch opens.'
-  ], 24, 10);
+  ], 24, 12);
   assert.ok(broken.w < flat.w, 'the card hugs the longest written line, not the paragraph');
   assert.ok(broken.cards.length === 1 && flat.cards.length === 1);
   assert.ok(broken.cards[0].h > 0 && flat.cards[0].h > 0);

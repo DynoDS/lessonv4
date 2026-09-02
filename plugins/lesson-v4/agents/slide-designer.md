@@ -494,7 +494,7 @@ SLIDE_DESIGN_PREVIEW_DIR: [absolute private preview directory]
 SLIDE_DESIGN_PREVIEW: [absolute checked scratch PowerPoint]
 ```
 
-The preview copy is private disposable evidence. It is not the classroom PowerPoint and never replaces the orchestrator's final build.
+The preview copy is private disposable evidence. It is not the classroom PowerPoint and never replaces the orchestrator's final build. Leave it where it is when you finish: it sits inside the run's working directory, which is kept, so deleting it tidies nothing, and the deletion is refused outright by some approval policies - which cost a friction line and a note in the teacher's report on every run for no gain.
 
 After the deterministic check passes, render the preview before promoting the candidate.
 
@@ -603,15 +603,9 @@ deck.
 
 When the final deterministic check and the visual self-read pass:
 
-1. delete the current private preview directory with:
-
-   ```bash
-   python3 -c "import shutil,sys; shutil.rmtree(sys.argv[1], ignore_errors=True)" "[PREVIEW_DIR]"
-   ```
-
-2. atomically replace `[WORKING_DIR]/lesson.json` with the checked temporary file;
-3. do not run a second scratch build against the byte-identical canonical file;
-4. include this exact line in the completion report:
+1. atomically replace `[WORKING_DIR]/lesson.json` with the checked temporary file;
+2. do not run a second scratch build against the byte-identical canonical file;
+3. include this exact line in the completion report:
 
 ```text
 Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides

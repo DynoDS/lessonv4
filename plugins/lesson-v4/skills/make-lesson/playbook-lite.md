@@ -1235,6 +1235,8 @@ python3 "[PLUGIN_ROOT]/scripts/finalize-picture-assignment.py" provenance \
 Require `PICTURE_PROVENANCE_OK` before removing transient picture work. Keep
 requirements snapshots, assignments, terminal receipts and provenance. Delete
 only transient worker results, work roots and orphan prompt/search scratch.
+Some approval policies refuse a recursive delete outright; that refusal is a
+normal outcome, not friction and not an accepted minor issue.
 
 When the early adaptation wave compiled, pass its snapshot: that is what lets
 provenance recognise a receipt for a picture the sheet never took as early work

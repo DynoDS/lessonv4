@@ -48,7 +48,7 @@ node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
   "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]"
 ```
 
-The command performs the real specification check and a real scratch build in a unique private directory, and prints `SLIDE_DESIGN_PREVIEW_DIR:` and `SLIDE_DESIGN_PREVIEW:` before `SLIDE_DESIGN_CHECK_OK: [N] slides`. A settled deck passes; if it does not, the composition was not settled and the fault is not yours: return `SLIDE_DECORATION_FAILED` with every `BUILD_DIAGNOSTIC:` line verbatim and stop.
+The command performs the real specification check and a real scratch build in a unique private directory, and prints `SLIDE_DESIGN_PREVIEW_DIR:` and `SLIDE_DESIGN_PREVIEW:` before `SLIDE_DESIGN_CHECK_OK: [N] slides`. Leave that directory where it is when you finish: it sits inside the run's working directory, which is kept, so deleting it tidies nothing, and the deletion is refused outright by some approval policies - which cost a friction line and a note in the teacher's report on every run for no gain. A settled deck passes; if it does not, the composition was not settled and the fault is not yours: return `SLIDE_DECORATION_FAILED` with every `BUILD_DIAGNOSTIC:` line verbatim and stop.
 
 Then render the preview pages exactly as the designer did:
 
@@ -120,14 +120,8 @@ You may make no more than two such repair passes, each rerunning the complete `-
 
 When the deterministic check, the optional-picture check and the visual look all pass:
 
-1. delete the private preview directory with:
-
-   ```bash
-   python3 -c "import shutil,sys; shutil.rmtree(sys.argv[1], ignore_errors=True)" "[PREVIEW_DIR]"
-   ```
-
-2. atomically replace `[WORKING_DIR]/lesson.json` with the checked temporary file;
-3. include this exact line in the completion report:
+1. atomically replace `[WORKING_DIR]/lesson.json` with the checked temporary file;
+2. include this exact line in the completion report:
 
 ```text
 Slide decoration check: SLIDE_DECORATION_OK: [N] slides

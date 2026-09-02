@@ -475,3 +475,45 @@ Not repaired this pass, and worth knowing: a photograph sitting alone in a tall
 template zone still leaves the space under it (the zone-fill advisory sees it,
 nothing acts on it), and the pending `place-value-chart` and `map` helper
 extensions are still waiting for `/install-helper`.
+
+## 2026-09-02 — Year 4 Our PSHE rules
+Run: output/working/year-4-pshe-our-pshe-rules.
+Design review APPROVED after two bounded voice corrections: pupil -> child in starter; Be respectful matters -> Being respectful matters in spoken script.
+Wall packet check accepted a 75-character reference-table cell, while the fixed A3 landscape build limited it to 74. Focused repair removed the final period; wall check and physical Visual QA then passed. Investigate parity between packet validation and fixed build capacity.
+Full tagged obstacles: output/working/year-4-pshe-our-pshe-rules/friction.md.
+
+## 2026-09-02 - Year 4 Maths Lesson 2: Represent 4-digit numbers
+
+- Worksheet place-value-counter-chart hardcodes valued, differently coloured counters while this lesson requires identical plain circles. Initial helper coverage was incorrect. Five verified picture assets rescued Expected and Below. Pending extension: C:\Users\Daniel\Projects\lessonv4\output\working\year-4-maths-represent-4-digit-numbers\pending-helper\place-value-counter-chart (not installed; installation tests unproven).
+- blank-surface offers number lines and bars, not a free drawing box; sort-grid supplied chart-drawing space and coverage was corrected.
+- Opening-model slide exhausted three local layout passes. Focused repair moved sticky knowledge below wider success criteria, preserving full-width charts. Rendered inspection caught a wrapped 1,000 after deterministic fit had passed. Final 20-slide deck passed.
+- A3 landscape workedExample wall overflowed by 0.1in at 36pt minimum. Portrait orientation preserved all content and passed physical-page QA.
+- Automatic worker audit selected another task record; explicit current-session audit corrected it. Policy blocked transient cleanup, so evidence and previews remain.
+- Full run evidence: C:\Users\Daniel\Projects\lessonv4\output\working\year-4-maths-represent-4-digit-numbers\run-report.md and friction.md.
+
+### Repaired in 4.2.73
+
+Four of the findings above were traced to their cause and closed, so a later run
+does not re-diagnose them:
+
+- The Your Turn questions shipping at 12pt were not a fit-pass failure. Question
+  cards were sized from an average character width deliberately set *under* the
+  real one, so the text box came out narrower than its own words and the fit pass
+  shrank the question into it. Cards are now measured against the real Comic Sans
+  advance widths (`builder/src/glyph-width.js`), and a short set in a wide,
+  shallow zone lays out in full rows so the type takes the width as well as the
+  height.
+- The reference-only "My Turn" slide came from a split made without the splitting
+  rules: a capacity finding routes the focused repair to sizing, and nothing sent
+  it to the rule that forbids a reference-only interlude. The trigger now fires on
+  the repair as well as the finding, and `TURN_SLIDE_WITHOUT_ITS_TURN` refuses a
+  turn-labelled slide carrying no question, task or answer.
+- The wall capacity mismatch this log asked about is not a parity bug: a card's
+  budget depends on page, orientation, column widths and the readable floor, so
+  it only exists once the pages are drawn. `working-wall-html/build.js
+  --validate-only` runs those checks without writing a PDF, and both wall
+  designers now run it before returning.
+- The blocked transient cleanup is gone from the two design roles, which had no
+  reason to be tidying a directory the run keeps anyway. The picture-work cleanup
+  stays (a rainforest lesson's picture work ran to 330MB) and a policy refusal of
+  it is no longer reported as friction.

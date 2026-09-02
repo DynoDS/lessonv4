@@ -1,0 +1,152 @@
+'use strict';
+
+// A Year 4 place-value Your Turn asked children to draw charts for 6,032, 6,302
+// and 6,320. The cards were laid out at 16pt and shipped at 12pt, in a narrow
+// column with two thirds of the zone's width empty beside them, while the "(4)"
+// on the same line stayed 16pt (flagged by Daniel, 2 Sept 2026: "your turn
+// question 4,5,6 font size is too small ... when theres instructions about being
+// read from back of classroom").
+//
+// Two faults, and both are geometry rather than taste:
+//
+//   the box was narrower than its words   the card was sized from an average
+//     character width deliberately set UNDER the real one, so the text box came
+//     out too small for the question and the fit pass shrank the question to fit
+//     the box the layout had given it. A grow pass changes a font size inside a
+//     box; it cannot widen the box, so an under-estimate is paid in font size.
+//
+//   the room was only ever the height   the font was chosen by dividing the
+//     zone's height between the cards, so a short set in a wide, shallow zone
+//     came out small however much width sat unused.
+
+const assert = require('node:assert/strict');
+const test = require('node:test');
+
+const requireGlobal = require('../src/require-global');
+const PptxGenJS = requireGlobal('pptxgenjs');
+const { drawNumberedQuestions } = require('../src/content/numbered-questions');
+const { textWidthIn } = require('../src/glyph-width');
+
+// Draw a question block into a zone and report every box that was placed.
+function draw(zone, data) {
+  const texts = [];
+  const shapes = [];
+  const pptx = new PptxGenJS();
+  const slide = {
+    addShape: (_kind, opts) => shapes.push(opts),
+    addText: (content, opts) => texts.push({ content, ...opts }),
+    addImage: () => {},
+  };
+  drawNumberedQuestions(pptx, slide, zone, data, { slideIndex: 0, lesson: {} });
+  return { texts, shapes };
+}
+
+const questionBoxes = (texts) =>
+  texts.filter((t) => /__question-text-/.test(t.objectName || ''));
+
+// A question reaches addText either as a plain string or as coloured runs,
+// depending on whether it carries presentation markers.
+const words = (content) =>
+  typeof content === 'string'
+    ? content
+    : (content || []).map((run) => run.text || '').join('');
+
+// A wide, shallow zone: the body of a Your Turn under its task instruction.
+const WIDE_SHALLOW = { x: 0.22, y: 1.7, w: 8.89, h: 2.58 };
+
+test('a question box is never narrower than the question inside it', () => {
+  const { texts } = draw(WIDE_SHALLOW, {
+    questions: ['6,032', '6,302', '6,320'],
+    startAt: 4,
+  });
+  const boxes = questionBoxes(texts);
+  assert.equal(boxes.length, 3);
+  boxes.forEach((box) => {
+    const text = words(box.content);
+    assert.ok(text, 'the question reached the slide');
+    const needed = textWidthIn(text, box.fontSize, true);
+    assert.ok(
+      box.w >= needed,
+      `"${text}" needs ${needed.toFixed(2)}in at ${box.fontSize}pt ` +
+        `and its box is ${box.w.toFixed(2)}in. A box narrower than its own words is ` +
+        `shrunk to fit by the fit pass, and the child reads the smaller size.`
+    );
+  });
+});
+
+test('the number beside a question is never wider than its own column', () => {
+  const { texts } = draw(WIDE_SHALLOW, {
+    questions: ['6,032', '6,302', '6,320'],
+    startAt: 8,
+  });
+  // Numbering that runs past (9) prints a two-digit label; the column is priced
+  // from the widest label the set actually prints, not from its length.
+  const labels = texts.filter((t) => /^\(\d+\)$/.test(t.content));
+  assert.deepEqual(labels.map((l) => l.content), ['(8)', '(9)', '(10)']);
+  labels.forEach((label) => {
+    assert.ok(
+      label.w >= textWidthIn(label.content, label.fontSize, true),
+      `${label.content} does not fit the column it was given`
+    );
+  });
+});
+
+test('a short set uses the width of a wide, shallow zone, not just its height', () => {
+  const wide = draw(WIDE_SHALLOW, {
+    questions: ['6,032', '6,302', '6,320'],
+    startAt: 4,
+  });
+  const boxes = questionBoxes(wide.texts);
+
+  // One row of three, so the type is bounded by the room the zone really has.
+  const tops = new Set(boxes.map((b) => Math.round(b.y * 100)));
+  assert.equal(tops.size, 1, 'three short questions belong on one row here');
+  assert.ok(
+    boxes[0].fontSize >= 30,
+    `a three-number set on an 8.9 x 2.6in zone must read from the back row; ` +
+      `it came out at ${boxes[0].fontSize}pt`
+  );
+
+  // The same set in a tall, narrow zone still stacks: there is no width to take.
+  const tall = draw({ x: 0.22, y: 1.7, w: 2.4, h: 5.0 }, {
+    questions: ['6,032', '6,302', '6,320'],
+    startAt: 4,
+  });
+  const stacked = questionBoxes(tall.texts);
+  assert.equal(
+    new Set(stacked.map((b) => Math.round(b.y * 100))).size,
+    3,
+    'a narrow zone has no spare width, so the cards stay in one column'
+  );
+});
+
+test('going wide never forces a question to wrap', () => {
+  // Full sentences in the same wide, shallow zone. Split three ways each column
+  // would be about 2.8in, which these cannot hold on one line, so the set keeps
+  // the single column where each question has the whole width.
+  const { texts } = draw(WIDE_SHALLOW, {
+    questions: [
+      'Explain why the zero has to stay in the hundreds column.',
+      'Write the number that is ten times as big as this one.',
+      'Draw a chart for a number with no tens and explain your choice.',
+    ],
+    startAt: 4,
+  });
+  const boxes = questionBoxes(texts);
+  assert.equal(
+    new Set(boxes.map((b) => Math.round(b.y * 100))).size,
+    3,
+    'questions that would wrap in a column are left in the single stack'
+  );
+});
+
+test('a grid leaves no ragged last row', () => {
+  // Five short questions: 5 does not divide by 2, 3 or 4, so the only full-row
+  // arrangement is one row of five. A 3 + 2 grid reads as a stack that ran out.
+  const { texts } = draw({ x: 0.22, y: 1.7, w: 11.0, h: 2.58 }, {
+    questions: ['4,102', '4,120', '4,201', '4,210', '4,012'],
+    startAt: 1,
+  });
+  const rows = new Set(questionBoxes(texts).map((b) => Math.round(b.y * 100)));
+  assert.ok(rows.size === 1 || rows.size === 5, `unexpected ${rows.size} rows`);
+});

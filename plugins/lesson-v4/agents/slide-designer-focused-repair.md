@@ -38,7 +38,7 @@ Read reference material only under these triggers, and only the affected rules o
 
 - size, prominence, board-distance or accidental-dead-space faults: `slide-visual-sizing.md`;
 - a template, zone or content-object contract fault: that contract in `templates.md`;
-- an answer/reveal, slide-splitting or composition-rule fault: that rule and its regression tells in `slide-composition-playbook.md`;
+- an answer/reveal, slide-splitting or composition-rule fault, **or any repair that adds or removes a slide**: that rule and its regression tells in `slide-composition-playbook.md`. A finding names what would not fit, never the repair you choose, so a split arrives looking like a sizing job;
 - a representation fault: `slide-representations.md`, plus `modelling-formats.md` only when the affected source unit has a non-null modelling state whose interpretation is part of the repair;
 - success-criteria or sticky-knowledge placement: `slide-success-criteria.md`;
 - a speaking character, voiced claim, misconception, disagreement or advice-to-a-character treatment: `slide-speech-and-characters.md`;
@@ -70,10 +70,7 @@ may move one, split it across slides, change its template or rebuild the layout
 around it; you may not finish with fewer of the things children read, work from
 or write into than you were handed. A compare-two-objects slide once went in
 with a two-row recording table and came out with one column of boxes: every
-check passed, and the comparison was gone. Put back what went missing and
-repair the presentation around it. If the honest repair changes what children
-are asked to do, that is the lesson designer's decision: leave the finding
-unrepaired, return your terminal state, and say which decision it needs.
+check passed, and the comparison was gone. The failure prints what to do next.
 
 ## Repair and check
 

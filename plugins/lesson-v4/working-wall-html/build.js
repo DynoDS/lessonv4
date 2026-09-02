@@ -9,7 +9,7 @@
 // `PDF_SKIPPED:` - the same signal the worksheet and stick-in-sheets HTML
 // builders use.
 //
-// Usage: node build.js <working-wall.json> [output-dir]
+// Usage: node build.js <working-wall.json> [output-dir] [--validate-only]
 
 const fs = require("fs");
 const path = require("path");
@@ -207,7 +207,17 @@ function assertFinalOptionalPictureContract(cards) {
   }
 }
 
-async function build(specPath, outDir) {
+// `options.validateOnly` stops after the layout checks and writes nothing.
+//
+// Every capacity rule the wall has - the characters a table cell holds at its
+// column width, the inches a panel of items needs at the readable floor - is
+// only reachable by drawing the pages, so the designer used to find out it had
+// overrun by handing the spec to the builder and reading the failure back. Two
+// consecutive lessons lost a designer-and-builder round trip that way, one to a
+// table cell 75 characters long where 74 fit and one to a panel 0.1in over at
+// 36pt. The rules cannot move to the designer, so the check does: the same
+// pages, the same warnings, no PDF.
+async function build(specPath, outDir, options = {}) {
   const spec = sanitizeHouseStyle(JSON.parse(fs.readFileSync(specPath, "utf8")));
   const layoutWarnings = [];
   const originalWarn = console.warn;
@@ -313,6 +323,11 @@ async function build(specPath, outDir) {
       console.log(notice);
     }
 
+    if (options.validateOnly) {
+      console.log(`WORKING_WALL_LAYOUT_OK: ${cards.length} card(s), ${pageDivs.length} page(s)`);
+      return null;
+    }
+
     const html = `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE_CSS}</style></head><body>${pageDivs.join("")}</body></html>`;
 
     let outPath;
@@ -336,13 +351,15 @@ async function build(specPath, outDir) {
 module.exports = { build, assertRequiredPhotosAreReadable };
 
 if (require.main === module) {
-  const [, , specPath, outDirArg] = process.argv;
+  const args = process.argv.slice(2);
+  const validateOnly = args.includes("--validate-only");
+  const [specPath, outDirArg] = args.filter((arg) => arg !== "--validate-only");
   if (!specPath) {
-    console.error("Usage: node build.js <working-wall.json> [output-dir]");
+    console.error("Usage: node build.js <working-wall.json> [output-dir] [--validate-only]");
     process.exit(1);
   }
   const outDir = outDirArg ? path.resolve(outDirArg) : path.dirname(path.resolve(specPath));
-  build(path.resolve(specPath), outDir).catch((err) => {
+  build(path.resolve(specPath), outDir, { validateOnly }).catch((err) => {
     console.error(err.message || err);
     process.exit(1);
   });

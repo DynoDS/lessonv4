@@ -416,3 +416,111 @@ test('the CLI ends malformed JSON with the exact failure marker', () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('a turn slide with nothing to work on blocks before the scratch builder runs', () => {
+  // A Year 4 place-value My Turn was split when its chart would not fit, and the
+  // reference half kept the turn label: a slide holding a column-value chart, a
+  // tenfold-relationship strip and a sticky fact, and nothing for the class to do
+  // (flagged by Daniel, 2 Sept 2026).
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'split-h-70-30',
+          title: 'My Turn: column values',
+          primary: {
+            type: 'stack',
+            items: [
+              {
+                type: 'place-value-chart',
+                columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+                rows: [{ cells: ['1,000', '100', '10', '1'] }]
+              },
+              { type: 'text', value: "A digit's place tells us its value." }
+            ]
+          },
+          secondary: {
+            type: 'sc-panel',
+            content: { type: 'steps', steps: ['Name the columns.'] }
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(result.stdout, /"signal":"TURN_SLIDE_WITHOUT_ITS_TURN"/);
+    assert.match(result.stdout, /"slide":1/);
+    assert.equal(fs.existsSync(builderMarker), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a turn slide showing its question, and the answer slide after it, both pass', () => {
+  // The discrimination this check has to make: the same reference material is
+  // fine on a slide that also carries the turn's question, and an answer slide
+  // legitimately shows answers rather than a question.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\nconsole.log('Wrote: nothing');\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'split-h-60-40',
+          title: 'My Turn: read the chart',
+          primary: {
+            type: 'stack',
+            items: [
+              {
+                type: 'text',
+                colorRole: 'focus-blue',
+                value: 'What number does this chart represent?'
+              },
+              {
+                type: 'place-value-chart',
+                columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+                rows: [{ cells: ['1,000', '100', '10', '1'] }]
+              }
+            ]
+          }
+        },
+        {
+          template: 'split-h-70-30',
+          title: 'Your Turn Answers',
+          primary: {
+            type: 'stack',
+            items: [{ type: 'text', value: '||4,261' }]
+          }
+        },
+        // A turn whose question is a maths-turn-sc `questions` array, not a text
+        // block, is carrying its turn just as clearly.
+        {
+          template: 'maths-turn-sc',
+          title: 'Our Turn (a)',
+          questions: [{ text: 'What number does this chart show?' }]
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.doesNotMatch(result.stdout, /TURN_SLIDE_WITHOUT_ITS_TURN/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

@@ -100,6 +100,70 @@ function presentationWarnings(lesson) {
   return warnings;
 }
 
+// My Turn, Our Turn and Your Turn are promises to the class about whose go it
+// is. A slide making one has to show what is being turned over: the question or
+// task itself, or - on the reveal that follows it - its answer.
+//
+// A Year 4 place-value deck ran three "My Turn" slides in a row. The first
+// carried a column-value chart, a strip of tenfold relationships and a sticky
+// fact, and nothing to work on at all: it was the reference the next slide
+// needed, given a slide and a turn label of its own when a repair split a
+// crowded My Turn in two. The teacher met "My Turn", taught, clicked, and met
+// "My Turn" again (flagged by Daniel, 2 Sept 2026: "It says My turn but I don't
+// actually do anything apart from teach, then next slide is finally my turn").
+//
+// The composition playbook already forbids the interlude slide this produces -
+// a reference-only slide "has no job of its own to show" - so this is that rule
+// where the deck cannot get past it.
+const TURN_TITLE = /^(?:my|our|your)\s+turn\b/i;
+const QUESTION_TYPES = new Set(['numbered-questions', 'question-cards']);
+// The green answer markers, which templates.md allows only on an answer or
+// reveal slide. Their presence is what makes a "Your Turn Answers" the reveal of
+// its turn rather than a turn with nothing on it.
+const ANSWER_GREEN = /\|\||\{\{/;
+
+function carriesItsTurn(slideData) {
+  let found = false;
+  walkContent(slideData, (node) => {
+    if (found) return;
+    if (Array.isArray(node.questions) && node.questions.length) found = true;
+    else if (QUESTION_TYPES.has(node.type)) found = true;
+    else if (node.colorRole === 'focus-blue') found = true;
+    else if (typeof node.color === 'string' && HOUSE_BLUE.test(node.color.trim())) {
+      found = true;
+    } else if (typeof node.value === 'string' && ANSWER_GREEN.test(node.value)) {
+      found = true;
+    } else if (typeof node.text === 'string' && ANSWER_GREEN.test(node.text)) {
+      found = true;
+    }
+  });
+  return found;
+}
+
+function turnWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    if (!slideData || typeof slideData !== 'object') return;
+    const title = typeof slideData.title === 'string' ? slideData.title.trim() : '';
+    if (!TURN_TITLE.test(title)) return;
+    if (carriesItsTurn(slideData)) return;
+    warnings.push({
+      signal: 'TURN_SLIDE_WITHOUT_ITS_TURN',
+      slide: index + 1,
+      field: 'title',
+      message:
+        `"${title}" promises the class a turn, but this slide carries no question, ` +
+        'no task in house blue and no answer - only reference material. Put the ' +
+        "turn's own question or task on it, or fold this content into the slide " +
+        'that does have the question (a reference usually fits beside a task as a ' +
+        'side panel in a row) rather than leaving a reference-only slide wearing a ' +
+        'turn label.'
+    });
+  });
+  return warnings;
+}
+
 // House blue is the colour of the words a child acts on. A text block whose
 // whole `color` is blue while it both tells and asks ("Look at the tropical
 // rainforest regions. What pattern do you notice around the Equator?") has
@@ -270,7 +334,9 @@ function runSlideDesignCheck(inputPath, options = {}) {
     };
   }
 
-  const presentation = presentationWarnings(lesson).concat(mixedBlockWarnings(lesson));
+  const presentation = presentationWarnings(lesson)
+    .concat(turnWarnings(lesson))
+    .concat(mixedBlockWarnings(lesson));
   if (presentation.length) {
     return {
       ok: false,
@@ -287,7 +353,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
               `${warning.signal}: ${warning.message}`
           )
           .join('\n') +
-        '\nReplace only the slide title, then run the check again.\n',
+        '\nRepair only what each line names, then run the check again.\n',
       scratchOutputPath: null
     };
   }

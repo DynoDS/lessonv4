@@ -247,6 +247,16 @@ Final `working-wall.json` must contain no unresolved Educational SVG request. Ev
 
 Write the file to `[WORKING_DIR]/working-wall.json`. Include `topic`, `yearGroup`, `lessonSlug`, `rationaleNote` (always — even when cards is empty), and `cards` (0–2 teaching cards, plus explicitly requested wall furniture only). Use only card types, field names, and page sizes defined in the schema above.
 
+### Step 8: Check the layout before you return
+
+A card's real capacity depends on the page, the orientation, the column widths and the readable font floor, so it cannot be counted while writing. Run the layout check on the file you just wrote:
+
+```bash
+node "[PLUGIN_ROOT]/working-wall-html/build.js" "[WORKING_DIR]/working-wall.json" --validate-only
+```
+
+It draws the pages and reports without writing a PDF. `WORKING_WALL_LAYOUT_OK` means the wall will build. A `Layout validation failed:` line names the card, the exact overrun and the budget it has to come inside — shorten the text, simplify the card, choose a supported larger layout or drop it, then run it again. Skipping this does not save the work, it moves it: the builder runs the same check and fails, and a wall that overruns by one character or a tenth of an inch then costs a full designer-and-builder repair round instead of one command here. Cards `[]` needs no check.
+
 ---
 
 ## Wall-Worthy Criteria
