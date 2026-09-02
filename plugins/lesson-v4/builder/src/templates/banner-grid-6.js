@@ -12,7 +12,7 @@ const CELL_GAP   = 0.18;
 
 function drawBannerGrid6(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const bannerZone = { x: bz.x, y: bz.y, w: bz.w, h: BANNER_H, class: 'B' };
   if (data.banner) drawContent(pptx, slide, bannerZone, data.banner, ctx);

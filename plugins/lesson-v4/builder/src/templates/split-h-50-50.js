@@ -12,7 +12,7 @@ const GAP_X = 0.20;
 
 function drawSplitH5050(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const colW = (bz.w - GAP_X) / 2;
   const leftZone  = { x: bz.x,                 y: bz.y, w: colW, h: bz.h, class: 'C' };

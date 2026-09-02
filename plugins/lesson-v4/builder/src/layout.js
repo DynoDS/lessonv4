@@ -11,6 +11,10 @@ const CONTENT_W = SLIDE_W - MARGIN_X * 2;
 
 const HEADER_TITLE_H   = 0.60;
 const HEADER_STARTER_H = 2.27;
+// The extra header row a starter prompt claims. "Starter" is the heading on the
+// opening slide of every lesson and is never replaced; a question or prompt the
+// designer wants there reads underneath it, on a line of its own.
+const STARTER_PROMPT_H = 0.62;
 
 const HEADER_TITLE = {
   titleX:       0.07,
@@ -39,16 +43,41 @@ const HEADER_STARTER = {
   instructionX: 4.42,
   instructionY: 1.84,
   instructionW: 8.69,
-  instructionH: 0.60
+  instructionH: 0.60,
+  promptX: MARGIN_X,
+  promptY: 2.50,
+  promptW: CONTENT_W,
+  promptH: 0.55
 };
 
-function bodyZone(headerStyle) {
+// The starter's own prompt: the question or line the designer wants under the
+// "Starter" heading, or nothing.
+//
+// The heading slot is a label slot - four inches wide, at heading size - and a
+// deck that put a question in it got "What do you remember about PSHE?" shrunk
+// to two lines of small print no class could read, with the word "Starter" gone
+// from the lesson's opening slide altogether (flagged by Daniel, 2 September
+// 2026: "Starter heading must ALWAYS be there"). So the label stays put and the
+// question takes a full-width line of its own beneath it.
+function starterPrompt(data) {
+  if (!data || typeof data !== 'object') return '';
+  const value = String(data.heading || data.title || '').trim();
+  if (!value || /^starter$/i.test(value)) return '';
+  return value;
+}
+
+function starterHeaderHeight(data) {
+  return HEADER_STARTER_H + (starterPrompt(data) ? STARTER_PROMPT_H : 0);
+}
+
+function bodyZone(headerStyle, data) {
   if (headerStyle === 'starter') {
+    const headerH = starterHeaderHeight(data);
     return {
       x: MARGIN_X,
-      y: MARGIN_TOP + HEADER_STARTER_H,
+      y: MARGIN_TOP + headerH,
       w: CONTENT_W,
-      h: SLIDE_H - MARGIN_BOTTOM - (MARGIN_TOP + HEADER_STARTER_H)
+      h: SLIDE_H - MARGIN_BOTTOM - (MARGIN_TOP + headerH)
     };
   }
   return {
@@ -62,7 +91,8 @@ function bodyZone(headerStyle) {
 module.exports = {
   SLIDE_W, SLIDE_H,
   MARGIN_X, MARGIN_TOP, MARGIN_BOTTOM, CONTENT_W,
-  HEADER_TITLE_H, HEADER_STARTER_H,
+  HEADER_TITLE_H, HEADER_STARTER_H, STARTER_PROMPT_H,
   HEADER_TITLE, HEADER_STARTER,
+  starterPrompt, starterHeaderHeight,
   bodyZone
 };

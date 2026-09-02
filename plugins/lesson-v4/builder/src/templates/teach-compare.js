@@ -18,7 +18,7 @@ const RIGHT_CATEGORY = 'orange';
 
 function drawTeachCompare(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const cardW = (bz.w - CARD_GAP) / 2;
   const leftX = bz.x;

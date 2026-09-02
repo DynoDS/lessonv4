@@ -10,7 +10,7 @@ const GAP_X = 0.20;
 
 function drawThirdsH(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const colW = (bz.w - GAP_X * 2) / 3;
   const leftZone   = { x: bz.x,                              y: bz.y, w: colW, h: bz.h, class: 'D' };

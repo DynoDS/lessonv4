@@ -11,7 +11,7 @@ const GAP_Y = 0.20;
 
 function drawSplitV5050(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const rowH = (bz.h - GAP_Y) / 2;
   const topZone    = { x: bz.x, y: bz.y,                 w: bz.w, h: rowH, class: 'C' };

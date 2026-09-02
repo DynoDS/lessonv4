@@ -126,7 +126,9 @@ Every non-cover template has a header area above the body. Two modes:
 | Mode | Contains | Height | Use |
 |---|---|---|---|
 | `title` | Title + optional instruction on one row | ~0.6" | Default for all non-starter slides |
-| `starter` | Date placeholder + LO + heading bar | ~2.3" | Use when this slide is the starter |
+| `starter` | Date placeholder + LO + the "Starter" heading, and the slide's own prompt beneath it when it has one | ~2.3", ~2.9" with a prompt | Use when this slide is the starter |
+
+**The starter heading is always the word "Starter", and the builder writes it.** It is how a class and a cold teacher find the beginning of the lesson, so it is not a slot to fill. Give the slide a `title` (or a `heading`) as normal and the builder puts it on a full-width line underneath the label, at slide-title size, where a question is actually readable - so `title: "What do you remember about PSHE?"` renders as **Starter** with the question below it and the starter's questions below that. Before this, a title in that slot replaced the word "Starter" and was shrunk to fit a four-inch label bar; a Year 4 PSHE deck opened on two lines of small blue print and no "Starter" anywhere (flagged by Daniel, 2 September 2026). A `title` of exactly "Starter" adds no second line.
 
 The lesson's opening Date + LO are not a third scenario: they are carried by the starter (slide 1) using the `starter` header mode above. Children copy the date and LO from the starter header into their books as they begin — there is no separate cover slide before the starter, because a slide whose only job is the date and LO spends a teaching beat on something the starter header already does (see `preferences.md`).
 
@@ -356,11 +358,11 @@ Reach for these when the slide's job is to *put words in a character's mouth*: s
 
 **Purpose:** A starter built around one tall test-question image (a portrait crop from the question bank, `[PLUGIN_ROOT]/builder/assets/test-questions/`). The standard full-width starter header leaves only the body height (~4.7") below it, which shrinks a tall question past the point a child at the back can read it. This template stacks the date, LO, and heading down the left column and gives the question the slide's full height on the right, so a portrait crop renders at or above the size it appears on the real paper.
 
-**Shape:** Left column carries the starter furniture (Date placeholder, LO, "Starter" heading) plus an optional content zone below the heading. Right side is one full-height zone for the question image.
+**Shape:** Left column carries the starter furniture (Date placeholder, LO, the "Starter" heading and the slide's own prompt when it has one) plus an optional content zone below. Right side is one full-height zone for the question image.
 
 **Slots:**
 - `lo` — the learning objective text (the builder prepends "LO: ").
-- `heading` — defaults to "Starter".
+- `title` — the starter's own prompt, drawn under the fixed "Starter" heading in the left column. The heading itself is always "Starter" and is not a slot (§1.4).
 - `question` — the content object for the right zone, normally `{ "type": "image", "imagePath": "test-questions/<file>.png" }`. Zone class A.
 - `left` — optional content object under the heading. On the question slide a short `text` prompt that states the learning action without choosing a recording surface or routine response method (for example, "Answer the question.") or nothing; on the answer slide the answer in green via the `||` marker (e.g. `{ "type": "text", "text": "||350 millilitres" }`). Zone class E-narrow.
 

@@ -1,7 +1,7 @@
 'use strict';
 
 const { FONT, COLOURS, SIZE_CEILINGS, FIT } = require('../styles');
-const { SLIDE_H, SLIDE_W, MARGIN_X } = require('../layout');
+const { SLIDE_H, SLIDE_W, MARGIN_X, starterPrompt } = require('../layout');
 const { drawContent } = require('../content');
 
 // A starter built around one tall test-question image (a portrait crop from a
@@ -22,8 +22,10 @@ const LO_H      = 1.20;              // taller than the standard header: the LO 
 const HEADING_Y = 2.35;
 const HEADING_H = 0.60;
 
+const PROMPT_Y  = 3.02;              // the starter's own question, under the "Starter" label
+const PROMPT_H  = 0.80;              // taller than the wide header's row: it wraps in this column
+
 const LEFT_ZONE_Y = 3.15;            // optional content below the heading (prompt / green answer)
-const LEFT_ZONE_H = SLIDE_H - 0.25 - LEFT_ZONE_Y;
 
 const IMAGE_X   = 6.40;              // question panel: full slide height, right side
 const IMAGE_W   = SLIDE_W - IMAGE_X;
@@ -46,14 +48,31 @@ function drawStarterQuestionTall(pptx, slide, data, ctx) {
     });
   }
 
-  slide.addText(data.heading || 'Starter', {
+  // "Starter" is the opening slide's heading in every lesson, always; the
+  // designer's own question reads underneath it. See `starterPrompt` in
+  // layout.js for why the label is not replaceable.
+  slide.addText('Starter', {
     x: LEFT_X, y: HEADING_Y, w: LEFT_W, h: HEADING_H,
     fontFace: FONT, fontSize: SIZE_CEILINGS.heading, bold: true,
     color: COLOURS.title, align: 'left', valign: 'middle',
     underline: { style: 'sng' }, margin: 0, fit: FIT
   });
 
-  const leftZone = { x: LEFT_X, y: LEFT_ZONE_Y, w: LEFT_W, h: LEFT_ZONE_H, class: 'E-narrow' };
+  const prompt = starterPrompt(data);
+  if (prompt) {
+    slide.addText(prompt, {
+      x: LEFT_X, y: PROMPT_Y, w: LEFT_W, h: PROMPT_H,
+      fontFace: FONT, fontSize: SIZE_CEILINGS.slideTitle, bold: true,
+      color: COLOURS.title, align: 'left', valign: 'top',
+      margin: 0, fit: FIT
+    });
+  }
+
+  const leftZoneY = prompt ? PROMPT_Y + PROMPT_H + 0.10 : LEFT_ZONE_Y;
+  const leftZone = {
+    x: LEFT_X, y: leftZoneY, w: LEFT_W,
+    h: SLIDE_H - 0.25 - leftZoneY, class: 'E-narrow'
+  };
   const questionZone = { x: IMAGE_X, y: 0, w: IMAGE_W, h: SLIDE_H, class: 'A' };
 
   if (data.left)     drawContent(pptx, slide, leftZone,     data.left,     ctx);

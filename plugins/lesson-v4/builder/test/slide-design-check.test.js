@@ -159,6 +159,114 @@ test('a whole-blue block that tells and then asks blocks before the scratch buil
   }
 });
 
+// The deck's third colour. Black is the teacher talking, blue is the child's job,
+// purple is the sentence to keep, and the builder paints a sticky line purple off
+// the back of its own star marker. An `emphasis` span stretched across the whole
+// statement paints over that - a Year 4 PSHE deck ran its one sticky fact in
+// problem red on two slides that way and finished with no purple anywhere
+// (flagged by Daniel, 2 September 2026). A span *inside* the line is a different
+// thing entirely and stays allowed.
+test('an emphasis covering a whole sticky line is refused before the build', () => {
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';
+` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');
+`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'Get help from a trusted adult',
+          stickyKnowledgeRefs: ['sk-002'],
+          body: {
+            type: 'stack',
+            items: [
+              {
+                type: 'text',
+                referenceId: 'sk-002',
+                value: '✨ Tell a trusted adult if something makes you feel unsafe.',
+                emphasis: [
+                  {
+                    text: 'Tell a trusted adult if something makes you feel unsafe.',
+                    role: 'safety-warning'
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(result.stdout, /"signal":"STICKY_LINE_RECOLOURED"/);
+    assert.match(result.stderr, /let the sticky line keep its colour/);
+    assert.equal(fs.existsSync(builderMarker), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// The discrimination case. Vocabulary green reaches every place a child reads a
+// taught term, sticky knowledge included, and marking one word inside the line
+// is not repainting the line.
+test('a taught term marked inside a sticky line is left alone', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';
+` +
+        `const fs = require('node:fs');
+` +
+        `const path = require('node:path');
+` +
+        `const outputDir = process.argv[3];
+` +
+        `fs.mkdirSync(outputDir, { recursive: true });
+` +
+        `fs.writeFileSync(path.join(outputDir, 'Scratch Check.pptx'), 'scratch');
+` +
+        `console.log('No warnings.');
+`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'What is a biome?',
+          stickyKnowledgeRefs: ['sk-001'],
+          body: {
+            type: 'text',
+            referenceId: 'sk-001',
+            value: '✨ A biome is a large region with a similar climate.',
+            emphasis: [{ text: 'biome', role: 'vocabulary' }]
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.ok(
+      !/STICKY_LINE_RECOLOURED/.test(result.stdout),
+      'one green word inside a sticky line is not a recoloured line'
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('a clean scratch build passes, hides its Wrote line and deletes its deck', () => {
   const root = makeRoot();
   try {

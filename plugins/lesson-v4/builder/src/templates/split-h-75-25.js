@@ -12,7 +12,7 @@ const PRIMARY_RATIO = 0.75;
 
 function drawSplitH7525(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const primaryW   = (bz.w - GAP_X) * PRIMARY_RATIO;
   const secondaryW = bz.w - GAP_X - primaryW;

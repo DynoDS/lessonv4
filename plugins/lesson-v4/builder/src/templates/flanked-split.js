@@ -12,7 +12,7 @@ const GAP_Y      = 0.15;
 
 function drawFlankedSplit(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const usableW = bz.w - GAP_X * 2;
   const sideW   = usableW * SIDE_RATIO;

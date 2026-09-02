@@ -6,7 +6,7 @@ const { drawContent } = require('../content');
 
 function drawTeachSteps(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
   bz.class = 'A';
 
   const steps = Array.isArray(data.steps) ? data.steps : [];

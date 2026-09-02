@@ -12,7 +12,7 @@ const BOTTOM_RATIO  = 0.25;
 
 function drawCentreBigV(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const topH    = bz.h * TOP_RATIO;
   const bottomH = bz.h * BOTTOM_RATIO;

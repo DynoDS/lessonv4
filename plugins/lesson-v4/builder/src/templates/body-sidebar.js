@@ -13,7 +13,7 @@ const GAP_Y         = 0.15;
 
 function drawBodySidebar(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const sidebarW = (bz.w - GAP_X) * SIDEBAR_RATIO;
   const leftW    = bz.w - GAP_X - sidebarW;

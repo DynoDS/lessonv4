@@ -20,7 +20,7 @@ const ARROW_COLOUR   = '0070C0';
 
 function drawTeachSequence(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const stages = Array.isArray(data.stages) ? data.stages : [];
   if (stages.length === 0) return;

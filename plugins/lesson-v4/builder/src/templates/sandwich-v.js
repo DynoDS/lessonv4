@@ -11,7 +11,7 @@ const GAP_Y   = 0.12;
 
 function drawSandwichV(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const middleH = bz.h - (STRIP_H * 2) - (GAP_Y * 2);
 

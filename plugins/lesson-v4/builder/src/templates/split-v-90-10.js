@@ -11,7 +11,7 @@ const PRIMARY_RATIO = 0.90;
 
 function drawSplitV9010(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const primaryH   = (bz.h - GAP_Y) * PRIMARY_RATIO;
   const secondaryH = bz.h - GAP_Y - primaryH;

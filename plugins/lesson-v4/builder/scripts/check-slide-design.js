@@ -226,6 +226,49 @@ function mixedBlockWarnings(lesson) {
   return warnings;
 }
 
+// A sticky-knowledge line is purple. That is the deck's whole point in having a
+// third colour: black is the teacher talking, blue is the child's job, purple is
+// the sentence to keep, and a child reads which is which without being told. The
+// builder colours a sticky line for you - the ✨ marks it - so the only way to
+// lose the purple is to paint over it, and an `emphasis` span stretched across
+// the entire statement does exactly that. A Year 4 PSHE deck ran its one sticky
+// fact in problem red on two slides that way (flagged by Daniel, 2 September
+// 2026), and the deck then had no purple in it at all.
+//
+// A span *inside* a sticky line is untouched: a taught term stays green there,
+// exactly as it does everywhere else a child reads it.
+const STICKY_LINE = /^\s*✨/;
+
+function stickyEmphasisWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    walkContent(slideData, (node) => {
+      const value = typeof node.value === 'string' ? node.value : null;
+      if (!value || !STICKY_LINE.test(value)) return;
+      if (!Array.isArray(node.emphasis) || !node.emphasis.length) return;
+      const statement = value.replace(STICKY_LINE, '').trim();
+      node.emphasis.forEach((entry) => {
+        if (!entry || typeof entry.text !== 'string') return;
+        if (entry.text.trim() !== statement) return;
+        warnings.push({
+          signal: 'STICKY_LINE_RECOLOURED',
+          slide: index + 1,
+          field: 'text',
+          message:
+            `"${statement.slice(0, 60)}" is a sticky-knowledge line, and the ` +
+            `\`${entry.role}\` emphasis covers the whole of it, which repaints ` +
+            'the sentence children are meant to read as purple. Remove that ' +
+            'emphasis and let the sticky line keep its colour; mark a span ' +
+            'inside it only when that span really is a taught term or a ' +
+            'source-authored warning of its own.'
+        });
+      });
+    });
+  });
+  return warnings;
+}
+
 function presentationDiagnostic(warning) {
   return `BUILD_DIAGNOSTIC: ${JSON.stringify({
     signal: warning.signal,
@@ -336,7 +379,8 @@ function runSlideDesignCheck(inputPath, options = {}) {
 
   const presentation = presentationWarnings(lesson)
     .concat(turnWarnings(lesson))
-    .concat(mixedBlockWarnings(lesson));
+    .concat(mixedBlockWarnings(lesson))
+    .concat(stickyEmphasisWarnings(lesson));
   if (presentation.length) {
     return {
       ok: false,

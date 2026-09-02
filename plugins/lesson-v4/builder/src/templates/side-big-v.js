@@ -12,7 +12,7 @@ const SECONDARY_RATIO = 0.25;
 
 function drawSideBigV(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const usableH    = bz.h - GAP_Y * 2;
   const primaryH   = usableH * PRIMARY_RATIO;

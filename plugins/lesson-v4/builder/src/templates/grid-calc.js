@@ -24,7 +24,7 @@ function drawGridCalc(pptx, slide, data, ctx) {
     instruction: data.instruction,
     signal: data.signal
   }, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const calculations = Array.isArray(data.calculations) ? data.calculations : [];
 

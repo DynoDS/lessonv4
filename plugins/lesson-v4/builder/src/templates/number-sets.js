@@ -18,7 +18,7 @@ const PROMPT_FONT   = 22;
 
 function drawNumberSets(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const numbers = Array.isArray(data.numbers) ? data.numbers : [];
   if (numbers.length === 0) return;

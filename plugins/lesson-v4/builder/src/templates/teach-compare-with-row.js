@@ -16,7 +16,7 @@ const RIGHT_CATEGORY = 'orange';
 
 function drawTeachCompareWithRow(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const topH = bz.h * TOP_RATIO;
   const bottomH = bz.h - topH - ROW_GAP;

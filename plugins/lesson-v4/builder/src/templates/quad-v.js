@@ -14,7 +14,7 @@ const BOTTOM_RATIO  = 0.30;
 
 function drawQuadV(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
   const usableH = bz.h - GAP_Y * 3;
 
   const topH    = usableH * TOP_RATIO;

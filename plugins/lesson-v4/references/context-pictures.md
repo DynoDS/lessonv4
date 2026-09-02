@@ -300,7 +300,7 @@ about **this slide**:
 
 | Reason | What you are saying |
 | --- | --- |
-| `full` | On the rendered page, no part of this slide is clear enough to hold a drawing without covering something. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card, not fullness. A slide whose template has three zones is not full because it has three zones. |
+| `full` | On the rendered page, no part of this slide is clear enough to hold a drawing without covering something. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card, not fullness. A slide whose template has three zones is not full because it has three zones, and a slide packed with text is not full because its cards are packed - the white inside and between those cards is exactly where a drawing goes. |
 | `competes` | A picture would cover, shrink or crowd what a child has to read here. This is the answer for a slide whose only clear areas are too small or too broken up to hold a drawing; it is never the answer for a slide with a strong central visual and a clear corner. |
 | `would-mislead` | A drawing here would bias, answer or pre-empt the task. The rainforest photo beside "which biome?" is this. |
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |
@@ -327,14 +327,25 @@ python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
 ```
 
 It reads the rendered pages and reports, for each slide, the largest clear
-rectangle and how many separate clear areas of readable size it has. Clear means
-background: a card, a photograph, a figure and a word all count as occupied, so
-the measurement only ever understates the room, and space behind a card that a
-`layer: "low"` drawing could genuinely use is counted as taken. Read the numbers
-before writing a `full` or `competes` line, and use them the way you use a
-search result for `nothing-fits`: as the thing that settles it. A slide the
-measurement says has two readable clear areas is a slide with room, whatever the
-specification looked like.
+rectangle and how many separate clear areas of readable size it has. **Clear
+means no ink, not no furniture.** Words, numbers, rules, drawn figures,
+photographs, maps and charts are occupied; paper, card fill, panel fill, table
+shading and the shadow around a card are room. So the blank half of a card
+counts, and so does the gap between two cards, because a framed drawing sits in
+front of or behind what is already there and may lie across a card's edge
+without moving or hiding a thing.
+
+That distinction is the whole of it on a text-heavy slide. Three white cards
+packed with sentences reach the margins and leave no *background* at all, while
+leaving plenty of white: the space after a short line, the band between two
+lines, the strip under the last sentence in its card. A slide like that is full
+of text, not full - and it is the slide that most wants a drawing, because a
+drawing is what breaks a wall of words up.
+
+Read the numbers before writing a `full` or `competes` line, and use them the way
+you use a search result for `nothing-fits`: as the thing that settles it. A slide
+the measurement says has two readable clear areas is a slide with room, whatever
+the specification looked like.
 
 The check reads the same file, so a slide recorded `full` or `competes` while
 the render shows readable clear space fails, and names the space. A machine with
@@ -540,6 +551,14 @@ P3 decoration, as one small drawing resting on a card's edge
 Both are valid P3. The first spreads a faint accent behind everything; the
 second is one small object sitting on top of a card in space the card's own
 shape already left over. Neither changed the layout to exist.
+
+Notice how differently sized they are, and size them that way on purpose. A
+drawing may be as large as the clear space allows and may be tilted, and the two
+together are most of what makes a decorated slide look composed rather than
+stamped: one generous drawing lying across the corner of a card does more for a
+wall of text than three identical thumbnails in three identical margins. Where a
+deck's decorations all come out the same width in the same kind of gap, the pass
+was sizing to a habit rather than to each slide.
 
 Semantic vocabulary Educational SVG is meaning-carrying P2. It requires meaningful `alt`
 and has no `fallbackEmoji`. On slides and worksheets it closes to text-only when

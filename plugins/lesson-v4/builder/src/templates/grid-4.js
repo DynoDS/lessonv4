@@ -12,7 +12,7 @@ const DIVIDER_W      = 1;          // line weight (pt)
 
 function drawGrid4(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const cells = Array.isArray(data.cells) ? data.cells : [];
   if (cells.length === 0) return;

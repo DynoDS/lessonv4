@@ -1,7 +1,7 @@
 'use strict';
 
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, CARD } = require('./styles');
-const { HEADER_TITLE, HEADER_STARTER } = require('./layout');
+const { HEADER_TITLE, HEADER_STARTER, starterPrompt } = require('./layout');
 const { drawSignal, signalWidth } = require('./signals');
 
 // Card look: a white pill hugging a header text, so the title and the task
@@ -91,7 +91,12 @@ function drawTitleHeader(slide, data, ctx) {
 function drawStarterHeader(slide, data, ctx) {
   const dateText = 'Date';
   const lo = data.lo || '';
-  const heading = data.heading || data.title || 'Starter';
+  // "Starter" is the opening slide's heading in every lesson, always. Anything
+  // the designer wants said there - a retrieval question, a prompt - is a line
+  // of its own underneath, so the class still sees which part of the lesson
+  // this is. See `starterPrompt` in layout.js.
+  const heading = 'Starter';
+  const prompt = starterPrompt(data);
   const instruction = data.instruction || '';
 
   slide.addText(dateText, {
@@ -123,6 +128,18 @@ function drawStarterHeader(slide, data, ctx) {
     color: COLOURS.title, align: 'left', valign: 'middle',
     underline: { style: 'sng' }, margin: 0, fit: FIT
   });
+
+  // The starter's own question or prompt, full width under the label, at slide-
+  // title size so a class reads it from the back of the room.
+  if (prompt) {
+    slide.addText(prompt, {
+      x: HEADER_STARTER.promptX, y: HEADER_STARTER.promptY,
+      w: HEADER_STARTER.promptW, h: HEADER_STARTER.promptH,
+      fontFace: FONT, fontSize: SIZE_CEILINGS.slideTitle, bold: true,
+      color: COLOURS.title, align: 'left', valign: 'middle',
+      margin: 0, fit: FIT
+    });
+  }
 
   if (instruction) {
     let textX = 0;

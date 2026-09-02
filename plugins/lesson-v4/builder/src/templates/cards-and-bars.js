@@ -12,7 +12,7 @@ const GAP_Y       = 0.15;
 
 function drawCardsAndBars(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const cards = Array.isArray(data.cards) ? data.cards : [];
   const bars  = Array.isArray(data.bars)  ? data.bars  : [];

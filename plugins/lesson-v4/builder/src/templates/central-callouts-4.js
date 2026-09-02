@@ -14,7 +14,7 @@ const CALLOUT_MARGIN = 0.15;
 
 function drawCentralCallouts4(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const centreW = bz.w * CENTRE_W_RATIO;
   const centreH = bz.h * CENTRE_H_RATIO;

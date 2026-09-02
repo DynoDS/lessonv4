@@ -517,3 +517,42 @@ does not re-diagnose them:
   reason to be tidying a directory the run keeps anyway. The picture-work cleanup
   stays (a rainforest lesson's picture work ran to 330MB) and a policy refusal of
   it is no longer reported as friction.
+
+## 2026-09-02 - Year 4 PSHE - Our PSHE Lessons
+
+- Design review corrected two worksheet model answers: a made-up story using classmates' names should be explained as making classmates feel picked on, not assumed to disclose a true private story.
+- Design review required separate pupil use of fictional stories, general questions and safety help. One redesign split the combined input into three checked steps while preserving the 45-minute lesson and 15-minute class-agreement task. Second review approved the result.
+
+
+### Resource findings from the same PSHE run
+- Slide Designer: colour checking treated Read and Do you agree as explanatory prose; unchanged sentences were separated into individually blue task objects.
+- Slide Designer: the full-width lower zone rejected a success-criteria table through E-narrow classification; a full-body stack with equivalent proportions passed.
+- Working Wall Designer: the checker rejected an empty wall allowed by the role, so it retained a right-to-pass reminder with an emoji. A no-required-picture lesson had acquired optional slide illustrations during the concurrent decoration pass.
+
+## 2026-09-02 - Three slide faults from the PSHE deck, repaired in the engine
+
+Reported by Daniel against `Our PSHE lessons.pptx`. All three are fixed at
+source, so a future run does not need to re-diagnose them:
+
+- **The word "Starter" disappeared from slide 1.** The starter header filled its
+  heading slot from `heading`, then `title`, and only fell back to "Starter"
+  when a deck offered neither - so a starter titled with a question lost the
+  label and shrank the question into a four-inch bar. The heading is now always
+  "Starter", drawn by the builder, and the slide's own prompt reads underneath it
+  full width at slide-title size.
+- **A text-heavy deck got no optional drawings at all.** `measure-slide-room.py`
+  counted a card, its outline and its shadow as content, so three white cards
+  reaching the margins measured as no room anywhere and the pass wrote `full`
+  down the whole record. Occupied now means ink - words, figures, photographs -
+  and the blank inside and between cards is room, which is exactly where a
+  drawing belongs on a wall of text.
+- **The one sticky-knowledge fact rendered red.** A `safety-warning` emphasis
+  covering the whole statement painted over the purple the builder gives a
+  sticky line. A whole-line emphasis on a sticky line is now refused by name;
+  a span inside one still works.
+
+Telling coloured blue also stands as a live risk rather than a fixed fault: the
+mixed-block check only sees a blue block that both tells and asks, so splitting
+the block into two blue objects gets past it. The discrimination now lives in
+the visual profile's Semantic colour - blue is about what a child does *now, on
+this slide*, and a rule of conduct phrased as an imperative is still telling.

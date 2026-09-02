@@ -13,17 +13,30 @@ real searches and real rejections, while `full` and `competes` cost nothing to
 write. Under any pressure at all the two free answers are the ones that get used.
 
 This script makes them cost something. It reads the pages the designer just
-rendered and reports, per slide, the largest rectangle containing no content at
-all and how many separate drawing-sized clear areas the slide has.
+rendered and reports, per slide, the largest rectangle containing nothing a
+child reads and how many separate drawing-sized clear areas the slide has.
 
 `check-optional-pictures.py` reads the result, so `full` on a slide with a
 readable clear rectangle in it fails the same way an invented rejection does.
 
-What counts as occupied is deliberately generous: a card, a photograph, a
-figure, a rule and a word are all content, so space *behind* a card - which a
-`layer: "low"` drawing could genuinely use - is counted as taken. The
-measurement therefore only ever understates the room, and a slide it calls full
-really is full.
+**What counts as occupied is ink, not furniture.** A card is a container, and
+the blank part of a card is room: a framed drawing is placed in front of or
+behind what is already there, so it may lie over a card's white, cross a card's
+edge or bridge the gap between two cards, and none of that moves or hides
+anything. The first version of this script counted a card, its outline and its
+shadow as content, which inverted the measurement on exactly the decks that
+needed it: a text-heavy deck whose white cards reach the margins came back with
+no clear areas on any slide, the pass wrote `full` down the whole record, and
+the deck that most wanted drawings to break up its walls of text was the one
+guaranteed to get none (flagged by Daniel, 2 September 2026, over a Year 4 PSHE
+deck: "there are 0 p2 or p3 educational svgs here ... this slide is full, but
+it's full of TEXT").
+
+So a pixel is occupied when it is dark or strongly coloured - a letter, a
+number, a rule, a drawn figure - or when its immediate neighbourhood varies,
+which is what a photograph, map or chart always does and what a flat fill never
+does. Paper, card fill, panel fill, table shading and the soft shadow around a
+card are all surface, and surface is room.
 """
 from __future__ import annotations
 
@@ -43,34 +56,50 @@ SLIDE_W_INCHES = 13.333
 SLIDE_H_INCHES = 7.5
 
 # A drawing smaller than this is a smudge rather than a picture, so a gap this
-# size is not room. The published P3 examples sit a little above it: the banana
-# resting on a card edge is 0.10 x 0.18 of the slide, or about 1.33 x 1.35
-# inches. A slide with nothing this big anywhere in it is genuinely full.
-READABLE_INCHES = 1.2
+# size is not room. Calibrated against the drawings Daniel places by hand on a
+# text-heavy slide: a padlock resting across a card's left edge measures about
+# 0.75 inches on the board and reads clearly from the back of the room. The
+# earlier 1.2 was taken from a published example rather than from the smallest
+# drawing that actually works, and it wrote off every gap between two lines of
+# large text - which on a wall-of-text slide is where all the room is.
+READABLE_INCHES = 0.8
 FLOOR_CELLS_W = max(1, round(READABLE_INCHES / (SLIDE_W_INCHES / GRID_W)))
 FLOOR_CELLS_H = max(1, round(READABLE_INCHES / (SLIDE_H_INCHES / GRID_H)))
 
-# How far a pixel may sit from the background colour and still count as clear.
-# Anti-aliasing round a letter lands well outside this, which is what keeps a
-# text card from reading as empty space.
-COLOUR_TOLERANCE = 12
+# Ink is dark. Every colour this deck writes in - black body text, house blue,
+# LO purple, vocabulary green, problem red, the grey gridline - sits below this
+# luminance, and every surface it fills with - white card, peach paper, blue
+# maths paper, green success-criteria panel, peach table shading, the shadow
+# under a card - sits above it.
+INK_LUMINANCE = 170
 
-# A cell is clear only when essentially all of it is background. Kept this tight
-# on purpose: the cost of calling a busy slide empty is a refused honest `full`,
-# and that is the one error this check must not make.
-CELL_CLEAR_THRESHOLD = 254
+# ...or strongly coloured. A pale but saturated fill would slip past the
+# luminance test; the tinted surfaces this deck uses are all inside this spread
+# (the peach paper is the widest, at 43) and no text colour is.
+INK_CHROMA = 60
+
+# ...or part of a picture. Surface is flat by construction - one fill colour, or
+# a slow shadow gradient - and a photograph, map or chart never is, so a pixel
+# whose immediate neighbourhood varies by more than this is textured. This is
+# what stops a drawing being placed on a bright sky.
+INK_LOCAL_RANGE = 6
+
+# A cell is clear when essentially all of it is surface. The slack is
+# deliberate: a hairline rule or the edge of a card may cross a cell without
+# making that cell content, because a drawing may lie across a card's edge.
+CELL_CLEAR_SHARE = 0.94
+
+# Texture is judged by the share of the cell, not pixel by pixel, and for the
+# same reason. The step from paper to card fill is a sharp edge, so every card
+# outline in the deck is textured along one thin line - counting that as content
+# rebuilds the wall this measurement exists to see past, and a drawing lying
+# across a card edge is the ordinary case. A photograph fills its cells with
+# variation; a card edge crosses one in a line two pixels wide.
+CELL_TEXTURE_SHARE = 0.30
 
 # Past this the count says "lots of small gaps" rather than anything useful, and
 # a slide is not improved by a seventh drawing.
 MAX_AREAS = 6
-
-# A full-bleed photograph reaches the page edge, so the edge colour is then just
-# one shade out of the picture and stands for nothing. Kept low on purpose: a
-# busy slide with narrow margins still has a background, and setting this high
-# enough to catch that case would zero the very slides whose corners are worth
-# measuring. The rectangle search finds nothing on a real photograph anyway,
-# since a photograph is not flat, so this is a cheap stop rather than the guard.
-MIN_BACKGROUND_SHARE = 0.05
 
 
 class MeasureError(RuntimeError):
@@ -79,7 +108,7 @@ class MeasureError(RuntimeError):
 
 def load_image(path: Path):
     try:
-        from PIL import Image, ImageChops
+        from PIL import Image, ImageChops, ImageFilter
     except ImportError as exc:  # pragma: no cover - environment fault
         raise MeasureError(f"Pillow is not available: {exc}") from exc
     try:
@@ -87,68 +116,55 @@ def load_image(path: Path):
         image.load()
     except OSError as exc:
         raise MeasureError(f"{path} is not a readable image: {exc}") from exc
-    return image.convert("RGB"), Image, ImageChops
+    return image.convert("RGB"), Image, ImageChops, ImageFilter
 
 
-def background_colour(image, Image) -> tuple[tuple[int, int, int], float]:
-    """The paper colour, taken from the page's outer edge.
+def ink_and_texture_masks(image, ImageChops, ImageFilter):
+    """Two one-band images: where the page is ink, and where it is textured.
 
-    The obvious reading - the colour the page is mostly made of - is wrong on
-    exactly the slides this measurement matters for. A deck whose cards are
-    tinted and packed can be more card than paper, and then the modal colour is
-    the card: the measurement inverts, reads every card as empty space and every
-    margin as content, and reports a crowded slide as the roomiest in the deck.
-
-    The outer edge cannot invert that way. Every template in this system leaves a
-    margin, so the ring around the page is paper by construction, whatever the
-    composition inside it is doing.
-
-    Sampled with NEAREST so real pixel values are counted rather than averages of
-    a letter and the paper behind it. The share returned is of the whole page,
-    not of the ring, because it answers a different question: whether this page
-    has a background at all.
+    Ink is what a child reads - a letter, a number, a rule, a drawn figure - and
+    it is dark or strongly coloured. Texture is variation in the immediate
+    neighbourhood, which is what a photograph, map or chart always has and what
+    paper, card fill, panel fill and a card's shadow never have. They are kept
+    apart because they are judged differently: a single ink pixel matters, and a
+    thin line of texture (the edge of a card) does not.
     """
-    width, height = 200, 120
-    band = 3
-    sample = image.resize((width, height), Image.NEAREST)
-    pixels = sample.load()
+    red, green, blue = image.split()
 
-    edge: dict[tuple[int, int, int], int] = {}
-    for y in range(height):
-        on_edge_row = y < band or y >= height - band
-        for x in range(width):
-            if not on_edge_row and band <= x < width - band:
-                continue
-            colour = pixels[x, y]
-            edge[colour] = edge.get(colour, 0) + 1
-    if not edge:
-        raise MeasureError("could not read the page's edge colours")
-    colour = max(edge.items(), key=lambda entry: entry[1])[0]
+    grey = image.convert("L")
+    dark = grey.point([255 if v < INK_LUMINANCE else 0 for v in range(256)])
 
-    whole = sample.getcolors(width * height) or []
-    matching = sum(
-        count
-        for count, other in whole
-        if all(abs(a - b) <= COLOUR_TOLERANCE for a, b in zip(other, colour))
+    high = ImageChops.lighter(ImageChops.lighter(red, green), blue)
+    low = ImageChops.darker(ImageChops.darker(red, green), blue)
+    chroma = ImageChops.difference(high, low)
+    coloured = chroma.point([255 if v >= INK_CHROMA else 0 for v in range(256)])
+
+    local = ImageChops.difference(
+        grey.filter(ImageFilter.MaxFilter(3)), grey.filter(ImageFilter.MinFilter(3))
     )
-    return colour, matching / float(width * height)
+    textured = local.point([255 if v > INK_LOCAL_RANGE else 0 for v in range(256)])
+
+    return ImageChops.lighter(dark, coloured), textured
 
 
-def clear_grid(image, colour, Image, ImageChops) -> list[list[bool]]:
-    """A GRID_H x GRID_W table saying which cells hold nothing but background."""
-    flat = Image.new("RGB", image.size, colour)
-    difference = ImageChops.difference(image, flat)
-    red, green, blue = difference.split()
-    # Per-channel maximum: a pixel is background only when every channel matches,
-    # so a colour that differs in one channel alone still reads as content.
-    spread = ImageChops.lighter(ImageChops.lighter(red, green), blue)
-    mask = spread.point(
-        [255 if value <= COLOUR_TOLERANCE else 0 for value in range(256)]
-    )
+def cell_shares(mask, Image):
+    """Each grid cell's share of the mask, 0.0 to 1.0."""
     reduced = mask.resize((GRID_W, GRID_H), Image.BOX)
-    data = list(reduced.getdata())
+    return [value / 255.0 for value in reduced.getdata()]
+
+
+def clear_grid(image, Image, ImageChops, ImageFilter) -> list[list[bool]]:
+    """A GRID_H x GRID_W table saying which cells hold nothing a child reads."""
+    ink, textured = ink_and_texture_masks(image, ImageChops, ImageFilter)
+    ink_share = cell_shares(ink, Image)
+    texture_share = cell_shares(textured, Image)
+    ink_ceiling = 1.0 - CELL_CLEAR_SHARE
     return [
-        [data[row * GRID_W + column] >= CELL_CLEAR_THRESHOLD for column in range(GRID_W)]
+        [
+            ink_share[row * GRID_W + column] <= ink_ceiling
+            and texture_share[row * GRID_W + column] <= CELL_TEXTURE_SHARE
+            for column in range(GRID_W)
+        ]
         for row in range(GRID_H)
     ]
 
@@ -229,16 +245,8 @@ def as_inches(rectangle: dict | None) -> dict | None:
 
 
 def measure_page(path: Path) -> dict:
-    image, Image, ImageChops = load_image(path)
-    colour, share = background_colour(image, Image)
-    if share < MIN_BACKGROUND_SHARE:
-        return {
-            "clearFraction": 0.0,
-            "largestClear": None,
-            "readableAreas": 0,
-            "note": "no dominant background colour; treated as fully covered",
-        }
-    grid = clear_grid(image, colour, Image, ImageChops)
+    image, Image, ImageChops, ImageFilter = load_image(path)
+    grid = clear_grid(image, Image, ImageChops, ImageFilter)
     clear_cells = sum(1 for row in grid for cell in row if cell)
     areas = clear_areas(grid)
     largest = largest_clear_rectangle(grid)

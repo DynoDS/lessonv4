@@ -101,7 +101,7 @@ function statementSide(data) {
 
 function drawSpeechBubbles(pptx, slide, data, ctx, count) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   // ── Statement under the header ──
   // A short text prompt sits in a slim band. When the statement is the very thing
@@ -259,7 +259,7 @@ const SOLO_COL_FRAC        = 0.6;   // speaker column width as a fraction of the
 
 function drawSpeechBubbles1(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   let statement = data.statement;
   if (typeof statement === 'string') statement = { type: 'text', value: statement };

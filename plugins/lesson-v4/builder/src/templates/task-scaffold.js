@@ -12,7 +12,7 @@ const SCAFFOLD_GAP_X  = 0.20;
 
 function drawTaskScaffold(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle);
+  const bz = bodyZone(data.headerStyle, data);
 
   const taskH     = bz.h * TASK_RATIO;
   const scaffoldH = bz.h - taskH - GAP_Y;
