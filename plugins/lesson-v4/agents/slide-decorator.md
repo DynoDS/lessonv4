@@ -68,6 +68,14 @@ python3 "[PLUGIN_ROOT]/scripts/build-visual-consistency-overview.py" build \
 
 Inspect the overview sheets, opening an individual page only where the overview cannot settle a slide. If no render route can produce page evidence, record `Visual self-read: unavailable` in the completion report and run the pass on the specification and `slide-room.json` alone; a missing render never stops the deck.
 
+**If `slide-room.json` is not there, measure the pages you have just rendered.** The file normally arrives from the Slide Designer, but a deck you can see is a deck that can be measured, and an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \n  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \n  --output "[WORKING_DIR]/slide-room.json"
+```
+
+Only a run with no render route at all answers `full` or `competes` from the specification, and it says so in its report.
+
 Now run one explicit whole-deck pass under the strict order P1 > P2 > P3. Resolve the Educational SVG library as the first act of the pass. Go slide by slide, every slide, and write one line each into `[WORKING_DIR]/optional-picture-pass.json` as you go. Judge each slide on its own rather than against a deck quota. The questions you are answering, per slide:
 
 1. **Where on this rendered page is nothing at all?** Room is physical: space no card, photograph, figure or word is using. `slide-room.json` has measured it, so read that slide's line before answering. A photograph on this slide does not answer question 1 - P1 beating P2 settles what a picture may *displace*. It never settles whether the slide has room, and neither does a strong central visual: a small faint drawing in a clear corner covers none of it and moves none of it. A picture on another slide answers nothing at all: There is no deck budget, so each slide's answer belongs to that slide. Competing is physical and judged on this slide alone.

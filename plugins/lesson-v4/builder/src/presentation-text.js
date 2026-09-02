@@ -176,6 +176,32 @@ function emphasisOptions(role, baseColor, bold) {
   );
 }
 
+// A calculation is read as one thing, so it is kept on one line: "2,648 + 10 ="
+// split across two lines in a narrow card once, with the "+ 10 =" underneath
+// the number, and a Year 4 class read a stacked sum whose digits did not line
+// up. The spaces inside a run of numbers and operators become no-break spaces,
+// which PowerPoint will not wrap at; the fit pass then shrinks the text until
+// the whole calculation fits its width. Words around the calculation still wrap
+// as normal, so "Is 90 + 10 = 910 correct?" keeps only its sum whole.
+const CALCULATION_RE =
+  /\d[\d,.]*(?:[ \t]+[+\-−×÷=][ \t]+(?:\|\|)?(?:\d[\d,.]*|_+|\?|□|⬜))*(?:[ \t]+=(?=[ \t]*$|[ \t]+(?:\|\|)?[\d_?□⬜]))*/gm;
+
+function keepCalculationsWhole(text) {
+  return String(text).replace(CALCULATION_RE, (match) =>
+    /[+\-−×÷=]/.test(match) ? match.replace(/[ 	]+/g, ' ') : match
+  );
+}
+
+function wholeCalculationRuns(runs) {
+  if (typeof runs === 'string') return keepCalculationsWhole(runs);
+  if (!Array.isArray(runs)) return runs;
+  return runs.map((run) =>
+    run && typeof run.text === 'string'
+      ? Object.assign({}, run, { text: keepCalculationsWhole(run.text) })
+      : run
+  );
+}
+
 function presentationRuns(value, bold, baseColor, owner) {
   const text = String(value == null ? '' : value);
   const data = owner && typeof owner === 'object' && !Array.isArray(owner)
@@ -189,7 +215,7 @@ function presentationRuns(value, bold, baseColor, owner) {
   const base = baseColourForRole(baseColor, data.colorRole);
 
   if (!Array.isArray(data.emphasis) || data.emphasis.length === 0) {
-    return splitAnswerRuns(text, bold, base);
+    return wholeCalculationRuns(splitAnswerRuns(text, bold, base));
   }
 
   const ranges = data.emphasis
@@ -224,10 +250,11 @@ function presentationRuns(value, bold, baseColor, owner) {
     });
   }
 
-  return runs;
+  return wholeCalculationRuns(runs);
 }
 
 module.exports = {
+  keepCalculationsWhole,
   COLOR_ROLES,
   EMPHASIS_ROLES,
   baseColourForRole,

@@ -18,7 +18,9 @@ Repair only `Finding` at `Location` and anything genuinely consequential to `Wha
 
 You own working-wall resource design: which already-settled lesson material earns wall space, how affected material is combined, card type, orientation, composition, prominence and visual treatment. You do not own pedagogical wording or new teaching content. Do not invent or rewrite lesson content and do not request a new required photograph.
 
-**One exception: a picture the assignment names as terminally unavailable.** Sourcing for that filename is closed and the file will never exist, so the card cannot keep that reference and refusing to change it loses the card rather than protecting it. Re-point that single reference at a picture this run has already published, or drop it and let the card stand on its words. Change nothing else. Any other picture stays exactly as it is.
+**One exception: a picture the assignment names as terminally unavailable.** Sourcing for that filename is closed and the file will never exist, so the card cannot keep that reference and refusing to change it loses the card rather than protecting it. Re-point that single reference at a picture this run has already published. Change nothing else. Any other picture stays exactly as it is.
+
+**What to do when nothing published fits depends on what the picture was.** On a card where the picture supports words that already carry the point (`stickyKnowledge`, `workedExample`, `misconception`, `vocabChips`), drop the reference and let the card stand on its words. On the overview families the picture IS the content - a `photoMapOverview` tile, a `heroCallouts` hero, a `causeCards` person - and a tile with no photograph is an empty tile, not a quieter one. There: remove the whole tile when the card still meets its minimum (three tiles), or re-type the card to a family the surviving pictures support, or remove the card and say what the wall now does without. Removing only the `photo` field is never the repair on those families; a geography wall did exactly that, passed its own checks, and then could not build at all.
 
 ## Start narrow
 

@@ -51,12 +51,19 @@ test("row height follows the most demanding column, since a row is one height", 
   );
 });
 
-test("an unknown or missing column entry falls back to word, never to nothing", () => {
+test("a column entry this engine cannot size is refused, not quietly made a word", () => {
+  // A maths sheet asked for "number" columns and got word-width ones without
+  // a word said, so nobody could see why the table was wider than the page
+  // wanted. "number" is now a real size; anything unknown is named and refused.
   const odd = table(["word", "nonsense", "word", "sentence"]);
-  // The bad entry is treated as word (30mm), so 30 + 30 + 30 + 52 = 142mm.
-  assert.strictEqual(recording.needs(odd).minWidthMm, 142);
+  assert.throws(() => recording.needs(odd), /not a writing size/);
+  const numbers = table(["number", "number", "number", "number"]);
+  assert.strictEqual(recording.needs(numbers).minWidthMm, 88);
+});
+
+test("a column past the end of the array still takes word, never nothing", () => {
   const short = table(["sentence"]);
-  // Columns past the end of the array take word: 52 + 30 + 30 + 30 = 142mm.
+  // 52 + 30 + 30 + 30 = 142mm.
   assert.strictEqual(recording.needs(short).minWidthMm, 142);
 });
 
@@ -76,4 +83,19 @@ test("a table with no writing field is unchanged", () => {
   const bare = { helper: "recording-table", columns: ["A", "B"], rows: [["x", null]] };
   assert.strictEqual(recording.needs(bare).minWidthMm, 80); // the 80mm floor
   assert.ok(recording.render(bare).includes("<table"));
+});
+
+test("every row carries the writing height, so a fully worked example row cannot swallow the spare", () => {
+  // This table stretches to fill its zone, and a browser gives a stretched
+  // table's spare height to whichever rows are unconstrained. On one sheet the
+  // first row was the worked example (42, 32, 52), the only row with no height,
+  // and it came out about five times the height of the rows beneath it.
+  const html = recording.render({
+    columns: ["Starting number", "10 less", "10 more"],
+    writing: ["number", "number", "number"],
+    rows: [["42", "32", "52"], ["34", null, null], ["56", null, null]],
+  });
+  const rows = html.match(/<tr[^>]*>/g).filter((tag) => tag.includes("height:"));
+  assert.strictEqual(rows.length, 3, "every body row carries a height");
+  assert.strictEqual(new Set(rows).size, 1, "and they are all the same height");
 });

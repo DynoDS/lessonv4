@@ -6,6 +6,10 @@ Read this reference only when the assignment contains real search or focused rep
 
 Translate the checked subject and evidence into concise terms. Keep compound species names, proper nouns, and technical terms intact.
 
+**Every word you add is another filter.** A source search matches all of the words, not the best of them, so the words that describe how a picture should look - `wide`, `landscape`, `ground view`, `standing in water`, `riverfront`, `buildings` - are what turns a subject with thousands of photographs into zero results. `Manaus Rio Negro riverfront` found nothing while `Manaus Rio Negro` has thousands; `Iquitos Peru Amazon river port boats buildings` found nothing while `Iquitos port` has thousands. Search for what the picture is OF, in two to four words, and judge how it looks when you look at the candidates: that judgement is yours to make from the images, not the search engine's to make from your adjectives. The fetcher retries a fruitless query with the descriptor words removed and records both queries, so a summary showing two `queries_run` is telling you the first one was too long.
+
+**Read past the first three.** The summary's `considered` list holds every candidate the search returned, not only the ones downloaded, because relevance ranking puts richly described satellite and archive files above ordinary ground photographs: three satellite views of the Sahara came back while a usable Algerian Sahara photograph sat at rank eight. When the downloaded candidates are all the wrong kind, look down that list and search again by what you find there, rather than reporting the subject as unavailable.
+
 For a named species, try its full common name first. If one word contaminates the results, use the scientific name, a faithful synonym, or a precise visible description in the next compiled step.
 
 For a place outside the English-speaking world, include local-language terms before concluding that no real image is available. Do not add local-language terms to a generic object with no place identity.

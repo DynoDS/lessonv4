@@ -94,5 +94,31 @@ class SharePointSyncTests(unittest.TestCase):
             sharepoint_sync.validate_filename("../other.pptx")
 
 
+    def test_a_file_already_at_its_destination_is_left_in_place(self):
+        """A maths run built its resources directly in the mapped SharePoint
+        folder, so source and destination were the same files; the copy
+        raised WinError 32 and the report logged a sync failure for a
+        delivery that had already happened."""
+        destination = sharepoint_sync.destination_for(
+            self.school_root, "2026-2027", 4, "Autumn 1", 1, "Maths", "Thursday"
+        )
+        destination.mkdir(parents=True)
+        (destination / "Lesson.pptx").write_bytes(b"deck")
+        result_destination, files = sharepoint_sync.sync_files(
+            term_file=self.term_file,
+            school_root=self.school_root,
+            year_group=4,
+            term_folder="Autumn 1",
+            week=1,
+            subject="Maths",
+            day="Thursday",
+            source=destination,
+            requested=["Lesson.pptx"],
+            dry_run=False,
+        )
+        self.assertEqual(result_destination, destination)
+        self.assertEqual([path.name for path in files], ["Lesson.pptx"])
+        self.assertEqual((destination / "Lesson.pptx").read_bytes(), b"deck")
+
 if __name__ == "__main__":
     unittest.main()

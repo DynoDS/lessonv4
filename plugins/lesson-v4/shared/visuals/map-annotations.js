@@ -394,8 +394,11 @@ function boxAt(centre, w, h) {
 
 // items: [{ text, anchor: [x, y], preferred: [x, y], colour }]
 // sizeFor(text) -> { w, h } as fractions of the map's width and height.
-function layoutLabels(items, sizeFor) {
-  const placed = [];
+// obstacles: boxes already on the map that a pill must also keep clear of - the
+// clue markers, so a line's label does not land on the letter beside it (the
+// Equator's "X" once sat touching marker B, and a child read them as one thing).
+function layoutLabels(items, sizeFor, obstacles) {
+  const placed = (obstacles || []).map(function (box) { return Object.assign({}, box); });
   return (items || []).filter(function (item) { return item && item.text; }).map(function (item) {
     const size = sizeFor(item.text);
     const preferred = item.preferred || item.anchor;

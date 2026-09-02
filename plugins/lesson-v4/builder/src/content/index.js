@@ -279,7 +279,18 @@ function wantsCard(zone, type, data, ctx) {
   if (categoryColourFor(data && data.categoryColor)) return true;
   if (TRANSPARENT.has(type)) return false;          // container defers to its children
   if (zone.class === 'F') return false;             // one-line instruction bar
-  if (!zone.compactCards && (zone.w < 1.0 || zone.h < 0.7)) return false; // too small on the open slide
+  // Too small on the open slide to be a card at all. The height half of that
+  // is about a card the content would burst out of, so a text block that
+  // measures shorter than its zone keeps its card however short the zone is:
+  // a stack item weighted 0.55 landed at 0.645in, lost its card by 0.055in,
+  // and a child saw one instruction floating on the background while every
+  // other line on the slide sat on white.
+  if (!zone.compactCards && zone.w < 1.0) return false;
+  if (!zone.compactCards && zone.h < 0.7) {
+    if (type !== 'text') return false;
+    const extent = measureContentExtent(zone, data, ctx);
+    return !!extent && extent.h <= zone.h;
+  }
   return true;
 }
 

@@ -115,7 +115,15 @@ def sync_files(
     if not dry_run:
         destination.mkdir(parents=True, exist_ok=True)
         for path in files:
-            shutil.copy2(path, destination / path.name)
+            target = destination / path.name
+            # A run that built straight into the resolved SharePoint folder
+            # hands us a file that is already its own destination. Windows
+            # refuses that copy (WinError 32), and a sync that fails over a
+            # file already where it belongs reports a delivery problem that
+            # does not exist.
+            if target.exists() and target.resolve() == path.resolve():
+                continue
+            shutil.copy2(path, target)
 
     return destination, files
 

@@ -374,3 +374,104 @@ improvement pass folds those in.
 
 - The first design required pupils to find 10 or 100 less across a thousand in independent work without first modelling the distinct reverse-exchange case.
   *Addressed in the lesson design: the non-boundary model was retained, while the boundary model now uses 2,005 to teach reverse exchange and placeholder zeros before related guided and independent questions. The independent design review then approved the sequence.*
+
+## 2026-09-01 — Year 4 Maths: live place-value counters and exchanges
+
+- The slide `place-value-chart` helper could label place-value rows but could not show grouped counters, live add/remove moves, or exchanges through empty columns while preserving zero placeholders and unsolved inverse equations.
+  *The lesson used three controlled-AI picture substitutes and completed unharmed. A tested slide-only extension is waiting at `pending-helper/place-value-chart/` in the lesson working folder for visual review and `/install-helper`; it is not installed in the package.*
+
+## 2026-09-01 — Year 4 Geography: terminal pictures and working-wall tile validation
+
+- Four real-only photographs used by two `photoMapOverview` wall cards finished `unsatisfied`. The focused wall repair followed its documented exception and removed only those unavailable `photo` fields; `working-wall.json` still passed its design validation and repair-scope check, but the builder then failed because every tile of this card type requires a readable photo. The repair route therefore spent its only round on a state the validator accepted but the builder cannot render. The focused role and validator need the same per-card-type requirement as the builder, or the repair must replace/drop the complete affected tile rather than its photo field alone.
+- The installed package root updated from 4.2.64 to 4.2.65 after the shared Chrome preflight. The new root had no local PDF packages, so the first worksheet build returned `PAGE_FIT_UNVERIFIED` despite the earlier `CHROME:` state. Running the new root's own preflight installed its dependencies and the one infrastructure retry passed. A root refresh should invalidate or repeat the printable preflight automatically.
+
+## 2026-09-02 — Teacher review of the Year 4 maths and geography runs (4.2.65)
+
+Both decks, both worksheets and the maths wall were rendered and read page by
+page against the teacher's own list. What follows is what the evidence showed
+and where each repair was made; every one has a regression test.
+
+- A calculation split across two lines in a narrow card, so `2,648 + 10 =`
+  reached a class as a stacked sum whose digits did not line up. The fit pass
+  sizes text by total height and refuses a size only for a single over-wide
+  word, so two lines were always the bigger font. *Calculations now join with
+  no-break spaces and the measurer respects them, so a sum shrinks rather than
+  wraps; ordinary words around it still wrap.*
+- The `✓ Success Criteria` heading wrapped to two lines in a sidebar panel.
+  *Same mechanism, same fix: the heading is one unbreakable line.*
+- The board objective was rewritten rather than shortened: a plan's `To describe
+  and give examples of a biome and find the location and some features of the
+  Amazon rainforest` reached the class as `To describe and give examples of
+  biomes, and locate and describe the Amazon rainforest`. The preference asked
+  for "the shortest form that preserves the learning", which reads as licence to
+  reword. *`displayedLo` must now be `lo` word for word or its opening with a
+  tacked-on tail cut at a natural join, enforced by the design validator.*
+- Every judged claim was wrong, and the child making it was called Dev in run
+  after run: the designer's own rule named Dev, and every reference example used
+  him. *The scaffold draws four plain first names at random per run, and the
+  designer weighs a claim's truth by what the lesson needs children to reason
+  about; at least one judged claim in a lesson is right.*
+- Success-criteria steps were true statements about the method rather than the
+  method in the order a child performs it. *The step-writing mechanics now say
+  to carry out the worked example with the steps and check each one can be done
+  when it appears.*
+- Map annotation labels and clue markers were around 8pt on the board, markers
+  were drawn on top of the answer labels, and a shaded region was a dense hatch
+  that hid the country under it. *Labels and markers are sized to be read from
+  the back of the room, a name label at a marker's own point replaces the letter
+  instead of covering it, the label layout keeps clear of markers, and shading
+  is a soft translucent wash.*
+- Sticky knowledge rendered black, indistinguishable from teacher talk. *It
+  takes the objective's purple, in both places it is drawn.*
+- A whole card was painted house blue where it first told and then asked, hiding
+  the question inside the instruction. *The slide-design check refuses a
+  whole-blue block that both tells and asks, before the build runs.*
+- Taught vocabulary was green only on its own card. *A term this lesson teaches
+  is vocabulary green wherever a child reads it.*
+- Photograph captions wrote out the evidence the child was meant to find, under
+  a task that asked them to find it. *The picture-repair roles may re-point a
+  dead reference at a published picture, never replace it with a sentence saying
+  what it showed.*
+- A map sat above an inch of background with the task above it at 14pt. *A stack
+  now hands back the height its hugged items do not use, and the picture grows
+  into it.*
+- A stack item weighted 0.55 landed 0.055in under the card threshold and lost
+  its white card while every other line on the slide had one. *A text block that
+  measures shorter than its zone keeps its card at any height.*
+- The worksheet's place-value counters wrapped two per row and spilled into the
+  question: the column allowed half a millimetre for a border that costs 0.8mm.
+  *The border is paid for in both the width and the measured height.*
+- The worked example row of a recording table came out five times the height of
+  the rows below it, because it was the only row without an explicit height in a
+  table that stretches. *The height goes on every row. `number` is now a real
+  writing size and an unknown one is refused rather than silently sized as a
+  word.*
+- The maths working wall was a sheet of words while three photographs of the
+  very counters its worked example described sat published. The "every card
+  carries a visual" rule was there, but its success-criteria exception and a
+  "most maths cards should have photo: null" line let it through, and nothing
+  deterministic checked. *`working-wall-packet.py check` refuses a wall whose
+  cards carry no picture while the lesson holds one; the exception is narrowed
+  to a lesson with no picture at all; the maths line is rewritten.*
+- The geography wall's repair removed four unavailable tile photographs, passed
+  its own checks, and then could not build. *The build checks every required
+  photograph first and names each empty slot; the repair role now distinguishes
+  a picture that supports words from one that is the content.*
+- Six Wikimedia photographs finished `unsatisfied` while Commons held thousands
+  of each. Commons matches all of a query's words, so five-to-nine-word queries
+  returned zero, and only the top three of a ranked list were ever downloaded,
+  which for a landscape query is three satellite images. *A fruitless query is
+  retried with its descriptor words removed, the search looks at thirty
+  candidates, and every candidate is recorded whether downloaded or not. Two
+  biome archetypes were also contracted as `authentic-real`, which is for a
+  place named as evidence; the designer's rule now separates the two.*
+- The optional-drawing pass declined twelve slides as `full` with no measurement
+  behind it, because the designer produced no `slide-room.json`. *The decorator
+  renders the deck for its own pass, so it measures those pages itself.*
+- A SharePoint sync failed with `WinError 32` on a run built directly in the
+  destination folder. *A file already at its destination is left in place.*
+
+Not repaired this pass, and worth knowing: a photograph sitting alone in a tall
+template zone still leaves the space under it (the zone-fill advisory sees it,
+nothing acts on it), and the pending `place-value-chart` and `map` helper
+extensions are still waiting for `/install-helper`.

@@ -51,7 +51,7 @@ emailed. Never write `imageHref` yourself.
 **Tables**
 
 - `data-table` - Values HANDED to the child to read from: a price list, a timetable, a set of results.
-- `recording-table` - A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column.
+- `recording-table` - A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column. The sizes are `tick`, `number`, `word` and `sentence`, named for what the child writes; anything else is refused rather than quietly sized as a word.
 
 **Charts and diagrams**
 
@@ -257,7 +257,7 @@ Smallest usable: **70mm wide x 25mm tall**. Spare height: never takes spare heig
 
 #### `recording-table`
 
-A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column.
+A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column. The sizes are `tick`, `number`, `word` and `sentence`, named for what the child writes; anything else is refused rather than quietly sized as a word.
 
 Smallest usable: **134mm wide x 92mm tall**. Spare height: takes spare height first (it is writing space).
 

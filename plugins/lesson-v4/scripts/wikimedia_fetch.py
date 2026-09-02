@@ -91,8 +91,75 @@ def is_allowed_licence(licence_name):
     return True
 
 
+# Commons ANDs every word of a search, so each extra word is another filter. A
+# scout asking for "Manaus Rio Negro riverfront" got zero results while "Manaus
+# Rio Negro" has thousands; "Iquitos Peru Amazon river port boats buildings" got
+# zero while "Iquitos port" has 2,394. These are the words that describe how a
+# picture should look rather than what it is of, so they are the first to go
+# when a query finds nothing.
+DESCRIPTOR_WORDS = {
+    "a", "an", "and", "at", "in", "into", "of", "on", "the", "with",
+    "aerial", "background", "big", "broad", "close", "closeup", "colour", "color",
+    "detail", "distant", "far", "front", "ground", "high", "image", "large",
+    "level", "look", "looking", "near", "open", "panorama", "panoramic",
+    "photo", "photograph", "picture", "scene", "scenery", "shot", "showing",
+    "side", "standing", "typical", "view", "viewed", "wide", "wider",
+}
+
+
+def relax(query):
+    """Shorter forms of a query, most specific first, for a search that found
+    nothing. Only words are removed; nothing is added or reworded."""
+    words = [word for word in str(query).split() if word]
+    forms = []
+    without_descriptors = [w for w in words if w.lower().strip(",.") not in DESCRIPTOR_WORDS]
+    if without_descriptors and without_descriptors != words:
+        forms.append(" ".join(without_descriptors))
+    base = without_descriptors or words
+    # The proper nouns are what the picture is OF: a place, a river, a people.
+    proper = []
+    for w in base:
+        if w[:1].isupper() and w.lower() not in {p.lower() for p in proper}:
+            proper.append(w)
+    if proper and proper != base:
+        forms.append(" ".join(proper))
+    # Last resort: the two most specific words, which for a place query is the
+    # place and the thing.
+    if len(base) > 2:
+        forms.append(" ".join(base[:2]))
+    ordered = []
+    for form in forms:
+        if form and form != query and form not in ordered:
+            ordered.append(form)
+    return ordered
+
+
 def search_commons(query, reserve, thumb_width=800):
-    params = {"action": "query", "generator": "search", "gsrsearch": f"{query} filetype:bitmap|drawing", "gsrnamespace": "6", "gsrlimit": str(min(max(reserve, 10), MAX_SEARCH_LIMIT)), "prop": "imageinfo", "iiprop": "url|extmetadata|size", "iiurlwidth": str(thumb_width), "format": "json"}
+    """Search Commons, and when a query finds too little, search again with the
+    same words minus the ones that only describe how the picture should look.
+
+    Returns (results, queries_run). The caller records every query it ran, so a
+    zero-result round is visibly a query problem rather than an absent subject.
+    """
+    queries = [query] + relax(query)
+    run = []
+    results = []
+    for attempt in queries:
+        run.append(attempt)
+        results = search_commons_once(attempt, reserve, thumb_width)
+        # Enough to choose from. A handful of hits on a long query is usually
+        # the wrong handful, so a thin result is relaxed like an empty one.
+        if len(results) >= max(reserve, 6):
+            break
+    return results, run
+
+
+def search_commons_once(query, reserve, thumb_width=800):
+    # Ask for far more than will be downloaded. Commons ranks a long, richly
+    # described NASA or ESA file above an ordinary ground photograph, so the top
+    # three for "Sahara Desert wide landscape" were all satellite imagery while
+    # a usable Algerian Sahara photo sat at rank eight, unseen.
+    params = {"action": "query", "generator": "search", "gsrsearch": f"{query} filetype:bitmap|drawing", "gsrnamespace": "6", "gsrlimit": str(min(max(reserve * 2, 30), MAX_SEARCH_LIMIT)), "prop": "imageinfo", "iiprop": "url|extmetadata|size", "iiurlwidth": str(thumb_width), "format": "json"}
     request = urllib.request.Request("https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode(params), headers={"User-Agent": USER_AGENT})
     try:
         with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
@@ -189,9 +256,10 @@ def main():
     parser = argparse.ArgumentParser(description="Fetch licensed images from Wikimedia Commons")
     parser.add_argument("query"); parser.add_argument("--count", type=int, default=3); parser.add_argument("--round", type=int, default=1, choices=(1, 2)); parser.add_argument("--output", default=DEFAULT_OUTPUT)
     args = parser.parse_args(); os.makedirs(args.output, exist_ok=True); requested = max(args.count, 1); summary_path = summary_path_for(args.output, args.round)
-    try: results = search_commons(args.query, requested * RESERVE_MULTIPLIER)
+    queries_run = [args.query]
+    try: results, queries_run = search_commons(args.query, requested * RESERVE_MULTIPLIER)
     except SourceFailure as exc:
-        _atomic_write(summary_path, {"query": args.query, "source": SOURCE, "round": args.round, "complete": False, "requested_count": requested, "returned_candidate_count": 0, "download_failure_count": 0, "failure_kind": exc.failure_kind, "error": str(exc), "results": []}, "w")
+        _atomic_write(summary_path, {"query": args.query, "queries_run": queries_run, "source": SOURCE, "round": args.round, "complete": False, "requested_count": requested, "returned_candidate_count": 0, "download_failure_count": 0, "failure_kind": exc.failure_kind, "error": str(exc), "results": [], "considered": []}, "w")
         print(f"ERROR: {exc}"); raise SystemExit(1)
     downloaded = []; failures = 0; slug = sanitize_filename(args.query)
     for index, item in enumerate(results, 1):
@@ -204,8 +272,22 @@ def main():
             failures += 1
             try: dest.unlink()
             except OSError: pass
+    # Every candidate the search returned, downloaded or not, so a scout that
+    # finds the top three unusable can see there was a fourth and search for
+    # it by name instead of reporting the subject as unavailable.
+    considered = [
+        {
+            "candidate_id": item.get("title"),
+            "page_url": item.get("page_url"),
+            "creator": item.get("artist"),
+            "licence_name": item.get("licence"),
+            "description": (item.get("description") or "")[:220],
+            "downloaded": any(row.get("candidate_id") == item.get("title") for row in downloaded),
+        }
+        for item in results
+    ]
     complete = len(downloaded) >= requested or len(downloaded) == len(results)
-    _atomic_write(summary_path, {"query": args.query, "source": SOURCE, "round": args.round, "complete": bool(complete), "requested_count": requested, "returned_candidate_count": len(results), "download_failure_count": failures, "failure_kind": None if complete else "transport", "error": None if complete else "one or more candidate downloads failed", "results": downloaded}, "w")
+    _atomic_write(summary_path, {"query": args.query, "queries_run": queries_run, "source": SOURCE, "round": args.round, "complete": bool(complete), "requested_count": requested, "returned_candidate_count": len(results), "download_failure_count": failures, "failure_kind": None if complete else "transport", "error": None if complete else "one or more candidate downloads failed", "results": downloaded, "considered": considered}, "w")
     print(f"Summary saved to: {summary_path}")
     if not complete: raise SystemExit(1)
 

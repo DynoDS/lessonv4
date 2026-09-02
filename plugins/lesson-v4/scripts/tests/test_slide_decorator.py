@@ -201,3 +201,24 @@ class DecoratorDegradeReportTests(RunReportCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_the_decorator_measures_the_pages_when_the_designer_left_none():
+    """A geography deck came back with 12 slides declined as `full`, 1 as
+    `competes` and no library search run at all, and the pass record's own
+    room line said UNMEASURED: the designer had produced no slide-room.json,
+    so every "no room here" answer stood on the record's word. The decorator
+    renders the deck for its own pass, so it can always measure."""
+    role = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
+    assert "If `slide-room.json` is not there, measure the pages you have just rendered" in role
+    assert "measure-slide-room.py" in role
+    assert "--render-manifest" in role
+    # And the exception stays only for a machine that cannot render at all.
+    assert "Only a run with no render route at all" in role
+
+
+def test_the_playbook_no_longer_reads_as_permission_to_skip_measuring():
+    playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
+        encoding="utf-8"
+    )
+    assert "It is not a licence to skip the measurement" in playbook

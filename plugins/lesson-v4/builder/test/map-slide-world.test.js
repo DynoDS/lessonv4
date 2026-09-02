@@ -126,12 +126,43 @@ test('the world map draws the marks it is given instead of dropping them', () =>
   assert.match(svg, />Congo</);
 });
 
-test('a shaded region is hatched over the real map, not filled solid over it', () => {
+test('a shaded region is a soft translucent wash over the real map, not a hatch or a solid', () => {
   const svg = world.tightSvg(RAINFOREST).svg;
-  assert.match(svg, /<pattern id="hatch-0"/, 'each shaded region gets its own hatch');
+  assert.match(svg, /<pattern id="hatch-0"/, 'each shaded region gets its own fill');
   assert.match(svg, /fill="url\(#hatch-0\)"/);
-  // Hatched rather than solid so the coastline and borders underneath survive.
-  assert.match(svg, /fill-opacity="0\.16"/);
+  // Translucent so the coastline and borders underneath survive; the heavy
+  // diagonal hatch it replaced hid the country it was pointing at.
+  assert.match(svg, /fill-opacity="0\.30"/);
+  assert.doesNotMatch(svg, /stroke-opacity="0\.85"/);
+});
+
+test('a name label on a clue marker\'s spot replaces the letter instead of covering it', () => {
+  // The starter's answer slide named South America and Africa at the same
+  // points as markers A and B, and the letters sat on top of the names.
+  const svg = world.tightSvg({
+    map: 'world-with-antarctica', presentation: 'seven-continent-world',
+    clueMarkers: [
+      { marker: 'A', kind: 'continent', at: [0.333, 0.583] },
+      { marker: 'B', kind: 'continent', at: [0.556, 0.472] }
+    ],
+    continentLabels: [{ text: 'South America', at: [0.333, 0.583] }]
+  }).svg;
+  assert.doesNotMatch(svg, />A<\/text>/);
+  assert.match(svg, />B<\/text>/);
+  assert.match(svg, />South America<\/text>/);
+});
+
+test('marker letters and name pills are sized to be read from the back of the room', () => {
+  // 25px on an 1800px drawing is about 9pt on a nine-inch board map.
+  const svg = world.tightSvg({
+    map: 'world-with-antarctica', presentation: 'seven-continent-world',
+    clueMarkers: [{ marker: 'A', kind: 'continent', at: [0.333, 0.583] }],
+    continentLabels: [{ text: 'Africa', at: [0.556, 0.472] }]
+  }).svg;
+  // The marker letter and the name pills are the black bold text; the compass N is not read.
+  const sizes = Array.from(svg.matchAll(/font-size="(\d+)" font-weight="bold" fill="#1A1A1A"/g)).map((m) => Number(m[1]));
+  assert.ok(sizes.length >= 2);
+  assert.ok(sizes.every((size) => size >= 30), 'every map label is at least 30px: ' + sizes.join(','));
 });
 
 test('the key names what the shading means, in the same hatch', () => {

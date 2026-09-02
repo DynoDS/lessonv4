@@ -21,7 +21,7 @@
 // helper in this engine does not know what row it sits in.
 
 const { LINE_MM, NOTE_LINE_MM, PT_MM, BODY_PT, esc, linesFor } = require("./shared");
-const { TYPE, INSET } = require("../tokens");
+const { TYPE, INSET, RULE } = require("../tokens");
 
 // A label set at note size, measured the way shared.js measures body text: a
 // note character is note/body of a body character, so a note-size label fits
@@ -64,13 +64,18 @@ const PVC_PAD_V_MM = INSET.cell.v;
 const PVC_PAD_H_MM = INSET.cell.h;
 const PVC_POINT_COL_MM = 6; // the decimal point's own narrow column
 
-// Three discs, their gaps, the cell's padding, and half a millimetre so a
-// rounded-up border can never push the third disc onto a second line.
+// Three discs, their gaps, the cell's padding, and the cell's own border on
+// both sides. The border is not slack to be guessed at: the cell is
+// box-sizing: border-box, so a 0.4mm rule on each side takes 0.8mm out of the
+// content box. A half-millimetre allowance did not cover it, three discs no
+// longer fitted, and nine tens wrapped two-per-row over five rows and spilled
+// out of a chart measured for three.
+const PVC_BORDER_MM = 2 * RULE.line;
 const PVC_VALUE_COL_MM =
   COUNTERS_PER_ROW * COUNTER_MM +
   (COUNTERS_PER_ROW - 1) * COUNTER_GAP_MM +
   2 * PVC_PAD_H_MM +
-  0.5;
+  PVC_BORDER_MM;
 
 function pvcColumns(spec) {
   return spec.columns || [];
@@ -112,7 +117,12 @@ function pvcCounterRows(spec) {
 
 function pvcBodyMm(spec) {
   const rows = pvcCounterRows(spec);
-  return rows * COUNTER_MM + (rows - 1) * COUNTER_GAP_MM + 2 * PVC_PAD_V_MM;
+  return (
+    rows * COUNTER_MM +
+    (rows - 1) * COUNTER_GAP_MM +
+    2 * PVC_PAD_V_MM +
+    PVC_BORDER_MM
+  );
 }
 
 function renderPlaceValueCounterChart(spec) {

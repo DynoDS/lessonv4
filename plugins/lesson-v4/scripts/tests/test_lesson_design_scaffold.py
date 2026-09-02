@@ -484,7 +484,7 @@ def test_cli_writes_parseable_scaffolds_and_exact_success_marker():
         )
 
         assert (
-            result.stdout.strip()
+            result.stdout.strip().splitlines()[-1]
             == "LESSON_DESIGN_SCAFFOLD_OK"
         )
 
@@ -652,7 +652,7 @@ def test_scaffold_may_be_rebuilt_from_a_corrected_request_before_filling():
             second.stdout + second.stderr
         )
         assert (
-            second.stdout.strip()
+            second.stdout.strip().splitlines()[-1]
             == "LESSON_DESIGN_SCAFFOLD_OK"
         )
 
@@ -923,3 +923,57 @@ if __name__ == "__main__":
     raise SystemExit(
         1 if failed else 0
     )
+
+
+def test_scaffold_draws_character_names_at_random_from_the_pool():
+    """A Year 4 geography lesson put its claim in the mouth of Dev, as the
+    lesson before it had, because the designer's own instruction named Dev
+    as the misconception speaker and every reference example used him.
+    The names are drawn here so they vary between runs and never come from
+    the examples."""
+    import random
+
+    first = scaffold.draw_character_names(rng=random.Random(1))
+    second = scaffold.draw_character_names(rng=random.Random(2))
+    assert len(first) == scaffold.CHARACTER_NAMES_DRAWN
+    assert len(set(first)) == len(first)
+    assert set(first) <= set(scaffold.CHARACTER_NAME_POOL)
+    assert first != second
+    for reserved in ("Mr Sear", "Miss Brooker", "Bailey", "Dev"):
+        assert reserved not in scaffold.CHARACTER_NAME_POOL
+
+
+def test_cli_prints_the_character_names_before_the_success_marker():
+    request = base_request()
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        request_path = root / "request.json"
+        request_path.write_text(
+            json.dumps(request, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-S",
+                str(SCAFFOLD),
+                "--request",
+                str(request_path),
+                "--lesson-design",
+                str(root / "lesson-design.json"),
+                "--photo-requirements",
+                str(root / "photo-requirements.json"),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        lines = result.stdout.strip().splitlines()
+        assert lines[-1] == "LESSON_DESIGN_SCAFFOLD_OK"
+        names_line = [line for line in lines if line.startswith("CHARACTER_NAMES: ")]
+        assert len(names_line) == 1
+        names = names_line[0][len("CHARACTER_NAMES: "):].split(", ")
+        assert len(names) == scaffold.CHARACTER_NAMES_DRAWN
+        assert set(names) <= set(scaffold.CHARACTER_NAME_POOL)

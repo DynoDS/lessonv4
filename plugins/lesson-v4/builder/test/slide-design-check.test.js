@@ -108,6 +108,57 @@ test('internal lesson-stage titles block before the scratch builder runs', () =>
   }
 });
 
+test('a whole-blue block that tells and then asks blocks before the scratch builder runs', () => {
+  // Geography slide 6 painted "Look at the tropical rainforest regions. What
+  // pattern do you notice around the Equator?" as one blue card, hiding the
+  // question inside the instruction.
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';
+` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');
+`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'Look Closely',
+          body: {
+            type: 'stack',
+            items: [
+              {
+                type: 'text',
+                color: '0070C0',
+                value: 'Look at the tropical rainforest regions. What pattern do you notice around the Equator?'
+              },
+              { type: 'text', color: '0070C0', value: 'Which continent is A?' },
+              { type: 'text', value: 'The Sahara looks different. How can both be biomes?' }
+            ]
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, {
+      buildPath: fakeBuilder
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    const hits = result.stdout.match(/"signal":"MIXED_BLOCK_WHOLE_BLUE"/g) || [];
+    assert.equal(hits.length, 1);
+    assert.match(result.stdout, /"slide":1/);
+    assert.equal(fs.existsSync(builderMarker), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('a clean scratch build passes, hides its Wrote line and deletes its deck', () => {
   const root = makeRoot();
   try {

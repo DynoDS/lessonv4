@@ -85,7 +85,7 @@ class PictureSourceTests(unittest.TestCase):
             output = root / "wikimedia-output"
             def write_truncated(_url, destination):
                 Path(destination).write_bytes(valid_bytes)
-            with mock.patch.object(wikimedia, "search_commons", return_value=[candidate]), mock.patch.object(wikimedia, "download_image", side_effect=write_truncated):
+            with mock.patch.object(wikimedia, "search_commons", return_value=([candidate], ["object"])), mock.patch.object(wikimedia, "download_image", side_effect=write_truncated):
                 with mock.patch.object(sys, "argv", [str(ROOT / "wikimedia_fetch.py"), "object", "--count", "1", "--output", str(output)]):
                     with self.assertRaises(SystemExit) as exit_info:
                         wikimedia.main()
@@ -301,3 +301,97 @@ class PictureRouteEnforcementAgreementTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CommonsAndsEveryWordTests(unittest.TestCase):
+    """Six photographs a Year 4 geography lesson needed finished `unsatisfied`
+    while Commons held thousands of each. Commons requires every word of a query
+    to match, so the scout's five-to-nine-word queries ("Manaus Rio Negro
+    riverfront", "Iquitos Peru Amazon river port boats buildings") returned
+    nothing at all; and where a query did return results, only the top three
+    were ever downloaded, which for a landscape query is three satellite images
+    because Commons ranks richly described NASA and ESA files first."""
+
+    def test_a_query_that_finds_nothing_is_retried_without_its_descriptor_words(self):
+        seen = []
+
+        def fake_search(query, reserve, thumb_width=800):
+            seen.append(query)
+            return [] if len(query.split()) > 3 else [{"title": "File:hit.jpg"}] * 8
+
+        with mock.patch.object(wikimedia, "search_commons_once", side_effect=fake_search):
+            results, queries_run = wikimedia.search_commons(
+                "Manaus Rio Negro riverfront", 3
+            )
+        self.assertEqual(queries_run[0], "Manaus Rio Negro riverfront")
+        self.assertIn("Manaus Rio Negro", queries_run)
+        self.assertTrue(results, "the relaxed query's results are what come back")
+
+    def test_a_query_that_already_works_is_never_relaxed(self):
+        with mock.patch.object(
+            wikimedia, "search_commons_once", return_value=[{"title": "File:a.jpg"}] * 9
+        ):
+            _, queries_run = wikimedia.search_commons("Sahara desert", 3)
+        self.assertEqual(queries_run, ["Sahara desert"])
+
+    def test_relaxation_only_removes_words(self):
+        for query in (
+            "Sahara Desert wide landscape",
+            "Amazon rainforest river ground view",
+            "Iquitos Peru Amazon river port boats buildings",
+        ):
+            original = set(query.split())
+            for form in wikimedia.relax(query):
+                self.assertTrue(
+                    set(form.split()) < original,
+                    f"{form!r} is not the words of {query!r} with some removed",
+                )
+
+    def test_the_summary_records_every_candidate_the_search_returned(self):
+        """A scout that finds the top three unusable could not see there was a
+        fourth: the summary held only what was downloaded, so a rank-eight
+        ground photograph of the Sahara was invisible and the entry died."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            jpeg = self.image(root / "candidate.jpg", "JPEG").read_bytes()
+            candidates = [
+                {
+                    "title": f"File:candidate-{i}.jpg",
+                    "thumb_url": f"https://example.test/{i}.jpg",
+                    "page_url": f"https://commons.wikimedia.org/wiki/File:candidate-{i}.jpg",
+                    "artist": "NASA" if i < 3 else "A photographer",
+                    "licence": "CC BY 4.0",
+                    "licence_url": "https://creativecommons.org/licenses/by/4.0/",
+                    "description": "one",
+                }
+                for i in range(8)
+            ]
+            output = root / "wikimedia-output"
+
+            def write_image(_url, destination):
+                Path(destination).write_bytes(jpeg)
+
+            with mock.patch.object(
+                wikimedia, "search_commons", return_value=(candidates, ["desert"])
+            ), mock.patch.object(wikimedia, "download_image", side_effect=write_image):
+                with mock.patch.object(
+                    sys,
+                    "argv",
+                    [str(ROOT / "wikimedia_fetch.py"), "desert", "--count", "3", "--output", str(output)],
+                ):
+                    wikimedia.main()
+
+            summary = json.loads((output / "_search-summary-wikimedia-r1.json").read_text())
+            self.assertEqual(len(summary["results"]), 3, "still downloads only what was asked for")
+            self.assertEqual(len(summary["considered"]), 8, "but records every candidate")
+            self.assertEqual(summary["queries_run"], ["desert"])
+            downloaded = [row["candidate_id"] for row in summary["considered"] if row["downloaded"]]
+            self.assertEqual(len(downloaded), 3)
+            unseen = [row for row in summary["considered"] if not row["downloaded"]]
+            self.assertTrue(all(row["page_url"] for row in unseen), "each one is findable by name")
+
+    def image(self, path, fmt):
+        from PIL import Image
+
+        Image.new("RGB", (40, 30), "white").save(path, fmt)
+        return path

@@ -12,6 +12,7 @@ const path = require("node:path");
 const style = require("../style.json");
 const { renderWorkedExample, renderMisconception } = require("../src/render-panels");
 const { renderReferenceTable } = require("../src/render-grids");
+const { assertRequiredPhotosAreReadable } = require("../build");
 
 const FIXTURES_DIR = path.join(__dirname, "..", "test-fixtures-a3");
 
@@ -109,6 +110,52 @@ test("a misconception with an emoji picture renders the emoji beneath the pair",
     "expected the misconception emoji to use the visual rendering path"
   );
   assert.ok(html.includes("\u{1F50C}"), "expected the misconception emoji to be visible");
+});
+
+test("a tile with no photograph is refused before the render, named by card and tile", () => {
+  // A geography wall's repair removed four unavailable tile photos, which the
+  // repair-scope check and the JSON both accepted, and the build then failed
+  // with `could not read required photo "undefined"` naming neither the tile
+  // nor the fact that the field was gone. On these families the photograph IS
+  // the tile, so the whole spec is checked first and every gap is reported.
+  const card = {
+    type: "photoMapOverview",
+    title: "Biome examples",
+    page: { size: "A3", orientation: "landscape" },
+    tiles: [
+      { title: "The Sahara", caption: "Desert biome." },
+      { title: "The Arctic", photo: "photos/no-such-photo.jpg", caption: "Tundra biome." },
+      { title: "The Amazon", photo: "photos/pizza.jpg", caption: "Rainforest biome." },
+    ],
+    map: { photo: "photos/pizza.jpg", caption: "Where they are" },
+    keySentence: "A biome is a large region.",
+  };
+
+  assert.throws(
+    () => assertRequiredPhotosAreReadable([card], FIXTURES_DIR),
+    (error) => {
+      assert.match(error.message, /2 required Working Wall photograph\(s\) missing/);
+      assert.match(error.message, /Card "Biome examples" tile 1 "The Sahara" has no photo/);
+      assert.match(error.message, /tile 2 "The Arctic" names "photos\/no-such-photo\.jpg"/);
+      assert.match(error.message, /cannot[\s\S]*stand on its words/);
+      return true;
+    }
+  );
+});
+
+test("a card whose photographs all read passes the same check", () => {
+  const card = {
+    type: "photoMapOverview",
+    title: "Biome examples",
+    page: { size: "A3", orientation: "landscape" },
+    tiles: [
+      { title: "One", photo: "photos/pizza.jpg" },
+      { title: "Two", photo: "photos/pizza.jpg" },
+      { title: "Three", photo: "photos/pizza.jpg" },
+    ],
+    map: { photo: "photos/pizza.jpg" },
+  };
+  assert.doesNotThrow(() => assertRequiredPhotosAreReadable([card], FIXTURES_DIR));
 });
 
 test("an unreadable worked-example photo stops the build with a named error", () => {

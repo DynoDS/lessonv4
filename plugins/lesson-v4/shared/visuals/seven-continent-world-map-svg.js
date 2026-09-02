@@ -9,10 +9,19 @@ const maps = require('./map-annotations');
 
 const MAP_KEY = 'world-with-antarctica';
 const FONT = 'Aptos, Arial, sans-serif';
-const LABEL_FONT = 27;
-const SEA_FONT = 23;
-const MARKER_R = 21;
-const MARKER_FONT = 25;
+// Sizes are in pixels of the 1800px-wide drawing. On a board the drawing is
+// about nine inches wide at most, so 25px came out near 9pt: a Year 4 class
+// could not read A, B or X from the back of the room. These sizes put a
+// marker letter and a name pill at roughly 15-16pt on a full-width map, the
+// smallest a child at the back can read, and the label layout below moves
+// pills apart when the bigger pills would otherwise touch.
+const LABEL_FONT = 40;
+const SEA_FONT = 34;
+const MARKER_R = 36;
+const MARKER_FONT = 42;
+// A marker whose spot a name label also claims is the answer version of that
+// marker: the name replaces the letter rather than sitting on top of it.
+const MARKER_NAMED_WITHIN = 0.02;
 const COMPASS_R = 48;
 const EDGE_BAND_W = 22;
 const FOOTER_H = 92;
@@ -232,11 +241,20 @@ function placedLabels(s, rect, mapW, mapH) {
       repeatAt: null
     });
   });
+  const markerW = (MARKER_R * 2 + 24) / mapW;
+  const markerH = (MARKER_R * 2 + 24) / mapH;
+  const obstacles = [];
+  s.clueMarkers.forEach(function (item) {
+    [item.at, item.repeatAt].forEach(function (at) {
+      if (!at) return;
+      obstacles.push({ x: at[0] - markerW / 2, y: at[1] - markerH / 2, w: markerW, h: markerH });
+    });
+  });
   const placed = maps.refuseCrowdedLabels(
     maps.layoutLabels(inputs, function (text) {
       const item = inputs.find(function (candidate) { return candidate.text === text; });
       return labelSize(text, item ? item.fontSize : LABEL_FONT, mapW, mapH);
-    }),
+    }, obstacles),
     'the seven-continent world map'
   );
   return placed.map(function (item, index) { return Object.assign(item, inputs[index]); });
@@ -300,9 +318,11 @@ function arrowDefs(marks) {
 function hatchDefs(marks) {
   return marks.map(function (mark, index) {
     if (!mark.shaded) return '';
+    // A soft translucent wash, not a hatch: the region reads as filled from the
+    // back of the room while the coastline, rivers and borders under it stay
+    // visible. The heavy diagonal hatch hid the very country it was pointing at.
     return '<pattern id="hatch-' + index + '" width="18" height="18" patternUnits="userSpaceOnUse">' +
-      '<rect width="18" height="18" fill="#' + mark.colour + '" fill-opacity="0.16"/>' +
-      '<path d="M-5 18 L18 -5 M4 23 L23 4" stroke="#' + mark.colour + '" stroke-width="5" stroke-opacity="0.85"/>' +
+      '<rect width="18" height="18" fill="#' + mark.colour + '" fill-opacity="0.30"/>' +
       '</pattern>';
   }).join('');
 }
@@ -315,15 +335,14 @@ function keySvg(entries, rect, y) {
     const x = startX + i * cellW;
     return '<rect x="' + x.toFixed(1) + '" y="' + y + '" width="46" height="34" rx="6" fill="url(#keyhatch-' + i + ')" stroke="#333333" stroke-width="2.5"/>' +
       '<text x="' + (x + 60).toFixed(1) + '" y="' + (y + 26) + '" font-family="' + FONT +
-      '" font-size="26" font-weight="bold" fill="#1A1A1A">' + esc(entry.text) + '</text>';
+      '" font-size="32" font-weight="bold" fill="#1A1A1A">' + esc(entry.text) + '</text>';
   }).join('');
 }
 
 function keyHatchDefs(entries) {
   return entries.map(function (entry, i) {
     return '<pattern id="keyhatch-' + i + '" width="18" height="18" patternUnits="userSpaceOnUse">' +
-      '<rect width="18" height="18" fill="#' + entry.colour + '" fill-opacity="0.16"/>' +
-      '<path d="M-5 18 L18 -5 M4 23 L23 4" stroke="#' + entry.colour + '" stroke-width="5" stroke-opacity="0.85"/>' +
+      '<rect width="18" height="18" fill="#' + entry.colour + '" fill-opacity="0.30"/>' +
       '</pattern>';
   }).join('');
 }
@@ -338,10 +357,10 @@ function mapLayer(s, uri, rect, parts) {
   drawn.forEach(function (line, index) {
     const y = rect.y + latitudeFraction(line.lat) * rect.h;
     const labelX = rect.x + rect.w * (index % 2 === 0 ? 0.20 : 0.74);
-    const halfWidth = 8 + line.text.length * 6.2;
+    const halfWidth = 10 + line.text.length * 8.4;
     parts.push('<line x1="' + rect.x + '" y1="' + y + '" x2="' + (rect.x + rect.w) + '" y2="' + y + '" stroke="#C65911" stroke-width="4" stroke-dasharray="18 12"/>');
     parts.push('<rect x="' + (labelX - halfWidth) + '" y="' + (y - 29) + '" width="' + (halfWidth * 2) + '" height="31" rx="12" fill="#FFFFFF" fill-opacity="0.94"/>');
-    parts.push('<text x="' + labelX + '" y="' + (y - 6) + '" text-anchor="middle" font-family="' + FONT + '" font-size="22" font-weight="bold" fill="#C65911">' + esc(line.text) + '</text>');
+    parts.push('<text x="' + labelX + '" y="' + (y - 6) + '" text-anchor="middle" font-family="' + FONT + '" font-size="30" font-weight="bold" fill="#C65911">' + esc(line.text) + '</text>');
   });
   if (s.joinedEdges) {
     parts.push('<rect x="' + rect.x + '" y="' + rect.y + '" width="' + EDGE_BAND_W + '" height="' + rect.h + '" fill="url(#pacific-edge)"/>');
@@ -360,7 +379,14 @@ function mapLayer(s, uri, rect, parts) {
       parts.push(drawPill(Object.assign(repeated, { text: item.text }), rect, item.fontSize, '#DDEBF7', '#0070C0'));
     }
   });
+  const named = [].concat(s.continentLabels, s.oceanLabels, s.seaLabels);
+  const namedHere = function (at) {
+    return named.some(function (label) {
+      return Math.abs(label.at[0] - at[0]) < MARKER_NAMED_WITHIN && Math.abs(label.at[1] - at[1]) < MARKER_NAMED_WITHIN;
+    });
+  };
   s.clueMarkers.forEach(function (item) {
+    if (namedHere(item.at)) return;
     parts.push(markerSvg(item, item.at, rect));
     if (item.repeatAt) parts.push(markerSvg(item, item.repeatAt, rect));
   });

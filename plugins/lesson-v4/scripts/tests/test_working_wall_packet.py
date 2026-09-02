@@ -355,3 +355,110 @@ def test_track_d_prepares_the_packet_before_the_launch() -> None:
     assert "one infrastructure retry" in track
     assert "FRICTION:" in track
     assert "never skips this launch" in track
+
+
+# ─── check: a wall of words while the lesson had pictures ────────────────────
+
+
+def wall_with(cards) -> dict:
+    return {"topic": "Find 10 and 100 more or less", "cards": cards}
+
+
+def words_only_card() -> dict:
+    return {
+        "type": "workedExample",
+        "title": "How to do it",
+        "page": {"size": "A3", "orientation": "landscape"},
+        "items": [
+            {"label": "Step 1", "text": "Find the tens column."},
+            {"label": "Worked example", "text": "2,950 + 100 = 3,050"},
+        ],
+        "photo": None,
+    }
+
+
+def publish(working_dir: Path, *names: str) -> None:
+    receipts = working_dir / "orchestration-receipts" / "picture-terminal"
+    receipts.mkdir(parents=True, exist_ok=True)
+    for index, name in enumerate(names):
+        (receipts / f"{index}.json").write_text(
+            json.dumps({"filename": name, "terminalState": "published"}),
+            encoding="utf-8",
+        )
+
+
+def run_check(working_dir: Path, wall: dict, lesson: dict | None = None):
+    wall_path = working_dir / "working-wall.json"
+    wall_path.write_text(json.dumps(wall), encoding="utf-8")
+    command = [
+        sys.executable,
+        str(SCRIPT),
+        "check",
+        "--plugin-root",
+        str(ROOT),
+        "--working-dir",
+        str(working_dir),
+        "--working-wall",
+        str(wall_path),
+    ]
+    if lesson is not None:
+        lesson_path = working_dir / "lesson.json"
+        lesson_path.write_text(json.dumps(lesson), encoding="utf-8")
+        command += ["--lesson", str(lesson_path)]
+    return subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+
+
+def test_a_wall_of_words_is_refused_while_the_lesson_holds_a_picture(tmp_path: Path) -> None:
+    """A Year 4 maths lesson published three photographs of place-value
+    counters, and the wall came out as one card of five steps and an equation:
+    an A3 sheet of text. The words-only success-criteria exception is real, but
+    it is for a lesson with no picture, and nothing checked which case this was."""
+    publish(
+        tmp_path,
+        "unsplash/place-value-cross-hundred-counters.jpg",
+        "unsplash/place-value-cross-thousand-counters.jpg",
+    )
+    result = run_check(tmp_path, wall_with([words_only_card()]))
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "carry no picture" in result.stdout
+    assert "'How to do it'" in result.stdout
+    assert "place-value-cross-hundred-counters.jpg" in result.stdout
+
+
+def test_the_same_wall_passes_when_the_lesson_had_no_picture_at_all(tmp_path: Path) -> None:
+    """The exception the rule exists for: nothing published, nothing drawn."""
+    result = run_check(tmp_path, wall_with([words_only_card()]))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "WORKING_WALL_DESIGN_OK"
+
+
+def test_a_card_that_carries_its_lesson_photo_passes(tmp_path: Path) -> None:
+    publish(tmp_path, "unsplash/place-value-cross-thousand-counters.jpg")
+    card = words_only_card()
+    card["photo"] = "unsplash/place-value-cross-thousand-counters.jpg"
+    result = run_check(tmp_path, wall_with([card]))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "WORKING_WALL_DESIGN_OK"
+
+
+def test_a_tile_photo_counts_as_the_card_carrying_a_picture(tmp_path: Path) -> None:
+    publish(tmp_path, "wikimedia/amazon.jpg")
+    card = {
+        "type": "photoMapOverview",
+        "title": "Biome examples",
+        "page": {"size": "A3", "orientation": "landscape"},
+        "tiles": [{"title": "The Amazon", "photo": "wikimedia/amazon.jpg"}],
+        "map": {"photo": "wikimedia/amazon.jpg"},
+    }
+    result = run_check(tmp_path, wall_with([card]))
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_the_playbook_and_the_role_carry_the_check(tmp_path: Path) -> None:
+    playbook = PLAYBOOK.read_text(encoding="utf-8")
+    assert "working-wall-packet.py" in playbook
+    assert "WORKING_WALL_DESIGN_OK" in playbook
+    role = ROLE.read_text(encoding="utf-8")
+    # The rule that used to send every maths wall to text is gone.
+    assert "most maths cards should have" not in role
+    assert "narrower than it sounds" in role

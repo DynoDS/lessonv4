@@ -294,10 +294,31 @@ test('question cards keep the peer colour on the whole question', () => {
       'What is 9 × 4?'
     ]
   });
-  const peer = texts.find((entry) => entry.content === 'What is 6 × 7?');
-  const plain = texts.find((entry) => entry.content === 'What is 9 × 4?');
+  // A calculation renders with no-break spaces, so compare the readable words.
+  const readable = (entry) => String(entry.content).replace(/\u00a0/g, ' ');
+  const peer = texts.find((entry) => readable(entry) === 'What is 6 × 7?');
+  const plain = texts.find((entry) => readable(entry) === 'What is 9 × 4?');
   assert.ok(peer, 'peer question should render');
   assert.ok(plain, 'plain question should render');
   assert.equal(peer.color, COLOURS.title);
   assert.equal(plain.color, COLOURS.body);
+});
+
+test('a calculation is kept on one line with no-break spaces, words around it still wrap', () => {
+  // Maths slide 6 put "2,648 + 10 =" in a narrow card and it came out as
+  // "2,648" over "+ 10 =": a stacked sum whose digits did not line up.
+  const { keepCalculationsWhole } = require('../src/presentation-text');
+  const nbsp = '\u00a0';
+  assert.equal(keepCalculationsWhole('2,648 + 10 ='), `2,648${nbsp}+${nbsp}10${nbsp}=`);
+  assert.equal(
+    keepCalculationsWhole('Is 90 + 10 = 910 correct? Explain how you know.'),
+    `Is 90${nbsp}+${nbsp}10${nbsp}=${nbsp}910 correct? Explain how you know.`
+  );
+  assert.equal(keepCalculationsWhole('6 × 7 = ||42'), `6${nbsp}×${nbsp}7${nbsp}=${nbsp}||42`);
+  assert.equal(keepCalculationsWhole('1,390 + 10 =\n1,400 - 10 ='), `1,390${nbsp}+${nbsp}10${nbsp}=\n1,400${nbsp}-${nbsp}10${nbsp}=`);
+  assert.equal(keepCalculationsWhole('Find 10 more than 736.'), 'Find 10 more than 736.');
+  assert.equal(keepCalculationsWhole('480, 490, __, 510'), '480, 490, __, 510');
+  const runs = presentationRuns('2,648 + 10 =', true, COLOURS.body, {});
+  const text = typeof runs === 'string' ? runs : runs.map((run) => run.text).join('');
+  assert.equal(text, `2,648${nbsp}+${nbsp}10${nbsp}=`);
 });

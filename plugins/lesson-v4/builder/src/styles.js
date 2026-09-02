@@ -13,6 +13,7 @@ const COLOURS = {
   problem:     'C00000',
   vocabBg:     'D5F5E3',
   stickyBg:    'DEEAF1',
+  sticky:      '7030A0',   // sticky-knowledge words, the LO's purple
   scPanelBg:   'D5F5E3',
   scPanelLine: '00B050',
   teachLeft:   '0070C0',

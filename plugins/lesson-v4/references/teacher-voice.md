@@ -326,6 +326,29 @@ may be less clear than:
 
 Always check the pupil's likely interpretation, not only whether the wording sounds like the teacher.
 
+## The planning nouns stay in the plan
+
+The words a lesson is designed in - `claim`, `evidence`, `source`, `locate`, `feature`, `a three-part description`, `make the location more precise` - name what the teacher is assessing. A child is not assessing anything; they are doing something with a map or a photograph, so the child's line names that doing. The tell is a sentence a child could only act on after being told what the noun means for them today.
+
+Planning language:
+> Which source would you use to show each claim: the Amazon crosses several countries; the vegetation is dense; people live there? Explain one choice.
+
+The teacher:
+> Which source would you use to find out each of these things?
+> - which countries the Amazon rainforest covers
+> - what the vegetation is like
+> - whether people live there
+>
+> Explain one of your choices.
+
+Planning language:
+> Start with the continent, then make the location more precise.
+
+The teacher:
+> Start with the continent, then narrow it down.
+
+The exception is a term the lesson itself has taught or that assessment will genuinely ask in that form (Written Voice keeps `identify`, `compare` and `evidence` when they are authentic to the learning). A taught word is used normally; an untaught planning word is translated into what the child does.
+
 ---
 
 # 7. Scaffolding

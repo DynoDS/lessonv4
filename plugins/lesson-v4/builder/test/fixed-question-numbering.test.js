@@ -65,7 +65,8 @@ test('a single teacher-led question stays unlabelled', () => {
     'a lone (a) reads as a fault, so a single teacher-led question loses its numbering'
   );
   assert.ok(
-    slide.texts.some((entry) => entry.value === 'What is 7 + 5?'),
+    // The sum inside renders with no-break spaces so it never wraps.
+    slide.texts.some((entry) => String(entry.value).replace(/\u00a0/g, ' ') === 'What is 7 + 5?'),
     'the question itself still renders'
   );
 });

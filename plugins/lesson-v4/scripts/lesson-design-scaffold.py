@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import random
 import re
 import sys
 from pathlib import Path
@@ -52,6 +53,32 @@ PLACEHOLDER = _validator.SCAFFOLD_PLACEHOLDER
 
 class ScaffoldError(ValueError):
     pass
+
+
+# Plain first names for the children who voice a claim, a prediction or a
+# mistake. A model asked to "choose a name" reaches for whichever name its
+# references used as an example, so one class met Dev every week; drawing the
+# names here, at random, is what makes them vary. The three class characters
+# (Mr Sear, Miss Brooker, Bailey) are the slide designer's and are not in the
+# pool.
+CHARACTER_NAME_POOL = (
+    "Amira", "Arjun", "Ava", "Ben", "Chloe", "Daniel", "Eli", "Ella",
+    "Ethan", "Farah", "Freya", "George", "Grace", "Hana", "Harry", "Isla",
+    "Jack", "Jamal", "Kai", "Layla", "Leo", "Lily", "Maya", "Mia",
+    "Nadia", "Noah", "Oliver", "Omar", "Priya", "Rosie", "Sam", "Sofia",
+    "Theo", "Yusuf", "Zara", "Zoe",
+)
+CHARACTER_NAMES_DRAWN = 4
+
+
+def draw_character_names(
+    count: int = CHARACTER_NAMES_DRAWN,
+    *,
+    rng: random.Random | None = None,
+) -> list[str]:
+    """Return `count` distinct names from the pool in a random order."""
+    chooser = rng or random.SystemRandom()
+    return chooser.sample(CHARACTER_NAME_POOL, count)
 
 
 def require(condition: bool, message: str) -> None:
@@ -1410,6 +1437,7 @@ def main(
         )
         return 1
 
+    print("CHARACTER_NAMES: " + ", ".join(draw_character_names()))
     print("LESSON_DESIGN_SCAFFOLD_OK")
     return 0
 

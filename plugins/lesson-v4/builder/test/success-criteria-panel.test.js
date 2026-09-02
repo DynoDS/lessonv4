@@ -68,7 +68,8 @@ test('both routes draw one green panel with three white criterion cards', () => 
 
 test('both routes carry the same panel label, colour and size', () => {
   const labels = drawBothRoutes().map((slide) =>
-    slide.texts.find((entry) => entry.content === '\u2713 Success Criteria')
+    // The heading is joined with no-break spaces so it never wraps.
+    slide.texts.find((entry) => entry.content === '\u2713\u00a0Success\u00a0Criteria')
   );
   labels.forEach((label, route) => {
     assert.ok(label, `route ${route + 1}: panel label renders once`);
@@ -78,4 +79,21 @@ test('both routes carry the same panel label, colour and size', () => {
   });
   assert.equal(labels[0].fontSize, labels[1].fontSize);
   assert.equal(labels[0].color, labels[1].color);
+});
+
+test('the panel heading is one unbreakable line', () => {
+  // A 30%-wide sidebar once wrapped "✓ Success Criteria" onto two large lines.
+  const pptx = new PptxGenJS();
+  const slide = pptx.addSlide();
+  drawScPanelContent(pptx, slide, { x: 6.5, y: 1, w: 3, h: 4 }, {
+    content: { type: 'steps', steps: ['One.', 'Two.'] }
+  }, {});
+  const heading = slide._slideObjects.find((o) => {
+    const text = typeof o.text === 'string' ? o.text : Array.isArray(o.text) ? o.text.map((t) => t.text).join('') : '';
+    return text.includes('Success');
+  });
+  assert.ok(heading, 'the heading is drawn');
+  const text = typeof heading.text === 'string' ? heading.text : heading.text.map((t) => t.text).join('');
+  assert.equal(text.includes(' '), false, 'no breakable space in the heading: ' + JSON.stringify(text));
+  assert.ok(text.includes('\u00a0'));
 });

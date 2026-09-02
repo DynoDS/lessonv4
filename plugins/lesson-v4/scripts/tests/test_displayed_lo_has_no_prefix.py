@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
+VALIDATOR = ROOT / "scripts" / "validate-lesson-design.py"
 LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
 PREFERENCES = ROOT / "references" / "preferences.md"
 TEMPLATE = ROOT / "references" / "output-template.md"
@@ -104,3 +105,69 @@ class PhotoBudgetIsNotTheRunCeilingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _validator():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("lesson_design_validator", VALIDATOR)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+class DisplayedLoIsTheTeachersWordsTests(unittest.TestCase):
+    """A Y4 Geography plan said `To describe and give examples of a biome and
+    find the location and some features of the Amazon rainforest`; the deck
+    showed `To describe and give examples of biomes, and locate and describe
+    the Amazon rainforest`. The old rule asked for "the shortest form that
+    preserves the learning", which reads as licence to rewrite. The board
+    objective is the teacher's own words, cut short at a tacked-on tail at
+    most."""
+
+    def setUp(self) -> None:
+        self.ok = _validator().displayed_lo_is_the_objective_or_its_opening
+
+    def test_the_reworded_geography_objective_is_refused(self) -> None:
+        self.assertFalse(self.ok(
+            "To describe and give examples of a biome and find the location "
+            "and some features of the Amazon rainforest.",
+            "To describe and give examples of biomes, and locate and describe "
+            "the Amazon rainforest",
+        ))
+
+    def test_the_objective_word_for_word_passes(self) -> None:
+        lo = ("To describe and give examples of a biome and find the location "
+              "and some features of the Amazon rainforest.")
+        self.assertTrue(self.ok(lo, lo.rstrip(".")))
+        self.assertTrue(self.ok(lo, lo))
+
+    def test_a_tacked_on_tail_may_be_cut_at_its_join(self) -> None:
+        self.assertTrue(self.ok(
+            "To solve problems involving time conversions: hours/minutes, "
+            "minutes/seconds", "To solve problems involving time conversions"))
+        self.assertTrue(self.ok(
+            "To add two-digit numbers using partitioning",
+            "To add two-digit numbers"))
+        self.assertTrue(self.ok(
+            "Plan a fair test, deciding what I will change",
+            "To plan a fair test"))
+
+    def test_a_cut_that_is_not_at_a_join_is_refused(self) -> None:
+        self.assertFalse(self.ok(
+            "To add two-digit numbers using partitioning", "To add two-digit"))
+        self.assertFalse(self.ok("To find 10 and 100 more or less", ""))
+
+    def test_the_validator_wires_the_check_in(self) -> None:
+        source = VALIDATOR.read_text(encoding="utf-8")
+        self.assertIn(
+            "displayed_lo_is_the_objective_or_its_opening(lesson[\"lo\"], "
+            "lesson[\"displayedLo\"])", source)
+
+    def test_the_designer_no_longer_asks_for_a_shortened_objective(self) -> None:
+        designer = flat(LESSON_DESIGNER)
+        self.assertNotIn("shortened displayed LO header", designer)
+        self.assertIn("The board objective is the teacher's words, not yours", designer)
+        preferences = flat(PREFERENCES)
+        self.assertNotIn("uses the shortest form that preserves the learning", preferences)

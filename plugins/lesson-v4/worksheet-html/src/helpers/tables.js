@@ -159,21 +159,38 @@ function measureDataTable(spec, widthMm = 100) {
 // that mixes demands: ["word", "tick", "word", "sentence"]. See columnWriting.
 const WRITING = {
   tick: { columnMm: 16, rowMm: 9 },
+  number: { columnMm: 22, rowMm: 12 },
   word: { columnMm: 30, rowMm: 12 },
   sentence: { columnMm: 52, rowMm: 22 },
 };
+
+// A name this table does not know used to fall back to "word" without a word
+// said, so a sheet asking for "number" columns silently got word-width ones and
+// nobody could see why the table was wider than the page wanted. A name is
+// either one this engine sizes or a mistake worth showing.
+function writingSize(name, where) {
+  if (name === undefined || name === null) return WRITING.word;
+  const size = WRITING[name];
+  if (!size) {
+    throw new Error(
+      `recording-table ${where} is "${name}", which is not a writing size. ` +
+        `Use one of: ${Object.keys(WRITING).join(", ")}.`
+    );
+  }
+  return size;
+}
 
 function writingFor(spec) {
   if (Array.isArray(spec.writing)) {
     // The widest column decides the row height, because one row is one height.
     let widest = WRITING.tick;
-    for (const name of spec.writing) {
-      const size = WRITING[name] || WRITING.word;
+    spec.writing.forEach((name, i) => {
+      const size = writingSize(name, `writing[${i}]`);
       if (size.rowMm > widest.rowMm) widest = size;
-    }
+    });
     return widest;
   }
-  return WRITING[spec.writing] || WRITING.word;
+  return writingSize(spec.writing, "writing");
 }
 
 // What each column needs, in order.
@@ -190,9 +207,9 @@ function writingFor(spec) {
 function columnWriting(spec) {
   const columns = spec.columns || [];
   if (Array.isArray(spec.writing)) {
-    return columns.map((_, i) => WRITING[spec.writing[i]] || WRITING.word);
+    return columns.map((_, i) => writingSize(spec.writing[i], `writing[${i}]`));
   }
-  const single = WRITING[spec.writing] || WRITING.word;
+  const single = writingSize(spec.writing, "writing");
   return columns.map(() => single);
 }
 
@@ -221,9 +238,15 @@ function renderRecordingTable(spec) {
           const tag = i === 0 ? "th scope=\"row\"" : "td";
           return `<${tag} class="h-given">${esc(value)}</${tag.split(" ")[0]}>`;
         }
-        return `<td class="h-write" style="height:${writingFor(spec).rowMm}mm"></td>`;
+        return `<td class="h-write"></td>`;
       });
-      return `<tr>${cells.join("")}</tr>`;
+      // The height goes on the ROW, not on the writing cells. This table
+      // stretches to fill its zone, and a browser hands a stretched table's
+      // spare height to whichever rows are unconstrained: on a sheet whose
+      // first row was the fully worked example (42, 32, 52), that row was the
+      // only one with no height and swallowed the lot, coming out five times
+      // the height of the rows beneath it.
+      return `<tr style="height:${writingFor(spec).rowMm}mm">${cells.join("")}</tr>`;
     })
     .join("");
   // The caption sits OUTSIDE the table rather than in a <caption> element,

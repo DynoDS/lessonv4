@@ -324,3 +324,20 @@ if __name__ == "__main__":
                 failed += 1
                 print("FAIL", name, str(error))
     raise SystemExit(1 if failed else 0)
+
+
+def test_no_break_spaces_measure_as_one_unbroken_word():
+    """The builder joins a calculation ("2,648 + 10 =") and the "Success
+    Criteria" heading with U+00A0 so PowerPoint keeps them on one line. The
+    measurer has to see the same thing, or it counts breaks the renderer
+    never makes and leaves the box under-shrunk."""
+    font = MODULE.pick_font_file(True, False)
+    joined = "2,648 + 10 ="
+    plain = "2,648 + 10 ="
+    pt = 24
+    whole_w, _ = MODULE._rendered_size(joined, pt, font)
+    assert MODULE.widest_unbroken_word([(joined, font)], pt) >= whole_w * 0.99
+    assert MODULE.widest_unbroken_word([(plain, font)], pt) < whole_w
+    narrow = int(whole_w * 0.6)
+    assert MODULE.wrap_paragraph(joined, narrow, pt, font) == 1
+    assert MODULE.wrap_paragraph(plain, narrow, pt, font) >= 2

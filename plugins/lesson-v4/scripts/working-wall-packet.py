@@ -870,6 +870,98 @@ def prepare(args: argparse.Namespace) -> int:
     return 0
 
 
+# ─── check: the wall a designer produced actually carries pictures ──────────
+#
+# The wall's own rules have said "every card carries a visual" since the design
+# began, with one written exception for a step-by-step success-criteria card.
+# A Year 4 maths wall took that exception while the lesson held three published
+# photographs of the very counters the card's worked example described, and the
+# teacher got an A3 sheet of words. Wording alone could not stop it, because the
+# exception is legitimate on a lesson that genuinely has no picture. What tells
+# the two apart is whether a picture existed, so that is what this checks.
+
+
+def card_carries_a_visual(card: dict) -> bool:
+    if not isinstance(card, dict):
+        return False
+    if isinstance(card.get("photo"), str) and card["photo"].strip():
+        return True
+    for key in ("visual", "picture", "map"):
+        if isinstance(card.get(key), dict) and card[key]:
+            return True
+    for key in ("tiles", "people"):
+        for item in card.get(key) or []:
+            if isinstance(item, dict) and (item.get("photo") or item.get("visual")):
+                return True
+    if isinstance(card.get("heroPhoto"), str) and card["heroPhoto"].strip():
+        return True
+    for row in card.get("rows") or []:
+        for cell in row if isinstance(row, list) else []:
+            if isinstance(cell, dict) and (cell.get("photo") or cell.get("visual")):
+                return True
+    for chip in card.get("chips") or []:
+        if isinstance(chip, dict) and chip.get("photo"):
+            return True
+    return False
+
+
+def published_photo_names(working_dir: Path) -> list[str]:
+    return sorted(
+        name
+        for name, state in terminal_states(working_dir).items()
+        if state == "published"
+    )
+
+
+def check(args) -> int:
+    plugin_root = Path(args.plugin_root).resolve()
+    working_dir = Path(args.working_dir).resolve()
+    wall_path = Path(args.working_wall).resolve()
+    wall = read_json(wall_path, "working-wall.json")
+    cards = [card for card in (wall.get("cards") or []) if isinstance(card, dict)]
+    if not cards:
+        raise PacketError(f"working-wall.json carries no cards: {wall_path}")
+
+    wordless = [card for card in cards if not card_carries_a_visual(card)]
+    if not wordless:
+        print("WORKING_WALL_DESIGN_OK")
+        return 0
+
+    published = published_photo_names(working_dir)
+    lesson = None
+    if args.lesson:
+        lesson_path = Path(args.lesson).resolve()
+        if lesson_path.is_file():
+            lesson = read_json(lesson_path, "lesson.json")
+    primitives = visual_primitives(plugin_root)
+    rendered_types = {item.get("type") for _, _, item in rendered_objects(lesson)}
+    drawable = sorted(key for key in primitives if key in rendered_types)
+
+    if not published and not drawable:
+        # The lesson genuinely had no picture to reuse, which is the case the
+        # words-only exception exists for.
+        print("WORKING_WALL_DESIGN_OK")
+        return 0
+
+    titles = ", ".join(
+        repr(card.get("title") or card.get("type") or "untitled") for card in wordless
+    )
+    available = []
+    if published:
+        available.append("published photographs: " + ", ".join(published))
+    if drawable:
+        available.append("drawn visuals the slides used: " + ", ".join(drawable))
+    raise PacketError(
+        f"{len(wordless)} working-wall card(s) carry no picture ({titles}), "
+        "while this lesson has one to reuse - "
+        + "; ".join(available)
+        + ". A card that is only words is slide content, not wall furniture: give "
+        "each card the lesson's own photograph, its drawn visual, or a primitive "
+        "that shows the same move. The words-only success-criteria exception is "
+        "for a lesson with no picture at all, which this is not."
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Build the Working Wall Designer's packet.")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -883,6 +975,12 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--reference-output", required=True)
     prep.add_argument("--receipt-output", required=True)
     prep.set_defaults(func=prepare)
+    chk = commands.add_parser("check", help="refuse a wall whose cards carry no picture")
+    chk.add_argument("--plugin-root", required=True)
+    chk.add_argument("--working-dir", required=True)
+    chk.add_argument("--working-wall", required=True)
+    chk.add_argument("--lesson")
+    chk.set_defaults(func=check)
     return parser
 
 

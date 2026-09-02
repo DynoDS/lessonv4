@@ -192,6 +192,34 @@ def expect(condition: bool, message: str) -> None:
         raise ContractError(message)
 
 
+# Where a board objective may stop short of the full one: the tail after any of
+# these is enumerated detail, a route or a condition, never the learning itself.
+DISPLAYED_LO_CUT_POINTS = (
+    ":", ",", "(", " - ", " – ", " — ",
+    " using ", " by ", " with ", " including ", " through ",
+)
+
+
+def _normalise_objective(text: str) -> str:
+    flat = " ".join(text.split()).strip().rstrip(".").strip().lower()
+    return flat[3:] if flat.startswith("to ") else flat
+
+
+def displayed_lo_is_the_objective_or_its_opening(lo: str, displayed: str) -> bool:
+    """True when the board objective is the full objective word for word, or
+    its opening words with a tacked-on tail cut off at a natural join."""
+    full = _normalise_objective(lo)
+    shown = _normalise_objective(displayed)
+    if not shown:
+        return False
+    if shown == full:
+        return True
+    if not full.startswith(shown):
+        return False
+    tail = full[len(shown):]
+    return any(tail.startswith(cut.rstrip()) for cut in DISPLAYED_LO_CUT_POINTS)
+
+
 def expect_dict(value: Any, path: str) -> dict[str, Any]:
     expect(isinstance(value, dict), f"{path} must be an object")
     return value
@@ -1602,6 +1630,21 @@ def validate_design(
            "lesson.yearGroup must be an integer from 1 to 6")
     for key in ("subject", "lo", "displayedLo", "stickingPoint"):
         expect_string(lesson[key], f"lesson.{key}")
+    # The board objective is the teacher's objective in the teacher's words.
+    # It may be cut short where enumerated detail, a method or a condition is
+    # tacked on ("...: hours/minutes, minutes/seconds", "... using
+    # partitioning"), and nothing else: a Year 4 geography deck once showed
+    # `To describe and give examples of biomes, and locate and describe the
+    # Amazon rainforest` for a plan that said `To describe and give examples
+    # of a biome and find the location and some features of the Amazon
+    # rainforest`. Every word had been re-chosen, and the class copied an
+    # objective the school does not assess against.
+    expect(
+        displayed_lo_is_the_objective_or_its_opening(lesson["lo"], lesson["displayedLo"]),
+        "lesson.displayedLo must be lesson.lo word for word, or its opening cut "
+        "short at a colon, comma, bracket, dash or a trailing 'using / by / "
+        "with / including / through' clause; it is never a rewording",
+    )
     # Canonical subject naming, so every downstream label (filing folders,
     # subject-file routing) gets the teacher's own "Maths".
     #

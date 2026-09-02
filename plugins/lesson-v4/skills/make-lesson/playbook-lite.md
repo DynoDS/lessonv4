@@ -145,7 +145,8 @@ python3 "[PLUGIN_ROOT]/scripts/lesson-design-scaffold.py" \
   --request "[WORKING_DIR]/lesson-design-scaffold-request.initial.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
   --photo-requirements "[WORKING_DIR]/photo-requirements.json"
-Require exactly: LESSON_DESIGN_SCAFFOLD_OK
+Require LESSON_DESIGN_SCAFFOLD_OK as the last line; the CHARACTER_NAMES line
+above it holds the names for any child who speaks in this lesson.
 This command writes the empty scaffold over both files. It is a builder, not a
 check. Once any field is filled, running it again would discard the design.
 
@@ -595,7 +596,9 @@ TERMINAL_STATE: COMPLETE
 
 Wait for both files and require both markers. `slide-room.json` is absent
 only when this machine had no render route; treat that as a quieter run, not a
-fault. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
+fault. It is not a licence to skip the measurement: the Slide Decorator renders
+the deck again for its own pass, so where this file is missing it measures those
+pages itself before answering whether any slide has room. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
 repair.
 
 **The moment `lesson.json` passes, three workers start together:** the Slide
@@ -1044,7 +1047,16 @@ Wall-worthiness is the designer's judgement, never decided here: the
 design's `workingWall` entry in `resourceOpportunities` is evidence being
 gathered for a later gate and never skips this launch, and a designer that
 finds nothing wall-worthy writes `cards: []` with its rationale for the run
-report. It owns only `working-wall.json`. After its deterministic check,
+report. It owns only `working-wall.json`. Its deterministic check is:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
+```
+
+Require exactly `WORKING_WALL_DESIGN_OK`. It refuses a wall whose cards carry
+no picture while this lesson holds a published photograph or a drawn visual
+its slides used, because a card that is only words is slide content rather
+than wall furniture; a lesson with no picture at all still passes. Then
 launch the retained Working Wall Builder only when `cards` is non-empty. The
 builder runs the fixed wall script and returns its short Output Report. One
 wall diagnostic permits one focused wall-owner repair and rebuild. Preserve

@@ -100,6 +100,68 @@ function presentationWarnings(lesson) {
   return warnings;
 }
 
+// House blue is the colour of the words a child acts on. A text block whose
+// whole `color` is blue while it both tells and asks ("Look at the tropical
+// rainforest regions. What pattern do you notice around the Equator?") has
+// hidden the question inside the explanation instead of lifting it; the
+// asking sentence is meant to sit on its own line in blue with the telling
+// black above it. The rule lives in the visual profile's Semantic colour, and
+// two Year 4 geography decks in a row painted the whole card anyway, so the
+// check names the card before the builder runs.
+const HOUSE_BLUE = /^#?0070c0$/i;
+
+function splitSentences(value) {
+  return String(value)
+    .split(/(?<=[.?!])\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function wholeBlueMixedBlock(node) {
+  if (!node || typeof node !== 'object' || node.type !== 'text') return false;
+  const blue =
+    (typeof node.color === 'string' && HOUSE_BLUE.test(node.color.trim())) ||
+    node.colorRole === 'focus-blue';
+  if (!blue || typeof node.value !== 'string') return false;
+  const sentences = splitSentences(node.value);
+  if (sentences.length < 2) return false;
+  const asks = sentences.filter((sentence) => sentence.endsWith('?'));
+  return asks.length > 0 && asks.length < sentences.length;
+}
+
+function walkContent(node, visit) {
+  if (Array.isArray(node)) {
+    node.forEach((child) => walkContent(child, visit));
+    return;
+  }
+  if (!node || typeof node !== 'object') return;
+  visit(node);
+  Object.keys(node).forEach((key) => {
+    if (key === 'speakerNotes' || key === 'decorations') return;
+    walkContent(node[key], visit);
+  });
+}
+
+function mixedBlockWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    walkContent(slideData, (node) => {
+      if (!wholeBlueMixedBlock(node)) return;
+      warnings.push({
+        signal: 'MIXED_BLOCK_WHOLE_BLUE',
+        slide: index + 1,
+        field: 'text',
+        message:
+          `"${node.value.slice(0, 60)}" tells and then asks in one blue block; ` +
+          'keep the telling black and put the question on its own line in blue ' +
+          '(a `[[ ]]` span or a separate text object).'
+      });
+    });
+  });
+  return warnings;
+}
+
 function presentationDiagnostic(warning) {
   return `BUILD_DIAGNOSTIC: ${JSON.stringify({
     signal: warning.signal,
@@ -208,7 +270,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
     };
   }
 
-  const presentation = presentationWarnings(lesson);
+  const presentation = presentationWarnings(lesson).concat(mixedBlockWarnings(lesson));
   if (presentation.length) {
     return {
       ok: false,

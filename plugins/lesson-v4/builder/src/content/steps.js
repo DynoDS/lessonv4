@@ -246,7 +246,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
         x: starW ? rowX + badgeW + BADGE_GAP : rowX, y: rowY,
         w: starW ? rowW - badgeW - BADGE_GAP : rowW, h: cardH,
         fontFace: FONT, fontSize: textFont, bold: true,
-        color: COLOURS.body,
+        color: COLOURS.sticky,
         align: 'left', valign: 'middle', margin: 0, fit: FIT,
         objectName: growFitObjectName(stepTextGroup, TEXT_FONT_MAX, 'step-reference-' + i)
       });

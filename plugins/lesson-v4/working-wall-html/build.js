@@ -20,6 +20,7 @@ const { safeFilenameComponent } = require("../shared/text/filename");
 const { preRenderSvgs } = require("./src/svg-renderer");
 const { htmlToPdf } = require("../worksheet-html/src/chrome");
 const { PAGE_CSS } = require("./src/shared");
+const { tryReadPhoto } = require("./src/layout");
 const { renderSectionHeading, renderLabelledDiagram, renderMnemonicPoster, renderBanner } = require("./src/render-display");
 const { renderStickyKnowledge, renderVocabDefinition, renderWorkedExample, renderSentenceStem, renderMisconception } = require("./src/render-panels");
 const { renderReferenceTable, renderEquivalenceGrid, renderVocabChips } = require("./src/render-grids");
@@ -97,6 +98,57 @@ function collectIncompleteEmojiPictures(node, pointer, out) {
 
   for (const [key, value] of Object.entries(node)) {
     collectIncompleteEmojiPictures(value, `${pointer}/${key}`, out);
+  }
+}
+
+// Where a picture IS the content rather than a decoration. On these families a
+// tile, a hero or a person without a readable photograph is not a thinner card,
+// it is an empty one, and the renderers refuse it mid-render one slot at a
+// time. Checking the whole spec first means a repair sees every missing
+// photograph at once, named by card and tile, instead of fixing one and
+// meeting the next: a geography wall failed with `could not read required
+// photo "undefined"` after a repair removed four tile photos that its own
+// validation had accepted.
+function requiredPhotoSlots(card) {
+  const slots = [];
+  const at = (photo, where) => slots.push({ photo, where });
+  if (card.type === "photoMapOverview") {
+    (Array.isArray(card.tiles) ? card.tiles : []).forEach((tile, i) => {
+      at(tile && tile.photo, `tile ${i + 1}${tile && tile.title ? ` "${tile.title}"` : ""}`);
+    });
+    at(card.map && card.map.photo, "the map");
+  } else if (card.type === "heroCallouts") {
+    at(card.heroPhoto, "the hero photograph");
+  } else if (card.type === "causeCards") {
+    (Array.isArray(card.people) ? card.people : []).forEach((person, i) => {
+      at(person && person.photo, `person ${i + 1}${person && person.name ? ` "${person.name}"` : ""}`);
+    });
+  }
+  return slots;
+}
+
+function assertRequiredPhotosAreReadable(cards, specDir) {
+  const faults = [];
+  cards.forEach((card) => {
+    if (!card || typeof card !== "object") return;
+    const label = card.title || card.type;
+    requiredPhotoSlots(card).forEach(({ photo, where }) => {
+      if (!photo) {
+        faults.push(`Card "${label}" ${where} has no photo.`);
+      } else if (!tryReadPhoto(specDir, photo)) {
+        faults.push(`Card "${label}" ${where} names "${photo}", which could not be read.`);
+      }
+    });
+  });
+  if (faults.length) {
+    const list = faults.map((fault) => "  " + fault).join("\n");
+    throw new Error(
+      `${faults.length} required Working Wall photograph(s) missing:\n${list}\n` +
+        "On these card types the photograph is the content, so a slot cannot " +
+        "stand on its words: re-point it at a published picture, drop the whole " +
+        "tile if the card still meets its minimum, or use a card type the " +
+        "surviving pictures support."
+    );
   }
 }
 
@@ -208,6 +260,7 @@ async function build(specPath, outDir) {
     assertFinalOptionalPictureContract(cards);
 
     const specDir = path.dirname(specPath);
+    assertRequiredPhotosAreReadable(cards, specDir);
 
     const pagePaddingMm = style.marginsCm.a3 * 10;
     const optionalVisuals = prepareWorkingWallOptionalImages(
@@ -280,7 +333,7 @@ async function build(specPath, outDir) {
   }
 }
 
-module.exports = { build };
+module.exports = { build, assertRequiredPhotosAreReadable };
 
 if (require.main === module) {
   const [, , specPath, outDirArg] = process.argv;

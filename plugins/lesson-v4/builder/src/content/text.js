@@ -141,7 +141,12 @@ function drawText(pptx, slide, zone, data, ctx) {
   const heightMode = textHeightMode(data);
 
   const ceiling = data.fontSize || TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
-  const color = data.color || data.colour || COLOURS.body;
+  // A sticky-knowledge line reads in purple, the colour the LO already wears,
+  // so a child knows at a glance that this sentence is one to keep rather than
+  // teacher talk (black) or a job for them (blue). A colour the designer set
+  // on purpose still wins.
+  const stickyLine = isSticky(data.value);
+  const color = data.color || data.colour || (stickyLine ? COLOURS.sticky : COLOURS.body);
   const displayColor = baseColourForRole(color, data.colorRole);
   const align = textAlign(data);
 

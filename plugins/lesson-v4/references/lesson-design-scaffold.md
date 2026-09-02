@@ -10,7 +10,7 @@ Do not use the scaffold route when the orchestrator supplies an existing `lesson
 2. Write `design-decisions.md`.
 3. Write `[WORKING_DIR]/lesson-design-scaffold-request.initial.json` from those settled decisions.
 4. Run the exact scaffold command supplied by the orchestrator.
-5. Require exactly `LESSON_DESIGN_SCAFFOLD_OK`.
+5. Require `LESSON_DESIGN_SCAFFOLD_OK` as the last line. The line before it, `CHARACTER_NAMES: ...`, is the names drawn at random for any child who speaks in this lesson; use them in that order, unless the brief names the child.
 6. Fill the generated `lesson-design.json` and `photo-requirements.json` by editing them in place.
 7. Replace every exact `__LESSON_DESIGN_FILL__` placeholder with the decided final value, including `null`, `[]`, an object or a scalar where the contract requires it.
 8. Run the normal JSON parse checks and the supplied lesson-design validator. The validator rejects any unresolved scaffold placeholder.

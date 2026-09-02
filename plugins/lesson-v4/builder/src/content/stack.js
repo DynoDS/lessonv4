@@ -8,7 +8,7 @@ const MIN_HEIGHT_RATIO = 0.35;
 const VERTICAL_ALIGNS = new Set(['top', 'center', 'bottom']);
 // ─── END CONSTANTS ────────────────────────────────────────────
 
-function stackLayout(zone, data) {
+function stackLayout(zone, data, ctx) {
   const items = Array.isArray(data.items) ? data.items : [];
   if (items.length === 0) return [];
 
@@ -60,31 +60,88 @@ function stackLayout(zone, data) {
     offsetY = slack;
   }
 
-  let cursorY = zone.y + offsetY;
+  const heights = items.map(function (_item, i) {
+    return contentH * (weights[i] / totalWeight);
+  });
 
-  return items.map(function (item, i) {
-    const itemH = contentH * (weights[i] / totalWeight);
-    const subZone = {
+  const zoneFor = function (item, y, h) {
+    return {
       x: zone.x,
-      y: cursorY,
+      y: y,
       w: zone.w,
-      h: itemH,
+      h: h,
       class: zone.class,
       noCard: zone.noCard,
       compactCards: zone.compactCards
     };
+  };
 
-    cursorY += itemH + GAP;
+  reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx);
 
-    return {
-      item,
-      zone: subZone
-    };
+  let cursorY = zone.y + offsetY;
+
+  return items.map(function (item, i) {
+    const subZone = zoneFor(item, cursorY, heights[i]);
+    cursorY += heights[i] + GAP;
+    return { item, zone: subZone };
+  });
+}
+
+// A weight settles a share of the height before anything has been measured, and
+// most things in a stack do not use their share: a photograph or a map is
+// contain-fitted and its card hugs it, so the difference used to become a band
+// of background under it while the rest of the slide made do. Two Year 4
+// geography slides carried an inch of nothing under the map with the task above
+// it at 14pt, and the room to fix that was sitting in the same zone all along.
+//
+// So the items that hug hand back what they do not use, and the items that can
+// genuinely use height take it: a picture grows into it (a bigger map is a more
+// readable map) and a fill-text card grows its type into it. Nothing moves if
+// nothing can be measured, so a stack the measurer knows nothing about lays out
+// exactly as it always did.
+const REFLOW_FLOOR = 0.12;
+
+function canUseMoreHeight(item) {
+  if (!item || typeof item !== 'object') return false;
+  if (item.type === 'image') return true;
+  return item.type === 'text' &&
+    String(item.heightMode || '').toLowerCase() === 'fill';
+}
+
+function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
+  if (!ctx) return;
+  const { measureContentExtent } = require('./index');
+  const growers = [];
+  let released = 0;
+
+  items.forEach(function (item, i) {
+    if (canUseMoreHeight(item)) {
+      growers.push(i);
+      return;
+    }
+    let extent = null;
+    try {
+      extent = measureContentExtent(zoneFor(item, zone.y, heights[i]), item, ctx);
+    } catch {
+      extent = null;
+    }
+    if (!extent) return;
+    const spare = heights[i] - extent.h;
+    if (spare > REFLOW_FLOOR) {
+      heights[i] = extent.h;
+      released += spare;
+    }
+  });
+
+  if (!growers.length || released <= REFLOW_FLOOR) return;
+  const share = released / growers.length;
+  growers.forEach(function (i) {
+    heights[i] += share;
   });
 }
 
 function drawStack(pptx, slide, zone, data, ctx) {
-  const layout = stackLayout(zone, data);
+  const layout = stackLayout(zone, data, ctx);
   if (layout.length === 0) return;
 
   const { drawContent } = require('./index');

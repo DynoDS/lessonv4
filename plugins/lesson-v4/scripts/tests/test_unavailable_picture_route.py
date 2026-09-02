@@ -146,3 +146,35 @@ class UnavailablePictureRouteTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DroppingAPhotoIsNotAlwaysARepairTests(unittest.TestCase):
+    """A geography wall's four tile photographs finished unavailable. The
+    repair role said "drop it and let the card stand on its words", so the
+    repair deleted four `photo` fields; the JSON stayed valid, the repair-scope
+    check passed (tiles carry no `type`), and the builder then refused the wall
+    because a photoMapOverview tile with no photograph is an empty tile. The
+    rule now depends on what the picture was doing, and the build says so
+    before it renders anything."""
+
+    def test_the_wall_repair_role_separates_support_from_content(self) -> None:
+        text = flat(WALL_REPAIR)
+        self.assertIn("Removing only the `photo` field is never the repair", text)
+        for family in ("photoMapOverview", "heroCallouts", "causeCards"):
+            self.assertIn(family, text)
+        # The panel families keep the old, correct behaviour.
+        self.assertIn("let the card stand on its words", text)
+
+    def test_the_contract_says_where_a_photo_is_required(self) -> None:
+        contracts = flat(
+            ROOT / "references" / "working-wall-card-contracts.md"
+        )
+        self.assertIn("Required, and checked before the build renders", contracts)
+
+    def test_the_build_checks_every_required_photograph_first(self) -> None:
+        build = (ROOT / "working-wall-html" / "build.js").read_text(encoding="utf-8")
+        self.assertIn("assertRequiredPhotosAreReadable", build)
+        self.assertIn("required Working Wall photograph(s) missing", build)
+        # Named by card and slot, and all of them at once.
+        self.assertIn("has no photo", build)
+        self.assertIn("could not be read", build)

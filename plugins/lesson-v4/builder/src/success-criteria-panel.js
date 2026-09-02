@@ -39,7 +39,10 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
     rectRadius: RADIUS
   });
 
-  slide.addText(label, {
+  // The heading is one line, always: the fit pass shrinks a word it cannot
+  // break, and "Success Criteria" once wrapped to two large lines in a
+  // sidebar panel and pushed the criteria down. No-break spaces make it one word.
+  slide.addText(String(label).replace(/ +/g, ' '), {
     x: zone.x + PAD, y: zone.y + PAD,
     w: zone.w - 2 * PAD, h: LABEL_H,
     fontFace: FONT, fontSize: LABEL_FONT, bold: true,

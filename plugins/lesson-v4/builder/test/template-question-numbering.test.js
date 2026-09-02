@@ -53,7 +53,7 @@ test('maths-turn-sc letters a four-question teacher-led set (a) to (d)', async (
     'maths-turn-sc must forward questionNumbering so a teacher-led set is lettered'
   );
   for (const question of FOUR) {
-    assert.ok(xml.includes(question), 'every question still renders: ' + question);
+    assert.ok(xml.replace(/\u00a0/g, ' ').includes(question), 'every question still renders: ' + question);
   }
   assert.ok(xml.includes('Add on the tens first'), 'the criteria card renders with the lettered set');
 });
@@ -92,7 +92,7 @@ test('writing-turn-ref-sc letters a four-question teacher-led set (a) to (d)', a
     'writing-turn-ref-sc is a general off-slide template and must forward questionNumbering too'
   );
   for (const question of FOUR) {
-    assert.ok(xml.includes(question), 'every question still renders: ' + question);
+    assert.ok(xml.replace(/\u00a0/g, ' ').includes(question), 'every question still renders: ' + question);
   }
   assert.ok(xml.includes('Start with a capital letter'), 'the criteria card renders with the lettered set');
 });
@@ -134,7 +134,7 @@ test('maths-turn-ref-sc letters a four-question teacher-led set (a) to (d)', asy
     'maths-turn-ref-sc must forward questionNumbering so a teacher-led set is lettered'
   );
   for (const question of FOUR) {
-    assert.ok(xml.includes(question), 'every question still renders: ' + question);
+    assert.ok(xml.replace(/\u00a0/g, ' ').includes(question), 'every question still renders: ' + question);
   }
   assert.ok(
     xml.includes('Train A leaves at 9:15'),

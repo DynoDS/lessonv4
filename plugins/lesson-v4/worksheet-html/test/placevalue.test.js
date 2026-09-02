@@ -531,3 +531,26 @@ test("a pyramid's bricks stop growing before they become slabs", () => {
   const helper = h("number-pyramid");
   assert.equal(helper.measure(spec, FULL_WIDTH_MM), helper.measure(spec, 267));
 });
+
+test("a counter column is wide enough for three discs once its own border is paid for", () => {
+  // The cell is box-sizing: border-box, so the 0.4mm rule on each side comes
+  // out of the content box. A half-millimetre allowance did not cover 0.8mm:
+  // three discs no longer fitted, nine tens wrapped two-per-row over five rows,
+  // and the counters spilled out of a chart measured for three rows.
+  const { RULE, INSET } = require("../src/tokens");
+  const helper = h("place-value-counter-chart");
+  const COUNTER_MM = 9;
+  const COUNTER_GAP_MM = 1.5;
+  const need = helper.needs({ columns: ["tens"], counts: { tens: 9 } });
+  const contentMm =
+    need.minWidthMm - 2 * INSET.cell.h - 2 * RULE.line;
+  assert.ok(
+    contentMm >= 3 * COUNTER_MM + 2 * COUNTER_GAP_MM - 1e-6,
+    `three 9mm discs and their gaps need 30mm of content box; the column offers ${contentMm}mm`
+  );
+  const rowsMm = 3 * COUNTER_MM + 2 * COUNTER_GAP_MM + 2 * INSET.cell.v + 2 * RULE.line;
+  assert.ok(
+    need.minHeightMm >= rowsMm - 1e-6,
+    `nine counters are three rows, and the measured height must include the border: ${need.minHeightMm}mm`
+  );
+});

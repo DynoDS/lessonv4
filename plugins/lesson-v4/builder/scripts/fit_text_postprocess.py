@@ -170,10 +170,22 @@ def pick_font_file(bold, italic):
     return f if os.path.exists(f) else _FONTS["regular"]
 
 
+# PowerPoint breaks a line at an ordinary space and never at a no-break space
+# (U+00A0), which is how the builder keeps a calculation ("2,648 + 10 =") or the
+# "Success Criteria" heading on one line. Python's str.split() treats U+00A0 as
+# whitespace, so measuring with it would count breaks the renderer never makes
+# and leave the box under-shrunk; the measurer splits on ASCII whitespace only.
+_BREAKABLE_WS = re.compile(r'[ \t\r\n\f\v]+')
+
+
+def breakable_words(text):
+    return [w for w in _BREAKABLE_WS.split(text or '') if w]
+
+
 def wrap_paragraph(text, width_emu, pt, font_file):
     if not text.strip():
         return 1
-    words = text.split()
+    words = breakable_words(text)
     lines = 0
     current = ""
     for w in words:
@@ -215,7 +227,7 @@ def wrap_runs(runs, width_emu, pt):
     tokens = []  # (word_width_emu,)
     for text, ff in runs:
         use = ff or FONT_REGULAR
-        for w in text.split():
+        for w in breakable_words(text):
             ww, _ = _rendered_size(w, pt, use)
             tokens.append(ww)
     if not tokens:
@@ -244,10 +256,10 @@ def widest_unbroken_word(runs, pt):
     current = 0
     for text, font_file in runs:
         use = font_file or FONT_REGULAR
-        for token in re.split(r'(\s+)', text or ''):
+        for token in re.split(r'([ \t\r\n\f\v]+)', text or ''):
             if not token:
                 continue
-            if token.isspace():
+            if _BREAKABLE_WS.fullmatch(token):
                 widest = max(widest, current)
                 current = 0
             else:
