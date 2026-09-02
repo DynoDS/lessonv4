@@ -397,17 +397,24 @@ test("template reference matches image fit and grouping helper contracts", () =>
 });
 
 test("the option bank keeps its labels out of the instruction in the design documents", () => {
+  // The shape rules moved from the lesson designer's role to their owner,
+  // output-template.md, in the 2 Sept 2026 context audit; the role now points
+  // there for every taskStructure kind.
   assert.ok(
-    LESSON_DESIGNER_MD.includes(
-      'Option bank: kind "option-bank" when children choose from'
-    ),
-    "lesson-designer.md does not structure a discrete option bank"
+    LESSON_DESIGNER_MD.includes("`option-bank`, `sort`, `evidence-classification` - and their exact shapes live in `output-template.md`"),
+    "lesson-designer.md no longer routes a discrete option bank to its owner"
   );
   assert.ok(
-    LESSON_DESIGNER_MD.includes(
-      "Keep answer.content route; option bank does not create answer.structure."
+    OUTPUT_TEMPLATE_MD.includes(
+      "Do not repeat these labels in `pupilInstruction`; the instruction names what to do with the bank."
     ),
-    "lesson-designer.md can still invent an answer structure for an option bank"
+    "output-template.md does not keep the bank's labels out of the instruction"
+  );
+  assert.ok(
+    OUTPUT_TEMPLATE_MD.includes(
+      "An option bank uses the ordinary `answer.content` route and never supplies `answer.structure`."
+    ),
+    "output-template.md can still invent an answer structure for an option bank"
   );
   assert.ok(
     OUTPUT_TEMPLATE_MD.includes('"kind": "option-bank"'),

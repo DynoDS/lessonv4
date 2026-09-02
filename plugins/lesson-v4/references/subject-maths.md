@@ -110,6 +110,14 @@ Why it matters here specifically: the strongest children can often just do it an
 
 ---
 
+## Real-world hooks
+
+Where a genuine, accurate link exists, a lesson or a new concept may open with a short hook: a real fact and an image that make a child want the answer, with the same context carried through the examples and practice. The hook is motivation and context, never a preview of the method, and the prerequisite starter still does its own job beside it. It is a judgement rather than a fixture: reach for it when the link is real and the maths lives inside the fact, and leave it out when the fact is scenery bolted onto the sum. A contrived hook teaches children that the real world is decoration, so no hook is better than one that has to be forced.
+
+A real fact has to stand up. A curriculum-stable fact is safe; a volatile one (a current population, a "latest" figure, a quantity the lesson leans its maths on) is stated as a robustly rounded claim that stays true, or is marked for the teacher to verify. The general rule for facts in any subject is in the lesson designer's Starter section; this section is the maths-specific case of opening on one.
+
+---
+
 ## The positions this file takes
 
 Every subject has arguments inside it, and this file takes the teacher's side on three so a lesson never wobbles between philosophies.

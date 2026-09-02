@@ -138,3 +138,37 @@ Do not claim that pedagogical equivalence has been proved until comparative less
 - Stage 7 experimental separate (not in scope for adoption)
 - Monitor real lesson-design outputs for any subtle quality drift not caught by validator
 - Do not optimise against the retired 60 KiB target. Judge future consolidation by whole-route context and preserved lesson quality.
+
+## Stage 8 - always-loaded context audit (2 September 2026)
+
+The role had grown from 63,161 bytes after Stage 6 to 93,924. Every section was classified as (a) always-needed judgement or invariant, (b) rare guidance with a nameable trigger, (c) a mechanical contract the scaffold or validator enforces, (d) one invariant stated twice, or (e) a long example whose rule fits a line. Nothing was removed from the package: a rule either stayed, or moved to the reference that already owned it and is now reached by a pointer the loading section routes and a guard test checks.
+
+| Passage | Class | Decision and reason |
+| --- | --- | --- |
+| Structure Decision: Dialogic beat execution | d | Synthesise invariant kept (pinned); the beat mechanics were already in `teaching-sequence-dialogic.md`, now pointed at. |
+| Structure Decision: Task-Centred checkpoint and Share rules | d | Duplicated `teaching-sequence-task-centred.md`; pointed at. |
+| Starter: real-world framing (maths) | b | Maths only. Moved to `subject-maths.md` → Real-world hooks, read at start only on maths lessons. The any-subject rule about volatile facts stayed. |
+| Teaching Representations: the four modelling states | c/d | `modelling-formats.md` defines them and is read when `modellingState` is set; cut to a pointer. |
+| Teaching Representations: model move and instance | e | Rule kept in half the words; field mechanics pointed at `output-template.md` → Source-unit contract. |
+| Starter and Success Criteria summaries of preferences sections | d | Each restated the owner's contents; cut to a pointer with the one distinction the designer needs before opening it. |
+| Worksheet: status and use mechanics (four paragraphs) | c | Folded to one statement of the decision; the validator owns the allowed values. |
+| Worksheet: one page per version | d | Overlapped the fit-priority paragraph; folded. |
+| Worksheet: frame-as-worksheet, shape of non-question practice, shared tool (three paragraphs) | d/c | Folded to one; `preferences.md` → Worksheets owns the shared-tool line and the validator owns the shared-frame field rules. |
+| Worksheet: option bank, sort, evidence-classification shapes | c | `output-template.md` → Source-unit contract and the validator own them; the two designer decisions (delivery by ordinary rule, never downgrade a sort) stayed. |
+| Worksheet: question labels | c | The builder adds labels per `preferences.md` → Question Labelling; cut to the one-line invariant. |
+| Before You Design: direct requirement bullet | d | Half restated Your Role as Decision-Maker; folded to the plan-as-source content it alone carries. |
+| Picture contract: the three acquisition modes | c | Per-mode field rules are in `output-template.md` → Additional Output: Photo Requirements and the validator; the misteaching judgement, the kettle example and the tool-the-engine-draws rule stayed. |
+| Settle the Decisions: scaffold paragraph | e | Shortened; the pinned in-place sentences stayed. |
+
+Kept deliberately, though long: the Misconceptions section, the child-facing wording test and its worksheet field list, the four register tells, and the objective-not-widened rule. Each is judgement that reaches every string of every lesson, and each is pinned by a test that names the real failure it came from. Considered and rejected: moving the whole Worksheet section to a decision-point reference. Every run designs a worksheet, so the bytes would be read anyway, and `preferences.md` outranks this role, which would misattribute the designer's craft as a teacher preference.
+
+Byte counts (UTF-8):
+
+| Measure | Before | After |
+| --- | --- | --- |
+| `agents/lesson-designer.md` | 93,924 | 89,851 |
+| Startup route, science lesson (role + named preferences and evidence sections + `subject-science.md`) | 129,845 | 125,772 |
+| Startup route, maths lesson (`subject-maths.md` grew by the hook section) | 132,459 | 129,463 |
+| Startup route, no subject file | 120,398 | 116,325 |
+
+The reduction is 4.3% of the role and about 3% of the startup route. It is modest because the file is mostly always-applicable judgement, and the audit chose a small safe cut over a large risky one. Guard: `scripts/tests/test_lesson_designer_loading_guard.py` fails if the role points at a reference the loading section does not route, or at a heading the file does not have.
