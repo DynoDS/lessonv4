@@ -325,9 +325,10 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
     slot on 4.2.80 and the next lesson showed the form beats the prose: a
     slot that exists gets filled in its own shape, a slot that does not exist
     leaks into the notes. So the same slot reaches the task-centred teaching
-    beat and discovery's teach-why (with a takeaway line), every beat carries
-    its minutes and the validator adds them up, and the two big-task beats
-    carry a launch."""
+    beat and discovery's teach-why (with a takeaway line), and the two big-task
+    beats
+    carry a launch. Minutes on every beat were tried here too and taken out
+    at the teacher's request the same day."""
 
     def setUp(self) -> None:
         self.scaffold = load("lesson_design_scaffold_audit", "lesson-design-scaffold.py")
@@ -359,49 +360,6 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         self.assertIn("`takeaway` is the one line children keep", discovery)
         skill = flat(ROOT / "references" / "teaching-sequence-skill-based.md")
         self.assertIn("Its `activity` is then the explanation as the child reads it", skill)
-
-    def test_every_beat_carries_minutes_and_the_validator_adds_them(self) -> None:
-        self.assertIn("minutes", self.validator.UNIT_FIELDS)
-        self.assertEqual(self.scaffold.source_unit("lesson-section/starter/unit-001", "starter", None)["minutes"], self.scaffold.PLACEHOLDER)
-        design, photos = self.contract.valid_content_contract()
-        self.validator.validate_design(design, photos)
-        duration = design["lesson"]["durationMinutes"]
-        planned = design["starter"]["minutes"] + sum(u["minutes"] for u in design["teachingSequence"])
-        # Too full: no room for vocabulary, setup and transitions.
-        design["teachingSequence"][0]["minutes"] += duration - planned
-        with self.assertRaises(self.validator.ContractError) as caught:
-            self.validator.validate_design(design, photos)
-        self.assertIn("leave at least 3 minutes", str(caught.exception))
-        # Too empty: most of the lesson unaccounted for.
-        for unit in design["teachingSequence"]:
-            unit["minutes"] = 1
-        with self.assertRaises(self.validator.ContractError) as caught:
-            self.validator.validate_design(design, photos)
-        self.assertIn("unaccounted for", str(caught.exception))
-        # A missing minutes key is refused.
-        design, photos = self.contract.valid_content_contract()
-        del design["teachingSequence"][0]["minutes"]
-        with self.assertRaises(self.validator.ContractError):
-            self.validator.validate_design(design, photos)
-
-    def test_timing_has_one_owner(self) -> None:
-        fields = self.scaffold.CONTENT_ENVELOPE_FIELDS
-        self.assertNotIn("durationMinutes", fields["talk"])
-        self.assertNotIn("durationMinutes", fields["stimulus-talk"])
-        template = flat(ROOT / "references" / "output-template.md")
-        self.assertIn("`minutes` is the whole minutes this beat takes in the room", template)
-        self.assertIn("a Talk beat has no separate duration", template)
-        self.assertIn("Each beat carries its `minutes` in the design, and the validator adds them", section(PREFERENCES, "Classroom Norms"))
-        self.assertIn("each beat's `minutes` could hold what it asks", flat(DESIGN_REVIEWER))
-
-    def test_the_review_view_shows_minutes_and_the_total(self) -> None:
-        packet = load("design_review_packet_audit", "design-review-packet.py")
-        design, _photos = self.contract.valid_content_contract()
-        total = packet.planned_minutes(design)
-        self.assertEqual(total, design["starter"]["minutes"] + sum(u["minutes"] for u in design["teachingSequence"]))
-        source = (SCRIPTS / "design-review-packet.py").read_text(encoding="utf-8")
-        self.assertIn('f"- Minutes: {unit[\'minutes\']}"', source)
-        self.assertIn("Beats planned", source)
 
     def test_the_big_task_beats_carry_a_launch(self) -> None:
         fields = self.scaffold.CONTENT_ENVELOPE_FIELDS

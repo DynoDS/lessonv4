@@ -118,7 +118,6 @@ UNIT_FIELDS = {
     "kind",
     "conceptRef",
     "content",
-    "minutes",
     "pupilInstruction",
     "modellingState",
     "representationRefs",
@@ -130,10 +129,6 @@ UNIT_FIELDS = {
     "answer",
 }
 UNIT_OPTIONAL_FIELDS = {"taskStructure"}
-
-# Minutes the beats must leave free, and the most they may leave unplanned.
-TRANSITION_MINUTES_MIN = 3
-UNPLANNED_MINUTES_MAX = 15
 
 SCAFFOLD_PLACEHOLDER = "__LESSON_DESIGN_FILL__"
 PLACEHOLDER_REPORT_LIMIT = 10
@@ -802,12 +797,13 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         strings(("prompt", "question"))
         expect_nullable_string(content["materialOnSlide"], f"{path}.materialOnSlide")
     elif kind == "talk":
-        keys = {"format", "discussionQuestion", "sentenceStems", "teacherListensFor"}
+        keys = {"format", "discussionQuestion", "sentenceStems", "durationMinutes", "teacherListensFor"}
         expect_exact_keys(content, keys, keys, path)
         strings(("format", "discussionQuestion"))
         stems = expect_list(content["sentenceStems"], f"{path}.sentenceStems")
         for i, stem in enumerate(stems):
             expect_string(stem, f"{path}.sentenceStems[{i}]")
+        expect_positive_int(content["durationMinutes"], f"{path}.durationMinutes")
         listens = expect_list(content["teacherListensFor"], f"{path}.teacherListensFor")
         expect(bool(listens), f"{path}.teacherListensFor must not be empty")
         for i, item in enumerate(listens):
@@ -815,7 +811,7 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
     elif kind == "stimulus-talk":
         keys = {
             "prompt", "question", "materialOnSlide", "format",
-            "sentenceStems", "teacherListensFor",
+            "sentenceStems", "durationMinutes", "teacherListensFor",
         }
         expect_exact_keys(content, keys, keys, path)
         strings(("prompt", "question", "format"))
@@ -823,6 +819,7 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         stems = expect_list(content["sentenceStems"], f"{path}.sentenceStems")
         for i, stem in enumerate(stems):
             expect_string(stem, f"{path}.sentenceStems[{i}]")
+        expect_positive_int(content["durationMinutes"], f"{path}.durationMinutes")
         listens = expect_list(content["teacherListensFor"], f"{path}.teacherListensFor")
         expect(bool(listens), f"{path}.teacherListensFor must not be empty")
         for i, item in enumerate(listens):
@@ -952,7 +949,6 @@ def validate_source_unit(
         expect(unit["conceptRef"] is None, f"{path}.conceptRef must be null for {kind}")
 
     validate_content(kind, unit["content"], f"{path}.content", sticky_ids)
-    expect_positive_int(unit["minutes"], f"{path}.minutes")
     expect_nullable_string(unit["pupilInstruction"], f"{path}.pupilInstruction")
     modelling = unit["modellingState"]
     if modelling is not None:
@@ -1954,24 +1950,6 @@ def validate_design(
     else:
         expect(ending["beat"] is None, "ending.beat must be null when ending.included is false")
 
-    # The beats have to fit the slot. The starter, every teaching-sequence
-    # unit and the ending each carry their minutes; vocabulary, setup and
-    # transitions live in the gap, which is at least 3 minutes and at most
-    # 15 (preferences.md, Classroom Norms).
-    duration = lesson["durationMinutes"]
-    planned = starter["minutes"] + sum(unit["minutes"] for unit in sequence)
-    if included:
-        planned += ending["beat"]["minutes"]
-    expect(
-        planned <= duration - TRANSITION_MINUTES_MIN,
-        f"beats plan {planned} minutes in a {duration}-minute lesson: leave at least "
-        f"{TRANSITION_MINUTES_MIN} minutes for vocabulary, setup and transitions",
-    )
-    expect(
-        planned >= duration - UNPLANNED_MINUTES_MAX,
-        f"beats plan {planned} minutes in a {duration}-minute lesson: more than "
-        f"{UNPLANNED_MINUTES_MAX} minutes are unaccounted for",
-    )
 
     worksheet = expect_dict(root["worksheet"], "worksheet")
     worksheet_fields = {

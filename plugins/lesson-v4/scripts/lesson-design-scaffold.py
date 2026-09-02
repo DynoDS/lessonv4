@@ -321,6 +321,7 @@ CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
         "format",
         "discussionQuestion",
         "sentenceStems",
+        "durationMinutes",
         "teacherListensFor",
     ),
     "stimulus-talk": (
@@ -329,6 +330,7 @@ CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
         "materialOnSlide",
         "format",
         "sentenceStems",
+        "durationMinutes",
         "teacherListensFor",
     ),
     "synthesise": ("framesToName",),
@@ -387,7 +389,6 @@ def source_unit(
         "kind": kind,
         "conceptRef": concept_ref,
         "content": content_scaffold(kind),
-        "minutes": PLACEHOLDER,
         "pupilInstruction": PLACEHOLDER,
         "taskStructure": PLACEHOLDER,
         "modellingState": PLACEHOLDER,

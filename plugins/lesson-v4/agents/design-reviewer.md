@@ -189,7 +189,6 @@ Check:
 - vocabulary definitions are useful to children;
 - sticky knowledge is accurate, stable and worth carrying;
 - each moment contains manageable reading, conceptual and working load;
-- each beat's `minutes` could hold what it asks: a Do beat given one minute for a written explanation, or a main task given eight, is a finding, and the view's total against the lesson length is the budget the validator has already checked;
 - support remains where it enables the intended thinking;
 - answer-giving or unnecessary support is removed;
 - the teacher can run the lesson without reconstructing missing decisions;

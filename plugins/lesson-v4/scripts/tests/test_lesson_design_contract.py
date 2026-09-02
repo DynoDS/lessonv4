@@ -105,7 +105,6 @@ def source_unit(
     misconception_refs: list | None = None,
     photo_refs: list | None = None,
     pupil_instruction: str | None = None,
-    minutes: int = 4,
     script: str | None = "Say to children: Have a look at this.",
     teacher_info: str | None = None,
     look_for: str | None = None,
@@ -117,7 +116,6 @@ def source_unit(
         "kind": kind,
         "conceptRef": concept_ref,
         "content": content,
-        "minutes": minutes,
         "pupilInstruction": pupil_instruction,
         "modellingState": modelling_state,
         "representationRefs": representation_refs or [],
@@ -164,7 +162,6 @@ def valid_contract():
                 "format": "Four short calculations.",
                 "testQuestionPath": None,
             },
-            "minutes": 5,
             "pupilInstruction": "Find each total.",
             "modellingState": None,
             "representationRefs": [],
@@ -371,24 +368,12 @@ def valid_contract():
         "slideDesignNotes": [],
         "flagsForTeacher": [],
     }
-    budget_minutes(design)
     photos = {
         "schema_version": 2,
         "lesson_name": "Adding two-digit numbers",
         "photos": [],
     }
     return design, photos
-
-
-def budget_minutes(design: dict) -> dict:
-    """Share the slot across the sequence so the validator's budget holds:
-    starter 5, ending 4 when included, and the rest split evenly inside the
-    3-to-15-minute gap the validator leaves for vocabulary and transitions."""
-    sequence = design["teachingSequence"]
-    share = (design["lesson"]["durationMinutes"] - 3 - design["starter"]["minutes"] - 4) // len(sequence)
-    for unit in sequence:
-        unit["minutes"] = share
-    return design
 
 
 def set_route(design: dict, structure: str, sequence: list[dict]):
@@ -402,7 +387,6 @@ def set_route(design: dict, structure: str, sequence: list[dict]):
         "reason": "The route already closes the learning purposefully.",
         "beat": None,
     }
-    budget_minutes(design)
 
 
 def valid_content_contract():
@@ -444,7 +428,7 @@ def valid_dialogic_contract():
         "Dialogic",
         [
             source_unit(1, "grounding-input", {"input": "A councillor is chosen by local people to represent their area."}),
-            source_unit(2, "stimulus-talk", {"prompt": "A park has room for one new facility.", "question": "What should the council choose?", "materialOnSlide": "play area / garden / sports court", "format": "ranking", "sentenceStems": ["I would choose ___ because ___."], "teacherListensFor": ["different community needs", "reasons linked to who would benefit"]}),
+            source_unit(2, "stimulus-talk", {"prompt": "A park has room for one new facility.", "question": "What should the council choose?", "materialOnSlide": "play area / garden / sports court", "format": "ranking", "sentenceStems": ["I would choose ___ because ___."], "durationMinutes": 5, "teacherListensFor": ["different community needs", "reasons linked to who would benefit"]}),
             source_unit(3, "synthesise", {"framesToName": ["who benefits", "how many people benefit", "what the area already has"]}),
         ],
     )
@@ -676,12 +660,12 @@ def test_valid_dialogic_separate_stimulus_talk_pair_passes():
                 "format": "ranking",
                 "discussionQuestion": "What should the council choose?",
                 "sentenceStems": ["I would choose ___ because ___."],
+                "durationMinutes": 5,
                 "teacherListensFor": ["different community needs"],
             },
         ),
         source_unit(4, "synthesise", {"framesToName": ["who benefits"]}),
     ]
-    budget_minutes(design)
     module.validate_design(design, photos)
 
 
@@ -779,6 +763,7 @@ def test_dialogic_separate_talk_question_must_match_stimulus_exactly():
                 "format": "ranking",
                 "discussionQuestion": "Which choice is best?",
                 "sentenceStems": ["I would choose ___ because ___."],
+                "durationMinutes": 5,
                 "teacherListensFor": ["different community needs"],
             },
         ),

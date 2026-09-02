@@ -418,16 +418,6 @@ def append_review_json(lines: list[str], label: str, value) -> None:
     )
 
 
-def planned_minutes(design: dict) -> int:
-    total = design["starter"]["minutes"] + sum(
-        unit["minutes"] for unit in design["teachingSequence"]
-    )
-    ending = design["ending"]
-    if ending["included"]:
-        total += ending["beat"]["minutes"]
-    return total
-
-
 def append_review_unit(
     lines: list[str],
     unit: dict,
@@ -443,7 +433,6 @@ def append_review_unit(
     if unit["conceptRef"] is not None:
         ref = unit["conceptRef"]
         lines.append(f"- Concept: `{ref}` {concepts[ref]['name']}")
-    lines.append(f"- Minutes: {unit['minutes']}")
     if unit["pupilInstruction"] is not None:
         lines.append(f"- Pupil instruction: {unit['pupilInstruction']}")
     if unit["modellingState"] is not None:
@@ -542,7 +531,6 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         f"- Full learning objective: {lesson['lo']}",
         f"- Displayed learning objective: {lesson['displayedLo']}",
         f"- Duration: {lesson['durationMinutes']} minutes",
-        f"- Beats planned: {planned_minutes(design)} minutes",
         f"- Scope: {lesson['scope']}",
     ]
     if lesson["deferredLearning"] is not None:
