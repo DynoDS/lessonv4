@@ -150,3 +150,61 @@ test('a grid leaves no ragged last row', () => {
   const rows = new Set(questionBoxes(texts).map((b) => Math.round(b.y * 100)));
   assert.ok(rows.size === 1 || rows.size === 5, `unexpected ${rows.size} rows`);
 });
+
+// A place-value heading is one word, so it cannot wrap: when the column is
+// narrower than the word PowerPoint splits it mid-word and the one-line header
+// band clips the bottom half. Three four-column charts sharing a row on the
+// same Year 4 Your Turn shipped "Tho/usan Hun/dred Tens One" as its headings,
+// and every check passed, because the scale that narrows type for a narrow
+// column is priced on the digits, which are one character wide.
+const {
+  drawPlaceValueChart
+} = require('../src/content/place-value-chart');
+
+function chartHeadings(zone) {
+  const tables = [];
+  const pptx = new PptxGenJS();
+  const slide = {
+    addShape: () => {},
+    addText: () => {},
+    addImage: () => {},
+    addTable: (rows, opts) => tables.push({ rows, opts }),
+  };
+  drawPlaceValueChart(pptx, slide, zone, {
+    type: 'place-value-chart',
+    columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+    rows: [{ cells: ['', '', '', ''], counters: { Thousands: 4, Hundreds: 2, Tens: 6, Ones: 1 } }],
+  }, { slideIndex: 0, lesson: {} });
+  const header = tables
+    .map((t) => t.rows[0])
+    .find((row) => row && row.some((cell) => cell.text === 'Thousands'));
+  const colW = tables.find((t) => Array.isArray(t.opts.colW)).opts.colW;
+  return { header, colW };
+}
+
+test('a column heading is never wider than the column it sits in', () => {
+  // The exact shape that clipped: a four-column chart in a third of a body zone.
+  const { header, colW } = chartHeadings({ x: 0.2, y: 1.8, w: 2.87, h: 3.6 });
+  const heading = header.find((cell) => cell.text === 'Thousands');
+  assert.ok(heading, 'the chart drew its headings');
+  assert.ok(
+    textWidthIn('Thousands', heading.options.fontSize, true) <= colW[0],
+    `"Thousands" at ${heading.options.fontSize}pt needs ` +
+      `${textWidthIn('Thousands', heading.options.fontSize, true).toFixed(2)}in ` +
+      `and its column is ${colW[0].toFixed(2)}in, so it breaks mid-word and is clipped.`
+  );
+});
+
+test('a chart with room keeps its headings at full size', () => {
+  // The discrimination: a chart given the width its headings need must not be
+  // shrunk by the same rule. A full-width My Turn chart reads at full size.
+  const wide = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 });
+  const narrow = chartHeadings({ x: 0.2, y: 1.8, w: 2.87, h: 3.6 });
+  const sizeOf = (drawn) =>
+    drawn.header.find((cell) => cell.text === 'Thousands').options.fontSize;
+  assert.ok(
+    sizeOf(wide) > sizeOf(narrow),
+    'a wide chart should not be shrunk to a narrow chart\'s heading size'
+  );
+  assert.ok(sizeOf(wide) >= 13, `full-width headings came out at ${sizeOf(wide)}pt`);
+});

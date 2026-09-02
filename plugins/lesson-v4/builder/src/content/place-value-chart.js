@@ -80,6 +80,7 @@
 
 const { FONT, COLOURS, FIT } = require('../styles');
 const { arrow } = require('./_geom');
+const { textWidthEm } = require('../glyph-width');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.08;
@@ -103,6 +104,10 @@ const HIGHLIGHT_PT     = 3.0;   // the ring round a changed digit. Three times
                                 // the ordinary rule, because from the back of
                                 // the room a slightly thicker line is no line
 const HEADER_FONT_SIZE = 13;
+const HEADER_FONT_MIN  = 9;    // below this a column name is furniture, not a
+                               // heading a child reads from the carpet
+const HEADER_CELL_INSET = 0.08; // the cell margin and border either side of a
+                               // heading, inches
 const CELL_FONT_SIZE   = 18;
 const LABEL_FONT_SIZE  = 14;
 const COUNTER_ROW_H    = 1.20; // inches at scale 1
@@ -192,6 +197,28 @@ function normaliseRow(row) {
       ? row.counters
       : null
   };
+}
+
+// The largest size at which every column name fits its own column on one line.
+//
+// A place-value heading is a single word - "Thousands", "Hundreds" - so it has
+// no break opportunity. When the column is narrower than the word, PowerPoint
+// splits it mid-word and the header band, which is one line tall, clips the
+// bottom half. A Year 4 Your Turn carrying three four-column charts in a row
+// shipped "Tho/usan  Hun/dred  Tens  One" as its headings, and every check
+// passed: nothing had measured a heading against the column it has to sit in.
+//
+// The scale already narrows type for a narrow column, but it is priced on the
+// digits, which are one character wide. The headings are up to nine.
+function fitHeadingFont(columns, colW, startPt) {
+  const usable = Math.max(0.2, colW - HEADER_CELL_INSET);
+  const widestEm = columns.reduce(function (m, label) {
+    if (label === '.') return m;
+    return Math.max(m, textWidthEm(String(label), true));
+  }, 0);
+  if (widestEm <= 0) return startPt;
+  const fits = Math.floor((usable * 72) / widestEm);
+  return Math.max(HEADER_FONT_MIN, Math.min(startPt, fits));
 }
 
 // A highlight names cells by their COLUMN, the way a designer thinks about the
@@ -628,7 +655,7 @@ function drawPair(pptx, slide, zone, columns, pair) {
   // picture's title.
   const chartY = bandY + Math.max(0, (chartAreaH - chartH) * CHART_TOP_BIAS);
 
-  const headerFont = Math.round(HEADER_FONT_SIZE * scale);
+  const headerFont = fitHeadingFont(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
   const cellFont   = Math.round(CELL_FONT_SIZE * scale);
   const headerH    = HEADER_H * scale;
   const digitH     = NATURAL_ROW_H * scale;
@@ -807,7 +834,7 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
   const startY   = headerOnly ? innerY : Math.max(zone.y, innerY + (innerH - usedH) / 2);
   const rowH     = NATURAL_ROW_H * scale;
   const counterH = hasCounters ? COUNTER_ROW_H * scale : 0;
-  const headerFont = Math.round(HEADER_FONT_SIZE * scale);
+  const headerFont = fitHeadingFont(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
   const cellFont = Math.round(CELL_FONT_SIZE * scale);
   const labelFont = Math.round(LABEL_FONT_SIZE * scale);
 

@@ -102,7 +102,7 @@ The floors for the helpers that get crammed into rows most often:
 
 - `clock`: 2.0″ square, and it binds on both axes — 3 across = ~6″ wide zone (4 = ~8″, 6 = ~12″), *and* each stacked row needs ~2.0″ of height before its heading
 - `numberline`: 3.5″ wide
-- `place-value-chart`: very tolerant — ~2.0″ wide with 4 columns is still readable
+- `place-value-chart`: the digits are very tolerant — ~2.0″ wide with 4 columns is still readable — but the **headings** are what bind. A column name is one word with nowhere to break, so a column narrower than its own heading gets that heading shrunk to fit (the build does this rather than letting PowerPoint split "Thousands" mid-word and clip it). Full words need about 1.0″ of column to read from the back, so a four-column **Thousands / Hundreds / Tens / Ones** chart wants ~4.0″ of width, and **two** is the most a body zone holds side by side. Three want stacking, which also gives the counters the width a row denies them. Abbreviated headings (`Th H T O`) are back at the 2.0″ figure
 - `part-whole-model`: 1.4″ square
 - `pyramid`: 2.0″ square if empty, 2.8″ square if cells carry text
 - `table`: 5.5″ wide for sentence-length cells, 3.0″ for digit-only cells, **and 0.74″ of height for the header band plus 0.2″ for every row**, so a two-row table needs a 1.15″ zone, a four-row table 1.55″, before any cell wraps onto a second line. A row shorter than that cannot show even `(1)` at a size a child can read, and the build refuses the zone by name rather than printing it
