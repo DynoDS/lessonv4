@@ -46,7 +46,7 @@ Consider variety when an equally suitable change of form would reduce monotony, 
 
 Match the form to what was just taught: a fact suits recall or a sort, a process suits labelling, sketching or sequencing, a concept suits writing or generating a fresh example, a value suits ranking or talk. By the last Do before Practise, children should be working with or reasoning with the idea rather than retrieving it; that is the shape of the lesson, not a staircase, so do not force every beat to be harder than the last, and check that the finished lesson does not sit at recall throughout where the objective supports worthwhile thinking.
 
-**Practise** — after the Teach→Do chunks, provide a larger opportunity to use the lesson's body of knowledge. Choose the form and amount that best shows the learning: questions, explanation, comparison, source or evidence work, classification, drawing or labelling a meaningful representation, structured writing, speaking, constructing, practical demonstration or another suitable performance. Writing is valuable when it serves the learning, but it is not compulsory. A substantial Practise is launched, not only instructed: where its product has a form children have not made in this lesson, the beat before it shows a good instance beside a weak one with the difference named, and the `task` opens with the steps children take (`preferences.md` → Slide Philosophy, `Giving a task its instructions is not launching it`).
+**Practise** — after the Teach→Do chunks, provide a larger opportunity to use the lesson's body of knowledge. Choose the form and amount that best shows the learning: questions, explanation, comparison, source or evidence work, classification, drawing or labelling a meaningful representation, structured writing, speaking, constructing, practical demonstration or another suitable performance. Writing is valuable when it serves the learning, but it is not compulsory. A substantial Practise is launched, not only instructed. Its `launch` carries, as the child reads them, what the lesson has established, a good instance of the product beside a weak one with the difference named, and the steps in the order children take them; the slide designer gives it a slide of its own before the task. Use `null` only when children can begin from the question alone, because the product is a form they have made before or the practice is a set of questions (`preferences.md` → Slide Philosophy, `Giving a task its instructions is not launching it`).
 
 The practice must provide useful evidence and should combine relevant remembering with worthwhile use of the knowledge where the objective supports it. It does not have to climb from simple to hard in a fixed order. A main Practise with a definite answer uses `answer-slide`. A Do beat with an exact answer uses `teacher-only` and receives no separate answer slide. A Do beat may use `answer-slide` when its structured answer is a genuinely useful `model` or `standard`. Open or exemplifiable outcomes receive a model or comparison standard only when it genuinely helps.
 
@@ -133,9 +133,16 @@ Practise:
   "content": {
     "activity": "the main application task after all Teach/Do pairs",
     "format": "the substantive form of the work",
-    "task": "the exact questions, prompt or structured task"
+    "task": "the exact questions, prompt or structured task",
+    "launch": {
+      "established": "one line naming what the lesson has established and the task now uses",
+      "goodLooksLike": "a good instance of the product beside a weak one, with the difference named; null when the success criteria already show it",
+      "steps": ["the steps in the order children take them"]
+    }
   }
 }
 ```
+
+`launch` is `null` when children can begin from the question alone.
 
 Put every answer/model/standard only in the source unit's structured `answer` object. Put the exact script or lesson-specific teacher information only in `speakerNotes`.

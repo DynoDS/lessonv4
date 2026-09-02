@@ -135,7 +135,7 @@ class ARuleOnTheBoardIsNotTheTeachingTests(unittest.TestCase):
             text,
         )
         self.assertNotIn('"enablingInput": "the one focused input children need"', text)
-        self.assertIn("never the rule alone", text)
+        self.assertIn("never because the script explains it", text)
 
     def test_content_based_takeaway_is_teaching_not_a_slogan(self) -> None:
         text = flat(CONTENT_BASED)
@@ -239,9 +239,8 @@ class GivingInstructionsIsNotLaunchingTests(unittest.TestCase):
     def test_task_centred_route_launches_the_doing(self) -> None:
         text = flat(TASK_CENTRED)
         self.assertIn("**Launch the task; do not only instruct it.**", text)
-        self.assertIn("The example and non-example are the last `teach-needed` unit", text)
-        self.assertIn("the gathering line and the steps open `do-task.content.activity`", text)
-        self.assertIn("A task children can begin from its question alone", text)
+        self.assertIn("They live in `do-task.content.launch`", text)
+        self.assertIn("`launch` is `null` only when children can begin from the question alone", text)
 
     def test_content_based_practise_is_launched(self) -> None:
         self.assertIn("A substantial Practise is launched, not only instructed", flat(CONTENT_BASED))
@@ -319,6 +318,117 @@ class OrientationIsNotATeachChunkTests(unittest.TestCase):
         self.assertIn("it is not a chunk and earns no Do", designer)
         self.assertIn("**The first Teach poses the lesson's problem; orientation folds into it.**", flat(CONTENT_BASED))
         self.assertIn("A Teach→Do pair whose Do nothing later uses is orientation wearing a chunk's clothes", flat(DESIGN_REVIEWER))
+
+
+class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
+    """The audit (3 September 2026). The content Teach got its explanation
+    slot on 4.2.80 and the next lesson showed the form beats the prose: a
+    slot that exists gets filled in its own shape, a slot that does not exist
+    leaks into the notes. So the same slot reaches the task-centred teaching
+    beat and discovery's teach-why (with a takeaway line), every beat carries
+    its minutes and the validator adds them up, and the two big-task beats
+    carry a launch."""
+
+    def setUp(self) -> None:
+        self.scaffold = load("lesson_design_scaffold_audit", "lesson-design-scaffold.py")
+        self.validator = load("validate_lesson_design_audit", "validate-lesson-design.py")
+        self.contract = load("test_lesson_design_contract_audit", "tests/test_lesson_design_contract.py")
+
+    def test_every_teaching_beat_has_an_explanation_slot(self) -> None:
+        fields = self.scaffold.CONTENT_ENVELOPE_FIELDS
+        self.assertIn("explanation", fields["teach"])
+        self.assertIn("explanation", fields["teach-needed"])
+        self.assertIn("takeaway", fields["teach-why"])
+        design, photos = self.contract.valid_task_contract()
+        unit = next(u for u in design["teachingSequence"] if u["kind"] == "teach-needed")
+        unit["content"]["explanation"] = "You can say \"I'd like to pass.\" You don't have to explain why."
+        self.validator.validate_design(design, photos)
+        design, photos = self.contract.valid_discovery_contract()
+        unit = next(u for u in design["teachingSequence"] if u["kind"] == "teach-why")
+        unit["content"]["takeaway"] = {"kind": "sticky", "ref": design["stickyKnowledge"][0]["id"]}
+        self.validator.validate_design(design, photos)
+        del unit["content"]["takeaway"]
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+    def test_the_explanation_slots_are_documented_on_their_routes(self) -> None:
+        task = flat(TASK_CENTRED)
+        self.assertIn("`enablingInput` is the one line children keep; `explanation` is the teaching as the child reads it", task)
+        discovery = flat(ROOT / "references" / "teaching-sequence-discovery.md")
+        self.assertIn("The board carries it, not only the script.", discovery)
+        self.assertIn("`takeaway` is the one line children keep", discovery)
+        skill = flat(ROOT / "references" / "teaching-sequence-skill-based.md")
+        self.assertIn("Its `activity` is then the explanation as the child reads it", skill)
+
+    def test_every_beat_carries_minutes_and_the_validator_adds_them(self) -> None:
+        self.assertIn("minutes", self.validator.UNIT_FIELDS)
+        self.assertEqual(self.scaffold.source_unit("lesson-section/starter/unit-001", "starter", None)["minutes"], self.scaffold.PLACEHOLDER)
+        design, photos = self.contract.valid_content_contract()
+        self.validator.validate_design(design, photos)
+        duration = design["lesson"]["durationMinutes"]
+        planned = design["starter"]["minutes"] + sum(u["minutes"] for u in design["teachingSequence"])
+        # Too full: no room for vocabulary, setup and transitions.
+        design["teachingSequence"][0]["minutes"] += duration - planned
+        with self.assertRaises(self.validator.ContractError) as caught:
+            self.validator.validate_design(design, photos)
+        self.assertIn("leave at least 3 minutes", str(caught.exception))
+        # Too empty: most of the lesson unaccounted for.
+        for unit in design["teachingSequence"]:
+            unit["minutes"] = 1
+        with self.assertRaises(self.validator.ContractError) as caught:
+            self.validator.validate_design(design, photos)
+        self.assertIn("unaccounted for", str(caught.exception))
+        # A missing minutes key is refused.
+        design, photos = self.contract.valid_content_contract()
+        del design["teachingSequence"][0]["minutes"]
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+    def test_timing_has_one_owner(self) -> None:
+        fields = self.scaffold.CONTENT_ENVELOPE_FIELDS
+        self.assertNotIn("durationMinutes", fields["talk"])
+        self.assertNotIn("durationMinutes", fields["stimulus-talk"])
+        template = flat(ROOT / "references" / "output-template.md")
+        self.assertIn("`minutes` is the whole minutes this beat takes in the room", template)
+        self.assertIn("a Talk beat has no separate duration", template)
+        self.assertIn("Each beat carries its `minutes` in the design, and the validator adds them", section(PREFERENCES, "Classroom Norms"))
+        self.assertIn("each beat's `minutes` could hold what it asks", flat(DESIGN_REVIEWER))
+
+    def test_the_review_view_shows_minutes_and_the_total(self) -> None:
+        packet = load("design_review_packet_audit", "design-review-packet.py")
+        design, _photos = self.contract.valid_content_contract()
+        total = packet.planned_minutes(design)
+        self.assertEqual(total, design["starter"]["minutes"] + sum(u["minutes"] for u in design["teachingSequence"]))
+        source = (SCRIPTS / "design-review-packet.py").read_text(encoding="utf-8")
+        self.assertIn('f"- Minutes: {unit[\'minutes\']}"', source)
+        self.assertIn("Beats planned", source)
+
+    def test_the_big_task_beats_carry_a_launch(self) -> None:
+        fields = self.scaffold.CONTENT_ENVELOPE_FIELDS
+        self.assertIn("launch", fields["practise"])
+        self.assertIn("launch", fields["do-task"])
+        design, photos = self.contract.valid_content_contract()
+        practise = next(u for u in design["teachingSequence"] if u["kind"] == "practise")
+        practise["content"]["launch"] = {
+            "established": "We've found what our agreement needs: joining in, passing, privacy, questions, help.",
+            "goodLooksLike": "\"Be respectful\" tells you nothing to do. \"Listen while someone else is speaking\" does.",
+            "steps": ["Write one rule.", "Combine your group's rules.", "Agree ours."],
+        }
+        self.validator.validate_design(design, photos)
+        practise["content"]["launch"]["goodLooksLike"] = None
+        self.validator.validate_design(design, photos)
+        practise["content"]["launch"] = {"established": "x", "steps": []}
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+        practise["content"]["launch"] = None
+        self.validator.validate_design(design, photos)
+
+    def test_the_launch_is_documented_and_rendered(self) -> None:
+        self.assertIn("Its `launch` carries, as the child reads them", flat(CONTENT_BASED))
+        playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
+        self.assertIn("`launch` takes a slide of its own before the task slide", playbook)
+        self.assertIn("a task's `launch`: its `established` line, its `goodLooksLike` pair and each of its `steps`", flat(SLIDE_DESIGNER))
+        self.assertIn("the unit's `launch` carries what the lesson has established", flat(DESIGN_REVIEWER))
 
 
 class ReviewerRoutingReachesSlidePhilosophyTests(unittest.TestCase):

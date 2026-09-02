@@ -105,6 +105,7 @@ def source_unit(
     misconception_refs: list | None = None,
     photo_refs: list | None = None,
     pupil_instruction: str | None = None,
+    minutes: int = 4,
     script: str | None = "Say to children: Have a look at this.",
     teacher_info: str | None = None,
     look_for: str | None = None,
@@ -116,6 +117,7 @@ def source_unit(
         "kind": kind,
         "conceptRef": concept_ref,
         "content": content,
+        "minutes": minutes,
         "pupilInstruction": pupil_instruction,
         "modellingState": modelling_state,
         "representationRefs": representation_refs or [],
@@ -162,6 +164,7 @@ def valid_contract():
                 "format": "Four short calculations.",
                 "testQuestionPath": None,
             },
+            "minutes": 5,
             "pupilInstruction": "Find each total.",
             "modellingState": None,
             "representationRefs": [],
@@ -368,12 +371,24 @@ def valid_contract():
         "slideDesignNotes": [],
         "flagsForTeacher": [],
     }
+    budget_minutes(design)
     photos = {
         "schema_version": 2,
         "lesson_name": "Adding two-digit numbers",
         "photos": [],
     }
     return design, photos
+
+
+def budget_minutes(design: dict) -> dict:
+    """Share the slot across the sequence so the validator's budget holds:
+    starter 5, ending 4 when included, and the rest split evenly inside the
+    3-to-15-minute gap the validator leaves for vocabulary and transitions."""
+    sequence = design["teachingSequence"]
+    share = (design["lesson"]["durationMinutes"] - 3 - design["starter"]["minutes"] - 4) // len(sequence)
+    for unit in sequence:
+        unit["minutes"] = share
+    return design
 
 
 def set_route(design: dict, structure: str, sequence: list[dict]):
@@ -387,6 +402,7 @@ def set_route(design: dict, structure: str, sequence: list[dict]):
         "reason": "The route already closes the learning purposefully.",
         "beat": None,
     }
+    budget_minutes(design)
 
 
 def valid_content_contract():
@@ -398,7 +414,7 @@ def valid_content_contract():
             source_unit(1, "observe", {"activity": "Compare the two photos.", "focus": "What changed?", "evidenceProduced": "One noticed difference."}),
             source_unit(2, "teach", {"headline": "Roads open up the forest", "explanation": None, "takeaway": {"kind": "text", "text": "A road can let more people reach the forest."}, "teachingText": None, "keyQuestions": ["What might happen once a road is there?"]}),
             source_unit(3, "do", {"activity": "Use the idea", "format": None, "task": "Explain one possible effect of the road."}, answer={"kind": "model", "content": "More people can reach the forest and more trees may be cut down.", "acceptanceCondition": "Accept another accurate consequence.", "delivery": "teacher-only"}),
-            source_unit(4, "practise", {"activity": "Explain the chain", "format": "short written explanation", "task": "Explain how a new road could lead to more forest being cleared."}, answer={"kind": "model", "content": "The road makes the area easier to reach, so more people may enter and clear land.", "acceptanceCondition": "Accept an accurate causal explanation.", "delivery": "answer-slide"}),
+            source_unit(4, "practise", {"launch": None, "activity": "Explain the chain", "format": "short written explanation", "task": "Explain how a new road could lead to more forest being cleared."}, answer={"kind": "model", "content": "The road makes the area easier to reach, so more people may enter and clear land.", "acceptanceCondition": "Accept an accurate causal explanation.", "delivery": "answer-slide"}),
         ],
     )
     return design, photos
@@ -413,7 +429,7 @@ def valid_discovery_contract():
             source_unit(1, "question", {"focus": "Which surface creates most friction?", "prerequisites": "Children know a force can change movement.", "discoveryFocus": "Compare how far the same object travels."}),
             source_unit(2, "explore", {"activity": "Release the same block across three surfaces.", "conditionsAndSafety": "Keep the ramp height the same.", "evidenceProduced": "Distances travelled."}),
             source_unit(3, "make-sense", {"resultOrPattern": "The block travels different distances.", "prompt": "Which surface slowed it most?"}),
-            source_unit(4, "teach-why", {"accurateExplanation": "Rougher surfaces usually create more friction.", "unsupportedExplanationToCorrect": None}),
+            source_unit(4, "teach-why", {"takeaway": {"kind": "text", "text": "Rougher surfaces grip more."}, "accurateExplanation": "Rougher surfaces usually create more friction.", "unsupportedExplanationToCorrect": None}),
             source_unit(5, "use-learning", {"activity": "Predict which new surface would slow the block most and explain why."}),
             source_unit(6, "finish", {"purposefulEnding": "State what the investigation showed about friction."}),
         ],
@@ -428,7 +444,7 @@ def valid_dialogic_contract():
         "Dialogic",
         [
             source_unit(1, "grounding-input", {"input": "A councillor is chosen by local people to represent their area."}),
-            source_unit(2, "stimulus-talk", {"prompt": "A park has room for one new facility.", "question": "What should the council choose?", "materialOnSlide": "play area / garden / sports court", "format": "ranking", "sentenceStems": ["I would choose ___ because ___."], "durationMinutes": 5, "teacherListensFor": ["different community needs", "reasons linked to who would benefit"]}),
+            source_unit(2, "stimulus-talk", {"prompt": "A park has room for one new facility.", "question": "What should the council choose?", "materialOnSlide": "play area / garden / sports court", "format": "ranking", "sentenceStems": ["I would choose ___ because ___."], "teacherListensFor": ["different community needs", "reasons linked to who would benefit"]}),
             source_unit(3, "synthesise", {"framesToName": ["who benefits", "how many people benefit", "what the area already has"]}),
         ],
     )
@@ -442,8 +458,8 @@ def valid_task_contract():
         "Task-Centred",
         [
             source_unit(1, "set-task", {"question": "Which material is best at blocking sound?", "investigationBrief": "Test the same sound through several materials."}, pupil_instruction="Write your prediction: I think ___ because ___."),
-            source_unit(2, "teach-needed", {"enablingInput": "Model how to keep one variable the same.", "modelledOn": "A quick demonstration using two materials."}, modelling_state="Physical-demonstration support"),
-            source_unit(3, "do-task", {"activity": "Plan the comparison, get the fairness check, then run the investigation.", "planWithinTask": "Choose what will stay the same while the material changes.", "checkpointQuestion": "What would make this unfair?", "runsBeyondToday": False, "todayEndsAt": None}),
+            source_unit(2, "teach-needed", {"explanation": None, "enablingInput": "Model how to keep one variable the same.", "modelledOn": "A quick demonstration using two materials."}, modelling_state="Physical-demonstration support"),
+            source_unit(3, "do-task", {"launch": None, "activity": "Plan the comparison, get the fairness check, then run the investigation.", "planWithinTask": "Choose what will stay the same while the material changes.", "checkpointQuestion": "What would make this unfair?", "runsBeyondToday": False, "todayEndsAt": None}),
             source_unit(4, "share-conclude", {"activity": "Conclude which material blocked sound best and use the results as evidence."}),
         ],
     )
@@ -660,12 +676,12 @@ def test_valid_dialogic_separate_stimulus_talk_pair_passes():
                 "format": "ranking",
                 "discussionQuestion": "What should the council choose?",
                 "sentenceStems": ["I would choose ___ because ___."],
-                "durationMinutes": 5,
                 "teacherListensFor": ["different community needs"],
             },
         ),
         source_unit(4, "synthesise", {"framesToName": ["who benefits"]}),
     ]
+    budget_minutes(design)
     module.validate_design(design, photos)
 
 
@@ -763,7 +779,6 @@ def test_dialogic_separate_talk_question_must_match_stimulus_exactly():
                 "format": "ranking",
                 "discussionQuestion": "Which choice is best?",
                 "sentenceStems": ["I would choose ___ because ___."],
-                "durationMinutes": 5,
                 "teacherListensFor": ["different community needs"],
             },
         ),

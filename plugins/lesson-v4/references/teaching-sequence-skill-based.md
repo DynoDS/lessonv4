@@ -200,6 +200,8 @@ Use no preparation unit when the lesson should move straight into My Turn. This 
 
 `bounded-attempt` carries the brief first try at the target itself, under the conditions in this file's opening section; put the exact challenge children are given in `activity`.
 
+`explanation` carries the short teaching some skills need before the first model. Its `activity` is then the explanation as the child reads it, two or three short lines on the board (what the idea means, why it matters, what it looks like), not a description of an activity and not a slogan the script explains (`preferences.md` → Slide Philosophy, `A heading, a fact or a rule on the board is not the teaching of it`).
+
 For each concept, use zero or more preparation units when genuinely needed, then **one or more My Turn source units** for the genuinely distinct modelled moves/cases children need to see, followed by at most one Our Turn and exactly one Your Turn. The Our Turn is present unless the omission test in the Our Turn section applies; omitting it is a purposeful decision, not a shortcut.
 
 Each My Turn source unit represents one pedagogically distinct modelled move and therefore carries its own `content`, `modellingState`, `representationRefs`, `speakerNotes` and `answer`. Do not create multiple My Turn source units merely because Slide Designer may later split one modelled move across several physical slides.

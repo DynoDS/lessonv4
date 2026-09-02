@@ -427,7 +427,7 @@ Then give one short decision per line, with its reason, covering only:
 - prior knowledge, visible foundation, new learning, the path from supported practice to independence, end performance and why the chosen structure fits;
 - the dominant sticking point or misconception, plus where it is exposed, resolved and retested;
 - the distinct teaching job of each explanation, model, experience or practice beat;
-- for each taught idea, the child-facing lines that carry its meaning, reason and example on the board rather than only in the script (a content Teach's `explanation`); and for a substantial task, how it is launched (what the class has established, the example and non-example of the product, the steps) or why its question alone is enough;
+- for each taught idea, the child-facing lines that carry its meaning, reason and example on the board rather than only in the script (a content Teach's `explanation`); and for a substantial task, how it is launched (the `launch` on a Practise or Do-the-task: what the class has established, the example and non-example of the product, the steps) or why its question alone is enough;
 - the independent assessment evidence, including why it cannot be passed by a surface cue or copied answer path;
 - the success-criteria form and the fresh worksheet evidence children produce;
 - any load-bearing representation, source, photograph or safety constraint and the teaching job it protects;

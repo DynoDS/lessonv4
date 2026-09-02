@@ -94,7 +94,6 @@ When the stimulus itself is an activity and Stimulus + Talk genuinely merge into
     "materialOnSlide": null,
     "format": "ranking",
     "sentenceStems": [],
-    "durationMinutes": 5,
     "teacherListensFor": [
       "one defensible position worth surfacing",
       "another defensible position worth surfacing"
@@ -114,7 +113,6 @@ Otherwise use a separate Talk source unit:
     "sentenceStems": [
       "I think ___ because ___."
     ],
-    "durationMinutes": 4,
     "teacherListensFor": [
       "one defensible position worth surfacing",
       "another defensible position worth surfacing"

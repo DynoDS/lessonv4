@@ -132,6 +132,7 @@ This includes:
 
 - prompts;
 - a content Teach unit's `explanation`, kept as its own short lines;
+- a task's `launch`: its `established` line, its `goodLooksLike` pair and each of its `steps`, as separate pieces on a slide of their own before the task slide;
 - instructions supplied through non-null `pupilInstruction`;
 - claims;
 - sentence stems;

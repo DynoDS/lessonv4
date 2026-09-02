@@ -105,6 +105,7 @@ def two_idea_task_design(first_pupil_instruction: str | None):
         "teach-needed",
         {
             "enablingInput": "If you don't want to share something personal, you can say pass.",
+            "explanation": None,
             "modelledOn": "Amira says: \"In PSHE, everyone should tell a true story about themselves.\"",
         },
         pupil_instruction=first_pupil_instruction,
@@ -114,6 +115,7 @@ def two_idea_task_design(first_pupil_instruction: str | None):
         "teach-needed",
         {
             "enablingInput": "If you think someone might be unsafe, tell a trusted adult.",
+            "explanation": None,
             "modelledOn": "Kai says: \"A worry is private, so keep it to yourself.\"",
         },
     )

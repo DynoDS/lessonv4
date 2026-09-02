@@ -374,6 +374,7 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
   "kind": "my-turn",
   "conceptRef": "concept-001",
   "content": {},
+  "minutes": 4,
   "pupilInstruction": null,
   "taskStructure": null,
   "modellingState": "Live-complete helper",
@@ -397,6 +398,8 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
 ```
 
 `conceptRef` is required for Skill-based `my-turn`, `our-turn` and `your-turn`; otherwise use `null`.
+
+`minutes` is the whole minutes this beat takes in the room, its teaching and its pupil action together. It is the only place a beat's time is recorded: a Talk beat has no separate duration, and `Allow N minutes` in the teacher information repeats this figure rather than replacing it. The validator adds the starter, every teaching-sequence unit and the ending, and refuses a plan that leaves fewer than 3 minutes or more than 15 minutes of `lesson.durationMinutes` unaccounted for; vocabulary, setup and transitions live in that gap.
 
 `pupilInstruction` is the exact short child-facing instruction when this unit needs one. Use `null` when no separate instruction is needed. A downstream designer may choose its physical slot but must render non-null wording exactly once and must not paraphrase it.
 
