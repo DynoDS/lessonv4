@@ -302,7 +302,7 @@ CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
     "our-turn": ("example", "guidedQuestions"),
     "your-turn": ("activityArchitecture", "task"),
     "observe": ("activity", "focus", "evidenceProduced"),
-    "teach": ("headline", "takeaway", "teachingText", "keyQuestions"),
+    "teach": ("headline", "explanation", "takeaway", "teachingText", "keyQuestions"),
     "do": ("activity", "format", "task"),
     "practise": ("activity", "format", "task"),
     "question": ("focus", "prerequisites", "discoveryFocus"),

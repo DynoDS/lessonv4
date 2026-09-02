@@ -568,7 +568,7 @@ def build_view(
         if not isinstance(content, dict):
             continue
         parts = []
-        for key in ("headline", "takeaway", "task", "prompt", "question", "discussionQuestion"):
+        for key in ("headline", "explanation", "takeaway", "task", "prompt", "question", "discussionQuestion"):
             if content.get(key) is not None:
                 parts.append(f"{key}: {compact(content[key])}")
         if parts:

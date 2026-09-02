@@ -310,7 +310,7 @@ When two vocabulary words are taught as a contrast on `teach-compare`, set `head
 
 ### Teaching and pupil action
 
-A teaching slide keeps the teaching object visible. Notes may enrich it but do not hold a hidden second lesson. When a title asks a question, the answer idea is visible on the slide. Keep every structured `keyQuestions` entry visible in a readable treatment. A pupil-action slide makes the material, decision, response and active reference visible. When a non-null pupil instruction is not independently actionable, preserve it and return `PUPIL_INSTRUCTION_AMBIGUOUS` instead of repairing it through presentation wording.
+A teaching slide keeps the teaching object visible. A content Teach unit's `explanation` is child-facing teaching text: render it black, as its own short lines, between the headline and the example it explains, with the takeaway still the slide's one prominent line. It is not a paragraph and not a caption. Notes may enrich it but do not hold a hidden second lesson. When a title asks a question, the answer idea is visible on the slide. Keep every structured `keyQuestions` entry visible in a readable treatment. A pupil-action slide makes the material, decision, response and active reference visible. When a non-null pupil instruction is not independently actionable, preserve it and return `PUPIL_INSTRUCTION_AMBIGUOUS` instead of repairing it through presentation wording.
 
 Before printing any source string, confirm that it is child-facing. Sourcing instructions, answer metadata, renderer notes, fit priorities and teacher rationale belong in non-visible fields or require an upstream hand-off. Do not print planning metadata.
 

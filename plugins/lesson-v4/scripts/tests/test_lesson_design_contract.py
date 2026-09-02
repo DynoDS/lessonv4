@@ -396,7 +396,7 @@ def valid_content_contract():
         "Content-based",
         [
             source_unit(1, "observe", {"activity": "Compare the two photos.", "focus": "What changed?", "evidenceProduced": "One noticed difference."}),
-            source_unit(2, "teach", {"headline": "Roads open up the forest", "takeaway": {"kind": "text", "text": "A road can let more people reach the forest."}, "teachingText": None, "keyQuestions": ["What might happen once a road is there?"]}),
+            source_unit(2, "teach", {"headline": "Roads open up the forest", "explanation": None, "takeaway": {"kind": "text", "text": "A road can let more people reach the forest."}, "teachingText": None, "keyQuestions": ["What might happen once a road is there?"]}),
             source_unit(3, "do", {"activity": "Use the idea", "format": None, "task": "Explain one possible effect of the road."}, answer={"kind": "model", "content": "More people can reach the forest and more trees may be cut down.", "acceptanceCondition": "Accept another accurate consequence.", "delivery": "teacher-only"}),
             source_unit(4, "practise", {"activity": "Explain the chain", "format": "short written explanation", "task": "Explain how a new road could lead to more forest being cleared."}, answer={"kind": "model", "content": "The road makes the area easier to reach, so more people may enter and clear land.", "acceptanceCondition": "Accept an accurate causal explanation.", "delivery": "answer-slide"}),
         ],

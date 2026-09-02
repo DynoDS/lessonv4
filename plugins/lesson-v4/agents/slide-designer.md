@@ -131,6 +131,7 @@ Copy every source-authored child-facing string exactly unless the template contr
 This includes:
 
 - prompts;
+- a content Teach unit's `explanation`, kept as its own short lines;
 - instructions supplied through non-null `pupilInstruction`;
 - claims;
 - sentence stems;

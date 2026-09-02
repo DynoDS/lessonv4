@@ -722,9 +722,12 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         expect_exact_keys(content, keys, keys, path)
         strings(("activity", "focus", "evidenceProduced"))
     elif kind == "teach":
-        keys = {"headline", "takeaway", "teachingText", "keyQuestions"}
+        keys = {"headline", "explanation", "takeaway", "teachingText", "keyQuestions"}
         expect_exact_keys(content, keys, keys, path)
         strings(("headline",))
+        # The teaching of the idea as the child reads it. Null only when the
+        # headline, takeaway and visible example already carry it.
+        expect_nullable_string(content["explanation"], f"{path}.explanation")
         validate_takeaway(content["takeaway"], f"{path}.takeaway", sticky_ids)
         expect_nullable_string(content["teachingText"], f"{path}.teachingText")
         qs = expect_list(content["keyQuestions"], f"{path}.keyQuestions")

@@ -139,7 +139,7 @@ class ARuleOnTheBoardIsNotTheTeachingTests(unittest.TestCase):
 
     def test_content_based_takeaway_is_teaching_not_a_slogan(self) -> None:
         text = flat(CONTENT_BASED)
-        self.assertIn("the takeaway is teaching, not a slogan", text)
+        self.assertIn("The takeaway stays one line, and it is not the teaching on its own", text)
         self.assertIn(RULE_TITLE, text)
 
     def test_reviewer_covers_the_script_and_reads_the_board(self) -> None:
@@ -253,6 +253,72 @@ class GivingInstructionsIsNotLaunchingTests(unittest.TestCase):
 
     def test_reviewer_checks_the_launch(self) -> None:
         self.assertIn("a substantial task is launched before it is instructed", flat(DESIGN_REVIEWER))
+
+
+class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
+    """The next lesson (3 September 2026, engine 4.2.79) put `You can pass
+    without giving a reason` and Theo's example on the board and left `what
+    pass means` in the script, because a content Teach unit had nowhere to
+    put an explanation: a one-line headline, a one-line takeaway, a text slot
+    reserved for sources, and questions. The rule said two or three short
+    lines; the contract had no field for them."""
+
+    def test_the_scaffold_and_validator_carry_the_field(self) -> None:
+        scaffold = load("lesson_design_scaffold_board", "lesson-design-scaffold.py")
+        self.assertIn("explanation", scaffold.CONTENT_ENVELOPE_FIELDS["teach"])
+        validator = load("validate_lesson_design_board", "validate-lesson-design.py")
+        contract = load("test_lesson_design_contract_board", "tests/test_lesson_design_contract.py")
+        design, photos = contract.valid_content_contract()
+        teach = next(unit for unit in design["teachingSequence"] if unit["kind"] == "teach")
+        teach["content"]["explanation"] = (
+            "Sometimes you don't want to answer a question. In PSHE, you can choose to pass.\n"
+            "You can say \"I'd like to pass.\" You don't have to explain why."
+        )
+        validator.validate_design(design, photos)
+        teach["content"]["explanation"] = None
+        validator.validate_design(design, photos)
+        del teach["content"]["explanation"]
+        with self.assertRaises(validator.ContractError):
+            validator.validate_design(design, photos)
+
+    def test_the_route_file_documents_the_field_and_its_limit(self) -> None:
+        text = flat(CONTENT_BASED)
+        self.assertIn('"explanation": "the teaching of that idea as the child reads it', text)
+        self.assertIn("`explanation` is the board's teaching of the idea", text)
+        self.assertIn("Use `null` only for a name, a convention or a fact that simply is so", text)
+        self.assertIn("It is not the place for the explanation", text)
+        self.assertIn("is not left asking `what's pass?`", text)
+
+    def test_downstream_renders_it_as_teaching_lines_and_the_reviewer_names_it(self) -> None:
+        self.assertIn("a content Teach unit's `explanation`, kept as its own short lines", flat(SLIDE_DESIGNER))
+        playbook = " ".join((ROOT / "references" / "slide-composition-playbook.md").read_text(encoding="utf-8").split())
+        self.assertIn("render it black, as its own short lines, between the headline and the example it explains", playbook)
+        self.assertIn("on a content Teach that teaching is the `explanation` field", flat(DESIGN_REVIEWER))
+
+
+class OrientationIsNotATeachChunkTests(unittest.TestCase):
+    """The same lesson spent a full Teach→Do on what PSHE is for (children
+    explained what learning about sleep, jealousy or saving could help
+    someone do) before the lesson's own problem arrived. The designer's
+    earns-its-place rule said to keep groundwork and link it, and the rhythm
+    demanded a Do after every Teach, so orientation became a chunk with a
+    manufactured beat that nothing later used."""
+
+    def test_preferences_owns_the_rule_with_its_test_and_limit(self) -> None:
+        rhythm = section(PREFERENCES, "The Teach → Do → Teach → Do Rhythm")
+        self.assertIn("**Orientation is not a Teach chunk, and it earns no Do beat.**", rhythm)
+        self.assertIn("does anything later depend on what children did here", rhythm)
+        self.assertIn("orientation wearing a chunk's clothes", rhythm)
+        self.assertIn("First: how do we disagree safely?", rhythm)
+        self.assertIn("groundwork children must use", rhythm)
+        self.assertIn("is a real chunk and keeps its Do", rhythm)
+
+    def test_designer_route_and_reviewer_carry_it(self) -> None:
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn("groundwork children will use", designer)
+        self.assertIn("it is not a chunk and earns no Do", designer)
+        self.assertIn("**The first Teach poses the lesson's problem; orientation folds into it.**", flat(CONTENT_BASED))
+        self.assertIn("A Teach→Do pair whose Do nothing later uses is orientation wearing a chunk's clothes", flat(DESIGN_REVIEWER))
 
 
 class ReviewerRoutingReachesSlidePhilosophyTests(unittest.TestCase):
