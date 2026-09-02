@@ -54,8 +54,9 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "The Teach → Do → Teach → Do Rhythm",
-        "Read for Content-based processing or when teaching and pupil use "
-        "have become separated.",
+        "Read when two teacher-presented beats run with no pupil action "
+        "between them, in any route, or when a beat carries a second job "
+        "that has no beat of its own.",
     ),
     (
         "Cognitive Load Triage on Scaffolds",

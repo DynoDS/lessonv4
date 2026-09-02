@@ -641,7 +641,11 @@ def validate_route_shape(
         )
         index += 1
 
-        if (
+        # One enabling idea per teach-needed unit, so a task that needs two
+        # distinct inputs can give each its own unit and its own pupil use
+        # instead of stacking both into one block. The design validator
+        # checks that every unit but the last carries that use.
+        while (
             index < len(sequence)
             and sequence[index]["kind"] == "teach-needed"
         ):

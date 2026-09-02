@@ -1286,8 +1286,19 @@ def validate_route_sequence(
         index = 0
         expect(sequence[index]["kind"] == "set-task", "Task-Centred sequence must begin with Set the Task")
         index += 1
-        if index < len(sequence) and sequence[index]["kind"] == "teach-needed":
+        while index < len(sequence) and sequence[index]["kind"] == "teach-needed":
+            unit = sequence[index]
             index += 1
+            if index < len(sequence) and sequence[index]["kind"] == "teach-needed":
+                # Children use one enabling idea before the next distinct
+                # idea arrives. The last teach-needed may be used by the
+                # planning or the task itself; an earlier one carries its
+                # own pupil use, or the two ideas are one block of telling.
+                expect(
+                    unit["pupilInstruction"] is not None,
+                    f"teachingSequence[{index - 1}].pupilInstruction must be non-null: "
+                    "children use this enabling idea before the next teach-needed unit arrives",
+                )
         separate_plan = False
         if index < len(sequence) and sequence[index]["kind"] == "plan-checkpoint":
             separate_plan = True

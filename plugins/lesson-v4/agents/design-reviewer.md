@@ -138,7 +138,7 @@ For Dialogic lessons, check that pupils receive knowledge before judgement, the 
 
 For Discovery lessons, check that exploration is safe, bounded and dependable, pupils have the needed prerequisites, the result becomes visible, and explicit explanation follows.
 
-For Task-Centred lessons, check that the sustained task is genuinely central, enabling teaching is limited to what the task needs, a checkpoint exists only when it can prevent a consequential failure, and the finish completes the task's purpose.
+For Task-Centred lessons, check that the sustained task is genuinely central, enabling teaching is limited to what the task needs and arrives one idea at a time with children using each before the next is taught (an enabling unit carrying several distinct ideas before its pupil action is a purposeful design defect, not polish), a checkpoint exists only when it can prevent a consequential failure, and the finish completes the task's purpose and carries nothing else.
 
 Across all routes, compare what is modelled or guided with what pupils later do alone. A child must not meet a required case cold. The model must not complete the decision the independent task is supposed to assess.
 
@@ -151,6 +151,7 @@ Check:
 - the task requires the thinking named by the objective;
 - the lesson has a coherent centre: the dominant sticking point or blocking misconception is exposed, resolved and tested again, or a clearly named central difficulty serves that role when no genuine misconception exists;
 - the retesting of that centre has an end: count the response moments, beats and worksheet prompts alike, that elicit essentially the same corrective answer, and when a later one can be passed by repeating the sentence given two moments earlier, the centre has decayed into a catchphrase and its time belongs to the parts of the objective still untaught. A lesson most of whose response moments rehearse the correction has narrowed its objective to the sticking point, which is a purposeful design defect, not polish;
+- the lesson reads as one line: read the beats in order and name what each hands to the next. A beat carrying a second job that has no beat of its own, or a run of teacher-presented beats with no pupil action between them, is a purposeful design defect, not polish (`preferences.md` → The Teach → Do → Teach → Do Rhythm);
 - a child cannot succeed by copying, reformatting, reading a visible answer or following a predictable answer pattern;
 - a hinge or checking question cannot be answered from an incidental picture cue, wording cue, answer position or immediate repetition; the correct response must depend on the relationship, decision or method being assessed;
 - reasoning is part of core learning when the objective supports it;

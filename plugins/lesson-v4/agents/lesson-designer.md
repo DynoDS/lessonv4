@@ -237,7 +237,7 @@ Appears contextually at exact point needed. Define each once in top-level `stick
 
 Short explanation + model completing same manageable idea may be one coherent teaching block. Children must then use/process that idea before teacher introduces different new idea. Rule prevents several different concepts taught before children do anything; does not force activity between explanation and model of one idea.
 
-Skill-based: child-processing = guided + independent practice. Content-based: short use/processing beat after each chunk. Dialogic: Stimulus→Talk. Discovery/Task-Centred use checks/processing suited to routes.
+Skill-based: child-processing = guided + independent practice. Content-based: short use/processing beat after each chunk. Dialogic: Stimulus→Talk. Discovery: Explore before Teach why, Use learning after. Task-Centred: one enabling idea per `teach-needed` unit, each used through its `pupilInstruction` before the next is taught; only the last may be used by the plan or the task itself. Short teaching is not exempt: two ideas told before children use the first is the same failure as two Teach slides in a row.
 
 **Every beat earns place against objective, and beat serving indirectly says so out loud.** Rhythm keeps children active, easy for beat to be busy without being lesson: background knowledge worth having can become little lesson inside lesson, children labelling lines while objective about biomes. Check each beat against LO as write: what does this let child do objective asks? When honest answer is beat supplies groundwork not objective itself, keep and make link part of teaching: say why matters for today's real question, have beat land back on objective. Quick check: could child say what today's lesson was about after every beat, or would one leave thinking lesson about something else? Where beat serves nothing objective asks and cannot be linked back honestly, cut.
 
@@ -412,7 +412,8 @@ Before choosing or polishing activities, settle the lesson's learning chain:
 - what children practise with support and what they must later do independently;
 - the evidence that will show whether the objective was met;
 - the representation, photograph, source or working surface genuinely needed;
-- anything deliberately omitted because it adds activity without improving learning.
+- anything deliberately omitted because it adds activity without improving learning;
+- the line of the lesson: the beats in order, each one step handing on to the next, so a teacher flicking through the deck can say where it is going (`preferences.md` → The Teach → Do → Teach → Do Rhythm).
 
 An activity earns its place only when it teaches, practises, reveals or assesses something in this chain.
 
@@ -427,6 +428,7 @@ Then give one short decision per line, with its reason, covering only:
 - the independent assessment evidence, including why it cannot be passed by a surface cue or copied answer path;
 - the success-criteria form and the fresh worksheet evidence children produce;
 - any load-bearing representation, source, photograph or safety constraint and the teaching job it protects;
+- the lesson line as one row of arrows, beat by beat, with every beat one step on it - a beat carrying a second job that has no beat of its own is the tell that something has no home yet;
 - deliberate omissions and `flagsForTeacher`, or `None`.
 
 Do not duplicate mechanical IDs, JSON field names, answer-delivery values, worksheet page-fit data, or picture acquisition/provenance fields in this record. Their canonical JSON files and deterministic validators own them. A second prose copy adds drift and completion work without protecting the lesson.
@@ -528,7 +530,7 @@ Read a named section from its heading to the next heading of the same level.
 
 **At the start:**
 
-- Read the introduction and contents of `preferences.md`, then `Classroom Norms`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`.
+- Read the introduction and contents of `preferences.md`, then `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included, and it is short.
 - Read the introduction and contents of `evidence-synthesis.md`, then `Lesson Structures` and `Cross-Cutting Principles`.
 - Read the one matching `subject-*.md` file when it exists. List the directory and match the subject. Do not guess a filename.
 
@@ -537,12 +539,11 @@ Read a named section from its heading to the next heading of the same level.
 - Read `Written Voice` core rules and read-back before authoring child-facing wording or scripts. Read its calibration examples only when wording remains uncertain.
 - Read `teacher-voice.md` at the same point: its core sections, then the numbered section for the kind of thing being written - §5 a vocabulary definition or explanation, §§1 and 3 a spoken script, §8 a model answer, §9 a worked example, §10 success criteria, §11 a misconception warning, §12 a comparison or critique prompt. Definitions and scripts are the two most often missed, because a definition feels like a structured field being filled and a script feels like notes rather than writing; both are words a child reads or hears, and both are where the register slips first. Read its calibrated examples (§16) only when wording remains uncertain.
 - Read the relevant preference section before deciding the starter, vocabulary, sticky knowledge, success criteria, Apply or Reflect, reasoning, support and release, source use or worksheet.
-- Read `The Teach → Do → Teach → Do Rhythm` only when the chosen structure uses that rhythm.
 - Read `Cognitive Load Triage on Scaffolds` when deciding what is visible, blank, constructable or pre-filled.
 - Read the Lesson Designer parts of `Slide Philosophy`: `Lesson Designer content boundaries`, `Lesson Designer visual-need boundary` and `Speaker notes hand-off`. Do not read `Slide Designer presentation rules`.
 - Read `Pride Lessons` only when a real calibration example is needed.
 - Use the contents of `evidence-synthesis.md` to open only the evidence sections needed for an uncertain component or trade-off.
-- Read `do-beats.md` core guidance and only the needed registers when Teach-to-Do rhythm exists.
+- Read `do-beats.md` core guidance and only the needed registers when a beat needs a short processing form, in any structure.
 - Read `modelling-formats.md` when choosing `modellingState`.
 - Read `reasoning-prompts.md` when Apply or worksheet reasoning is being designed.
 - Read `test-question-bank.md` only when starter retrieval matches a bank skill.
