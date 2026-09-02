@@ -152,6 +152,8 @@ Check:
 - the lesson has a coherent centre: the dominant sticking point or blocking misconception is exposed, resolved and tested again, or a clearly named central difficulty serves that role when no genuine misconception exists;
 - the retesting of that centre has an end: count the response moments, beats and worksheet prompts alike, that elicit essentially the same corrective answer, and when a later one can be passed by repeating the sentence given two moments earlier, the centre has decayed into a catchphrase and its time belongs to the parts of the objective still untaught. A lesson most of whose response moments rehearse the correction has narrowed its objective to the sticking point, which is a purposeful design defect, not polish;
 - each major beat changes the state of the lesson and the next builds from it: read the beats in order and name what each changes and what later depends on it. A major beat that could move elsewhere with nothing lost gets the challenge, and the answer is either a legitimate place beside the spine (vocabulary, a routine, a safeguarding note, setup) or a finding; do not answer it by demanding forced links. A beat carrying a second job that has no beat of its own, or a run of teacher-presented beats with no pupil action between them, is a purposeful design defect, not polish (`preferences.md` → The Teach → Do → Teach → Do Rhythm);
+- each Do beat or `pupilInstruction` is every child using the idea just taught, not a question to the room: a question a child could answer without that idea, or that most of the class could sit out, is a check on the room, and it is a finding unless the form makes every child commit (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `Questioning is not doing`);
+- a substantial task is launched before it is instructed: when the product's form is new to the lesson or the enabling input ran to several units, the board carries what the lesson has established, a good instance beside a weak one, and the steps, before the instruction (`preferences.md` → Slide Philosophy, `Giving a task its instructions is not launching it`);
 - a child cannot succeed by copying, reformatting, reading a visible answer or following a predictable answer pattern;
 - a hinge or checking question cannot be answered from an incidental picture cue, wording cue, answer position or immediate repetition; the correct response must depend on the relationship, decision or method being assessed;
 - reasoning is part of core learning when the objective supports it;
@@ -190,6 +192,7 @@ Check:
 - support remains where it enables the intended thinking;
 - answer-giving or unnecessary support is removed;
 - the teacher can run the lesson without reconstructing missing decisions;
+- every taught idea reaches the board as teaching, not a label: cover each unit's script and read its child-facing content as a child who missed the teacher; when `what?`, `why?` or `when?` is a fair reply, the meaning lives only in the notes, which is a purposeful design defect, not polish (`preferences.md` → Slide Philosophy, `A heading, a fact or a rule on the board is not the teaching of it`);
 - routine classroom management remains teacher-owned;
 - scripts, slide content, answers, success criteria and instructions agree.
 

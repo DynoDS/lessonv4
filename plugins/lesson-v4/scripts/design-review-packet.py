@@ -59,6 +59,14 @@ PREFERENCE_REVIEW_ROUTES = (
         "that has no beat of its own.",
     ),
     (
+        "Slide Philosophy",
+        "Read its Lesson Designer parts when a unit's child-facing content "
+        "states a rule or fact whose meaning, reason or example lives only "
+        "in its script, when a Do beat is a question to the room rather "
+        "than every child using the idea, or when a substantial task "
+        "arrives with instructions only.",
+    ),
+    (
         "Cognitive Load Triage on Scaffolds",
         "Read when a scaffold may reveal the answer, remove necessary "
         "support or overload the task.",

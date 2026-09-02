@@ -624,6 +624,7 @@ Report briefly:
 - number of slides specified;
 - any helper/content gaps;
 - any notable visual decision that the teacher would genuinely care about;
+- one line per unit whose child-facing content states a rule or fact that only its script explains, naming the unit. You cannot move teaching from the notes to the board, and the teacher should know that slide will not teach on its own;
 - one line per slide whose picture you are uneasy about, naming the slide and the filename. Nobody looks at the built deck after you, so a doubt you keep to yourself reaches the classroom as a surprise. Flagging costs a sentence and lets the teacher swap a picture on the morning.
 
 When a slide's natural shape had no template and forcing it through free geometry made the work materially harder or the result worse, add one `Friction:` line naming the missing template shape and the slide that wanted it (for example, `Friction: no template splits the bottom half full-width with two top quarters, so slide 14's task-plus-reference layout was hand-built from stacks - run unharmed`). This is a suggestion for a template worth building, so raise it only when it would genuinely have made this deck easier or the shape is an obvious hole in the catalogue - a tight slide you composed cleanly with the existing templates is not friction.
