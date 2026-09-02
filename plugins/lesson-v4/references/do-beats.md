@@ -1,6 +1,6 @@
 # Do Beat Formats — Reference Catalogue
 
-A **Do beat** is a short consolidation or checking move between genuinely different taught ideas. It gives every child meaningful thinking or action before the next new chunk. A question put to the room is not one unless it is chosen so that every child commits to an answer that needs the idea just taught (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `Questioning is not doing`, owns the line). One to three minutes is a useful estimate, not a hard limit. A spoken response, visible decision, movement, physical action, drawing or writing may be enough; every Do beat does not need a permanent written artefact. If the activity becomes substantial, treat it as main practice rather than letting a nominally quick beat swallow the lesson.
+A **Do beat** is a short consolidation or checking move between genuinely different taught ideas. It requires every child to use the chunk they have just been taught, and it leaves something the teacher can see: a written answer, a partner's spoken response, a visible decision, a physical position. A question put to the room is not one unless it is chosen so that every child commits to an answer that needs the idea just taught (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `Questioning is not doing`, owns the line). One to three minutes is a useful estimate, not a hard limit. A spoken response, visible decision, movement, physical action, drawing or writing may be enough; every Do beat does not need a permanent written artefact. If the activity becomes substantial, treat it as main practice rather than letting a nominally quick beat swallow the lesson.
 
 This document is a selective activity catalogue, not a second statement of the plugin's overall teaching philosophy. Response channel and cognitive demand are separate decisions. First settle the thinking children need and the actual demands or barriers the response form creates. Then choose a suitable format and consider whether an equally suitable change of form would reduce monotony, fatigue or an access barrier. Variety matters, but there is no register quota and no compulsory non-writing activity. Repetition remains appropriate when repeated performance builds the target skill.
 
@@ -14,7 +14,7 @@ So pick each beat on both axes, and think about the shape across the lesson rath
 
 **A placement alone is thin evidence; a one-line why upgrades it cheaply.** A sort, match or classify beat whose only output is placements can be passed by luck or half-knowledge. Where the placement decisions carry the learning, add the short justification prompt - `How do you know?`, `Which clue told you?` - so the check shows the reasoning behind a placement, not just the placements. Skip it when the same reasoning is already demanded inside the beat or in the one that follows.
 
-**Check the lesson for worthwhile thinking without forcing an arc.** A sequence may move up and down in demand, and a final check may return to central knowledge. Notice when every activity remains unnecessarily shallow and the objective supports more worthwhile thinking, but do not require every successive beat to be harder.
+**The shape across the lesson matters more than any single beat.** Early beats after a brand-new chunk can sit at surface, and by the last beat before the main practice children should be working with or reasoning with the idea. That is not a staircase: a sequence may move up and down in demand, and a final check may return to central knowledge. If every beat in a finished sequence sits in the surface band, change some of them, and the usual fix is a harder question about the same content, not a different topic.
 
 **Success evidence depends on the task.** Do not require roughly 80% success through every Do beat or lesson type. For a defined repeatable skill, roughly 80% at release is a planning expectation. A diagnostic question may deliberately reveal widespread misunderstanding, and many incorrect answers can be useful evidence. The live teacher responds to the actual class.
 
@@ -28,7 +28,7 @@ Each entry follows the same shape — what it is, register, best for, why it wor
 
 1. Settle the intended thinking or checking purpose.
 2. Notice the response form's actual demands and supports, such as writing load, spoken language, public performance, reading, movement, fine-motor control, partner dependence or visual structure.
-3. Choose the activity family that best serves that thinking and the supplied pupil needs.
+3. Choose the activity family that best serves that thinking and the supplied pupil needs. As a default, a fact suits recall or a sort, a process suits labelling, sketching or sequencing, a concept suits writing or generating a fresh example, and a value or a position suits ranking or talk.
 4. Consider variety when repetition would create fatigue or monotony, but do not vary solely to meet a count.
 
 There is no compulsory non-writing activity, fixed content-to-format route or SEND format. Familiar repetition is appropriate when it builds the target skill.

@@ -186,6 +186,39 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
             "each Do beat or `pupilInstruction` is every child using the idea just taught, not a question to the room",
             text,
         )
+        self.assertIn("working with or reasoning with the idea rather than retrieving it", text)
+
+    def test_the_old_plugin_definition_of_a_do_beat_is_back(self) -> None:
+        """Lesson v4's packaging (28 August 2026) softened the Do beat from
+        `requires children to use what they just heard`, leaving something
+        the teacher can see, to `a chance to process`, and dropped the
+        expectation that demand climbs by the last beat before practice and
+        the default that matches the form to what was taught. The teacher
+        asked for those back (3 September 2026), without the books and
+        whiteboards norm."""
+        rhythm = section(PREFERENCES, "The Teach → Do → Teach → Do Rhythm")
+        self.assertIn("requires every child to use what they have just been told", rhythm)
+        self.assertIn(
+            "a written answer, a partner's spoken response, a visible decision, a physical position",
+            rhythm,
+        )
+        self.assertIn("Match the form to what was just taught", rhythm)
+        self.assertIn("**Climb the demand across the lesson, without forcing a staircase.**", rhythm)
+        self.assertIn("working with the idea or reasoning with it rather than retrieving it", rhythm)
+        # The caveat survives: an expectation for the shape, not a rule per step.
+        self.assertIn("not a rule for each step", rhythm)
+        # No device is named as the way to commit.
+        self.assertNotIn("whiteboard", rhythm)
+
+    def test_the_catalogue_and_designer_carry_the_restored_definition(self) -> None:
+        do_beats = flat(DO_BEATS)
+        self.assertIn("It requires every child to use the chunk they have just been taught", do_beats)
+        self.assertIn("The shape across the lesson matters more than any single beat", do_beats)
+        self.assertIn("As a default, a fact suits recall or a sort", do_beats)
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn("Every Do beat: every child uses the chunk and leaves something the teacher can see", designer)
+        self.assertIn("Demand climbs across lesson", designer)
+        self.assertIn("Match the form to what was just taught", flat(CONTENT_BASED))
 
 
 class GivingInstructionsIsNotLaunchingTests(unittest.TestCase):
