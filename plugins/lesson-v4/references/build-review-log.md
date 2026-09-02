@@ -657,3 +657,39 @@ AGENT: delivery | FRICTION: The report parser split unquoted paths at spaces and
   which strand the lesson covers and what the others would need, because the
   teacher assesses against the objective line and cannot see the narrowing from
   it.*
+
+## 2026-09-02 - Year 4 History: no humour anywhere in the lesson (4.2.83)
+
+- **Not one light line in the whole lesson, and nothing was ever asked to look
+  for one.** *Fixed in `teacher-voice.md` §4, the Lesson Designer and the Design
+  Reviewer. The teacher's report: "was any humour used in this lesson? could it
+  have been? i havent seen one yet." The starter, seven scripts, the models and
+  the ending were all correct and completely flat, while the material had handed
+  over easy lines it walked past - a Tudor prince painted at about a year old in
+  cloth of gold, and a Roman school carving. Two causes. §4 was never routed to
+  the designer at all: the guide's numbered sections are routed by the kind of
+  string being written (§5 a definition, §§1 and 3 a script, §8 a model answer),
+  and a playful opportunity is not a kind of string, so it had no entry. And the
+  one place the question did reach the designer was the ten-point pre-flight,
+  run "over the same strings" - nine of those questions can be answered from one
+  string and this one cannot, so asked sentence by sentence at the end of a long
+  run it can only ever be answered no. The reviewer carried the same question
+  inside the same per-string sweep. It is now asked once, of the lesson's
+  material, at the completion pass, by both. Placement is left open: slide,
+  script or both.*
+- **The guidance would have made every lesson joke about the misconception.**
+  *Fixed in the same section, before it shipped. §4 named the lesson's own
+  misconception as the easiest opportunity and gave it the worked example, so the
+  one route available in every lesson was also the most prominent, and routing
+  the designer there would have produced a wry remark about the wrong answer in
+  every deck. The teacher named it first: "dont always want it in
+  misconceptions?" The section now leads with six routes and the misconception is
+  last - the source or object in front of the class, a genuinely daft real fact,
+  a person in a scenario, doing the thing wrong on purpose, lowering the stakes
+  on something children over-polish, then the wrong idea. Each carries an example
+  in the teacher's voice; the four he had already endorsed are kept and two are
+  new. A new part says plainly that sameness across lessons is the failure while
+  silence is not, and that a lesson handing over nothing keeps its straight face.
+  The earlier repair that put the misconception route there in the first place is
+  preserved intact, wording and all - it exists so that a lesson with dull
+  content is not read as a lesson with no opportunities, and that is still true.*

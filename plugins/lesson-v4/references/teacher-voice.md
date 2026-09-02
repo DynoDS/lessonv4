@@ -141,33 +141,52 @@ Do not force variation for its own sake. The goal is **natural rhythm**, not a c
 
 Humour is a genuine part of the voice, but it is **opportunity-sensitive, not quota-based**.
 
-## When humour may be expected
+## Where the opportunities actually come from
 
-If the content naturally hands you an easy playful hook, notice it.
+If the content naturally hands you an easy playful hook, notice it. The hook is not always the content being amusing. Six places it tends to come from, none of them the default:
 
-Examples:
-- quirky animals;
-- bizarre facts;
-- popcorn popping;
-- amusing historical situations;
-- deliberately "breaking" a circuit after making it work.
-
-The hook is not always the content being amusing. The lesson's own misconception is often the easiest opportunity: take the wrong rule seriously for a moment and let its absurdity show.
+**The source, photograph or object the class is looking at.** The richest one, because you are already choosing this material carefully and the funny thing is usually sitting in it. A Tudor prince painted at about a year old, in cloth of gold, holding a golden rattle:
 
 Good:
-> One apple isn't a magic "balanced diet" button!
+> He's about one year old here. Imagine wearing that to play out.
 
-The joke lands on the wrong idea, so it teaches while it amuses - and a wrong rule is present in most lessons, which is why a lesson with no quirky content is not a lesson with no opportunities.
+**A real fact that is genuinely daft.**
 
 Good:
 > The Romans didn't travel all the way to Britain for the weather!
+
+**A person in a scenario doing something recognisable.** Word problems invent someone buying forty-seven melons and then say nothing about it:
+
+Good:
+> Priya's bought forty-seven melons. We won't ask why.
+
+**Doing the thing wrong on purpose.**
 
 Good:
 > You've made it work. Now break it.  
 > *Not literally!*
 
+**Lowering the stakes on something children will over-polish.**
+
 Good:
 > It doesn't need to be a masterpiece - it just needs to show the circuit clearly!
+
+**The lesson's own wrong idea, taken seriously for a second.** Here you take the wrong rule seriously for a moment and let its absurdity show:
+
+Good:
+> One apple isn't a magic "balanced diet" button!
+
+The joke lands on the wrong idea, so it teaches while it amuses, and a wrong rule is present in most lessons, which is why a lesson with no quirky content is not a lesson with no opportunities.
+
+## Sameness across lessons is the failure, not silence
+
+That last route is the one always available, which is exactly why it must not become the house joke. A teacher whose last three lessons each made a wry remark about the wrong answer has stopped having a voice and started having a habit, and children hear a habit coming. Look at the other five first, and let the material decide which one this lesson gets.
+
+The same applies to placement. A light line can sit on the slide where children read it themselves, or in the script where the teacher uses it if the room is right, or both. There is no fixed home, and giving it one turns it into a slot to fill.
+
+## Most lessons hand over nothing
+
+None is the right answer then, and a lesson with no light moment in it is not a lesson with a fault. The cost of a forced line is higher than the cost of a straight one: children can tell, and a joke nobody laughs at spends the room's attention and returns nothing.
 
 ## When humour is optional
 
@@ -745,7 +764,7 @@ Before finalising pupil-facing material, quickly check:
 6. **Have I accidentally given away the answer - or presupposed the verdict the child is meant to reach?**
 7. **Is the wording clear to the pupil, not merely clear to a teacher?**
 8. **If humour is present, did the content genuinely invite it?**
-9. **If an obvious playful opportunity exists, have I missed it?**
+9. **Asked once for the whole lesson, not of each sentence: looking at the sources, pictures, facts, numbers and people this lesson puts in front of the class, did any of them hand me an easy playful line, and did I take it?** Per sentence this question can only ever be answered no. See §4.
 10. **Across several sentences, does the rhythm feel human rather than mechanically even?**
 
 ---
