@@ -232,6 +232,97 @@ function consecutiveModellingWarnings(lesson) {
   return warnings;
 }
 
+// One picture in two places on one board.
+//
+// Nothing in this engine crops a delivered picture: a file arrives whole and
+// every slide that names it shows all of it. The contract validator refuses a
+// picture drawn to be cut apart (`_PHOTO_CROP_RE` in validate-lesson-design.py,
+// which is where a Year 4 place-value lesson's eight-chart sheet should have
+// been stopped). This is the other half, on the finished deck: the same file
+// drawn twice on ONE slide.
+//
+// That one is never a design. It is the same thing shown twice, and the second
+// copy is always the smaller of the two - on the deck that found it, a
+// place-value reference sat legibly in the side panel and again as a
+// half-inch smudge at the bottom of the main column, where four columns of
+// headings and values were pure noise. A picture the class reads on a run of
+// slides is a different thing entirely and is exactly what §5 of the
+// composition playbook asks for; the fault is two copies competing in one
+// field of view.
+
+// Fields that are never rendered to the board, so a filename inside them is not
+// a picture on the slide.
+const UNRENDERED_SLIDE_KEYS = new Set([
+  'speakerNotes',
+  'notes',
+  'decorations',
+  'template',
+  'title',
+  'designUnitId',
+  'designUnitIds',
+  'representationRefs',
+  'successCriteriaRefs',
+  'stickyKnowledgeRefs'
+]);
+
+// Every picture drawn on one slide, in the order the spec holds them.
+function slidePictures(slideData) {
+  const found = [];
+  const seen = new Set();
+
+  const walk = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (!node || typeof node !== 'object' || seen.has(node)) return;
+    seen.add(node);
+    if (node.type === 'image' && typeof node.imagePath === 'string') {
+      found.push(node.imagePath);
+    }
+    Object.entries(node).forEach(([key, child]) => {
+      if (UNRENDERED_SLIDE_KEYS.has(key)) return;
+      if (child && typeof child === 'object') walk(child);
+    });
+  };
+
+  Object.entries(slideData || {}).forEach(([key, value]) => {
+    if (UNRENDERED_SLIDE_KEYS.has(key)) return;
+    if (value && typeof value === 'object') walk(value);
+  });
+
+  return found;
+}
+
+function pictureWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+
+  slides.forEach((slideData, index) => {
+    if (!slideData || typeof slideData !== 'object') return;
+    const timesDrawn = new Map();
+    slidePictures(slideData).forEach((imagePath) => {
+      timesDrawn.set(imagePath, (timesDrawn.get(imagePath) || 0) + 1);
+    });
+    timesDrawn.forEach((times, imagePath) => {
+      if (times < 2) return;
+      warnings.push({
+        signal: 'PICTURE_TWICE_ON_ONE_SLIDE',
+        slide: index + 1,
+        field: 'imagePath',
+        message:
+          `"${imagePath}" is drawn ${times} times on this slide. One picture in ` +
+          'two places on one board is the same thing shown twice, and the smaller ' +
+          'copy is doing nothing the larger one is not already doing. Keep the ' +
+          'copy that is the right size for what children read off it, and give ' +
+          'the space back to whatever the slide was short of.'
+      });
+    });
+  });
+
+  return warnings;
+}
+
 // House blue is the colour of the words a child acts on. A text block whose
 // whole `color` is blue while it both tells and asks ("Look at the tropical
 // rainforest regions. What pattern do you notice around the Equator?") has
@@ -584,7 +675,8 @@ function runSlideDesignCheck(inputPath, options = {}) {
     .concat(mixedBlockWarnings(lesson))
     .concat(blueStatementWarnings(lesson))
     .concat(starterColourWarnings(lesson))
-    .concat(stickyEmphasisWarnings(lesson));
+    .concat(stickyEmphasisWarnings(lesson))
+    .concat(pictureWarnings(lesson));
   if (presentation.length) {
     return {
       ok: false,

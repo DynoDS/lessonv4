@@ -79,6 +79,7 @@
 // pair; composing pairs on a slide is the slide-designer's job.
 
 const { FONT, COLOURS, FIT } = require('../styles');
+const { canonicalColumn } = require('../../../shared/visuals/place-value-chart-svg');
 const { arrow } = require('./_geom');
 const { textWidthEm } = require('../glyph-width');
 
@@ -221,6 +222,51 @@ function fitHeadingFont(columns, colW, startPt) {
   return Math.max(HEADER_FONT_MIN, Math.min(startPt, fits));
 }
 
+// Which spelling of the column names this chart can actually print, and at what
+// size.
+//
+// Shrinking alone was only half a repair. `fitHeadingFont` stops at
+// HEADER_FONT_MIN so a heading stays readable from the carpet, and a column too
+// narrow for "Thousands" even at that size got the minimum anyway - PowerPoint
+// then split the word, and the one-line header band clipped the bottom half. A
+// Year 4 place-value deck (3 September 2026) shipped "Thousan/ds  Hundred/s" on
+// three slides that way, and the very same lesson's working-wall card failed its
+// build on the same overlap and was repaired by hand to Th/H/T/O.
+//
+// So the short name is the fallback rather than a smaller full one: Th, H, T, O
+// is the form the chart's own schema leads with, the form the wall card prints,
+// and the form a child meets in the teacher's own hand on a whiteboard. The full
+// word is still preferred wherever a column is wide enough to hold it, so a
+// generous chart reads "Thousands" and a tight one reads "Th" - and neither
+// reads half a word.
+//
+// All the headings change together or none does: "Th | Hundreds | T | O" would
+// be a chart that cannot decide what it is.
+function headingsFor(columns, colW, startPt) {
+  const asWritten = fitHeadingFont(columns, colW, startPt);
+  const widest = columns.reduce(function (m, label) {
+    if (label === '.') return m;
+    return Math.max(m, textWidthEm(String(label), true));
+  }, 0);
+  const usable = Math.max(0.2, colW - HEADER_CELL_INSET);
+  const printable = widest <= 0 || (widest * asWritten) / 72 <= usable;
+  if (printable) return { labels: columns, font: asWritten };
+
+  const short = columns.map(canonicalColumn);
+  return { labels: short, font: fitHeadingFont(short, colW, startPt) };
+}
+
+// A column named in a highlight or an exchange cue is matched through the same
+// canonical key as the palette, so `highlight: ["Tens"]` finds a column the
+// chart headed "T" and the other way round.
+function columnIndex(columns, name) {
+  const wanted = canonicalColumn(name);
+  for (let i = 0; i < columns.length; i += 1) {
+    if (canonicalColumn(columns[i]) === wanted) return i;
+  }
+  return -1;
+}
+
 // A highlight names cells by their COLUMN, the way a designer thinks about the
 // chart ("the tens changed"), so `["T"]` is the natural form. A place value
 // chart never repeats a column, so a name is unambiguous. A bare index is
@@ -233,7 +279,7 @@ function highlightedIndices(highlight, columns) {
       return;
     }
     const name = String(h);
-    const at = columns.indexOf(name);
+    const at = columnIndex(columns, name);
     if (at !== -1) picked.add(at);
   });
   return picked;
@@ -295,7 +341,7 @@ function counterCount(populations, column) {
 }
 
 function counterFill(column) {
-  const colours = COLUMN_COLOURS[column];
+  const colours = COLUMN_COLOURS[canonicalColumn(column)];
   return colours ? colours[0] : DEFAULT_HEADER;
 }
 
@@ -340,7 +386,7 @@ function drawCounterPopulation(pptx, slide, x, y, w, h, column, count) {
 
 function counterCells(columns) {
   return columns.map(function (label) {
-    const colColours = COLUMN_COLOURS[label];
+    const colColours = COLUMN_COLOURS[canonicalColumn(label)];
     return {
       text: '',
       options: {
@@ -388,8 +434,8 @@ function normaliseExchanges(pair, columns) {
   if (!Array.isArray(raw)) raw = [raw];
   return raw.filter(function (cue) {
     return cue && typeof cue === 'object'
-      && columns.indexOf(String(cue.from)) !== -1
-      && columns.indexOf(String(cue.to)) !== -1;
+      && columnIndex(columns, cue.from) !== -1
+      && columnIndex(columns, cue.to) !== -1;
   }).map(function (cue) {
     const from = String(cue.from);
     const to = String(cue.to);
@@ -470,9 +516,9 @@ function changedIndices(columns, from, to) {
 }
 
 // One chart of a pair: header row plus a single row of digits.
-function pairGrid(columns, cells, picked, headerFont, cellFont) {
-  const headerRow = columns.map(function (label) {
-    const colColors = COLUMN_COLOURS[label];
+function pairGrid(columns, headings, cells, picked, headerFont, cellFont) {
+  const headerRow = headings.map(function (label) {
+    const colColors = COLUMN_COLOURS[canonicalColumn(label)];
     return {
       text: label === '.' ? '' : label,
       options: {
@@ -485,7 +531,7 @@ function pairGrid(columns, cells, picked, headerFont, cellFont) {
   });
   const digitRow = columns.map(function (label, i) {
     const isDot     = label === '.';
-    const colColors = COLUMN_COLOURS[label];
+    const colColors = COLUMN_COLOURS[canonicalColumn(label)];
     const isPicked  = !isDot && picked.has(i);
     return {
       text: isDot ? '.' : (cells[i] != null ? String(cells[i]) : ''),
@@ -505,10 +551,10 @@ function pairGrid(columns, cells, picked, headerFont, cellFont) {
 }
 
 function drawPairChartWithCounters(
-  pptx, slide, x, y, colWs, columns, cells, populations, picked,
+  pptx, slide, x, y, colWs, columns, headings, cells, populations, picked,
   headerH, counterH, digitH, headerFont, cellFont
 ) {
-  const grid = pairGrid(columns, cells, picked, headerFont, cellFont);
+  const grid = pairGrid(columns, headings, cells, picked, headerFont, cellFont);
   const header = grid[0];
   const digits = grid[1];
 
@@ -655,7 +701,9 @@ function drawPair(pptx, slide, zone, columns, pair) {
   // picture's title.
   const chartY = bandY + Math.max(0, (chartAreaH - chartH) * CHART_TOP_BIAS);
 
-  const headerFont = fitHeadingFont(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
+  const heading    = headingsFor(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
+  const headings   = heading.labels;
+  const headerFont = heading.font;
   const cellFont   = Math.round(CELL_FONT_SIZE * scale);
   const headerH    = HEADER_H * scale;
   const digitH     = NATURAL_ROW_H * scale;
@@ -683,18 +731,18 @@ function drawPair(pptx, slide, zone, columns, pair) {
 
   if (hasCounters) {
     drawPairChartWithCounters(
-      pptx, slide, leftX, chartY, colWs, columns, from, fromCounters,
+      pptx, slide, leftX, chartY, colWs, columns, headings, from, fromCounters,
       new Set(), headerH, counterH, digitH, headerFont, cellFont
     );
     drawPairChartWithCounters(
-      pptx, slide, rightX, chartY, colWs, columns, to, toCounters,
+      pptx, slide, rightX, chartY, colWs, columns, headings, to, toCounters,
       changed, headerH, counterH, digitH, headerFont, cellFont
     );
   } else {
-    slide.addTable(pairGrid(columns, from, new Set(), headerFont, cellFont), {
+    slide.addTable(pairGrid(columns, headings, from, new Set(), headerFont, cellFont), {
       x: leftX, y: chartY, colW: colWs, rowH: rowHs, autoPage: false
     });
-    slide.addTable(pairGrid(columns, to, changed, headerFont, cellFont), {
+    slide.addTable(pairGrid(columns, headings, to, changed, headerFont, cellFont), {
       x: rightX, y: chartY, colW: colWs, rowH: rowHs, autoPage: false
     });
   }
@@ -734,7 +782,7 @@ function drawPair(pptx, slide, zone, columns, pair) {
         fontFace: FONT,
         fontSize: fitLabelFont(SAME_TEXT, w, sameH, SAME_FONT * scale),
         bold: true,
-        color: SAME_COLOURS[label] || BORDER_COLOUR,
+        color: SAME_COLOURS[canonicalColumn(label)] || BORDER_COLOUR,
         align: 'center', valign: 'top',
         margin: 0, wrap: false, objectName: 'NOFIT_pv-pair-same'
       });
@@ -834,12 +882,13 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
   const startY   = headerOnly ? innerY : Math.max(zone.y, innerY + (innerH - usedH) / 2);
   const rowH     = NATURAL_ROW_H * scale;
   const counterH = hasCounters ? COUNTER_ROW_H * scale : 0;
-  const headerFont = fitHeadingFont(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
+  const heading = headingsFor(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
+  const headerFont = heading.font;
   const cellFont = Math.round(CELL_FONT_SIZE * scale);
   const labelFont = Math.round(LABEL_FONT_SIZE * scale);
 
-  const headerRow = columns.map(function (label) {
-    const colColors = COLUMN_COLOURS[label];
+  const headerRow = heading.labels.map(function (label) {
+    const colColors = COLUMN_COLOURS[canonicalColumn(label)];
     const fill = colColors ? colColors[0] : DEFAULT_HEADER;
     return {
       text: label === '.' ? '' : label,
@@ -869,7 +918,7 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
     const picked = highlightedIndices(row.highlight, columns);
     const cells = columns.map(function (label, i) {
       const isDot     = label === '.';
-      const colColors = COLUMN_COLOURS[label];
+      const colColors = COLUMN_COLOURS[canonicalColumn(label)];
       const fill      = colColors ? colColors[1] : DEFAULT_CELL;
       const isPicked  = !isDot && picked.has(i);
       return {

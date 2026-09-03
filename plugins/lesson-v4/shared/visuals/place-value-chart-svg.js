@@ -141,6 +141,67 @@ const SAME_COLOURS = {
   '.': '#808080',
 };
 
+// A place-value column has a canonical short name - Th, H, T, O - and that
+// short name is what the palette above is keyed on. A designer naturally writes
+// the full word, and until this map existed a chart headed "Thousands,
+// Hundreds, Tens, Ones" lost two things at once, both silently.
+//
+// It lost the colour coding: every lookup missed, so every column drew in the
+// default grey, and the column coding is the half of this picture that says a
+// counter's value comes from where it sits.
+//
+// And it lost the heading. "Thousands" is one word with no break opportunity,
+// so a column narrower than the word is split mid-word and the one-line header
+// band clips the bottom half. A Year 4 place-value deck (3 September 2026)
+// shipped "Thousan/ds  Hundred/s" in grey across three slides, and the same
+// lesson's working-wall build failed outright on the overlap and was repaired
+// by hand to Th/H/T/O - the repair this map now makes unnecessary.
+//
+// So the spelling a designer uses stops being load-bearing. The canonical key
+// resolves the colour whichever spelling arrives, and a heading falls back to
+// the short name only where the full word cannot be printed at a size a child
+// reads from the carpet.
+//
+// Case is significant among the canonical keys themselves - T is tens and t is
+// tenths, H is hundreds and h is hundredths, Th is thousands and th is
+// thousandths - so an already-canonical label is returned untouched and only a
+// spelled-out name is folded to lower case.
+const CANONICAL_COLUMN = {
+  million: 'M',
+  millions: 'M',
+  'hundred thousand': 'HTh',
+  'hundred thousands': 'HTh',
+  'ten thousand': 'TTh',
+  'ten thousands': 'TTh',
+  thousand: 'Th',
+  thousands: 'Th',
+  hundred: 'H',
+  hundreds: 'H',
+  ten: 'T',
+  tens: 'T',
+  one: 'O',
+  ones: 'O',
+  unit: 'O',
+  units: 'O',
+  tenth: 't',
+  tenths: 't',
+  hundredth: 'h',
+  hundredths: 'h',
+  thousandth: 'th',
+  thousandths: 'th',
+  point: '.',
+};
+
+// The canonical short name for a column label, or the label unchanged when it
+// is not a place-value name at all (a chart is free to head a column anything).
+function canonicalColumn(label) {
+  const raw = label == null ? '' : String(label);
+  if (Object.prototype.hasOwnProperty.call(COLUMN_COLOURS, raw)) return raw;
+  const words = raw.toLowerCase().replace(/\s+/g, ' ').trim().replace(/ (?:column|place)$/, '');
+  const found = CANONICAL_COLUMN[words];
+  return found === undefined ? raw : found;
+}
+
 const CHAR_W = 0.58;  // Arial-bold character-width estimate (× font size)
 // ─── END CONSTANTS ──────────────────────────────────────────────────────────
 
@@ -157,8 +218,14 @@ function textWidth(s, fs) {
   return String(s == null ? '' : s).length * fs * CHAR_W;
 }
 
+// Every column is held by its canonical short name from here down, so the
+// palette, the "same" band and a highlight all resolve whichever spelling the
+// designer wrote. A wall card has one fixed header band at one fixed size and
+// no room for "Thousands" at any width, so the short name is also what it
+// prints - the repair a hand-edited card had to make for itself.
 function columnsOf(data) {
-  return Array.isArray(data && data.columns) ? data.columns : [];
+  const raw = Array.isArray(data && data.columns) ? data.columns : [];
+  return raw.map(canonicalColumn);
 }
 
 // A row is either a bare array of cell values or an object that can also carry
@@ -190,7 +257,7 @@ function pickedIn(row, columns) {
       if (hRaw >= 0 && hRaw < columns.length) picked.add(hRaw);
       return;
     }
-    const at = columns.indexOf(String(hRaw));
+    const at = columns.indexOf(canonicalColumn(hRaw));
     if (at !== -1) picked.add(at);
   });
   return picked;
@@ -536,4 +603,4 @@ function onePerColumnCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { tightSvg, onePerColumnCueSvg, cacheKey, COLUMN_COLOURS };
+module.exports = { tightSvg, onePerColumnCueSvg, cacheKey, COLUMN_COLOURS, canonicalColumn };

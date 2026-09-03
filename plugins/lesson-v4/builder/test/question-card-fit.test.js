@@ -157,11 +157,25 @@ test('a grid leaves no ragged last row', () => {
 // same Year 4 Your Turn shipped "Tho/usan Hun/dred Tens One" as its headings,
 // and every check passed, because the scale that narrows type for a narrow
 // column is priced on the digits, which are one character wide.
+//
+// Shrinking the type was only half the repair, and the other half took a second
+// deck to find. The shrink stops at a readable minimum, so a column too narrow
+// for "Thousands" even there got the minimum anyway and clipped exactly as
+// before: a Year 4 deck (3 September 2026) shipped "Thousan/ds Hundred/s" on
+// three slides, and the same lesson's working-wall card failed its build on the
+// same overlap. So the chart now falls back to the canonical short name - Th,
+// H, T, O - rather than to half a long one, and these tests are written on the
+// invariant rather than on either spelling: whatever the chart prints, it fits.
+//
+// The spelling carried a second, quieter fault. The column palette is keyed on
+// the short names, so a chart headed with the full words missed every lookup
+// and drew entirely in the default grey - and the column colour coding is the
+// half of this picture that says a counter's value comes from where it sits.
 const {
   drawPlaceValueChart
 } = require('../src/content/place-value-chart');
 
-function chartHeadings(zone) {
+function chartHeadings(zone, columns) {
   const tables = [];
   const pptx = new PptxGenJS();
   const slide = {
@@ -172,39 +186,66 @@ function chartHeadings(zone) {
   };
   drawPlaceValueChart(pptx, slide, zone, {
     type: 'place-value-chart',
-    columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+    columns: columns || ['Thousands', 'Hundreds', 'Tens', 'Ones'],
     rows: [{ cells: ['', '', '', ''], counters: { Thousands: 4, Hundreds: 2, Tens: 6, Ones: 1 } }],
   }, { slideIndex: 0, lesson: {} });
   const header = tables
     .map((t) => t.rows[0])
-    .find((row) => row && row.some((cell) => cell.text === 'Thousands'));
+    .find((row) => row && row.some((cell) => /^(Thousands|Th)$/.test(cell.text)));
   const colW = tables.find((t) => Array.isArray(t.opts.colW)).opts.colW;
   return { header, colW };
 }
 
+// The heading of the thousands column, whichever spelling the chart chose.
+function thousandsHeading(drawn) {
+  return drawn.header.find((cell) => /^(Thousands|Th)$/.test(cell.text));
+}
+
 test('a column heading is never wider than the column it sits in', () => {
   // The exact shape that clipped: a four-column chart in a third of a body zone.
-  const { header, colW } = chartHeadings({ x: 0.2, y: 1.8, w: 2.87, h: 3.6 });
-  const heading = header.find((cell) => cell.text === 'Thousands');
+  const drawn = chartHeadings({ x: 0.2, y: 1.8, w: 2.87, h: 3.6 });
+  const heading = thousandsHeading(drawn);
   assert.ok(heading, 'the chart drew its headings');
   assert.ok(
-    textWidthIn('Thousands', heading.options.fontSize, true) <= colW[0],
-    `"Thousands" at ${heading.options.fontSize}pt needs ` +
-      `${textWidthIn('Thousands', heading.options.fontSize, true).toFixed(2)}in ` +
-      `and its column is ${colW[0].toFixed(2)}in, so it breaks mid-word and is clipped.`
+    textWidthIn(heading.text, heading.options.fontSize, true) <= drawn.colW[0],
+    `"${heading.text}" at ${heading.options.fontSize}pt needs ` +
+      `${textWidthIn(heading.text, heading.options.fontSize, true).toFixed(2)}in ` +
+      `and its column is ${drawn.colW[0].toFixed(2)}in, so it breaks mid-word and is clipped.`
   );
 });
 
-test('a chart with room keeps its headings at full size', () => {
-  // The discrimination: a chart given the width its headings need must not be
-  // shrunk by the same rule. A full-width My Turn chart reads at full size.
-  const wide = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 });
-  const narrow = chartHeadings({ x: 0.2, y: 1.8, w: 2.87, h: 3.6 });
-  const sizeOf = (drawn) =>
-    drawn.header.find((cell) => cell.text === 'Thousands').options.fontSize;
+test('a chart too narrow for the word prints the short name, not half the word', () => {
+  // The narrowest real case: two four-column charts sharing a speech-bubble
+  // slide's side band. At this width no readable size holds "Thousands", so
+  // shrinking alone can only clip.
+  const drawn = chartHeadings({ x: 0.2, y: 1.8, w: 1.9, h: 2.2 });
+  const heading = thousandsHeading(drawn);
+  assert.equal(heading.text, 'Th');
   assert.ok(
-    sizeOf(wide) > sizeOf(narrow),
-    'a wide chart should not be shrunk to a narrow chart\'s heading size'
+    textWidthIn(heading.text, heading.options.fontSize, true) <= drawn.colW[0],
+    `even "Th" does not fit at ${heading.options.fontSize}pt`
   );
-  assert.ok(sizeOf(wide) >= 13, `full-width headings came out at ${sizeOf(wide)}pt`);
+});
+
+test('a chart with room keeps the full word at full size', () => {
+  // The discrimination: a chart given the width its headings need must not be
+  // shrunk, nor abbreviated, by the same rule. A full-width My Turn chart reads
+  // "Thousands" at full size.
+  const wide = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 });
+  const heading = thousandsHeading(wide);
+  assert.equal(heading.text, 'Thousands');
+  assert.ok(heading.options.fontSize >= 13, `full-width headings came out at ${heading.options.fontSize}pt`);
+});
+
+test('the column palette survives a chart headed with the full words', () => {
+  // Written short and written long must colour the same, or spelling the names
+  // out silently costs the chart its column coding.
+  const long = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 });
+  const short = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 }, ['Th', 'H', 'T', 'O']);
+  const fills = (drawn) => drawn.header.map((cell) => cell.options.fill.color);
+  assert.deepEqual(fills(long), fills(short));
+  assert.ok(
+    new Set(fills(long)).size > 1,
+    'every column drew in one colour, so the palette never resolved'
+  );
 });

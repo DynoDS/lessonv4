@@ -906,3 +906,98 @@ test('a My Turn answer or reveal slide is not counted as a second model', () => 
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// A Year 4 place-value My Turn carried a counter-value reference twice: legibly
+// in the side panel, and again as a half-inch smudge at the foot of the main
+// column, where four columns of headings and values were pure noise. The
+// smaller copy was doing nothing the larger one was not, and it was taking
+// space from the charts the class had to read (flagged by Daniel, 3 September
+// 2026: "those place value charts ... were so small").
+function pictureSlide(title, primaryItems, secondaryItems) {
+  const slide = {
+    template: 'split-h-60-40',
+    title,
+    primary: { type: 'stack', items: primaryItems }
+  };
+  if (secondaryItems) slide.secondary = { type: 'stack', items: secondaryItems };
+  return slide;
+}
+
+const REFERENCE = { type: 'image', imagePath: 'generated/counter-values.png' };
+
+test('one picture drawn twice on one slide blocks before the scratch builder runs', () => {
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        pictureSlide(
+          'My Turn - read the chart',
+          [{ type: 'text', value: 'What number does each chart show?' }, { ...REFERENCE, weight: 0.7 }],
+          [{ ...REFERENCE, weight: 2 }]
+        )
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(result.stdout, /"signal":"PICTURE_TWICE_ON_ONE_SLIDE"/);
+    assert.match(result.stdout, /"slide":1/);
+    // The message has to name the repair, not only the fault.
+    assert.match(result.stdout, /Keep the copy that is the right size/);
+    assert.equal(fs.existsSync(builderMarker), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a reference the class reads across a run of slides is left alone', () => {
+  // The discrimination, and the reason this counts copies per slide rather than
+  // per deck: a reference that recedes on every slide of a beat is exactly what
+  // the composition playbook asks for. The fault is two copies competing in one
+  // field of view, not one picture doing its job several times.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        pictureSlide('My Turn', [{ type: 'text', value: 'Watch me.' }], [{ ...REFERENCE, weight: 2 }]),
+        pictureSlide('Our Turn', [{ type: 'text', value: 'Together.' }], [{ ...REFERENCE, weight: 2 }]),
+        pictureSlide('Your Turn', [{ type: 'text', value: 'Your go.' }], [{ ...REFERENCE, weight: 2 }])
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.doesNotMatch(result.stdout, /PICTURE_TWICE_ON_ONE_SLIDE/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a picture named in speaker notes is not a picture on the slide', () => {
+  // Notes are the teacher's script and never reach the board, so a filename
+  // mentioned there must not read as a second copy.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const slide = pictureSlide('My Turn', [{ ...REFERENCE, weight: 2 }]);
+    slide.speakerNotes = { reminder: { type: 'image', imagePath: 'generated/counter-values.png' } };
+    const lessonPath = writeLesson(root, { ...ordinaryLesson(), slides: [slide] });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.doesNotMatch(result.stdout, /PICTURE_TWICE_ON_ONE_SLIDE/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

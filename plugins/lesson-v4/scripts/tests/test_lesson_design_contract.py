@@ -2326,6 +2326,79 @@ def test_a_web_address_inside_evidence_or_a_prompt_is_refused():
     )
 
 
+def test_a_picture_contract_that_asks_for_a_crop_is_refused():
+    """Nothing downstream crops a delivered picture, so a contract that plans on
+    one is planning on a stage that has never existed.
+
+    A Year 4 place-value lesson (3 September 2026) asked for "three isolated
+    landscape panels with generous crop-safe gutters" holding the My Turn's two
+    numerals, the Our Turn's two and the Your Turn's four. The file arrived whole
+    and landed whole on all four slides: a My Turn carrying eight questions
+    including ones the class had not reached, its answers on the board before
+    anyone had worked, four consecutive slides rendering as one picture, and
+    every chart a quarter of the size it would have had alone.
+    """
+    for field, value in (
+        (
+            "subject",
+            "A crop-ready flat vector asset holding the charts for three slide stages",
+        ),
+        (
+            "pedagogical_constraint",
+            "Wide blank margins so the slide designer can crop one panel without its neighbour.",
+        ),
+    ):
+        design, photos = valid_contract()
+        photo = photo_requirement(
+            "photo-001",
+            "Four-column place-value charts",
+            "generated/place-value-charts.png",
+        )
+        photo[field] = value
+        photos["photos"] = [photo]
+        assert_invalid_contract(
+            design,
+            photos,
+            f"photo-requirements.json.photos[0].{field} asks for the picture to be",
+        )
+
+    design, photos = valid_contract()
+    photo = photo_requirement(
+        "photo-001",
+        "Four-column place-value charts",
+        "generated/place-value-charts.png",
+    )
+    photo["generation_prompt"]["composition"] = (
+        "Two chart bodies stacked with a wide blank crop gutter between them."
+    )
+    photos["photos"] = [photo]
+    assert_invalid_contract(
+        design,
+        photos,
+        "photos[0].generation_prompt.composition asks for the picture to be",
+    )
+
+
+def test_the_framing_of_a_photograph_is_still_allowed_to_be_called_a_crop():
+    """The discrimination, and the reason this is not a ban on a word.
+
+    A matched pair of maps has to agree on how each is framed, and "identical in
+    projection, crop, scale and palette" is the right way to say so. That names
+    the picture that arrives; it does not ask anyone to cut it up afterwards.
+    """
+    design, photos = valid_contract()
+    photo = photo_requirement(
+        "photo-001",
+        "A political map of South America",
+        "generated/south-america.png",
+    )
+    photo["pedagogical_constraint"] = (
+        "Match the companion map exactly in projection, crop, scale and palette."
+    )
+    photos["photos"] = [photo]
+    module.validate_design(design, photos)
+
+
 def test_the_refusal_names_the_route_that_does_reach_the_source():
     """A designer that found the perfect source is not told to forget it.
 

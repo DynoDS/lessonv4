@@ -779,3 +779,12 @@ same lesson a version earlier; the third was the route's own settled shape.
 - Adaptation reused existing photograph filenames with new adaptation IDs, and build-provisional rejected the duplicate filename identities. The required fallback preserves the Expected sheet but omits the supported version.
 - Run evidence: C:/Users/Daniel/Projects/lessonv4/output/working/childrens-lives-continuity-and-change/friction.md.
 - Final result: one validated A3 wall PDF delivered and synced. Slide and worksheet owner repairs could not preserve the tasks with only the portrait available. The run is BLOCKED; nine slides lack evidence and no worksheet/answer key was built. The slide wrapper also misdecoded the curly apostrophe in the output name.
+
+## 2026-09-03 - Year 4 Maths Lesson 2: represent 4-digit numbers
+
+- The installed worksheet `place-value-counter-chart` renders coloured, value-labelled counters, while the approved lesson required identical plain counters whose value comes only from position. A pending helper drop-in now adds the missing slide modes, but worksheet parity still needs a compact plain-counter variant.
+- The original Expected worksheet contract exceeded one A4 portrait page by 76 mm. The content-gap rescue preserved the four two-way build/read performances and removed only the eight-counter extension task; that reasoning remains in the lesson's final comparison task and is flagged for the teacher.
+- Two initial controlled-AI slide visuals ended unsatisfied. Focused slide repair replaced both with exact live counter-chart compositions and preserved all 13 slides; two other generated slide visuals published successfully.
+- The first wall build exposed overlapping long column headings. A focused repair changed only the wall chart labels to Th/H/T/O, and the one-card A3 rebuild passed visual QA.
+- Run evidence: C:/Users/Daniel/Projects/lessonv4/output/working/year-4-maths-lesson-2/friction.md.
+- Final result: 13-slide PowerPoint, three-level worksheet PDF with separate answer key, and one-page working wall built. Stick-in sheets were not needed.

@@ -1425,6 +1425,36 @@ def _photo_route(photo: dict[str, Any]) -> str:
 # five are now inside the scout's reach.
 _PHOTO_URL_RE = re.compile(r"(?:\bhttps?://|\bwww\.\S)", re.IGNORECASE)
 
+# Nothing in this package crops a delivered picture. A file arrives whole and
+# every slide that names it shows all of it, so a contract that asks for several
+# teaching moments in one file, gutters between them and a downstream reader to
+# cut them apart is describing a stage that has never existed.
+#
+# A Year 4 place-value lesson (3 September 2026) asked for "three isolated
+# landscape panels with generous crop-safe gutters" holding the My Turn's two
+# numerals, the Our Turn's two and the Your Turn's four, and again for chart
+# bodies "stacked vertically with a wide blank crop gutter ... so the slide
+# designer can crop one panel without including either neighbour". The whole
+# eight-chart sheet then landed on all four slides: a My Turn carrying eight
+# questions including the ones the class had not reached, four consecutive
+# slides rendering as one picture, and every chart a quarter of the size it
+# would have had alone.
+#
+# The repair is one picture object per visual, which the schema already asks for
+# and which costs no more image generations than the panels did. The word `crop`
+# is not itself the fault - a coherent group holding two maps identical "in
+# projection, crop, scale and palette" is naming the framing of the photograph,
+# which is exactly right - so this matches the instruction to cut a file up, not
+# the noun.
+_PHOTO_CROP_RE = re.compile(
+    r"crop[\s-]?(?:safe|ready)"
+    r"|crop(?:ping)?[\s-](?:gutter|margin|line|guide)"
+    r"|\b(?:can|to|then|must|should|may|will)\s+crop\b"
+    r"|\bcrop\s+(?:one|each|every|apart|out)\b"
+    r"|\bcut\s+(?:apart|out|into|along)\b",
+    re.IGNORECASE,
+)
+
 
 def _photo_text_values(photo: dict[str, Any]):
     for field in ("subject", "pedagogical_constraint", "teaching_requirement", "fallback_note"):
@@ -1481,6 +1511,19 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
         expect(_photo_nonempty(photo["subject"]), f"{path}.subject must be non-empty")
         expect(isinstance(photo["pedagogical_constraint"], str), f"{path}.pedagogical_constraint must be a string")
         for field, value in _photo_text_values(photo):
+            crop = _PHOTO_CROP_RE.search(value)
+            if crop:
+                raise ContractError(
+                    f"photo contract route error: {path}.{field} asks for the picture to be "
+                    f"cropped or cut up ({crop.group(0)!r}). Nothing downstream crops a "
+                    "delivered picture: the file arrives whole and every slide that names it "
+                    "shows all of it, so panels drawn for three teaching moments put all three "
+                    "on each of those slides - a later turn's questions on an earlier turn, its "
+                    "answers in front of the class before they have worked, and every panel a "
+                    "fraction of the size it would have had alone. Give each visual its own "
+                    "photo object with its own filename, describing only what that one moment "
+                    "shows. This costs the same number of images and each arrives at full size."
+                )
             if _PHOTO_URL_RE.search(value):
                 raise ContractError(
                     f"photo contract route error: {path}.{field} contains a web address. "

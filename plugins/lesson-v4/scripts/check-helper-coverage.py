@@ -161,7 +161,30 @@ def registry_keys(root: Path, surface: str) -> set[str]:
     return keys
 
 
-def purposes(root: Path) -> dict[str, str]:
+# What each surface writes down about its own helpers, so a reader choosing
+# between sixty-odd of them has more than a name to go on.
+#
+# These were one file for a while - the worksheet purposes - and every surface
+# was labelled from it. That is fine while two surfaces mean the same thing by a
+# key, and silently wrong the moment they do not. On worksheets
+# `place-value-chart` is the digits chart and `place-value-counter-chart` is a
+# separate helper for counters; on slides there is one `place-value-chart`, and
+# it draws digits, counters, ten-for-one exchanges and a before-and-after pair.
+#
+# A Year 4 place-value run (3 September 2026) read the worksheet's digits-only
+# line under LIVE HELPERS slides, concluded the board could not draw counters at
+# all, and sent four slide configurations to controlled AI generation instead: a
+# helper build, a design revision, two image scouts and two generations that
+# failed outright. The deck then drew those same charts with that very helper,
+# when a focused repair replaced the pictures it could not get. The description
+# was not stale. It belonged to a different surface.
+#
+# So each surface answers for itself now. Slides read the helper table in
+# templates.md, which is the reference the slide designer already works from, so
+# there is one description per helper rather than a second copy free to drift.
+# Worksheets keep their own purposes file. A surface with nothing written down
+# says nothing, rather than borrowing another surface's words.
+def worksheet_purposes(root: Path) -> dict[str, str]:
     path = root / "worksheet-html/src/helpers/purposes.js"
     try:
         text = path.read_text(encoding="utf-8")
@@ -174,6 +197,30 @@ def purposes(root: Path) -> dict[str, str]:
     ):
         found.setdefault(key, line)
     return found
+
+
+def slide_purposes(root: Path) -> dict[str, str]:
+    path = root / "references/templates.md"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    found: dict[str, str] = {}
+    for key, line in re.findall(
+        r"^\|\s*`([A-Za-z][A-Za-z0-9_-]*)`\s*\|\s*(.+?)\s*\|\s*$",
+        text,
+        re.M,
+    ):
+        found.setdefault(key, line.strip())
+    return found
+
+
+def purposes(root: Path, surface: str) -> dict[str, str]:
+    if surface == "slides":
+        return slide_purposes(root)
+    if surface == "worksheets":
+        return worksheet_purposes(root)
+    return {}
 
 
 def use_key(item: dict) -> tuple[str, str, str]:
@@ -190,7 +237,6 @@ def surface_of(item: dict) -> str:
 
 def run_inventory(root: Path, design_path: Path) -> int:
     uses = load_uses(design_path)
-    lines = purposes(root)
     print(f"REQUIRED USES {len(uses)}")
     for item in uses:
         bearing = "load-bearing" if item["loadBearing"] else "supporting"
@@ -203,6 +249,7 @@ def run_inventory(root: Path, design_path: Path) -> int:
         )
     for surface in ("slides", "worksheets", "wall", "stick-in"):
         keys = sorted(registry_keys(root, surface))
+        lines = purposes(root, surface)
         print(f"\nLIVE HELPERS {surface} ({len(keys)})")
         for key in keys:
             note = lines.get(key)
@@ -415,6 +462,17 @@ def run_delivery(verdict_path: Path, spec_path: Path, surface: str) -> int:
 
 
 def main(argv=None) -> int:
+    # The inventory prints the helper descriptions verbatim, and a maths and
+    # science catalogue is written in ticks, multiplication signs, squared units
+    # and dashes. On Windows the console's default code page cannot encode any of
+    # them, so the script died mid-listing on the very characters its own
+    # reference is written in. A tool whose whole job is printing a catalogue
+    # settles its own encoding rather than depending on every caller remembering
+    # `-X utf8`.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=("inventory", "verdict", "delivery"))
     parser.add_argument("--plugin-root")

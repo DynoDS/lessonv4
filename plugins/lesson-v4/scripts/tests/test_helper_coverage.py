@@ -18,6 +18,7 @@ So the tests below hold three separate points:
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -625,6 +626,64 @@ class HelperRouteContractTests(unittest.TestCase):
         builder = HELPER_BUILDER.read_text(encoding="utf-8")
         self.assertIn("fact about the world", builder)
         self.assertNotIn("`teaching-plugins` is its own git repo", text)
+
+
+class EverySurfaceDescribesItsOwnHelpers(unittest.TestCase):
+    """The inventory is the only thing a helper decision is made from.
+
+    A Year 4 place-value run (3 September 2026) read `place-value-chart` under
+    LIVE HELPERS slides and was told "Place names across the top, a row per
+    number. Fill a row to hand a number over, leave it empty to be written in".
+    Nothing there mentions counters, and the run concluded - reasonably, from
+    what it was shown - that the board could not draw a counter chart at all. It
+    spent a helper build, a design revision, two image scouts and two failed
+    generations getting pictures of a chart the board draws natively, and a
+    focused repair later drew them with that helper anyway.
+
+    The description was not out of date. It was the WORKSHEET's, where
+    `place-value-chart` is the digits chart and counters are a different helper
+    called `place-value-counter-chart`, and every surface was being labelled from
+    that one file.
+    """
+
+    def helpers_and_lines(self, surface: str) -> tuple[list[str], dict[str, str]]:
+        spec = importlib.util.spec_from_file_location("coverage_module", COVERAGE)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        keys = sorted(module.registry_keys(ROOT, surface))
+        return keys, module.purposes(ROOT, surface)
+
+    def test_a_slide_helper_is_described_from_the_slide_reference(self):
+        keys, lines = self.helpers_and_lines("slides")
+        undescribed = [key for key in keys if not lines.get(key)]
+        self.assertEqual(
+            undescribed, [],
+            "these slide helpers have no row in the templates.md helper table, so a "
+            "reader choosing between them has only the name: " + ", ".join(undescribed),
+        )
+
+    def test_the_slide_chart_says_it_draws_counters(self):
+        # The specific sentence the failed run needed and did not get. Counters
+        # are what separates this helper from the worksheet's same-named one.
+        _, lines = self.helpers_and_lines("slides")
+        self.assertIn("counter", lines["place-value-chart"].lower())
+
+    def test_a_surface_never_borrows_another_surface_s_words(self):
+        # The discrimination: worksheets have their own `place-value-chart`,
+        # meaning the digits chart, and it must keep saying that. Two surfaces
+        # sharing a key is exactly when borrowing goes wrong.
+        _, slides = self.helpers_and_lines("slides")
+        _, sheets = self.helpers_and_lines("worksheets")
+        self.assertNotEqual(slides["place-value-chart"], sheets["place-value-chart"])
+        self.assertNotIn("counter", sheets["place-value-chart"].lower())
+        self.assertIn("counter", sheets["place-value-counter-chart"].lower())
+
+    def test_a_surface_with_nothing_written_down_stays_silent(self):
+        # The wall and the stick-in pack keep no descriptions, and a bare key is
+        # an honest "nothing written down" where another surface's sentence is a
+        # confident wrong answer.
+        for surface in ("wall", "stick-in"):
+            self.assertEqual(self.helpers_and_lines(surface)[1], {})
 
 
 if __name__ == "__main__":
