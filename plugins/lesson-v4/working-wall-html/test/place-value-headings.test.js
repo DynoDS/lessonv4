@@ -58,3 +58,47 @@ test('a column name that is not a place is left alone', () => {
   assert.equal(canonicalColumn('Thousandths'), 'th');
   assert.equal(canonicalColumn('hundred thousands'), 'HTh');
 });
+
+// The board's chart grew counters and the wall's shared drawing never did, so
+// the two became different pictures of one representation. A Year 4 card headed
+// "Count each column's counters", captioned "Worked example: Chart B: 6,041",
+// printed an entirely empty grid: the card taught nothing, and every check
+// passed because nothing had ever asked whether the wall could draw what the
+// board could.
+
+const COUNTED = {
+  columns: ['Th', 'H', 'T', 'O'],
+  rows: [{ label: 'B', cells: ['6', '0', '4', '1'], counters: { Thousands: 6, Hundreds: 0, Tens: 4, Ones: 1 } }],
+};
+
+test('a card asked for counters draws them', () => {
+  const { svg } = tightSvg(COUNTED);
+  assert.equal((svg.match(/<circle/g) || []).length, 11);
+});
+
+test('a counter population is read through the column name, however it is spelled', () => {
+  // The card that found this wrote its columns short and its counters long.
+  const long = tightSvg(COUNTED).svg;
+  const short = tightSvg({
+    columns: ['Th', 'H', 'T', 'O'],
+    rows: [{ label: 'B', cells: ['6', '0', '4', '1'], counters: { Th: 6, H: 0, T: 4, O: 1 } }],
+  }).svg;
+  assert.equal(long, short);
+});
+
+test('a chart with no counters is unchanged', () => {
+  // The discrimination: the digits-only chart is the form most place-value
+  // lessons use, and it must not grow an empty band it never asked for.
+  const { svg } = tightSvg({ columns: ['Th', 'H', 'T', 'O'], rows: [{ label: '3,462', cells: ['3', '4', '6', '2'] }] });
+  assert.equal((svg.match(/<circle/g) || []).length, 0);
+});
+
+test('two charts differing only in their counters are two pictures', () => {
+  // A cache key blind to the populations would render the first and hand the
+  // same picture to the second.
+  const { cacheKey } = require('../../shared/visuals/place-value-chart-svg');
+  const four = { columns: ['Th', 'H', 'T', 'O'], rows: [{ label: 'A', cells: ['', '', '', ''], counters: { T: 4 } }] };
+  const five = { columns: ['Th', 'H', 'T', 'O'], rows: [{ label: 'A', cells: ['', '', '', ''], counters: { T: 5 } }] };
+  assert.notEqual(cacheKey(four), cacheKey(five));
+  assert.notEqual(tightSvg(four).svg, tightSvg(five).svg);
+});

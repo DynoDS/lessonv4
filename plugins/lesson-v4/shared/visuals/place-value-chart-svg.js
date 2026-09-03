@@ -68,6 +68,13 @@ const DIGIT_COL_W  = 96;   // one digit column
 const POINT_COL_W  = 44;   // the decimal point's own narrow column
 const HEADER_H     = 52;
 const ROW_H        = 86;
+const COUNTER_H    = 150;  // the counter band above each row of digits. Taller
+                           // than a digit row, because nine counters have to be
+                           // countable from across a classroom rather than just
+                           // present.
+const COUNTER_PAD  = 12;   // inside the counter cell
+const COUNTER_LINE = '#4A4A4A';
+const COUNTER_MAX  = 20;   // guards a malformed spec from flooding a card
 const LABEL_PAD_X  = 22;   // inside the row-label column
 const LABEL_MIN_W  = 120;
 const TITLE_GAP    = 16;
@@ -223,6 +230,55 @@ function textWidth(s, fs) {
 // designer wrote. A wall card has one fixed header band at one fixed size and
 // no room for "Thousands" at any width, so the short name is also what it
 // prints - the repair a hand-edited card had to make for itself.
+// A counter population is written the way the lesson talks about the column, so
+// `{ Thousands: 6 }` has to find a chart headed "Th" and the other way round.
+function counterCount(counters, column) {
+  if (!counters) return 0;
+  const wanted = canonicalColumn(column);
+  let found = 0;
+  Object.keys(counters).forEach((key) => {
+    if (canonicalColumn(key) !== wanted) return;
+    const n = Number(counters[key]);
+    if (Number.isFinite(n) && n > 0) found = Math.min(COUNTER_MAX, Math.floor(n));
+  });
+  return found;
+}
+
+// Counters in a strict grid inside their own cell, so one can never drift over a
+// place-value rule into the column next door. Ten goes two rows of five, which
+// makes the complete exchange group countable at a glance. Same rule as the
+// board's, because a child glancing from one to the other must count the same
+// shapes in the same arrangement.
+function counterGridSvg(x, y, w, h, column, count) {
+  if (count <= 0) return '';
+  let cols;
+  if (count === 10) cols = 5;
+  else if (count <= 4) cols = 2;
+  else if (count <= 9) cols = 3;
+  else cols = 5;
+  const gridRows = Math.ceil(count / cols);
+
+  const pad = Math.min(COUNTER_PAD, w * 0.08, h * 0.08);
+  const stepW = Math.max(1, w - 2 * pad) / cols;
+  const stepH = Math.max(1, h - 2 * pad) / gridRows;
+  const d = Math.min(stepW, stepH) * 0.68;
+  const gx = x + (w - stepW * cols) / 2;
+  const gy = y + (h - stepH * gridRows) / 2;
+  const palette = COLUMN_COLOURS[canonicalColumn(column)];
+  const fill = palette ? palette[0] : DEFAULT_HEADER_FILL;
+
+  const out = [];
+  for (let i = 0; i < count; i += 1) {
+    const cx = gx + (i % cols) * stepW + stepW / 2;
+    const cy = gy + Math.floor(i / cols) * stepH + stepH / 2;
+    out.push(
+      `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(d / 2)}" fill="${fill}" ` +
+      `stroke="${COUNTER_LINE}" stroke-width="${GRID_W}"/>`
+    );
+  }
+  return out.join('');
+}
+
 function columnsOf(data) {
   const raw = Array.isArray(data && data.columns) ? data.columns : [];
   return raw.map(canonicalColumn);
@@ -233,17 +289,21 @@ function columnsOf(data) {
 function rowsOf(data) {
   const raw = Array.isArray(data && data.rows) ? data.rows : [];
   const rows = raw.map((row) => {
-    if (Array.isArray(row)) return { label: '', cells: row, highlight: [] };
-    if (!row || typeof row !== 'object') return { label: '', cells: [], highlight: [] };
+    if (Array.isArray(row)) return { label: '', cells: row, highlight: [], counters: null };
+    if (!row || typeof row !== 'object') return { label: '', cells: [], highlight: [], counters: null };
     return {
       label: row.label == null ? '' : String(row.label),
       cells: Array.isArray(row.cells) ? row.cells : [],
       highlight:
         row.highlight == null ? [] : (Array.isArray(row.highlight) ? row.highlight : [row.highlight]),
+      counters:
+        row.counters && typeof row.counters === 'object' && !Array.isArray(row.counters)
+          ? row.counters
+          : null,
     };
   });
   if (rows.length > 0) return rows;
-  return [{ label: '', cells: [], highlight: [] }];
+  return [{ label: '', cells: [], highlight: [], counters: null }];
 }
 
 // A highlight names cells by their COLUMN, the way the lesson talks about them.
@@ -486,9 +546,18 @@ function tightSvg(data) {
   for (const w of allWs) { xs.push(running); running += w; }
   const tableW = running;
 
+  // A counter band is what a card of this lesson's chart is FOR: "count each
+  // column's counters" over a grid with none in it teaches nothing, and that is
+  // exactly the card a Year 4 place-value lesson (3 September 2026) printed. The
+  // board grew counters and the wall never did, so the two drifted into
+  // different pictures of one representation.
+  const hasCounters = rows.some((row) => row.counters !== null);
+  const bandH = hasCounters ? COUNTER_H : 0;
+  const rowH = bandH + ROW_H;
+
   const titleH = title ? TITLE_FS + TITLE_GAP : 0;
   const gridTop = titleH;
-  const totalH = gridTop + HEADER_H + rows.length * ROW_H;
+  const totalH = gridTop + HEADER_H + rows.length * rowH;
 
   const parts = [];
 
@@ -525,15 +594,27 @@ function tightSvg(data) {
   //    painted over by the neighbouring cell's fill drawn after it.
   const rings = [];
   rows.forEach((row, r) => {
-    const y = gridTop + HEADER_H + r * ROW_H;
+    const bandY = gridTop + HEADER_H + r * rowH;
+    const y = bandY + bandH;
     const picked = pickedIn(row, columns);
     const rowHasDigits = columns.some(
       (c, i) => c !== '.' && row.cells[i] != null && String(row.cells[i]) !== ''
     );
 
     if (labelW > 0) {
-      cellRect(xs[0], y, labelW, ROW_H, LABEL_FILL);
-      centredText(xs[0], y, labelW, ROW_H, row.label, LABEL_FS, TEXT_COLOUR);
+      cellRect(xs[0], bandY, labelW, rowH, LABEL_FILL);
+      centredText(xs[0], bandY, labelW, rowH, row.label, LABEL_FS, TEXT_COLOUR);
+    }
+
+    if (hasCounters) {
+      columns.forEach((column, i) => {
+        const at = labelW > 0 ? i + 1 : i;
+        const palette = COLUMN_COLOURS[canonicalColumn(column)];
+        cellRect(xs[at], bandY, colWs[i], bandH, palette ? palette[1] : DEFAULT_CELL_FILL);
+        parts.push(
+          counterGridSvg(xs[at], bandY, colWs[i], bandH, column, counterCount(row.counters, column))
+        );
+      });
     }
 
     columns.forEach((column, i) => {
@@ -583,7 +664,15 @@ function cacheKey(data) {
     return `pvchart:pair:${columns.join(',')}:${pair.from.join(',')}>${pair.to.join(',')}:${pair.operation}:${t}`;
   }
   const rowKey = rowsOf(data)
-    .map((r) => `${r.label}=${r.cells.join(',')}#${r.highlight.join(',')}`)
+    .map((r) => {
+      // Counters go in the key for the reason the pair's cells do: two charts of
+      // one number differing only in their populations are two different
+      // pictures, and a key that ignored them would hand the second the first.
+      const counters = r.counters
+        ? Object.keys(r.counters).sort().map((k) => `${k}:${r.counters[k]}`).join(';')
+        : '';
+      return `${r.label}=${r.cells.join(',')}#${r.highlight.join(',')}+${counters}`;
+    })
     .join('|');
   return `pvchart:${(data && data.title) || ''}:${columns.join(',')}:${rowKey}`;
 }
