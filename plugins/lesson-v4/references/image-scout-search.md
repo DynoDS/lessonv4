@@ -2,6 +2,77 @@
 
 Read this reference only when the assignment contains real search or focused repair authorises one real search.
 
+## The ladder
+
+The compiled schedule is a ladder, cheapest rung first, and you stop at the
+first faithful winner. Never run a rung the schedule has not compiled, and never
+skip one to reach the rung below it.
+
+| Rung | What it searches | Command |
+| --- | --- | --- |
+| `unsplash` | modern stock photography | `unsplash_fetch.py "<query>" --count N --round R --output <dir>` |
+| `wikimedia` | Wikimedia Commons | `wikimedia_fetch.py "<query>" --count N --round R --output <dir>` |
+| `openverse` | about a hundred collections at once - Flickr Commons, where archives and museums publish their photographs, the Science Museum Group, the Smithsonian, Europeana, university libraries | `openverse_fetch.py "<query>" --count N --round R --output <dir>` |
+| `web` | the holding institution's own page, found by you | `web_fetch.py "<subject>" --candidates <file.json> --count N --round R --output <dir>` |
+
+The first three take a query and return candidates. `openverse` is on every real
+schedule because one free keyless call costs nothing once a winner has been
+found above it, and it is where a real photograph of a real place at a real date
+usually lives: a lesson wanting a British classroom around 1900 gets school
+photographs from museum and city-archive collections there and from nowhere
+else on this ladder.
+
+## The open-web rung
+
+`web` is compiled only for a picture whose contract says the lesson gets nothing
+if the search fails. It exists because the evidence a history or geography
+lesson needs is often held by exactly one institution and published on exactly
+one of its own pages, indexed by nothing. Five such photographs, sitting on a
+county record office's blog, cost a Year 4 lesson its slides, its worksheet and
+its answer key.
+
+This is the one rung where you do the finding. Search the web for the subject
+the assignment names, open the page the holding institution publishes it on, and
+write a candidates file:
+
+```json
+[
+  {
+    "page_url": "https://<the institution's own page>",
+    "image_url": "https://<the image on that page>",
+    "publisher": "Essex Record Office",
+    "terms_note": "what that page actually says about reuse, or that it says nothing",
+    "licence_name": "CC BY 4.0",
+    "licence_url": "https://creativecommons.org/licenses/by/4.0/"
+  }
+]
+```
+
+`licence_name` and `licence_url` go in together or not at all. Give them when
+the page states a licence, copied from what it says. Leave both out when it
+states none, which is ordinary for an archive blog or a museum collection entry:
+the fetcher then records the basis the picture is actually used on, which is
+fair dealing for illustration for instruction with the source acknowledged. That
+is why `publisher` is required - it is the credit that basis depends on, and the
+deck prints it under the picture.
+
+`--count` is the step's compiled `candidate_count`, not the number of
+candidates you chose: the summary is checked against the schedule that compiled
+it, so a good fetch of two candidates against a three-candidate step is thrown
+out if it records two.
+
+Go to the institution that holds the picture. The fetcher refuses a picture
+library (Getty, Alamy, Shutterstock and their kind), because selling the licence
+is their whole business and taking the preview is not fair dealing under any
+reading; and it refuses an aggregator or social feed (Pinterest, Instagram, X
+and their kind), because the poster is not the rights holder and provenance
+pointing at a re-poster is worse than none. Prefer a museum, archive, record
+office, library, university, national body or government page - they hold the
+thing, they say who made it, and they are usually glad it is being taught from.
+
+Judge an open-web candidate exactly as hard as any other. Nothing indexed it,
+so nothing has checked the subject but you.
+
 ## Query design
 
 Translate the checked subject and evidence into concise terms. Keep compound species names, proper nouns, and technical terms intact.

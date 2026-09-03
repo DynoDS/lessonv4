@@ -2326,12 +2326,12 @@ def test_a_web_address_inside_evidence_or_a_prompt_is_refused():
     )
 
 
-def test_the_refusal_names_where_an_exact_source_should_go_instead():
+def test_the_refusal_names_the_route_that_does_reach_the_source():
     """A designer that found the perfect source is not told to forget it.
 
-    The lesson keeps the value of that search: the URL travels to the teacher
-    in `flagsForTeacher`, and the contract asks for evidence the approved
-    libraries can actually deliver.
+    The scout's ladder ends at the holding institution's own page, so the exact
+    photograph is reachable. What has to change is who fetches it: the designer
+    names the subject and the institution, and the scout goes and gets it.
     """
     design, photos = valid_contract()
     photo = photo_requirement(
@@ -2347,8 +2347,9 @@ def test_the_refusal_names_where_an_exact_source_should_go_instead():
         message = str(exc)
     else:
         raise AssertionError("contract unexpectedly validated")
-    assert "flagsForTeacher" in message, message
-    assert "Wikimedia and Unsplash" in message, message
+    assert "the Image Scout's job" in message, message
+    assert "Openverse" in message, message
+    assert "Essex Record Office" in message, message
 
 
 def test_an_ordinary_picture_contract_still_validates():

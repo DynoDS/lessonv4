@@ -70,8 +70,7 @@ class ContentGapPictureWaveTests(unittest.TestCase):
             playbook,
         )
         self.assertIn(
-            "pitches the evidence at the level the teaching needs rather than "
-            "at one catalogued item",
+            "pitches the evidence at the level the teaching needs",
             playbook,
         )
         # Filling the hole with a generated photograph of a named real source
@@ -101,7 +100,10 @@ class ContentGapPictureWaveTests(unittest.TestCase):
     def test_the_ladder_is_real_first_and_generation_is_checked(self) -> None:
         """Real sources lead; generated geography needs its check to pass."""
         playbook = flat(PLAYBOOK)
-        self.assertIn("real search on Wikimedia and Unsplash", playbook)
+        self.assertIn(
+            "real search up through Unsplash, Wikimedia, Openverse and the open web",
+            playbook,
+        )
         self.assertIn("authorised controlled generation with its visual checks", playbook)
         self.assertIn(
             "a real place's geography publishes only after its visual check "

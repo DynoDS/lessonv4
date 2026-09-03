@@ -36,7 +36,7 @@ Read `ATTEMPT_REQUEST_FILE`, then read `ASSIGNMENT_FILE` once. Require `schema_v
 
 Own only those entries.
 
-Read `[PLUGIN_ROOT]/references/image-scout-search.md` only when an entry has `initial_route: real` or the repair object authorises real search.
+Read `[PLUGIN_ROOT]/references/image-scout-search.md` only when an entry has `initial_route: real` or the repair object authorises real search. The compiled schedule is a ladder, and its last rung, `web`, is the one where you search the open web yourself and take the picture from the institution that holds it. That reference carries the commands, the candidates file it needs, and which publishers are never the right ones to take from.
 
 Read `[PLUGIN_ROOT]/references/image-scout-generation.md` only immediately before the first legal generation action.
 

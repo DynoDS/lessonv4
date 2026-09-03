@@ -98,13 +98,34 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
         ordinary = photo("ordinary.jpg", profile="wikimedia-then-unsplash", fallback="ai", essential=True)
         direct = photo("direct.jpg", mode="controlled-ai", profile="none", fallback="omit")
         self.assertEqual(compiler.initial_route(authentic), "real")
+        # The designer's own profile, then Openverse, which goes on the end of
+        # every real schedule because one free keyless call costs nothing when
+        # the scout has already stopped at a winner above it.
         self.assertEqual(compiler.source_schedule(authentic), [
             {"source": "unsplash", "round": 1, "candidate_count": 3},
             {"source": "wikimedia", "round": 1, "candidate_count": 3},
             {"source": "unsplash", "round": 2, "candidate_count": 3},
+            {"source": "openverse", "round": 1, "candidate_count": 3},
         ])
-        self.assertEqual(len(compiler.source_schedule(ordinary)), 1)
+        # This one may be omitted, so the lesson survives an empty search and
+        # the expensive open-web hunt is not authorised.
+        self.assertNotIn("web", [step["source"] for step in compiler.source_schedule(authentic)])
+        # An AI fallback means the picture arrives either way, so the ladder
+        # ends at Openverse there too.
+        self.assertEqual(
+            [step["source"] for step in compiler.source_schedule(ordinary)],
+            ["wikimedia", "openverse"],
+        )
         self.assertEqual(compiler.source_schedule(direct), [])
+
+        # The open web is the rung for the one case that costs a lesson: a
+        # picture whose contract says an empty search means no picture at all.
+        terminal = photo("terminal.jpg", mode="authentic-real",
+                         profile="wikimedia-only", fallback="unsatisfied", essential=True)
+        self.assertEqual(
+            [step["source"] for step in compiler.source_schedule(terminal)],
+            ["wikimedia", "wikimedia", "openverse", "web"],
+        )
 
     def test_exact_minimum_partition_allows_mixed_batches(self):
         photos = [photo(f"r{i}.jpg") for i in range(3)] + [photo("ai.jpg", mode="controlled-ai", profile="none")]
@@ -196,6 +217,8 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
         self.assertEqual(compiler.source_schedule(item), [
             {"source": "unsplash", "round": 1, "candidate_count": 3},
             {"source": "unsplash", "round": 2, "candidate_count": 3},
+            {"source": "openverse", "round": 1, "candidate_count": 3},
+            {"source": "web", "round": 1, "candidate_count": 3},
         ])
 
     def test_essential_single_source_with_ai_fallback_stops_after_primary_round_one(self):
@@ -204,6 +227,7 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             compiler.source_schedule(item),
             [
                 {"source": "unsplash", "round": 1, "candidate_count": 3},
+                {"source": "openverse", "round": 1, "candidate_count": 3},
             ],
         )
 

@@ -20,7 +20,7 @@ REASONS = {
     "imagegen_capability_unavailable", "fundamental_generation_miss",
     "correction_failed", "attempt_budget_exhausted", "imagegen_output_unavailable",
 }
-REAL_SOURCES = {"unsplash", "wikimedia"}
+REAL_SOURCES = {"unsplash", "wikimedia", "openverse", "web"}
 
 
 class ValidationError(ValueError):
@@ -209,6 +209,23 @@ def validate_manifest(args) -> None:
     print(f"PICTURE_MANIFEST_OK: {len(assignments)} assignments")
 
 
+def open_web_page_allowed(page_url: str) -> bool:
+    """Refuse the hosts `web_fetch.py` refuses, read back from that fetcher.
+
+    The fetcher already declines a picture library or a social feed, so this is
+    a read-back rather than a second opinion: a result naming such a page proves
+    the record was written by hand instead of by the fetch.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "web_fetch_hosts", Path(__file__).resolve().parent / "web_fetch.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.blocked_reason(page_url) is None
+
+
 def wikimedia_licence_allowed(name: str) -> bool:
     normal = " ".join(str(name).casefold().replace("-", " ").replace("_", " ").split())
     restrictive = ("nc", "nd", "noncommercial", "non commercial", "no derivatives", "no derivative", "noderivatives", "noderivative")
@@ -374,6 +391,26 @@ def summary_candidate(summary: dict, candidate_id: str, work_root: Path, label: 
         raise ValidationError(f"{label}: Unsplash candidate has an unbound licence")
     if candidate["source"] == "wikimedia" and (not wikimedia_licence_allowed(candidate["licence_name"]) or not candidate["licence_url"]):
         raise ValidationError(f"{label}: Wikimedia candidate has an unbound or restrictive licence")
+    # Openverse states a licence for every result it returns and the fetcher
+    # asks the API for the permitted set, so a restrictive name arriving here
+    # means the record was edited after the fetch rather than read from it.
+    if candidate["source"] == "openverse" and (not wikimedia_licence_allowed(candidate["licence_name"]) or not candidate["licence_url"]):
+        raise ValidationError(f"{label}: Openverse candidate has an unbound or restrictive licence")
+    # The open web is the one route where no index vouches for the picture, so
+    # the record has to name the page it came from and who to credit. Either
+    # the page published a licence, which governs, or the recorded basis is the
+    # credited education exception - and nothing else is a legal answer.
+    if candidate["source"] == "web":
+        if not open_web_page_allowed(candidate["source_page_url"]):
+            raise ValidationError(
+                f"{label}: open-web candidate comes from a picture library or a social feed, "
+                "which is never the holder to take it from"
+            )
+        if candidate["creator"].strip().casefold() in {"", "unknown", "unknown author", "n/a", "none"}:
+            raise ValidationError(
+                f"{label}: open-web candidate has no publisher to credit, and the education "
+                "exception it is used under requires the source to be acknowledged"
+            )
     path = Path(candidate["path"]).resolve()
     if not inside(path, work_root) or path.is_symlink() or not path.is_file():
         raise ValidationError(f"{label}: candidate path is not a regular file under WORK_ROOT")

@@ -18,6 +18,26 @@ SOURCES = {
     "wikimedia-then-unsplash": ["wikimedia", "unsplash"],
     "none": [],
 }
+
+# The two rungs below the designer's chosen profile. Neither is a profile the
+# designer picks, because neither is a preference: they are what the ladder does
+# when the shelf it was pointed at turns out to be empty.
+#
+# `openverse` searches about a hundred collections at once - Flickr Commons,
+# where archives and museums publish their photographs, the Science Museum
+# Group, the Smithsonian, Europeana, university libraries - and every result
+# carries its own licence. It costs one free keyless call, so it goes on the end
+# of every real schedule.
+#
+# `web` leaves the indexed libraries altogether: the scout finds the holding
+# institution's own page and `web_fetch.py` takes the picture from it. That is
+# more expensive and it is the only rung that needs a judgement about reuse, so
+# it is authorised for one case only - a picture whose contract says the lesson
+# gets nothing if the search fails. A Year 4 history lesson lost its slides, its
+# worksheet and its answer key to five such photographs that were sitting on a
+# county record office's blog the whole time.
+LADDER_SOURCE = "openverse"
+OPEN_WEB_SOURCE = "web"
 AI_PROMPT_FIELDS = {"physical_state", "must_avoid", "text_rule", "composition"}
 PROMPT_USES = {"slide", "worksheet", "both"}
 STYLE_RULE = "photorealistic, generic, classroom-suitable, no decorative extras"
@@ -314,7 +334,7 @@ def source_schedule(photo: dict) -> list[dict]:
     if budget >= 3 and len(sources) > 1:
         candidates.append((sources[0], 2))
 
-    return [
+    steps = [
         {
             "source": source,
             "round": round_number,
@@ -322,6 +342,13 @@ def source_schedule(photo: dict) -> list[dict]:
         }
         for source, round_number in candidates[:budget]
     ]
+
+    # The scout stops at the first faithful winner, so a rung below the
+    # designer's own profile costs nothing on a picture the profile serves.
+    steps.append({"source": LADDER_SOURCE, "round": 1, "candidate_count": count})
+    if photo["fallback_action"] == "unsatisfied":
+        steps.append({"source": OPEN_WEB_SOURCE, "round": 1, "candidate_count": count})
+    return steps
 
 
 def initial_route(photo: dict) -> str:

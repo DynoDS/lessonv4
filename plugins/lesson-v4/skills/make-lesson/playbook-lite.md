@@ -1123,8 +1123,9 @@ finalisation waits for every branch.
 
 **The content-gap picture wave.** `SLIDE_CONTENT_GAP` or
 `WORKSHEET_CONTENT_GAP` does not end the resource. The picture ladder (real
-search on Wikimedia and Unsplash, then authorised controlled generation with
-its visual checks) is a rescue route, not only a service for pictures the
+search up through Unsplash, Wikimedia, Openverse and the open web, then
+authorised controlled generation with its visual checks) is a rescue route, not
+only a service for pictures the
 design promised up front; a teacher finding a blocked lesson in the morning is
 the worse outcome. The signal is the trigger, not the cause: a helper that
 cannot draw a load-bearing visual takes the wave, and so does a load-bearing
@@ -1138,9 +1139,9 @@ authorised fallback (a real place's geography publishes only after its visual
 check confirms it), point the affected representation use at that filename,
 change nothing else, keep the picture cap. A replacement for a spent filename
 takes a new id and filename, and pitches the evidence at the level the teaching
-needs rather than at one catalogued item, which is the designer's own rule.
-Where the lesson genuinely is about that exact source, drop the dependent task
-and say so in `flagsForTeacher`; authenticity does not bend to fill the hole.
+needs, which is the designer's own rule. Where even the open-web rung could not
+reach the one source the lesson is genuinely about, drop the dependent task and
+say so in `flagsForTeacher`; authenticity does not bend to fill the hole.
 
 Re-run the design validator and photo-cap check, snapshot the revision as the
 next wave number, and run the supplemental-wave mechanics over that snapshot,
@@ -1253,6 +1254,9 @@ requirements snapshots, assignments, terminal receipts and provenance. Delete
 only transient worker results, work roots and orphan prompt/search scratch.
 Some approval policies refuse a recursive delete outright; that refusal is a
 normal outcome, not friction and not an accepted minor issue.
+
+Copy its `PICTURE_SOURCES:` line into the report's picture results: an open-web
+picture is credited under the education exception, not carrying a licence.
 
 When the early adaptation wave compiled, pass its snapshot: that is what lets
 provenance recognise a receipt for a picture the sheet never took as early work

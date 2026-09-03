@@ -109,11 +109,22 @@ def candidate_provenance(selection: dict, work_root: Path) -> dict:
     candidate = candidates[0]
     if candidate.get("source") == "unsplash" and (candidate.get("licence_name") != "Unsplash License" or candidate.get("licence_url") != "https://unsplash.com/license"):
         raise FinalizeError("Unsplash candidate has an unbound licence")
-    if candidate.get("source") == "wikimedia":
+    if candidate.get("source") in {"wikimedia", "openverse"}:
         spec = importlib.util.spec_from_file_location("wikimedia_license", Path(__file__).resolve().parent / "wikimedia_fetch.py")
         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
         if not module.is_allowed_licence(candidate.get("licence_name")) or not candidate.get("licence_url"):
-            raise FinalizeError("Wikimedia candidate has an unbound or restrictive licence")
+            raise FinalizeError(f"{candidate['source']} candidate has an unbound or restrictive licence")
+    if candidate.get("source") == "web":
+        # No index vouches for an open-web picture, so publication is the last
+        # place to check that it is attributable: the page it came from, who
+        # published it, and the licence or the credited exception it is used
+        # under. A picture library or a social feed is never that page.
+        spec = importlib.util.spec_from_file_location("web_fetch_hosts", Path(__file__).resolve().parent / "web_fetch.py")
+        module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+        if module.blocked_reason(candidate.get("source_page_url", "")) is not None:
+            raise FinalizeError("open-web candidate comes from a picture library or a social feed")
+        if not str(candidate.get("creator", "")).strip() or not str(candidate.get("licence_url", "")).strip():
+            raise FinalizeError("open-web candidate has no publisher to credit or no recorded basis of use")
     path = Path(candidate.get("path", "")).resolve()
     if not inside(path, work_root) or not path.is_file() or sha256(path) != candidate.get("sha256"):
         raise FinalizeError("selected candidate changed before publication")
@@ -409,6 +420,24 @@ def provenance_command(args) -> int:
 
     payload = {"schema_version": 2, "kind": "picture-provenance", "requirements": {"path": str(requirements_path), "sha256": sha256(requirements_path)}, "rows": rows}
     summary = {"schema_version": 2, "ok": True, "rows": len(rows), "output": str(Path(args.output).resolve())}
+
+    # Which rung of the ladder each published picture came off. The teacher is
+    # the one who answers for a photograph in front of a class, and the rungs
+    # are not equal in what they promise: a Wikimedia or Openverse picture
+    # carries an open licence, while an open-web picture was taken from the
+    # institution that holds it and is credited under the education exception.
+    # One line makes that visible in the run report instead of only in a JSON
+    # file nobody opens.
+    counts: dict[str, int] = {}
+    for row in rows:
+        provenance = row.get("provenance") or {}
+        if provenance.get("kind") == "sourced":
+            counts[provenance.get("source", "unknown")] = counts.get(provenance.get("source", "unknown"), 0) + 1
+        elif provenance.get("kind") == "generated":
+            counts["generated"] = counts.get("generated", 0) + 1
+    summary["sources"] = counts
+    if counts:
+        print("PICTURE_SOURCES: " + ", ".join(f"{count} {name}" for name, count in sorted(counts.items())))
     if early is not None:
         early_used = [name for name in expected if receipt_bound_to(by_name[name], early[0])]
         payload["earlyWave"] = {"snapshot": str(early[0]), "sourcedEarly": len(early_used) + len(unused_rows), "used": early_used, "unused": [row["filename"] for row in unused_rows]}

@@ -1407,21 +1407,22 @@ def _photo_route(photo: dict[str, Any]) -> str:
     return "ai" if photo["acquisition_mode"] == "controlled-ai" else "real"
 
 
-# Pictures are acquired by one route only: a compiled search of Wikimedia and
-# Unsplash, run by a scout that is never handed a URL and cannot open one. So a
-# web address written into a picture object is not an acquisition instruction,
-# it is a route the run does not have - and writing one is the reliable sign
-# that the designer expected a channel to exist.
+# The picture contract says what a picture must show. It has no field meaning
+# "fetch this exact file", because fetching is the Image Scout's job and the
+# scout searches by subject: Unsplash and Wikimedia, then Openverse, then - for
+# a picture the lesson cannot do without - the holding institution's own page on
+# the open web. A URL written into a picture object is therefore not an
+# acquisition instruction. It is the reliable sign that the designer went
+# hunting for image files instead of describing the evidence, which is both the
+# slow way round and a promise nothing downstream can keep.
 #
-# A Year 4 history lesson (3 September 2026) found five ideal archive
-# photographs on the open web, could not express "fetch this file", wrote the
-# official source pages into `pedagogical_constraint` alongside the sentence
-# "the schema only permits Wikimedia/Unsplash routes", and shipped anyway. The
-# searches returned nothing, five essential photographs came back terminally
-# unsatisfied, and the teacher got a working wall: no slides, no worksheet, no
-# answer key. An ideal source the approved libraries do not hold belongs in
-# `flagsForTeacher`, where a teacher can go and get it; the contract has to ask
-# for something the run can actually deliver.
+# A Year 4 history lesson (3 September 2026) did exactly that: it found five
+# ideal archive photographs, could not express "fetch this file", wrote the
+# source pages into `pedagogical_constraint` beside the sentence "the schema
+# only permits Wikimedia/Unsplash routes", and shipped anyway. The teacher got a
+# working wall and nothing else. Named as subjects rather than as links - "the
+# Ford End School classroom around 1900, held by Essex Record Office" - the same
+# five are now inside the scout's reach.
 _PHOTO_URL_RE = re.compile(r"(?:\bhttps?://|\bwww\.\S)", re.IGNORECASE)
 
 
@@ -1483,11 +1484,12 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
             if _PHOTO_URL_RE.search(value):
                 raise ContractError(
                     f"photo contract route error: {path}.{field} contains a web address. "
-                    "Pictures are acquired only by a compiled search of Wikimedia and Unsplash, "
-                    "run by a scout that is never given a URL and cannot open one, so a link here "
-                    "is a route this run does not have. Describe what has to be visible, pitched so "
-                    "a search of those two libraries could return it, and put the exact source a "
-                    "teacher should fetch by hand in lesson-design.json.flagsForTeacher instead."
+                    "Finding the file is the Image Scout's job and it searches by subject, so a "
+                    "link here is a promise nothing downstream can keep. Say what the picture must "
+                    "show instead, naming the institution that holds it where you know it - "
+                    "\"the Ford End School classroom around 1900, held by Essex Record Office\" - "
+                    "and the scout's ladder (Unsplash, Wikimedia, Openverse, then that institution's "
+                    "own page) will reach it."
                 )
         expect(_photo_nonempty(photo["teaching_requirement"]), f"{path}.teaching_requirement must be non-empty")
         evidence = photo["load_bearing_evidence"]
