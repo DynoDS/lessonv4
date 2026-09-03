@@ -736,8 +736,20 @@ same lesson a version earlier; the third was the route's own settled shape.
   models". `validate-lesson-design.py` refuses two My Turn units in a row for the
   same concept, and its message names the fix. The coverage rule keeps its
   requirement that every distinct case is modelled and now says how to reach an
-  unmodelled one. Regression:
-  `scripts/tests/test_a_my_turn_is_used_before_the_next_is_taught.py`.*
+  unmodelled one.*
+  *One control was not sufficient on its own. Moving examples inside a unit opens
+  a second route to the same board: a unit whose examples cannot share one visual
+  will not fit one slide, and the composition rules then split it into two
+  consecutive My Turn slides, which is the fault again with the design check
+  passing. The slide check now refuses a second consecutive My Turn slide
+  (`MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS`) before the builder runs, and
+  the split rule in `slide-composition-playbook.md` names a My Turn as the one
+  beat a split may not reach, sending the repair back to the teaching sequence
+  rather than to another layout attempt. An answer or reveal slide after a My
+  Turn is excluded, and a My Turn followed by its Our Turn is the discrimination
+  case both suites test. Regressions:
+  `scripts/tests/test_a_my_turn_is_used_before_the_next_is_taught.py` and three
+  cases in `builder/test/slide-design-check.test.js`.*
 - Not changed, deliberately: the splitting-axis rules already refuse a concept
   split on the directional fork, so `+10`, `-10`, `+100`, `-100` cannot become
   four rounds of their own; and the reviewer gains no new clause, because the

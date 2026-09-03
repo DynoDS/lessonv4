@@ -10,7 +10,11 @@ units ... followed by at most one Our Turn", and had dropped the older rule
 that a quick move gets two examples and the Our Turn answers two as well, so
 extra cases became extra slides instead of extra examples.
 
-The structural half lives in the validator, where an ordering limit belongs.
+The structural half lives in two deterministic gates, where an ordering limit
+belongs: the design validator refuses two My Turn source units for one concept,
+and the slide check refuses two consecutive My Turn slides, which is the same
+board reached by splitting one unit whose examples cannot share a visual. The
+slide gate's own tests live in `builder/test/slide-design-check.test.js`.
 """
 from __future__ import annotations
 
@@ -113,10 +117,26 @@ class TheGuidanceMatchesTheCheckTests(unittest.TestCase):
             "first one",
             route,
         )
-        # The named check, so prose and code cannot silently drift.
+        # Both named gates, so prose and code cannot silently drift.
         self.assertIn(
             "`validate-lesson-design.py` refuses two My Turn units in a row",
             route,
+        )
+        self.assertIn(
+            "`MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS`", route
+        )
+
+    def test_the_split_rule_names_the_beat_it_may_not_reach(self):
+        playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
+        self.assertIn(
+            "A My Turn is also the one beat a split may not reach", playbook
+        )
+        self.assertIn(
+            "`MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS`", playbook
+        )
+        # The repair is upstream, not a layout retry.
+        self.assertIn(
+            "they are different moves rather than a layout problem", playbook
         )
 
     def test_the_structure_spec_describes_cycles_not_a_run_of_models(self):

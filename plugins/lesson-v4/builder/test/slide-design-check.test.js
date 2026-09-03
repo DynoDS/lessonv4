@@ -632,3 +632,112 @@ test('a turn slide showing its question, and the answer slide after it, both pas
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+function modellingSlide(title) {
+  return {
+    template: 'split-v-50-50',
+    title,
+    primary: {
+      type: 'stack',
+      items: [
+        { type: 'text', value: '1,390 + 10 =', color: '0070C0' },
+        {
+          type: 'place-value-chart',
+          columns: ['Th', 'H', 'T', 'O'],
+          rows: [{ label: '1,390', cells: ['1', '3', '9', '0'] }, { label: '10 more', cells: ['', '', '', ''] }]
+        }
+      ]
+    },
+    secondary: {
+      type: 'sc-panel',
+      content: { type: 'steps', steps: ['Make the number.'] }
+    }
+  };
+}
+
+test('two modelling slides in a row block before the scratch builder runs', () => {
+  // The Year 4 "find 10 and 100 more or less" deck went My Turn (cross a
+  // hundred), My Turn (cross a thousand), one Our Turn, Your Turn. The teacher
+  // abandoned the lesson on the second model: the class had watched two moves
+  // before practising either (flagged by Daniel, 3 Sept 2026). The design
+  // validator refuses two My Turn source units; this catches the same board
+  // reached by splitting one unit whose examples cannot share a visual.
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        modellingSlide('My Turn: Cross a hundred'),
+        modellingSlide('My Turn: Cross a thousand')
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(
+      result.stdout,
+      /"signal":"MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS"/
+    );
+    assert.match(result.stdout, /"slide":2/);
+    // The message has to name the repair, not only the fault.
+    assert.match(result.stdout, /its own cycle with an Our Turn between/);
+    assert.equal(fs.existsSync(builderMarker), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a model followed by the class taking its turn passes', () => {
+  // The discrimination case: same two slides, but the second is the Our Turn.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        modellingSlide('My Turn: Cross a hundred'),
+        modellingSlide('Our Turn: Cross a thousand')
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.doesNotMatch(
+      result.stdout,
+      /MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS/
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a My Turn answer or reveal slide is not counted as a second model', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        modellingSlide('My Turn'),
+        modellingSlide('My Turn answers')
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.doesNotMatch(
+      result.stdout,
+      /MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS/
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

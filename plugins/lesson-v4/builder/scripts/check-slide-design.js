@@ -164,6 +164,48 @@ function turnWarnings(lesson) {
   return warnings;
 }
 
+// Two modelling slides in a row means the class watched two moves before
+// practising either, so the move shown first commonly reaches independent work
+// with no guided attempt behind it. The design validator refuses two My Turn
+// source units for one concept; this catches the other route to the same board,
+// where one unit carrying examples that cannot share a representation is split
+// across consecutive slides. Either way the repair is upstream: give the second
+// move its own cycle with an Our Turn between, or choose examples that share one
+// starting value and one visual.
+const MY_TURN_TITLE = /^my\s+turn\b/i;
+const ANSWER_TITLE = /\banswers?\b/i;
+
+function consecutiveModellingWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  const titleOf = (slideData) =>
+    slideData && typeof slideData.title === 'string' ? slideData.title.trim() : '';
+  slides.forEach((slideData, index) => {
+    if (index === 0) return;
+    const title = titleOf(slideData);
+    const previous = titleOf(slides[index - 1]);
+    if (!MY_TURN_TITLE.test(title) || !MY_TURN_TITLE.test(previous)) return;
+    // An answer or reveal slide is not a second model, and the turn rules put a
+    // My Turn's answer in the speaker notes rather than on a slide of its own.
+    if (ANSWER_TITLE.test(title)) return;
+    warnings.push({
+      signal: 'MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS',
+      slide: index + 1,
+      field: 'title',
+      message:
+        `"${title}" is a second modelling slide immediately after "${previous}", ` +
+        'so children watch two moves before practising either and the first one ' +
+        'can reach independent work with no guided attempt behind it. Put every ' +
+        "example of one move on that move's own slide, and give a genuinely " +
+        'different move its own cycle with an Our Turn between. Where the ' +
+        'examples cannot share one starting value and one visual, they are ' +
+        'different moves and belong in different cycles rather than in one unit ' +
+        'split across slides.'
+    });
+  });
+  return warnings;
+}
+
 // House blue is the colour of the words a child acts on. A text block whose
 // whole `color` is blue while it both tells and asks ("Look at the tropical
 // rainforest regions. What pattern do you notice around the Equator?") has
@@ -379,6 +421,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
 
   const presentation = presentationWarnings(lesson)
     .concat(turnWarnings(lesson))
+    .concat(consecutiveModellingWarnings(lesson))
     .concat(mixedBlockWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson));
   if (presentation.length) {
