@@ -329,7 +329,7 @@ test("answer slides are limited without removing speaker-note answers", () => {
 });
 
 test('semantic colour stays with the teacher profile and exact field contracts', () => {
-  assert.match(TEACHER_PROFILE_MD, /Black carries ordinary teacher explanation/);
+  assert.match(TEACHER_PROFILE_MD, /Black carries everything else the board says/);
   assert.match(TEACHER_PROFILE_MD, /Answer green belongs only to answers being revealed or marked/);
   assert.match(TEACHER_PROFILE_MD, /Safety and failure are different semantic roles/);
   assert.match(TEMPLATES_MD, /`colorRole` is one of:/);
@@ -349,11 +349,35 @@ test('the asking-versus-telling colour grammar holds across every colour owner',
   assert.match(TEACHER_PROFILE_MD, /asking versus telling/);
   assert.match(TEACHER_PROFILE_MD, /The boundary is the sentence, not the block/);
   assert.match(PLAYBOOK_MD, /asking versus telling/);
-  assert.match(PREFERENCES_MD, /Black tells, blue asks/);
+  assert.match(PREFERENCES_MD, /Blue asks; everything else tells/);
   assert.ok(
     !TEACHER_PROFILE_MD.includes('do not make routine starter questions or every task question blue'),
     'the retired one-focal-question restriction must not resurface in the profile'
   );
+});
+
+test('blue is the colour of a question, and instructions are black', () => {
+  // A Year 4 history deck put "Explain your answer using the photograph.",
+  // "Point to the details that support your comparison." and six more task
+  // lines in house blue, so almost the whole board arrived blue and the colour
+  // stopped marking anything (flagged by Daniel, 3 September 2026: "can we make
+  // only questions to children blue"). Every owner of the grammar has to say
+  // instructions are black, or a run picks up whichever file it opens first.
+  assert.match(TEACHER_PROFILE_MD, /House blue is the colour of a question to children/);
+  assert.match(TEACHER_PROFILE_MD, /the instructions children act on/);
+  assert.match(PREFERENCES_MD, /the instructions children act on/);
+  assert.match(
+    PLAYBOOK_MD,
+    /Every child-facing question outside the starter carries the blue/
+  );
+  assert.ok(
+    !PLAYBOOK_MD.includes('Every child-facing question and pupil instruction carries the blue'),
+    'the playbook must not keep sending instructions to house blue'
+  );
+  // The starter is questions all the way down, so blue marks nothing there.
+  assert.match(TEACHER_PROFILE_MD, /The starter is the one place a question is normally black/);
+  assert.match(TEACHER_PROFILE_MD, /alternate them black, blue, black, blue/);
+  assert.match(PREFERENCES_MD, /Starter questions are the exception and stay black/);
 });
 
 test('the composition regressions from the electrical-appliances deck stay fixed', () => {

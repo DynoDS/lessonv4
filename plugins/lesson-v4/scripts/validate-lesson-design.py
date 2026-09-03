@@ -1407,6 +1407,45 @@ def _photo_route(photo: dict[str, Any]) -> str:
     return "ai" if photo["acquisition_mode"] == "controlled-ai" else "real"
 
 
+# Pictures are acquired by one route only: a compiled search of Wikimedia and
+# Unsplash, run by a scout that is never handed a URL and cannot open one. So a
+# web address written into a picture object is not an acquisition instruction,
+# it is a route the run does not have - and writing one is the reliable sign
+# that the designer expected a channel to exist.
+#
+# A Year 4 history lesson (3 September 2026) found five ideal archive
+# photographs on the open web, could not express "fetch this file", wrote the
+# official source pages into `pedagogical_constraint` alongside the sentence
+# "the schema only permits Wikimedia/Unsplash routes", and shipped anyway. The
+# searches returned nothing, five essential photographs came back terminally
+# unsatisfied, and the teacher got a working wall: no slides, no worksheet, no
+# answer key. An ideal source the approved libraries do not hold belongs in
+# `flagsForTeacher`, where a teacher can go and get it; the contract has to ask
+# for something the run can actually deliver.
+_PHOTO_URL_RE = re.compile(r"(?:\bhttps?://|\bwww\.\S)", re.IGNORECASE)
+
+
+def _photo_text_values(photo: dict[str, Any]):
+    for field in ("subject", "pedagogical_constraint", "teaching_requirement", "fallback_note"):
+        value = photo.get(field)
+        if isinstance(value, str):
+            yield field, value
+    evidence = photo.get("load_bearing_evidence")
+    if isinstance(evidence, list):
+        for index, value in enumerate(evidence):
+            if isinstance(value, str):
+                yield f"load_bearing_evidence[{index}]", value
+    prompt = photo.get("generation_prompt")
+    if isinstance(prompt, dict):
+        for key, value in prompt.items():
+            if isinstance(value, str):
+                yield f"generation_prompt.{key}", value
+            elif isinstance(value, list):
+                for index, item in enumerate(value):
+                    if isinstance(item, str):
+                        yield f"generation_prompt.{key}[{index}]", item
+
+
 def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = False):
     """Validate the complete semantic picture contract, independently of routing."""
     root = expect_dict(photos, "photo-requirements.json")
@@ -1440,6 +1479,16 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
         by_id[photo_id] = photo
         expect(_photo_nonempty(photo["subject"]), f"{path}.subject must be non-empty")
         expect(isinstance(photo["pedagogical_constraint"], str), f"{path}.pedagogical_constraint must be a string")
+        for field, value in _photo_text_values(photo):
+            if _PHOTO_URL_RE.search(value):
+                raise ContractError(
+                    f"photo contract route error: {path}.{field} contains a web address. "
+                    "Pictures are acquired only by a compiled search of Wikimedia and Unsplash, "
+                    "run by a scout that is never given a URL and cannot open one, so a link here "
+                    "is a route this run does not have. Describe what has to be visible, pitched so "
+                    "a search of those two libraries could return it, and put the exact source a "
+                    "teacher should fetch by hand in lesson-design.json.flagsForTeacher instead."
+                )
         expect(_photo_nonempty(photo["teaching_requirement"]), f"{path}.teaching_requirement must be non-empty")
         evidence = photo["load_bearing_evidence"]
         expect(isinstance(evidence, list) and evidence and all(_photo_nonempty(v) for v in evidence),

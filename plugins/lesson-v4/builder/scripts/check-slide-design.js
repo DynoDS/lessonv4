@@ -122,8 +122,34 @@ const QUESTION_TYPES = new Set(['numbered-questions', 'question-cards']);
 // its turn rather than a turn with nothing on it.
 const ANSWER_GREEN = /\|\||\{\{/;
 
+// A task list is the turn on a slide that instructs rather than asks. It used
+// to be recognised through its house blue, but instructions are black now (see
+// teacher-slide-visual-profile.md -> Semantic colour), so the list itself has to
+// count or every instructed turn would read as a reference-only slide.
+// Success criteria are steps too, and they are the reference a child checks
+// their work against rather than the work itself, so the panel never counts.
+function hasTaskSteps(node, insidePanel) {
+  if (Array.isArray(node)) {
+    return node.some((child) => hasTaskSteps(child, insidePanel));
+  }
+  if (!node || typeof node !== 'object') return false;
+  const inPanel = insidePanel || node.type === 'sc-panel';
+  if (
+    !inPanel &&
+    node.type === 'steps' &&
+    Array.isArray(node.steps) &&
+    node.steps.length
+  ) {
+    return true;
+  }
+  return Object.keys(node).some((key) => {
+    if (key === 'speakerNotes' || key === 'decorations') return false;
+    return hasTaskSteps(node[key], inPanel);
+  });
+}
+
 function carriesItsTurn(slideData) {
-  let found = false;
+  let found = hasTaskSteps(slideData, false);
   walkContent(slideData, (node) => {
     if (found) return;
     if (Array.isArray(node.questions) && node.questions.length) found = true;
@@ -263,6 +289,139 @@ function mixedBlockWarnings(lesson) {
           'keep the telling black and put the question on its own line in blue ' +
           '(a `[[ ]]` span or a separate text object).'
       });
+    });
+  });
+  return warnings;
+}
+
+// House blue means one thing on the body of a slide: this is a question for
+// you. An instruction the class acts on is black, because it already reads as
+// part of the job the blue question set, and painting it blue too spends the
+// contrast that was lifting the question. A Year 4 history deck put "Explain
+// your answer using the photograph.", "Point to the details that support your
+// comparison." and seven more task lines in house blue, and the board arrived
+// almost entirely blue (flagged by Daniel, 3 September 2026: "can we make only
+// questions to children blue").
+//
+// A blue run is only judged when it is a finished sentence - it ends in a full
+// stop or an exclamation mark and runs to more than one word. Short blue
+// labels, category names and option words are navigational chrome the templates
+// own, and they carry no terminal punctuation, so they never reach this check.
+// A run carrying a question mark is doing blue's own job and passes; a blue
+// block that both tells and asks is the neighbouring MIXED_BLOCK_WHOLE_BLUE
+// fault, which splits it instead.
+const FOCUS_SPAN = /\[\[([\s\S]*?)\]\]/g;
+
+function blueStatement(run) {
+  const text = String(run == null ? '' : run).trim();
+  if (!/[.!]$/.test(text)) return false;
+  if (text.includes('?')) return false;
+  return text.split(/\s+/).filter(Boolean).length > 1;
+}
+
+function nodeIsBlue(node) {
+  return (
+    node.colorRole === 'focus-blue' ||
+    (typeof node.color === 'string' && HOUSE_BLUE.test(node.color.trim()))
+  );
+}
+
+// `[[ ]]` reaches blue from inside any string the slide prints, and a task
+// list carries its lines as bare strings in `steps` rather than as text nodes,
+// so scanning only `value` and `text` would let a whole blue instruction list
+// through. Speaker notes are the teacher's script and never rendered to the
+// board, so they stay out.
+const UNPRINTED_KEYS = new Set(['speakerNotes', 'decorations']);
+
+function blueStatementRuns(node) {
+  const runs = [];
+  const whole = typeof node.value === 'string' ? node.value : node.text;
+  if (nodeIsBlue(node) && typeof whole === 'string') runs.push(whole);
+  Object.keys(node).forEach((key) => {
+    if (UNPRINTED_KEYS.has(key)) return;
+    const value = node[key];
+    const strings =
+      typeof value === 'string'
+        ? [value]
+        : Array.isArray(value)
+          ? value.filter((entry) => typeof entry === 'string')
+          : [];
+    strings.forEach((entry) => {
+      for (const match of entry.matchAll(FOCUS_SPAN)) runs.push(match[1]);
+    });
+  });
+  return runs.filter(blueStatement);
+}
+
+function blueStatementWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    const seen = new Set();
+    walkContent(slideData, (node) => {
+      blueStatementRuns(node).forEach((run) => {
+        const text = run.trim();
+        if (seen.has(text)) return;
+        seen.add(text);
+        warnings.push({
+          signal: 'BLUE_WITHOUT_A_QUESTION',
+          slide: index + 1,
+          field: 'text',
+          message:
+            `"${text.slice(0, 60)}" is in house blue but asks the class ` +
+            'nothing. Blue is the colour of a question children answer; an ' +
+            'instruction they act on is black, so drop the blue here (remove ' +
+            'the `focus-blue` role, the house-blue `color` or the `[[ ]]` ' +
+            'span) and leave the blue for the question this task belongs to.'
+        });
+      });
+    });
+  });
+  return warnings;
+}
+
+// A starter is questions all the way down, so blue there marks nothing a child
+// cannot already see and a screenful of solid blue reads worse than black. One
+// starter question is black; several alternate black, blue, black, blue, where
+// the colour is separating one numbered question from the next rather than
+// saying "this is for you".
+function starterQuestionEntries(slideData) {
+  const entries = [];
+  walkContent(slideData, (node) => {
+    if (!QUESTION_TYPES.has(node.type) || !Array.isArray(node.questions)) return;
+    node.questions.forEach((question) => entries.push(question));
+  });
+  return entries;
+}
+
+function starterQuestionIsBlue(question) {
+  if (typeof question === 'string') {
+    // FOCUS_SPAN is global, and a global regex carries lastIndex between
+    // `test` calls, so it would answer every other question wrongly.
+    return question.trim().match(FOCUS_SPAN) !== null;
+  }
+  if (!question || typeof question !== 'object') return false;
+  return nodeIsBlue(question);
+}
+
+function starterColourWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    if (!slideData || slideData.headerStyle !== 'starter') return;
+    const questions = starterQuestionEntries(slideData);
+    if (!questions.length) return;
+    if (!questions.every(starterQuestionIsBlue)) return;
+    warnings.push({
+      signal: 'STARTER_QUESTIONS_ALL_BLUE',
+      slide: index + 1,
+      field: 'body',
+      message:
+        `every question on this starter is house blue, which marks nothing a ` +
+        'child cannot already see on a slide that is questions all the way ' +
+        'down. Leave a single starter question black; with several, alternate ' +
+        'them black, blue, black, blue so the colour separates one numbered ' +
+        'question from the next.'
     });
   });
   return warnings;
@@ -423,6 +582,8 @@ function runSlideDesignCheck(inputPath, options = {}) {
     .concat(turnWarnings(lesson))
     .concat(consecutiveModellingWarnings(lesson))
     .concat(mixedBlockWarnings(lesson))
+    .concat(blueStatementWarnings(lesson))
+    .concat(starterColourWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson));
   if (presentation.length) {
     return {

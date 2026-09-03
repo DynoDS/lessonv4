@@ -332,7 +332,7 @@ For each generated question, part or task:
 - Response: [printed action and target]
 - Support: [reference, representation, vocabulary, scaffold or None]
 - Visual requirements: [required visual and its job, or None]
-- Photo refs: [adaptation-photo-### IDs used by this item, or None]
+- Photo refs: [photo-### or adaptation-photo-### IDs used by this item, or None]
 
 Fit priority:
 - Page budget check: [the protected items priced against one A4 side, and the total]
@@ -378,7 +378,7 @@ For each generated question, part or task:
 - Response: [printed action and target]
 - Support: [including any separately labelled word bank]
 - Visual requirements: [required visual and its job, or None]
-- Photo refs: [adaptation-photo-### IDs used by this item, or None]
+- Photo refs: [photo-### or adaptation-photo-### IDs used by this item, or None]
 
 Support and representation decision:
 [what remains, repeats, fades or is pre-drawn, and why]
@@ -438,6 +438,8 @@ Assign IDs sequentially in the order those objects appear across the one adaptat
 A required adaptation photograph may be requested even when Expected uses none. Name the exact learning or access job and use the smallest coherent set.
 
 The complete automated lesson run may promote at most 16 required Image Team picture requests. The prompt supplies the current promoted count and the number of unconsumed places. Reuse an existing approved picture only when it remains truthful for this adaptation and does not give away thinking the pupil is meant to do.
+
+**Reuse means naming the picture that already exists, not describing it again.** `Photos for the sheets` declares pictures that are new to this run; a `photo-###` the Lesson Designer already contracted is reused by putting that ID in the item's `Photo refs` and leaving the block alone. Re-declaring it as an `adaptation-photo-###` gives one filename two identities, and the contract merge refuses the whole adaptation for it - a Year 4 history adaptation was dropped entirely that way, over a photograph the lesson already had. Where the reused picture needs a different constraint for this sheet, that is a genuinely different picture: give it a new filename as well as a new ID.
 
 The adaptation's `Photos for the sheets` block remains provisional while Worksheet Designer settles the final page plan. Do not silently delete a required picture merely because the provisional set would exceed the remaining places. If the final required adaptation set still needs more new pictures than the run has places available, report `PHOTO_CAP_GAP` with the exact required visual jobs so the owning adaptation task can be revised before those new pictures are promoted.
 

@@ -525,6 +525,171 @@ test('the CLI ends malformed JSON with the exact failure marker', () => {
   }
 });
 
+test('a blue line that asks the class nothing blocks before the scratch builder runs', () => {
+  // The Year 4 history deck ran "Explain your answer using the photograph." and
+  // three `[[ ]]` task steps in house blue, so the board was almost all blue and
+  // the colour stopped marking the questions (flagged by Daniel, 3 September
+  // 2026). Blue is a question children answer; the task they act on is black.
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'Compare the two classrooms',
+          body: {
+            type: 'stack',
+            items: [
+              {
+                type: 'text',
+                colorRole: 'focus-blue',
+                value: 'How did children use these two classrooms?'
+              },
+              {
+                type: 'text',
+                colorRole: 'focus-blue',
+                value: 'Explain your answer using the photograph.'
+              },
+              {
+                type: 'steps',
+                steps: ['[[Point to the details that support your comparison.]]']
+              },
+              { type: 'text', colorRole: 'focus-blue', value: 'Changed' }
+            ]
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    const hits = result.stdout.match(/"signal":"BLUE_WITHOUT_A_QUESTION"/g) || [];
+    // The question passes, the short blue label passes, the instruction and the
+    // blue span inside the task list do not.
+    assert.equal(hits.length, 2);
+    assert.match(result.stdout, /Explain your answer using the photograph/);
+    assert.match(result.stdout, /Point to the details/);
+    assert.equal(fs.existsSync(builderMarker), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a starter whose every question is blue blocks before the scratch builder runs', () => {
+  // A starter is questions all the way down, so blue there marks nothing a child
+  // cannot already see. One question stays black; several alternate black, blue,
+  // black, blue so the colour separates one from the next.
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'Starter',
+          headerStyle: 'starter',
+          body: {
+            type: 'numbered-questions',
+            questions: [
+              { text: 'Which year came first?', colorRole: 'focus-blue' },
+              {
+                text: 'What could a photograph tell us that a bell could not?',
+                colorRole: 'focus-blue'
+              }
+            ]
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(result.stdout, /"signal":"STARTER_QUESTIONS_ALL_BLUE"/);
+    assert.equal(fs.existsSync(builderMarker), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('an alternating starter and a black instruction under a blue question both pass', () => {
+  // The shape the rule asks for: the starter alternates black, blue, and the
+  // teaching slide keeps its one blue question with the task in black under it.
+  const root = makeRoot();
+  try {
+    const builderMarker = path.join(root, 'builder-ran.txt');
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `require('node:fs').writeFileSync(${JSON.stringify(builderMarker)}, 'ran');\n` +
+        `console.log('Wrote: ' + process.argv[3]);\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'Starter',
+          headerStyle: 'starter',
+          body: {
+            type: 'numbered-questions',
+            questions: [
+              { text: 'Which year came first?' },
+              {
+                text: 'What could a photograph tell us that a bell could not?',
+                colorRole: 'focus-blue'
+              }
+            ]
+          }
+        },
+        {
+          template: 'body-full',
+          title: 'Your Turn: compare the classrooms',
+          body: {
+            type: 'stack',
+            items: [
+              {
+                type: 'text',
+                colorRole: 'focus-blue',
+                value: 'How did children use these two classrooms?'
+              },
+              {
+                type: 'text',
+                value: 'Explain your answer using the photograph.'
+              }
+            ]
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.notEqual(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.ok(!/BLUE_WITHOUT_A_QUESTION/.test(result.stdout));
+    assert.ok(!/STARTER_QUESTIONS_ALL_BLUE/.test(result.stdout));
+    assert.ok(!/TURN_SLIDE_WITHOUT_ITS_TURN/.test(result.stdout));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('a turn slide with nothing to work on blocks before the scratch builder runs', () => {
   // A Year 4 place-value My Turn was split when its chart would not fit, and the
   // reference half kept the turn label: a slide holding a column-value chart, a

@@ -289,3 +289,53 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AdaptationPictureReuseTests(unittest.TestCase):
+    """Reusing a picture must not give one filename two identities.
+
+    On 3 September 2026 a Year 4 history adaptation wanted a photograph the
+    Lesson Designer had already contracted as `photo-005`. It re-declared that
+    filename in its own `Photos for the sheets` block as
+    `adaptation-photo-001`, the contract merge refused
+    ("same filename has different id"), and the whole Below sheet was dropped
+    over a picture the lesson already had. The agent said reuse was allowed but
+    never said how to do it, and the item template offered only
+    `adaptation-photo-###` ids to name.
+    """
+
+    def flat(self, text: str) -> str:
+        return " ".join(text.split())
+
+    def test_reuse_is_by_naming_the_existing_id(self) -> None:
+        agent = self.flat(AGENT)
+        self.assertIn(
+            "Reuse means naming the picture that already exists, not describing "
+            "it again.",
+            agent,
+        )
+        self.assertIn(
+            "is reused by putting that ID in the item's `Photo refs` and "
+            "leaving the block alone",
+            agent,
+        )
+
+    def test_the_photo_refs_line_accepts_an_initial_picture_id(self) -> None:
+        """The template that only offered adaptation ids is what forced the
+        re-declaration, so it has to name both namespaces."""
+        self.assertIn(
+            "- Photo refs: [photo-### or adaptation-photo-### IDs used by this "
+            "item, or None]",
+            AGENT,
+        )
+        self.assertNotIn(
+            "- Photo refs: [adaptation-photo-### IDs used by this item, or None]",
+            AGENT,
+        )
+
+    def test_a_genuinely_different_constraint_earns_a_new_filename(self) -> None:
+        """The boundary: reuse is for the same picture doing the same job."""
+        self.assertIn(
+            "give it a new filename as well as a new ID",
+            self.flat(AGENT),
+        )

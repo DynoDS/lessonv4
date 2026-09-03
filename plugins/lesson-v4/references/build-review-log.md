@@ -771,3 +771,11 @@ same lesson a version earlier; the third was the route's own settled shape.
   four rounds of their own; and the reviewer gains no new clause, because the
   structural half is now a deterministic check and the judgement half (whether a
   quick move got its second example) belongs to the one rule that owns it.
+
+## 2026-09-03 - Year 4 History Lesson 1: childhood continuity and change
+
+- Design review approved the lesson after correcting child-facing date punctuation and a stale design-decisions line so the paired comparison matches the canonical tutor-and-class task.
+- The selected official museum/archive sources have exact URLs, but the compiled picture route searches Wikimedia and has returned five of six requirements unsatisfied. Authentic evidence selected in pedagogy is therefore unavailable to resource builds; no synthetic substitute was authorised.
+- Adaptation reused existing photograph filenames with new adaptation IDs, and build-provisional rejected the duplicate filename identities. The required fallback preserves the Expected sheet but omits the supported version.
+- Run evidence: C:/Users/Daniel/Projects/lessonv4/output/working/childrens-lives-continuity-and-change/friction.md.
+- Final result: one validated A3 wall PDF delivered and synced. Slide and worksheet owner repairs could not preserve the tasks with only the portrait available. The run is BLOCKED; nine slides lack evidence and no worksheet/answer key was built. The slide wrapper also misdecoded the curly apostrophe in the output name.

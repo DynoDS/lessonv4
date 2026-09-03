@@ -1122,21 +1122,31 @@ resource against another. Only the deterministic
 finalisation waits for every branch.
 
 **The content-gap picture wave.** `SLIDE_CONTENT_GAP` or
-`WORKSHEET_CONTENT_GAP` - a live helper cannot draw a load-bearing visual
-faithfully and no authorised photo covers it - does not end the resource. The
-picture ladder (real search on Wikimedia and Unsplash, then authorised
-controlled generation with its visual checks) is a rescue route, not only a
-service for pictures the design promised up front; a teacher finding a blocked
-lesson in the morning is the worse outcome. Run one focused Lesson Designer
-revision over the three canonical design files: add the missing visual as a
-picture requirement, real-first with an authorised fallback (a real place's
-geography publishes only after its visual check confirms it), point the
-affected representation use at that filename, change nothing else, keep the
-picture cap. Re-run the design validator and photo-cap check, snapshot the
-revision as the next wave number, and run the supplemental-wave mechanics over
-that snapshot, naming already-terminal filenames so nothing finished reopens.
-Relaunch the blocked designer on the published picture. One wave per run; a
-gap that survives it excludes as before, the pending helper still built for
+`WORKSHEET_CONTENT_GAP` does not end the resource. The picture ladder (real
+search on Wikimedia and Unsplash, then authorised controlled generation with
+its visual checks) is a rescue route, not only a service for pictures the
+design promised up front; a teacher finding a blocked lesson in the morning is
+the worse outcome. The signal is the trigger, not the cause: a helper that
+cannot draw a load-bearing visual takes the wave, and so does a load-bearing
+picture the design promised that came back terminally `unsatisfied` - an
+authorised photograph that never arrived is the same hole as a visual nobody
+requested.
+
+Run one focused Lesson Designer revision over the three canonical design files:
+add or respecify that visual as a picture requirement, real-first with an
+authorised fallback (a real place's geography publishes only after its visual
+check confirms it), point the affected representation use at that filename,
+change nothing else, keep the picture cap. A replacement for a spent filename
+takes a new id and filename, and pitches the evidence at the level the teaching
+needs rather than at one catalogued item, which is the designer's own rule.
+Where the lesson genuinely is about that exact source, drop the dependent task
+and say so in `flagsForTeacher`; authenticity does not bend to fill the hole.
+
+Re-run the design validator and photo-cap check, snapshot the revision as the
+next wave number, and run the supplemental-wave mechanics over that snapshot,
+naming already-terminal filenames so nothing finished reopens. Relaunch the
+blocked designer on the published picture. One wave per run; a gap that
+survives it excludes as before, the pending helper still built for
 `/install-helper`.
 
 Re-record that use in `helper-check.json` as the wave leaves it: `substitute`
@@ -1210,6 +1220,12 @@ the prior picture receipt, finalise with `--replace yes`, then rebuild only the
 resources naming that filename. A picture that never published at all is the
 different fault the tracks reconcile before they build, where the resource owner
 re-points that one reference and keeps the learning it was serving.
+
+**When re-pointing cannot keep the learning, the owner is the wrong repairer.**
+A repair returning `SLIDE_CONTENT_GAP` or `WORKSHEET_CONTENT_GAP` because the
+missing picture *was* the task's evidence has named the one fault only the
+Lesson Designer can fix: it goes to the content-gap picture wave whenever it
+surfaces, never to exclusion.
 
 ---
 

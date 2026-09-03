@@ -482,8 +482,14 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # end of the worksheet chain, and the wave's compile, its bookkeeping
         # of what the sheet then dropped, and the cost line the report owes
         # are what the playbook gained. Every slice still sits under its own
-        # 7 KiB budget, which is what a run actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 64 * 1024)
+        # 7 KiB budget, which is what a run actually pays. Raised from 64 KiB
+        # when the content-gap picture wave stopped being a helper-only rescue:
+        # a load-bearing photograph that comes back terminally unsatisfied now
+        # takes the same wave, because a Year 4 history lesson lost its slides,
+        # its worksheet and its answer key over five archive photographs the
+        # approved sources never held. The wave's respecify example was cut to
+        # pay for part of it; it lives in full in the designer's own file.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 65 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

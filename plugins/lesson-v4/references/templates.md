@@ -499,7 +499,7 @@ own text column and add a line when the full set still fits at that same font.
 `colorRole` is one of:
 
 - `default` - existing base colour;
-- `focus-blue` - a question children answer or an instruction they act on, in house blue (the asking-versus-telling grammar in `teacher-slide-visual-profile.md` → Semantic colour);
+- `focus-blue` - a question children answer, in house blue; an instruction they act on stays black (the asking-versus-telling grammar in `teacher-slide-visual-profile.md` → Semantic colour);
 - `peer-blue` - house blue for one item in a compact equal-status peer set;
 - `peer-purple` - house purple for one item in a compact equal-status peer set.
 

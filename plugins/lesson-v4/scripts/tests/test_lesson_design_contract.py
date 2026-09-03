@@ -2251,3 +2251,118 @@ if __name__ == "__main__":
                 failed += 1
                 print("FAIL", name, str(exc)[:500])
     raise SystemExit(1 if failed else 0)
+
+
+def test_a_web_address_in_a_picture_object_is_refused():
+    """A URL in the picture contract is a route the run does not have.
+
+    On 3 September 2026 a Year 4 history Lesson Designer searched the web while
+    planning, found five ideal archive photographs, could not express "fetch
+    this exact file", and wrote the official source pages into
+    `pedagogical_constraint` beside the sentence "the schema only permits
+    Wikimedia/Unsplash routes". It shipped that contract anyway. The compiled
+    searches found nothing, all five came back terminally unsatisfied, and the
+    teacher received a working wall with no slides, no worksheet and no answer
+    key. The designer had already written down that the design was unbuildable;
+    nothing read it, because nothing was looking.
+    """
+    for field, value in (
+        (
+            "pedagogical_constraint",
+            "Use the exact interior. Official source page: "
+            "https://www.essexrecordofficeblog.co.uk/school-then-and-now/",
+        ),
+        ("subject", "Ford End School classroom, www.essexrecordoffice.co.uk"),
+        (
+            "teaching_requirement",
+            "Compare the classrooms; see http://example.org/pair for the pair.",
+        ),
+    ):
+        design, photos = valid_contract()
+        photo = photo_requirement(
+            "photo-001",
+            "A classroom around 1900",
+            "unsplash/classroom-c1900.jpg",
+        )
+        photo[field] = value
+        photos["photos"] = [photo]
+        assert_invalid_contract(
+            design,
+            photos,
+            f"photo-requirements.json.photos[0].{field} contains a web address",
+        )
+
+
+def test_a_web_address_inside_evidence_or_a_prompt_is_refused():
+    """The same link moved one field down is the same missing route."""
+    design, photos = valid_contract()
+    photo = photo_requirement(
+        "photo-001",
+        "A classroom around 1900",
+        "unsplash/classroom-c1900.jpg",
+    )
+    photo["load_bearing_evidence"] = [
+        "the original interior at https://example.org/i-mb-383-1-52.jpg"
+    ]
+    photos["photos"] = [photo]
+    assert_invalid_contract(
+        design,
+        photos,
+        "photos[0].load_bearing_evidence[0] contains a web address",
+    )
+
+    design, photos = valid_contract()
+    photo = photo_requirement(
+        "photo-001",
+        "A classroom around 1900",
+        "unsplash/classroom-c1900.jpg",
+    )
+    photo["generation_prompt"]["composition"] = "match https://example.org/ref.jpg"
+    photos["photos"] = [photo]
+    assert_invalid_contract(
+        design,
+        photos,
+        "photos[0].generation_prompt.composition contains a web address",
+    )
+
+
+def test_the_refusal_names_where_an_exact_source_should_go_instead():
+    """A designer that found the perfect source is not told to forget it.
+
+    The lesson keeps the value of that search: the URL travels to the teacher
+    in `flagsForTeacher`, and the contract asks for evidence the approved
+    libraries can actually deliver.
+    """
+    design, photos = valid_contract()
+    photo = photo_requirement(
+        "photo-001",
+        "A classroom around 1900",
+        "unsplash/classroom-c1900.jpg",
+        pedagogical_constraint="Source: https://example.org/photo",
+    )
+    photos["photos"] = [photo]
+    try:
+        module.validate_design(design, photos)
+    except module.ContractError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("contract unexpectedly validated")
+    assert "flagsForTeacher" in message, message
+    assert "Wikimedia and Unsplash" in message, message
+
+
+def test_an_ordinary_picture_contract_still_validates():
+    """The gate must not fire on prose that merely mentions a place or a dot."""
+    design, photos = valid_contract()
+    photos["photos"] = [
+        photo_requirement(
+            "photo-001",
+            "A classroom around 1900",
+            "unsplash/classroom-c1900.jpg",
+            pedagogical_constraint=(
+                "Children at rows of desks. Keep the room and the adults "
+                "visible. Do not crop to one child."
+            ),
+        )
+    ]
+    module.validate_design(design, photos)

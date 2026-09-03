@@ -36,6 +36,68 @@ class ContentGapPictureWaveTests(unittest.TestCase):
         self.assertIn("The content-gap picture wave.", playbook)
         self.assertIn("`SLIDE_CONTENT_GAP` or `WORKSHEET_CONTENT_GAP`", playbook)
 
+    def test_a_terminally_unsatisfied_picture_takes_the_wave_too(self) -> None:
+        """The wave was scoped to helper gaps, so a lesson died of the other cause.
+
+        On 3 September 2026 a Year 4 history lesson promised five archive
+        photographs the approved sources do not hold. All five came back
+        terminally `unsatisfied`, the focused slide and worksheet repairs
+        correctly refused to invent the evidence their tasks read from, and the
+        run reported "the Phase 3 helper-gap wave does not reopen these
+        terminal filenames: these were already-authorised photographs, not
+        missing helper depictions". The teacher got a working wall: no slides,
+        no worksheet, no answer key. The signal has to be the trigger, or the
+        cause becomes a reason to deliver nothing.
+        """
+        playbook = flat(PLAYBOOK)
+        self.assertIn("The signal is the trigger, not the cause", playbook)
+        self.assertIn(
+            "a load-bearing picture the design promised that came back terminally "
+            "`unsatisfied`",
+            playbook,
+        )
+        self.assertIn(
+            "an authorised photograph that never arrived is the same hole as a "
+            "visual nobody requested",
+            playbook,
+        )
+
+    def test_a_replacement_picture_never_reopens_the_spent_filename(self) -> None:
+        """A spent filename is append-only, so the repair is a new one."""
+        playbook = flat(PLAYBOOK)
+        self.assertIn(
+            "A replacement for a spent filename takes a new id and filename",
+            playbook,
+        )
+        self.assertIn(
+            "pitches the evidence at the level the teaching needs rather than "
+            "at one catalogued item",
+            playbook,
+        )
+        # Filling the hole with a generated photograph of a named real source
+        # would be the lie authentic-real exists to refuse.
+        self.assertIn("authenticity does not bend to fill the hole", playbook)
+
+    def test_the_owner_repair_round_escalates_instead_of_excluding(self) -> None:
+        """A resource owner refusing to invent evidence has diagnosed, not failed.
+
+        Phase 3.5 told the owner to "re-point that one reference and keep the
+        learning it was serving", which is impossible when the picture *was*
+        the learning, and the run then excluded the resource on an honest
+        refusal.
+        """
+        playbook = flat(PLAYBOOK)
+        self.assertIn(
+            "When re-pointing cannot keep the learning, the owner is the wrong "
+            "repairer.",
+            playbook,
+        )
+        self.assertIn(
+            "it goes to the content-gap picture wave whenever it surfaces, "
+            "never to exclusion",
+            playbook,
+        )
+
     def test_the_ladder_is_real_first_and_generation_is_checked(self) -> None:
         """Real sources lead; generated geography needs its check to pass."""
         playbook = flat(PLAYBOOK)
