@@ -1207,31 +1207,41 @@ def validate_route_sequence(
             while index < len(sequence) and sequence[index]["kind"] == "prepare":
                 index += 1
 
-            my_turn_count = 0
+            # A concept runs one or more My Turn -> Our Turn cycles, then one Your
+            # Turn. Two My Turn units in a row are refused: children must use a
+            # modelled move before the next one is taught.
+            cycles = 0
             while index < len(sequence) and sequence[index]["kind"] == "my-turn":
                 expect(
                     sequence[index]["conceptRef"] == concept_id,
                     f"Skill-based sequence expected My Turn for {concept_id}",
                 )
-                my_turn_count += 1
                 index += 1
-            expect(my_turn_count >= 1, f"Skill-based concept {concept_id} requires at least one My Turn")
-
-            if (
-                index < len(sequence)
-                and sequence[index]["kind"] == "our-turn"
-            ):
+                cycles += 1
                 expect(
-                    sequence[index]["conceptRef"] == concept_id,
-                    f"Skill-based Our Turn must use {concept_id}",
+                    not (index < len(sequence) and sequence[index]["kind"] == "my-turn"),
+                    (
+                        f"Skill-based concept {concept_id} has two My Turn units in a row. "
+                        "Put every example of one modelled move inside that move's own My Turn "
+                        "unit, and give a genuinely different move its own cycle with an Our Turn "
+                        "between, so each move is used before the next is taught "
+                        "(teaching-sequence-skill-based.md, 'Several examples of one move belong "
+                        "inside one My Turn unit')"
+                    ),
                 )
-                index += 1
+                if index < len(sequence) and sequence[index]["kind"] == "our-turn":
+                    expect(
+                        sequence[index]["conceptRef"] == concept_id,
+                        f"Skill-based Our Turn must use {concept_id}",
+                    )
+                    index += 1
+            expect(cycles >= 1, f"Skill-based concept {concept_id} requires at least one My Turn")
 
             expect(
                 index < len(sequence) and sequence[index]["kind"] == "your-turn",
                 (
                     f"Skill-based concept {concept_id} requires Your Turn "
-                    "after its My Turn move(s) and optional Our Turn"
+                    "after its My Turn and Our Turn cycles"
                 ),
             )
             expect(

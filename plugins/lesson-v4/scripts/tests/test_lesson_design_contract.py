@@ -609,10 +609,14 @@ def test_unresolved_photo_requirement_scaffold_placeholder_is_rejected():
     )
 
 
-def test_valid_skill_contract_allows_multiple_distinct_my_turn_moves():
+def test_valid_skill_contract_gives_a_second_distinct_move_its_own_cycle():
+    # A second modelled move takes a My Turn plus Our Turn cycle of its own, so
+    # children use the first move before the second is taught. A second My Turn
+    # placed beside the first is refused; see
+    # test_a_my_turn_is_used_before_the_next_is_taught.py.
     design, photos = valid_contract()
-    second = source_unit(
-        2,
+    second_model = source_unit(
+        3,
         "my-turn",
         {"example": "46 + 38 =", "modelledExemplar": None},
         label="My Turn",
@@ -622,7 +626,28 @@ def test_valid_skill_contract_allows_multiple_distinct_my_turn_moves():
         success_criteria_refs=["sc-001"],
         answer=exact_answer("84", "visible-in-unit"),
     )
-    design["teachingSequence"].insert(1, second)
+    second_guided = source_unit(
+        4,
+        "our-turn",
+        {
+            "example": "57 + 29 =",
+            "guidedQuestions": [
+                "What should we partition first?",
+                "Which tens cross into a new hundred?",
+                "Which ones can we add?",
+            ],
+        },
+        label="Our Turn",
+        concept_ref="concept-001",
+        modelling_state="Live-complete helper",
+        representation_refs=[
+            {"ref": "rep-001", "configuration": "model", "interaction": "teacher-completes"}
+        ],
+        success_criteria_refs=["sc-001"],
+        script="Say to children: which tens cross into a new hundred?",
+        answer=exact_answer("86", "teacher-only"),
+    )
+    design["teachingSequence"][2:2] = [second_model, second_guided]
     for index, unit in enumerate(design["teachingSequence"], 1):
         unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
     module.validate_design(design, photos)

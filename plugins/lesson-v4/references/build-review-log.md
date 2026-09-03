@@ -693,3 +693,53 @@ AGENT: delivery | FRICTION: The report parser split unquoted paths at spaces and
   The earlier repair that put the misconception route there in the first place is
   preserved intact, wording and all - it exists so that a lesson with dull
   content is not read as a lesson with no opportunities, and that is still true.*
+
+## 2026-09-03 - Teacher review of the Year 4 maths run (4.2.84)
+
+The teacher taught `Find 10 and 100 more or less` and abandoned the lesson on
+its second slide of modelling, bringing out his own place-value chart instead.
+Two of the three faults he named were already repaired by the rebuild of the
+same lesson a version earlier; the third was the route's own settled shape.
+
+- The modelling slide carried two questions and an AI-generated photograph of a
+  chart with the first question's number already made, so nothing could be
+  modelled on it and the picture served one of the two questions.
+  *Already repaired before this review: the run had declared no representation
+  at all, and the `place-value-chart` helper could not yet show counters or
+  exchanges, so three controlled-AI substitutes stood in. The helper now carries
+  counters, row labels and exchange cues, and the rebuild of this lesson selected
+  `Live-complete helper` with the answer rows left blank and no photograph in the
+  modelling at all.*
+- The first thing modelled was crossing a hundred, with no plain case first.
+  *Already repaired before this review by the design reviewer, which caught the
+  missing non-boundary model and approved the corrected sequence. The rule it
+  enforced ("the first example is a minimum-viable case") was present all along;
+  what was missing was anything checking it.*
+- The deck went My Turn (cross a hundred), My Turn (cross a thousand), one Our
+  Turn, Your Turn. Children watched two different moves before practising
+  either, and the plain case was modelled once and then met again only in
+  independent work. Every check passed it, because the route authorised it
+  outright: "one or more My Turn source units ... followed by at most one Our
+  Turn". The general rhythm in `preferences.md` says the opposite in the same
+  breath ("every My Turn ... is followed immediately by a beat that requires
+  every child to use what they have just been told"), and skill-based lessons
+  were reading their own line as a block-level exemption.
+  *Addressed by restoring the previous plugin's shape, which handled extra cases
+  as extra examples inside one My Turn rather than as extra My Turn slides. Three
+  repairs: the rep-count default is back ("two for quick instances and one for
+  lengthy ones", with the Our Turn answering the same number, and its limit named
+  so it cannot become a quota); a concept now runs one or more My Turn plus Our
+  Turn cycles before its single Your Turn, so a genuinely different move earns a
+  cycle rather than a second My Turn beside the first; and the skill-based clause
+  in the rhythm section now reads "the guided and independent practice that
+  follows each modelled move, never as one block of practice at the end of several
+  models". `validate-lesson-design.py` refuses two My Turn units in a row for the
+  same concept, and its message names the fix. The coverage rule keeps its
+  requirement that every distinct case is modelled and now says how to reach an
+  unmodelled one. Regression:
+  `scripts/tests/test_a_my_turn_is_used_before_the_next_is_taught.py`.*
+- Not changed, deliberately: the splitting-axis rules already refuse a concept
+  split on the directional fork, so `+10`, `-10`, `+100`, `-100` cannot become
+  four rounds of their own; and the reviewer gains no new clause, because the
+  structural half is now a deterministic check and the judgement half (whether a
+  quick move got its second example) belongs to the one rule that owns it.
