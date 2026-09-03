@@ -750,6 +750,22 @@ same lesson a version earlier; the third was the route's own settled shape.
   case both suites test. Regressions:
   `scripts/tests/test_a_my_turn_is_used_before_the_next_is_taught.py` and three
   cases in `builder/test/slide-design-check.test.js`.*
+- The two modelled examples were an inverse pair: `1,390 + 10 =` then
+  `1,400 - 10 =`, so the second question asked the class to find 1,390, already
+  printed above it as the first question's starting number. The pair looked like
+  two worked examples and demonstrated one instance run forwards then backwards,
+  and nothing in the route covered it: the spoiler audit existed only for a
+  bounded attempt.
+  *Addressed beside the rule that owns example choice, where holding the starting
+  number still already prevents it, rather than as a rule of its own. The
+  paragraph now names the failure, generalises it past arithmetic to any
+  reversible move, and carries its limit: a deliberate inverse demonstration
+  (counting back returns the number you started with, checking by the inverse
+  operation) is legitimate and the script says so. No deterministic check was
+  added: the only slide type where the fault appeared is the one where the
+  reversal can be the teaching point, so a check would have to misfire on the
+  legitimate case to catch the reported one. Regression: four assertions in
+  `scripts/tests/test_a_my_turn_is_used_before_the_next_is_taught.py`.*
 - Not changed, deliberately: the splitting-axis rules already refuse a concept
   split on the directional fork, so `+10`, `-10`, `+100`, `-100` cannot become
   four rounds of their own; and the reviewer gains no new clause, because the

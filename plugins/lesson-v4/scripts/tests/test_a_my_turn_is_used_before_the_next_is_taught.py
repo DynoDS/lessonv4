@@ -174,6 +174,28 @@ class AQuickMoveGetsTwoExamplesTests(unittest.TestCase):
         self.assertIn("`643 + 10 =` beside `643 - 100 =`", route)
         self.assertIn("one chart with two answer rows", route)
 
+    def test_a_second_example_may_not_undo_the_first(self):
+        # The taught deck paired `1,390 + 10 =` with `1,400 - 10 =`, so the
+        # second question asked for a number already printed above it as the
+        # first question's starting value (flagged by Daniel, 3 Sep 2026).
+        route = flat(SKILL_ROUTE)
+        self.assertIn(
+            "a second example that undoes the first: `1,390 + 10 =` followed "
+            "by `1,400 - 10 =`",
+            route,
+        )
+        self.assertIn(
+            "the second question is read off rather than worked", route
+        )
+        # It generalises past arithmetic.
+        self.assertIn("The same trap catches any reversible move", route)
+        # The limit: a deliberate inverse demonstration is legitimate.
+        self.assertIn(
+            "The limit is when the inverse relationship is itself the teaching "
+            "point",
+            route,
+        )
+
 
 class TheRhythmHasNoSkillBasedExemptionTests(unittest.TestCase):
     def test_practice_follows_each_modelled_move(self):
