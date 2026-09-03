@@ -190,14 +190,29 @@ function turnWarnings(lesson) {
   return warnings;
 }
 
-// Two modelling slides in a row means the class watched two moves before
+// Two modelling slides in a row means the class watched two MOVES before
 // practising either, so the move shown first commonly reaches independent work
-// with no guided attempt behind it. The design validator refuses two My Turn
-// source units for one concept; this catches the other route to the same board,
-// where one unit carrying examples that cannot share a representation is split
-// across consecutive slides. Either way the repair is upstream: give the second
-// move its own cycle with an Our Turn between, or choose examples that share one
-// starting value and one visual.
+// with no guided attempt behind it. A Year 4 deck went My Turn (cross a
+// hundred), My Turn (cross a thousand), one Our Turn, Your Turn, and the teacher
+// abandoned the lesson on the second model.
+//
+// Two moves is the fault, and the slide's source unit is what says whether that
+// is what happened. Examples of one move live in one My Turn unit, so two
+// consecutive My Turn slides carrying the SAME `designUnitId` are one modelling
+// moment the layout had to divide, not a second move: the class still practises
+// that one move next, which is the whole thing this rule protects. Different
+// units are two moves and are still refused.
+//
+// The rule used to say a layout problem could never justify dividing a My Turn -
+// examples that will not fit together "are different moves rather than a layout
+// problem". A representation with a minimum usable size disproves that. Two
+// four-column counter charts sharing one slide give each column 0.6in and each
+// counter 0.10in, which `PLACE_VALUE_COUNTERS_TOO_SMALL` now refuses outright,
+// so a lesson modelling two numbers on counter charts has nowhere else to go
+// (flagged by Daniel, 3 September 2026: "2 in one slide is still too small to do
+// anything with ... I'd honestly have one each slide, 2 my turns"). One number
+// per slide, twice, is one move modelled twice at a size children can use. It is
+// not two moves.
 const MY_TURN_TITLE = /^my\s+turn\b/i;
 const ANSWER_TITLE = /\banswers?\b/i;
 
@@ -206,6 +221,8 @@ function consecutiveModellingWarnings(lesson) {
   const warnings = [];
   const titleOf = (slideData) =>
     slideData && typeof slideData.title === 'string' ? slideData.title.trim() : '';
+  const unitOf = (slideData) =>
+    slideData && typeof slideData.designUnitId === 'string' ? slideData.designUnitId : '';
   slides.forEach((slideData, index) => {
     if (index === 0) return;
     const title = titleOf(slideData);
@@ -214,6 +231,9 @@ function consecutiveModellingWarnings(lesson) {
     // An answer or reveal slide is not a second model, and the turn rules put a
     // My Turn's answer in the speaker notes rather than on a slide of its own.
     if (ANSWER_TITLE.test(title)) return;
+    // One unit divided across slides is one move shown more than once. Two units
+    // back to back are two moves, which is the fault.
+    if (unitOf(slideData) && unitOf(slideData) === unitOf(slides[index - 1])) return;
     warnings.push({
       signal: 'MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS',
       slide: index + 1,
@@ -221,12 +241,13 @@ function consecutiveModellingWarnings(lesson) {
       message:
         `"${title}" is a second modelling slide immediately after "${previous}", ` +
         'so children watch two moves before practising either and the first one ' +
-        'can reach independent work with no guided attempt behind it. Put every ' +
-        "example of one move on that move's own slide, and give a genuinely " +
-        'different move its own cycle with an Our Turn between. Where the ' +
-        'examples cannot share one starting value and one visual, they are ' +
-        'different moves and belong in different cycles rather than in one unit ' +
-        'split across slides.'
+        'can reach independent work with no guided attempt behind it. These two ' +
+        'come from different source units, so they are two moves: give the ' +
+        'second its own cycle with an Our Turn between. Examples of ONE move ' +
+        'belong in one My Turn unit, and a unit divided across slides because ' +
+        'its representation cannot be read at the size sharing one slide would ' +
+        'give it is allowed - that is one move modelled twice, and the class ' +
+        'still practises it next.'
     });
   });
   return warnings;

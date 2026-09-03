@@ -1001,3 +1001,76 @@ test('a picture named in speaker notes is not a picture on the slide', () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// One My Turn divided across slides is one move modelled twice; two My Turns
+// from different source units are two moves, which is the fault this rule was
+// built for. The source unit is what tells them apart, and until it was read the
+// rule refused both - so a lesson whose representation cannot be shared legibly
+// had nowhere to go (flagged by Daniel, 3 September 2026: "I'd honestly have one
+// each slide, 2 my turns etc").
+function modelSlide(title, unit) {
+  return { ...modellingSlide(title), designUnitId: unit };
+}
+
+test('one My Turn unit divided across two slides is one move, not two', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        modelSlide('My Turn - build the chart', 'teaching-sequence/unit-001'),
+        modelSlide('My Turn - build the chart', 'teaching-sequence/unit-001')
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.doesNotMatch(result.stdout, /MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('two My Turn units in a row are still two moves and still refused', () => {
+  // The discrimination, and the original fault: cross a hundred, then cross a
+  // thousand, and the class practises neither before watching both.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        modelSlide('My Turn: Cross a hundred', 'teaching-sequence/unit-001'),
+        modelSlide('My Turn: Cross a thousand', 'teaching-sequence/unit-002')
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.match(result.stdout, /"signal":"MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS"/);
+    assert.match(result.stdout, /come from different source units/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a My Turn with no source unit at all is still refused', () => {
+  // The permission is evidence, not an absence of it: a slide that names no unit
+  // cannot claim to share one.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [modellingSlide('My Turn'), modellingSlide('My Turn')]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.match(result.stdout, /MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

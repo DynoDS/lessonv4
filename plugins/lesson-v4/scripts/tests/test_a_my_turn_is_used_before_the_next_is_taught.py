@@ -126,18 +126,21 @@ class TheGuidanceMatchesTheCheckTests(unittest.TestCase):
             "`MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS`", route
         )
 
-    def test_the_split_rule_names_the_beat_it_may_not_reach(self):
+    def test_the_split_rule_names_what_a_second_my_turn_has_to_prove(self):
+        # The rule used to refuse every second My Turn slide and say a layout
+        # problem could never justify one. A representation with a minimum usable
+        # size disproved that: two four-column counter charts on one slide give
+        # each counter a tenth of an inch, which the build now refuses outright,
+        # so a lesson modelling two numbers on charts had nowhere left to go.
+        # Two MOVES is still the fault, and the source unit is the evidence.
         playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
-        self.assertIn(
-            "A My Turn is also the one beat a split may not reach", playbook
-        )
-        self.assertIn(
-            "`MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS`", playbook
-        )
-        # The repair is upstream, not a layout retry.
-        self.assertIn(
-            "they are different moves rather than a layout problem", playbook
-        )
+        self.assertIn("`MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS`", playbook)
+        self.assertIn("from a different source unit", playbook)
+        self.assertIn("two My Turn slides carrying the same unit are one modelling moment", playbook)
+        # And the permission is bounded, or every crowded My Turn takes it.
+        self.assertIn("for a representation that cannot be read shared, and for nothing else", playbook)
+        self.assertIn("`PLACE_VALUE_COUNTERS_TOO_SMALL`", playbook)
+        self.assertNotIn("they are different moves rather than a layout problem", playbook)
 
     def test_the_structure_spec_describes_cycles_not_a_run_of_models(self):
         route = flat(SKILL_ROUTE)

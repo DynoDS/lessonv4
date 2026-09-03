@@ -116,7 +116,23 @@ const COUNTER_PAD      = 0.08; // inches at scale 1
 const COUNTER_LINE     = '4A4A4A';
 const COUNTER_MAX      = 20;   // guards malformed specs from flooding a slide
 const COUNTER_MIN_D    = 0.09; // inches
-const COUNTER_MAX_D    = 0.25; // inches
+const COUNTER_MAX_D    = 0.25; // inches - the size a counter is MEANT to be,
+                               // reached whenever the column has the room
+// The smallest a counter can be and still be counted.
+//
+// The chart has always had a height floor and never a width one, and the two
+// are not interchangeable: the counter band grows with the scale while a column
+// keeps whatever width the layout gave it, so a tall thin cell spends its height
+// on gaps and its counters come out tiny. Two four-column charts sharing the
+// 60% side of a split gave each column 0.6in, and six counters in one came out
+// 0.10in across in a band 1.6in tall. Every check passed and the deck shipped
+// (flagged by Daniel, 3 September 2026: "2 in one slide is still too small to
+// do anything with. The columns are too narrow").
+//
+// Half the intended size is the floor, which is also the 0.125in the header
+// font's own 9pt minimum calls the smallest mark a child reads from the carpet.
+// A counter below it is not a smaller counter, it is a dot.
+const COUNTER_READABLE_D = 0.125;
 
 // ── The before-and-after pair ────────────────────────────────
 const REF_COL_W        = 0.45;  // one digit column at scale 1, inches - the
@@ -349,9 +365,7 @@ function counterFill(column) {
 // cell alone, so a counter can never drift across a place-value rule into the
 // neighbouring column. Ten uses two rows of five, which makes the complete
 // exchange group immediately countable.
-function drawCounterPopulation(pptx, slide, x, y, w, h, column, count) {
-  if (count <= 0 || w <= 0 || h <= 0) return;
-
+function counterGrid(w, h, count) {
   let cols;
   if (count === 10) cols = 5;
   else if (count <= 4) cols = 2;
@@ -360,10 +374,39 @@ function drawCounterPopulation(pptx, slide, x, y, w, h, column, count) {
   const rows = Math.ceil(count / cols);
 
   const pad = Math.min(COUNTER_PAD, w * 0.08, h * 0.08);
-  const availW = Math.max(0.05, w - 2 * pad);
-  const availH = Math.max(0.05, h - 2 * pad);
-  const stepW = availW / cols;
-  const stepH = availH / rows;
+  const stepW = Math.max(0.05, w - 2 * pad) / cols;
+  const stepH = Math.max(0.05, h - 2 * pad) / rows;
+  return {
+    cols,
+    rows,
+    stepW,
+    stepH,
+    // Uncapped at the bottom, because this is also what the readable check
+    // measures, and clamping first would hide exactly the case it looks for.
+    d: Math.min(Math.min(stepW, stepH) * 0.68, COUNTER_MAX_D)
+  };
+}
+
+// The smallest counter this chart would draw, or null when it draws none.
+function smallestCounter(colWs, counterH, columns, dataRows, hasLabels) {
+  let smallest = null;
+  dataRows.forEach(function (row) {
+    if (row.counters === null) return;
+    columns.forEach(function (column, i) {
+      const count = counterCount(row.counters, column);
+      if (count <= 0) return;
+      const w = colWs[hasLabels ? i + 1 : i];
+      const { d } = counterGrid(w, counterH, count);
+      if (smallest === null || d < smallest) smallest = d;
+    });
+  });
+  return smallest;
+}
+
+function drawCounterPopulation(pptx, slide, x, y, w, h, column, count) {
+  if (count <= 0 || w <= 0 || h <= 0) return;
+
+  const { cols, rows, stepW, stepH } = counterGrid(w, h, count);
   const d = clamp(Math.min(stepW, stepH) * 0.68, COUNTER_MIN_D, COUNTER_MAX_D);
   const gridW = stepW * cols;
   const gridH = stepH * rows;
@@ -882,6 +925,32 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
   const startY   = headerOnly ? innerY : Math.max(zone.y, innerY + (innerH - usedH) / 2);
   const rowH     = NATURAL_ROW_H * scale;
   const counterH = hasCounters ? COUNTER_ROW_H * scale : 0;
+
+  // Refuse a column too narrow for its counters to be counted.
+  //
+  // The sibling of the height refusal above, and the one that was missing. A
+  // column keeps whatever width the layout hands it while the counter band
+  // grows with the scale, so a narrow column produces a tall thin cell that
+  // spends its height on gaps: two charts sharing the 60% side of a split gave
+  // six counters 0.10in each in a band 1.6in tall, and nothing said so. Width
+  // is the lever here, which is why the message names width repairs and not the
+  // height ones the refusal above already covers.
+  const smallest = headerOnly
+    ? null
+    : smallestCounter(colWs, counterH, columns, dataRows, hasLabels);
+  if (smallest !== null && smallest < COUNTER_READABLE_D) {
+    throw new Error(
+      `PLACE_VALUE_COUNTERS_TOO_SMALL: this chart's counters come out ` +
+      `${smallest.toFixed(2)}in across, below the ${COUNTER_READABLE_D}in a ` +
+      `child can count from the carpet, because each column is only ` +
+      `${regColW.toFixed(2)}in wide. The counter band already has the height it ` +
+      `needs, so a taller zone will not move it: give the chart more WIDTH - a ` +
+      `wider zone, one chart on this slide instead of two, or a template that ` +
+      `does not spend 40% of the board on a side panel. Fewer counters in a ` +
+      `column works too, where the lesson's numbers allow it.`
+    );
+  }
+
   const heading = headingsFor(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
   const headerFont = heading.font;
   const cellFont = Math.round(CELL_FONT_SIZE * scale);

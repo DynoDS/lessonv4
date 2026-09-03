@@ -175,7 +175,7 @@ const {
   drawPlaceValueChart
 } = require('../src/content/place-value-chart');
 
-function chartHeadings(zone, columns) {
+function chartHeadings(zone, columns, counters = true) {
   const tables = [];
   const pptx = new PptxGenJS();
   const slide = {
@@ -187,7 +187,9 @@ function chartHeadings(zone, columns) {
   drawPlaceValueChart(pptx, slide, zone, {
     type: 'place-value-chart',
     columns: columns || ['Thousands', 'Hundreds', 'Tens', 'Ones'],
-    rows: [{ cells: ['', '', '', ''], counters: { Thousands: 4, Hundreds: 2, Tens: 6, Ones: 1 } }],
+    rows: [counters
+      ? { cells: ['', '', '', ''], counters: { Thousands: 4, Hundreds: 2, Tens: 6, Ones: 1 } }
+      : { cells: ['4', '2', '6', '1'] }],
   }, { slideIndex: 0, lesson: {} });
   const header = tables
     .map((t) => t.rows[0])
@@ -217,8 +219,10 @@ test('a column heading is never wider than the column it sits in', () => {
 test('a chart too narrow for the word prints the short name, not half the word', () => {
   // The narrowest real case: two four-column charts sharing a speech-bubble
   // slide's side band. At this width no readable size holds "Thousands", so
-  // shrinking alone can only clip.
-  const drawn = chartHeadings({ x: 0.2, y: 1.8, w: 1.9, h: 2.2 });
+  // shrinking alone can only clip. Digits only, because a chart this narrow
+  // carrying counters is refused outright by the counter floor below - heading
+  // fit and counter size are separate faults and this one is the heading.
+  const drawn = chartHeadings({ x: 0.2, y: 1.8, w: 1.9, h: 2.2 }, null, false);
   const heading = thousandsHeading(drawn);
   assert.equal(heading.text, 'Th');
   assert.ok(
@@ -248,4 +252,70 @@ test('the column palette survives a chart headed with the full words', () => {
     new Set(fills(long)).size > 1,
     'every column drew in one colour, so the palette never resolved'
   );
+});
+
+// A chart has always had a height floor and never a width one, and the two are
+// not interchangeable. The counter band grows with the scale while a column
+// keeps whatever width the layout gave it, so a narrow column makes a tall thin
+// cell that spends its height on gaps: two four-column charts sharing the 60%
+// side of a split gave each column 0.6in and six counters 0.10in across, in a
+// band 1.6in tall. Every check passed and the deck shipped twice (flagged by
+// Daniel, 3 September 2026: "2 in one slide is still too small to do anything
+// with. The columns are too narrow").
+
+function drawCounterChart(zone) {
+  const pptx = new PptxGenJS();
+  const slide = {
+    addShape: () => {},
+    addText: () => {},
+    addImage: () => {},
+    addTable: () => {},
+  };
+  drawPlaceValueChart(pptx, slide, zone, {
+    type: 'place-value-chart',
+    columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+    rows: [{ label: 'A', cells: ['', '', '', ''], counters: { Thousands: 6, Hundreds: 2, Tens: 4, Ones: 1 } }],
+  }, { slideIndex: 0, lesson: {} });
+}
+
+test('a column too narrow for its counters is refused, not shipped small', () => {
+  // Half of a 60-40 split's primary: the exact zone each of two charts got.
+  assert.throws(
+    () => drawCounterChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 }),
+    /PLACE_VALUE_COUNTERS_TOO_SMALL/
+  );
+});
+
+test('the refusal names width, because height is not the lever', () => {
+  // The height refusal beside it already offers a taller zone and fewer rows,
+  // and a designer sent to the wrong lever spends a repair pass measuring the
+  // same number again.
+  try {
+    drawCounterChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 });
+    assert.fail('the chart drew counters it should have refused');
+  } catch (error) {
+    assert.match(error.message, /more WIDTH/);
+    assert.match(error.message, /one chart on this slide instead of two/);
+    assert.match(error.message, /a taller zone will not move it/);
+  }
+});
+
+test('one chart in the same zone draws counters at full size', () => {
+  // The discrimination, and the repair the message names: the whole primary
+  // instead of half of it doubles the column and the counters come out at the
+  // size they were designed for.
+  assert.doesNotThrow(() => drawCounterChart({ x: 0.2, y: 1.8, w: 7.2, h: 4.56 }));
+});
+
+test('a chart with no counters is judged on height alone', () => {
+  // A digits-only chart has no counters to be too small, and must not acquire a
+  // width floor it never needed.
+  const pptx = new PptxGenJS();
+  const slide = { addShape: () => {}, addText: () => {}, addImage: () => {}, addTable: () => {} };
+  assert.doesNotThrow(() =>
+    drawPlaceValueChart(pptx, slide, { x: 0.2, y: 1.8, w: 2.4, h: 3.0 }, {
+      type: 'place-value-chart',
+      columns: ['Th', 'H', 'T', 'O'],
+      rows: [{ label: '3,462', cells: ['3', '4', '6', '2'] }],
+    }, { slideIndex: 0, lesson: {} }));
 });
