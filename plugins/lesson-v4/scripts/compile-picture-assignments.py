@@ -343,9 +343,34 @@ def source_schedule(photo: dict) -> list[dict]:
         for source, round_number in candidates[:budget]
     ]
 
-    # The scout stops at the first faithful winner, so a rung below the
-    # designer's own profile costs nothing on a picture the profile serves.
-    steps.append({"source": LADDER_SOURCE, "round": 1, "candidate_count": count})
+    # Where the ladder's extra rungs go, and why they are not a fixed tail.
+    #
+    # Each rung the scout climbs costs a fetch and, far more expensively, a
+    # visual inspection pass. So the ordering question is not "which source is
+    # cheapest to call" - they are all cheap - but "which one holds this
+    # picture", because the rung that answers first is the only one that gets
+    # paid for.
+    #
+    # Openverse earns a rung only where a real photograph is the sole
+    # acceptable answer. When `fallback_action` is `ai`, a faithful generated
+    # picture teaches the same thing by the contract's own admission, so
+    # another real search before generation is a rung nobody needed.
+    if photo["fallback_action"] != "ai":
+        ladder = {"source": LADDER_SOURCE, "round": 1, "candidate_count": count}
+        if photo["acquisition_mode"] == "authentic-real":
+            # A real thing at a real date in a real place lives in an archive,
+            # a museum or a library, which is what Openverse searches and what
+            # stock photography by definition does not hold. Putting it after
+            # the stock rungs spends two inspections finding that out. It leads
+            # here, and the designer's own profile follows it.
+            steps.insert(0, ladder)
+        else:
+            steps.append(ladder)
+
+    # The open web needs the scout's own search before this script can fetch
+    # anything, so it is a model turn whichever way round it goes. It stays
+    # last, for the one case where the alternative is the lesson losing the
+    # picture altogether.
     if photo["fallback_action"] == "unsatisfied":
         steps.append({"source": OPEN_WEB_SOURCE, "round": 1, "candidate_count": count})
     return steps

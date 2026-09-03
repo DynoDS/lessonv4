@@ -15,12 +15,14 @@ skip one to reach the rung below it.
 | `openverse` | about a hundred collections at once - Flickr Commons, where archives and museums publish their photographs, the Science Museum Group, the Smithsonian, Europeana, university libraries | `openverse_fetch.py "<query>" --count N --round R --output <dir>` |
 | `web` | the holding institution's own page, found by you | `web_fetch.py "<subject>" --candidates <file.json> --count N --round R --output <dir>` |
 
-The first three take a query and return candidates. `openverse` is on every real
-schedule because one free keyless call costs nothing once a winner has been
-found above it, and it is where a real photograph of a real place at a real date
-usually lives: a lesson wanting a British classroom around 1900 gets school
-photographs from museum and city-archive collections there and from nowhere
-else on this ladder.
+The first three take a query and return candidates. **The order is compiled per
+picture, not fixed**, because each rung costs a fetch and, far more expensively,
+one of your inspection passes - so the rung that answers first is the only one
+that gets paid for, and the compiler puts it first. A picture of a real thing at
+a real date leads with `openverse`, where archives and museums are; an ordinary
+object leads with stock photography, which is what stock is good at; a picture
+with an authorised AI fallback gets one real search and then generates. Run the
+schedule you were given, in the order you were given it.
 
 ## The open-web rung
 

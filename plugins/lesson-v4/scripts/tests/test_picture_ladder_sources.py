@@ -316,15 +316,45 @@ class LadderSchedule(unittest.TestCase):
         base.update(overrides)
         return base
 
-    def test_openverse_ends_every_real_schedule(self):
-        """One free keyless call, reached only when everything above it failed."""
+    def test_authentic_evidence_leads_with_openverse(self):
+        """The rung that answers first is the only one that gets paid for.
+
+        Each rung costs a fetch and, far more expensively, a visual inspection
+        pass. A real thing at a real date in a real place lives in an archive, a
+        museum or a library - which is what Openverse searches and what stock
+        photography by definition does not hold - so reaching it after the stock
+        rungs spends two inspections finding that out.
+        """
         for profile in ("unsplash-only", "wikimedia-only", "unsplash-then-wikimedia"):
             with self.subTest(profile=profile):
-                steps = compiler.source_schedule(self.photo(source_profile=profile))
-                self.assertEqual(steps[-2]["source"], "openverse")
+                steps = compiler.source_schedule(
+                    self.photo(source_profile=profile, acquisition_mode="authentic-real")
+                )
+                self.assertEqual(steps[0]["source"], "openverse")
+                # The designer's own profile still runs, behind it.
+                self.assertIn(profile.split("-")[0], [step["source"] for step in steps])
+
+    def test_an_ordinary_picture_with_an_ai_fallback_gets_no_extra_real_rung(self):
+        """The contract has already said a faithful generated picture teaches
+        the same thing, so a second real search before generation is a rung
+        nobody needed - one search, then generate."""
+        steps = compiler.source_schedule(self.photo(
+            acquisition_mode="ordinary-real", source_profile="unsplash-only",
+            fallback_action="ai"))
+        self.assertEqual([step["source"] for step in steps], ["unsplash"])
+
+    def test_an_ordinary_picture_that_cannot_be_generated_still_gets_openverse(self):
+        """With no AI substitute authorised, a real photograph is the only
+        answer, so the extra real rung is worth its call - after the profile,
+        because an ordinary object is what stock photography is good at."""
+        steps = compiler.source_schedule(self.photo(
+            acquisition_mode="ordinary-real", source_profile="unsplash-only",
+            fallback_action="omit", essential=False))
+        self.assertEqual([step["source"] for step in steps], ["unsplash", "openverse"])
 
     def test_the_open_web_is_authorised_only_where_the_lesson_would_lose_the_picture(self):
-        """It is the expensive rung and the only one needing a judgement about
+        """It is the expensive rung - it needs the scout's own web search before
+        anything can be fetched - and the only one needing a judgement about
         reuse, so it runs for the one case that costs a lesson."""
         terminal = compiler.source_schedule(self.photo(fallback_action="unsatisfied"))
         self.assertEqual(terminal[-1]["source"], "web")
@@ -340,6 +370,8 @@ class LadderSchedule(unittest.TestCase):
         self.assertNotIn("web", [step["source"] for step in omitted])
 
     def test_a_generated_picture_climbs_no_ladder_at_all(self):
+        """`controlled-ai` is a decision that no photograph can show this, so
+        there is nothing to search for and the run goes straight to generation."""
         steps = compiler.source_schedule(self.photo(
             acquisition_mode="controlled-ai", source_profile="none", fallback_action="omit"))
         self.assertEqual(steps, [])

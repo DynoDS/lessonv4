@@ -98,23 +98,24 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
         ordinary = photo("ordinary.jpg", profile="wikimedia-then-unsplash", fallback="ai", essential=True)
         direct = photo("direct.jpg", mode="controlled-ai", profile="none", fallback="omit")
         self.assertEqual(compiler.initial_route(authentic), "real")
-        # The designer's own profile, then Openverse, which goes on the end of
-        # every real schedule because one free keyless call costs nothing when
-        # the scout has already stopped at a winner above it.
+        # Authentic evidence leads with Openverse: a real thing at a real date
+        # lives in an archive or a museum, and finding that out after two stock
+        # searches costs two visual inspections for nothing.
         self.assertEqual(compiler.source_schedule(authentic), [
+            {"source": "openverse", "round": 1, "candidate_count": 3},
             {"source": "unsplash", "round": 1, "candidate_count": 3},
             {"source": "wikimedia", "round": 1, "candidate_count": 3},
             {"source": "unsplash", "round": 2, "candidate_count": 3},
-            {"source": "openverse", "round": 1, "candidate_count": 3},
         ])
         # This one may be omitted, so the lesson survives an empty search and
         # the expensive open-web hunt is not authorised.
         self.assertNotIn("web", [step["source"] for step in compiler.source_schedule(authentic)])
-        # An AI fallback means the picture arrives either way, so the ladder
-        # ends at Openverse there too.
+        # An AI fallback means a faithful generated picture teaches the same
+        # thing, so a second real search before generation is a rung nobody
+        # needed: one search, then generation.
         self.assertEqual(
             [step["source"] for step in compiler.source_schedule(ordinary)],
-            ["wikimedia", "openverse"],
+            ["wikimedia"],
         )
         self.assertEqual(compiler.source_schedule(direct), [])
 
@@ -124,7 +125,7 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
                          profile="wikimedia-only", fallback="unsatisfied", essential=True)
         self.assertEqual(
             [step["source"] for step in compiler.source_schedule(terminal)],
-            ["wikimedia", "wikimedia", "openverse", "web"],
+            ["openverse", "wikimedia", "wikimedia", "web"],
         )
 
     def test_exact_minimum_partition_allows_mixed_batches(self):
@@ -227,7 +228,6 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             compiler.source_schedule(item),
             [
                 {"source": "unsplash", "round": 1, "candidate_count": 3},
-                {"source": "openverse", "round": 1, "candidate_count": 3},
             ],
         )
 

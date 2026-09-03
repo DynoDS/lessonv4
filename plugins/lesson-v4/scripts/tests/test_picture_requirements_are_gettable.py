@@ -41,6 +41,26 @@ class PictureRequirementsAreGettableTests(unittest.TestCase):
             designer,
         )
 
+    def test_what_a_search_discovered_travels_in_the_subject(self) -> None:
+        """The line between the two is where a designer will otherwise guess.
+
+        Discovering that one archive holds a matched then-and-now set is exactly
+        the kind of thing a web search is for, and it is worthless unless it
+        reaches the scout. It travels as words in `subject`, not as links.
+        """
+        designer = flat(DESIGNER)
+        self.assertIn(
+            "belongs in the picture's `subject` where the scout can act on it",
+            designer,
+        )
+        self.assertIn("Collecting the four image URLs off that page is the shopping list.", designer)
+
+    def test_the_ladder_order_is_the_compilers_and_follows_the_picture(self) -> None:
+        """A fixed order spends inspections proving stock has no 1900 classroom."""
+        designer = flat(DESIGNER)
+        self.assertIn("climbs a ladder ordered for the picture it is fetching", designer)
+        self.assertIn("Authentic evidence leads instead with Openverse", designer)
+
     def test_the_designer_names_the_evidence_and_the_scout_fetches_it(self) -> None:
         designer = flat(DESIGNER)
         self.assertIn("Name the evidence, not the file.", designer)
