@@ -52,12 +52,22 @@ PREFERENCE_REVIEW_ROUTES = (
         "Read when timing, routine teacher autonomy, partner talk or the "
         "visible learning objective is in doubt.",
     ),
+    # A trigger has to be something the reviewer can see in the view before it
+    # has made the judgement, or it never fires. "Read when a Do practises a
+    # different idea from the one its own Teach taught" asks the reviewer to
+    # have already found the fault in order to be sent to the section that
+    # would help it find the fault, and a Year 4 History lesson was approved
+    # twice with nothing but punctuation corrections. Counting Teach beats and
+    # reading the last task are things the view answers on its face.
     (
         "The Teach → Do → Teach → Do Rhythm",
         "Read when two teacher-presented beats run with no pupil action "
         "between them, in any route, when a Do beat practises a different "
-        "idea from the one its own Teach just taught, or when a beat "
-        "carries a second job that has no beat of its own.",
+        "idea from the one its own Teach just taught, when a beat carries a "
+        "second job that has no beat of its own, or whenever the sequence has "
+        "three or more Teach beats - with three, say in your own words the "
+        "move each Teach taught and what its own Do makes children do, and "
+        "check each pair before reading on.",
     ),
     (
         "Slide Philosophy",
@@ -74,7 +84,11 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "How Much Fits in One Lesson",
-        "Read when the lesson may need an honest split.",
+        "Read when the lesson may need an honest split, and whenever an idea "
+        "a Teach beat taught is not used again by the independent practice or "
+        "the ending. That one is countable from the view: list what each Teach "
+        "taught, then read the practice and the ending and mark off the ideas "
+        "they actually need.",
     ),
     (
         "Starters",

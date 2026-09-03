@@ -1775,3 +1775,55 @@ def test_verify_rejects_out_of_order_required_review_headings():
             in result.stderr
         )
         assert not postflight.exists()
+
+
+def _routing() -> dict[str, str]:
+    spec = importlib.util.spec_from_file_location("design_review_packet", PACKET)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return {heading: " ".join(trigger.split())
+            for heading, trigger in module.PREFERENCE_REVIEW_ROUTES}
+
+
+RHYTHM = "The Teach → Do → Teach → Do Rhythm"
+
+
+def test_the_rhythm_section_opens_on_a_countable_condition():
+    """A trigger the reviewer can only meet by already having the judgement
+    never fires.
+
+    The rhythm section was routed "when a Do beat practises a different idea
+    from the one its own Teach just taught". To follow that, the reviewer has to
+    have found the fault in order to be sent to the section that would help it
+    find the fault. A Year 4 History lesson went through review twice and came
+    back both times with punctuation corrections and `Redesign required: None`.
+    Counting Teach beats is something the review view answers on its face.
+    """
+    trigger = _routing()[RHYTHM]
+    assert "three or more Teach beats" in trigger
+    # And it says what to do once open, so the count is not merely a nudge.
+    assert "say in your own words the move each Teach taught" in trigger
+
+
+def test_the_self_diagnosed_route_is_kept_beside_the_countable_one():
+    """Both ways in, because they catch different reviewers.
+
+    The self-diagnosed clause still catches a reviewer that notices the
+    mismatch on its own, and removing it would undo an earlier repair. What it
+    cannot do is guarantee the section ever opens, which is the count's job.
+    """
+    trigger = _routing()[RHYTHM]
+    assert (
+        "when a Do beat practises a different idea from the one its own Teach "
+        "just taught" in trigger
+    )
+    assert "three or more Teach beats" in trigger
+
+
+def test_the_overload_section_opens_on_an_unused_taught_idea():
+    """The guidance's own tell for too many ideas: something taught in the
+    middle of the lesson that nothing after it needs."""
+    trigger = _routing()["How Much Fits in One Lesson"]
+    assert "not used again by the independent practice or the ending" in trigger
+    assert "countable from the view" in trigger
+
