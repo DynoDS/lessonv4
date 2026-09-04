@@ -47,18 +47,49 @@ const PENDING_ASPECT = 1;
 // FROM is still readable from the back of the room. That reading is the work, so
 // a picture below this is on the slide without doing its job.
 //
-// It sits between the part-whole model's 1.4" floor (a photograph carries far
-// more incidental detail than a two-circle diagram) and the clock's 2.0" (a
-// photograph is recognised as a whole object, not by the fine angle of a hand).
-// `references/slide-visual-sizing.md` carries the same figure beside its
-// siblings; change it in both places.
+// The floor depends on how many such pictures share the slide, because the
+// question the floor answers is "is this the thing children are looking at
+// while they work?", and one picture alone on a slide IS that thing. A Year 4
+// history deck put its only classroom photograph, the one the task said to
+// "look closely" at, in a 2" cell beside an empty table and a 5" square of
+// blank slide, and a single 1.6" floor passed it: the picture was not
+// broken, it was merely the smallest thing on the board. So:
+//
+//   one picture children work from on the slide  → 3.0"  (it is the hero)
+//   two                                           → 2.2"  (a comparison pair)
+//   three or more                                 → 1.6"  (a set in a grid)
+//
+// The 1.6" base sits between the part-whole model's 1.4" floor (a photograph
+// carries far more incidental detail than a two-circle diagram) and the clock's
+// 2.0" (a photograph is recognised as a whole object, not by the fine angle of
+// a hand). `references/slide-visual-sizing.md` carries the same figures beside
+// their siblings; change them in both places.
 //
 // It is measured on the allocated cell, not on the picture that arrived, so the
 // answer is the same before and after the picture stage delivers. A supporting
 // photo is meant to be small and says so with `essential: false`, which takes it
-// out of this check entirely.
+// out of this check entirely and out of the count.
 const PICTURE_READABLE_FLOOR = 1.6;
+const PICTURE_FLOOR_ALONE    = 3.0;
+const PICTURE_FLOOR_PAIR     = 2.2;
 // ─── END CONSTANTS ────────────────────────────────────────────
+
+// Every breach of the floor, kept for the build to report after the draw as a
+// blocking composition diagnostic. The floor used to be a `[warn]` line only,
+// and a warning is a line a designer can read past: a Year 4 history deck
+// shipped its lone classroom photograph at two inches under a task that said
+// "look closely", with the warning printed and the check reporting OK
+// (4 September 2026). Mirrors `_zone-fill.js`: the store is cleared between
+// the layout preflight and the real draw so nothing is counted twice.
+const floorFindings = [];
+
+function clearPictureFloor() {
+  floorFindings.length = 0;
+}
+
+function pictureFloorFindings() {
+  return floorFindings.slice();
+}
 
 // Centre a picture of `aspect` inside `frame` without stretching it: the same
 // containment the contain-fit draw performs, shared so a reserved space and the
@@ -120,6 +151,69 @@ function imageWillDraw(imageData, ctx) {
 // three times over on a composition nothing has touched - which is how a deck
 // reached `EXHAUSTED 3/3` still 0.11" short. Reporting the binding axis, the
 // shortfall and what the caption costs turns three guesses into one repair.
+// The pictures children work FROM on one slide: every `image` content object in
+// the slide's spec that has not opted out with `essential: false`. Walked from
+// the spec rather than counted as pictures draw, so the first picture on a
+// slide already knows how many it shares the board with.
+//
+// Four places a picture can live are left out on purpose. An `inset` is a
+// corner of its parent and is meant to be small. A vocabulary card's `visual`
+// under `words` is a picture beside a word, not one children study. A
+// template's `supports` row is, by its own contract, "the smaller supporting
+// items below" the thing being taught. All of those are held to the base floor
+// below rather than the hero's. `decorations` are the optional drawing layer
+// and never count at all.
+const WORKING_PICTURE_SKIP_KEYS = new Set(['inset', 'words', 'supports', 'decorations', 'speakerNotes']);
+
+function workingPicturePaths(slideSpec) {
+  const paths = [];
+  const visit = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+      return;
+    }
+    if (!node || typeof node !== 'object') return;
+    if (node.type === 'image' && node.essential !== false && typeof node.imagePath === 'string') {
+      paths.push(node.imagePath);
+    }
+    for (const [key, value] of Object.entries(node)) {
+      if (WORKING_PICTURE_SKIP_KEYS.has(key)) continue;
+      if (value && typeof value === 'object') visit(value);
+    }
+  };
+  visit(slideSpec);
+  return paths;
+}
+
+// Which floor this picture is held to, and the words that say why.
+//
+// A slide the check cannot see (no lesson on the context) keeps the base
+// floor. The real build always hands the lesson over, so this is only the
+// answer for a helper drawn on its own in a test or a tool, where the picture's
+// company genuinely is unknown and the old flat floor is the honest one.
+function pictureFloorFor(data, ctx) {
+  const slides = ctx && ctx.lesson && Array.isArray(ctx.lesson.slides) ? ctx.lesson.slides : null;
+  const slideSpec = slides ? slides[ctx.slideIndex] : null;
+  if (!slideSpec) {
+    return { floor: PICTURE_READABLE_FLOOR, role: 'As a picture children work from' };
+  }
+  const paths = workingPicturePaths(slideSpec);
+  if (!paths.includes(data.imagePath)) {
+    // Drawn through a route the spec walk does not count - a vocabulary
+    // card's picture, a template's supporting row, an evidence card's
+    // photograph - so it keeps the base floor it always had.
+    return { floor: PICTURE_READABLE_FLOOR, role: 'As a supporting picture rather than one the slide is built around' };
+  }
+  const count = paths.length;
+  if (count === 1) {
+    return { floor: PICTURE_FLOOR_ALONE, role: 'As the only picture children work from on this slide' };
+  }
+  if (count === 2) {
+    return { floor: PICTURE_FLOOR_PAIR, role: 'As one of two pictures children work from on this slide' };
+  }
+  return { floor: PICTURE_READABLE_FLOOR, role: `As one of ${count} pictures children work from on this slide` };
+}
+
 function checkPictureCellSize(zone, data, ctx) {
   if (!ctx || !data || data.essential === false) return;
   if (!data.imagePath) return;
@@ -130,19 +224,19 @@ function checkPictureCellSize(zone, data, ctx) {
   const frameW = cell.w - 2 * PAD;
   const frameH = cell.h - 2 * PAD - captionCost;
   const guaranteed = Math.min(frameW, frameH);
-  if (!(guaranteed > 0) || guaranteed >= PICTURE_READABLE_FLOOR) return;
+  const { floor, role } = pictureFloorFor(data, ctx);
+  if (!(guaranteed > 0) || guaranteed >= floor) return;
 
   const short = (n) => n.toFixed(2);
-  const shortfall = short(PICTURE_READABLE_FLOOR - guaranteed);
+  const shortfall = short(floor - guaranteed);
   const opening =
     `image "${data.imagePath}" is guaranteed only ${short(guaranteed)}" on its ` +
-    `short side, so a photograph of any shape renders below the ` +
-    `${PICTURE_READABLE_FLOOR}" a class can read from the back of the room. `;
+    `short side. ${role} it needs ${short(floor)}" for a class to read it from ` +
+    `the back of the room, so a photograph of any shape renders below that. `;
 
   // Height and width are both short of the floor: neither axis alone is the
   // story, and a designer told only about one will fix it and meet the other.
-  const bothBind =
-    frameW < PICTURE_READABLE_FLOOR && frameH < PICTURE_READABLE_FLOOR;
+  const bothBind = frameW < floor && frameH < floor;
 
   let diagnosis;
   if (bothBind) {
@@ -172,13 +266,18 @@ function checkPictureCellSize(zone, data, ctx) {
       `stopped by the width.`;
   }
 
-  warn(
-    ctx.slideIndex,
+  const message =
     opening +
-      diagnosis +
-      ' A picture that is only supporting context belongs here at this size ' +
-      'and should say so with `essential: false`.'
-  );
+    diagnosis +
+    ' A picture that is only supporting context belongs here at this size ' +
+    'and should say so with `essential: false`.';
+  warn(ctx.slideIndex, message);
+  floorFindings.push({
+    signal: 'PICTURE_BELOW_READABLE_FLOOR',
+    slide: ctx.slideIndex + 1,
+    field: `image:${data.imagePath}`,
+    message,
+  });
 }
 
 function drawImage(pptx, slide, zone, data, ctx) {
@@ -379,4 +478,12 @@ function imageAspect(data, ctx) {
   return dims.w / dims.h;
 }
 
-module.exports = { drawImage, imageWillDraw, measureImage, imageAspect, PICTURE_READABLE_FLOOR };
+module.exports = {
+  drawImage,
+  imageWillDraw,
+  measureImage,
+  imageAspect,
+  PICTURE_READABLE_FLOOR,
+  pictureFloorFindings,
+  clearPictureFloor,
+};

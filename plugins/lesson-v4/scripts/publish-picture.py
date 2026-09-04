@@ -157,6 +157,11 @@ def atomic_write_image(destination: Path, image, target_format: str) -> None:
         raise
 
 
+# Below this long side a picture is a preview, not a source: shown at slide
+# width it reaches roughly 75 dpi, enough for a scene and not for handwriting.
+LOW_RESOLUTION_LONG_SIDE_PX = 1000
+
+
 def flatten_for_jpeg(image, Image):
     """JPEG has no alpha, so transparency is composited onto neutral white."""
     if image.mode in ("RGBA", "LA") or (
@@ -194,6 +199,25 @@ def cmd_publish(args) -> dict:
     except Exception as exc:
         raise PublishError(f"staged source is not a readable image: {exc}")
 
+    # A small copy publishes, because an old grainy photograph is still the
+    # real thing; what it cannot do is be enlarged to show fine detail. A Year 4
+    # history run shipped a 400 px archive preview of a classroom for children
+    # to inspect (4 September 2026), and nothing said so. The line goes to the
+    # run's record so the designer or teacher can give the source another route
+    # (a crop, an adapted extract, a printed copy) rather than find out on the
+    # board. It changes no other output and never the exit code.
+    width, height = image.size
+    low_resolution = None
+    if max(width, height) < LOW_RESOLUTION_LONG_SIDE_PX:
+        low_resolution = f"{width}x{height}"
+        # stdout is the one JSON document callers parse, so the marker line
+        # goes to stderr and the same fact rides inside the JSON result.
+        print(
+            f"PICTURE_LOW_RESOLUTION: {args.filename} {width}x{height} - fine "
+            "detail will not survive enlargement; a scene reads, a document may not",
+            file=sys.stderr,
+        )
+
     ext = os.path.splitext(destination.name)[1].lower()
     target_format = FORMAT_FOR_EXT.get(ext)
     if target_format is None:
@@ -218,6 +242,8 @@ def cmd_publish(args) -> dict:
         "staged_format": staged_format,
         "published_format": target_format,
         "replaced": replace,
+        "pixelSize": f"{width}x{height}",
+        "lowResolution": low_resolution,
     }
 
 

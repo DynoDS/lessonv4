@@ -21,6 +21,23 @@ const recordingTable = require("../../shared/visuals/recording-table-svg");
 // enough that the picture reads and a child can write a word on each blank line.
 const LABEL_DIAGRAM_WIDTH_MM = 135; // ~2 across the 277mm landscape width
 
+// A printed copy of one source the child reads fine detail off - a document, a
+// timetable, a photograph, a map - glued in because the board cannot show the
+// detail large enough from the back of the room. It is the one piece with no
+// write-on line: the child reads from it, so usability is READABLE DETAIL, and
+// the default is the width of an exercise-book page with room to glue it down.
+// A wide document at 165mm is about the size it would print on its own sheet,
+// which is what the teacher used to make by hand from the PowerPoint.
+const SOURCE_COPY_WIDTH_MM = 165;
+// The caption line under the copy, in the pack's ordinary type: it says what
+// the source is (place, date, what kind of thing) so a cut-out separated from
+// the board still names its evidence. One line normally; a long caption wraps
+// and the band grows by this much per extra line.
+const SOURCE_COPY_CAPTION_LINE_MM = 5.5;
+const SOURCE_COPY_CAPTION_PAD_MM = 1.5;
+// Rough width of one caption character at the caption's 11pt, for line counting.
+const SOURCE_COPY_CHAR_MM = 2.2;
+
 // One source of truth for which visuals the pack can draw and how big each
 // prints. The guiding rule is fit the MOST copies on a page that stay genuinely
 // usable: size every visual to the smallest size a child can still work on, so
@@ -204,6 +221,17 @@ function missingQuestionContent(item) {
         return "a translation grid needs a shape (points) to translate";
       }
       return null;
+    case "source-copy":
+      // The picture IS the piece and the caption is what names it once it is
+      // cut free of the page: without either the child holds a blank or an
+      // anonymous scrap. The file itself is checked where it is opened.
+      if (!filled(s.imagePath)) {
+        return "a source copy needs imagePath, the published picture the slide shows";
+      }
+      if (!filled(s.caption)) {
+        return "a source copy needs a caption saying what the source is (place, date, what kind of thing)";
+      }
+      return null;
     case "coordinate-grid":
       // A BLANK numbered grid is a valid write-on in itself (the child plots on
       // it), so — like angle/triangle — no field is required for the stick-in use.
@@ -235,4 +263,8 @@ module.exports = {
   ROW_BOX_H_MM,
   ROW_LINE_GAP_MM,
   LABEL_DIAGRAM_WIDTH_MM,
+  SOURCE_COPY_WIDTH_MM,
+  SOURCE_COPY_CAPTION_LINE_MM,
+  SOURCE_COPY_CAPTION_PAD_MM,
+  SOURCE_COPY_CHAR_MM,
 };

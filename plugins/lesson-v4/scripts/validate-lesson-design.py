@@ -29,7 +29,52 @@ TOP_LEVEL_FIELDS = {
 
 # Fields a design may carry without every saved design and fixture having to
 # grow them at once. Present, they are validated as strictly as the rest.
-OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities"}
+OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities", "vocabularyPlacement"}
+
+# Where a lesson may put its one vocabulary slide. `null` keeps the default,
+# straight after the starter. `{"after": "<teachingSequence sourceUnitId>"}`
+# shows the slide after that unit, for a lesson that lets children meet the
+# meaning in the material before the word is given.
+VOCABULARY_PLACEMENT_FIELDS = {"after"}
+
+# The one thing an ordering task must not do is print its items already in
+# answer order. A Year 4 history starter listed Stone Age, Roman, Anglo-Saxon,
+# today and asked "put these in order"; the Do beat's chips read 1862, 1897,
+# 2026 under "what came first?" (4 September 2026). Both the designer's rule
+# and the reviewer's check said not to, and neither is a check. So: when the
+# wording asks for an order and three or more items carry a date the script
+# can read, the printed order must not already be the answer.
+ORDERING_CUE_RE = re.compile(
+    r"\b(order|earliest|latest|oldest|newest|sequence|chronolog\w*|timeline|"
+    r"first,? next|first,? then|came first)\b",
+    re.I,
+)
+# British periods a primary chronology runs through, earliest first. A label
+# naming one is datable by its place in this list; a year or "N years ago"
+# is datable directly; today is the end of every timeline.
+PERIOD_ORDER = (
+    ("stone age", -3000000),
+    ("bronze age", -2500),
+    ("iron age", -800),
+    ("roman", 43),
+    ("anglo-saxon", 410),
+    ("anglo saxon", 410),
+    ("saxon", 410),
+    ("viking", 793),
+    ("norman", 1066),
+    ("medieval", 1150),
+    ("middle ages", 1150),
+    ("tudor", 1485),
+    ("stuart", 1603),
+    ("georgian", 1714),
+    ("victorian", 1837),
+    ("edwardian", 1901),
+    ("first world war", 1914),
+    ("second world war", 1939),
+)
+YEAR_RE = re.compile(r"\b(1\d{3}|20\d{2})\b")
+YEARS_AGO_RE = re.compile(r"([\d,]+)\s*(million\s+)?years?\s+ago", re.I)
+TODAY_RE = re.compile(r"\b(today|now|present day|the present|nowadays)\b", re.I)
 
 STRUCTURES = {
     "Skill-based",
@@ -302,6 +347,72 @@ def validate_source_unit_id(value: Any, path: str, section: str, ordinal: int) -
     expected = f"lesson-section/{section}/unit-{ordinal:03d}"
     expect(source_id == expected, f"{path} must be exactly {expected}")
     return source_id
+
+
+def datable_value(label: str) -> int | None:
+    """A sortable year for a label the script can date, else None."""
+    text = label.strip()
+    lowered = text.lower()
+    ago = YEARS_AGO_RE.search(text)
+    if ago:
+        try:
+            number = int(ago.group(1).replace(",", ""))
+        except ValueError:
+            number = None
+        if number is not None:
+            if ago.group(2):
+                number *= 1_000_000
+            return 2026 - number
+    year = YEAR_RE.search(text)
+    if year:
+        return int(year.group(1))
+    if TODAY_RE.search(text):
+        return 3000
+    for name, value in PERIOD_ORDER:
+        if name in lowered:
+            return value
+    return None
+
+
+def has_ordering_cue(*texts: Any) -> bool:
+    return any(
+        isinstance(text, str) and ORDERING_CUE_RE.search(text) is not None
+        for text in texts
+    )
+
+
+def check_not_printed_in_answer_order(
+    labels: list[str],
+    path: str,
+    *,
+    what: str,
+) -> None:
+    """Refuse an ordering task whose datable items already stand in order."""
+    dated = [(label, datable_value(label)) for label in labels]
+    values = [value for _, value in dated if value is not None]
+    if len(values) < 3:
+        return
+    ascending = all(a < b for a, b in zip(values, values[1:]))
+    descending = all(a > b for a, b in zip(values, values[1:]))
+    if not (ascending or descending):
+        return
+    shown = ", ".join(label for label, value in dated if value is not None)
+    raise ContractError(
+        f"{path} asks children to put items in order, but the {what} prints "
+        f"them already in answer order ({shown}): a child reads the answer off "
+        f"the page instead of deciding it. Shuffle the {what} so the printed "
+        "order is not the chronological one."
+    )
+
+
+def bullet_items(text: str) -> list[str]:
+    """The `- ` bullet lines of a prose activity, as printed."""
+    items: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- ") or stripped.startswith("* "):
+            items.append(stripped[2:].strip())
+    return items
 
 
 def validate_task_structure(
@@ -1007,6 +1118,32 @@ def validate_source_unit(
             unit["pupilInstruction"] is not None,
             f"{path}.pupilInstruction must be non-null when taskStructure is present",
         )
+    content = unit["content"]
+    ordering_texts = (
+        unit["pupilInstruction"],
+        content.get("task") if isinstance(content, dict) else None,
+        content.get("activity") if isinstance(content, dict) else None,
+    )
+    if (
+        task_structure is not None
+        and task_structure["kind"] == "option-bank"
+        and has_ordering_cue(*ordering_texts)
+    ):
+        check_not_printed_in_answer_order(
+            [str(item["label"]) for item in task_structure["items"]],
+            f"{path}.taskStructure",
+            what="option bank",
+        )
+    if kind == "starter" and isinstance(content, dict):
+        activity = content.get("activity")
+        if isinstance(activity, str) and has_ordering_cue(activity):
+            listed = bullet_items(activity)
+            if len(listed) >= 3:
+                check_not_printed_in_answer_order(
+                    listed,
+                    f"{path}.content.activity",
+                    what="list",
+                )
     validate_speaker_notes(unit["speakerNotes"], f"{path}.speakerNotes")
     if kind in SCRIPT_REQUIRED_KINDS:
         expect(
@@ -2030,6 +2167,23 @@ def validate_design(
             expect(unit["conceptRef"] is None, f"{path}.conceptRef must be null for {structure}")
 
     validate_route_sequence(structure, sequence, concept_items)
+
+    if "vocabularyPlacement" in root:
+        placement = root["vocabularyPlacement"]
+        if placement is not None:
+            placement = expect_dict(placement, "vocabularyPlacement")
+            expect_exact_keys(
+                placement,
+                VOCABULARY_PLACEMENT_FIELDS,
+                VOCABULARY_PLACEMENT_FIELDS,
+                "vocabularyPlacement",
+            )
+            after = expect_string(placement["after"], "vocabularyPlacement.after")
+            sequence_ids = {unit["sourceUnitId"] for unit in sequence}
+            expect(
+                after in sequence_ids,
+                f"vocabularyPlacement.after must name a teachingSequence sourceUnitId: {after}",
+            )
 
     ending = expect_dict(root["ending"], "ending")
     expect_exact_keys(ending, {"included", "kind", "reason", "beat"}, {"included", "kind", "reason", "beat"}, "ending")

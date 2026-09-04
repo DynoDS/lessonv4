@@ -489,7 +489,14 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # its worksheet and its answer key over five archive photographs the
         # approved sources never held. The wave's respecify example was cut to
         # pay for part of it; it lives in full in the designer's own file.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 65 * 1024)
+        # Raised from 65 KiB after the teacher refused a Year 4 history deck
+        # (4 September 2026) whose content-gap revision had rewritten the
+        # lesson and gone straight to the slide designer with no second review:
+        # the wave now briefs the revision to find another sound route and
+        # re-judge the beats that leaned on the lost source, then returns
+        # through Phase 1.25; the helper check's `covered` bullet refuses a
+        # lookalike key; and the low-resolution picture line reaches the report.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 69 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

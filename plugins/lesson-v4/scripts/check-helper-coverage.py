@@ -56,6 +56,106 @@ from pathlib import Path
 
 DECISIONS = ("covered", "build", "substitute", "gap")
 
+# A `covered` decision names the helper that draws the figure the lesson
+# describes, not a lookalike of roughly the right shape. A Year 4 history run
+# recorded a not-to-scale timeline as covered by `table`, and the deck printed
+# a three-column table with "not to scale" as a column heading, three times
+# (4 September 2026). The check below cannot judge every figure, but it can
+# hold the ones the catalogue already names: when the representation's own
+# words say what the figure is, the helper must be one that draws that figure.
+# Keys are the words a designer writes; values are the helper keys that draw
+# them on each surface. A surface with no acceptable key means no helper on
+# that surface draws it, so the decision must be build, substitute or gap.
+FIGURE_HELPERS: dict[str, dict[str, tuple[str, ...]]] = {
+    "timeline": {
+        "slides": ("timeline",),
+        "worksheets": ("timeline",),
+        "wall": ("timeline",),
+        "stick-in": ("timeline",),
+    },
+    "number line": {
+        "slides": ("numberline",),
+        "worksheets": ("numberline", "number-line"),
+        "wall": ("numberline", "number-line"),
+        "stick-in": ("numberline", "number-line"),
+    },
+    "numberline": {
+        "slides": ("numberline",),
+        "worksheets": ("numberline", "number-line"),
+        "wall": ("numberline", "number-line"),
+        "stick-in": ("numberline", "number-line"),
+    },
+    "venn": {s: ("venn",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "carroll": {s: ("carroll",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "bar model": {s: ("bar-model",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "place value": {
+        s: ("place-value-chart", "place-value-counter-chart")
+        for s in ("slides", "worksheets", "wall", "stick-in")
+    },
+    "place-value": {
+        s: ("place-value-chart", "place-value-counter-chart")
+        for s in ("slides", "worksheets", "wall", "stick-in")
+    },
+    "clock": {s: ("clock",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "part-whole": {s: ("part-whole-model",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "part whole": {s: ("part-whole-model",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "concept map": {s: ("concept-map",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "fishbone": {s: ("fishbone",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "map": {s: ("map", "grid-map") for s in ("slides", "worksheets", "wall", "stick-in")},
+}
+# Longer names first, so "concept map" is matched before "map".
+FIGURE_WORDS = sorted(FIGURE_HELPERS, key=len, reverse=True)
+
+
+def figure_named(item: dict) -> str | None:
+    """The catalogue figure this representation's own words name, if any."""
+    text = " ".join(
+        str(item.get(field) or "")
+        for field in ("representationName", "description")
+    ).lower()
+    for word in FIGURE_WORDS:
+        if re.search(r"(?<![a-z-])" + re.escape(word) + r"(?![a-z])", text):
+            return word
+    return None
+
+
+def lookalike_failure(item: dict, helper_key: str, surface: str, label: str) -> str | None:
+    """Why a `covered` decision names a lookalike rather than the figure."""
+    word = figure_named(item)
+    if word is None:
+        return None
+    acceptable = FIGURE_HELPERS[word].get(surface, ())
+    if helper_key in acceptable:
+        return None
+    live = [key for key in acceptable if key in registry_keys_cached(surface)]
+    if live:
+        return (
+            f"{label} describes a {word} but is covered by {helper_key!r}, which "
+            f"draws something else: a {word} on {surface} is drawn by "
+            f"{', '.join(repr(key) for key in live)}, so name that helper"
+        )
+    return (
+        f"{label} describes a {word} but is covered by {helper_key!r}, and no "
+        f"{surface} helper draws a {word}: record build, substitute or gap "
+        "rather than a lookalike that renders cleanly and teaches the wrong "
+        "figure"
+    )
+
+
+_REGISTRY_CACHE: dict[str, set[str]] = {}
+_REGISTRY_ROOT: Path | None = None
+
+
+def registry_keys_cached(surface: str) -> set[str]:
+    if _REGISTRY_ROOT is None:
+        return set()
+    if surface not in _REGISTRY_CACHE:
+        try:
+            _REGISTRY_CACHE[surface] = registry_keys(_REGISTRY_ROOT, surface)
+        except CoverageError:
+            _REGISTRY_CACHE[surface] = set()
+    return _REGISTRY_CACHE[surface]
+
 # Each surface, the registry file that decides what it can draw, and the
 # JavaScript object inside it that holds the keys. Reading the registry is the
 # point: a helper is only real where its renderer dispatches on it, and a
@@ -294,6 +394,9 @@ def run_verdict(
     verdict_path: Path,
     photo_requirements: Path | None = None,
 ) -> int:
+    global _REGISTRY_ROOT
+    _REGISTRY_ROOT = root
+    _REGISTRY_CACHE.clear()
     uses = load_uses(design_path)
     decisions = read_decisions(verdict_path)
     failures: list[str] = []
@@ -388,6 +491,10 @@ def run_verdict(
                     f"{label} is covered by {helper_key!r}, which no {surface} "
                     "renderer can draw: treat it as build or substitute"
                 )
+                continue
+            lookalike = lookalike_failure(required[key], helper_key, surface, label)
+            if lookalike:
+                failures.append(lookalike)
         if verdict == "build":
             failures.append(
                 f"{label} is still marked build: run the helper route, then "

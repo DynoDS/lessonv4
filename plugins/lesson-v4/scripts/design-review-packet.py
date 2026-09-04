@@ -22,7 +22,55 @@ REQUIRED_REVIEW_HEADINGS = (
     "## Corrections made",
     "## Redesign required",
     "## Flags for the teacher",
+    "## Voice sweep",
 )
+
+# The review view opens with every string a child reads or hears, printed as
+# plain text in lesson order, because a reviewer that meets `"task": "..."`
+# inside a JSON block reads a specification, and a reviewer that meets the same
+# words on their own line hears a child at the back of the room. A Year 4
+# history lesson went to a class with `What does one visible detail suggest
+# about this class?` on the board after a review that corrected nothing: every
+# string had passed in its braces. The section's opening line carries the count,
+# and the review report has to hand the same count back, so a sweep that did not
+# happen cannot be reported as one that found nothing.
+CLASS_VIEW_HEADING = "## As the class meets it"
+CLASS_VIEW_COUNT_RE = re.compile(
+    r"^(\d+) child-facing strings for a Year (\d+) class\."
+)
+VOICE_SWEEP_HEADING = "## Voice sweep"
+VOICE_SWEEP_RE = re.compile(
+    r"^Read (\d+) child-facing strings as a Year (\d+) child; repaired (\d+)\.$"
+)
+
+# Content fields a child reads on the board or hears the teacher say, across
+# every teaching route. Anything not named here is treated as written for a
+# designer or the teacher and never reaches the class-facing view: `activity`,
+# `format`, `focus`, `evidenceProduced`, `modelledExemplar`,
+# `activityArchitecture`, `teacherListensFor` and their kind. The starter's
+# `activity` and an ending beat's `activity` are the exceptions, because on
+# those two units that field is the task itself.
+CHILD_FACING_CONTENT_KEYS = (
+    "headline",
+    "explanation",
+    "teachingText",
+    "keyQuestions",
+    "task",
+    "example",
+    "guidedQuestions",
+    "question",
+    "prompt",
+    "discussionQuestion",
+    "sentenceStems",
+    "input",
+    "materialOnSlide",
+    "enablingInput",
+    "checkpointQuestion",
+    "investigationBrief",
+    "accurateExplanation",
+    "conditionsAndSafety",
+)
+ACTIVITY_IS_THE_TASK_KINDS = {"starter", "apply", "reflect"}
 
 STRUCTURE_REFERENCE_FILES = {
     "Skill-based": "teaching-sequence-skill-based.md",
@@ -518,6 +566,289 @@ def append_review_unit(
         )
 
 
+def class_view_strings(values, out: list[str]) -> None:
+    """Append every non-empty string in `values` (a string or a list of strings)."""
+    if isinstance(values, str):
+        if values.strip():
+            out.append(values)
+    elif isinstance(values, list):
+        for value in values:
+            if isinstance(value, str) and value.strip():
+                out.append(value)
+
+
+def class_view_criteria(ref: str, criteria: dict[str, dict], out: list[str]) -> None:
+    row = criteria.get(ref)
+    if row is None:
+        return
+    content = row.get("content") or {}
+    kind = row.get("type")
+    if kind == "steps":
+        class_view_strings(content.get("steps"), out)
+    elif kind == "reference-table":
+        columns = content.get("columns") or []
+        if columns:
+            out.append(" | ".join(str(cell) for cell in columns))
+        for cells in content.get("rows") or []:
+            out.append(" | ".join(str(cell) for cell in cells))
+    elif kind == "labelled-reference":
+        for item in content.get("items") or []:
+            label = item.get("label") or ""
+            text = item.get("text") or ""
+            out.append(f"{label}: {text}" if text else label)
+
+
+def class_view_answer(unit: dict, out: list[str]) -> None:
+    answer = unit.get("answer") or {}
+    if answer.get("delivery") not in {"answer-slide", "visible-in-unit"}:
+        return
+    if answer.get("content"):
+        out.append(answer["content"])
+        return
+    structure = answer.get("structure")
+    task = unit.get("taskStructure") or {}
+    if not isinstance(structure, dict):
+        return
+    if structure.get("kind") == "sort":
+        items = {row["id"]: row.get("label", "") for row in task.get("items") or []}
+        groups = {row["id"]: row.get("label", "") for row in task.get("groups") or []}
+        for placement in structure.get("placements") or []:
+            out.append(
+                f"{items.get(placement.get('itemRef'), placement.get('itemRef'))}: "
+                f"{groups.get(placement.get('groupRef'), placement.get('groupRef'))}"
+            )
+    elif structure.get("kind") == "evidence-classification":
+        fields = {row["id"]: row.get("label", "") for row in task.get("fields") or []}
+        for result in structure.get("results") or []:
+            out.append(
+                "; ".join(
+                    f"{fields.get(value.get('fieldRef'), value.get('fieldRef'))}: "
+                    f"{value.get('value')}"
+                    for value in result.get("values") or []
+                )
+            )
+
+
+def class_view_unit(
+    unit: dict,
+    *,
+    criteria: dict[str, dict],
+    sticky: dict[str, str],
+) -> list[str]:
+    """Every string on this unit a child reads or hears, in the order they meet it."""
+    out: list[str] = []
+    content = unit.get("content") or {}
+    if unit.get("kind") in ACTIVITY_IS_THE_TASK_KINDS:
+        class_view_strings(content.get("activity"), out)
+    for key in CHILD_FACING_CONTENT_KEYS:
+        class_view_strings(content.get(key), out)
+    takeaway = content.get("takeaway")
+    if isinstance(takeaway, dict):
+        if takeaway.get("kind") == "text":
+            class_view_strings(takeaway.get("text"), out)
+        elif takeaway.get("kind") == "sticky":
+            class_view_strings(sticky.get(takeaway.get("ref")), out)
+    launch = content.get("launch")
+    if isinstance(launch, dict):
+        class_view_strings(launch.get("established"), out)
+        class_view_strings(launch.get("goodLooksLike"), out)
+        class_view_strings(launch.get("steps"), out)
+    class_view_strings(unit.get("pupilInstruction"), out)
+    task = unit.get("taskStructure")
+    if isinstance(task, dict):
+        for row in task.get("groups") or []:
+            class_view_strings(row.get("label"), out)
+        for row in task.get("fields") or []:
+            class_view_strings(row.get("label"), out)
+        for row in task.get("items") or []:
+            class_view_strings(row.get("label"), out)
+            class_view_strings(row.get("detail"), out)
+    for ref in unit.get("successCriteriaRefs") or []:
+        class_view_criteria(ref, criteria, out)
+    for ref in unit.get("stickyKnowledgeRefs") or []:
+        class_view_strings(sticky.get(ref), out)
+    class_view_answer(unit, out)
+    script = (unit.get("speakerNotes") or {}).get("script")
+    if isinstance(script, str) and script.strip():
+        spoken = re.sub(r"^\s*Say to children:\s*", "", script, count=1)
+        out.append(f"Teacher says: {spoken}")
+    return out
+
+
+def class_view_worksheet(
+    worksheet: dict,
+    *,
+    criteria: dict[str, dict],
+    sticky: dict[str, str],
+) -> list[str]:
+    out: list[str] = []
+    for ref in worksheet.get("successCriteriaRefs") or []:
+        class_view_criteria(ref, criteria, out)
+    for ref in worksheet.get("stickyKnowledgeRefs") or []:
+        class_view_strings(sticky.get(ref), out)
+    for block in worksheet.get("contentBlocks") or []:
+        kind = block.get("kind")
+        if kind == "question":
+            class_view_strings(block.get("pupilPrompt"), out)
+            class_view_strings(block.get("support"), out)
+        elif kind == "question-group":
+            class_view_strings(block.get("groupPrompt"), out)
+            for part in block.get("parts") or []:
+                class_view_strings(part.get("pupilPrompt"), out)
+                class_view_strings(part.get("support"), out)
+        elif kind == "frame":
+            for section in block.get("sections") or []:
+                class_view_strings(section.get("heading"), out)
+                class_view_strings(section.get("whatGoesHere"), out)
+        elif kind == "stimulus-set":
+            class_view_strings(block.get("stimulus"), out)
+            class_view_strings(block.get("pupilAction"), out)
+            for prompt in block.get("prompts") or []:
+                class_view_strings(prompt.get("pupilPrompt"), out)
+                class_view_strings(prompt.get("support"), out)
+        elif kind == "child-generated":
+            class_view_strings(block.get("generator"), out)
+            class_view_strings(block.get("firstRowWorked"), out)
+    return out
+
+
+def vocabulary_placement_line(design: dict) -> str:
+    """Where the one vocabulary slide sits, so the reviewer can judge whether the
+    words arrive after the meaning. `vocabularyPlacement` is optional: absent or
+    null means the slide follows the starter, as every design before it did."""
+    placement = design.get("vocabularyPlacement")
+    if not isinstance(placement, dict) or not placement.get("after"):
+        return "after the starter"
+    target = placement["after"]
+    for unit in design.get("teachingSequence") or []:
+        if unit.get("sourceUnitId") == target:
+            return f'after "{unit.get("label", target)}"'
+    return f'after "{target}"'
+
+
+def build_class_view(design: dict) -> tuple[list[str], int]:
+    """The lesson as the class meets it: plain text, lesson order, no field names.
+
+    Returns the section's lines and the number of strings it printed.
+    """
+    criteria = {row["id"]: row for row in design.get("successCriteria") or []}
+    sticky = {row["id"]: row["text"] for row in design.get("stickyKnowledge") or []}
+    blocks: list[tuple[str, list[str]]] = []
+
+    starter = design.get("starter")
+    if starter:
+        blocks.append(
+            (starter["label"], class_view_unit(starter, criteria=criteria, sticky=sticky))
+        )
+
+    vocabulary = [
+        f"{row['term']}: {row['definition']}"
+        for row in design.get("vocabulary") or []
+    ]
+    if vocabulary:
+        blocks.append(("Vocabulary", vocabulary))
+
+    for unit in design.get("teachingSequence") or []:
+        blocks.append((unit["label"], class_view_unit(unit, criteria=criteria, sticky=sticky)))
+
+    ending = design.get("ending") or {}
+    beat = ending.get("beat")
+    if ending.get("included") and beat:
+        blocks.append((beat["label"], class_view_unit(beat, criteria=criteria, sticky=sticky)))
+
+    worksheet = design.get("worksheet") or {}
+    if worksheet.get("status") == "generated":
+        strings = class_view_worksheet(worksheet, criteria=criteria, sticky=sticky)
+        if strings:
+            blocks.append(("Worksheet", strings))
+
+    count = sum(len(strings) for _, strings in blocks)
+    year = design["lesson"]["yearGroup"]
+    lines = [
+        CLASS_VIEW_HEADING,
+        "",
+        (
+            f"{count} child-facing strings for a Year {year} class. Read each one "
+            "as that child at the back of the room, then as the teacher saying it "
+            "aloud."
+        ),
+        "",
+    ]
+    for label, strings in blocks:
+        lines.append(f"### {label}")
+        for text in strings:
+            lines.append(text)
+        lines.append("")
+    return lines, count
+
+
+def read_class_view_count(view_path: Path) -> tuple[int, int]:
+    """The count and year the review view printed at the head of its class view."""
+    for line in view_path.read_text(encoding="utf-8").splitlines():
+        match = CLASS_VIEW_COUNT_RE.match(line.strip())
+        if match:
+            return int(match.group(1)), int(match.group(2))
+    raise PacketError(
+        "design-review-view.md carries no `## As the class meets it` count line; "
+        "re-run prepare so the view and the review come from the same packet"
+    )
+
+
+def require_voice_sweep(
+    review_path: Path,
+    *,
+    expected_count: int,
+    expected_year: int,
+) -> tuple[int, int, int]:
+    """The review must say how many child-facing strings it read, and the number
+    must be the one the view printed: a sweep that did not happen cannot report
+    itself as one that found nothing."""
+    lines = review_path.read_text(encoding="utf-8").splitlines()
+    positions = [
+        index for index, line in enumerate(lines) if line.strip() == VOICE_SWEEP_HEADING
+    ]
+    expected_line = (
+        f"Read {expected_count} child-facing strings as a Year {expected_year} child; "
+        "repaired [M]."
+    )
+    if len(positions) != 1:
+        raise PacketError(
+            f"design-review.md must contain exactly one {VOICE_SWEEP_HEADING!r} "
+            f"heading followed by the line `{expected_line}`, where M is the number "
+            "of strings repaired in place"
+        )
+    cursor = positions[0] + 1
+    while cursor < len(lines) and not lines[cursor].strip():
+        cursor += 1
+    line = lines[cursor].strip() if cursor < len(lines) else ""
+    match = VOICE_SWEEP_RE.match(line)
+    if not match:
+        raise PacketError(
+            f"design-review.md {VOICE_SWEEP_HEADING} must be followed by exactly one "
+            f"line of the form `{expected_line}`; found {line!r}. The review view "
+            f"printed {expected_count} child-facing strings, and M counts the "
+            "strings repaired in place"
+        )
+    read_count, year, repaired = (int(group) for group in match.groups())
+    if read_count != expected_count:
+        raise PacketError(
+            f"design-review.md {VOICE_SWEEP_HEADING} says {read_count} strings were "
+            f"read, but the review view printed {expected_count} child-facing "
+            f"strings; the line must read `{expected_line}`"
+        )
+    if year != expected_year:
+        raise PacketError(
+            f"design-review.md {VOICE_SWEEP_HEADING} names Year {year}, but this is "
+            f"a Year {expected_year} lesson; the line must read `{expected_line}`"
+        )
+    if repaired > read_count:
+        raise PacketError(
+            f"design-review.md {VOICE_SWEEP_HEADING} repaired {repaired} strings, "
+            f"which cannot exceed the {read_count} strings read"
+        )
+    return read_count, year, repaired
+
+
 def build_review_view(design: dict, photo_requirements: dict) -> str:
     concepts = {
         row["id"]: row
@@ -559,7 +890,14 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
     lines.extend(
         [
             f"- Sticking point: {lesson['stickingPoint']}",
+            f"- Vocabulary slide: {vocabulary_placement_line(design)}",
             "",
+        ]
+    )
+    class_view_lines, _class_view_count = build_class_view(design)
+    lines.extend(class_view_lines)
+    lines.extend(
+        [
             "## Teacher orientation",
             "",
             design["teacherOrientation"],
@@ -1731,6 +2069,30 @@ def verify(args: argparse.Namespace) -> int:
         review_path
     )
 
+    (
+        class_view_count,
+        class_view_year,
+    ) = read_class_view_count(view_path)
+    design_year = load_json(
+        paths["lessonDesign"],
+        "lesson-design.json",
+    )["lesson"]["yearGroup"]
+    if class_view_year != design_year:
+        raise PacketError(
+            "design-review-view.md was prepared for a "
+            f"Year {class_view_year} lesson but the "
+            f"design now says Year {design_year}"
+        )
+    (
+        sweep_read,
+        _sweep_year,
+        sweep_repaired,
+    ) = require_voice_sweep(
+        review_path,
+        expected_count=class_view_count,
+        expected_year=design_year,
+    )
+
     postflight = {
         "schemaVersion": 1,
         "kind": "design-review-postflight",
@@ -1759,6 +2121,10 @@ def verify(args: argparse.Namespace) -> int:
             "sha256": sha256_file(
                 review_path
             ),
+        },
+        "voiceSweep": {
+            "childFacingStrings": sweep_read,
+            "repaired": sweep_repaired,
         },
         "currentInputs": {
             "lessonDesign": input_record(

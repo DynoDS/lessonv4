@@ -79,7 +79,7 @@ Read in this order:
 5. Read `[WORKING_DIR]/design-review-reference.md`.
 6. Read the selected subject reference named there, when one exists.
 7. Read the selected teaching-route reference from the start to, but not including, `## Output Format Block`.
-8. Read `[WORKING_DIR]/design-review-view.md` once, straight through.
+8. Read `[WORKING_DIR]/design-review-view.md` once, straight through. Its opening section, `As the class meets it`, is every child-facing and spoken string as plain text in lesson order; read that section first, as the child of this year group sitting at the back of the room and then as the teacher saying each line aloud, before the structured sections. A string read inside JSON braces beside its field name is read as a specification, and that is how a class met `What does one visible detail suggest about this class?` after a review that found nothing.
 9. Complete the semantic review before opening `[WORKING_DIR]/design-decisions.md`.
 10. Read `design-decisions.md` only for the final decision-drift check.
 11. Open exact areas of `lesson-design.json` or `photo-requirements.json` only when making or reading back an authorised correction.
@@ -117,6 +117,7 @@ Check:
 - the lesson distinguishes this year group's required performance from related later content, notation or technique;
 - a later formal convention is included only when the approved objective or supplied sequence requires it, not merely because it belongs to the same topic;
 - the full and displayed learning objectives mean the same thing;
+- in a knowledge subject (history, geography, science content, RE), the Teach labels and headlines read in order are things about the topic, not rules about how to think; a lesson whose Teach beats are each a rule about sources or evidence has put the method in front of the knowledge and is a purposeful design defect, because the class leaves able to recite the rule and knowing nothing about the people (the subject file's own test);
 - substantial teaching and tasks serve the objective;
 - deferred learning is not taught early;
 - two substantial new demands are not stacked into one lesson without enough teaching, practice and checking for both;
@@ -172,8 +173,9 @@ Apply Written Voice as a comprehension test, not a shortening test.
 
 Read the source-unit labels alone, in order, as the slide titles they become: they should tell the lesson's story. A label naming a slot rather than a move (`Still part of the lesson`, `Apply`) is a bounded correction under `preferences.md` → Slide Headings; write the move a child is making.
 
-**Then sweep the voice, string by string.** The designer writes these words at the end of a long run and cannot hear its own drift, so this sweep is the one place the register is checked by someone who did not write it - a general "the voice seemed fine" is not the sweep. Walk the child-facing and spoken strings of the review view in order - every script, explanation, definition, question, task instruction, success criterion, sticky fact, model answer and worksheet string - and put each through `teacher-voice.md` → Final pre-flight check, opening the numbered section for the kind of string in hand when one feels off. Where a string genuinely misses the guide, repair it in place: same meaning, same teaching, same difficulty, the teacher's register. The misses that reach classes, from real lessons:
+**Then sweep the voice, string by string.** The designer writes these words at the end of a long run and cannot hear its own drift, so this sweep is the one place the register is checked by someone who did not write it - a general "the voice seemed fine" is not the sweep. Walk the `As the class meets it` section of the review view in order - every script, explanation, definition, question, task instruction, success criterion, sticky fact, model answer and worksheet string it prints - and put each through `teacher-voice.md` → Final pre-flight check, opening the numbered section for the kind of string in hand when one feels off. Read each one first as the child: the actual eight- or nine-year-old the year group names, who has not read the plan, and then as the teacher saying it. The section opens by stating how many strings it holds; that count goes into your report, and the packet check refuses a report whose count does not match, because a sweep that was skipped and a sweep that found nothing used to look the same. Where a string genuinely misses the guide, repair it in place: same meaning, same teaching, same difficulty, the teacher's register. The misses that reach classes, from real lessons:
 
+- a planning noun standing where the child needs the thing, which is the commonest miss in a foundation subject and the hardest to hear because every such string is grammatical and contracted: `What does one visible detail suggest about this class?`, `Which parts of the timetable support the claim about this school's week?`, `One source is one piece` - a teacher says `What can you see in this classroom?`, `What did these girls do on a Saturday?`, `One school, not every school`. The test is whether a child could act on the line without being told what `detail`, `claim` or `support` means for them today (`teacher-voice.md` → The planning nouns stay in the plan);
 - a script in written-report English the teacher would never say aloud: `Trace where the electricity comes from in each photograph. One source reaches an appliance through a socket, while another sits inside it.` - a teacher says `Look at where each one gets its electricity from. The toaster uses the mains, the torch uses a battery - and the laptop is the tricky one.`;
 - adjacent sentences sharing one shape and length (`Carbohydrates are our main source of energy. Protein helps us grow and repair. Vitamins and minerals help the body work well.`) - each true, together machine-rhythmed;
 - a model answer leaning on one repeated construction (`The pitta provides... Hummus and yoghurt provide... The vegetables and orange provide...`), which is the guide's §8 anti-AI check failing on the most-copied surface in the lesson;
@@ -367,7 +369,12 @@ Use exactly this report shape:
 ## Flags for the teacher
 - [location] | Choice: [genuine choice between sound options] | Why teacher input is needed: [missing teacher-owned context]
 - or `None.`
+
+## Voice sweep
+Read [N] child-facing strings as a Year [Y] child; repaired [M].
 ```
+
+`[N]` is the count the view's `As the class meets it` section states, `[Y]` the lesson's year group and `[M]` how many strings you repaired; the packet check refuses a report whose `[N]` does not match the view.
 
 Use `APPROVED` when no purposeful lesson decision remains defective. Local corrections and teacher flags may exist.
 
@@ -375,6 +382,6 @@ Use `REDESIGN REQUIRED` when one or more purposeful lesson decisions must change
 
 Do not restate the lesson, the review process or rules.
 
-A clean approval uses `None.` in all three sections. Do not invent a finding to show activity.
+A clean approval uses `None.` in the three finding sections and still carries the voice sweep line. Do not invent a finding to show activity.
 
 Return the same exact result value as the report.

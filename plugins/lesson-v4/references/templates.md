@@ -85,6 +85,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `row` | A container placing its items side by side inside a zone |
 | `diamond-nine` | The ranking diamond: nine cells in the 1-2-3-2-1 shape, most important at the top |
 | `continuum-line` | An agree/disagree (or any two-pole) line with marks a class positions ideas along |
+| `timeline` | A history timeline: named era bands sitting on a bold line, with dated ticks hanging beneath. Every position is a fraction the designer chooses (a school timeline is almost never honestly to scale, and `note` says so in small type); the sheet draws the same figure from the same fields |
 | `fishbone` | A cause-and-effect fishbone: a spine to the effect, angled ribs carrying causes |
 | `concept-map` | A radial concept map: a centre idea with spokes to connected ideas |
 | `callout` | A small coloured box holding one short line of text, with an arrow leaving any side of it to point at the thing the line is about — the chart above it, the number line beside it, a part of a photograph. Set `points` (up/down/left/right) and `at` (how far along that edge the arrow tip lands). Key words in the line carry colour with the ordinary inline markers. Use whenever a slide needs to point at its own content and say one thing about it, instead of leaving that sentence to a text panel or the speaker notes |
@@ -1640,6 +1641,48 @@ Zone class compatibility: fits A, B, C, E-wide. The line wants width; height can
 
 **Minimum useful size (empirically tested):** 4.0″ × 1.4″. Below 4″ wide the end labels start truncating; below 1.4″ tall the labels collide with the line.
 
+### `timeline`
+
+A timeline for the board: named era bands sitting on a bold horizontal line, with dated ticks hanging beneath it and each date's label under its own tick. Use it wherever a lesson puts sources, events or periods in order - the Victorian period with the two sources the class is reading placed inside it, the four periods a starter retrieves, the years of an enquiry. It is the slide twin of the worksheet `timeline`: the same fields draw the same figure on the sheet, so a placement asked on the board can be asked again on paper.
+
+**Every position is a fraction of the line, from 0 (left end) to 1 (right end), chosen by the designer.** The helper never works positions out from dates. A school timeline is almost never honestly to scale (the Stone Age drawn to scale pushes every later era off the slide), so the spacing is a teaching decision, and `note` is where the slide says so.
+
+```json
+{ "type": "timeline",
+  "eras": [ { "label": "Victorian period 1837 to 1901", "from": 0.05, "to": 0.62 } ],
+  "marks": [
+    { "label": "1837", "at": 0.05 },
+    { "label": "Hampton timetable 1862", "at": 0.27 },
+    { "label": "Port Sunlight classroom April 1897", "at": 0.55 },
+    { "label": "1901", "at": 0.62 },
+    { "label": "today 2026", "at": 0.97 } ],
+  "note": "not to scale" }
+```
+
+With a stem above and a caption below:
+
+```json
+{ "type": "timeline",
+  "text": "Where do our two sources sit in time?",
+  "eras": [ { "label": "Tudor", "from": 0.02, "to": 0.3 }, { "label": "Victorian", "from": 0.5, "to": 0.72 } ],
+  "marks": [ { "label": "hornbook", "at": 0.2 }, { "label": "1862", "at": 0.58 }, { "label": "today", "at": 0.98 } ],
+  "caption": "The gaps are not to scale." }
+```
+
+Fields:
+
+- `eras` (optional) - an array of `{ "label", "from", "to" }`. Each draws as a labelled band directly above the line spanning `from`..`to`; bands take alternating pale fills so neighbouring eras read apart. The labels share one size and stay on one line.
+- `marks` (optional) - an array of `{ "label", "at" }`. Each draws a tick hanging from the line at `at`, with its label beneath. Labels share one size, may wrap to two lines at a space, and are never split inside a word. A mark within 0.08 of either end tucks its label inward from the tick so nothing hangs off the figure.
+- `text` (optional) - one short line above the figure, black, left-aligned: the question or stem the timeline serves.
+- `note` (optional) - a few words printed small and grey at the right end, above the bands. The designer's place for `not to scale`; nothing is printed when it is absent.
+- `caption` (optional) - one short italic line centred beneath the labels.
+
+A timeline with neither eras nor marks draws the bare line. The card hugs the drawn figure, so spare zone height reads as background rather than as an empty box.
+
+Zone class compatibility: fits A, B, C, E-wide. The line wants width; height can be modest because the bands sit on the line and the labels hang close beneath it. B (a wide strip) is the natural fit when the timeline is one element on a teaching slide, with the sources it dates beside or below it.
+
+**Minimum useful size (empirically tested):** about 1.6" tall with era bands and one-line dates (1.9" with two-line dates or a caption), and roughly 1.1" of line per dated mark so neighbouring labels keep readable type: five marks want 5.5"+ of width, the full body width holds eight comfortably. Below that the helper stops with `TIMELINE_ZONE_TOO_NARROW` (naming the label and the width it needs) or `TIMELINE_ZONE_TOO_SHORT` (naming the height), rather than shrinking a date below 11pt or splitting a word. The lever for a narrow case is the mark spacing or a wider zone; for a short case it is the block's stack share, the caption, or the text line.
+
 ### `fishbone`
 
 An Ishikawa fishbone cause-and-effect scaffold. A horizontal spine arrow points right at an "effect" box on the right; ribs angle off the spine alternately top and bottom, each ending in a "cause" box. Use for *why did X happen?* chunks in history, geography (e.g., causes of flooding), and science (e.g., factors affecting plant growth).
@@ -2557,6 +2600,7 @@ Which content types fit which zone class.
 | `clock`             | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `diamond-nine`      | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `continuum-line`    | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
+| `timeline`          | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `fishbone`          | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `concept-map`       | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `source-pathway`    | ✓ |   | ✓ |   | ✓ |   |   |   |
@@ -2592,7 +2636,7 @@ If the slide-designer assigns a content type to an incompatible zone, the builde
 
 Nothing is published while either is outstanding, so a slide that would have shipped blank is found before a file exists rather than after.
 
-**Two capacity checks preserve every word and item.** `FIXED_CAPTION_CAPACITY` and `SUCCESS_CRITERIA_CAPACITY` never shorten, remove or rewrite content. The ordinary builder reports them as warnings. The Slide Designer's final `check-slide-design.js` gate treats them as blocking composition diagnostics because a candidate may not be promoted while either fixed surface is below its readable capacity. The Slide Designer must change layout, allocate more space or split faithfully. It must not edit source-authored wording or remove referenced criteria.
+**Two capacity checks preserve every word and item.** `FIXED_CAPTION_CAPACITY` and `SUCCESS_CRITERIA_CAPACITY` never shorten, remove or rewrite content. The ordinary builder reports them as warnings. The Slide Designer's final `check-slide-design.js` gate treats them as blocking composition diagnostics because a candidate may not be promoted while either fixed surface is below its readable capacity. `PICTURE_BELOW_READABLE_FLOOR` blocks at the same gate: a picture children work from that was allocated less than its tier's floor (`slide-visual-sizing.md` → The readable floors) is a composition fault the designer repairs with a taller zone, a split, or `essential: false` for a picture that is only context. The Slide Designer must change layout, allocate more space or split faithfully. It must not edit source-authored wording or remove referenced criteria.
 
 ---
 

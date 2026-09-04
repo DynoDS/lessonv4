@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -202,14 +203,44 @@ def write_science_contract(
     return design, photos
 
 
+def voice_sweep_line(
+    working_dir: Path,
+    *,
+    read_count: int | None = None,
+    repaired: int = 0,
+) -> str:
+    """The receipt line a review must carry, counted from the prepared view."""
+    view = working_dir / "design-review-view.md"
+    count, year = 0, 4
+    if view.exists():
+        for line in view.read_text(encoding="utf-8").splitlines():
+            match = re.match(
+                r"^(\d+) child-facing strings for a Year (\d+) class\.",
+                line.strip(),
+            )
+            if match:
+                count, year = int(match.group(1)), int(match.group(2))
+                break
+    if read_count is not None:
+        count = read_count
+    return (
+        f"Read {count} child-facing strings as a Year {year} child; "
+        f"repaired {repaired}."
+    )
+
+
 def write_review(
     working_dir: Path,
     result: str,
+    *,
+    voice_sweep: str | None = None,
 ) -> Path:
     path = (
         working_dir
         / "design-review.md"
     )
+    if voice_sweep is None:
+        voice_sweep = voice_sweep_line(working_dir)
 
     if result == "APPROVED":
         redesign_required = "- None.\n\n"
@@ -231,7 +262,9 @@ def write_review(
         "## Redesign required\n"
         f"{redesign_required}"
         "## Flags for the teacher\n"
-        "- None.\n",
+        "- None.\n\n"
+        "## Voice sweep\n"
+        f"{voice_sweep}\n",
         encoding="utf-8",
     )
     return path
@@ -1755,7 +1788,9 @@ def test_verify_rejects_out_of_order_required_review_headings():
             "## Corrections made\n"
             "- None.\n\n"
             "## Flags for the teacher\n"
-            "- None.\n",
+            "- None.\n\n"
+            "## Voice sweep\n"
+            f"{voice_sweep_line(working_dir)}\n",
             encoding="utf-8",
         )
 
@@ -1774,6 +1809,344 @@ def test_verify_rejects_out_of_order_required_review_headings():
             "required headings are out of order"
             in result.stderr
         )
+        assert not postflight.exists()
+
+
+PACKET_MODULE_SPEC = importlib.util.spec_from_file_location(
+    "design_review_packet_class_view",
+    PACKET,
+)
+assert PACKET_MODULE_SPEC and PACKET_MODULE_SPEC.loader
+packet_module = importlib.util.module_from_spec(PACKET_MODULE_SPEC)
+PACKET_MODULE_SPEC.loader.exec_module(packet_module)
+
+
+def content_based_design() -> tuple[dict, dict]:
+    """A content-based design with every unit kind the class view renders.
+
+    Built by hand rather than through the validator, because build_review_view
+    reads the design directly and the test counts strings, not legality.
+    """
+    design, photos = fixtures.valid_contract()
+    design["lesson"]["structure"] = "Content-based"
+    design["lesson"]["subject"] = "History"
+    design["lesson"]["yearGroup"] = 4
+    design["concepts"] = []
+    design["successCriteria"] = [
+        {
+            "id": "sc-001",
+            "type": "steps",
+            "drawLive": False,
+            "content": {"steps": ["Find a detail.", "Compare it with today."]},
+        }
+    ]
+    design["stickyKnowledge"] = [
+        {"id": "sk-001", "text": "A source tells us about one school."}
+    ]
+    design["vocabulary"] = [
+        {
+            "id": "vocab-001",
+            "sourceUnitId": "lesson-section/vocabulary/unit-001",
+            "term": "continuity",
+            "definition": "Something that has stayed similar over time.",
+            "visual": {"kind": "none"},
+        }
+    ]
+
+    def unit(kind, label, content, **overrides):
+        base = {
+            "sourceUnitId": f"lesson-section/teaching-sequence/{label}",
+            "label": label,
+            "kind": kind,
+            "conceptRef": None,
+            "content": content,
+            "pupilInstruction": None,
+            "taskStructure": None,
+            "modellingState": None,
+            "representationRefs": [],
+            "successCriteriaRefs": [],
+            "stickyKnowledgeRefs": [],
+            "misconceptionRefs": [],
+            "photoRefs": [],
+            "speakerNotes": {"script": None, "teacherInfo": None, "lookFor": None},
+            "answer": {
+                "kind": "none",
+                "content": None,
+                "acceptanceCondition": None,
+                "delivery": "none",
+            },
+        }
+        base.update(overrides)
+        return base
+
+    design["starter"] = unit(
+        "starter",
+        "Last lesson",
+        {
+            "activity": "Name one thing a historian uses.",
+            "connection": "DESIGNER ONLY connection",
+            "format": "DESIGNER ONLY format",
+            "testQuestionPath": None,
+        },
+        sourceUnitId="lesson-section/starter/unit-001",
+        speakerNotes={
+            "script": "Say to children: Bring back what you already know.",
+            "teacherInfo": None,
+            "lookFor": None,
+        },
+        answer={
+            "kind": "exact",
+            "content": "A photograph or an old timetable.",
+            "acceptanceCondition": "TEACHER ONLY acceptance",
+            "delivery": "answer-slide",
+        },
+    )
+    design["teachingSequence"] = [
+        unit(
+            "teach",
+            "A classroom in 1897",
+            {
+                "headline": "This classroom is from 1897.",
+                "explanation": "Children sat in rows.",
+                "takeaway": {"kind": "sticky", "ref": "sk-001"},
+                "teachingText": None,
+                "keyQuestions": ["What do you notice?"],
+            },
+            stickyKnowledgeRefs=["sk-001"],
+            speakerNotes={
+                "script": "Say to children: Look at this classroom.",
+                "teacherInfo": "TEACHER ONLY MARKER about the archive reference",
+                "lookFor": "Look for: TEACHER ONLY look-for",
+            },
+            answer={
+                "kind": "model",
+                "content": "TEACHER ONLY model kept in the notes",
+                "acceptanceCondition": None,
+                "delivery": "teacher-only",
+            },
+        ),
+        unit(
+            "do",
+            "Same or different?",
+            {
+                "activity": "DESIGNER ONLY activity description",
+                "format": None,
+                "task": "Find one thing that is the same as our classroom.",
+            },
+            pupilInstruction="Talk to your partner first.",
+            taskStructure={
+                "kind": "option-bank",
+                "items": [
+                    {"id": "item-001", "label": "desks in rows"},
+                    {"id": "item-002", "label": "a teacher"},
+                ],
+            },
+        ),
+        unit(
+            "practise",
+            "Stayed similar or changed",
+            {
+                "activity": "DESIGNER ONLY practise description",
+                "format": "DESIGNER ONLY form",
+                "task": "Write two things that changed.",
+                "launch": {
+                    "established": "We can spot what stayed similar.",
+                    "goodLooksLike": "Strong: desks in rows. Weak: it was different.",
+                    "steps": ["Look at the photo.", "Write one change."],
+                },
+            },
+            successCriteriaRefs=["sc-001"],
+            answer={
+                "kind": "model",
+                "content": "Desks were in rows; there was no whiteboard.",
+                "acceptanceCondition": "TEACHER ONLY acceptance",
+                "delivery": "answer-slide",
+            },
+        ),
+    ]
+    design["ending"] = {
+        "included": True,
+        "kind": "Apply",
+        "reason": "DESIGNER ONLY reason",
+        "beat": unit(
+            "apply",
+            "Has school completely changed?",
+            {"activity": "Has school completely changed since Victorian times?"},
+            sourceUnitId="lesson-section/apply/unit-001",
+            speakerNotes={
+                "script": "Say to children: Use two sources to decide.",
+                "teacherInfo": None,
+                "lookFor": None,
+            },
+        ),
+    }
+    design["worksheet"]["status"] = "generated"
+    design["worksheet"]["successCriteriaRefs"] = []
+    design["worksheet"]["stickyKnowledgeRefs"] = []
+    design["worksheet"]["contentBlocks"] = [
+        {
+            "id": "ws-q-001",
+            "kind": "question",
+            "pupilPrompt": "What has stayed the same?",
+            "response": "DESIGNER ONLY response size",
+            "support": "Start with: I can see...",
+            "visualRequirements": "DESIGNER ONLY visual requirement",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+                "kind": "model",
+                "content": "TEACHER ONLY worksheet answer",
+                "acceptanceCondition": None,
+                "delivery": "teacher-only",
+            },
+        }
+    ]
+    return design, photos
+
+
+def class_view_section(view: str) -> str:
+    start = view.index("## As the class meets it")
+    end = view.index("## Teacher orientation")
+    return view[start:end]
+
+
+def test_the_view_opens_with_the_lesson_as_the_class_meets_it():
+    design, photos = content_based_design()
+    view = packet_module.build_review_view(design, photos)
+
+    assert view.index("## Lesson") < view.index("## As the class meets it")
+    assert view.index("## As the class meets it") < view.index("## Teacher orientation")
+
+    section = class_view_section(view)
+    # Starter: activity, answer (answer-slide), script = 3
+    # Vocabulary: 1
+    # Teach: headline, explanation, key question, takeaway (sticky), sticky ref,
+    #        script = 6
+    # Do: task, pupil instruction, two option labels = 4
+    # Practise: task, established, goodLooksLike, two steps, two criteria steps,
+    #           answer (answer-slide) = 8
+    # Apply: activity, script = 2
+    # Worksheet: prompt, support = 2
+    assert "26 child-facing strings for a Year 4 class." in section
+    for expected in (
+        "### Last lesson",
+        "Name one thing a historian uses.",
+        "A photograph or an old timetable.",
+        "Teacher says: Bring back what you already know.",
+        "### Vocabulary",
+        "continuity: Something that has stayed similar over time.",
+        "This classroom is from 1897.",
+        "What do you notice?",
+        "A source tells us about one school.",
+        "Find one thing that is the same as our classroom.",
+        "Talk to your partner first.",
+        "desks in rows",
+        "We can spot what stayed similar.",
+        "Look at the photo.",
+        "Compare it with today.",
+        "Desks were in rows; there was no whiteboard.",
+        "Has school completely changed since Victorian times?",
+        "### Worksheet",
+        "What has stayed the same?",
+        "Start with: I can see...",
+    ):
+        assert expected in section, expected
+    assert "Say to children:" not in section
+    assert "{" not in section and "}" not in section
+    assert '"task"' not in section
+
+
+def test_the_class_view_never_prints_teacher_only_material():
+    design, photos = content_based_design()
+    section = class_view_section(
+        packet_module.build_review_view(design, photos)
+    )
+    for hidden in (
+        "TEACHER ONLY",
+        "DESIGNER ONLY",
+        "Look for:",
+    ):
+        assert hidden not in section, hidden
+    # Teacher-only material still reaches the detailed JSON sections below.
+    assert "TEACHER ONLY MARKER" in packet_module.build_review_view(design, photos)
+
+
+def test_the_lesson_block_says_where_the_vocabulary_slide_sits():
+    design, photos = content_based_design()
+    assert "vocabularyPlacement" not in design
+    assert "- Vocabulary slide: after the starter" in packet_module.build_review_view(design, photos)
+
+    design["vocabularyPlacement"] = None
+    assert "- Vocabulary slide: after the starter" in packet_module.build_review_view(design, photos)
+
+    design["vocabularyPlacement"] = {
+        "after": design["teachingSequence"][0]["sourceUnitId"]
+    }
+    view = packet_module.build_review_view(design, photos)
+    assert '- Vocabulary slide: after "A classroom in 1897"' in view
+    assert view.index("- Vocabulary slide:") < view.index("## As the class meets it")
+
+
+def test_verify_accepts_a_voice_sweep_that_matches_the_view():
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        prepare_result, preflight, reference = prepare(working_dir)
+        assert prepare_result.returncode == 0
+
+        review = write_review(
+            working_dir,
+            "APPROVED",
+            voice_sweep=voice_sweep_line(working_dir, repaired=2),
+        )
+        result, postflight = verify(working_dir, preflight, reference, review)
+
+        assert result.returncode == 0, result.stderr
+        receipt = json.loads(postflight.read_text(encoding="utf-8"))
+        assert receipt["voiceSweep"]["repaired"] == 2
+        assert receipt["voiceSweep"]["childFacingStrings"] > 0
+
+
+def test_verify_rejects_a_voice_sweep_whose_count_is_not_the_views():
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        prepare_result, preflight, reference = prepare(working_dir)
+        assert prepare_result.returncode == 0
+
+        expected = voice_sweep_line(working_dir)
+        expected_count = int(expected.split()[1])
+        review = write_review(
+            working_dir,
+            "APPROVED",
+            voice_sweep=voice_sweep_line(
+                working_dir,
+                read_count=expected_count + 5,
+            ),
+        )
+        result, postflight = verify(working_dir, preflight, reference, review)
+
+        assert result.returncode == 1
+        assert f"review view printed {expected_count} child-facing strings" in result.stderr
+        assert f"Read {expected_count} child-facing strings as a Year" in result.stderr
+        assert not postflight.exists()
+
+
+def test_verify_rejects_a_review_with_no_voice_sweep():
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        prepare_result, preflight, reference = prepare(working_dir)
+        assert prepare_result.returncode == 0
+
+        review = write_review(working_dir, "APPROVED")
+        text = review.read_text(encoding="utf-8")
+        review.write_text(text[: text.index("## Voice sweep")], encoding="utf-8")
+        result, postflight = verify(working_dir, preflight, reference, review)
+
+        assert result.returncode == 1
+        assert "exactly one '## Voice sweep' heading" in result.stderr
         assert not postflight.exists()
 
 

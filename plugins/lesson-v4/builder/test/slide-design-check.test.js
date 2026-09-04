@@ -1074,3 +1074,31 @@ test('a My Turn with no source unit at all is still refused', () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('a picture below its readable floor blocks promotion like any capacity fault', () => {
+  // The floor used to be a [warn] line the check read past: a lone classroom
+  // photograph shipped at two inches under "look closely" (4 September 2026).
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `const fs = require('node:fs');\n` +
+        `const path = require('node:path');\n` +
+        `const outputDir = process.argv[3];\n` +
+        `const outputPath = path.join(outputDir, 'Scratch Check.pptx');\n` +
+        `fs.writeFileSync(outputPath, 'scratch');\n` +
+        `console.log('BUILD_DIAGNOSTIC: {"signal":"PICTURE_BELOW_READABLE_FLOOR","artifact":"slides","faultClass":"composition","location":{"slide":9,"path":"image:unsplash/classroom.jpg"},"message":"guaranteed only 1.91 on its short side"}');\n` +
+        `console.log('Wrote: ' + outputPath);\n`
+    );
+    const lessonPath = writeLesson(root, ordinaryLesson());
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_CAPACITY');
+    assert.match(result.stdout, /"signal":"PICTURE_BELOW_READABLE_FLOOR"/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

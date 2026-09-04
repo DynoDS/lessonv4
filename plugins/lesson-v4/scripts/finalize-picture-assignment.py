@@ -158,6 +158,36 @@ def expected_receipt(args, assignment: dict, result_row: dict, terminal_state: s
     }
 
 
+# Below this long side a picture is a preview, not a source: shown at slide
+# width it reaches roughly 75 dpi, enough for a scene and not for handwriting.
+# The same figure lives in publish-picture.py; change both together.
+LOW_RESOLUTION_LONG_SIDE_PX = 1000
+
+
+def low_resolution_of(published: Path) -> str | None:
+    """`WxH` when the published picture is too small to enlarge, else None.
+
+    A small copy still publishes, because an old grainy photograph is the real
+    thing; what it cannot do is be enlarged to show fine detail. A Year 4
+    history run shipped a 400 px archive preview of a classroom for children to
+    inspect (4 September 2026), and nothing said so. The orchestrator runs this
+    finaliser, never the publisher, so the fact is read from the published file
+    here and printed where the run's record can carry it.
+    """
+    try:
+        from PIL import Image  # type: ignore
+    except ImportError:
+        return None
+    try:
+        with Image.open(published) as probe:
+            width, height = probe.size
+    except Exception:
+        return None
+    if max(width, height) < LOW_RESOLUTION_LONG_SIDE_PX:
+        return f"{width}x{height}"
+    return None
+
+
 def publish_one(script_dir: Path, working: Path, source: Path, filename: str, replace: str) -> tuple[bool, str, int]:
     # publish-picture.py intentionally accepts only its staging namespace. The
     # unified worker's durable root is the source of truth, so copy one proved
@@ -246,11 +276,23 @@ def assignment_command(args) -> int:
             ok, publication, _ = publish_one(Path(__file__).resolve().parent, working, source_path.resolve(), filename, args.replace)
             if ok and canonical.is_file(): terminal_state = "published"; canonical_hash = sha256(canonical); summary["releasedFilenames"].append(filename)
             else: terminal_state = "picture_publish_failed"; reason = "picture_publish_failed"; summary["ok"] = False; summary["errors"].append(f"{filename}: publication failed")
+            low_resolution = low_resolution_of(canonical) if terminal_state == "published" else None
+            if low_resolution:
+                # A small copy still publishes - an old grainy photograph is the
+                # real thing - but it cannot be enlarged to show fine detail, so
+                # the run's record says so where the orchestrator reads it.
+                print(
+                    f"PICTURE_LOW_RESOLUTION: {filename} {low_resolution} - fine "
+                    "detail will not survive enlargement; a scene reads, a document may not"
+                )
         receipt = expected_receipt(args, assignment, row, terminal_state, provenance, canonical if terminal_state == "published" else None, canonical_hash, publication, reason)
         atomic_json(existing, receipt)
         if source_path is None:
             summary["releasedFilenames"].append(filename)
-        summary["entries"].append({"filename": filename, "action": "published" if terminal_state == "published" else "terminalized", "terminalState": terminal_state})
+        entry_summary = {"filename": filename, "action": "published" if terminal_state == "published" else "terminalized", "terminalState": terminal_state}
+        if source_path is not None and terminal_state == "published" and low_resolution:
+            entry_summary["lowResolution"] = low_resolution
+        summary["entries"].append(entry_summary)
     atomic_json(Path(args.summary_output).resolve(), summary)
     print(json.dumps(summary, indent=2))
     return 0 if summary["ok"] else 1

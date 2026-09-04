@@ -198,11 +198,18 @@ content changes, and the deck quietly ships a substitute for the visual the
 lesson depends on. The check below refuses that, and refusing it late costs the
 run a repair worker and a rebuild.
 
-Give a promised helper its layout priority before anything else on the slide.
-Choose the zone that lets it be read, then compose the remaining content around
-it. The failure this prevents is the ordinary one: a slide laid out first, the
-helper found not to fit the strip it was left, and a hand-built substitute
-chosen because it does. If the helper genuinely cannot be read in any zone the
+Give a promised helper its layout priority over prose, furniture and
+decoration. Choose the zone that lets it be read, then compose the remaining
+content around it. The failure this prevents is the ordinary one: a slide laid
+out first, the helper found not to fit the strip it was left, and a hand-built
+substitute chosen because it does. The priority stops at the thing children
+read from: when the promised helper is a frame or table the class records
+*into* from a source or photograph on the same slide, the source is the hero
+and the frame takes the height its rows need and no more, because a child
+cannot fill a row from a picture they cannot see. A Year 4 history deck gave an
+empty four-column table the width of three slides while the photograph it was
+about shrank to two inches beside it; the build's picture floor now refuses
+that, and the composition should never reach it. If the helper genuinely cannot be read in any zone the
 slide can offer, the slide is the wrong shape for it - change the template or
 split the slide - and only a route that no template can hold is a helper gap.
 
@@ -234,6 +241,8 @@ When a unit names success-criteria or sticky-knowledge references, read the cond
 Keep a structured visual structured. Do not flatten a table, bank, sequence, checklist, diagram or card set into prose.
 
 ### 7. Keep vocabulary coherent
+
+The single `key-vocabulary` slide follows the starter unless the design's `vocabularyPlacement.after` names a teaching-sequence unit, in which case it follows that unit's last slide: the lesson has let children meet the meaning before the word, and a vocabulary slide placed earlier would hand them the definition before it names anything they have seen.
 
 When a unit contains vocabulary, read the named preference sections before composing it. Use the exact structured visual selected upstream. Keep one coherent card or comparison per genuine conceptual unit. A text-only card is complete when `kind: none` or when no honest semantic visual exists.
 

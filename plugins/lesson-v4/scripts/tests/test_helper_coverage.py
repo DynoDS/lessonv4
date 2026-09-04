@@ -154,6 +154,73 @@ class HelperCoverageTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("no slides renderer can draw", result.stderr)
 
+    def timeline_design(self, name: str, description: str) -> None:
+        """The reported lookalike: a representation whose own words name a
+        figure the catalogue draws, recorded as covered by something else."""
+        lesson = design()
+        lesson["representations"][0]["name"] = name
+        lesson["representations"][0]["configurations"][0]["description"] = description
+        self.design_path.write_text(json.dumps(lesson), encoding="utf-8")
+
+    def test_a_timeline_covered_by_a_table_is_a_lookalike_and_fails(self):
+        """A Year 4 history deck printed a three-column table with `not to
+        scale` as a column heading, three times, because the check accepted
+        `table` as cover for a not-to-scale timeline (4 September 2026)."""
+        self.timeline_design(
+            "Not-to-scale Victorian-source timeline",
+            "A left-to-right, explicitly not-to-scale timeline with dated markers",
+        )
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "table",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("describes a timeline but is covered by 'table'", result.stderr)
+
+    def test_a_recording_frame_covered_by_a_table_still_passes(self):
+        """A table standing in for a table is not a lookalike."""
+        self.timeline_design(
+            "Source comparison frame",
+            "One source above a blank row with four child-facing questions",
+        )
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "table",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("HELPER_COVERAGE_OK", result.stdout)
+
+    def test_a_concept_map_is_not_mistaken_for_a_map(self):
+        """Longer figure names match first, so `concept map` is judged as a
+        concept map and never as a geographical map."""
+        self.timeline_design(
+            "Concept map of the causes",
+            "A concept map with one idea at the centre and four around it",
+        )
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "concept-map",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_a_build_left_standing_fails(self):
         """`build` is a job, not an outcome.
 

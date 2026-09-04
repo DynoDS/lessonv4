@@ -14,7 +14,15 @@ const path = require("path");
 const {
   VISUALS, ROW_VISUALS, ROW_PER_ROW, BOXES_PER_ROW,
   missingQuestionContent, ROW_BOX_H_MM, ROW_LINE_GAP_MM, LABEL_DIAGRAM_WIDTH_MM,
+  SOURCE_COPY_WIDTH_MM, SOURCE_COPY_CAPTION_LINE_MM, SOURCE_COPY_CAPTION_PAD_MM, SOURCE_COPY_CHAR_MM,
 } = require("./visual-registry");
+const { A4 } = require("./layout-rules");
+
+// The tallest a piece can print: the landscape page's printable height, the
+// same figure build.js packs shelves against (portrait width, both margins,
+// the 5mm page caption). A source copy is refused above it rather than cropped,
+// because a source with its bottom cut off is a different source.
+const PIECE_MAX_H_MM = A4.widthMm - 2 * A4.marginMm - 5;
 const { buildLabelDiagramSvg } = require("../../shared/visuals/label-diagram-svg");
 
 const GREY = "#999999";
@@ -184,12 +192,72 @@ async function renderLabelDiagram(item, baseDir, opts = {}) {
   };
 }
 
+// A printed copy of one source the child READS from - the same published
+// picture the board shows, at a width the detail can actually be read at, with
+// a caption naming it beneath. No write-on line: this is the read-from piece,
+// for a document, a timetable, a photograph or a map whose fine detail cannot be
+// seen from the back of the room. The picture keeps its own proportions and the
+// cut guide follows it; a copy taller than the page is refused with the height
+// named, never cropped, because a source with its bottom missing is a different
+// source.
+async function renderSourceCopy(item, baseDir, opts = {}) {
+  const missing = missingQuestionContent(item);
+  if (missing) {
+    console.warn(`[stick-in] "${item.label || item.visual}": ${missing}, so this item is skipped rather than tiled as blank copies.`);
+    return null;
+  }
+  const spec = item.spec || {};
+  const imgPath = path.isAbsolute(spec.imagePath) ? spec.imagePath : path.join(baseDir || ".", spec.imagePath);
+  if (!fs.existsSync(imgPath)) {
+    console.warn(`[stick-in] "${item.label || item.visual}": image not found at ${imgPath}, skipping this item.`);
+    return null;
+  }
+  const sharp = require("sharp");
+  const meta = await sharp(imgPath).metadata();
+  if (!(meta.width > 0 && meta.height > 0)) {
+    console.warn(`[stick-in] "${item.label || item.visual}": could not read the picture's size from ${imgPath}, skipping this item.`);
+    return null;
+  }
+  const mime = meta.format === "png" ? "image/png" : meta.format === "svg" ? "image/svg+xml" : "image/jpeg";
+  const b64 = fs.readFileSync(imgPath).toString("base64");
+  const aspect = meta.width / meta.height;
+
+  const caption = String(spec.caption).trim();
+  const widthMm = item.widthMm ?? spec.widthMm ?? SOURCE_COPY_WIDTH_MM;
+  const captionLines = Math.max(1, Math.ceil((caption.length * SOURCE_COPY_CHAR_MM) / widthMm));
+  const captionMm = captionLines * SOURCE_COPY_CAPTION_LINE_MM + SOURCE_COPY_CAPTION_PAD_MM;
+  const reserveTopMm = opts.reserveTopMm || 0;
+  const imageHMm = widthMm / aspect;
+  const heightMm = imageHMm + captionMm + reserveTopMm;
+
+  if (heightMm > PIECE_MAX_H_MM) {
+    // The widest this picture can print and still fit the page, so the fix is
+    // one number away rather than a guess.
+    const fitWidthMm = Math.floor((PIECE_MAX_H_MM - captionMm - reserveTopMm) * aspect);
+    console.warn(
+      `[stick-in] "${item.label || item.visual}": at ${widthMm}mm wide this source copy is ` +
+      `${heightMm.toFixed(0)}mm tall, and the page can print at most ${PIECE_MAX_H_MM}mm. ` +
+      `It is not cropped, because a source with its bottom missing is a different source: ` +
+      `set widthMm to ${fitWidthMm} or less, or choose a crop of the source on the slide and copy that.`
+    );
+    return null;
+  }
+
+  const html =
+    `<div style="width:${widthMm}mm;margin:0 auto">` +
+    `<img src="data:${mime};base64,${b64}" alt="" style="display:block;width:${widthMm}mm;height:${imageHMm.toFixed(2)}mm">` +
+    `<div style="text-align:center;font-size:11pt;line-height:${SOURCE_COPY_CAPTION_LINE_MM}mm;padding-top:${SOURCE_COPY_CAPTION_PAD_MM}mm">${esc(caption)}</div>` +
+    `</div>`;
+  return { html, widthMm, heightMm };
+}
+
 // One write-on item → { html, widthMm, heightMm }, or null (with a warning)
 // when there is nothing to render.
 async function renderPieceHtml(item, opts = {}) {
   if (ROW_VISUALS[item.visual]) return renderRow(item);
   if (item.visual === "draw-box-row") return renderBoxRow(item);
   if (item.visual === "label-diagram") return renderLabelDiagram(item, opts.baseDir, opts);
+  if (item.visual === "source-copy") return renderSourceCopy(item, opts.baseDir, opts);
   if (!VISUALS[item.visual]) {
     throw new Error(`Unknown stick-in visual: "${item.visual}". Add it to VISUALS or ROW_VISUALS in stick-in-sheets-html/src/visual-registry.js.`);
   }

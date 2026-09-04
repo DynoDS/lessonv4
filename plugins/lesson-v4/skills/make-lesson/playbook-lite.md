@@ -364,7 +364,10 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
 `configuration`, `requiredSurface`, `decision` and the fields below:
 
 - `covered` - a live helper draws it as designed. Name it in `helperKey`; the
-  check refuses a key no renderer on that surface dispatches on.
+  check refuses a key no renderer on that surface dispatches on, and refuses a
+  lookalike (a `table` for a timeline: a history deck shipped its timeline as
+  a table three times). A figure no helper draws is `build`, `substitute` or
+  `gap`, never a neighbour that renders cleanly.
 - `build` - nothing draws it, or the closest helper cannot draw it as designed.
   Give `helperKey` and a `reason` naming what it cannot draw, then take the
   helper route. When a helper already holds the real source for this subject,
@@ -1133,20 +1136,32 @@ picture the design promised that came back terminally `unsatisfied` - an
 authorised photograph that never arrived is the same hole as a visual nobody
 requested.
 
-Run one focused Lesson Designer revision over the three canonical design files:
-add or respecify that visual as a picture requirement, real-first with an
-authorised fallback (a real place's geography publishes only after its visual
-check confirms it), point the affected representation use at that filename,
-change nothing else, keep the picture cap. A replacement for a spent filename
-takes a new id and filename, and pitches the evidence at the level the teaching
-needs, which is the designer's own rule. Where even the open-web rung could not
-reach the one source the lesson is genuinely about, drop the dependent task and
-say so in `flagsForTeacher`; authenticity does not bend to fill the hole.
+Run one focused Lesson Designer revision over the three canonical design files.
+Its brief is to find another sound route to the same learning, not the smallest
+deletion that makes the fault go away: another real source of the same kind
+from a different holding, the same evidence as an adapted extract the designer
+writes, a printed copy, or a redesigned beat that teaches the same thing from
+what did arrive. Add or respecify the visual as a picture requirement,
+real-first with an authorised fallback (a real place's geography publishes only
+after its visual check confirms it), point the affected representation use at
+that filename, keep the picture cap. A replacement for a spent filename takes a
+new id and filename, and pitches the evidence at the level the teaching needs,
+which is the designer's own rule. Every beat that leaned on the lost source is
+re-judged, not trimmed around: a timeline that held three sources across two
+periods is orientation once it holds two dates from one period, and an
+ordering task whose only remaining items are printed in date order has no job
+left. Only where even the open-web rung could not reach the one source the
+lesson is genuinely about does the dependent task go, and then
+`flagsForTeacher` says so; authenticity does not bend to fill the hole.
 
-Re-run the design validator and photo-cap check, snapshot the revision as the
-next wave number, and run the supplemental-wave mechanics over that snapshot,
-naming already-terminal filenames so nothing finished reopens. Relaunch the
-blocked designer on the published picture. One wave per run; a gap that
+Re-run the design validator and photo-cap check, then run Phase 1.25 again over
+the revised files: a revision that removes a source, rewrites the model beat
+and re-points the Do beats is a new lesson, and the one this pipeline delivered
+without a second review was the one the teacher refused to teach. The review
+costs three minutes; a redesign it returns follows the Phase 1.25 rules.
+Then snapshot the revision as the next wave number, run the supplemental-wave
+mechanics over that snapshot, naming already-terminal filenames so nothing
+finished reopens, and relaunch the blocked designer on the published picture. One wave per run; a gap that
 survives it excludes as before, the pending helper still built for
 `/install-helper`.
 
@@ -1255,7 +1270,11 @@ only transient worker results, work roots and orphan prompt/search scratch.
 Some approval policies refuse a recursive delete outright; that refusal is a
 normal outcome, not friction and not an accepted minor issue.
 
-Copy its `PICTURE_SOURCES:` line into the report's picture results: an open-web
+Copy every `PICTURE_LOW_RESOLUTION:` line the finaliser printed into the run's
+friction file and into the report's picture results as a teacher flag naming
+the slide the picture is on: the picture was accepted because it still does its
+job at that size, and the teacher decides whether to print it. Copy its
+`PICTURE_SOURCES:` line into the report's picture results: an open-web
 picture is credited under the education exception, not carrying a licence.
 
 When the early adaptation wave compiled, pass its snapshot: that is what lets

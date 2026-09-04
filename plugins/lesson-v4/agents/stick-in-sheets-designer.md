@@ -60,3 +60,7 @@ retry through another worker and do not delay the stick-in branch for optional
 picture work.
 Write the updated JSON atomically and parse it again before returning.
 5. Flag the gaps. When a write-on moment needs a visual the supported set doesn't have, leave it off the pack and name it in your final report rather than forcing a poor fit - the gap is then visible and a new renderer can be built, instead of a child gluing in a figure that doesn't do the job.
+
+## A source children read from
+
+One piece is earned by reading rather than writing. When a moment has children read fine detail off a source (a timetable's cells, a line of handwriting, small figures in a photograph, place names on a map) and that detail cannot be seen from the back of the room on the board, the moment is a **read-from moment** and gets a `source-copy`: the same published picture the slide shows, printed at exercise-book width with its caption, nothing to write on. Both halves have to be true. A 400-pixel photograph of a Victorian classroom under "look closely" earns one; a portrait children glance at for who it shows does not, because the whole scene reads from the board. One copy per source per moment. Take `imagePath` and the caption from the slide that shows the source, so the paper and the board name the same evidence; the pedagogy reference's read-from section carries the boundary and the spec.

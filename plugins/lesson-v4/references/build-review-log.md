@@ -788,3 +788,120 @@ same lesson a version earlier; the third was the route's own settled shape.
 - The first wall build exposed overlapping long column headings. A focused repair changed only the wall chart labels to Th/H/T/O, and the one-card A3 rebuild passed visual QA.
 - Run evidence: C:/Users/Daniel/Projects/lessonv4/output/working/year-4-maths-lesson-2/friction.md.
 - Final result: 13-slide PowerPoint, three-level worksheet PDF with separate answer key, and one-page working wall built. Stick-in sheets were not needed.
+
+## 2026-09-04 - Year 4 Maths Lesson 3: partition 4-digit numbers
+
+- The installed slide `part-whole-model` helper supports only two or three linked parts, while the lesson required exactly four ordered place-value parts. A controlled generated teaching diagram supplied this run, and a tested pending helper growth is waiting under the run's `pending-helper/part-whole-model` folder for later installation.
+- The worksheet builder corrected a 2 mm browser-measured zone difference on the Below sheet without changing its content; both worksheet pages then passed the fixed build.
+- Run evidence: C:/Users/Daniel/Projects/lessonv4/lesson-output/working/year-4-maths-lesson-3/friction.md.
+- Final result: 10-slide PowerPoint, Below and Expected worksheet PDF with separate answer key, and one-page working wall built. Stick-in sheets were not needed.
+
+## 2026-09-04 - Year 4 History Lesson 1: source evidence and continuity/change
+
+- The British Museum horn-book endpoint failed TLS verification twice, so the authentic object ended terminally unsatisfied. A focused content-gap design revision removed that dependency and preserved the objective through four published Victorian archive sources; synthetic historical evidence was not used.
+- The first slide specification exhausted its three self-repair passes on six layout and compatibility diagnostics. Focused repair cleared all six, and the post-revision slide design passed with 19 slides.
+- Picture provenance could not use the revised four-picture contract because the surviving terminal receipts were tied to the immutable five-picture Phase 2 snapshot. Provenance completed against that snapshot, retaining the unused unsatisfied receipt and proving all four published sources.
+- Run evidence: C:/Users/Daniel/Projects/lessonv4/output/working/to-identify-the-continuities-and-changes-to-children-s-lives-using-a-range-of-sources/friction.md.
+- Final result: 19-slide PowerPoint, three-level worksheet PDF with separate answer key, and two-page working wall built. Stick-in sheets were not needed.
+
+## 2026-09-04 - Teacher review of the Year 4 History run (4.2.95): "I will 100% NOT BE USING THIS LESSON"
+
+The third run of the same objective in three days, and the teacher refused
+the deck by slide 9: the voice was "Year 10, not Year 4", the lesson was "a
+teacher talking nonsense" about sources, the timeline was "what is that
+table!", and a photograph children were told to look closely at was two
+inches wide beside five inches of empty slide. The teacher then described the
+lesson he would build (the 1897 classroom first and "what do you notice?",
+the words continuity and change given after the noticing and attached to it,
+a second source adding real knowledge, the limit of one source arriving as a
+question the class can now answer, an adapted Bridget Kelpin extract, a
+two-column task, "has school completely changed?"), and that sketch is now the
+history file's calibration. What follows is what the evidence showed.
+
+- **The lesson was built around a rule about sources, not around Victorian
+  children.** The decisions record opened "because the lesson helps them stop
+  treating one source as a complete picture", every Teach headline was a
+  method rule (`Put each source in time`, `One source is one piece`, `Compare
+  the same part of life`), the "can't prove" question sat on 7 of 19 slides
+  and its sticky fact on 5, and no slide told the class what a school of
+  industry or a workhouse school was. The 2 September review had logged the
+  same family (nine abstractions, lives versus learning) and the rules added
+  then were obeyed in letter. *The shape, not another rule, is changed:
+  `subject-history.md` opens with what the lesson feels like to the child and
+  owns the spine for history (a chunk is a piece of the past; the historian's
+  move is taught inside the beat that needs it, once, where the knowledge
+  makes it mean something); the content-based sequence file and the rhythm
+  section in `preferences.md` say a chunk is knowledge and hand the
+  definition of "the one thing" to the subject file; the Lesson Designer's
+  sticking-point bullet and decisions-record opening sentence no longer force
+  a misconception spine on a knowledge subject; the reviewer's learning
+  contract reads the Teach headlines in order as the subject file's own test.*
+- **The vocabulary came before the meaning.** *`vocabularyPlacement` (null, or
+  `after` a unit) lets the single vocabulary slide follow the first noticing
+  beat; the validator, scaffold, review view, slide designer and composition
+  playbook carry it; `preferences.md` → Vocabulary and the designer's
+  placement paragraph say why.*
+- **Nobody heard the words as a child.** `What does one visible detail suggest
+  about this class?`, `Which parts of the timetable support the claim about
+  this school's week?`: grammatical, contracted, and planning nouns all the
+  way through. The reviewer returned in three minutes with `Corrections made:
+  None.`, reading every string inside JSON braces beside its field name.
+  *The review view now opens with `As the class meets it`, every child-facing
+  and spoken string as plain text in lesson order with its count; the
+  reviewer reads that first as the year group's child, the planning-noun miss
+  leads its list of misses, and the report carries a `## Voice sweep` line
+  whose count the packet verify checks against the view, so a skipped sweep
+  no longer looks like a clean one.*
+- **The delivered lesson was never reviewed.** The reviewer approved a
+  hornbook-plus-Victorian design; the hornbook picture failed, a content-gap
+  revision removed the Tudor strand and rewrote the model and Do beats, and
+  the route sent it straight to the slide designer. The ordering beat it left
+  behind had two dates from one period printed in order. *The content-gap
+  wave now briefs the revision to find another sound route rather than the
+  smallest deletion, to re-judge every beat that leaned on the lost source,
+  and to go back through Phase 1.25 before anything is built.*
+- **The timeline was a table.** No slide helper drew one; the helper check
+  recorded `covered` by `table`, and `not to scale` became a column heading
+  three times. *A `timeline` slide helper now exists (eras as bands, marks at
+  designer-set fractions, optional note and caption, parity declared with the
+  worksheet's), `check-helper-coverage.py verdict` refuses a lookalike key for
+  a named figure, and the playbook's `covered` bullet says so.*
+- **The photograph children were told to look closely at was the smallest
+  thing on its slide.** Three causes. The picture floor was 1.6" on the cell's
+  short side, so a two-inch photo passed; the slide designer was told to give
+  a promised helper layout priority, so an empty four-column table took the
+  width on five slides; and the file itself was a 400 by 332 pixel preview
+  the scout recorded and accepted. *The floor is tiered by how many pictures
+  children work from share the slide (3.0" alone, 2.2" for two, 1.6" for
+  three or more), the helper-priority clause stops at the source a frame
+  records from, the scout judges resolution against the job and searches
+  past a viewer's preview, the finaliser prints `PICTURE_LOW_RESOLUTION:` and
+  the playbook carries it to the teacher as a flag.*
+- **Unreadable evidence had nowhere to go.** The design asked the picture
+  stage for "a readable transcript", which the scout cannot supply, and a
+  page of Victorian handwriting reached the board with "find a detail".
+  *The history file says the adapted extract is content the designer writes
+  (`teachingText` or the worksheet stimulus) with the original small beside
+  it; a **read-from moment** (detail the board cannot show large enough)
+  earns a printed `source-copy` stick-in piece, defined in
+  `stick-in-sheets-pedagogy.md` and the designer's Printed extras, and the
+  stick-in engine now prints one.*
+- **An empty four-question frame was the "live-complete helper".** The
+  headings were the method's steps, the completed row lived only in the
+  notes, and a PowerPoint table cannot be typed into during a show.
+  *`modelling-formats.md` says a frame is built from the class's own
+  questions with its first row filled, and the completed state reaches the
+  board (an `answer-slide` drawn into the frame) where it cannot be drawn
+  live.*
+- **Both ordering tasks were printed in answer order, and the starter's title
+  was a question.** *`validate-lesson-design.py` refuses a datable option
+  bank or starter list printed in ascending or descending order (years,
+  "years ago", named British periods); the designer's naming rule says a
+  starter label names what is remembered, never a question.*
+- Not changed, deliberately: the rhythm, the sticking-point machinery and the
+  reviewer's material-defect boundary all stay, because they are right for
+  maths and the fault was that nothing let the subject file override the
+  shape; and the reviewer stays on the same model for now, because the
+  teacher's own accurate reviewer is a chat thread that holds his correction
+  history, and the closest thing this pipeline can do is put the plain words
+  in front of the reviewer and make it prove the sweep happened.

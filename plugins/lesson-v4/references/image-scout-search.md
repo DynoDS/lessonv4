@@ -75,6 +75,14 @@ thing, they say who made it, and they are usually glad it is being taught from.
 Judge an open-web candidate exactly as hard as any other. Nothing indexed it,
 so nothing has checked the subject but you.
 
+A page that shows its picture through a viewer and serves only a small preview
+is the ordinary shape of an archive's education page, and the full-size file
+usually lives one step away:
+the collection record for the same reference number, a "view larger" link, or
+the same photograph in a second archive. Try those before taking the preview; a
+picture children read detail from is only the source at a size where the detail
+survives. When the preview is all there is, take it and say so.
+
 ## Query design
 
 Translate the checked subject and evidence into concise terms. Keep compound species names, proper nouns, and technical terms intact.

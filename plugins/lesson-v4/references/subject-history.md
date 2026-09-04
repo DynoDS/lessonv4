@@ -10,6 +10,29 @@ So the purpose underneath all of it: history is learning from what happened, not
 
 ---
 
+## What the lesson feels like to the child
+
+Start from what a Year 4 child is actually doing in the room, because that is what the design produces, and it decides the shape of everything below.
+
+A primary history lesson is about the people: what school was really like for Victorian children, why a Roman family wanted a villa, what a Tudor child did all day. The historian's moves (reading a source, deducing, spotting continuity and change, being careful about what one piece of evidence proves) are still taught and still assessed, and they are taught at the moment they help answer the question the class already has. A lesson whose Teach slides are each a rule about method ("put a source in time before you compare it", "use the detail that is actually there", "compare the same part of life") is a lesson about being a historian, and a nine-year-old cannot see why anybody is telling them these things, because nothing is in front of them yet for the rules to be about. The knowledge is what makes the move mean something. Teach the move first and the class sits through methodology.
+
+So the spine of a history lesson runs through the material, and this file owns that spine. The teaching-sequence file supplies the rhythm, but what a chunk *is* here is a piece of the past, and a thinking move earns a line or two inside the beat where children need it rather than a chunk of its own. That holds even when the objective names the move ("using a range of sources"): the objective decides what children are assessed on, not that the method is taught before the thing it is a method for.
+
+The shape that produces this, in the order a child meets it:
+
+1. **The source first, big, and a question a child can answer by looking.** This is a classroom from 1897. What do you notice? What looks like our classroom? What looks different? Children are doing the actual lesson inside the first two minutes, and doing it on evidence, which is the historian's move without the label.
+2. **The idea, then its name, then the name attached to what they just saw.** Something that has stayed similar over time is called a continuity. Something that has become different is called a change. Then straight back to their own noticing: children learning together in a room, continuity; no interactive whiteboard, change. The word arrives after the meaning exists, so it lands on something. The vocabulary slide follows this beat rather than preceding it (`vocabularyPlacement` in the design carries that).
+3. **Every child uses it.** Find one continuity and one change between this classroom and ours, with a partner or on whiteboards.
+4. **New knowledge from a second source, told plainly.** Victorian children at this school had some lessons we still have, and they also went to school on Saturday. That is a fact about real children, and the next beat uses it.
+5. **The limit of a source arrives as a question children can now answer.** But this is one school's timetable. Does that mean every Victorian child went to school on Saturday? No. Exactly: a source tells us about the person, place or school it came from, so we are careful before we say everyone lived like that. The idea the lesson is built to land, that one source is not a picture of everyone, is taught here, once, where an eight-year-old can see why it matters, and it is tested once more at the end.
+6. **Another readable source, adapted.** Bridget was nearly twelve. She said school started at half past eight and finished at five, and she had time to play. The original document sits small beside it, named as the real thing. What has stayed the same? What has changed?
+7. **The main task, now that they have earned it.** Two columns, stayed similar and changed, filled from two sources. Or: use the classroom photo and Bridget's story, and write two things that have changed and one that has stayed similar.
+8. **A big question they can genuinely answer.** Has school completely changed since Victorian times? No: some things changed and some stayed similar, and here is the evidence.
+
+That is one lesson, given as the calibration and not as the template. A Roman lesson opens on a different source and lands a different fact; a significance lesson ends on a different question. What generalises is the order: material, noticing, the idea named after it is met, use, more knowledge, the historian's caution arriving as a question the knowledge lets children answer, then the task and the big question. The check on a finished design is quick: read the Teach headlines in order. If they are rules about sources rather than things about the period, the method has been put in front of the knowledge, and the design goes back to the material.
+
+---
+
 ## What children do when it is really history
 
 Every history LO is asking for one or two of these. Naming which one you are on decides the structure, the task, and what a good answer looks like.
@@ -67,7 +90,7 @@ What they cannot do is make a real historical judgement before they have been ta
 
 **A source used as a comprehension text.** A source on the board that children read answers off is a slide with facts on it. It becomes evidence the moment a child has to work out something the source does not say outright: what this tells us about who made it, why it mentions this and not that, what it lets us say and what it cannot. The limit: reading a source together for what it plainly says is exactly right when that is the knowledge being taught. The question is whether children are ever asked to get more out of it than it states.
 
-**Generic source checklists.** The 5Ws applied to any source, or the rule that sources from the time are more reliable than later ones (or the reverse). Both are found in primary classrooms and both actively teach the misconception. Replace the checklist with the question this particular source is being weighed for.
+**Generic source checklists.** The 5Ws applied to any source, or the rule that sources from the time are more reliable than later ones (or the reverse). Both are found in primary classrooms and both actively teach the misconception. Replace the checklist with the question this particular source is being weighed for. A four-column frame headed *What can I see or read? How does it compare with today? What does that show? What can't this source prove?* is the same checklist drawn as a table: its headings are the method's steps, so a child filling it is doing the method rather than the history, and a Year 4 class met exactly that frame, empty, under a photograph too small to read. A frame the class builds live earns its place when its headings are the questions the class just asked of this source (*What was their school day like? How do we know?*) and its first row is what they found; the blank row is then the next source, and the frame is theirs.
 
 **Source work in every lesson.** Evidential understanding is built better by making it the whole point of one lesson occasionally than by scattering a source task through every unit. So a history lesson does not need a source in it, and a lesson whose knowledge is best delivered by storytelling and shared reading is not weaker for having none.
 
@@ -101,7 +124,7 @@ A writing frame built from the question actually in front of them can help. Keep
 
 ## What the board and the page hold
 
-The Teaching Representations line is a contract, and in history the things worth naming on it are a timeline on the sheet with its spacing chosen deliberately as a teaching decision (the helper takes the positions you set, and its own guidance is that a school timeline is almost never honestly to scale), a source extract shown large enough to actually be read from the back, a picture or object with the parts that carry meaning pointed at, a card set for sorting, and a two-column changed-and-stayed-the-same. Reach for whichever the move needs; do not put a picture on a slide because the slide looked empty, because a decorative image costs attention rather than adding to it.
+The Teaching Representations line is a contract, and in history the things worth naming on it are a timeline, on the board or the sheet, with its spacing chosen deliberately as a teaching decision (both engines draw a `timeline` from the positions you set, and their own guidance is that a school timeline is almost never honestly to scale), and only when the lesson has more than one time to hold apart (two dated sources from inside one period do not need a timeline, they need their dates in their captions), a source extract shown large enough to actually be read from the back, a picture or object with the parts that carry meaning pointed at, a card set for sorting, and a two-column changed-and-stayed-the-same. Reach for whichever the move needs; do not put a picture on a slide because the slide looked empty, because a decorative image costs attention rather than adding to it.
 
 ### Optional decoration on sensitive history
 
@@ -111,6 +134,8 @@ disaster, memorialisation, trauma or any treatment where decorative accent
 would trivialise the human weight. A sparse page is valid.
 
 **A real source needs an accessible route before a child can think with it.** Select the smallest coherent source set the historical thinking genuinely requires. One source may be enough; comparison, corroboration or sequence may require more. Protect against overload by keeping every included source large and readable, shortening it to the load-bearing material, glossing difficult words in place and making the context clear. Put the caption and the question **on** the image rather than beside it, because a child looking from picture to question and back is spending their thinking on the looking. The one condition worth holding is to show the original alongside the adapted version and say plainly that it has been adapted, because the source being old and hard to read is itself part of what is being taught.
+
+The adapted version is content you write, not a request you make of the picture stage. A photograph constraint saying "with a readable transcript where the print is too small" asks the image scout for words, and the scout only fetches pictures, so a class met a page of Victorian handwriting and the instruction to find a detail in it. Write the adapted extract yourself, in the child's reading range, as the unit's `teachingText` (or the worksheet's `stimulus`), and name the original as the picture beside it. And when the detail children must read genuinely cannot be seen from the back of the room however large the board shows it (a timetable's cells, small figures in a photograph, place names on a map), record that moment as a read-from moment under `resourceOpportunities.stickIn`, so the stick-in pack prints each child a copy: the source stays on the board for the teacher to point at, and the child holds the paper.
 
 **A clip has to be checked against what you taught, every time.** Film that agrees with the teaching lifts recall substantially. Film that contradicts it produces confident false memories of the film's version in around half of children, and those are durable, so an unchecked clip is not neutral, it is worse than showing nothing. Historical fiction behaves the same way: excellent for the texture of a place and dangerous for what actually happened and who did what.
 
@@ -144,6 +169,8 @@ Children find historical time genuinely hard, and later than teachers assume. Da
 
 That decides *what* is worth retrieving, not what shape the retrieval takes. Choose the form from the general starter guidance, which is where that decision belongs. What is worth pulling back is where this sits against what they already know, what came before and after it, and how long ago that actually is.
 
+An ordering task hands over its answer when its items are printed in order, and it happens easily because the designer types them in the order they know: Stone Age, Roman, Anglo-Saxon, today. Shuffle them, so the child has to decide. The design validator refuses a datable list printed in answer order, but the habit belongs here.
+
 One caution on retrieval that matters more in history than in maths. Quick recall works well on facts and works poorly on reasons, so quizzing a class on *what* happened is not the same intervention as quizzing them on *why* it happened. Causal and interpretive material needs re-explaining rather than only retrieving, and a starter that pulls back six dates children can chant tells you nothing about whether the explanation survived the week. Pull back one thing worth reasoning with rather than six worth reciting.
 
 ---
@@ -175,6 +202,8 @@ A question earns its place when it catches interest, puts a genuine piece of his
 ## Misconceptions worth planning against
 
 Most primary teachers have no history background, so these are held here rather than predicted from scratch. Reach for the ones the period actually touches, and attach to each one a question a child holding it answers *wrongly*, because that is the only way it surfaces. "Does everyone understand?" catches nothing.
+
+A misconception from this list is checked in a lesson, not built into its spine. The lesson's centre is what happened; the wrong idea is met once, at the point where the knowledge makes it visibly wrong (Saturday school is on this one timetable; does that mean every child?), and tested once more at the end. Build the whole lesson on the correction and every beat rehearses the same sentence, which is the methodology lesson again by another door.
 
 - People in the past were stupid, ignorant, or worse people than us. The commonest by far, and the fix is teaching what they believed until the behaviour makes sense.
 - A historian is somebody who digs things up, and most of it is guessing. Children pick this up from a diet of objects and pictures with no written history in it, and the repair is meeting something a historian actually wrote somewhere in Key Stage 2.

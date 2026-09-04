@@ -122,7 +122,8 @@ class HelperDeliveryAtTheDesignerGateTests(unittest.TestCase):
     def test_a_promised_helper_gets_its_layout_first(self) -> None:
         """The substitute was reached for because the layout was chosen first and
         the helper did not fit what was left."""
-        self.assertIn("layout priority before anything else on the slide", flat(SLIDE_DESIGNER))
+        self.assertIn("layout priority over prose, furniture and decoration", flat(SLIDE_DESIGNER))
+        self.assertIn("The priority stops at the thing children read from", flat(SLIDE_DESIGNER))
 
 
 if __name__ == "__main__":

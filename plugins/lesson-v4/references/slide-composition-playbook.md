@@ -320,7 +320,7 @@ The starter is slide 1. It carries the Date and shortened displayed LO in the st
 
 Use the exact structured visual selected upstream. Keep one coherent card or comparison per genuine conceptual unit. A text-only card is complete when `kind: none` or no honest semantic visual exists. Do not add P3 merely because a vocabulary card is text-only.
 
-Vocabulary is presented on one `key-vocabulary` slide: all the lesson's words as a single glanceable reference the class returns to, each card carrying its word, definition and visual. Do not spread the words across one-word-per-slide vocabulary slides - a run of them slows the open of the lesson and scatters into four slides the reference children need in one place. When one word genuinely needs teaching rather than introducing, that teaching is a Teach beat with its own slide in the sequence, in addition to - never instead of - the word's card on the vocabulary slide.
+Vocabulary is presented on one `key-vocabulary` slide: all the lesson's words as a single glanceable reference the class returns to, each card carrying its word, definition and visual. It follows the starter unless the design's `vocabularyPlacement.after` names a unit, and then it follows that unit's last slide, because the lesson has let children meet the meaning before the word. Do not spread the words across one-word-per-slide vocabulary slides - a run of them slows the open of the lesson and scatters into four slides the reference children need in one place. When one word genuinely needs teaching rather than introducing, that teaching is a Teach beat with its own slide in the sequence, in addition to - never instead of - the word's card on the vocabulary slide.
 
 When two vocabulary words are taught as a contrast on `teach-compare`, set `headingRole: "vocabulary"` so both headwords take vocabulary green rather than the template's category palette — they are equals being defined, not competing categories.
 
@@ -348,7 +348,7 @@ Make comparison spatial. Align like with like and keep comparable images at comp
 
 ### Maps, charts, diagrams, and photographs
 
-Treat maps, charts and diagrams as teaching surfaces. Keep keys, scales, axes and labels readable. Preserve shared geometry when a supported shared helper exists.
+Treat maps, charts and diagrams as teaching surfaces. Keep keys, scales, axes and labels readable. Preserve shared geometry when a supported shared helper exists. A timeline is drawn by `timeline`, with the eras and marks at the fractions the design sets; a `table` with period names in its header row is not a timeline, and a class met one three times in a deck whose design had asked for a timeline on every slide.
 
 Use `contain` when the whole image or its edges carry evidence. Use `cover` only when a centred crop cannot remove a load-bearing feature. Keep comparison crops consistent unless evidence requires a different treatment.
 

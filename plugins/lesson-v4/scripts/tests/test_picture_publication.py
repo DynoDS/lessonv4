@@ -70,6 +70,29 @@ class PicturePublisherTests(unittest.TestCase):
         self.assertEqual(published.read_bytes(), staged.read_bytes())
         self.assertEqual(json.loads(out.stdout)["action"], "copied")
 
+    def test_a_small_copy_publishes_and_says_so(self):
+        """A 400 px archive preview of a classroom shipped for children to
+        inspect and nothing said so (4 September 2026). The picture still
+        publishes, because old and small is not the same as wrong; the fact
+        rides in the JSON result and as one marker line on stderr, so stdout
+        stays the single JSON document callers parse."""
+        staged = self.write_image(self.real_staging / "small.jpg", fmt="JPEG", size=(400, 332))
+        out = self.publish(staged, "unsplash/small.jpg")
+        self.assertEqual(out.returncode, 0, out.stdout)
+        payload = json.loads(out.stdout)
+        self.assertEqual(payload["action"], "copied")
+        self.assertEqual(payload["pixelSize"], "400x332")
+        self.assertEqual(payload["lowResolution"], "400x332")
+        self.assertIn("PICTURE_LOW_RESOLUTION: unsplash/small.jpg 400x332", out.stderr)
+
+    def test_a_full_size_picture_carries_no_warning(self):
+        staged = self.write_image(self.real_staging / "big.jpg", fmt="JPEG", size=(1600, 1200))
+        out = self.publish(staged, "unsplash/big.jpg")
+        self.assertEqual(out.returncode, 0, out.stdout)
+        payload = json.loads(out.stdout)
+        self.assertIsNone(payload["lowResolution"])
+        self.assertNotIn("PICTURE_LOW_RESOLUTION", out.stderr)
+
     def test_converts_png_bytes_behind_a_jpg_name(self):
         staged = self.write_image(self.real_staging / "winner.png", fmt="PNG", mode="RGBA")
         out = self.publish(staged, "unsplash/a.jpg")

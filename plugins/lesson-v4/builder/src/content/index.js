@@ -24,6 +24,7 @@ const { drawPyramid } = require('./pyramid');
 const { drawClock }  = require('./clock');
 const { drawDiamondNine }   = require('./diamond-nine');
 const { drawContinuumLine } = require('./continuum-line');
+const { drawTimeline, measureTimeline } = require('./timeline');
 const { drawFishbone }      = require('./fishbone');
 const { drawConceptMap }    = require('./concept-map');
 const { drawSourcePathway } = require('./source-pathway');
@@ -98,6 +99,9 @@ const ZONE_COMPAT = {
   clock:               ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'diamond-nine':      ['A', 'C', 'E-wide'],
   'continuum-line':    ['A', 'B', 'C', 'E-wide'],
+  // A timeline wants width for its dated marks; a narrow zone forces its
+  // labels below the readable floor, and the helper refuses that by name.
+  timeline:            ['A', 'B', 'C', 'E-wide'],
   fishbone:            ['A', 'C', 'E-wide'],
   'concept-map':       ['A', 'C', 'E-wide'],
   'source-pathway':    ['A', 'C', 'E-wide'],
@@ -167,6 +171,7 @@ const HELPERS = {
   clock:               drawClock,
   'diamond-nine':      drawDiamondNine,
   'continuum-line':    drawContinuumLine,
+  timeline:            drawTimeline,
   fishbone:            drawFishbone,
   'concept-map':       drawConceptMap,
   'source-pathway':    drawSourcePathway,
@@ -242,7 +247,10 @@ const MEASURE = {
   // Fixed-aspect figures: the card hugs the contained picture, not the zone.
   'label-diagram': measureLabelDiagram,
   'circuit-diagram': measureCircuitDiagram,
-  'circuit-symbol-bank': measureCircuitSymbolBank
+  'circuit-symbol-bank': measureCircuitSymbolBank,
+  // The bands, line and dated labels are laid out from their own content and
+  // centred in spare height; the card hugs that figure, not the zone.
+  timeline: measureTimeline
 };
 
 // Helpers that pad their own content (text 0.08in, image 0.12in). Their card

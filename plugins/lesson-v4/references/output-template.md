@@ -155,6 +155,12 @@ Use these exact shapes:
 
 Use `[]` when nothing was trimmed.
 
+**`vocabularyPlacement`** is a top-level field beside the vocabulary array. `null` keeps the one vocabulary slide where it normally sits, straight after the starter. `{ "after": "lesson-section/teaching-sequence/unit-001" }` shows that same slide after the named unit instead, for a lesson that lets children meet the meaning in the material before the word is given (children notice what is the same and what is different about a Victorian classroom, and only then are told that the first is called a continuity and the second a change). The word count and the single-slide rule do not change; only where the slide comes.
+
+```json
+"vocabularyPlacement": null
+```
+
 ### Representations
 
 Use `"representations": []` when no pedagogical representation is required. Never emit a prose sentinel such as `"Plain text only."`.

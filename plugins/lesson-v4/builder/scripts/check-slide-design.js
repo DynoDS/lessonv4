@@ -12,6 +12,11 @@ const { friendlyParseError } = require('../src/validate');
 const BLOCKING_CAPACITY_SIGNALS = new Set([
   'FIXED_CAPTION_CAPACITY',
   'SUCCESS_CRITERIA_CAPACITY',
+  // A picture children work from below its readable floor. Was a warning
+  // only, and a warning shipped a two-inch classroom photograph under "look
+  // closely" (4 September 2026); the repair is the designer's own (a taller
+  // zone, a split, `essential: false` for a picture that is only context).
+  'PICTURE_BELOW_READABLE_FLOOR',
 ]);
 
 function buildDiagnostic(warning) {

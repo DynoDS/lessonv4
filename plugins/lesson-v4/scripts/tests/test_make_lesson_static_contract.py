@@ -525,10 +525,13 @@ class MakeLessonStaticContractTests(unittest.TestCase):
 
     def test_stage1_vocabulary_placement(self):
         text = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
-        self.assertIn("Place vocabulary at the point where children have enough context to understand and use it.", text)
-        self.assertIn("In Skill-based and Content-based lessons, this is normally after the starter", text)
-        self.assertIn("In Discovery, introduce formal vocabulary after the exploration", text)
-        self.assertIn("In Dialogic and Task-Centred lessons, place it before the first discussion or task that depends on it.", text)
+        # Meaning first, then the word (teacher review, 4 September 2026): a
+        # definition met before it names anything a child has seen is held as a
+        # slogan, so the vocabulary slide may follow the first noticing beat.
+        self.assertIn("Place vocabulary at the point where children have enough context to understand and use it, and read that as meaning first, then the word.", text)
+        self.assertIn("the vocabulary slide follows that first noticing beat", text)
+        self.assertIn("Set `vocabularyPlacement` to", text)
+        self.assertIn("Discovery still introduces formal vocabulary after the exploration", text)
 
     def _designer_text(self):
         return (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")

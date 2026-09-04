@@ -66,7 +66,8 @@ For every accepted real or generated image, check:
 - correct physical state, components, connections, background, and setting;
 - correct use on slide, worksheet, or both;
 - recognisability at about 10 mm for a word-bank thumbnail;
-- suitable crop, aspect, resolution, and uncluttered focus;
+- suitable crop, aspect and uncluttered focus;
+- resolution judged against the job at its use size: a scene read as a whole (a classroom, a street, a landscape) survives a small file, and a document, a timetable or a photograph whose small figures are the evidence does not, because enlarging it on the board enlarges the blur. A preview-sized copy of a detailed source is not yet the source: look for the page's own full-size file or the same item in another holding before you accept it, accept the small copy only when the picture still does its job at that size, and say so in a `Friction:` line naming the pixel size so the teacher is warned rather than surprised;
 - legible English text when authentic text is required;
 - no generated text, labels, logos, or branding when forbidden;
 - no invented detail that changes the teaching meaning;

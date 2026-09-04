@@ -1341,6 +1341,11 @@ def build_scaffold(
             }
             for key in ("stickIn", "workingWall")
         },
+        # Where the one vocabulary slide sits. Null keeps it after the starter;
+        # a lesson that lets children meet the meaning before the word names
+        # the unit it follows. Left null rather than a placeholder because the
+        # default is the ordinary answer and the validator accepts null.
+        "vocabularyPlacement": None,
         "slideDesignNotes": [PLACEHOLDER],
         "flagsForTeacher": [PLACEHOLDER],
     }

@@ -16,6 +16,7 @@ const { slideCheckpointState, checkpointMessage } = require('./src/slide-checkpo
 const { preflightLayouts } = require('./src/layout-preflight');
 const { capacityWarnings } = require('./src/content/capacity');
 const { zoneFillWarnings, clearZoneFill } = require('./src/content/_zone-fill');
+const { pictureFloorFindings, clearPictureFloor } = require('./src/content/image');
 const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
 const { verifyPictures } = require('./src/verify-pictures');
@@ -273,6 +274,7 @@ async function main() {
   // The preflight already drew every slide once, so anything a figure recorded
   // about its slot is a duplicate of what the real draw is about to record.
   clearZoneFill();
+  clearPictureFloor();
 
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
@@ -308,6 +310,19 @@ async function main() {
       'composition',
       { slide: warning.slide, path: warning.field },
       warning.message
+    );
+  }
+
+  // A picture children work from that was allocated less than its readable
+  // floor. The [warn] line was already printed where it happened; this is the
+  // same fact as a diagnostic, so the slide-design check can refuse to promote
+  // a candidate that carries one instead of reading past a warning.
+  for (const finding of pictureFloorFindings()) {
+    diagnostic(
+      finding.signal,
+      'composition',
+      { slide: finding.slide, path: finding.field },
+      finding.message
     );
   }
 
