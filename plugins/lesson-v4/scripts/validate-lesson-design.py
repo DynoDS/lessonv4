@@ -38,7 +38,7 @@ OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities", "vocabularyPlacement"}
 VOCABULARY_PLACEMENT_FIELDS = {"after"}
 
 # The one thing an ordering task must not do is print its items already in
-# answer order. A Year 4 history starter listed Stone Age, Roman, Anglo-Saxon,
+# answer order. A history starter listed Stone Age, Roman, Anglo-Saxon,
 # today and asked "put these in order"; the Do beat's chips read 1862, 1897,
 # 2026 under "what came first?" (4 September 2026). Both the designer's rule
 # and the reviewer's check said not to, and neither is a check. So: when the

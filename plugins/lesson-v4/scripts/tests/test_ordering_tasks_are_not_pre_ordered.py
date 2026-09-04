@@ -1,6 +1,6 @@
 """An ordering task must not print its items already in answer order.
 
-The Year 4 history starter of 4 September 2026 read "Put these in order,
+The history starter of 4 September 2026 read "Put these in order,
 earliest first" over Stone Age Britain, Roman Britain, Anglo-Saxon Britain,
 today, printed in exactly that order, and the Do beat's chips read 1862, 1897,
 2026 under "What came first, next and last?". The designer's rule ("don't

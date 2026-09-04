@@ -168,7 +168,7 @@ def low_resolution_of(published: Path) -> str | None:
     """`WxH` when the published picture is too small to enlarge, else None.
 
     A small copy still publishes, because an old grainy photograph is the real
-    thing; what it cannot do is be enlarged to show fine detail. A Year 4
+    thing; what it cannot do is be enlarged to show fine detail. A
     history run shipped a 400 px archive preview of a classroom for children to
     inspect (4 September 2026), and nothing said so. The orchestrator runs this
     finaliser, never the publisher, so the fact is read from the published file

@@ -489,7 +489,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # its worksheet and its answer key over five archive photographs the
         # approved sources never held. The wave's respecify example was cut to
         # pay for part of it; it lives in full in the designer's own file.
-        # Raised from 65 KiB after the teacher refused a Year 4 history deck
+        # Raised from 65 KiB after the teacher refused a history deck
         # (4 September 2026) whose content-gap revision had rewritten the
         # lesson and gone straight to the slide designer with no second review:
         # the wave now briefs the revision to find another sound route and

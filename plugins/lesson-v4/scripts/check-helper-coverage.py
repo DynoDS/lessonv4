@@ -57,7 +57,7 @@ from pathlib import Path
 DECISIONS = ("covered", "build", "substitute", "gap")
 
 # A `covered` decision names the helper that draws the figure the lesson
-# describes, not a lookalike of roughly the right shape. A Year 4 history run
+# describes, not a lookalike of roughly the right shape. A history run
 # recorded a not-to-scale timeline as covered by `table`, and the deck printed
 # a three-column table with "not to scale" as a column heading, three times
 # (4 September 2026). The check below cannot judge every figure, but it can

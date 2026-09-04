@@ -2,7 +2,7 @@
 
 // The slide `timeline` helper: era bands on a line with dated ticks beneath.
 //
-// A Year 4 history deck (4 September 2026) rendered its "not-to-scale
+// A history deck (4 September 2026) rendered its "not-to-scale
 // Victorian-to-today timeline" three times as a three-column `table` with
 // "not to scale" as a column heading, because the slide engine had no
 // timeline and the helper check recorded the table as covering it. These

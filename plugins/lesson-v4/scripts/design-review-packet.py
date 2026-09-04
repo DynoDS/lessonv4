@@ -28,7 +28,7 @@ REQUIRED_REVIEW_HEADINGS = (
 # The review view opens with every string a child reads or hears, printed as
 # plain text in lesson order, because a reviewer that meets `"task": "..."`
 # inside a JSON block reads a specification, and a reviewer that meets the same
-# words on their own line hears a child at the back of the room. A Year 4
+# words on their own line hears a child at the back of the room. A
 # history lesson went to a class with `What does one visible detail suggest
 # about this class?` on the board after a review that corrected nothing: every
 # string had passed in its braces. The section's opening line carries the count,

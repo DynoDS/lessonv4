@@ -16,7 +16,7 @@
 //
 // And the TIER, because a flat floor answered the wrong question. 1.6" says a
 // picture is not broken; it never said whether the picture was the thing
-// children were looking at. A Year 4 history deck put its only classroom
+// children were looking at. A history deck put its only classroom
 // photograph, under a task that said "look closely", in a 2" cell beside an
 // empty table and a 5" square of empty slide, and the flat floor passed it. So
 // the floor now depends on how many pictures children work from share the

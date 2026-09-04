@@ -200,7 +200,7 @@ def cmd_publish(args) -> dict:
         raise PublishError(f"staged source is not a readable image: {exc}")
 
     # A small copy publishes, because an old grainy photograph is still the
-    # real thing; what it cannot do is be enlarged to show fine detail. A Year 4
+    # real thing; what it cannot do is be enlarged to show fine detail. A
     # history run shipped a 400 px archive preview of a classroom for children
     # to inspect (4 September 2026), and nothing said so. The line goes to the
     # run's record so the designer or teacher can give the source another route

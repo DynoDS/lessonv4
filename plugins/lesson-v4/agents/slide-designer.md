@@ -206,7 +206,7 @@ substitute chosen because it does. The priority stops at the thing children
 read from: when the promised helper is a frame or table the class records
 *into* from a source or photograph on the same slide, the source is the hero
 and the frame takes the height its rows need and no more, because a child
-cannot fill a row from a picture they cannot see. A Year 4 history deck gave an
+cannot fill a row from a picture they cannot see. A history deck gave an
 empty four-column table the width of three slides while the photograph it was
 about shrank to two inches beside it; the build's picture floor now refuses
 that, and the composition should never reach it. If the helper genuinely cannot be read in any zone the

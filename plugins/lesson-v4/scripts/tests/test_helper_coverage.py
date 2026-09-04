@@ -163,7 +163,7 @@ class HelperCoverageTests(unittest.TestCase):
         self.design_path.write_text(json.dumps(lesson), encoding="utf-8")
 
     def test_a_timeline_covered_by_a_table_is_a_lookalike_and_fails(self):
-        """A Year 4 history deck printed a three-column table with `not to
+        """A history deck printed a three-column table with `not to
         scale` as a column heading, three times, because the check accepted
         `table` as cover for a not-to-scale timeline (4 September 2026)."""
         self.timeline_design(

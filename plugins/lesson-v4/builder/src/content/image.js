@@ -49,7 +49,7 @@ const PENDING_ASPECT = 1;
 //
 // The floor depends on how many such pictures share the slide, because the
 // question the floor answers is "is this the thing children are looking at
-// while they work?", and one picture alone on a slide IS that thing. A Year 4
+// while they work?", and one picture alone on a slide IS that thing. A
 // history deck put its only classroom photograph, the one the task said to
 // "look closely" at, in a 2" cell beside an empty table and a 5" square of
 // blank slide, and a single 1.6" floor passed it: the picture was not
@@ -76,7 +76,7 @@ const PICTURE_FLOOR_PAIR     = 2.2;
 
 // Every breach of the floor, kept for the build to report after the draw as a
 // blocking composition diagnostic. The floor used to be a `[warn]` line only,
-// and a warning is a line a designer can read past: a Year 4 history deck
+// and a warning is a line a designer can read past: a history deck
 // shipped its lone classroom photograph at two inches under a task that said
 // "look closely", with the warning printed and the check reporting OK
 // (4 September 2026). Mirrors `_zone-fill.js`: the store is cleared between
