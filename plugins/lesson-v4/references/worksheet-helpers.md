@@ -113,8 +113,22 @@ them. A single-sheet worksheet carries no code, since there are no piles.
 | Field | |
 |---|---|
 | `layout` | required. `"auto"` for the normal case — the engine chooses the shape. Or a named page shape from `worksheet-compositions.md`, when the teaching wants a particular arrangement. |
-| `orientation` | `portrait` (default for a named layout) or `landscape`. Per sheet: a landscape sort beside a portrait set of questions is a normal lesson. With `"auto"`, stating one constrains the choice to it; omitting it lets the engine try both. |
+| `orientation` | `portrait` (default for a named layout) or `landscape`. Per sheet, though one lesson's sheets normally share one: see below. With `"auto"`, stating one constrains the choice to it; omitting it lets the engine try both. |
 | `zones` | required. With `"auto"`: an ARRAY of zone contents in reading order. With a named layout: an object with one entry per lettered zone. |
+
+**One lesson's sheets normally share an orientation.** The teacher prints the
+file once and cuts it into piles, so a portrait Below on top of a landscape
+Expected stacks awkwardly, and children comparing sheets across a table read the
+difference before they read a word: these are not the same lesson. Pick the
+shape from Expected, which is the class lesson the others adapt, and carry it
+across.
+
+Break it when a sheet's own content genuinely needs the other way round: a wide
+sort, a timeline, a table with six columns. Then say which sheet and why in
+`notes`, so the teacher knows the odd one out is deliberate. Leaving every sheet
+on `"auto"` is not a decision either way - the engine settles each sheet on its
+own and a set can drift apart without anyone stating a thing, which is how three
+real sets went out mixed in one week. The preflight reports a set that disagrees.
 
 A layout's zones are lettered `a`, `b`, `c`… and the letters mean position and
 nothing else. **A zone knows it is 180mm by 70mm. It does not know what goes in
@@ -309,6 +323,8 @@ reported rather than just the first.
 | `TWO_PAGE_SPEC_CONFLICT` | A sheet mixes one-page `layout`/`orientation`/`zones` with a `pages` array. |
 | `WORD_BANK_INLINE` | A word bank is typed into pupil wording. A bank is a separate labelled support block, not part of a question's words. |
 | `WORD_BANK_MISSING` | Pupil wording tells the child to use the word bank and the sheet has none. |
+| `SECTION_LABEL_IN_TEXT` | A block's mode-of-work heading (`Fluency`, `Reasoning`, `Practise`...) opens a question's own words, so it prints as part of that question. Lift it into a `section-label` above the block; the heading is wanted, just not there. |
+| `NOT_FOR_THE_CHILD` | Pupil wording names the page's machinery rather than the work (`answer line`, `writing lines`, `sentence stem`, `prefilled`, `placeholder`). Say what the child does and let the helper supply the room to do it. |
 | `NO_SHEETS` | The JSON has none of `below`, `expected`, `greaterDepth`. |
 | `SPEC_INVALID` | The JSON is malformed, a sheet name is not one of the three, or answers were stored as `sheets.answers`. |
 

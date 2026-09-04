@@ -136,3 +136,57 @@ test("no inner helper prints a stray number inside the question", () => {
   // The user-visible fault: four "(1)" labels scattered through question 2.
   assert.strictEqual(innerRuns(twoColumnQuestion()), 0);
 });
+
+// ─── an unmarked set still prints, so it still has to be counted ─────────
+//
+// A history sheet came out numbered (1) (1) (2) (1) (2) (3): two different
+// questions both called (1), and a child asked to answer "question 1" with no
+// way to know which. The specs had `questions` helpers written without
+// `question: true`, so the numbering pass walked straight past them - and the
+// helper printed anyway, from its own 1. The flag never controlled whether
+// numbers appeared, only whether they were right.
+//
+// Found on the Continuity and change Below sheet, 4 September 2026.
+
+test("a set nobody marked as a question is still numbered from the sheet's count", () => {
+  const zones = {
+    a: {
+      stack: [
+        { helper: "multiple-choice", question: true, text: "Tick one.", options: ["a", "b"] },
+        { helper: "questions", items: ["Finish this sentence:"] },
+      ],
+    },
+    b: {
+      stack: [
+        { helper: "instruction", question: true, text: "Look at Source B." },
+        { helper: "questions", items: ["A continuity is...", "A change is..."] },
+        { helper: "instruction", question: true, text: "Choose a source." },
+      ],
+    },
+  };
+  assert.deepStrictEqual(labelsOf(zones), ["1", "2", "3", "4", "5", "6"]);
+});
+
+test("no set is left printing its own numbers outside the count", () => {
+  const zones = {
+    a: { stack: [{ helper: "questions", items: ["One?", "Two?"] }] },
+    b: { stack: [{ helper: "written-answers", items: [{ text: "Why?", sentences: 1 }] }] },
+  };
+  assert.strictEqual(innerRuns(zones), 0);
+  assert.deepStrictEqual(labelsOf(zones), ["1", "2", "3"]);
+});
+
+test("a list that says it is not questions takes no numbers at all", () => {
+  // `showNumbers: false` is how a spec says a list is named slots rather than
+  // questions. Counting those would demand answers for things nobody asked.
+  const zones = {
+    a: {
+      question: true,
+      stack: [
+        { helper: "instruction", text: "Fill in the label." },
+        { helper: "questions", items: ["Name:", "Date:"], showNumbers: false },
+      ],
+    },
+  };
+  assert.deepStrictEqual(labelsOf(zones), ["1"]);
+});

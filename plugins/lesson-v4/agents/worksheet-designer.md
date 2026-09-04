@@ -118,14 +118,27 @@ rebuilding it as photographs, then questions, with the drawing task alone on
 the other side. `preferences.md` (Worksheets) carries the decision and the
 superseded panel-on-the-right arrangement it replaced.
 
-Support a child glances at while working - steps, success criteria, a word bank,
-a reminder - comes after the work in the reading order, normally the right-hand
-column and sometimes a band below. Which of those you use is latitude. What is
-not is the top-left corner: it belongs to whatever the questions read from, and a
-narrow support panel that takes it pushes the whole task into the width that is
-left and strands an empty band under it. A step list a child works *through*
-before answering is not support at all - it is part of the task, and goes above
-its questions in their own column.
+Support a child glances at while working comes after the work in the reading
+order, normally the right-hand column and sometimes a band below. Which of those
+you use is latitude. What is not is the top-left corner: it belongs to whatever
+the questions read from, and a narrow support panel that takes it pushes the
+whole task into the width that is left and strands an empty band under it.
+
+**What sends something to the back is what a child could do without it, not what
+kind of thing it is.** Ask whether a child who never read it could still produce
+an answer. Success criteria, a reminder of a method they have already used, a
+prompt to check their work: yes, and those improve or check an answer that
+already exists, so they come after. A definition of the word the question turns
+on, a sentence starter the answer is written into, a word bank the answer is
+chosen from, a step list worked *through*: no, and without it there is no
+answer, so it is part of the question and sits with it, above the writing space
+rather than under it.
+
+Sorted by kind instead, it prints as something a child cannot use. A real PSHE
+sheet put `Optional sentence start: "You can..."` underneath the line the
+sentence was to be written on, and a real history sheet put `continuity = stayed
+similar` at the foot of a page whose first question asked the child to tick
+continuity or change. Both were filed as reminders. Neither child could start.
 
 ---
 
@@ -722,10 +735,28 @@ Render the upstream pedagogical decision faithfully.
 1. **Question text is verbatim.** You do not paraphrase, renumber, re-pitch or
    rewrite. Flag it in `notes` instead.
 
-   *The one exception:* strip a teacher-facing meta-label where a depth prompt
-   opens with one (`**Compare two methods**:`, `**Reverse / working
-   backwards**:`). Those are scaffolds for whoever wrote the adaptation, not
-   words for a child. Keep everything after them verbatim.
+   *The one exception:* a label written for whoever wrote the brief rather than
+   for a child. It arrives two ways.
+
+   A depth prompt opening with a bold pedagogical type (`**Compare two
+   methods**:`, `**Reverse / working backwards**:`) loses the label and keeps
+   everything after it verbatim.
+
+   A block whose first line is a bare mode-of-work word (`Fluency`,
+   `Reasoning`, `Problem Solving`, `Practise`, `Apply`, `Stretch`) is a
+   heading that has grown into the question under it. Lift the word into a
+   `section-label` above the block (`shared.md` covers which word each subject
+   uses) and leave the question its own opening words. Copied through as it
+   arrives it prints as `Fluency Complete each row.`: one instruction that
+   opens by naming a category of thinking, which a child cannot act on and did
+   not ask about.
+
+   The boundary is the whole first line. A question that merely opens with one
+   of those words, as in `Problem solving takes longer when you rush`, is a
+   question, and stays exactly as it is. The engine refuses the buried case by
+   name (`SECTION_LABEL_IN_TEXT`) so a missed one cannot reach paper, but the
+   repair is always to move the word, never to delete it: the block still needs
+   its heading.
 
    Verbatim governs the words, never the typography. Splitting a stimulus at
    its own case boundaries so each case gets its own card or row changes no

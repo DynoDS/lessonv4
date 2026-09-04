@@ -135,16 +135,36 @@ class ReadingOrderTests(unittest.TestCase):
     def test_a_worked_through_step_list_is_not_support(self) -> None:
         """Discrimination: steps a child must complete in order before they can
         answer are part of the task and stay above their questions."""
-        self.assertIn(
-            "A step list a child works *through* before answering is not "
-            "support at all - it is part of the task",
-            flat(WORKSHEET_DESIGNER),
-        )
+        self.assertIn("a step list worked *through*", flat(WORKSHEET_DESIGNER))
         self.assertIn(
             "A step list a child must work *through* in order before they can "
             "answer anything is not support at all",
             flat(PREFERENCES),
         )
+
+    def test_what_goes_to_the_back_is_decided_by_need_not_by_kind(self) -> None:
+        """The step list was the only carve-out named, so everything else a
+        child cannot start without went to the back with the reminders.
+
+        Sheets of 1 to 4 September 2026: a PSHE sheet printed `Optional
+        sentence start: "You can..."` under the line the sentence was to be
+        written on, and a history sheet put `continuity = stayed similar` at the
+        foot of a page whose first question asked the child to tick continuity
+        or change. Both were filed as reminders and both left the child unable
+        to start, so the carve-out is now a criterion rather than one example.
+        """
+        for path in (PREFERENCES, WORKSHEET_DESIGNER):
+            with self.subTest(path=path.name):
+                text = flat(path)
+                # The test itself, not a longer list of kinds.
+                self.assertIn("could do without it, not what kind of thing it is", text)
+                self.assertIn(
+                    "a child who never read it could still produce an answer", text
+                )
+                # Both sides of it, so neither drifts into a blanket rule.
+                self.assertIn("Success criteria", text)
+                self.assertIn("sentence starter the answer is written into", text)
+                self.assertIn("word bank the answer is chosen from", text)
 
     def test_the_worksheet_rule_does_not_contradict_the_settled_column_rule(self) -> None:
         """The 29 and 31 August decisions stand: a stimulus and the questions

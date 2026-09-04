@@ -192,7 +192,11 @@ async function main() {
       // Words the designer wrote that the page does not print. Content, not
       // composition: the page fits and looks finished, and a line the child
       // needed is simply absent.
-      for (const problem of [...sheet.unprinted, ...sheet.emptySets]) {
+      for (const problem of [
+        ...sheet.unprinted,
+        ...sheet.emptySets,
+        ...sheet.pupilWording,
+      ]) {
         const named = /^([A-Z_]+):\s*([\s\S]*)$/.exec(problem);
         fail(
           named ? named[1] : "TEXT_NOT_PRINTED",

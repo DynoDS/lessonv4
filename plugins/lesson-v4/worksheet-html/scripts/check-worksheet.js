@@ -374,6 +374,7 @@ function main() {
           ...sheet.wordBanks,
           ...sheet.unprinted,
           ...sheet.emptySets,
+          ...sheet.pupilWording,
         ]) {
           const named = /^([A-Z_]+):\s*([\s\S]*)$/.exec(problem);
           fail(

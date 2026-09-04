@@ -160,6 +160,18 @@ function makeNumberer() {
     return `${activeGroupMain}a`;
   }
 
+  // A helper that draws its own list of numbered items. `showNumbers: false`
+  // is how a spec says the list is not questions - a run of named slots, a set
+  // of labels - and such a list takes no numbers and needs no answers.
+  function isNumberPrintingSet(node) {
+    return (
+      (node.helper === "questions" || node.helper === "written-answers") &&
+      Array.isArray(node.items) &&
+      node.items.length > 0 &&
+      node.showNumbers !== false
+    );
+  }
+
   function numberZones(zones) {
     const walk = (node, zoneId, insideNumberedQuestion = false) => {
       if (Array.isArray(node)) {
@@ -177,7 +189,18 @@ function makeNumberer() {
       }
 
       // A set numbers its own items, so it takes as many numbers as it has.
-      if (node.question && Array.isArray(node.items)) {
+      //
+      // What decides this is whether the set will PRINT numbers, not whether
+      // anyone remembered to mark it `question: true`. An unmarked set still
+      // printed - `startAt` was never set, the helper fell back to 1, and a
+      // history sheet came out numbered (1) (1) (2) (1) (2) (3) with two
+      // different questions both called (1). The numbers were on the page
+      // either way; the only thing the missing flag changed was whether they
+      // were right. Those items were also invisible to the answer-key check,
+      // so a question a child answered had no answer beside it and nothing
+      // said so. Numbering every printing set from the one running count makes
+      // both true by construction.
+      if (isNumberPrintingSet(node)) {
         if (groupIdOf(node) !== null) {
           throw new WorksheetError(
             "NUMBERING_CONFLICT",
@@ -1068,6 +1091,95 @@ function wordBankProblems(sheet) {
   return problems;
 }
 
+// ─── wording that was never meant for the child ──────────────────────────
+//
+// Everything in PUPIL_TEXT_FIELDS is printed on paper a child reads. Two kinds
+// of writing keep arriving in those fields, and both print without complaint.
+//
+// The first is the apparatus talking about itself. Real sheets carried "Show
+// the counters in a prefilled place-value chart and provide one numeral answer
+// line" and "Add the sentence stem: ...". Those are directions to whoever
+// builds the page, and a child reading them has been handed the wrong document.
+// The words below name the page's own machinery; a question about the LESSON
+// never needs them, which is what makes them safe to refuse on sight.
+//
+// The second is a mode-of-work label growing into the question it heads.
+// Upstream writes "Fluency\n\nComplete each row." as one block, verbatim
+// copying carries it through, and the sheet prints "Fluency Complete each
+// row." as a single instruction. The engine has `section-label` for exactly
+// this - a heading above the block it names - so the repair is to lift the
+// word out, not to delete it. Only a label ALONE on the first line counts: a
+// question that happens to open with the word "Reasoning about..." is a
+// question, not a heading.
+const BUILDER_WORDING = [
+  /\banswer\s+lines?\b/i,
+  /\bwriting\s+lines?\b/i,
+  /\bsentence\s+stems?\b/i,
+  /\bpre-?filled\b/i,
+  /\bplace-?holder\b/i,
+];
+
+// The mode-of-work words this engine prints as headings, from shared.md.
+const MODE_OF_WORK = new Set([
+  "fluency",
+  "practise",
+  "practice",
+  "apply",
+  "stretch",
+  "reasoning",
+  "problem solving",
+  "going deeper",
+]);
+
+function modeOfWorkLead(value) {
+  const [first, ...rest] = String(value).split("\n");
+  if (!rest.some((line) => line.trim())) return null;
+  const lead = first.trim().replace(/[:.]$/, "");
+  return MODE_OF_WORK.has(lead.toLowerCase()) ? lead : null;
+}
+
+function pupilWordingProblems(sheet) {
+  const problems = [];
+
+  const walk = (node, zoneId) => {
+    if (Array.isArray(node)) {
+      node.forEach((n) => walk(n, zoneId));
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+
+    for (const [key, value] of Object.entries(node)) {
+      if (typeof value === "string" && PUPIL_TEXT_FIELDS.has(key)) {
+        for (const pattern of BUILDER_WORDING) {
+          const hit = pattern.exec(value);
+          if (!hit) continue;
+          problems.push(
+            `NOT_FOR_THE_CHILD: zone "${zoneId}" prints ${JSON.stringify(hit[0])} ` +
+              `in its ${key}, which describes the page rather than the work. ` +
+              `Say what the child does; let the helper supply the room to do it.`
+          );
+        }
+        const lead = modeOfWorkLead(value);
+        if (lead) {
+          problems.push(
+            `SECTION_LABEL_IN_TEXT: zone "${zoneId}" opens its ${key} with ` +
+              `${JSON.stringify(lead)}, so the heading prints as part of the ` +
+              `question. Lift it into a "section-label" helper above the block ` +
+              `and leave the question its own words.`
+          );
+        }
+      }
+      walk(value, zoneId);
+    }
+  };
+
+  for (const id of Object.keys(sheet.spec.zones || {}).sort()) {
+    walk(sheet.spec.zones[id], id);
+  }
+
+  return problems;
+}
+
 function checkWorksheet(worksheet) {
   return sheetsOf(worksheet)
     .map((sheet) => ({ ...sheet, ...problemsWith(sheet) }))
@@ -1077,7 +1189,8 @@ function checkWorksheet(worksheet) {
         sheet.tooTight.length ||
         sheet.wordBanks.length ||
         sheet.unprinted.length ||
-        sheet.emptySets.length
+        sheet.emptySets.length ||
+        sheet.pupilWording.length
     );
 }
 
@@ -1107,6 +1220,7 @@ function problemsWith(sheet) {
     wordBanks: badZones.length ? [] : wordBankProblems(sheet),
     unprinted: badZones.length ? [] : unprintedTextProblems(sheet),
     emptySets: badZones.length ? [] : emptySetProblems(sheet),
+    pupilWording: badZones.length ? [] : pupilWordingProblems(sheet),
   };
 }
 

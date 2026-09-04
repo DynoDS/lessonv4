@@ -64,6 +64,65 @@ function walk(node, where, advisories) {
 // raises none. Never throws on a malformed spec - the real validators own
 // shape errors, and an advisory pass that crashed would block the check that
 // matters.
+// ─── the three sheets are one lesson, so they print as one stack ─────────
+//
+// A teacher prints the file once and cuts it into piles. A portrait Below on
+// top of a landscape Expected makes that an awkward stack, and children
+// comparing sheets across a table read the difference before they read a word:
+// these are not the same lesson. Three real sets went out mixed in one week.
+//
+// Advisory, not a refusal. A sheet whose own content genuinely wants the other
+// way round - a wide sort, a timeline, a six-column table - is a real case, and
+// which sheet that is cannot be decided from here.
+//
+// Read AFTER auto layouts resolve, because a set can disagree without ever
+// saying so: two sheets written `"layout": "auto"` are handed their shapes
+// separately, and one came out landscape and the other portrait.
+function orientationOf(sheet) {
+  if (!sheet || typeof sheet !== "object") return null;
+  const pages = Array.isArray(sheet.pages) ? sheet.pages : [sheet];
+  const stated = pages
+    .map((page) => (page && page.orientation) || (page && page.layout ? "portrait" : null))
+    .filter(Boolean);
+  return stated.length ? stated[0] : null;
+}
+
+function settledSheets(worksheet) {
+  try {
+    // Lazy, and only here: worksheet.js requires this file's sibling checks,
+    // and a top-level require either way round loads half a module.
+    const { resolveAutoLayouts } = require("./worksheet");
+    return resolveAutoLayouts(worksheet).worksheet.sheets || {};
+  } catch (e) {
+    // A worksheet too broken to resolve has a real fault waiting for it, and
+    // an advisory is not the place to report it.
+    return (worksheet && worksheet.sheets) || {};
+  }
+}
+
+function setShapeAdvisories(worksheet, advisories) {
+  const sheets = settledSheets(worksheet);
+  const byOrientation = new Map();
+  for (const [name, sheet] of Object.entries(sheets)) {
+    const orientation = orientationOf(sheet);
+    if (!orientation) continue;
+    if (!byOrientation.has(orientation)) byOrientation.set(orientation, []);
+    byOrientation.get(orientation).push(name);
+  }
+  if (byOrientation.size < 2) return;
+
+  const split = [...byOrientation.entries()]
+    .map(([orientation, names]) => `${names.join(", ")} ${orientation}`)
+    .join("; ");
+  advisories.push(
+    `this lesson's sheets do not share an orientation (${split}). They print ` +
+      `as one file and get cut into piles, so a mixed set stacks awkwardly and ` +
+      `reads to a child as a different lesson. Carry Expected's shape across ` +
+      `unless a sheet's own content needs the other way round - and say which ` +
+      `in notes when it does.`
+  );
+}
+
 function compositionAdvisories(worksheet) {
   const advisories = [];
   const sheets = (worksheet && worksheet.sheets) || {};
@@ -78,6 +137,7 @@ function compositionAdvisories(worksheet) {
       }
     });
   }
+  setShapeAdvisories(worksheet, advisories);
   return advisories;
 }
 

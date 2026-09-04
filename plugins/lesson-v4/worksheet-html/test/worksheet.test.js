@@ -1035,3 +1035,75 @@ test("an empty bank does not count as a bank", () => {
 
   assert.match(problems[0].wordBanks.join(" "), /WORD_BANK_MISSING/);
 });
+
+// ─── wording that was never meant for the child ──────────────────────────
+//
+// Two families of words kept reaching paper a child reads, and both printed
+// without a murmur. Real sheets, 1 to 4 September 2026.
+
+const sheetSaying = (zoneA) => ({
+  meta: { lesson: "X", lo: "To do X", yearGroup: 4 },
+  sheets: { expected: { layout: "full", zones: { a: zoneA } } },
+});
+
+test("the page describing its own apparatus is not a question", () => {
+  // Printed on a real maths sheet: "Show the counters in a prefilled
+  // place-value chart and provide one numeral answer line."
+  const problems = checkWorksheet(
+    sheetSaying({
+      helper: "instruction",
+      text:
+        "What number is shown by 8 tens counters? Show the counters in a " +
+        "prefilled place-value chart and provide one numeral answer line.",
+    })
+  );
+
+  const said = problems[0].pupilWording.join(" ");
+  assert.match(said, /NOT_FOR_THE_CHILD/);
+  assert.match(said, /prefilled/);
+  assert.match(said, /answer line/);
+});
+
+test("a question about the lesson is left alone", () => {
+  // Discrimination: these say what the CHILD does. Nothing here names the
+  // page's machinery, so nothing here is refused.
+  const problems = checkWorksheet(
+    sheetSaying({
+      stack: [
+        { helper: "instruction", text: "Write your answer on the line below." },
+        { helper: "instruction", text: "Draw a line from each word to its part." },
+        { helper: "instruction", text: "Reasoning about weight helped you here." },
+      ],
+    })
+  );
+
+  assert.deepEqual(problems, []);
+});
+
+test("a mode-of-work heading buried in a question is sent back to its helper", () => {
+  // Printed on a real sheet as "Fluency Complete each row." - one instruction,
+  // the heading swallowed into it.
+  const problems = checkWorksheet(
+    sheetSaying({ helper: "instruction", text: "Fluency\n\nComplete each row." })
+  );
+
+  const said = problems[0].pupilWording.join(" ");
+  assert.match(said, /SECTION_LABEL_IN_TEXT/);
+  assert.match(said, /section-label/);
+});
+
+test("a heading that is the whole line is a heading, not a buried one", () => {
+  // Discrimination both ways: a label alone is what `section-label` is for and
+  // is nobody's fault here, and a question merely opening with the word is a
+  // question.
+  const problems = checkWorksheet(
+    sheetSaying({
+      stack: [
+        { helper: "section-label", text: "Fluency" },
+        { helper: "instruction", text: "Problem solving takes longer when you rush." },
+      ],
+    })
+  );
+
+  assert.deepEqual(problems, []);
+});
