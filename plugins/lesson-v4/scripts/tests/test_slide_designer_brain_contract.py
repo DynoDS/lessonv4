@@ -76,7 +76,8 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "description: Slide specification designer for UK primary lessons.",
             self.agent,
         )
-        self.assertIn("This role creates JSON only.", self.agent)
+        self.assertIn("This role delivers JSON and inspects its prescribed private PowerPoint preview.", self.agent)
+        self.assertIn("orchestrator alone runs and publishes the final PowerPoint build", self.agent)
         self.assertIn(
             "Do not load or use the global `Presentations` skill for this role.",
             self.agent,
@@ -403,12 +404,16 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         self.assert_tokens(
             self.gap,
             "## Slide Designer route",
-            "HELPERS_UNAVAILABLE",
-            "HELPERS_IN_PROGRESS",
-            "lesson.partial.json",
-            '"schemaVersion": 1',
+            "SLIDE_HELPER_GAP",
+            "pending-helper/",
+            "later manual installation",
             "Do not create or update canonical `[WORKING_DIR]/lesson.json`",
         )
+        # A missing helper must still prevent an unfaithful final spec, but
+        # today's route cannot resume on helpers awaiting manual installation.
+        worker_rules = self.gap + self.agent + read(ROOT / "agents" / "worksheet-designer.md")
+        for retired in ("HELPERS_IN_PROGRESS", "RESUME_CHECKPOINT", "SOURCE_SNAPSHOT"):
+            self.assertNotIn(retired, worker_rules)
         self.assertNotIn(
             "record the exact missing capability in `notes`",
             self.representations,

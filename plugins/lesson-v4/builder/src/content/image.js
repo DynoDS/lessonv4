@@ -113,10 +113,6 @@ function containRect(frame, aspect) {
   };
 }
 
-function resolveImagePath(imagePath, ctx) {
-  return resolveForEmbed(imagePath, ctx);
-}
-
 // Will this image actually put something on the slide? Any layout that reserves
 // space for a picture, or writes a caption describing one, needs this answer
 // rather than "is `image` a type I can draw?" — the two come apart exactly when
@@ -127,7 +123,7 @@ function resolveImagePath(imagePath, ctx) {
 // that were promised on its behalf.
 function imageWillDraw(imageData, ctx) {
   if (!imageData || !imageData.imagePath) return false;
-  const resolved = resolveImagePath(imageData.imagePath, ctx);
+  const resolved = resolveForEmbed(imageData.imagePath, ctx);
   if (resolved && fs.existsSync(resolved)) return true;
   // A missing essential photo still draws: the grey placeholder is the signal
   // that it needs sourcing, so the space it holds is doing a job.
@@ -309,7 +305,7 @@ function drawImage(pptx, slide, zone, data, ctx) {
 
 function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
   const raw = imageData.imagePath;
-  const resolved = resolveImagePath(raw, ctx);
+  const resolved = resolveForEmbed(raw, ctx);
 
   if (!resolved || !fs.existsSync(resolved)) {
     // A photo the lesson-designer marked non-essential is an enhancement, not
@@ -438,7 +434,7 @@ function measureImage(zone, data, ctx) {
   const fit = resolveFit(data, false);
   if (fit !== 'contain') return null;                       // cover fills the zone, so the card should too
 
-  const resolved = resolveImagePath(data.imagePath, ctx);
+  const resolved = resolveForEmbed(data.imagePath, ctx);
   const pending = !resolved || !fs.existsSync(resolved);
   const dims = ctx && ctx.imageDims ? ctx.imageDims[data.imagePath] : null;
   if (!pending && (!dims || !(dims.w > 0) || !(dims.h > 0))) return null;
@@ -471,7 +467,7 @@ function measureImage(zone, data, ctx) {
 function imageAspect(data, ctx) {
   if (!imageWillDraw(data, ctx)) return null;
   if (resolveFit(data, false) !== 'contain') return null;
-  const resolved = resolveImagePath(data.imagePath, ctx);
+  const resolved = resolveForEmbed(data.imagePath, ctx);
   if (!resolved || !fs.existsSync(resolved)) return PENDING_ASPECT;
   const dims = ctx && ctx.imageDims ? ctx.imageDims[data.imagePath] : null;
   if (!dims || !(dims.w > 0) || !(dims.h > 0)) return null;

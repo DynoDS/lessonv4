@@ -310,12 +310,6 @@ function questionCount(zones) {
 // job print (1a) and (1b), a count of three says nothing about whether a key
 // holding 1, 2, 3 covers a sheet showing 1a, 1b, 2 - so the key is matched
 // against these exact labels instead.
-function questionLabels(zones) {
-  const numberer = makeNumberer();
-  numberer.numberZones(zones || {});
-  return numberer.finish();
-}
-
 // A pupil level's labels across every physical page it occupies, so the two-page
 // exception is checked as one sequence rather than two.
 function questionLabelsForSheet(sheet) {

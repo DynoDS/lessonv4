@@ -170,108 +170,6 @@ reply instead reaches nobody.
 
 ---
 
-## Private checkpoint for isolated helper gaps
-
-Use this route only when the spawn prompt contains `HELPERS_IN_PROGRESS`.
-
-A missing helper blocks only the pupil sheet or sheets whose required
-representation or physical realisation uses one of its unresolved helper IDs.
-Complete every other required sheet and its complete answer-key section. Do not
-wait for the helper while holding the worker, and do not substitute a different
-helper, plain text or a weaker task.
-
-On a blocked run, write `WORKING_DIR/worksheet.partial.json`. Do not create or
-update `WORKING_DIR/worksheet.json`.
-
-Use the same root fields as final `worksheet.json`, but include only fully
-completed sheet keys and their matching complete `answerKey` keys. Add:
-
-```json
-{
-  "checkpoint": {
-    "schemaVersion": 1,
-    "status": "WORKSHEET_HELPER_GAP",
-    "attemptId": "[ATTEMPT_ID]",
-    "sourceSnapshot": "[absolute SOURCE_SNAPSHOT path]",
-    "sourceSnapshotSha256": "[lowercase raw-byte SHA-256 of snapshot.json]",
-    "requiredHelpers": [
-      "helper:[name]:[capability]"
-    ],
-    "blockedSheets": {
-      "below": ["helper:[name]:[capability]"],
-      "expected": [],
-      "greaterDepth": []
-    }
-  }
-}
-```
-
-Use only `below`, `expected` and `greaterDepth` under `blockedSheets`. Include
-only genuinely blocked keys, or retain an empty array for an unblocked key.
-Every helper ID under a blocked sheet must occur exactly once in
-`requiredHelpers`.
-
-A completed sheet without its complete matching answer-key section is not
-reusable and must not enter the partial file.
-
-The attempt's immutable source snapshot contains:
-
-- `lesson-design.json`;
-- `photo-requirements.json`;
-- `adaptation.md` when present;
-- an explicit absent record when `adaptation.md` is absent.
-
-An absent adaptation has `exists: false` and `sha256: null`; it is not equivalent
-to an empty adaptation file.
-
-Parse `worksheet.partial.json` before returning. Do not run
-`check-worksheet.js` on the partial checkpoint and do not send it to the builder
-or direct fixed build.
-
-Return exactly this checkpoint header before the normal short report:
-
-```text
-WORKSHEET_HELPER_GAP
-Attempt: [ATTEMPT_ID]
-Checkpoint: [WORKING_DIR]/worksheet.partial.json
-Required helpers: [comma-separated helper IDs]
-Blocked sheets: [comma-separated sheet keys]
-Completed sheets: [comma-separated sheet keys, or None]
-```
-
-When the spawn prompt contains `RESUME_CHECKPOINT`, read:
-
-- current lesson design;
-- current adaptation when present;
-- current photo requirements;
-- the checkpoint;
-- the immutable source copies named by the checkpoint's original
-  `sourceSnapshot`;
-- the current attempt's new `SOURCE_SNAPSHOT`.
-
-Recompute the exact raw-byte hashes.
-
-- Reuse a completed sheet and its matching answer-key section exactly when no
-  changed source could affect that sheet.
-- When a source changed, compare the immutable source copy and current source.
-  Rebuild every completed sheet that could have been affected. When no narrower
-  safe sheet boundary can be established, rebuild that sheet.
-- In the completion result, list `Reused sheets:` and `Rebuilt sheets:`.
-- Complete every blocked sheet after every helper ID it names has passed.
-- Remove the root `checkpoint` object.
-- Write `[WORKING_DIR]/worksheet.json.tmp.[ATTEMPT_ID]`.
-- Parse it and run the exact existing worksheet preflight against the temporary
-  file.
-- On success, atomically replace canonical `worksheet.json` and run the exact
-  existing preflight against the canonical path.
-- Delete `worksheet.partial.json` only after canonical preflight passes.
-- On failure, retain the partial and temporary file, return failure and do not
-  run the direct fixed worksheet build.
-
-A checkpoint is saved work, not a buildable worksheet specification.
-
----
-
 ## Building a sheet
 
 ### 1. Work out what goes on it
@@ -325,16 +223,11 @@ visual with no usable picture, apply the rule immediately below, and name the
 affected refs in your completion report. Never invent, substitute or quietly
 rewrite the task as text because of it.
 
-For adaptation photographs the dependency direction is absolute: they are
-sourced only AFTER your `worksheet.json` exists, because promotion reads your
-spec to decide which provisional entries become real pictures. A provisional
-entry with no published file is therefore the normal state at your design time,
-not a gap. Omitting a sheet because its adaptation pictures "have not arrived"
-inverts the pipeline and guarantees they never arrive - the promotion that
-would have sourced them finds no sheet referencing them and selects zero. A
-ref present in the contract you were given is an approved request; design the
-sheet to its promised filename. The content-gap rule below is only for a ref
-that is genuinely absent from that contract.
+Adaptation pictures may be sourced alongside your design. A ref in the supplied
+contract is an approved request; design to its promised filename without waiting
+for publication. Promotion reads your finished spec to settle which pictures
+the sheet keeps. The content-gap rule below is only for a ref genuinely absent
+from that contract.
 
 When a required visual has no approved request, do not put the word or question
 on the page bare and do not redesign the task as text. Omit the affected sheet
@@ -390,11 +283,9 @@ left-to-right, and turned on its side, so if your biggest item is second,
 a shape whose biggest zone is second already exists and has already been
 tried.
 
-**Its numbers ARE the build's numbers.** Same measurements, same helpers, same
-millimetres - so there is nothing to be learned by building a sheet to find
-out whether it fits. A spec the gate accepts will render; one it refuses would
-have been refused after the build too. Never build a page in order to measure
-it.
+The gate and build share layout estimates. The fixed builder then measures
+the browser output, corrects fit where possible and refuses unresolved clipping.
+Use the preflight here; do not build a page yourself to measure it.
 
 **Name a layout yourself only when the teaching wants a particular
 arrangement.** The engine cannot tell that a grid a child plots on wants to be
@@ -898,9 +789,6 @@ Before the mechanical gate, read each sheet once as the pupil using it:
 Return an upstream failure through `WORKSHEET_CONTENT_GAP`. Fix only physical
 realisation faults you own.
 
-This section applies only to final `worksheet.json`. Never run the final gate on
-`worksheet.partial.json`.
-
 When writing `worksheet.json.meta.lessonDesignPath`, write the absolute path to `lesson-design.json`.
 
 ### Resolve your own Educational SVG requests
@@ -966,9 +854,8 @@ sheet that wanted it. This is a suggestion for a layout or helper worth
 building, so raise it only when it would genuinely have made this sheet easier
 or the shape is an obvious hole - a tight page you composed cleanly with the
 existing shapes is not friction.
-This final command resolves any `"auto"` layout exactly as the build will,
-prints the shape it chose, and proves the JSON you actually saved is the page
-that will print.
+This final command checks the saved JSON and prints the initial layout choice.
+The fixed builder verifies the physical fit.
 
 Then run exactly:
 

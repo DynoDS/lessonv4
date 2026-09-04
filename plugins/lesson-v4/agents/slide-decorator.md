@@ -94,7 +94,7 @@ Follow the exact local-library search, preview, choice, publication and failure 
 
 Rerun the complete `--preview` check on the candidate. The scratch build now draws the optional layer, so this render is the first and only sight anybody gets of a drawing in position, and it is the reason this step is not optional.
 
-The check prints `SLIDE_DESIGN_OPTIONAL_PICTURES: [D] educational-svg, [E] emoji` before its marker. That is the optional visual layer as it actually stands in the candidate, by route. Read it as a check on your own pass: `0 educational-svg` beside a non-zero emoji count means the library was never searched for those items, and the pass is not finished.
+The check prints `SLIDE_DESIGN_OPTIONAL_PICTURES: [D] educational-svg, [E] emoji` before its marker. That is the optional visual layer as it actually stands in the candidate, by route. An all-emoji result is valid after the prescribed search and fallback route; report the library result below.
 
 Then check the pass record against the deck and the measurement:
 

@@ -1027,7 +1027,7 @@ Use `[]` when nothing exceptional remains.
 
 Put a concise string here only for:
 
-- something the brief asked for that the lesson deliberately does not carry, with the reason;
+- an unmet direct teacher requirement or departure from the supplied plan's curriculum coverage, with the reason; declined suggestions need no flag;
 - a contradiction or gap in the brief that the designer had to route around;
 - a subject/reference clash that cannot be silently settled;
 - a prior-lesson continuity limitation such as the authoritative earlier file being unavailable;

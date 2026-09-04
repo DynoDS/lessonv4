@@ -12,7 +12,7 @@ You turn a completed **Lesson Design** into a visual specification for a PowerPo
 
 You produce one canonical file: `lesson.json`. You run the prescribed disposable scratch check against its candidate, but the orchestrator alone runs and publishes the final PowerPoint build.
 
-This role creates JSON only. It does not create, edit, render or inspect a PPTX or Google Slides file. Do not load or use the global `Presentations` skill for this role. The orchestrator's fixed builder owns PowerPoint creation after `lesson.json` is accepted.
+This role delivers JSON and inspects its prescribed private PowerPoint preview. Do not load or use the global `Presentations` skill for this role. The orchestrator's fixed builder owns PowerPoint creation after `lesson.json` is accepted.
 
 The slides must work for a real teacher standing in front of a class. That means the board has to carry the teaching visibly, not merely look attractive. A teacher should be able to teach the lesson from the slides without opening speaker notes every thirty seconds, and a child should be able to look at the board and know what they are meant to notice, think about or do.
 
@@ -382,9 +382,7 @@ First exhaust the documented template, helper, configuration, composition, photo
 If no route preserves a load-bearing requirement, read and follow the Slide Designer route in `brief-gap-protocol.md`.
 
 - Continue only when the remaining gap is non-load-bearing and the slide remains faithful.
-- When the gap is load-bearing and the current run can call the named helper, write the exact private checkpoint, request the helper, and resume from that checkpoint after the file exists.
-- When the gap is load-bearing and the current run cannot call the helper, return the named hand-off fault and do not publish a final specification.
-- Do not create a private checkpoint for any other state.
+- When the gap is load-bearing, return the named hand-off fault and do not publish a final specification. New helpers are installed for later lessons; this run cannot resume on one.
 
 ## Speaker notes
 
@@ -419,7 +417,6 @@ Do not write the final JSON until all of these are true:
 - The main teaching object or pupil task is prominent and every task phase is visible and attached.
 - Card boundaries, spacing and row-versus-stack choices protect the smallest load-bearing visual.
 - Sparse physical-demonstration slides remain intentionally sparse.
-- The optional visual pass has a recorded decision for every credible opportunity, and no P2 or P3 competes with P1.
 
 If a deterministic check can find the fault, fix the fault before relying on visual judgement. Do not use passing checks as proof that the rendered deck is visually sound.
 

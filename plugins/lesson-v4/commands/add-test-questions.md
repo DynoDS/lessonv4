@@ -77,7 +77,7 @@ For a PDF that didn't need splitting above, spawn the `question-extractor` agent
 
 Each extractor files straight into `[PLUGIN_SOURCE_ROOT]/builder/assets/test-questions/`, the git source tree, the same place every other asset this plugin ships with lives (the children photos, the coin images). Nothing needs copying there afterwards.
 
-Once every extractor in this run has finished filing (whether it was one paper or several at once), before reporting back to the teacher: from `[PLUGIN_SOURCE_ROOT]/..`, `git add` the new and changed files under `lesson-resources/builder/assets/test-questions/`, commit with a message naming the paper (or papers) just extracted, and push.
+Once every extractor in this run has finished filing (whether it was one paper or several at once), before reporting back to the teacher: from `[PLUGIN_SOURCE_ROOT]`, `git add` the new and changed files under `builder/assets/test-questions/`, commit with a message naming the paper (or papers) just extracted, and push.
 
 ## Report back
 

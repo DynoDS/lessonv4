@@ -33,16 +33,6 @@ const CHOICE_BOX_MM = 4;
 // that is missing: both would produce a sheet that looks finished and teaches
 // something other than what was designed.
 
-function exactArray(value, path, count) {
-  if (!Array.isArray(value) || value.length !== count) {
-    throw new Error(
-      `HELPER_STRUCTURE_INVALID: ${path} requires exactly ${count} entries; ` +
-        `received ${Array.isArray(value) ? value.length : "non-array"}.`
-    );
-  }
-  return value;
-}
-
 function atMost(value, path, count) {
   if (!Array.isArray(value)) {
     throw new Error(`HELPER_STRUCTURE_INVALID: ${path} must be an array.`);
