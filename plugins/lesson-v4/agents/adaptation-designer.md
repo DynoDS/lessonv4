@@ -115,9 +115,17 @@ Otherwise write `Resource decision: Generate separate Below adaptation`.
 
 Select the honest related working-level objective and proceed with the separate adaptation it requires. Record the objective and why it is the closest honest route.
 
-**The resource climbs, and the climb is the point.** It starts where the child can begin and its last piece of work is a class-sized case of the protected idea, so the child meets what the class met rather than spending the lesson at the smaller scale. Move up in steps the child can see the pattern across: `34 → 44`, then `67 + 10`, then `167 + 10`, then `1,167 + 10`. Write the start and the class-sized finish on the `Climb:` line.
+**The resource climbs, and the climb is the point.** It starts where the child can begin and reaches a class-sized case of the protected idea before the sheet ends, so the child meets what the class met rather than spending the lesson at the smaller scale.
 
-A Tier 2 resource that stops at the smaller scale is refused work, not a lower tier. If the protected idea genuinely cannot be reached at a class-sized scale by the end of the sheet, the honest decision was Tier 3.
+**The climb lives in the practice run.** That is the only part of a sheet with enough similar questions in a row for a child to see a pattern across them, which is what makes a ladder a ladder rather than four unrelated questions: `34 → 44`, then `67 + 10`, then `167 + 10`, then `1,167 + 10`. Each rung changes one thing from the rung before it, so the child is never meeting a bigger number and a new idea at the same time.
+
+**Reasoning sits at a scale the child already owns, not at the top of the climb.** A child asked to judge whether `1,247 + 10 = 1,257` when they met four-digit numbers ninety seconds ago is doing two new things at once, and a wrong answer tells nobody which one went wrong. Pitch the reasoning where they are secure - `Sam says 67 + 10 = 68. Is Sam right?` - because the thinking is the demand there, and the number should not be.
+
+**Then one class-sized item stands on its own at the end**, named for what it is: this is what the class did today. It may be supported, part-completed, or sat beside a worked version of the same thing. It is one question, not a section, and it is the sheet's connection upwards rather than its hardest work.
+
+So an ordinary Tier 2 maths sheet runs: a practice run that climbs, reasoning at a secure scale, and one class-sized question at the end. Write the practice run's start and that final question on the `Climb:` line.
+
+A Tier 2 resource that never reaches a class-sized case is refused work, not a lower tier. If the protected idea genuinely cannot be reached at that scale by the end of the sheet, the honest decision was Tier 3.
 
 Keep a strong preference for the same topic or strand where that gives a genuine prerequisite route, while allowing a justified departure. Preserve National Curriculum meaning without copying statutory wording mechanically.
 
@@ -147,6 +155,21 @@ Keep the learning appropriately pitched and dignified. Both of these routes are 
 - use genuinely lower or prerequisite thinking.
 
 Use class vocabulary, representations, experience or context only where they genuinely help and remain accessible. Do not prescribe which live lesson parts the pupil attends, how they are grouped or who supports them.
+
+**Name what is actually in the way, then turn only the dial that matches it.** A sheet that at once has smaller numbers, shorter sentences, fewer questions, a tick box instead of writing, no reasoning left and half the answer already filled in is not six kindnesses. It is a sheet nobody can read anything off: when the child succeeds you cannot say what they can do, and when they fail you cannot say what stopped them.
+
+| What is in the way | What changes |
+|---|---|
+| The knowledge the task rests on | Step back in the sequence. That is the tier decision, not a dial. |
+| Reading | Shorter sentences and fewer of them, the words the question turns on pre-taught with a picture, a source cut to what carries the point or read aloud. |
+| Holding the steps | One step at a time, the sequence chunked, a worked example beside the first attempt. |
+| Abstraction | The concrete or pictorial form of the same thing, then a deliberate move back towards the symbols. |
+| Getting the answer down | Match, tick, sort, circle, label, complete a stem. The thinking stays and the transcription goes. |
+| Amount | Fewer items, but enough of them to learn the thing. |
+
+Most Below sheets need one or two of these, not all six. Name the ones you turned in `Support and representation decision:` and leave the rest alone.
+
+**In history, geography, science and RE those dials do nearly all the work, and the one thing they never touch is the subject.** A source is cut to the sentences carrying the point or given to be read aloud; it does not become a different, easier fact. A response becomes a sort, a match or a stem; it does not become copying. The sheet earns a word bank with a true picture beside each concrete thing, a box holding the word the question turns on, and a reference the child can look back at while working. And it still asks the historical, geographical or scientific question the class was asked. The tell that a dial has gone too far is that the page could now be completed by a child who knows nothing about the topic.
 
 Treat the sheet cautiously as a low-reading-load resource unless the brief gives a clear reason not to. Apply the canonical Written Voice with a stronger access lens: reduce unnecessary reading load, descriptive padding and avoidable vocabulary, and use shorter words or sentences when they genuinely make the task easier to enter. This is not a short-sentence quota. Connected sentences are right when they carry one manageable idea more naturally than fragments. Use phonic accessibility as a practical guide, not a rigid test. Keep essential subject vocabulary and proper nouns, supporting them with examples, visuals or plain-language bridges rather than automatically replacing them. Keep the register dignified, natural and age-appropriate rather than babyish, robotic or telegraphic.
 

@@ -388,7 +388,7 @@ class BelowRouteTests(unittest.TestCase):
                 self.assertIn("class-sized", text)
         # Stopping at the smaller scale is the fault the tier exists to prevent.
         self.assertIn(
-            "A Tier 2 resource that stops at the smaller scale is refused work",
+            "A Tier 2 resource that never reaches a class-sized case is refused work",
             AGENT,
         )
 
@@ -430,3 +430,38 @@ class BelowRouteTests(unittest.TestCase):
         )
         self.assertIn("`Climb:`", WORKSHEET_DESIGNER)
         self.assertIn("never trim them to fit", WORKSHEET_DESIGNER)
+
+    def test_the_climb_says_where_on_the_sheet_it_lives(self) -> None:
+        """"Its last piece of work is class-sized" left three readings open on a
+        sheet with practice, reasoning and problem solving: does every section
+        climb, does the whole sheet, is the reasoning question class-sized? The
+        teacher asked which, on 4 September 2026, and the answer was not there.
+        """
+        self.assertIn("The climb lives in the practice run.", AGENT)
+        # Reasoning is not the top of the ladder: that tests two things at once.
+        self.assertIn(
+            "Reasoning sits at a scale the child already owns, not at the top of the climb.",
+            AGENT,
+        )
+        # And the class-sized item is one question, not a section.
+        self.assertIn("It is one question, not a section", AGENT)
+
+    def test_an_adaptation_names_the_barrier_before_it_changes_anything(self) -> None:
+        """A sheet with every dial turned at once cannot be read: a child who
+        succeeds proves nothing and a child who fails names nothing."""
+        self.assertIn("turn only the dial that matches it", AGENT)
+        for barrier in ("Reading", "Holding the steps", "Abstraction", "Amount"):
+            with self.subTest(barrier=barrier):
+                self.assertIn(barrier, AGENT)
+        self.assertIn("not all six", AGENT)
+
+    def test_a_foundation_subject_sheet_keeps_its_subject(self) -> None:
+        """The dials are allowed to do a great deal to a history sheet. What
+        they may not do is leave a page a child could finish knowing nothing
+        about the topic."""
+        self.assertIn(
+            "the one thing they never touch is the subject", AGENT
+        )
+        self.assertIn(
+            "completed by a child who knows nothing about the topic", AGENT
+        )
