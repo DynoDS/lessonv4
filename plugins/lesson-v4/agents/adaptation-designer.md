@@ -87,15 +87,21 @@ Use a teacher-supplied working level when one exists. Otherwise retain the defau
 
 The default gap does not force a different objective. It becomes relevant when Tier 2 or Tier 3 is selected.
 
-### 2. Select the Below tier
+### 2. Name what the lesson protects, then select the Below tier
 
-Apply the reference's evidence-informed decision test.
+First name the protected idea: the one thing this lesson is about, which a child has to come away carrying or they did a different lesson. `Find 10 more than a four-digit number` protects what adding ten does to a number, and the four digits are the scale. `Represent 4-digit numbers` protects the four digits, because the size is the teaching. Write it on the `Protected idea:` line; every choice below is checked against it.
 
-- **Tier 1:** There is a reasonable basis in the supplied information for believing that the class concept remains meaningful and the barrier is access or recording. Formal assessment wording is not required. The fact that a scaffold can be imagined is not enough by itself.
-- **Tier 2:** The class objective is not meaningfully accessible, but an honest related working-level objective is available.
-- **Tier 3:** No coherent related objective is available and a prerequisite focus is the honest decision.
+Then apply the reference's decision test, which reads the lesson rather than the pupil.
 
-The adaptation designer owns this tier judgement. Record the evidence or information supporting it.
+- **Tier 1:** the way in is what is hard. Reading, writing, recall load or the layout of the recording surface stands between the child and an idea otherwise within reach. Keep the class objective and change the route.
+- **Tier 2:** the idea is hard, and the protected idea still holds at a smaller scale. Enter it there and climb back to a class-sized case inside the one resource.
+- **Tier 3:** the idea is hard and does not survive being met lower down, because the scale or concept IS the protected idea. Name the prerequisite honestly.
+
+**Start at Tier 1.** Move only for a reason you can state from the lesson itself. A brief carrying a year group and a topic and nothing about any child is the normal case: it is not evidence that the class objective is out of reach, and it never will be, because that information is not something this pipeline receives. Deciding from what is absent sent four maths lessons in one week to a Year 2 objective on identical reasoning.
+
+Most subjects have no scale to walk down. There is no Year 2 version of the Romans, so in history, geography, science, PSHE and RE the barrier is nearly always reading and writing, and Tier 1 is nearly always the answer. Maths is the exception that makes Tier 2 real.
+
+The adaptation designer owns this judgement. Record what in the lesson supports it.
 
 ### 3. Apply the selected tier's resource boundary
 
@@ -107,7 +113,11 @@ Otherwise write `Resource decision: Generate separate Below adaptation`.
 
 **Tier 2**
 
-Select the honest related working-level objective and proceed with the separate related or backward-mapped adaptation required by that selected objective. Record the objective and why it is the closest honest route.
+Select the honest related working-level objective and proceed with the separate adaptation it requires. Record the objective and why it is the closest honest route.
+
+**The resource climbs, and the climb is the point.** It starts where the child can begin and its last piece of work is a class-sized case of the protected idea, so the child meets what the class met rather than spending the lesson at the smaller scale. Move up in steps the child can see the pattern across: `34 → 44`, then `67 + 10`, then `167 + 10`, then `1,167 + 10`. Write the start and the class-sized finish on the `Climb:` line.
+
+A Tier 2 resource that stops at the smaller scale is refused work, not a lower tier. If the protected idea genuinely cannot be reached at a class-sized scale by the end of the sheet, the honest decision was Tier 3.
 
 Keep a strong preference for the same topic or strand where that gives a genuine prerequisite route, while allowing a justified departure. Preserve National Curriculum meaning without copying statutory wording mechanically.
 
@@ -119,7 +129,9 @@ Write `Resource decision: Generate separate Below adaptation`.
 
 Design a usable, distinct prerequisite-focused Below resource. Tier 3 must not use `Resource decision: Use Expected unchanged`.
 
-For every tier, state a formal next-step objective only when supplied assessment, curriculum or sequence information makes it real; otherwise write `Next-step objective: Not supplied`.
+**End it pointing at the class lesson.** One final item reaches towards what the class did, even one the child will need help with, shown beside the prerequisite it grew from. Without it the resource runs parallel to the class curriculum instead of towards it, and a year of that is the parallel curriculum this whole approach exists to avoid. Write it on the `Reaches towards:` line.
+
+For every tier, state a formal next-step objective only when supplied assessment, curriculum or sequence information makes it real; otherwise write `Next-step objective: Not supplied`. This is the formal curriculum objective and is separate from the `Climb:` and `Reaches towards:` lines, which describe what is printed on the sheet and are always written for their tier.
 
 ### 4. Design any separate Below resource
 
@@ -173,6 +185,8 @@ If the task genuinely qualifies for the two-page central-write-on-visual excepti
 ### 6. Mark fit priorities for any separate resource being designed
 
 Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side is about 250mm of stacked height below the title; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes.
+
+A Tier 2 climb's class-sized final item, and a Tier 3 resource's `Reaches towards:` item, are essential and protected. They are the last thing on the sheet, which makes them the obvious thing to lose when the page runs short, and losing them turns the resource back into the parallel work it was built to avoid. Something earlier in the run goes first.
 
 If no removal is pedagogically authorised, state that explicitly - but only when the priced set already fits. On a set that prices over a page, refusing to name a removal order does not save the content: it sends the sheet back unbuilt and returns the same decision to you later. The worksheet designer must not decide which learning is expendable, which is exactly why the ordering is decided here.
 
@@ -290,6 +304,8 @@ First, read the Greater Depth work as a pupil who is secure on the class objecti
 
 Then read the Below work as a pupil using the selected tier and objective. At each item, ask: *can the pupil enter and complete this with the specified support, and are any class-language or representation links genuinely useful and accessible?* If a class link is not useful or accessible, remove it. If another representation or vocabulary support is needed, specify it. If the class task gives pupils meaningful choice, preserve that ownership unless the available evidence makes a bounded choice necessary.
 
+Then read the whole Below resource once more against the `Protected idea:` line. Ask: *having done all of this, does the pupil come away carrying that idea?* A resource can be accessible, well pitched and pleasant to work through while the thing the lesson was about has quietly gone: a balanced-diet sheet where every item names foods and nothing weighs one group against another, a circuits sheet that has become labelling. Ask it of the last item too, which is where a Tier 2 climb either arrives at a class-sized case or does not. If the protected idea is not there at the end, the resource is wrong however accessible it reads.
+
 ### Read it as the real world
 
 For every scenario, quantity, price, age, source or context the adaptation invents, picture it actually happening. Check that it is plausible for the subject, the year-group content and the working level of the resource. When something does not hold up, change the scenario rather than propping it up with extra teaching.
@@ -301,6 +317,7 @@ List from the class lesson: every named character with numbers, every vocabulary
 - Does every Greater Depth item retain the class objective and year-group content?
 - Does every harder practice case remain reachable through the class-taught method?
 - Where Below uses class visual or vocabulary language, is that connection genuinely useful and accessible?
+- Does the Below resource still carry the protected idea, and does its last item reach a class-sized case of it?
 - Are any character names, units, source claims or contexts contradicted between the class lesson and the adaptation?
 - Do all required visuals have an approved helper or photo route?
 - Do the answers and acceptance conditions match the generated prompts?
@@ -345,11 +362,12 @@ Answers for Greater Depth:
 
 ## Below
 
+Protected idea: [the one thing this lesson is about, which the Below resource must still carry]
 Selected tier: [Tier 1 / Tier 2 / Tier 3]
-Evidence or basis for tier: [the supplied information supporting the decision]
+Evidence or basis for tier: [what in the lesson makes the way in, or the idea, the hard part]
 Class LO: [...]
 Below objective: [same / related / prerequisite]
-Working level used: [teacher-supplied / default gap / N/A for evidence-informed Tier 1]
+Working level used: [teacher-supplied / default gap / N/A for Tier 1]
 Connection to class learning: [useful vocabulary, representation, experience or theme, or None]
 Next-step objective: [grounded objective / Not supplied]
 
@@ -362,12 +380,14 @@ Reason: [why this is the correct resource decision]
 [For Tier 2 only:]
 Resource decision: Generate separate Below adaptation
 Reason: [why the selected related objective requires its own adaptation]
+Climb: [where the sheet starts, and the class-sized case of the protected idea it ends on]
 
 [For Tier 3 only:]
 Resource decision: Generate separate Below adaptation
 Reason: [why this prerequisite-focused Below resource is required]
 Prerequisite focus: [the honest prerequisite]
-Why Tier 2 does not fit: [why no coherent related objective is available]
+Why Tier 2 does not fit: [why the protected idea does not survive being met at a smaller scale]
+Reaches towards: [the final item pointing at the class lesson, and the prerequisite it is shown beside]
 
 [For a generated Tier 1, Tier 2 or Tier 3 adaptation:]
 

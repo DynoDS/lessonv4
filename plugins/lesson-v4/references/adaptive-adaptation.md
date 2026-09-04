@@ -6,23 +6,52 @@ The adaptation-designer makes separate Below and Greater Depth decisions. For Ti
 
 ---
 
+## What the lesson protects
+
+Before any tier is chosen, name the one idea this lesson is about: the thing that, if it were taken out, would mean a child had done a different lesson. Everything else on the page is a way in, and a way in can be changed freely.
+
+`Find 10 more than a four-digit number` protects what adding ten does to a number; the four digits are only the scale it is met at. `Represent 4-digit numbers` protects the four digits themselves, because the size is what is being taught. Two lessons a fortnight apart, opposite answers, and the whole Below decision turns on which kind this is.
+
+Write it down before the tier decision, because every later choice is checked against it. A Below resource that no longer carries the protected idea is a different lesson whatever its objective line says. A real science Below sheet moved `To explore the importance of having a balanced diet` to `To choose different types of food and say how they help the body`: the food knowledge survived, and `balanced`, which was the lesson, did not.
+
+---
+
 ## The Three Tiers
 
-A Below adaptation falls into one of three tiers. The adaptation-designer selects the tier from the supplied lesson, pupil, working-level, assessment and curriculum information.
+A Below adaptation falls into one of three tiers. The adaptation-designer selects the tier from the lesson in front of it.
 
-**Tier 1 — Same LO, supported access.** Use this when there is a reasonable basis for believing that the learner can meaningfully access the class concept and that access or recording is the important barrier. A formal assessment statement is not required, but the mere fact that the task could be scaffolded is not enough evidence by itself. The Expected sheet may already be suitable unchanged. When a distinct Below sheet is useful, keep the class LO and change only the access route or support that the evidence justifies.
+**Tier 1: same objective, the way in changed.** The protected idea is within reach once reading, writing, recall load or the layout of the recording surface is lifted. Keep the class objective and change only the route to it. The Expected sheet may already do this unchanged.
 
-**Tier 2 — Related backward-mapped LO.** Use this when the class objective is not meaningfully accessible from the available information but an honest related objective can be selected at the supplied or default working level. Keep a strong preference for the same topic or strand where it provides a genuine prerequisite route, while permitting a different prerequisite when that is pedagogically better.
+**Tier 2: the same idea, entered lower and climbing.** The protected idea still holds at a smaller scale, so meet it there and walk back up inside the one resource. The sheet starts where the child can begin, and its last piece of work is a class-sized case of the same idea.
 
-**Tier 3 — Prerequisite focus.** Use this when no coherent related objective can be identified from the available information. Name the prerequisite and explain why it is needed. The teacher or SENCO decides when, how and with what support it is used. Tier 3 must always produce a usable, distinct prerequisite-focused Below resource.
+A sheet that stops at the smaller scale is the fault this tier exists to prevent. `Find 10 and 100 more or less` came back as five two-digit questions and ended there: the child practised Year 2 number for the whole lesson and never met what the class met. Built as a climb it runs `34 → 44`, then `67 + 10`, then `167 + 10`, then `1,167 + 10`, and the same child finishes on the class's own number. Record where the climb starts and the class-sized case it ends on.
 
-**The decision test**, in order:
-1. Use a teacher-supplied working level when one exists; otherwise apply the retained default gap when backward mapping is needed.
-2. Is there a reasonable basis in the supplied lesson or pupil information for believing that the class concept remains meaningful and the barrier is access or recording? If yes, Tier 1 may retain the class LO. Record that basis.
-3. If not, choose the closest honest related objective and use Tier 2.
-4. If no coherent related objective is available, select Tier 3 and identify the prerequisite focus.
+Keep a strong preference for the same topic or strand. Preserve National Curriculum meaning without copying statutory wording mechanically.
 
-Do not select Tier 1 merely because support can be imagined or because retaining the class LO sounds more inclusive. Also do not force a different objective when the supplied information genuinely shows that the class concept remains accessible.
+**Tier 3: the prerequisite, named honestly.** The protected idea does not survive being met lower down, because the scale or the concept IS the thing being taught, and the child does not yet have what it rests on. Name the prerequisite and why it is needed. The teacher or SENCO decides when and how it is used. Tier 3 still ends with one item reaching towards the class lesson, even one the child needs help with, so the resource points somewhere instead of running parallel.
+
+**The decision test.** Ask what makes this lesson hard for a child who is behind. There are two answers and they lead to different tiers.
+
+1. Name the protected idea.
+2. **Is the way in hard, or is the idea hard?** Reading the questions, writing the answers, holding the steps, reading the layout: that is the way in, and it is Tier 1.
+3. When the idea itself is hard, ask whether the protected idea still holds at a smaller scale. Yes gives Tier 2, entered small and climbing. No, because the scale is the protected idea, gives Tier 3.
+4. Use a teacher-supplied working level when one exists; otherwise apply the default gap to size a Tier 2 or Tier 3 entry point.
+
+**Start at Tier 1 and move only for a reason you can name from the lesson.** Reading and writing are the commonest barrier in a primary classroom and the only one that can be lifted without knowing anything about a particular child.
+
+**Absence of pupil information is not a reason to lower the objective.** It was read as one, and every maths lesson in a week came back at Tier 2 carrying the same sentence: no assessment evidence was supplied, therefore the class objective could not be retained. Nothing was known about those children, so nothing about them justified a two-year drop either. A run that arrives with a year group and a topic and nothing else is the normal case, not a case with something missing. What justifies a tier is the lesson: what it protects, and whether that survives being met lower down.
+
+Do not select Tier 1 because retaining the class objective sounds more inclusive, and do not select Tier 2 or Tier 3 because an easier version is easy to reach for.
+
+---
+
+## Scale is a maths ladder, and most subjects have no ladder
+
+Maths has a scale to walk down: two-digit, three-digit, four-digit. That is what makes a Tier 2 climb possible, and it is also why Tier 2 gets over-chosen in maths, because an easier version is always within reach.
+
+Most other subjects have no such ladder. There is no Year 2 version of the Romans, and a child who cannot read a page about the Nile can still understand why it mattered when someone says it aloud. So in history, geography, science, PSHE and RE the barrier is nearly always the reading and the writing, which is Tier 1: keep the objective, change the way in.
+
+The failure to watch for in those subjects is not the wrong year group. It is the subject quietly draining out of the task until naming, matching and colouring are what is left: the history sheet that becomes a literacy worksheet, the circuits lesson that becomes colouring a bulb. The protected idea is the guard. If the Below task no longer carries it, the task is wrong however accessible it has become.
 
 ---
 

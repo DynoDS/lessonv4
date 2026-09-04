@@ -339,3 +339,94 @@ class AdaptationPictureReuseTests(unittest.TestCase):
             "give it a new filename as well as a new ID",
             self.flat(AGENT),
         )
+
+
+class BelowRouteTests(unittest.TestCase):
+    """The Below route is chosen from the lesson, and it climbs.
+
+    Every maths lesson built between 1 and 4 September 2026 came back at Tier 2
+    on the same reasoning: no pupil assessment evidence was supplied, therefore
+    the class objective could not be retained. The teacher had typed a year
+    group and a topic, which is every run this pipeline ever gets, so absence of
+    pupil information had quietly become the standard argument for dropping two
+    years. `Find 10 and 100 more or less` reached a child as five two-digit
+    questions that never rose above 90; the class was working in thousands.
+
+    The research the teacher supplied on 4 September 2026 named the missing
+    route: keep the idea, enter it at a smaller scale, and climb back to a
+    class-sized case on the same sheet, so a below-working child meets what the
+    class met. It also named the foundation-subject version of the same fault,
+    where the subject drains out of an accessible task until naming and
+    labelling are left.
+    """
+
+    def test_the_tier_is_decided_from_the_lesson_not_from_missing_pupil_data(self) -> None:
+        self.assertIn(
+            "Absence of pupil information is not a reason to lower the objective.",
+            ADAPTIVE,
+        )
+        # The decision that replaces it: which half of the lesson is hard.
+        for text in (ADAPTIVE, AGENT):
+            self.assertIn("the way in", text)
+        self.assertIn("Start at Tier 1", AGENT)
+        self.assertIn("Start at Tier 1 and move only for a reason you can name", ADAPTIVE)
+
+    def test_the_protected_idea_is_named_before_the_tier_is_chosen(self) -> None:
+        self.assertIn("Protected idea:", AGENT)
+        self.assertIn("## What the lesson protects", ADAPTIVE)
+        # Named before the tier so every later choice can be checked against it.
+        self.assertLess(
+            AGENT.index("Protected idea:"),
+            AGENT.index("Selected tier:"),
+            "the protected idea is named before the tier decision, not after it",
+        )
+
+    def test_a_tier_2_resource_climbs_to_a_class_sized_case(self) -> None:
+        self.assertIn("Climb:", AGENT)
+        for text in (ADAPTIVE, AGENT):
+            with self.subTest(doc=text[:40]):
+                self.assertIn("class-sized", text)
+        # Stopping at the smaller scale is the fault the tier exists to prevent.
+        self.assertIn(
+            "A Tier 2 resource that stops at the smaller scale is refused work",
+            AGENT,
+        )
+
+    def test_a_tier_3_resource_still_points_at_the_class_lesson(self) -> None:
+        self.assertIn("Reaches towards:", AGENT)
+        self.assertIn("parallel", AGENT)
+
+    def test_the_final_reaching_item_is_not_the_cheap_thing_to_cut(self) -> None:
+        """It is last on the sheet, so it is first in line when the page runs
+        short, and cutting it returns the resource to parallel work."""
+        self.assertIn("essential and protected", AGENT)
+        self.assertIn("Something earlier in the run goes first.", AGENT)
+
+    def test_the_maths_ladder_is_named_as_the_exception_not_the_rule(self) -> None:
+        """Discrimination. Smaller numbers are a real route in maths and have no
+        equivalent in history: without this, Tier 2 over-fires everywhere."""
+        self.assertIn("Scale is a maths ladder, and most subjects have no ladder", ADAPTIVE)
+        for text in (ADAPTIVE, AGENT):
+            with self.subTest(doc=text[:40]):
+                self.assertIn("no Year 2 version of the Romans", text)
+
+    def test_an_accessible_task_that_lost_the_subject_is_still_wrong(self) -> None:
+        """The foundation-subject fault: a real science sheet moved `balanced
+        diet` to `choose foods and say how they help the body`, keeping the food
+        and losing the balance."""
+        self.assertIn("balanced", ADAPTIVE)
+        self.assertIn(
+            "does the pupil come away carrying that idea?",
+            AGENT,
+        )
+
+    def test_the_worksheet_designer_does_not_shuffle_the_climb(self) -> None:
+        """A climb is a rising run of answers, which is precisely the shape
+        rule 8 tells the designer to break up. The exception named only the
+        lesson-designer, and a Below sheet's order comes from the adaptation."""
+        self.assertIn("an upstream designer", WORKSHEET_DESIGNER)
+        self.assertNotIn(
+            "The exception is a sequence the lesson-designer", WORKSHEET_DESIGNER
+        )
+        self.assertIn("`Climb:`", WORKSHEET_DESIGNER)
+        self.assertIn("never trim them to fit", WORKSHEET_DESIGNER)
