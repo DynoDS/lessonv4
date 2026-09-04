@@ -134,6 +134,32 @@ const COUNTER_MAX_D    = 0.25; // inches - the size a counter is MEANT to be,
 // A counter below it is not a smaller counter, it is a dot.
 const COUNTER_READABLE_D = 0.125;
 
+// The narrowest a column can be and still be written in.
+//
+// The sibling of the counter floor above, and what that floor should have been
+// in the first place. That one asks whether the COUNTERS come out big enough,
+// so a chart drawing no counters is measured for nothing at all - and the chart
+// a teacher writes into is precisely the chart with no counters in it. Two
+// four-column charts with a blank "Value" row shared one slide twice more, at
+// 0.72in and 0.64in a column, and every check passed again (flagged by Daniel,
+// 4 September 2026: "there's no way the teacher if they wanted to could write
+// neatly in the columns because they're not wide enough").
+//
+// A column somebody writes in needs more room than a column that merely prints
+// a digit, and this package has already answered how much on the surface where
+// writing in the cells is the entire point. The worksheet chart states
+// `PVCHART_COL_MIN_MM = 14` - "one handwritten digit, comfortably"
+// (worksheet-html/src/helpers/placevalue.js) - and prints its digits at 12pt
+// body type. This chart prints its own at 18pt, half as big again, so the same
+// standard costs half as much again here: 14mm at 12pt is 0.83in at 18pt. One
+// standard, converted by the type each surface sets its digits in, rather than
+// two surfaces guessing separately at the same question.
+//
+// It is a floor for ONE handwritten digit, which is the least any write-in cell
+// is asked to hold; a row of place VALUES ("5,000", "300") wants more than the
+// floor and gets it from the ordinary width the layout gives a chart with room.
+const WRITE_IN_COL_W = 0.83; // 14mm at 12pt on paper, at this chart's 18pt
+
 // ── The before-and-after pair ────────────────────────────────
 const REF_COL_W        = 0.45;  // one digit column at scale 1, inches - the
                                 // reference the pair's charts are scaled from
@@ -401,6 +427,24 @@ function smallestCounter(colWs, counterH, columns, dataRows, hasLabels) {
     });
   });
   return smallest;
+}
+
+// Does anybody have to write in this chart?
+//
+// A cell left blank is answer space: the chart hands the class a number to work
+// from and an empty row to fill. Blank cells UNDER counters are not, because
+// there the counters carry the value and the digits are deliberately held back
+// for later - so a counter chart is judged by the counter floor and never by
+// the write-in one. A '.' column is the printed decimal point, never written in.
+function hasWriteInCells(columns, dataRows) {
+  return dataRows.some(function (row) {
+    if (row.counters !== null) return false;
+    return columns.some(function (label, i) {
+      if (label === '.') return false;
+      const cell = row.cells[i];
+      return cell == null || String(cell) === '';
+    });
+  });
 }
 
 function drawCounterPopulation(pptx, slide, x, y, w, h, column, count) {
@@ -928,13 +972,20 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
 
   // Refuse a column too narrow for its counters to be counted.
   //
-  // The sibling of the height refusal above, and the one that was missing. A
-  // column keeps whatever width the layout hands it while the counter band
-  // grows with the scale, so a narrow column produces a tall thin cell that
-  // spends its height on gaps: two charts sharing the 60% side of a split gave
-  // six counters 0.10in each in a band 1.6in tall, and nothing said so. Width
-  // is the lever here, which is why the message names width repairs and not the
-  // height ones the refusal above already covers.
+  // One of the two width floors, and the narrower question of the two: it asks
+  // only whether the COUNTERS can be counted. A column keeps whatever width the
+  // layout hands it while the counter band grows with the scale, so a narrow
+  // column produces a tall thin cell that spends its height on gaps: two charts
+  // sharing the 60% side of a split gave six counters 0.10in each in a band
+  // 1.6in tall, and nothing said so. Width is the lever here, which is why the
+  // message names width repairs and not the height ones the refusal above
+  // already covers.
+  //
+  // It was written as though it were THE width floor, and it is not: a chart
+  // drawing no counters passes it by having nothing to measure, which let the
+  // same too-narrow shape ship again as a write-in chart the day after. The
+  // write-in floor below is the other half, and the two divide the chart
+  // between them - counters here, blank cells there.
   const smallest = headerOnly
     ? null
     : smallestCounter(colWs, counterH, columns, dataRows, hasLabels);
@@ -948,6 +999,34 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
       `wider zone, one chart on this slide instead of two, or a template that ` +
       `does not spend 40% of the board on a side panel. Fewer counters in a ` +
       `column works too, where the lesson's numbers allow it.`
+    );
+  }
+
+  // Refuse a column too narrow to write in.
+  //
+  // The counter floor above measures counters, so a chart drawing none passed
+  // it by having nothing to measure - and a chart with an empty row is the one
+  // somebody has to write in. Two charts with a blank "Value" row shared a
+  // My Turn and an Our Turn slide at 0.72in and 0.64in a column: wide enough to
+  // PRINT a digit in, which is all the scale clamp ever asked, and too narrow to
+  // write "5,000" in by hand at the size the chart prints its own digits.
+  //
+  // Same lever, same repairs, and one more that is only available here: a chart
+  // nobody writes in does not want this width at all, and saying so - printing
+  // the digits, or asking for the bare heading strip - is the honest repair when
+  // the chart was only ever meant to be read.
+  const writeIn = !headerOnly && hasWriteInCells(columns, dataRows);
+  if (writeIn && regColW < WRITE_IN_COL_W) {
+    throw new Error(
+      `PLACE_VALUE_WRITE_IN_TOO_NARROW: this chart has a row left blank for ` +
+      `somebody to write in, but each column is only ${regColW.toFixed(3)}in ` +
+      `wide, below the ${WRITE_IN_COL_W}in one handwritten digit needs at the ` +
+      `size this chart prints its own digits. Height is not the lever, so ` +
+      `a taller zone will not move it: give the chart more WIDTH - a wider ` +
+      `zone, one chart on this slide instead of two, or a template that does ` +
+      `not spend 40% of the board on a side panel. If nobody writes in this ` +
+      `chart, say so instead: print the digits in the blank cells, or ask for ` +
+      `the headings alone with "rows": [] for a reference strip.`
     );
   }
 

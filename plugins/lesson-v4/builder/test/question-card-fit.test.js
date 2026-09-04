@@ -307,9 +307,10 @@ test('one chart in the same zone draws counters at full size', () => {
   assert.doesNotThrow(() => drawCounterChart({ x: 0.2, y: 1.8, w: 7.2, h: 4.56 }));
 });
 
-test('a chart with no counters is judged on height alone', () => {
-  // A digits-only chart has no counters to be too small, and must not acquire a
-  // width floor it never needed.
+test('a chart nobody writes in is judged on height alone', () => {
+  // The discrimination for BOTH width floors: every cell is printed, so there
+  // is nothing to count and nothing to write, and a narrow column costs the
+  // chart nothing. A chart like this is read.
   const pptx = new PptxGenJS();
   const slide = { addShape: () => {}, addText: () => {}, addImage: () => {}, addTable: () => {} };
   assert.doesNotThrow(() =>
@@ -318,4 +319,113 @@ test('a chart with no counters is judged on height alone', () => {
       columns: ['Th', 'H', 'T', 'O'],
       rows: [{ label: '3,462', cells: ['3', '4', '6', '2'] }],
     }, { slideIndex: 0, lesson: {} }));
+});
+
+// The counter floor above was written as though it were THE width floor, and it
+// is not: it measures counters, so a chart drawing none passes it by having
+// nothing to measure. The chart a teacher writes into is exactly the chart with
+// no counters in it, and the day after the counter floor shipped, the same
+// too-narrow shape shipped again in the same lesson family - two four-column
+// charts with a blank "Value" row sharing a My Turn slide (0.719in a column) and
+// an Our Turn slide (0.639in), flagged by Daniel on 4 September 2026: "there's
+// no way the teacher if they wanted to could write neatly in the columns because
+// they're not wide enough ... I would have instead still used both but on 2
+// different slides, so each get more space".
+
+function drawWriteInChart(zone, rows) {
+  const pptx = new PptxGenJS();
+  const slide = {
+    addShape: () => {},
+    addText: () => {},
+    addImage: () => {},
+    addTable: () => {},
+  };
+  drawPlaceValueChart(pptx, slide, zone, {
+    type: 'place-value-chart',
+    columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+    rows: rows === undefined
+      ? [
+          { label: '5,346', cells: ['5', '3', '4', '6'] },
+          { label: 'Value', cells: ['', '', '', ''] },
+        ]
+      : rows,
+  }, { slideIndex: 0, lesson: {} });
+}
+
+// Half the body of a body-sidebar, and half the question visual of a
+// maths-turn-sc: the two zones the flagged charts actually got.
+const SHARED_MY_TURN = { x: 0.2, y: 1.8, w: 4.15, h: 4.44 };
+const SHARED_OUR_TURN = { x: 0.2, y: 1.8, w: 3.71, h: 1.94 };
+
+test('a column too narrow to write in is refused, not shipped narrow', () => {
+  assert.throws(
+    () => drawWriteInChart(SHARED_OUR_TURN),
+    /PLACE_VALUE_WRITE_IN_TOO_NARROW/
+  );
+});
+
+test('the counter floor cannot see this chart, so the write-in floor must', () => {
+  // The My Turn zone, and the reason this test exists as well as the one above:
+  // at 0.719in a column it is the marginal case, it draws no counters at all,
+  // and it shipped. A floor that only measures counters is blind to it.
+  assert.throws(
+    () => drawWriteInChart(SHARED_MY_TURN),
+    /PLACE_VALUE_WRITE_IN_TOO_NARROW/
+  );
+});
+
+test('the refusal names width, and the repair the teacher asked for', () => {
+  try {
+    drawWriteInChart(SHARED_OUR_TURN);
+    assert.fail('the chart drew a write-in row it should have refused');
+  } catch (error) {
+    assert.match(error.message, /more WIDTH/);
+    assert.match(error.message, /one chart on this slide instead of two/);
+    assert.match(error.message, /Height is not the lever/);
+    // The repair that belongs to this floor alone: a chart nobody writes in
+    // should say so rather than be given width it does not need.
+    assert.match(error.message, /print the digits in the blank cells/);
+  }
+});
+
+test('one chart per slide gives the column the width it needed', () => {
+  // The repair, measured: the whole body instead of half of it took the same
+  // chart from 0.639in a column to 1.529in.
+  assert.doesNotThrow(() => drawWriteInChart({ x: 0.2, y: 1.8, w: 8.65, h: 2.68 }));
+});
+
+test('blank cells under counters are the counters speaking, not answer space', () => {
+  // The boundary between the two width floors. Here the counters carry the
+  // value and the digits are deliberately held back, so this chart is the
+  // counter floor's business and must not be reported as a write-in fault.
+  try {
+    drawWriteInChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 }, [
+      { label: 'A', cells: ['', '', '', ''], counters: { Thousands: 6, Hundreds: 2, Tens: 4, Ones: 1 } },
+    ]);
+    assert.fail('a counter chart this narrow should still be refused');
+  } catch (error) {
+    assert.match(error.message, /PLACE_VALUE_COUNTERS_TOO_SMALL/);
+  }
+});
+
+test('a bare heading strip in a side rail is not asking to be written on', () => {
+  // An explicitly empty rows array is the "Th | H | T | O" reference strip a
+  // quick check puts in its rail so children have the column names to answer
+  // WITH. Nothing is written on it, and a narrow rail is where it belongs.
+  assert.doesNotThrow(() => drawWriteInChart({ x: 0.2, y: 1.8, w: 2.93, h: 3.6 }, []));
+});
+
+test('a chart with rows omitted is a write-in chart, and judged as one', () => {
+  // Omitting `rows` means one blank row for the teacher to fill in live - the
+  // chart's own documented default - so it carries the write-in floor even
+  // though no cell was ever written down as empty.
+  const pptx = new PptxGenJS();
+  const slide = { addShape: () => {}, addText: () => {}, addImage: () => {}, addTable: () => {} };
+  assert.throws(
+    () => drawPlaceValueChart(pptx, slide, { x: 0.2, y: 1.8, w: 2.93, h: 3.6 }, {
+      type: 'place-value-chart',
+      columns: ['Th', 'H', 'T', 'O'],
+    }, { slideIndex: 0, lesson: {} }),
+    /PLACE_VALUE_WRITE_IN_TOO_NARROW/
+  );
 });

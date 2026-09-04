@@ -206,13 +206,15 @@ function turnWarnings(lesson) {
 // The rule used to say a layout problem could never justify dividing a My Turn -
 // examples that will not fit together "are different moves rather than a layout
 // problem". A representation with a minimum usable size disproves that. Two
-// four-column counter charts sharing one slide give each column 0.6in and each
-// counter 0.10in, which `PLACE_VALUE_COUNTERS_TOO_SMALL` now refuses outright,
-// so a lesson modelling two numbers on counter charts has nowhere else to go
-// (flagged by Daniel, 3 September 2026: "2 in one slide is still too small to do
-// anything with ... I'd honestly have one each slide, 2 my turns"). One number
-// per slide, twice, is one move modelled twice at a size children can use. It is
-// not two moves.
+// four-column place-value charts sharing one slide give each column around
+// 0.6in, which the build refuses outright - `PLACE_VALUE_COUNTERS_TOO_SMALL`
+// when the chart carries counters, `PLACE_VALUE_WRITE_IN_TOO_NARROW` when a row
+// is left blank to be filled in live - so a lesson modelling two numbers on
+// charts has nowhere else to go (flagged by Daniel on 3 September 2026, "2 in
+// one slide is still too small to do anything with ... I'd honestly have one
+// each slide, 2 my turns", and again on 4 September when the write-in form of
+// the same shape shipped). One number per slide, twice, is one move modelled
+// twice at a size children can use. It is not two moves.
 const MY_TURN_TITLE = /^my\s+turn\b/i;
 const ANSWER_TITLE = /\banswers?\b/i;
 

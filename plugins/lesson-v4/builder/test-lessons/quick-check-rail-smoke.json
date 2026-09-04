@@ -68,10 +68,11 @@
       "template": "split-h-75-25",
       "headerStyle": "title",
       "title": "Narrow-rail regression — a full chart still renders in class G",
-      "instruction": "rows omitted, so a blank working row as before",
+      "instruction": "a printed row, because a rail this narrow cannot be written in",
       "primary": { "type": "numbered-questions",
         "questions": ["What changes?", "What stays the same?"] },
-      "secondary": { "type": "place-value-chart", "columns": ["Th", "H", "T", "O"] }
+      "secondary": { "type": "place-value-chart", "columns": ["Th", "H", "T", "O"],
+        "rows": [{ "label": "3,462", "cells": ["3", "4", "6", "2"] }] }
     }
   ]
 }
