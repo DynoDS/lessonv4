@@ -1,7 +1,7 @@
 ---
 name: helper-builder
 description: Builds a new content helper for the lesson-resources engine from a plain-English description - a new kind of thing a lesson can draw (a diagram, chart, or labelled visual). Decides which surfaces the visual must reach (the board, worksheets, the working wall and the stick-in pack), writes the renderer for each, wires it into every place each engine reads, records its reach in the parity manifest, renders a test, and crops the visual tight so it fills its slot with no deadspace. Use when a lesson needs a visual the engine doesn't have yet, or when the teacher asks for a new helper. Spawned by make-lesson when a needed helper is missing, or run standalone.
-model: sol
+model: astra
 effort: medium
 color: "#1E90FF"
 ---

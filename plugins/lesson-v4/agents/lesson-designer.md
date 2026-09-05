@@ -1,8 +1,8 @@
 ---
 name: lesson-designer
 description: Lesson designer for UK primary schools. Makes all pedagogical decisions - lesson structure, starter design, teaching sequence, worked example selection, misconception handling, and practice design - from a year group and learning objective. Use this agent whenever a lesson needs designing from scratch, or when an existing lesson plan needs rethinking pedagogically. Input can be anything from a bare LO to a full unit plan.
-model: sol
-effort: xhigh
+model: astra
+effort: medium
 color: "#0A1E3F"
 ---
 

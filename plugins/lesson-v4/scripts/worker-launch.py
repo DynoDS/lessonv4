@@ -45,11 +45,12 @@ AGENTS_DIR = Path(__file__).resolve().parents[1] / "agents"
 
 # A role file's `model:` shorthand is host-neutral; each host spells it its own
 # way. `haiku` is the odd one: it names a Claude model, and Codex has no
-# equivalent, so five mechanical roles had no correct translation and the
-# orchestrator invented one every run. Luna at low effort is what those roles
-# actually need - run a fixed script, report what happened, decide nothing.
+# equivalent, so the remaining mechanical roles had no correct translation and
+# the orchestrator invented one every run. Luna at low effort is what those
+# roles actually need - run a fixed script, report what happened, decide nothing.
 HOST_MODELS = {
     "codex": {
+        "astra": "gpt-6-astra",
         "sol": "gpt-5.6-sol",
         "terra": "gpt-5.6-terra",
         "luna": "gpt-5.6-luna",
@@ -61,6 +62,7 @@ HOST_MODELS = {
 # rather than degrading silently at launch.
 HOST_EFFORTS = {
     "codex": {
+        "gpt-6-astra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-sol": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-terra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-luna": ("low", "medium", "high", "xhigh", "max"),

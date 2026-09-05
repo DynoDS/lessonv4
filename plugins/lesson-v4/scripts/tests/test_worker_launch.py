@@ -74,19 +74,45 @@ class SpecTests(unittest.TestCase):
         self.assertIn("WORKER_LAUNCH_OK", result.stdout)
         for line in (
             "task_name: lesson_designer",
-            "model: gpt-5.6-sol",
-            "reasoning_effort: xhigh",
+            "model: gpt-6-astra",
+            "reasoning_effort: medium",
             "fork_turns: none",
         ):
             with self.subTest(line=line):
                 self.assertIn(line, result.stdout)
 
-    def test_a_mechanical_role_gets_a_real_model_rather_than_a_guess(self) -> None:
-        """`haiku` names a Claude model; five roles carry it and Codex has none."""
+    def test_working_wall_builder_gets_its_explicit_visual_review_settings(self) -> None:
         result = run("spec", "--role", "working-wall-builder")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("model: gpt-5.6-luna", result.stdout)
-        self.assertIn("reasoning_effort: low", result.stdout)
+        self.assertIn("reasoning_effort: xhigh", result.stdout)
+
+    def test_selected_normal_and_repair_roles_resolve_to_the_requested_matrix(self) -> None:
+        expected = {
+            "lesson-designer": ("gpt-6-astra", "medium"),
+            "design-reviewer": ("gpt-5.6-sol", "xhigh"),
+            "adaptation-designer": ("gpt-6-astra", "low"),
+            "slide-designer": ("gpt-5.6-sol", "high"),
+            "worksheet-designer": ("gpt-5.6-sol", "medium"),
+            "helper-builder": ("gpt-6-astra", "medium"),
+            "image-scout": ("gpt-5.6-luna", "max"),
+            "diagram-anchor": ("gpt-5.6-sol", "medium"),
+            "question-extractor": ("gpt-5.6-luna", "max"),
+            "slide-decorator": ("gpt-5.6-luna", "xhigh"),
+            "stick-in-sheets-designer": ("gpt-5.6-luna", "xhigh"),
+            "stick-in-sheets-designer-focused-repair": ("gpt-5.6-luna", "xhigh"),
+            "slide-designer-focused-repair": ("gpt-5.6-sol", "medium"),
+            "worksheet-designer-focused-repair": ("gpt-5.6-sol", "medium"),
+            "working-wall-builder": ("gpt-5.6-luna", "xhigh"),
+            "working-wall-designer": ("gpt-5.6-sol", "medium"),
+            "working-wall-designer-focused-repair": ("gpt-5.6-sol", "medium"),
+        }
+        for role, (model, effort) in expected.items():
+            with self.subTest(role=role):
+                result = run("spec", "--role", role)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"model: {model}", result.stdout)
+                self.assertIn(f"reasoning_effort: {effort}", result.stdout)
 
     def test_an_unknown_role_fails_loudly(self) -> None:
         result = run("spec", "--role", "not-a-role")
@@ -136,8 +162,8 @@ class AuditTests(unittest.TestCase):
             [
                 {
                     "task_name": "lesson_designer",
-                    "model": "gpt-5.6-sol",
-                    "reasoning_effort": "xhigh",
+                    "model": "gpt-6-astra",
+                    "reasoning_effort": "medium",
                     "fork_turns": "none",
                 },
                 {
@@ -193,8 +219,8 @@ class AuditTests(unittest.TestCase):
             [
                 {
                     "task_name": "lesson_designer_redesign_2",
-                    "model": "gpt-5.6-sol",
-                    "reasoning_effort": "xhigh",
+                    "model": "gpt-6-astra",
+                    "reasoning_effort": "medium",
                     "fork_turns": "none",
                 }
             ],
@@ -281,8 +307,8 @@ class SessionChoiceTests(unittest.TestCase):
             [
                 {
                     "task_name": "lesson_designer",
-                    "model": "gpt-5.6-sol",
-                    "reasoning_effort": "xhigh",
+                    "model": "gpt-6-astra",
+                    "reasoning_effort": "medium",
                     "fork_turns": "none",
                 }
             ],

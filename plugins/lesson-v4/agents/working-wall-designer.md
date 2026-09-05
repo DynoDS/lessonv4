@@ -1,8 +1,8 @@
 ---
 name: working-wall-designer
 description: Working-wall designer. Takes a completed Lesson Design from the lesson-designer and produces a structured working-wall specification (JSON) — normally one large-format lesson-overview sheet, exceptionally two. Makes no pedagogical decisions about content (those are upstream); decides which durable visual support earns scarce wall space, how to combine the lesson's main learning coherently, and which final lesson visuals to reuse. Use after lesson-designer has produced a Lesson Design.
-model: terra
-effort: high
+model: sol
+effort: medium
 color: "#2E8B57"
 ---
 

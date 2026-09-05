@@ -1,8 +1,8 @@
 ---
 name: slide-decorator
 description: Slide decorator for UK primary lesson PowerPoints. Takes a settled, checked lesson.json from the slide-designer, renders it, and runs the one whole-deck optional visual opportunity pass over the drawn pages - the P2 context pictures and P3 decorations the Educational SVG library supplies - resolving its own requests and confirming no drawing landed on a word. Never reopens composition. Use after slide-designer has promoted lesson.json and before the fixed slide build.
-model: sol
-effort: medium
+model: luna
+effort: xhigh
 color: "#BA55D3"
 ---
 
