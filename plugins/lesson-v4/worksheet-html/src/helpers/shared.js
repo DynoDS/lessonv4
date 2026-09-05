@@ -3,7 +3,7 @@
 // Small things every helper file needs. Kept apart from index.js so that a
 // helper file can use them without importing the registry that imports it.
 
-const { WRITING_LINE_MM, TYPE } = require("../tokens");
+const { WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, TYPE } = require("../tokens");
 
 const BODY_PT = 12; // must track TYPE.body in tokens.js
 const PT_MM = 0.3528;
@@ -110,6 +110,7 @@ module.exports = {
   LINE_MM,
   NOTE_LINE_MM,
   WRITING_LINE_MM,
+  WRITING_LINE_GROWN_RATIO,
   BLANK_CHARS,
   BLANK_MM,
   esc,

@@ -220,14 +220,22 @@ module.exports = {
     imageWidth: PLANT.width,
     imageHeight: PLANT.height,
     // Anchors are percentages of the picture, so they travel with it whatever
-    // size it prints at. Blank unless the lesson hands the word over: on a
-    // worksheet, labelling is the child's job.
+    // size it prints at.
+    //
+    // Every callout says which of the two jobs it is doing, and the worksheet
+    // check refuses a sheet where one does not. "given": false is a blank
+    // line the child writes on; "given": true prints the word beside the
+    // object as reading support. They mix freely, and this example mixes them:
+    // "stem" is handed over so the child has a worked one to copy the shape
+    // of, and the other four are the task. A callout with no "given" at all
+    // silently becomes blank, which turned a Below sheet's promised food
+    // names into two unanswered lines.
     labels: [
-      { anchor: [37, 31], label: "petal" },
-      { anchor: [50, 31], label: "flower" },
-      { anchor: [40, 61], label: "leaf" },
-      { anchor: [50, 50], label: "stem" },
-      { anchor: [50, 90], label: "roots" },
+      { anchor: [37, 31], label: "petal", given: false },
+      { anchor: [50, 31], label: "flower", given: false },
+      { anchor: [40, 61], label: "leaf", given: false },
+      { anchor: [50, 50], label: "stem", given: true },
+      { anchor: [50, 90], label: "roots", given: false },
     ],
   },
 

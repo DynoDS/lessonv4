@@ -24,6 +24,7 @@
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
+const path = require('node:path');
 
 const requireGlobal = require('../src/require-global');
 const PptxGenJS = requireGlobal('pptxgenjs');
@@ -334,4 +335,136 @@ test('a breach is recorded for the build to report as a blocking diagnostic', ()
   clearPictureFloor();
   floorWarning(ROOMY, { type: 'image', imagePath: 'unsplash/rainforest.jpg' });
   assert.equal(pictureFloorFindings().length, 0, 'a picture with room records nothing');
+});
+
+// ─── Once the photograph has arrived ──────────────────────────────────────
+//
+// Everything above measures a picture that has not been delivered yet, where
+// the honest answer is what the cell guarantees whatever shape turns up. Once
+// the file is there its shape is known, and a contained picture only ever
+// keeps the cell's short side when the two shapes match. A history deck's own
+// classroom photograph is the case that exposed this: 400 x 332 in a 3.5"
+// square cell reserves 3.26" and draws 2.71", a quarter-inch under the hero
+// floor, with the reserved-frame check reporting nothing (5 September 2026).
+
+// A file that really exists, so the check takes the delivered branch. Nothing
+// opens it - the dimensions come from `imageDims`, exactly as the build
+// supplies them - so which picture it is does not matter.
+const REAL_FILE = path.join(__dirname, '..', 'assets', 'maps', 'europe.png');
+
+// As `floorWarning`, but the picture has been delivered and measured.
+function deliveredWarning(zone, data, dims, { companions = 0, extras = [] } = {}) {
+  const withPath = { ...data, imagePath: REAL_FILE };
+  const lesson = lessonWith(withPath, companions, extras);
+  return floorWarning(zone, withPath, {
+    slideIndex: 0,
+    lesson,
+    imageDims: { [REAL_FILE]: dims },
+  });
+}
+
+// The history deck's cell: 3.5" square, no caption, so a 3.26" frame.
+const SQUARE_CELL = { x: 0.5, y: 0.5, w: 3.5, h: 3.5 };
+// Wide enough that the same photograph clears the hero floor: 3.76" of frame
+// width carries a 1.2:1 picture to 3.12" tall.
+const WIDER_CELL = { x: 0.5, y: 0.5, w: 4.0, h: 3.5 };
+
+test('a delivered photograph is measured as drawn, not as the cell reserved', () => {
+  const message = deliveredWarning(SQUARE_CELL, { type: 'image' }, { w: 400, h: 332 });
+  assert.ok(message, 'a 2.71" drawn picture under a 3.0" floor must be reported');
+
+  // The number the class actually sees, and the rectangle it came from.
+  assert.match(message, /renders 3\.26" by 2\.71"/);
+  assert.match(message, /only 2\.71" on its short side/);
+  assert.match(message, /needs 3\.00"/);
+  // Why a cell that reads as big enough is not: this is the sentence that
+  // stops a designer measuring the cell again and concluding the check is wrong.
+  assert.match(message, /cell reserves 3\.26", which reads as enough/);
+  assert.match(message, /400 by 332/);
+  // Width is the lever, even though the cell is square and the picture is
+  // short on height: the fit already uses the full width, so height follows
+  // from it and a taller cell moves nothing.
+  assert.match(message, /Width is what binds/);
+  assert.match(message, /0\.35" more width/);
+});
+
+test('the width that was asked for is the width that fixes it', () => {
+  // 0.35" more width on a 3.5" cell is 3.85"; 4.0" is the next sensible cell
+  // and clears it. A repair instruction that does not actually repair the case
+  // costs a whole self-repair pass.
+  assert.equal(deliveredWarning(WIDER_CELL, { type: 'image' }, { w: 400, h: 332 }), null);
+});
+
+test('a portrait photograph in the same cell is stopped by height instead', () => {
+  // The mirror case, and the discrimination that a cell-only check cannot make:
+  // identical cell, identical floor, opposite lever. 332 x 400 fills the
+  // height and loses width, so widening the cell does nothing.
+  const message = deliveredWarning(SQUARE_CELL, { type: 'image' }, { w: 332, h: 400 });
+  assert.ok(message, 'a portrait picture drawn at 2.71" wide must be reported');
+  assert.match(message, /renders 2\.71" by 3\.26"/);
+  assert.match(message, /Height is what binds/);
+  assert.match(message, /0\.35" more height/);
+});
+
+test('a panoramic photograph is told the real width a hero would need', () => {
+  // A 2.67:1 landscape in a roomy 4.5" square cell still draws only 1.60"
+  // tall. The honest answer is that a picture this shape cannot be a 3" hero
+  // in any cell narrower than 8", which is a template decision, not a nudge.
+  const message = deliveredWarning(
+    { x: 0.5, y: 0.5, w: 4.5, h: 4.5 },
+    { type: 'image' },
+    { w: 1600, h: 600 }
+  );
+  assert.ok(message, 'a panoramic picture drawn at 1.60" must be reported');
+  assert.match(message, /renders 4\.26" by 1\.60"/);
+  assert.match(message, /Width is what binds/);
+  assert.match(message, /3\.74" more width/);
+});
+
+test('the same photograph in the same cell passes as one of a pair', () => {
+  // 2.71" is under the hero floor and over the pair floor. The delivered
+  // measurement changes the number, not the tiers.
+  assert.equal(
+    deliveredWarning(SQUARE_CELL, { type: 'image' }, { w: 400, h: 332 }, { companions: 1 }),
+    null
+  );
+});
+
+test('a delivered supporting picture is still out of the check', () => {
+  // `essential: false` is how a photo says it is context rather than the work.
+  // Measuring the drawn rectangle must not drag those back in.
+  assert.equal(
+    deliveredWarning(SQUARE_CELL, { type: 'image', essential: false }, { w: 400, h: 332 }),
+    null
+  );
+});
+
+test('a picture that has not arrived still gets the early reserved-frame answer', () => {
+  // The two branches must be distinguishable in the message, because they
+  // answer different questions. Before delivery the check can only promise
+  // what the cell guarantees; saying "renders" then would be a claim about a
+  // file nobody has seen.
+  const pending = floorWarning(TWO_POINT_FOUR, { type: 'image', imagePath: 'unsplash/not-yet.jpg' }, {
+    slideIndex: 0,
+    lesson: lessonWith({ type: 'image', imagePath: 'unsplash/not-yet.jpg' }, 0),
+  });
+  assert.ok(pending, 'a 2.40" reserved frame under the hero floor is still reported early');
+  assert.match(pending, /is guaranteed only 2\.40"/);
+  assert.ok(!/renders [0-9]/.test(pending), 'an undelivered picture must not be given drawn dimensions');
+
+  const delivered = deliveredWarning(SQUARE_CELL, { type: 'image' }, { w: 400, h: 332 });
+  assert.ok(!/is guaranteed only/.test(delivered), 'a delivered picture is measured, not promised');
+});
+
+test('one delivered picture raises one finding, not one per measurement', () => {
+  // The reserved frame and the drawn rectangle are the same check on two
+  // numbers. Reporting both would put 3.26" and 2.71" on one photograph and
+  // leave a designer unable to tell which to repair against.
+  clearPictureFloor();
+  deliveredWarning(SQUARE_CELL, { type: 'image' }, { w: 400, h: 332 });
+  const findings = pictureFloorFindings();
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].signal, 'PICTURE_BELOW_READABLE_FLOOR');
+  assert.match(findings[0].message, /renders 3\.26" by 2\.71"/);
+  clearPictureFloor();
 });

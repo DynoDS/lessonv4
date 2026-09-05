@@ -381,8 +381,20 @@ test('blue is the colour of a question, and instructions are black', () => {
 });
 
 test('the composition regressions from the electrical-appliances deck stay fixed', () => {
-  // Vocabulary returns to one key-vocabulary slide.
-  assert.match(PLAYBOOK_MD, /Vocabulary is presented on one `key-vocabulary` slide/);
+  // Vocabulary is not scattered one word per slide.
+  //
+  // The deck this came from opened with a run of single-word vocabulary
+  // slides, and the repair at the time was "one slide, all the words". That
+  // over-corrected: it also forbade introducing a word at the point it is
+  // needed, which is the timing Daniel asked for (5 September 2026). What has
+  // to survive is the reason, not the count - a run of single-word slides at
+  // the open puts a reference children wanted in one place across four slides,
+  // none of them near the teaching that uses it - and the fact that the
+  // DESIGN owns the grouping, so the slide designer cannot scatter a group
+  // the design planned together.
+  assert.match(PLAYBOOK_MD, /one per introduction the design planned/);
+  assert.match(PLAYBOOK_MD, /a run of single-word slides at the open of a lesson/);
+  assert.match(PLAYBOOK_MD, /do not split a group because the words look separable/);
   assert.ok(!PLAYBOOK_MD.includes('two established shapes'));
   // Sort task slides: big item bank, hugged destinations.
   assert.match(PLAYBOOK_MD, /the item bank takes the slide's spare height/);

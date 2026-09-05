@@ -424,7 +424,12 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertIn("substitute", helpers)
         self.assertIn("a fixed depiction of one real thing", helpers)
         self.assertIn("UK three-pin plug and socket", helpers)
-        self.assertIn("`controlled-ai`", helpers)
+        # The route is a PICTURE. Which picture route it takes - generated, or
+        # a real photograph with generation behind it - is the ordinary
+        # acquisition decision, and pinning "controlled-ai" here once taught a
+        # Year 4 circuits lesson to send a photograph of a cell in a battery
+        # holder to generation and arrive with nothing on a host that had none.
+        self.assertIn("its acquisition mode the designer's own rule", helpers)
         # A helper's late picture is exactly the need the run ceiling exists
         # to allow, so this route is measured against 24, not the 16 the
         # designer budgeted to.
@@ -438,9 +443,11 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertIn(
             "A fixed depiction of one real thing is the opposite", template
         )
-        self.assertIn(
-            "Ask for that visual as a picture instead, `controlled-ai`", template
-        )
+        self.assertIn("Ask for that visual as a picture instead", template)
+        # And that the template keeps the two decisions apart, so an object
+        # ordinary photography covers still tries the real route first.
+        self.assertIn("does not settle where the picture comes from", template)
+        self.assertIn("`ordinary-real` with `fallback_action: ai`", template)
 
     def test_scaffold_owns_route_specific_content_envelopes(self):
         """The builder emits each unit's content envelope; the designer only
@@ -525,13 +532,24 @@ class MakeLessonStaticContractTests(unittest.TestCase):
 
     def test_stage1_vocabulary_placement(self):
         text = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
-        # Meaning first, then the word (teacher review, 4 September 2026): a
-        # definition met before it names anything a child has seen is held as a
-        # slogan, so the vocabulary slide may follow the first noticing beat.
-        self.assertIn("Place vocabulary at the point where children have enough context to understand and use it, and read that as meaning first, then the word.", text)
-        self.assertIn("the vocabulary slide follows that first noticing beat", text)
-        self.assertIn("Set `vocabularyPlacement` to", text)
+        # Each word where it is most useful (teacher review, 5 September 2026).
+        # "Meaning first, then the word" was the whole rule and only ever
+        # covered half the lesson: it says nothing about a word children need
+        # BEFORE they can follow an instruction, and one placement field could
+        # not hold both answers in one lesson anyway. What is pinned here is
+        # that the designer plans a moment per word, that both reasons for
+        # choosing a moment survive, and that the two failures either side of
+        # it are still named.
+        self.assertIn("Plan when each word is introduced", text)
+        self.assertIn("`vocabularyIntroductions`", text)
+        # A term needed to follow an instruction goes in first.
+        self.assertIn("goes in before that instruction", text)
+        # A term the material can show goes in after the noticing.
+        self.assertIn("goes in after that noticing", text)
         self.assertIn("Discovery still introduces formal vocabulary after the exploration", text)
+        # Grouping is a decision, not a quota, in both directions.
+        self.assertIn("Group words that are needed together", text)
+        self.assertIn("a word introduced after the last moment it was any use", text)
 
     def _designer_text(self):
         return (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")

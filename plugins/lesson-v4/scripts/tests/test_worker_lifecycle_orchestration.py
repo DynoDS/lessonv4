@@ -278,8 +278,8 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("## Phase 3 — Service Each Branch as It Lands", playbook)
         flat_playbook = " ".join(playbook.split())
         self.assertIn(
-            "A branch that has built its resource and passed that resource's "
-            "check is finished.",
+            "A branch that has built its resource, passed its check and resolved any "
+            "reported material content gap is finished.",
             flat_playbook,
         )
         self.assertIn(

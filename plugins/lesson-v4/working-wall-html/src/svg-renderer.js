@@ -32,10 +32,12 @@ const lineGraphShared = require('../../shared/visuals/line-graph-svg');
 const barModelShared = require('../../shared/visuals/bar-model-svg');
 const gridMapShared = require('../../shared/visuals/grid-map-svg');
 const rainforestLayersShared = require('../../shared/visuals/rainforest-layers-svg');
+const balancedPatternPlateShared = require('../../shared/visuals/balanced-pattern-plate-svg');
 const placeValueChartShared = require('../../shared/visuals/place-value-chart-svg');
 // The same strict circuit the slides and the sheets draw, so a wall card and
 // the board show one circuit rather than two drawings of it.
 const circuitShared = require('../../shared/visuals/circuit-diagram-svg');
+const parachuteForcesShared = require('../../shared/visuals/parachute-forces-svg');
 // The annotation overlay (anchor → leader line → label) shared with the slides,
 // worksheets and stick-in pack. The wall uses it to turn any drawn primitive
 // into an "anatomy poster" reference card: the diagram children met on the board,
@@ -747,8 +749,10 @@ async function preRenderSvgs(spec) {
     'bar-model':      { keyFn: barModelShared.cacheKey, tightFn: barModelShared.tightSvg, collected: {} },
     'grid-map':       { keyFn: gridMapShared.cacheKey, tightFn: gridMapShared.tightSvg, collected: {} },
     'rainforest-layers': { keyFn: rainforestLayersShared.cacheKey, tightFn: rainforestLayersShared.tightSvg, collected: {} },
+    'balanced-pattern-plate': { keyFn: balancedPatternPlateShared.cacheKey, tightFn: balancedPatternPlateShared.tightSvg, collected: {} },
     'place-value-chart': { keyFn: placeValueChartShared.cacheKey, tightFn: placeValueChartShared.tightSvg, collected: {} },
     'circuit-diagram': { keyFn: circuitShared.cacheKey, tightFn: circuitShared.tightSvg, collected: {} },
+    'parachute-forces': { keyFn: parachuteForcesShared.cacheKey, tightFn: parachuteForcesShared.tightSvg, collected: {} },
   };
 
   const badges = new Set();
@@ -906,8 +910,11 @@ module.exports = {
   barModelKey: barModelShared.cacheKey,
   gridMapKey: gridMapShared.cacheKey,
   rainforestLayersKey: rainforestLayersShared.cacheKey,
+  balancedPatternPlateKey: balancedPatternPlateShared.cacheKey,
+  balancedPatternPlateTightSvg: balancedPatternPlateShared.tightSvg,
   placeValueChartKey: placeValueChartShared.cacheKey,
   circuitDiagramKey: circuitShared.cacheKey,
+  parachuteForcesKey: parachuteForcesShared.cacheKey,
   badgeSvg,
   badgeKey,
   calloutKeySuffix,

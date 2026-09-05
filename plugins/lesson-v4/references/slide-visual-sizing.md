@@ -57,6 +57,21 @@ photograph 1.3″. Size a picture cell by asking **"if a square photograph turns
 up here, is it still readable from the back of the room?"** If the answer is no,
 the cell is too small however wide it looks.
 
+**That square question is the floor a cell can promise, not the size the picture
+will be.** It is the right question before the photograph exists, because its
+shape is not yours to choose. Once the file arrives its shape is known, and a
+contained picture leaves the spare room on one axis empty: a 400 by 332
+classroom photograph in a 3.5″ square cell reserves 3.26″ and draws 3.26″ by
+2.71″, which is under the 3.0″ a lone working picture needs. The build measures
+the rectangle it actually put on the slide, so a cell that passed the square
+question can still be named once the photograph lands, and the message then
+quotes the drawn size and the picture's pixel dimensions rather than the cell's.
+When a picture has to be the hero of its slide, spend the axis its subject runs
+along: a landscape photograph needs the floor multiplied by how many times wider
+than tall it is, a portrait one the same on height. A wide landscape cannot be a
+3″ hero in a cell narrower than 8″, and that is a template decision rather than
+a nudge.
+
 This is why four pictures belong in a 2 by 2 rather than a row, and why a picture
 grid squeezed between a statement bar above and a conclusion bar below is usually
 the wrong shape: each of those decisions spends the axis the photograph needs.

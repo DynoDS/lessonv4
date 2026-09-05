@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import importlib.util
+import io
 import json
 import sys
 import tempfile
@@ -153,7 +155,7 @@ class PictureSourceTests(unittest.TestCase):
             root = Path(tmp); step = self.step(root); self.write_summary(step, False, "rate_limit")
             with self.assertRaises(validator.ValidationError): validator.completed_step_summary(step, "test")
 
-    def result_fixture(self, selected_index, earlier_failure=None, later_exists=False):
+    def result_fixture(self, selected_index, earlier_failure=None, later_exists=False, earlier_retry_failure=None):
         root = Path(tempfile.mkdtemp()); working = root / "working"; working.mkdir()
         photo = {"id": "photo-001", "subject": "subject", "pedagogical_constraint": "show it", "teaching_requirement": "identify it", "load_bearing_evidence": ["the subject"], "use": "slide", "essential": True, "filename": "unsplash/item.jpg", "acquisition_mode": "authentic-real", "source_profile": "unsplash-then-wikimedia", "fallback_action": "unsatisfied", "fallback_note": "a generated image would misrepresent the real record", "generation_prompt": None, "coherent_group": None, "coherent_mode": "none", "coherent_visual_invariants": []}
         req = root / "requirements.json"; req.write_text(json.dumps({"schema_version": 2, "lesson_name": "lesson", "photos": [photo]}) + "\n")
@@ -168,6 +170,8 @@ class PictureSourceTests(unittest.TestCase):
                 self.write_summary(step, True, results=[candidate])
             elif index < selected_index and earlier_failure and index == 0:
                 self.write_summary(step, False, earlier_failure)
+                if earlier_retry_failure is not None:
+                    self.write_summary(step, False, earlier_retry_failure, retry=True)
             elif later_exists and index > selected_index:
                 self.write_summary(step, True)
         result_path = root / "result.json"; result_path.write_text(json.dumps({"schema_version": 2, "kind": "image", "batch_id": "p1", "entries": [{"filename": entry["filename"], "status": "sourced", "selection": {"summary_path": selected_step["summary_path"], "candidate_id": "candidate-1"}, "staging_path": None, "reason": None}]}) + "\n")
@@ -180,6 +184,40 @@ class PictureSourceTests(unittest.TestCase):
 
     def test_search_after_winner_is_rejected(self):
         args = self.result_fixture(0, later_exists=True)
+        with self.assertRaises(validator.ValidationError): validator.validate_result(args)
+
+    # An Openverse gateway outage cost a real Year 4 history lesson all four of
+    # its photographs, its deck and its worksheets while Wikimedia was up and
+    # holding what it needed. The rung was walked; it could not answer. These
+    # four tests fix where the line sits.
+
+    def test_earlier_transport_outage_lets_a_later_real_winner_stand(self):
+        args = self.result_fixture(1, earlier_failure="transport", earlier_retry_failure="transport")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            validator.validate_result(args)
+        self.assertIn("PICTURE_RESULT_OK", out.getvalue())
+
+    def test_a_bypassed_rung_is_named_rather_than_silently_dropped(self):
+        args = self.result_fixture(1, earlier_failure="transport", earlier_retry_failure="transport")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            validator.validate_result(args)
+        printed = out.getvalue()
+        self.assertIn("PICTURE_SOURCE_OUTAGE", printed)
+        self.assertIn("step 1", printed)
+        self.assertIn("unsplash r1", printed)
+
+    def test_one_transport_blip_without_its_retry_still_blocks_a_later_winner(self):
+        # A single failure is not an outage. The retry is what tells them apart,
+        # and it is owed before the ladder may walk on.
+        args = self.result_fixture(1, earlier_failure="transport")
+        with self.assertRaises(validator.ValidationError): validator.validate_result(args)
+
+    def test_an_earlier_step_that_never_ran_still_blocks_a_later_winner(self):
+        # No summary at all is a skipped shelf, which is exactly what the rule
+        # is for.
+        args = self.result_fixture(1)
         with self.assertRaises(validator.ValidationError): validator.validate_result(args)
 
 

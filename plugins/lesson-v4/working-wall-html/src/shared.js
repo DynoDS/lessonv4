@@ -10,7 +10,11 @@
 //   dxa / 1440 is already inches.
 // - colours from style.json carry no leading '#' - hash() adds it.
 
-const { printableInches, WIDE_ASPECT } = require("./layout");
+const {
+  printableInches,
+  TITLE_BAR_PADDING_DXA,
+  WIDE_ASPECT,
+} = require("./layout");
 
 const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
 
@@ -72,13 +76,14 @@ function fontStack(name) {
 // accepted for interface parity with the other *Html builders below - the bar
 // is always full width of whatever printable-width container it renders
 // inside, so it never needs the page dimensions itself.
-function titleBarHtml(text, fillColour, style, fittedPt, size, orientation) {
-  const paddingMm = mm(240 / 1440);
+function titleBarHtml(text, fillColour, style, fittedPt, size, orientation, opts = {}) {
+  const paddingMm = mm(TITLE_BAR_PADDING_DXA / 1440);
   const textColour = hash(style.colours.titleBarText || "FFFFFF");
+  const lineHeight = opts.lineHeight != null ? `line-height:${opts.lineHeight};` : "";
   return (
     `<div style="box-sizing:border-box;width:100%;background:${hash(fillColour)};padding:${paddingMm}mm;">` +
     `<div style="text-align:center;font-family:${fontStack(style.fonts.title)};font-weight:bold;` +
-    `font-size:${fittedPt}pt;color:${textColour};">${esc(text)}</div></div>`
+    `font-size:${fittedPt}pt;${lineHeight}color:${textColour};">${esc(text)}</div></div>`
   );
 }
 
@@ -132,6 +137,11 @@ function panelWithVisualHtml(innerHtml, visual, visualLabel, fillColour, borderC
     if (visual && (visual.buf || visual.emoji)) {
       const visualWidthIn = Math.max(1, dims.width - (2 * paddingDxa) / 1440) * 0.96;
       let visualHeightIn = visualWidthIn / aspect;
+      // The reserve the card already subtracted from its text area, passed in
+      // so the space set aside for the figure is the space it is drawn at.
+      // These two drifting apart is how a card reserves room a figure never
+      // uses. Falls back to the guaranteed share for a caller that reserved
+      // nothing.
       const maxVisualHeightIn = opts.maxVisualHeightIn || dims.height * 0.21;
       let fittedVisualWidthIn = visualWidthIn;
       if (visualHeightIn > maxVisualHeightIn) {

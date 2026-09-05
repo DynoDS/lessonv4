@@ -171,6 +171,26 @@ def search_commons_once(query, reserve, thumb_width=800):
         raise SourceFailure(f"could not reach Wikimedia Commons: {exc.reason}", "transport") from exc
     except ValueError as exc:
         raise SourceFailure(f"Wikimedia Commons returned unreadable JSON: {exc}", "transport") from exc
+    # A socket timeout is NOT a URLError.
+    #
+    # `urllib` wraps a failure to CONNECT in URLError, but a gateway that
+    # accepts the connection and then does not answer raises a bare
+    # `TimeoutError` (which `socket.timeout` is an alias for) straight out of
+    # the read. It is an OSError, never a URLError, so it fell past all three
+    # handlers above and killed the process with a traceback - and a fetcher
+    # that dies writes no summary at all.
+    #
+    # That is worse than a recorded failure. The picture validator proves
+    # `real_source_unavailable` from a recorded incomplete step; with no
+    # summary the step is invisible rather than failed, and NO terminal row
+    # validates, so a lesson loses every picture including the ones a later
+    # rung already found. A Year 4 history deck lost all four that way while
+    # Openverse returned 504s at about 60 seconds against a 25-second timeout
+    # (5 September 2026).
+    #
+    # OSError is last because both HTTPError and URLError are subclasses of it.
+    except OSError as exc:
+        raise SourceFailure(f"could not reach Wikimedia Commons: {exc}", "transport") from exc
     pages = data.get("query", {}).get("pages", {})
     output = []
     for page in pages.values() if isinstance(pages, dict) else pages:

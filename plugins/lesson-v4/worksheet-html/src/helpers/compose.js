@@ -305,7 +305,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
     return measure(content, widthMm);
   }
 
-  function needsContent(content) {
+  function needsContent(content, widthMm) {
     const items = itemsOf(content);
 
     // The gutter is width the content does not get, so it is added to what the
@@ -313,12 +313,14 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
     // zone 9mm wider than it will actually have.
     if (content && content.number !== undefined) {
       const { number, ...rest } = content;
-      const need = needsContent(rest);
+      const need = needsContent(rest,
+        Number.isFinite(widthMm) ? widthMm - NUMBER_GUTTER_MM : undefined);
       return { ...need, minWidthMm: need.minWidthMm + NUMBER_GUTTER_MM };
     }
 
     if (isRow(content)) {
-      const ns = items.map(needsContent);
+      const widths = Number.isFinite(widthMm) ? widthsIn(content, items, widthMm) : null;
+      const ns = items.map((item, i) => needsContent(item, widths ? widths[i] : undefined));
       return {
         minWidthMm:
           ns.reduce((s, n) => s + n.minWidthMm, 0) +
@@ -328,7 +330,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
     }
 
     if (isStack(content)) {
-      const ns = items.map(needsContent);
+      const ns = items.map(item => needsContent(item, widthMm));
       return {
         minWidthMm: Math.max(...ns.map((n) => n.minWidthMm)),
         minHeightMm:
@@ -337,7 +339,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
       };
     }
 
-    return needs(content);
+    return needs(content, widthMm);
   }
 
   // A group can use spare height if ANY of its parts can. Taking the largest
@@ -433,10 +435,35 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
         return part;
       });
     } else if (isStack(content)) {
-      // One above another: each gets the full width and its own natural height.
-      self.parts = items.map((item) =>
-        inspectContent(item, widthMm, measureContent(item, widthMm))
+      // One above another, each at the full width. Height is NOT simply natural
+      // any more, and the report was wrong for as long as it assumed so: a
+      // stack item marked as growing is given "flex: 1 1 auto", so the browser
+      // shares whatever the stack has left over equally between those items on
+      // top of their natural heights. A Year 4 Greater Depth sheet's answer
+      // blocks were drawn at 73mm each and reported at 33mm, which is a report
+      // describing a page nobody printed - the same fault the zone heights
+      // above were repaired for, one level down.
+      //
+      // The share is worked out exactly as renderContent decides it, so the two
+      // cannot drift apart: fill items take it when any exists, greedy items
+      // otherwise, and equal flex-grow means equal shares.
+      const naturals = items.map((item) => measureContent(item, widthMm));
+      const someFill = items.some((item) => fillsContent(item));
+      const growing = items.map((item) =>
+        someFill ? fillsContent(item) : greedContent(item) > 0
       );
+      const growers = growing.filter(Boolean).length;
+      const gaps = Math.max(0, items.length - 1) * GAP_MM;
+      const leftover = heightMm - naturals.reduce((a, b) => a + b, 0) - gaps;
+      const share = growers > 0 && leftover > 0 ? leftover / growers : 0;
+
+      self.parts = items.map((item, i) => {
+        const part = inspectContent(item, widthMm, naturals[i] + (growing[i] ? share : 0));
+        // A grown item did not choose its height; the stack handed it one, the
+        // same way a row hands its items the row's height.
+        if (growing[i] && share > 0) part.heightImposed = true;
+        return part;
+      });
     }
 
     return self;

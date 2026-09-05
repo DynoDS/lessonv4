@@ -51,7 +51,7 @@ emailed. Never write `imageHref` yourself.
 **Tables**
 
 - `data-table` - Values HANDED to the child to read from: a price list, a timetable, a set of results.
-- `recording-table` - A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column. The sizes are `tick`, `number`, `word` and `sentence`, named for what the child writes; anything else is refused rather than quietly sized as a word.
+- `recording-table` - A table the CHILD completes: supplied cells stay put and the rest stay tall and blank, sized by `writing` - `tick`, `number`, `word` or `sentence`, one size or one per column.
 
 **Charts and diagrams**
 
@@ -257,7 +257,7 @@ Smallest usable: **70mm wide x 25mm tall**. Spare height: never takes spare heig
 
 #### `recording-table`
 
-A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column. The sizes are `tick`, `number`, `word` and `sentence`, named for what the child writes; anything else is refused rather than quietly sized as a word.
+A table the CHILD completes: supplied cells stay put and the rest stay tall and blank, sized by `writing` - `tick`, `number`, `word` or `sentence`, one size or one per column. Any other size is refused.
 
 Smallest usable: **134mm wide x 92mm tall**. Spare height: takes spare height first (it is writing space).
 
@@ -455,7 +455,7 @@ Smallest usable: **100mm wide x 76mm tall**. Spare height: never takes spare hei
 
 #### `label-diagram`
 
-A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on. The one helper built around a PHOTOGRAPH.
+A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on. Every callout states which with `given`, and unstated is refused. Built around a PHOTOGRAPH.
 
 Smallest usable: **84mm wide x 68mm tall**. Spare height: never takes spare height.
 
@@ -470,35 +470,40 @@ Smallest usable: **84mm wide x 68mm tall**. Spare height: never takes spare heig
         37,
         31
       ],
-      "label": "petal"
+      "label": "petal",
+      "given": false
     },
     {
       "anchor": [
         50,
         31
       ],
-      "label": "flower"
+      "label": "flower",
+      "given": false
     },
     {
       "anchor": [
         40,
         61
       ],
-      "label": "leaf"
+      "label": "leaf",
+      "given": false
     },
     {
       "anchor": [
         50,
         50
       ],
-      "label": "stem"
+      "label": "stem",
+      "given": true
     },
     {
       "anchor": [
         50,
         90
       ],
-      "label": "roots"
+      "label": "roots",
+      "given": false
     }
   ]
 }
@@ -1376,7 +1381,7 @@ Smallest usable: **81mm wide x 43mm tall**. Spare height: never takes spare heig
 
 Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.
 
-Smallest usable: **75mm wide x 29mm tall**. Spare height: never takes spare height.
+Smallest usable: **76mm wide x 30mm tall**. Spare height: never takes spare height.
 
 ```json
 {

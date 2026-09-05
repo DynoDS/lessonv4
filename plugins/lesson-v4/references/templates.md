@@ -67,6 +67,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `grid-map` | A schematic river-town map on a **numbered four-figure grid** — eastings along the bottom, northings up the side, the numbers sitting ON the grid lines at the corners (read along the bottom, then up the side). A blue river winds through with a meander, features sit inside their squares, and an optional ring marks one square's bottom-left corner. Use for "read the human/physical features and four-figure grid references off the map" geography/maths work; the `highlightSquare` ring models reading a reference on the Teach slide |
 | `geographical-description-frame` | A blank three-part writing frame headed Biome, Location, and Features from evidence. It prompts for a biome meaning and example, a continent and more than one country, and two features linked to map or photograph evidence |
 | `rainforest-layers` | A cross section of a tropical rainforest — four stacked bands, top to bottom: emergent (a few very tall widely spaced trees), canopy (an unbroken roof of overlapping treetops), understorey (thin trunks and large leaves), forest floor (dark ground, leaf litter and roots). The **band tint is the light gradient**, brightest at the top and near dark at the floor, so the diagram teaches the light idea just by looking right. Toggle `labels`, `heights` and `light` (sun, arrows thinning band by band, "about 2 rays in every 100"); `notes` prints a short phrase under a layer's name, which is where what a layer is *like* belongs rather than in a text panel beside the picture; `highlight` takes a pair of layer names and dims the other two, so the same diagram carries a whole lesson slide by slide; `blank` gives the write-on form. Use for any "describe the layers of a rainforest" geography work |
+| `parachute-forces` | A front-view fair-test schematic of two billowed-sheet model parachutes. It fixes canopy widths at exactly 3:1, derives equal Euclidean suspension-cord lengths, keeps the loads identical, and distinguishes the air-resistance arrows qualitatively while gravity arrows remain equal. Use after practical evidence is pooled to explain why canopy size changes falling time |
 | `balanced-pattern-plate` | A neutral broad proportional food-group plate: larger fruit-and-vegetable and starchy-carbohydrate areas, smaller protein and dairy-or-alternative areas, and a very small oils-and-spreads area. The five proportions are the fixed thing the picture teaches and no field changes them; everything you set is words. Each group takes its own label and up to four short examples, and the drawing measures them, so a longer label wraps, shrinks, and moves out to a labelled card beside the plate rather than being clipped. `mode: "practice"` keeps the identical sectors and turns whichever groups you name into pupil-decision spaces. Water sits beside it; foods high in fat, salt or sugar have a separate "less often / small amounts" cue. Never use calorie, weight-loss, moral, or bad-food labels. |
 | `geoboard` | A grid of evenly spaced pegs (dotty paper) with zero, one, or many straight-line shapes drawn on by their vertices. A general workspace: blank dotty paper to draw on, a single shape to name, a square turned 45° on diagonal pegs ("it's not a diamond"), or several shapes to sort. Not limited to four sides — triangles, pentagons, irregular and open paths all work. Use for shape, area, perimeter, symmetry and "how many shapes can you make?" investigations. Unnumbered (unlike `coordinate-grid`); a free drawing surface, not a reflection task (unlike `reflection-grid`) |
 | `measuring-jug` | A jug with a vertical graduated scale: 0 at the bottom up to `max`, numbered ticks, and an optional coloured liquid level. Use for "read the level" / "mark 250ml" capacity work — the vertical scale the round `dial-scale` can't represent |
@@ -1203,6 +1204,30 @@ The standard "which pairs are parallel?" sorting layout — a row of four bare p
 **`label` field (optional):** a short caption below the picture in body typography, supporting the `||` answer reveal exactly like `angle` / clock / turn diagram — `"(a) ||parallel"` shows the identifier on the question slide and the green answer on the reveal. Keep labels short (`"parallel"`, `"perpendicular"`, `"neither"`, `"not parallel"`) so they stay large on the board.
 
 Zone class compatibility: fits A, B, C, D, E-wide, E-narrow, G. The figure is cropped tight to the two lines and placed by its true proportions (a horizontal pair is wide, a vertical pair tall), so it fills the slot it is given with no deadspace. **Minimum useful size** ~1.8″ in a `row` so the constant gap and the right-angle square read from the back; ~2.0″–2.5″ for a single teaching figure.
+
+### `parachute-forces`
+
+```json
+{
+  "type": "parachute-forces",
+  "canopyShape": "billowed-sheet",
+  "largeCanopyWidthRatio": 3,
+  "cordLengthRatio": 1,
+  "loadSizeRatio": 1,
+  "showEqualityTicks": true,
+  "labels": {
+    "largeCanopy": "More air to push out of the way",
+    "smallCanopy": "Less air to push out of the way",
+    "largeUpForce": "More air resistance",
+    "smallUpForce": "Less air resistance",
+    "downForce": "Gravity pulls down",
+    "cords": "Same cord length",
+    "loads": "Same load"
+  }
+}
+```
+
+A native explanatory model for a fair parachute comparison. Both canopies use the same billowed-sheet profile; the large canopy is exactly three times the drawn width of the small one. The renderer calculates each load's vertical drop from the shared cord length, so corresponding cords remain equal in Euclidean length instead of merely looking similar. Matching ticks expose that equality, identical load blocks expose the controlled load, unequal upward arrows show more/less air resistance qualitatively, and equal downward arrows show the same gravity comparison. All seven labels are measured, wrapped into external boxes and joined to their targets with leaders. The fixed ratio fields are validated and refused if changed: this helper represents the 60 cm : 20 cm comparison, equal cords and equal loads. It is a schematic teaching model, not photographic evidence. Use in a wide teaching zone after children have gathered results; do not use as a success-criteria icon.
 
 ### `circuit-diagram`
 
@@ -2584,6 +2609,7 @@ Which content types fit which zone class.
 | `matching`          | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `numberline`        | ✓ | ✓ | ✓ |   | ✓ | ✓ |   |   |
 | `place-value-chart` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
+| `place-value-mini`  | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `fraction-wall`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `part-whole-model`  | ✓ | ✓ | ✓ |   | ✓ | ✓ |   |   |
 | `bar-model`         | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
@@ -2616,6 +2642,7 @@ Which content types fit which zone class.
 | `reflection-grid`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `grid-map`          | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `rainforest-layers` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
+| `parachute-forces`  | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `geographical-description-frame` | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `geoboard`          | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `measuring-jug`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |

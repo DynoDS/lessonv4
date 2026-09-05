@@ -118,7 +118,7 @@ Check:
 - a later formal convention is included only when the approved objective or supplied sequence requires it, not merely because it belongs to the same topic;
 - the full and displayed learning objectives mean the same thing;
 - in a knowledge subject (history, geography, science content, RE), the Teach labels and headlines read in order are things about the topic, not rules about how to think; a lesson whose Teach beats are each a rule about sources or evidence has put the method in front of the knowledge and is a purposeful design defect, because the class leaves able to recite the rule and knowing nothing about the people (the subject file's own test);
-- substantial teaching and tasks serve the objective;
+- substantial teaching and tasks serve the objective, and the FINAL task demonstrates what the objective actually says: read the end performance and ask what a child who does it well now knows and can do. A lesson that keeps the objective's wording while its teaching, evidence and final work are about one corner of it has not delivered it, and a teacher flag naming the narrowing does not repair that. The opposite failure counts too: a token reference to each strand of a broad objective teaches none of them, and one well-chosen case that carries the whole thinking is a sound design, not a narrow one;
 - deferred learning is not taught early;
 - two substantial new demands are not stacked into one lesson without enough teaching, practice and checking for both;
 - any lesson split is honest and visible;
@@ -146,6 +146,15 @@ Across all routes, compare what is modelled or guided with what pupils later do 
 Roughly 80 per cent successful independence is a planning expectation for repeatable skills, not a result to demand or report.
 
 ### 3. Thinking, practice and evidence
+
+Check the factual premise of each model answer against its actual stimulus,
+not only against the designer's explanation. A category label does not prove
+that an item lacks a property, and a fact about one time, place or group does
+not establish a universal claim. Verify a consequential uncertain claim with
+an authoritative source. For an answer accepting a class of cases ("any",
+"always", "exactly"), test the stated condition at its boundary and try a
+counterexample; one correct model example does not validate the whole rule.
+Preserve a sound simplification when its limits do not misteach the task.
 
 Check:
 
@@ -323,7 +332,12 @@ After a JSON correction, serialise through the host JSON library, parse the writ
 
 You inherit a design that has already passed deterministic validation, so once you edit it you are the author of whatever it now contains. Trusting deterministic validation means trusting it about the design you were given, not about the wording you have just written over it.
 
-When you have made your last correction, run:
+When you have made your last correction, rerun the exact `validator.command`
+from `design-review-preflight.json`. It retains strict initial-photo validation
+for a new design and ordinary live-reference validation for a review after the
+verified Phase 2 freeze, when a retired picture remains in the immutable history.
+If no prepared packet was supplied, use the orchestrator's validator command;
+the initial-design command is:
 
 ```bash
 python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace \

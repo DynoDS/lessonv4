@@ -659,12 +659,36 @@ ${helperCss}
 </body></html>`;
 }
 
+// The height each zone is actually DRAWN at, by zone id.
+//
+// A zone's height is not its share of the layout. `measureTree` measures what
+// the zone holds, `growToFit` lets the greedy helpers claim the surplus, and
+// `placeTree` then places rectangles at those measured heights - which is why
+// two stacked layouts with different declared ratios produce the identical
+// page. Anything reporting on a zone's spare room has to ask here, or it
+// describes a page nobody prints: the balanced-diet Expected sheet's step
+// panel was reported as 221mm of blank paper under a zone the build draws at
+// 47.79mm, its content height, with the questions beside it (5 September 2026).
+function drawnZoneHeights(spec) {
+  const { tree, sheet } = sheetGeometry(spec);
+  const orientation = spec.orientation || "portrait";
+  const area = printableArea(orientation, DEFAULT_MARGIN_MM);
+  const measured = measureTree(tree, sheet, area.widthMm);
+  growToFit(measured, area.heightMm);
+  const byId = {};
+  for (const placed of placeTree(measured, 0, 0, area.widthMm)) {
+    byId[placed.id] = placed.h;
+  }
+  return byId;
+}
+
 module.exports = {
   renderSheet,
   checkFit,
   getLayout,
   measureFill,
   zoneContentMm,
+  drawnZoneHeights,
   GUTTER_MM,
   // Exported so the tightness report describes the page that was DRAWN. A
   // report worked out from the layout's own tree would still be measuring a

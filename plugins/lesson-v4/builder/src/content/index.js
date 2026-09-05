@@ -47,7 +47,9 @@ const { drawTurnDiagram }    = require('./turn-diagram');
 const { drawAngle }          = require('./angle');
 const { drawTriangle, drawTriangleNonExample } = require('./triangle');
 const { drawLinePair } = require('./line-pair');
+const { drawPlaceValueMini } = require('./place-value-mini');
 const { drawCircuitDiagram, measureCircuitDiagram } = require('./circuit-diagram');
+const { drawParachuteForces, measureParachuteForces } = require('./parachute-forces');
 const { drawCircuitSymbolBank, measureCircuitSymbolBank } = require('./circuit-symbol-bank');
 const { drawChipBank }       = require('./chip-bank');
 const { drawSortBoard }      = require('./sort-board');
@@ -122,7 +124,18 @@ const ZONE_COMPAT = {
   triangle:            ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'triangle-nonexample': ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'line-pair':         ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
+  // The small place-value drawing built for a vocabulary card's 2.2" panel:
+  // one digit mapping to its value, a highlighted column, ten tens becoming a
+  // hundred, or the zeros in a numeral. `templates.md` documents it as a
+  // `key-vocabulary` visual with four worked examples, and it draws through
+  // `content/vocab.js` - but it was never registered here, and the layout
+  // preflight walks every typed node including a card's `visual`. So a deck
+  // that used it exactly as documented was refused before it drew
+  // (CONTENT_ZONE_INCOMPATIBLE), and the designer shipped a text-only card
+  // instead (5 September 2026). Registered like its sibling card visuals.
+  'place-value-mini':  ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'circuit-diagram':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
+  'parachute-forces':  ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
   // The component-symbol key for a circuit lesson: individually identifiable
   // symbols with child-facing names, for the slide that teaches or consults
   // the symbol map itself (a complete loop is circuit-diagram's job).
@@ -192,7 +205,9 @@ const HELPERS = {
   triangle:            drawTriangle,
   'triangle-nonexample': drawTriangleNonExample,
   'line-pair':         drawLinePair,
+  'place-value-mini':  drawPlaceValueMini,
   'circuit-diagram':   drawCircuitDiagram,
+  'parachute-forces':  drawParachuteForces,
   'circuit-symbol-bank': drawCircuitSymbolBank,
   'chip-bank':         drawChipBank,
   'sort-board':        drawSortBoard,
@@ -247,6 +262,7 @@ const MEASURE = {
   // Fixed-aspect figures: the card hugs the contained picture, not the zone.
   'label-diagram': measureLabelDiagram,
   'circuit-diagram': measureCircuitDiagram,
+  'parachute-forces': measureParachuteForces,
   'circuit-symbol-bank': measureCircuitSymbolBank,
   // The bands, line and dated labels are laid out from their own content and
   // centred in spare height; the card hugs that figure, not the zone.

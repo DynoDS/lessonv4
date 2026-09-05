@@ -57,6 +57,26 @@ def search_unsplash(query, access_key, reserve, orientation=None):
         raise SourceFailure(f"could not reach Unsplash: {exc.reason}", "transport") from exc
     except ValueError as exc:
         raise SourceFailure(f"Unsplash returned unreadable JSON: {exc}", "transport") from exc
+    # A socket timeout is NOT a URLError.
+    #
+    # `urllib` wraps a failure to CONNECT in URLError, but a gateway that
+    # accepts the connection and then does not answer raises a bare
+    # `TimeoutError` (which `socket.timeout` is an alias for) straight out of
+    # the read. It is an OSError, never a URLError, so it fell past all three
+    # handlers below and killed the process with a traceback - and a fetcher
+    # that dies writes no summary at all.
+    #
+    # That is worse than a recorded failure. The picture validator proves
+    # `real_source_unavailable` from a recorded incomplete step; with no
+    # summary the step is invisible rather than failed, and NO terminal row
+    # validates, so a lesson loses every picture including the ones a later
+    # rung already found. A Year 4 history deck lost all four that way while
+    # Openverse returned 504s at about 60 seconds against this 25-second
+    # timeout (5 September 2026).
+    #
+    # OSError is last because both HTTPError and URLError are subclasses of it.
+    except OSError as exc:
+        raise SourceFailure(f"could not reach Unsplash: {exc}", "transport") from exc
     return data.get("results", [])
 
 

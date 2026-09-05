@@ -317,6 +317,37 @@ def step_has_final_operational_failure(step: dict, label: str) -> bool:
     return not retry_path.exists()
 
 
+def step_stayed_unreachable(step: dict, label: str) -> bool:
+    """An earlier rung the scout walked to and could not get an answer from.
+
+    Narrower than `step_has_final_operational_failure` on purpose, and the
+    difference is the whole point of the rule this serves. Only a TRANSPORT
+    failure that survived its one authorised retry counts:
+
+    - `transport` is the source itself being unreachable. Nothing in the run
+      can fix it, it is expected to clear on its own, and the retry is what
+      separates a blip from an outage.
+    - `auth` is a missing or wrong credential. It is a configuration fault, it
+      will not clear on its own, and routing around it quietly would leave the
+      preferred source permanently invisible with nobody told. It keeps
+      blocking, so somebody fixes the key.
+    - `rate_limit` is self-inflicted and clears by waiting. It is deliberately
+      never retried, so it has no evidence of persistence to offer.
+    """
+    primary_path, retry_path = step_summary_paths(step)
+    if not primary_path.is_file() or primary_path.is_symlink():
+        return False
+    primary = read_json(primary_path, f"{label} failed search summary")
+    validate_step_summary_shape(primary, step, label)
+    if primary["complete"] is True or primary.get("failure_kind") != "transport":
+        return False
+    if not retry_path.is_file() or retry_path.is_symlink():
+        return False
+    retry = read_json(retry_path, f"{label} failed retry summary")
+    validate_step_summary_shape(retry, step, label)
+    return retry["complete"] is not True
+
+
 def attempted_step_summary(step: dict, label: str, *, allow_outage: bool):
     """A compiled search step that the worker was entitled to move on from.
 
@@ -439,6 +470,7 @@ def validate_result(args) -> None:
     if not isinstance(rows, list) or [r.get("filename") if isinstance(r, dict) else None for r in rows] != expected:
         raise ValidationError("result must contain exactly the expected filename set in order")
     compiler = load_compiler(); attempts = load_attempts()
+    outage_notes: list[str] = []
     for row, compiled in zip(rows, assignment_entries):
         label = row.get("filename") if isinstance(row, dict) else "<invalid>"
         if not isinstance(row, dict) or set(row) != RESULT_FIELDS:
@@ -487,7 +519,24 @@ def validate_result(args) -> None:
                 elif retry_path.exists():
                     raise ValidationError(f"{label}: selected primary summary has a later retry")
 
-                for prior_step in schedule[:step_index]:
+                for prior_index, prior_step in enumerate(schedule[:step_index]):
+                    # A shut shelf is not an empty library. The schedule is an
+                    # order of preference, not of validity: every source on it
+                    # is one this entry's own contract authorised, so a faithful
+                    # photograph from a later rung is a full answer carrying its
+                    # own provenance. This rule exists to prove the scout did not
+                    # SKIP a preferred shelf, and an outage recorded through its
+                    # authorised retry is proof the rung was walked. Refusing it
+                    # costs the lesson every picture, including ones already
+                    # found. See `step_stayed_unreachable` for why only a
+                    # transport outage counts.
+                    if step_stayed_unreachable(prior_step, label):
+                        outage_notes.append(
+                            f"PICTURE_SOURCE_OUTAGE: {label}: step {prior_index + 1} "
+                            f"({prior_step['source']} r{prior_step['round']}) stayed unreachable through its "
+                            f"retry; accepted {step['source']} r{step['round']} instead"
+                        )
+                        continue
                     completed_step_summary(prior_step, label)
             candidate = summary_candidate(summary, selection["candidate_id"], summary_root, label)
             if step is not None and candidate["source"] != step["source"]:
@@ -626,6 +675,10 @@ def validate_result(args) -> None:
                     last = state["attempts"][-1]
                     if last["fault"] != "imagegen_output_unavailable":
                         raise ValidationError(f"{label}: output-unavailable reason does not match the ledger")
+    # A bypassed rung is reported, never silent: the run report has to be able
+    # to say which source was down and which one answered instead.
+    for note in outage_notes:
+        print(note)
     print("PICTURE_RESULT_OK")
 
 

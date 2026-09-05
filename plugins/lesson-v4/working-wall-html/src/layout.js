@@ -13,6 +13,9 @@ const A3_LONG_IN = 16.54;
 
 const CHAR_WIDTH_RATIO = 0.55;
 const TITLE_FIT_SAFETY = 0.93;
+const TITLE_BAR_PADDING_DXA = 240;
+const TITLE_BAR_LINE_HEIGHT = 1.25;
+const REFERENCE_TABLE_LINE_HEIGHT = 1.25;
 
 
 const WIDE_ASPECT = 1.15;
@@ -55,6 +58,14 @@ function fitTitleSize(text, basePt, size, orientation, style) {
     pt -= 8;
   }
   return Math.max(36, pt);
+}
+
+// Keep the height reserved by the layout pass identical to the title bar's
+// CSS. A fixed 1.4in allowance was smaller than a 96pt A3 title plus its two
+// 240dxa paddings, so a table could validate and then lose its final row below
+// the physical page edge.
+function titleBarHeightInches(fittedPt) {
+  return (fittedPt * TITLE_BAR_LINE_HEIGHT / 72) + (2 * TITLE_BAR_PADDING_DXA / 1440);
 }
 
 function longestWordLen(text) {
@@ -130,13 +141,31 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
   return minPt;
 }
 
+// Would this body still fit at its floor size if the card gave it this much
+// title-and-visual area? Answers the question `fitLinearBodySize` cannot: its
+// return value is `minPt` both when the floor fits exactly and when it does
+// not, so a caller deciding how much height to hand a figure cannot tell a
+// panel that is full from one that has been overrun. Same arithmetic, one
+// boolean.
+function linearBodyFitsAtFloor(items, minPt, size, orientation, style, opts = {}) {
+  const probe = [];
+  const original = console.warn;
+  console.warn = (...args) => probe.push(args);
+  try {
+    fitLinearBodySize(items, minPt, minPt, size, orientation, style, opts);
+  } finally {
+    console.warn = original;
+  }
+  return probe.length === 0;
+}
+
 function fitReferenceTableSize(columns, rows, columnWidthsDxa, defaultPt, minPt, size, orientation, style, opts = {}) {
   const isA3 = size === "A3";
   const dims = printableInches(size, orientation, style);
   const titleAreaInches = opts.titleAreaInches != null ? opts.titleAreaInches : (isA3 ? 1.4 : 1.0);
   const safety = opts.safety != null ? opts.safety : 0.3;
   const availHeight = dims.height - titleAreaInches - safety;
-  const lineHeight = opts.lineHeight || 1.25;
+  const lineHeight = opts.lineHeight || REFERENCE_TABLE_LINE_HEIGHT;
   const charWidthRatio = opts.charWidthRatio || 0.55;
   const headerRatio = opts.headerRatio || 0.75;
   const cellPaddingH = 400 / 1440;
@@ -229,7 +258,10 @@ function referenceColumnWidths(columnCount, pageSize, orientation, style) {
   const totalDxa = Math.round(dims.width * 1440);
 
   if (columnCount === 2) {
-    const left = Math.round(totalDxa * 0.30);
+    // Portrait tables need enough physical width for ordinary row labels at
+    // the 36pt readability floor. The landscape split remains the established
+    // 30/70; portrait uses 35/65 and may wrap descriptive cells to three lines.
+    const left = Math.round(totalDxa * (orientation === "portrait" ? 0.35 : 0.30));
     return [left, totalDxa - left];
   }
   if (columnCount === 3) {
@@ -277,13 +309,18 @@ function photoAspect(buf) {
 }
 
 module.exports = {
+  linearBodyFitsAtFloor,
   printableInches,
   printableDxa,
   fitTitleSize,
+  titleBarHeightInches,
   fitLinearBodySize,
   fitReferenceTableSize,
   referenceColumnWidths,
   tryReadPhoto,
   photoAspect,
+  TITLE_BAR_PADDING_DXA,
+  TITLE_BAR_LINE_HEIGHT,
+  REFERENCE_TABLE_LINE_HEIGHT,
   WIDE_ASPECT,
 };

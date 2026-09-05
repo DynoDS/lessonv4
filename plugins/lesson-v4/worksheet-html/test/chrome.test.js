@@ -316,3 +316,137 @@ test("an ordinary zone with room to spare reports nothing", async () => {
   const problems = await probe(`<p style="margin:0;">A short question.</p>`);
   assert.deepEqual(problems, [], `a comfortable zone was reported as a problem: ${JSON.stringify(problems)}`);
 });
+
+// The zone the two boxless-wrapper tests below use sits AWAY from the viewport
+// origin, and that offset is the whole point. An element with no box reports
+// its rectangle as 0x0 at the origin; a zone pinned at the origin therefore
+// contains it by accident and the fault hides. Every real worksheet zone is
+// inset from the page edge, which is why this only ever showed up on real
+// sheets.
+const OFFSET_ZONE_STYLE =
+  "position:absolute;left:40mm;top:40mm;width:60mm;height:30mm;overflow:hidden;";
+
+const offsetProbe = async (inner) => {
+  const { fitProblems } = await htmlToPdf(
+    `<div data-worksheet-zone="a" style="${OFFSET_ZONE_STYLE}">${inner}</div>`,
+    { inspectFit: true }
+  );
+  return fitProblems;
+};
+
+test("a display:contents wrapper is not itself reported as outside the zone", async () => {
+  // An element laid out this way draws NO box: its children are placed as
+  // though it were not there, and asking it for its rectangle returns 0x0 at
+  // the viewport origin - above and left of every zone on a real page.
+  // Measuring it condemned every worksheet carrying a place-value chart, whose
+  // rows are laid out this way so all of them share one set of column tracks.
+  // A single chart on an otherwise empty page was refused, and the diagnostic
+  // blamed the composition, so the repair round went to the designer, whose
+  // spec was never at fault (5 September 2026).
+  const problems = await offsetProbe(
+    `<div style="display:grid;grid-template-columns:repeat(4,1fr);">
+       <div style="display:contents;"><span>1</span><span>2</span><span>3</span><span>4</span></div>
+       <div style="display:contents;"><span>5</span><span>6</span><span>7</span><span>8</span></div>
+     </div>`
+  );
+  assert.deepEqual(
+    problems,
+    [],
+    `a boxless wrapper was reported as content outside the zone: ${JSON.stringify(problems)}`
+  );
+});
+
+test("content genuinely spilling out of a display:contents wrapper is still reported", async () => {
+  // The discrimination. Skipping the wrapper must not blind the probe to what
+  // the wrapper carries: its children draw real boxes and are still measured.
+  const problems = await offsetProbe(
+    `<div style="display:contents;"><div style="height:80mm;">too tall</div></div>`
+  );
+  assert.ok(
+    problems.length > 0,
+    "a child spilling out of a boxless wrapper was passed as fitting"
+  );
+});
+
+// ─── two blocks printing on top of each other ────────────────────────────
+//
+// The fault the three checks above all miss. A box with a constrained height
+// and content taller than it, and no clipping, does not lose the content: it
+// draws it over the next block. The zone does not scroll, nothing clips and
+// nothing leaves the zone, so every check passed and the balanced-diet Greater
+// Depth sheet printed question (1) through a table's bottom rule.
+
+test("a box drawing over the block after it is reported", async () => {
+  const problems = await probe(
+    `<div style="height:8mm;">
+       <div style="height:20mm;">a table that grew taller than its slot</div>
+     </div>
+     <p style="margin:0;">(1) the question this now prints through</p>`
+  );
+  assert.ok(
+    problems.some((p) => p.kind === "child-spills-over-neighbour"),
+    `an overlap inside the zone went unreported: ${JSON.stringify(problems)}`
+  );
+});
+
+test("a max-height box whose content outgrows it is reported the same way", async () => {
+  // The shape this actually takes in the engine: a box capped by max-height
+  // with no overflow rule, which is a spill rather than a clip.
+  const problems = await probe(
+    `<div style="max-height:6mm;">
+       <div style="height:24mm;">support panel</div>
+     </div>`
+  );
+  assert.ok(
+    problems.some((p) => p.kind === "child-spills-over-neighbour"),
+    `a max-height overflow went unreported: ${JSON.stringify(problems)}`
+  );
+});
+
+test("an ordinary auto-height block is never called a spill", async () => {
+  // The direction that matters most: an auto-height block reports its content
+  // exactly, so the new check must be silent on every sound sheet. It is worth
+  // pinning because a false positive here refuses a worksheet that is correct.
+  const problems = await probe(
+    `<div><p style="margin:0;">A question.</p><p style="margin:0;">Another.</p></div>`
+  );
+  assert.deepEqual(problems, [], `a sound zone was called a spill: ${JSON.stringify(problems)}`);
+});
+
+test("a box that clips its own content is a clip, not a spill", async () => {
+  // The two are complements and must not both fire on one element, or a single
+  // fault arrives as two findings and the designer repairs it twice.
+  const problems = await probe(
+    `<div style="height:10mm;overflow:hidden;"><div style="height:40mm;">cut</div></div>`
+  );
+  assert.ok(problems.some((p) => p.kind === "child-clipped"));
+  assert.ok(
+    !problems.some((p) => p.kind === "child-spills-over-neighbour"),
+    `one fault was reported twice: ${JSON.stringify(problems)}`
+  );
+});
+
+test("a decoration hanging into space reserved for it is not a spill", async () => {
+  // The direction that cost a correct sheet. The engine hangs a speech
+  // bubble's tail below the bubble with a margin reserved for it, so the box
+  // overflows its own padding box on purpose and draws over nothing. Counting
+  // absolutely positioned descendants refused the already-repaired Greater
+  // Depth diet sheet over exactly this.
+  const problems = await probe(
+    `<div style="position:relative;margin-bottom:6mm;"><p style="margin:0;">said</p>
+       <span style="position:absolute;top:100%;width:0;height:0;
+                    border-left:5mm solid transparent;border-top:5mm solid #000;"></span>
+     </div>
+     <p style="margin:0;">the block after it</p>`
+  );
+  assert.deepEqual(problems, [], `a reserved-space decoration was called a spill: ${JSON.stringify(problems)}`);
+});
+
+test("the spilling box names itself so the finding has a repair site", async () => {
+  const problems = await probe(
+    `<div class="h-stack-item" style="height:8mm;"><div style="height:20mm;">too tall</div></div>`
+  );
+  const spill = problems.find((p) => p.kind === "child-spills-over-neighbour");
+  assert.ok(spill, `no spill reported: ${JSON.stringify(problems)}`);
+  assert.strictEqual(spill.box, "h-stack-item");
+});

@@ -31,8 +31,10 @@ const {
   barModelKey,
   gridMapKey,
   rainforestLayersKey,
+  balancedPatternPlateKey,
   placeValueChartKey,
   circuitDiagramKey,
+  parachuteForcesKey,
   badgeKey,
   calloutKeySuffix,
 } = require("./svg-renderer");
@@ -62,8 +64,10 @@ const VISUAL_KEY_FNS = {
   "bar-model": barModelKey,
   "grid-map": gridMapKey,
   "rainforest-layers": rainforestLayersKey,
+  "balanced-pattern-plate": balancedPatternPlateKey,
   "place-value-chart": placeValueChartKey,
   "circuit-diagram": circuitDiagramKey,
+  "parachute-forces": parachuteForcesKey,
 };
 
 function pickRainbowColour(idx, style) {
@@ -113,12 +117,43 @@ function panelFractionFor(card, ctx, hasPhoto) {
   return (v && (v.aspect || 1) >= WIDE_ASPECT) ? 1.0 : 0.6;
 }
 
-function wideVisualReserveInches(card, ctx, style) {
+// How much height a wide visual is reserved on a stacked card.
+//
+// The panel's autofit grows its text to fill whatever height it is left, so
+// every inch not reserved here becomes bigger body text and none of it ever
+// reaches the figure. At a flat fifth that produced a Year 4 place-value wall
+// whose five method steps ran in very large type down three quarters of an A3
+// sheet, with the worked chart - the thing a child looks up to check WHICH
+// column changed - as a small band at the foot. That chart's own card contract
+// says the ring on the changed digit is what makes it wall material "at a
+// glance from anywhere in the room", and at a fifth it was not. Daniel chose
+// the bigger diagram from the two rendered options (5 September 2026).
+//
+// A flat bigger fraction is the wrong instrument: a third pushed a three-item
+// landscape worked example, and the six-item portrait card this was meant to
+// fix, 0.1in under the floor size their own text needs. So the figure is
+// offered the generous share and the panel keeps whatever it genuinely cannot
+// give up: `bodyFitsAtFloor` steps the reserve back until the body fits at its
+// floor, never below the fifth that was always guaranteed. Nothing shrinks,
+// and no card can be pushed under its text floor by construction.
+const WIDE_VISUAL_SHARE_GENEROUS = 1 / 3;
+const WIDE_VISUAL_SHARE_GUARANTEED = 0.21;
+const RESERVE_STEP_INCHES = 0.1;
+
+function wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor) {
   if (!card || !card.visual) return 0;
   const v = pickVisual(card.visual, ctx);
   if (!v || (v.aspect || 1) < WIDE_ASPECT) return 0;
   const dims = printableInches(card.page.size, card.page.orientation, style);
-  return Math.min((dims.width * 0.96) / (v.aspect || 1), dims.height * 0.21) + 0.25;
+  const byWidth = (dims.width * 0.96) / (v.aspect || 1);
+  const guaranteed = Math.min(byWidth, dims.height * WIDE_VISUAL_SHARE_GUARANTEED) + 0.25;
+  const generous = Math.min(byWidth, dims.height * WIDE_VISUAL_SHARE_GENEROUS) + 0.25;
+  if (generous <= guaranteed + 0.01) return guaranteed;
+  if (typeof bodyFitsAtFloor !== "function") return guaranteed;
+  for (let reserve = generous; reserve > guaranteed; reserve -= RESERVE_STEP_INCHES) {
+    if (bodyFitsAtFloor(reserve)) return reserve;
+  }
+  return guaranteed;
 }
 
 function pickVisual(visual, ctx) {
@@ -164,6 +199,8 @@ function defaultVisualLabel(visual) {
 }
 
 module.exports = {
+  WIDE_VISUAL_SHARE_GENEROUS,
+  WIDE_VISUAL_SHARE_GUARANTEED,
   VISUAL_KEY_FNS,
   panelFractionFor,
   wideVisualReserveInches,

@@ -386,11 +386,63 @@ class BelowRouteTests(unittest.TestCase):
         for text in (ADAPTIVE, AGENT):
             with self.subTest(doc=text[:40]):
                 self.assertIn("class-sized", text)
-        # Stopping at the smaller scale is the fault the tier exists to prevent.
+        # Stopping at the smaller scale is still the fault the tier exists to
+        # prevent, and a route up usually exists. Whether to walk it is a
+        # separate decision, and the guidance must say so rather than presume.
+        self.assertIn("Whether to walk it is a second decision", AGENT)
+        self.assertIn("A sheet that stops at the smaller scale is the fault this tier exists to prevent", ADAPTIVE)
+
+    def test_whether_to_climb_is_weighed_not_presumed(self) -> None:
+        """Daniel's own words (5 September 2026): a bridge "sounds like a good
+        idea when appropriate".
+
+        The rule first hardened into "reach a class-sized case or you chose the
+        wrong tier". Relaxing that to "the strong default unless unreachable"
+        still answered the wrong question: reachability is one input, and a
+        route up nearly always exists. What decides it is what this sheet's
+        room is best spent on, so both sides of that trade have to be in the
+        guidance - what the child gains from meeting the class case, and what
+        the rungs cost the practice at the level they are actually working at.
+
+        What must NOT loosen with it is the obligation to say how the resource
+        stands in relation to the class learning: only the ladder is
+        conditional, never the relationship.
+        """
+        self.assertIn("Decide whether to climb by what this sheet's room is best spent on", AGENT)
+        self.assertIn('"could" is not "should"', AGENT)
+        # Both sides of the trade, named.
+        self.assertIn("**What the child gains.**", AGENT)
+        self.assertIn("**What the climb costs.**", AGENT)
+        # The cost side is concrete enough to act on.
+        self.assertIn("crowd the accessible practice down to two or three questions", AGENT)
+        self.assertIn("carries a SECOND new idea", AGENT)
+        # Supported forms are tried before calling an endpoint unreachable.
+        self.assertIn("the class case part-completed", AGENT)
+        # The escape is explicit and carries its reason AND its connection.
+        self.assertIn("`Climb: Not selected`", AGENT)
+        self.assertIn("The relationship is never optional; the ladder is one way of carrying it", AGENT)
+        # A sheet without a climb is still connected, and how is stated.
+        self.assertIn("The same method, the same representation, the same vocabulary, the same context", AGENT)
+        # And it is not an escape from work.
+        self.assertIn("a climb is fiddly to write", AGENT)
+        # Dropping the climb is not a way of staying in Tier 2 with a
+        # smaller-scale sheet.
         self.assertIn(
-            "A Tier 2 resource that never reaches a class-sized case is refused work",
+            "the honest decision was Tier 3, not a Tier 2 with the climb removed",
             AGENT,
         )
+
+    def test_a_tier_3_reaching_item_is_conditional_but_the_connection_is_not(self) -> None:
+        self.assertIn("`Reaches towards: Not selected`", AGENT)
+        self.assertIn("The connection is still required; only the printed item is conditional.", AGENT)
+        for text in (ADAPTIVE, AGENT):
+            with self.subTest(doc=text[:40]):
+                self.assertIn("token", text)
+
+    def test_a_downstream_worker_does_not_fill_in_a_dropped_climb(self) -> None:
+        """A `Not selected` line is a decision, not a gap. The worksheet
+        designer protects a selected climb and must not invent one."""
+        self.assertIn("do not invent a class-sized question to finish the sheet with", WORKSHEET_DESIGNER)
 
     def test_a_tier_3_resource_still_points_at_the_class_lesson(self) -> None:
         self.assertIn("Reaches towards:", AGENT)
@@ -398,8 +450,11 @@ class BelowRouteTests(unittest.TestCase):
 
     def test_the_final_reaching_item_is_not_the_cheap_thing_to_cut(self) -> None:
         """It is last on the sheet, so it is first in line when the page runs
-        short, and cutting it returns the resource to parallel work."""
+        short, and cutting it returns the resource to parallel work. The
+        protection follows what the design actually selected: a sheet with no
+        climb has nothing there to protect and nothing to make room for."""
         self.assertIn("essential and protected", AGENT)
+        self.assertIn("Where the design selected them", AGENT)
         self.assertIn("Something earlier in the run goes first.", AGENT)
 
     def test_the_maths_ladder_is_named_as_the_exception_not_the_rule(self) -> None:

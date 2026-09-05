@@ -74,6 +74,7 @@ def task_request(kinds: list[str]) -> dict:
             "subject": "PSHE",
             "scope": "Complete lesson",
             "vocabularyCount": 3,
+            "vocabularyIntroductionCount": 1,
             "trimmedVocabularyCount": 0,
             "representations": [],
             "successCriteriaCount": 1,

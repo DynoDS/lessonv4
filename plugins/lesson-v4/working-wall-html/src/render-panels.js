@@ -6,6 +6,7 @@
 const {
   printableInches,
   fitLinearBodySize,
+  linearBodyFitsAtFloor,
   fitTitleSize,
   tryReadPhoto,
   photoAspect,
@@ -78,7 +79,24 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
   const panelFraction = panelFractionFor(card, ctx, hasVisual && !card.visual);
   const widthOverride = dims.width * panelFraction - 0.6;
   // A3-only builder: use the fixed A3 value below.
-  const titleAreaInches = 1.6 + wideVisualReserveInches(card, ctx, style);
+  // The figure is offered the generous share and handed back whatever the
+  // panel cannot give up: this probe re-runs the body's own fit at its floor
+  // size for a candidate reserve, so no card can be pushed under the text
+  // size its steps need in order to print a bigger diagram.
+  const bodyFitsAtFloor = (reserve) =>
+    linearBodyFitsAtFloor(
+      items.length > 0 ? items : [{ text: "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride, titleAreaInches: 1.6 + reserve, ...stackedBodyOpts(card, panelFraction) }
+    );
+  const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
+  const titleAreaInches = 1.6 + wideVisualReserve;
+  // The draw uses the number the reserve was made with; the 0.25in is the
+  // gap `wideVisualReserveInches` adds above the figure.
+  const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
 
   const bodyPt = fitLinearBodySize(
     items.length > 0 ? items : [{ text: "" }],
@@ -97,7 +115,7 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
     const visualLabel = defaultVisualLabel(card.visual);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1 })
+      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
     );
   }
 
@@ -149,9 +167,35 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
   const hasVisual = !!card.visual;
   const panelFraction = panelFractionFor(card, ctx, hasVisual && !card.visual);
   const widthOverride = dims.width * panelFraction - 0.6;
-  const titleAreaInches = 1.6 + wideVisualReserveInches(card, ctx, style);
-
+  // The figure is offered the generous share and handed back whatever the
+  // panel cannot give up: this probe re-runs the body's own fit at its floor
+  // size for a candidate reserve, so no card can be pushed under the text
+  // size its steps need in order to print a bigger diagram.
+  // Declared BEFORE the closure that reads it, which is the whole point of
+  // where this line sits. It used to sit below `wideVisualReserveInches`, and
+  // that call invokes `bodyFitsAtFloor` whenever the card carries a wide
+  // visual - so every `vocabDefinition` with a wide figure died on
+  // "Cannot access 'items' before initialization" before it drew anything.
+  // The three other panel renderers in this file already declare theirs first;
+  // this one was the odd one out, and the cost was a Year 4 maths wall
+  // shipping without the card defining `exchange`, the word two of its own
+  // method steps hang on.
   const items = definition ? [{ text: definition }] : [{ text: "" }];
+
+  const bodyFitsAtFloor = (reserve) =>
+    linearBodyFitsAtFloor(
+      items.length > 0 ? items : [{ text: "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride, titleAreaInches: 1.6 + reserve, ...stackedBodyOpts(card, panelFraction) }
+    );
+  const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
+  const titleAreaInches = 1.6 + wideVisualReserve;
+  // The draw uses the number the reserve was made with; the 0.25in is the
+  // gap `wideVisualReserveInches` adds above the figure.
+  const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
   const bodyPt = fitLinearBodySize(
     items,
     defaultBodyPt(card, style),
@@ -169,7 +213,7 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
     const visualLabel = defaultVisualLabel(card.visual);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1 })
+      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
     );
   }
 
@@ -235,7 +279,24 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
   const panelFraction = panelFractionFor(card, ctx, hasSideVisual);
   const widthOverride = dims.width * panelFraction - 0.6;
   // A3-only builder: use the fixed A3 value below.
-  const titleAreaInches = 1.8 + wideVisualReserveInches(card, ctx, style);
+  // The figure is offered the generous share and handed back whatever the
+  // panel cannot give up: this probe re-runs the body's own fit at its floor
+  // size for a candidate reserve, so no card can be pushed under the text
+  // size its steps need in order to print a bigger diagram.
+  const bodyFitsAtFloor = (reserve) =>
+    linearBodyFitsAtFloor(
+      items.length > 0 ? items : [{ text: "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride, titleAreaInches: 1.8 + reserve, ...stackedBodyOpts(card, panelFraction) }
+    );
+  const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
+  const titleAreaInches = 1.8 + wideVisualReserve;
+  // The draw uses the number the reserve was made with; the 0.25in is the
+  // gap `wideVisualReserveInches` adds above the figure.
+  const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
 
   const bodyPt = fitLinearBodySize(
     items.length > 0 ? items : [{ text: "" }],
@@ -273,7 +334,7 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
     const visualLabel = defaultVisualLabel(card.visual);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1 })
+      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
     );
   }
 
@@ -360,7 +421,24 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
   const panelFraction = panelFractionFor(card, ctx, false);
   const widthOverride = dims.width * panelFraction - 0.6;
   // A3-only builder: use the fixed A3 value below.
-  const titleAreaInches = 1.6 + wideVisualReserveInches(card, ctx, style);
+  // The figure is offered the generous share and handed back whatever the
+  // panel cannot give up: this probe re-runs the body's own fit at its floor
+  // size for a candidate reserve, so no card can be pushed under the text
+  // size its steps need in order to print a bigger diagram.
+  const bodyFitsAtFloor = (reserve) =>
+    linearBodyFitsAtFloor(
+      items.length > 0 ? items : [{ text: "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride, titleAreaInches: 1.6 + reserve, ...stackedBodyOpts(card, panelFraction) }
+    );
+  const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
+  const titleAreaInches = 1.6 + wideVisualReserve;
+  // The draw uses the number the reserve was made with; the 0.25in is the
+  // gap `wideVisualReserveInches` adds above the figure.
+  const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
 
   // Autofit treats each filled line as an extra body line so the pair sizes
   // down together rather than overflowing the panel.
@@ -392,7 +470,7 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
     const v = pickVisual(card.visual, ctx);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, card.visual.label || null, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1 })
+      panelWithVisualHtml(panelChildrenHtml, v, card.visual.label || null, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
     );
   }
 

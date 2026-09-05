@@ -6,10 +6,13 @@ const {
   printableDxa,
   printableInches,
   fitTitleSize,
+  titleBarHeightInches,
   fitReferenceTableSize,
   referenceColumnWidths,
   tryReadPhoto,
   photoAspect,
+  TITLE_BAR_LINE_HEIGHT,
+  REFERENCE_TABLE_LINE_HEIGHT,
 } = require("./layout");
 const {
   pickVisual,
@@ -108,17 +111,27 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
     style,
     {
       rowMinHeights,
-      // A3-only builder: use the fixed A3 value below.
-      titleAreaInches: 1.4 + tablePhotoHeight + (tablePhoto ? 0.2 : 0),
+      titleAreaInches: titleBarHeightInches(titlePt) + tablePhotoHeight + (tablePhoto ? 0.2 : 0),
       label: cardLabel(card),
-      maxLinesPerCell: card.rows.length <= 2 ? 3 : 2,
+      // A portrait table trades width for height, so three measured lines are
+      // legitimate there while dense landscape tables retain the two-line cap.
+      maxLinesPerCell: card.page.orientation === "portrait" || card.rows.length <= 2 ? 3 : 2,
+      lineHeight: REFERENCE_TABLE_LINE_HEIGHT,
     }
   );
   const headerPt = Math.max(20, Math.round(bodyPt * 0.75));
 
   // Title bar text colour matches titleBarText (both FFFFFF), so
   // titleBarHtml's own text colour is used as-is.
-  let html = titleBarHtml(card.title || "Reference", style.colours.referenceTableHeaderFill, style, titlePt, card.page.size, card.page.orientation);
+  let html = titleBarHtml(
+    card.title || "Reference",
+    style.colours.referenceTableHeaderFill,
+    style,
+    titlePt,
+    card.page.size,
+    card.page.orientation,
+    { lineHeight: TITLE_BAR_LINE_HEIGHT }
+  );
 
   if (tablePhoto) {
     const aspect = photoAspect(tablePhoto) || 1.5;
@@ -146,7 +159,7 @@ function referenceTableHtml(columns, rows, headerPt, bodyPt, columnWidths, style
     columns.map((header) =>
       `<th style="box-sizing:border-box;border:${borderCss};padding:${cellPadMm}mm;background:${hash(style.colours.referenceTableHeaderFill)};` +
       `text-align:center;vertical-align:middle;font-family:'${style.fonts.title}', ${FONT_STACK_FALLBACK};font-weight:bold;` +
-      `font-size:${headerPt}pt;color:${hash(style.colours.referenceTableHeaderText)};">${esc(header)}</th>`
+      `font-size:${headerPt}pt;line-height:${REFERENCE_TABLE_LINE_HEIGHT};color:${hash(style.colours.referenceTableHeaderText)};">${esc(header)}</th>`
     ).join("") +
     `</tr>`;
 
@@ -167,7 +180,7 @@ function referenceTableHtml(columns, rows, headerPt, bodyPt, columnWidths, style
         innerHtml = imgTag(cell.image, mm(wIn), mm(hIn), "margin:0 auto;");
       } else {
         const textColour = cellIdx === 0 ? style.colours.referenceTableHeaderFill : style.colours.body;
-        innerHtml = `<div style="font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;font-size:${bodyPt}pt;color:${hash(textColour)};">${esc(cell)}</div>`;
+        innerHtml = `<div style="font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;font-size:${bodyPt}pt;line-height:${REFERENCE_TABLE_LINE_HEIGHT};color:${hash(textColour)};">${esc(cell)}</div>`;
       }
       return `<td style="box-sizing:border-box;border:${borderCss};padding:${cellPadMm}mm;background:${hash(fillColour)};text-align:center;vertical-align:middle;">${innerHtml}</td>`;
     }).join("");

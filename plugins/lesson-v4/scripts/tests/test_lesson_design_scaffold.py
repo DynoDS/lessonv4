@@ -38,6 +38,7 @@ def base_request() -> dict:
         "subject": "Science",
         "scope": "Complete lesson",
         "vocabularyCount": 2,
+        "vocabularyIntroductionCount": 2,
         "trimmedVocabularyCount": 1,
         "representations": [
             {

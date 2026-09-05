@@ -242,7 +242,9 @@ Keep a structured visual structured. Do not flatten a table, bank, sequence, che
 
 ### 7. Keep vocabulary coherent
 
-The single `key-vocabulary` slide follows the starter unless the design's `vocabularyPlacement.after` names a teaching-sequence unit, in which case it follows that unit's last slide: the lesson has let children meet the meaning before the word, and a vocabulary slide placed earlier would hand them the definition before it names anything they have seen.
+The design's `vocabularyIntroductions` says when each word is introduced: one `key-vocabulary` slide per entry, carrying that entry's words, placed after the last slide of the unit the entry names. Two entries on one unit keep the design's order. The timing is a teaching decision already made, so do not merge two entries onto one slide or split one entry across two.
+
+A saved design that carries `vocabularyPlacement` instead means every word in one slide: after the starter when the field is null or absent, after the named unit otherwise.
 
 When a unit contains vocabulary, read the named preference sections before composing it. Use the exact structured visual selected upstream. Keep one coherent card or comparison per genuine conceptual unit. A text-only card is complete when `kind: none` or when no honest semantic visual exists.
 

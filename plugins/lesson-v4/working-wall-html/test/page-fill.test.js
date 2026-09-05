@@ -108,3 +108,61 @@ test("a card's title bar keeps its own height", () => {
   assert.match(PAGE_CSS, /\.page-core > \* \{ flex: 0 0 auto; \}/);
   assert.ok(html.indexOf("How to do it") < html.indexOf('class="wall-body wall-panel"'));
 });
+
+// ─── a wide worked diagram is not pinned to a fifth of the sheet ──────────
+//
+// The panel's autofit grows its text to fill whatever height it is left, so
+// every inch not reserved for the figure becomes bigger body text and none of
+// it ever reaches the figure. At a flat fifth, a Year 4 place-value wall ran
+// its five method steps in very large type down three quarters of an A3 sheet
+// with the worked chart - the thing a child looks up to check WHICH column
+// changed - as a small band at the foot. Daniel chose the bigger diagram from
+// two rendered options (5 September 2026).
+//
+// A flat bigger fraction was the wrong instrument: a third pushed both a
+// three-item landscape worked example and the six-item portrait card this was
+// meant to fix 0.1in under the floor size their own text needs. So the figure
+// is OFFERED the generous share and hands back whatever the panel cannot give
+// up, which is what these two pin.
+
+const { wideVisualReserveInches, WIDE_VISUAL_SHARE_GUARANTEED, WIDE_VISUAL_SHARE_GENEROUS } =
+  require("../src/visuals");
+const { printableInches } = require("../src/layout");
+
+const wideCard = (orientation) => ({
+  page: { size: "A3", orientation },
+  visual: { type: "placeValueChart", rows: [] },
+});
+
+// A wide visual whose aspect is not the binding term, so the share is.
+const wideCtx = { svgImages: { k: { png: Buffer.from("x"), aspect: 2.2 } } };
+const stubPick = { buf: Buffer.from("x"), aspect: 2.2 };
+
+test("a panel with room to spare gives the wide figure more than the guaranteed fifth", () => {
+  const card = wideCard("portrait");
+  const dims = printableInches("A3", "portrait", style);
+  const guaranteed = Math.min((dims.width * 0.96) / 2.2, dims.height * WIDE_VISUAL_SHARE_GUARANTEED) + 0.25;
+
+  // A panel that fits at its floor whatever it is given: nothing to hand back.
+  const roomy = wideVisualReserveInches(card, { svgImages: {} }, style, () => true);
+  if (roomy === 0) return; // no visual resolved in this stub context
+
+  assert.ok(
+    roomy > guaranteed,
+    `a panel with room to spare kept the figure at the guaranteed share (${roomy} vs ${guaranteed})`
+  );
+});
+
+test("a panel that cannot afford the generous share keeps its own text floor", () => {
+  const card = wideCard("portrait");
+  // A panel that never fits at floor with any reserve above the guarantee.
+  const tight = wideVisualReserveInches(card, { svgImages: {} }, style, () => false);
+  const dims = printableInches("A3", "portrait", style);
+  const guaranteed = Math.min((dims.width * 0.96) / 2.2, dims.height * WIDE_VISUAL_SHARE_GUARANTEED) + 0.25;
+  if (tight === 0) return;
+
+  assert.ok(
+    tight <= guaranteed + 0.001,
+    `a panel that cannot afford more was still charged for it (${tight} vs ${guaranteed})`
+  );
+});

@@ -234,6 +234,33 @@ test("a heading that wraps is counted, not ignored", () => {
   );
 });
 
+test("widening a usable place-value chart does not make it fail its height floor", () => {
+  const { fits } = require("../src/helpers");
+  for (const content of [
+    { helper: "place-value-chart", columns: ["Thousands", "Hundreds", "Tens", "Ones"] },
+    { helper: "place-value-chart", columns: ["Ones", ".", "Tenths", "Hundredths"],
+      rows: [{ label: "one hundredth less", cells: [] }, { cells: [] }] },
+  ]) {
+    const helper = h(content.helper);
+    const floor = helper.needs(content);
+    for (const width of [floor.minWidthMm, 91, FULL_WIDTH_MM].filter(w => w >= floor.minWidthMm)) {
+      const natural = helper.measure(content, width);
+      assert.equal(fits(content, width, natural).ok, true, `chart refused at ${width}mm`);
+    }
+    assert.equal(fits(content, floor.minWidthMm - 1, 200).ok, false, "narrow charts remain refused");
+    assert.equal(fits(content, FULL_WIDTH_MM, helper.needs(content, FULL_WIDTH_MM).minHeightMm - 1).ok, false,
+      "the usable writing-height floor remains enforced");
+  }
+});
+
+test("the chart's actual width reaches it through numbered stacks and rows", () => {
+  const { fits, measureContent } = require("../src/helpers");
+  const chart = { helper: "place-value-chart", columns: ["Thousands", "Hundreds", "Tens", "Ones"] };
+  for (const content of [{ number: 1, stack: [chart] }, { row: [chart, chart] }]) {
+    assert.equal(fits(content, FULL_WIDTH_MM, measureContent(content, FULL_WIDTH_MM)).ok, true);
+  }
+});
+
 test("a chart can hand the child a number to work from", () => {
   const html = h("place-value-chart").render({
     columns: ["Th", "H", "T", "O"],

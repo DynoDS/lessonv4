@@ -4,7 +4,7 @@
 // read. Nothing here is subject-specific. A source is a history source, a
 // science explanation or an RE text depending only on what is put in it.
 
-const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, BLANK_MM, esc, promptHtml, linesFor } = require("./shared");
+const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, esc, promptHtml, linesFor } = require("./shared");
 const { SPACE, TYPE } = require("../tokens");
 const { formatQuestionLabel } = require("../labels");
 
@@ -356,9 +356,13 @@ function renderWrittenAnswers(spec, widthMm = 100) {
   const items = spec.items
     .map((q, i) => {
       const lines = writingLinesFor(q, widthMm - numberGutterMm);
+      // The cap travels with the line because the base height is per phase: a
+      // Year 2 line starts taller than a Year 5 one, so one shared ceiling
+      // would mean two different things. See WRITING_LINE_GROWN_RATIO.
+      const grownMm = (lineMm * WRITING_LINE_GROWN_RATIO).toFixed(2);
       const ruled = Array.from(
         { length: lines },
-        () => `<span class="h-line" style="height:${lineMm}mm"></span>`
+        () => `<span class="h-line" style="height:${lineMm}mm;max-height:${grownMm}mm"></span>`
       ).join("");
       return `
       <li class="h-q h-written">
@@ -656,6 +660,27 @@ const css = `
      ruled lines to yield that tiny discrepancy together; keeping shrink at
      zero clipped the final requested line completely. */
   .h-answers .h-line { flex: 1 1 auto; }
+  /* The link that made none of the rule above true.
+     .h-q aligns on the BASELINE so a question number sits on the first line of
+     its text rather than floating at the top of a tall block, and that is right.
+     But baseline alignment stops the body stretching, so the height the engine
+     handed a written-answers block stopped at the body and never reached the
+     ruled lines. Every claim above was accurate about intent and inert in fact:
+     a Year 4 Greater Depth sheet printed three tight lines under each prompt
+     with 45mm of blank paper below them, and the room report stayed silent
+     because a greedy block is assumed to have used what it was given.
+     Stretch the body and put the number back on the first line by hand: the
+     number and the body's first line share a font size and a line height, so a
+     number sitting at the top of a stretched box lands on the same baseline it
+     did before. Scoped to written answers, so an ordinary question row - where
+     baseline alignment is doing real work against inline blanks - is untouched.
+     The cap is what keeps this from overcorrecting. Room a line cannot use is
+     better left as paper than turned into a two-centimetre gap between rules
+     that reads as a mistake; how many lines a question deserves is the
+     designer's decision, made with the sentences field, not something to reach by
+     stretching three of them. */
+  .h-answers .h-written { align-items: stretch; }
+  .h-answers .h-written > .h-num { align-self: flex-start; }
 
   .h-source {
     border-left: 1mm solid var(--colour-given);

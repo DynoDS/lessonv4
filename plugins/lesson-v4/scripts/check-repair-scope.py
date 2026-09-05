@@ -44,11 +44,27 @@ OPTIONAL_PICTURE_KINDS = {"educational-svg", "emoji"}
 DECORATIVE_KEYS = {"decorations"}
 
 
-def content_types(node: object) -> Counter:
-    """Every content object in a specification, counted by its ``type``.
+# What each engine calls the field that says what a thing IS.
+#
+# This used to be ``type`` alone, on the stated grounds that ``type`` "is the
+# discriminator every one of these engines uses". It is not, and the cost was
+# that this check silently counted nothing on two of the four artefacts it
+# guards. A worksheet specification names its content with ``helper`` and a
+# stick-in piece names it with ``visual``; only slides use ``type``. So a
+# worksheet handed to a focused repair could come back with two of its three
+# sheets deleted and still print REPAIR_SCOPE_OK: 0 content object(s)
+# preserved - which is what it did, on the real PSHE worksheet, when a repairer
+# thought to test the check rather than trust it.
+#
+# A zero count is now a failure in its own right below, so a fifth engine
+# arriving with a fifth field name cannot put this check quietly back to sleep.
+DISCRIMINATORS = ("type", "helper")
 
-    ``type`` is the discriminator every one of these engines uses to say what a
-    thing is, so counting it needs no per-helper knowledge and cannot fall out
+
+def content_types(node: object) -> Counter:
+    """Every content object in a specification, counted by what it is.
+
+    Counting the discriminator needs no per-helper knowledge and cannot fall out
     of date as helpers are added.
     """
     counts: Counter = Counter()
@@ -68,9 +84,18 @@ def content_types(node: object) -> Counter:
         if value.get("kind") in OPTIONAL_PICTURE_KINDS:
             return
 
-        kind = value.get("type")
-        if isinstance(kind, str) and kind:
-            counts[kind] += 1
+        for field in DISCRIMINATORS:
+            kind = value.get(field)
+            if isinstance(kind, str) and kind:
+                counts[f"{field}:{kind}"] += 1
+
+        # A stick-in piece names its figure as a bare string on ``visual``,
+        # where a wall card uses ``visual`` for a nested object that carries its
+        # own ``type``. Counting the string form here catches the first without
+        # double-counting the second, which the walk below reaches anyway.
+        visual = value.get("visual")
+        if isinstance(visual, str) and visual:
+            counts[f"visual:{visual}"] += 1
 
         for key, child in value.items():
             if key in DECORATIVE_KEYS:
@@ -123,6 +148,23 @@ def main(argv: list[str] | None = None) -> int:
             "If the honest fix really is to ask children to do something else, "
             "that is a design decision and belongs to the lesson designer, not "
             "to this round."
+        )
+        return 1
+
+    # A check that counted nothing used to say OK, which is how this one slept
+    # through every worksheet and stick-in repair it was meant to guard. Zero
+    # content objects means the walker did not recognise this artefact, not that
+    # the artefact is empty: a real specification always holds some.
+    if not before:
+        print(
+            "REPAIR_SCOPE_FAILED: no content object was recognised in --before, "
+            "so nothing could be compared."
+        )
+        print(
+            "  - This check reads the field an engine uses to say what a thing "
+            f"is ({', '.join(DISCRIMINATORS)}, or a string 'visual'). An "
+            "artefact naming its content some other way needs that name adding "
+            "here before this marker means anything."
         )
         return 1
 

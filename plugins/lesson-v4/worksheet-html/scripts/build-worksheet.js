@@ -196,6 +196,7 @@ async function main() {
         ...sheet.unprinted,
         ...sheet.emptySets,
         ...sheet.pupilWording,
+        ...sheet.labelIntent,
       ]) {
         const named = /^([A-Z_]+):\s*([\s\S]*)$/.exec(problem);
         fail(
@@ -348,7 +349,12 @@ async function main() {
               `${problem.clientWidth}px)`
             : problem.kind === "child-outside-zone"
               ? "rendered content reaches outside the zone and is cut by its edge"
-              : "a box inside the zone is cutting off its own content";
+              : problem.kind === "child-spills-over-neighbour"
+                ? `the box "${problem.box}" is drawing over what comes after it ` +
+                  `(content ${problem.scrollHeight}px tall in a ${problem.clientHeight}px box, ` +
+                  `${problem.scrollWidth}px wide in ${problem.clientWidth}px), so two ` +
+                  `blocks print on top of each other`
+                : "a box inside the zone is cutting off its own content";
         fail(
           "SHEET_DOES_NOT_FIT",
           `${sheet.label} page ${sheet.page} zone "${problem.zone}" - ${detail}.`,

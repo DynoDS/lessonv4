@@ -29,12 +29,26 @@ TOP_LEVEL_FIELDS = {
 
 # Fields a design may carry without every saved design and fixture having to
 # grow them at once. Present, they are validated as strictly as the rest.
-OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities", "vocabularyPlacement"}
+OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities", "vocabularyPlacement", "vocabularyIntroductions"}
 
-# Where a lesson may put its one vocabulary slide. `null` keeps the default,
-# straight after the starter. `{"after": "<teachingSequence sourceUnitId>"}`
-# shows the slide after that unit, for a lesson that lets children meet the
-# meaning in the material before the word is given.
+# WHEN each key word is introduced.
+#
+# `vocabularyIntroductions` is an ordered list of introductions. Each names the
+# words it introduces and the unit it follows, so a lesson can teach one word
+# where it is needed and a related pair somewhere else. It replaces
+# `vocabularyPlacement`, which could only move ONE slide holding ALL the words
+# and so could not express "prerequisite word before the instruction that uses
+# it, and the two contrast words after the noticing that gives them meaning".
+#
+# Grouping is a teaching choice, not a quota: one word, two, or a genuinely
+# useful larger set. The rule the validator holds is only that every retained
+# word is introduced exactly once and that the anchor exists.
+VOCABULARY_INTRODUCTION_FIELDS = {"vocabularyRefs", "after"}
+
+# The superseded field, still read so saved designs keep their original
+# meaning: `null` or absent puts every word after the starter, and
+# `{"after": "<teachingSequence sourceUnitId>"}` puts them all after that unit.
+# A design that carries both schedules is refused rather than guessed at.
 VOCABULARY_PLACEMENT_FIELDS = {"after"}
 
 # The one thing an ordering task must not do is print its items already in
@@ -2168,22 +2182,78 @@ def validate_design(
 
     validate_route_sequence(structure, sequence, concept_items)
 
-    if "vocabularyPlacement" in root:
-        placement = root["vocabularyPlacement"]
-        if placement is not None:
-            placement = expect_dict(placement, "vocabularyPlacement")
+    starter_unit_id = (root.get("starter") or {}).get("sourceUnitId")
+    sequence_ids = {unit["sourceUnitId"] for unit in sequence}
+    anchor_ids = sequence_ids | ({starter_unit_id} if starter_unit_id else set())
+
+    has_schedule = "vocabularyIntroductions" in root
+    has_legacy = "vocabularyPlacement" in root and root["vocabularyPlacement"] is not None
+    expect(
+        not (has_schedule and has_legacy),
+        "a design carries either vocabularyIntroductions or vocabularyPlacement, "
+        "not both: they are two schedules for the same words and there is no "
+        "safe way to guess which one you meant",
+    )
+
+    if has_schedule:
+        introductions = expect_list(root["vocabularyIntroductions"], "vocabularyIntroductions")
+        vocab_ids = [item["id"] for item in vocab_items]
+        introduced: list[str] = []
+        for index, raw in enumerate(introductions):
+            path = f"vocabularyIntroductions[{index}]"
+            entry = expect_dict(raw, path)
             expect_exact_keys(
-                placement,
-                VOCABULARY_PLACEMENT_FIELDS,
-                VOCABULARY_PLACEMENT_FIELDS,
-                "vocabularyPlacement",
+                entry,
+                VOCABULARY_INTRODUCTION_FIELDS,
+                VOCABULARY_INTRODUCTION_FIELDS,
+                path,
             )
-            after = expect_string(placement["after"], "vocabularyPlacement.after")
-            sequence_ids = {unit["sourceUnitId"] for unit in sequence}
+            refs = expect_list(entry["vocabularyRefs"], f"{path}.vocabularyRefs")
             expect(
-                after in sequence_ids,
-                f"vocabularyPlacement.after must name a teachingSequence sourceUnitId: {after}",
+                bool(refs),
+                f"{path}.vocabularyRefs must name at least one word: an introduction "
+                "that introduces nothing is a slide with nothing on it",
             )
+            for position, ref in enumerate(refs):
+                ref = expect_string(ref, f"{path}.vocabularyRefs[{position}]")
+                expect(
+                    ref in vocab_ids,
+                    f"{path}.vocabularyRefs[{position}] must name a vocabulary id: {ref}",
+                )
+                introduced.append(ref)
+            after = expect_string(entry["after"], f"{path}.after")
+            expect(
+                after in anchor_ids,
+                f"{path}.after must name the starter's or a teachingSequence "
+                f"sourceUnitId: {after}",
+            )
+
+        duplicates = sorted({ref for ref in introduced if introduced.count(ref) > 1})
+        expect(
+            not duplicates,
+            "each word is introduced once and then used; these are introduced "
+            f"more than once: {', '.join(duplicates)}",
+        )
+        missing = [ref for ref in vocab_ids if ref not in introduced]
+        expect(
+            not missing,
+            "every retained word needs a planned introduction, or it reaches the "
+            f"class without ever being taught; these have none: {', '.join(missing)}",
+        )
+
+    if has_legacy:
+        placement = expect_dict(root["vocabularyPlacement"], "vocabularyPlacement")
+        expect_exact_keys(
+            placement,
+            VOCABULARY_PLACEMENT_FIELDS,
+            VOCABULARY_PLACEMENT_FIELDS,
+            "vocabularyPlacement",
+        )
+        after = expect_string(placement["after"], "vocabularyPlacement.after")
+        expect(
+            after in sequence_ids,
+            f"vocabularyPlacement.after must name a teachingSequence sourceUnitId: {after}",
+        )
 
     ending = expect_dict(root["ending"], "ending")
     expect_exact_keys(ending, {"included", "kind", "reason", "beat"}, {"included", "kind", "reason", "beat"}, "ending")

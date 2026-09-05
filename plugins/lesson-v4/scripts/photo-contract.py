@@ -141,7 +141,25 @@ def adaptation_photos(path: Path) -> list[dict]:
             "zero adaptation photos from another file would silently drop every "
             "picture the adaptation asked for."
         )
-    marker = text.lower().find("photos for the sheets")
+    # The block is a HEADING, and this used to be a bare substring search over
+    # the whole file. An adaptation that needed no new pictures wrote the
+    # sentence "there is no `Photos for the sheets` block and nothing to merge
+    # into the picture contract" - and the search found the phrase inside its
+    # own denial, went looking for a fenced object after it, and failed the
+    # entire contract for a lesson whose adaptation was correct.
+    #
+    # So the phrase counts only when it is the whole of a line, once its
+    # heading and emphasis marks are taken off. That accepts the documented
+    # `## Photos for the sheets`, accepts a bold variant, and ignores every
+    # mention inside a sentence.
+    marker = -1
+    offset = 0
+    for line in text.splitlines(keepends=True):
+        bare = line.strip().strip("#").strip("*").strip()
+        if bare.lower() == "photos for the sheets":
+            marker = offset
+            break
+        offset += len(line)
     if marker < 0:
         return []
     tail = text[marker:]

@@ -840,7 +840,10 @@ history file's calibration. What follows is what the evidence showed.
   `after` a unit) lets the single vocabulary slide follow the first noticing
   beat; the validator, scaffold, review view, slide designer and composition
   playbook carry it; `preferences.md` → Vocabulary and the designer's
-  placement paragraph say why.*
+  placement paragraph say why.* **Superseded 5 September 2026** by
+  `vocabularyIntroductions`: one slide holding every word could only ever be in
+  one place, and a lesson needs a prerequisite word before an instruction AND a
+  contrasting pair after the noticing, in the same lesson.*
 - **Nobody heard the words as a child.** `What does one visible detail suggest
   about this class?`, `Which parts of the timetable support the claim about
   this school's week?`: grammatical, contracted, and planning nouns all the
@@ -905,3 +908,15 @@ history file's calibration. What follows is what the evidence showed.
   teacher's own accurate reviewer is a chat thread that holds his correction
   history, and the closest thing this pipeline can do is put the plain words
   in front of the reviewer and make it prove the sweep happened.
+# 5 September 2026 — supervised completion after independent audit
+
+Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-package run reports, actual page renders and final test logs. This entry supplements the historical trial reports; it does not erase failed attempts.
+
+- The maths general answer rule was incomplete: zero tens alone admits 5,004, whose subtraction changes three digits. The repaired rule also requires nonzero hundreds; all 9,000 four-digit inputs were checked. Review and adaptation guidance now require the complete acceptance condition, not just a successful example.
+- The history legal claim and photograph interpretations, and the diet nutrient/group conflation, survived prior reviews. Existing review now explicitly checks the factual premise against the stimulus. Owning designs and affected answers/resources were repaired and independently re-reviewed.
+- A material Expected maths support omission had been acknowledged in notes but not resolved. The playbook now routes such gaps to the existing owner before marking a branch complete. The Expected working chart is delivered.
+- The chart's narrowest-width minimum height disagreed with its actual wide rendering. Actual allocated width now reaches measurement through the helper registry and nested composition; narrow and insufficient-height rejection remain tested.
+- Discovery exhausted its two allowed image calls without satisfying comparison geometry. The owner replaced the teaching representation with a shared precise native visual and obtained review. The terminal failed photograph remains in the immutable history. Post-freeze review validates the frozen receipt and current references; reporting distinguishes a reviewed retired picture from a still-required missing picture. Missing history and stale-review cases still fail.
+- The balanced diet plate already existed but lacked wall wiring. It now uses the same shared visual there, with parity tests. The final reference-table PDF exposed a separate measurement/render mismatch: the checker reserved a 1.4-inch title but the 96pt title and padding needed 2 inches. Shared line-height/padding measurement now rejects the clipped landscape layout and supports measured portrait cells at the 36pt floor. The exact slide lookup table also contradicted a blanket picture requirement: the guard now recognises an exact matching teaching table as its own visual support; altered/invented tables do not gain that exception. Focused regressions cover both mechanisms.
+- Actual final slide reading caught a cramped diagram, a starter-box overflow, a false statement under an ambiguous heading, and decorative wind images reinforcing the misconception. Bounded slide-owner repairs preserved teaching content. Existing would-mislead guidance already covers the decoration failure; no duplicate rule was added. A reported diet worksheet header fault did not reproduce in the final PDF, so no speculative renderer change was made.
+- Acceptance limit: these are supervised repairs, not clean unattended repeat passes. Tests and worker completion markers alone did not establish teachability. Deep free-writing stick-in cells and standalone piece preview remain deferred; the delivered short-response slips do not require those features.

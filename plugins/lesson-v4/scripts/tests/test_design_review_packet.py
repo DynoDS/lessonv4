@@ -288,6 +288,45 @@ def write_photos(
     )
 
 
+def test_later_review_preserves_retired_frozen_photo_but_checks_live_refs():
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        design, _ = write_science_contract(working_dir)
+        design["starter"]["photoRefs"] = ["photo-002"]
+        design_path = working_dir / "lesson-design.json"
+        design_path.write_text(json.dumps(design), encoding="utf-8")
+        initial, _, _ = prepare(working_dir)
+        assert initial.returncode != 0, "Initial review must reject unused photos"
+
+        canonical = working_dir / "photo-requirements.json"
+        snapshot = working_dir / "phase2-initial-photo-requirements.json"
+        snapshot.write_bytes(canonical.read_bytes())
+        receipt_path = working_dir / "phase2-initial-photo-requirements.receipt.json"
+        receipt = {
+            "schemaVersion": 1,
+            "canonicalPath": str(canonical),
+            "snapshotPath": str(snapshot),
+            "sha256": hashlib.sha256(snapshot.read_bytes()).hexdigest(),
+        }
+        receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        later, preflight, _ = prepare(working_dir)
+        assert later.returncode == 0, later.stderr
+        assert "--initial-photo-namespace" not in json.loads(
+            preflight.read_text(encoding="utf-8")
+        )["validator"]["command"]
+
+        design["starter"]["photoRefs"] = ["photo-999"]
+        design_path.write_text(json.dumps(design), encoding="utf-8")
+        dangling, _, _ = prepare(working_dir)
+        assert dangling.returncode != 0, "Later review must still reject dangling refs"
+
+        receipt["sha256"] = "0" * 64
+        receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        invalid, _, _ = prepare(working_dir)
+        assert invalid.returncode != 0
+        assert "Invalid Phase 2 photo freeze receipt" in invalid.stderr
+
+
 def run_packet(
     *arguments: str,
 ) -> subprocess.CompletedProcess:
@@ -2072,20 +2111,92 @@ def test_the_class_view_never_prints_teacher_only_material():
     assert "TEACHER ONLY MARKER" in packet_module.build_review_view(design, photos)
 
 
-def test_the_lesson_block_says_where_the_vocabulary_slide_sits():
+def test_the_lesson_block_says_when_each_word_is_introduced():
     design, photos = content_based_design()
-    assert "vocabularyPlacement" not in design
-    assert "- Vocabulary slide: after the starter" in packet_module.build_review_view(design, photos)
+    starter = design["starter"]["sourceUnitId"]
+    unit = design["teachingSequence"][0]["sourceUnitId"]
 
-    design["vocabularyPlacement"] = None
-    assert "- Vocabulary slide: after the starter" in packet_module.build_review_view(design, photos)
+    design["vocabularyIntroductions"] = [
+        {"vocabularyRefs": ["vocab-001"], "after": starter}
+    ]
+    view = packet_module.build_review_view(design, photos)
+    assert '- Vocabulary introduced: continuity after "Last lesson"' in view
 
+    design["vocabularyIntroductions"] = [
+        {"vocabularyRefs": ["vocab-001"], "after": unit}
+    ]
+    view = packet_module.build_review_view(design, photos)
+    assert '- Vocabulary introduced: continuity after "A classroom in 1897"' in view
+    assert view.index("- Vocabulary introduced:") < view.index("## As the class meets it")
+
+
+def test_two_groups_are_each_named_with_their_own_moment():
+    design, photos = content_based_design()
+    design["vocabulary"].append(
+        {
+            "id": "vocab-002",
+            "sourceUnitId": "lesson-section/vocabulary/unit-002",
+            "term": "change",
+            "definition": "Something that has become different over time.",
+            "visual": {"kind": "none"},
+        }
+    )
+    design["vocabularyIntroductions"] = [
+        {"vocabularyRefs": ["vocab-001"], "after": design["starter"]["sourceUnitId"]},
+        {
+            "vocabularyRefs": ["vocab-002"],
+            "after": design["teachingSequence"][0]["sourceUnitId"],
+        },
+    ]
+    view = packet_module.build_review_view(design, photos)
+    assert (
+        '- Vocabulary introduced: continuity after "Last lesson"; '
+        'change after "A classroom in 1897"'
+    ) in view
+
+
+def test_the_class_view_reads_the_words_where_the_class_meets_them():
+    # The fault this pins. The reading was built with every word straight after
+    # the starter WHATEVER the design said, so a reviewer approved a lesson in
+    # an order the class never met: the definition of "continuity" read out
+    # before the beat that was supposed to give it meaning. The summary line and
+    # the reading now come from one schedule and cannot drift apart.
+    design, photos = content_based_design()
+    design["vocabularyIntroductions"] = [
+        {
+            "vocabularyRefs": ["vocab-001"],
+            "after": design["teachingSequence"][0]["sourceUnitId"],
+        }
+    ]
+    section = class_view_section(packet_module.build_review_view(design, photos))
+    assert section.index("A classroom in 1897") < section.index("continuity:")
+
+
+def test_a_saved_design_reads_in_the_order_its_own_field_meant():
+    # No introductions: every word after the starter, which is what
+    # `vocabularyPlacement` null meant and what those designs were written to.
+    design, photos = content_based_design()
+    assert "vocabularyIntroductions" not in design
+    section = class_view_section(packet_module.build_review_view(design, photos))
+    assert section.index("continuity:") < section.index("A classroom in 1897")
+
+    # And the superseded field still moves them where it said.
     design["vocabularyPlacement"] = {
         "after": design["teachingSequence"][0]["sourceUnitId"]
     }
     view = packet_module.build_review_view(design, photos)
-    assert '- Vocabulary slide: after "A classroom in 1897"' in view
-    assert view.index("- Vocabulary slide:") < view.index("## As the class meets it")
+    assert '- Vocabulary introduced: continuity after "A classroom in 1897"' in view
+    section = class_view_section(view)
+    assert section.index("A classroom in 1897") < section.index("continuity:")
+
+
+def test_a_lesson_with_no_key_vocabulary_says_so():
+    design, photos = content_based_design()
+    design["vocabulary"] = []
+    design["vocabularyIntroductions"] = []
+    assert "- Vocabulary introduced: no key vocabulary" in packet_module.build_review_view(
+        design, photos
+    )
 
 
 def test_verify_accepts_a_voice_sweep_that_matches_the_view():

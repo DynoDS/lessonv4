@@ -113,13 +113,15 @@ Do not run two source steps for the same filename in parallel. Parallel calls ar
 
 ## Completed and failed calls
 
-A summary with `complete: true` proves that one compiled search step completed. An empty result list is valid completed evidence.
+A summary with `complete: true` proves one compiled search step completed. An empty result list is valid completed evidence.
 
-A non-zero call, `complete: false`, authentication failure, rate limit, transport failure, or unreadable summary proves nothing about source availability.
+A non-zero call, `complete: false`, auth failure, rate limit, transport failure or unreadable summary proves nothing about source availability.
 
-Retry one clearly transient transport failure once. Use a `retry-1` child directory inside that compiled step's output directory. The retry summary is `retry-1/<the same compiled summary filename>`. Never overwrite the first failed summary. Never retry authentication or rate limit as if it were a semantic search.
+Retry one clearly transient transport failure once, in a `retry-1` child directory inside that step's output directory, named `retry-1/<the same compiled summary filename>`. Never overwrite the first failed summary. Never retry authentication or rate limit as if it were a semantic search.
 
-If a required compiled step remains unavailable after that one retry, the entry's own contract decides what happens next. When `fallback_action` is `ai`, the outage is not a terminal answer: the lesson has an authorised substitute, so continue to generation and let the generation outcome be the result. Otherwise report `real_source_unavailable`, because no substitute is authorised and a picture invented in place of an outage would be provenance the contract refused.
+If a compiled step stays unavailable after its one retry, walk on to the next step: the schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Record the outage; never restart or re-retry it.
+
+Only with no rung left does the contract decide. When `fallback_action` is `ai`, continue to generation and report its outcome. Otherwise report `real_source_unavailable`: no substitute is authorised, and a picture invented in place of an outage would be provenance the contract refused.
 
 ## Candidate inspection
 

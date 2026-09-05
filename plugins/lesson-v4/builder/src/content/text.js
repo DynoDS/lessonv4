@@ -285,4 +285,4 @@ function measureText(zone, data, ctx) {
   };
 }
 
-module.exports = { drawText, measureText };
+module.exports = { drawText, measureText, estimateLines };

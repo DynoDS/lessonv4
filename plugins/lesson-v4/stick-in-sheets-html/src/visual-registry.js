@@ -12,6 +12,7 @@ const rainforestLayers = require("../../shared/visuals/rainforest-layers-svg");
 const worldWriteOnMap = require("../../shared/visuals/world-write-on-map-svg");
 const geographicalDescriptionFrame = require("../../shared/visuals/geographical-description-frame-svg");
 const recordingTable = require("../../shared/visuals/recording-table-svg");
+const geoboard = require("../../shared/visuals/geoboard-svg");
 
 // A labelled diagram a child sticks in and writes the part names onto. The figure
 // is the SAME one the board shows (the slide's label-diagram), so the cut-out and
@@ -51,7 +52,7 @@ const SOURCE_COPY_CHAR_MM = 2.2;
 //     while the squares stay big enough to count dots and rule lines on; the
 //     width then follows the grid's own aspect, so a wide grid prints wider than
 //     a square one but both keep the same usable square.
-// Adding clock-face / number-line / geoboard later is a one-line entry here.
+// Adding clock-face / number-line later is a one-line entry here.
 const VISUALS = {
   // 127mm: two copies fit the ~277mm landscape printable width (2×127 + 6mm gap = 260mm ✓)
   // and two rows fit the ~185mm landscape printable height (2×89.5 + 6mm gap = 185mm ✓).
@@ -89,6 +90,19 @@ const VISUALS = {
   // carries — the original shape sits on a clear grid and the child plots and joins
   // the translated image themselves.
   "translation-shape": { tightSvg: translationShape.tightSvg, fitHeightMm: 88 },
+  // 88mm tall: dotty paper is the artefact a child rules peg-to-peg lines on, so
+  // usability is the printed PEG SPACING, not the overall width - sized by height
+  // like the other draw-on grids so two boards stack within the ~185mm landscape
+  // height (2x88 + 6mm gap = 182mm) and print four-up. A 5x5 board at 88mm leaves
+  // pegs about 16mm apart, which a Year 2 hand can rule a straight side between
+  // and a Year 2 finger can touch and count one at a time. Sizing by height means
+  // a wide 6x3 board prints wider than a square one and both keep that spacing.
+  // A BLANK board (no shapes) is the ordinary stick-in form: bare dotty paper the
+  // child draws their own shape on. A board carrying shapes is also valid - the
+  // child counts and marks the sides of a shape that is already there - so unlike
+  // the rainforest layers there is no specFn forcing one form, because both are
+  // genuine write-on tasks rather than one being the printed answer to the other.
+  geoboard: { tightSvg: geoboard.tightSvg, fitHeightMm: 88 },
   // 120mm wide: the river-town map carries dense grid numbers and feature labels a
   // child reads four-figure references off and annotates, so usability here is
   // keeping those numbers and labels legible, not maximum copies. At 120mm two
@@ -153,6 +167,15 @@ const VISUALS = {
 const ROW_VISUALS = {
   "angle-row": { tightSvg: angle.tightSvg, defaultFigureWidthMm: 38 },
   "triangle-row": { tightSvg: triangle.tightSvg, defaultFigureWidthMm: 42 },
+  // A strip of shapes on dotty paper, each with its own write-on line: count the
+  // sides and corners of this one, then name it, then the next. It needs a taller
+  // box than an angle or a triangle does, and the reason is the pegs. An angle is
+  // judged by its opening, which survives being small; a dotty-paper shape is
+  // COUNTED, one corner at a time, by a Year 2 finger. At the shared 26mm box a
+  // 5x5 board puts its pegs about 4mm apart, close enough that a finger covers
+  // three at once and the count is lost - which is the whole task. 46mm leaves
+  // them about 8mm apart, and three shapes still sit across the landscape row.
+  "geoboard-row": { tightSvg: geoboard.tightSvg, defaultFigureWidthMm: 46, boxHeightMm: 46 },
 };
 
 const BOXES_PER_ROW = 3; // draw-box-row wraps at this count (same as ROW_PER_ROW)
@@ -246,6 +269,34 @@ function missingQuestionContent(item) {
         }
         if (Array.isArray(s.points) && good.length === 0) {
           return "a coordinate grid given points needs each point to have a numeric x and y";
+        }
+      }
+      return null;
+    case "geoboard":
+    case "geoboard-row":
+      // A BLANK dotty board is a valid write-on in itself - the child draws their
+      // own shape on it - so, like the coordinate grid, no field is required.
+      // Only a board that PROMISES a shape is load-bearing: a shapes list whose
+      // entries carry no usable vertices would tile a bare grid where every child
+      // was supposed to receive a shape to count, and the piece would look right.
+      {
+        const specs = item.visual === "geoboard-row"
+          ? ((item.spec && item.spec.figures) || [])
+          : [s];
+        for (const one of specs) {
+          const declared = [];
+          if (Array.isArray(one.shapes)) declared.push(...one.shapes);
+          if (one.shape) declared.push(one.shape);
+          if (declared.length === 0) continue;
+          const usable = declared.filter((shape) => {
+            const points = Array.isArray(shape) ? shape : (shape && shape.points);
+            return Array.isArray(points)
+              && points.filter((pt) => Array.isArray(pt) && pt.length >= 2
+                && Number.isFinite(Number(pt[0])) && Number.isFinite(Number(pt[1]))).length >= 2;
+          });
+          if (usable.length !== declared.length) {
+            return "a geoboard given shapes needs each one to carry at least two vertices with numeric x and y";
+          }
         }
       }
       return null;

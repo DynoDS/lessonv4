@@ -100,6 +100,11 @@ function settledSheets(worksheet) {
   }
 }
 
+// The words a note has to contain to count as explaining a mixed set. Kept as
+// a named constant so the check reads as one idea rather than a regex buried
+// mid-function.
+const ORIENTATION_WORDS = /(landscape|portrait|orientation)/i
+
 function setShapeAdvisories(worksheet, advisories) {
   const sheets = settledSheets(worksheet);
   const byOrientation = new Map();
@@ -114,12 +119,28 @@ function setShapeAdvisories(worksheet, advisories) {
   const split = [...byOrientation.entries()]
     .map(([orientation, names]) => `${names.join(", ")} ${orientation}`)
     .join("; ");
+
+  // A mixed set can be the right answer - a seven-row place-value chart beside
+  // a speech scene genuinely needs the landscape page - and when it is, the one
+  // person who has to live with it is told. So the advisory turns on whether
+  // that has been done. Saying the same sentence to a designer who already
+  // explained it trains the sentence to be ignored, and saying nothing to one
+  // who has not lets a pack print mixed with nobody told: a focused repair
+  // reshaped a Below sheet from portrait to landscape to buy four pixels and
+  // left `notes` null, so the teacher met the split at the photocopier.
+  const notes = Array.isArray(worksheet && worksheet.notes) ? worksheet.notes : [];
+  const explained = notes.some(
+    (note) => typeof note === "string" && ORIENTATION_WORDS.test(note)
+  );
+  if (explained) return;
+
   advisories.push(
-    `this lesson's sheets do not share an orientation (${split}). They print ` +
-      `as one file and get cut into piles, so a mixed set stacks awkwardly and ` +
-      `reads to a child as a different lesson. Carry Expected's shape across ` +
-      `unless a sheet's own content needs the other way round - and say which ` +
-      `in notes when it does.`
+    `this lesson's sheets do not share an orientation (${split}), and no ` +
+      `top-level note says why. They print as one file and get cut into piles, ` +
+      `so a mixed set stacks awkwardly and reads to a child as a different ` +
+      `lesson. Carry Expected's shape across unless a sheet's own content needs ` +
+      `the other way round - and when it does, add a note saying which sheet ` +
+      `and why, because the teacher is the one who meets the split.`
   );
 }
 

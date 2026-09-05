@@ -1107,3 +1107,155 @@ test("a heading that is the whole line is a heading, not a buried one", () => {
 
   assert.deepEqual(problems, []);
 });
+
+// ─── whether a label is printed or blank ──────────────────────────────────
+//
+// The same five lines of JSON make two opposite pages. A Below sheet's
+// adaptation asked for `bread roll` and `egg` to be printed beside a lunch
+// photograph, because the task under it was to tick which body job each food
+// does and a child who cannot name the food cannot start. The specification
+// listed both words with no `given`, the helper's blank default turned them
+// into two empty leader lines, and the build reported a clean fit
+// (5 September 2026).
+
+const labelSheet = (labels) => ({
+  meta: { lesson: "Balanced diets", yearGroup: 4 },
+  sheets: {
+    below: {
+      layout: "full",
+      zones: {
+        a: {
+          question: true,
+          helper: "label-diagram",
+          text: "Look at the lunch.",
+          imagePath: "lunch.jpg",
+          labels,
+        },
+      },
+    },
+  },
+});
+
+test("a label that does not say whether it is printed or blank is refused", () => {
+  const problems = checkWorksheet(
+    labelSheet([
+      { anchor: [35, 50], label: "bread roll" },
+      { anchor: [65, 50], label: "egg" },
+    ])
+  );
+
+  assert.equal(problems.length, 1);
+  const said = problems[0].labelIntent.join(" ");
+  assert.match(said, /LABEL_INTENT_UNSTATED/);
+  // Named, so the designer does not have to work out which callout is meant.
+  assert.match(said, /"bread roll", "egg"/);
+  // What silence actually does, which is the part that made this invisible.
+  assert.match(said, /prints as a blank line/);
+  // Both answers offered. This asks for a decision, not for one of them.
+  assert.match(said, /"given": true/);
+  assert.match(said, /"given": false/);
+  // Where the answer lives.
+  assert.match(said, /lesson design or adaptation/);
+});
+
+test("a genuine labelling task passes once it says the lines are blank", () => {
+  // The counterexample, and the reason the renderer's default was left alone:
+  // printing every label would hand the child the answers to this sheet.
+  assert.deepEqual(
+    checkWorksheet(
+      labelSheet([
+        { anchor: [37, 31], label: "petal", given: false },
+        { anchor: [50, 90], label: "roots", given: false },
+      ])
+    ),
+    []
+  );
+});
+
+test("printed support passes, and so does a diagram that mixes the two", () => {
+  assert.deepEqual(
+    checkWorksheet(
+      labelSheet([
+        { anchor: [35, 50], label: "bread roll", given: true },
+        { anchor: [65, 50], label: "egg", given: true },
+      ])
+    ),
+    []
+  );
+
+  // One worked label to copy the shape of, the rest for the child. Mixing is
+  // a real design, so the check must not push a diagram to be all one thing.
+  assert.deepEqual(
+    checkWorksheet(
+      labelSheet([
+        { anchor: [50, 50], label: "stem", given: true },
+        { anchor: [37, 31], label: "petal", given: false },
+      ])
+    ),
+    []
+  );
+});
+
+test("a truthy value that is not a boolean is not a stated intent", () => {
+  // "given": "yes" reads as a decision and is not one the helper can act on:
+  // it prints blank, exactly as silence does. The check asks for the field the
+  // renderer actually reads.
+  const problems = checkWorksheet(
+    labelSheet([{ anchor: [35, 50], label: "bread roll", given: "yes" }])
+  );
+  assert.match(problems[0].labelIntent.join(" "), /LABEL_INTENT_UNSTATED/);
+});
+
+test("an empty diagram is still reported as empty, not as unstated intent", () => {
+  // Two faults that could both fire on one zone. The zone with no labels at
+  // all has nothing to state an intent about, so only the emptier fault
+  // should speak.
+  const problems = checkWorksheet(labelSheet([]));
+  assert.equal(problems[0].labelIntent.length, 0);
+  assert.match(problems[0].emptySets.join(" "), /EMPTY_SET/);
+});
+
+// ─── what a stacked ratio actually does ──────────────────────────────────
+//
+// The library offers seven top-to-bottom ratios and they cannot differ: every
+// zone is finally sized to what it holds, so the parts in a row split only
+// order the fit search. That is the right behaviour - a stacked zone held to
+// 30% would cut content or print a hole - but it was documented as though the
+// heights were promised, and a designer choosing between them was making a
+// decision with no effect. This pins the behaviour and the honest claim
+// together, so if one ever changes the other has to change with it.
+test("every stacked ratio renders the same page, and the reference says so", () => {
+  const { renderSheet } = require("../src/render.js");
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const q = (t) => ({ helper: "written-answers", items: [{ text: t, sentences: 2 }] });
+  const base = {
+    orientation: "portrait", title: "t",
+    zones: { a: { stack: [q("A short first question.")] }, b: { stack: [q("A longer second question that wraps.")] } },
+  };
+  const ids = ["halves-stacked", "stacked-20-80", "stacked-30-70", "stacked-50-50", "stacked-70-30", "stacked-80-20"];
+  const rendered = ids.map((layout) => renderSheet({ ...base, layout }));
+  for (let i = 1; i < rendered.length; i += 1) {
+    assert.strictEqual(rendered[i], rendered[0],
+      `${ids[i]} differed from ${ids[0]}; if stacked ratios now do something, the reference paragraph must be rewritten`);
+  }
+
+  const doc = fs.readFileSync(
+    path.join(__dirname, "..", "..", "references", "worksheet-compositions.md"), "utf8");
+  assert.match(doc, /cannot differ from/,
+    "the reference must keep telling the designer that choosing a stacked ratio is not a decision");
+});
+
+test("a side-by-side ratio does set a real width", () => {
+  // The contrast that makes the paragraph above true rather than a blanket
+  // claim that ratios are meaningless. A 20% column really is 20% wide, and a
+  // helper that needs more is refused in it.
+  const { renderSheet } = require("../src/render.js");
+  const q = (t) => ({ helper: "written-answers", items: [{ text: t, sentences: 2 }] });
+  const base = {
+    orientation: "portrait", title: "t",
+    zones: { a: { stack: [q("First.")] }, b: { stack: [q("Second.")] } },
+  };
+  assert.throws(() => renderSheet({ ...base, layout: "side-20-80" }), /needs \d+mm wide, zone is \d+mm/);
+  assert.doesNotThrow(() => renderSheet({ ...base, layout: "side-50-50" }));
+});

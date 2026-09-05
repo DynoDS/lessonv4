@@ -19,6 +19,7 @@ REQUEST_FIELDS = {
     "subject",
     "scope",
     "vocabularyCount",
+    "vocabularyIntroductionCount",
     "trimmedVocabularyCount",
     "representations",
     "successCriteriaCount",
@@ -742,6 +743,7 @@ def validate_request(raw: Any) -> dict[str, Any]:
 
     for field in (
         "vocabularyCount",
+        "vocabularyIntroductionCount",
         "trimmedVocabularyCount",
         "successCriteriaCount",
         "stickyKnowledgeCount",
@@ -1341,11 +1343,24 @@ def build_scaffold(
             }
             for key in ("stickIn", "workingWall")
         },
-        # Where the one vocabulary slide sits. Null keeps it after the starter;
-        # a lesson that lets children meet the meaning before the word names
-        # the unit it follows. Left null rather than a placeholder because the
-        # default is the ordinary answer and the validator accepts null.
-        "vocabularyPlacement": None,
+        # When each word is introduced. One entry per introduction, in the
+        # order they happen: the words it introduces, and the unit it follows.
+        #
+        # Sized from the request like every other count here, and for the same
+        # reason: how many moments this lesson introduces vocabulary at is a
+        # decision, and a scaffold that always emitted one entry would have
+        # made "all of them, together" the path of least resistance - which is
+        # the default that had been failing.
+        "vocabularyIntroductions": [
+            {
+                "vocabularyRefs": [PLACEHOLDER],
+                "after": PLACEHOLDER,
+            }
+            for _
+            in range(
+                request["vocabularyIntroductionCount"],
+            )
+        ],
         "slideDesignNotes": [PLACEHOLDER],
         "flagsForTeacher": [PLACEHOLDER],
     }

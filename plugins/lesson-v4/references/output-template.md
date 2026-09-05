@@ -155,11 +155,20 @@ Use these exact shapes:
 
 Use `[]` when nothing was trimmed.
 
-**`vocabularyPlacement`** is a top-level field beside the vocabulary array. `null` keeps the one vocabulary slide where it normally sits, straight after the starter. `{ "after": "lesson-section/teaching-sequence/unit-001" }` shows that same slide after the named unit instead, for a lesson that lets children meet the meaning in the material before the word is given (children notice what is the same and what is different about a Victorian classroom, and only then are told that the first is called a continuity and the second a change). The word count and the single-slide rule do not change; only where the slide comes.
+**`vocabularyIntroductions`** is a top-level ordered array beside the vocabulary array: one entry per moment the lesson introduces vocabulary, in the order they happen.
+
+`vocabularyRefs` names the vocabulary ids introduced at that moment. `after` names the unit the introduction follows, which is the starter's `sourceUnitId` or any teaching-sequence `sourceUnitId`, and means after the whole of that unit including its last slide when the unit spans several. Two entries on the same anchor keep their listed order.
+
+Every retained word takes exactly one introduction, and a word may not appear in two. Later reminders and reuse are ordinary teaching and are not listed here. An empty vocabulary array takes an empty introductions array.
 
 ```json
-"vocabularyPlacement": null
+"vocabularyIntroductions": [
+  { "vocabularyRefs": ["vocab-001"], "after": "lesson-section/starter/unit-001" },
+  { "vocabularyRefs": ["vocab-002", "vocab-003"], "after": "lesson-section/teaching-sequence/unit-002" }
+]
 ```
+
+The superseded `vocabularyPlacement` field is still read so that saved designs keep their original meaning: absent or `null` put every word after the starter, and `{ "after": "<teachingSequence sourceUnitId>" }` put every word after that unit. Write `vocabularyIntroductions` in new designs. A design carrying both is refused rather than guessed at.
 
 ### Representations
 
@@ -206,7 +215,9 @@ Define each pedagogically meaningful visual or representational family once, the
 
 A symbol counts as a representation whenever the learning depends on its exact form. A UK three-pin plug and socket, a pound coin, a specific road sign or a named piece of apparatus is a representation with that form as a `requiredFeature`, however small it renders, because a child reads the form and not the caption. Declaring it here is what puts it in front of the helper check before any renderer starts; leaving it as a bare label sends the designer looking for the nearest emoji, and the emoji is drawn by the device rather than by the lesson. A general picture children recognise at a glance, where any reasonable drawing would do, is not a representation.
 
-Declaring it is not the same as choosing where it comes from, and the second decision is yours too. A representation is drawn by an engine helper, and a helper is worth having when the visual is built from the lesson's own data - change the numbers, the labels, the categories or the child's marks and the picture changes with them. A fixed depiction of one real thing is the opposite: the same drawing every time, nothing computed from the lesson, and no second lesson wanting it with different data. Ask for that visual as a picture instead, `controlled-ai` with a complete generation prompt, because a staged image to a written prompt is exactly the thing the picture stage already produces and it arrives faithful without an engine learning to draw one unchanging object. The plug and socket, the road sign, the named apparatus all belong on the picture side. This is the one case where a source-based image is right even though a representation could name the visual.
+Declaring it is not the same as choosing where it comes from, and the second decision is yours too. A representation is drawn by an engine helper, and a helper is worth having when the visual is built from the lesson's own data - change the numbers, the labels, the categories or the child's marks and the picture changes with them. A fixed depiction of one real thing is the opposite: the same drawing every time, nothing computed from the lesson, and no second lesson wanting it with different data. Ask for that visual as a picture instead, because a picture arrives faithful without an engine learning to draw one unchanging object. The plug and socket, the road sign, the named apparatus all belong on the picture side. This is the one case where a source-based image is right even though a representation could name the visual.
+
+That settles that it is a picture. It does not settle where the picture comes from, and those are two decisions, not one. Choose the acquisition mode on the ordinary test below: `controlled-ai` only when the STAGING is what makes the image evidence, and `ordinary-real` with `fallback_action: ai` whenever a stock library plausibly holds the thing. A cell in a battery holder, a lamp in a lamp holder, a pound coin, a road sign are all ordinary photography, so the real route finds them and generation stands behind it if it does not. Sending them straight to generation costs nothing when generation is available and costs the whole lesson when it is not: a Year 4 circuits lesson declared all six of its pictures `controlled-ai`, including a cell in a holder, and arrived on a host with no generation route with no pictures at all and no rung left to try - while the same lesson's staged fault circuits, which genuinely are staged combinations, were right to be there.
 
 `loadBearing` belongs to a named configuration because the same representation family may have a load-bearing live-complete state, a different load-bearing prepared state, and a non-load-bearing reminder state. A configuration with `loadBearing: true` must contain at least one non-empty `requiredFeatures` entry; a non-load-bearing configuration uses `requiredFeatures: []`. Do not copy one configuration's capability requirements onto every use of the representation.
 

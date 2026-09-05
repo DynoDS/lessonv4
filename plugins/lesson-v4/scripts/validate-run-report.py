@@ -22,6 +22,7 @@ Standard library only. Writes nothing.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -174,6 +175,41 @@ def promised_filenames(working_dir: Path) -> list[str]:
             if isinstance(filename, str) and filename and filename not in names:
                 names.append(filename)
     return names
+
+
+def reviewed_retired_pictures(working_dir: Path) -> set[str]:
+    """Retired photo history stays reportable without blocking a reviewed repair.
+
+    Require a current successful review of the actual design and contract, no
+    live owner reference, and no filename in any resource spec. A stale review
+    or a downstream use still owes the picture; merely deleting a use is not
+    proof that the replacement teaching was approved.
+    """
+    try:
+        post = json.loads((working_dir / "design-review-postflight.json").read_text(encoding="utf-8"))
+        if post.get("result") != "OK" or post.get("reviewResult") != "APPROVED":
+            return set()
+        for key, name in (("lessonDesign", "lesson-design.json"), ("photoRequirements", "photo-requirements.json")):
+            if hashlib.sha256((working_dir / name).read_bytes()).hexdigest() != post["currentInputs"][key]["sha256"]:
+                return set()
+        design = json.loads((working_dir / "lesson-design.json").read_text(encoding="utf-8"))
+        photos = json.loads((working_dir / "photo-requirements.json").read_text(encoding="utf-8"))["photos"]
+        # Exact JSON string tokens also catch references in nested structures.
+        owner_text = json.dumps(design)
+        specs = []
+        for name in ("lesson.json", "worksheet.json", "working-wall.json", "stick-in-sheets.json"):
+            path = working_dir / name
+            if path.is_file():
+                specs.append(json.dumps(json.loads(path.read_text(encoding="utf-8"))))
+        if not (working_dir / "lesson.json").is_file():
+            return set()
+        return {
+            photo["filename"] for photo in photos
+            if json.dumps(photo["id"]) not in owner_text
+            and all(json.dumps(photo["filename"]) not in spec for spec in specs)
+        }
+    except (OSError, ValueError, KeyError, TypeError):
+        return set()
 
 
 def helper_obligations(working_dir: Path) -> list[str]:
@@ -707,10 +743,11 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 "COMPLETE: the report carries PAGE_FIT_UNVERIFIED; an unverified review "
                 "cannot close as COMPLETE."
             )
-        if obligations["picture"]:
+        missing_live_pictures = set(obligations["picture"]) - reviewed_retired_pictures(working)
+        if missing_live_pictures:
             failures.append(
                 "COMPLETE: picture(s) the contract promised were never published: "
-                + ", ".join(obligations["picture"])
+                + ", ".join(sorted(missing_live_pictures))
                 + "; a package that ships without a picture it promised is PARTIAL, "
                 "not COMPLETE."
             )

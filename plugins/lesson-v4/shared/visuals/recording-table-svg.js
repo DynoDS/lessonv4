@@ -24,7 +24,21 @@ const CELL_FS_MIN = 18;
 const LINE_HEIGHT = 1.22;
 const CHAR_W = 0.54;
 // A response cell holds a Year 4 phrase in the child's own hand, so its height
-// is set by handwriting, not by the printed text beside it.
+// is set by handwriting rather than by the printed text beside it.
+//
+// It is set relative to the WIDTH, though, and that is worth knowing before you
+// plan a task around this table. The whole drawing is authored in a 1200-unit
+// space and scaled to whatever printed width the consumer asks for, so a
+// response row is always a tenth of that width: 16mm at the stick-in pack's
+// 160mm book width, which holds about two lines of Year 4 handwriting. There is
+// no width that buys more, because narrowing the table makes its rows shorter
+// too.
+//
+// So this table suits a phrase per cell. A task wanting the thing PLUS the
+// evidence for it - four or five lines a cell - does not fit here at any size,
+// and a history stick-in piece was left out of its pack for exactly that reason
+// after the arithmetic was checked. Giving a caller a way to ask for a deeper
+// response row is the change that would open it up; nothing has needed it yet.
 const RESPONSE_ROW_H = 120;
 const HEADER_FILL = '#2D3748';
 const HEADER_TEXT = '#FFFFFF';
@@ -82,10 +96,26 @@ function normalise(data = {}) {
 }
 
 function columnWidths(headers, rows, innerW) {
-  // The first column usually carries the given item names, so it hugs the
+  // The first column USUALLY carries the given item names, so it hugs the
   // longest of them (within bounds); the response columns share the rest
   // equally, because a child's answer needs the width more than a heading does.
+  //
+  // "Usually" is doing real work there, and when it is wrong the table comes out
+  // lopsided in a way that reads as a mistake. A Year 4 history table headed
+  // "Stayed the same" / "Changed" has no item names at all: both columns are
+  // response columns doing the same job. Hugging the first one then gave it a
+  // third of the width the second got, and the narrow one was the column the
+  // lesson's sticking point says is the harder of the two. That piece was left
+  // out of the pack rather than printed lopsided.
+  //
+  // So the hug applies only where there is something to hug: a first column
+  // whose ROWS supply no text is a response column like its neighbours, and
+  // every column shares the width equally.
   const cols = headers.length;
+  const firstGiven = rows.some((r) => String((r && r[0]) || '').trim().length > 0);
+  if (!firstGiven) {
+    return new Array(cols).fill(innerW / cols);
+  }
   const firstTexts = [headers[0]].concat(rows.map((r) => r[0] || ''));
   const longest = firstTexts.reduce((max, t) => Math.max(max, String(t).length), 0);
   let firstW = longest * CELL_FS_MAX * CHAR_W + 2 * CELL_PAD_X;

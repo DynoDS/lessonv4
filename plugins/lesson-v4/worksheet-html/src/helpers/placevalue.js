@@ -471,7 +471,7 @@ function measurePlaceValueChart(spec, widthMm) {
   return pvchartHeaderMm(spec, widthMm) + body + 1;
 }
 
-function needsPlaceValueChart(spec) {
+function needsPlaceValueChart(spec, widthMm) {
   const minWidthMm = pvchartSpanMm(spec, PVCHART_COL_MIN_MM);
   return {
     // Three charts side by side need three charts' worth of width, a chart with
@@ -479,9 +479,11 @@ function needsPlaceValueChart(spec) {
     // labels needs the caption column as well: a constant per helper cannot
     // know any of the three.
     minWidthMm,
-    // Measured AT that minimum, because that is where the headers and the row
-    // labels wrap most and the block is at its tallest.
-    minHeightMm: measurePlaceValueChart(spec, minWidthMm),
+    // Planning without a width still gets a usable minimum-size box. During
+    // fitting, measure at the actual width: wider headings can unwrap without
+    // shortening the writing rows or making the chart unusable.
+    minHeightMm: measurePlaceValueChart(spec,
+      Number.isFinite(widthMm) ? Math.max(minWidthMm, widthMm) : minWidthMm),
   };
 }
 

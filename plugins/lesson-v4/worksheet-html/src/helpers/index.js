@@ -8,7 +8,7 @@
 //
 //   render(spec)            → the HTML
 //   measure(spec, widthMm)  → how tall it naturally wants to be at that width
-//   needs(spec)             → the smallest box THIS content stays usable in
+//   needs(spec, widthMm?)   → usable floors, at the actual width when supplied
 //   greed                   → how much spare height it should absorb
 //
 // `needs` is a function of the content, not a constant per helper. A
@@ -54,8 +54,8 @@ const FILES = [
 function withLegibilityFloor(helper) {
   return {
     ...helper,
-    needs: (spec) => {
-      const stated = helper.needs(spec);
+    needs: (spec, widthMm) => {
+      const stated = helper.needs(spec, widthMm);
       const legible = legibleWidthMm(helper.render(spec));
       const minWidthMm = Math.max(stated.minWidthMm, legible);
       return {
@@ -122,7 +122,7 @@ const {
 } = makeCompose({
   render: (spec, widthMm) => entry(spec.helper).render(spec, widthMm),
   measure,
-  needs: (spec) => entry(spec.helper).needs(spec),
+  needs: (spec, widthMm) => entry(spec.helper).needs(spec, widthMm),
   greed,
   fills,
 });
@@ -206,7 +206,7 @@ function requiredSets(helperName) {
 // zone can answer this before anything is drawn. It takes the whole content
 // spec, not just the helper's name, because the answer depends on what is in it.
 function fits(spec, zoneWidthMm, zoneHeightMm) {
-  const { minWidthMm, minHeightMm } = needsContent(spec);
+  const { minWidthMm, minHeightMm } = needsContent(spec, zoneWidthMm);
   const tooNarrow = zoneWidthMm < minWidthMm;
   const tooShort = zoneHeightMm < minHeightMm;
 

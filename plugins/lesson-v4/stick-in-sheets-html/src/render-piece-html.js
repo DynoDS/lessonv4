@@ -86,13 +86,30 @@ function renderRow(item) {
   const def = ROW_VISUALS[item.visual];
   const figs = (item.spec && item.spec.figures) || [];
   if (figs.length === 0) return null;
+  // The same guard the single figures get. It was only ever wired to
+  // `renderSingle`, which cost nothing while every row figure had a valid
+  // default (an angle with no degrees is a perfectly good 45 degrees to name).
+  // A dotty board is the first row figure that can be asked for a shape and
+  // handed none, and the strip would print as bare grids with write-on lines
+  // under them - looking exactly right, for all thirty children.
+  const missingInRow = missingQuestionContent(item);
+  if (missingInRow) {
+    console.warn(`[stick-in] "${item.label || item.visual}": ${missingInRow}, so this item is skipped rather than tiled as blank copies.`);
+    return null;
+  }
   const boxWMm = item.spec?.figureWidthMm ?? def.defaultFigureWidthMm;
+  // Most row figures share one box height so every write-on line sits level and
+  // no figure looks bigger than its neighbours. A figure whose usability depends
+  // on printed detail rather than overall shape - dotty-paper pegs a child counts
+  // one at a time - declares its own, and every cell in ITS strip uses that, so
+  // the strip is still internally level.
+  const boxHMm = def.boxHeightMm ?? ROW_BOX_H_MM;
   const cellWMm = boxWMm + 2 * ROW_CELL_PAD_MM;
   const withLabels = Boolean(item.spec?.writeOnLabels);
 
   const cells = figs.map((fspec) => {
     const { svg, w, h } = def.tightSvg(fspec);
-    const scale = Math.min(boxWMm / w, ROW_BOX_H_MM / h);
+    const scale = Math.min(boxWMm / w, boxHMm / h);
     const displayW = w * scale;
     const displayH = h * scale;
     const line = withLabels
@@ -100,8 +117,8 @@ function renderRow(item) {
       : "";
     // Bottom-aligned figure so every write-on line sits level however tall the
     // figure inside the common box is.
-    return `<td style="width:${cellWMm}mm;height:${ROW_BOX_H_MM + ROW_LINE_GAP_MM}mm;vertical-align:bottom;padding:1mm 2mm;border:none">` +
-      `<div style="display:flex;align-items:flex-end;justify-content:center;height:${ROW_BOX_H_MM}mm">` +
+    return `<td style="width:${cellWMm}mm;height:${boxHMm + ROW_LINE_GAP_MM}mm;vertical-align:bottom;padding:1mm 2mm;border:none">` +
+      `<div style="display:flex;align-items:flex-end;justify-content:center;height:${boxHMm}mm">` +
       inlineSvg(svg, displayW, displayH) +
       `</div>${line}</td>`;
   });
@@ -118,7 +135,7 @@ function renderRow(item) {
   return {
     html: `<table style="border-collapse:collapse;margin:0 auto"><tbody>${rows.join("")}</tbody></table>`,
     widthMm: colCount * cellWMm,
-    heightMm: rowCount * (ROW_BOX_H_MM + ROW_LINE_GAP_MM + (withLabels ? ROW_LABEL_BAND_MM : 0)),
+    heightMm: rowCount * (boxHMm + ROW_LINE_GAP_MM + (withLabels ? ROW_LABEL_BAND_MM : 0)),
   };
 }
 

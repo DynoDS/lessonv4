@@ -130,23 +130,6 @@ function imageWillDraw(imageData, ctx) {
   return imageData.essential !== false;
 }
 
-// Is the cell this picture was allocated big enough for a class to read it?
-//
-// The test runs on the cell rather than on the delivered file, so it gives the
-// same answer while the picture stage is still working as it does afterwards:
-// the fault is the allocation, and the allocation is the designer's to repair
-// while a repair is still cheap. `zone.cell` is the pre-hug allocation when the
-// card look has already shrunk the zone around the drawn picture.
-//
-// The message names WHICH AXIS BINDS, because only one of the available repairs
-// can move a given case and the other reads just as plausible. A row of
-// captioned photographs in a shallow band binds on height: taking a picture out
-// of the row makes the survivors wider and leaves the short side exactly where
-// it was. A designer that reaches for the wrong lever spends a repair pass
-// measuring the same number again, and a bounded self-repair budget is spent
-// three times over on a composition nothing has touched - which is how a deck
-// reached `EXHAUSTED 3/3` still 0.11" short. Reporting the binding axis, the
-// shortfall and what the caption costs turns three guesses into one repair.
 // The pictures children work FROM on one slide: every `image` content object in
 // the slide's spec that has not opted out with `essential: false`. Walked from
 // the spec rather than counted as pictures draw, so the first picture on a
@@ -210,29 +193,114 @@ function pictureFloorFor(data, ctx) {
   return { floor: PICTURE_READABLE_FLOOR, role: `As one of ${count} pictures children work from on this slide` };
 }
 
+// The proportions this picture will actually be drawn at, and whether they are
+// the real file's or the square stand-in a picture that has not arrived yet is
+// reserved at. `imageAspect` answers the first question for the layout; the
+// floor check needs the second as well, because what it can honestly say about
+// a picture's size depends on whether the picture exists yet.
+function pictureShape(data, ctx) {
+  const resolved = resolveForEmbed(data.imagePath, ctx);
+  if (!resolved || !fs.existsSync(resolved)) {
+    return { aspect: PENDING_ASPECT, delivered: false, dims: null };
+  }
+  const dims = ctx && ctx.imageDims ? ctx.imageDims[data.imagePath] : null;
+  if (!dims || !(dims.w > 0) || !(dims.h > 0)) return null;
+  return { aspect: dims.w / dims.h, delivered: true, dims };
+}
+
+// Is this picture big enough for a class to read once it is on the slide?
+//
+// ONE finding per picture, on the truest measurement available at the time.
+// Before the file has been measured the only honest number is what the cell
+// GUARANTEES whatever shape turns up - the short side of the reserved frame -
+// and that is the early answer a designer can act on while the picture stage
+// is still running. Once the file has been measured, the contain fit is known
+// and so is the rectangle actually put on the slide.
+//
+// Those two are not the same number, and the difference was a real hole in
+// this check. A 400 x 332 classroom photograph in a 3.5" square cell leaves a
+// 3.26" frame, which reads as comfortably over the 3.0" hero floor, and then
+// contain-fits to 3.26" by 2.71": a quarter of an inch UNDER the floor, with
+// nothing reported (5 September 2026). A frame with room in it is not proof of
+// a picture big enough to read. The check therefore measures the drawn
+// rectangle whenever the drawn rectangle is knowable, and the reserved frame
+// only while it is not - never both, because two findings and two warnings
+// about one photograph, quoting two different short sides, leave a designer
+// unable to tell which number to repair against.
+//
+// The measurement runs on `zone.cell`, the pre-hug allocation, when the card
+// look has already shrunk the zone around the drawn picture: the allocation is
+// what a designer repairs, and hugging a zone around a small picture does not
+// make the picture bigger.
+//
+// The message names WHICH AXIS BINDS, because only one of the available
+// repairs can move a given case and the other reads just as plausible. A row
+// of captioned photographs in a shallow band binds on height: taking a picture
+// out of the row makes the survivors wider and leaves the short side exactly
+// where it was. A designer that reaches for the wrong lever spends a repair
+// pass measuring the same number again, and a bounded self-repair budget is
+// spent three times over on a composition nothing has touched - which is how a
+// deck reached `EXHAUSTED 3/3` still 0.11" short. Reporting the binding axis,
+// the shortfall and what the caption costs turns three guesses into one
+// repair.
+//
+// With the picture's shape known, the binding axis is the one the fit is
+// stopped by, and that is not always the shorter side of the cell. A landscape
+// photograph in a square cell is stopped by WIDTH - it already uses the full
+// width and its height follows from that - so a taller cell moves nothing and
+// a wider one moves everything. Contain-fitting an image of aspect `a` leaves
+// a short side of min(w, h, w/a, h*a), so the frame needs `floor * max(1, a)`
+// of width and `floor * max(1, 1/a)` of height, and whichever of those two it
+// is missing is the axis to name.
 function checkPictureCellSize(zone, data, ctx) {
   if (!ctx || !data || data.essential === false) return;
   if (!data.imagePath) return;
   if (resolveFit(data, false) !== 'contain') return;
+  const shape = pictureShape(data, ctx);
+  if (!shape) return;
+  const { aspect, delivered, dims } = shape;
+  if (!(aspect > 0)) return;
+
   const cell = zone.cell || zone;
   const caption = data.caption || '';
   const captionCost = caption.length > 0 ? (CAPTION_H + CAPTION_GAP) : 0;
   const frameW = cell.w - 2 * PAD;
   const frameH = cell.h - 2 * PAD - captionCost;
-  const guaranteed = Math.min(frameW, frameH);
+  if (!(frameW > 0) || !(frameH > 0)) return;
+
   const { floor, role } = pictureFloorFor(data, ctx);
-  if (!(guaranteed > 0) || guaranteed >= floor) return;
+  const guaranteed = Math.min(frameW, frameH);
+  const drawn = containRect({ x: 0, y: 0, w: frameW, h: frameH }, aspect);
+  const measured = Math.min(drawn.w, drawn.h);
+  if (!(measured > 0) || measured >= floor) return;
 
   const short = (n) => n.toFixed(2);
-  const shortfall = short(floor - guaranteed);
-  const opening =
-    `image "${data.imagePath}" is guaranteed only ${short(guaranteed)}" on its ` +
-    `short side. ${role} it needs ${short(floor)}" for a class to read it from ` +
-    `the back of the room, so a photograph of any shape renders below that. `;
+  const widthShort = floor * Math.max(1, aspect) - frameW;
+  const heightShort = floor * Math.max(1, 1 / aspect) - frameH;
 
-  // Height and width are both short of the floor: neither axis alone is the
-  // story, and a designer told only about one will fix it and meet the other.
-  const bothBind = frameW < floor && frameH < floor;
+  let opening;
+  if (delivered) {
+    opening =
+      `image "${data.imagePath}" renders ${short(drawn.w)}" by ${short(drawn.h)}" ` +
+      `on the slide, so it is only ${short(measured)}" on its short side. ${role} ` +
+      `it needs ${short(floor)}" for a class to read it from the back of the room. `;
+    if (guaranteed >= floor) {
+      opening +=
+        `The cell reserves ${short(guaranteed)}", which reads as enough, but this ` +
+        `photograph is ${dims.w} by ${dims.h} and keeps its true proportions, so the ` +
+        `spare room on the other axis stays empty instead of going into the picture. `;
+    }
+  } else {
+    opening =
+      `image "${data.imagePath}" is guaranteed only ${short(measured)}" on its ` +
+      `short side. ${role} it needs ${short(floor)}" for a class to read it from ` +
+      `the back of the room, so a photograph of any shape renders below that. `;
+  }
+
+  // Height and width are both short of what the floor needs: neither axis
+  // alone is the story, and a designer told only about one will fix it and
+  // meet the other.
+  const bothBind = widthShort > 0 && heightShort > 0;
 
   let diagnosis;
   if (bothBind) {
@@ -242,11 +310,11 @@ function checkPictureCellSize(zone, data, ctx) {
       `. A cell this size cannot hold a picture children work from whatever ` +
       `you rearrange inside it, so this needs a different template or the beat ` +
       `split across two slides, not a smaller adjustment.`;
-  } else if (frameH < frameW) {
+  } else if (heightShort > 0) {
     diagnosis =
       `Height is what binds: the cell is ${short(cell.h)}" tall` +
       (captionCost ? `, and the caption under the picture takes ${short(captionCost)}" of that` : '') +
-      `. Find this picture ${shortfall}" more height - a taller zone, fewer ` +
+      `. Find this picture ${short(heightShort)}" more height - a taller zone, fewer ` +
       `rows stacked down it, or the beat split across two slides` +
       (captionCost
         ? `; a label the task does not need is ${short(captionCost)}" back on its own`
@@ -256,7 +324,7 @@ function checkPictureCellSize(zone, data, ctx) {
   } else {
     diagnosis =
       `Width is what binds: the cell is ${short(cell.w)}" wide. Find this ` +
-      `picture ${shortfall}" more width - a wider zone, fewer pictures side ` +
+      `picture ${short(widthShort)}" more width - a wider zone, fewer pictures side ` +
       `by side, or the same set laid out as a grid rather than one long row. ` +
       `A taller zone will not move it, because each picture is already ` +
       `stopped by the width.`;

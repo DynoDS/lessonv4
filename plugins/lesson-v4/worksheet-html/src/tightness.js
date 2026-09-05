@@ -24,7 +24,7 @@
 
 const { flatten } = require("./layouts");
 const { printableArea, DEFAULT_MARGIN_MM } = require("./page");
-const { sheetGeometry, zoneContentMm } = require("./render");
+const { sheetGeometry, zoneContentMm, drawnZoneHeights } = require("./render");
 const { inspectContent } = require("./helpers");
 
 // At or below this, a part is at the edge of what a child can use.
@@ -56,15 +56,32 @@ function tightnessOf(spec) {
   const orientation = spec.orientation || "portrait";
   const area = printableArea(orientation, DEFAULT_MARGIN_MM);
 
+  // The height each zone is DRAWN at, not its share of the layout tree.
+  //
+  // Those are different numbers and the difference is the whole report. A
+  // zone's share is a starting shape; `growToFit` then sizes each zone to what
+  // it holds, which is why two stacked layouts with different declared ratios
+  // draw the identical page. Measuring against the share invented blank paper
+  // nobody prints: the balanced-diet Expected sheet's four step lines were
+  // reported as "needs 46mm and was given 267mm, so 221mm below it prints
+  // empty" while the build drew that zone at 47.79mm with the questions beside
+  // it, and the same false line fires on any short support panel in a
+  // full-height column, which is most of them (5 September 2026). A designer
+  // chasing it pads or moves a panel that was right.
+  const drawn = drawnZoneHeights(spec);
+
   const zones = [];
   for (const zone of flatten(tree)) {
     const content = sheet.zones[zone.id];
     if (!content) continue;
-    const { wMm, hMm } = zoneContentMm(zone, area);
+    const { wMm } = zoneContentMm(zone, area);
+    const drawnMm = drawn[zone.id];
+    const hMm = Number.isFinite(drawnMm) ? drawnMm : zoneContentMm(zone, area).hMm;
     const inspected = inspectContent(content, wMm, hMm);
     // A zone hands its content the zone's height the same way a row hands its
     // items the row's height, so the top of the tree is imposed too. Without
-    // this a sheet whose one zone is half empty reports nothing at all.
+    // this a sheet whose one zone is half empty reports nothing at all - and
+    // with the drawn height above, "half empty" now means the page really is.
     inspected.heightImposed = true;
     zones.push({ id: zone.id, tree: inspected });
   }

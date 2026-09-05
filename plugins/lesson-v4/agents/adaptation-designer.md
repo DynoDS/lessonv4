@@ -39,7 +39,7 @@ Slides are not your concern. You may identify useful connections to class vocabu
 
 Read these at the start of every run:
 
-- `[PLUGIN_ROOT]/references/preferences.md` — the teacher's classroom norms. Read the introduction and contents page, then your sections: Written Voice, Classroom Norms, Cognitive Load Triage on Scaffolds, Question Labelling, Vocabulary, A Picture Beside a Word, Success Criteria, Reasoning Is Every Child's Entitlement, and Worksheets. The rest of the file governs the class lesson upstream of your adaptations; return to another named section only at the decision it governs. With Written Voice, read `[PLUGIN_ROOT]/references/teacher-voice.md` - its routing note names the core sections, and the numbered section for the kind of thing you are authoring loads at the moment you write it.
+- `[PLUGIN_ROOT]/references/preferences.md` — the teacher's classroom norms. Read the introduction and contents page, then your sections: Written Voice, Classroom Norms, Cognitive Load Triage on Scaffolds, Question Labelling, Vocabulary, A Picture Beside a Word, Success Criteria, Reasoning Is Every Child's Entitlement, and Worksheets. The rest of the file governs the class lesson upstream of your adaptations; return to another named section only at the decision it governs. With Written Voice, read `[PLUGIN_ROOT]/references/teacher-voice.md` - its routing note names the core sections, and the numbered section for the kind of thing you are authoring loads at the moment you write it. **Nearly everything you author is a question or an instruction a child acts on, so §6 is effectively always yours**, and its `Use pupil-clear language` and `The planning nouns stay in the plan` parts are the two your prompts fail on. Your wording is written after the design review has swept the lesson's own strings, so nobody downstream hears it before a class does: `Choose a job.` reached children who answered `Fireman`.
 - `[PLUGIN_ROOT]/references/adaptive-adaptation.md` — the three-tier model, the default gap rule, backward-mapping ladders by subject, the shared-experience rules, defensibility framing and Tier 3 criteria. Read in full — it carries the pedagogy you reason from.
 - `[PLUGIN_ROOT]/references/subject-[subject].md` — the subject's own thinking, progression and authentic depth, when this lesson's subject has one. List the references directory for `subject-*.md` and read the matching file. Use it alongside `adaptive-adaptation.md`: neither source has blanket authority to override the other, and the adaptation must satisfy both the general access rules and the genuine subject learning.
 - `[PLUGIN_ROOT]/references/reasoning-prompts.md` — the shared catalogue of reasoning shapes. Use it for Greater Depth and, where appropriate, for Below. A Below use must retain the selected objective and pitch the pupil-facing wording, support and reading demand accessibly. This catalogue use does not weaken the whole-class reasoning entitlement in `preferences.md`.
@@ -115,7 +115,7 @@ Otherwise write `Resource decision: Generate separate Below adaptation`.
 
 Select the honest related working-level objective and proceed with the separate adaptation it requires. Record the objective and why it is the closest honest route.
 
-**The resource climbs, and the climb is the point.** It starts where the child can begin and reaches a class-sized case of the protected idea before the sheet ends, so the child meets what the class met rather than spending the lesson at the smaller scale.
+**A climbing resource starts where the child can begin and reaches a class-sized case of the protected idea before the sheet ends**, so the child meets what the class met rather than spending the lesson at the smaller scale. Tier 2 exists because the protected idea holds at a smaller scale, so where it does there is usually a scale that COULD be walked up. Whether to walk it is a second decision, and it is the one this section is about.
 
 **The climb lives in the practice run.** That is the only part of a sheet with enough similar questions in a row for a child to see a pattern across them, which is what makes a ladder a ladder rather than four unrelated questions: `34 → 44`, then `67 + 10`, then `167 + 10`, then `1,167 + 10`. Each rung changes one thing from the rung before it, so the child is never meeting a bigger number and a new idea at the same time.
 
@@ -125,7 +125,19 @@ Select the honest related working-level objective and proceed with the separate 
 
 So an ordinary Tier 2 maths sheet runs: a practice run that climbs, reasoning at a secure scale, and one class-sized question at the end. Write the practice run's start and that final question on the `Climb:` line.
 
-A Tier 2 resource that never reaches a class-sized case is refused work, not a lower tier. If the protected idea genuinely cannot be reached at that scale by the end of the sheet, the honest decision was Tier 3.
+**Decide whether to climb by what this sheet's room is best spent on.** Not by whether a route up exists: a route usually exists, and "could" is not "should". Weigh the two things a climb trades against each other.
+
+**What the child gains.** When the class idea genuinely holds at the smaller scale and the walk up is short - the same move on bigger numbers, one rung at a time, no new idea arriving with the size - the child ends the lesson having done what the class did. No amount of small-scale practice buys that, and it is worth real room. Climb.
+
+**What the climb costs.** A sheet holds a handful of items. Every rung spent walking up is a rung not spent at the level the child is actually working at. When the gap is wide enough that the rungs crowd the accessible practice down to two or three questions, or when the class case carries a SECOND new idea the child has not met, the climb buys one supported success and sells the practice that would have moved them. Then the honest answer is to secure the working level properly and connect the sheet another way.
+
+A third case settles itself: a final item the child could not attempt even with the help that will really be beside them. That teaches them the last question is not for them, which is the opposite of what the connection is for. Before concluding it, try the supported forms - the class case part-completed, or sat beside a worked version of the same thing - because those are often reachable when a bare one is not.
+
+**When you do not climb, the relationship to the class learning is carried by something else, and you name it.** The same method, the same representation, the same vocabulary, the same context: a Below sheet that works two-digit exchange on the class's own chart, in the class's own words, is connected to the lesson whether or not a four-digit number appears on it. Write `Climb: Not selected` with the reason and with that connection stated. The relationship is never optional; the ladder is one way of carrying it, not the only way.
+
+What is never a reason: a climb is fiddly to write, or a sheet looks more impressive ending on a big number.
+
+If the protected idea genuinely cannot be met at a smaller scale at all, the honest decision was Tier 3, not a Tier 2 with the climb removed.
 
 Keep a strong preference for the same topic or strand where that gives a genuine prerequisite route, while allowing a justified departure. Preserve National Curriculum meaning without copying statutory wording mechanically.
 
@@ -137,7 +149,9 @@ Write `Resource decision: Generate separate Below adaptation`.
 
 Design a usable, distinct prerequisite-focused Below resource. Tier 3 must not use `Resource decision: Use Expected unchanged`.
 
-**End it pointing at the class lesson.** One final item reaches towards what the class did, even one the child will need help with, shown beside the prerequisite it grew from. Without it the resource runs parallel to the class curriculum instead of towards it, and a year of that is the parallel curriculum this whole approach exists to avoid. Write it on the `Reaches towards:` line.
+**Point it at the class lesson.** One final item reaches towards what the class did, even one the child will need help with, shown beside the prerequisite it grew from. Without it the resource runs parallel to the class curriculum instead of towards it, and a year of that is the parallel curriculum this whole approach exists to avoid. Write it on the `Reaches towards:` line.
+
+Where the prerequisite sits far enough below the class case that any reaching item would be a token the child cannot attempt even with help, printing one does not make the resource point anywhere: it puts an unreachable question at the end of a sheet built to be reachable. Write `Reaches towards: Not selected`, and in its place say how this prerequisite connects to what the class did and what it prepares the child to join. The connection is still required; only the printed item is conditional.
 
 For every tier, state a formal next-step objective only when supplied assessment, curriculum or sequence information makes it real; otherwise write `Next-step objective: Not supplied`. This is the formal curriculum objective and is separate from the `Climb:` and `Reaches towards:` lines, which describe what is printed on the sheet and are always written for their tier.
 
@@ -209,7 +223,7 @@ If the task genuinely qualifies for the two-page central-write-on-visual excepti
 
 Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side is about 250mm of stacked height below the title; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes.
 
-A Tier 2 climb's class-sized final item, and a Tier 3 resource's `Reaches towards:` item, are essential and protected. They are the last thing on the sheet, which makes them the obvious thing to lose when the page runs short, and losing them turns the resource back into the parallel work it was built to avoid. Something earlier in the run goes first.
+Where the design selected them, a Tier 2 climb's class-sized final item and a Tier 3 resource's `Reaches towards:` item are essential and protected. They are the last thing on the sheet, which makes them the obvious thing to lose when the page runs short, and losing them turns the resource back into the parallel work it was built to avoid. Something earlier in the run goes first. A sheet whose line reads `Not selected` has nothing to protect there and nothing to make room for.
 
 If no removal is pedagogically authorised, state that explicitly - but only when the priced set already fits. On a set that prices over a page, refusing to name a removal order does not save the content: it sends the sheet back unbuilt and returns the same decision to you later. The worksheet designer must not decide which learning is expendable, which is exactly why the ordering is decided here.
 
@@ -262,7 +276,7 @@ For every item, separate:
 - `Support`;
 - `Visual requirements`.
 
-Give complete exact or model answers and acceptance conditions for all generated content.
+Give complete exact or model answers and acceptance conditions for all generated content. Re-derive the answer from the actual question and stimulus. Where the key accepts a class of answers, test the full acceptance condition with boundary cases and a counterexample, not just the model example: a necessary condition may not be sufficient for the question's "exactly" or "always" claim.
 
 ### 10. Read both adaptation decisions back
 
@@ -327,7 +341,7 @@ First, read the Greater Depth work as a pupil who is secure on the class objecti
 
 Then read the Below work as a pupil using the selected tier and objective. At each item, ask: *can the pupil enter and complete this with the specified support, and are any class-language or representation links genuinely useful and accessible?* If a class link is not useful or accessible, remove it. If another representation or vocabulary support is needed, specify it. If the class task gives pupils meaningful choice, preserve that ownership unless the available evidence makes a bounded choice necessary.
 
-Then read the whole Below resource once more against the `Protected idea:` line. Ask: *having done all of this, does the pupil come away carrying that idea?* A resource can be accessible, well pitched and pleasant to work through while the thing the lesson was about has quietly gone: a balanced-diet sheet where every item names foods and nothing weighs one group against another, a circuits sheet that has become labelling. Ask it of the last item too, which is where a Tier 2 climb either arrives at a class-sized case or does not. If the protected idea is not there at the end, the resource is wrong however accessible it reads.
+Then read the whole Below resource once more against the `Protected idea:` line. Ask: *having done all of this, does the pupil come away carrying that idea?* A resource can be accessible, well pitched and pleasant to work through while the thing the lesson was about has quietly gone: a balanced-diet sheet where every item names foods and nothing weighs one group against another, a circuits sheet that has become labelling. Ask it of the last item too, which is where a selected Tier 2 climb either arrives at a class-sized case or does not. If the protected idea is not there at the end, the resource is wrong however accessible it reads.
 
 ### Read it as the real world
 
@@ -340,7 +354,7 @@ List from the class lesson: every named character with numbers, every vocabulary
 - Does every Greater Depth item retain the class objective and year-group content?
 - Does every harder practice case remain reachable through the class-taught method?
 - Where Below uses class visual or vocabulary language, is that connection genuinely useful and accessible?
-- Does the Below resource still carry the protected idea, and does its last item reach a class-sized case of it?
+- Does the Below resource still carry the protected idea, and where a climb was selected, does its last item reach a class-sized case of it?
 - Are any character names, units, source claims or contexts contradicted between the class lesson and the adaptation?
 - Do all required visuals have an approved helper or photo route?
 - Do the answers and acceptance conditions match the generated prompts?
@@ -403,14 +417,14 @@ Reason: [why this is the correct resource decision]
 [For Tier 2 only:]
 Resource decision: Generate separate Below adaptation
 Reason: [why the selected related objective requires its own adaptation]
-Climb: [where the sheet starts, and the class-sized case of the protected idea it ends on]
+Climb: [where the sheet starts, and the class-sized case of the protected idea it ends on; or `Not selected` with the reason and what this resource does support]
 
 [For Tier 3 only:]
 Resource decision: Generate separate Below adaptation
 Reason: [why this prerequisite-focused Below resource is required]
 Prerequisite focus: [the honest prerequisite]
 Why Tier 2 does not fit: [why the protected idea does not survive being met at a smaller scale]
-Reaches towards: [the final item pointing at the class lesson, and the prerequisite it is shown beside]
+Reaches towards: [the final item pointing at the class lesson, and the prerequisite it is shown beside; or `Not selected` with how this prerequisite connects to what the class did]
 
 [For a generated Tier 1, Tier 2 or Tier 3 adaptation:]
 

@@ -13,6 +13,7 @@ prose.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -428,6 +429,34 @@ class TestRunReport(RunReportCase):
         )
         result = self.validate(self.write_report())
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_retired_picture_needs_current_review_no_live_use_and_history_report(self):
+        design = self.write_json(self.working / "lesson-design.json", {"photoRefs": [], "representation": "native diagram"})
+        photos = self.write_json(self.working / "photo-requirements.json", {
+            "photos": [{"id": "photo-001", "filename": "generated/parachutes.jpg"}],
+        })
+        post = {
+            "result": "OK", "reviewResult": "APPROVED",
+            "currentInputs": {key: {"sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+                              for key, path in (("lessonDesign", design), ("photoRequirements", photos))},
+        }
+        self.write_json(self.working / "design-review-postflight.json", post)
+        report = self.write_report(overrides={"picture": "- generated/parachutes.jpg: retired after approved native replacement; failed attempts preserved."})
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        # Failure history remains owed even though it no longer blocks completion.
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("generated/parachutes.jpg", result.stdout)
+        report = self.write_report(overrides={"picture": "- generated/parachutes.jpg: retired after reviewed native replacement."})
+        self.write_json(self.working / "lesson.json", {"slides": [{"image": "generated/parachutes.jpg"}]})
+        self.assertEqual(self.validate(report).returncode, 1)
+        self.write_json(self.working / "lesson.json", {"slides": [{"type": "native-diagram"}]})
+        self.write_json(design, {"photoRefs": ["photo-001"]})
+        self.assertEqual(self.validate(report).returncode, 1)
+        post["currentInputs"]["lessonDesign"]["sha256"] = hashlib.sha256(design.read_bytes()).hexdigest()
+        self.write_json(self.working / "design-review-postflight.json", post)
+        self.assertEqual(self.validate(report).returncode, 1)
 
     def test_legacy_helper_receipt_is_not_a_report_dependency(self):
         self.write_json(

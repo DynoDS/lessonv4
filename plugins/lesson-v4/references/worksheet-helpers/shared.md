@@ -193,6 +193,22 @@ looking at unnumbered dots cannot tell which one row 3 of the list is asking
 about. The drawing already renumbers its dots into reading order, so the list
 runs 1, 2, 3 down the page.
 
+**Say what every callout is for.** `given: false` is a blank line the child
+writes on; `given: true` prints the word beside the object. Both are real
+designs, a diagram can mix them, and the sheet is refused
+(`LABEL_INTENT_UNSTATED`) if any callout leaves it unsaid, because a callout
+with no `given` draws blank and there is no way to tell a designer who chose
+that from one who never thought about it.
+
+The case that costs a lesson is a printed word doing a job the task depends on.
+A Below sheet showed a lunch and asked which body job each food does; the plan
+named `bread roll` and `egg` as reading support, the specification listed both
+words with no `given`, and the sheet printed two blank leader lines over a
+photograph. The support the child needed to start arrived as an extra question,
+and every check passed. So before you write a label-diagram, read what the
+lesson design or the adaptation asked this picture to GIVE the child, and print
+those words. Ask for a word only when naming it is the work.
+
 **This is not a compromise.** Numbering the parts and answering in a list is how
 most published science sheets do this, and it is the form to reach for the moment
 a sheet carries more than two photographs. Three separate photographs is the

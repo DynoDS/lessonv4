@@ -270,7 +270,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 self.assertIn("ends here", text)
 
         phase3 = self.slice_text("phase3")
-        self.assertIn("Nothing waits on a sibling", phase3)
+        self.assertIn("Nothing waits on an unrelated sibling", phase3)
         self.assertIn(
             "Only the deterministic\nfinalisation waits for every branch",
             phase3,

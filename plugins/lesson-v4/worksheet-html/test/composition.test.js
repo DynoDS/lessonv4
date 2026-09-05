@@ -195,3 +195,50 @@ test("a single-sheet worksheet has no set to disagree with itself", () => {
 
   assert.deepStrictEqual(advisories.filter((a) => /orientation/.test(a)), []);
 });
+
+// ─── a mixed-orientation pack has to explain itself ──────────────────────
+//
+// A mixed set can be the right answer: a seven-row place-value chart beside a
+// speech scene genuinely needs the landscape page. What is not acceptable is
+// the teacher meeting the split at the photocopier with nothing saying why. The
+// advisory used to fire either way, which meant the run that HAD explained it
+// got the same sentence as the run that had not, and a focused repair reshaped
+// a Below sheet from portrait to landscape to buy four pixels and left `notes`
+// null with nobody told.
+
+const mixed = () => ({
+  sheets: {
+    below: { orientation: "landscape", layout: "full", zones: { a: { stack: [] } } },
+    expected: { orientation: "portrait", layout: "full", zones: { a: { stack: [] } } },
+  },
+});
+
+test("a mixed-orientation pack with no note is reported", () => {
+  const advisories = compositionAdvisories(mixed());
+  assert.ok(
+    advisories.some((a) => a.includes("do not share an orientation")),
+    `an unexplained mixed set was not reported: ${JSON.stringify(advisories)}`
+  );
+});
+
+test("a mixed-orientation pack that says why in notes is left alone", () => {
+  const spec = mixed();
+  spec.notes = [
+    "Sheet A (Below) prints landscape because its seven-row chart and its speech scene each need about 90mm of width.",
+  ];
+  const advisories = compositionAdvisories(spec);
+  assert.ok(
+    !advisories.some((a) => a.includes("do not share an orientation")),
+    `a designer who already explained the split was told again: ${JSON.stringify(advisories)}`
+  );
+});
+
+test("a note about something else does not count as the explanation", () => {
+  const spec = mixed();
+  spec.notes = ["Question 2 answers into the chart, not on the line after the equals sign."];
+  const advisories = compositionAdvisories(spec);
+  assert.ok(
+    advisories.some((a) => a.includes("do not share an orientation")),
+    "any note at all was treated as the explanation"
+  );
+});

@@ -157,14 +157,23 @@ class TheRuleReachesEveryAgentThatCouldBreakItTests(unittest.TestCase):
             text,
         )
 
-    def test_the_designer_flags_a_strand_when_the_objective_is_broader(self) -> None:
+    def test_the_designer_serves_a_broad_objective_rather_than_flagging_it_away(self) -> None:
+        # The rule this replaces let a lesson teach one strand, keep the
+        # objective's wording and note the narrowing in the flags. Daniel's
+        # answer (5 September 2026): the objective says what children must be
+        # able to do by the end, and preserving its words while teaching a
+        # corner of it does not satisfy it.
         text = flat(LESSON_DESIGNER)
-        self.assertIn(
-            "**Where the objective is broader than the strand you teach, "
-            "name the strand in the flags.**",
-            text,
-        )
-        self.assertIn("Never edit the objective to match the lesson", text)
+        self.assertIn("Teach the objective's meaning, not only its words", text)
+        # The test is the end performance, not the coverage plan.
+        self.assertIn("what does a child who does it well now know and demonstrate", text)
+        # And it is not answered by sampling every strand.
+        self.assertIn("Breadth-by-checklist is the failure at this end", text)
+        self.assertIn("one well-chosen case can carry a whole objective", text.lower())
+        # A genuinely impossible brief is reported as a conflict, not resolved
+        # silently into a different lesson.
+        self.assertIn("Never quietly teach a different objective and report success", text)
+        self.assertIn("never edit the objective to match the lesson", text)
 
     def test_the_reviewer_can_call_it_a_defect_rather_than_polish(self) -> None:
         text = flat(DESIGN_REVIEWER)

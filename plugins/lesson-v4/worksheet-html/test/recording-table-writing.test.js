@@ -99,3 +99,50 @@ test("every row carries the writing height, so a fully worked example row cannot
   assert.strictEqual(rows.length, 3, "every body row carries a height");
   assert.strictEqual(new Set(rows).size, 1, "and they are all the same height");
 });
+
+
+// ─── every column is a response column ───────────────────────────────────
+//
+// The first column hugs its longest text because it USUALLY carries the given
+// item names. A Year 4 history table headed "Stayed the same" / "Changed" has
+// no item names: both columns are response columns doing the same job, and
+// hugging the first gave it about a third of the width the second got, with the
+// narrow one carrying the harder of the two answers. The stick-in designer left
+// that piece out of the pack rather than print it lopsided.
+
+const { tightSvg } = require("../../shared/visuals/recording-table-svg");
+
+const cellWidths = (svg) =>
+  [...svg.matchAll(/<rect x="[\d.]+" y="[\d.]+" width="([\d.]+)" height="[\d.]+" fill="#FFFFFF"/g)]
+    .map((m) => Number(m[1]));
+
+test("two response columns share the width equally", () => {
+  const { svg } = tightSvg({
+    headers: ["Stayed the same", "Changed"],
+    rows: [["", ""], ["", ""]],
+  });
+  const widths = cellWidths(svg);
+  assert.ok(widths.length >= 2, `expected cells, got ${widths.length}`);
+  assert.ok(
+    Math.abs(widths[0] - widths[1]) < 1,
+    `columns doing the same job came out ${widths[0]} and ${widths[1]}`
+  );
+});
+
+test("a first column that carries item names still hugs them", () => {
+  // The behaviour the rule was written for, which must survive: a given-name
+  // column stays narrow so the answer columns get the room.
+  const { svg } = tightSvg({
+    headers: ["Meal", "Monday", "Tuesday"],
+    rows: [["Breakfast", "", ""], ["Lunch", "", ""]],
+  });
+  const widths = cellWidths(svg);
+  assert.ok(
+    widths[0] < widths[1] * 0.6,
+    `the item-name column should stay narrow, got ${widths[0]} against ${widths[1]}`
+  );
+  assert.ok(
+    Math.abs(widths[1] - widths[2]) < 1,
+    "the two response columns should still match each other"
+  );
+});

@@ -38,6 +38,20 @@ If upstream wording, task grouping, support or visual requirements would create
 a genuinely poor or misleading pupil resource, do not knowingly ship it and do
 not rewrite it yourself. Omit the affected sheet and add:
 
+**A prompt a child cannot act on is one of these, and it is the one most often
+copied through.** It reads as settled content, it is grammatical, and it is not
+your wording to repair - so it goes upstream rather than onto the page. The test
+is `teacher-voice.md` §6, `The planning nouns stay in the plan`: could a child
+act on this line without first being told what one of its words means for them
+today? `Choose a job.` was printed on an appliances sheet and children wrote
+`Fireman`; `Write one question you would ask before making a stronger judgement.`
+was printed on a Greater Depth sheet. Both were copied faithfully, and neither
+should have been. Judge the words the child reads, not how finished they look.
+A word the lesson itself taught is not this fault: `continuity` on a sheet whose
+class was taught the word is the lesson's own language.
+
+Report it and let its owner rewrite it:
+
 `WORKSHEET_CONTENT_GAP: [Below / Expected / Greater Depth] — [exact problem and responsible content owner]`
 
 The orchestrator returns an Expected gap to the lesson designer and a Below or
@@ -272,6 +286,24 @@ exactly what that zone will hold, so it is usually a `stack` of several
 helpers, and a two-column sheet's array has two entries. Three entries asks
 for a three-zone shape: split one zone's stack into separate entries and you
 have asked for a different page from the one you meant.
+
+**A prompt that names a POSITION is yours to correct, and only yours.** You
+choose the shape, so you are the only one who knows where anything landed. A
+Year 4 sheet asked children to "look at 92 + 10 in the chart above" while the
+shape it needed put that chart to the LEFT of the question, and the run
+delivered the sheet with a note asking the teacher to say a word to the class.
+A child reading "above" looks above and finds the top of the page.
+
+So when the layout you chose contradicts a positional reference, take the
+position out and name the thing instead: `in the chart`, `in Jay's record`,
+`in the picture`. That is not rewriting the question and it is not the
+content-gap route - the thinking, the numbers and the answer are untouched, and
+upstream could not have got it right because upstream does not know the shape.
+Prefer wording with no position in it from the start, for the same reason: a
+sheet that has to be reshaped later then needs no second look.
+
+If the reference cannot be repaired by naming the thing - the wording leans on
+the position itself - that IS a content gap, and it goes back to its owner.
 
 **Content stays in the order you hand it over. The library moves instead.**
 Zones fill in reading order, first entry into the first zone, and that is
@@ -674,9 +706,23 @@ Render the upstream pedagogical decision faithfully.
    is three invitations to answer the same question, and a child who picks the
    wrong one gets marked as though they chose badly. An empty part-whole bubble
    IS the answer space. A calculation ending in `=` IS the answer space.
-   The `questions` helper is for a prompt that remains on one line beside its
-   short blank. If the prompt wraps, use `written-answers`; a short dotted stub
-   floating beside the last line no longer reads as the place to answer.
+   The `questions` helper is for a prompt that stays on one line beside a
+   SHORT answer: a number, a word, a tick. What decides it is how much the
+   CHILD writes, not how long the prompt is. `It helps the body...` is four
+   words and asks for a clause, and it printed as a three-centimetre dotted
+   tail with the rest of the page blank underneath - the shortest prompt on
+   the sheet took the smallest answer space on it, and the child with most to
+   say had least room to say it. When the answer is a phrase, a clause or a
+   sentence, use `written-answers` with the `sentences` it needs, even where
+   the prompt is one short line. Use it too when the prompt itself wraps: a
+   short dotted stub floating beside the last line no longer reads as the
+   place to answer.
+
+   `check-worksheet.js` prints a `[room]` report and this is where it shows
+   up: a stack that "needs 144mm and was given 180mm" is usually a bare
+   question list holding height it cannot use. It runs while the spec is still
+   yours to change, so read it before you finish rather than leaving the same
+   lines to the build.
 
    A sentence stem with blanks IS the answer space too: the child writes the
    missing words into the gaps, so it takes no writing lines beneath it. A line
@@ -717,7 +763,9 @@ Render the upstream pedagogical decision faithfully.
    then `1,167 + 10` reaches a class-sized case by rising through it, and any
    other order is a page of unrelated calculations. Its final item, and a Tier 3
    sheet's `Reaches towards:` item, are the point of the sheet rather than its
-   tail: keep them last, and never trim them to fit.
+   tail: keep them last, and never trim them to fit. A line reading `Not
+   selected` is a decision already made upstream, not a gap for you to fill:
+   do not invent a class-sized question to finish the sheet with.
 
 9. **When no helper renders what a question requires, preserve the settled
    teaching requirement.** Use this ladder:

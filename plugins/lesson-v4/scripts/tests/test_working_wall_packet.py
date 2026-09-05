@@ -408,6 +408,28 @@ def run_check(working_dir: Path, wall: dict, lesson: dict | None = None):
     return subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
 
 
+def test_exact_teaching_lookup_table_needs_no_unrelated_picture(tmp_path: Path) -> None:
+    publish(tmp_path, "food.jpg")
+    table = {"type": "table", "headers": ["Group", "Nutrients"],
+             "rows": [["Dairy", "Protein and calcium"], ["Starchy foods", "Carbohydrate"]]}
+    card = {"type": "referenceTable", "columns": table["headers"], "rows": table["rows"]}
+    lesson = {"slides": [{"body": {"type": "sc-panel", "content": table}}]}
+    result = run_check(tmp_path, wall_with([card]), lesson)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_table_exception_does_not_admit_changed_or_invented_rows(tmp_path: Path) -> None:
+    publish(tmp_path, "food.jpg")
+    table = {"type": "table", "headers": ["Group", "Nutrients"],
+             "rows": [["Dairy", "Protein and calcium"]]}
+    card = {"type": "referenceTable", "columns": table["headers"],
+            "rows": [["Dairy", "Calcium only"]]}
+    lesson = {"slides": [{"body": table}]}
+    result = run_check(tmp_path, wall_with([card]), lesson)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "carry no picture" in result.stdout
+
+
 def test_a_wall_of_words_is_refused_while_the_lesson_holds_a_picture(tmp_path: Path) -> None:
     """A Year 4 maths lesson published three photographs of place-value
     counters, and the wall came out as one card of five steps and an equation:

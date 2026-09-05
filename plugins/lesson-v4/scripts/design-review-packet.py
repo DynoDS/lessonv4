@@ -308,6 +308,27 @@ def validator_command(
     plugin_root: Path,
     working_dir: Path,
 ) -> list[str]:
+    # An owner may replace an exhausted picture with a native representation.
+    # Its frozen Phase 2 requirement remains provenance, not a fake live use.
+    # Keep the strict initial namespace until a verified freeze establishes
+    # that this is a later review; all live references still validate below.
+    receipt_path = working_dir / "phase2-initial-photo-requirements.receipt.json"
+    namespace_args = ["--initial-photo-namespace"]
+    if receipt_path.exists():
+        try:
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            snapshot = Path(receipt["snapshotPath"])
+            if (
+                receipt.get("schemaVersion") != 1
+                or Path(receipt["canonicalPath"]).resolve()
+                != (working_dir / "photo-requirements.json").resolve()
+                or not snapshot.is_file()
+                or sha256_file(snapshot) != receipt["sha256"]
+            ):
+                raise ValueError("freeze receipt does not match its snapshot")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise PacketError(f"Invalid Phase 2 photo freeze receipt: {exc}") from exc
+        namespace_args = []
     return [
         sys.executable,
         str(
@@ -317,7 +338,7 @@ def validator_command(
                 / "validate-lesson-design.py"
             ).resolve()
         ),
-        "--initial-photo-namespace",
+        *namespace_args,
         str((working_dir / "lesson-design.json").resolve()),
         str((working_dir / "photo-requirements.json").resolve()),
     ]
@@ -712,18 +733,65 @@ def class_view_worksheet(
     return out
 
 
-def vocabulary_placement_line(design: dict) -> str:
-    """Where the one vocabulary slide sits, so the reviewer can judge whether the
-    words arrive after the meaning. `vocabularyPlacement` is optional: absent or
-    null means the slide follows the starter, as every design before it did."""
-    placement = design.get("vocabularyPlacement")
-    if not isinstance(placement, dict) or not placement.get("after"):
-        return "after the starter"
-    target = placement["after"]
+def unit_label(design: dict, source_unit_id: str) -> str:
+    """The name a person would use for a unit, for a line about where something
+    sits. Falls back to the id when the anchor names nothing, so a broken
+    schedule reads as broken rather than silently as the starter."""
+    starter = design.get("starter") or {}
+    if starter.get("sourceUnitId") == source_unit_id:
+        return starter.get("label") or "the starter"
     for unit in design.get("teachingSequence") or []:
-        if unit.get("sourceUnitId") == target:
-            return f'after "{unit.get("label", target)}"'
-    return f'after "{target}"'
+        if unit.get("sourceUnitId") == source_unit_id:
+            return unit.get("label") or source_unit_id
+    return source_unit_id
+
+
+def vocabulary_schedule(design: dict) -> list[tuple[str, list[dict]]]:
+    """Every planned vocabulary introduction, in order, as (anchor, words).
+
+    One reading of the schedule, used by BOTH the placement summary and the
+    class view, because those two disagreeing is how a reviewer approved a
+    lesson it had read in an order the class never met. The class view used to
+    print every word straight after the starter whatever the design said.
+
+    `vocabularyIntroductions` is the current field. A saved design carrying
+    only `vocabularyPlacement` keeps its original meaning: all the words in one
+    group, after the named unit, or after the starter when it is null or
+    absent. A design with no vocabulary has no schedule.
+    """
+    words = {row["id"]: row for row in design.get("vocabulary") or []}
+    if not words:
+        return []
+
+    starter_id = (design.get("starter") or {}).get("sourceUnitId") or ""
+
+    introductions = design.get("vocabularyIntroductions")
+    if isinstance(introductions, list) and introductions:
+        schedule: list[tuple[str, list[dict]]] = []
+        for entry in introductions:
+            if not isinstance(entry, dict):
+                continue
+            group = [words[ref] for ref in entry.get("vocabularyRefs") or [] if ref in words]
+            if group:
+                schedule.append((entry.get("after") or starter_id, group))
+        return schedule
+
+    placement = design.get("vocabularyPlacement")
+    anchor = placement["after"] if isinstance(placement, dict) and placement.get("after") else starter_id
+    return [(anchor, list(words.values()))]
+
+
+def vocabulary_placement_line(design: dict) -> str:
+    """Where each group of words is introduced, so the reviewer can judge
+    whether every word arrives after the meaning and before its use."""
+    schedule = vocabulary_schedule(design)
+    if not schedule:
+        return "no key vocabulary"
+    parts = []
+    for anchor, group in schedule:
+        terms = ", ".join(row["term"] for row in group)
+        parts.append(f'{terms} after "{unit_label(design, anchor)}"')
+    return "; ".join(parts)
 
 
 def build_class_view(design: dict) -> tuple[list[str], int]:
@@ -735,21 +803,35 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
     sticky = {row["id"]: row["text"] for row in design.get("stickyKnowledge") or []}
     blocks: list[tuple[str, list[str]]] = []
 
+    # Words grouped by the unit they follow, so each group can be dropped into
+    # the reading at the point the class actually meets it. A group whose
+    # anchor names no unit in this lesson would otherwise vanish from the
+    # reading entirely, so anything unplaced trails the last unit and is
+    # visible.
+    scheduled: dict[str, list[list[str]]] = {}
+    for anchor, group in vocabulary_schedule(design):
+        scheduled.setdefault(anchor, []).append(
+            [f"{row['term']}: {row['definition']}" for row in group]
+        )
+
+    def vocabulary_after(source_unit_id: str) -> None:
+        for group in scheduled.pop(source_unit_id, []):
+            blocks.append(("Vocabulary", group))
+
     starter = design.get("starter")
     if starter:
         blocks.append(
             (starter["label"], class_view_unit(starter, criteria=criteria, sticky=sticky))
         )
-
-    vocabulary = [
-        f"{row['term']}: {row['definition']}"
-        for row in design.get("vocabulary") or []
-    ]
-    if vocabulary:
-        blocks.append(("Vocabulary", vocabulary))
+        vocabulary_after(starter.get("sourceUnitId") or "")
 
     for unit in design.get("teachingSequence") or []:
         blocks.append((unit["label"], class_view_unit(unit, criteria=criteria, sticky=sticky)))
+        vocabulary_after(unit.get("sourceUnitId") or "")
+
+    for groups in scheduled.values():
+        for group in groups:
+            blocks.append(("Vocabulary (unplaced)", group))
 
     ending = design.get("ending") or {}
     beat = ending.get("beat")
@@ -890,7 +972,7 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
     lines.extend(
         [
             f"- Sticking point: {lesson['stickingPoint']}",
-            f"- Vocabulary slide: {vocabulary_placement_line(design)}",
+            f"- Vocabulary introduced: {vocabulary_placement_line(design)}",
             "",
         ]
     )

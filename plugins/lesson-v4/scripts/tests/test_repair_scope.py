@@ -197,3 +197,55 @@ class EveryRepairerRunsItTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EveryEngineIsActuallyReadTests(RepairScopeCase):
+    """The check guards four artefacts and used to read only one of them.
+
+    It counted objects by a ``type`` field on the stated grounds that ``type``
+    is what every engine uses. It is not: a worksheet names its content with
+    ``helper`` and a stick-in piece with ``visual``. So on those two the check
+    counted nothing, found nothing missing, and printed OK - including for a
+    worksheet with two of its three sheets deleted. Every focused worksheet
+    repair in the 5 September pass returned that marker, and it meant nothing.
+    """
+
+    def test_a_worksheet_losing_two_of_three_sheets_is_caught(self):
+        before = {
+            "sheets": {
+                "below": {"zones": [{"stack": [{"helper": "written-answers"}]}]},
+                "expected": {"zones": [{"stack": [{"helper": "speech-scene"}]}]},
+                "greaterDepth": {"zones": [{"stack": [{"helper": "chip-bank"}]}]},
+            }
+        }
+        after = {"sheets": {"below": before["sheets"]["below"]}}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("REPAIR_SCOPE_FAILED", result.stdout)
+        self.assertIn("helper:speech-scene", result.stdout)
+
+    def test_a_stick_in_losing_a_piece_is_caught(self):
+        before = {"items": [{"visual": "source-copy"}, {"visual": "geoboard-row"}]}
+        after = {"items": [{"visual": "source-copy"}]}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("visual:geoboard-row", result.stdout)
+
+    def test_an_unchanged_specification_of_each_kind_still_passes(self):
+        for spec in (
+            {"sheets": {"a": {"zones": [{"stack": [{"helper": "questions"}]}]}}},
+            {"items": [{"visual": "venn"}]},
+            {"slides": [{"template": "body-full", "body": {"type": "text"}}]},
+        ):
+            result = self.run_check(spec, spec)
+            self.assertEqual(result.returncode, 0, result.stdout)
+            self.assertIn("REPAIR_SCOPE_OK", result.stdout)
+
+    def test_an_artefact_the_walker_cannot_read_is_a_failure_not_an_ok(self):
+        # The trap that let this sleep: nothing recognised means nothing lost.
+        # A real specification always holds content, so zero means the walker
+        # did not understand the file, and the marker must not claim otherwise.
+        unreadable = {"sheets": {"below": {"zones": [{"widget": "mystery"}]}}}
+        result = self.run_check(unreadable, unreadable)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("no content object was recognised", result.stdout)

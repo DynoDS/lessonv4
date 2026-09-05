@@ -16,8 +16,10 @@ const {
   answerKeyOf,
   checkWorksheet,
   resolveAutoLayouts,
+  sheetsOf,
   WorksheetError,
 } = require("../src/worksheet");
+const { tightnessOf, describeTightness } = require("../src/tightness");
 
 function fail(signal, message) {
   console.log(`${signal}: ${message}`);
@@ -355,6 +357,22 @@ function main() {
       console.warn(`[composition] ${advisory}`);
     }
 
+    // How the height was actually spent, sheet by sheet, for the same reason
+    // the content faults above are repeated here: it was printed only by the
+    // BUILD, which runs after the designer has finished. A Below sheet ended
+    // "It helps the body..." with a three-centimetre dotted stub and 36mm of
+    // empty paper under it; the build said so in exactly these words, and by
+    // then nobody was left to move the room to the child (5 September 2026).
+    // Advisory, never an exit code, because whether a blank is waste or the
+    // design is a judgement about a printed page and this report cannot tell
+    // those apart - which is why it has to reach the person who can.
+    for (const sheet of sheetsOf(worksheet)) {
+      const description = describeTightness(tightnessOf(sheet.spec));
+      if (!description.trim()) continue;
+      console.warn(`[room] ${sheet.label}`);
+      for (const line of description.split("\n")) console.warn(`[room]   ${line}`);
+    }
+
     answerKeyOf(worksheet);
     const refused = checkWorksheet(worksheet);
     if (refused.length) {
@@ -375,6 +393,7 @@ function main() {
           ...sheet.unprinted,
           ...sheet.emptySets,
           ...sheet.pupilWording,
+          ...sheet.labelIntent,
         ]) {
           const named = /^([A-Z_]+):\s*([\s\S]*)$/.exec(problem);
           fail(

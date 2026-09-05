@@ -1174,6 +1174,73 @@ function pupilWordingProblems(sheet) {
   return problems;
 }
 
+// A `label-diagram` callout that does not say whether its word is PRINTED for
+// the child or LEFT BLANK for the child to write.
+//
+// The helper's default is blank, and that default is right: on a worksheet,
+// labelling is usually the child's job. What it cannot do is tell the
+// difference between a designer who chose blank and a designer who never
+// thought about it, and the two produce opposite pages from identical JSON.
+//
+// A Below sheet on balanced diets is the case. The adaptation asked for the
+// words `bread roll` and `egg` printed beside the photograph, because the
+// task underneath was to tick which body job each food does and a child who
+// cannot name the food cannot start. The specification put both words in
+// `labels` with no `given`, so the sheet printed two blank leader lines
+// pointing at a lunch, the reading support the plan required arrived as an
+// unasked question, and the build reported a clean fit (5 September 2026).
+//
+// So the intent is required here rather than defaulted here. Flipping the
+// shared renderer's default instead would print the answers on every genuine
+// labelling task in the plugin, on the board as well as on paper, which is the
+// same fault pointing the other way. Requiring the author to state it costs one
+// field and makes the two cases distinguishable at the point where the decision
+// is actually made.
+//
+// This asks the author to DECIDE, not to decide a particular way: `given: true`
+// and `given: false` are both correct answers, and a diagram can carry some of
+// each. What it cannot be is unstated.
+function labelIntentProblems(sheet) {
+  const problems = [];
+
+  const walk = (node, zoneId) => {
+    if (Array.isArray(node)) {
+      node.forEach((n) => walk(n, zoneId));
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+
+    if (node.helper === "label-diagram" && Array.isArray(node.labels)) {
+      const unstated = node.labels
+        .filter((l) => l && typeof l === "object" && typeof l.given !== "boolean")
+        .map((l) => l.label)
+        .filter((word) => typeof word === "string" && word.length);
+      if (unstated.length) {
+        const words = unstated.map((w) => JSON.stringify(w)).join(", ");
+        problems.push(
+          `LABEL_INTENT_UNSTATED: zone "${zoneId}" has a label-diagram whose ` +
+            `callout${unstated.length > 1 ? "s" : ""} for ${words} ` +
+            `do${unstated.length > 1 ? "" : "es"} not say whether the word is ` +
+            `printed on the sheet or left blank for the child. A callout with no ` +
+            `"given" prints as a blank line, so a word the lesson meant as reading ` +
+            `support becomes an unanswered question and the page still fits. ` +
+            `Set "given": true on a word the sheet hands the child, "given": false ` +
+            `on a part the child names. Read the lesson design or adaptation for ` +
+            `which this one is; if it asked for the word to be printed, it is true.`
+        );
+      }
+    }
+
+    for (const value of Object.values(node)) walk(value, zoneId);
+  };
+
+  for (const id of Object.keys(sheet.spec.zones || {}).sort()) {
+    walk(sheet.spec.zones[id], id);
+  }
+
+  return problems;
+}
+
 function checkWorksheet(worksheet) {
   return sheetsOf(worksheet)
     .map((sheet) => ({ ...sheet, ...problemsWith(sheet) }))
@@ -1184,7 +1251,8 @@ function checkWorksheet(worksheet) {
         sheet.wordBanks.length ||
         sheet.unprinted.length ||
         sheet.emptySets.length ||
-        sheet.pupilWording.length
+        sheet.pupilWording.length ||
+        sheet.labelIntent.length
     );
 }
 
@@ -1215,6 +1283,7 @@ function problemsWith(sheet) {
     unprinted: badZones.length ? [] : unprintedTextProblems(sheet),
     emptySets: badZones.length ? [] : emptySetProblems(sheet),
     pupilWording: badZones.length ? [] : pupilWordingProblems(sheet),
+    labelIntent: badZones.length ? [] : labelIntentProblems(sheet),
   };
 }
 

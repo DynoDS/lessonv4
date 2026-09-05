@@ -72,7 +72,12 @@ class MathsHelperGapHasAnExitTests(unittest.TestCase):
         playbook = flat(PLAYBOOK)
         route = playbook[playbook.index("### The picture route"):]
         route = route[: route.index("Record the decision as `gap`")]
-        self.assertIn("add the visual as a `controlled-ai` picture", route)
+        self.assertIn("add the visual as a picture", route)
+        # Which picture route it takes is the ordinary acquisition decision,
+        # not a fixed answer: an object ordinary photography covers tries the
+        # real route first, so a host with no image generation still gets a
+        # picture instead of losing the visual.
+        self.assertIn("its acquisition mode the designer's own rule", route)
         self.assertNotIn("Maths", route)
 
     def test_the_real_rule_survives_as_a_judgement_where_it_can_be_seen(self) -> None:

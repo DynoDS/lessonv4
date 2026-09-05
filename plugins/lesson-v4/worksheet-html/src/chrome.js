@@ -152,29 +152,101 @@ const RENDERED_FIT_PROBE = `(() => {
       }
     }
 
-    // Content that reaches outside the zone altogether. The zone's scroll size
-    // does not see content above or left of its own origin, so this is the only
-    // thing that catches a block drawn off the top of its zone.
+    // The other half of that fault, and the one nothing caught. A box whose
+    // content is taller than the box and which does NOT clip does not lose the
+    // content: it draws it straight over whatever comes next. Both blocks are
+    // inside the zone and the zone does not scroll, so the zone-overflow check
+    // says nothing; nothing clips, so the child-clipped check says nothing;
+    // neither block leaves the zone, so the child-outside-zone check says
+    // nothing. A balanced-diet Greater Depth sheet printed question (1)
+    // straight through a table's bottom rule while the build reported one clean
+    // page, and a person looking at the render is what found it.
     //
-    // Drawings are judged by their own outer element and never by the shapes
-    // inside them. An SVG's contents live in its viewBox and are clipped by the
-    // SVG, not by the zone, and an SVG text node's box routinely reaches two or
-    // three pixels above its own visible ink - so comparing those inner nodes
-    // against the zone reports a clip where nothing whatever is cut. It did:
-    // three sound worksheets were refused over a bar chart title overshooting
-    // by 2px, and the real fault on those sheets went unmentioned underneath it.
+    // Only a box that CONSTRAINS its height can do this - a fixed height, a
+    // max-height, a flex slot it cannot grow past - so an ordinary auto-height
+    // block reports its content exactly and never appears here.
+    //
+    // What is measured is IN-FLOW content, not scrollHeight, and the difference
+    // is what makes the check usable. scrollHeight counts absolutely positioned
+    // descendants too, and the engine draws decorations that way on purpose: a
+    // speech bubble hangs its tail below itself with a margin reserved for it,
+    // so it overflows its own padding box by design and nothing is drawn over.
+    // Measuring scrollHeight refused the corrected Greater Depth sheet - the
+    // one that had already been repaired and inspected - over that tail. Only
+    // content that is laid out IN the box can push the next block, so only
+    // in-flow children are counted, and a decoration placed in space already
+    // reserved for it is left alone.
+    //
+    // The tolerance is about a millimetre. Under that is sub-pixel rounding and
+    // the odd descender; over it is ink landing on another block.
+    const SPILL_TOLERANCE_PX = 4;
     for (const child of zone.querySelectorAll("*")) {
       if (child.closest("svg")) continue;
       const style = getComputedStyle(child);
-      if (style.display === "none" || style.visibility === "hidden") continue;
-      const childRect = child.getBoundingClientRect();
       if (
-        childRect.right > rect.right + OUTSIDE_TOLERANCE_PX ||
-        childRect.bottom > rect.bottom + OUTSIDE_TOLERANCE_PX ||
-        childRect.left < rect.left - OUTSIDE_TOLERANCE_PX ||
-        childRect.top < rect.top - OUTSIDE_TOLERANCE_PX
+        style.display === "none" ||
+        style.display === "contents" ||
+        style.visibility === "hidden"
       ) {
-        problems.push({ zone: id, kind: "child-outside-zone" });
+        continue;
+      }
+      if (CLIPS.has(style.overflowX) || CLIPS.has(style.overflowY)) continue;
+
+      const box = child.getBoundingClientRect();
+      const borderBottom = parseFloat(style.borderBottomWidth) || 0;
+      const borderRight = parseFloat(style.borderRightWidth) || 0;
+      const limitBottom = box.bottom - borderBottom;
+      const limitRight = box.right - borderRight;
+
+      // Direct element children only. A descendant deeper down that overflows
+      // ITS parent is the same fault one level lower, and the loop reaches that
+      // level on its own turn, so walking the whole subtree here would report
+      // one overlap several times over.
+      let contentBottom = -Infinity;
+      let contentRight = -Infinity;
+      let inFlowChildren = 0;
+      for (const inner of child.children) {
+        const innerStyle = getComputedStyle(inner);
+        if (
+          innerStyle.position === "absolute" ||
+          innerStyle.position === "fixed" ||
+          innerStyle.display === "none" ||
+          innerStyle.visibility === "hidden" ||
+          innerStyle.float !== "none"
+        ) {
+          continue;
+        }
+        const innerBox = inner.getBoundingClientRect();
+        if (innerBox.width === 0 && innerBox.height === 0) continue;
+        inFlowChildren += 1;
+        contentBottom = Math.max(contentBottom, innerBox.bottom);
+        contentRight = Math.max(contentRight, innerBox.right);
+      }
+
+      // A box holding only text has no child rectangle to measure, so its own
+      // scrolling area is the only account of what it holds. Nothing can be
+      // absolutely positioned inside it either, which is what made that figure
+      // untrustworthy above.
+      const overflows = inFlowChildren === 0
+        ? (child.scrollHeight > child.clientHeight + SPILL_TOLERANCE_PX ||
+           child.scrollWidth > child.clientWidth + SPILL_TOLERANCE_PX)
+        : (contentBottom > limitBottom + SPILL_TOLERANCE_PX ||
+           contentRight > limitRight + SPILL_TOLERANCE_PX);
+
+      if (overflows) {
+        problems.push({
+          zone: id,
+          kind: "child-spills-over-neighbour",
+          scrollHeight: child.scrollHeight,
+          clientHeight: child.clientHeight,
+          scrollWidth: child.scrollWidth,
+          clientWidth: child.clientWidth,
+          // Which box. A zone holds a dozen nested elements and "something in
+          // zone a overlaps" sends the reader back to the render to find out
+          // what; the class name is what the engine calls the helper that drew
+          // it, so the finding names its own repair site.
+          box: (child.getAttribute("class") || child.tagName.toLowerCase()).slice(0, 60),
+        });
         break;
       }
     }

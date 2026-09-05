@@ -379,3 +379,49 @@ class LadderSchedule(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ControlledAiIsEarnedByStagingTests(unittest.TestCase):
+    """A route with no real rung behind it must be earned, not reached for.
+
+    `controlled-ai` has `source_profile: none` and cannot take an AI fallback,
+    because AI is already primary - so on a host with no generation route it
+    ends with no picture and nothing left to try. A Year 4 circuits lesson
+    declared all six of its pictures that way, including a cell in a battery
+    holder and a lamp in a lamp holder, and arrived with none. Ordinary
+    photography holds both of those; only its two staged fault circuits had
+    earned the mode.
+    """
+
+    def test_the_designer_is_told_a_named_object_is_not_staging(self) -> None:
+        text = (ROOT.parent / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+        self.assertIn("A single named object is not staging", text)
+        self.assertIn("earned by the STAGING", text)
+        self.assertIn("`ordinary-real` with `fallback_action: ai`", text)
+
+    def test_the_template_keeps_the_picture_and_the_route_apart(self) -> None:
+        # Deciding a visual is a picture rather than an engine helper is one
+        # decision; where the picture comes from is another. Collapsing them
+        # sent every named apparatus straight to generation.
+        text = (ROOT.parent / "references" / "output-template.md").read_text(encoding="utf-8")
+        self.assertIn("does not settle where the picture comes from", text)
+        self.assertIn("two decisions, not one", text)
+
+    def test_controlled_ai_still_has_no_real_rung_to_fall_back_on(self) -> None:
+        # The reason the rule above matters. If this ever changes, the rule can
+        # be relaxed; while it holds, the mode is a one-way door.
+        photo = {
+            "id": "photo-001", "subject": "a staged combination",
+            "pedagogical_constraint": "", "teaching_requirement": "identify it",
+            "load_bearing_evidence": ["the thing"], "use": "slide", "essential": True,
+            "filename": "ai/x.jpg", "acquisition_mode": "controlled-ai",
+            "source_profile": "none", "fallback_action": "omit", "fallback_note": None,
+            "generation_prompt": {
+                "physical_state": "one intact object on a plain surface",
+                "must_avoid": ["logos"], "text_rule": "no generated text",
+                "composition": "single clear subject",
+            },
+            "coherent_group": None, "coherent_mode": "none",
+            "coherent_visual_invariants": [],
+        }
+        self.assertEqual(compiler.source_schedule(photo), [])

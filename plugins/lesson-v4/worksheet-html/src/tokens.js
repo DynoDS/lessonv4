@@ -103,6 +103,14 @@ const WRITING_LINE_MM = {
   upper: 6, // Years 4 to 6
 };
 
+// The tallest a ruled line may grow to when a block is handed spare height.
+// A line exists to be written on, and past about half as much again the gap
+// between rules stops reading as generous and starts reading as a fault - so
+// room beyond this is left as paper rather than pushed into the rules. A sheet
+// that keeps hitting the cap is telling the designer its questions want more
+// lines, which is `sentences`, not a rendering decision.
+const WRITING_LINE_GROWN_RATIO = 1.5;
+
 function cssVariables() {
   const lines = [":root {"];
   lines.push(`  --font: "${FONT}", cursive;`);
@@ -130,4 +138,4 @@ function cssVariables() {
   return lines.join("\n");
 }
 
-module.exports = { FONT, COLOUR, TYPE, SPACE, RULE, INSET, WRITING_LINE_MM, cssVariables };
+module.exports = { FONT, COLOUR, TYPE, SPACE, RULE, INSET, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, cssVariables };

@@ -933,6 +933,20 @@ def check(args) -> int:
         lesson_path = Path(args.lesson).resolve()
         if lesson_path.is_file():
             lesson = read_json(lesson_path, "lesson.json")
+    # An exact teaching lookup table is itself the visual reference: forcing
+    # a photograph onto it consumes space without explaining its relationships.
+    # Do not exempt arbitrary words placed in a table, or altered source rows.
+    source_tables = [item for _, _, item in rendered_objects(lesson)
+                     if item.get("type") == "table" and item.get("headers") and item.get("rows")]
+    wordless = [card for card in wordless if not (
+        card.get("type") == "referenceTable" and any(
+            card.get("columns") == table["headers"] and card.get("rows") == table["rows"]
+            for table in source_tables
+        )
+    )]
+    if not wordless:
+        print("WORKING_WALL_DESIGN_OK")
+        return 0
     primitives = visual_primitives(plugin_root)
     rendered_types = {item.get("type") for _, _, item in rendered_objects(lesson)}
     drawable = sorted(key for key in primitives if key in rendered_types)

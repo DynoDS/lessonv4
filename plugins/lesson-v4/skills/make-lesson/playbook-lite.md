@@ -275,9 +275,16 @@ canonical design files, require `APPROVED` or `REDESIGN REQUIRED` in
 --initial-photo-namespace` afterwards.
 
 If `verify` fails after a completed review, do not discard or re-run the
-review. Re-run `validate-lesson-design.py --initial-photo-namespace` yourself:
+review. Re-run the prepared `validator.command` yourself:
 when it passes, continue on the exact `Result` in `design-review.md` and record
 the packet failure in the run report.
+
+For an owner repair after the verified Phase 2 freeze, prepare a fresh review
+packet. Its validator checks live references without the initial-only rule
+that every frozen picture must still be cited. Preserve exhausted pictures and
+their receipts as history; never add a false use or restart their call budget.
+In the direct-review fallback for this later phase, omit
+`--initial-photo-namespace` and pass that exact command to the reviewer.
 
 When it fails, the fault is in the review pass's own corrections, because the
 design validated before the reviewer opened it. Send it back to the pass that
@@ -414,7 +421,7 @@ picture added now is sourced in the same wave as the rest. It reopens exactly
 once more for a content gap a designer finds later: the content-gap picture
 wave in Phase 3. Take it with one
 focused Lesson Designer revision over the three canonical design files: add the
-visual as a `controlled-ai` picture with a complete generation prompt, drop the
+visual as a picture, its acquisition mode the designer's own rule, drop the
 representation use that has no helper, change nothing else, and stay within the
 run ceiling of 24 rather than the 16 design budget, because this picture is
 exactly the late need that ceiling exists to allow. Re-run the design
@@ -1056,7 +1063,8 @@ report. It owns only `working-wall.json`. Its deterministic check is:
 python3 "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
 ```
 
-Require exactly `WORKING_WALL_DESIGN_OK`. It refuses a wall whose cards carry
+Require exactly `WORKING_WALL_DESIGN_OK`. An exact reference table retained from
+the slides is itself a recognised visual reference. Otherwise it refuses a wall whose cards carry
 no picture while this lesson holds a published photograph or a drawn visual
 its slides used, because a card that is only words is slide content rather
 than wall furniture; a lesson with no picture at all still passes. Then
@@ -1080,7 +1088,10 @@ On `STICK_IN_LAUNCH`, launch the stick-in designer directly with approved
 `lesson-design.json`, `lesson.json` and applicable picture contract. The
 write-on test is the designer's judgement, never decided here; a lesson with
 no write-on moment gets an empty `items` list with a short rationale. It owns
-only `stick-in-sheets.json`. Require its role validator.
+only `stick-in-sheets.json`. Its check is `check-json.py` over that file:
+no stick-in-specific validator exists, and "require its role validator"
+named one that does not, so two runs improvised a check apiece. The build
+in Track F is what refuses a spec the engine cannot draw.
 
 On `STICK_IN_SKIP: [reason]`, the reviewed lesson recorded that no moment
 earns a piece and the validator found no unit contradicting it, so no worker
@@ -1118,8 +1129,16 @@ Do not poll each worker serially. Service whichever branch has landed, as Phase
 2 sets out, and release only its genuine dependants. A failed branch does not
 invalidate a clean independent branch.
 
-**A branch that has built its resource and passed that resource's check is
-finished.** Nothing waits on a sibling: Track A's build lands while the
+**A branch that has built its resource, passed its check and resolved any
+reported material content gap is finished.** Read the returned adaptation and
+resource notes as well as the terminal marker. Missing support or a wrong
+answer remains a content gap when recorded in notes; a note naming another
+owner does not resolve it. Send that bounded decision to its existing owner,
+validate and re-review the changed pedagogy, then resume only the affected
+resource. Use the picture wave below only if the repair actually needs a new
+picture. Preserve optional teacher choices and harmless observations as notes;
+an unresolved material gap remains a blocking fault in the final report.
+Nothing waits on an unrelated sibling: Track A's build lands while the
 worksheet branch is still designing, and no stage after this one compares one
 resource against another. Only the deterministic
 finalisation waits for every branch.
@@ -1312,7 +1331,11 @@ Write `[WORKING_DIR]/run-report.md` with:
   retained build warning, or a picture a designer flagged and left standing;
 - picture outcomes. A picture the contract promised and the run did not publish
   is a missing picture whether one scout failed or the stage never started, so
-  name it, and the package is then not `COMPLETE`. When the early adaptation
+  name it, and the package is then not `COMPLETE`. A picture retired by an
+  approved owner revision remains named failure history, but does not block
+  completion when the review matches the current design/contract and no owner
+  or resource still uses it. The replacement teaching must be built and checked.
+  When the early adaptation
   wave ran, carry its `PICTURE_EARLY_WAVE:` line from provenance verbatim: an
   early picture the sheet dropped is a cost, not a missing picture;
 - every helper gap: each visual answered with a substitute, and every helper

@@ -39,7 +39,7 @@ module.exports = {
   "data-table":
     "Values HANDED to the child to read from: a price list, a timetable, a set of results. Nobody writes in it.",
   "recording-table":
-    "A table the CHILD completes: any cells may be supplied and the rest stay tall and blank for writing, sized by `writing` - one size, or one per column.",
+    "A table the CHILD completes: supplied cells stay put and the rest stay tall and blank, sized by `writing` - `tick`, `number`, `word` or `sentence`, one size or one per column. Any other size is refused.",
 
   // ─── visuals ───
   "bar-chart":
@@ -80,7 +80,7 @@ module.exports = {
   "balanced-pattern-plate":
     "A neutral proportional food-group plate. The five shares are fixed; you set each group's label, its example foods, and which groups arrive blank for the child.",
   "label-diagram":
-    "A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on. The one helper built around a PHOTOGRAPH.",
+    "A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on. Every callout states which with `given`, and unstated is refused. Built around a PHOTOGRAPH.",
 
   // ─── drawn ───
   "clock-row":
