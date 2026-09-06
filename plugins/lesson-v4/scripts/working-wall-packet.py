@@ -15,7 +15,7 @@ generated files:
 - `working-wall-view.md`: every string a card could carry, byte for byte and
   with its source ID (success criteria with any flipchart flag, sticky
   knowledge, misconceptions with corrective facts, sentence stems, vocabulary
-  with its qualifying visual, the modelled units, headline facts), every
+  with its needed teaching visuals, the modelled units, headline facts), every
   figure exactly as `lesson.json` rendered it, the photograph filenames with
   their terminal state where known, and the design's recorded wall decision.
 - `working-wall-reference.md`: the wall-worthy test and the wording and visual
@@ -155,7 +155,7 @@ PREFERENCE_SECTIONS_BY_FAMILY = {
 VISUAL_SECTIONS_ALWAYS = (
     "Consistent identity, varied learning shapes",
     "The load-bearing principle: this is classroom signage, not a worksheet",
-    "Every card carries a visual: the entry ticket",
+    "Choose visuals for the card's learning",
     "The six design moves the wall is built on",
     "What this means for your decisions",
     "When to attach a `visual`",
@@ -922,58 +922,24 @@ def check(args) -> int:
     if not cards:
         raise PacketError(f"working-wall.json carries no cards: {wall_path}")
 
-    wordless = [card for card in cards if not card_carries_a_visual(card)]
-    if not wordless:
-        print("WORKING_WALL_DESIGN_OK")
-        return 0
-
-    published = published_photo_names(working_dir)
+    # Picture availability elsewhere cannot determine a card's teaching needs.
+    # Semantic completeness and visual necessity belong to the designer and
+    # rendered review. Preserve the existing exact-table hand-off invariant.
     lesson = None
     if args.lesson:
         lesson_path = Path(args.lesson).resolve()
         if lesson_path.is_file():
             lesson = read_json(lesson_path, "lesson.json")
-    # An exact teaching lookup table is itself the visual reference: forcing
-    # a photograph onto it consumes space without explaining its relationships.
-    # Do not exempt arbitrary words placed in a table, or altered source rows.
     source_tables = [item for _, _, item in rendered_objects(lesson)
                      if item.get("type") == "table" and item.get("headers") and item.get("rows")]
-    wordless = [card for card in wordless if not (
-        card.get("type") == "referenceTable" and any(
-            card.get("columns") == table["headers"] and card.get("rows") == table["rows"]
-            for table in source_tables
-        )
-    )]
-    if not wordless:
-        print("WORKING_WALL_DESIGN_OK")
-        return 0
-    primitives = visual_primitives(plugin_root)
-    rendered_types = {item.get("type") for _, _, item in rendered_objects(lesson)}
-    drawable = sorted(key for key in primitives if key in rendered_types)
-
-    if not published and not drawable:
-        # The lesson genuinely had no picture to reuse, which is the case the
-        # words-only exception exists for.
-        print("WORKING_WALL_DESIGN_OK")
-        return 0
-
-    titles = ", ".join(
-        repr(card.get("title") or card.get("type") or "untitled") for card in wordless
-    )
-    available = []
-    if published:
-        available.append("published photographs: " + ", ".join(published))
-    if drawable:
-        available.append("drawn visuals the slides used: " + ", ".join(drawable))
-    raise PacketError(
-        f"{len(wordless)} working-wall card(s) carry no picture ({titles}), "
-        "while this lesson has one to reuse - "
-        + "; ".join(available)
-        + ". A card that is only words is slide content, not wall furniture: give "
-        "each card the lesson's own photograph, its drawn visual, or a primitive "
-        "that shows the same move. The words-only success-criteria exception is "
-        "for a lesson with no picture at all, which this is not."
-    )
+    for card in cards:
+        if card.get("type") != "referenceTable":
+            continue
+        matching = [table for table in source_tables if card.get("columns") == table["headers"]]
+        if matching and not any(card.get("rows") == table["rows"] for table in matching):
+            raise PacketError("Working-wall reference table changes the source rows; preserve the teaching reference.")
+    print("WORKING_WALL_DESIGN_OK")
+    return 0
 
 
 def build_parser() -> argparse.ArgumentParser:

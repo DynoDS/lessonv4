@@ -11,27 +11,9 @@ Visual rendering (fonts, colours, panel borders) lives in `working-wall-html/sty
 
 ## The load-bearing principle: cards must teach themselves
 
-Every card has to make sense to a child who **was not in the lesson**. A working wall is not a souvenir of teaching that happened — it is a self-service reference shelf for children who need help mid-task. If a child cannot use the card without a teacher standing next to them explaining it, the card has failed.
+Every card should offer useful help without requiring the teacher to explain its layout or missing context. Imagine a child returning to the work, a less fluent reader and a child relying on visual structure: can each identify what the reference helps with and use its relevant information?
 
-Apply this test to every card before writing it:
-
-> Imagine three children glance at this card and have to act on it:
-> - one who missed the lesson entirely (the child who was off school)
-> - one who can read but not fluently (a low-attaining reader)
-> - one with SEND who relies on visual structure
->
-> Can each of them get something useful from the card alone — without the teacher, without the slide deck, without the worksheet?
-
-If the answer is no, the card needs more context, an example, a picture, or it doesn't earn a place. A card with a picture and one clear example beats a card with four crammed bullet-points every time.
-
-The picture is not optional. Because children read the wall picture-first from across the room, a visual a child recognises by sight - a diagram, a photo, or a genuine P2 context picture - is the entry ticket for every card; a card that is only words is slide content, not wall furniture. The one exception is a step-by-step success-criteria card, whose numbered method is its own support. The full rule, and what counts as a visual on a text-driven lesson, lives in `working-wall-visual-language.md` under "Every card carries a visual".
-
-Only P1 teaching visuals and genuine P2 context cues count toward this entry
-ticket. A Working Wall P2 may be either a resolved Educational SVG picture or a complete
-emoji picture; it is a card-level visual, not permission to alter protected
-lesson wording. P3 `decorations` never count. A card that is words plus P3
-remains a words-only card and must be skipped unless it is the existing
-success-criteria exception.
+Provide enough context, an example or a visual for that job. A wall reminder need not reteach an entire missed lesson. Choose pictures under `working-wall-visual-language.md` → Choose visuals for the card's learning; text-led references are valid when clear and useful. Preserve a defining diagram or source rather than replacing the learning with labels or decoration.
 
 ---
 
@@ -159,7 +141,7 @@ When the lesson uses a reference table to support children, the wall reproduces 
 
 Trust your judgement on the wall-worthy test. If a lesson's misconception is too vague, generic, or unlikely to recur, skip the card. A clean wall is better than a wall full of filler. The orchestrator's `rationaleNote` is where you explain skipping.
 
-A card with no visual a child recognises by sight is one of these skips - unless it's a step-by-step success-criteria card. Words-only content belongs on the slides, where children read it close up, not on the wall, where it can't be read from a desk (see `working-wall-visual-language.md`, "Every card carries a visual").
+Skip a card that cannot offer useful, readable support. Lack of an optional visual is not a reason to omit it; loss of a defining diagram or evidence is. Follow `working-wall-visual-language.md` → Choose visuals for the card's learning.
 
 ---
 

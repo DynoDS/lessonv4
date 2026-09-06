@@ -68,11 +68,9 @@ These are load-bearing. They come from the headteacher's brief and from what mak
 
    **Wall furniture is opt-in and counts as physical output.** Never infer a banner or section headings merely because the lesson opens a unit. Produce them only when the spawn prompt or teacher explicitly requests wall setup. Keep requested furniture separate from the lesson teaching-sheet count and report its physical page cost in `rationaleNote`; it is not a loophole around the wall-space budget.
 
-2. **Apply the wall-worthy test before earning any card.** Identify what a child can retrieve from the wall and check that its content and visuals supply that learning. Preserve the planned relationship, not only labels. If it cannot fit, use the brief-gap route. One sheet need not mean one image. Apply each card family's criteria; merely having a fact or procedure does not earn a card.
+2. **Choose visuals for each card.** Follow `working-wall-visual-language.md` → Choose visuals for the card's learning. Preserve defining diagrams and evidence. Concise text-led references are valid when useful and readable; an unrelated picture elsewhere in the lesson does not create a requirement for this card.
 
-   **Part of that test: a card earns its place only when it carries a visual a child recognises by sight** - the lesson's own drawn diagram, a photo it already fetched, or a genuine P2 context picture. The wall is read picture-first from across the room, so a card that is only words is slide content, not wall furniture, and belongs on the slides instead. The single exception is a step-by-step success-criteria card, and it is narrower than it sounds: it applies only when this run published no photograph and the slides drew no visual the wall could reuse. Where a picture exists the success-criteria card takes it like every other card, showing the counters the worked example describes or the diagram the method is carried out on. A maths wall once printed five steps and an equation while three photographs of those very counters sat published, and the wall's deterministic check now refuses that. Reuse the lesson's diagrams and required photos first. When neither fits but a relevant context cue would make the card recognisable, settle the core card first, then use a complete emoji `picture` or author and resolve an Educational SVG `picture` yourself under `[PLUGIN_ROOT]/references/context-pictures.md`. Do not alter protected lesson wording to insert the cue. The full wall-worthy decision set lives in `working-wall-visual-language.md` under "Every card carries a visual".
-
-3. **Cards must teach themselves to a child who was not in the lesson.** A working wall is a self-service reference shelf. Apply this test before writing every card: imagine three children glance at it — one who missed the lesson, one who reads but not fluently, one with SEND. Can each of them get something useful from the card alone, without the teacher? If not, the card needs more context, an example, a picture — or it doesn't earn a place. Bare label-text pairs (e.g. `when → tells you the time`) fail this test because they assume the child already knows the column header. Self-contained items (`when tells you when something happens — *when she opened the door…*`) pass it.
+3. **Cards must be usable references.** Make the learning and how to use the support clear to children with different reading needs. Add context, an example or a visual where needed; a reminder does not have to replace all the teaching for a child who missed the lesson.
 
    **When the card's words point at something inside its picture, the child has to be able to find it.** This is where a card passes the test on paper and fails it on the wall. A history card read `How to compare` with the worked example `Change: Saturday lessons; our school has none`, beside the whole Victorian timetable photograph at about a third of the sheet. Every word of that card is right, the picture is the lesson's own source, and a child standing in front of it cannot find `Saturday` in a page of small handwriting across the room. The card taught the method and withheld the evidence the method was demonstrated on.
 
@@ -140,7 +138,7 @@ That a card carries a visual is firm (rule 2); *which* visual is the judgement. 
 - The card is a worked-example or sticky-knowledge card and the diagram is the anchor children will look at while reading the steps.
 - The same drawn shape appears in My Turn / Our Turn / Your Turn slides, so children already associate it with this LO.
 
-When the lesson has no drawable diagram - a text-driven English lesson, a geography "features" lesson - the visual is a photo it already fetched or a genuine P2 card-level `picture` rather than a maths primitive (see `working-wall-visual-language.md`, "Every card carries a visual"). The card is still visual; it just carries a different kind of picture.
+When no drawn diagram serves the card, consider a relevant photograph or P2 cue. Use a text-led reference if it is clearer; the card-level learning decision governs.
 
 **A classification lesson is the clearest case of all.** When the LO is telling categories apart by how they look — types of line (parallel / perpendicular), types of angle (acute / right / obtuse), types of triangle (`triangle`) or quadrilateral — the diagram *is* the definition, and the strongest card is the Twinkl "Types of …" poster: a `referenceTable` whose rows pair the category name with its defining picture, each picture a `line-pair`, `angle`, or `triangle` diagram cell (`{ "visual": { … } }`, see the `cards[].rows` note). A child finds the category by recognising its shape, so a text-only table of such a lesson has dropped the very thing children navigate by.
 
@@ -152,11 +150,11 @@ A success criteria carrying `flipchart: true` in `lesson.json` is a direct signa
 
 On these poster tables the picture is the meaning, so let it carry the meaning: the row wants the name and the picture, plus at most a few words the picture cannot show. A column that only re-describes what the diagram already makes plain — "tick marks: all dashes different" beside a triangle whose dashes are right there, "opening: small" beside a drawn acute angle — adds reading without adding meaning, and turns a glanceable poster back into a wall of words. Keep a short "what it means" only when it tells the child something the picture doesn't; otherwise name-plus-picture is the stronger card, read faster from across the room.
 
-Skip `visual` when the lesson is text-driven (English, vocabulary, conjunctions), or when adding a *supporting* picture would crowd the panel without earning its space. Skipping the primitive is not the same as shipping a words-only card: the card still needs some qualifying visual under rule 2.
+Skip `visual` when it adds no useful information or crowds the reference. Retain any defining representation the child needs.
 
-When a primitive genuinely can't draw the lesson's anchor, weigh what the picture was doing. If it merely *supported* text that already carries the point, the card may still be wall-worthy - drop the `visual` and, once the core design is settled, consider a genuine P2 context `picture` as its visual entry ticket. If it was the *defining* picture — the shape children recognise the category by — a text-only card has lost the content, so flag it plainly in your final report (and keep the card's structure ready for it) so the missing primitive gets built rather than the gap being shipped silently.
+When a primitive cannot draw a necessary teaching anchor, use an authorised alternative or report the gap. A context picture cannot substitute for the shape or relationship children need to inspect.
 
-Either way the entry-ticket rule still binds. If no qualifying P1 or P2 visual can be produced for an ordinary card, omit the card rather than shipping it words-only; the step-by-step success-criteria card remains the only ordinary card that may stand on its words alone. Note the omission and the missing primitive in your final report so the next builder release knows what to add.
+If the card cannot carry its required learning clearly, omit it and report the gap. Lack of an optional picture alone does not disqualify useful support.
 
 ### Visual primitives
 
@@ -174,7 +172,7 @@ Read **`[WORKING_DIR]/working-wall-view.md`** straight through. It is cut from `
 
 - **Success criteria** - every `criteria.steps` array, with any `flipchart` flag. When you build a worked-example card, the steps must be copied **verbatim** from one of these - same words, same punctuation, same number of steps. If the lesson has separate "past" and "to" SCs (or any pair of variant SCs), pick the one your card teaches and copy that one in full.
 - **Worked-example content** - the question, its visual and any modelled answer from the units the design marks as modelled.
-- **Sticky knowledge**, **sentence stems** and **key vocabulary** with its qualifying visual.
+- **Sticky knowledge**, **sentence stems** and **key vocabulary** with any visual needed for its learning.
 - **Lesson structure** - read exact `lesson.structure`, whose values are `Skill-based`, `Content-based`, `Discovery`, `Dialogic` or `Task-Centred`. Use the actual lesson content plus the wall-worthy criteria to determine whether a worked-example card is possible; do not translate the JSON structure back into retired `Procedural` / `Explicit-*` labels.
 - **LO and year group** - `lesson.lo` and `lesson.yearGroup`, carried into the JSON metadata.
 - **Misconceptions** - the ones the lesson names, with corrective facts. `misconceptions: []` is a valid explicit statement that no misconception card can be sourced from the lesson design. Do not heuristically invent one.
@@ -239,13 +237,13 @@ actual drawings at roughly the size the wall will use. Use the
 publisher-returned `educationalSvgId`, `educationalSvgSlug` and `imagePath`.
 Never invent any of those values.
 
-Before searching an ordinary P2, know whether that P2 is the card's visual entry ticket or merely an enhancement. Keep that distinction in your reasoning only; do not add a `role`, `required`, `entryTicket` or similar field to `working-wall.json`.
+Before searching for P2, identify how the cue improves this card. Do not add fields such as `entryTicket` or `required` to justify a decorative choice.
 
 If the library is unavailable, the search or publication fails, or no candidate is suitable:
 
 - for an ordinary P2 `picture`, use its suitable `fallbackEmoji` when one exists by replacing the entire failed request with `{ "kind": "emoji", "value": "<fallbackEmoji>", "alt": "<alt>" }`; `<alt>` is the request's existing non-empty `alt` when present, otherwise its original `concept`;
-- when an ordinary P2 has no suitable emoji fallback, remove that `picture`; if the card still has another qualifying P1/P2 visual, keep the card, and if it is the step-by-step success-criteria exception, it may also remain;
-- when removing that ordinary P2 leaves any other ordinary card with no qualifying visual, remove the card and update `rationaleNote`;
+- when an ordinary P2 has no suitable emoji fallback, remove that `picture` and judge whether the remaining card still offers useful, accessible support;
+- remove the card and update `rationaleNote` only when it no longer carries its required learning clearly; do not remove useful text-led support merely because P2 is unavailable;
 - for semantic-vocabulary P2 (`vocabDefinition.visual` with `type: "image"` and `kind: "educational-svg"`), remove the `vocabDefinition` card;
 - for P3, remove only the failed decoration.
 
@@ -271,7 +269,7 @@ It draws the pages and reports without writing a PDF. `WORKING_WALL_LAYOUT_OK` m
 
 ## Wall-Worthy Criteria
 
-A card type only earns a place when it passes **all** its criteria — and every card, of every type, must also pass the **self-contained test** from rule 3 (a child who missed the lesson can use it) and the **visual gate** from rule 2 (it carries something a child recognises by sight: a legitimate P1 diagram, a legitimate P1 photo, or a genuine card-level P2 `picture` on a family that supports one — `stickyKnowledge`, `workedExample`, `misconception`), the one exception being a step-by-step success-criteria card.
+A card type earns its place when it meets its learning criteria and the card-level usability and visual decisions in rules 2 and 3.
 
 
 Each family's criteria sit beside its contract in the packet reference. Apply them family by family, and treat a family the packet did not offer as one whose criteria this lesson does not meet unless you can say in `rationaleNote` what evidence the packet missed.
@@ -322,12 +320,7 @@ succeeds:
 3. **Drop the card** — and only here. Note in `rationaleNote` what was lost and
    why the wording could not carry the meaning any shorter.
 
-Dropping the card's picture is *not* on this list. The visual gate (rule 2) means
-a card with no qualifying picture does not go on the wall at all, so trading the
-picture for the wider 106-character budget loses the card by a different route.
-The 106-character figure describes families that legitimately carry no picture,
-such as the step-by-step success-criteria card; it is not a budget an ordinary
-card can unlock by giving up its visual.
+Choose the supported text budget for the actual card configuration. Preserve readable learning and response examples rather than adding or removing a picture to gain a character allowance.
 
 This budget applies to body items. Titles, chips, table cells and mnemonic
 letters have their own fitting and are not measured against it.

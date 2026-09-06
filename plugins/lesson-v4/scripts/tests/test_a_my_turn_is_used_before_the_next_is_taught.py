@@ -167,23 +167,11 @@ class TheGuidanceMatchesTheCheckTests(unittest.TestCase):
         )
 
 
-class AQuickMoveGetsTwoExamplesTests(unittest.TestCase):
-    def test_the_rep_count_default_is_back_with_its_limit(self):
+class ExampleSelectionTests(unittest.TestCase):
+    def test_guided_count_is_chosen_independently(self):
         route = flat(SKILL_ROUTE)
-        self.assertIn(
-            "Match the number of examples to how long one instance takes, and "
-            "give the Our Turn the same number.",
-            route,
-        )
-        self.assertIn(
-            "two for quick instances and one for lengthy ones", route
-        )
-        # The limit, so the default does not become a quota to fill.
-        self.assertIn(
-            "It is a default, not a quota, so two examples of a move that "
-            "takes two minutes each is padding.",
-            route,
-        )
+        self.assertIn("Our Turn need not match My Turn in number.", route)
+        self.assertNotIn("give the Our Turn the same number.", route)
 
     def test_examples_are_chosen_to_share_one_visual(self):
         route = flat(SKILL_ROUTE)

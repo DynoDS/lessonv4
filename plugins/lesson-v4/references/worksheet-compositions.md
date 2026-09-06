@@ -99,23 +99,9 @@ So in the tables below, read a portrait height under a top-to-bottom split as
 the planning figure the fit search used, not as the millimetres that will print.
 The widths are exact.
 
-## What this document no longer decides
+## Scope
 
-The hand-written version carried three things besides the shapes. None is lost,
-and none of them belongs in a generated file:
-
-- **How the three sheets differ.** "Changing only names, numbers, quantities or
-  question count is not differentiation" is a teaching principle, not a page
-  shape. It lives in the worksheet-designer's own instructions.
-- **Typeface, colour and rules.** The engine owns these now and states them in one
-  place. The old text named Arial and a 14pt title, which the pipeline had already
-  overruled: the typeface is locked across slides, worksheets and the working wall
-  together. Nothing here should be choosing a font.
-- **How full a page must be.** The old rule was 78% to 94% of printable height.
-  The engine measures fill but the threshold is deliberately UNSET, because it
-  should come from real lessons rather than a number picked in advance. Until it
-  is set: a strip left at the foot is fine, a teacher trims it. Half a page
-  missing is not. Do not pad a sheet to fill it.
+This reference owns composition shapes. The worksheet and adaptation guidance owns learning and response demands; the engine owns typography and fit. Choose space for readable content and usable responses, without padding to meet a fullness target.
 
 ---
 

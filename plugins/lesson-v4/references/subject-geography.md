@@ -4,7 +4,7 @@ Read this at the start of the run when the lesson is Geography, before the struc
 
 Geography lessons fail in a particular way, and it is not the way you would expect. They rarely fail on accuracy. They fail by teaching correct geographical facts while never asking a child to do anything a geographer does, so children leave able to recite where the Amazon is and unable to think about anywhere.
 
-The distinction that prevents it: **substantive knowledge** is what geographers know (where places are, what they are like, how rivers and climates and settlements work). **Disciplinary knowledge** is how geographers find out and reason (locating, comparing, explaining patterns, using maps and data, weighing what should happen, judging how sure we can be). A lesson that carries only the first is a lesson about geography. A lesson carries the subject when children handle both.
+Geographical knowledge includes places, features and processes as well as ways of locating, comparing, investigating and explaining them. Choose the balance from the approved objective and the wider sequence. A lesson that secures important locational or descriptive knowledge can be worthwhile without adding a separate reasoning demand; an explanation objective needs more than naming facts.
 
 The purpose underneath all of it is that children become genuinely interested in the world, not that they accumulate facts about it. Geography has a reputation among children for being boring, and it is earned by how it is taught rather than by the subject: naming rock types, memorising where countries are, colouring in a map. The planet is remarkable, so a Geography lesson children leave bored is a lesson that went wrong.
 
@@ -36,7 +36,7 @@ Include an evidence-questioning beat when the limits, choices or method of the e
 
 | The LO asks children to | Structure | The shape inside it |
 |---|---|---|
-| Locate, describe, or explain | Content-based | Teach → process each coherent chunk, with activity that does geographical work rather than only recall |
+| Locate, describe, or explain | Content-based | Teach → process each coherent chunk, with activity that demonstrates the intended locational, descriptive or explanatory learning |
 | Compare two places or environments | Content-based | The comparison is the spine, not a closing question |
 | Use a map, atlas, grid reference, scale, key, or graph | Skill-based | My Turn → Our Turn → Your Turn on the tool |
 | Weigh an issue and take a position | Dialogic | Stimulus → Talk, ending on the child's own reasoned view |
@@ -57,7 +57,7 @@ Five traps, each with what to do instead. They are the difference between a less
 
 **A map used as a picture rather than a tool.** A map on the board that children read answers off is a slide with facts on it. The child does not choose where to look, use a key, work out a scale, or find something they did not already know. A map becomes a tool the moment the child has to *interrogate* it: find which countries the river crosses and put them in order, use the key to work out what the shaded band means, judge which of two settlements is closer to the coast and by roughly how far. The limit: a map on the board is exactly right when it is the shared reference the class annotates during teaching, or the thing being explained. The question is whether children ever hold one themselves and get something out of it that was not already said aloud.
 
-Five different things count as map work and they need separate practice: decoding what the symbols and key mean, constructing a map or sketch map, reading a distribution off one, finding a route, and drawing a conclusion from what the map shows. Pick a different one from the last map lesson rather than settling into find-and-colour, because a class can meet a map every week for a term and only ever have decoded.
+Map work includes decoding symbols and keys, constructing maps, reading distributions, finding routes and drawing conclusions. Choose the practice the objective and prior learning need. Repeating a technique can secure it; vary the demand when children are ready or the enquiry requires a different use, rather than changing it merely because the previous lesson used it.
 
 **A place taught as a list of facts.** Nine countries, one river, three animals, a city called Manaus. Each fact is true and the set adds to nothing. A place becomes knowledge when the facts hang together into a picture with a reason in it: it is hot and wet *because* of where it sits, which is *why* the vegetation is what it is, which is *why* people travel by river. Ask of any descriptive chunk: could a child use this to say something about a place they have never met? If not, it is a list.
 
@@ -65,7 +65,7 @@ Five different things count as map work and they need separate practice: decodin
 
 **Comparison bolted on at the end.** When the LO is comparative, the two places run side by side through the lesson rather than one being taught and the other produced at the finish for a closing question. Children need both pictures in place before they can weigh them, and the criteria for comparing (climate, relief, vegetation, settlement, how people live) are what the lesson teaches them to use.
 
-**A place met through a single lens.** A place studied through one attribute becomes a caricature: Bangladesh known only for flooding, Africa shown only as villages and jungle so children conclude there are no cities in it, the Amazon shown only as destruction so children conclude it has already gone. This happens through the pictures and resources a lesson asks for, not through anything a teacher says out loud, which is what makes it easy to miss and puts the repair in your photo requirements: any place the lesson studies is shown through more than one image and more than one attribute, and where a lesson is about damage or change, something intact belongs in the set too. The same trap sits closer to home in how children picture parts of their own country, so it is not only a rule about faraway places.
+**Represent a place fairly for the claim being taught.** A place repeatedly presented only through disaster, deprivation or wilderness can become a caricature. Choose enough evidence and context to avoid implying that one feature represents the whole place. A focused lesson may use one suitable image or attribute; broader claims need broader evidence. Additional images earn their place by correcting or developing the understanding, not by meeting a quota.
 
 ---
 
@@ -89,7 +89,7 @@ The design-reviewer reads the book at the end of the lesson and asks whether it 
 - Data read and interpreted, not just copied
 - The child's own position on a geographical question, with a reason
 
-A page of matched pairs, labels copied from a board diagram, and short factual answers reads as geography topic work rather than geographical thinking, even when every answer is right. The other failure to watch is the appealing product: a mounted poster, a diary entry, a decorated letter. It looks like the best work in the unit and it evidences presentation rather than thinking, so what the lesson is judged on is the reasoning children produced, not the artefact they decorated.
+Judge the response against the geographical learning. Matching, locating, labelling or short factual answers may show exactly what the objective requires. Copying does not demonstrate an explanation, and an elaborate product does not establish understanding. Choose the response form and demand from the knowledge or thinking children need to demonstrate.
 
 ---
 

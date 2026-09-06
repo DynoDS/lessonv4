@@ -250,7 +250,7 @@ def test_furniture_is_never_offered_by_evidence(geography: Path) -> None:
 def test_the_reference_carries_the_always_rules_and_points_at_the_full_files(geography: Path) -> None:
     _, _, reference, _ = run_prepare(geography, lesson=geography / "lesson.json", photos=geography / "photo-requirements.json")
     text = reference.read_text(encoding="utf-8")
-    for heading in ("## The wall-worthy test", "## The load-bearing principle: cards must teach themselves", "## Every card carries a visual: the entry ticket", "## When to combine items on one card", "## Every card", "## Full files"):
+    for heading in ("## The wall-worthy test", "## The load-bearing principle: cards must teach themselves", "## Choose visuals for the card's learning", "## When to combine items on one card", "## Every card", "## Full files"):
         assert heading in text, heading
     assert "(renderer's job)" not in text, "the renderer's own moves are facts about the builder, not designer decisions"
     assert "Open a full file only when you want a card family this packet did not offer" in text
@@ -427,24 +427,19 @@ def test_table_exception_does_not_admit_changed_or_invented_rows(tmp_path: Path)
     lesson = {"slides": [{"body": table}]}
     result = run_check(tmp_path, wall_with([card]), lesson)
     assert result.returncode == 1, result.stdout + result.stderr
-    assert "carry no picture" in result.stdout
+    assert "changes the source rows" in result.stdout
 
 
-def test_a_wall_of_words_is_refused_while_the_lesson_holds_a_picture(tmp_path: Path) -> None:
-    """A Year 4 maths lesson published three photographs of place-value
-    counters, and the wall came out as one card of five steps and an equation:
-    an A3 sheet of text. The words-only success-criteria exception is real, but
-    it is for a lesson with no picture, and nothing checked which case this was."""
-    publish(
-        tmp_path,
-        "unsplash/place-value-cross-hundred-counters.jpg",
-        "unsplash/place-value-cross-thousand-counters.jpg",
-    )
+def test_text_reference_is_not_rejected_due_to_unrelated_photo(tmp_path: Path) -> None:
+    publish(tmp_path, "classroom.jpg")
     result = run_check(tmp_path, wall_with([words_only_card()]))
-    assert result.returncode == 1, result.stdout + result.stderr
-    assert "carry no picture" in result.stdout
-    assert "'How to do it'" in result.stdout
-    assert "place-value-cross-hundred-counters.jpg" in result.stdout
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "WORKING_WALL_DESIGN_OK"
+
+def test_empty_wall_is_still_rejected(tmp_path: Path) -> None:
+    result = run_check(tmp_path, wall_with([]))
+    assert result.returncode == 1
+    assert "carries no cards" in result.stdout
 
 
 def test_the_same_wall_passes_when_the_lesson_had_no_picture_at_all(tmp_path: Path) -> None:
@@ -483,4 +478,4 @@ def test_the_playbook_and_the_role_carry_the_check(tmp_path: Path) -> None:
     role = ROLE.read_text(encoding="utf-8")
     # The rule that used to send every maths wall to text is gone.
     assert "most maths cards should have" not in role
-    assert "narrower than it sounds" in role
+    assert "Choose visuals for each card" in role

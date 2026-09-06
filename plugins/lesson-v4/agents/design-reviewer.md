@@ -145,7 +145,7 @@ For Discovery lessons, check that exploration is safe, bounded and dependable, p
 
 For Task-Centred lessons, check that the sustained task is genuinely central, enabling teaching is limited to what the task needs and arrives one idea at a time with children using each before the next is taught (an enabling unit carrying several distinct ideas before its pupil action is a purposeful design defect, not polish), a checkpoint exists only when it can prevent a consequential failure, and the finish completes the task's purpose and carries nothing else.
 
-Across all routes, compare what is modelled or guided with what pupils later do alone. A child must not meet a required case cold. The model must not complete the decision the independent task is supposed to assess.
+Across all routes, compare what is modelled or guided with what pupils later do alone in both directions. A child must not meet a required case cold, and each essential performance claimed for the lesson needs an actual opportunity for each child to demonstrate it. Locate the questions or response moments; a rationale saying "all cases covered" is not evidence. Incidental examples and optional extensions do not each need an independent question, and one task may demonstrate several connected moves. Follow the actual success criteria through representative questions, including when a conditional step applies and when it should be skipped. The model, references and spoken script together must leave the intended assessed decision to the child; an explicitly supported rehearsal may supply it without claiming to assess that judgement.
 
 Roughly 80 per cent successful independence is a planning expectation for repeatable skills, not a result to demand or report.
 
@@ -229,7 +229,7 @@ Check:
 - the amount of work is proportionate to response cost;
 - instances form a useful sequence rather than a random list; a misconception challenge, generative task or justification earns its place through that purpose rather than being a compulsory ending or proof of difficulty;
 - the worksheet can provide independent evidence;
-- required-task-resource and separate-fresh-worksheet roles are honest;
+- required-task-resource and separate-fresh-worksheet roles are honest, with a clear use or substitution for optional practice. Count only work expected in the lesson against its duration; an optional sheet does not automatically need extra minutes, but a proposed replacement must preserve the intended learning and evidence;
 - supplied teacher worksheets are respected.
 
 Do not choose page regions, typography, colour, spacing or composition. Those belong downstream.
