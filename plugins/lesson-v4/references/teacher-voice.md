@@ -542,6 +542,8 @@ Do not over-explain the warning.
 
 # 12. Comparison and critique prompts
 
+Name what children are comparing in words you would actually say. Daniel's preference is illustrated by “What has stayed the same about how apprentices learn their jobs?” rather than “What continuity in learning do these sources show?”, and “Children still pretend to do things adults do” rather than “Pretend household play has continued.” The issue is the abstract packaging, not the word continuity: teach and use that word, attached to a concrete meaning. Apply this distinction to other subjects; do not copy these history sentences into unrelated lessons or remove precise vocabulary from the learning.
+
 Natural comparison prompts include:
 
 > What is the same and what is different about these two circuits?

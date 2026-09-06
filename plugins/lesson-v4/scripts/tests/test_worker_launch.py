@@ -90,7 +90,7 @@ class SpecTests(unittest.TestCase):
     def test_selected_normal_and_repair_roles_resolve_to_the_requested_matrix(self) -> None:
         expected = {
             "lesson-designer": ("gpt-6-astra", "medium"),
-            "design-reviewer": ("gpt-5.6-sol", "xhigh"),
+            "design-reviewer": ("gpt-6-astra", "high"),
             "adaptation-designer": ("gpt-6-astra", "low"),
             "slide-designer": ("gpt-5.6-sol", "high"),
             "worksheet-designer": ("gpt-5.6-sol", "medium"),

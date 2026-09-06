@@ -41,6 +41,14 @@ More context makes decisions better; does not transfer responsibility. If plan s
 
 ---
 
+## Settle the classroom experience before collecting content
+
+First read the brief, the relevant plan rows and the governing preferences. Before choosing sources or filling the scaffold, rehearse how you would teach the objective yourself: what you put in front of the class, the specific thing you point out, explain or write, and what each child then does with it. Use this walkthrough to choose the sources and teaching medium, rather than building a sequence around the sources you happen to find. Keep it in the existing `design-decisions.md`; this replaces a list of activity justifications, not an additional deliverable.
+
+For an object comparison, children need to encounter both objects, through suitable images, diagrams or the real things, when their appearance or use makes the idea understandable. Supplying an accurate written description of the second object is not equivalent. It makes the child construct the missing object before comparing it. Use words instead where the evidence is the words or the relationship cannot honestly be seen. `preferences.md` → Lesson Designer visual-need boundary owns the full boundary.
+
+Walk through the middle of the lesson as carefully as its opening. Each new explanation should make the current idea clear enough for children to use; a connected but different question earns a later step only if this lesson needs it. Keep necessary context and substantive teaching. Choose a simpler source or example when doing so removes explanatory detours without losing the approved learning.
+
 ## Name Things Plainly
 
 Use standard classroom names: success criteria, vocabulary, starter, reference table, steps. No metaphors for structural components. Content can be vivid; role name stays standard in every layer: heading, panel label, speaker notes, child-facing phrasing. One name top to bottom.
@@ -429,11 +437,11 @@ Before choosing or polishing activities, settle the lesson's learning chain:
 - what must be explained, modelled, shown or briefly established;
 - what children practise with support and what they must later do independently;
 - the evidence that will show whether the objective was met;
-- the representation, photograph, source or working surface genuinely needed;
+- the teaching medium that makes the new idea clearest: what children will actually see, hear, handle or read, what the teacher does with it, and why that gives a clearer route than merely stating the answerable facts;
 - anything deliberately omitted because it adds activity without improving learning;
 - what each major beat changes (what children now know, notice, can do, have decided, are wondering or have produced) and which later beat builds from that change, so a teacher flicking through the deck feels each slide follow from the last (`preferences.md` → The Teach → Do → Teach → Do Rhythm).
 
-An activity earns its place only when it teaches, practises, reveals or assesses something in this chain.
+An activity earns its place only when it teaches, practises, reveals or assesses something in this chain. Before committing the sequence, compare it with a simpler sufficient route to the same approved learning. Keep additional sources, explanations and transitions when they add necessary knowledge, useful contrast or practice; remove or defer them when they only make the lesson more comprehensive. Do not narrow required curriculum coverage to make the comparison win. Record a consequential choice in the existing decision record, not a second plan or checklist.
 
 When every decision is made, and before the scaffold request or JSON, write `design-decisions.md` in the working folder as a compact semantic quality lock. Open with one sentence: `By the end, children will [performance] because the lesson gives them [the knowledge or move the performance needs, or replaces the wrong rule that blocks it], evidenced by [independent check].` If there is no genuine misconception, name the central difficulty instead. Read the sentence back before going on: when the clause after `because` names a rule about method and nothing about the subject's content, the lesson has been built on the method, and a knowledge subject's spine goes back to its material.
 
@@ -442,7 +450,7 @@ Then give one short decision per line, with its reason, covering only:
 - the approved curriculum boundary for today and any related content deliberately deferred;
 - prior knowledge, visible foundation, new learning, the path from supported practice to independence, end performance and why the chosen structure fits;
 - the dominant sticking point or misconception, plus where it is exposed, resolved and retested;
-- the distinct teaching job of each explanation, model, experience or practice beat;
+- the classroom walkthrough for each major beat: the actual object, text, diagram or working children encounter; the concrete explanation or live action that teaches through it; and the pupil response it prepares. A statement such as “sources support comparison” does not describe that encounter;
 - for each taught idea, the particular knowledge or feature its example, demonstration or experience makes understandable and the child-facing lines that teach it, rather than only naming it or leaving it in the script (a content Teach's `explanation`); and for a substantial task, how it is launched (the `launch` on a Practise or Do-the-task: what the class has established, the example and non-example of the product, the steps) or why its question alone is enough;
 - the independent assessment evidence, including why it cannot be passed by a surface cue or copied answer path;
 - the success-criteria form and the fresh worksheet evidence children produce;

@@ -16,7 +16,7 @@ For each knowledge chunk being taught, design a Teach slide paired immediately w
 
 **Teach** — the teacher delivers a specific piece of knowledge with a clear teaching anchor.
 
-Each Teach beat covers one manageable knowledge chunk. Closely connected facts or ideas may stay together only when they genuinely form one simple, easy-to-understand chunk. Do not use "closely connected" as permission to place too much explanation or several concepts into one teacher-led block. Children use or process that chunk before the lesson introduces the next distinct idea.
+Each Teach beat develops one understandable relationship or explanation, then children use it before the next distinct idea. Judge the chunk from what children must understand together to make that response, not from a shared topic heading. Several facts may jointly explain one cause, comparison or process and belong together. Facts about the same broad topic may instead require different explanations and different pupil decisions. Keep only the context needed for this step; defer a worthwhile side branch or give it its own taught-and-used step if today’s objective requires it. Splitting the text across readable slides fixes presentation, not an overloaded learning chunk. Preserve the explicit knowledge needed for meaningful success rather than making the teaching thin.
 
 A content chunk teaches knowledge about the topic. Teach a new thinking move through the material it helps children understand, with enough explanation and guided use for the later task. A brief cue may suffice for a familiar comparison; an unfamiliar evidence decision may need focused teaching of its own. Keep that teaching connected to substantive content rather than replacing the lesson with generic rules about thinking.
 
