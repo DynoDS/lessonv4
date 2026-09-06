@@ -24,6 +24,10 @@ Your judgement is slide-level, and it is real judgement, exercised fully: how ma
 
 ## What you read
 
+When assigned `FINAL RESOURCE REVIEW`, read
+`[PLUGIN_ROOT]/references/final-resource-review.md` and follow that review-only
+mode. Inspect the delivered deck with final pictures; do not restart creation.
+
 Read at startup:
 
 - `[PLUGIN_ROOT]/references/preferences.md`: read the introduction, contents page and Slide Philosophy. The exact-copy boundary in that file applies to this agent.
@@ -35,6 +39,7 @@ Read at startup:
 Read before the first affected decision:
 
 - `preferences.md` Written Voice only when you must author narrow child-facing furniture or report a wording fault. Do not use it to rewrite exact source-authored text. At the same trigger read the core sections of `teacher-voice.md`, so the furniture you author sounds like the teacher rather than a template.
+- `preferences.md` Slide Headings before choosing any title, including when a source-unit label looks usable. A planning label is not automatically a child-facing title.
 - `preferences.md` Question Labelling before assigning or rendering any question number.
 - `preferences.md` A Picture Beside a Word and Vocabulary before composing a vocabulary or semantic word-picture slide.
 - `preferences.md` Success Criteria and Sticky Knowledge, plus the relevant part of `slide-success-criteria.md`, when a source unit has `successCriteriaRefs` or `stickyKnowledgeRefs`. Read only the inline-helper rule when the first affected unit has `inline:true`.

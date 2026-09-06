@@ -264,7 +264,10 @@ def write_review(
         "## Flags for the teacher\n"
         "- None.\n\n"
         "## Voice sweep\n"
-        f"{voice_sweep}\n",
+        f"{voice_sweep}\n\n"
+        "## Judgements\n"
+        f"Pedagogy: {'PASS' if result == 'APPROVED' else 'REVISE'}\n"
+        "Daniel-fit: PASS\n",
         encoding="utf-8",
     )
     return path
@@ -2050,6 +2053,33 @@ def class_view_section(view: str) -> str:
     return view[start:end]
 
 
+def test_reused_worksheet_criteria_are_resolved_beside_the_new_task():
+    """Expose a semantic mismatch to the reviewer, without pretending the
+    packet builder can decide whether the support is pedagogically suitable.
+    """
+    design, photos = content_based_design()
+    design["successCriteria"] = [{
+        "id": "sc-001", "type": "reference-table", "drawLive": False,
+        "content": {
+            "columns": ["Evidence", "Use"],
+            "rows": [["Sources", "A detail from the toys and the account"]],
+        },
+    }]
+    design["worksheet"]["successCriteriaRefs"] = ["sc-001"]
+    design["worksheet"]["contentBlocks"] = [{
+        "id": "ws-stimulus-001", "kind": "stimulus-set",
+        "stimulus": "Account A describes school. Account B describes songs.",
+        "pupilAction": "Compare learning and play using both accounts.",
+        "prompts": [],
+    }]
+    section = class_view_section(packet_module.build_review_view(design, photos))
+    worksheet_view = section.split("### Worksheet", 1)[1]
+    assert "A detail from the toys and the account" in worksheet_view
+    assert "Account A describes school. Account B describes songs." in worksheet_view
+    assert "Compare learning and play using both accounts." in worksheet_view
+    assert "sc-001" not in worksheet_view
+
+
 def test_the_view_opens_with_the_lesson_as_the_class_meets_it():
     design, photos = content_based_design()
     view = packet_module.build_review_view(design, photos)
@@ -2109,6 +2139,35 @@ def test_the_class_view_never_prints_teacher_only_material():
         assert hidden not in section, hidden
     # Teacher-only material still reaches the detailed JSON sections below.
     assert "TEACHER ONLY MARKER" in packet_module.build_review_view(design, photos)
+
+
+def test_observation_prompt_reaches_voice_review_but_do_metadata_does_not():
+    design, photos = content_based_design()
+    design["teachingSequence"][0]["kind"] = "observe"
+    design["teachingSequence"][0]["content"] = {
+        "activity": "Look at the tops of these objects. How are they different?",
+        "focus": "TEACHER ONLY attention cue",
+        "evidenceProduced": "DESIGNER ONLY response expectation",
+    }
+    section = class_view_section(packet_module.build_review_view(design, photos))
+    assert "Look at the tops of these objects. How are they different?" in section
+    assert "DESIGNER ONLY" not in section
+    assert "TEACHER ONLY" not in section
+
+
+def test_separate_judgements_cannot_be_hidden_by_overall_approval():
+    with tempfile.TemporaryDirectory() as directory:
+        report = Path(directory) / "review.md"
+        report.write_text("Pedagogy: PASS\nDaniel-fit: REVISE\n", encoding="utf-8")
+        try:
+            packet_module.require_review_judgements(report, "APPROVED")
+        except packet_module.PacketError as error:
+            assert "both" in str(error)
+        else:
+            raise AssertionError("A failed personal-fit judgement was approved")
+        assert packet_module.require_review_judgements(report, "REDESIGN REQUIRED")["Daniel-fit"] == "REVISE"
+        report.write_text("Pedagogy: PASS\nDaniel-fit: PASS\n", encoding="utf-8")
+        assert len(packet_module.require_review_judgements(report, "APPROVED")) == 2
 
 
 def test_the_lesson_block_says_when_each_word_is_introduced():

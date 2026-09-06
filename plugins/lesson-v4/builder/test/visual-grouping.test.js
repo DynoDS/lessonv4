@@ -70,7 +70,7 @@ test('grow-fit names encode a stable group and an explicit ceiling', () => {
   );
 });
 
-test('table cells grow by column and remain uniform within each column', () => {
+test('table headers and cells share one readable hierarchy', () => {
   const { texts } = capture(drawTable, ZONE, {
     headers: ['Category', 'What it means'],
     rows: [
@@ -86,7 +86,9 @@ test('table cells grow by column and remain uniform within each column', () => {
   ];
   assert.deepEqual(byColumn.map((column) => column.length), [3, 3]);
   assert.ok(byColumn.every((column) => new Set(column.map((entry) => groupFromName(entry.objectName))).size === 1));
-  assert.notEqual(groupFromName(byColumn[0][0].objectName), groupFromName(byColumn[1][0].objectName));
+  assert.equal(groupFromName(byColumn[0][0].objectName), groupFromName(byColumn[1][0].objectName));
+  assert.ok(texts.every(entry => /__MIN20__/.test(entry.objectName)));
+  assert.equal(new Set(texts.map(entry => groupFromName(entry.objectName))).size, 1);
   assert.ok(body.every((entry) => /__54__/.test(entry.objectName)));
 });
 
@@ -268,7 +270,7 @@ test('evidence answer text shares one grow-fit group', (t) => {
   }, ctx);
   const answers = texts.filter((entry) => /__evidence-answer-/.test(entry.objectName || ''));
   assert.equal(new Set(answers.map((entry) => groupFromName(entry.objectName))).size, 1);
-  assert.ok(answers.every((entry) => /__36__/.test(entry.objectName)));
+  assert.ok(answers.every((entry) => /__28__/.test(entry.objectName)));
 });
 
 test('evidence cards refuse more than four cards', () => {
@@ -785,7 +787,7 @@ test('a sticky fact in a landscape zone keeps its left star and indent', () => {
   assert.ok(Math.abs(text.y - (landscape.y + 0.08)) < 0.01, 'no top inset in landscape');
 });
 
-test('an all-blank evidence card gives its prompt lines more of the card, spaced', (t) => {
+test('evidence fields retain paragraph spacing without reserving extra space for missing answers', (t) => {
   const image = temporaryImage(t);
   const ctx = { slideIndex: 0, imageDims: { [image]: { w: 100, h: 100 } } };
   const fields = [
@@ -804,8 +806,8 @@ test('an all-blank evidence card gives its prompt lines more of the card, spaced
   const answeredText = answered.texts.find((entry) => /__evidence-answer-/.test(entry.objectName || ''));
   assert.ok(promptText && answeredText);
   assert.ok(
-    promptText.h > answeredText.h,
-    'blank prompts are the working text, so they take more of the card than a filled answer strip'
+    promptText.h <= answeredText.h,
+    'short prompt labels must not displace more evidence than the completed fields'
   );
   assert.ok(promptText.paraSpaceAfter > 0, 'fields render with paragraph spacing');
   assert.ok(answeredText.paraSpaceAfter > 0);

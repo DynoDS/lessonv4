@@ -22,7 +22,7 @@ function renderMultipleChoice(spec) {
     .join("");
   return `
     <div class="h-mc">
-      <p class="h-mc-stem">${promptHtml(spec.text)}</p>
+      ${spec.text ? `<p class="h-mc-stem">${promptHtml(spec.text)}</p>` : ""}
       <p class="h-mc-instr">${esc(instr)}</p>
       <ul class="h-mc-opts">${options}</ul>
     </div>`;
@@ -32,7 +32,7 @@ const MC_OPT_MM = 8; // one option's tick box and label, tall enough not to
                       // crowd the option below it
 
 function measureMultipleChoice(spec, widthMm) {
-  const stemMm = linesFor(spec.text, widthMm) * LINE_MM;
+  const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM : 0;
   const instrMm = LINE_MM * 1.2;
   const optsMm = (spec.options || []).length * MC_OPT_MM;
   return stemMm + instrMm + optsMm + 4;

@@ -657,6 +657,11 @@ The inset is drawn at roughly 25% of the big image's width, with a thin white bo
 **Fit (default `contain`):** images preserve their natural aspect ratio inside the zone, centred, with the slide background showing through any letterbox bands. Use this when the full photograph or visible evidence must survive. To fill the zone, pass `"fit": "cover"`. Cover preserves natural proportions and removes equal overflow from opposite sides with a centred crop. It never stretches. Use cover only when that crop cannot remove required evidence. Insets use the same true cover crop regardless of the parent. If a real image cannot be measured, the build stops with `IMAGE_DIMENSIONS_UNAVAILABLE` instead of stretching it.
 
 ### `table`
+
+Projected headers and cells share one fitted text size with a 20 pt minimum.
+If the content cannot fit at that size, the build refuses it: change the zone,
+arrangement or coherent grouping instead of shrinking the evidence below reading
+size. A header must not grow independently of the cells it describes.
 ```json
 { "type": "table",
   "headers": ["Group", "Body covering", "Babies"],

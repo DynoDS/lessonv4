@@ -204,7 +204,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
         x: box.x + Q_PAD, y: rowY,
         w: LABEL_W, h: rowH,
         fontFace: FONT, fontSize: QUESTION_FONT, bold: true,
-        color: COLOURS.title, align: 'left', valign: 'middle',
+        color: COLOURS.questionLabel, align: 'left', valign: 'middle',
         margin: 0, fit: FIT
       });
       if (picture) {

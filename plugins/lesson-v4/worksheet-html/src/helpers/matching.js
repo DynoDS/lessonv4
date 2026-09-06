@@ -229,7 +229,7 @@ function cardHeightMm(card, innerMm, spec) {
   const titleMm = card.title ? linesFor(card.title, innerMm) * LINE_MM : 0;
   const imageMm = card.imageHref ? innerMm * cardImageAspect(card) : 0;
   const captionMm = card.caption
-    ? linesFor(card.caption, innerMm) * NOTE_LINE_MM
+    ? linesFor(card.caption, innerMm, spec && spec.blankWidthMm) * NOTE_LINE_MM
     : 0;
 
   // Every part of this answers to something in the CSS below. The border and
@@ -273,7 +273,7 @@ function renderCardRow(spec) {
             ? `<img class="h-card-img" src="${esc(card.imageHref)}" alt="">`
             : ""
         }
-        ${card.caption ? `<p class="h-card-caption">${esc(card.caption)}</p>` : ""}
+        ${card.caption ? `<p class="h-card-caption">${promptHtml(card.caption, spec.blankWidthMm)}</p>` : ""}
         ${
           spec.writeLabel
             ? `<div class="h-card-write">

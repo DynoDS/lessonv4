@@ -17,6 +17,7 @@ module.exports = {
   // ─── text ───
   instruction: {
     text: "Use the place value chart to help you.",
+    blankWidthMm: 25,
   },
   questions: {
     // `text` is the instruction over the set. Numbering is `question: true`
@@ -488,6 +489,7 @@ module.exports = {
   },
   "card-row": {
     text: "Use an atlas to find where each plant grows.",
+    blankWidthMm: 25,
     columns: 3,
     cards: [
       {

@@ -121,9 +121,9 @@ class ARuleOnTheBoardIsNotTheTeachingTests(unittest.TestCase):
             "A script that teaches an idea the slide only names has put the lesson in the notes",
             text,
         )
-        # The decisions record settles where each idea's teaching lives.
+        # Teaching reaches pupil-facing content before its spoken elaboration.
         self.assertIn(
-            "the child-facing lines that carry its meaning, reason and example on the board",
+            "the meaning, reason and example a child needs live in the unit's child-facing content first",
             text,
         )
 

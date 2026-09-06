@@ -8,6 +8,7 @@ const COLOURS = {
   lo:          '7030A0',
   body:        '000000',
   prompt:      '0070C0',
+  questionLabel: '7030A0',
   green:       '00B050',
   orange:      'E46C0A',
   problem:     'C00000',

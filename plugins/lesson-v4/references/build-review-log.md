@@ -920,3 +920,19 @@ Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-pa
 - The balanced diet plate already existed but lacked wall wiring. It now uses the same shared visual there, with parity tests. The final reference-table PDF exposed a separate measurement/render mismatch: the checker reserved a 1.4-inch title but the 96pt title and padding needed 2 inches. Shared line-height/padding measurement now rejects the clipped landscape layout and supports measured portrait cells at the 36pt floor. The exact slide lookup table also contradicted a blanket picture requirement: the guard now recognises an exact matching teaching table as its own visual support; altered/invented tables do not gain that exception. Focused regressions cover both mechanisms.
 - Actual final slide reading caught a cramped diagram, a starter-box overflow, a false statement under an ambiguous heading, and decorative wind images reinforcing the misconception. Bounded slide-owner repairs preserved teaching content. Existing would-mislead guidance already covers the decoration failure; no duplicate rule was added. A reported diet worksheet header fault did not reproduce in the final PDF, so no speculative renderer change was made.
 - Acceptance limit: these are supervised repairs, not clean unattended repeat passes. Tests and worker completion markers alone did not establish teachability. Deep free-writing stick-in cells and standalone piece preview remain deferred; the delivered short-response slips do not require those features.
+
+# 5 September 2026 - Partition 4-digit numbers lesson review
+
+- The independent design review replaced the formal instruction `Then check whether each place in the whole number is still accounted for.` with the clearer Year 4 teacher wording `Then check you haven't missed a column.` The mathematical check was preserved and the revised design revalidated.
+
+# 6 September 2026 - Describe teeth and their uses lesson review
+
+- The supplied supporting statement that premolars guide food to molars was corrected to the more accurate Year 4 explanation that premolars crush and begin grinding food.
+- The final square-ish tooth images exposed a slide-readable-floor failure that was invisible before publication; a focused layout repair enlarged the canine image without changing lesson content.
+- The designed four-image evidence-card task earns a write-on aid pedagogically, but the current stick-in renderer cannot reproduce its repeated picture-plus-two-response-field structure. The sheet was honestly omitted instead of substituted with a misleading layout.
+
+# 6 September 2026 - Children's lives continuity and change lesson review
+
+- The initial authentic museum toy choice had no verified reusable image route. Independent review caught it before rendering; redesign selected London Museum toy jug 98.2/163 under CC BY-NC 4.0 and revised the visible comparison to its surviving body, open mouth and missing handle.
+- Clearing four slide height diagnostics exposed a separate `TEXT_OVERLOAD` on an earlier slide. A distinct focused repair preserved all teaching content and reached `SLIDE_DESIGN_CHECK_OK: 19 slides`, showing that deterministic slide checks can reveal faults sequentially after layout changes.
+- The expected worksheet remained 20px too tall after its one permitted focused repair (`lines: 5 → 4`); the h-stack allocation grew with the change and the same overlap persisted. The worksheet was excluded rather than released with overlapping print content. This is evidence that reducing a nested response-line count is not a reliable fit lever for that h-stack layout.

@@ -155,30 +155,15 @@ class SuccessCriteriaRecede(unittest.TestCase):
 
 
 class SplitAtTheTeachingJoin(unittest.TestCase):
-    def test_a_split_has_a_reason_other_than_overflow(self) -> None:
-        self.assertIn(
-            "A unit that establishes something and then asks something is two "
-            "moments, whether or not it fits.",
-            FLAT_PLAYBOOK,
-        )
-        self.assertIn(
-            "Overflow is the usual trigger for a split and it is not the only "
-            "reason to make one",
-            FLAT_PLAYBOOK,
-        )
+    def test_a_split_is_conditional_on_teaching_and_readability(self):
+        self.assertIn("Establishing and asking can share a slide", FLAT_PLAYBOOK)
+        self.assertIn("distinct teaching moments", FLAT_PLAYBOOK)
+        self.assertIn("try the available width", FLAT_PLAYBOOK)
 
-    def test_the_join_is_described_so_it_can_be_found(self) -> None:
-        self.assertIn(
-            "the rule then the source it is about, the explanation then the "
-            "question it sets up, the model then what children do with it",
-            FLAT_PLAYBOOK,
-        )
-
-    def test_splitting_may_not_thin_the_teaching(self) -> None:
-        """The boundary that keeps this from becoming a licence to cut."""
-        self.assertIn(
-            "the parts add up to everything the unit carried", FLAT_PLAYBOOK
-        )
+    def test_evidence_and_teaching_survive_the_split(self):
+        self.assertIn("Preserve all required content across the sequence", FLAT_PLAYBOOK)
+        self.assertIn("retains the evidence and support that action still needs", FLAT_PLAYBOOK)
+        self.assertIn("Match necessary speaker notes to each physical teaching slide", FLAT_PLAYBOOK)
 
 
 class ADoLooksDifferentFromATeach(unittest.TestCase):

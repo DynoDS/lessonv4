@@ -57,6 +57,23 @@ class RunReportCase(unittest.TestCase):
         self.answers_out.write_bytes(b"answers fixture")
 
         self.report = self.working / "run-report.md"
+        self.write_final_reviews([self.slides_out, self.worksheets_out])
+
+    def write_final_reviews(self, paths):
+        entries = []
+        for index, path in enumerate(paths):
+            page = self.working / f"review-page-{index}.png"
+            page.write_bytes(b"rendered page fixture")
+            digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+            manifest = self.write_json(self.working / f"render-{index}.json", {
+                "version": 1, "source": str(path), "sourceSha256": digest(path),
+                "pdf": {"path": str(path), "sha256": digest(path)},
+                "pages": [{"number": 1, "path": str(page), "sha256": digest(page)}],
+            })
+            entries.append({"path": str(path), "owner": "slide-designer" if path.suffix == ".pptx" else "worksheet-designer",
+                "manifest": str(manifest), "reviewedPages": [1], "status": "PASS", "findings": [],
+                "evidence": {"readability": "Necessary labels are legible.", "taskAccess": "Task and reference share the page.", "responseSpace": "Each answer has a writing area."}})
+        self.write_json(self.working / "final-resource-reviews.json", {"schemaVersion": 1, "resources": entries})
 
     def write_json(self, path: Path, payload) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -113,6 +130,36 @@ class RunReportCase(unittest.TestCase):
 
 
 class TestRunReport(RunReportCase):
+    def test_complete_requires_current_final_review(self):
+        self.write_report()
+        (self.working / "final-resource-reviews.json").unlink()
+        self.assertNotEqual(self.validate().returncode, 0)
+
+    def test_rebuild_invalidates_final_review(self):
+        self.write_report()
+        self.slides_out.write_bytes(b"changed final slide")
+        result = self.validate()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("stale render evidence", result.stdout + result.stderr)
+
+    def test_page_inspection_cannot_be_omitted(self):
+        self.write_report()
+        receipt = self.working / "final-resource-reviews.json"
+        data = json.loads(receipt.read_text())
+        data["resources"][0]["reviewedPages"] = []
+        self.write_json(receipt, data)
+        self.assertNotEqual(self.validate().returncode, 0)
+
+    def test_unverified_resource_cannot_claim_complete(self):
+        self.write_report()
+        receipt = self.working / "final-resource-reviews.json"
+        data = json.loads(receipt.read_text())
+        data["resources"][0]["status"] = "UNVERIFIED"
+        self.write_json(receipt, data)
+        self.assertNotEqual(self.validate().returncode, 0)
+        self.write_report({"outcome": "Package status: UNVERIFIED", "accepted": "- Final slide rendering unavailable."})
+        self.assertEqual(self.validate().returncode, 0)
+
     def test_valid_report_prints_ok(self):
         report = self.write_report()
         result = self.validate(report)

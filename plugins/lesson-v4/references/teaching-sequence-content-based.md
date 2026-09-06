@@ -64,7 +64,7 @@ Match the substance before the form: this Do practises the move this Teach just 
 
 The practice must provide useful evidence and should combine relevant remembering with worthwhile use of the knowledge where the objective supports it. It does not have to climb from simple to hard in a fixed order. A main Practise with a definite answer uses `answer-slide`. A Do beat with an exact answer uses `teacher-only` and receives no separate answer slide. A Do beat may use `answer-slide` when its structured answer is a genuinely useful `model` or `standard`. Open or exemplifiable outcomes receive a model or comparison standard only when it genuinely helps.
 
-**Success criteria** in content-based lessons. Often not needed — there's no procedure to step through. When appropriate (e.g. writing an information paragraph with specific features), use a reference table showing the features children should include, and keep it visible during Practise.
+**Success criteria** in content-based lessons. A procedure is not required for a useful reference. When children need one, show the features or decisions that distinguish a successful performance and keep it visible during Practise. Match the task's actual conditions: a comparison requiring two sources needs guidance on using both and comparing matching aspects, not only definitions of comparison terms. Keep the format appropriate to the work; a feature table is valid and numbered steps are not compulsory. Simple familiar tasks need no separate criteria. Apply `preferences.md` → Support, Checking and Release to independent and optional worksheet use too: plan where needed references and source material remain accessible without filling in the child's comparison.
 
 ---
 

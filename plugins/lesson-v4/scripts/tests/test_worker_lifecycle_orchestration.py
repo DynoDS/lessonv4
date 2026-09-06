@@ -141,23 +141,8 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("Never refuse to write `lesson.json`", slides)
         self.assertIn("on your first pass", slides)
 
-    def test_track_a_is_one_worker_from_design_to_report(self):
-        """Two reviewers went, then the look that replaced them went too.
-
-        The look re-read a 52KB role file to confirm a deck that had already
-        passed its check. Its one catch that mattered - a photograph too small
-        for the zone it was given - is enforced in the builder, whether or not
-        anybody looks, and the photograph itself was never the designer's to
-        repair, so a wrong picture reached the teacher as a flag either way.
-
-        What the designer needed instead was to see its own optional drawings in
-        position, and the pass that places them now does: the scratch build
-        draws them and the Slide Decorator renders that deck itself. That pass
-        runs in its own worker since 1 Sept 2026 so the wall and stick-in
-        designers can start on the settled composition, but it is the same
-        pass at the same point over the same private preview, never a look at
-        the built deck.
-        """
+    def test_track_a_keeps_optional_decoration_and_final_review_distinct(self):
+        """Optional decoration stays early; final review sees the delivered resources."""
         playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
             encoding="utf-8"
         )
@@ -169,14 +154,14 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertNotIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
         self.assertNotIn("slide_designer_built_deck_look", playbook)
         self.assertNotIn("## The built-deck look", designer)
-        # A removed stage that is merely undocumented gets reinvented.
-        self.assertIn("Do not reinstate it", playbook)
+        # Final output review has an explicit, separate route.
+        self.assertIn("FINAL RESOURCE REVIEW", playbook)
 
         decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
         self.assertIn("## Confirm the layer landed where you put it", decorator)
         self.assertNotIn("Confirm the layer landed where you put it", designer)
         self.assertIn("SLIDE_DECORATION_OK", playbook)
-        self.assertIn("The Slide Decorator is not that spawn", playbook)
+        self.assertIn("earlier optional-picture stage", playbook)
         self.assertNotIn("'--skip-optional-decorations'", check)
 
     def test_a_track_a_worker_launch_still_has_only_two_shapes(self):
@@ -318,7 +303,7 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         # The slice markers are the playbook's own headings, so they move together.
         self.assertIn("## Phase 3 — Service Each Branch as It Lands", runtime)
         self.assertIn("## Phase 3.5 — The Focused Owner-Repair Round", runtime)
-        self.assertIn("## Phase 3.6 — Deterministic Finalisation", runtime)
+        self.assertIn("## Phase 3.6 - Final Resource Review and Finalisation", runtime)
 
 
 if __name__ == "__main__":

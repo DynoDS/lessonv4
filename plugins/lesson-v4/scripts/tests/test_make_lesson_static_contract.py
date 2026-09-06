@@ -377,7 +377,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         playbook = PLAYBOOK.read_text(encoding="utf-8")
         repair = playbook.split("## Phase 3.5 — The Focused Owner-Repair Round", 1)[
             1
-        ].split("## Phase 3.6 — Deterministic Finalisation", 1)[0]
+        ].split("## Phase 3.6 - Final Resource Review and Finalisation", 1)[0]
         self.assertIn("Edit the named file in place", repair)
         self.assertIn("references/revising-in-place.md", repair)
 

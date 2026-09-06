@@ -756,23 +756,13 @@ python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" slides \
 Require `ok: true` and the exact output paths in the summary. On a semantic
 build diagnostic, run one focused Slide Designer repair and rebuild once.
 
-**Nothing looks at the built deck, and nothing needs to.** There was a second
-Slide Designer spawn here that rendered the finished deck and looked at its
-photographs. It is gone. Do not reinstate it, and do not invent an equivalent.
+The finished deck receives the final resource review in Phase 3.6, after its
+pictures arrive. Physical picture-size checks do not establish that an object
+is recognisable, its detail serves the question, or references remain available
+through a slide transition. The review uses the compact review-mode reference
+and the saved outputs, without restarting the full creation workflow.
 
-Its one real catch - a photograph too small or too squeezed for the space it was
-given - is deterministic and already made: the builder refuses a picture whose
-guaranteed extent falls below the readable floor, whether or not anybody looks.
-Everything else it was allowed to find, it was not allowed to repair: the
-photograph itself was never the designer's to change, so a wrong picture reached
-the teacher as a flag either way. The Slide Designer now names any picture it is
-uneasy about in its own completion report, and that flag carries into the run
-report.
-
-What the spawn did cost was a whole worker on a healthy run, re-reading a
-52KB role file to confirm work that had already passed its check.
-
-The Slide Decorator is not that spawn. It runs the optional drawing pass the
+The Slide Decorator remains the earlier optional-picture stage. It runs the optional drawing pass the
 Slide Designer used to run last, at the same point and over the same private
 preview, in a worker of its own so the wall and stick-in branches need not
 wait for it. It looks at nothing after the build and judges no photograph.
@@ -1199,10 +1189,9 @@ is the honest record of a branch that ended, not a fault to repair here.
 ## Phase 3.5 — The Focused Owner-Repair Round
 
 This is the one repair route the pipeline has, and every track above sends the
-same three faults into it: a semantic build diagnostic, a picture reference the
-receipts say will never be honoured, and a helper-delivery failure. Each of
-those is raised by a deterministic check that names the resource, so the round
-starts with the fault already identified and its owner already known.
+faults into it: a semantic build diagnostic, a picture reference the receipts
+say will never be honoured, a helper-delivery failure, or a material finding
+from the final resource review. Each identifies the resource, location and owner.
 
 Use the compact focused-repair role for the named owner when present, otherwise
 its full creation role. Give it the exact artefact/location, the required
@@ -1227,9 +1216,8 @@ every other byte as it is. Do not delete and recreate it, and do not re-emit the
 whole file to alter part of it. See [PLUGIN_ROOT]/references/revising-in-place.md.
 ```
 
-A repairer that rewrites the whole specification re-decides every passing thing
-it retypes, which is what `Already passed - leave unchanged` exists to protect,
-and the rebuilt resource cannot then tell a repair from a silent redesign.
+`Already passed - leave unchanged` protects passing content from being redesigned
+while the owner repairs the named fault.
 
 Return these exact repair-impact fields with the normal terminal marker:
 
@@ -1246,9 +1234,9 @@ There is no second round for the same fault. Record the round in the run's
 friction file, whatever its result.
 
 A repair that declares a real cross-resource impact has changed something
-another resource mirrors, and nothing downstream now compares the two. Carry the
-declaration verbatim into the run report as a teacher flag, so the one person
-who will see both resources knows where to look.
+another resource mirrors. Supply both affected resources to the final review
+and recheck that relationship after rebuilding. Carry any unresolved impact
+into the run report as a teacher flag.
 
 For a picture that published and is wrong, use the one-filename repair slice and
 the prior picture receipt, finalise with `--replace yes`, then rebuild only the
@@ -1264,11 +1252,35 @@ surfaces, never to exclusion.
 
 ---
 
-## Phase 3.6 — Deterministic Finalisation
+## Phase 3.6 - Final Resource Review and Finalisation
 
 Every branch has now either built its resource and passed that resource's check
-or been excluded with a reason. Nothing further judges the package: this phase
-proves what the pictures were, tidies the transient work and writes the record.
+or been excluded with a reason. Before delivery, review the actual outputs with
+their final pictures. The early composition preview cannot settle their usability.
+
+For each built resource, launch its existing owner with `FINAL RESOURCE REVIEW`
+and `[PLUGIN_ROOT]/references/final-resource-review.md`: slide-designer for slides,
+worksheet-designer for pupil sheets and answer PDFs, working-wall-builder for the
+wall, and stick-in-sheets-designer for stick-ins. Reuse the wall builder's final
+inspection when its evidence still matches the delivered file. Supply exact
+output paths from build results, the resource specification, approved design,
+the run's render route and a separate owned review-result path. Use
+`render-pages.py` to produce a manifest and page PNGs for each file. This is
+review mode, not another creation run or a pre-picture preview.
+
+Merge the owners' entries into `[WORKING_DIR]/final-resource-reviews.json`,
+keeping their findings. Route REVISE findings through Phase 3.5;
+a final visual fault does not need to exhaust the pre-picture self-repair budget.
+Missing teaching or changed learning demand returns to Lesson Designer and design
+review. Rebuild affected resources and obtain a review of the current renders.
+A repair has not passed merely because it builds. Keep unresolved faults visible
+when the existing repair budget is exhausted. Rendering unavailable means UNVERIFIED.
+
+Only a current PASS for every delivered visual resource supports COMPLETE.
+`validate-run-report.py` checks delivered bytes, render evidence and page coverage
+against the final review receipt. It cannot check judgement quality. Retain final
+manifests and page images alongside the review records. Then prove picture
+provenance, tidy transient work and write the record.
 
 Run picture provenance once from the final schema-2 requirements and
 `[WORKING_DIR]/orchestration-receipts/picture-terminal/`:
@@ -1323,6 +1335,8 @@ directory.
 Write `[WORKING_DIR]/run-report.md` with:
 
 - outcome: `COMPLETE`, `PARTIAL`, `BLOCKED` or `UNVERIFIED`;
+- final resource review outcomes and unresolved findings. Use UNVERIFIED when an
+  output could not be visually checked, and BLOCKED for unresolved material faults;
 - delivered resources with exact paths from fixed build summaries or the wall
   builder, each path in backticks;
 - excluded earned resources and exact reasons;

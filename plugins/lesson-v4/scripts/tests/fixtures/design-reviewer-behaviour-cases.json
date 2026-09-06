@@ -265,6 +265,166 @@
       "expectedResult": "REDESIGN REQUIRED",
       "expectedOwner": "Lesson Designer",
       "forbiddenFinding": "Do not treat the decision record as higher authority than the teacher brief."
+    },
+    {
+      "id": "source-correction-loses-curricular-purpose",
+      "protectedBehaviour": "Reconsider the learning when correcting or replacing evidence removes a planned comparison.",
+      "materialDifference": "Year 4 objective: identify continuity and change in children's lives using a range of sources. The designer planned play and learning. A supposed toy in a portrait proves unsuitable evidence of play and becomes a comparison of painted and photographed portraits. The other two sources concern schooling. The final task permits any two sources and accepts an entirely schooling-based answer. The decision record calls this full coverage because the lesson also showed the portrait.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not restore the inaccurate toy inference, demand a fixed number of childhood topics, or change the objective to match the narrower task."
+    },
+    {
+      "id": "source-replacement-cousin-loses-needed-evidence",
+      "protectedBehaviour": "Judge replacements by the geographical learning they still enable, not by their being valid photographs.",
+      "materialDifference": "A geography lesson compares how people use two river locations. An unavailable photograph showing boats and a quay is replaced by an accurate close-up of water at that location. The comparison still asks how people use both locations, and the replacement shows no such use. The other source shows farming. Neither text nor another representation supplies the lost evidence.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not reject a different photograph or accessible text that actually preserves the required evidence merely because the original file changed."
+    },
+    {
+      "id": "school-specific-objective-permits-school-only-evidence",
+      "protectedBehaviour": "Accept appropriate depth within an explicitly school-specific objective.",
+      "materialDifference": "The approved objective is to identify continuity and change in children's schooling using sources. A classroom photograph and a timetable supply different evidence, and the final answer compares school activities and equipment with today. Children use both sources meaningfully.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not demand work, play or home life to satisfy a different, broader objective."
+    },
+    {
+      "id": "source-correction-preserves-learning",
+      "protectedBehaviour": "Accept an accurate replacement that preserves the intended learning.",
+      "materialDifference": "A lesson comparing travel before and after motor transport replaces one unusable photograph of a horse-drawn bus with another verified photograph showing the same relevant transport features. Questions, comparisons and end performance remain supported; attribution is updated.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not demand a new lesson architecture solely because the source file or attribution changed."
+    },
+    {
+      "id": "thematic-comparison-has-no-fixed-source-order",
+      "protectedBehaviour": "Accept sources whose distinct contributions meet in the final comparison without a dependency between every adjacent source.",
+      "materialDifference": "Children examine evidence of past work and play, with time and place made clear. Both contributions are taught and used in a final comparison of childhood. Reversing the two source pairs changes no necessary prerequisite, but removing either loses a substantive part of the comparison.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not reject the sequence for lacking chronological order or invent a causal link between work and play."
+    },
+    {
+      "id": "claim-format-repeats-supplied-conclusion",
+      "protectedBehaviour": "Distinguish a new format from a new application decision.",
+      "materialDifference": "Teaching states that pupils still read and write while tools changed. Children select a paraphrase of that conclusion, then write it with evidence. An extra Apply asks whether everything about learning changed and accepts the same conclusion using the same evidence. Its rationale claims increased demand solely because it is now a claim to judge.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not ban immediate comprehension checks or repeated practice that serves learning; reconsider the unearned extra Apply."
+    },
+    {
+      "id": "fresh-claim-requires-new-evidence-selection",
+      "protectedBehaviour": "Accept application when familiar knowledge must be used to decide a fresh case.",
+      "materialDifference": "After learning that changes to tools do not necessarily change an activity, children meet a new, accessible source showing both a changed tool and a changed activity. They must decide which earlier comparison still holds and which does not. Repeating the earlier conclusion unchanged gives an incorrect answer.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not reject this merely because it also uses a claim question or revisits continuity and change."
+    },
+    {
+      "id": "comparison-reference-enables-fresh-answer",
+      "protectedBehaviour": "Retain enabling criteria and readable evidence during independent comparison.",
+      "materialDifference": "The task uses fresh sources. A visible feature table reminds children to compare matching aspects, identify continuity and change, and use details from both sources. It supplies no comparison or conclusion for those sources. Children can use or ignore it.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not remove the reference because the work is independent or require procedural numbered steps instead."
+    },
+    {
+      "id": "science-picture-does-not-teach-explanation",
+      "protectedBehaviour": "Require the knowledge needed for the intended explanation, not just a concrete topic example.",
+      "materialDifference": "The objective is to explain how an animal's features help it survive. Teaching shows a clear polar bear photograph and says it is suited to cold places, but gives no explanation of what its features do. Independent work asks children to explain how its fur helps it survive. Neither prior knowledge nor another source supplies the missing relationship.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not demand more animals, a story or a longer lesson when teaching the relevant relationship through this example is sufficient."
+    },
+    {
+      "id": "simple-science-demonstration-supplies-needed-learning",
+      "protectedBehaviour": "Accept a small concrete example that adequately prepares the target performance.",
+      "materialDifference": "Children observe and compare a toy car travelling down the same ramp onto two surfaces. The teacher explains how greater friction slows the car, referring to the observed motion. Children use a fresh comparable result to explain the difference. The representation and necessary reading support remain available.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not add technical vocabulary, a second phenomenon or extra facts merely to make the teaching richer."
+    },
+    {
+      "id": "procedural-fluency-keeps-method-and-support",
+      "protectedBehaviour": "Accept fresh values and purposeful repetition when executing the taught method is the learning.",
+      "materialDifference": "After modelled and guided reading of four-digit counter charts with empty columns, children read fresh charts. Zero moves between columns, all case types have been prepared, and the column-value reference remains visible. Children must read each chart to find its numeral; the set has no final trick question.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not replace fluency with puzzles, remove the reference or demand a written justification after every chart."
+    },
+    {
+      "id": "same-reading-conclusion-different-evidence",
+      "protectedBehaviour": "Accept the same conclusion when a fresh case requires independent examination of different evidence.",
+      "materialDifference": "Children learn to infer a character's feelings from actions and speech. In a fresh accessible passage, a different character is also anxious, but the clues are different. The question asks children to infer the feeling and explain which details support it. Repeating the earlier answer's evidence would be wrong.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "forbiddenFinding": "Do not require a different emotion just to make the answer different, or ban reuse of the taught inference method."
+    },
+    {
+      "id": "pshe-new-names-leave-no-fresh-decision",
+      "protectedBehaviour": "Judge a fresh situation by the choice it leaves children, not its new names.",
+      "materialDifference": "Teaching models listening without interrupting through a disagreement. A worksheet labelled fresh application changes only the children's names and asks which is better: listening or interrupting. The preceding slide has given that exact choice and conclusion. No new circumstance, action to formulate or evidence to interpret changes the work.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not ban an immediate recall check, a familiar reminder, or rehearsal of the listening behaviour when that is the declared purpose."
+    },
+    {
+      "id": "geography-image-request-misses-decision-feature",
+      "protectedBehaviour": "Match picture evidence requirements to the explanation and pupil decision.",
+      "materialDifference": "A geography task asks children to explain how a bridge connects homes to a school across a river. The picture request requires only a river with buildings and permits images showing no crossing or school. The designer has supplied no map or text carrying those relationships, yet the model answer assumes they are visible.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "forbiddenFinding": "Do not require one exact photograph, architecture style or camera angle when several truthful representations could show the needed relationships."
+    },
+    {
+      "id": "reused-criteria-name-absent-source",
+      "materialDifference": "A worksheet provides written accounts of learning and play, but references a board criterion requiring a detail from the toys and a detail from the written account. No toys appear in the worksheet. Its intended comparison and required evidence are otherwise explicit.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Check resolved support against the task that uses it.",
+      "forbiddenFinding": "Do not add toys or change the task merely to satisfy the stale criterion, or remove needed support. Correct its source wording for this use."
+    },
+    {
+      "id": "shared-support-explicitly-accessible",
+      "materialDifference": "A maths sheet has no printed chart. Its design explicitly retains the blank place-value chart and criteria on the board while children complete the sheet in class. The chart is suitable and does not reveal the fresh answers.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Accept planned access without duplicating support on every sheet.",
+      "forbiddenFinding": "Do not require a printed chart solely because the worksheet reference list is empty."
+    },
+    {
+      "id": "standalone-task-assumes-unavailable-reference",
+      "materialDifference": "A sheet intended for use away from the classroom asks children to use the classification key from the board. The key is neither printed nor included in another available resource; its classifications cannot be inferred from the task alone.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "protectedBehaviour": "Require usable support access when a task depends on it.",
+      "forbiddenFinding": "Do not invent access to the board or change the learning to unaided recall. Preserve the intended classification task while providing the needed resource."
+    },
+    {
+      "id": "support-remains-suitable-with-fresh-evidence",
+      "materialDifference": "A fresh comparison uses different written sources but the retained criteria ask for a matching aspect, a continuity or change, and details from both sources. Each instruction fits the new work and none supplies its answer.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Reuse valid support rather than rewriting it for novelty.",
+      "forbiddenFinding": "Do not rewrite suitable criteria just because the sources changed."
+    },
+    {
+      "id": "explicit-continuity-claim-as-consolidation",
+      "materialDifference": "A source comparison explicitly establishes that reading continues while its materials differ. A brief claim question asks whether everything changed and children rehearse the supported comparison. It is labelled consolidation within practice; a later fresh task supplies independent evidence.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Accept a supported check when its limited purpose is honest.",
+      "forbiddenFinding": "Do not ban the claim question or require it to become harder when it serves consolidation."
+    },
+    {
+      "id": "explicit-continuity-claim-as-independent-judgement",
+      "materialDifference": "A source comparison explicitly establishes that reading continues while its materials differ. The same claim question asks whether everything changed, but is the sole final evidence of fresh independent comparison. The supplied conclusion answers it without children selecting or interpreting new evidence.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "protectedBehaviour": "Distinguish the same supported question from evidence of fresh independent judgement.",
+      "forbiddenFinding": "Do not ban claim questions generally. The finding concerns what this task can establish about the intended learning."
     }
   ]
 }

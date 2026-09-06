@@ -4,17 +4,16 @@ const { FONT, COLOURS, FIT, CARD } = require('../styles');
 const { splitAnswerRuns } = require('../answer-text');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { drawImage, imageAspect } = require('./image');
+const { textBoxWidthIn } = require('../glyph-width');
 
 const PAD = 0.12;
 const CARD_GAP = 0.18;
 const CARD_PAD = 0.12;
 const ANSWER_GAP = 0.10;
-// A card whose fields are all blank is a prompt card: the field labels are the
-// working text children read across the room, so they take more of the card
-// than a completed answer strip does, and the photograph gives up the room.
-const ANSWER_RATIO = 0.38;
-const PROMPT_RATIO = 0.52;
-const ANSWER_FONT_MAX = 36;
+// Reserve the space the field text actually needs. Blank response fields are
+// read as prompts, not written on the projected board; they do not earn an
+// arbitrary majority of the card at the expense of the evidence being studied.
+const ANSWER_FONT_MAX = 28;
 // Each field is its own point for a child's eye to land on, so the lines get
 // paragraph spacing rather than stacking as one fused block.
 const FIELD_PARA_SPACE = 8;
@@ -51,6 +50,17 @@ function answerText(fields) {
   }).join('\n');
 }
 
+function fieldHeight(fields, width) {
+  if (!fields.length) return 0;
+  const lines = fields.reduce(function (total, field) {
+    const text = field.label + (field.value.trim() ? ': ' + field.value : '');
+    return total + text.split('\n').reduce(function (n, line) {
+      return n + Math.max(1, Math.ceil(textBoxWidthIn(line, ANSWER_FONT_MAX, true) / Math.max(0.1, width)));
+    }, 0);
+  }, 0);
+  return lines * ANSWER_FONT_MAX * 1.3 / 72 + fields.length * FIELD_PARA_SPACE / 72;
+}
+
 function drawEvidenceCards(pptx, slide, zone, data, ctx) {
   const items = normaliseItems(data);
   if (items.length < 1 || items.length > 4) {
@@ -75,10 +85,7 @@ function drawEvidenceCards(pptx, slide, zone, data, ctx) {
   if (items.length === 1) {
     const only = items[0];
     const hasAnswer0 = only.fields.length > 0;
-    const isPrompt0 = hasAnswer0 && only.fields.every(function (field) {
-      return field.value.trim() === '';
-    });
-    const answerH0 = hasAnswer0 ? cardH * (isPrompt0 ? PROMPT_RATIO : ANSWER_RATIO) : 0;
+    const answerH0 = fieldHeight(only.fields, cardW - 2 * CARD_PAD);
     const imageH0 = cardH - 2 * CARD_PAD - answerH0 - (hasAnswer0 ? ANSWER_GAP : 0);
     const aspect = imageAspect({
       type: 'image',
@@ -104,11 +111,11 @@ function drawEvidenceCards(pptx, slide, zone, data, ctx) {
     const x = cardX0 + col * (cardW + CARD_GAP);
     const y = innerY + row * (cardH + CARD_GAP);
     const hasAnswer = item.fields.length > 0;
-    const isPrompt = hasAnswer && item.fields.every(function (field) {
-      return field.value.trim() === '';
-    });
-    const answerH = hasAnswer ? cardH * (isPrompt ? PROMPT_RATIO : ANSWER_RATIO) : 0;
+    const answerH = fieldHeight(item.fields, cardW - 2 * CARD_PAD);
     const imageH = cardH - 2 * CARD_PAD - answerH - (hasAnswer ? ANSWER_GAP : 0);
+    if (imageH < 0.9) {
+      throw new Error('EVIDENCE_CARDS_CAPACITY: field text leaves less than 0.9in for its evidence. Give the card more room or show fewer cards; do not shrink the evidence to fit labels.');
+    }
 
     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
       x: x, y: y, w: cardW, h: cardH,

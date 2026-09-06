@@ -50,6 +50,12 @@ const SUPPLIED_ORANGE = COLOURS.orange; // E46C0A — supplied/given material th
 
 function splitAnswerRuns(text, bold, baseColor) {
   const str = String(text);
+  const label = /^(\([A-Za-z]|\(\d+[A-Za-z]?)\)(\s+|$)/.exec(str);
+  if (label) {
+    const rest = splitAnswerRuns(str.slice(label[0].length), bold, baseColor);
+    return [{ text: label[0], options: { color: COLOURS.questionLabel, bold: true } }]
+      .concat(Array.isArray(rest) ? rest : rest ? [{ text: rest, options: { color: baseColor || COLOURS.body, bold: !!bold } }] : []);
+  }
   const hasInline =
     str.indexOf('**') !== -1 ||
     str.indexOf('[[') !== -1 ||

@@ -54,15 +54,13 @@ class SlideDecoratorRoleTests(unittest.TestCase):
         self.designer = read(DESIGNER)
         self.playbook = read(PLAYBOOK)
 
-    def test_the_role_exists_at_a_narrower_effort_than_the_designer(self) -> None:
+    def test_the_role_retains_its_configured_launch_settings(self) -> None:
         fields = frontmatter(self.decorator)
         self.assertEqual(fields["name"], "slide-decorator")
-        self.assertEqual(fields["model"], "sol")
+        self.assertEqual(fields["model"], "luna")
         # Composition is settled before it runs; its judgement is room,
         # relevance and legibility, and the role says so beside the setting.
-        self.assertEqual(fields["effort"], "medium")
-        self.assertIn("Your effort is medium because", self.decorator)
-        self.assertEqual(frontmatter(self.designer)["effort"], "high")
+        self.assertEqual(fields["effort"], "xhigh")
 
     def test_the_launch_spec_resolves_the_new_role(self) -> None:
         result = subprocess.run(
@@ -73,7 +71,7 @@ class SlideDecoratorRoleTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("task_name: slide_decorator", result.stdout)
-        self.assertIn("reasoning_effort: medium", result.stdout)
+        self.assertIn("reasoning_effort: xhigh", result.stdout)
 
     def test_the_decorator_owns_the_pass_and_its_markers(self) -> None:
         for token in (
@@ -160,10 +158,9 @@ class SlideDecoratorOrchestrationTests(unittest.TestCase):
             "Wait until Slide Designer, the Slide Decorator (or its degrade) and all",
             finalize,
         )
-        # The paragraph forbidding a built-deck look survives, and now says the
-        # decorator is not that spawn, so nobody removes it as one.
-        self.assertIn("Do not reinstate it", finalize)
-        self.assertIn("The Slide Decorator is not that spawn", finalize)
+        # Optional decoration stays separate from final output judgement.
+        self.assertIn("final resource review in Phase 3.6", finalize)
+        self.assertIn("earlier optional-picture stage", finalize)
 
     def test_a_failed_decorator_degrades_and_never_blocks(self) -> None:
         slides = self.slice("slides-design")

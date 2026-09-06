@@ -442,6 +442,55 @@ def path_exists(token: str, working_dir: Path, output_dir: Path) -> bool:
     return False
 
 
+def final_review_failures(working: Path, output: Path, delivered: list[str]) -> list[str]:
+    """Bind the claimed visual review to the exact delivered files and pages.
+
+    This verifies evidence coverage and freshness, not the quality of judgement.
+    """
+    targets = set()
+    for bullet in delivered:
+        for token in path_tokens(bullet):
+            path = Path(token)
+            if path.suffix.lower() not in {".pptx", ".pdf", ".docx", ".html"}:
+                continue
+            candidates = [path, output / path, working / path]
+            targets.add(next((p.resolve() for p in candidates if p.is_file()), path.resolve()))
+    if not targets:
+        return []
+    failures = []
+    receipt = read_json(working / "final-resource-reviews.json", "final resource review", failures)
+    if not isinstance(receipt, dict) or receipt.get("schemaVersion") != 1 or not isinstance(receipt.get("resources"), list):
+        return failures + ["final resource review: schemaVersion 1 and resources array required"]
+    for target in targets:
+        try:
+            entries = [r for r in receipt["resources"] if isinstance(r, dict) and Path(r.get("path", "")).resolve() == target]
+            if len(entries) != 1:
+                raise ValueError("requires exactly one review entry")
+            entry = entries[0]
+            if entry.get("status") != "PASS" or entry.get("findings") != []:
+                raise ValueError("review is unresolved or unverified")
+            if entry.get("owner") not in {"slide-designer", "worksheet-designer", "working-wall-builder", "stick-in-sheets-designer"}:
+                raise ValueError("review owner missing or invalid")
+            evidence = entry.get("evidence", {})
+            if not isinstance(evidence, dict) or not all(isinstance(evidence.get(k), str) and evidence[k].strip() for k in ("readability", "taskAccess", "responseSpace")):
+                raise ValueError("requires concrete readability, taskAccess and responseSpace evidence")
+            manifest = json.loads(Path(entry["manifest"]).read_text(encoding="utf-8"))
+            if manifest.get("version") != 1 or Path(manifest["source"]).resolve() != target:
+                raise ValueError("render manifest is not for this delivered file")
+            pages = manifest["pages"]
+            numbers = [p["number"] for p in pages]
+            if not numbers or numbers != list(range(1, len(numbers) + 1)) or entry.get("reviewedPages") != numbers:
+                raise ValueError("review must cover every rendered page in order")
+            checks = [(target, manifest["sourceSha256"]), (Path(manifest["pdf"]["path"]), manifest["pdf"]["sha256"])]
+            checks.extend((Path(p["path"]), p["sha256"]) for p in pages)
+            for path, expected in checks:
+                if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+                    raise ValueError(f"stale render evidence: {path}")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            failures.append(f"final resource review: {target.name}: {exc}")
+    return failures
+
+
 def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
     failures: list[str] = []
     working = Path(working_dir)
@@ -726,6 +775,7 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
 
     # ── COMPLETE is earned, not declared ─────────────────────────────────
     if package_status == "COMPLETE":
+        failures.extend(final_review_failures(working, output, delivered_bullets))
         blocked = section_bullets(sections.get("## Blocking faults", ""))
         if blocked:
             failures.append(

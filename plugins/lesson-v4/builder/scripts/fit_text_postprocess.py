@@ -420,6 +420,12 @@ def grow_fit_directive(name):
     return match.group("group"), int(match.group("ceiling"))
 
 
+def shape_floor(name, default):
+    """An explicit projected-reading floor survives the global fitting pass."""
+    match = re.match(r"^GROWFIT__[^_]+__\d+__MIN([1-9]\d{0,2})__", name or "")
+    return max(default, int(match.group(1))) if match else default
+
+
 def measure_shape(shape, ceiling, floor_pt):
     tf = shape.text_frame
     max_size, bold, italic = inspect_runs(tf)
@@ -513,7 +519,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             group_failed = False
             for shape, ceiling in members:
                 try:
-                    result = measure_shape(shape, ceiling, min(floor_pt, ceiling))
+                    result = measure_shape(shape, ceiling, shape_floor(shape.name, min(floor_pt, ceiling)))
                     if result is None:
                         skipped += 1
                         group_failed = True
@@ -558,7 +564,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
     )
     for sn, shape_name, preview in overloaded:
         print(
-            f"  OVERLOAD slide {sn} box {shape_name!r}: hit {floor_pt}pt floor; "
+            f"  OVERLOAD slide {sn} box {shape_name!r}: hit {shape_floor(shape_name, floor_pt)}pt floor; "
             f"content is too heavy for this box. Give it more room or split the slide. "
             f"Text preview: \"{preview}{'...' if len(preview) == 60 else ''}\"",
             file=sys.stderr,

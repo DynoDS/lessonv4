@@ -31,6 +31,10 @@ Report or correct a defect only when the evidence shows that the design will mat
 
 A different sound design choice is not a defect.
 
+Make two distinct judgements: **Pedagogy**, whether this design prepares children for meaningful success at its objective; and **Daniel-fit**, whether the planned experience and wording match Daniel's documented preferences. An educationally sound choice can still fail an established teacher preference. Name the applicable preference and exact mismatch; do not invent preferences or require a universally harmful consequence. A personal rewrite must preserve meaning and thinking demand. Physical layout remains downstream.
+
+Read the work before the designer's rationale. For pedagogy, attempt a representative pupil response using only the preparation and accessible references the lesson provides. Identify any connection the adult would still have to supply. For Daniel-fit, walk through what the teacher says and children encounter, applying the relevant preferences even when the lesson seems broadly sound. Resolve both judgements before classifying corrections. A pass requires evidence in the lesson, not a convincing rationale, a checklist count or the absence of a familiar error.
+
 Use the existing four outcomes:
 
 1. **Bounded objective correction:** make a small local correction that restores the settled lesson without changing its approach, scope, difficulty, task architecture, main representation or intended pupil work.
@@ -158,10 +162,10 @@ Preserve a sound simplification when its limits do not misteach the task.
 
 Check:
 
-- the task requires the thinking named by the objective;
+- the task requires the thinking named by the objective, and the teaching supplies the particular knowledge, examples or demonstrated actions a successful performance depends on. Trace a representative pupil answer back to that preparation. A topic-relevant picture, a correct headline or a claim of substantive teaching in the rationale is not sufficient by itself. Accept concise teaching and simple examples when they do supply what children need; richness is not a count of facts, images or activities;
 - the lesson has a coherent centre: the dominant sticking point or blocking misconception is exposed, resolved and tested again, or a clearly named central difficulty serves that role when no genuine misconception exists;
 - the retesting of that centre has an end: count the response moments, beats and worksheet prompts alike, that elicit essentially the same corrective answer, and when a later one can be passed by repeating the sentence given two moments earlier, the centre has decayed into a catchphrase and its time belongs to the parts of the objective still untaught. A lesson most of whose response moments rehearse the correction has narrowed its objective to the sticking point, which is a purposeful design defect, not polish;
-- each major beat changes the state of the lesson and the next builds from it: read the beats in order and name what each changes and what later depends on it. A major beat that could move elsewhere with nothing lost gets the challenge, and the answer is either a legitimate place beside the spine (vocabulary, a routine, a safeguarding note, setup) or a finding; do not answer it by demanding forced links. A Teach→Do pair whose Do nothing later uses is orientation wearing a chunk's clothes (what the subject is, why we are here); it becomes the one or two lines that pose the lesson's problem on the first real Teach, and its Do goes (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `Orientation is not a Teach chunk`). A beat carrying a second job that has no beat of its own, or a run of teacher-presented beats with no pupil action between them, is a purposeful design defect, not polish (`preferences.md` → The Teach → Do → Teach → Do Rhythm);
+- each major beat changes the state of the lesson and the next builds from it: read the beats in order and name what each changes and what later depends on it. A major beat that could move elsewhere with nothing lost gets the challenge, and the answer is either a legitimate contribution to a later shared comparison, a place beside the spine (vocabulary, a routine, a safeguarding note, setup), or a finding; do not answer it by demanding forced links. A Teach→Do pair whose Do nothing later uses is orientation wearing a chunk's clothes (what the subject is, why we are here); it becomes the one or two lines that pose the lesson's problem on the first real Teach, and its Do goes (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `Orientation is not a Teach chunk`). A beat carrying a second job that has no beat of its own, or a run of teacher-presented beats with no pupil action between them, is a purposeful design defect, not polish (`preferences.md` → The Teach → Do → Teach → Do Rhythm);
 - each Do beat or `pupilInstruction` is every child using the idea just taught, not a question to the room: a question a child could answer without that idea, or that most of the class could sit out, is a check on the room, and it is a finding unless the form makes every child commit; and it is the idea *this* Teach taught rather than a neighbouring one: a beat where every child commits to real work still breaks the pair when the move it practises was never taught here and the move that was taught is used by nobody, which is a purposeful design defect rather than polish; and by the last beat before the main practice children are working with or reasoning with the idea rather than retrieving it (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `Questioning is not doing`, `The Do uses the idea its own Teach just taught` and `Climb the demand`);
 - a substantial task is launched before it is instructed: when the product's form is new to the lesson or the enabling input ran to several units, the unit's `launch` carries what the lesson has established, a good instance beside a weak one, and the steps, and a null `launch` is right only when children can begin from the question alone (`preferences.md` → Slide Philosophy, `Giving a task its instructions is not launching it`);
 - a child cannot succeed by copying, reformatting, reading a visible answer or following a predictable answer pattern;
@@ -200,7 +204,7 @@ Check:
 - vocabulary definitions are useful to children;
 - sticky knowledge is accurate, stable and worth carrying;
 - each moment contains manageable reading, conceptual and working load;
-- support remains where it enables the intended thinking;
+- support remains where it enables the intended thinking, and its words still fit each task using it. Read the resolved criteria, worked reference and word bank alongside that task's actual sources and required response, following `preferences.md` → Support, Checking and Release. A valid reference ID or suitability for an earlier task is not evidence of suitability here. For needed support omitted from a sheet, check the planned shared access before making a finding; do not assume either that nothing is available or that the board will always be there;
 - answer-giving or unnecessary support is removed;
 - the teacher can run the lesson without reconstructing missing decisions;
 - every taught idea reaches the board as teaching, not a label: cover each unit's script and read its child-facing content as a child who missed the teacher; when `what?`, `why?` or `when?` is a fair reply, the meaning lives only in the notes, which is a purposeful design defect, not polish; on a content Teach that teaching is the `explanation` field, and a null one is right only for a name, a convention or a fact that simply is so (`preferences.md` → Slide Philosophy, `A heading, a fact or a rule on the board is not the teaching of it`);
@@ -217,13 +221,13 @@ Judge the worksheet's learning brief, not its physical page design.
 
 Check:
 
-- the work is intellectually fresh from modelled and Your Turn work;
+- the work serves its stated practice purpose and is intellectually fresh from modelled and Your Turn work where fresh application is claimed;
 - procedural fluency may use new values when carrying out the procedure is the target;
-- reasoning, inference, explanation and decisions change a load-bearing feature;
+- for reasoning, inference, explanation and decisions, work a representative answer and compare it with the taught answer: identify the changed information and what the child must still work out from it. Changing a load-bearing feature must change the work required, not merely decorate a reusable conclusion. Reaching the same conclusion remains valid when each case requires examination of its own evidence;
 - an improve-or-extend prompt works on a stimulus that genuinely lacks something in the lesson's taught terms, so a strong answer can demonstrate the taught rationale rather than only a true fact;
 - the activity architecture matches the thinking;
 - the amount of work is proportionate to response cost;
-- instances form a useful sequence rather than a random list;
+- instances form a useful sequence rather than a random list; a misconception challenge, generative task or justification earns its place through that purpose rather than being a compulsory ending or proof of difficulty;
 - the worksheet can provide independent evidence;
 - required-task-resource and separate-fresh-worksheet roles are honest;
 - supplied teacher worksheets are respected.
@@ -285,7 +289,7 @@ Do not recheck identifier or reference legality.
 
 Then read `design-decisions.md`.
 
-Compare the finished design with the recorded purposeful decisions and teacher brief. Correct one objectively stale decision-record line only when the design is clearly right. If matching the record would change the lesson decision, return `REDESIGN REQUIRED`.
+Compare the finished design with the recorded purposeful decisions and teacher brief. Test claims such as full objective coverage or increased demand against actual successful pupil answers, including any permitted source choices; the rationale is a claim to verify, not evidence that the task delivers it. When a source was replaced or reinterpreted, check whether its teaching purpose survived, using the lesson-designer's final-performance check. Correct one objectively stale decision-record line only when the design is clearly right. If matching the record would change the lesson decision, return `REDESIGN REQUIRED`.
 
 ## Correction and ownership boundary
 
@@ -386,11 +390,20 @@ Use exactly this report shape:
 
 ## Voice sweep
 Read [N] child-facing strings as a Year [Y] child; repaired [M].
+
+## Judgements
+Pedagogy: PASS or REVISE
+Daniel-fit: PASS or REVISE
+
+Learning evidence: [the intended performance and the particular teaching/practice that prepares it, or the missing preparation]
+Teacher fit: [the relevant preference and concrete delivery/wording evidence, or the mismatch]
 ```
 
 `[N]` is the count the view's `As the class meets it` section states, `[Y]` the lesson's year group and `[M]` how many strings you repaired; the packet check refuses a report whose `[N]` does not match the view.
 
 Use `APPROVED` when no purposeful lesson decision remains defective. Local corrections and teacher flags may exist.
+
+Report each judgement on the corrected final design. Both must PASS for APPROVED; at least one must REVISE for REDESIGN REQUIRED. These are separate responsibilities within this review, not a claim that two independent reviewers ran. Keep each evidence line to one or two sentences. Do not manufacture criticism or rewrite sound choices to demonstrate effort.
 
 Use `REDESIGN REQUIRED` when one or more purposeful lesson decisions must change.
 

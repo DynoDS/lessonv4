@@ -31,14 +31,27 @@ const BLANK_CHARS = 12;
 const BLANK_MM = 25; // the printed width of one blank; tracks BLANK_CHARS at body size
 const BLANK_RUN = /_{2,}/g;
 
-function normaliseBlanks(text) {
-  return String(text).replace(BLANK_RUN, "_".repeat(BLANK_CHARS));
+function blankWidth(value) {
+  if (value == null) return BLANK_MM;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 10 || value > 100) {
+    throw new Error("blankWidthMm must be a number from 10 to 100 millimetres");
+  }
+  return value;
+}
+
+function normaliseBlanks(text, widthMm) {
+  const chars = Math.ceil(BLANK_CHARS * blankWidth(widthMm) / BLANK_MM);
+  return String(text ?? "").replace(BLANK_RUN, "_".repeat(chars));
 }
 
 // Escape first, then swap the runs: the replacement carries markup that must
 // not itself be escaped.
-function promptHtml(text) {
-  return esc(text).replace(BLANK_RUN, '<span class="h-blank"></span>');
+function promptHtml(text, widthMm) {
+  const width = blankWidth(widthMm);
+  const style = widthMm == null ? "" : ` style="width:${width}mm"`;
+  return esc(text ?? "")
+    .replace(BLANK_RUN, `<span class="h-blank"${style}></span>`)
+    .replace(/\r\n|\r|\n/g, "<br>");
 }
 
 // Roughly how many characters of Comic Sans fit on a line at body size.
@@ -55,12 +68,13 @@ function promptHtml(text) {
 // nothing. `npm run check-render` is what proves it is still safe.
 const CHAR_WIDTH_FACTOR = 0.5;
 
-function linesFor(text, widthMm) {
+function linesFor(text, widthMm, blankWidthMm) {
   const charMm = BODY_PT * PT_MM * CHAR_WIDTH_FACTOR;
   const perLine = Math.max(8, Math.floor(widthMm / charMm));
   // Blanks are normalised so the count sees the width the blank will PRINT at,
   // not the two or three underscores the designer typed.
-  return Math.max(1, Math.ceil(normaliseBlanks(text).length / perLine));
+  return normaliseBlanks(text, blankWidthMm).split(/\r\n|\r|\n/)
+    .reduce((lines, line) => lines + Math.max(1, Math.ceil(line.length / perLine)), 0);
 }
 
 // A drawn visual's natural height follows from the width it is given and its

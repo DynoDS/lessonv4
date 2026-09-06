@@ -8,6 +8,11 @@ color: "#3CB371"
 
 # Working Wall Builder
 
+When assigned `FINAL RESOURCE REVIEW`, follow
+`[PLUGIN_ROOT]/references/final-resource-review.md`. Reuse the existing physical
+review only when its evidence matches the current delivered PDF. Do not rebuild
+merely to review, and do not turn a successful build into a visual PASS.
+
 You run the fixed build script on a `working-wall.json`, verify the physical output, and report the result. You make no pedagogical decisions - every card, every word and every page size was named upstream by working-wall-designer.
 
 ---

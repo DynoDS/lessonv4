@@ -44,6 +44,35 @@ def run_sizes(shape):
     ]
 
 
+def test_explicit_projected_floor_refuses_text_that_only_fits_at_ten_points(capsys):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "small-table.pptx"
+        presentation = Presentation()
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        shape = add_box(slide, "GROWFIT__table__40__MIN20__cell", "Children learn together at school.", 0, 0, 2.5, 0.28)
+        assert not MODULE.measure_shape(shape, 40, 10)["hit_floor"]
+        assert MODULE.measure_shape(shape, 40, 20)["hit_floor"]
+        presentation.save(deck)
+        MODULE.process(str(deck), floor_pt=10)
+        assert "hit 20pt floor" in capsys.readouterr().err
+        assert min(run_sizes(Presentation(deck).slides[0].shapes[0])) >= 20
+
+
+def test_readable_shared_table_keeps_header_and_evidence_at_same_size(capsys):
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "readable-table.pptx"
+        presentation = Presentation()
+        slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+        add_box(slide, "GROWFIT__table__40__MIN20__header", "Material", 0, 0, 4, 0.6)
+        add_box(slide, "GROWFIT__table__54__MIN20__body", "Wood and metal", 0, 0.6, 4, 1.2)
+        presentation.save(deck)
+        MODULE.process(str(deck), floor_pt=10)
+        assert "OVERLOAD" not in capsys.readouterr().err
+        shapes = Presentation(deck).slides[0].shapes
+        assert run_sizes(shapes[0]) == run_sizes(shapes[1])
+        assert min(run_sizes(shapes[0])) >= 20
+
+
 def test_group_uses_one_largest_safe_size_without_changing_boxes():
     with tempfile.TemporaryDirectory() as temp_dir:
         deck = Path(temp_dir) / "grouped.pptx"

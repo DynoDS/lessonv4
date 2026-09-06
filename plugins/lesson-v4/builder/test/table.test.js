@@ -41,15 +41,15 @@ test('a table refuses a zone whose rows cannot hold one readable line', () => {
       assert.match(err.message, /^TABLE_ZONE_TOO_SHORT:/);
       // The remedy is named in the units the zone is written in, because the
       // words are "(1)" and cutting them cannot repair the geometry.
-      assert.match(err.message, /1\.14in tall/);
+      assert.match(err.message, /1\.50in tall/);
       return true;
     }
   );
 });
 
 test('the refusal names the height the row count actually needs', () => {
-  assert.equal(requiredZoneHeight(2).toFixed(2), '1.14');
-  assert.equal(requiredZoneHeight(4).toFixed(2), '1.54');
+  assert.equal(requiredZoneHeight(2).toFixed(2), '1.50');
+  assert.equal(requiredZoneHeight(4).toFixed(2), '2.26');
   assert.ok(ROW_MIN_H > 0);
 });
 
@@ -73,7 +73,7 @@ test('a taller zone with more rows than it can hold is refused too', () => {
     () => drawn(zone, { headers: ['#', 'x', 'y'], rows }),
     (err) => {
       assert.match(err.message, /^TABLE_ZONE_TOO_SHORT:/);
-      assert.match(err.message, /2\.34in tall/);
+      assert.match(err.message, /3\.78in tall/);
       return true;
     }
   );
@@ -101,5 +101,5 @@ test('the refusal reaches the preflight by name, before anything is written', ()
   assert.equal(result.errors.length, 1);
   assert.equal(result.errors[0].signal, 'TABLE_ZONE_TOO_SHORT');
   assert.equal(result.errors[0].slide, 1);
-  assert.match(result.errors[0].message, /1\.14in tall/);
+  assert.match(result.errors[0].message, /1\.50in tall/);
 });

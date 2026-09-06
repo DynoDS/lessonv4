@@ -22,9 +22,10 @@ function fitGroupId(zone, role) {
   ].join('-');
 }
 
-function growFitObjectName(groupId, ceilingPt, label) {
+function growFitObjectName(groupId, ceilingPt, label, minimumPt) {
   const ceiling = Math.max(1, Math.min(999, Math.floor(Number(ceilingPt) || 1)));
-  return 'GROWFIT__' + safePart(groupId) + '__' + ceiling + '__' + safePart(label);
+  const floor = minimumPt == null ? '' : 'MIN' + Math.max(1, Math.min(ceiling, Math.floor(minimumPt))) + '__';
+  return 'GROWFIT__' + safePart(groupId) + '__' + ceiling + '__' + floor + safePart(label);
 }
 
 module.exports = { fitGroupId, growFitObjectName };

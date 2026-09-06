@@ -25,13 +25,13 @@ FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str]] = {
     ),
     "working-wall-designer": (
         "working-wall-designer-focused-repair.md",
-        "terra",
-        "high",
+        "sol",
+        "medium",
     ),
     "stick-in-sheets-designer": (
         "stick-in-sheets-designer-focused-repair.md",
-        "terra",
-        "high",
+        "luna",
+        "xhigh",
     ),
 }
 
@@ -94,10 +94,10 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "focused-repair": (
         "## Phase 3.5 — The Focused Owner-Repair Round",
-        "## Phase 3.6 — Deterministic Finalisation",
+        "## Phase 3.6 - Final Resource Review and Finalisation",
     ),
     "finalize": (
-        "## Phase 3.6 — Deterministic Finalisation",
+        "## Phase 3.6 - Final Resource Review and Finalisation",
         "## Phase 4 — Final Assembly and Report",
     ),
     "delivery": (
@@ -553,9 +553,10 @@ class MakeLessonRuntimeTests(unittest.TestCase):
 
         for token in (
             "a semantic build diagnostic",
-            "a picture reference the\nreceipts say will never be honoured",
+            "a picture reference the receipts",
             "a helper-delivery failure",
-            "raised by a deterministic check that names the resource",
+            "material finding",
+            "Each identifies the resource, location and owner",
         ):
             with self.subTest(token=token):
                 self.assertIn(token, focused)
@@ -585,22 +586,19 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         """
         focused = self.slice_text("focused-repair")
 
-        self.assertIn("nothing downstream now compares the two", focused)
+        self.assertIn("Supply both affected resources to the final review", focused)
         self.assertIn("run report as a teacher flag", focused)
 
     def test_finalize_slice_proves_the_pictures_and_writes_the_record(
         self,
     ) -> None:
-        """Finalisation is deterministic: no verdict, no judgement, no merge.
-
-        This slice used to open by merging review findings into a package
-        verdict. What has to survive that removal is the licence and history
-        proof for every published picture, and the shared build review log.
-        """
+        """Final output judgement runs before provenance and the delivery record."""
         finalize = self.slice_text("finalize")
 
         for token in (
-            "Nothing further judges the package",
+            "final-resource-reviews.json",
+            "final-resource-review.md",
+            "Only a current PASS",
             'finalize-picture-assignment.py" provenance',
             "Require `PICTURE_PROVENANCE_OK` before removing transient picture work",
             "Append genuine findings to the shared build review log",

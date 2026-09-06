@@ -348,13 +348,13 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
       const badgeCy = rowY + BADGE_INSET + badgeD / 2;
       slide.addShape(pptx.ShapeType.ellipse, Object.assign(
         placeTilted(card, badgeD, badgeD, badgeCx, badgeCy),
-        { fill: { color: COLOURS.title }, line: { type: 'none' }, rotate: tilt }
+        { fill: { color: COLOURS.pureWhite }, line: { color: COLOURS.questionLabel, width: 1 }, rotate: tilt }
       ));
       slide.addText(String(n + 1), Object.assign(
         placeTilted(card, badgeD, badgeD, badgeCx, badgeCy),
         {
           fontFace: FONT, fontSize: badgeFont, bold: true,
-          color: COLOURS.pureWhite, align: 'center', valign: 'middle',
+          color: COLOURS.questionLabel, align: 'center', valign: 'middle',
           margin: 0, fit: FIT, rotate: tilt
         }
       ));

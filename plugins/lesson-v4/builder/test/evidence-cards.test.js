@@ -163,9 +163,23 @@ test('whitespace-only values count as a prompt card, not answers', () => {
 
   const cardH = ZONE.h - 2 * PAD;
   const fieldBlock = texts[texts.length - 1];
-  // PROMPT_RATIO (0.52), not ANSWER_RATIO (0.38): a space is not an answer.
-  assert.ok(
-    Math.abs(fieldBlock.opts.h - cardH * 0.52) < 0.01,
-    `prompt fields should take the prompt share, got ${fieldBlock.opts.h}`
-  );
+  assert.ok(fieldBlock.opts.h < cardH / 2, 'short prompts must leave most of the height for their evidence');
+  const other = record();
+  drawEvidenceCards(pptx, other.slide, ZONE, {
+    type: 'evidence-cards', items: [{ imagePath: 'photo.png', fields: PROMPT_FIELDS.map(f => ({...f, value: ''})) }]
+  }, ctx);
+  assert.equal(fieldBlock.opts.h, other.texts.at(-1).opts.h, 'blank and whitespace values have the same demand');
+});
+
+test('short task labels preserve at least as much evidence as their completed answers', () => {
+  const pptx = new PptxGenJS();
+  const ctx = makeLessonDir(400, 400);
+  function imageHeight(value) {
+    const r = record();
+    drawEvidenceCards(pptx, r.slide, ZONE, { items: [0, 1].map(() => ({
+      imagePath: 'photo.png', fields: [{label: 'Object', value}, {label: 'How does its shape help?', value}]
+    })) }, ctx);
+    return r.shapes.find(s => s.type === 'image').opts.h;
+  }
+  assert.ok(imageHeight('') >= imageHeight('Its broad surface helps spread the force.'));
 });

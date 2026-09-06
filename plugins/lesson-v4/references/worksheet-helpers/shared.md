@@ -78,11 +78,20 @@ question, not a quota to fill.
 
 ## The instruction line
 
+Keep separate actions on separate lines when that makes the instruction easier
+to follow. The `instruction` helper preserves explicit line breaks. Its optional
+`blankWidthMm` also works on `card-row` captions: choose a number from 10 to 100
+for the width of each completion blank in that block. The default is 25 mm.
+Size this space for the longest plausible answer, including a phrase from the
+word bank, and check the rendered card. Typing more underscores does not make
+the blank wider. If a phrase cannot fit the card, use a writing area below it.
+
 About a third of the helpers take a `text`: the quiet line above the activity
 that says what to do. The catalogue's example for each helper shows whether it
 has one; where the helper cannot carry it, put an `instruction` above it in the
-stack. One short line. Two is one too many at the top of a page whose room
-belongs to the questions.
+stack. Keep it concise, but preserve the steps children need to understand
+the task. A second necessary instruction is better than a compressed sentence
+that hides what to do.
 
 The build refuses a sheet whose pupil wording does not reach the page:
 `TEXT_NOT_PRINTED` names the zone, the helper and the field. It used to be
@@ -137,11 +146,11 @@ the helper's title out.
 
 ---
 
-## One answer format per question
+## One place for each required response
 
-Pick one. A bordered box AND writing lines AND a blank space is three
-invitations to answer in the same question, and a child will use the wrong one
-and be marked as if they chose badly.
+Give each response its own suitable space. Drawing and explaining need separate
+areas when both are requested. Allocate room for all required responses before
+giving spare height to a drawing box. Avoid competing places for the same answer.
 
 `questions` already carries its own short answer space. Putting `written-answers`
 beside it for the same question gives two.

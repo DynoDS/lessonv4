@@ -22,7 +22,7 @@ const {
 } = require('../content-picture');
 const { textBoxWidthIn } = require('../glyph-width');
 
-// A stack of question cards, each with an auto blue "(1) (2) (3)" label.
+// A stack of question cards with purple labels, independent of body colour.
 //
 // The cards are sized by their QUESTIONS, not by the zone. That sounds obvious and
 // it is not what this helper used to do: it divided the zone's height by the number
@@ -500,7 +500,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
         x: cardX + CARD_PAD_X, y: cardY,
         w: stack.labelTextW, h: c.h,
         fontFace: FONT, fontSize: fontPt, bold: true,
-        color: COLOURS.title, align: 'right', valign: 'middle',
+        color: COLOURS.questionLabel, align: 'right', valign: 'middle',
         margin: 0, fit: FIT
       });
     }

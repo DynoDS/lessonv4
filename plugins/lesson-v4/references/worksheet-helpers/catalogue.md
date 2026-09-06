@@ -164,7 +164,8 @@ Smallest usable: **45mm wide x 6mm tall**. Spare height: never takes spare heigh
 ```json
 {
   "helper": "instruction",
-  "text": "Use the place value chart to help you."
+  "text": "Use the place value chart to help you.",
+  "blankWidthMm": 25
 }
 ```
 
@@ -1761,6 +1762,7 @@ Smallest usable: **96mm wide x 88mm tall**. Spare height: never takes spare heig
 {
   "helper": "card-row",
   "text": "Use an atlas to find where each plant grows.",
+  "blankWidthMm": 25,
   "columns": 3,
   "cards": [
     {

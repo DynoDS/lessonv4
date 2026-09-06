@@ -10,6 +10,31 @@ const {
   BLANK_CHARS,
 } = require("../src/helpers/shared");
 const { helpers } = require("../src/helpers/text");
+const cards = require("../src/helpers/matching").helpers;
+const forms = require("../src/helpers/forms").helpers;
+
+test("caption completions use measured phrase space and preserve line breaks", () => {
+  const caption = "Its ___ helps it ___.\nExplain why.";
+  const html = cards['card-row'].render({cards:[{caption}], blankWidthMm:45});
+  assert.equal((html.match(/width:45mm/g) || []).length, 2);
+  assert.ok(!html.includes('___'));
+  assert.ok(html.includes('<br>Explain why.'));
+  assert.ok(linesFor(caption, 55, 45) > linesFor(caption, 55, 25));
+  assert.throws(() => promptHtml('___', '45; color:red'), /blankWidthMm/);
+});
+
+test("separate instructions remain separate in rendering and measurement", () => {
+  assert.equal(promptHtml('First.\n\nSecond.'), 'First.<br><br>Second.');
+  assert.equal(linesFor('First.\n\nSecond.', 180), 3);
+});
+
+test("choice controls allow an external stem without printing an absent value", () => {
+  const spec = {options:['Yes','No']};
+  const html = forms['multiple-choice'].render(spec);
+  assert.ok(!html.includes('undefined') && !html.includes('h-mc-stem'));
+  assert.ok(html.includes('Tick one.'));
+  assert.ok(forms['multiple-choice'].measure({...spec,text:'Is this correct?'},100) > forms['multiple-choice'].measure(spec,100));
+});
 
 // A run of underscores in a prompt is a blank the child writes INTO. Printed
 // literally, "___" is a few millimetres wide: an answer space no pencil fits.

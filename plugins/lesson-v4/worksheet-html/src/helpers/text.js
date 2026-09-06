@@ -16,11 +16,11 @@ const { formatQuestionLabel } = require("../labels");
 // to be a question.
 
 function renderInstruction(spec) {
-  return `<p class="h-instruction">${promptHtml(spec.text)}</p>`;
+  return `<p class="h-instruction">${promptHtml(spec.text, spec.blankWidthMm)}</p>`;
 }
 
 function measureInstruction(spec, widthMm) {
-  return linesFor(spec.text, widthMm) * LINE_MM;
+  return linesFor(spec.text, widthMm, spec.blankWidthMm) * LINE_MM;
 }
 
 // ─── short questions ─────────────────────────────────────────────────────

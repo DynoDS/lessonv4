@@ -47,9 +47,8 @@ VOICE_SWEEP_RE = re.compile(
 # every teaching route. Anything not named here is treated as written for a
 # designer or the teacher and never reaches the class-facing view: `activity`,
 # `format`, `focus`, `evidenceProduced`, `modelledExemplar`,
-# `activityArchitecture`, `teacherListensFor` and their kind. The starter's
-# `activity` and an ending beat's `activity` are the exceptions, because on
-# those two units that field is the task itself.
+# `activityArchitecture`, `teacherListensFor` and their kind. In starter,
+# observe, apply and reflect units, activity is the actual pupil prompt.
 CHILD_FACING_CONTENT_KEYS = (
     "headline",
     "explanation",
@@ -70,7 +69,7 @@ CHILD_FACING_CONTENT_KEYS = (
     "accurateExplanation",
     "conditionsAndSafety",
 )
-ACTIVITY_IS_THE_TASK_KINDS = {"starter", "apply", "reflect"}
+ACTIVITY_IS_THE_TASK_KINDS = {"starter", "observe", "apply", "reflect"}
 
 STRUCTURE_REFERENCE_FILES = {
     "Skill-based": "teaching-sequence-skill-based.md",
@@ -883,8 +882,8 @@ def require_voice_sweep(
     expected_year: int,
 ) -> tuple[int, int, int]:
     """The review must say how many child-facing strings it read, and the number
-    must be the one the view printed: a sweep that did not happen cannot report
-    itself as one that found nothing."""
+    must be the one the view printed. This checks reported coverage only;
+    it cannot establish that the reviewer read or judged the strings well."""
     lines = review_path.read_text(encoding="utf-8").splitlines()
     positions = [
         index for index, line in enumerate(lines) if line.strip() == VOICE_SWEEP_HEADING
@@ -929,6 +928,24 @@ def require_voice_sweep(
             f"which cannot exceed the {read_count} strings read"
         )
     return read_count, year, repaired
+
+
+def require_review_judgements(review_path: Path, review_result: str) -> dict[str, str]:
+    """Require distinct judgements, not a claim that either was judged well."""
+    text = review_path.read_text(encoding="utf-8")
+    judgements = {}
+    for label in ("Pedagogy", "Daniel-fit"):
+        matches = re.findall(
+            rf"^{re.escape(label)}: (PASS|REVISE)\s*$", text, re.MULTILINE
+        )
+        if len(matches) != 1:
+            raise PacketError(f"design-review.md requires exactly one '{label}: PASS' or '{label}: REVISE' line")
+        judgements[label] = matches[0]
+    if review_result == "APPROVED" and "REVISE" in judgements.values():
+        raise PacketError("APPROVED requires both Pedagogy and Daniel-fit to PASS")
+    if review_result == "REDESIGN REQUIRED" and "REVISE" not in judgements.values():
+        raise PacketError("REDESIGN REQUIRED must identify which judgement needs revision")
+    return judgements
 
 
 def build_review_view(design: dict, photo_requirements: dict) -> str:
@@ -2175,11 +2192,14 @@ def verify(args: argparse.Namespace) -> int:
         expected_year=design_year,
     )
 
+    judgements = require_review_judgements(review_path, review_result)
+
     postflight = {
         "schemaVersion": 1,
         "kind": "design-review-postflight",
         "result": "OK",
         "reviewResult": review_result,
+        "judgements": judgements,
         "preflight": {
             "path": str(preflight_path),
             "sha256": sha256_file(

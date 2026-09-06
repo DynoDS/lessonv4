@@ -112,6 +112,8 @@ The deck's core colour grammar is asking versus telling.
 
 Use size, position and spacing, not colour, when prominence alone is the job of a black explanatory line.
 
+Question numbers and letters use the shared purple question-label colour on every slide. Keep the question body's semantic colour independent of its label.
+
 ## Task-to-object attachment
 
 When different phases of one task act on different visible objects, attach each phase to the object it governs.
@@ -159,7 +161,7 @@ The profile calibrates how numbering is *seen*, not which lessons get numbered w
 
 ## Final teacher pass
 
-After the deterministic check passes, the Slide Designer renders the checked preview and reads the whole deck in its own context, once, as the teacher would meet it:
+After the deterministic check passes, the Slide Designer renders the checked preview and reads the whole deck in its own context, once, as the teacher would meet it. This early composition pass is followed by `final-resource-review.md` once final pictures have arrived:
 
 - read each slide from a distance, not from a screen;
 - check that the principal pupil task is in the body at task-reading size rather than dependent on the small header cue;

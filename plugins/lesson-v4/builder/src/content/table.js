@@ -9,7 +9,7 @@ const PAD              = 0.12;
 const HEADER_H         = 0.50;
 const HEADER_FONT      = 16;
 const HEADER_FONT_MAX  = 40;
-const CELL_FONT        = 14;
+const CELL_FONT        = 20;
 const CELL_FONT_MAX    = 54;
 const HEADER_FILL      = '3A3A3A';
 const HEADER_TEXT      = 'FFFFFF';
@@ -17,10 +17,10 @@ const ROW_FILLS        = ['FFE0C2', 'FFF8C2', 'D6EEFF', 'D5F5E3', 'E8D5F5'];
 const CELL_BORDER      = 'CCCCCC';
 const FIRST_COL_BOLD   = true;
 const CELL_ALIGN       = 'center';
-// One line of cell text at the build's 10pt readable floor, measured through
-// the same font metrics the fitting pass uses. A row shorter than this cannot
-// show its own content at any size a child can read.
-const ROW_MIN_H        = 0.20;
+// Projected table content needs its own reading floor. Physical fitting at
+// 10pt is not adequate evidence that children can read the table.
+const TABLE_MIN_PT     = 20;
+const ROW_MIN_H        = 0.38;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 // A table divides whatever height it is handed. Handed too little, it used to
@@ -57,10 +57,9 @@ function drawTable(pptx, slide, zone, data) {
         `carry fewer rows; nothing was shrunk further or cut.`
     );
   }
-  const headerGroup = fitGroupId(zone, 'table-headers');
-  const columnGroups = headers.map(function (_header, c) {
-    return fitGroupId(zone, 'table-column-' + c);
-  });
+  // One hierarchy across the table: short headings must not grow independently
+  // while the longer evidence they describe shrinks to the floor.
+  const tableGroup = fitGroupId(zone, 'table-text');
 
   headers.forEach(function (h, c) {
     const cx = innerX + c * colW;
@@ -73,7 +72,7 @@ function drawTable(pptx, slide, zone, data) {
       x: cx, y: innerY, w: colW, h: HEADER_H,
       fontFace: FONT, fontSize: HEADER_FONT, bold: true, color: HEADER_TEXT,
       align: 'center', valign: 'middle', margin: 0, fit: FIT,
-      objectName: growFitObjectName(headerGroup, HEADER_FONT_MAX, 'table-header-' + c)
+      objectName: growFitObjectName(tableGroup, HEADER_FONT_MAX, 'table-header-' + c, TABLE_MIN_PT)
     });
   });
 
@@ -93,7 +92,7 @@ function drawTable(pptx, slide, zone, data) {
         x: cx, y: cy, w: colW, h: rowH,
         fontFace: FONT, fontSize: CELL_FONT, bold: cellBold, color: COLOURS.body,
         align: CELL_ALIGN, valign: 'middle', margin: 0, fit: FIT,
-        objectName: growFitObjectName(columnGroups[c], CELL_FONT_MAX, 'table-cell-' + r + '-' + c)
+        objectName: growFitObjectName(tableGroup, CELL_FONT_MAX, 'table-cell-' + r + '-' + c, TABLE_MIN_PT)
       });
     });
   });

@@ -496,13 +496,8 @@ class ContractTests(unittest.TestCase):
             decorator.index("Now run one explicit whole-deck pass"),
         )
 
-    def test_the_second_spawn_that_looked_at_the_deck_is_gone(self):
-        """One worker designs, builds, checks, looks and reports.
-
-        The built-deck look re-read a 52KB role file to confirm work that had
-        already passed its check. Its one real catch - a photograph too small
-        for its zone - is enforced by the builder's readable floor instead.
-        """
+    def test_final_review_is_distinct_from_the_retired_deck_look(self):
+        """Final review uses current outputs without restoring the retired creation pass."""
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
         playbook = (
             ROOT / "skills" / "make-lesson" / "playbook-lite.md"
@@ -511,7 +506,7 @@ class ContractTests(unittest.TestCase):
         self.assertNotIn("BUILT_DECK_LOOK", designer)
         self.assertNotIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
         self.assertNotIn("slide_designer_built_deck_look", playbook)
-        self.assertIn("Do not reinstate it", playbook)
+        self.assertIn("FINAL RESOURCE REVIEW", playbook)
         # The judgement the removed section carried has to survive somewhere
         # the role that sees the drawings rendered still reads: the Slide
         # Decorator, which is that pass in its own worker and not a review of
@@ -519,7 +514,7 @@ class ContractTests(unittest.TestCase):
         decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
         self.assertIn("Overlap by itself is never the fault", decorator)
         self.assertIn("Judge legibility rather than taste", decorator)
-        self.assertIn("The Slide Decorator is not that spawn", playbook)
+        self.assertIn("earlier optional-picture stage", playbook)
 
 
 if __name__ == "__main__":
