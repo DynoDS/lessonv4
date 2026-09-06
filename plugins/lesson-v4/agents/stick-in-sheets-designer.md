@@ -29,6 +29,8 @@ For an Educational SVG picture, write the contextual `picture` request while com
 piece, then resolve the actual drawing yourself after the complete stick-in spec
 is settled.
 
+
+For covered helper uses, preserve the verdict's `featureChecks` in the actual configuration and bind each helper with `helperUse: {representationId, configuration}` when its containing unit has no unambiguous `representationRefs`. Inspect required features in the rendered piece as well as checking delivery.
 ## What you read and what you produce
 
 Read the lesson design at `[WORKING_DIR]/lesson-design.json` for the pedagogy: every moment where a child writes, in lesson order, and what each moment asks of them.

@@ -200,7 +200,7 @@ Use no preparation unit when the lesson should move straight into My Turn. This 
 
 `bounded-attempt` carries the brief first try at the target itself, under the conditions in this file's opening section; put the exact challenge children are given in `activity`.
 
-`explanation` carries the short teaching some skills need before the first model. Its `activity` is then the explanation as the child reads it, two or three short lines on the board (what the idea means, why it matters, what it looks like), not a description of an activity and not a slogan the script explains (`preferences.md` → Slide Philosophy, `A heading, a fact or a rule on the board is not the teaching of it`).
+`explanation` carries the short teaching some skills need before the first model. Its `activity` is then the explanation as the child reads it, two or three short lines on the board (what the idea means, why it matters, what it looks like), not a description of an activity and not a slogan the script explains (`preferences.md` → Slide Philosophy, `Use the teaching object to carry meaning`).
 
 For each concept, use zero or more preparation units when genuinely needed, then **one or more My Turn plus Our Turn cycles**, then exactly one Your Turn. Each cycle is one My Turn source unit carrying that move's modelled examples, followed by at most one Our Turn for the same concept. Most concepts need one cycle. A concept whose independent practice needs a second modelled move takes a second cycle rather than a second My Turn beside the first, under the rule below. The Our Turn is present unless the omission test in the Our Turn section applies; omitting it is a purposeful decision, not a shortcut.
 
@@ -258,4 +258,4 @@ Do not copy success-criteria wording into these `content` objects. Define it onc
 
 Do not describe a helper again inside `content`. Define the representation once and attach the exact `representationRefs` use to each turn.
 
-Put each turn's exact script in its source-unit `speakerNotes`. Put its answer/model/standard only in the structured `answer` object.
+Put each turn's exact script in its source-unit `speakerNotes`. Keep the canonical answer/model/standard in `answer`; spoken modelling may use its concrete content and intermediate results consistently. Do not leak an independent answer before the attempt.

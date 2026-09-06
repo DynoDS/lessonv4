@@ -10,6 +10,7 @@
 //       label: "890",
 //       cells: ["0", "8", "9", "0"],
 //       highlight: ["T"],
+//       counterLabels: true, // optional value on each counter; plain by default
 //       counters: { Th: 0, H: 8, T: 9, O: 0 }
 //     }],
 //     pair: {
@@ -79,7 +80,7 @@
 // pair; composing pairs on a slide is the slide-designer's job.
 
 const { FONT, COLOURS, FIT } = require('../styles');
-const { canonicalColumn } = require('../../../shared/visuals/place-value-chart-svg');
+const { canonicalColumn, counterValue, labelledCounterGrid } = require('../../../shared/visuals/place-value-chart-svg');
 const { arrow } = require('./_geom');
 const { textWidthEm } = require('../glyph-width');
 
@@ -231,6 +232,7 @@ function normaliseRow(row) {
     return { label: '', cells: [], highlight: [], counters: null };
   }
   return {
+    counterLabels: row.counterLabels === true,
     label: row.label != null ? String(row.label) : '',
     cells: Array.isArray(row.cells) ? row.cells : [],
     highlight: row.highlight == null
@@ -447,11 +449,13 @@ function hasWriteInCells(columns, dataRows) {
   });
 }
 
-function drawCounterPopulation(pptx, slide, x, y, w, h, column, count) {
+function drawCounterPopulation(pptx, slide, x, y, w, h, column, count, labelled = false) {
   if (count <= 0 || w <= 0 || h <= 0) return;
 
-  const { cols, rows, stepW, stepH } = counterGrid(w, h, count);
-  const d = clamp(Math.min(stepW, stepH) * 0.68, COUNTER_MIN_D, COUNTER_MAX_D);
+  const label = labelled ? counterValue(column) : '';
+  const layout = labelled ? labelledCounterGrid(w, h, count, label, 9, 1 / 72, 0.45) : counterGrid(w, h, count);
+  const { cols, rows, stepW, stepH } = layout;
+  const d = labelled ? layout.d : clamp(Math.min(stepW, stepH) * 0.68, COUNTER_MIN_D, COUNTER_MAX_D);
   const gridW = stepW * cols;
   const gridH = stepH * rows;
   const gx = x + (w - gridW) / 2;
@@ -467,6 +471,11 @@ function drawCounterPopulation(pptx, slide, x, y, w, h, column, count) {
       x: cx - d / 2, y: cy - d / 2, w: d, h: d,
       fill: { color: fill },
       line: { color: COUNTER_LINE, width: 1.0 }
+    });
+    if (labelled) slide.addText(label, {
+      x: cx - d * 0.36, y: cy - d * 0.30, w: d * 0.72, h: d * 0.60,
+      fontFace: FONT, fontSize: layout.font, bold: true, color: COLOURS.body,
+      align: 'center', valign: 'middle', margin: 0, breakLine: false
     });
   }
 }
@@ -485,7 +494,7 @@ function counterCells(columns) {
   });
 }
 
-function drawCounterBand(pptx, slide, x, y, colWs, h, columns, populations) {
+function drawCounterBand(pptx, slide, x, y, colWs, h, columns, populations, labelled = false) {
   slide.addTable([counterCells(columns)], {
     x, y, colW: colWs, rowH: [h], autoPage: false
   });
@@ -495,7 +504,7 @@ function drawCounterBand(pptx, slide, x, y, colWs, h, columns, populations) {
     drawCounterPopulation(
       pptx, slide,
       cx + 0.02, y + 0.02, Math.max(0.01, w - 0.04), Math.max(0.01, h - 0.04),
-      column, counterCount(populations, column)
+      column, counterCount(populations, column), labelled
     );
     cx += w;
   });
@@ -1138,7 +1147,7 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
     }
 
     drawCounterBand(
-      pptx, slide, digitX, rowY, digitColWs, counterH, columns, row.counters
+      pptx, slide, digitX, rowY, digitColWs, counterH, columns, row.counters, row.counterLabels
     );
 
     const cells = hasLabels ? digitRows[rowIndex].slice(1) : digitRows[rowIndex];

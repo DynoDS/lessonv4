@@ -370,11 +370,11 @@ Record one decision per required use in `[WORKING_DIR]/helper-check.json` as
 `{"schemaVersion": 1, "decisions": [...]}`, each carrying `representationId`,
 `configuration`, `requiredSurface`, `decision` and the fields below:
 
-- `covered` - a live helper draws it as designed. Name it in `helperKey`; the
-  check refuses a key no renderer on that surface dispatches on, and refuses a
-  lookalike (a `table` for a timeline: a history deck shipped its timeline as
-  a table three times). A figure no helper draws is `build`, `substitute` or
-  `gap`, never a neighbour that renders cleanly.
+- `covered` - a live helper draws the required figure and features on this
+  surface, not merely a lookalike. Name its `helperKey`. Read
+  `references/helper-route.md` → Capability and delivery contract before
+  recording the required `featureChecks` and per-use binding.
+
 - `build` - nothing draws it, or the closest helper cannot draw it as designed.
   Give `helperKey` and a `reason` naming what it cannot draw, then take the
   helper route. When a helper already holds the real source for this subject,

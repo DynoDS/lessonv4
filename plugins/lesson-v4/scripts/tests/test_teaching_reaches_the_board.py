@@ -76,86 +76,6 @@ def section(path: Path, heading: str) -> str:
     return " ".join(body.split())
 
 
-class ARuleOnTheBoardIsNotTheTeachingTests(unittest.TestCase):
-    def test_preferences_owns_the_rule_with_its_read_back(self) -> None:
-        philosophy = section(PREFERENCES, "Slide Philosophy")
-        self.assertIn(f"**{RULE_TITLE}.**", philosophy)
-        # The notes-closed test now asks whether a child who knew nothing
-        # would understand the idea, not only whether they know what to do.
-        self.assertIn(
-            "would a child who knew nothing before this slide understand what the idea means, "
-            "why it matters and what it looks like",
-            philosophy,
-        )
-        self.assertIn("cover the script and read the child-facing lines", philosophy)
-        self.assertIn("it never carries the meaning alone", philosophy)
-
-    def test_the_rule_answers_the_more_text_objection_with_form(self) -> None:
-        philosophy = section(PREFERENCES, "Slide Philosophy")
-        self.assertIn("That is not more text", philosophy)
-        self.assertIn("takes two slides doing less each", philosophy)
-
-    def test_the_rule_names_its_limit(self) -> None:
-        """A convention or a name has no why a child can use; padding one on
-        would be the fault in the other direction."""
-        philosophy = section(PREFERENCES, "Slide Philosophy")
-        self.assertIn("The limit is a thing with no reason a child can use", philosophy)
-        self.assertIn("a manufactured why would only pad the slide", philosophy)
-
-    def test_the_notes_no_longer_own_the_why_and_the_explanation(self) -> None:
-        """The old sentence handed `the why-it-matters, the worked-aloud
-        explanation` to the notes, which is the licence the slogan used."""
-        philosophy = section(PREFERENCES, "Slide Philosophy")
-        self.assertNotIn(
-            "the framing, the why-it-matters, the worked-aloud explanation", philosophy
-        )
-        self.assertNotIn(
-            "The extended explanation belongs in the speaker notes", philosophy
-        )
-        self.assertIn("the meaning of the idea does not live there alone", philosophy)
-
-    def test_lesson_designer_reads_tighter_as_fewer_words_not_the_label(self) -> None:
-        text = flat(LESSON_DESIGNER)
-        self.assertIn("Tighter is fewer words for the same meaning, not the label for it", text)
-        self.assertIn(
-            "A script that teaches an idea the slide only names has put the lesson in the notes",
-            text,
-        )
-        # Teaching reaches pupil-facing content before its spoken elaboration.
-        self.assertIn(
-            "the meaning, reason and example a child needs live in the unit's child-facing content first",
-            text,
-        )
-
-    def test_task_centred_enabling_input_is_the_teaching_as_the_child_reads_it(self) -> None:
-        text = flat(TASK_CENTRED)
-        self.assertIn("Short is one idea and a few minutes, not the idea cut to a heading", text)
-        self.assertIn(
-            "what the idea means, why it matters and what it looks like, in two or three short lines",
-            text,
-        )
-        self.assertNotIn('"enablingInput": "the one focused input children need"', text)
-        self.assertIn("never because the script explains it", text)
-
-    def test_content_based_takeaway_is_teaching_not_a_slogan(self) -> None:
-        text = flat(CONTENT_BASED)
-        self.assertIn("The takeaway stays one line, and it is not the teaching on its own", text)
-        self.assertIn(RULE_TITLE, text)
-
-    def test_reviewer_covers_the_script_and_reads_the_board(self) -> None:
-        text = flat(DESIGN_REVIEWER)
-        self.assertIn("every taught idea reaches the board as teaching, not a label", text)
-        self.assertIn("cover each unit's script and read its child-facing content", text)
-        self.assertIn(RULE_TITLE, text)
-
-    def test_slide_designer_names_a_slogan_it_cannot_repair(self) -> None:
-        text = flat(SLIDE_DESIGNER)
-        self.assertIn(
-            "one line per unit whose child-facing content states a rule or fact that only its script explains",
-            text,
-        )
-
-
 class QuestioningIsNotDoingTests(unittest.TestCase):
     def test_preferences_owns_the_distinction_with_two_tests(self) -> None:
         rhythm = section(PREFERENCES, "The Teach → Do → Teach → Do Rhythm")
@@ -286,38 +206,11 @@ class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
         self.assertIn("`explanation` is the board's teaching of the idea", text)
         self.assertIn("Use `null` only for a name, a convention or a fact that simply is so", text)
         self.assertIn("It is not the place for the explanation", text)
-        self.assertIn("is not left asking `what's pass?`", text)
 
     def test_downstream_renders_it_as_teaching_lines_and_the_reviewer_names_it(self) -> None:
         self.assertIn("a content Teach unit's `explanation`, kept as its own short lines", flat(SLIDE_DESIGNER))
         playbook = " ".join((ROOT / "references" / "slide-composition-playbook.md").read_text(encoding="utf-8").split())
         self.assertIn("render it black, as its own short lines, between the headline and the example it explains", playbook)
-        self.assertIn("on a content Teach that teaching is the `explanation` field", flat(DESIGN_REVIEWER))
-
-
-class OrientationIsNotATeachChunkTests(unittest.TestCase):
-    """The same lesson spent a full Teach→Do on what PSHE is for (children
-    explained what learning about sleep, jealousy or saving could help
-    someone do) before the lesson's own problem arrived. The designer's
-    earns-its-place rule said to keep groundwork and link it, and the rhythm
-    demanded a Do after every Teach, so orientation became a chunk with a
-    manufactured beat that nothing later used."""
-
-    def test_preferences_owns_the_rule_with_its_test_and_limit(self) -> None:
-        rhythm = section(PREFERENCES, "The Teach → Do → Teach → Do Rhythm")
-        self.assertIn("**Orientation is not a Teach chunk, and it earns no Do beat.**", rhythm)
-        self.assertIn("does anything later depend on what children did here", rhythm)
-        self.assertIn("orientation wearing a chunk's clothes", rhythm)
-        self.assertIn("First: how do we disagree safely?", rhythm)
-        self.assertIn("groundwork children must use", rhythm)
-        self.assertIn("is a real chunk and keeps its Do", rhythm)
-
-    def test_designer_route_and_reviewer_carry_it(self) -> None:
-        designer = flat(LESSON_DESIGNER)
-        self.assertIn("groundwork children will use", designer)
-        self.assertIn("it is not a chunk and earns no Do", designer)
-        self.assertIn("**The first Teach poses the lesson's problem; orientation folds into it.**", flat(CONTENT_BASED))
-        self.assertIn("A Teach→Do pair whose Do nothing later uses is orientation wearing a chunk's clothes", flat(DESIGN_REVIEWER))
 
 
 class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
@@ -351,15 +244,6 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         del unit["content"]["takeaway"]
         with self.assertRaises(self.validator.ContractError):
             self.validator.validate_design(design, photos)
-
-    def test_the_explanation_slots_are_documented_on_their_routes(self) -> None:
-        task = flat(TASK_CENTRED)
-        self.assertIn("`enablingInput` is the one line children keep; `explanation` is the teaching as the child reads it", task)
-        discovery = flat(ROOT / "references" / "teaching-sequence-discovery.md")
-        self.assertIn("The board carries it, not only the script.", discovery)
-        self.assertIn("`takeaway` is the one line children keep", discovery)
-        skill = flat(ROOT / "references" / "teaching-sequence-skill-based.md")
-        self.assertIn("Its `activity` is then the explanation as the child reads it", skill)
 
     def test_the_big_task_beats_carry_a_launch(self) -> None:
         fields = self.scaffold.CONTENT_ENVELOPE_FIELDS

@@ -494,7 +494,7 @@ Each group `id` is local to the source unit and uses `group-###`. Each item `id`
 
 `speakerNotes.lookFor` is either `null` or one optional sentence beginning `Look for:`.
 
-Do not put an answer line inside any speaker-note field. The answer object is the one source of truth.
+The structured `answer` is canonical. Intentional spoken modelling may use its exact content and intermediate results; keep them consistent. Do not duplicate an answer-key block in notes or leak an independent answer before the attempt.
 
 `answer.kind` is exactly one of:
 

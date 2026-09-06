@@ -483,6 +483,15 @@ def run_verdict(
         if verdict == "gap":
             gaps.append(f"{label}: {reason if isinstance(reason, str) else ''}")
         if verdict == "covered":
+            checks = decision.get("featureChecks")
+            if not valid_checks(checks):
+                failures.append(f"{label} needs featureChecks: an array of feature/path/equals assertions (empty only when no required features)")
+            else:
+                features = {check["feature"] for check in checks}
+                missing = set(required[key]["requiredFeatures"]) - features
+                extra = features - set(required[key]["requiredFeatures"])
+                if missing or extra:
+                    failures.append(f"{label} featureChecks must cover exactly the required features; missing={sorted(missing)}, unknown={sorted(extra)}")
             if surface not in REGISTRIES:
                 failures.append(f"{label} has no known registry for its surface")
                 continue
@@ -517,17 +526,66 @@ def run_verdict(
     return 0
 
 
-def spec_keys(value, fields: tuple[str, ...], found: set[str]) -> None:
+def valid_checks(checks) -> bool:
+    return isinstance(checks, list) and all(
+        isinstance(c, dict) and isinstance(c.get("feature"), str) and c["feature"].strip()
+        and ((isinstance(c.get("path"), str) and c["path"].startswith("/") and "equals" in c
+              and "visualReview" not in c)
+             or (isinstance(c.get("visualReview"), str) and c["visualReview"].strip()
+                 and "path" not in c and "equals" not in c)) for c in checks
+    )
+
+
+def pointer_values(value, pointer: str) -> list:
+    """JSON Pointer with * for every list element; a missing path never passes."""
+    values = [value]
+    for raw in pointer.split("/")[1:]:
+        token = raw.replace("~1", "/").replace("~0", "~")
+        next_values = []
+        for current in values:
+            if token == "*" and isinstance(current, list):
+                if not current:
+                    return []
+                next_values.extend(current)
+            elif isinstance(current, dict) and token in current:
+                next_values.append(current[token])
+            elif isinstance(current, list) and token.isdigit() and int(token) < len(current):
+                next_values.append(current[int(token)])
+            else:
+                return []
+        values = next_values
+    return values
+
+
+def helper_occurrences(value, fields, refs=(), path=""):
     if isinstance(value, dict):
+        # An explicit node binding disambiguates multiple representations sharing
+        # a slide; otherwise reuse the existing source-unit references.
+        binding = value.get("helperUse")
+        if isinstance(binding, dict):
+            refs = ({"ref": binding.get("representationId"), "configuration": binding.get("configuration")},)
+        elif isinstance(value.get("representationRefs"), list):
+            refs = value["representationRefs"]
         for field in fields:
-            item = value.get(field)
-            if isinstance(item, str):
-                found.add(item)
-        for child in value.values():
-            spec_keys(child, fields, found)
+            if isinstance(value.get(field), str):
+                yield value[field], refs, value, path
+        for name, child in value.items():
+            if name not in ("helperUse", "representationRefs"):
+                yield from helper_occurrences(child, fields, refs, f"{path}/{name}")
     elif isinstance(value, list):
-        for child in value:
-            spec_keys(child, fields, found)
+        for index, child in enumerate(value):
+            yield from helper_occurrences(child, fields, refs, f"{path}/{index}")
+
+
+def reference_scopes(value, path=""):
+    if isinstance(value, dict):
+        if isinstance(value.get("representationRefs"), list):
+            yield value["representationRefs"], path
+        for name, child in value.items():
+            yield from reference_scopes(child, f"{path}/{name}")
+    elif isinstance(value, list):
+        for index, child in enumerate(value):
+            yield from reference_scopes(child, f"{path}/{index}")
 
 
 def run_delivery(verdict_path: Path, spec_path: Path, surface: str) -> int:
@@ -535,30 +593,40 @@ def run_delivery(verdict_path: Path, spec_path: Path, surface: str) -> int:
         raise CoverageError(f"unknown surface {surface!r}")
     decisions = read_decisions(verdict_path)
     spec = load_json(spec_path, "built specification")
-    present: set[str] = set()
-    spec_keys(spec, SPEC_KEY_FIELDS[surface], present)
-
-    failures: list[str] = []
+    occurrences = list(helper_occurrences(spec, SPEC_KEY_FIELDS[surface]))
+    scopes = list(reference_scopes(spec))
+    failures = []
     checked = 0
     for decision in decisions:
-        if not isinstance(decision, dict):
-            continue
-        if decision.get("requiredSurface") != surface:
-            continue
-        if decision.get("decision") != "covered":
-            continue
-        helper_key = decision.get("helperKey")
-        if not isinstance(helper_key, str):
+        if not isinstance(decision, dict) or decision.get("requiredSurface") != surface or decision.get("decision") != "covered":
             continue
         checked += 1
-        if helper_key not in present:
-            failures.append(
-                f"{decision.get('representationId')}/"
-                f"{decision.get('configuration')} was recorded as drawn by "
-                f"{helper_key!r}, but nothing in {spec_path.name} uses it: the "
-                "surface shipped a substitute for a visual the lesson depends on"
-            )
-
+        rep, config, _ = use_key(decision)
+        helper = decision.get("helperKey")
+        label = f"{rep}/{config} ({helper})"
+        checks = decision.get("featureChecks")
+        if not valid_checks(checks):
+            failures.append(f"{label}: missing or malformed featureChecks; rerun the capability verdict")
+            continue
+        matches = [(node, path) for key, refs, node, path in occurrences
+                   if key == helper and len(refs) == 1 and any(isinstance(r, dict) and r.get("ref") == rep and r.get("configuration") == config for r in refs)]
+        if not matches:
+            failures.append(f"{label}: no helper bound to this representation/configuration; surface shipped a substitute or omitted its use binding")
+            continue
+        for refs, scope in scopes:
+            if any(isinstance(r, dict) and r.get("ref") == rep and r.get("configuration") == config for r in refs):
+                if not any(path == scope or path.startswith(scope + "/") for _, path in matches):
+                    failures.append(f"{label}: required use at {scope} has no bound helper; a different unit cannot satisfy it")
+        for node, path in matches:
+            for check in checks:
+                if "visualReview" in check:
+                    print(f"HELPER_VISUAL_REVIEW: {label} at {path}: {check['feature']}: {check['visualReview']}")
+                    continue
+                values = pointer_values(node, check["path"])
+                # JSON booleans and numbers must not compare equal in Python.
+                expected = json.dumps(check["equals"], sort_keys=True)
+                if not values or any(json.dumps(v, sort_keys=True) != expected for v in values):
+                    failures.append(f"{label} at {path}: required feature {check['feature']!r} failed {check['path']}")
     if failures:
         print("HELPER_DELIVERY_FAILED", file=sys.stderr)
         for line in failures:

@@ -18,7 +18,7 @@ The teacher decides how to annotate or complete the helper. Do not instruct them
 
 ### Question and reference
 
-Use this state when the written working happens away from the helper. Show the exact question, the success criteria and every useful representation or reference, such as a fraction wall, clock, price list or part-whole model. Do not add a generic working box or specify where the teacher writes.
+Use this state when children need a question and references visible while the teacher produces separate working. Show the exact example and useful support, including applicable success criteria. For a live written model, normally reserve a clear, usable area beside or below the reference on the displayed slide; name the intended working in the hand-off so the renderer can allow enough space. The area need not have a box or heading. Do not fill it with explanatory panels, and do not prescribe a separate classroom surface. Omit separate space when all annotation happens inside the helper, or the selected demonstration clearly uses a different medium. Do not add empty space to a read-off or prepared example by reflex.
 
 ### Physical-demonstration support
 
@@ -30,12 +30,12 @@ Choose from the learning:
 
 - If studying a completed form is the useful experience, use **Prepared example**.
 - If a representation or helper is completed as part of the model, use **Live-complete helper**.
-- If children need the question and references visible while written working is modelled elsewhere, use **Question and reference**.
+- If children need the question and references visible while separate written working is modelled, use **Question and reference**.
 - If the teaching move is performed with real equipment or movement, use **Physical-demonstration support**.
 
 Judge each genuinely different modelled move separately. Different moves in one lesson may need different states. Do not split one simple model into artificial mini-moves merely to create separate treatments, and use one shared instruction when several moves genuinely need the same state.
 
-Generic working boxes remain removed. Any prepared model or helper must be large, clear, readable and suitable to annotate when annotation could be useful. When the needed helper does not exist, check existing helper configurations, faithful compositions, required diagrams and required photographs. If no route preserves the state, follow the affected resource designer's named gap contract. Do not substitute an unsuitable representation and do not publish a resource that hides a load-bearing missing helper.
+Generic working boxes are not a default; purposeful room for the specified live working is legitimate. Any prepared model or helper must be large, clear, readable and suitable to annotate when annotation could be useful. When the needed helper does not exist, check existing helper configurations, faithful compositions, required diagrams and required photographs. If no route preserves the state, follow the affected resource designer's named gap contract. Do not substitute an unsuitable representation and do not publish a resource that hides a load-bearing missing helper.
 
 A separate optional draw-live pencil cue remains governed by `preferences.md`: when the lesson designer judges that a reusable reference would be useful to copy verbatim onto a working wall, the cue may suggest that possibility. It is never an instruction to the teacher and adds no child-facing or speaker-note direction.
 

@@ -57,7 +57,7 @@ def design(helper_needed: bool = True) -> dict:
                         "id": "blank",
                         "description": "Empty plate divided into groups",
                         "loadBearing": helper_needed,
-                        "requiredFeatures": ["group boundaries"] if helper_needed else [],
+                        "requiredFeatures": [],
                     }
                 ],
             }
@@ -90,6 +90,9 @@ class HelperCoverageTests(unittest.TestCase):
         self.temp.cleanup()
 
     def write_verdict(self, *decisions: dict) -> None:
+        for decision in decisions:
+            if decision.get("decision") == "covered":
+                decision.setdefault("featureChecks", [])
         self.verdict_path.write_text(
             json.dumps({"schemaVersion": 1, "decisions": list(decisions)}),
             encoding="utf-8",
@@ -400,7 +403,7 @@ class HelperCoverageTests(unittest.TestCase):
         result = run("inventory", "--lesson-design", str(self.design_path))
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("Balanced plate", result.stdout)
-        self.assertIn("group boundaries", result.stdout)
+        self.assertIn("must show: none stated", result.stdout)
         for surface in ("slides", "worksheets", "wall", "stick-in"):
             self.assertIn(f"LIVE HELPERS {surface}", result.stdout)
         # Real keys from each engine's own registry, not a written list.
@@ -472,7 +475,7 @@ class HelperCoverageTests(unittest.TestCase):
             }
         )
         result = self.delivery(
-            {"slides": [{"body": {"type": "part-whole-model", "whole": 12}}]}
+            {"slides": [{"body": {"type": "part-whole-model", "whole": 12, "helperUse": {"representationId": "rep-001", "configuration": "blank"}}}]}
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("HELPER_DELIVERY_OK 1", result.stdout)
@@ -510,7 +513,7 @@ class HelperCoverageTests(unittest.TestCase):
         )
         spec_path = self.dir / "worksheet.json"
         spec_path.write_text(
-            json.dumps({"sheets": {"expected": {"zones": {"a": {"helper": "venn"}}}}}),
+            json.dumps({"sheets": {"expected": {"zones": {"a": {"helper": "venn", "helperUse": {"representationId": "rep-001", "configuration": "blank"}}}}}}),
             encoding="utf-8",
         )
         result = run(

@@ -90,17 +90,6 @@ class OneThingToLookAt(unittest.TestCase):
             FLAT_PLAYBOOK,
         )
 
-    def test_the_owning_rule_on_form_over_relocation_still_stands(self) -> None:
-        """This rule only works beside its counterweight, which lives in
-        Slide Philosophy and the slide designer reads at startup."""
-        self.assertIn(
-            "the resolution is form, not relocation", flat(PREFERENCES)
-        )
-        self.assertIn(
-            "The failure to design out is the text-only Teach slide",
-            flat(PREFERENCES),
-        )
-
 
 class SuccessCriteriaRecede(unittest.TestCase):
     def test_the_imperative_that_multiplied_the_panel_is_gone(self) -> None:

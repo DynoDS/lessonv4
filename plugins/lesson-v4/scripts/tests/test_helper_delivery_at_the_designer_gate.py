@@ -45,7 +45,7 @@ class HelperDeliveryAtTheDesignerGateTests(unittest.TestCase):
                     "configuration": "body-jobs",
                     "requiredSurface": "slides",
                     "decision": "covered",
-                    "helperKey": "concept-map",
+                    "helperKey": "concept-map", "featureChecks": [],
                 }],
             }), encoding="utf-8")
 
@@ -70,7 +70,7 @@ class HelperDeliveryAtTheDesignerGateTests(unittest.TestCase):
             delivered.write_text(json.dumps({
                 "slides": [{
                     "template": "split-h-70-30",
-                    "primary": {"type": "concept-map", "centre": "Nutrients", "spokes": []},
+                    "primary": {"type": "concept-map", "helperUse": {"representationId": "rep-001", "configuration": "body-jobs"}, "centre": "Nutrients", "spokes": []},
                 }],
             }), encoding="utf-8")
 

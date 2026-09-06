@@ -34,7 +34,7 @@ Bring together or inspect the observations, outcomes or pattern before the expli
 
 Give the accurate explicit explanation of why the result or pattern occurred. This is the load-bearing teaching beat. Connect the explanation to what children observed, correct unsupported theories and preserve important distinctions rather than accepting any explanation because it followed an investigation.
 
-The board carries it, not only the script. `takeaway` is the one line children keep (the sticky fact when it is one); `accurateExplanation` is the explanation as the child reads it, two or three short lines on the evidence they just saw: what happened, why, what it looks like. A takeaway on the board with the why only in the notes is a slogan, and a paragraph of the script on the board is the other failure (`preferences.md` → Slide Philosophy, `A heading, a fact or a rule on the board is not the teaching of it`).
+The board carries it, not only the script. `takeaway` is the one line children keep (the sticky fact when it is one); `accurateExplanation` is the explanation as the child reads it, two or three short lines on the evidence they just saw: what happened, why, what it looks like. A takeaway on the board with the why only in the notes is a slogan, and a paragraph of the script on the board is the other failure (`preferences.md` → Slide Philosophy, `Use the teaching object to carry meaning`).
 
 ### Use the learning
 

@@ -249,7 +249,29 @@ function counterCount(counters, column) {
 // makes the complete exchange group countable at a glance. Same rule as the
 // board's, because a child glancing from one to the other must count the same
 // shapes in the same arrangement.
-function counterGridSvg(x, y, w, h, column, count) {
+// Values are derived from the column, never separately authored answer text.
+const COUNTER_VALUES = { M: '1000000', HTh: '100000', TTh: '10000', Th: '1000', H: '100', T: '10', O: '1', t: '0.1', h: '0.01', th: '0.001' };
+function counterValue(column) {
+  const value = COUNTER_VALUES[canonicalColumn(column)];
+  if (!value) throw new Error('PLACE_VALUE_COUNTER_LABEL_UNKNOWN_COLUMN: ' + column);
+  return value;
+}
+
+function labelledCounterGrid(w, h, count, label, minFont, unitsPerPoint, maxDiameter = Infinity) {
+  // Pick a grid that leaves enough diameter for the whole label. No tiny-text fallback.
+  let best = null;
+  for (let cols = 1; cols <= count; cols += 1) {
+    const rows = Math.ceil(count / cols);
+    const stepW = w / cols, stepH = h / rows;
+    const d = Math.min(Math.min(stepW, stepH) * 0.82, maxDiameter);
+    const font = Math.min(14, d * 0.72 / (label.length * 0.62 * unitsPerPoint));
+    if (!best || d > best.d) best = { cols, rows, stepW, stepH, d, font };
+  }
+  if (!best || best.font < minFont) throw new Error('PLACE_VALUE_COUNTER_LABELS_DO_NOT_FIT: enlarge the chart or use fewer simultaneous examples');
+  return best;
+}
+
+function counterGridSvg(x, y, w, h, column, count, labelled = false) {
   if (count <= 0) return '';
   let cols;
   if (count === 10) cols = 5;
@@ -259,11 +281,15 @@ function counterGridSvg(x, y, w, h, column, count) {
   const gridRows = Math.ceil(count / cols);
 
   const pad = Math.min(COUNTER_PAD, w * 0.08, h * 0.08);
-  const stepW = Math.max(1, w - 2 * pad) / cols;
-  const stepH = Math.max(1, h - 2 * pad) / gridRows;
-  const d = Math.min(stepW, stepH) * 0.68;
+  const label = labelled ? counterValue(column) : '';
+  const layout = labelled ? labelledCounterGrid(w - 2 * pad, h - 2 * pad, count, label, 9, 1, 42) : null;
+  if (layout) cols = layout.cols;
+  const actualRows = layout ? layout.rows : gridRows;
+  const stepW = layout ? layout.stepW : Math.max(1, w - 2 * pad) / cols;
+  const stepH = layout ? layout.stepH : Math.max(1, h - 2 * pad) / gridRows;
+  const d = layout ? layout.d : Math.min(stepW, stepH) * 0.68;
   const gx = x + (w - stepW * cols) / 2;
-  const gy = y + (h - stepH * gridRows) / 2;
+  const gy = y + (h - stepH * actualRows) / 2;
   const palette = COLUMN_COLOURS[canonicalColumn(column)];
   const fill = palette ? palette[0] : DEFAULT_HEADER_FILL;
 
@@ -275,6 +301,7 @@ function counterGridSvg(x, y, w, h, column, count) {
       `<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(d / 2)}" fill="${fill}" ` +
       `stroke="${COUNTER_LINE}" stroke-width="${GRID_W}"/>`
     );
+    if (labelled) out.push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(layout.font)}" font-weight="bold" fill="${TEXT_COLOUR}">${label}</text>`);
   }
   return out.join('');
 }
@@ -292,6 +319,7 @@ function rowsOf(data) {
     if (Array.isArray(row)) return { label: '', cells: row, highlight: [], counters: null };
     if (!row || typeof row !== 'object') return { label: '', cells: [], highlight: [], counters: null };
     return {
+      counterLabels: row.counterLabels === true,
       label: row.label == null ? '' : String(row.label),
       cells: Array.isArray(row.cells) ? row.cells : [],
       highlight:
@@ -612,7 +640,7 @@ function tightSvg(data) {
         const palette = COLUMN_COLOURS[canonicalColumn(column)];
         cellRect(xs[at], bandY, colWs[i], bandH, palette ? palette[1] : DEFAULT_CELL_FILL);
         parts.push(
-          counterGridSvg(xs[at], bandY, colWs[i], bandH, column, counterCount(row.counters, column))
+          counterGridSvg(xs[at], bandY, colWs[i], bandH, column, counterCount(row.counters, column), row.counterLabels)
         );
       });
     }
@@ -671,7 +699,7 @@ function cacheKey(data) {
       const counters = r.counters
         ? Object.keys(r.counters).sort().map((k) => `${k}:${r.counters[k]}`).join(';')
         : '';
-      return `${r.label}=${r.cells.join(',')}#${r.highlight.join(',')}+${counters}`;
+      return `${r.label}=${r.cells.join(',')}#${r.highlight.join(',')}+${counters}:labels=${r.counterLabels === true}`;
     })
     .join('|');
   return `pvchart:${(data && data.title) || ''}:${columns.join(',')}:${rowKey}`;
@@ -692,4 +720,4 @@ function onePerColumnCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { tightSvg, onePerColumnCueSvg, cacheKey, COLUMN_COLOURS, canonicalColumn };
+module.exports = { tightSvg, onePerColumnCueSvg, cacheKey, COLUMN_COLOURS, canonicalColumn, counterValue, labelledCounterGrid };

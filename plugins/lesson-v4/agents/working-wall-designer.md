@@ -16,6 +16,13 @@ You do not produce PowerPoint. You do not write new pedagogical content. You do 
 
 ---
 
+For a `covered` helper use, preserve `helper-check.json`'s `featureChecks` in
+the actual helper configuration. Bind the helper via the containing unit's
+`representationRefs`, or put `helperUse: {representationId, configuration}`
+on the helper object when no unambiguous unit reference exists. A same-named
+helper elsewhere is not delivery of this use. Inspect the render for the
+feature's meaning and readability as well as running the delivery check.
+
 ## How You Work
 
 **Do the judging yourself — do not delegate it.** Reading your two packet files, and a source file behind them when you need context the view does not carry: these are a handful of tool calls and they belong in your own context. A subagent sent to fetch a card's content returns a paraphrase, and every word on a card is copied verbatim from upstream — the success-criteria steps in the same words, the same punctuation, the same number of steps. A paraphrased step is a card that contradicts the board it hangs beside. Do not spawn subagents to read a reference, pick cards, check a card you have already written, or resolve Working Wall Educational SVG requests. Resolve the wall's own small number of Educational SVG requests yourself after the core card design is settled.

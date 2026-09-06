@@ -39,7 +39,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `mult-grid` | A multiplication-facts grid (the SATs "missing numbers in this multiplication grid" shape): `×` corner, headers across and down, product cells. Big numbers, blank cells, green `||` answers. Use for a times-tables grid, not the generic `table` |
 | `matching` | A "draw a line to match" layout: two columns of boxes joined by connector lines. One example line on the question, every line green on the answer slide. Use for any match-these-to-those starter or task |
 | `numberline` | Number line with ticks, question arrow, answer dot |
-| `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters, and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart |
+| `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters (set `counterLabels: true` on a row for the value on each counter; enlarge the chart if labels cannot fit), and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart |
 | `fraction-wall` | Stacked rows of equal-width fraction pieces |
 | `part-whole-model` | One whole circle (left) branching to 2–3 part circles (right), with text labels in each |
 | `triangle-square` | The "two triangles add up to the square" part-whole puzzle in SATs-paper notation: two stacked triangles (left) with arrows pointing into a square (right). Leave one shape blank for the unknown. Use when the lesson recreates this exact paper question type — not the circle-and-line `part-whole-model` |
@@ -150,11 +150,11 @@ The lesson opens on the starter (slide 1). Its Date and LO sit in the `starter` 
 
 My Turn / Our Turn / Your Turn is a teaching move, not a maths-only feature, so it also runs in grammar, punctuation, spelling and comprehension — but there the modelled answer is a word, a choice or a mark with no working to write out. Those non-numerical turns belong on `body-full` (or another free template), where the question and its options, sentence, `table` or `matching` fill the body. The maths templates here expose no body zone and size their cards for short sums, so non-numerical content placed in them comes out cramped or unrendered. The slide-designer's skill-based mapping covers which to choose.
 
-**No template in this family ever carries a blank column for the teacher to write a calculation into.** Follow the upstream `Modelling resource state`. When a move uses Question and reference, the written working itself does not claim a slide zone; `writing-turn-ref-sc`, below, is one template that supports that state. The templates that follow can carry diagrams used as helpers or references — reading a clock, filling a grid's blank cells, tracing a coordinate grid — and each one that can carry a diagram needs telling to give it the full width; do not infer the resource state merely from the presence of a diagram.
+**Choose the template from the planned live action.** Follow the upstream modelling state and specified working. A reference-only layout is valid when all annotation is inside the helper or no on-slide working is intended. When the model requires separate on-slide working, use the existing working-space option in `maths-turn-sc` or `maths-turn-ref-sc`, or a free layout with a clear unboxed area. Protect readable reference size and enough room for the actual writing; do not choose a template merely from the subject name.
 
 #### `writing-turn-ref-sc`
 
-**Purpose:** My Turn or Our Turn slide for **Question and reference** modelling — the written working happens away from the helper, so the slide never carries a working column at all. Question strip on top, a reference panel taking the room a working column would otherwise have claimed, full-height SC panel on the right. Use it when the upstream resource state is Question and reference and the slide needs the question, success criteria and any useful reference visible while the written working happens elsewhere.
+**Purpose:** Question strip, large reference panel and full-height SC panel. Use this reference-only layout when the upstream state needs no separate on-slide writing. If the teacher will build working beside the reference, choose `maths-turn-ref-sc` with `hideWorkingSpace: false` or a suitable free layout instead.
 
 **Slots:** `title`, `questions`, `criteria`, `criteriaLabel`, `flipchart` (see `maths-turn-sc`'s entry below for what it renders), plus:
 - `reference` (optional) — a content object holding whatever the teacher and class need visible during modelling: a fraction wall or number line shown for context, a price list, a results table, or leave it out entirely for a plain calculation with nothing else to show.
@@ -173,7 +173,7 @@ There's no `workingSpace` flag to set here: this template never draws a working 
 - `questionNumbering` (optional) — omit or use `"none"` for My Turn and ordinary non-Maths Our Turn. Use `"teacher-led"` only for a Maths Our Turn containing two or more discrete questions; it renders `(a)`, `(b)`, `(c)` and restarts on that turn.
 - `flipchart` (optional) — set `true` when the lesson-designer marked this criteria with the optional *draw-live (flipchart → working wall)* suggestion. Renders a small pencil in the panel's top-right corner suggesting that possibility to the teacher; nothing else on the slide changes. Applies across the `*-sc` family (`maths-turn-sc`, `maths-turn-ref-sc`, `maths-your-turn-sc`, `writing-turn-ref-sc`) — set it at the slide level beside `criteria`. Reserved for recognition/labelled references that carry forward, not procedural step lists.
 - `questionVisual` (required) — a content object (clock, diagram, image, etc.) — the diagram the question is *about* (e.g. "What time is shown on this clock?", "What fraction is shaded?").
-- `workingSpace` — **always pass `false`.** The template's blank annotation column defaults on; setting it off is what hands `questionVisual` the full width instead of halving it with a column nothing is ever written into. If there's no `questionVisual` either, this isn't the right template for the slide — choose the template that fits the upstream resource state; `writing-turn-ref-sc` is the Question-and-reference option.
+- `workingSpace` — set `true` when the planned model needs the separate annotation column; otherwise explicitly pass `false` so the question visual uses the full width. Check the reference and handwriting area at actual slide size. No visual and no planned working usually calls for a simpler layout.
 
 #### `maths-turn-ref-sc`
 
@@ -184,7 +184,7 @@ There's no `workingSpace` flag to set here: this template never draws a working 
 - `referenceLabel` (optional) — short label rendered at the top-left of the reference panel ("Price list", "Speeds (mph)", "Ingredients"). Omit for unlabelled references.
 - `questionNumbering` (optional) — omit or use `"none"` for My Turn and ordinary non-Maths Our Turn. Use `"teacher-led"` only for a Maths Our Turn containing two or more discrete questions; it renders `(a)`, `(b)`, `(c)` and restarts on that turn.
 - `questionVisual` (optional) — the diagram the question is about, same as `maths-turn-sc`.
-- `hideWorkingSpace` — **always pass `true`.** Note the different key and polarity from `maths-turn-sc`'s `workingSpace: false`: this template's own flag hides the space and, doing so, expands the reference panel to fill the freed height, so the given information reads at a larger size rather than leaving a gap.
+- `hideWorkingSpace` — pass `false` when the planned model needs separate working below the reference; pass `true` when it does not, expanding the reference instead. This flag has the opposite polarity to `maths-turn-sc`'s `workingSpace`.
 
 **When to choose this over `maths-turn-sc`:** if the question can stand on its own without the reference visible, use `maths-turn-sc` and embed the values in the question stem. If the question is *about* a separate dataset that children read repeatedly while solving — most SATs-style "use the price list / table to answer" problems — use `maths-turn-ref-sc`.
 
@@ -209,7 +209,7 @@ There's no `workingSpace` flag to set here: this template never draws a working 
 
 #### `maths-turn`, `maths-mtotyt`, `maths-mtotyt-sc` — retired, do not pick these
 
-These three always draw a blank working column with no flag to turn it off. `maths-turn` will draw a `questionVisual`, but only at half width beside the column; `maths-mtotyt` and `maths-mtotyt-sc` drop one entirely. They predate the no-working-column rule above, and there's no lesson this rule now lets them render correctly, so leave them out of every new build. For a single-stage My Turn or Our Turn, reach for `maths-turn-sc` (a full-width question visual/helper) or `writing-turn-ref-sc` (`Question and reference`) instead of plain `maths-turn`. For a combined MT+OT+YT slide, build the three turns as separate slides - there's no combined `Question and reference` equivalent to `maths-mtotyt`/`maths-mtotyt-sc`.
+These older templates force working columns and, in the combined variants, omit question visuals. Keep them retired: use the configurable single-turn templates or a free layout so the reference and live working receive the space each needs. Build distinct My Turn, Our Turn and Your Turn stages as separate slides.
 
 ### 2.3 Teach family
 

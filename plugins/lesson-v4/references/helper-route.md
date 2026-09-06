@@ -87,3 +87,29 @@ hand-off: what it draws, the exact folder it is waiting in, and that
 `/install-helper` over that folder is what makes it real. That sentence is the
 whole point of building it here, and a helper nobody is told about is a helper
 nobody installs.
+
+
+## Capability and delivery contract
+
+  Record `featureChecks` for every exact `requiredFeatures` string: each entry
+  is `{"feature": "<exact feature>", "path": "/rows/*/counterLabels", "equals": true}`,
+  with paths and values taken from the chosen renderer's actual supported configuration.
+  Paths are relative to the helper object; `*` tests every array member. A feature
+  may need several checks. Use `[]` only when the design requires no features.
+  If a feature needs visual/teaching judgement rather than a supported setting
+  (for example, room for the intended working), use
+  `{"feature": "<exact feature>", "visualReview": "<where and what to inspect>"}`.
+  Do not invent an ignored property to satisfy an assertion. Delivery prints
+  these as `HELPER_VISUAL_REVIEW` for the existing resource inspection; they
+  are not mechanically certified. Use configuration assertions whenever the
+  required setting is expressible, with visual inspection for size and meaning.
+  Compare what the configuration actually draws with the feature's meaning;
+  a property that the renderer ignores is not evidence. Render a small probe when
+  support is uncertain. The checks enforce the recorded configuration, not this
+  semantic judgement or final visual readability. A required feature with no
+  faithful configuration takes the build/substitute/gap route.
+  Resource designers bind each helper to its use with existing `representationRefs`
+  on its containing unit, or `helperUse: {representationId, configuration}` on
+  the helper object when that is ambiguous or the surface has no unit references.
+  Delivery checks every bound occurrence and its feature checks; another helper
+  with the same key elsewhere cannot satisfy the promise.

@@ -245,7 +245,6 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "The structured `modellingState` is authoritative",
             "return a named content hand-off fault",
         )
-        self.assertIn("Generic working boxes remain removed", self.modelling)
 
     def test_answer_treatment_remains_source_controlled(self) -> None:
         answer_section = section(

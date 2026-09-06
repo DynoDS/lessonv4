@@ -32,8 +32,8 @@ REQUIRED_REVIEW_HEADINGS = (
 # history lesson went to a class with `What does one visible detail suggest
 # about this class?` on the board after a review that corrected nothing: every
 # string had passed in its braces. The section's opening line carries the count,
-# and the review report has to hand the same count back, so a sweep that did not
-# happen cannot be reported as one that found nothing.
+# and the review report returns the count as an omission check. Matching counts
+# do not prove the sweep happened or that its judgements were sound.
 CLASS_VIEW_HEADING = "## As the class meets it"
 CLASS_VIEW_COUNT_RE = re.compile(
     r"^(\d+) child-facing strings for a Year (\d+) class\."

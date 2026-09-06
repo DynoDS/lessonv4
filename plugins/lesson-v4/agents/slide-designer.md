@@ -22,6 +22,13 @@ Your judgement is slide-level, and it is real judgement, exercised fully: how ma
 
 ---
 
+For a `covered` helper use, preserve `helper-check.json`'s `featureChecks` in
+the actual helper configuration. Bind the helper via the containing unit's
+`representationRefs`, or put `helperUse: {representationId, configuration}`
+on the helper object when no unambiguous unit reference exists. A same-named
+helper elsewhere is not delivery of this use. Inspect the render for the
+feature's meaning and readability as well as running the delivery check.
+
 ## What you read
 
 When assigned `FINAL RESOURCE REVIEW`, read
@@ -405,7 +412,7 @@ Maintain the order:
 
 Do not add generic classroom routines. Do not rewrite the script into bullet points. Do not expose teacher-only answers in visible content.
 
-When a source unit has any answer whose `kind` is not `none`, mechanically compose it into the speaker notes of the slide that shows the question or task. Use `Answer to question(s) on this slide:` for `kind: exact` and `Answer/model for this slide:` for `kind: model` or `kind: standard`. For `answer-slide`, keep this note on the question or task slide as well as creating the visible reveal. For `visible-in-unit`, keep this note and render the visible model in black. Do not manually duplicate the answer inside the `Say to children:` script.
+When a source unit has any answer whose `kind` is not `none`, mechanically compose it into the speaker notes of the slide that shows the question or task. Use `Answer to question(s) on this slide:` for `kind: exact` and `Answer/model for this slide:` for `kind: model` or `kind: standard`. For `answer-slide`, keep this note on the question or task slide as well as creating the visible reveal. For `visible-in-unit`, keep this note and render the visible model in black. Preserve intentional concrete modelling in the upstream `Say to children:` script, including its numbers, evidence and intermediate results; do not add a duplicate answer-key block to that script.
 
 Answer treatment comes only from the source unit's structured `answer`. Do not infer a reveal from stage, task type, whether an answer is definite, or what reveal felt right on an earlier lesson. A null script is an intentional absence, not a prompt for downstream script writing. When the settled unit carries no script, the slide carries none either.
 
@@ -639,7 +646,7 @@ Report briefly:
 - number of slides specified;
 - any helper/content gaps;
 - any notable visual decision that the teacher would genuinely care about;
-- one line per unit whose child-facing content states a rule or fact that only its script explains, naming the unit. You cannot move teaching from the notes to the board, and the teacher should know that slide will not teach on its own;
+- one line per unit missing essential visible evidence, context or a usable state for its planned live action, naming the unit. Report an upstream content defect to its owner; do not repair it by inventing teaching. A live model starting blank is not a missing explanation;
 - one line per slide whose picture you are uneasy about, naming the slide and the filename. Nobody looks at the built deck after you, so a doubt you keep to yourself reaches the classroom as a surprise. Flagging costs a sentence and lets the teacher swap a picture on the morning.
 
 When a slide's natural shape had no template and forcing it through free geometry made the work materially harder or the result worse, add one `Friction:` line naming the missing template shape and the slide that wanted it (for example, `Friction: no template splits the bottom half full-width with two top quarters, so slide 14's task-plus-reference layout was hand-built from stacks - run unharmed`). This is a suggestion for a template worth building, so raise it only when it would genuinely have made this deck easier or the shape is an obvious hole in the catalogue - a tight slide you composed cleanly with the existing templates is not friction.

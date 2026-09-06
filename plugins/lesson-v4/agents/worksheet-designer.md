@@ -160,6 +160,13 @@ continuity or change. Both were filed as reminders. Neither child could start.
 
 ---
 
+For a `covered` helper use, preserve `helper-check.json`'s `featureChecks` in
+the actual helper configuration. Bind the helper via the containing unit's
+`representationRefs`, or put `helperUse: {representationId, configuration}`
+on the helper object when no unambiguous unit reference exists. A same-named
+helper elsewhere is not delivery of this use. Inspect the render for the
+feature's meaning and readability as well as running the delivery check.
+
 ## How you work
 
 **Do the mapping yourself.** Reading the lesson design, the adaptation and the
@@ -474,7 +481,7 @@ It also names the most expensive single item and its height at the narrowest it
 is allowed to be. That is the item the three moves below should be aimed at
 first, and it is often not the one that looks biggest in the brief.
 
-When the complete content does not fit:
+When the complete content does not fit, read the measured failing block and available width/height before choosing a repair. Change the geometry that caused the failure (for example, the column allocation or a repeated support), then rebuild and compare the resulting measurements. Removing a wrapper that preserves the same width and height is not a fit repair. Preserve readable text, usable response space and all required learning; follow the priorities below rather than repeating an unchanged build:
 
 1. **Compose faithfully.** Reuse one required stimulus across connected prompts
    or choose another arrangement only when the task relationships remain
