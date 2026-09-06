@@ -76,6 +76,10 @@ Use exactly these top-level fields:
 
 The values in the request are decisions already made by the Lesson Designer. The scaffold script only turns them into IDs, ordinals, repeated envelopes, required top-level keys and each source unit's route-specific `content` envelope.
 
+## Filling words for the right audience
+
+A placeholder is not necessarily a planning note. For starter, observe, apply and reflect, `content.activity` is the actual question or task children meet. For do and practise, `content.task` carries that wording while `content.activity` describes the activity for planning. Write each child-facing field as words addressed to this class; keep purpose, delivery instructions and marking alternatives in their teacher/planning fields. `output-template.md` owns the full field contract. Do not add a purpose sentence in front of an already clear pupil question.
+
 ## Counts
 
 `vocabularyCount`, `vocabularyIntroductionCount`, `trimmedVocabularyCount`, `successCriteriaCount`, `stickyKnowledgeCount`, `misconceptionCount` and `photoCount` are zero or positive integers. They are counts of decisions already made, not targets to fill.

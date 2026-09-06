@@ -635,7 +635,7 @@ For every answer whose `kind` is not `none`, the slide-designer composes the str
 
 ### Starter
 
-The starter is one source unit:
+The starter is one source unit. Its `content.activity` is the exact question or task children read, not a description of the learning purpose. Put the purpose in `content.connection` and delivery method in `content.format`. If `pupilInstruction` is needed, it adds a short action rather than duplicating the questions. A line about what children will retrieve, demonstrate or practise belongs in planning, unless it is itself an intelligible instruction addressed to them.
 
 ```json
 {

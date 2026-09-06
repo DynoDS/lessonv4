@@ -2370,3 +2370,13 @@ def test_the_overload_section_opens_on_an_unused_taught_idea():
     assert "not used again by the independent practice or the ending" in trigger
     assert "countable from the view" in trigger
 
+
+
+def test_authored_planning_register_is_quoted_without_rewriting_or_hiding_it():
+    design, photos = content_based_design()
+    design["starter"]["content"]["activity"] = "Retrieve a familiar occupation.\nExplain the worker's task."
+    design["starter"]["content"]["connection"] = "Private planning purpose"
+    section = class_view_section(packet_module.build_review_view(design, photos))
+    assert "> Retrieve a familiar occupation.\n> Explain the worker's task." in section
+    assert "Private planning purpose" not in section
+    assert "26 child-facing strings for a Year 4 class." in section

@@ -858,7 +858,9 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
     for label, strings in blocks:
         lines.append(f"### {label}")
         for text in strings:
-            lines.append(text)
+            # Keep authored wording distinct from packet commentary.
+            lines.extend("> " + line for line in text.split("\n"))
+            lines.append("")
         lines.append("")
     return lines, count
 
