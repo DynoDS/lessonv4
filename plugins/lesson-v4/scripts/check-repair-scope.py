@@ -26,20 +26,23 @@ list, one row from a recording table, one summand from a number sentence, or
 one counter denomination from a claim, and every container count stays exactly
 where it was.
 
-**Did words appear that nobody wrote upstream?** Preservation is not only about
-loss. A repairer may not author child-facing wording, so a string that was not
-in the specification when it arrived has no business being in it now - and the
-one that matters is the helpful line explaining which of two claims is correct.
-Repeating a string that was already there is a different thing and stays legal:
-splitting one slide into two repeats its title.
+**Did words appear on the child's page that were not on it before?** A repairer
+may not author child-facing wording, so a string that was not in front of
+children when the repair began has no business being there now - and the two
+that matter are the helpful line explaining which of two claims is correct, and
+the answer lifted out of the teacher's key. The teacher's channel is counted
+apart from the pupil's for exactly that second one: the document already held
+the words, and the child did not. Repeating a string that was already on the
+page is a different thing and stays legal: splitting one slide into two repeats
+its title.
 
 **Did each case keep its own evidence and its own response?** The four above are
 bags. A bag cannot tell the counters that belong to the first equation from the
 counters that belong to the second, so exchanging them changes nothing it can
-see, and the sheet then shows the wrong evidence under each claim. Each numbered
-question, and each case inside a row of parallel cases, is therefore fingerprinted
-on its own and the fingerprints are compared as a set. Moving one somewhere else
-keeps its fingerprint; taking its evidence away does not.
+see, and the sheet then shows the wrong evidence under each claim. So the units
+that bind a case together are fingerprinted on their own and compared as a set.
+What counts as one is decided by what a node IS rather than by what wraps it -
+see `Census` below, which explains why, and what it cost to learn.
 
 **Did every one of them keep its room to write?** Totalled across a sheet, one
 question can lose two ruled lines while another gains two. Counted against the
@@ -170,11 +173,16 @@ def is_flat(item: object) -> bool:
     """
     if isinstance(item, bool):
         return False
+    if item is None:
+        return True
     if isinstance(item, (str, int, float)):
         return True
     if isinstance(item, list):
+        # A table row whose response cells are null is still a row of values.
+        # Excluding it left every part-completed recording table unordered.
         return all(
-            isinstance(cell, (str, int, float)) and not isinstance(cell, bool)
+            cell is None
+            or (isinstance(cell, (str, int, float)) and not isinstance(cell, bool))
             for cell in item
         )
     return isinstance(item, dict) and not any(
@@ -186,10 +194,14 @@ BLANK = "[blank]"
 
 
 def printed_part(item: object) -> str:
+    if item is None:
+        return BLANK
     if isinstance(item, list):
         # One row of a table, kept whole, so two cells cannot swap rows
-        # unnoticed while the bag of cell values stays identical.
-        return " | ".join(str(cell) for cell in item)
+        # unnoticed while the bag of cell values stays identical. A null cell
+        # is the child's own space and is written out, so a row cannot quietly
+        # trade its blanks for the row above's given words.
+        return " | ".join(BLANK if cell is None else str(cell) for cell in item)
     if not isinstance(item, dict):
         return str(item)
     for field in ("value", "text", "caption", "label"):
@@ -224,36 +236,57 @@ def value_sequence(items: list) -> tuple | None:
 
 # ─── what a case is ──────────────────────────────────────────────────────
 #
-# A bag of content is blind to which evidence belongs to which claim. So the
-# units that hold a case together are fingerprinted separately: a numbered
-# question, and each member of a row of parallel cases, which is how two
-# equations, three sources or four objects are laid out side by side.
+# A bag of content is blind to which evidence belongs to which claim, so the
+# units that bind a case together are fingerprinted separately. The first
+# version of this decided that by looking at the wrapper - a child of a `row`
+# was a case - and a wrapper is presentation. Two consequences, both wrong in
+# opposite directions: two questions inside one `written-answers` helper were
+# not cases at all, so one could take the other's ruled lines; and moving two
+# intact claims from a row into a stack destroyed both fingerprints and was
+# reported as a loss.
 #
-# A fingerprint is everything inside that unit - its words, its values, its
-# order and its room to write - so exchanging the counters under two claims
-# changes both, while moving a whole question to another zone changes neither.
+# So a node is a case because of what it IS:
+#
+#   1. it says so - `question: true`;
+#   2. it BINDS - its subtree holds both something to read and somewhere to
+#      write, and no smaller part of it does. This is the numbered item inside
+#      a helper, the part node with its caption, the claim with its evidence;
+#   3. it holds a case AND content of its own that sits outside every case in
+#      it. That is a claim whose evidence is beside its response rather than
+#      inside it, and it is what catches evidence swapped between two claims.
+#
+# A layout slot is never a case on rules 2 and 3. A zone holds whatever the
+# page put there, and moving a question between zones is the repair itself.
+LAYOUT_SLOT_KEYS = {"zones", "sheets", "slides", "pages"}
 
-
-def is_case(value: dict, in_row: bool) -> bool:
-    if value.get("question") is True:
-        return True
-    return in_row and any(
-        key in value for key in ("helper", "type", "stack", "row")
-    )
+# The teacher's channel. Answers, acceptance conditions and marking notes are
+# real content that must survive, and they are not on the child's page. Counted
+# apart, so that copying an answer out of the key and onto a pupil instruction
+# reads as what it is: a string that is new to the child, even though the
+# document already contained it.
+TEACHER_KEYS = {
+    "answerKey",
+    "answers",
+    "answer",
+    "acceptanceCondition",
+    "lookFor",
+    "teacherInfo",
+}
 
 
 class Census:
-    """Everything one specification holds, counted five ways in a single walk."""
+    """Everything one specification holds, counted in a single walk."""
 
     def __init__(self, node: object) -> None:
         self.objects: Counter = Counter()
         self.content: Counter = Counter()
+        self.teacher: Counter = Counter()
         self.room: Counter = Counter()
         self.cases: Counter = Counter()
         # Room, keyed by the case that holds it, so a question cannot pay for
         # its neighbour's extra line with one of its own.
         self.case_room: Counter = Counter()
-        self._walk(node)
+        self._visit(node, 1, False, False)
 
     # ─── one node's own room to write ───
     @staticmethod
@@ -286,28 +319,42 @@ class Census:
             found["targets"] += times
         return found
 
-    def _walk(self, value: object, times: int = 1, in_row: bool = False,
-              case: Counter | None = None) -> None:
+    def _visit(self, value: object, times: int, in_slot: bool, teacher: bool):
+        """Walk one node.
+
+        Returns what the subtree holds that is NOT already inside a case:
+        (content, room, holds_a_case). The parent needs that to answer rule 3 -
+        does it have evidence of its own beside the case it contains?
+        """
+        free: Counter = Counter()
+        free_room: Counter = Counter()
+        holds_case = False
+
         if isinstance(value, list):
             for item in value:
-                self._walk(item, times, in_row, case)
-                if not isinstance(item, (dict, list)):
-                    self._note(item, times, case)
-            return
+                if isinstance(item, (dict, list)):
+                    sub, sub_room, sub_case = self._visit(item, times, in_slot, teacher)
+                    free.update(sub)
+                    free_room.update(sub_room)
+                    holds_case = holds_case or sub_case
+                else:
+                    self._note(item, times, free, teacher)
+                    # A null cell in a table row is a place to write, and it is
+                    # the only shape of response target that carries no key of
+                    # its own. Left uncounted, a table's blanks could be moved
+                    # to other rows or removed with the words intact.
+                    if item is None:
+                        self.room["targets"] += times
+                        free_room["targets"] += times
+            return free, free_room, holds_case
+
         if not isinstance(value, dict):
-            return
+            return free, free_room, holds_case
 
         if value.get("kind") in OPTIONAL_PICTURE_KINDS:
-            return
+            return free, free_room, holds_case
 
         times *= repeats_of(value)
-
-        # A case opens its own fingerprint. Everything below it lands in that
-        # fingerprint as well as in the whole-document bags, so a case can be
-        # moved but not hollowed out.
-        own = case
-        if is_case(value, in_row):
-            own = Counter()
 
         for field in DISCRIMINATORS:
             kind = value.get(field)
@@ -322,12 +369,9 @@ class Census:
         if isinstance(visual, str) and visual:
             self.objects[f"visual:{visual}"] += times
 
-        room = self._room_of(value, times)
-        self.room.update(room)
-        if own is not None:
-            own["#room"] += 0  # so a case with no room still has an entry
-            for tally, count in room.items():
-                own[f"#room:{tally}"] += count
+        own: Counter = Counter()
+        own_room = self._room_of(value, times)
+        self.room.update(own_room)
 
         for key, child in value.items():
             if key in DECORATIVE_KEYS:
@@ -336,43 +380,58 @@ class Census:
                 continue
             if key == "parts" and is_width_split(child):
                 continue
+            child_teacher = teacher or key in TEACHER_KEYS
             if key in DISCRIMINATORS or key == "visual":
                 # Already counted as an object, with a helper's aliases
                 # resolved. Counting the name again here would call a legal
                 # swap between two names for one renderer a lost word.
                 if isinstance(child, (dict, list)):
-                    self._walk(child, times, False, own)
+                    sub, sub_room, sub_case = self._visit(
+                        child, times, False, child_teacher
+                    )
+                    own.update(sub)
+                    own_room.update(sub_room)
+                    holds_case = holds_case or sub_case
                 continue
-            if isinstance(child, list):
-                sequence = value_sequence(child)
-                if sequence is not None:
-                    self._note_key(key, ", ".join(sequence), times, own)
-                self._walk(child, times, key == "row", own)
-            elif isinstance(child, dict):
-                self._walk(child, times, key == "row", own)
+            if isinstance(child, (dict, list)):
+                if isinstance(child, list):
+                    sequence = value_sequence(child)
+                    if sequence is not None:
+                        self._note_key(key, ", ".join(sequence), times, own, child_teacher)
+                sub, sub_room, sub_case = self._visit(
+                    child, times, key in LAYOUT_SLOT_KEYS, child_teacher
+                )
+                own.update(sub)
+                own_room.update(sub_room)
+                holds_case = holds_case or sub_case
             else:
-                self._note(child, times, own)
+                self._note(child, times, own, child_teacher)
 
-        if own is not case and own is not None:
-            # Identity is what the case SAYS; room is what it gives the child
-            # to say it in. Kept apart, because a repair may hand a question
-            # another ruled line and must not hand it another value.
-            said = {k: v for k, v in own.items() if not k.startswith("#room")}
-            fingerprint = self._fingerprint(said)
+        # Rule 1 outranks the slot rule: a zone that IS a numbered question is a
+        # question, whatever it is standing in.
+        explicit = value.get("question") is True
+        # Rule 2: it binds, and nothing smaller inside it does.
+        binds = (not holds_case) and bool(own) and bool(own_room)
+        # Rule 3: it holds a case, and evidence of its own beside it.
+        beside = holds_case and bool(own)
+        is_case = explicit or (not in_slot and (binds or beside))
+
+        if is_case:
+            fingerprint = self._fingerprint(own)
             self.cases[fingerprint] += 1
-            for key, count in own.items():
-                if key.startswith("#room:"):
-                    self.case_room[f"{fingerprint} :: {key[6:]}"] += count
-            if case is not None:
-                # A case inside a case still counts towards the outer one, or a
-                # question could lose a whole claim and keep its fingerprint.
-                case.update(own)
+            for tally, count in own_room.items():
+                self.case_room[f"{fingerprint} :: {tally}"] += count
+            # Everything here is now accounted for by this case, so the parent
+            # does not see it as loose content of its own.
+            return Counter(), Counter(), True
+
+        return own, own_room, holds_case
 
     @staticmethod
-    def _fingerprint(said: dict) -> str:
+    def _fingerprint(said: Counter) -> str:
         return " ; ".join(f"{k}x{v}" for k, v in sorted(said.items()))
 
-    def _note(self, value: object, times: int, case: Counter | None) -> None:
+    def _note(self, value: object, times: int, free: Counter, teacher: bool) -> None:
         if isinstance(value, bool):
             return
         if isinstance(value, str):
@@ -384,15 +443,20 @@ class Census:
             key = repr(value)
         else:
             return
+        if teacher:
+            self.teacher[key] += times
+            return
         self.content[key] += times
-        if case is not None:
-            case[key] += times
+        free[key] += times
 
-    def _note_key(self, key: str, text: str, times: int, case: Counter | None) -> None:
+    def _note_key(self, key: str, text: str, times: int, free: Counter,
+                  teacher: bool) -> None:
         entry = f"{key}: {text}"
+        if teacher:
+            self.teacher[entry] += times
+            return
         self.content[entry] += times
-        if case is not None:
-            case[entry] += times
+        free[entry] += times
 
 
 def read_spec(path: Path, label: str) -> object:
@@ -482,6 +546,17 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
+    lost_teacher = losses(before.teacher, after.teacher)
+    if lost_teacher:
+        report(
+            f"REPAIR_SCOPE_FAILED: {len(lost_teacher)} teacher answer(s) or "
+            "marking note(s) did not survive the repair:",
+            lost_teacher,
+            "The teacher's copy is content too. A question with no answer "
+            "beside it is a question nobody can mark.",
+        )
+        return 1
+
     added = additions(before.content, after.content)
     if added:
         report(
@@ -491,8 +566,9 @@ def main(argv: list[str] | None = None) -> int:
             "Nothing here writes words for children. A line that tells them "
             "which answer is right, a label that classifies a source, or a "
             "value printed where one was to be worked out all change the task "
-            "even though nothing was taken away. Repeating wording that was "
-            "already in the specification is fine; inventing it is not.",
+            "even though nothing was taken away. Repeating wording already on "
+            "the child's page is fine. Copying it off the teacher's copy is "
+            "not: the answer key is content, and it is not their channel.",
         )
         return 1
 
@@ -545,7 +621,8 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"REPAIR_SCOPE_OK: {sum(after.objects.values())} content object(s), "
         f"{sum(after.content.values())} thing(s) children read or work from, "
-        f"{sum(after.cases.values())} question(s) or case(s) intact and "
+        f"{sum(after.cases.values())} question(s) or case(s) intact, "
+        f"{sum(after.teacher.values())} teacher answer(s) and "
         f"{after.room['targets']} place(s) to write preserved"
     )
     return 0

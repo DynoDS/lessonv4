@@ -348,9 +348,16 @@ test("every task the approved sheet asks reaches a printed page", () => {
                        "How do you know you've found them all?"]) {
     assert.ok(text.includes(value), `${value} never reaches a printed page`);
   }
-  // Every place to write is on the page too, counted rather than assumed.
-  const blanks = (pages.match(/h-ns-box|h-ns-cell|h-line/g) || []).length;
-  assert.ok(blanks > 60, `only ${blanks} response targets printed`);
+  // Every place to write reaches the page too. Counted on the body markup,
+  // never on the whole file: the stylesheet names all three of these classes,
+  // so a count over the document counts its own CSS rules. This is a count and
+  // not a geometry check - whether each box is big enough to write in on paper
+  // is a question about a printed page, and it belongs to the final review.
+  const body = pages
+    .replace(/<style[\s\S]*?<\/style>/g, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ");
+  const targets = (body.match(/class="h-ns-box|class="h-ns-cell|class="h-line/g) || []).length;
+  assert.ok(targets > 60, `only ${targets} response targets printed`);
 });
 
 test("no answer from the fixture's teacher key appears on a pupil sheet", () => {

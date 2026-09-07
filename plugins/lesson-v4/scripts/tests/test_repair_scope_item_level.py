@@ -275,6 +275,150 @@ class NestedRowsAreContentTooTests(ItemLevelCase):
         self.assertAllowed(self.mutated())
 
 
+class IdentityComesFromWhatAThingIsTests(ItemLevelCase):
+    """The second audit's four, and they were one mistake wearing four faces.
+
+    The first version of the case model decided what a case was by looking at
+    its wrapper: a child of a `row` was a case, and nothing else was. A wrapper
+    is presentation, so the model was wrong in both directions at once. Two
+    numbered questions inside one `written-answers` helper were not cases at
+    all, and one could take the other's ruled lines. Two intact claims moved
+    from a row into a stack lost both their fingerprints and were reported as
+    a loss, which is the same mistake pointed the other way.
+
+    A case is now decided by what a node IS: it says so, or it binds something
+    to read to somewhere to write, or it holds a case and evidence of its own
+    beside it.
+    """
+
+    def two_questions_in_one_helper(self) -> dict:
+        return {"sheets": {"expected": {"zones": [{"stack": [
+            {"question": True, "helper": "written-answers", "items": [
+                {"text": "Why does the river slow down here?", "lines": 3},
+                {"text": "What would change if it rained for a week?", "lines": 3},
+            ]},
+        ]}]}}}
+
+    def test_one_item_takes_the_ruled_lines_of_the_item_beside_it(self):
+        # Six lines before and six after, and the first question has lost two.
+        # The engine numbers these items even though neither carries
+        # `question: true`, so the checker and the numberer disagreed about
+        # what a question was.
+        self.before = self.two_questions_in_one_helper()
+        after = self.mutated()
+        items = after["sheets"]["expected"]["zones"][0]["stack"][0]["items"]
+        items[0]["lines"] = 1
+        items[1]["lines"] = 5
+        self.assertIn("room", self.assertCaught(after))
+
+    def test_both_items_gaining_a_line_is_still_an_improvement(self):
+        self.before = self.two_questions_in_one_helper()
+        after = self.mutated()
+        for item in after["sheets"]["expected"]["zones"][0]["stack"][0]["items"]:
+            item["lines"] = 4
+        self.assertAllowed(after)
+
+    def test_two_intact_cases_may_move_from_a_row_into_a_stack(self):
+        claims = [
+            {"stack": [
+                {"helper": "counter-group", "statement": "5,009 = 5,000 + 9",
+                 "joiner": "+", "groups": [{"value": "1000", "count": 5},
+                                           {"value": "1", "count": 9}]},
+                {"helper": "written-answers", "showNumbers": False,
+                 "items": [{"text": "", "lines": 2}]}]},
+            {"stack": [
+                {"helper": "counter-group", "statement": "5,009 = 500 + 9",
+                 "joiner": "+", "groups": [{"value": "100", "count": 5},
+                                           {"value": "1", "count": 9}]},
+                {"helper": "written-answers", "showNumbers": False,
+                 "items": [{"text": "", "lines": 2}]}]},
+        ]
+        self.before = {"sheets": {"expected": {"zones": [{"stack": [
+            {"question": True, "row": claims}]}]}}}
+        after = {"sheets": {"expected": {"zones": [{"stack": [
+            {"question": True, "stack": claims}]}]}}}
+        self.assertAllowed(after)
+
+
+class TheTwoChannelsStaySeparateTests(ItemLevelCase):
+    """An answer already in the document is still new to the child.
+
+    The additions check asked whether a string was new to the whole file. A
+    teacher answer copied out of the key and onto a pupil instruction is not
+    new to the file, and every count stayed where it was.
+    """
+
+    def marked_sheet(self) -> dict:
+        return {
+            "sheets": {"expected": {"zones": [{"stack": [
+                {"question": True, "helper": "written-answers", "items": [
+                    {"text": "Is Rowan right? How do you know?", "lines": 3}]},
+            ]}]}},
+            "answerKey": {"expected": [{
+                "question": 1,
+                "answer": "No. The day is already balanced, so nothing needs adding.",
+            }]},
+        }
+
+    def setUp(self) -> None:
+        self.before = self.marked_sheet()
+
+    def test_a_teacher_answer_copied_onto_the_pupil_page(self):
+        after = self.mutated()
+        after["sheets"]["expected"]["zones"][0]["stack"].append(
+            {"helper": "instruction",
+             "text": "No. The day is already balanced, so nothing needs adding."}
+        )
+        self.assertIn("teacher", self.assertCaught(after))
+
+    def test_the_teacher_answer_itself_may_not_be_dropped(self):
+        after = self.mutated()
+        after["answerKey"]["expected"] = []
+        self.assertIn("teacher answer", self.assertCaught(after))
+
+    def test_the_same_marked_sheet_unchanged_passes(self):
+        self.assertAllowed(self.mutated())
+
+
+class ATableCellKeepsItsRowTests(ItemLevelCase):
+    """A part-completed table's given words move to the wrong source.
+
+    Rows containing a null response cell were skipped by the ordered-row check,
+    because a null is not a value, and the nulls were not counted as places to
+    write either. So a supplied statement could be moved under a different
+    source with the word counts identical.
+    """
+
+    TABLE = {"sheets": {"expected": {"zones": [{"stack": [
+        {"question": True, "helper": "recording-table",
+         "columns": ["Source", "What it says", "What you think"],
+         "writing": ["word", "sentence", "sentence"],
+         "rows": [["Source A", "The river flooded twice.", None],
+                  ["Source B", "The bridge was rebuilt.", None]]},
+    ]}]}}}
+
+    def setUp(self) -> None:
+        self.before = copy.deepcopy(self.TABLE)
+
+    @staticmethod
+    def rows(spec: dict) -> list:
+        return spec["sheets"]["expected"]["zones"][0]["stack"][0]["rows"]
+
+    def test_given_cells_reassigned_to_the_other_source(self):
+        after = self.mutated()
+        rows = self.rows(after)
+        rows[0][1], rows[1][1] = rows[1][1], rows[0][1]
+        self.assertCaught(after)
+
+    def test_a_blank_cell_filled_in_with_a_given_word(self):
+        after = self.mutated()
+        self.rows(after)[0][2] = "It flooded because the banks were low."
+        self.assertCaught(after)
+
+    def test_the_same_table_unchanged_passes(self):
+        self.assertAllowed(self.mutated())
+
+
 class LegalRepairsStillPassTests(ItemLevelCase):
     def test_a_different_layout_and_orientation(self):
         after = self.mutated()

@@ -56,25 +56,22 @@ comprehension, an extended piece of writing - that is the right design and not
 a shortcut. `worksheet-visual-profile.md` holds the standard this is drawn
 from, including the sheet the teacher approved.
 
-**A claim in a person's mouth is a speech-scene, not prose.** When the upstream
-prompt quotes someone by name - `Rae says, "Toast is bad..."`, `Rowan says,
-'the day must already be balanced'` - draw the person and put their words in
-the bubble. The figure gives the claim a face a child can argue with, the
-bubble separates the claim from the question about it, and the judge box gives
-`Is she right?` its tick target. The same quote buried in a question stem or a
-`source-text` block prints a voice as furniture, and the child asked to test
-"Rowan's claim" has to hunt the page for where Rowan spoke. `source-text` is
-for a passage, account or extract - text the child reads AS text - not for a
-person speaking.
+**A claim in a person's mouth reads as theirs, separately from the question
+about it.** When the upstream prompt quotes someone by name - `Rae says, "Toast
+is bad..."`, `Rowan says, 'the day must already be balanced'` - the same quote
+buried in a question stem or a `source-text` block prints a voice as furniture,
+and the child asked to test "Rowan's claim" has to hunt the page for where
+Rowan spoke. `source-text` is for a passage, account or extract - text the child
+reads AS text - not for a person speaking.
 
-What has to be true is that the claim reads as somebody's, separately from the
-question about it. A drawn figure with a bubble is how this engine does that and
-is the right default. It is not the only thing that satisfies it, and it is not
-a mascot requirement: a claim carried on its own card, a named source panel, or
-a quoted line set apart with the judging question beneath it can all keep the
-voice distinct from the test of it. Choose the speech-scene unless the approved
-task wants something else; do not add a figure to a task that never had a
-speaker.
+`speech-scene` is how this engine does it and is the right default: the figure
+gives the claim a face a child can argue with, the bubble separates the claim
+from the question about it, and the judge box gives `Is she right?` its tick
+target. It is not the only thing that satisfies the rule and it is not a mascot
+requirement - a claim on its own card, a named source panel, or a quoted line
+set apart with its judging question beneath can each keep the voice distinct
+from the test of it. Reach for the speech-scene unless the approved task wants
+one of those; never add a speaker to a task that never had one.
 
 **A frame the child fills** is `fact-file` when it is a stack of named slots. A
 frame whose boxes need different heights, or one the child fills row by row, is
