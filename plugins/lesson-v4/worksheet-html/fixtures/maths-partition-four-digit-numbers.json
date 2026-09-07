@@ -1,0 +1,501 @@
+{
+  "meta": {
+    "lesson": "Partitioning four-digit numbers",
+    "lo": "To partition 4-digit numbers",
+    "yearGroup": "Year 4",
+    "subject": "Mathematics",
+    "note": "The reference fixture for the teacher-approved visual partitioning sheets. Every task, value and order here comes from the approved pack: four wholes to partition, the parts of 6,731 in words, three mixed-order recombinations, two claims judged against matched counters, and the find-all investigation on 4, 0, 0, 7. The scaffolds those sheets added - four explicit part nodes, the zero instruction, four-digit result frames, counters depicting the right-hand side, and a six-row record - are intentional and were settled upstream. Nothing here may be sorted, evaluated or filled in."
+  },
+  "sheets": {
+    "expected": {
+      "title": "To partition 4-digit numbers",
+      "layout": "auto",
+      "zones": [
+        {
+          "stack": [
+            {
+              "helper": "section-label",
+              "text": "Fluency"
+            },
+            {
+              "helper": "instruction",
+              "text": "Write each number in expanded form.\nWrite each part in its box. Use 0 for an empty part."
+            },
+            {
+              "row": [
+                {
+                  "question": true,
+                  "helper": "part-whole",
+                  "whole": {
+                    "value": "6,731"
+                  },
+                  "joiner": "+",
+                  "parts": [
+                    {
+                      "blank": true,
+                      "caption": "Thousands"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Hundreds"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Tens"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Ones"
+                    }
+                  ],
+                  "questionGroupId": "qg-partition"
+                },
+                {
+                  "question": true,
+                  "helper": "part-whole",
+                  "whole": {
+                    "value": "6,701"
+                  },
+                  "joiner": "+",
+                  "parts": [
+                    {
+                      "blank": true,
+                      "caption": "Thousands"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Hundreds"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Tens"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Ones"
+                    }
+                  ],
+                  "questionGroupId": "qg-partition"
+                }
+              ]
+            },
+            {
+              "row": [
+                {
+                  "question": true,
+                  "helper": "part-whole",
+                  "whole": {
+                    "value": "6,071"
+                  },
+                  "joiner": "+",
+                  "parts": [
+                    {
+                      "blank": true,
+                      "caption": "Thousands"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Hundreds"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Tens"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Ones"
+                    }
+                  ],
+                  "questionGroupId": "qg-partition"
+                },
+                {
+                  "question": true,
+                  "helper": "part-whole",
+                  "whole": {
+                    "value": "6,007"
+                  },
+                  "joiner": "+",
+                  "parts": [
+                    {
+                      "blank": true,
+                      "caption": "Thousands"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Hundreds"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Tens"
+                    },
+                    {
+                      "blank": true,
+                      "caption": "Ones"
+                    }
+                  ],
+                  "questionGroupId": "qg-partition"
+                }
+              ]
+            },
+            {
+              "question": true,
+              "helper": "number-sentence",
+              "text": "Write the parts of 6,731 in words:",
+              "terms": [
+                {
+                  "blank": true,
+                  "chars": 12,
+                  "caption": "thousands"
+                },
+                {
+                  "blank": true,
+                  "chars": 10,
+                  "caption": "hundreds"
+                },
+                {
+                  "blank": true,
+                  "chars": 8,
+                  "caption": "tens"
+                },
+                {
+                  "blank": true,
+                  "chars": 6,
+                  "caption": "ones"
+                }
+              ],
+              "questionGroupId": "qg-partition"
+            },
+            {
+              "helper": "instruction",
+              "text": "Write the whole number for each addition."
+            },
+            {
+              "question": true,
+              "helper": "number-sentence",
+              "terms": [
+                {
+                  "value": 9
+                },
+                "+",
+                {
+                  "value": "4,000"
+                },
+                "+",
+                {
+                  "value": 50
+                },
+                "+",
+                {
+                  "value": 200
+                },
+                "=",
+                {
+                  "cells": 4
+                }
+              ],
+              "questionGroupId": "qg-recombine"
+            },
+            {
+              "question": true,
+              "helper": "number-sentence",
+              "terms": [
+                {
+                  "value": 80
+                },
+                "+",
+                {
+                  "value": "3,000"
+                },
+                "+",
+                {
+                  "value": 2
+                },
+                "=",
+                {
+                  "cells": 4
+                }
+              ],
+              "questionGroupId": "qg-recombine"
+            },
+            {
+              "question": true,
+              "helper": "number-sentence",
+              "terms": [
+                {
+                  "value": 500
+                },
+                "+",
+                {
+                  "value": "9,000"
+                },
+                "=",
+                {
+                  "cells": 4
+                }
+              ],
+              "questionGroupId": "qg-recombine"
+            },
+            {
+              "helper": "section-label",
+              "text": "Reasoning"
+            },
+            {
+              "helper": "instruction",
+              "text": "Decide whether each equation is correct. Explain your decisions.\nThe counters show each addition."
+            },
+            {
+              "row": [
+                {
+                  "stack": [
+                    {
+                      "helper": "counter-group",
+                      "statement": "5,009 = 5,000 + 9",
+                      "joiner": "+",
+                      "groups": [
+                        {
+                          "value": "1000",
+                          "count": 5
+                        },
+                        {
+                          "value": "1",
+                          "count": 9
+                        }
+                      ]
+                    },
+                    {
+                      "helper": "written-answers",
+                      "showNumbers": false,
+                      "items": [
+                        {
+                          "text": "",
+                          "lines": 2
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "stack": [
+                    {
+                      "helper": "counter-group",
+                      "statement": "5,009 = 500 + 9",
+                      "joiner": "+",
+                      "groups": [
+                        {
+                          "value": "100",
+                          "count": 5
+                        },
+                        {
+                          "value": "1",
+                          "count": 9
+                        }
+                      ]
+                    },
+                    {
+                      "helper": "written-answers",
+                      "showNumbers": false,
+                      "items": [
+                        {
+                          "text": "",
+                          "lines": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "question": true
+            }
+          ]
+        }
+      ],
+      "notes": "Every task, value, case and response target from the approved reference is on this sheet. The shared reference band that sits at the foot of the approved PDF - the place-value chart and the two method-step lists - is not, and that is a page decision rather than a cut: the work alone prices at 255mm of the 267mm this engine gives a portrait A4 side, and the band costs 69mm more. The approved PDF fits both by setting its counters, captions and writing lines below the sizes this engine's design system allows anything to print at. The chart and the steps are on the board while children work, which is where `preferences.md` puts a reference a child glances at when the page is tight.",
+      "orientation": "portrait"
+    },
+    "greaterDepth": {
+      "title": "To partition 4-digit numbers",
+      "layout": "auto",
+      "zones": [
+        {
+          "stack": [
+            {
+              "helper": "section-label",
+              "text": "Going Deeper"
+            },
+            {
+              "question": true,
+              "questionGroupId": "qg-investigate",
+              "stack": [
+                {
+                  "helper": "digit-cards",
+                  "digits": [
+                    "4",
+                    "0",
+                    "0",
+                    "7"
+                  ]
+                },
+                {
+                  "helper": "instruction",
+                  "text": "Use all four digit cards once in each number. Find all the different 4-digit numbers you can make. Write each number in expanded form.\nUse 0 for an empty part."
+                },
+                {
+                  "helper": "number-sentence",
+                  "terms": [
+                    {
+                      "cells": 4,
+                      "heading": "Your number"
+                    },
+                    "=",
+                    {
+                      "blank": true,
+                      "chars": 4,
+                      "heading": "Expanded form"
+                    },
+                    "+",
+                    {
+                      "blank": true,
+                      "chars": 4
+                    },
+                    "+",
+                    {
+                      "blank": true,
+                      "chars": 4
+                    },
+                    "+",
+                    {
+                      "blank": true,
+                      "chars": 4
+                    }
+                  ]
+                },
+                {
+                  "stack": {
+                    "helper": "number-sentence",
+                    "terms": [
+                      {
+                        "cells": 4
+                      },
+                      "=",
+                      {
+                        "blank": true,
+                        "chars": 4
+                      },
+                      "+",
+                      {
+                        "blank": true,
+                        "chars": 4
+                      },
+                      "+",
+                      {
+                        "blank": true,
+                        "chars": 4
+                      },
+                      "+",
+                      {
+                        "blank": true,
+                        "chars": 4
+                      }
+                    ]
+                  },
+                  "repeat": 5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "question": true,
+          "questionGroupId": "qg-investigate",
+          "stack": [
+            {
+              "helper": "written-answers",
+              "items": [
+                {
+                  "text": "How do you know you've found them all? Explain using the place-value columns.",
+                  "lines": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "stack": [
+            {
+              "helper": "instruction",
+              "text": "Use this chart to help you."
+            },
+            {
+              "row": [
+                {
+                  "helper": "place-value-chart",
+                  "columns": [
+                    "Thousands",
+                    "Hundreds",
+                    "Tens",
+                    "Ones"
+                  ]
+                },
+                {
+                  "helper": "instruction",
+                  "text": "Use these steps to help you partition each number.\nRead each digit's column.\nWrite each digit's value.\nJoin the values with +."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "orientation": "portrait"
+    }
+  },
+  "answerKey": {
+    "expected": [
+      {
+        "question": "1a",
+        "answer": "6,000 + 700 + 30 + 1"
+      },
+      {
+        "question": "1b",
+        "answer": "6,000 + 700 + 0 + 1"
+      },
+      {
+        "question": "1c",
+        "answer": "6,000 + 0 + 70 + 1"
+      },
+      {
+        "question": "1d",
+        "answer": "6,000 + 0 + 0 + 7"
+      },
+      {
+        "question": "1e",
+        "answer": "six thousand / seven hundred / thirty / one"
+      },
+      {
+        "question": "2a",
+        "answer": "4,259"
+      },
+      {
+        "question": "2b",
+        "answer": "3,082"
+      },
+      {
+        "question": "2c",
+        "answer": "9,500"
+      },
+      {
+        "question": "3",
+        "answer": "The first is correct: 5,000 + 9 = 5,009, and the counters show five thousands and nine ones. The second is not: 500 + 9 = 509. Five hundreds is 500, not 5,000, so there is nothing in the thousands column."
+      }
+    ],
+    "greaterDepth": [
+      {
+        "question": "1a",
+        "answer": "4,007 = 4,000 + 0 + 0 + 7; 4,070 = 4,000 + 0 + 70 + 0; 4,700 = 4,000 + 700 + 0 + 0; 7,004 = 7,000 + 0 + 0 + 4; 7,040 = 7,000 + 0 + 40 + 0; 7,400 = 7,000 + 400 + 0 + 0."
+      },
+      {
+        "question": "1b",
+        "answer": "Only 4 or 7 can go in the thousands column, because a number starting with 0 is not a 4-digit number. Whichever is there, the other digit can sit in the hundreds, tens or ones, and the two zeros fill the rest. 2 x 3 = 6."
+      }
+    ]
+  }
+}
