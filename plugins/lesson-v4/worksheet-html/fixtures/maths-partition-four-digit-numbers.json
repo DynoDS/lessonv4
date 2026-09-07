@@ -144,12 +144,12 @@
               "terms": [
                 {
                   "blank": true,
-                  "chars": 12,
+                  "chars": 8,
                   "caption": "thousands"
                 },
                 {
                   "blank": true,
-                  "chars": 10,
+                  "chars": 8,
                   "caption": "hundreds"
                 },
                 {
@@ -159,7 +159,7 @@
                 },
                 {
                   "blank": true,
-                  "chars": 6,
+                  "chars": 8,
                   "caption": "ones"
                 }
               ],
@@ -309,7 +309,6 @@
           ]
         }
       ],
-      "notes": "Every task, value, case and response target from the approved reference is on this sheet. The shared reference band that sits at the foot of the approved PDF - the place-value chart and the two method-step lists - is not, and that is a page decision rather than a cut: the work alone prices at 255mm of the 267mm this engine gives a portrait A4 side, and the band costs 69mm more. The approved PDF fits both by setting its counters, captions and writing lines below the sizes this engine's design system allows anything to print at. The chart and the steps are on the board while children work, which is where `preferences.md` puts a reference a child glances at when the page is tight.",
       "orientation": "portrait"
     },
     "greaterDepth": {
@@ -468,7 +467,7 @@
       },
       {
         "question": "1e",
-        "answer": "six thousand / seven hundred / thirty / one"
+        "answer": "six; seven; three; one"
       },
       {
         "question": "2a",
@@ -497,5 +496,8 @@
         "answer": "Only 4 or 7 can go in the thousands column, because a number starting with 0 is not a 4-digit number. Whichever is there, the other digit can sit in the hundreds, tens or ones, and the two zeros fill the rest. 2 x 3 = 6."
       }
     ]
-  }
+  },
+  "notes": [
+    "Expected carries every task, value, case and response target of the approved reference. It does not carry the reference band from the foot of that page - the place-value chart and the two method-step lists - and that is a page decision this fixture records rather than a difference anyone approved. The work alone measures 255mm of the 267mm a portrait A4 side gives, and the band costs 69mm more. The approved PDF fits both by setting its counters, captions and writing lines below the sizes this design system allows anything to print at, so the honest choice was legible type and the chart on the board while children work. Restoring it on paper needs a decision from the lesson designer about what else comes off."
+  ]
 }

@@ -287,11 +287,40 @@ test("ruled lines with no prompt of their own are not charged for one", () => {
 
 // ─── the fixture itself ──────────────────────────────────────────────────
 
+// What the PUPIL sheets carry. Never the whole fixture: `answerKey` sits in the
+// same file, so searching the document as a whole finds "6,731" in the teacher
+// answers and calls it present on the page. That is exactly the mistake these
+// tests exist to catch, and for a while they were making it.
+const PUPIL = JSON.stringify(FIXTURE.sheets);
+
+// What the pages actually PRINT, as opposed to what the specification holds.
+// A value in a `notes` string or a `meta` line is not on a child's page.
+function pupilPages() {
+  const { renderSheet } = require("../src/render");
+  const { sheetsOf, resolveAutoLayouts } = require("../src/worksheet");
+  // Exactly the path the build takes: resolve `layout: "auto"` to a real shape,
+  // then let `sheetsOf` number the questions and size the writing lines to the
+  // year group, then render. Anything less measures a different page from the
+  // one that gets printed.
+  const { worksheet } = resolveAutoLayouts(JSON.parse(JSON.stringify(FIXTURE)));
+  return sheetsOf(worksheet).map((sheet) => renderSheet(sheet.spec)).join("\n");
+}
+
+// The words a child can actually read. The stylesheet the engine ships carries
+// long explanatory comments, and searching the raw markup for "six" found one
+// of those: a check that reads the whole file is not reading the page.
+function pupilText(pages) {
+  return pages
+    .replace(/<style[\s\S]*?<\/style>/g, " ")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ");
+}
+
 test("the approved fixture still holds every task it arrived with", () => {
-  const json = JSON.stringify(FIXTURE);
   for (const value of ["6,731", "6,701", "6,071", "6,007",
                        "5,009 = 5,000 + 9", "5,009 = 500 + 9"]) {
-    assert.ok(json.includes(value), `${value} has gone from the fixture`);
+    assert.ok(PUPIL.includes(value), `${value} has gone from the pupil sheets`);
   }
   // The three recombinations, in the order the approved sheet asks them.
   const sentences = FIXTURE.sheets.expected.zones[0].stack
@@ -303,15 +332,65 @@ test("the approved fixture still holds every task it arrived with", () => {
     ["500", "9,000"],
   ]);
   // Four digit cards, both zeros kept.
-  const cards = JSON.parse(json).sheets.greaterDepth.zones[0].stack[1].stack[0];
+  const cards = FIXTURE.sheets.greaterDepth.zones[0].stack[1].stack[0];
   assert.deepEqual(cards.digits, ["4", "0", "0", "7"]);
 });
 
+test("every task the approved sheet asks reaches a printed page", () => {
+  // The specification holding a value and the page printing it are two claims,
+  // and only the second one is about a child. This renders the sheets the way
+  // the build does and reads the markup.
+  const pages = pupilPages();
+  const text = pupilText(pages);
+  for (const value of ["6,731", "6,701", "6,071", "6,007", "4,000", "9,000",
+                       "5,009 = 5,000 + 9", "5,009 = 500 + 9",
+                       "Write the parts of 6,731 in words",
+                       "How do you know you've found them all?"]) {
+    assert.ok(text.includes(value), `${value} never reaches a printed page`);
+  }
+  // Every place to write is on the page too, counted rather than assumed.
+  const blanks = (pages.match(/h-ns-box|h-ns-cell|h-line/g) || []).length;
+  assert.ok(blanks > 60, `only ${blanks} response targets printed`);
+});
+
 test("no answer from the fixture's teacher key appears on a pupil sheet", () => {
-  const pupil = JSON.stringify(FIXTURE.sheets);
+  const text = pupilText(pupilPages());
   for (const entry of [...FIXTURE.answerKey.expected, ...FIXTURE.answerKey.greaterDepth]) {
     const firstAnswer = String(entry.answer).split(/[;.]/)[0].trim();
-    assert.ok(!pupil.includes(firstAnswer),
-      `the answer to (${entry.question}) is on the pupil sheet`);
+    // A whole answer, not a fragment of one: "six" is a substring of "sixty",
+    // and the point is whether a child could read the answer off the page.
+    const asWords = new RegExp(`(^|[^\\w,])${firstAnswer.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^\\w,]|$)`);
+    assert.ok(!asWords.test(PUPIL),
+      `the answer to (${entry.question}) is in the pupil specification`);
+    assert.ok(!asWords.test(text),
+      `the answer to (${entry.question}) printed on a pupil page`);
+  }
+});
+
+test("the answer to 1e is the words that fit the boxes it is asked in", () => {
+  // Four boxes captioned thousands, hundreds, tens and ones. What goes in the
+  // first is "six", because the caption already says thousands - "six thousand"
+  // under a thousands caption reads as six thousand thousands. The original
+  // pack's teacher answers say the same, and the key said the other thing.
+  const key = FIXTURE.answerKey.expected.find((e) => e.question === "1e");
+  assert.equal(key.answer, "six; seven; three; one");
+
+  // And every box is the same width, so a blank's length never leaks which
+  // word it wants. They were 12, 10, 8 and 6 characters: the shape of the
+  // answer, drawn on the page.
+  const words = FIXTURE.sheets.expected.zones[0].stack
+    .find((item) => item.helper === "number-sentence" && item.text);
+  const widths = new Set(words.terms.map((t) => t.chars));
+  assert.equal(widths.size, 1, `the blanks are ${[...widths].join(", ")} characters wide`);
+});
+
+test("the fixture says out loud where it departs from the approved page", () => {
+  // A development build is not an approval. The reference band is missing, and
+  // the reason has to reach the teacher - which means the top-level `notes`
+  // the builder prints, not a `notes` on the sheet, which nothing reads.
+  assert.ok(Array.isArray(FIXTURE.notes) && FIXTURE.notes.length > 0);
+  assert.match(FIXTURE.notes.join(" "), /reference band/);
+  for (const sheet of Object.values(FIXTURE.sheets)) {
+    assert.equal(sheet.notes, undefined, "a note on a sheet reaches nobody");
   }
 });

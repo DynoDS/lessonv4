@@ -28,9 +28,20 @@ partitioning worksheets. One tidied the spacing around the questions. The other
 made the mathematics into the page. He approved the second one, in those words:
 *"Yes that looks incredible and premium."*
 
-`worksheet-html/fixtures/maths-partition-four-digit-numbers.json` is that sheet,
-built by this engine, and it is the standard to judge against. Four things
-changed, and each is a move worth reusing:
+The approved artefact is the PDF the teacher was shown. It is not in this
+repository: it was drawn by a standalone script, and it is the aesthetic target
+rather than a production output.
+
+`worksheet-html/fixtures/maths-partition-four-digit-numbers.json` is this
+engine's build of the same tasks, and it is a development fixture rather than a
+second copy of the approval. It carries every task, value, case and response
+target, and it does not carry the reference band from the foot of the approved
+page: that band costs 69mm the work has already spent, and the fixture's `notes`
+says so. Judge against the approved PDF; use the fixture to see what this engine
+can currently draw and where it falls short.
+
+Four things changed between the original worksheets and the approved ones, and
+each is a move worth reusing:
 
 - **A number to partition became a whole joined to four empty parts.** The
   additive relationship is the response surface. The child writes into the
@@ -52,6 +63,13 @@ restrained hierarchy, evidence sitting next to the response it feeds, and the
 same standard of finish across all three sheets. What does not generalise is
 that page: not four nodes, not six rows, not a footer, not two columns, and not
 a rule that partitioning must always show explicit zeros.
+
+**A development build is not an approval.** Using the same tasks and the same
+helper families does not make a rebuild the thing the teacher said yes to. Where
+a build departs from the approved artefact - a support moved, a size floor
+respected, a layout chosen differently - say so in `notes`, at the top level of
+the document where the builder prints it, and treat the departure as a decision
+someone still has to make rather than as the new standard.
 
 ## The boundary that matters most
 
