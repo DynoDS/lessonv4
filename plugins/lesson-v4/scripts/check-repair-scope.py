@@ -365,33 +365,32 @@ class Census:
         return found
 
     @staticmethod
-    def _set_room_of(value: dict, times: int) -> Counter:
-        """The answer space a question set carries without saying so.
+    def _implicit_room_of(value: object, times: int,
+                          default_lines: int | None) -> Counter:
+        """An item's effective room when its helper supplies the default.
 
-        A `questions` item answers on its own line and a `written-answers` item
-        gets three ruled lines when it names no number. An item that states its
-        own room has already been counted by `_room_of`.
+        Resolve this on the item, not on the containing helper. Otherwise an
+        omitted default belongs to one group case while the equivalent explicit
+        value belongs to each individual question, changing the case identity
+        even though the rendered work has not changed.
         """
         found: Counter = Counter()
-        kind = value.get("helper") or value.get("type")
-        items = value.get("items")
-        if kind not in RESPONSE_SET_HELPERS or not isinstance(items, list):
+        if default_lines is None:
             return found
-        default_lines = RESPONSE_SET_HELPERS[kind]
-        for item in items:
-            if isinstance(item, dict) and any(
-                isinstance(item.get(k), int)
-                and not isinstance(item.get(k), bool)
-                and item.get(k) > 0
-                for k in ("lines", "sentences")
-            ):
-                continue
-            found["targets"] += times
-            if default_lines:
-                found["ruled lines"] += default_lines * times
+        if isinstance(value, dict) and any(
+            isinstance(value.get(key), int)
+            and not isinstance(value.get(key), bool)
+            and value.get(key) > 0
+            for key in ("lines", "sentences")
+        ):
+            return found
+        found["targets"] += times
+        if default_lines:
+            found["ruled lines"] += default_lines * times
         return found
 
-    def _visit(self, value: object, times: int, in_slot: bool, channel: str):
+    def _visit(self, value: object, times: int, in_slot: bool, channel: str,
+               implicit_lines: int | None = None):
         """Walk one node.
 
         Returns what the subtree holds that is NOT already inside a case:
@@ -405,12 +404,17 @@ class Census:
         if isinstance(value, list):
             for item in value:
                 if isinstance(item, (dict, list)):
-                    sub, sub_room, sub_case = self._visit(item, times, in_slot, channel)
+                    sub, sub_room, sub_case = self._visit(
+                        item, times, in_slot, channel, implicit_lines
+                    )
                     free.update(sub)
                     free_room.update(sub_room)
                     holds_case = holds_case or sub_case
                 else:
                     self._note(item, times, free, channel)
+                    item_room = self._implicit_room_of(item, times, implicit_lines)
+                    self.room.update(item_room)
+                    free_room.update(item_room)
                     # A null cell in a table row is a place to write, and it is
                     # the only shape of response target that carries no key of
                     # its own. Left uncounted, a table's blanks could be moved
@@ -443,8 +447,11 @@ class Census:
 
         own: Counter = Counter()
         own_room = self._room_of(value, times)
-        own_room.update(self._set_room_of(value, times))
+        own_room.update(self._implicit_room_of(value, times, implicit_lines))
         self.room.update(own_room)
+
+        kind = value.get("helper") or value.get("type")
+        item_default = RESPONSE_SET_HELPERS.get(kind)
 
         for key, child in value.items():
             if key in DECORATIVE_KEYS:
@@ -472,7 +479,8 @@ class Census:
                     if sequence is not None:
                         self._note_key(key, ", ".join(sequence), times, own, child_channel)
                 sub, sub_room, sub_case = self._visit(
-                    child, times, key in LAYOUT_SLOT_KEYS, child_channel
+                    child, times, key in LAYOUT_SLOT_KEYS, child_channel,
+                    item_default if key == "items" else None,
                 )
                 own.update(sub)
                 own_room.update(sub_room)

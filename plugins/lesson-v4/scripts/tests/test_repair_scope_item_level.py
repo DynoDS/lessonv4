@@ -223,6 +223,41 @@ class EachCaseKeepsItsOwnTests(ItemLevelCase):
         self.assertIn("room in them", self.assertCaught(after))
 
 
+class WrittenAnswerDefaultsBelongToTheirItemsTests(ItemLevelCase):
+    """Implicit renderer defaults and their explicit spelling are equivalent."""
+
+    def setUp(self) -> None:
+        self.before = {"sheets": {"expected": {"zones": [{"stack": [{
+            "helper": "written-answers",
+            "items": [
+                {"text": "Explain the first pattern."},
+                {"text": "Explain the second pattern."},
+            ],
+        }]}]}}}
+
+    @staticmethod
+    def items(spec: dict) -> list:
+        return spec["sheets"]["expected"]["zones"][0]["stack"][0]["items"]
+
+    def test_default_three_lines_may_be_made_explicit_for_each_item(self):
+        after = self.mutated()
+        for item in self.items(after):
+            item["lines"] = 3
+        self.assertAllowed(after)
+
+    def test_each_item_may_grow_from_default_three_to_four_lines(self):
+        after = self.mutated()
+        for item in self.items(after):
+            item["lines"] = 4
+        self.assertAllowed(after)
+
+    def test_one_item_cannot_fund_another_items_extra_line(self):
+        after = self.mutated()
+        first, second = self.items(after)
+        first["lines"] = 2
+        second["lines"] = 4
+        self.assertCaught(after)
+
 class NestedRowsAreContentTooTests(ItemLevelCase):
     """Primitive cells live in lists inside lists, which the walk skipped.
 
