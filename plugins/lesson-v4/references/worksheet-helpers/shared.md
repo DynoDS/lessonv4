@@ -67,12 +67,26 @@ bubble separates the claim from the question about it, and the judge box gives
 for a passage, account or extract - text the child reads AS text - not for a
 person speaking.
 
+What has to be true is that the claim reads as somebody's, separately from the
+question about it. A drawn figure with a bubble is how this engine does that and
+is the right default. It is not the only thing that satisfies it, and it is not
+a mascot requirement: a claim carried on its own card, a named source panel, or
+a quoted line set apart with the judging question beneath it can all keep the
+voice distinct from the test of it. Choose the speech-scene unless the approved
+task wants something else; do not add a figure to a task that never had a
+speaker.
+
 **A frame the child fills** is `fact-file` when it is a stack of named slots. A
 frame whose boxes need different heights, or one the child fills row by row, is
 `recording-table` instead.
 
-**The same frame carries all three sheets, and the fields are what change.** On
-the expected sheet a field is its bare name and nothing else. The below sheet
+**Where all three sheets share one frame, the fields are what change.** That is
+the common case and the one to reach for, because a child moving between sheets
+meets one shape rather than three. It is not a rule: the adaptation designer may
+settle on a different surface for a variant when constructing the structure is
+itself the learning, or when a recording barrier is what stands in a child's way,
+and that decision arrives already made. Render what it asked for. Within one
+frame, on the expected sheet a field is its bare name and nothing else. The below sheet
 hangs a `hint` and a `wordBank` on the fields that need one, and both are drawn
 so they cannot be mistaken for the child's own writing: a starter set apart by
 weight and its own line, a bank in the colour this sheet already uses for
@@ -96,12 +110,19 @@ bank that carries pictures; `chip-bank` is words alone, and a bank titled
 
 **Show the case, then attach its response to it.** When two or three cases are
 weighed against each other - two equations to judge, three claims to test, two
-sources to compare - each case gets the same treatment as the others and its own
-place to answer, directly under it. Matched, so nothing about the styling hints
-which is which; separate, so a child working case by case finds their case at a
-glance; and with the explanation attached, so the answer to the second claim is
-not written under the first. What fails is one block of prose holding all the
-cases and one run of ruled lines underneath.
+sources to compare - each case gets the same treatment as the others: matched, so
+nothing about the styling hints which is which, and separate, so a child working
+case by case finds their case at a glance. What fails is one block of prose
+holding all the cases fused together.
+
+**The number of responses comes from upstream, not from the number of cases.**
+Where the design asks for a judgement on each case, each case carries its own
+place to answer directly under it, so the answer to the second claim is not
+written under the first. Where it asks for one answer ACROSS the cases - a
+comparison, a conclusion drawn from three sources, a single explanation of what
+they have in common - that is one response, and splitting it into one per case
+turns a synthesis into three separate observations. Read what the design asked
+for and give it exactly that many.
 
 **A sheet with no visual at all is worth a second look before it ships.** The
 questions and their helpers come from upstream, but plenty of visual work is

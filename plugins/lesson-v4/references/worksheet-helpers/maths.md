@@ -185,10 +185,15 @@ with nothing over them leave a child to work out which half is which.
 `{ "stack": { ... }, "repeat": 6 }` writes one row once and prints six. **How
 many rows is an authored decision, not a count of the answers.** Six rows for a
 find-all investigation with six solutions is a capacity cue, and on the approved
-Year 4 sheet that was deliberate. Where withholding the number of solutions is
-part of the question, use fewer rows than there are answers, or an open
-`recording-table`, and say so upstream - the renderer never works out how many
-there should be.
+Year 4 sheet that was deliberate.
+
+Where withholding the number of solutions is part of the question, the answer is
+an open surface, not a short one. A `recording-table` sized by its `writing`
+gives rows that do not announce a count, and a `blank-surface` gives a child room
+to organise their own search. Printing fewer rows than there are answers is not
+the fix: it cues a smaller number and leaves a child who found them all with
+nowhere to put the last two. Whichever it is, it is settled upstream and said
+there; the renderer never works out how many rows there should be.
 
 `counter-group` is the place-value counters without the chart: one compact group
 per denomination, under the claim they are evidence for. Reach for it when two

@@ -471,7 +471,7 @@ test("the subject guides only name helpers that exist", () => {
     "catalogue", "shared", "maths", "science", "hint", "note", "title",
     "given", "value", "label", "caption", "blank", "blankChars", "chars",
     "cells", "heading", "joiner", "groups", "count", "statement", "digits",
-    "instances",
+    "instances", "writing",
   ]);
 
   for (const file of ["shared.md", "maths.md", "science.md"]) {
