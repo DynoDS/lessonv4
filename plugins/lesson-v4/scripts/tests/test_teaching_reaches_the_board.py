@@ -137,7 +137,7 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
         do_beats = flat(DO_BEATS)
         self.assertIn("It requires every child to use the chunk they have just been taught", do_beats)
         self.assertIn("The shape across the lesson matters more than any single beat", do_beats)
-        self.assertIn("As a default, a fact suits recall or a sort", do_beats)
+        self.assertIn("A fact may suit recall or a sort", do_beats)
         designer = flat(LESSON_DESIGNER)
         self.assertIn("Every Do beat: every child uses the chunk and leaves something the teacher can see", designer)
         self.assertIn("Demand climbs across lesson", designer)

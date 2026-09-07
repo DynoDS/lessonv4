@@ -53,7 +53,7 @@ class BriefAbsorptionAndUnroutedRuleTests(unittest.TestCase):
         for written clues stopped the sheet testing recognition."""
         designer = flat(LESSON_DESIGNER)
         self.assertIn(
-            "Freshness comes from new instances, not a new medium", designer
+            "For fresh additional practice, change instances rather than the teaching medium", designer
         )
         self.assertIn("Object A washes clothes", designer)
         self.assertIn(
