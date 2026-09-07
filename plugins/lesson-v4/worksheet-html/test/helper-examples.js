@@ -329,6 +329,27 @@ module.exports = {
     text: "Write digits that make this true.",
     expression: "5 . □ 2 < 5 . □ 8",
   },
+  // Terms and operators, in the order the sentence reads. A string between two
+  // terms is the operator. Each term states exactly one of `value` (handed to
+  // the child), `text` (a word they read), `blank` (somewhere to write, sized
+  // by `chars`) or `cells` (a digit frame, one cell per digit), and a term
+  // stating two is refused. The summands stay in the order the question asked
+  // them in; nothing here sorts, evaluates or fills anything.
+  "number-sentence": {
+    question: true,
+    text: "Write the whole number for this addition.",
+    terms: [
+      { value: 9 },
+      "+",
+      { value: "4,000" },
+      "+",
+      { value: 50 },
+      "+",
+      { value: 200 },
+      "=",
+      { cells: 4 },
+    ],
+  },
   "order-numbers": {
     numbers: ["0.9", "0.34", "0.6", "0.07"],
     separator: "<",
@@ -357,6 +378,18 @@ module.exports = {
   "place-value-counter-chart": {
     columns: ["ones", ".", "tenths"],
     counts: { ones: 3, tenths: 4 },
+  },
+  // The counters on their own, under the claim they are evidence for. Two of
+  // these sit side by side where two charts could not. `statement` is the
+  // claim exactly as the question words it; the groups depict one side of it,
+  // and which side is a design decision made upstream, not by this helper.
+  "counter-group": {
+    statement: "5,009 = 5,000 + 9",
+    joiner: "+",
+    groups: [
+      { value: "1000", count: 5 },
+      { value: "1", count: 9 },
+    ],
   },
   // The lesson shape this helper exists for: a number handed over, then the
   // same number ten more, with the digit that changed picked out, then a row
@@ -406,6 +439,21 @@ module.exports = {
     text: "£1.40 + £2.30",
     whole: {},
     parts: [{ label: "£1.40" }, { label: "£2.30" }],
+  },
+  "part-whole": {
+    // Every node says which of the three it is, and the helper refuses one
+    // that does not. `value` is handed over and prints in the given colour;
+    // `blank: true` is the question and stays empty; `caption` names the node
+    // from OUTSIDE the box, so it can never be read as an answer already
+    // written in. `blankChars` sizes the box for what goes in it.
+    whole: { value: "6,731" },
+    joiner: "+",
+    parts: [
+      { blank: true, caption: "Thousands" },
+      { blank: true, caption: "Hundreds" },
+      { blank: true, caption: "Tens" },
+      { blank: true, caption: "Ones" },
+    ],
   },
   "chip-bank": {
     text: "Choose a word from the bank.",

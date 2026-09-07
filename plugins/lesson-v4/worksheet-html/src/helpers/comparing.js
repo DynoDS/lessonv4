@@ -289,6 +289,245 @@ function needsInequalityWithBoxes(spec) {
   };
 }
 
+// ─── number-sentence ─────────────────────────────────────────────────────
+// A number sentence written out as the thing it is: values HANDED to the child
+// as separate tiles, operators between them, and a real target wherever the
+// answer goes.
+//
+// This exists because the alternative was typing the sentence into a question
+// stem and putting a blank after it. "9 + 4,000 + 50 + 200 =" set as running
+// text is four values a child has to pick out of a line of prose before they
+// can start, and the space they answer in is whatever the prompt's blank
+// happens to be. Separating the terms is not decoration: mixed-order addition
+// IS the recombining, and the page should show the pieces being recombined.
+//
+// Three kinds of term, and each says exactly one thing:
+//
+//   { value: 4000 }        material handed over. Given colour, on its own tile.
+//   { blank: true }        somewhere to write one thing. Sized by `chars`.
+//   { cells: 4 }           a segmented frame, one cell per digit, for an answer
+//                          whose DIGITS are the point.
+//
+// Operators are plain strings between the terms, so the spec reads in the order
+// the sentence does. `value: 0` prints "0": a given zero is a real term, and
+// reading a term for truthiness is how a zero silently becomes a blank.
+//
+// The helper never evaluates anything. A blank stays blank however obvious its
+// answer is, and there is no field that would let one be filled in.
+
+const NS_PT = TYPE.sectionLabel; // displayed, like an inequality
+const NS_CELL_MM = 8; // one digit in a nine-year-old's hand
+const NS_BOX_MIN_MM = 12;
+const NS_BOX_H_MM = WRITING_LINE_MM.lower; // a box written in, not a box read
+const NS_TILE_MIN_MM = 10;
+const NS_GAP_MM = SPACE.tight;
+const NS_PAD_MM = INSET.card.v;
+const NS_CAPTION_MM = TYPE.note * PT_MM * 1.35 + SPACE.hair;
+// BLANK_MM over BLANK_CHARS: the engine's own answer for how wide a write-in
+// blank is per character, rather than a second number chosen here.
+const NS_CHAR_MM = 25 / 12;
+
+function numberSentenceTerms(spec) {
+  const terms = spec.terms;
+  if (!Array.isArray(terms) || terms.length === 0) {
+    throw new Error("number-sentence: `terms` must list the terms and operators");
+  }
+  return terms;
+}
+
+function isOperator(term) {
+  return typeof term === "string" || typeof term === "number";
+}
+
+function termChars(term) {
+  const stated = term.chars;
+  if (stated == null) return 4;
+  if (typeof stated !== "number" || !Number.isFinite(stated) || stated < 1 || stated > 40) {
+    throw new Error("number-sentence: `chars` must be a number from 1 to 40");
+  }
+  return Math.ceil(stated);
+}
+
+function termCells(term) {
+  const cells = term.cells;
+  if (typeof cells !== "number" || !Number.isFinite(cells) || cells < 1 || cells > 12) {
+    throw new Error("number-sentence: `cells` must be a whole number from 1 to 12");
+  }
+  return Math.floor(cells);
+}
+
+// What each term IS, checked once, so a term that says two things at once is
+// refused rather than silently ranked. A tile carrying a value and also marked
+// blank is the one mistake that would put an answer on a pupil sheet.
+function termKind(term) {
+  if (isOperator(term)) return "operator";
+  if (term && typeof term === "object" && term.heading != null && term.blank === undefined
+      && term.value === undefined && term.text === undefined && term.cells === undefined) {
+    throw new Error(
+      "number-sentence: a term with a `heading` still has to say what it IS."
+    );
+  }
+  if (!term || typeof term !== "object") {
+    throw new Error("number-sentence: a term is an operator string or an object");
+  }
+  const hasValue = term.value != null && term.value !== "";
+  const hasText = term.text != null && term.text !== "";
+  const blank = term.blank === true;
+  const cells = term.cells != null;
+  const stated = [hasValue, hasText, blank, cells].filter(Boolean).length;
+  if (stated !== 1) {
+    throw new Error(
+      "number-sentence: every term states exactly one of `value` (handed to " +
+        "the child), `text` (a word they read), `blank` (somewhere to write) " +
+        "or `cells` (a digit frame). This one states " +
+        stated +
+        "."
+    );
+  }
+  if (hasValue) return "value";
+  if (hasText) return "text";
+  if (blank) return "blank";
+  return "cells";
+}
+
+function termWidthMm(term) {
+  const kind = termKind(term);
+  if (kind === "operator") {
+    return Math.max(4, textWidthMm(String(term), NS_PT));
+  }
+  if (kind === "cells") return termCells(term) * NS_CELL_MM;
+  if (kind === "blank") {
+    return Math.max(NS_BOX_MIN_MM, termChars(term) * NS_CHAR_MM + 2 * INSET.card.h);
+  }
+  const text = kind === "value" ? String(term.value) : String(term.text);
+  return Math.max(NS_TILE_MIN_MM, textWidthMm(text, NS_PT) + 2 * INSET.card.h);
+}
+
+function numberSentenceRowMm(spec) {
+  const terms = numberSentenceTerms(spec);
+  return (
+    terms.reduce((w, t) => w + termWidthMm(t), 0) +
+    Math.max(0, terms.length - 1) * NS_GAP_MM
+  );
+}
+
+function numberSentenceHasCaption(spec) {
+  return numberSentenceTerms(spec).some(
+    (t) => !isOperator(t) && t.caption != null && t.caption !== ""
+  );
+}
+
+// A heading names the COLUMN a term stands in, which is what a record needs
+// and a single sentence does not: six blank rows with nothing over them leave
+// a child to work out which half is the number and which is its expansion.
+// It sits above the row, left-aligned to the term it heads, and is allowed to
+// run on over the terms that follow - "Expanded form" heads four blanks and
+// there is no sensible way to centre it over one of them.
+function numberSentenceHasHeading(spec) {
+  return numberSentenceTerms(spec).some(
+    (t) => !isOperator(t) && t.heading != null && t.heading !== ""
+  );
+}
+
+function renderTerm(term) {
+  const kind = termKind(term);
+  if (kind === "operator") {
+    return `<span class="h-ns-op">${esc(String(term))}</span>`;
+  }
+
+  // Under the term, not in it. A caption names what the term is for; a child
+  // must never read it as something already written in the space they are
+  // about to write in.
+  const caption =
+    term.caption != null && term.caption !== ""
+      ? `<span class="h-ns-caption">${esc(term.caption)}</span>`
+      : "";
+
+  let body;
+  if (kind === "cells") {
+    const cells = Array.from(
+      { length: termCells(term) },
+      () => `<span class="h-ns-cell"></span>`
+    ).join("");
+    body = `<span class="h-ns-cells">${cells}</span>`;
+  } else if (kind === "blank") {
+    body = `<span class="h-ns-box" style="width:${termWidthMm(term)}mm"></span>`;
+  } else if (kind === "value") {
+    body = `<span class="h-ns-tile">${esc(String(term.value))}</span>`;
+  } else {
+    body = `<span class="h-ns-text">${esc(String(term.text))}</span>`;
+  }
+  return `<span class="h-ns-term">${body}${caption}</span>`;
+}
+
+// A heading spans from its own term to just before the next one that carries a
+// heading, so "Expanded form" is one cell as wide as the four blanks and three
+// operators it names rather than a word overflowing the first blank.
+function headingCells(spec) {
+  const terms = numberSentenceTerms(spec);
+  const cells = [];
+  terms.forEach((term, i) => {
+    const heading =
+      !isOperator(term) && term.heading != null && term.heading !== ""
+        ? String(term.heading)
+        : null;
+    const width = termWidthMm(term);
+    if (heading || cells.length === 0) {
+      cells.push({ text: heading || "", widthMm: width });
+    } else {
+      const last = cells[cells.length - 1];
+      last.widthMm += NS_GAP_MM + width;
+    }
+  });
+  return cells;
+}
+
+function renderHeadings(spec) {
+  if (!numberSentenceHasHeading(spec)) return "";
+  const cells = headingCells(spec)
+    .map(
+      (cell) =>
+        `<span class="h-ns-head" style="width:${cell.widthMm}mm">${esc(cell.text)}</span>`
+    )
+    .join("");
+  return `<div class="h-ns-heads">${cells}</div>`;
+}
+
+function renderNumberSentence(spec) {
+  const terms = numberSentenceTerms(spec).map(renderTerm).join("");
+  return `
+    <div class="h-ns">
+      ${spec.text ? `<p class="h-cq-stem">${questionNumber(spec)}${esc(spec.text)}</p>` : ""}
+      ${renderHeadings(spec)}
+      <div class="h-ns-row">${spec.text ? "" : questionNumber(spec)}${terms}</div>
+    </div>`;
+}
+
+function numberSentenceBodyMm(spec) {
+  const rowMm = Math.max(NS_BOX_H_MM, NS_CELL_MM, lineMmAt(NS_PT)) + 2 * NS_PAD_MM;
+  return (
+    rowMm +
+    (numberSentenceHasCaption(spec) ? NS_CAPTION_MM : 0) +
+    (numberSentenceHasHeading(spec) ? NS_CAPTION_MM : 0)
+  );
+}
+
+function measureNumberSentence(spec, widthMm) {
+  return stemMm(spec, widthMm) + numberSentenceBodyMm(spec);
+}
+
+function needsNumberSentence(spec) {
+  // A number sentence broken across two lines stops being a sentence: the
+  // child has to reassemble it before they can work on it, and the answer
+  // target ends up on a different line from the values it belongs to. So the
+  // whole row is the minimum, exactly as an inequality's is.
+  const rowMm = numberSentenceRowMm(spec) + numGutterMm(spec);
+  return {
+    minWidthMm: Math.min(WIDEST_ZONE_MM, rowMm),
+    minHeightMm: measureNumberSentence(spec, WIDEST_ZONE_MM),
+  };
+}
+
 // ─── order-numbers ───────────────────────────────────────────────────────
 // The numbers to order on a tinted card, and under it one blank per number
 // with the separator between them. The count of blanks is not a choice: four
@@ -740,6 +979,67 @@ const css = `
     border: var(--rule-line) solid var(--colour-ink);
   }
 
+  /* ─── number-sentence ─── */
+  /* One row, and it does not wrap: the stated minimum has already claimed the
+     width of the whole sentence, so wrapping here would mean the estimate and
+     the page disagreed about how tall the block is. */
+  .h-ns-row {
+    display: flex; flex-wrap: nowrap; align-items: flex-start;
+    gap: ${NS_GAP_MM}mm;
+    padding: ${NS_PAD_MM}mm 0;
+  }
+  .h-ns-term { display: flex; flex-direction: column; align-items: center; }
+  .h-ns-op {
+    align-self: center;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-ink); line-height: 1.35;
+  }
+  /* A supplied value, on its own tile. The given orange and a light boundary,
+     the same treatment a word bank gives a word handed over. */
+  .h-ns-tile {
+    box-sizing: border-box;
+    min-width: ${NS_TILE_MIN_MM}mm; text-align: center;
+    padding: var(--inset-card);
+    border: var(--rule-line) solid var(--colour-given);
+    border-radius: 1.5mm;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-given); line-height: 1.35;
+  }
+  .h-ns-text {
+    align-self: center; padding: var(--inset-card);
+    font-size: var(--type-sectionLabel); color: var(--colour-ink); line-height: 1.35;
+  }
+  /* Somewhere to write, and empty. No fill and no colour of its own: on this
+     sheet an empty box is the one thing that always means "yours". */
+  .h-ns-box {
+    box-sizing: border-box; flex: none;
+    height: ${NS_BOX_H_MM}mm;
+    border: var(--rule-line) solid var(--colour-ink);
+    border-radius: 1mm;
+  }
+  /* A digit frame: one cell per digit, sharing their internal rules so the
+     frame reads as one answer rather than as four separate boxes. */
+  .h-ns-cells { display: flex; }
+  .h-ns-cell {
+    box-sizing: border-box; flex: none;
+    width: ${NS_CELL_MM}mm; height: ${NS_BOX_H_MM}mm;
+    border: var(--rule-line) solid var(--colour-ink);
+    margin-left: -${RULE.line}mm;
+  }
+  .h-ns-cell:first-child { margin-left: 0; }
+  /* Headings line up with the terms by taking the same widths, so the word
+     over a column starts exactly where the column does. */
+  .h-ns-heads { display: flex; flex-wrap: nowrap; gap: ${NS_GAP_MM}mm; }
+  .h-ns-head {
+    flex: none; overflow: hidden; text-overflow: clip;
+    font-size: var(--type-note); color: var(--colour-quiet); line-height: 1.35;
+  }
+  .h-ns-caption {
+    margin-top: var(--space-hair);
+    font-size: var(--type-note); color: var(--colour-quiet);
+    line-height: 1.35; text-align: center;
+  }
+
   /* ─── order-numbers ─── */
   .h-order-line { display: flex; align-items: center; font-size: var(--type-body); line-height: 1.35; }
   .h-order-card {
@@ -819,6 +1119,13 @@ const helpers = {
     measure: measureInequalityWithBoxes,
     needs: needsInequalityWithBoxes,
     greed: 0, // a displayed statement is the size it is
+  },
+  "number-sentence": {
+    requires: ["terms"],
+    render: renderNumberSentence,
+    measure: measureNumberSentence,
+    needs: needsNumberSentence,
+    greed: 0, // the boxes are the size the answer is; taller ones hold no more
   },
   "order-numbers": {
     requires: ["numbers"],

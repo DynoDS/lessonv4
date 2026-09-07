@@ -21,7 +21,7 @@
 // helper in this engine does not know what row it sits in.
 
 const { LINE_MM, NOTE_LINE_MM, PT_MM, BODY_PT, esc, linesFor } = require("./shared");
-const { TYPE, INSET, RULE } = require("../tokens");
+const { TYPE, INSET, RULE, SPACE } = require("../tokens");
 
 // A label set at note size, measured the way shared.js measures body text: a
 // note character is note/body of a body character, so a note-size label fits
@@ -52,6 +52,11 @@ const PLACES = {
   tenths: { label: "Tenths", counter: "0.1" },
   hundredths: { label: "Hundredths", counter: "0.01" },
 };
+
+// Two decimal places is as fine as a millimetre needs to be written.
+function f2(n) {
+  return Number(n.toFixed(2));
+}
 
 const COUNTER_MM = 9; // a disc holding "0.01" at note size, the smallest type
                       // the design system allows
@@ -185,6 +190,158 @@ function needsPlaceValueCounterChart(spec) {
     // hiding by shrinking them.
     minWidthMm: pvcWidthMm(spec),
     minHeightMm: measurePlaceValueCounterChart(spec),
+  };
+}
+
+// ─── counter-group ───────────────────────────────────────────────────────
+// The counters on their own: a compact group of one denomination, several
+// groups joined by an operator, under the claim they depict.
+//
+// The chart above is the right object when the COLUMNS are the teaching. It is
+// the wrong object when two claims have to sit side by side and be compared,
+// because a four-column chart is most of a portrait page's width and two of
+// them are two pages. What that comparison needs is the discs themselves, at
+// the size a child can read them, and nothing else.
+//
+// The discs are the same discs, in the same colours, drawn from the same PLACES
+// table, so the counters a child meets in a chart on one sheet are the counters
+// they meet in a group on the next.
+//
+// It draws exactly the groups it is given and nothing else. There is no field
+// for a total, no field for a verdict, and no arithmetic anywhere in it: a
+// helper that could work out whether the claim were true would sooner or later
+// print the answer beside the question asking for it.
+
+const CG_GROUP_GAP_MM = SPACE.item;
+const CG_OP_MM = 6; // the operator's own column between two groups
+const CG_STATEMENT_PAD_MM = INSET.card.v;
+
+// A counter here is sized by the number on its face, not by the widest number
+// any counter could carry.
+//
+// The chart above uses one square cell for every denomination, because its
+// columns have to line up. These do not: they are separate groups sitting side
+// by side, and a counter reading "1" drawn as wide as one reading "0.01" makes
+// a group of nine ones three rows of enormous discs. The chart's 9mm square is
+// the right answer there and the wrong answer here, and copying it cost the
+// reference sheet's reasoning block half as much page again as it needed.
+//
+// Height is one line of note text with a cell's padding: the smallest the
+// design system lets any label print, which is what a counter's face is.
+const CG_COUNTER_H_MM = TYPE.note * PT_MM * 1.35 + 2 * INSET.cell.v;
+const CG_FACE_CHAR_MM = TYPE.note * PT_MM * 0.5; // tracks CHAR_WIDTH_FACTOR
+const CG_COUNTER_GAP_MM = COUNTER_GAP_MM;
+
+function counterWidthMm(face) {
+  return Math.max(
+    CG_COUNTER_H_MM,
+    String(face).length * CG_FACE_CHAR_MM + 2 * INSET.cell.h
+  );
+}
+
+// The counter face a denomination shows, and the colour class that goes with
+// it, both looked up in the one PLACES table the chart already uses.
+const COUNTER_PLACES = Object.fromEntries(
+  Object.entries(PLACES).map(([place, def]) => [def.counter, place])
+);
+
+function counterGroups(spec) {
+  const groups = spec.groups;
+  if (!Array.isArray(groups) || groups.length === 0) {
+    throw new Error("counter-group: `groups` must list at least one group of counters");
+  }
+  return groups.map((group, i) => {
+    const face = String(group.value ?? "").trim();
+    if (!face) {
+      throw new Error(`counter-group: group ${i + 1} has no \`value\` (the number on the counter)`);
+    }
+    const count = Number(group.count);
+    if (!Number.isInteger(count) || count < 1 || count > 20) {
+      throw new Error(
+        `counter-group: group ${i + 1} needs a \`count\` from 1 to 20. ` +
+          "The count is the evidence; it is not something to infer."
+      );
+    }
+    return { face, count, place: COUNTER_PLACES[face] || null };
+  });
+}
+
+function counterGroupWidthMm(group) {
+  const perRow = Math.min(COUNTERS_PER_ROW, group.count);
+  return perRow * counterWidthMm(group.face) + (perRow - 1) * CG_COUNTER_GAP_MM;
+}
+
+function counterGroupHeightMm(group) {
+  const rows = Math.ceil(group.count / COUNTERS_PER_ROW);
+  return rows * CG_COUNTER_H_MM + (rows - 1) * CG_COUNTER_GAP_MM;
+}
+
+function counterGroupRowMm(spec) {
+  const groups = counterGroups(spec);
+  const joiner = spec.joiner != null && spec.joiner !== "" ? String(spec.joiner) : null;
+  return (
+    groups.reduce((w, g) => w + counterGroupWidthMm(g), 0) +
+    Math.max(0, groups.length - 1) * (2 * CG_GROUP_GAP_MM + (joiner ? CG_OP_MM : 0))
+  );
+}
+
+function counterGroupStatementMm(spec, widthMm) {
+  if (!spec.statement) return 0;
+  const inner = Math.max(20, widthMm - 2 * INSET.card.h);
+  const lines = Math.max(
+    1,
+    Math.ceil(
+      noteLinesFor(String(spec.statement), inner * (TYPE.note / TYPE.sectionLabel))
+    )
+  );
+  return lines * (TYPE.sectionLabel * PT_MM * 1.35) + 2 * CG_STATEMENT_PAD_MM;
+}
+
+function renderCounterGroup(spec) {
+  const groups = counterGroups(spec);
+  const joiner = spec.joiner != null && spec.joiner !== "" ? String(spec.joiner) : null;
+
+  const drawn = groups
+    .map((group) => {
+      const discs = Array.from(
+        { length: group.count },
+        () =>
+          `<span class="h-cg-counter" style="width:${f2(counterWidthMm(group.face))}mm">` +
+          `${esc(group.face)}</span>`
+      ).join("");
+      const colour = group.place ? ` h-pvc-${group.place}` : "";
+      return (
+        `<span class="h-cg-group${colour}" style="width:${f2(counterGroupWidthMm(group))}mm">` +
+        discs +
+        `</span>`
+      );
+    })
+    .join(joiner ? `<span class="h-cg-op">${esc(joiner)}</span>` : `<span class="h-cg-op"></span>`);
+
+  // The claim sits with the evidence for it. Splitting the two across separate
+  // helpers is how a page ends up with a row of counters and no way to tell
+  // which of two claims they belong to.
+  const statement = spec.statement
+    ? `<div class="h-cg-statement">${esc(spec.statement)}</div>`
+    : "";
+
+  return `<div class="h-cg">${statement}<div class="h-cg-row">${drawn}</div></div>`;
+}
+
+function measureCounterGroup(spec, widthMm) {
+  const groups = counterGroups(spec);
+  const tallest = groups.reduce((m, g) => Math.max(m, counterGroupHeightMm(g)), 0);
+  return counterGroupStatementMm(spec, widthMm) + tallest + SPACE.tight;
+}
+
+function needsCounterGroup(spec) {
+  // The discs are a fixed size, because a counter a child cannot read the face
+  // of is not a counter. So the row's width is the truth about how much page
+  // this evidence costs, not a starting point to shrink from.
+  const minWidthMm = counterGroupRowMm(spec);
+  return {
+    minWidthMm,
+    minHeightMm: measureCounterGroup(spec, minWidthMm),
   };
 }
 
@@ -723,6 +880,43 @@ const css = `
     color: var(--colour-ink);
   }
 
+  /* counter-group */
+  .h-cg-statement {
+    box-sizing: border-box;
+    padding: var(--inset-card);
+    background: var(--colour-tint);
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-ink); line-height: 1.35; text-align: center;
+  }
+  .h-cg-row {
+    display: flex; flex-wrap: nowrap; align-items: center; justify-content: center;
+    gap: ${CG_GROUP_GAP_MM}mm;
+    margin-top: ${SPACE.tight}mm;
+  }
+  /* The same disc the chart draws, in the same colours, but as a pill sized to
+     the number on its face. A round counter carrying "1000" would have to be
+     as wide as its widest label in every direction. */
+  .h-cg-counter {
+    height: ${CG_COUNTER_H_MM}mm; flex: none;
+    box-sizing: border-box;
+    border-radius: ${CG_COUNTER_H_MM / 2}mm;
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--type-note); font-weight: bold; line-height: 1.35;
+    background: var(--pvc-fill); color: var(--pvc-ink);
+  }
+  /* The discs of one denomination, wrapping three to a row the way they do in
+     a chart cell, so a group of nine reads as three rows of three rather than
+     as a line nine counters long. */
+  .h-cg-group {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: ${COUNTER_GAP_MM}mm; flex: none;
+  }
+  .h-cg-op {
+    flex: none; min-width: ${CG_OP_MM}mm; text-align: center;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-ink); line-height: 1.35;
+  }
+
   /* place-value-chart */
   .h-pvchart { display: flex; gap: ${PVCHART_GAP_MM}mm; }
   /* min-width: 0 or a flex item refuses to shrink below the widest unbreakable
@@ -845,6 +1039,13 @@ const css = `
 `;
 
 const helpers = {
+  "counter-group": {
+    requires: ["groups"],
+    render: renderCounterGroup,
+    measure: measureCounterGroup,
+    needs: needsCounterGroup,
+    greed: 0, // a counter is a fixed object; height above it is a hole
+  },
   "place-value-counter-chart": {
     render: renderPlaceValueCounterChart,
     measure: measurePlaceValueCounterChart,

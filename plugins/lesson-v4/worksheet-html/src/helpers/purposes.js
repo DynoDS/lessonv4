@@ -135,6 +135,8 @@ module.exports = {
     "Two values with an empty box between them, for less-than, greater-than and equals work.",
   "inequality-with-boxes":
     "A displayed statement with some digits left as boxes to fill, so the child chooses numbers that make it true.",
+  "number-sentence":
+    "A number sentence with its terms kept apart: supplied values on their own tiles, operators between them, a box or digit frame where the answer goes. For when composing, recombining or a missing term IS the work.",
   "order-numbers":
     "Numbers to order on a card, with one blank per number underneath and the separator between them.",
   "order-table":
@@ -147,6 +149,8 @@ module.exports = {
   // ─── place value ───
   "place-value-counter-chart":
     "Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.",
+  "counter-group":
+    "The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.",
   "place-value-chart":
     "Place names across the top, a row per number. Fill a row to hand a number over, leave it empty to be written in, label it to say what it is, highlight a cell to pick out the digit that changed.",
   "digit-cards":
@@ -160,7 +164,9 @@ module.exports = {
   "coin-strip":
     "A row of coins and notes drawn at their real sizes relative to each other, over a line for the total.",
   "part-whole-money":
-    "A whole bubble with parts beneath it, joined by lines.",
+    "A whole bubble with parts beneath it, joined by lines. The money-flavoured name for part-whole, kept because saved specs use it; its bubbles may carry coins.",
+  "part-whole":
+    "A whole joined to its parts: partitioning, decomposition, a missing addend. Every node says whether the child is handed it, reads it or writes it, and a node that says nothing is refused.",
   "chip-bank":
     "A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text. A bank titled Word bank prints in vocabulary green unless a variant overrides it.",
   "stacked-fraction":

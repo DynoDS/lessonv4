@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 70 helpers, what each is for, and a working example of each.
+The 73 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -90,7 +90,9 @@ emailed. Never write `imageHref` yourself.
 - `number-line` - A labelled number line carrying marked or blank jumps, boxes to write in, and an object bracket.
 - `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
 - `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
+- `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
 - `part-whole-money` - A whole bubble with parts beneath it, joined by lines.
+- `number-sentence` - A number sentence with its terms kept apart: supplied values on their own tiles, operators between them, a box or digit frame where the answer goes.
 - `column-method-grid` - Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row.
 - `short-multiplication-grid` - Column multiplication by a single digit, with a thick-topped answer row and a carry row.
 - `long-multiplication-grid` - The long multiplication shape: one partial product row per digit of the multiplier, then the total.
@@ -101,6 +103,7 @@ emailed. Never write `imageHref` yourself.
 - `times-table-grid` - The multiplication-facts grid: headers across and down, products in the body, blanks to find.
 - `place-value-chart` - Place names across the top, a row per number.
 - `place-value-counter-chart` - Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.
+- `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
 - `digit-cards` - A row of cards, one digit each, handed to the child to make numbers from.
 
 **Fractions and money**
@@ -1140,9 +1143,43 @@ Smallest usable: **70mm wide x 48mm tall**. Spare height: never takes spare heig
 }
 ```
 
+#### `part-whole`
+
+A whole joined to its parts: partitioning, decomposition, a missing addend. Every node says whether the child is handed it, reads it or writes it, and a node that says nothing is refused.
+
+Smallest usable: **81mm wide x 26mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "part-whole",
+  "whole": {
+    "value": "6,731"
+  },
+  "joiner": "+",
+  "parts": [
+    {
+      "blank": true,
+      "caption": "Thousands"
+    },
+    {
+      "blank": true,
+      "caption": "Hundreds"
+    },
+    {
+      "blank": true,
+      "caption": "Tens"
+    },
+    {
+      "blank": true,
+      "caption": "Ones"
+    }
+  ]
+}
+```
+
 #### `part-whole-money`
 
-A whole bubble with parts beneath it, joined by lines.
+A whole bubble with parts beneath it, joined by lines. The money-flavoured name for part-whole, kept because saved specs use it; its bubbles may carry coins.
 
 Smallest usable: **61mm wide x 45mm tall**. Spare height: never takes spare height.
 
@@ -1157,6 +1194,41 @@ Smallest usable: **61mm wide x 45mm tall**. Spare height: never takes spare heig
     },
     {
       "label": "£2.30"
+    }
+  ]
+}
+```
+
+#### `number-sentence`
+
+A number sentence with its terms kept apart: supplied values on their own tiles, operators between them, a box or digit frame where the answer goes. For when composing, recombining or a missing term IS the work.
+
+Smallest usable: **129mm wide x 20mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "number-sentence",
+  "question": true,
+  "text": "Write the whole number for this addition.",
+  "terms": [
+    {
+      "value": 9
+    },
+    "+",
+    {
+      "value": "4,000"
+    },
+    "+",
+    {
+      "value": 50
+    },
+    "+",
+    {
+      "value": 200
+    },
+    "=",
+    {
+      "cells": 4
     }
   ]
 }
@@ -1396,6 +1468,30 @@ Smallest usable: **76mm wide x 30mm tall**. Spare height: never takes spare heig
     "ones": 3,
     "tenths": 4
   }
+}
+```
+
+#### `counter-group`
+
+The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.
+
+Smallest usable: **74mm wide x 43mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "counter-group",
+  "statement": "5,009 = 5,000 + 9",
+  "joiner": "+",
+  "groups": [
+    {
+      "value": "1000",
+      "count": 5
+    },
+    {
+      "value": "1",
+      "count": 9
+    }
+  ]
 }
 ```
 

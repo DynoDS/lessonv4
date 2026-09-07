@@ -364,14 +364,24 @@ function renderWrittenAnswers(spec, widthMm = 100) {
         { length: lines },
         () => `<span class="h-line" style="height:${lineMm}mm;max-height:${grownMm}mm"></span>`
       ).join("");
+      // An item may carry ruled lines and no prompt of its own: two lines under
+      // each of two claims, where the one instruction above already said what
+      // to do. Printing an empty prompt row there costs a line of paper per
+      // item and leaves a gap nothing explains, so the row is left out
+      // entirely - and `measure` below leaves out the same line, or the
+      // estimate and the page stop agreeing.
+      const hasPrompt = String(q.text ?? "") !== "";
+      const prompt = hasPrompt
+        ? `<div class="h-written-prompt">
+            ${pictureMarkup(pictures && pictures[i])}
+            <span class="h-text">${esc(q.text)}</span>
+          </div>`
+        : "";
       return `
       <li class="h-q h-written">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         <div class="h-body">
-          <div class="h-written-prompt">
-            ${pictureMarkup(pictures && pictures[i])}
-            <span class="h-text">${esc(q.text)}</span>
-          </div>
+          ${prompt}
           <div class="h-lines">${ruled}</div>
         </div>
       </li>`;
@@ -406,11 +416,12 @@ function measureWrittenAnswers(spec, widthMm) {
     const lines = writingLinesFor(q, baseTextWidth);
     const textWidth = baseTextWidth - pictureSlotMm(picture);
     // The prompt row is as tall as its tallest flex item: the wrapped words,
-    // or an image picture at its readable size.
-    const promptMm = Math.max(
-      linesFor(q.text, textWidth) * LINE_MM,
-      pictureHeightMm(picture)
-    );
+    // or an image picture at its readable size. An item with no prompt of its
+    // own prints no prompt row, so it is not charged for one.
+    const promptMm =
+      String(q.text ?? "") === "" && !picture
+        ? 0
+        : Math.max(linesFor(q.text, textWidth) * LINE_MM, pictureHeightMm(picture));
     return h + promptMm + lines * lineMm + gapMm;
   }, 0);
 }

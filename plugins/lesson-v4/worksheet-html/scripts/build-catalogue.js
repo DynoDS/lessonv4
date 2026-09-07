@@ -56,11 +56,13 @@ const FAMILIES = [
   [
     "Number and calculation",
     [
-      "number-line", "blank-surface", "bar-model", "part-whole-money",
+      "number-line", "blank-surface", "bar-model", "part-whole",
+      "part-whole-money", "number-sentence",
       "column-method-grid", "short-multiplication-grid",
       "long-multiplication-grid", "bus-stop-grid", "long-division-grid",
       "method-frame", "number-pyramid", "times-table-grid",
-      "place-value-chart", "place-value-counter-chart", "digit-cards",
+      "place-value-chart", "place-value-counter-chart", "counter-group",
+      "digit-cards",
     ],
   ],
   [

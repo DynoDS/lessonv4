@@ -457,6 +457,7 @@ test("every helper answers all four parts of the contract", () => {
   const expected = [
     "compare-row",
     "inequality-with-boxes",
+    "number-sentence",
     "order-numbers",
     "order-table",
     "data-table-with-ordering",

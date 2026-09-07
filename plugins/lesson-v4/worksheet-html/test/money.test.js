@@ -506,7 +506,7 @@ test("each chip hugs its own word instead of matching the longest in the bank", 
   assert.ok(!html.includes("--h-chip-track"), "chips still share one track width");
 });
 
-// ─── the contract, for all five ──────────────────────────────────────────
+// ─── the contract, for all six ───────────────────────────────────────────
 
 const EXAMPLES = {
   "stacked-fraction": {
@@ -528,6 +528,16 @@ const EXAMPLES = {
     whole: {},
     parts: [{ label: "£1.40" }, { label: "£2.30" }],
   },
+  "part-whole": {
+    whole: { value: "6,731" },
+    joiner: "+",
+    parts: [
+      { blank: true, caption: "Thousands" },
+      { blank: true, caption: "Hundreds" },
+      { blank: true, caption: "Tens" },
+      { blank: true, caption: "Ones" },
+    ],
+  },
   "chip-bank": {
     title: "Word bank",
     variant: "yellow",
@@ -535,7 +545,7 @@ const EXAMPLES = {
   },
 };
 
-test("all five sign the whole contract", () => {
+test("all six sign the whole contract", () => {
   for (const [name, h] of Object.entries(helpers)) {
     assert.equal(typeof h.render, "function", `"${name}" has no render`);
     assert.equal(typeof h.measure, "function", `"${name}" has no measure`);

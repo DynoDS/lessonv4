@@ -20,6 +20,7 @@
 //   { stack: [ ... ] }                  one above another
 //   { row: [ ... ] }                    side by side
 //   { row: {...}, repeat: 5 }           five of the same thing side by side
+//   { stack: {...}, repeat: 6 }         six of the same thing down the page
 //
 // ─── why this does not explode ───────────────────────────────────────────
 //
@@ -41,6 +42,41 @@ const { formatQuestionLabel } = require("../labels");
 
 const GAP_MM = SPACE.item;
 
+// A heading is not a neighbour: it belongs to what it introduces.
+//
+// A stack put the same gap between everything in it. Between two questions
+// that is right. Between a section label and the block it names, or between an
+// instruction and the thing it instructs, it is wrong twice over: the heading
+// reads as one more item in the list rather than as the title of the one below
+// it, and a ten-item stack spends forty millimetres of a two-hundred-and-
+// fifty-millimetre page saying nothing.
+//
+// So an introducer is joined to what follows it at the tight step. This is the
+// design system's own rhythm - four steps, and `tight` is the one for things
+// that belong together - applied to the join rather than to the item.
+const TIGHT_GAP_MM = SPACE.tight;
+const INTRODUCERS = new Set(["section-label", "instruction"]);
+
+function introduces(item) {
+  return Boolean(
+    item && !Array.isArray(item) && typeof item === "object" && INTRODUCERS.has(item.helper)
+  );
+}
+
+// The gap above item i of a stack: none above the first, tight under something
+// that introduced it, the ordinary item gap otherwise. Measuring, checking and
+// drawing all read it here, so they cannot disagree about how tall a stack is.
+function gapAboveMm(items, i) {
+  if (i === 0) return 0;
+  return introduces(items[i - 1]) ? TIGHT_GAP_MM : GAP_MM;
+}
+
+function stackGapsMm(items) {
+  let total = 0;
+  for (let i = 1; i < items.length; i += 1) total += gapAboveMm(items, i);
+  return total;
+}
+
 // The gutter a question number sits in. Wide enough for "(10)" at body size,
 // because a sheet whose numbering shifts left at question ten reads as two
 // different sheets stapled together.
@@ -53,19 +89,21 @@ function isRow(content) {
 }
 
 function isStack(content) {
-  return content && Array.isArray(content.stack);
+  return content && content.stack !== undefined;
 }
 
 // A row may be written out in full, or as one item and a count. Five identical
 // angles are a count, not five copies of the same JSON.
 function itemsOf(content) {
-  if (isStack(content)) return content.stack;
-  if (!isRow(content)) return [];
-
-  const { row, repeat } = content;
-  if (Array.isArray(row)) return row;
+  const { repeat } = content || {};
+  const listed = isStack(content) ? content.stack : isRow(content) ? content.row : null;
+  if (listed == null) return [];
+  if (Array.isArray(listed)) return listed;
+  // One item and a count, in either direction. Six identical blank record rows
+  // are a count, not six copies of the same JSON - and writing them out six
+  // times is how the fourth one quietly ends up different from the other five.
   const times = Number(repeat) > 0 ? Math.floor(Number(repeat)) : 1;
-  return Array.from({ length: times }, () => row);
+  return Array.from({ length: times }, () => listed);
 }
 
 // A width used only to ask an item its shape. Any width would do: the answer
@@ -262,9 +300,11 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
       // gave the box half the space it should have had.
       const someFill = items.some((item) => fillsContent(item));
       const cells = items
-        .map((item) => {
+        .map((item, i) => {
           const grows = someFill ? fillsContent(item) : greedContent(item) > 0;
-          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}">${renderContent(item, widthMm)}</div>`;
+          const gap = gapAboveMm(items, i);
+          const space = gap ? ` style="margin-top:${gap}mm"` : "";
+          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
         })
         .join("");
       return `<div class="h-stack">${cells}</div>`;
@@ -298,7 +338,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
       // One above another, so heights add, with a gap between each.
       return (
         items.reduce((sum, item) => sum + measureContent(item, widthMm), 0) +
-        GAP_MM * Math.max(0, items.length - 1)
+        stackGapsMm(items)
       );
     }
 
@@ -334,8 +374,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
       return {
         minWidthMm: Math.max(...ns.map((n) => n.minWidthMm)),
         minHeightMm:
-          ns.reduce((s, n) => s + n.minHeightMm, 0) +
-          GAP_MM * Math.max(0, ns.length - 1),
+          ns.reduce((s, n) => s + n.minHeightMm, 0) + stackGapsMm(items),
       };
     }
 
@@ -453,7 +492,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
         someFill ? fillsContent(item) : greedContent(item) > 0
       );
       const growers = growing.filter(Boolean).length;
-      const gaps = Math.max(0, items.length - 1) * GAP_MM;
+      const gaps = stackGapsMm(items);
       const leftover = heightMm - naturals.reduce((a, b) => a + b, 0) - gaps;
       const share = growers > 0 && leftover > 0 ? leftover / growers : 0;
 
@@ -519,7 +558,9 @@ const css = `
   /* One above another. An item that can use spare height takes it; the rest
      keep their natural size, so the leftover does not spread itself evenly
      over things that gain nothing from it. */
-  .h-stack { display: flex; flex-direction: column; gap: ${GAP_MM}mm; width: 100%; height: 100%; }
+  /* No gap here: each item carries its own top margin, because the join under
+     a heading is tighter than the join between two questions. */
+  .h-stack { display: flex; flex-direction: column; width: 100%; height: 100%; }
   .h-stack-item { flex: none; min-height: 0; }
   /* Share spare height without throwing away the natural height that the fit
      pass already proved each child can use. flex: 1 means 1 1 0%: two

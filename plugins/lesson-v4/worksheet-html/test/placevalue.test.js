@@ -33,9 +33,10 @@ function cellTexts(html, className) {
 
 // ─── the contract ────────────────────────────────────────────────────────
 
-test("all five helpers sign the whole contract", () => {
+test("all six helpers sign the whole contract", () => {
   const expected = [
     "place-value-counter-chart",
+    "counter-group",
     "place-value-chart",
     "digit-cards",
     "times-table-grid",
