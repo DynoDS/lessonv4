@@ -433,42 +433,20 @@ def validate_route_shape(
                 )
                 index += 1
 
-            my_turns = 0
-
-            while (
-                index < len(sequence)
-                and sequence[index]["kind"] == "my-turn"
-            ):
-                require(
-                    sequence[index]["conceptIndex"] == concept_index,
-                    (
-                        "Skill-based My Turn must use "
-                        f"conceptIndex {concept_index}"
-                    ),
-                )
-                my_turns += 1
+            cycles = 0
+            while index < len(sequence) and sequence[index]["kind"] == "my-turn":
+                require(sequence[index]["conceptIndex"] == concept_index,
+                        f"Skill-based My Turn must use conceptIndex {concept_index}")
+                cycles += 1
                 index += 1
-
-            require(
-                my_turns >= 1,
-                (
-                    "Skill-based conceptIndex "
-                    f"{concept_index} requires at least one my-turn"
-                ),
-            )
-
-            if (
-                index < len(sequence)
-                and sequence[index]["kind"] == "our-turn"
-            ):
-                require(
-                    sequence[index]["conceptIndex"] == concept_index,
-                    (
-                        "Skill-based our-turn must use "
-                        f"conceptIndex {concept_index}"
-                    ),
-                )
-                index += 1
+                require(not (index < len(sequence) and sequence[index]["kind"] == "my-turn"),
+                        f"Skill-based conceptIndex {concept_index} cannot have consecutive my-turn units; use the move before teaching the next")
+                if index < len(sequence) and sequence[index]["kind"] == "our-turn":
+                    require(sequence[index]["conceptIndex"] == concept_index,
+                            f"Skill-based our-turn must use conceptIndex {concept_index}")
+                    index += 1
+            require(cycles >= 1,
+                    f"Skill-based conceptIndex {concept_index} requires at least one my-turn")
 
             require(
                 index < len(sequence)
@@ -477,7 +455,7 @@ def validate_route_shape(
                 (
                     "Skill-based conceptIndex "
                     f"{concept_index} requires one your-turn "
-                    "after its my-turn move(s) and optional our-turn"
+                    "after its my-turn and optional our-turn cycles"
                 ),
             )
             index += 1

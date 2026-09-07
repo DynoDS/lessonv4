@@ -106,7 +106,7 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
             "each Do beat or `pupilInstruction` is every child using the idea just taught, not a question to the room",
             text,
         )
-        self.assertIn("working with or reasoning with the idea rather than retrieving it", text)
+        self.assertIn("judge worthwhile use or reasoning across the whole lesson", text)
 
     def test_the_old_plugin_definition_of_a_do_beat_is_back(self) -> None:
         """Lesson v4's packaging (28 August 2026) softened the Do beat from
@@ -124,7 +124,10 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
         )
         self.assertIn("Match the form to what was just taught", rhythm)
         self.assertIn("**Climb the demand across the lesson, without forcing a staircase.**", rhythm)
-        self.assertIn("working with the idea or reasoning with it rather than retrieving it", rhythm)
+        # September 7 clarification: main practice may supply progression;
+        # the last short check can still establish the newly taught knowledge.
+        self.assertIn("main practice can supply that progression", rhythm.lower())
+        self.assertIn("Do not demand a harder intermediate task solely", rhythm)
         # The caveat survives: an expectation for the shape, not a rule per step.
         self.assertIn("not a rule for each step", rhythm)
         # No device is named as the way to commit.

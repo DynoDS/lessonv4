@@ -14,7 +14,7 @@ So pick each beat on both axes, and think about the shape across the lesson rath
 
 **Choose whether a placement needs an explanation.** Add a short justification when the reason behind a placement is part of the intended learning or when it will distinguish understanding from guessing. Accurate classification may itself be the intended check; do not turn every quick sort into a written explanation. Consider evidence already gathered in this beat and the lesson.
 
-**The shape across the lesson matters more than any single beat.** Early beats after a brand-new chunk can sit at surface, and by the last beat before the main practice children should be working with or reasoning with the idea. That is not a staircase: a sequence may move up and down in demand, and a final check may return to central knowledge. If every beat in a finished sequence sits in the surface band, change some of them, and the usual fix is a harder question about the same content, not a different topic.
+**The shape across the lesson matters more than any single beat.** Follow `preferences.md` → The Teach → Do → Teach → Do Rhythm for the whole-lesson judgement, including main practice. These bands describe choices, not a compulsory sequence. A short response can establish new knowledge; select meaningful use or reasoning where the objective supports it rather than making the last Do harder by position alone.
 
 **Success evidence depends on the task.** Do not require roughly 80% success through every Do beat or lesson type. For a defined repeatable skill, roughly 80% at release is a planning expectation. A diagnostic question may deliberately reveal widespread misunderstanding, and many incorrect answers can be useful evidence. The live teacher responds to the actual class.
 

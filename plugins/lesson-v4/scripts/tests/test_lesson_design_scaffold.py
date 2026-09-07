@@ -811,6 +811,47 @@ def test_skill_concept_may_omit_our_turn():
     ]
 
 
+def test_repeated_teach_and_guided_cycles_survive_scaffolding():
+    request = skill_request()
+    request["teachingSequence"] = [
+        {"kind": kind, "conceptIndex": concept}
+        for kind, concept in [
+            ("my-turn", 1), ("our-turn", 1),
+            ("my-turn", 1), ("our-turn", 1), ("your-turn", 1),
+            ("my-turn", 2), ("your-turn", 2),
+        ]
+    ]
+    scaffold.validate_request(request)
+    design, _ = scaffold.build_scaffold(request)
+    assert [u["kind"] for u in design["teachingSequence"]] == [
+        u["kind"] for u in request["teachingSequence"]
+    ]
+    validator.validate_route_sequence("Skill-based", design["teachingSequence"], design["concepts"])
+
+
+def test_scaffold_and_final_validator_agree_on_short_skill_routes():
+    """Check accepted and rejected routes, not only the motivating example."""
+    from itertools import product
+    for length in range(1, 7):
+        for kinds in product(("my-turn", "our-turn", "your-turn"), repeat=length):
+            request = skill_request()
+            request["teachingSequence"] = [
+                {"kind": kind, "conceptIndex": 1} for kind in kinds
+            ] + [{"kind": "my-turn", "conceptIndex": 2}, {"kind": "your-turn", "conceptIndex": 2}]
+            try:
+                scaffold.validate_request(request)
+                scaffold_ok = True
+            except scaffold.ScaffoldError:
+                scaffold_ok = False
+            units = [{"kind": u["kind"], "conceptRef": f"concept-{u['conceptIndex']}"} for u in request["teachingSequence"]]
+            try:
+                validator.validate_route_sequence("Skill-based", units, [{"id": "concept-1"}, {"id": "concept-2"}])
+                final_ok = True
+            except validator.ContractError:
+                final_ok = False
+            assert scaffold_ok == final_ok, kinds
+
+
 def test_omitting_your_turn_is_still_rejected():
     """Discrimination case: only the our-turn became optional."""
     request = skill_request()
