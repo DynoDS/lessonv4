@@ -99,7 +99,7 @@ class TheApprovedSheetSurvivesItselfTests(ItemLevelCase):
     def test_an_unchanged_specification_passes(self):
         result = self.check(self.before)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("place(s) to write preserved", result.stdout)
+        self.assertIn("place(s) to write", result.stdout)
 
 
 class LessInsideTheSameContainersTests(ItemLevelCase):
@@ -377,6 +377,88 @@ class TheTwoChannelsStaySeparateTests(ItemLevelCase):
         self.assertIn("teacher answer", self.assertCaught(after))
 
     def test_the_same_marked_sheet_unchanged_passes(self):
+        self.assertAllowed(self.mutated())
+
+
+class MetadataIsNotSomethingAChildHasReadTests(ItemLevelCase):
+    """The exact sheet a third audit sent back, and its one-variable controls.
+
+    A Year 4 worksheet whose teacher answer is `4`. Copy that answer onto the
+    pupil page and the additions check waves it through, because the token `4`
+    was already in the file - in `meta.yearGroup`, which picks the height of a
+    ruled line and never appears on paper. The digit was in the document. It
+    was not in front of the class.
+
+    The controls are what make it a mechanism rather than a coincidence: the
+    same copy with the year group set to 5, and with no metadata at all, were
+    both correctly rejected all along. Only the collision let it through, and
+    the fix is a separate channel rather than a rule about the digit 4.
+
+    The class's own earlier teacher/pupil test passed throughout, because its
+    answer was a long sentence that collided with nothing. Passing tests are
+    not proof that the reported input was replayed, so it is replayed here.
+    """
+
+    def marked(self, year: object = 4, with_meta: bool = True) -> dict:
+        spec = {
+            "sheets": {"expected": {
+                "layout": "full", "orientation": "portrait",
+                "zones": {"a": {"helper": "questions", "items": ["What is 2 + 2?"]}},
+            }},
+            "answerKey": {"expected": [{"question": 1, "answer": "4"}]},
+        }
+        if with_meta:
+            spec = {"meta": {"yearGroup": year}, **spec}
+        return spec
+
+    @staticmethod
+    def with_answer_copied(spec: dict) -> dict:
+        after = copy.deepcopy(spec)
+        after["sheets"]["expected"]["zones"]["b"] = {
+            "helper": "instruction", "text": "4"
+        }
+        return after
+
+    def test_the_answer_copied_onto_a_page_whose_year_group_is_that_number(self):
+        self.before = self.marked(year=4)
+        self.assertIn("new since", self.assertCaught(self.with_answer_copied(self.before)))
+
+    def test_the_same_copy_with_a_year_group_that_does_not_collide(self):
+        self.before = self.marked(year=5)
+        self.assertCaught(self.with_answer_copied(self.before))
+
+    def test_the_same_copy_with_no_metadata_at_all(self):
+        self.before = self.marked(with_meta=False)
+        self.assertCaught(self.with_answer_copied(self.before))
+
+    def test_the_metadata_itself_may_not_be_dropped(self):
+        # Not decoration: a year group sizes every ruled line on the sheet.
+        self.before = self.marked()
+        after = self.mutated()
+        del after["meta"]
+        self.assertIn("authoring data", self.assertCaught(after))
+
+    def test_metadata_the_renderer_prints_is_still_the_childs_words(self):
+        # `worksheet.js` falls back to `meta.lo` for the objective printed at
+        # the top of the sheet, so blanket-ignoring metadata would be the same
+        # mistake pointed the other way.
+        self.before = self.marked()
+        self.before["meta"]["lo"] = "To add two one-digit numbers"
+        after = self.mutated()
+        del after["meta"]["lo"]
+        self.assertIn("children read", self.assertCaught(after))
+
+    def test_a_short_answer_set_is_a_task_with_somewhere_to_answer(self):
+        # The audit noticed "0 question(s) or case(s) intact" on this sheet: a
+        # plain `questions` helper's answer space is on the line and is stated
+        # nowhere, so the checker saw a page with nothing to answer on it.
+        self.before = self.marked()
+        after = self.mutated()
+        after["sheets"]["expected"]["zones"]["a"]["items"] = []
+        self.assertCaught(after)
+
+    def test_the_same_sheet_unchanged_passes(self):
+        self.before = self.marked()
         self.assertAllowed(self.mutated())
 
 

@@ -30,9 +30,9 @@ where it was.
 may not author child-facing wording, so a string that was not in front of
 children when the repair began has no business being there now - and the two
 that matter are the helpful line explaining which of two claims is correct, and
-the answer lifted out of the teacher's key. The teacher's channel is counted
-apart from the pupil's for exactly that second one: the document already held
-the words, and the child did not. Repeating a string that was already on the
+the answer lifted out of the teacher's key. The teacher's channel and the authoring metadata are
+counted apart from the pupil's for exactly that reason: the document already
+held the words, and the child did not. Repeating a string that was already on the
 page is a different thing and stays legal: splitting one slide into two repeats
 its title.
 
@@ -259,11 +259,15 @@ def value_sequence(items: list) -> tuple | None:
 # page put there, and moving a question between zones is the repair itself.
 LAYOUT_SLOT_KEYS = {"zones", "sheets", "slides", "pages"}
 
-# The teacher's channel. Answers, acceptance conditions and marking notes are
-# real content that must survive, and they are not on the child's page. Counted
-# apart, so that copying an answer out of the key and onto a pupil instruction
-# reads as what it is: a string that is new to the child, even though the
-# document already contained it.
+# A specification carries three audiences and they are counted apart, because
+# "has a child seen this word before?" is the question the additions check is
+# actually asking and every channel mixed into one answers it wrongly.
+#
+# The teacher's channel: answers, acceptance conditions and marking notes. Real
+# content that must survive, and not on the child's page. Counted apart so that
+# copying an answer out of the key and onto a pupil instruction reads as what it
+# is - a string that is new to the child, even though the document already
+# contained it.
 TEACHER_KEYS = {
     "answerKey",
     "answers",
@@ -273,6 +277,46 @@ TEACHER_KEYS = {
     "teacherInfo",
 }
 
+# The authoring channel: what the build needs to know, as opposed to what it
+# prints. `meta.yearGroup` picks the height of a ruled line and never appears on
+# paper - and while it was counted as something a child had read, a worksheet
+# for Year 4 could have the teacher answer `4` copied onto the page and the
+# addition read as a repeat. The digit was in the file. It was not in front of
+# the class.
+METADATA_KEYS = {"meta", "metadata"}
+
+# Except for the fields the renderer genuinely prints from it. Blanket-ignoring
+# metadata would be the same mistake pointed the other way: `worksheet.js` falls
+# back to `meta.lesson` or `meta.name` for the sheet's title and to `meta.lo`
+# for the objective printed at the top of the page, so those ARE the child's.
+PRINTED_METADATA_FIELDS = {"lo", "lesson", "name", "title"}
+
+# Helpers whose `items` each own a response, and how many ruled lines an item
+# gets when it does not say. Named because the renderer names them:
+# `isNumberPrintingSet` in `worksheet-html/src/worksheet.js` numbers exactly
+# these two, a `questions` item answers on its own line, and `writingLinesFor`
+# gives a `written-answers` item three lines when it states none.
+#
+# Without this a plain question set looked like a page with nothing to answer on
+# it: no response target, and therefore no task binding anything to anything.
+RESPONSE_SET_HELPERS = {"questions": 0, "written-answers": 3}
+
+
+def channel_of(channel: str, key: str) -> str:
+    """Which audience the value under this key belongs to.
+
+    Once inside the teacher's copy everything below stays there. Metadata is the
+    same, except that the handful of fields the renderer prints from it climb
+    back out onto the child's page.
+    """
+    if channel == "teacher" or key in TEACHER_KEYS:
+        return "teacher"
+    if key in METADATA_KEYS:
+        return "metadata"
+    if channel == "metadata":
+        return "pupil" if key in PRINTED_METADATA_FIELDS else "metadata"
+    return channel
+
 
 class Census:
     """Everything one specification holds, counted in a single walk."""
@@ -281,12 +325,13 @@ class Census:
         self.objects: Counter = Counter()
         self.content: Counter = Counter()
         self.teacher: Counter = Counter()
+        self.metadata: Counter = Counter()
         self.room: Counter = Counter()
         self.cases: Counter = Counter()
         # Room, keyed by the case that holds it, so a question cannot pay for
         # its neighbour's extra line with one of its own.
         self.case_room: Counter = Counter()
-        self._visit(node, 1, False, False)
+        self._visit(node, 1, False, "pupil")
 
     # ─── one node's own room to write ───
     @staticmethod
@@ -319,7 +364,34 @@ class Census:
             found["targets"] += times
         return found
 
-    def _visit(self, value: object, times: int, in_slot: bool, teacher: bool):
+    @staticmethod
+    def _set_room_of(value: dict, times: int) -> Counter:
+        """The answer space a question set carries without saying so.
+
+        A `questions` item answers on its own line and a `written-answers` item
+        gets three ruled lines when it names no number. An item that states its
+        own room has already been counted by `_room_of`.
+        """
+        found: Counter = Counter()
+        kind = value.get("helper") or value.get("type")
+        items = value.get("items")
+        if kind not in RESPONSE_SET_HELPERS or not isinstance(items, list):
+            return found
+        default_lines = RESPONSE_SET_HELPERS[kind]
+        for item in items:
+            if isinstance(item, dict) and any(
+                isinstance(item.get(k), int)
+                and not isinstance(item.get(k), bool)
+                and item.get(k) > 0
+                for k in ("lines", "sentences")
+            ):
+                continue
+            found["targets"] += times
+            if default_lines:
+                found["ruled lines"] += default_lines * times
+        return found
+
+    def _visit(self, value: object, times: int, in_slot: bool, channel: str):
         """Walk one node.
 
         Returns what the subtree holds that is NOT already inside a case:
@@ -333,12 +405,12 @@ class Census:
         if isinstance(value, list):
             for item in value:
                 if isinstance(item, (dict, list)):
-                    sub, sub_room, sub_case = self._visit(item, times, in_slot, teacher)
+                    sub, sub_room, sub_case = self._visit(item, times, in_slot, channel)
                     free.update(sub)
                     free_room.update(sub_room)
                     holds_case = holds_case or sub_case
                 else:
-                    self._note(item, times, free, teacher)
+                    self._note(item, times, free, channel)
                     # A null cell in a table row is a place to write, and it is
                     # the only shape of response target that carries no key of
                     # its own. Left uncounted, a table's blanks could be moved
@@ -371,6 +443,7 @@ class Census:
 
         own: Counter = Counter()
         own_room = self._room_of(value, times)
+        own_room.update(self._set_room_of(value, times))
         self.room.update(own_room)
 
         for key, child in value.items():
@@ -380,14 +453,14 @@ class Census:
                 continue
             if key == "parts" and is_width_split(child):
                 continue
-            child_teacher = teacher or key in TEACHER_KEYS
+            child_channel = channel_of(channel, key)
             if key in DISCRIMINATORS or key == "visual":
                 # Already counted as an object, with a helper's aliases
                 # resolved. Counting the name again here would call a legal
                 # swap between two names for one renderer a lost word.
                 if isinstance(child, (dict, list)):
                     sub, sub_room, sub_case = self._visit(
-                        child, times, False, child_teacher
+                        child, times, False, child_channel
                     )
                     own.update(sub)
                     own_room.update(sub_room)
@@ -397,15 +470,15 @@ class Census:
                 if isinstance(child, list):
                     sequence = value_sequence(child)
                     if sequence is not None:
-                        self._note_key(key, ", ".join(sequence), times, own, child_teacher)
+                        self._note_key(key, ", ".join(sequence), times, own, child_channel)
                 sub, sub_room, sub_case = self._visit(
-                    child, times, key in LAYOUT_SLOT_KEYS, child_teacher
+                    child, times, key in LAYOUT_SLOT_KEYS, child_channel
                 )
                 own.update(sub)
                 own_room.update(sub_room)
                 holds_case = holds_case or sub_case
             else:
-                self._note(child, times, own, child_teacher)
+                self._note(child, times, own, child_channel)
 
         # Rule 1 outranks the slot rule: a zone that IS a numbered question is a
         # question, whatever it is standing in.
@@ -431,7 +504,7 @@ class Census:
     def _fingerprint(said: Counter) -> str:
         return " ; ".join(f"{k}x{v}" for k, v in sorted(said.items()))
 
-    def _note(self, value: object, times: int, free: Counter, teacher: bool) -> None:
+    def _note(self, value: object, times: int, free: Counter, channel: str) -> None:
         if isinstance(value, bool):
             return
         if isinstance(value, str):
@@ -443,17 +516,23 @@ class Census:
             key = repr(value)
         else:
             return
-        if teacher:
+        if channel == "teacher":
             self.teacher[key] += times
+            return
+        if channel == "metadata":
+            self.metadata[key] += times
             return
         self.content[key] += times
         free[key] += times
 
     def _note_key(self, key: str, text: str, times: int, free: Counter,
-                  teacher: bool) -> None:
+                  channel: str) -> None:
         entry = f"{key}: {text}"
-        if teacher:
+        if channel == "teacher":
             self.teacher[entry] += times
+            return
+        if channel == "metadata":
+            self.metadata[entry] += times
             return
         self.content[entry] += times
         free[entry] += times
@@ -546,6 +625,17 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
+    lost_meta = losses(before.metadata, after.metadata)
+    if lost_meta:
+        report(
+            f"REPAIR_SCOPE_FAILED: {len(lost_meta)} piece(s) of the "
+            "specification's own authoring data did not survive the repair:",
+            lost_meta,
+            "A year group sizes the ruled lines, a subject routes the sheet, a "
+            "lesson name titles it. None of them is decoration.",
+        )
+        return 1
+
     lost_teacher = losses(before.teacher, after.teacher)
     if lost_teacher:
         report(
@@ -622,8 +712,9 @@ def main(argv: list[str] | None = None) -> int:
         f"REPAIR_SCOPE_OK: {sum(after.objects.values())} content object(s), "
         f"{sum(after.content.values())} thing(s) children read or work from, "
         f"{sum(after.cases.values())} question(s) or case(s) intact, "
-        f"{sum(after.teacher.values())} teacher answer(s) and "
-        f"{after.room['targets']} place(s) to write preserved"
+        f"{sum(after.teacher.values())} teacher answer(s), "
+        f"{after.room['targets']} place(s) to write and "
+        f"{sum(after.metadata.values())} piece(s) of authoring data preserved"
     )
     return 0
 
