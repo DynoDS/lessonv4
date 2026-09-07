@@ -140,9 +140,32 @@ class ContentThatVanishedTests(RepairScopeCase):
         result = self.run_check(BEFORE, after)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_adding_content_is_allowed(self):
+    def test_adding_words_nobody_wrote_upstream_is_caught(self):
+        """This test used to assert the opposite, and it was wrong.
+
+        It read "adding content is allowed", on the unstated grounds that a
+        repair which takes nothing away has taken nothing away. But a repairer
+        may not author child-facing wording at all, and the addition that
+        matters is not extra work: it is the helpful line. A sheet asking
+        children to judge two equations came back with `The first equation is
+        correct.` underneath them, and every count was where it had been.
+
+        Repeating wording already in the specification stays legal, which is
+        what the next test holds. Inventing it does not.
+        """
         after = json.loads(json.dumps(BEFORE))
         after["slides"][0]["body"]["items"].append({"type": "text", "text": "Now explain."})
+        result = self.run_check(BEFORE, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("Now explain.", result.stdout)
+
+    def test_adding_structure_around_the_same_words_is_allowed(self):
+        # A second card holding the wording that was already there is
+        # composition, which is what a repair is for.
+        after = json.loads(json.dumps(BEFORE))
+        after["slides"][0]["body"]["items"].append(
+            {"type": "text", "text": "Both fans move air. Which is electrical?"}
+        )
         result = self.run_check(BEFORE, after)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 

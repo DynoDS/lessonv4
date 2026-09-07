@@ -180,6 +180,101 @@ class NoAnswerAppearsAndNoRoomGoesTests(ItemLevelCase):
         self.assertAllowed(after)
 
 
+class EachCaseKeepsItsOwnTests(ItemLevelCase):
+    """The holes a bag of content cannot see.
+
+    An independent audit ran these against the first version of the item-level
+    check and every one of them went through. They are here as regressions
+    because each has the same shape: the totals are right and the sheet is
+    wrong. Fixing them individually with keyword rules would leave the shape
+    intact, so what changed was the model - each question and each parallel
+    case is fingerprinted on its own, and its room is compared beside it.
+    """
+
+    def test_the_evidence_for_two_claims_is_exchanged(self):
+        # Every counter still on the page, every count identical, and each
+        # claim now sitting above the other one's evidence.
+        after = self.mutated()
+        row = self.claims(after)["row"]
+        row[0]["stack"][0]["groups"], row[1]["stack"][0]["groups"] = (
+            row[1]["stack"][0]["groups"],
+            row[0]["stack"][0]["groups"],
+        )
+        self.assertCaught(after)
+
+    def test_one_question_loses_the_lines_another_gains(self):
+        after = self.mutated()
+        row = self.claims(after)["row"]
+        row[0]["stack"][1]["items"][0]["lines"] = 1
+        row[1]["stack"][1]["items"][0]["lines"] = 3
+        self.assertCaught(after)
+
+    def test_a_word_blank_narrowed_until_the_word_will_not_fit(self):
+        # Still a blank, still counted as a place to write, and now a box for
+        # one character where the answer is "seven".
+        after = self.mutated()
+        words = next(
+            item for item in self.work(after)
+            if item.get("helper") == "number-sentence" and item.get("text")
+        )
+        for term in words["terms"]:
+            if isinstance(term, dict) and term.get("blank"):
+                term["chars"] = 1
+        self.assertIn("room in them", self.assertCaught(after))
+
+
+class NestedRowsAreContentTooTests(ItemLevelCase):
+    """Primitive cells live in lists inside lists, which the walk skipped.
+
+    Normal table `rows` are exactly that shape, so every cell and every whole
+    row of every data table and recording table in the pipeline was invisible.
+    """
+
+    TABLES = {
+        "sheets": {"expected": {"zones": [{"stack": [
+            {"helper": "data-table",
+             "headers": ["Material", "Waterproof?"],
+             "rows": [["Glass", "yes"], ["Cardboard", "no"], ["Foil", "yes"]]},
+            {"helper": "recording-table",
+             "columns": ["Source", "What it shows"],
+             "writing": ["word", "sentence"],
+             "rows": [["Source A", ""], ["Source B", ""]]},
+        ]}]}}
+    }
+
+    def setUp(self) -> None:
+        self.before = copy.deepcopy(self.TABLES)
+
+    @staticmethod
+    def tables(spec: dict) -> list:
+        return spec["sheets"]["expected"]["zones"][0]["stack"]
+
+    def test_a_cell_value_changed(self):
+        after = self.mutated()
+        self.tables(after)[0]["rows"][0][1] = "no"
+        self.assertCaught(after)
+
+    def test_a_whole_row_removed(self):
+        after = self.mutated()
+        del self.tables(after)[0]["rows"][1]
+        self.assertCaught(after)
+
+    def test_a_recording_row_and_its_cells_removed(self):
+        after = self.mutated()
+        del self.tables(after)[1]["rows"][1]
+        self.assertCaught(after)
+
+    def test_two_cells_swapped_between_rows(self):
+        # The bag of cell values is identical; the table now says the opposite.
+        after = self.mutated()
+        rows = self.tables(after)[0]["rows"]
+        rows[0][1], rows[1][1] = rows[1][1], rows[0][1]
+        self.assertCaught(after)
+
+    def test_the_same_tables_unchanged_still_pass(self):
+        self.assertAllowed(self.mutated())
+
+
 class LegalRepairsStillPassTests(ItemLevelCase):
     def test_a_different_layout_and_orientation(self):
         after = self.mutated()
