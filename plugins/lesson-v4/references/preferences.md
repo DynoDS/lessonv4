@@ -26,7 +26,7 @@ This file serves several agents. The Lesson Designer reads the introduction, con
 - **Reasoning Is Every Child's Entitlement** — genuine reasoning shapes for the whole class, not just the quick finishers.
 - **Slide Philosophy** — the glance test, live teaching and visible meaning, takeaways, and the speaker-notes voice.
 - **Slide Headings (Child-Facing Labels)** — warm child-facing titles, My/Our/Your Turn, performative demonstration titles.
-- **Worksheets** — normally optional independent practice, the required task-resource exception, one page per child, and the two kinds of sheet.
+- **Worksheets** — normally optional independent practice, the required task-resource exception, one page per child, the two kinds of sheet, and the subject-shaped working surface the teacher approved (`worksheet-visual-profile.md` carries that standard in full).
 - **Pride Lessons (Quality Anchor)** — two real lessons that show what "right" feels like.
 
 ---
@@ -572,6 +572,10 @@ A step list a child must work *through* in order before they can answer anything
 **A lettered or numbered stimulus set is one block.** Photographs A to D are one thing a child reads, so they sit together. Splitting them - A, B and C in one zone and D inside a later question - leaves a table headed "A to D" whose fourth row is somewhere else on the page.
 
 **A worksheet should look like a purposeful children's activity, not a test paper.** Use one coherent visual or working surface, clear section blocks, small banks/cards/tables where they reduce reading load, and enough variation in response type to make the thinking visible. Colour is for navigation and support, not decoration. A title followed by a long numbered list and answer lines is a warning sign even when the prose is colour-coded. The page should be inviting and calm, but never quick to complete without close reading.
+
+**The sheet is a working surface for its subject, and the relationship the child is working on should BE the surface.** On 6 September 2026 the teacher was shown two versions of the same Year 4 partitioning worksheets - one with tidier spacing around the questions, one where the mathematics had become the page - and approved the second: whole-part models with the parts left empty, mixed-order summands as separate value tiles running into a digit frame, two claims each with the counters that depict it and its own room to explain, and a blank record with a column for the number and a column for its expansion. `worksheet-visual-profile.md` owns that standard in full and is the file to open when judging how a sheet looks; this is the one line of it that changes what gets designed. What generalises is the relationship between the subject and the surface, never those exact diagrams: a comprehension is rightly text-led, an extended piece of writing rightly wants ruled lines, and there is no diagram quota. The failure it names is the other one - a task with a relationship at the heart of it rendered as a prompt and a blank because that was the shortest route.
+
+**Never improve the appearance of a page by taking work off it.** The investigation stays, the third activity stays, the explanation space stays; when a redesign will not fit, the redesign gives way. The rule runs the other way too: a visual pass must not quietly ADD scaffolding either. A zero already filled in, a counter that settles a claim, a row count that announces how many solutions there are, a heading that classifies a source before the child does - each turns an unaided question into a supported one, and that is a decision the lesson designer or the adaptation designer makes on purpose, before the content is frozen, never one that arrives with a nicer-looking page.
 
 **Blank page area must belong to the pupil.** Writing lines, a labelled drawing
 box, a plotting grid, annotation space or a recording table may be spacious

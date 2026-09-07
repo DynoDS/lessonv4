@@ -208,6 +208,12 @@ Do not impose more questions than Expected, fixed maths section counts or a reas
 
 ### 5. Plan visual requirements for any separate resource being designed
 
+**Choose the representation for this variant's actual demand, not for a picture of what Below or Greater Depth looks like.** There is no rule that Below must be more illustrated or that Greater Depth must lose its support. A Below resource can keep a familiar model precisely because it removes a recording barrier and leaves the thinking intact. A Greater Depth resource can keep the same model and change what is asked of it - generalise, compare, reason systematically - and that is usually a better depth move than swapping the surface. The opposite is also a real design: where constructing the structure IS the learning, a less structured surface is the harder task, and that goes for any tier.
+
+Record, for every part of the resource, which parts are given, which stay blank and which the child constructs, and which support is kept, changed or removed with the reason. That is what the worksheet designer realises and what the reviewer checks; a support decision left implicit is one nobody downstream can tell from an oversight.
+
+The standard of graphic finish is the same across the whole pack. That does not mean identical layouts or matching illustrations, and it is never a reason to manufacture a sheet so the set looks differentiated - `Use Expected unchanged` remains a complete answer.
+
 The adaptation may request its own required photographs even when Expected uses none. Use the smallest coherent visual set the learning and access genuinely require. There is no fixed picture maximum, but visual-heavy content creates serious fitting risk.
 
 For every required visual, name:

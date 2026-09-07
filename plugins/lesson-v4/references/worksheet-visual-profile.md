@@ -1,0 +1,135 @@
+# Worksheet visual profile
+
+This is the teacher's stable visual-judgement layer for the printed sheet, the
+paper counterpart of `teacher-slide-visual-profile.md`. It says what a good
+working surface looks like and where the line between meaning and presentation
+falls. It never reopens the pedagogy: when it disagrees with a settled design
+decision, the design decision wins and the disagreement is reported.
+
+## The one thing this file is for
+
+**A worksheet is a working surface for its subject, and it should look like
+one.** The representations, the response spaces and the visual hierarchy should
+express what children are actually doing. A page whose mathematics, sources,
+map or apparatus have been flattened into prose and answer lines has lost
+something real, however correct every word on it is.
+
+This is not a demand for decoration, a number of diagrams per sheet, a
+different helper on every question, or less writing everywhere. Plenty of good
+sheets are mostly words: a comprehension is text-led because reading is the
+work, and an extended piece of writing wants ruled lines and room to think. The
+failure is the other one - a task with a relationship at the heart of it,
+rendered as a question and a blank because that was the shortest route.
+
+## The positive example
+
+On 6 September 2026 the teacher was shown two versions of the same Year 4
+partitioning worksheets. One tidied the spacing around the questions. The other
+made the mathematics into the page. He approved the second one, in those words:
+*"Yes that looks incredible and premium."*
+
+`worksheet-html/fixtures/maths-partition-four-digit-numbers.json` is that sheet,
+built by this engine, and it is the standard to judge against. Four things
+changed, and each is a move worth reusing:
+
+- **A number to partition became a whole joined to four empty parts.** The
+  additive relationship is the response surface. The child writes into the
+  relationship rather than beside a copy of the number.
+- **Mixed-order summands became separate tiles with a digit frame at the end.**
+  Composition is visible without being done. `9 + 4,000 + 50 + 200` typed into
+  a prompt is four values to pick out of a sentence first.
+- **Two claims to judge became two matched panels, each with the counters that
+  depict its right-hand side and its own room to explain.** The cases are
+  separated, the evidence is attached to the case it serves, and nothing on the
+  page says which is right.
+- **Six generic writing lines became a blank record with a column for the
+  number and a column for its expansion.** The findings stay comparable without
+  the sheet supplying a search strategy.
+
+**What generalises is the relationship between the subject and the surface**,
+along with crisp vector construction, consistent alignment, light boundaries,
+restrained hierarchy, evidence sitting next to the response it feeds, and the
+same standard of finish across all three sheets. What does not generalise is
+that page: not four nodes, not six rows, not a footer, not two columns, and not
+a rule that partitioning must always show explicit zeros.
+
+## The boundary that matters most
+
+**Never improve the appearance of a page by taking work off it.** The
+investigation stays. The third activity stays. The explanation space stays.
+When a redesign will not fit, the redesign is what gives way.
+
+The same line runs the other way. A visual pass must not quietly ADD
+scaffolding either: a zero already filled in, a counter that settles a claim,
+a row count that announces how many solutions there are, a heading that
+classifies a source before the child does. Every one of those turns an unaided
+question into a supported one, and that is a decision for the Lesson Designer
+or Adaptation Designer to make on purpose, before the content is frozen.
+
+So the ownership is:
+
+| Who | Decides |
+|---|---|
+| Lesson Designer | Which relationship the child meets, which representation carries it, what is given and what stays blank |
+| Adaptation Designer | The same, for each variant, and what support changes with it |
+| Design Reviewer | Whether the chosen representation still leaves the intended thinking to the child |
+| Worksheet Designer | Which helpers realise those decisions, and how the page is composed around them |
+| The engine | Accurate drawing, honest sizing, refusal when something will not fit |
+| Final resource review | Whether the delivered page actually works at print size |
+
+## Given and blank are different states, and they must stay different
+
+A value handed to the child prints in the given colour. A place the child
+writes stays empty. The two are never the same mark, and no helper may turn one
+into the other.
+
+**A zero is where this goes wrong.** `6,007` has zero hundreds and zero tens,
+and those zeros are the entire question. A given zero is a printed `0`; a blank
+is an empty box. Anything that reads a value for truthiness collapses them, and
+the sheet then either hands the child two of its four answers or refuses to
+print a zero the design asked for. The helpers that carry values state which
+they are and refuse a node that says neither.
+
+## Sizing comes from the answer, not from the page
+
+A four-digit number, a four-term expression and a written explanation are three
+different spaces. There is no universal answer-line length.
+
+Space stops paying off. A ruled line reaches its useful height and passes it; a
+box a child draws in does not. Spare room goes to whatever is still gaining from
+it, and what is left over is paper, not an excuse for two enormous boxes and
+tiny type elsewhere.
+
+Where a measurement is the task - a ruler, a coordinate grid - true scale is not
+negotiable. A schematic whole-part node is the opposite case: its boxes are
+symbols, and their widths must not suggest magnitude. A bar model is a bar
+model and keeps its own proportions.
+
+## Draw it, never generate a picture of it
+
+Mathematics, apparatus, circuit symbols, table headings, counters, scales and
+answer blanks are drawn by the engine as HTML and SVG. Image generation is for
+photographs and authentic evidence through the existing picture route, and it
+never renders an equation, a label or a place to write.
+
+## Print scale is the test, not the screen
+
+Judge a delivered page at the size it prints, with the production font loaded,
+and check it in greyscale. Nothing a child has to do may depend on telling two
+colours apart: a denomination, a source, a label or a correct case that only
+reads in colour does not read at all on the photocopier the class actually uses.
+
+Small type is paid for in page width, not in cleverness. This engine grows a
+drawing until its smallest label reaches note size, so a caption set as small
+as a commercial worksheet's costs the page more room than it saves. Where the
+approved reference sets something smaller than the design system allows, the
+design system wins and the page is composed around it.
+
+## When a cosmetic improvement cannot be made
+
+Separate an unusable resource from an unfinished-looking one. A clipped zone, a
+missing source or a response with nowhere to go is blocking. A page that is
+merely plainer than hoped is not: keep the last valid version, say precisely
+what could not be improved, and never buy the improvement by cutting work,
+shrinking a response below a usable size, or invoking a fit-priority removal
+that the tightness was not actually forcing.

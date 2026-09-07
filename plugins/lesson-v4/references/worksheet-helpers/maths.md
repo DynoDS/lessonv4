@@ -27,9 +27,14 @@ the steps named as well, that is `method-frame`.
 A mental strategy printed as a fill-in method: labelled lines, with boxes where
 the child writes.
 
-**Fade it across a set.** The same frame can be given fully worked, then with
-one blank, then all blank. That progression is the teaching, and it is why the
-helper takes the blanks per line rather than fixing them.
+**It can be faded across a set, when the lesson asked for that.** The same
+frame can be given fully worked, then with one blank, then all blank, and the
+helper takes the blanks per line so that progression is possible. It is not a
+default: the lesson designer and the adaptation designer own whether support
+fades, and `preferences.md` → Support, Checking and Release is explicit that
+there is no fixed fully-partly-blank pattern. Render the progression that was
+approved upstream. A set of frames that all stay fully blank, or all stay
+partly worked, is a real design and not a fade somebody forgot.
 
 The board draws the same frame, so the child meets one picture in both places.
 
@@ -104,11 +109,36 @@ sizes relative to one another for the same reason.
 
 ## The part-whole model
 
-`part-whole-money` is a whole bubble with parts beneath it, two being the usual
-shape. **Its bubbles
-carry text labels**, and that is the right default nearly every time: a
-schematic part-whole reads at any column width, where coins inside a bubble are
-competing for room with the bubble's own outline.
+`part-whole` is a whole joined to its parts. It is one renderer under two names:
+`part-whole-money` is the older, money-flavoured one, kept working because saved
+specs use it, and its bubbles can carry coins. Reach for `part-whole` for
+everything else - partitioning, decomposition, a missing addend, a bar-model-
+adjacent split - because the mathematical object was never about money, and
+while the only name for it was `part-whole-money` it was passed over for all of
+that work.
+
+**Every node says which of three things it is, and a node that says none is
+refused.** `value` is a number handed to the child and prints in the given
+colour. `label` is a word the child reads - `Left`, `Pounds` - and stays in ink.
+`blank: true` is a place to write, and stays empty. This is the same discipline
+`label-diagram` applies to its callouts, for the same reason: a node left empty
+because that is the question and a node left empty because nobody decided look
+identical on paper.
+
+Two more fields carry the rest of the approved partitioning sheet. `caption`
+names a node from outside its box - `Thousands` under a blank - so a child can
+never read it as something already written in the space they are about to write
+in. `joiner: "+"` prints the operator between the parts, which is what makes an
+additive model say what it means rather than leaving the child to supply the
+relationship.
+
+`blankChars` sizes a blank for what goes in it: four for a four-digit number,
+more for a word. A node the child writes a word into and a node they write a
+digit into are not the same box.
+
+**Its bubbles carry text labels**, and that is the right default nearly every
+time: a schematic part-whole reads at any column width, where coins inside a
+bubble are competing for room with the bubble's own outline.
 
 The unfilled bubble is the question, wherever it sits. Leave the whole unfilled
 and the child totals the parts; fill the whole and leave a part for them to
@@ -132,6 +162,43 @@ different amounts draws two models, never one: four bubbles hanging off a
 single whole says all four are parts of that one whole, which is the opposite
 of what the question asked.
 
+## Composing, decomposing and the number sentence itself
+
+`number-sentence` writes a number sentence out as the thing it is: values handed
+over on their own tiles, operators between them, and a real target wherever the
+answer goes. Three kinds of term, each saying exactly one thing - `value` (given,
+orange, on a tile), `blank` (a box, sized by `chars`), `cells` (a segmented frame,
+one cell per digit, for an answer whose digits are the point).
+
+Reach for it when composing, recombining or finding a missing term IS the work.
+`9 + 4,000 + 50 + 200 = ` typed into a question stem with a blank after it is
+four values a child has to pick out of a sentence before they can start; the
+same task with the terms apart shows the pieces being recombined. The mixed
+order is usually the question, so never sort the terms into place-value order on
+the way past.
+
+A `heading` on a term names the column it stands in and runs across the terms
+that follow it, which is what turns a stack of these into a record: `Your
+number` over the digit frame, `Expanded form` over the blanks. Six blank rows
+with nothing over them leave a child to work out which half is which.
+
+`{ "stack": { ... }, "repeat": 6 }` writes one row once and prints six. **How
+many rows is an authored decision, not a count of the answers.** Six rows for a
+find-all investigation with six solutions is a capacity cue, and on the approved
+Year 4 sheet that was deliberate. Where withholding the number of solutions is
+part of the question, use fewer rows than there are answers, or an open
+`recording-table`, and say so upstream - the renderer never works out how many
+there should be.
+
+`counter-group` is the place-value counters without the chart: one compact group
+per denomination, under the claim they are evidence for. Reach for it when two
+cases sit side by side and are compared - two equations to judge, two
+partitions to test - where two counter charts would be two pages. It draws the
+groups it is given and has no field for a total or a verdict, which is the
+point: the child decides whether the claim is true, and the sheet must not tint,
+tick or total its way to the answer first. Keep the two panels visually matched
+and give each its own room to explain, directly under it.
+
 ## Shape and space
 
 `shape` carries the measurements a child reads to find a perimeter, an area or a
@@ -154,14 +221,25 @@ the reason to reach for one.
 
 ## Sequencing a maths sheet
 
-Fluency first, then reasoning, then the problem. That order is not decoration:
-a child who cannot yet do the calculation cannot show reasoning about it.
+Make the approved task sequence read coherently. Where a sheet does run fluency,
+then reasoning, then a problem, keep that order: a child who cannot yet do the
+calculation cannot show reasoning about it. But that is the shape of a common
+sheet, not a shape to impose. A single investigation is a whole sheet. So is one
+coherent practice set. **Do not invent a section the lesson design did not ask
+for** so that a sheet has three of them.
 
 - **Fluency** wants the same helper repeated, so the child settles into a rhythm
   and the page stops being something to decode. A `row` with `repeat` gives
-  several of the same thing side by side.
-- **Reasoning** wants a different shape, so the change of gear is visible.
+  several of the same thing side by side, and a `stack` with `repeat` gives
+  several down the page.
+- **Reasoning** usually wants a different shape, so the change of gear is
+  visible - though where the reasoning is about the same objects the fluency
+  used, keeping the representation and changing the demand is the better move.
 - **The problem** usually wants room to write, which means `written-answers`
   rather than the short answer space `questions` carries.
 
-Vary the helper between sections and not within one.
+**Keep equivalent items visually consistent, and change the surface only when
+the task changes.** Four numbers partitioned four ways are four of the same
+model; printing each in a different helper says they are four different jobs.
+Variation is a consequence of a different intellectual demand, never a goal in
+itself.

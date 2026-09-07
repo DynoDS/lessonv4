@@ -12,10 +12,12 @@ Not from what the page looks like. A helper is chosen by the action:
 
 | The child… | Reach for |
 |---|---|
-| answers in a word or a number | `questions` |
+| gives a short read-off answer, with no structure behind it | `questions` |
 | answers in their own words | `written-answers` |
+| decomposes, composes, calculates, compares or manipulates something | the representation that shows it: `part-whole`, `number-sentence`, `bar-model`, `number-line`, the place-value and method helpers |
 | reads something and works from it | `source-text`, `data-table` |
-| records what they find | `recording-table` |
+| weighs one case against another | matched panels of the same shape - `counter-group`, `card-row`, `speech-scene` - one per case |
+| records what they find | `recording-table`, or a repeated `number-sentence` where the record is numerical |
 | joins one thing to another | `match-up`, `card-row`, `timeline`, `label-diagram` |
 | sorts into groups | `sort-grid`, `venn`, `carroll` |
 | picks from options | `multiple-choice`, `circle-the-answer`, `chip-bank` |
@@ -25,6 +27,34 @@ Not from what the page looks like. A helper is chosen by the action:
 | judges or answers what a named person says | `speech-scene` |
 
 If two fit, choose the one that leaves the least explaining to do.
+
+**Choose on the relationship first, and on the shape of the answer second.**
+The first row of that table used to read "answers in a word or a number", and
+it sent every task with a numerical answer to `questions` - because the answer
+IS a number, which is true of most of maths. `9 + 4,000 + 50 + 200 = ` typed
+into a prompt with a blank after it is a correct sheet and a poor one: four
+values a child has to pick out of a sentence before they can start, and an
+answer space that is whatever the blank happened to be. The same task as a
+`number-sentence` puts each value on its own tile and gives the total a
+four-cell frame, and the child can see what they are recombining.
+
+So ask what the child is DOING to what, and whether a relationship has to stay
+visible while they do it. Only when the answer is genuinely a short read-off -
+`How many children chose football?` - is the short-answer helper the right
+first choice. A short prompt does not imply a short answer, and a wrapping
+prompt does not by itself mean `written-answers`: a long question with a
+one-word answer may need no explanation box at all.
+
+The same question decides the response space. A four-digit number, a four-term
+expression and an explanation are three different sizes, and giving all three
+the same line is how a sheet ends up with an explanation squeezed onto a line
+built for a number.
+
+Do not read this as a form to fill in. Use the helpers the catalogue actually
+has, and where the honest answer is a page of text and ruled lines - a
+comprehension, an extended piece of writing - that is the right design and not
+a shortcut. `worksheet-visual-profile.md` holds the standard this is drawn
+from, including the sheet the teacher approved.
 
 **A claim in a person's mouth is a speech-scene, not prose.** When the upstream
 prompt quotes someone by name - `Rae says, "Toast is bad..."`, `Rowan says,
@@ -63,6 +93,15 @@ one glyph per word at any cost - so a bank where two of eight words are bare is
 right, and a spiral standing in for a vacuum cleaner is not. `card-row` is the
 bank that carries pictures; `chip-bank` is words alone, and a bank titled
 `Word bank` prints in vocabulary green.
+
+**Show the case, then attach its response to it.** When two or three cases are
+weighed against each other - two equations to judge, three claims to test, two
+sources to compare - each case gets the same treatment as the others and its own
+place to answer, directly under it. Matched, so nothing about the styling hints
+which is which; separate, so a child working case by case finds their case at a
+glance; and with the explanation attached, so the answer to the second claim is
+not written under the first. What fails is one block of prose holding all the
+cases and one run of ruled lines underneath.
 
 **A sheet with no visual at all is worth a second look before it ships.** The
 questions and their helpers come from upstream, but plenty of visual work is

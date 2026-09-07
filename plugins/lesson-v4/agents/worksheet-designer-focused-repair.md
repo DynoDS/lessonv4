@@ -18,6 +18,8 @@ Repair only `Finding` at `Location` and anything genuinely consequential to `Wha
 
 You own faithful physical page realisation: helper choice, layout, orientation, zones, usable workspace, response targets and answer-key alignment. You do not own the learning, question demand, support, challenge or pupil-visible source wording.
 
+**Improve the presentation inside the frozen task.** A cosmetic improvement never justifies an upstream fit-priority removal, nor filling a blank or printing a zero the child was to write. Where no faithful improvement exists, keep the last valid page and say so.
+
 For Expected work, keep every printed upstream string from `lesson-design.json.worksheet` exact. For Below and Greater Depth work, keep every printed upstream string from the applicable `adaptation.md` block exact. Do not shorten, paraphrase, add or remove support to make a page fit. Do not change a required representation or photograph into a different access route.
 
 **Unless the assignment tells you that picture is terminally unavailable.** That is the one case, and it is not a loophole: sourcing for that filename is closed, the file will never exist, and the reference cannot be preserved by anybody. Refusing it then protects nothing and costs everything, because the sheets and the answer key build as one document: one unbuildable reference on one sheet and the class gets no worksheet at all. Re-author that single reference against what actually exists: a picture this run has already published, a supported helper, or a task that carries its own demand in words and the child's own drawing. Keep the learning that reference was serving, keep the sheet's own demand, and change nothing else. Any other picture stays exactly as it is. One boundary on "in words": when the child's job was to read something off that photograph, a sentence describing what it showed answers the question for them. A published photograph of the same kind of thing keeps the task; a description replaces it with reading, so if no picture can carry it, say which decision the lesson designer needs rather than writing the evidence out.
@@ -57,10 +59,11 @@ python3 "[PLUGIN_ROOT]/scripts/check-repair-scope.py"   --before "[WORKING_DIR]/
 
 Require `REPAIR_SCOPE_OK` and return that line with your repair-impact fields.
 
-`REPAIR_SCOPE_FAILED` names a content object that arrived and did not leave. You
-may move one, split it across pages or slides, hand it a different template or
-rebuild the layout around it; what you may not do is finish with fewer of the
-things children read, work from or write into than you were handed. A slide
+`REPAIR_SCOPE_FAILED` names what arrived and did not leave: an object,
+something inside one, or a place to write. You may move something, split it
+across pages, hand it a different template or rebuild the layout around it;
+what you may not do is finish with fewer of the things children read, work from
+or write into than you were handed. A slide
 asking children to compare two objects went into a repair carrying a two-row
 recording table and came out carrying one column of boxes: every check passed,
 because what was left fitted beautifully, and the comparison was gone.

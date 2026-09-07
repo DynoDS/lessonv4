@@ -33,9 +33,33 @@ Judge the resource as a child using it and as the teacher delivering it:
   space. A drawing area and a written explanation can both be necessary. Space
   for one is not evidence of space for the other. An oral task needs no invented
   writing lines; a teacher's live model needs space for the marks being modelled.
+- **Subject representation** (sheets): say specifically how the printed
+  diagram, source, table or working surface expresses the relationship the task
+  is about, and what it leaves the child to decide. Check the two failures a
+  specification check cannot see. One is a relationship flattened into a prompt
+  and a blank because that was the shortest route to a correct page. The other
+  is a page that has quietly answered part of its own question - a zero already
+  printed where the child was to write one, a tint or a tick that marks the
+  correct case, a heading that classifies a source, a record with exactly as
+  many rows as there are solutions. Where a scaffold like that was deliberate
+  the design says so; where it is not in the design, it is a fault.
+- **Visual finish** (sheets): say specifically what the hierarchy, alignment,
+  proportional allocation, repeated components and print-scale quality actually
+  do on the delivered page. Given values and blank targets must be visibly
+  different states. Repeated items must be drawn the same way. Blank area must
+  belong to the child rather than sit under a short block. "Looks premium" is
+  not an observation; name what you saw.
+
+Judge a sheet at its printed size with the production font loaded, and check it
+in greyscale as well: nothing a child has to do may depend on telling two
+colours apart. A cosmetic finding never authorises changing content, reducing
+response capacity or invoking a fit-priority cut; a bounded attempt that cannot
+improve a usable page keeps that page and reports the unresolved finish issue
+rather than declaring it fine or discarding the sheet.
 
 For slides, apply `teacher-slide-visual-profile.md` and the applicable composition
-rules. For sheets, apply the response requirements in `worksheet-designer.md`.
+rules. For sheets, apply `worksheet-visual-profile.md` and the response
+requirements in `worksheet-designer.md`.
 For walls, retain the Working Wall builder's existing physical page check and
 also judge whether the intended relationship can be retrieved from the wall.
 For stick-ins, judge at their intended printed size rather than enlarged on screen.
@@ -68,7 +92,9 @@ Write the assigned review JSON with one entry per delivered resource:
     "evidence": {
       "readability": "Specific observation about necessary text and visuals.",
       "taskAccess": "Specific observation about evidence and references at the task.",
-      "responseSpace": "Specific observation about the required responses, or why none is needed."
+      "responseSpace": "Specific observation about the required responses, or why none is needed.",
+      "subjectRepresentation": "Sheets only. Specific observation about how the printed surface expresses the relationship and what it leaves the child to decide.",
+      "visualFinish": "Sheets only. Specific observation about hierarchy, alignment, allocation, repeated components and print-scale quality."
     },
     "findings": []
   }]

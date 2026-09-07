@@ -214,7 +214,15 @@ One of four things, and any of them can nest:
 { "stack": [ {}, {} ] }                                     one above another
 { "row":   [ {}, {} ] }                                     side by side
 { "row": {}, "repeat": 5 }                                  five of the same, side by side
+{ "stack": {}, "repeat": 6 }                                six of the same, down the page
 ```
+
+`repeat` writes one item once and prints several. Reach for it wherever the
+work genuinely repeats - six blank rows of an investigation record, four
+identical models - because six copies of the same JSON is where the fourth one
+quietly ends up different from the other five. How many is an authored
+decision: a record with exactly as many rows as there are answers tells a child
+when to stop, which is sometimes the design and sometimes a giveaway.
 
 ### Numbering
 
