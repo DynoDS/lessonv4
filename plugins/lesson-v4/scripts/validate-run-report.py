@@ -469,11 +469,29 @@ def final_review_failures(working: Path, output: Path, delivered: list[str]) -> 
             entry = entries[0]
             if entry.get("status") != "PASS" or entry.get("findings") != []:
                 raise ValueError("review is unresolved or unverified")
-            if entry.get("owner") not in {"slide-designer", "worksheet-designer", "working-wall-builder", "stick-in-sheets-designer"}:
+            # An honest observation that changes nothing is not a fault, and a
+            # reviewer forced to choose between a clean pass and a blocked run
+            # will choose the clean pass. `findings` blocks; `advisories` is
+            # where a bounded cosmetic limitation goes on the record instead.
+            advisories = entry.get("advisories", [])
+            if not isinstance(advisories, list) or not all(
+                isinstance(a, str) and a.strip() for a in advisories
+            ):
+                raise ValueError("advisories must be a list of non-empty observations")
+            owner = entry.get("owner")
+            if owner not in {"slide-designer", "worksheet-designer", "working-wall-builder", "stick-in-sheets-designer"}:
                 raise ValueError("review owner missing or invalid")
             evidence = entry.get("evidence", {})
-            if not isinstance(evidence, dict) or not all(isinstance(evidence.get(k), str) and evidence[k].strip() for k in ("readability", "taskAccess", "responseSpace")):
-                raise ValueError("requires concrete readability, taskAccess and responseSpace evidence")
+            required = ["readability", "taskAccess", "responseSpace"]
+            # A sheet is judged on two more criteria than a slide, because the
+            # two failures a specification check cannot see are both physical:
+            # a relationship flattened into a prompt and a blank, and a page
+            # that has quietly answered part of its own question. Asking for
+            # the evidence and not requiring it is the same as not asking.
+            if owner == "worksheet-designer":
+                required += ["subjectRepresentation", "visualFinish"]
+            if not isinstance(evidence, dict) or not all(isinstance(evidence.get(k), str) and evidence[k].strip() for k in required):
+                raise ValueError("requires concrete " + ", ".join(required) + " evidence")
             manifest = json.loads(Path(entry["manifest"]).read_text(encoding="utf-8"))
             if manifest.get("version") != 1 or Path(manifest["source"]).resolve() != target:
                 raise ValueError("render manifest is not for this delivered file")

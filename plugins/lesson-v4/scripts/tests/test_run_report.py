@@ -70,9 +70,23 @@ class RunReportCase(unittest.TestCase):
                 "pdf": {"path": str(path), "sha256": digest(path)},
                 "pages": [{"number": 1, "path": str(page), "sha256": digest(page)}],
             })
-            entries.append({"path": str(path), "owner": "slide-designer" if path.suffix == ".pptx" else "worksheet-designer",
+            owner = "slide-designer" if path.suffix == ".pptx" else "worksheet-designer"
+            evidence = {"readability": "Necessary labels are legible.",
+                        "taskAccess": "Task and reference share the page.",
+                        "responseSpace": "Each answer has a writing area."}
+            if owner == "worksheet-designer":
+                # A sheet answers two more questions than a slide: what the
+                # printed surface expresses, and what it looks like at print
+                # size. See references/final-resource-review.md.
+                evidence["subjectRepresentation"] = (
+                    "The part-whole models show the whole and leave all four parts blank."
+                )
+                evidence["visualFinish"] = (
+                    "Given values and blank boxes read as different states in grey."
+                )
+            entries.append({"path": str(path), "owner": owner,
                 "manifest": str(manifest), "reviewedPages": [1], "status": "PASS", "findings": [],
-                "evidence": {"readability": "Necessary labels are legible.", "taskAccess": "Task and reference share the page.", "responseSpace": "Each answer has a writing area."}})
+                "evidence": evidence})
         self.write_json(self.working / "final-resource-reviews.json", {"schemaVersion": 1, "resources": entries})
 
     def write_json(self, path: Path, payload) -> Path:
@@ -147,6 +161,65 @@ class TestRunReport(RunReportCase):
         receipt = self.working / "final-resource-reviews.json"
         data = json.loads(receipt.read_text())
         data["resources"][0]["reviewedPages"] = []
+        self.write_json(receipt, data)
+        self.assertNotEqual(self.validate().returncode, 0)
+
+    def test_a_sheet_review_must_carry_the_two_worksheet_criteria(self):
+        """Asking for evidence and not requiring it is the same as not asking.
+
+        The final review gained `subjectRepresentation` and `visualFinish` when
+        worksheets did, because the two failures a specification check cannot
+        see are both physical: a relationship flattened into a prompt and a
+        blank, and a page that has quietly answered part of its own question.
+        For a while the instructions asked for them and the gate did not.
+        """
+        for field in ("subjectRepresentation", "visualFinish"):
+            with self.subTest(field=field):
+                self.write_report()
+                receipt = self.working / "final-resource-reviews.json"
+                data = json.loads(receipt.read_text())
+                sheet = next(r for r in data["resources"] if r["owner"] == "worksheet-designer")
+                del sheet["evidence"][field]
+                self.write_json(receipt, data)
+                result = self.validate()
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(field, result.stdout + result.stderr)
+
+    def test_a_slide_review_is_not_asked_for_the_worksheet_criteria(self):
+        self.write_report()
+        receipt = self.working / "final-resource-reviews.json"
+        data = json.loads(receipt.read_text())
+        deck = next(r for r in data["resources"] if r["owner"] == "slide-designer")
+        self.assertNotIn("subjectRepresentation", deck["evidence"])
+        self.assertEqual(self.validate().returncode, 0)
+
+    def test_an_honest_cosmetic_observation_does_not_block_the_run(self):
+        """The reviewer must have somewhere to put a bounded finish problem.
+
+        A page that is usable but plainer than hoped is not a fault, and a
+        reviewer whose only choices are a clean pass and a blocked run will
+        pick the clean pass. `findings` blocks; `advisories` records.
+        """
+        self.write_report()
+        receipt = self.working / "final-resource-reviews.json"
+        data = json.loads(receipt.read_text())
+        data["resources"][0]["advisories"] = [
+            "The counters wrap three to a row where the reference shows five; "
+            "usable, and no rearrangement improved it."
+        ]
+        self.write_json(receipt, data)
+        self.assertEqual(self.validate().returncode, 0)
+
+        # An empty string is not an observation.
+        data["resources"][0]["advisories"] = [""]
+        self.write_json(receipt, data)
+        self.assertNotEqual(self.validate().returncode, 0)
+
+    def test_a_real_finding_still_blocks(self):
+        self.write_report()
+        receipt = self.working / "final-resource-reviews.json"
+        data = json.loads(receipt.read_text())
+        data["resources"][0]["findings"] = [{"fault": "The source is unreadable at print size."}]
         self.write_json(receipt, data)
         self.assertNotEqual(self.validate().returncode, 0)
 

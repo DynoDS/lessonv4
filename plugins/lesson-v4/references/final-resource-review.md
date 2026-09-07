@@ -89,6 +89,7 @@ Write the assigned review JSON with one entry per delivered resource:
     "manifest": "[absolute render-manifest.json path]",
     "reviewedPages": [1, 2],
     "status": "PASS",
+    "advisories": [],
     "evidence": {
       "readability": "Specific observation about necessary text and visuals.",
       "taskAccess": "Specific observation about evidence and references at the task.",
@@ -101,8 +102,22 @@ Write the assigned review JSON with one entry per delivered resource:
 }
 ```
 
+`subjectRepresentation` and `visualFinish` are required on a worksheet review
+and are not asked for on a deck. The validator enforces that, so a sheet review
+that leaves either one out fails the gate rather than passing quietly.
+
 Allowed statuses are PASS, REVISE and UNVERIFIED. PASS has no unresolved findings.
 REVISE findings name the fault and owner; UNVERIFIED names the missing evidence.
+
+**`findings` blocks; `advisories` records.** A bounded finish problem on a page
+that is genuinely usable - a composition no rearrangement improved, a figure
+plainer than the reference - is an observation, not a fault, and it belongs in
+`advisories` with the same specificity a finding would carry. A PASS may hold
+advisories. This exists so that the honest answer and the passing answer are the
+same answer: a reviewer whose only choices are a clean pass and a blocked run
+will write the clean pass, and the observation reaches nobody. What must never
+go in advisories is a material access or correctness fault; that is a finding,
+and it blocks.
 Use the actual owner: slide-designer, worksheet-designer, working-wall-builder
 or stick-in-sheets-designer. Do not write placeholder evidence or infer a pass
 from the fact that every page was opened. Counts and hashes establish coverage
