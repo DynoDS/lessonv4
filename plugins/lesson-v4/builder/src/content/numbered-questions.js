@@ -539,10 +539,18 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       fontFace: FONT, fontSize: fontPt, bold: true,
       color: baseColor, align: 'left', valign: 'middle',
       margin: 0, fit: FIT,
+      // The floor travels in the name, or the global fit pass does not know it
+      // exists: a question with no MIN in its name is shrunk to the deck-wide
+      // 10pt floor while the criteria table beside it, which carries MIN20,
+      // stops at 20. That is how a Year 4 history practice question reached
+      // the class at 11pt next to a 23pt reference (8 September 2026). With
+      // the floor named, a question that cannot fit at it is reported as an
+      // overload for the designer to recompose, never quietly shrunk past it.
       objectName: growFitObjectName(
         questionTextGroup,
         CARD_FONT_MAX,
-        'question-text-' + (startAt + i)
+        'question-text-' + (startAt + i),
+        Math.max(CARD_FONT_MIN, MIN_FONT_PT)
       )
     });
 

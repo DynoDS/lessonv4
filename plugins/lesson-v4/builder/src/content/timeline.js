@@ -8,16 +8,15 @@ const { textBoxWidthIn } = require('../glyph-width');
 // dated ticks hanging beneath it. It is the slide twin of the worksheet
 // timeline in worksheet-html/src/helpers/matching.js, and it keeps that
 // helper's one rule: POSITIONS ARE FRACTIONS THE DESIGNER CHOOSES, never
-// dates the helper spaces out for itself. A school timeline is almost never
-// honestly to scale - the Stone Age would push every later era off the edge -
-// so the spacing is a teaching decision, and `note` is where the designer
-// says so ("not to scale") in small type at the right end.
+// dates the helper spaces out for itself. The designer works those fractions
+// out from the real dates (`templates.md` shows the arithmetic), so the line
+// a child sees is honest about how far apart things are. There is no "not to
+// scale" note: the teacher asked for none on any timeline (8 September 2026),
+// and a spec that still carries `note` is refused by name rather than drawn.
 const PAD              = 0.12;   // inches of breathing room inside the zone
 const STEM_H           = 0.42;   // the optional line of text above the figure
 const STEM_FONT        = 18;
 const STEM_GAP         = 0.08;
-const NOTE_H           = 0.24;   // the optional small note row (right-aligned)
-const NOTE_FONT        = 11;
 const ERA_H_MAX        = 0.60;   // era band height at full size ...
 const ERA_H_MIN        = 0.36;   // ... and the shortest a band may be squeezed to
 const ERA_FONT_MAX     = 20;
@@ -150,7 +149,14 @@ function layoutTimeline(zone, data) {
   const eras = normaliseEras(data);
   const marks = normaliseMarks(data);
   const stem = str(data.text).trim();
-  const note = str(data.note).trim();
+  if (str(data.note).trim()) {
+    throw new Error(
+      'TIMELINE_NOTE_NOT_DRAWN: a timeline carries no note (this one says ' +
+      `"${str(data.note).trim()}"). Timelines are not labelled "not to scale"; ` +
+      'place each mark and era in proportion to its real dates instead, and ' +
+      'remove the note.'
+    );
+  }
   const caption = str(data.caption).trim();
 
   const innerX = zone.x + PAD;
@@ -207,14 +213,13 @@ function layoutTimeline(zone, data) {
   const markLabelH = marks.length ? lineHeightIn(markFont) * markLines + 0.04 : 0;
 
   const stemBlock = stem ? STEM_H + STEM_GAP : 0;
-  const noteBlock = note ? NOTE_H : 0;
   const captionBlock = caption ? CAPTION_GAP + CAPTION_H : 0;
   const belowLine = marks.length ? TICK_H + MARK_GAP + markLabelH : END_CAP_H / 2;
   const aboveLineFixed = eras.length ? ERA_GAP : END_CAP_H / 2;
 
   // Natural height at full-size bands, then squeeze the bands (only) toward
   // their floor when the zone is shorter than that.
-  const fixed = stemBlock + noteBlock + aboveLineFixed + LINE_THICK / 2 + belowLine + captionBlock;
+  const fixed = stemBlock + aboveLineFixed + LINE_THICK / 2 + belowLine + captionBlock;
   let eraH = eras.length ? ERA_H_MAX : 0;
   if (eras.length && fixed + eraH > innerH) {
     eraH = Math.max(ERA_H_MIN, innerH - fixed);
@@ -237,8 +242,6 @@ function layoutTimeline(zone, data) {
   let cursor = startY;
   const stemY = cursor;
   cursor += stemBlock;
-  const noteY = cursor;
-  cursor += noteBlock;
   const eraY = cursor;
   cursor += eraH + aboveLineFixed;
   const lineY = cursor + LINE_THICK / 2; // the line's centre
@@ -246,12 +249,12 @@ function layoutTimeline(zone, data) {
   const captionY = cursor + CAPTION_GAP;
 
   return {
-    eras, marks, stem, note, caption,
+    eras, marks, stem, caption,
     innerX, innerY, innerW, innerH,
     lineX0, lineW, lineY,
     eraFont, eraH, eraY,
     markFont, markLabelH, boxes,
-    stemY, noteY, captionY,
+    stemY, captionY,
     startY, usedH
   };
 }
@@ -264,14 +267,6 @@ function drawTimeline(pptx, slide, zone, data) {
       x: L.innerX, y: L.stemY, w: L.innerW, h: STEM_H,
       fontFace: FONT, fontSize: STEM_FONT, bold: true, color: COLOURS.body,
       align: 'left', valign: 'middle', margin: 0, fit: FIT
-    });
-  }
-
-  if (L.note) {
-    slide.addText(L.note, {
-      x: L.innerX, y: L.noteY, w: L.innerW, h: NOTE_H,
-      fontFace: FONT, fontSize: NOTE_FONT, italic: true, color: COLOURS.dim,
-      align: 'right', valign: 'middle', margin: 0, fit: FIT
     });
   }
 

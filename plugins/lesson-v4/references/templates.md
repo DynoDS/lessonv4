@@ -90,7 +90,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `fishbone` | A cause-and-effect fishbone: a spine to the effect, angled ribs carrying causes |
 | `concept-map` | A radial concept map: a centre idea with spokes to connected ideas |
 | `callout` | A small coloured box holding one short line of text, with an arrow leaving any side of it to point at the thing the line is about — the chart above it, the number line beside it, a part of a photograph. Set `points` (up/down/left/right) and `at` (how far along that edge the arrow tip lands). Key words in the line carry colour with the ordinary inline markers. Use whenever a slide needs to point at its own content and say one thing about it, instead of leaving that sentence to a text panel or the speaker notes |
-| `sc-panel` | Wraps a success criteria in its green "✓ Success Criteria" box, so the criteria reads as the standard wherever it sits — use when the success criteria has to go somewhere the `maths-*-sc` panel can't reach (a wide visual reference in a full-width strip, a free-template zone). Inside a `*-sc` template's own criteria slot the box is already drawn, so there pass the bare criteria, not this. Carries an optional `flipchart: true` for a draw-live criteria — same corner pencil as the `*-sc` panels; set it on the `sc-panel` object itself here |
+| `sc-panel` | Wraps a success criteria in its green "✓ Success Criteria" box, so the criteria reads as the standard wherever it sits — use when the success criteria has to go somewhere the `maths-*-sc` panel can't reach (a wide visual reference in a full-width strip, a free-template zone). Inside a `*-sc` template's own criteria slot the box is already drawn, so there pass the bare criteria, not this. Carries an optional `flipchart: true` for a draw-live criteria — same corner flipchart drawing as the `*-sc` panels; set it on the `sc-panel` object itself here |
 
 Any zone in any template accepts a content object. Whether a particular content object fits a particular zone depends on the zone's class — see §5.
 
@@ -171,7 +171,7 @@ There's no `workingSpace` flag to set here: this template never draws a working 
 - `criteria` (required) — a content object (typically `type: "steps"` or `type: "table"`)
 - `criteriaLabel` (optional) — panel label, defaults to "✓ Success Criteria"
 - `questionNumbering` (optional) — omit or use `"none"` for My Turn and ordinary non-Maths Our Turn. Use `"teacher-led"` only for a Maths Our Turn containing two or more discrete questions; it renders `(a)`, `(b)`, `(c)` and restarts on that turn.
-- `flipchart` (optional) — set `true` when the lesson-designer marked this criteria with the optional *draw-live (flipchart → working wall)* suggestion. Renders a small pencil in the panel's top-right corner suggesting that possibility to the teacher; nothing else on the slide changes. Applies across the `*-sc` family (`maths-turn-sc`, `maths-turn-ref-sc`, `maths-your-turn-sc`, `writing-turn-ref-sc`) — set it at the slide level beside `criteria`. Reserved for recognition/labelled references that carry forward, not procedural step lists.
+- `flipchart` (optional) — set `true` when the lesson-designer marked this criteria `drawLive: true` (a labelled set a later lesson assumes, or a method children run across a sequence of lessons). Renders a small flipchart drawing in the panel's top-right corner suggesting to the teacher that this is worth building live and keeping; nothing else on the slide changes. Applies across the `*-sc` family (`maths-turn-sc`, `maths-turn-ref-sc`, `maths-your-turn-sc`, `writing-turn-ref-sc`) — set it at the slide level beside `criteria`.
 - `questionVisual` (required) — a content object (clock, diagram, image, etc.) — the diagram the question is *about* (e.g. "What time is shown on this clock?", "What fraction is shaded?").
 - `workingSpace` — set `true` when the planned model needs the separate annotation column; otherwise explicitly pass `false` so the question visual uses the full width. Check the reference and handwriting area at actual slide size. No visual and no planned working usually calls for a simpler layout.
 
@@ -523,8 +523,8 @@ Use `peer-blue` / `peer-purple` only to separate a compact set of equal-status p
 
 Supported roles are:
 
-- `core-action` - bold house blue for the survival phrase;
-- `task-action` - bold house blue for an existing action verb or short action phrase inside a multi-phase task;
+- `core-action` - bold, in the line's own colour, for the survival phrase (house blue stays the colour of a question and of nothing else);
+- `task-action` - bold, in the line's own colour, for an existing action verb or short action phrase inside a multi-phase task;
 - `required-material` - bold single underline;
 - `response-demand` - bold single underline;
 - `reasoning-demand` - bold single underline;
@@ -1696,8 +1696,8 @@ A timeline for the board: named era bands sitting on a bold horizontal line, wit
     { "label": "Hampton timetable 1862", "at": 0.27 },
     { "label": "Port Sunlight classroom April 1897", "at": 0.55 },
     { "label": "1901", "at": 0.62 },
-    { "label": "today 2026", "at": 0.97 } ],
-  "note": "not to scale" }
+    { "label": "today 2026", "at": 0.97 } ]
+}
 ```
 
 With a stem above and a caption below:
@@ -1715,10 +1715,11 @@ Fields:
 - `eras` (optional) - an array of `{ "label", "from", "to" }`. Each draws as a labelled band directly above the line spanning `from`..`to`; bands take alternating pale fills so neighbouring eras read apart. The labels share one size and stay on one line.
 - `marks` (optional) - an array of `{ "label", "at" }`. Each draws a tick hanging from the line at `at`, with its label beneath. Labels share one size, may wrap to two lines at a space, and are never split inside a word. A mark within 0.08 of either end tucks its label inward from the tick so nothing hangs off the figure.
 - `text` (optional) - one short line above the figure, black, left-aligned: the question or stem the timeline serves.
-- `note` (optional) - a few words printed small and grey at the right end, above the bands. The designer's place for `not to scale`; nothing is printed when it is absent.
 - `caption` (optional) - one short italic line centred beneath the labels.
 
 A timeline with neither eras nor marks draws the bare line. The card hugs the drawn figure, so spare zone height reads as background rather than as an empty box.
+
+**Place marks and eras in proportion to their real dates, and never label a timeline "not to scale".** The helper draws where you put things, so the honesty of the line is yours: work each fraction out from the span the line covers. A line from 1485 to 2026 covers 541 years, so 1538 sits at (1538 − 1485) ÷ 541 ≈ 0.10 and 1603 at ≈ 0.22; a Tudor band stretched to 0.55 for label room tells a child the Tudors lasted half the way to today. When a label needs more room than its true position leaves, shorten the label or let it wrap to its two lines rather than moving the mark. The teacher wants no "not to scale" note on any timeline (8 September 2026); a spec carrying `note` is refused by name at build.
 
 Zone class compatibility: fits A, B, C, E-wide. The line wants width; height can be modest because the bands sit on the line and the labels hang close beneath it. B (a wide strip) is the natural fit when the timeline is one element on a teaching slide, with the sources it dates beside or below it.
 

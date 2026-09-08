@@ -13,6 +13,8 @@ const { COLOURS } = require('./styles');
 //           (the long-standing reveal marker — e.g. "25 × 4 = ||100"). The
 //           marker works per line: "A: ||1\nB: ||2" reveals an answer after
 //           every field, and each new line starts back in the base colour.
+//           A string that OPENS with the marker and carries no other is one
+//           answer from top to bottom, every paragraph green.
 //           When text sits hard against both sides of the ||, the builder
 //           inserts the separating space itself, so "in?||South America"
 //           renders as "in? South America" — a question and its revealed
@@ -56,6 +58,29 @@ function splitAnswerRuns(text, bold, baseColor) {
     return [{ text: label[0], options: { color: COLOURS.questionLabel, bold: true } }]
       .concat(Array.isArray(rest) ? rest : rest ? [{ text: rest, options: { color: baseColor || COLOURS.body, bold: !!bold } }] : []);
   }
+  // A block that opens with the reveal marker and carries no other one is a
+  // single answer, however many paragraphs it runs to. The per-line rule
+  // further down is for a field list ("Object: ||Hairdryer\nPower: ||Mains"),
+  // where every line has its own reveal; a two-paragraph model answer on a
+  // check slide has one reveal at the top, and colouring only its first
+  // paragraph left the second sitting black beside it (Year 4 PSHE, slides 18
+  // and 20, 8 September 2026). So a leading marker sets green as the base for
+  // the whole block, and the inline markers still keep their own colours.
+  if (str.startsWith('||') && str.indexOf('||', 2) === -1) {
+    const body = str.slice(2).replace(/^\s+/, '');
+    const inner = splitAnswerRuns(body, bold, COLOURS.green);
+    if (Array.isArray(inner)) return inner;
+    const lines = String(inner).split('\n');
+    const green = [];
+    lines.forEach(function (line, index) {
+      if (line !== '') green.push({ text: line, options: { color: COLOURS.green, bold: !!bold } });
+      if (index < lines.length - 1) {
+        green.push({ text: '\n', options: { color: COLOURS.green, bold: !!bold } });
+      }
+    });
+    return green;
+  }
+
   const hasInline =
     str.indexOf('**') !== -1 ||
     str.indexOf('[[') !== -1 ||

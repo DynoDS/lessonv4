@@ -80,12 +80,41 @@ test('task-action exposes action verbs without changing the source string', () =
     text
   );
 
+  // Bold in the line's own colour: blue is the question's and nothing else's.
   for (const verb of ['Build', 'Test', 'Record']) {
     const run = runs.find((entry) => entry.text === verb);
     assert.ok(run);
-    assert.equal(run.options.color, COLOURS.title);
+    assert.equal(run.options.color, COLOURS.body);
     assert.equal(run.options.bold, true);
   }
+  assert.ok(runs.every((run) => run.options.color !== COLOURS.title));
+});
+
+test('an action role keeps the colour of the line it sits in', () => {
+  const blue = presentationRuns('Choose a fruit to add.', true, COLOURS.title, {
+    emphasis: [{ text: 'Choose', role: 'core-action' }]
+  });
+  assert.equal(blue.find((run) => run.text === 'Choose').options.color, COLOURS.title);
+  const black = presentationRuns('Choose a fruit to add.', true, COLOURS.body, {
+    emphasis: [{ text: 'Choose', role: 'core-action' }]
+  });
+  assert.equal(black.find((run) => run.text === 'Choose').options.color, COLOURS.body);
+  assert.equal(black.find((run) => run.text === 'Choose').options.bold, true);
+});
+
+test('a newline before an emphasised word is its own run, so the line stays one paragraph', () => {
+  const runs = presentationRuns(
+    'The two largest parts are fruit and starchy foods.\nWe also need protein foods.',
+    true,
+    COLOURS.body,
+    { emphasis: [{ text: 'protein', role: 'vocabulary' }] }
+  );
+  assert.equal(runs.map((run) => run.text).join(''),
+    'The two largest parts are fruit and starchy foods.\nWe also need protein foods.');
+  assert.ok(runs.every((run) => run.text === '\n' || !run.text.includes('\n')));
+  const index = runs.findIndex((run) => run.text === 'protein');
+  assert.equal(runs[index - 1].text, 'We also need ');
+  assert.equal(runs[index].options.color, COLOURS.green);
 });
 
 test('safety-warning uses problem red without becoming problem-state', () => {
@@ -148,7 +177,7 @@ test('emphasis roles render their own styling on their own words', () => {
     'The lamp lights. Join the wires. Watch the switch.');
 
   const byText = Object.fromEntries(runs.map((run) => [run.text, run.options]));
-  assert.equal(byText['The lamp lights.'].color, COLOURS.title);
+  assert.equal(byText['The lamp lights.'].color, COLOURS.body);
   assert.equal(byText['The lamp lights.'].bold, true);
   assert.equal(byText['Watch the switch.'].color, COLOURS.problem);
   assert.equal(byText['Watch the switch.'].bold, true);
@@ -283,7 +312,7 @@ test('text content honours peer colour roles and emphasis runs', () => {
   assert.equal(runs.map((run) => run.text).join(''),
     'Join the circuit. Now switch it on.');
   const action = runs.find((run) => run.text === 'Now switch it on');
-  assert.equal(action.options.color, COLOURS.title);
+  assert.equal(action.options.color, COLOURS.body);
   assert.equal(action.options.bold, true);
 });
 

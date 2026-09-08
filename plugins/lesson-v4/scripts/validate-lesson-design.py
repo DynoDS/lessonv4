@@ -2028,6 +2028,24 @@ def validate_design(
             expect_exact_keys(content, {"steps"}, {"steps"}, f"{path}.content")
             steps = expect_list(content["steps"], f"{path}.content.steps")
             expect(bool(steps), f"{path}.content.steps must not be empty")
+            # The criteria panel beside a turn is a glance reference, and it
+            # holds about five short steps at a size a child reads from the
+            # back. A six-step list (Y4 1,000 more/less, 7 Sep 2026: four
+            # steps plus two "Exchange...?" conditions written as steps) did
+            # not fit, so the slide designer showed four or five per slide and
+            # split the six practice questions across four slides to match.
+            # A condition is a branch, and a branch is a lookup row, not a
+            # step: keep the method to five steps and put the cases in a
+            # reference-table criteria referenced beside it.
+            expect(
+                len(steps) <= 5,
+                f"{path}.content.steps has {len(steps)} steps; a criteria "
+                "panel holds five short steps a child can read from the back. "
+                "A step that starts with a condition (\"Ten thousands? ...\", "
+                "\"Subtracting with no thousands? ...\") is a branch: move "
+                "the cases into a reference-table criteria referenced beside "
+                "these steps, or split the concept",
+            )
             for i, step in enumerate(steps):
                 expect_string(step, f"{path}.content.steps[{i}]")
                 # Steps are board reference a child glances at mid-task; the
@@ -2051,11 +2069,30 @@ def validate_design(
                 expect_string(column, f"{path}.content.columns[{i}]")
             rows = expect_list(content["rows"], f"{path}.content.rows")
             expect(bool(rows), f"{path}.content.rows must not be empty")
+            # A reference-table criteria is read down and across at a glance,
+            # so its cells are labels and short actions, not sentences. A Y4
+            # history table whose cells read "A detail from each period that
+            # supports your comparison." needed half of every slide it sat on,
+            # and the practice question beside it shrank to 10pt (8 Sep 2026).
+            expect(
+                len(rows) <= 5,
+                f"{path}.content.rows has {len(rows)} rows; a criteria table "
+                "children glance at holds five at most - split the concept or "
+                "move the rest to a representation",
+            )
             for r_index, row in enumerate(rows):
                 values = expect_list(row, f"{path}.content.rows[{r_index}]")
                 expect(len(values) == len(columns), f"{path}.content.rows[{r_index}] must match column count")
                 for c_index, value in enumerate(values):
-                    expect_string(value, f"{path}.content.rows[{r_index}][{c_index}]")
+                    cell = expect_string(value, f"{path}.content.rows[{r_index}][{c_index}]")
+                    words = len(cell.split())
+                    expect(
+                        words <= 8,
+                        f"{path}.content.rows[{r_index}][{c_index}] is {words} "
+                        "words; a criteria cell is a label or a short action "
+                        "(cap 8) - say what the child looks for or does, not "
+                        "the sentence around it",
+                    )
         else:
             expect_exact_keys(content, {"items"}, {"items"}, f"{path}.content")
             items = expect_list(content["items"], f"{path}.content.items")

@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-08 Four decks traced against the teacher's preferences (4.2.109)
+
+The balanced diet, children's lives, 1,000 more/less and number line decks (Codex, 4.2.107/108) were traced through their runs against the preferences analysis. The record is `output/lesson-v4-preferences-analysis-2026-09-04/deck-investigation-2026-09-08.md`. What 4.2.109 changes:
+
+- Action verbs were painted question blue. `core-action` and `task-action` rendered in house blue, while the visual profile said instructions stay black; a PSHE task sentence went out in four alternating blue and black chunks. Both roles now render bold in the line's own colour. Rebuilding the diet deck put slides 5, 8, 11 and 17 back in black with the one real question still blue.
+- A practice question shrank to 10pt beside a 23pt criteria table because its fit name carried no floor. Numbered-question text now names its 14pt floor, so the history deck's slides 13 and 14 stop the build with `TEXT_OVERLOAD` instead of shipping.
+- A two-paragraph model answer was half green: the `||` reveal is per line. A block that opens with the marker and carries no other is now green throughout.
+- A green vocabulary word after a line break split its paragraph, because emphasis runs were not cut at newlines the way marker runs are. They are now.
+- Success criteria authored as a sentence table (history) or six conditional steps (1,000) drove the panel taking half of every slide, the nutrient table wearing the criteria label (diet) and the Your Turn fragmenting into one-calculation slides. The design validator now refuses a sixth step and a table cell past eight words; the preferences say criteria are what the child does or what good work shows, a table of facts the task uses is a representation, and a branch is a lookup row. The design reviewer reads the object, not its id.
+- The draw-live cue was reserved for labelled category sets and never reached the slide designer as a field. It now covers a method children run across a sequence of lessons too (the exchange steps the teacher wrote up by hand), the slide designer maps `drawLive` to `flipchart`, and the wall reproduces either.
+- The timeline helper printed a "not to scale" note its documentation example taught. The teacher wants none: the note is refused by name and the catalogue shows how to place marks in proportion to real dates.
+- The PowerPoint render probe asked only the interpreter running the script; Codex's bundled Python has no `win32com`, so three runs recorded no route on a machine that could render. The probe now tries every interpreter it can find, records the one that answered for the conversion, and names a missing module instead of reading it as absence.
+- Preferences recorded from the teacher's answers: slides are written as if the notes are never opened, so a later check's answer must have been visible; every vocabulary card carries a visual; two questions never share a paragraph; a decoration may take a genuinely clear area at the same fade, and is judged at its placed size.
+
 ## 2026-09-06 Partition 4-digit numbers
 
 - Final slide review found that slide specifications using the key `notes` produced a deck with empty speaker-note bodies because the fixed builder reads `speakerNotes`. Renaming only the slide-level key on all 15 slides preserved the note text and produced a reviewed PASS after rebuilding.

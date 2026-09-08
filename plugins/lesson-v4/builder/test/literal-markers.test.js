@@ -182,3 +182,23 @@ test('every marker form is recognised, and an unpaired one is left alone', () =>
   // A plain classroom string carries nothing.
   assert.deepEqual(markersIn('Name the object.'), []);
 });
+
+test('a leading reveal marker colours every paragraph of the answer', () => {
+  // One reveal at the top of a two-paragraph model answer is one answer; the
+  // per-line rule above is for a field list, where every line has its own.
+  const runs = splitAnswerRuns(
+    '||Sophie could have pitta for energy.\n\nPepper strips add vitamins.',
+    true,
+    '000000'
+  );
+  assert.equal(
+    runs.map((run) => run.text).join(''),
+    'Sophie could have pitta for energy.\n\nPepper strips add vitamins.'
+  );
+  assert.ok(runs.every((run) => run.options.color === '00B050'));
+  // A single-line answer keeps rendering exactly as before.
+  assert.deepEqual(
+    splitAnswerRuns('||100', true, '000000'),
+    [{ text: '100', options: { color: '00B050', bold: true } }]
+  );
+});

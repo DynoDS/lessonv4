@@ -137,9 +137,16 @@ cell or any part of a figure a child reads.
 
 Size a free-standing optional picture for its job: small enough that the eye
 still lands on the teaching first, large enough to read as a drawing rather than
-a smudge. Several small ones can share a slide when they share a style and sit
-around the edges of the composition. What fails is a scatter of unrelated marks,
-which reads as clutter however relevant each one is on its own.
+a smudge. Where the composition leaves a genuinely clear area (a corner the
+cards never reach, the empty half of a light slide) the drawing may take it,
+at the same 50%: a one-inch drawing faded into a two-foot gap reads as a
+smudge, and the teacher would rather see it (8 September 2026). Several can
+share a slide when they share a style and each has its own clear place; there
+is no one-drawing-per-slide rule. What fails is a scatter of unrelated marks,
+which reads as clutter however relevant each one is on its own, and a drawing
+whose subject can no longer be told at the size and fade it will get: judge a
+candidate as it will be placed, not on the preview sheet at full size, since a
+chopping board seen from above at one inch is a phone.
 
 ---
 

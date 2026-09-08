@@ -99,25 +99,79 @@ def _is_permission_error(exc):
     return isinstance(exc, OSError) and exc.errno in (1, 13)
 
 
-def probe_powerpoint():
+# The helper needs pywin32 (`win32com`), and the interpreter running this
+# script is not always the one that has it. Codex's bundled Python has no
+# win32com at all, so a run started from there asked it, heard "No module
+# named 'win32com'", and recorded that as no PowerPoint on a machine whose
+# system Python could have opened the deck (checked 8 September 2026). So the
+# probe asks every interpreter it can find, most likely first, and the one
+# that answers is written into the route file for the conversion to use.
+MISSING_COM_MODULE = "No module named"
+
+
+def powerpoint_interpreters():
+    """Interpreters that may carry the PowerPoint COM module, most likely first."""
+    candidates = [sys.executable]
+    for name in ("python", "python3", "py"):
+        hit = shutil.which(name)
+        if hit:
+            candidates.append(hit)
+    local = os.environ.get("LOCALAPPDATA", "")
+    if local:
+        for hit in sorted(Path(local, "Programs", "Python").glob("Python3*/python.exe"),
+                          reverse=True):
+            candidates.append(str(hit))
+    seen = set()
+    ordered = []
+    for candidate in candidates:
+        key = os.path.normcase(os.path.abspath(candidate))
+        if key in seen:
+            continue
+        seen.add(key)
+        ordered.append(candidate)
+    return ordered
+
+
+def probe_powerpoint_interpreter():
+    """The interpreter whose probe answered, or None, plus one note per refusal.
+
+    Raises ProbeBlocked when the sandbox refused to start the probe at all.
+    Stops at the first interpreter whose helper reached PowerPoint and was
+    told no: another interpreter cannot change what PowerPoint itself said.
+    """
     if not is_windows():
-        return False
-    try:
-        completed = subprocess.run(
-            [sys.executable, str(powerpoint_helper()), "--probe"],
-            capture_output=True,
-            text=True,
-            timeout=POWERPOINT_PROBE_TIMEOUT_SECONDS,
-        )
-    except subprocess.TimeoutExpired:
-        return False
-    except OSError as exc:
-        if _is_permission_error(exc):
-            raise ProbeBlocked(
-                f"starting the PowerPoint probe was refused: {exc}"
-            ) from exc
-        return False
-    return completed.returncode == 0 and "POWERPOINT_PROBE_OK" in completed.stdout
+        return None, []
+    notes = []
+    for interpreter in powerpoint_interpreters():
+        try:
+            completed = subprocess.run(
+                [interpreter, str(powerpoint_helper()), "--probe"],
+                capture_output=True,
+                text=True,
+                timeout=POWERPOINT_PROBE_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            notes.append(f"{interpreter}: the probe timed out")
+            continue
+        except OSError as exc:
+            if _is_permission_error(exc):
+                raise ProbeBlocked(
+                    f"starting the PowerPoint probe was refused: {exc}"
+                ) from exc
+            notes.append(f"{interpreter}: {exc}")
+            continue
+        if completed.returncode == 0 and "POWERPOINT_PROBE_OK" in completed.stdout:
+            return interpreter, notes
+        detail = (completed.stderr or completed.stdout or "").strip().splitlines()
+        notes.append(f"{interpreter}: {detail[-1] if detail else 'the probe failed'}")
+        if MISSING_COM_MODULE not in (completed.stderr or ""):
+            break
+    return None, notes
+
+
+def probe_powerpoint():
+    interpreter, _notes = probe_powerpoint_interpreter()
+    return interpreter is not None
 
 
 def probe_pymupdf():
@@ -159,8 +213,11 @@ def stage_source(src, tmp_dir):
 def probe_routes(route_file):
     pptx = []
     blocked = []
+    powerpoint_python = None
+    probe_notes = []
     try:
-        if probe_powerpoint():
+        powerpoint_python, probe_notes = probe_powerpoint_interpreter()
+        if powerpoint_python:
             pptx.append("powerpoint")
     except ProbeBlocked as exc:
         blocked.append(f"powerpoint: {exc}")
@@ -178,7 +235,23 @@ def probe_routes(route_file):
         "docxRoutes": docx,
         "pdfRoutes": pdf,
         "blockedProbes": blocked,
+        "powerpointPython": powerpoint_python,
+        "probeNotes": probe_notes,
     })
+    if is_windows() and not powerpoint_python and not blocked and probe_notes:
+        # PowerPoint was asked and could not be reached from any interpreter.
+        # Say which, and why, so "no route" is never read as "no PowerPoint"
+        # when the real gap is a missing module in the interpreter used.
+        print("RENDER_PROBE_POWERPOINT_UNAVAILABLE", file=sys.stderr)
+        for note in probe_notes:
+            print(f"- {note}", file=sys.stderr)
+        if any(MISSING_COM_MODULE in note for note in probe_notes):
+            print(
+                "The PowerPoint route needs pywin32 (`win32com`) in an interpreter "
+                "on this machine: install it into one of those listed, or run "
+                "the probe from an interpreter that has it.",
+                file=sys.stderr,
+            )
     # A blocked probe is not an answer, so the caller is told to ask again with
     # access rather than left to read an empty list as a verdict. Exit 3 keeps
     # it distinct from 1 (malformed input) and 2 (no route succeeded).
@@ -208,13 +281,13 @@ def load_route_file(path):
     return data
 
 
-def powerpoint_to_pdf(src, out_pdf):
+def powerpoint_to_pdf(src, out_pdf, interpreter=None):
     if not is_windows():
         raise RuntimeError("PowerPoint COM is not available off Windows")
     require_short_path(src, "PowerPoint")
     require_short_path(out_pdf, "PowerPoint")
     command = [
-        sys.executable,
+        interpreter or sys.executable,
         str(powerpoint_helper()),
         "--source",
         str(src),
@@ -261,13 +334,16 @@ def libreoffice_to_pdf(src, out_pdf, tmp_dir):
         shutil.copyfile(generated, out_pdf)
 
 
-def convert_office(src, routes, tmp_dir):
+def convert_office(src, routes, tmp_dir, powerpoint_python=None):
     errors = []
     out_pdf = Path(tmp_dir, src.stem + "-office.pdf")
     for route in routes:
         try:
             if route == "powerpoint":
-                powerpoint_to_pdf(src, out_pdf)
+                if powerpoint_python:
+                    powerpoint_to_pdf(src, out_pdf, powerpoint_python)
+                else:
+                    powerpoint_to_pdf(src, out_pdf)
             elif route == "libreoffice":
                 libreoffice_to_pdf(src, out_pdf, tmp_dir)
             else:
@@ -459,7 +535,7 @@ def render(source, out_dir, route_file, manifest_file, dpi):
             key = "pptxRoutes" if suffix == ".pptx" else "docxRoutes"
             try:
                 working_pdf, office_route = convert_office(
-                    staged, routes[key], tmp_dir)
+                    staged, routes[key], tmp_dir, routes.get("powerpointPython"))
             except RuntimeError as exc:
                 print(
                     f"VISUAL_ROUTE_UNVERIFIED: {src.name}: no established visual "

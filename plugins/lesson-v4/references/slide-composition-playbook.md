@@ -103,7 +103,7 @@ Protected wording may still have visual syntax.
 
 Where a break may fall in settled prose is owned by Written Voice (House Style) in `preferences.md`: its density-and-rhythm rule covers every multi-sentence block a child reads - a scenario, a model answer, an explanation and a task alike - and carries the hard constraint that a break only separates words that are already there. Apply it here so a child sees `build → test → repair` or `find → explain` before fully reading the prose. What this playbook adds is the presentation layer on top:
 
-For a dense task, identify the existing **survival phrase**: the shortest source-authored phrase that preserves the central action if the child catches only one part during a glance. Give that phrase the `core-action` presentation role when emphasis improves entry into the task.
+For a dense task, identify the existing **survival phrase**: the shortest source-authored phrase that preserves the central action if the child catches only one part during a glance. Give that phrase the `core-action` presentation role when emphasis improves entry into the task. Both action roles render bold in the line's own colour, so exposing a verb never turns an instruction blue; blue stays the question's.
 
 When several source-authored action verbs expose the structure more clearly than one survival phrase alone, give those exact verbs or short action phrases the `task-action` role.
 

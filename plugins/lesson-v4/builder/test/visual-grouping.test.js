@@ -103,6 +103,9 @@ test('numbered question text uses one shared grow-fit group', () => {
   assert.equal(bodies.length, 2);
   assert.equal(new Set(bodies.map((entry) => groupFromName(entry.objectName))).size, 1);
   assert.ok(bodies.every((entry) => /__40__/.test(entry.objectName)));
+  // The floor travels in the name, or the global fit pass shrinks a question
+  // to the deck-wide 10pt beside a table that stops at 20.
+  assert.ok(bodies.every((entry) => /__MIN14__/.test(entry.objectName)));
 });
 
 test('chip bank labels use one shared grow-fit group with a 54 point ceiling', () => {

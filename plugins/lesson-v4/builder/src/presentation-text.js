@@ -151,7 +151,15 @@ function emphasisOptions(role, baseColor, bold) {
   };
 
   if (role === 'core-action' || role === 'task-action') {
-    return { ...base, color: COLOURS.title, bold: true };
+    // Bold, in the line's own colour. House blue is the colour of a question
+    // to children and of nothing else on the board (teacher-slide-visual-profile
+    // -> Semantic colour), so an action verb painted blue reads as a question
+    // and spends the contrast that was lifting the real one. A Year 4 PSHE deck
+    // went out with "Choose", "Draw", "Label" and "add arrows" all in question
+    // blue, one task sentence in four alternating chunks (8 September 2026).
+    // Weight alone is what exposes the survival phrase; the colour stays with
+    // the line it sits in.
+    return { ...base, bold: true };
   }
   if (
     role === 'required-material' ||
@@ -227,27 +235,38 @@ function presentationRuns(value, bold, baseColor, owner) {
     .sort((a, b) => a.start - b.start);
 
   const runs = [];
+  const plain = { color: base, bold: !!bold };
+
+  // A newline is always its own run, exactly as the marker route below does
+  // it. A run that carries "\n" inside its text is split into lines by the
+  // deck library and the last line is left waiting for the next run to break
+  // it, so "...starchy foods.\nWe also need " followed by a green "protein"
+  // came out as "We also need" on a line of its own with "protein foods" on
+  // the next (Year 4 PSHE, 8 September 2026). Emitting the break by itself
+  // keeps each source line one paragraph whatever emphasis it carries.
+  const pushLines = function (value, options) {
+    const parts = value.split('\n');
+    parts.forEach((part, index) => {
+      if (part !== '') runs.push({ text: part, options: options });
+      if (index < parts.length - 1) runs.push({ text: '\n', options: plain });
+    });
+  };
+
   let cursor = 0;
 
   for (const range of ranges) {
     if (range.start > cursor) {
-      runs.push({
-        text: text.slice(cursor, range.start),
-        options: { color: base, bold: !!bold }
-      });
+      pushLines(text.slice(cursor, range.start), plain);
     }
-    runs.push({
-      text: text.slice(range.start, range.end),
-      options: emphasisOptions(range.role, base, bold)
-    });
+    pushLines(
+      text.slice(range.start, range.end),
+      emphasisOptions(range.role, base, bold)
+    );
     cursor = range.end;
   }
 
   if (cursor < text.length) {
-    runs.push({
-      text: text.slice(cursor),
-      options: { color: base, bold: !!bold }
-    });
+    pushLines(text.slice(cursor), plain);
   }
 
   return wholeCalculationRuns(runs);

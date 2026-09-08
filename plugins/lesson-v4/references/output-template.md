@@ -305,7 +305,7 @@ Labelled reference:
 }
 ```
 
-`drawLive` preserves the existing optional draw-live decision. It does not prescribe where the teacher writes.
+`drawLive: true` marks a criteria worth building live and keeping beyond today: a labelled set a later lesson assumes, or a method children run across a sequence of lessons (`preferences.md` → Success Criteria). The slide carries the flipchart cue for it and the working wall reproduces it. It does not prescribe where the teacher writes.
 
 For a Skill-based concept, define the concept once:
 

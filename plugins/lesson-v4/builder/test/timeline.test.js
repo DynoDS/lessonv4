@@ -48,7 +48,6 @@ const VICTORIAN = {
     { label: 'Port Sunlight classroom April 1897', at: 0.55 },
     { label: 'today 2026', at: 0.97 },
   ],
-  note: 'not to scale',
 };
 
 function inside(box, zone) {
@@ -107,11 +106,14 @@ test('labels share one size, never split a word, and take at most two lines', ()
   const era = texts.find((t) => t.value === VICTORIAN.eras[0].label);
   assert.ok(era, 'the era label is drawn');
   assert.ok(textBoxWidthIn(era.value, era.fontSize, true) <= era.w + 1e-6);
-  // The note is small, grey and right-aligned; nothing prints when it is absent.
-  const note = texts.find((t) => t.value === 'not to scale');
-  assert.ok(note && note.align === 'right' && note.fontSize < era.fontSize);
-  const without = draw(STRIP, { ...VICTORIAN, note: undefined });
-  assert.equal(without.texts.some((t) => t.value === 'not to scale'), false);
+  // No timeline carries a "not to scale" note: the teacher wants none, and a
+  // spec that still says so is refused by name rather than drawn.
+  assert.equal(texts.some((t) => /not to scale/i.test(t.value)), false);
+  assert.throws(
+    () => draw(STRIP, { ...VICTORIAN, note: 'not to scale' }),
+    (error) => /^TIMELINE_NOTE_NOT_DRAWN/.test(error.message)
+      && /in proportion to its real dates/.test(error.message)
+  );
 });
 
 test('a zone too narrow for a date label is refused by name, and the refusal says why', () => {
