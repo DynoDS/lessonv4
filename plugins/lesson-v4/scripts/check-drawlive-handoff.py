@@ -55,95 +55,165 @@ def load(path: Path, label: str) -> dict:
     return data
 
 
-def draw_live_ids(design: dict) -> list[str]:
-    out = []
-    for item in design.get("successCriteria") or []:
-        if isinstance(item, dict) and item.get("drawLive") is True:
-            out.append(str(item.get("id")))
-    return out
+# These are the templates that actually call drawScPanel. A suffix alone
+# would incorrectly accept a made-up template that renders no cue.
+PANEL_TEMPLATES = {
+    "maths-turn-sc", "maths-turn-ref-sc", "maths-your-turn-sc",
+    "maths-mtotyt-sc", "writing-turn-ref-sc",
+}
+NON_RENDERED = {"speakerNotes", "teacherInfo", "slideDesignNotes", "decorations"}
 
 
-def flipchart_flagged(node, path="") -> list[str]:
-    """Every place in the spec that asks for the cue.
+def plain(value) -> str:
+    """Presentation markers/line breaks may change; authored words may not."""
+    if isinstance(value, dict):
+        value = value.get("text", value.get("value", ""))
+    text = str(value or "")
+    for marker in ("**", "[[", "]]", "{{", "}}", "<<", ">>", "||"):
+        text = text.replace(marker, "")
+    return " ".join(text.split())
 
-    The flag lives at slide level on the `*-sc` templates and on the `sc-panel`
-    object elsewhere, so it is found by walking rather than by looking in one
-    known place.
+
+def content_nodes(node):
+    if isinstance(node, dict):
+        yield node
+        for key, value in node.items():
+            if key not in NON_RENDERED:
+                yield from content_nodes(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from content_nodes(value)
+
+
+def panel_matches(panel, source: dict) -> bool:
+    """Confirm source content, not just an ID beside an unrelated panel.
+
+    Steps preserve order (inline helpers and a folded sticky line are allowed).
+    Tables preserve cells. Labelled sets preserve their labels/text; checking
+    their actual diagram geometry belongs to the existing visual review.
     """
-    found = []
+    if not isinstance(panel, dict):
+        return False
+    content = source.get("content") or {}
+    nodes = list(content_nodes(panel))
+    if source.get("type") == "steps":
+        expected = [plain(s) for s in content.get("steps") or []]
+        for node in nodes:
+            if node.get("type") != "steps":
+                continue
+            actual = [plain(s) for s in node.get("steps") or []
+                      if not plain(s).startswith("✨")]
+            # A combined panel may also contain another criterion; the whole
+            # source's steps still have to occur in order without omissions.
+            if expected and any(actual[i:i + len(expected)] == expected
+                                for i in range(len(actual) - len(expected) + 1)):
+                return True
+        return False
+    if source.get("type") == "reference-table":
+        expected_headers = [plain(c) for c in content.get("columns") or []]
+        expected_rows = [[plain(c) for c in row] for row in content.get("rows") or []]
+        return any(
+            node.get("type") in {"table", "reference-table"}
+            and [plain(c) for c in node.get("headers", node.get("columns", []))] == expected_headers
+            and [[plain(c) for c in row] for row in node.get("rows") or []] == expected_rows
+            for node in nodes
+        )
+    # Source-labelled sets can become rows of diagrams, image captions or a
+    # table; do not require one physical representation for recognition.
+    expected = [plain(item.get(key)) for item in content.get("items") or []
+                for key in ("label", "text") if plain(item.get(key))]
+    visible = []
+    for node in nodes:
+        for key in ("text", "value", "label", "caption", "heading", "title"):
+            if isinstance(node.get(key), str):
+                visible.append(plain(node[key]))
+        if node.get("type") in {"table", "reference-table"}:
+            visible.extend(plain(c) for c in node.get("headers", node.get("columns", [])))
+            visible.extend(plain(c) for row in node.get("rows") or [] for c in row)
+    return bool(expected) and all(text in visible for text in expected)
+
+
+def flag_owners(node, path="", hidden=False):
+    """Return all flags, including misplaced ones, rather than ignoring them."""
     if isinstance(node, dict):
         if node.get("flipchart") is True:
-            found.append(path or "/")
+            yield path or "/", node, hidden
         for key, value in node.items():
-            found.extend(flipchart_flagged(value, f"{path}/{key}"))
+            yield from flag_owners(value, f"{path}/{key}", hidden or key in NON_RENDERED)
     elif isinstance(node, list):
         for index, value in enumerate(node):
-            found.extend(flipchart_flagged(value, f"{path}/{index}"))
-    return found
-
-
-def slides_for(spec: dict, criteria_id: str) -> list[int]:
-    """Slide numbers whose `successCriteriaRefs` name this criteria."""
-    out = []
-    for number, slide in enumerate(spec.get("slides") or [], start=1):
-        if not isinstance(slide, dict):
-            continue
-        refs = slide.get("successCriteriaRefs") or []
-        if isinstance(refs, list) and criteria_id in [str(r) for r in refs]:
-            out.append(number)
-    return out
-
-
-def slide_carries_cue(slide) -> bool:
-    return bool(flipchart_flagged(slide))
+            yield from flag_owners(value, f"{path}/{index}", hidden)
 
 
 def run(design_path: Path, spec_path: Path) -> int:
     design = load(design_path, "lesson design")
     spec = load(spec_path, "slide specification")
     slides = spec.get("slides")
-    if not isinstance(slides, list):
-        raise HandoffError(f"the slide specification at {spec_path} has no slides array")
-
-    marked = draw_live_ids(design)
+    raw_criteria = design.get("successCriteria")
+    if not isinstance(slides, list) or not all(isinstance(s, dict) for s in slides):
+        raise HandoffError("the slide specification must have an array of slide objects")
+    if not isinstance(raw_criteria, list):
+        raise HandoffError("the lesson design must have a successCriteria array")
+    criteria = {}
+    for source in raw_criteria:
+        if (not isinstance(source, dict) or not isinstance(source.get("id"), str)
+                or not isinstance(source.get("drawLive"), bool)
+                or not isinstance(source.get("content"), dict)):
+            raise HandoffError("each success criterion needs an id, drawLive boolean and content object")
+        if source["id"] in criteria:
+            raise HandoffError(f"duplicate success criterion: {source['id']}")
+        criteria[source["id"]] = source
+    marked = {key for key, source in criteria.items() if source["drawLive"]}
+    reached = set()
     failures = []
-
-    for criteria_id in marked:
-        showing = slides_for(spec, criteria_id)
-        if not showing:
-            failures.append(
-                f"{criteria_id} is marked drawLive in the design but no slide "
-                "references it, so its cue has nowhere to appear"
-            )
+    for location, owner, hidden in flag_owners(spec):
+        parts = location.strip("/").split("/")
+        if len(parts) < 2 or parts[0] != "slides" or not parts[1].isdigit():
+            failures.append(f"flipchart at {location} is not on a rendered slide panel")
             continue
-        with_cue = [n for n in showing if slide_carries_cue(slides[n - 1])]
-        if not with_cue:
-            listed = ", ".join(str(n) for n in showing)
-            failures.append(
-                f"{criteria_id} is marked drawLive in the design but no slide "
-                f"showing it sets flipchart: true (slides {listed}). Set it at "
-                "slide level beside criteria on the *-sc templates, or on the "
-                "sc-panel object elsewhere; the teacher never sees the "
-                "suggestion otherwise"
-            )
+        index = int(parts[1])
+        slide = slides[index]
+        is_slide = len(parts) == 2
+        if hidden or (is_slide and slide.get("template") not in PANEL_TEMPLATES) or (
+                not is_slide and owner.get("type") != "sc-panel"):
+            failures.append(f"flipchart at {location} is not a rendered cue owner; use a *-sc slide or sc-panel")
+            continue
+        refs = slide.get("successCriteriaRefs") or []
+        if not isinstance(refs, list):
+            raise HandoffError(f"slide {index + 1} successCriteriaRefs must be an array")
+        panel = owner.get("criteria") or owner.get("content")
+        ref = owner.get("criteriaRef")
+        if ref is not None:
+            candidates = [ref] if isinstance(ref, str) and ref in refs and ref in criteria else []
+        else:
+            candidates = [key for key in refs if isinstance(key, str) and key in criteria
+                          and panel_matches(panel, criteria[key])]
+            candidates = list(dict.fromkeys(candidates))
+        if len(candidates) != 1:
+            failures.append(f"flipchart at {location} has no unambiguous source; set criteriaRef to the displayed criterion in successCriteriaRefs")
+            continue
+        ref = candidates[0]
+        if ref not in marked:
+            reason = "no criteria in the design is marked drawLive" if not marked else f"{ref} is not marked drawLive"
+            failures.append(f"flipchart at {location}: {reason}")
+            continue
+        if not panel_matches(panel, criteria[ref]):
+            failures.append(f"flipchart at {location} names {ref} but its panel does not carry that criterion's content")
+            continue
+        reached.add(ref)
 
-    # The other direction: a cue on a criteria the design did not mark tells the
-    # teacher to keep something the lesson never judged worth keeping, and the
-    # cue means less every time it appears without reason.
-    if not marked:
-        for location in flipchart_flagged(spec):
-            failures.append(
-                f"the specification sets flipchart: true at {location} but no "
-                "criteria in the design is marked drawLive; the cue is the "
-                "design's decision, not a presentation choice"
-            )
-
+    for ref in sorted(marked - reached):
+        showing = [str(i) for i, slide in enumerate(slides, 1)
+                   if ref in (slide.get("successCriteriaRefs") or [])]
+        if showing:
+            failures.append(f"{ref} is marked drawLive but has no correctly bound flipchart cue (slides {', '.join(showing)}); set it beside its criteria on the *-sc slide or its sc-panel")
+        else:
+            failures.append(f"{ref} is marked drawLive but no slide references it, so its cue has nowhere to appear")
     if failures:
         print("DRAWLIVE_HANDOFF_FAILED", file=sys.stderr)
-        for line in failures:
-            print(f"- {line}", file=sys.stderr)
+        for message in failures:
+            print(f"- {message}", file=sys.stderr)
         return 1
-
     print(f"DRAWLIVE_HANDOFF_OK {len(marked)}")
     return 0
 

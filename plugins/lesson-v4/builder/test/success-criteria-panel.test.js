@@ -97,3 +97,43 @@ test('the panel heading is one unbreakable line', () => {
   assert.equal(text.includes(' '), false, 'no breakable space in the heading: ' + JSON.stringify(text));
   assert.ok(text.includes('\u00a0'));
 });
+
+const SIX_STEPS = [
+  'Find the endpoints.', 'Find the difference.', 'Count the spaces.',
+  'Divide by the spaces.', 'Count on in steps.', 'Write the missing number.'
+];
+
+test('six short steps retain all actions and the final fitting floor in both routes', () => {
+  const pptx = new PptxGenJS();
+  const data = { criteriaRef: 'sc-001', flipchart: true,
+    criteria: { type: 'steps', steps: SIX_STEPS } };
+  for (const route of ['fixed', 'free']) {
+    const slide = fakeSlide();
+    const ctx = { slideIndex: 0, imageDims: {}, cardLook: true };
+    if (route === 'fixed') drawScPanel(pptx, slide, data, ctx);
+    else drawScPanelContent(pptx, slide, { x: 6.8, y: 0.7, w: 6.2, h: 6.5 }, data, ctx);
+    const steps = slide.texts.filter(row => (row.objectName || '').includes('step-text-'));
+    assert.equal(steps.length, SIX_STEPS.length, route + ': no omitted steps');
+    steps.forEach((row, i) => {
+      assert.ok(row.fontSize >= 18, route + ': initial readable floor');
+      assert.match(row.objectName, /__MIN18__/, route + ': floor survives final fitting');
+      const text = Array.isArray(row.content) ? row.content.map(r => r.text).join('') : row.content;
+      assert.equal(text, SIX_STEPS[i], route + ': wording and order preserved');
+    });
+  }
+});
+
+test('seven short actions are supported without making six a replacement ceiling', () => {
+  const slide = fakeSlide();
+  drawScPanelContent(new PptxGenJS(), slide, { x: 6.8, y: 0.7, w: 6.2, h: 6.5 }, {
+    criteria: { type: 'steps', steps: [...SIX_STEPS, 'Check your answer.'] }
+  }, { slideIndex: 0, imageDims: {}, cardLook: true });
+  assert.equal(slide.texts.filter(row => (row.objectName || '').includes('step-text-')).length, 7);
+});
+
+test('an undersized criteria panel still refuses unreadable steps instead of dropping them', () => {
+  assert.throws(() => drawScPanelContent(new PptxGenJS(), fakeSlide(),
+    { x: 0, y: 0, w: 2.2, h: 1.5 },
+    { criteria: { type: 'steps', steps: SIX_STEPS } },
+    { slideIndex: 0, imageDims: {}, cardLook: true }), /STEP_TEXT_OVERLOAD/);
+});

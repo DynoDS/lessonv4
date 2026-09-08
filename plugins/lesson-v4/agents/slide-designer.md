@@ -249,7 +249,7 @@ When a unit names success-criteria or sticky-knowledge references, read the cond
 - An inline reference becomes a visible on-slide mark attached to the exact object or decision named by the source.
 - Sticky knowledge appears only in the source context that names it.
 - When one reference is both success criteria and sticky knowledge, render one faithful combined reference rather than two competing copies.
-- A criteria whose source object carries `drawLive: true` sets `flipchart: true`: at slide level beside `criteria` on the `*-sc` templates, on the `sc-panel` object elsewhere. The builder draws the small flipchart in the panel corner; nothing else on the slide changes. A design's draw-live decision that never becomes this flag is a cue the teacher never sees, so `check-drawlive-handoff.py` compares the two files at your gate and names the slides that should have carried it.
+- A criteria whose source object carries `drawLive: true` sets `flipchart: true` and `criteriaRef` to its source ID on the same owner: at slide level beside `criteria` on the `*-sc` templates, on the `sc-panel` object elsewhere. Keep the actual source content inside that panel. `check-drawlive-handoff.py` checks each cue's location and source, not merely whether any flag exists on the slide; `slide-success-criteria.md` owns placement and legacy inference.
 - The criteria label goes on the criteria only. A representation the task uses (a nutrient table, a word bank, a source) sits in its own zone under its own name; wrapping it in an `sc-panel` tells children the facts are the standard, and the real steps are then somewhere else or nowhere.
 
 Keep a structured visual structured. Do not flatten a table, bank, sequence, checklist, diagram or card set into prose.

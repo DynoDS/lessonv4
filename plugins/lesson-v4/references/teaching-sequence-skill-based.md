@@ -121,15 +121,15 @@ to satisfy a repetition count.
 
 When the success criteria for a concept is a procedure written as how-to steps, these are the mechanics of writing those steps well. Choosing the *form* of the success criteria (how-to steps, a reference table, or a labelled set the child matches an instance against) is governed by `preferences.md` → Success Criteria, which the lesson-designer reads every run; what follows is how to write the steps once that form is chosen.
 
-**Writing how-to steps:** Each step is a short verb-first action the child can just do. One action per step. Aim for 2–5 words, 8 at the absolute outside, and the validator refuses a step past 8. The panel fits about five words to a line at the size a child reads it from the back of the room, so a longer step wraps and reads as a sentence: the child stops glancing and starts reading, which is the moment the criteria stops being a live reference. Five steps is the most a panel holds, and the validator refuses a sixth: a method that needs more is two methods, or is carrying its branches as steps (see the branch guidance below).
+**Writing how-to steps:** Each step is one short, verb-first action the child can carry out and the class can repeat as a familiar cue. Aim for 2-5 words and usually up to five steps. More than eight words or five steps triggers a careful reread in the review packet, not automatic rejection. Say the cues aloud while doing the method; cut explanation and repeated alternatives before cutting useful meaning. Do not compress two distinct actions into one vague instruction, or call a method two concepts merely to fit a panel. Keep the same cue wording through modelling and practice. The Slide Designer must fit the complete necessary method beside readable work, not shrink or omit it; `slide-success-criteria.md` owns the available layouts.
 
-**Three things go in a step and make it long, and each belongs somewhere else.**
+**Three common reasons steps become wordy. Decide what the child actually needs to recall.**
 
-*The reason.* `Connect the lamp back to the cell to close the loop` and `Write the number, keeping any zeros it needs` each carry why after the what. The why was taught on the Teach slide and is in the speaker script; the step is the reminder of which move the child is on. Write `Connect the lamp to the cell` and `Write the number`.
+*The explanation.* `Multiply the whole pounds by 100 (this converts them to pence)` repeats the teaching inside the cue. `Multiply the pounds by 100` recalls that taught move. Remove elaboration, not an essential condition or feature: `keeping any zeros it needs` is an accuracy reminder, not a reason, and may earn a separate short cue (`Keep any needed zeros.`) when children need it. Do not hide necessary new teaching in notes or delete it merely to shorten the criteria.
 
 *The alternatives.* `Connect the switch to the lamp or buzzer`, four times down a list, spends most of the panel on a choice the teacher makes once. Name one piece of equipment (`Connect the switch to the lamp`) and let the teacher say the class is using buzzers.
 
-*The condition.* `Subtracting with no thousands? Exchange one ten thousand for ten thousands` is a branch, and a branch belongs in a lookup row of a reference-table criteria beside the steps, where a child scans for their case and reads off the move. Written as a step it forces every child to read a case that applies to some of them.
+*The condition.* `Ten ones? Exchange for one ten.` can be one easy callback in a method children have been taught. Keep a short condition inline when that is clearest. When children must choose between several cases, move those cases to a lookup table or other runnable guide; do not force every condition into a second panel merely because it is conditional.
 
 Good: `Multiply the pounds by 100.`
 Bad: `Multiply the whole pounds by 100 (this converts them to pence).`
@@ -144,15 +144,9 @@ Bad: `Halve each half for useful quarter points.`
 
 **A step is written in the child's own words, not the plan's.** `Divide the difference by the interval count` and `Compare the same part of life` are planning sentences: *interval count* and *part of life* are the designer's categories. The child's versions are `Divide by the number of spaces.` and `Compare school with school.` The tell is a noun the child has not been taught to use.
 
-**The steps are the procedure in the order the child performs it.** A child reads step 1 and does it, then step 2, so the list has to be the method as hands do it, not a set of true statements about the method. Write the steps by carrying out the worked example with them: at each step, what does the child do next? A line that cannot be done at the moment it appears is out of order or is not a step. `Use tens for 10 or hundreds for 100 / For less, exchange from the left until you can remove one / Add one for more; remove one for less / Has the column reached 10? Exchange 10 for 1 / Read the number` fails that test: step 1 names a rule rather than an action, and the exchange arrives before the child has taken anything away. The same method as a child does it: `Find the tens column (or hundreds for 100). / Add one counter for more, or take one away for less. / Full column? Exchange 10 for 1. Empty column? Exchange 1 for 10. / Read the new number.` A fact the child must hold while working (`the ones digit never changes`) is sticky knowledge, not a step, and sits beside the list.
+**The steps are the procedure in the order the child performs it.** Carry out a worked example with the cues before keeping them. A line that cannot be done at that point is out of order or hides an untaught action. For subtracting ten with a taught exchange method, `Find the tens column. / No tens? Exchange first. / Take away one ten. / Read the new number.` recalls actions in usable order. The exchange has to precede removal when there is no ten to remove, and its actual method must already have been modelled. Use the appropriate cues for other operations rather than packing all alternatives into every step. A fact such as `The ones digit stays the same` is sticky knowledge, not another numbered action.
 
 **Steps encode the decision rule, never an artefact of the worked example.** Ask of each step: would a different-but-correct performance fail it? Then the step is teaching the example, not the skill. `Connect the cell to the switch, then the switch to the lamp` fails a perfectly good circuit built in another order, and quietly swaps the taught invariant (*one complete loop*) for a ritual - the child leaves believing the order mattered. Keep order in the steps only when the order IS the procedure being taught, as in an algorithm's own sequence; the order the model happened to be built in never qualifies.
-
-Good: "Multiply the pounds by 100."
-Bad: "Multiply the whole pounds by 100 (this converts them to pence)."
-
-Good SC step: "Work out the minute hand."
-Bad SC step: "Look at the hour hand (short). It points to or just past a number — that's the hour."
 
 The same mechanics hold outside maths. A PE throwing lesson:
 
@@ -161,7 +155,7 @@ Bad: "Use your non-throwing arm to aim by pointing it toward where you want the 
 
 **Name a familiar or just-taught action only when children genuinely know how to carry it out.** A short label may remind children of a secure sub-procedure without re-teaching it. Do not hide the lesson's new or difficult thinking inside an unexplained label; when that action is the learning, the criteria must make it runnable. Where a step needs to point at a literal piece of writing (the templated answer, the colon in a digital time, the unit), put the literal mark in the step itself: `"Write: ___ past."`, `":"`, `"Write it down."`. Children can copy a literal mark; they can't act on a description.
 
-**When a step branches on what the question contains** — for example a conversion where the direction changes the operation — write each branch as a named lookup row using the actual content the child sees, not an abstract category label. A child scans the SC to find their input and reads off the action directly.
+**When several cases need a lookup** - for example a conversion where the direction changes the operation - name each row using the actual content the child sees, not an abstract category label. A child scans the guide to find their input and reads off the action. A single short condition may instead stay in the steps, as above.
 
 Good: "Hours → minutes? × 60"
 Bad: "Smaller unit? Multiply by 60."

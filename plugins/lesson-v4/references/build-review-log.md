@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-08 Memorable criteria without arbitrary ceilings (4.2.111)
+
+Daniel clarified the purpose: "short and sweet, easy to remember, easy to repeat and call back." Neither eight words nor five steps is an absolute limit, provided the complete method can be displayed usefully. A simple condition may stay inline. This supersedes the numerical ceilings recorded below, not the preference for concise cues.
+
+The design validator still checks structure and nonempty content, but no longer rejects a necessary action solely by word or row count. The existing review view exposes long wording/list cues and both true and false `drawLive` decisions. The designer, voice guide and reviewer now judge familiar, runnable callbacks; count cues are neither automatic failures nor excuses for verbose prose. Contradictory examples and the assertion that every condition needs a table were reconciled.
+
+The existing fixed and free success-criteria panels already render six or seven short steps, so no second layout engine was added. Their real fitting gap was later: the steps helper calculated an 18pt initial floor but did not transmit it to final autofit. It now does. The placement guidance protects the complete method, question and working space, and routes genuine capacity failures instead of cutting steps or inventing a second concept.
+
+The live-drawing check now binds each cue to its own source via optional `criteriaRef`, validates the displayed content and the supported flag location, and rejects an invented cue even when another criterion is legitimately marked. Unambiguous older panels infer their source from content. It deliberately does not decide pedagogically whether a method should be marked; that decision is now visible to the reviewer.
+
+The cumulative-learning instructions already contained a substantial forward transition check. The focused addition distinguishes carrying learning from merely reusing a resource or a callback phrase, tracing a representative final performance backwards and then forwards. Parallel cases contributing to a later comparison remain valid. No extra agent, required per-beat form or automatic Apply slide was added. The new behavioural calibration cases are examples for review, not evidence that a model has passed a classroom evaluation.
+
+Verification: 205 targeted Python tests passed, including the complete design-review packet and lesson-design contract tests; 11 focused steps/panel tests passed. The two-slide `criteria-callbacks-smoke.json` built without warnings, passed the cue handoff, and was rendered and visually inspected with Comic Sans MS loaded: all six/seven steps, the task, number line and modelling space remain usable. This is a layout fixture, not a generated-lesson effectiveness trial. The broader local builder check also exposed existing picture-guard failures and two stale documentation assertions; each was reproduced on the untouched starting snapshot. They are not silently treated as a clean whole-repository pass and are outside this criteria/progression repair.
+
 ## 2026-09-08 Criteria wording, and the draw-live cue that never fired (4.2.110)
 
 Two things the teacher raised after reading the four decks, traced before changing anything.

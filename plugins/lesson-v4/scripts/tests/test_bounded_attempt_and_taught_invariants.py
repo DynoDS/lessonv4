@@ -55,32 +55,11 @@ class StepsTeachTheInvariantTests(unittest.TestCase):
         # The limit: order stays when order IS the procedure.
         self.assertIn("the order IS the procedure being taught", route)
 
-    def test_the_validator_refuses_a_mini_instruction_step(self):
-        import importlib.util
-
-        spec = importlib.util.spec_from_file_location(
-            "vld", ROOT / "scripts" / "validate-lesson-design.py"
-        )
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-
-        import test_lesson_design_contract as contract
-
-        design, photos = contract.valid_contract()
-        design["successCriteria"][0]["content"]["steps"][0] = (
-            "Connect the lamp or buzzer back to the cell to close the loop"
-        )
-        try:
-            module.validate_design(design, photos)
-        except module.ContractError as exc:
-            self.assertIn("short verb-first action", str(exc))
-        else:
-            self.fail("13-word step unexpectedly validated")
-
-        # The guidance names the cap so the two cannot silently drift. It was
-        # 12 between 1 and 8 September 2026, which let a step run to twice the
-        # 2-5 word aim; 8 is the ceiling the guidance has always described.
-        self.assertIn("the validator refuses a step past 8", flat(SKILL_ROUTE))
+    def test_wordy_steps_remain_a_review_concern_not_a_numeric_ban(self):
+        route = flat(SKILL_ROUTE)
+        self.assertIn("repeat as a familiar cue", route)
+        self.assertIn("not automatic rejection", route)
+        self.assertIn("Do not compress two distinct actions", route)
 
 
 class TheObjectivesOwnTermIsTaughtTests(unittest.TestCase):

@@ -79,7 +79,7 @@ test('related steps use one uniform size', () => {
   const sizes = new Set(bodies.map((body) => body.fontSize));
   assert.equal(sizes.size, 1, 'related steps used different font sizes');
   assert.ok(
-    bodies.every((body) => /^GROWFIT__.+__36__step-/.test(body.objectName)),
+    bodies.every((body) => /^GROWFIT__.+__36__MIN18__step-/.test(body.objectName)),
     'a related step was not assigned to the shared grow-fit group'
   );
 });

@@ -30,6 +30,16 @@ Only the panel dimensions change with the layout. Do not switch the same procedu
 
 Sometimes a free template genuinely is the right geometry, most often because the criteria is a *wide visual reference* (a labelled `row` of diagrams) that needs a full-width strip the narrow `*-sc` side-panel can't give. There, wrap the criteria in an `sc-panel` content object so it keeps the full green-box identity (the rounded green box and the "✓ Success Criteria" label) wherever it sits, instead of rendering as a bare list or row a child reads as just more content. Use `sc-panel` only *outside* the `maths-*-sc` templates; their own criteria slot already draws the box, so wrapping there would double it.
 
+## Fit the complete reference, not a step-count quota
+
+Five short steps is a useful default, not the capacity of every composition. Try the complete approved method in the existing `*-sc` panel. If it cannot share the screen with readable questions and a genuinely usable working surface, use a roomier free composition with `sc-panel`; changing panel width and height is a presentation decision. Keep the order, wording and necessary steps together wherever children need the whole method. Do not split the concept, drop steps, merge their wording or fragment an otherwise coherent practice set to fit the default sidebar.
+
+Steps carry an 18pt minimum through both initial layout and the final text-fitting pass. That floor is a backstop, not a claim that every slide at 18pt is good: inspect the rendered task, reference and writing space together at projection size. A word-count review cue is not permission to shrink text or bypass a failed build. If no supported composition can present the necessary work, report the specific representation or layout capability needed through the existing repair route rather than pretending the lesson only needs five steps.
+
+## Bind a live-drawing cue to its own reference
+
+When setting `flipchart: true`, put `criteriaRef: "sc-001"` beside it on the same cue owner: the slide for a fixed `*-sc` template, or the `sc-panel` object in a free layout. It must name the source criterion actually shown inside that panel and be included in the slide's `successCriteriaRefs`. Do not put the flag on an arbitrary nested object or in notes; those locations do not draw the cue. Existing specifications without `criteriaRef` remain valid when the panel's content identifies one source unambiguously. The handoff check verifies each cue separately, even when marked and unmarked criteria share a slide.
+
 ## Keep the SC beside what its steps refer to
 
 When a step points at the question or task ("read the question: what am I comparing?"), the question has to be on the same slide, or the step has nothing to point at. A labelled slot is the goal, but never at the cost of stranding the steps on a question-less slide. When the steps reference the question, choose a template that holds the question and the steps together (a body zone with the question line above a `steps` object) rather than the full-slide `success-criteria` template, which leaves no room for the question.

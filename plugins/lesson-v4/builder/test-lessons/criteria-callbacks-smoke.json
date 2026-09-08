@@ -1,0 +1,95 @@
+{
+  "lessonName": "Criteria callback layout check",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "Find a missing value on a number line",
+  "slides": [
+    {
+      "template": "maths-turn-sc",
+      "title": "My Turn",
+      "questions": [
+        "Find the missing number."
+      ],
+      "questionVisual": {
+        "type": "numberline",
+        "start": 200,
+        "end": 300,
+        "interval": 10,
+        "labels": [
+          200,
+          300
+        ],
+        "arrow": {
+          "at": 270,
+          "label": "?"
+        }
+      },
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "criteriaRef": "sc-001",
+      "flipchart": true,
+      "criteria": {
+        "type": "steps",
+        "steps": [
+          "Find the endpoints.",
+          "Find the difference.",
+          "Count the spaces.",
+          "Divide by the spaces.",
+          "Count on in steps.",
+          "Write the missing number."
+        ]
+      }
+    },
+    {
+      "template": "split-h-50-50",
+      "headerStyle": "title",
+      "title": "Your Turn",
+      "primary": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "numbered-questions",
+            "questions": [
+              "Find the missing number."
+            ]
+          },
+          {
+            "type": "numberline",
+            "start": 200,
+            "end": 300,
+            "interval": 10,
+            "labels": [
+              200,
+              300
+            ],
+            "arrow": {
+              "at": 270,
+              "label": "?"
+            }
+          }
+        ]
+      },
+      "secondary": {
+        "type": "sc-panel",
+        "criteriaRef": "sc-002",
+        "flipchart": true,
+        "content": {
+          "type": "steps",
+          "steps": [
+            "Find the endpoints.",
+            "Find the difference.",
+            "Count the spaces.",
+            "Divide by the spaces.",
+            "Count on in steps.",
+            "Write the missing number.",
+            "Check your answer."
+          ]
+        }
+      },
+      "successCriteriaRefs": [
+        "sc-002"
+      ]
+    }
+  ]
+}

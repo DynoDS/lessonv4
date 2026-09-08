@@ -162,7 +162,8 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "Success Criteria",
-        "Read when form, wording, use or alignment is in doubt.",
+        "Read when criteria are present: check repeatable wording, any count cues, "
+        "and whether drawLive true or false matches a reference worth retaining.",
     ),
     (
         "The Apply Slide",
@@ -950,6 +951,28 @@ def require_review_judgements(review_path: Path, review_result: str) -> dict[str
     return judgements
 
 
+def criteria_review_cues(row: dict) -> list[str]:
+    """Counts invite semantic review; they neither approve nor reject wording."""
+    content = row.get("content") or {}
+    steps = content.get("steps") or []
+    rows = content.get("rows") or []
+    cues = []
+    if len(steps) > 5:
+        cues.append(f"{len(steps)} steps: keep necessary actions; check the complete panel fits")
+    if len(rows) > 5:
+        cues.append(f"{len(rows)} rows: check lookup load and readable placement")
+    for index, step in enumerate(steps, 1):
+        words = len(step.split())
+        if words > 8:
+            cues.append(f"step {index}: {words} words; reread for a short, repeatable action cue")
+    for r, cells in enumerate(rows, 1):
+        for c, cell in enumerate(cells, 1):
+            words = len(cell.split())
+            if words > 8:
+                cues.append(f"row {r}, cell {c}: {words} words; reread for a glanceable lookup")
+    return cues
+
+
 def build_review_view(design: dict, photo_requirements: dict) -> str:
     concepts = {
         row["id"]: row
@@ -1054,9 +1077,12 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
     lines.extend(["## Success criteria", ""])
     for row in design["successCriteria"]:
         lines.append(
-            f"- `{row['id']}` {row['type']}: "
+            f"- `{row['id']}` {row['type']} "
+            f"(drawLive: {str(row['drawLive']).lower()}): "
             f"{review_json(row['content'])}"
         )
+        for cue in criteria_review_cues(row):
+            lines.append(f"  - Review cue (not a failure): {cue}.")
     lines.append("")
 
     lines.extend(["## Sticky knowledge", ""])

@@ -298,7 +298,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
       fontFace: FONT, fontSize: textFont, bold: true,
       color: COLOURS.body,
       align: 'left', valign: 'middle', margin: 0, fit: FIT,
-      objectName: growFitObjectName(stepTextGroup, TEXT_FONT_MAX, 'step-text-' + i)
+      objectName: growFitObjectName(stepTextGroup, TEXT_FONT_MAX, 'step-text-' + i, TEXT_FONT_MIN)
     });
   });
 }
