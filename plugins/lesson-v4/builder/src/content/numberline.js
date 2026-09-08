@@ -86,6 +86,22 @@ const LABEL_GUTTER     = 0.06;
 // "clearest at around three rather than five", and a soft word like that is
 // exactly the kind a busy designer reads past.
 const MAX_LINES        = 3;
+// A number line is a thin thing: one line and its numerals need about half an
+// inch, and a My Turn card is often seven times that. Capping the drawing at
+// its "natural" size banked all of that as white space and left the numerals
+// smaller than they needed to be, on the slide with the most room to spare. It
+// may now grow into a generous card up to this multiple. It is a MULTIPLE and
+// not a target: the zone still binds first, so a crowded card is unaffected and
+// only a card with genuine room to spare gives any of it back. Room is left
+// above and below the axis either way, because a My Turn line gets written on.
+const MAX_GROW         = 1.6;
+// Stacked lines are named down their left edge, because a question saying
+// "Line B: what number does Q show?" over three unnamed lines makes a child
+// work out which line is B before starting the maths. Naming is the DEFAULT for
+// a stack rather than a field a designer has to remember, since forgetting it
+// is invisible in the spec and only shows up in front of a class.
+const LINE_NAMES       = ['A', 'B', 'C'];
+const NAME_GAP         = 0.18;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 // Year 4 place value is taught WITH the comma, and the question beside the line
@@ -197,7 +213,7 @@ function drawNumberline(pptx, slide, zone, data) {
                 + ROW_GAP * (lines.length - 1);
   const bands   = ink.reduce(function (t, k) { return t + k.aboveBands + k.belowBands; }, 0);
 
-  let scale  = Math.min(1.0, innerH / (elastic + bands * LABEL_H));
+  let scale  = Math.min(MAX_GROW, innerH / (elastic + bands * LABEL_H));
   let bandH  = LABEL_H * scale;
   let fontPt = Math.round(FONT_SIZE * scale * 10) / 10;
 
@@ -208,7 +224,7 @@ function drawNumberline(pptx, slide, zone, data) {
     const heldH = FONT_MIN / 72 + 0.03;
     const held  = (innerH - bands * heldH) / elastic;
     if (held > 0) {
-      scale  = Math.min(1.0, held);
+      scale  = Math.min(MAX_GROW, held);
       bandH  = heldH;
       fontPt = FONT_MIN;
     }
@@ -291,9 +307,27 @@ function drawNumberline(pptx, slide, zone, data) {
   if (labelFont < fontPt) labelFont = Math.min(fontPt, crowdedFont(labelFont));
   labelFont = Math.round(labelFont * 10) / 10;
 
-  const geo    = insetFor(labelFont);
-  const lineX1 = geo.x1;
-  const lineW  = geo.w;
+  const geo = insetFor(labelFont);
+  let lineX1 = geo.x1;
+  let lineW  = geo.w;
+
+  // Reserve the left-hand column the names sit in, once, so every axis starts
+  // at the same x and stacked lines stay comparable.
+  const names = lines.map(function (spec, i) {
+    if (spec.lineLabel) return String(spec.lineLabel);
+    if (lines.length > 1 && data.lineLabels !== false) return LINE_NAMES[i] || '';
+    return '';
+  });
+  let nameW = 0;
+  names.forEach(function (n) {
+    if (n) nameW = Math.max(nameW, textBoxWidthIn(n, fontPt, true));
+  });
+  if (nameW > 0 && lineW - (nameW + NAME_GAP) > 1.0) {
+    lineX1 += nameW + NAME_GAP;
+    lineW  -= nameW + NAME_GAP;
+  } else {
+    nameW = 0;
+  }
 
   // Charging a line only for what it carries can leave real slack in a deep
   // zone. Spare room belongs BETWEEN stacked lines, where it separates one
@@ -328,6 +362,14 @@ function drawNumberline(pptx, slide, zone, data) {
 
     function getX(val) {
       return lineX1 + ((val - start) / (end - start)) * lineW;
+    }
+
+    if (nameW > 0 && names[lineIdx]) {
+      slide.addText(names[lineIdx], {
+        x: lineX1 - nameW - NAME_GAP, y: lineY - bandH / 2, w: nameW, h: bandH,
+        fontFace: FONT, fontSize: fontPt, bold: true, color: COLOURS.body,
+        align: 'left', valign: 'middle', margin: 0, fit: FIT
+      });
     }
 
     slide.addShape(pptx.shapes.RECTANGLE, {

@@ -750,6 +750,10 @@ Multiple stacked lines, each with its own scale:
 
 **Minimum useful size:** 3.5″ wide × ~1.2″ tall per single line (empirically tested). Below 3.5″ the tick labels overlap and intervals stop reading clearly. Stacked lines add ~1.0″ per extra line.
 
+**Stacked lines are named A, B, C down their left edge automatically.** A question saying "Line B: what number does Q show?" over three unnamed lines makes a child work out which line is B before starting the maths, so the naming is the default rather than a field to remember. Set `"lineLabel": "..."` on a line to name it something else, or `"lineLabels": false` on the visual to turn naming off where the lines are genuinely not referred to individually. A single line is never named.
+
+**The drawing grows into a card that has room to spare**, up to 1.6x its natural size, so a lone line in a deep My Turn card gets bigger numerals rather than a bigger margin. The zone still binds first, so this only affects a card with genuine surplus, and writing room is kept above and below the axis either way. Nothing to set.
+
 **The axis numerals print with thousands separators** (1,000 and 10,000), matching the way the question beside them is written, so a Year 4 slide is not showing a child both conventions at once. Values under a thousand and decimals are left as they are. Nothing to set: the drawing does it.
 
 ### `place-value-chart`

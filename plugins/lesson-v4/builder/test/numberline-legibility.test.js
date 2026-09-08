@@ -130,16 +130,14 @@ test('a pair of bare endpoint lines is not charged for arrows it does not have',
 });
 
 test('stacking three arrowed lines no longer halves the arrows', () => {
-  const arrowOf = (r) => {
-    // The stem is the tall, very narrow red rectangle.
+  // Measured absolutely, not against a single-line arrow: a lone line may now
+  // grow into a roomy card, so a ratio between the two would move for reasons
+  // that have nothing to do with the stack.
+  const stem = (r) => {
     const red = r.shapes.filter((s) => s.options.fill && s.options.fill.color === 'CC0000');
     assert.ok(red.length >= 2, 'an arrowed line draws a stem and a head');
     return Math.max(...red.map((s) => s.options.h));
   };
-
-  const one = draw(ZONE, {
-    start: 2000, end: 4000, interval: 500, labels: 'ends', arrow: { at: 3500, label: 'A' },
-  });
   const three = draw(ZONE, {
     lines: [
       { start: 1000, end: 3500, interval: 500, labels: 'ends', arrow: { at: 2500, label: 'P' } },
@@ -147,13 +145,56 @@ test('stacking three arrowed lines no longer halves the arrows', () => {
       { start: 0, end: 10000, interval: 2000, labels: 'ends', arrow: { at: 8000, label: 'R' } },
     ],
   });
-
-  const ratio = arrowOf(three) / arrowOf(one);
   assert.ok(
-    ratio > 0.6,
-    `a stacked arrow came out at ${(ratio * 100).toFixed(0)}% of a single-line arrow; ` +
-      'the deck that prompted this shipped at 49%'
+    stem(three) > 0.165,
+    `a stacked arrow stem came out at ${stem(three).toFixed(3)}in; the deck that prompted ` +
+      'this shipped 0.141in, because a flat per-line height charge scaled it to 54%'
   );
+});
+
+test('a lone line grows into a card with room to spare', () => {
+  // The reported deck put one number line in a 3.7in card. Capping the drawing
+  // at its natural size banked all of that as white and left the numerals
+  // smaller than the card could afford.
+  const roomy = draw({ x: 0.23, y: 0.77, w: 7.98, h: 3.7 },
+    { start: 0, end: 10000, interval: 2500, labels: 'ends' });
+  const tight = draw({ x: 0.23, y: 0.77, w: 7.98, h: 1.0 },
+    { start: 0, end: 10000, interval: 2500, labels: 'ends' });
+  assert.ok(
+    labelled(roomy.labels, '10,000').opts.fontSize > labelled(tight.labels, '10,000').opts.fontSize,
+    'a generous card should buy bigger numerals, not more white space'
+  );
+  for (const l of roomy.labels) assertFits(l, 'a grown numeral');
+});
+
+test('stacked lines are named down their left edge without being asked', () => {
+  // A question saying "Line B: what number does Q show?" over three unnamed
+  // lines makes a child work out which line is B before starting the maths.
+  const three = draw(ZONE, {
+    lines: [
+      { start: 1000, end: 3500, interval: 500, labels: 'ends' },
+      { start: 7000, end: 8000, interval: 200, labels: 'ends' },
+      { start: 0, end: 10000, interval: 2000, labels: 'ends' },
+    ],
+  });
+  const texts = three.labels.map((l) => l.text);
+  for (const name of ['A', 'B', 'C']) {
+    assert.ok(texts.includes(name), `expected the lines to be named; got ${texts.join(' ')}`);
+  }
+});
+
+test('a single line is not named, and naming can be turned off', () => {
+  const one = draw(ZONE, { start: 0, end: 10000, interval: 2500, labels: 'ends' });
+  assert.ok(!one.labels.some((l) => l.text === 'A'), 'one line has nothing to be told apart from');
+
+  const off = draw(ZONE, {
+    lineLabels: false,
+    lines: [
+      { start: 0, end: 10000, interval: 2500, labels: 'ends' },
+      { start: 4000, end: 8000, interval: 1000, labels: 'ends' },
+    ],
+  });
+  assert.ok(!off.labels.some((l) => l.text === 'A'), 'a designer may turn the names off');
 });
 
 test('a stack in a shallow zone takes its room out of the arrows, not the numerals', () => {

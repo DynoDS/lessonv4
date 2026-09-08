@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-08 Number lines fill the card, and stacked lines say which they are (4.2.114)
+
+Follow-up to 4.2.113, decided by Daniel against a mock deck showing both options side by side. He picked the fuller of the two.
+
+A number line is a thin thing: one line and its numerals need about half an inch, and a My Turn card is often seven times that. Capping the drawing at its natural size banked all of that as white space and left the numerals smaller than the card could afford, on exactly the slides with the most room. The drawing may now grow up to 1.6x. The zone still binds first, so a crowded card is unaffected and only genuine surplus is given back, and room is kept above and below the axis because a My Turn line gets written on.
+
+Stacked lines are now named A, B, C down their left edge by default. The reported deck asked "Line B: what number does Q show?" over three unnamed lines, so a child had to work out which line was B before starting the maths. Naming is the default rather than a field a designer sets, because forgetting it is invisible in the spec and only shows up in front of a class; `lineLabel` renames one and `lineLabels: false` turns them off.
+
+One test had to change rather than pass: it compared a stacked arrow against a single-line arrow as a ratio, and a lone line may now grow, so the ratio moved for reasons unrelated to the stack. It measures the stacked arrow absolutely instead - 0.141in when this was reported, 0.180in now.
+
 ## 2026-09-08 Number line numerals that can actually be read (4.2.113)
 
 Daniel reported that the arrows, axis numbers, the red marker and the green answers on a number line all looked too small. They were: on one axis a "0" printed at full size next to a "10000" at well under half of it, and the words in the question box beside them were roughly twice the height of either.
