@@ -24,8 +24,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const { LAYOUTS, VARIANTS, zonesOf } = require("../src/layouts");
-const { printableArea, DEFAULT_MARGIN_MM } = require("../src/page");
-const { GUTTER_MM, zoneContentMm } = require("../src/render");
+const { DEFAULT_MARGIN_MM } = require("../src/page");
+const { GUTTER_MM, zoneContentMm, contentArea } = require("../src/render");
 
 // A zone's real size on paper, so it can be read against a helper's minimum.
 function sizesFor(layout, orientation) {
@@ -35,7 +35,12 @@ function sizesFor(layout, orientation) {
   // against 90mm and then handed 84 - so its last column came out too narrow
   // for a child to write in, on a page that looked finished. A document that
   // states sizes a helper is then refused at would do the same thing again.
-  const area = printableArea(orientation);
+  // The page a sheet's ZONES actually get, which is the printable area less the
+  // band the learning objective sits in. Quoting the paper instead would
+  // overstate every height in this document by six millimetres, which is the
+  // same class of fault the comment above describes: a size stated here that a
+  // helper is then refused at.
+  const area = contentArea({ orientation, lo: "an objective" });
 
   return zonesOf(layout).map((z) => {
     const { wMm, hMm } = zoneContentMm(z, area);
@@ -139,10 +144,11 @@ function main() {
     "",
     "## What the numbers mean",
     "",
-    `Every sheet is A4 with a ${DEFAULT_MARGIN_MM}mm margin, and the gutter between`,
-    `zones (${GUTTER_MM}mm) is already taken off. So these are the millimetres a helper`,
-    "actually gets, and they can be read straight against the **smallest usable** size",
-    "in the helper catalogue.",
+    `Every sheet is A4 with a ${DEFAULT_MARGIN_MM}mm margin. The gutter between`,
+    `zones (${GUTTER_MM}mm) and the band the learning objective and sheet code sit in`,
+    "are already taken off. So these are the millimetres a helper actually gets, and",
+    "they can be read straight against the **smallest usable** size in the helper",
+    "catalogue.",
     "",
     "A helper asking for more than its zone offers is refused with a reason. It is",
     "never squashed, and nothing is trimmed to make it fit.",
