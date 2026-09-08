@@ -167,7 +167,7 @@ class PlanningLanguageTests(unittest.TestCase):
             "Judge balance using the pattern across a day or week.", voice
         )
         self.assertIn(
-            "Think about what someone eats across a whole day or week.",
+            "Check the whole day or week.",
             voice,
         )
 

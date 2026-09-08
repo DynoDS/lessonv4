@@ -512,9 +512,9 @@ Criteria are read and used by the child, so they are written in the child's own 
 
 is a curriculum document's sentence. The child's step is:
 
-> Think about what someone eats across a whole day or week.
+> Check the whole day or week.
 
-A criterion is glanced at while the child works, so it stays short: 2–5 words, 8 at the outside. Extra wording is what a child has to read instead of work, and the three things that lengthen a criterion each belong somewhere else - the reason on the Teach slide, an alternative in the teacher's mouth, a condition in a lookup row beside the steps.
+A criterion is a short, memorable cue: easy to say, repeat and call back while children work. Aim for 2-5 words, not an explanation after every instruction. Eight words is a reread point rather than a ban: keep a few extra words when they make the action clearer. `preferences.md` → Success Criteria owns the length and layout judgement. Remove repeated explanations or equipment alternatives; keep a simple condition inline when it is easy to follow. Shorter is not better if the child no longer knows what to do.
 
 Where a class needs more support, the support goes in the step's own words rather than in an explanation after it:
 

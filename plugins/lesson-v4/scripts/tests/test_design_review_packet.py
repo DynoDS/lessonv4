@@ -2381,3 +2381,12 @@ def test_authored_planning_register_is_quoted_without_rewriting_or_hiding_it():
     assert "> Retrieve a familiar occupation.\n> Explain the worker's task." in section
     assert "Private planning purpose" not in section
     assert "26 child-facing strings for a Year 4 class." in section
+
+
+def test_progression_calibration_covers_false_links_and_legitimate_convergence():
+    payload = json.loads(BEHAVIOUR_CASES.read_text(encoding="utf-8"))
+    cases = {row["id"]: row for row in payload["cases"]}
+    assert cases["resource-reuse-is-not-learning-dependency"]["expectedResult"] == "REDESIGN REQUIRED"
+    assert cases["cumulative-scale-learning"]["expectedResult"] == "APPROVED"
+    assert cases["parallel-cases-converge-without-forced-chain"]["expectedResult"] == "APPROVED"
+    assert "A link carries learning" in PREFERENCES.read_text(encoding="utf-8")

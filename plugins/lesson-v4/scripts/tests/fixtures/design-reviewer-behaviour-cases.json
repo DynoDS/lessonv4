@@ -425,6 +425,46 @@
       "expectedOwner": "Lesson Designer",
       "protectedBehaviour": "Distinguish the same supported question from evidence of fresh independent judgement.",
       "forbiddenFinding": "Do not ban claim questions generally. The finding concerns what this task can establish about the intended learning."
+    },
+    {
+      "id": "resource-reuse-is-not-learning-dependency",
+      "materialDifference": "A number-line lesson keeps the same diagram throughout. Children name its endpoints, then copy interval counts, then locate an unlabelled value. Nothing teaches how endpoint difference and equal spaces determine one interval, yet the final answer requires that relationship. Each task refers to the previous slide.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "protectedBehaviour": "Trace the final performance backwards to its taught ingredients, not shared objects or callback wording.",
+      "forbiddenFinding": "Do not repair the missing scale relationship by adding a progress strip or an activity label."
+    },
+    {
+      "id": "cumulative-scale-learning",
+      "materialDifference": "Children find the endpoint difference, use it with the number of equal spaces to calculate one interval, then use that interval to locate a fresh point. Each new move is taught and used. Their final answer depends on the earlier difference and interval reasoning rather than a printed value.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Accept a cumulative dependency visible in the content without per-beat paperwork.",
+      "forbiddenFinding": "Do not require an extra Apply slide or a written product between each stage."
+    },
+    {
+      "id": "parallel-cases-converge-without-forced-chain",
+      "materialDifference": "Two independent historical sources about different aspects of children's lives are taught and used separately. Either could come first, but both supply distinct evidence needed for a later comparison.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Accept converging evidence with a real final contribution.",
+      "forbiddenFinding": "Do not require source B to depend on a written product from source A or reject the order solely because it is movable."
+    },
+    {
+      "id": "short-callback-not-numeric-compliance",
+      "materialDifference": "The criteria list uses six necessary, short, runnable actions with stable wording. The supported free-panel composition preserves all steps and adequate working space at the renderer's reading floor, and visual review finds the whole screen usable.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Judge memorable cues, completeness and actual usability rather than a five-step cap.",
+      "forbiddenFinding": "Do not merge distinct actions or split the method into two concepts to meet a count."
+    },
+    {
+      "id": "wordy-criteria-still-needs-repair",
+      "materialDifference": "Every success-criteria step repeats the teacher's explanation and lists the same equipment alternatives. All necessary meanings can be retained as shorter, familiar action cues, but the design claims that no hard word ceiling makes the prose acceptable.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Removing a numerical ban does not remove the short, repeatable wording preference.",
+      "forbiddenFinding": "Do not accept routine verbosity merely because it is structurally valid; do not delete essential teaching."
     }
   ]
 }
