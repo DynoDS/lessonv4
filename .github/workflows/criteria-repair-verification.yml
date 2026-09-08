@@ -3,62 +3,25 @@ on:
   push:
     branches: [repair/teachable-criteria-and-progression]
 permissions:
-  contents: write
+  contents: read
 jobs:
-  final-verification:
-    if: github.actor != 'github-actions[bot]'
+  integration-source:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - uses: actions/setup-python@v5
+          ref: 768a76f3bb08507fb6977a59c1680f9b0d9a125c
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Capture exact concurrent commit
+        run: |
+          git diff 3e728d0c42f3377eebbc04c0fa35ee6fbd9f3d12 HEAD --binary > /tmp/concurrent-main.patch
+          git show --format=fuller --stat HEAD > /tmp/concurrent-main-summary.txt
+      - uses: actions/upload-artifact@v4
         with:
-          python-version: '3.11'
-      - name: Reconcile callback regression and preserve complete test record
-        run: |
-          python - <<'PY'
-          import subprocess
-          from pathlib import Path
-          root = Path('plugins/lesson-v4')
-          p = root / 'scripts/tests/test_verdict_leaks_spoken_notes_and_retest_decay.py'
-          text = p.read_text()
-          old = '"Think about what someone eats across a whole day or week.",'
-          assert text.count(old) == 1
-          p.write_text(text.replace(old, '"Check the whole day or week.",'))
-          p = root / 'references/build-review-log.md'
-          text = p.read_text()
-          needle = 'They are not silently treated as a clean whole-repository pass and are outside this criteria/progression repair.'
-          assert text.count(needle) == 1
-          extra = ' The full Node test run passed 526 of 528 tests, with only those same two baseline assertions failing. The full Python run passed 1,290 tests and 1,641 subtests; of four failures, three were reproduced on the untouched snapshot (picture guard, an old reviewer effort assertion, and an old voice-guide name assertion). The fourth expected the long criteria example replaced here; its expectation now follows the short callback, and that entire 18-test file passes.'
-          p.write_text(text.replace(needle, needle + extra))
-          expected = {
-            'scripts/tests/test_verdict_leaks_spoken_notes_and_retest_decay.py': '4eeb9eefba9f711efea5988872661070c459cdc9',
-            'references/build-review-log.md': '8c4bc347f0621805ff26d4d47e6fdc2058da80bb'
-          }
-          for name, sha in expected.items():
-              actual = subprocess.check_output(['git', 'hash-object', str(root / name)], text=True).strip()
-              assert actual == sha, (name, actual)
-          PY
-      - name: Install test dependencies
-        run: |
-          python -m pip install pytest Pillow
-          npm ci --prefix plugins/lesson-v4/builder
-      - name: Run focused Python regressions including legacy voice checks
-        working-directory: plugins/lesson-v4
-        run: python -m pytest -q scripts/tests/test_success_criteria_fit_a_glance.py scripts/tests/test_drawlive_handoff.py scripts/tests/test_verdict_leaks_spoken_notes_and_retest_decay.py
-      - name: Run steps and criteria-panel regressions
-        working-directory: plugins/lesson-v4/builder
-        run: node --test test/steps.test.js test/success-criteria-panel.test.js
-      - name: Commit verified source on the repair branch only
-        run: |
-          test "$GITHUB_REF" = 'refs/heads/repair/teachable-criteria-and-progression'
-          git add plugins/lesson-v4
-          git diff --cached --check
-          git diff --cached --stat
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Align callback regression with the short criterion and record baseline-only failures'
-          git push origin HEAD:refs/heads/repair/teachable-criteria-and-progression
+          name: concurrent-main-integration
+          path: |
+            /tmp/concurrent-main.patch
+            /tmp/concurrent-main-summary.txt
+          retention-days: 1
