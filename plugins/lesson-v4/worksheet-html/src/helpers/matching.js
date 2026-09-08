@@ -188,10 +188,81 @@ const CARD_GAP_MM = 3;
 // runs, so the fallback should almost never be reached.
 const CARD_IMAGE_RATIO = 0.6;
 
+// Three geometries, and the row used to know only one of them.
+//
+//   the FILE      what the photographer's camera happened to frame
+//   the SUBJECT   the object a child is being asked to look at
+//   the VIEWPORT  the room this page gives that object
+//
+// `.h-card-img { width: 100%; height: auto }` said all three were the same
+// thing. On a Year 4 history sheet comparing a Tudor doll with a modern one,
+// the Tudor photograph is 2,650 x 4,450 and the modern one 2,000 x 2,000, so at
+// the same 79mm card width one printed 132.6mm tall and the other 79.1mm, the
+// cards stretched to a shared 149.2mm to hold the taller of them, and half the
+// worksheet went to the fact that one photographer had stood further back. That
+// is a file's aspect ratio designing a page.
+//
+// So a row of cards shares ONE viewport height and each photograph is drawn
+// inside it at its own true proportions. The height is the tallest that still
+// lets every picture in the row print at its full card width, so the widest
+// picture in the set fills its card and the others match its height rather than
+// out-growing it. Nothing is stretched, nothing is cropped by the engine, and
+// no picture is made to look bigger than another because of the canvas around
+// it.
+//
+// Where the true relative scale IS the evidence - a Victorian penny beside a
+// modern one - `imageFit: "canvas"` gives every picture the full card width
+// again and lets the heights differ, which is the whole point of that
+// comparison. `imageHeightMm` states the viewport outright.
+
+// The tallest a viewport reaches on its own, which is the guard for the card
+// that has no neighbour to share a height with. One photograph in one card is
+// still a file deciding a page if the file is tall enough: at 2,650 x 4,450 the
+// Tudor doll is 1.68 times as deep as it is wide and takes 133mm of a 267mm
+// page on its own.
+//
+// 1.5 is a 2:3 portrait, which is the tallest an ordinary photograph is framed
+// at. Anything past that is unusual framing rather than an upright picture, and
+// the page stops paying for it.
+const CARD_IMAGE_MAX_ASPECT = 1.5;
+
+// A reviewed crop: how much of each edge of the FILE is not evidence.
+//
+// Written as fractions of the file, named the way CSS names its sides. It
+// exists for the photograph with a hand's width of studio white beside the
+// object, where trimming canvas makes the subject bigger without making the
+// picture say anything it did not already say. It is authored per card and the
+// engine never sets it: deciding what in a source is not evidence is a decision
+// about the source, and this file has never seen it.
+const CROP_SIDES = ["top", "right", "bottom", "left"];
+const CROP_MAX = 0.45;
+
+function cardCrop(card) {
+  const given = card && card.crop;
+  const crop = { top: 0, right: 0, bottom: 0, left: 0 };
+  if (given === undefined || given === null) return crop;
+  for (const side of CROP_SIDES) {
+    const value = Number(given[side] || 0);
+    if (!Number.isFinite(value) || value < 0 || value > CROP_MAX) {
+      throw new Error(
+        `card crop.${side} is ${given[side]}, which is not a fraction of the ` +
+          `picture between 0 and ${CROP_MAX}. A crop trims canvas that is not ` +
+          `evidence; it is not a way to keep half a source out of the lesson.`
+      );
+    }
+    crop[side] = value;
+  }
+  return crop;
+}
+
+// The shape of what is LEFT after the crop, which is the shape the page sees.
 function cardImageAspect(card) {
-  return card.imageWidth > 0 && card.imageHeight > 0
-    ? card.imageHeight / card.imageWidth
-    : CARD_IMAGE_RATIO;
+  const natural =
+    card.imageWidth > 0 && card.imageHeight > 0
+      ? card.imageHeight / card.imageWidth
+      : CARD_IMAGE_RATIO;
+  const crop = cardCrop(card);
+  return natural * ((1 - crop.top - crop.bottom) / (1 - crop.left - crop.right));
 }
 
 function cardInnerWidthMm(widthMm, columns) {
@@ -225,9 +296,59 @@ function cardResponseMm(spec) {
   );
 }
 
-function cardHeightMm(card, innerMm, spec) {
+// The cards of one printed row, in order.
+function cardRows(spec) {
+  const columns = cardColumns(spec);
+  const cards = spec.cards || [];
+  const rows = [];
+  for (let r = 0; r * columns < cards.length || r === 0; r += 1) {
+    rows.push(cards.slice(r * columns, (r + 1) * columns));
+  }
+  return rows;
+}
+
+// The one image height every card in a row is drawn to.
+//
+// The tallest that still lets every picture reach its full card width: taller
+// than that and the widest picture in the set would have to be cropped or
+// squeezed to keep up, which is the file deciding the page again. Capped, so a
+// row of uniformly upright photographs still stops somewhere.
+function sharedImageMm(cards, innerMm, spec) {
+  const withPictures = cards.filter((card) => card.imageHref);
+  if (!withPictures.length) return 0;
+
+  if (spec && spec.imageHeightMm !== undefined) {
+    const stated = Number(spec.imageHeightMm);
+    if (!Number.isFinite(stated) || stated < 15 || stated > 200) {
+      throw new Error(
+        `card-row imageHeightMm is ${spec.imageHeightMm}. State the height a ` +
+          "source is worth looking at, in millimetres, between 15 and 200."
+      );
+    }
+    return stated;
+  }
+
+  const atFullWidth = withPictures.map((card) => innerMm * cardImageAspect(card));
+  // Every picture at its own canvas height: the old behaviour, kept for the
+  // comparison where the difference in size is the evidence.
+  if (spec && spec.imageFit === "canvas") return Math.max(...atFullWidth);
+
+  return Math.min(innerMm * CARD_IMAGE_MAX_ASPECT, ...atFullWidth);
+}
+
+// Where one picture actually lands inside that viewport: as wide as its own
+// proportions allow at the shared height, never wider than the card.
+function cardImageBox(card, innerMm, viewportMm) {
+  const aspect = cardImageAspect(card);
+  const widthMm = Math.min(innerMm, viewportMm / aspect);
+  return { widthMm, heightMm: widthMm * aspect };
+}
+
+function cardHeightMm(card, innerMm, spec, viewportMm) {
   const titleMm = card.title ? linesFor(card.title, innerMm) * LINE_MM : 0;
-  const imageMm = card.imageHref ? innerMm * cardImageAspect(card) : 0;
+  const imageMm = card.imageHref
+    ? cardImageBox(card, innerMm, viewportMm).heightMm
+    : 0;
   const captionMm = card.caption
     ? linesFor(card.caption, innerMm, spec && spec.blankWidthMm) * NOTE_LINE_MM
     : 0;
@@ -260,19 +381,48 @@ function cardDotSide(spec) {
   return CARD_DOT_SIDES.has(spec.dot) ? spec.dot : null;
 }
 
-function renderCardRow(spec) {
+// One picture in its viewport. The viewport is drawn at exactly the size the
+// picture lands at, so a tall photograph is narrower than its card rather than
+// floating in a letterboxed grey rectangle, and every offset inside it is a
+// percentage of that box - which is what keeps the crop arithmetic to one line
+// each and out of reach of a rounding difference between the estimate and the
+// browser.
+function cardImageHtml(card, innerMm, viewportMm) {
+  const crop = cardCrop(card);
+  const box = cardImageBox(card, innerMm, viewportMm);
+  const keptWide = 1 - crop.left - crop.right;
+  const keptTall = 1 - crop.top - crop.bottom;
+  const style = [
+    `width:${(100 / keptWide).toFixed(3)}%`,
+    `height:${(100 / keptTall).toFixed(3)}%`,
+    `left:${((-crop.left * 100) / keptWide).toFixed(3)}%`,
+    `top:${((-crop.top * 100) / keptTall).toFixed(3)}%`,
+  ].join(";");
+  return `<span class="h-card-view" style="width:${box.widthMm.toFixed(2)}mm;height:${box.heightMm.toFixed(2)}mm"><img class="h-card-img" style="${style}" src="${esc(card.imageHref)}" alt=""></span>`;
+}
+
+function renderCardRow(spec, widthMm) {
   const columns = cardColumns(spec);
   const dot = cardDotSide(spec);
+  const innerMm = cardInnerWidthMm(
+    typeof widthMm === "number" && widthMm > 0 ? widthMm : WIDEST_ZONE_MM,
+    columns
+  );
+  // One viewport per printed row, because a row is what a child compares
+  // across. Two rows of artefacts are two sets, and forcing the second to the
+  // first's height would be the same fault in the other direction.
+  const viewports = new Map();
+  cardRows(spec).forEach((row) => {
+    const shared = sharedImageMm(row, innerMm, spec);
+    row.forEach((card) => viewports.set(card, shared));
+  });
+
   const cards = (spec.cards || [])
     .map(
       (card) => `
       <li class="h-card">
         ${card.title ? `<p class="h-card-title">${esc(card.title)}</p>` : ""}
-        ${
-          card.imageHref
-            ? `<img class="h-card-img" src="${esc(card.imageHref)}" alt="">`
-            : ""
-        }
+        ${card.imageHref ? cardImageHtml(card, innerMm, viewports.get(card) || 0) : ""}
         ${card.caption ? `<p class="h-card-caption">${promptHtml(card.caption, spec.blankWidthMm)}</p>` : ""}
         ${
           spec.writeLabel
@@ -314,8 +464,9 @@ function measureCardRow(spec, widthMm) {
   let total = 0;
   for (let r = 0; r < rows; r += 1) {
     const inRow = cards.slice(r * columns, (r + 1) * columns);
+    const viewportMm = sharedImageMm(inRow, innerMm, spec);
     const tallest = inRow.reduce(
-      (h, card) => Math.max(h, cardHeightMm(card, innerMm, spec)),
+      (h, card) => Math.max(h, cardHeightMm(card, innerMm, spec, viewportMm)),
       MATCH_CARD_MIN_MM
     );
     total += tallest + (r < rows - 1 ? CARD_GAP_MM : 0);
@@ -539,7 +690,15 @@ const css = `
     font-weight: bold; color: var(--colour-ink);
     line-height: 1.35;
   }
-  .h-card-img { width: 100%; height: auto; display: block; }
+  /* The viewport is the room this page gives the object; the image inside it is
+     the file, positioned so the part that is evidence is the part on show. Both
+     are drawn at sizes the engine worked out, because the engine had to know
+     them to measure the card. */
+  .h-card-view {
+    display: block; position: relative; overflow: hidden;
+    margin: 0 auto;
+  }
+  .h-card-img { position: absolute; display: block; }
   .h-card-caption {
     margin: var(--space-hair) 0 0;
     font-size: var(--type-note); color: var(--colour-ink);

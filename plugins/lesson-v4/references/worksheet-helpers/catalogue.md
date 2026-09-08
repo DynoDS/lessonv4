@@ -195,7 +195,7 @@ Smallest usable: **60mm wide x 27mm tall**. Spare height: never takes spare heig
 
 A question answered in the child's own words, with ruled lines under it. Say how many written things the prompt demands (`sentences`) and the engine sizes the lines to the zone; `lines` sets an exact count.
 
-Smallest usable: **70mm wide x 33mm tall**. Spare height: takes spare height first (it is writing space).
+Smallest usable: **70mm wide x 33mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
 
 ```json
 {
@@ -1853,7 +1853,7 @@ Smallest usable: **80mm wide x 100mm tall**. Spare height: takes spare height re
 
 A row of small titled cards, each optionally carrying a picture: plants along the foot of a sheet, artefacts under a timeline.
 
-Smallest usable: **96mm wide x 88mm tall**. Spare height: never takes spare height.
+Smallest usable: **96mm wide x 78mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1865,7 +1865,11 @@ Smallest usable: **96mm wide x 88mm tall**. Spare height: never takes spare heig
     {
       "title": "Cacao",
       "caption": "Amazon River basin, southern Mexico",
-      "imagePath": "plant.jpg  (the filename image-scout saved; the build inlines it)"
+      "imagePath": "plant.jpg  (the filename image-scout saved; the build inlines it)",
+      "crop": {
+        "left": 0.05,
+        "right": 0.05
+      }
     },
     {
       "title": "Coffee",
@@ -1876,6 +1880,7 @@ Smallest usable: **96mm wide x 88mm tall**. Spare height: never takes spare heig
       "caption": "Central and South America"
     }
   ],
+  "imageHeightMm": 34,
   "writeLabel": "Because...",
   "markLabel": "Tick if it grows in the rainforest"
 }

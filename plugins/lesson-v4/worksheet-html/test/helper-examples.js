@@ -560,10 +560,21 @@ module.exports = {
         imageHref: PLANT.href,
         imageWidth: PLANT.width,
         imageHeight: PLANT.height,
+        // Fractions of the FILE that are not evidence, trimmed before the
+        // picture is placed: studio white beside an object, a slab of sky, a
+        // museum label. Authored after looking at the photograph; never a way
+        // to keep part of a source out of the lesson.
+        crop: { left: 0.05, right: 0.05 },
       },
       { title: "Coffee", caption: "Ethiopia, South America, Sudan" },
       { title: "Orchids", caption: "Central and South America" },
     ],
+    // Every picture in a row is drawn to one height, so a child comparing them
+    // compares the objects and not the framing. Two ways to say otherwise:
+    // `imageHeightMm` states the height outright, and `imageFit: "canvas"` puts
+    // every picture back at its full card width, for the comparison where the
+    // difference in size is itself the evidence.
+    imageHeightMm: 34,
     // Asked for once, repeated on every card: "write why beside each one" is
     // one instruction to a child, not three.
     writeLabel: "Because...",

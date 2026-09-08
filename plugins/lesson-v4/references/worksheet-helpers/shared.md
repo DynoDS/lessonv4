@@ -164,22 +164,37 @@ before starting.
 
 ## Somewhere to draw
 
-**A box a child draws in is a `sort-grid` with one row.** The column names head
-the box, so the headings do the instructing: `Uses electricity` and `Works by
-hand` over two halves, or one named box on its own. That is the whole task
-stated without a second instruction line under it.
+**A surface a child draws on is `drawing-space`.** Say what the surface has to
+hold and it works out the size: `draw: 4` is how many separate things go on it,
+`annotate: true` adds room for the labels and arrows that go around them, and
+`areas: ["Uses electricity", "Works by hand"]` names side-by-side parts, so the
+names do the instructing and no second instruction line is needed under it.
+`frame: "none"` gives bare paper with no edge drawn.
 
-It is also the one helper that keeps growing. Every other writing helper stops
-at half again its natural height, because a ruled line reaches its useful size
-and passes it, and a box a child draws in does not. So a sort grid given a side
-of a page takes the side, and a stack holding both a drawing box and some
-writing lines gives the room to the box and leaves the lines the size the
-question asked for.
+**Where you already know the surface, say it: `heightMm: 140`.** A designer who has
+looked at the task knows better than an arithmetic default, and the default is
+deliberately modest so that a big canvas is a decision somebody made rather than
+whatever the page had going spare.
 
-`blank-surface` is the bare surface with no headings - a number line to
-construct, an empty bar - and `storyboard` is numbered boxes in sequence with
-writing under each. Reach for the sort grid when what the child draws belongs
-under a NAME.
+This used to be a `sort-grid` with one row, and it went wrong in both
+directions. A sorting grid is a TABLE: it printed a tinted heading band and
+ruled cells around what should have been paper. And because a sorting cell was
+declared to have no useful upper size, the box took whatever height was left:
+a balanced-diet sheet shipped with a 209mm blank rectangle under a heading,
+which is most of a page of generic box. Neither was ever a decision about the
+drawing.
+
+**Room a drawing gets is still real room.** `drawing-space` is first in the
+queue for a short column's leftover - a rectangle of paper in the middle of a
+sheet has nowhere else useful to go, and it is more of the work here - so a
+stack holding a drawing surface and some writing lines still sends that room to
+the surface. What changed is that it stops at the surface the task asked for
+instead of at the edge of the page.
+
+`sort-grid` is for what it says: named columns a child sorts words or items
+into. `blank-surface` is a constructed strategy on a bare surface - a number
+line to build, an empty bar - and `storyboard` is numbered boxes in sequence
+with writing under each.
 
 ---
 
@@ -279,7 +294,7 @@ those words. Ask for a word only when naming it is the work.
 most published science sheets do this, and it is the form to reach for the moment
 a sheet carries more than two photographs. Three separate photographs is the
 ceiling even numbered, and past that no arrangement of zones exists that
-holds them — so the answer is fewer pictures, or several parts numbered on one
+holds them, so the answer is fewer pictures, or several parts numbered on one
 picture rather than one part each on several.
 
 These sizes and ceilings are pinned by `test/photo-costing.test.js` in the
@@ -290,6 +305,31 @@ names this file, so the numbers here are current rather than remembered.
 and its height follows, so a wider zone holds a TALLER picture and the page total
 grows. That is why "too narrow" on a picture-led sheet usually means one picture
 too many rather than the wrong shape.
+
+**Sources in a `card-row` are drawn to one height, and you rarely need to say
+so.** A child comparing a Tudor doll with a modern one should be comparing the
+dolls, not the two photographers' framing, so every picture in a row prints at
+the same height at its own true proportions - the widest one filling its card
+and the rest matching it. Nothing is stretched or cropped to manage it.
+
+Two ways to overrule that, both authored:
+
+- `imageFit: "canvas"` puts every picture back at its full card width and lets
+  the heights differ. Reach for it when the difference in size **is** the
+  evidence: a Victorian penny beside a modern one, a mammoth tooth beside a
+  human one.
+- `imageHeightMm` states the viewport outright, when a source is worth a
+  particular amount of page.
+
+**A crop is a decision about the source, so you make it.** Where a photograph
+carries a hand's width of studio white beside the object, or a slab of empty
+sky, `crop: { left: 0.18, right: 0.18 }` on that card trims it as fractions of
+the file before the picture is placed, and the object prints bigger for it.
+Trim canvas that carries nothing a child is asked to look at. Never trim to
+make two objects match, to remove a maker's mark, a label, damage, or anything
+the questions touch: that is editing the evidence, and the sheet is refused
+outright past 45% of any edge. Where the padding is the whole problem, the
+better repair is upstream - ask the image scout for a tighter photograph.
 
 **A name has to be attached to the thing it names, never floated above it.**
 When the questions call something `Circuit A` or `Photograph B`, that name is
