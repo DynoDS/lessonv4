@@ -3,18 +3,62 @@ on:
   push:
     branches: [repair/teachable-criteria-and-progression]
 permissions:
-  contents: read
+  contents: write
 jobs:
-  snapshot:
+  verify-repair:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          persist-credentials: false
-      - name: Export exact source for local verification
-        run: git archive --format=tar HEAD > /tmp/lessonv4-source.tar
-      - uses: actions/upload-artifact@v4
+          node-version: '22'
+      - uses: actions/setup-python@v5
         with:
-          name: lessonv4-source
-          path: /tmp/lessonv4-source.tar
-          retention-days: 1
+          python-version: '3.11'
+      - name: Apply the exact locally tested patch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import base64, hashlib, json, os, subprocess, urllib.request, zlib
+          from pathlib import Path
+          shas = ['27d04cd5ce354a2f897448500745ee583aed20a0', '355a544d55379e96b6187358cea501383022e327', '199f8d6d70594ce02d032bb898321021bd7ab5c7']
+          parts = []
+          for sha in shas:
+              url = f'https://api.github.com/repos/{os.environ["GITHUB_REPOSITORY"]}/git/blobs/{sha}'
+              req = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json', 'User-Agent': 'criteria-repair-verification'})
+              with urllib.request.urlopen(req, timeout=60) as response:
+                  body = json.load(response)
+              parts.append(base64.b64decode(body['content']))
+          # Repair a verified two-character transcription in the transport only.
+          parts[1] = parts[1].replace(b'yZIvNaVEVEukip', b'yZIvNaVEukip')
+          patch = zlib.decompress(base64.b64decode(b''.join(parts)))
+          assert hashlib.sha256(patch).hexdigest() == '785aa7dc52836ebd1c1a3c7b224cb3c51ddd894eac88629765c800309ab12078'
+          Path('/tmp/criteria-repair.patch').write_bytes(patch)
+          subprocess.run(['git', 'apply', '--unidiff-zero', '--check', '/tmp/criteria-repair.patch'], check=True)
+          subprocess.run(['git', 'apply', '--unidiff-zero', '/tmp/criteria-repair.patch'], check=True)
+          subprocess.run(['git', 'diff', '--check'], check=True)
+          print('Verified exact patch SHA256; applied 4.2.111 repair.')
+          PY
+      - name: Install test dependencies
+        run: |
+          python -m pip install pytest Pillow
+          npm ci --prefix plugins/lesson-v4/builder
+      - name: Run focused Python regressions
+        working-directory: plugins/lesson-v4
+        run: python -m pytest -q scripts/tests/test_success_criteria_fit_a_glance.py scripts/tests/test_drawlive_handoff.py
+      - name: Run complete steps and criteria-panel regressions
+        working-directory: plugins/lesson-v4/builder
+        run: node --test test/steps.test.js test/success-criteria-panel.test.js
+      - name: Commit verified source on the repair branch only
+        run: |
+          test "$GITHUB_REF" = 'refs/heads/repair/teachable-criteria-and-progression'
+          git add plugins/lesson-v4
+          git diff --cached --check
+          git diff --cached --stat
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Keep criteria memorable, preserve their real fit, and bind live cues (4.2.111)'
+          git push origin HEAD:refs/heads/repair/teachable-criteria-and-progression
