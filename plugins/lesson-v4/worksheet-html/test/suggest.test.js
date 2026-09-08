@@ -449,3 +449,63 @@ test("a refusal carries its own shortfall, so the closest miss can be found with
     assert.ok("widthShortMm" in r, `${r.layout} carries no width shortfall`);
   }
 });
+
+// ─── what the shape does to the work ─────────────────────────────────────
+//
+// Fill was the only thing this ranking measured, and a percentage describes a
+// page from the outside. Two shapes can fill a page identically and be nothing
+// alike inside it: one gives a chart the width to be read, the other squeezes
+// it to the narrowest size the engine will accept and spends the width it saved
+// on writing lines that had enough already. The second was winning whenever its
+// percentage came out closer to the target.
+
+test("a shape that squeezes the work is not offered above one that does not", () => {
+  const wideChart = {
+    helper: "bar-chart",
+    title: "Books read in each class this term",
+    categories: ["Oak", "Elm", "Birch", "Willow", "Ash", "Yew"],
+    values: [24, 18, 30, 12, 20, 26],
+    yMax: 32,
+    yInterval: 4,
+  };
+  const answers = {
+    helper: "written-answers",
+    items: [
+      { text: "How many more books did Birch read than Willow?", sentences: 1 },
+      { text: "Explain how you worked it out.", sentences: 2 },
+    ],
+  };
+
+  const { fits } = suggestLayouts([wideChart, answers], {
+    yearGroup: 4,
+    extra: { title: "Bar charts", lo: "To read a bar chart" },
+  });
+
+  const strained = fits.filter((f) => f.strain > 0);
+  assert.ok(
+    strained.length > 0,
+    "no shape here crams the chart, so this test proves nothing - pick content " +
+      "with a wider picture in it"
+  );
+
+  for (const tight of strained) {
+    const rank = fits.indexOf(tight);
+    const easier = fits.filter((f) => f.strain === 0);
+    assert.ok(
+      easier.every((f) => fits.indexOf(f) < rank),
+      `${tight.layout}/${tight.orientation} squeezes something and was still ` +
+        `offered at position ${rank + 1}, above a shape that squeezes nothing`
+    );
+  }
+
+  // And the demotion is doing real work here: on fill alone this shape was as
+  // good as the best of them, so the old ranking had nothing to separate them
+  // by and offered it near the top.
+  const byFill = [...fits].sort(
+    (a, b) => comfortPenalty(a.fillPct) - comfortPenalty(b.fillPct)
+  );
+  assert.ok(
+    byFill.indexOf(strained[0]) < fits.indexOf(strained[0]),
+    "ranked by fill alone this shape came no higher, so nothing changed"
+  );
+});

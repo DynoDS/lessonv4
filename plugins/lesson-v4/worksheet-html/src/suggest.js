@@ -40,6 +40,34 @@ function verdictFor(fillPct) {
   return "good";
 }
 
+// What this shape does to the WORK, before anything is said about how full the
+// page looks.
+//
+// Fill was the only thing this ranking measured, and "88% full" describes a
+// page from the outside. Two shapes can fill a page identically and be nothing
+// alike inside it: one gives a photograph the width to be looked at, the other
+// squeezes it to the narrowest size the engine will accept and spends the width
+// it saved on writing lines that had enough already. The second one is not a
+// near miss on aesthetics, it is a page a child works from badly, and it was
+// winning whenever its percentage came out closer to the target.
+//
+// So the hard things are counted first: a part at the edge of its usable width,
+// and a part given less height than it asked for. Both are already measured by
+// the room report, and neither is a matter of taste.
+function strainOf(spec) {
+  try {
+    const { tightnessOf } = require("./tightness");
+    const room = tightnessOf(spec);
+    // A squashed part is worse than a narrow one: narrow is uncomfortable and
+    // squashed is content that did not fit in the space it was drawn into.
+    return room.squashed.length * 2 + room.cramped.length;
+  } catch {
+    // A shape that cannot be reported on is not a shape to promote, but it is
+    // not a refusal either - checkFit has already had its say.
+    return 0;
+  }
+}
+
 // How far a page is from the fill it should be aimed at, in a single number
 // that can be sorted on. The two ends are not symmetrical on purpose: a roomy
 // page wastes paper and a teacher trims it, whereas a page with no spare left
@@ -195,6 +223,7 @@ function suggestLayouts(rawItems, options = {}) {
       usedMm: fill.usedMm,
       availableMm: fill.availableMm,
       verdict: verdictFor(fill.fillPct),
+      strain: strainOf(spec),
     });
   }
 
@@ -211,7 +240,16 @@ function suggestLayouts(rawItems, options = {}) {
   //
   // So rank by comfort. A page a little roomier than ideal is a page a teacher
   // trims; a page with nothing left over is a page that clips.
-  fits.sort((a, b) => comfortPenalty(a.fillPct) - comfortPenalty(b.fillPct));
+  //
+  // And rank what the shape does to the work ahead of that, because a
+  // percentage is a fact about the page and a squeezed picture is a fact about
+  // the lesson. Fill decides between shapes that treat the content equally
+  // well, which is most of them; it never promotes one that treats it worse.
+  fits.sort(
+    (a, b) =>
+      a.strain - b.strain ||
+      comfortPenalty(a.fillPct) - comfortPenalty(b.fillPct)
+  );
 
   return {
     fits,

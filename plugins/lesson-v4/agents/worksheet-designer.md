@@ -284,14 +284,32 @@ For the normal case, do not choose a layout at all. Write the sheet with
 { "layout": "auto", "zones": [ { "stack": [ ... ] }, { "stack": [ ... ] } ] }
 ```
 
-The engine tries every layout in the library at both orientations and takes
-the one closest to comfortably full - the exact ranking `suggest.js` prints,
-applied by the preflight gate and the build identically, so nothing is lost by
-not running the tool yourself. The build reports the choice out loud
-(`AUTO_LAYOUT: Expected drawn in "band-two-cols" (portrait), 87% full.`), and
-"comfortably full" is deliberate: heights are estimates, a browser draws the
-real page a fraction taller or shorter, and a page with spare room absorbs
-that difference where a page filled to the brim clips and is refused.
+The engine tries every layout in the library at both orientations. It rejects
+any shape that squeezes something below its usable size or gives something less
+height than it asked for, and only then takes the one closest to comfortably
+full - the exact ranking `suggest.js` prints, applied by the preflight gate and
+the build identically, so nothing is lost by not running the tool yourself. The
+build reports the choice out loud (`AUTO_LAYOUT: Expected drawn in
+"band-two-cols" (portrait), 87% full.`), and "comfortably full" is deliberate:
+heights are estimates, a browser draws the real page a fraction taller or
+shorter, and a page with spare room absorbs that difference where a page filled
+to the brim clips and is refused.
+
+**Know what it is choosing between, so you know when to overrule it.** It is a
+FIT search over the content you handed it. It will not decide that two
+photographs want a shared viewport, that a claim is better compact than staged,
+or that a drawing wants a different surface. Those are the choices you make
+before you hand the content over, and no ranking rescues a page whose parts are
+the wrong size.
+
+**Naming a layout yourself is not reserved for teaching reasons.** The usual
+one is teaching - a comparison that has to sit side by side, a source above the
+questions about it - and it stays the commonest. But presentation is a real
+reason too: two sources a child compares belong on one line rather than one
+above the other, a picture-led sheet reads better landscape, a long stack of
+short items wants two columns rather than one tall one. Name the layout, and
+say in one line why in your run notes. What you may not do is buy a shape by
+cutting work, shrinking a response below a usable size, or dropping a source.
 
 **One entry per ZONE, in reading order - not one per helper.** An entry is
 exactly what that zone will hold, so it is usually a `stack` of several
