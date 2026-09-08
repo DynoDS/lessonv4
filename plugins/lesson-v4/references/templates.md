@@ -746,7 +746,11 @@ Multiple stacked lines, each with its own scale:
 
 **`labels` — choose which tick values are printed, because on a scale-reading task the labels are part of what the child works out.** Three forms: an explicit array like `[0, 2, 18, 20]` prints only those values; `"ends"` (the default) prints just the start and end; `"all"` prints every tick. When reading the scale is the skill (a starter retrieving "check what each step is worth", an arrow to read off), give a few anchor values so the interval can be deduced and leave the ticks between them bare, so the child counts on rather than reading a printed number off the tick. Reach for `"all"` only when the tick numbers are not themselves what's being worked out and showing them all genuinely helps: a deliberately easy first line, or a line used only to point at a position whose value is already given. This is the "Cognitive Load Triage on Scaffolds" principle in `preferences.md` applied to a scale: the scale is the part the child operates on, so it stays partly blank.
 
-**Minimum useful size:** 3.5″ wide × ~1.2″ tall per single line (empirically tested). Below 3.5″ the tick labels overlap and intervals stop reading clearly. Stacked lines add ~1.0″ per extra line, so a starter reading is clearest at around three lines rather than five: past that the zone scales every line down and the numbers crowd.
+**Three stacked lines is a hard maximum, and the build refuses a fourth by name (`NUMBERLINE_TOO_MANY_LINES`).** Every extra line is paid for out of the size of the numerals on *all* of them, and at five they are too small to read from the back of the room whatever else is done. Three is a comparison a child can hold in mind at once; more than three is a second slide, or a sign the question is comparing lines it does not need. This used to read "clearest at around three rather than five", and a run built five.
+
+**Minimum useful size:** 3.5″ wide × ~1.2″ tall per single line (empirically tested). Below 3.5″ the tick labels overlap and intervals stop reading clearly. Stacked lines add ~1.0″ per extra line.
+
+**The axis numerals print with thousands separators** (1,000 and 10,000), matching the way the question beside them is written, so a Year 4 slide is not showing a child both conventions at once. Values under a thousand and decimals are left as they are. Nothing to set: the drawing does it.
 
 ### `place-value-chart`
 ```json

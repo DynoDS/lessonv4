@@ -1,36 +1,168 @@
 'use strict';
 
 const { FONT, COLOURS, FIT } = require('../styles');
+const { textBoxWidthIn } = require('../glyph-width');
+
+// How big are the numbers a child actually reads off a number line?
+//
+// They were half the size of the words beside them, and the two reasons were
+// independent - which is why raising the font ceiling from 14pt to 24pt, the
+// last time this was reported, changed almost nothing.
+//
+//   1. EVERY AXIS LABEL WAS GIVEN THE SAME LITTLE BOX. A fixed 0.55in slot,
+//      whatever the number. "0" sat in it at full size; "10,000" needs 0.93in,
+//      so the fit pass shrank it until it fitted. Four-digit numbers landed in
+//      between. The size of a numeral therefore tracked its DIGIT COUNT and
+//      nothing else - so on a Year 4 deck, where every number on the line is
+//      four digits, every number on the line was squashed, and the lone "0"
+//      beside it stayed full size and made the mismatch obvious. This is the
+//      exact failure src/glyph-width.js was written for; the number line was
+//      never converted to it. Boxes are now measured from their own text, and
+//      the axis is inset far enough for the end labels to sit inside the zone
+//      at full size instead of being shrunk into a slot that overhangs it.
+//
+//   2. STACKING LINES SHRANK THE INK, NOT JUST THE SPACING. Each line claimed a
+//      flat 2.00in of natural height whether or not it carried an arrow or an
+//      answer, so three lines "needed" 6in; in a 3.3in zone everything was
+//      scaled to 54% - numerals, arrowheads, dots and ticks together. The
+//      arrows on a three-line slide came out half the length of the ones on a
+//      single-line slide in the same deck. A line now claims the height it
+//      actually uses: the arrow band only when it carries an arrow, the answer
+//      band only when it carries an answer. Two endpoint-only lines, which
+//      claimed 4in and were scaled to 81%, now claim about 1.4in and stay full
+//      size.
+//
+// The fit pass stays switched on underneath all of this as a last resort for a
+// genuinely crowded axis, where it now shrinks a numeral because the tick
+// spacing really is too tight - not because the number was long.
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.15;
-const NATURAL_SLOT_H   = 2.00;
 const LINE_H           = 0.04;
-const TICK_H           = 0.28;
-const TALL_TICK_H      = 0.44;
-const TICK_W           = 0.04;
+// Counting the equal intervals is step 3 of the success criteria, so the ticks
+// are what the method is actually performed on from the back of the room. They
+// were shorter than the gap beneath them and easy to lose against the rule.
+const TICK_H           = 0.38;
+const TALL_TICK_H      = 0.60;
+const TICK_W           = 0.05;
 const LABEL_GAP        = 0.08;
-const LABEL_H          = 0.40;
-const LABEL_W          = 0.55;
-// Board-readable ceiling for the axis numbers a child reads off. The scale is
-// the point of the task, so the numerals must read from the back of the room;
-// 14pt rendered too small in practice. `fit: FIT` (shrink) keeps this a ceiling,
-// so a crowded or many-line stack still shrinks the numbers to fit their box.
+// One line of FONT_SIZE text is 0.33in, so this is the text plus a hair.
+const LABEL_H          = 0.36;
+// Board-readable size for the axis numbers a child reads off. The scale is the
+// point of the task, so the numerals must read from the back of the room. This
+// is now a size they REACH rather than a ceiling they are shrunk from, because
+// the box around each numeral is measured from the numeral.
 const FONT_SIZE        = 24;
+// The floor every other card helper in here declares and this one never did. A
+// deep stack of lines used to buy its room out of the numerals, which are the
+// one thing on a number line a child cannot do the maths without. Below this
+// the arrows, ticks and dots give up room instead: an arrow only has to point,
+// but a scale has to be read.
+const FONT_MIN         = 14;
 const ARROW_STEM_W     = 0.03;
 const ARROW_STEM_H     = 0.26;
 const ARROW_HEAD_W     = 0.14;
 const ARROW_HEAD_H     = 0.14;
 const ARROW_COLOUR     = 'CC0000';
-const ARROW_LABEL_W    = 0.44;
-const ARROW_LABEL_H    = 0.40;
-const ARROW_RAISE      = 0.55;
-const ARROW_LABEL_RAISE = 0.34;
+// Stem top above the axis. Stem plus head is 0.39in, so the arrowhead tip lands
+// just clear of the axis rather than floating 0.15in above it. The arrow's
+// letter sits in a text band directly on top of the stem, so it cannot collide
+// with the stem however far the geometry is scaled down.
+const ARROW_RAISE      = 0.44;
 const DOT_R            = 0.09;
-const ANSWER_W         = 0.64;
-const ANSWER_H         = 0.40;
 const ANSWER_LABEL_GAP = 0.06;
+// Breathing room BETWEEN stacked lines, counted once per gap and not once per
+// line, so a pair of lines is not charged for a gap it does not have.
+const ROW_GAP          = 0.20;
+// ...and how far apart stacked lines may drift when the zone has room to spare.
+// Beyond this they stop reading as one set of lines to compare.
+const MAX_ROW_GAP      = 1.30;
+// Clear air between one axis label and the next before either has to shrink.
+const LABEL_GUTTER     = 0.06;
+// A hard ceiling, not a preference. Every line past this one is paid for out of
+// the size of all of them, and at five the numerals are too small to read from
+// the back of the room whatever else is done. Three lines is a comparison a
+// child can hold; more than three is a second slide. The guidance used to say
+// "clearest at around three rather than five", and a soft word like that is
+// exactly the kind a busy designer reads past.
+const MAX_LINES        = 3;
 // ─── END CONSTANTS ────────────────────────────────────────────
+
+// Year 4 place value is taught WITH the comma, and the question beside the line
+// already uses it ("Mark 3,000 on the line."). An axis reading 3000 under a
+// question reading 3,000 puts both conventions in front of a child at once, on
+// the slide that is teaching the convention. Built by hand rather than through
+// toLocaleString so the deck reads the same whatever the building machine's
+// locale happens to be. Decimals and values under a thousand are left alone.
+function formatValue(v) {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return String(v);
+  if (!Number.isInteger(v) || Math.abs(v) < 1000) return String(v);
+  const digits = String(Math.abs(v));
+  let out = '';
+  for (let i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 === 0) out += ',';
+    out += digits[i];
+  }
+  return (v < 0 ? '-' : '') + out;
+}
+
+function specOf(spec, key, fallback) {
+  return spec[key] != null ? spec[key] : fallback;
+}
+
+// The values this line writes under its axis, in ascending order.
+function labelValuesFor(spec) {
+  const start    = specOf(spec, 'start', 0);
+  const end      = specOf(spec, 'end', 10);
+  const interval = specOf(spec, 'interval', 1);
+
+  let values = spec.labels;
+  if (!values || values === 'ends') {
+    values = [start, end];
+  } else if (values === 'all') {
+    const numTicks = Math.round((end - start) / interval);
+    values = [];
+    for (let i = 0; i <= numTicks; i++) {
+      values.push(Math.round((start + i * interval) * 1e9) / 1e9);
+    }
+  }
+  return values.slice().sort(function (a, b) { return a - b; });
+}
+
+// The vertical room this line genuinely uses, above and below its axis, split
+// into the part that may be scaled down (rules, stems, gaps) and the number of
+// one-line TEXT BANDS, which may not be scaled below the font floor. A line
+// carrying neither arrow nor answer uses nothing above it and is charged
+// nothing for it.
+function inkFor(spec) {
+  let aboveElastic = 0;
+  let aboveBands   = 0;
+  if (spec.arrow) {
+    aboveElastic = Math.max(aboveElastic, ARROW_RAISE);
+    aboveBands   = 1;
+  }
+  if (spec.answer) {
+    aboveElastic = Math.max(aboveElastic, DOT_R + ANSWER_LABEL_GAP);
+    aboveBands   = 1;
+  }
+  const tickHalf = spec.wholeTick != null ? TALL_TICK_H / 2 : TICK_H / 2;
+  return {
+    aboveElastic: Math.max(aboveElastic, tickHalf),
+    aboveBands:   aboveBands,
+    belowElastic: tickHalf + LABEL_GAP,
+    belowBands:   1
+  };
+}
+
+// Keep a text box inside the zone without narrowing it: a label centred on an
+// endpoint may sit a few points inboard of its tick, but it is never shrunk to
+// buy room the zone already has.
+function boxWithin(centreX, w, loX, hiX) {
+  let x = centreX - w / 2;
+  if (x < loX) x = loX;
+  if (x + w > hiX) x = hiX - w;
+  return x;
+}
 
 function drawNumberline(pptx, slide, zone, data) {
   const lines = Array.isArray(data.lines)
@@ -45,60 +177,167 @@ function drawNumberline(pptx, slide, zone, data) {
         answer:    data.answer
       }];
 
+  if (lines.length > MAX_LINES) {
+    throw new Error(
+      'NUMBERLINE_TOO_MANY_LINES: ' + lines.length + ' stacked lines were asked for and ' +
+      MAX_LINES + ' is the most a number line may carry. Every extra line is paid for out of ' +
+      'the size of the numerals on all of them. Split these across two slides, or drop the ' +
+      'lines this question does not actually compare.'
+    );
+  }
+
   const innerX = zone.x + PAD;
   const innerY = zone.y + PAD;
   const innerW = zone.w - 2 * PAD;
   const innerH = zone.h - 2 * PAD;
 
-  const naturalH = NATURAL_SLOT_H * lines.length;
-  const scale    = Math.min(1.0, innerH / naturalH);
-  const slotH    = NATURAL_SLOT_H * scale;
-  const usedH    = slotH * lines.length;
-  const blockY   = innerY + (innerH - usedH) / 2;
+  // ── Vertical: what the lines actually need, then how much of it fits ──
+  const ink     = lines.map(inkFor);
+  const elastic = ink.reduce(function (t, k) { return t + k.aboveElastic + k.belowElastic; }, 0)
+                + ROW_GAP * (lines.length - 1);
+  const bands   = ink.reduce(function (t, k) { return t + k.aboveBands + k.belowBands; }, 0);
 
-  const tickH           = TICK_H           * scale;
+  let scale  = Math.min(1.0, innerH / (elastic + bands * LABEL_H));
+  let bandH  = LABEL_H * scale;
+  let fontPt = Math.round(FONT_SIZE * scale * 10) / 10;
+
+  // Under the floor, the numerals stop paying for the stack. Hold them at the
+  // floor, give every text band the height that font actually needs, and solve
+  // again for the scale everything ELSE runs at inside the room that leaves.
+  if (fontPt < FONT_MIN) {
+    const heldH = FONT_MIN / 72 + 0.03;
+    const held  = (innerH - bands * heldH) / elastic;
+    if (held > 0) {
+      scale  = Math.min(1.0, held);
+      bandH  = heldH;
+      fontPt = FONT_MIN;
+    }
+  }
+
+  const lineH           = LINE_H            * scale;
+  const tickH           = TICK_H            * scale;
   const tallTickH       = TALL_TICK_H       * scale;
+  const tickW           = TICK_W            * scale;
   const labelGap        = LABEL_GAP         * scale;
-  const labelH          = LABEL_H           * scale;
+  const arrowStemW      = ARROW_STEM_W      * scale;
   const arrowStemH      = ARROW_STEM_H      * scale;
+  const arrowHeadW      = ARROW_HEAD_W      * scale;
   const arrowHeadH      = ARROW_HEAD_H      * scale;
   const arrowRaise      = ARROW_RAISE       * scale;
-  const arrowLabelRaise = ARROW_LABEL_RAISE * scale;
-  const arrowLabelH     = ARROW_LABEL_H     * scale;
   const dotR            = DOT_R             * scale;
-  const answerH         = ANSWER_H          * scale;
   const answerLabelGap  = ANSWER_LABEL_GAP  * scale;
+  const rowGap          = ROW_GAP           * scale;
+
+  // Every label - axis numeral, arrow letter, answer - is one line of the same
+  // text, so all three sit in a band of the same height. Holding that band to
+  // the font floor is what stops a deep stack shrinking the numerals.
+  const above = ink.map(function (k) { return k.aboveElastic * scale + k.aboveBands * bandH; });
+  const below = ink.map(function (k) { return k.belowElastic * scale + k.belowBands * bandH; });
+
+  function labelWidth(text) {
+    return textBoxWidthIn(String(text), fontPt, true);
+  }
+
+  // ── Horizontal: inset the axis so the end labels fit inside the zone ──
+  // Every line shares one span, so stacked lines stay physically aligned and a
+  // slide can still ask children to compare positions across them.
+  const allLabels = lines.map(labelValuesFor);
+
+  function insetFor(f) {
+    let lh = 0;
+    let rh = 0;
+    allLabels.forEach(function (values) {
+      if (!values.length) return;
+      lh = Math.max(lh, textBoxWidthIn(formatValue(values[0]), f, true) / 2);
+      rh = Math.max(rh, textBoxWidthIn(formatValue(values[values.length - 1]), f, true) / 2);
+    });
+    let x1 = zone.x + Math.max(PAD, lh);
+    let x2 = zone.x + zone.w - Math.max(PAD, rh);
+    if (!(x2 - x1 > 0.5)) {   // pathologically narrow zone: keep the old span
+      x1 = innerX;
+      x2 = innerX + innerW;
+    }
+    return { x1: x1, w: x2 - x1 };
+  }
+
+  // One size for every numeral on the visual. A crowded axis has to shrink, but
+  // it shrinks WHOLE: letting each label take the size its own digits allow is
+  // how "0" ends up twice the height of "10000" on one line, which is the fault
+  // being repaired. So the tightest axis sets the size, and the rest match it.
+  function crowdedFont(f) {
+    const geo = insetFor(f);
+    let out = f;
+    lines.forEach(function (spec, i) {
+      const values = allLabels[i];
+      if (values.length < 2) return;
+      const start = specOf(spec, 'start', 0);
+      const end   = specOf(spec, 'end', 10);
+      if (end === start) return;
+      const xs = values.map(function (v) { return geo.x1 + ((v - start) / (end - start)) * geo.w; });
+      let minGap = Infinity;
+      for (let k = 1; k < xs.length; k++) minGap = Math.min(minGap, xs[k] - xs[k - 1]);
+      const cap  = Math.max(0.20, minGap - LABEL_GUTTER);
+      const need = Math.max.apply(null, values.map(function (v) {
+        return textBoxWidthIn(formatValue(v), f, true);
+      }));
+      if (need > cap) out = Math.min(out, f * cap / need);
+    });
+    return out;
+  }
+
+  // A smaller font needs a smaller inset, which lengthens the axis and relieves
+  // some of the crowding, so the second pass gives back what the first overpaid.
+  let labelFont = crowdedFont(fontPt);
+  if (labelFont < fontPt) labelFont = Math.min(fontPt, crowdedFont(labelFont));
+  labelFont = Math.round(labelFont * 10) / 10;
+
+  const geo    = insetFor(labelFont);
+  const lineX1 = geo.x1;
+  const lineW  = geo.w;
+
+  // Charging a line only for what it carries can leave real slack in a deep
+  // zone. Spare room belongs BETWEEN stacked lines, where it separates one
+  // child's line from the next; banked below them it just reads as a cramped
+  // huddle with a margin under it.
+  const inkH = above.reduce(function (t, v) { return t + v; }, 0)
+             + below.reduce(function (t, v) { return t + v; }, 0);
+  let gap = rowGap;
+  if (lines.length > 1 && inkH + gap * (lines.length - 1) < innerH) {
+    const slack = innerH - inkH - gap * (lines.length - 1);
+    gap += Math.min(slack / (lines.length - 1), MAX_ROW_GAP - ROW_GAP);
+  }
+  const usedH = inkH + gap * (lines.length - 1);
+  let cursorY = innerY + (innerH - usedH) / 2;
 
   lines.forEach(function (spec, lineIdx) {
     const start    = spec.start    != null ? spec.start    : 0;
     const end      = spec.end      != null ? spec.end      : 10;
     const interval = spec.interval != null ? spec.interval : 1;
 
-    const slotY = blockY + lineIdx * slotH;
-    const lineY = slotY + slotH * 0.45;
+    const lineY = cursorY + above[lineIdx];
 
     const numTicks = Math.round((end - start) / interval);
-    const spacing  = innerW / numTicks;
+    const spacing  = lineW / numTicks;
 
     const ticks = [];
     for (let i = 0; i <= numTicks; i++) {
-      const tickX = innerX + i * spacing;
+      const tickX = lineX1 + i * spacing;
       const value = Math.round((start + i * interval) * 1e9) / 1e9;
-      ticks.push({ x: tickX, index: i, value });
+      ticks.push({ x: tickX, index: i, value: value });
     }
 
     function getX(val) {
-      return innerX + ((val - start) / (end - start)) * innerW;
+      return lineX1 + ((val - start) / (end - start)) * lineW;
     }
 
     slide.addShape(pptx.shapes.RECTANGLE, {
-      x: innerX, y: lineY - LINE_H / 2, w: innerW, h: LINE_H,
+      x: lineX1, y: lineY - lineH / 2, w: lineW, h: lineH,
       fill: { color: COLOURS.body }, line: { color: COLOURS.body, width: 0 }
     });
 
     ticks.forEach(function (tick) {
       slide.addShape(pptx.shapes.RECTANGLE, {
-        x: tick.x - TICK_W / 2, y: lineY - tickH / 2, w: TICK_W, h: tickH,
+        x: tick.x - tickW / 2, y: lineY - tickH / 2, w: tickW, h: tickH,
         fill: { color: COLOURS.body }, line: { color: COLOURS.body, width: 0 }
       });
     });
@@ -108,25 +347,30 @@ function drawNumberline(pptx, slide, zone, data) {
       wholeVals.forEach(function (val) {
         const tx = getX(val);
         slide.addShape(pptx.shapes.RECTANGLE, {
-          x: tx - TICK_W / 2, y: lineY - tallTickH / 2, w: TICK_W, h: tallTickH,
+          x: tx - tickW / 2, y: lineY - tallTickH / 2, w: tickW, h: tallTickH,
           fill: { color: COLOURS.body }, line: { color: COLOURS.body, width: 0 }
         });
       });
     }
 
-    const belowY = lineY + tickH / 2 + labelGap;
-    let labelValues = spec.labels;
-    if (!labelValues || labelValues === 'ends') {
-      labelValues = [start, end];
-    } else if (labelValues === 'all') {
-      labelValues = ticks.map(function (t) { return t.value; });
-    }
+    const belowY      = lineY + tickH / 2 + labelGap;
+    const labelValues = allLabels[lineIdx];
+    const labelXs     = labelValues.map(getX);
 
-    labelValues.forEach(function (val) {
-      const lx = getX(val);
-      slide.addText(String(val), {
-        x: lx - LABEL_W / 2, y: belowY, w: LABEL_W, h: labelH,
-        fontFace: FONT, fontSize: FONT_SIZE, bold: true, color: COLOURS.body,
+    // A label may take the width its own digits need, up to the clear air
+    // between it and its neighbour. Only a genuinely crowded axis shrinks.
+    let minGap = Infinity;
+    for (let i = 1; i < labelXs.length; i++) {
+      minGap = Math.min(minGap, labelXs[i] - labelXs[i - 1]);
+    }
+    const widthCap = Number.isFinite(minGap) ? Math.max(0.20, minGap - LABEL_GUTTER) : lineW;
+
+    labelValues.forEach(function (val, i) {
+      const boxW = Math.min(textBoxWidthIn(formatValue(val), labelFont, true), widthCap);
+      slide.addText(formatValue(val), {
+        x: boxWithin(labelXs[i], boxW, zone.x, zone.x + zone.w),
+        y: belowY, w: boxW, h: bandH,
+        fontFace: FONT, fontSize: labelFont, bold: true, color: COLOURS.body,
         align: 'center', valign: 'top', margin: 0, fit: FIT
       });
     });
@@ -137,19 +381,20 @@ function drawNumberline(pptx, slide, zone, data) {
       const stemTopY = lineY - arrowRaise;
 
       slide.addShape(pptx.shapes.RECTANGLE, {
-        x: ax - ARROW_STEM_W / 2, y: stemTopY, w: ARROW_STEM_W, h: arrowStemH,
+        x: ax - arrowStemW / 2, y: stemTopY, w: arrowStemW, h: arrowStemH,
         fill: { color: ARROW_COLOUR }, line: { color: ARROW_COLOUR, width: 0 }
       });
       slide.addShape(pptx.shapes.ISOSCELES_TRIANGLE, {
-        x: ax - ARROW_HEAD_W / 2, y: stemTopY + arrowStemH - 0.01,
-        w: ARROW_HEAD_W, h: arrowHeadH,
+        x: ax - arrowHeadW / 2, y: stemTopY + arrowStemH - 0.01 * scale,
+        w: arrowHeadW, h: arrowHeadH,
         fill: { color: ARROW_COLOUR }, line: { color: ARROW_COLOUR, width: 0 },
         rotate: 180
       });
+      const arrowBoxW = labelWidth(arLabel);
       slide.addText(arLabel, {
-        x: ax - ARROW_LABEL_W / 2, y: stemTopY - arrowLabelRaise,
-        w: ARROW_LABEL_W, h: arrowLabelH,
-        fontFace: FONT, fontSize: FONT_SIZE, bold: true, color: ARROW_COLOUR,
+        x: boxWithin(ax, arrowBoxW, zone.x, zone.x + zone.w),
+        y: stemTopY - bandH, w: arrowBoxW, h: bandH,
+        fontFace: FONT, fontSize: fontPt, bold: true, color: ARROW_COLOUR,
         align: 'center', valign: 'middle', margin: 0, fit: FIT
       });
     }
@@ -162,13 +407,17 @@ function drawNumberline(pptx, slide, zone, data) {
         x: dotX - dotR, y: lineY - dotR, w: dotR * 2, h: dotR * 2,
         fill: { color: COLOURS.green }, line: { color: COLOURS.green, width: 0 }
       });
+      const answerBoxW = labelWidth(ansText);
       slide.addText(ansText, {
-        x: dotX - ANSWER_W / 2, y: lineY - dotR - answerLabelGap - answerH,
-        w: ANSWER_W, h: answerH,
-        fontFace: FONT, fontSize: FONT_SIZE, bold: true, color: COLOURS.green,
+        x: boxWithin(dotX, answerBoxW, zone.x, zone.x + zone.w),
+        y: lineY - dotR - answerLabelGap - bandH,
+        w: answerBoxW, h: bandH,
+        fontFace: FONT, fontSize: fontPt, bold: true, color: COLOURS.green,
         align: 'center', valign: 'middle', margin: 0, fit: FIT
       });
     }
+
+    cursorY += above[lineIdx] + below[lineIdx] + gap;
   });
 }
 
