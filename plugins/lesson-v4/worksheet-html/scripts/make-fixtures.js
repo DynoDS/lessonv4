@@ -319,6 +319,84 @@ function keyFor(sheet, answers) {
   return answers.map((answer, i) => ({ question: i + 1, answer }));
 }
 
+// ─── the three shapes the packs of 7 September 2026 got wrong ────────────
+// One Year 4 sheet carrying all three, so the whole build can be pointed at it
+// and the result looked at on paper.
+//
+// Every one of them was a SIZE decision the engine had never been asked to
+// make, and each is now answered by a different part of the contract:
+//
+//   a table taking one four-digit number per cell, drawn with a 30mm blank row
+//   because its zone had 30mm going spare               (recording-table enough)
+//
+//   a claim to judge, built as a conversation, so the child's own answer came
+//   out as a second featureless person called You                (named-claim)
+//
+//   somewhere to draw, routed to a one-row sorting grid that was allowed to
+//   keep growing, and drawn 209mm tall                        (drawing-space)
+//
+// It is a fixture rather than a test because the fault was visible and nothing
+// arithmetic was complaining: the point is to build it and look at it.
+
+const SIZING_EXPECTED = {
+  title: "Adding and subtracting 1,000",
+  questions: [
+    {
+      stack: [
+        { helper: "section-label", text: "Fluency" },
+        {
+          helper: "instruction",
+          text: "Write the number that is 1,000 less and 1,000 more.",
+        },
+        {
+          question: true,
+          helper: "recording-table",
+          columns: ["1,000 less", "Starting number", "1,000 more"],
+          rows: [
+            ["", "4,382", ""],
+            ["", "6,105", ""],
+            ["", "2,940", ""],
+            ["", "7,008", ""],
+          ],
+          // Three digits and a comma go in each cell. Saying so is what stops
+          // the row being drawn at whatever height the page has left.
+          writing: "number",
+        },
+      ],
+    },
+    {
+      stack: [
+        { helper: "section-label", text: "Reasoning" },
+        {
+          question: true,
+          helper: "named-claim",
+          text: "Tick or cross, then explain how you know.",
+          speaker: "Ethan",
+          says: "If I add 1,000 to 4,382, the hundreds digit changes.",
+          lines: 3,
+        },
+        {
+          question: true,
+          helper: "drawing-space",
+          text: "Draw counters in a place value chart to show what adding 1,000 does.",
+          // Two named halves, so the headings do the instructing and the
+          // surface is a surface rather than one bare rectangle with a
+          // sentence above it. Nothing about what the child draws is decided
+          // here: the names say which is which and the paper is theirs.
+          areas: ["4,382", "After adding 1,000"],
+          draw: 2,
+          annotate: true,
+        },
+      ],
+    },
+  ],
+  answers: [
+    "3,382 / 5,382 | 5,105 / 7,105 | 1,940 / 3,940 | 6,008 / 8,008",
+    "Cross. Only the thousands digit changes: 4,382 becomes 5,382.",
+    "Counters for 4 thousands, 3 hundreds, 8 tens and 2 ones, then five thousands counters.",
+  ],
+};
+
 function worksheet(meta, levels) {
   const sheets = {};
   const answerKey = {};
@@ -365,6 +443,21 @@ function main() {
         subject: "Geography",
       },
       { expected: GEOGRAPHY_EXPECTED }
+    )
+  );
+
+  write(
+    "maths-sizing-that-was-wrong",
+    worksheet(
+      {
+        lesson: "Adding and subtracting 1,000",
+        lo: "To add and subtract 1,000 from a four-digit number",
+        yearGroup: "Year 4",
+        subject: "Mathematics",
+        note:
+          "The three sizing faults of 7 September 2026, in the shapes that fixed them: a number-sized recording table, a named claim rather than a staged conversation, and a drawing surface sized from the work rather than from the page. Build it and look at it - nothing arithmetic was complaining about the versions this replaces.",
+      },
+      { expected: SIZING_EXPECTED }
     )
   );
 

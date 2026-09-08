@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "lesson": "Adding and subtracting 1,000",
+    "lo": "To add and subtract 1,000 from a four-digit number",
+    "yearGroup": "Year 4",
+    "subject": "Mathematics",
+    "note": "The three sizing faults of 7 September 2026, in the shapes that fixed them: a number-sized recording table, a named claim rather than a staged conversation, and a drawing surface sized from the work rather than from the page. Build it and look at it - nothing arithmetic was complaining about the versions this replaces."
+  },
+  "sheets": {
+    "expected": {
+      "title": "Adding and subtracting 1,000",
+      "layout": "halves-stacked",
+      "orientation": "portrait",
+      "zones": {
+        "a": {
+          "stack": [
+            {
+              "helper": "section-label",
+              "text": "Fluency"
+            },
+            {
+              "helper": "instruction",
+              "text": "Write the number that is 1,000 less and 1,000 more."
+            },
+            {
+              "question": true,
+              "helper": "recording-table",
+              "columns": [
+                "1,000 less",
+                "Starting number",
+                "1,000 more"
+              ],
+              "rows": [
+                [
+                  "",
+                  "4,382",
+                  ""
+                ],
+                [
+                  "",
+                  "6,105",
+                  ""
+                ],
+                [
+                  "",
+                  "2,940",
+                  ""
+                ],
+                [
+                  "",
+                  "7,008",
+                  ""
+                ]
+              ],
+              "writing": "number"
+            }
+          ]
+        },
+        "b": {
+          "stack": [
+            {
+              "helper": "section-label",
+              "text": "Reasoning"
+            },
+            {
+              "question": true,
+              "helper": "named-claim",
+              "text": "Tick or cross, then explain how you know.",
+              "speaker": "Ethan",
+              "says": "If I add 1,000 to 4,382, the hundreds digit changes.",
+              "lines": 3
+            },
+            {
+              "question": true,
+              "helper": "drawing-space",
+              "text": "Draw counters in a place value chart to show what adding 1,000 does.",
+              "areas": [
+                "4,382",
+                "After adding 1,000"
+              ],
+              "draw": 2,
+              "annotate": true
+            }
+          ]
+        }
+      }
+    }
+  },
+  "answerKey": {
+    "expected": [
+      {
+        "question": 1,
+        "answer": "3,382 / 5,382 | 5,105 / 7,105 | 1,940 / 3,940 | 6,008 / 8,008"
+      },
+      {
+        "question": 2,
+        "answer": "Cross. Only the thousands digit changes: 4,382 becomes 5,382."
+      },
+      {
+        "question": 3,
+        "answer": "Counters for 4 thousands, 3 hundreds, 8 tens and 2 ones, then five thousands counters."
+      }
+    ]
+  }
+}
