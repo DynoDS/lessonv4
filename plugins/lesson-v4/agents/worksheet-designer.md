@@ -468,9 +468,11 @@ never talk yourself into a smaller picture to get past it.
 **When no layout in the library holds it, the brief is bigger than a page and
 that is the finding.** Not a puzzle to keep re-cutting: three or four refusals
 on the same sheet means you are past the point where a different shape helps,
-and the refusal message tells you plainly - a page has 267mm of height in
-portrait and 180mm in landscape, so content asking for 500mm is not a layout
-problem.
+and the refusal message tells you plainly - a sheet's zones get about
+260mm of height in portrait and about 173mm in landscape, so content asking for
+500mm is not a layout problem. (The paper gives 267mm and 180mm; the few
+millimetres between the two are the band the learning objective and the sheet
+code sit in, at the top of the printable area.)
 
 **Read the verdict that comes back when nothing fits, and act on which kind it
 is.** Whether it arrives from `suggest.js` or as an auto sheet's

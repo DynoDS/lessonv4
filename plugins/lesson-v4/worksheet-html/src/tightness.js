@@ -23,8 +23,7 @@
 // real sheets rather than a number picked in here.
 
 const { flatten } = require("./layouts");
-const { printableArea, DEFAULT_MARGIN_MM } = require("./page");
-const { sheetGeometry, zoneContentMm, drawnZoneHeights, GUTTER_MM } = require("./render");
+const { sheetGeometry, zoneContentMm, drawnZoneHeights, contentArea, GUTTER_MM } = require("./render");
 const { inspectContent } = require("./helpers");
 
 // At or below this, a part is at the edge of what a child can use.
@@ -53,8 +52,7 @@ function tightnessOf(spec) {
   // names is full width THERE, and a report still measuring it inside one
   // column would be describing a page nobody printed.
   const { tree, sheet } = sheetGeometry(spec);
-  const orientation = spec.orientation || "portrait";
-  const area = printableArea(orientation, DEFAULT_MARGIN_MM);
+  const area = contentArea(spec);
 
   // The height each zone is DRAWN at, not its share of the layout tree.
   //

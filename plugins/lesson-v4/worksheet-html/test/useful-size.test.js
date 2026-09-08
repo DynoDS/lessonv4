@@ -266,3 +266,53 @@ test("what a written block may grow to is exactly what its lines may grow to", (
       "its five lines can between them use 15mm"
   );
 });
+
+// ─── the heading, on all six pages ───────────────────────────────────────
+//
+// Every page of all three packs carried the same tiny grey objective jammed
+// against the physical corner of the paper, and the same sheet code jammed
+// against the other. That is not six agents making the same unfortunate
+// decision: it was two lines of CSS placing them at `left: 0; top: 0` on the
+// body, which is outside the margin and inside the strip some classroom
+// printers cannot print at all. No instruction to "give the worksheet a
+// polished header" could ever have reached it.
+
+test("the sheet's heading is aligned to the work, not to the edge of the paper", () => {
+  const html = renderSheet({
+    layout: "full",
+    orientation: "portrait",
+    yearGroup: 4,
+    lo: "To add and subtract 1,000 from a four-digit number",
+    code: "C",
+    zones: { a: { question: true, ...transformationTable } },
+  });
+
+  assert.match(
+    html,
+    /\.lo \{[^}]*left: 15mm; top: 15mm/s,
+    "the objective sits on the same left edge as the work beneath it"
+  );
+  assert.match(
+    html,
+    /\.sheet-code \{[^}]*right: 15mm; top: 15mm/s,
+    "and the code sits on the same right edge"
+  );
+});
+
+test("the heading's band is paid for before a zone is measured", () => {
+  const { contentArea } = require("../src/render");
+  const bare = contentArea({ orientation: "portrait" });
+  const headed = contentArea({ orientation: "portrait", lo: "To read a bar chart" });
+
+  assert.ok(
+    headed.heightMm < bare.heightMm,
+    "a heading that costs no height is a heading printed over the top line of " +
+      "the first zone"
+  );
+  assert.ok(
+    bare.heightMm - headed.heightMm < 10,
+    `the band took ${(bare.heightMm - headed.heightMm).toFixed(1)}mm. It is one ` +
+      "quiet line, not a banner: the child already has the lesson's title from " +
+      "the board, and a banner costs a question to say so again."
+  );
+});

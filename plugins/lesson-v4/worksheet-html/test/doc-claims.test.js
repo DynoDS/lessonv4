@@ -38,7 +38,8 @@ const EXAMPLES = require("./helper-examples");
 //                                 references/subject-maths.md
 //   - a four-column counter chart is about 138mm wide and only about 39mm tall
 //                                 references/worksheet-helpers/maths.md
-//   - the page is 180x267mm portrait / 267x180mm landscape, a quarters zone is
+//   - the page is 180x267mm portrait / 267x180mm landscape, a headed sheet's
+//     zones get about 260mm / 173mm of that, a quarters zone is
 //     84 x 133.5mm, and numbering a zone costs 9mm of width
 //                                 agents/worksheet-designer.md, references/worksheet-helpers.md
 //   - the generated catalogue and compositions documents match the engine
@@ -227,6 +228,23 @@ test("the page and zone numbers the designer docs quote (worksheet-designer.md, 
     { w: landscape.widthMm, h: landscape.heightMm },
     { w: 267, h: 180 },
     "landscape printable area moved - worksheet-designer.md quotes 180mm of height"
+  );
+
+  // What a sheet's ZONES actually get, which is the printable area less the
+  // band its own heading sits in. Those were the same number until the learning
+  // objective stopped being printed at the physical corner of the paper.
+  const { contentArea } = require("../src/render");
+  const headed = contentArea({ orientation: "portrait", lo: "To add 1,000 to a number" });
+  assert.ok(
+    Math.abs(headed.heightMm - 260.7) < 0.5,
+    `a headed portrait sheet gives its zones ${headed.heightMm.toFixed(1)}mm - ` +
+      "worksheet-designer.md quotes about 260mm"
+  );
+  const headedLandscape = contentArea({ orientation: "landscape", lo: "To add 1,000 to a number" });
+  assert.ok(
+    Math.abs(headedLandscape.heightMm - 173.7) < 0.5,
+    `a headed landscape sheet gives its zones ${headedLandscape.heightMm.toFixed(1)}mm - ` +
+      "worksheet-designer.md quotes about 173mm"
   );
 
   const quarters = LAYOUTS.find((l) => l.id === "quarters");

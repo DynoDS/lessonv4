@@ -15,7 +15,8 @@
 
 const { pageSize, printableArea, DEFAULT_MARGIN_MM } = require("./page");
 const { renderDecorationLayers } = require("./decorations");
-const { cssVariables } = require("./tokens");
+const { cssVariables, SPACE } = require("./tokens");
+const { NOTE_LINE_MM } = require("./helpers/shared");
 const { LAYOUTS, VARIANTS, flatten } = require("./layouts");
 const { isStack } = require("./helpers/compose");
 const {
@@ -32,6 +33,43 @@ const {
 // The gutter between zones. Without it, content in one zone runs straight up
 // against content in the next and the two read as one crowded block.
 const GUTTER_MM = 6;
+
+// The band across the top of the sheet where its own heading sits.
+//
+// The learning objective and the sheet code used to be placed at `left: 0;
+// top: 0` on the body, which is the PHYSICAL corner of the paper - outside the
+// margin, hard against the edge, and in the strip some classroom printers
+// cannot print at all. All six pages of the three packs of 7 September 2026
+// carry it, and not one of them is an agent's decision: it is two lines of CSS
+// making the same placement every time.
+//
+// It is also why "give the worksheet a proper header" could never be answered
+// by an instruction to a designer. There was nowhere for a header to go.
+//
+// So the heading is aligned to the printable content, like everything else on
+// the sheet, and the band it needs is taken off the page before any zone is
+// measured. A header that overlaps the work, or one whose height nothing has
+// paid for, is how the top line of a zone gets clipped.
+//
+// One note line and the tight step beneath it. Compact on purpose: the sheet's
+// title belongs to the lesson and the child already has it from the board, so a
+// banner across the top would cost a question to say what nobody needs telling.
+const HEADER_MM = NOTE_LINE_MM + SPACE.tight;
+
+function headerMm(spec) {
+  return spec && (spec.lo || spec.code) ? HEADER_MM : 0;
+}
+
+// The page a sheet's ZONES get, which is the printable area less that band.
+// Everything that measures, checks, grows, places or reports on a sheet reads
+// its geometry from here, so none of them can be working from a different page.
+function contentArea(spec) {
+  const area = printableArea(spec.orientation || "portrait", DEFAULT_MARGIN_MM);
+  return {
+    widthMm: area.widthMm,
+    heightMm: area.heightMm - headerMm(spec),
+  };
+}
 
 // Zones sized to their CONTENT, not left standing at their proportional height.
 //
@@ -438,7 +476,7 @@ function hoistSectionTitles(node, zones, box) {
 function sheetGeometry(spec) {
   const layout = getLayout(spec.layout);
   const zones = { ...spec.zones };
-  const area = printableArea(spec.orientation || "portrait", DEFAULT_MARGIN_MM);
+  const area = contentArea(spec);
   const tree = hoistSectionTitles(layout.tree, zones, {
     wMm: area.widthMm,
     hMm: area.heightMm,
@@ -461,8 +499,7 @@ function getLayout(id) {
 // time, not after a page exists.
 function checkFit(spec) {
   const { tree, sheet } = sheetGeometry(spec);
-  const orientation = spec.orientation || "portrait";
-  const area = printableArea(orientation, DEFAULT_MARGIN_MM);
+  const area = contentArea(spec);
   const problems = [];
 
   for (const zone of flatten(tree)) {
@@ -525,8 +562,7 @@ function checkFit(spec) {
 // Reported alongside the HTML so a caller can show it without re-measuring.
 function measureFill(spec) {
   const { tree, sheet } = sheetGeometry(spec);
-  const orientation = spec.orientation || "portrait";
-  const area = printableArea(orientation, DEFAULT_MARGIN_MM);
+  const area = contentArea(spec);
   const measured = measureTree(tree, sheet, area.widthMm);
   // Natural height, before growth: the honest measure of how much content the
   // sheet actually carries. After growth it would always read 100%.
@@ -555,7 +591,7 @@ function renderSheet(spec, opts = {}) {
   const orientation = spec.orientation || "portrait";
   const page = pageSize(orientation);
   const decorationLayers = renderDecorationLayers(spec.decorations, page);
-  const area = printableArea(orientation, DEFAULT_MARGIN_MM);
+  const area = contentArea(spec);
 
   // Measure the tree, let what can grow grow, then place real rectangles.
   const measured = measureTree(tree, sheet, area.widthMm);
@@ -625,7 +661,10 @@ ${cssVariables()}
     color: var(--colour-ink);
     width: ${page.widthMm}mm;
     height: ${page.heightMm}mm;
-    padding: ${DEFAULT_MARGIN_MM}mm;
+    /* The heading's band is padding, so the work below it starts under the
+       heading rather than behind it, and the area below is exactly the height
+       every measurement in this file was taken against. */
+    padding: ${DEFAULT_MARGIN_MM + headerMm(spec)}mm ${DEFAULT_MARGIN_MM}mm ${DEFAULT_MARGIN_MM}mm;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
@@ -658,10 +697,18 @@ ${cssVariables()}
   .area--full .h-stack-item:has(> .h-data) { flex: 1 1 auto; }
   .area--full .h-stack-item > .h-data { height: 100%; }
 
-  /* The learning objective, printed small at the top of the sheet. */
+  /* The learning objective, printed small at the top of the sheet.
+     Aligned to the printable content, not to the edge of the paper. It sat at
+     the physical corner of the page for as long as this file existed - inside
+     the printer's own unprintable strip on some machines, and reading as a
+     stray line of grey rather than as the sheet's heading. See HEADER_MM. */
   .lo {
-    position: absolute; left: 0; top: 0;
+    position: absolute;
+    left: ${DEFAULT_MARGIN_MM}mm; top: ${DEFAULT_MARGIN_MM}mm;
+    /* Never far enough across to reach the sheet code on the other side. */
+    max-width: ${(area.widthMm * 0.72).toFixed(1)}mm;
     font-size: var(--type-note);
+    line-height: 1.35;
     color: var(--colour-quiet);
     z-index: 3;
   }
@@ -672,8 +719,10 @@ ${cssVariables()}
      top of a page is read by the child holding it. Carried over from the Word
      builder, which made the same call. */
   .sheet-code {
-    position: absolute; right: 0; top: 0;
+    position: absolute;
+    right: ${DEFAULT_MARGIN_MM}mm; top: ${DEFAULT_MARGIN_MM}mm;
     font-size: var(--type-note);
+    line-height: 1.35;
     color: var(--colour-quiet);
     z-index: 3;
   }
@@ -701,8 +750,7 @@ ${helperCss}
 // 47.79mm, its content height, with the questions beside it (5 September 2026).
 function drawnZoneHeights(spec) {
   const { tree, sheet } = sheetGeometry(spec);
-  const orientation = spec.orientation || "portrait";
-  const area = printableArea(orientation, DEFAULT_MARGIN_MM);
+  const area = contentArea(spec);
   const measured = measureTree(tree, sheet, area.widthMm);
   growToFit(measured, area.heightMm);
   const byId = {};
@@ -720,6 +768,7 @@ module.exports = {
   zoneContentMm,
   drawnZoneHeights,
   GUTTER_MM,
+  contentArea,
   // Exported so the tightness report describes the page that was DRAWN. A
   // report worked out from the layout's own tree would still be measuring a
   // section title inside the column it used to sit in.
