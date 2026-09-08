@@ -176,6 +176,7 @@ UNIT_FIELDS = {
     "label",
     "kind",
     "conceptRef",
+    "unlocks",
     "content",
     "pupilInstruction",
     "modellingState",
@@ -188,6 +189,8 @@ UNIT_FIELDS = {
     "answer",
 }
 UNIT_OPTIONAL_FIELDS = {"taskStructure"}
+
+UNLOCKS_MAX_CHARS = 200
 
 SCAFFOLD_PLACEHOLDER = "__LESSON_DESIGN_FILL__"
 PLACEHOLDER_REPORT_LIMIT = 10
@@ -1074,6 +1077,15 @@ def validate_source_unit(
         expect(unit["conceptRef"] is None, f"{path}.conceptRef must be null for {kind}")
 
     validate_content(kind, unit["content"], f"{path}.content", sticky_ids)
+    unlocks = unit["unlocks"]
+    if unlocks is not None:
+        # expect_string already refuses an empty or whitespace-only value, so a
+        # beat that has nothing to record uses null rather than a blank line.
+        unlocks = expect_string(unlocks, f"{path}.unlocks")
+        expect(
+            len(unlocks) <= UNLOCKS_MAX_CHARS,
+            f"{path}.unlocks must be at most {UNLOCKS_MAX_CHARS} characters; it names what children can now do, not how the beat went",
+        )
     expect_nullable_string(unit["pupilInstruction"], f"{path}.pupilInstruction")
     modelling = unit["modellingState"]
     if modelling is not None:
@@ -2168,6 +2180,17 @@ def validate_design(
                    f"{path}.successCriteriaRefs must exactly match {concept_ref}.successCriteriaRefs")
         elif structure != "Skill-based":
             expect(unit["conceptRef"] is None, f"{path}.conceptRef must be null for {structure}")
+
+    # A lesson whose every beat unlocks nothing has no spine. `null` is a real
+    # answer for a beat that sits beside it (a vocabulary moment, a routine, a
+    # safeguarding note, setup, the final performance), so the floor is one
+    # beat, not a filled field everywhere. Whether the recorded links are any
+    # good is the reviewer's judgement, not this file's.
+    expect(
+        any(unit["unlocks"] is not None for unit in sequence),
+        "at least one teachingSequence unit must record what it unlocks; "
+        "a sequence where every beat unlocks nothing has no dependency in it",
+    )
 
     validate_route_sequence(structure, sequence, concept_items)
 

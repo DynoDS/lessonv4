@@ -26,9 +26,9 @@ Each entry follows the same shape — what it is, register, best for, why it wor
 
 ## How to pick
 
-1. Settle the intended thinking or checking purpose.
+1. Settle the intended thinking or checking purpose, using `preferences.md` → The Teach → Do → Teach → Do Rhythm, `Name what the chunk needs children to do with it`. That list is what a purpose is stated in; arriving here without one is how a beat ends up chosen by topic.
 2. Notice the response form's actual demands and supports, such as writing load, spoken language, public performance, reading, movement, fine-motor control, partner dependence or visual structure.
-3. Compare plausible activities for that purpose using the contents below; choose the one whose actual pupil action best serves the learning and supplied pupil needs. A fact may suit recall or a sort, a process labelling, sketching or sequencing, and a judgement ranking or talk; these are starting possibilities, not routes that settle the choice.
+3. Compare plausible activities for that purpose using the contents below; choose the one whose actual pupil action best serves the learning and supplied pupil needs. A fact may suit recall or a sort, a process labelling, sketching or sequencing, and a judgement ranking or talk; these are starting possibilities, not routes that settle the choice. An explanation, cause, mechanism or relationship is the case with no obvious channel, and the one most often answered with a summary that only says it back: §10 holds the beats that use it, and talk (§2), writing (§3) or a diagram (§4) can each carry them. The contents are indexed by response channel, so more than one section will usually hold a candidate for a single purpose.
 4. Read the sequence of pupil actions together against the purposeful-variety judgement in `preferences.md`. Keep useful repetition; reconsider a string of generic explanations even when each individually matches the taught content.
 
 There is no compulsory non-writing activity, fixed content-to-format route or SEND format. Familiar repetition is appropriate when it builds the target skill.
@@ -46,13 +46,16 @@ Use the contents to open only the activity families relevant to the intended thi
 - **§7 Movement / Embodied** — seven body-as-channel formats (freeze frame, conscience alley, gesture-as-memory). Read for narrative, sequence or vocabulary chunks, and when an embodied response improves access or understanding.
 - **§8 Generative** — seven make-something-new formats (write the question, apply to a new case, spot the mistake). Read when a chunk is understood and now needs using: transfer, application, generating fresh examples.
 - **§9 Metacognitive** — seven thinking-about-thinking formats (confidence vote, muddiest point, three-two-one). Read when you need the class's own read on where they are, or the lesson targets a misconception or a shifted view.
+- **§10 Explain, predict, infer and connect**: ten formats for using an explanation as an explanation (because sentence, explain the link, predict before reveal, words to diagram and back, what can we tell, connect to earlier learning). Read whenever the Teach that just finished explained a cause, a mechanism, a reason or a relationship, or handed children evidence to reason from. This is the commonest chunk in a content lesson and the easiest one to answer with a summary that only says it back.
 
 ---
 
 ## 1. Recall (retrieval-led — fact and definition surfacing)
 
 **Register:** recall (sometimes writing as the output channel).
-**Mechanism:** retrieval practice — the act of pulling a fact from memory strengthens that memory more than re-reading it ever could (Agarwal & Bain, *Powerful Teaching*; Roediger & Karpicke testing-effect work). Use these when the prior chunk is a fact, name, date, definition, or rule that children need to lock in before building on it.
+**Mechanism:** retrieval practice: pulling a fact from memory strengthens that memory more than re-reading it ever could (Agarwal & Bain, *Powerful Teaching*; Roediger & Karpicke testing-effect work). Use these when the prior chunk is a fact, name, date, definition, or rule that children need to lock in before building on it.
+
+**A beat thirty seconds after the answer was given is not that, and calling it retrieval practice does not make it so.** The testing effect comes from pulling something back after it has begun to fade, so straight after teaching the honest value of one of these is different and still real: it makes every child produce the thing rather than hear it, and it tells the teacher who has it. That is worth the minute. What it does not do is secure the memory for next week, which needs the same knowledge asked for again after a delay, with the answer or correction supplied (`evidence-synthesis.md` §1 and §8). So use these here for the processing and the read on the class, and let the durable version be planned as something that comes back.
 
 ### 1.1 Free Recall
 Use free recall deliberately when children have enough secure knowledge and open retrieval is genuinely the intended action. It is demanding and may produce incomplete evidence, so normally prefer a useful structure such as headings, questions, a cap or a partly completed diagram when the aim is to reveal specific knowledge.
@@ -434,6 +437,65 @@ The teacher has modelled thinking aloud during the Teach; in the Do, a pupil thi
 
 ---
 
+## 10. Explain, predict, infer and connect
+
+**Register:** varies by format (talk, write or visual); what these share is the thinking, not the channel.
+**Mechanism:** an explanation only becomes usable knowledge when a child does something with it that requires the explanation itself. Asking why a step follows, predicting from the model before the answer appears, moving between words and a diagram, drawing a careful conclusion from evidence, and connecting a new idea to an older one are the moves that do that (IES *Organizing Instruction and Study* on deep explanatory questioning and connecting abstract and concrete representations; Fiorella & Mayer 2016 on explaining and predicting; Chi's self-explanation work; Rosenshine on connecting new learning to prior). Use these when the Teach that just finished explained a cause, a mechanism, a reason or a relationship, or handed children evidence to reason from. The failure they exist to prevent is the summary that only says the explanation back, which reads as processing and is closer to copying.
+
+Younger children and children new to the content usually need the prompt to be precise. "Explain your thinking" leaves them with nothing to hold; the stems below name the exact link being asked for, which is what makes these reachable in Year 2 as well as Year 6.
+
+### 10.1 Because Sentence
+Children complete a stem that forces the mechanism into the open. *"A shadow forms because…"*, *"The Romans built roads because…"*, *"This soil holds more water because…"*. The test on a finished answer is whether the word "because" is followed by a mechanism or by a restatement.
+**Best for:** straight after a causal or explanatory Teach, in any subject.
+**SEND access:** the stem carries the sentence structure, so the child supplies only the idea; a spoken version to a partner is a legitimate response.
+
+### 10.2 Explain One Link
+Where the Teach produced a chain or a diagram with arrows, each child explains a single named link rather than the whole thing. *"Explain the arrow from heavy rain to the river rising."* Different children can be given different links.
+**Best for:** causal chains, processes and cycles where the whole thing is too much to explain at once.
+**SEND access:** one link is a bounded ask; the diagram supplies everything except the sentence.
+
+### 10.3 Predict Before Reveal
+Children commit a prediction the taught idea decides, before the answer, demonstration or next slide shows it. *"Mark on your diagram where the shadow will fall."* *"Which of these three will dissolve fastest? Write the letter and one reason."* The prediction has to be settled by the explanation just taught, not by general good sense, or it is a guess with a reason attached.
+**Best for:** science, maths and geography chunks where a model has just been built and can now be run forwards.
+**SEND access:** committing a letter or a mark is a very low writing load; the reason can be spoken.
+
+### 10.4 Change One Thing
+Children say what follows when one condition of the explanation is altered and everything else is held still. *"We move the torch closer. What happens to the shadow, and why?"* *"The river's channel gets narrower. What happens to the water?"* Changing exactly one thing is what makes the answer depend on the mechanism.
+**Best for:** testing whether an explanation is understood as a mechanism rather than as a remembered result.
+**SEND access:** the single change keeps the reasoning short; offer the pair of possible answers to choose between when the open form is too open.
+
+### 10.5 Words to Diagram
+Children turn the spoken explanation into a drawing, arrows, a labelled sketch or a completed part-drawn figure. *"Draw the light leaving the torch and show where it cannot reach."* Name what the diagram has to contain, or the task drifts into decoration.
+**Best for:** explanations with a spatial, directional or sequential shape.
+**SEND access:** a part-drawn frame to add to removes the drawing demand while keeping the thinking; state that demand honestly rather than assuming drawing is easier.
+
+### 10.6 Diagram to Words
+The reverse, and often the harder half. Children say or write in one sentence what a diagram, arrow or model shows. *"In one sentence, what is this diagram telling us about how the water gets back to the sky?"*
+**Best for:** after a modelled diagram, and as the check that a picture children copied actually means something to them.
+**SEND access:** offer the sentence stem; one sentence is the whole task.
+
+### 10.7 What Can We Tell?
+Children separate what a source, photograph, result or set of data actually shows from what they are inferring. *"Two things you can see in this photograph. One thing you think it tells us, and why."* The teaching value is in the gap between the two columns.
+**Best for:** history sources, science results, geography photographs and data.
+**SEND access:** the observation half is available to every child and gives everyone something written before the harder half.
+
+### 10.8 Which Claim Does This Support?
+Children choose which of two or three claims the evidence in front of them supports, and say what rules the others out. *"Plant A grew 8 cm more than Plant B. Which of these three does that support?"* Wrong options map to the ways evidence is usually over-read.
+**Best for:** the moment children start treating one piece of evidence as proof of everything.
+**SEND access:** the choice is the response; the reason is one line and can be spoken.
+
+### 10.9 Connect It Back
+Children name the link between the new idea and something the lesson or the unit already established. *"What does today's answer change about what we said last week?"* *"We learnt what a denominator is. Which part of this model is it?"*
+**Best for:** the seam where a new idea has to join an existing one rather than sit beside it.
+**SEND access:** the older idea is the familiar half, so the child is reasoning from something secure.
+
+### 10.10 Which Explanation Is Better?
+Two explanations of the same thing, one sound and one plausible but weaker, and children choose and justify. *"Sam says the shadow is bigger because the object got bigger. Priya says it is bigger because it moved closer to the light. Who is right, and how do you know?"* Both must be about the same case and differ only on the taught point, or a child can win the argument for the wrong one (`evidence-synthesis.md` §5).
+**Best for:** consolidating an explanation against the misconception the topic reliably produces.
+**SEND access:** the named characters give a concrete thing to react to; choosing is the entry and justifying is the stretch.
+
+---
+
 ## Sources
 
 - Lemov, D. (2021). *Teach Like a Champion 3.0: 63 Techniques that Put Students on the Path to College*. Jossey-Bass. (Cold Call, Show Call, Everybody Writes, Turn and Talk, Wait Time, No Opt Out, Habits of Discussion, Means of Participation, Show Me, Stretch It, Call and Response, Stop and Jot.)
@@ -454,3 +516,6 @@ The teacher has modelled thinking aloud during the Teach; in the Do, a pupil thi
 - Macedonia, M. & Knosche, T. R. (2011). *Body in Mind: How Gestures Empower Foreign Language Learning*; Sullivan, J. V. (2018). *Learning and Embodied Cognition: A Review and Proposal*. Sage.
 - Edutopia (2024). *15 Quick (and Mighty) Retrieval Practices*; Mosteller (1989) on the muddiest point.
 - McGill, R. M. (2011). *Pose Pause Pounce Bounce* — teachertoolkit.co.uk, attributed to Pam Fearnley.
+- Pashler, H. et al. (2007). *Organizing Instruction and Study to Improve Student Learning* (IES Practice Guide): deep explanatory questioning; connecting abstract and concrete representations.
+- Chi, M. T. H. et al. (1994). *Eliciting Self-Explanations Improves Understanding*; Rittle-Johnson, Loehr & Durkin (2017) on prompted self-explanation in primary.
+- Fiorella, L. & Mayer, R. E. (2016). *Eight Ways to Promote Generative Learning*: explaining, predicting, drawing and their developmental conditions.
