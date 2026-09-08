@@ -1901,6 +1901,7 @@ def content_based_design() -> tuple[dict, dict]:
             "label": label,
             "kind": kind,
             "conceptRef": None,
+            "unlocks": 'They can do the step this beat taught, which the next beat uses.',
             "content": content,
             "pupilInstruction": None,
             "taskStructure": None,

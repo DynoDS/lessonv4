@@ -389,6 +389,7 @@ def source_unit(
         "label": PLACEHOLDER,
         "kind": kind,
         "conceptRef": concept_ref,
+        "unlocks": PLACEHOLDER,
         "content": content_scaffold(kind),
         "pupilInstruction": PLACEHOLDER,
         "taskStructure": PLACEHOLDER,

@@ -115,6 +115,7 @@ def source_unit(
         "label": label or kind.replace("-", " ").title(),
         "kind": kind,
         "conceptRef": concept_ref,
+        "unlocks": 'They can do the step this beat taught, which the next beat uses.',
         "content": content,
         "pupilInstruction": pupil_instruction,
         "modellingState": modelling_state,
@@ -156,6 +157,7 @@ def valid_contract():
             "label": "Starter",
             "kind": "starter",
             "conceptRef": None,
+            "unlocks": None,
             "content": {
                 "activity": "Recall number bonds to 10.",
                 "connection": "Retrieves addition facts used inside today's method.",
@@ -546,10 +548,12 @@ def test_valid_skill_contract_allows_optional_our_turn():
             {
                 "kind": "my-turn",
                 "conceptRef": "concept-001",
+                "unlocks": None,
             },
             {
                 "kind": "your-turn",
                 "conceptRef": "concept-001",
+                "unlocks": None,
             },
         ],
         concept_items,
@@ -560,14 +564,17 @@ def test_valid_skill_contract_allows_optional_our_turn():
             {
                 "kind": "my-turn",
                 "conceptRef": "concept-001",
+                "unlocks": None,
             },
             {
                 "kind": "our-turn",
                 "conceptRef": "concept-001",
+                "unlocks": None,
             },
             {
                 "kind": "your-turn",
                 "conceptRef": "concept-001",
+                "unlocks": None,
             },
         ],
         concept_items,

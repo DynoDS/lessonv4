@@ -111,7 +111,9 @@ PREFERENCE_REVIEW_ROUTES = (
         "Read when two teacher-presented beats run with no pupil action "
         "between them, in any route, when a Do beat practises a different "
         "idea from the one its own Teach just taught, when a beat carries a "
-        "second job that has no beat of its own, or whenever the sequence has "
+        "second job that has no beat of its own, when a Do beat's expected "
+        "answer is a summary, headline, recap or restatement of the "
+        "explanation its own Teach just gave, or whenever the sequence has "
         "three or more Teach beats - with three, say in your own words the "
         "move each Teach taught and what its own Do makes children do, and "
         "check each pair before reading on.",
@@ -516,6 +518,13 @@ def append_review_unit(
     if unit["conceptRef"] is not None:
         ref = unit["conceptRef"]
         lines.append(f"- Concept: `{ref}` {concepts[ref]['name']}")
+    # Printed even when null. A substantial teaching beat that unlocks nothing
+    # is the finding, and a field that only appears when filled hides exactly
+    # the case the reviewer is looking for.
+    unlocks = unit.get("unlocks")
+    lines.append(
+        f"- Unlocks: {unlocks}" if unlocks else "- Unlocks: none recorded"
+    )
     if unit["pupilInstruction"] is not None:
         lines.append(f"- Pupil instruction: {unit['pupilInstruction']}")
     if unit["modellingState"] is not None:
