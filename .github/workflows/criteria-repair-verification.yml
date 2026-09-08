@@ -80,7 +80,8 @@ jobs:
       - name: Commit verified integration on repair branch only
         run: |
           test "$GITHUB_REF" = 'refs/heads/repair/teachable-criteria-and-progression'
-          test "$(git rev-parse :plugins/lesson-v4)" = '0e718c734f86343462c973351ab57ee2194d9f7d'
+          tree="$(git write-tree)"
+          test "$(git rev-parse "$tree:plugins/lesson-v4")" = '0e718c734f86343462c973351ab57ee2194d9f7d'
           git diff --cached --check
           git commit -m 'Integrate memorable criteria repair with concurrent learning progression release (4.2.112)'
           git push origin HEAD:refs/heads/repair/teachable-criteria-and-progression
