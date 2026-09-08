@@ -64,14 +64,26 @@ and the child asked to test "Rowan's claim" has to hunt the page for where
 Rowan spoke. `source-text` is for a passage, account or extract - text the child
 reads AS text - not for a person speaking.
 
-`speech-scene` is how this engine does it and is the right default: the figure
-gives the claim a face a child can argue with, the bubble separates the claim
-from the question about it, and the judge box gives `Is she right?` its tick
-target. It is not the only thing that satisfies the rule and it is not a mascot
-requirement - a claim on its own card, a named source panel, or a quoted line
-set apart with its judging question beneath can each keep the voice distinct
-from the test of it. Reach for the speech-scene unless the approved task wants
-one of those; never add a speaker to a task that never had one.
+**Which helper depends on how many people are speaking.**
+
+`named-claim` is the one for one person saying one thing: the claim sits in its
+own panel with the speaker's name on it, and what the child does about it - a
+tick-or-cross box, ruled lines, both - is an ordinary response underneath. Most
+"is Ethan right, and how do you know" tasks are this.
+
+`speech-scene` is for a CONVERSATION, where the exchange is the work: two
+children disagreeing, or a reply the child writes in a bubble of their own. It
+draws a figure and a bubble per turn, which is right when the turns are the
+point and wrong when they are not - a design that put the child's answer in the
+scene as a second turn got a second featureless person and a speaker called You,
+on a page whose words were exactly the words the design asked for. The furniture
+was the fault, not the task.
+
+Either way the rule is the same and neither is a mascot requirement: a claim on
+its own card, a named source panel, or a quoted line set apart with its judging
+question beneath can each keep the voice distinct from the test of it. Never add
+a speaker to a task that never had one, and never turn an explanation question
+into a staged dialogue to make the page look busier.
 
 **A frame the child fills** is `fact-file` when it is a stack of named slots. A
 frame whose boxes need different heights, or one the child fills row by row, is

@@ -1,5 +1,9 @@
 # Build review log
 
+## 2026-09-06 — Partition 4-digit numbers
+
+- Final slide review found that slide specifications using the key `notes` produced a deck with empty speaker-note bodies because the fixed builder reads `speakerNotes`. Renaming only the slide-level key on all 15 slides preserved the note text and produced a reviewed PASS after rebuilding.
+
 ## 2026-09-01 - Year 4 Geography Lesson 1 (rebuilt deck, read)
 
 - Maps came out a fraction of the size their cards had room for, and nothing measured it.

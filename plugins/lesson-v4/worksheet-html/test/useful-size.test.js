@@ -316,3 +316,43 @@ test("the heading's band is paid for before a zone is measured", () => {
       "the board, and a banner costs a question to say so again."
   );
 });
+
+// ─── one person saying one thing ─────────────────────────────────────────
+
+test("a claim to judge does not need two people and two bubbles", () => {
+  const { measure } = require("../src/helpers");
+  const claim = {
+    helper: "named-claim",
+    text: "Tick or cross, then explain how you know.",
+    speaker: "Ethan",
+    says: "If I add 1,000 to 4,382, the hundreds digit changes.",
+    lines: 3,
+  };
+  const asAScene = {
+    helper: "speech-scene",
+    text: "Is Ethan right? Tick or cross, then explain how you know.",
+    turns: [
+      { speaker: "Ethan", says: "If I add 1,000 to 4,382, the hundreds digit changes." },
+      { speaker: "You", lines: 3 },
+    ],
+  };
+
+  const html = renderSheet({
+    layout: "full",
+    orientation: "portrait",
+    yearGroup: 4,
+    zones: { a: { question: true, ...claim } },
+  });
+
+  assert.ok(
+    !html.includes('<span class="h-speech-figure">'),
+    "an explanation question is not a staged dialogue, and drawing one says it is"
+  );
+  assert.match(html, /Ethan/, "the speaker keeps their name");
+  assert.match(html, /hundreds digit changes/, "and their exact words");
+  assert.match(html, /h-speech-judge-box/, "and the tick or cross still has a box");
+  assert.ok(
+    measure(claim, 174) < measure(asAScene, 174),
+    "the same claim and the same response cost less page without the furniture"
+  );
+});

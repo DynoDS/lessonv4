@@ -604,6 +604,16 @@ module.exports = {
       { speaker: "Aisha", side: "right", lines: 3 },
     ],
   },
+  // One person, one claim, and the child judging it - which is a different
+  // shape from a conversation and used to be built as one. Wording the
+  // instruction "tick or cross" is what asks for the box, exactly as it is in a
+  // speech scene: two ways of saying it would be two ways to disagree.
+  "named-claim": {
+    text: "Tick or cross, then explain how you know.",
+    speaker: "Ethan",
+    says: "If I add 1,000 to 4,382, the hundreds digit changes.",
+    lines: 3,
+  },
   // Both forms of a field, so the contract tests exercise the scaffolded path
   // and the catalogue shows a designer that it exists. A bare string is the
   // expected sheet; the object form is what carries a below sheet.

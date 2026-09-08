@@ -21,6 +21,24 @@ work, and an extended piece of writing wants ruled lines and room to think. The
 failure is the other one - a task with a relationship at the heart of it,
 rendered as a question and a blank because that was the shortest route.
 
+## The look this is against
+
+Named plainly, because "premium" says what to reach for and not what to avoid,
+and every sheet that has missed the mark has missed it in one of these ways:
+
+- **Boxes bigger than the answers they hold.** A blank rectangle taking a third
+  of a page under a heading; a 30mm row waiting for one four-digit number.
+- **A page composed around a photograph's file** rather than around the object
+  a child is being asked to look at.
+- **A heading against the physical edge of the paper**, in the strip a
+  classroom printer may not print, reading as a stray grey line rather than as
+  the sheet's own heading.
+- **Furniture standing in for a task.** Two drawn figures and two speech
+  bubbles where the work is one claim and an explanation of whether it holds.
+
+None of those is a pedagogical fault and none is repaired by changing the
+questions. They are what the page does with work that was already right.
+
 ## The positive example
 
 On 6 September 2026 the teacher was shown two versions of the same Year 4
@@ -113,10 +131,31 @@ they are and refuse a node that says neither.
 A four-digit number, a four-term expression and a written explanation are three
 different spaces. There is no universal answer-line length.
 
-Space stops paying off. A ruled line reaches its useful height and passes it; a
-box a child draws in does not. Spare room goes to whatever is still gaining from
-it, and what is left over is paper, not an excuse for two enormous boxes and
-tiny type elsewhere.
+**Space stops paying off, and everything on a page has a point where it does.**
+A ruled line reaches its useful height and passes it. A box for one four-digit
+number reaches its useful height sooner: a child writes four digits in it and a
+taller box holds the same four digits with more paper round them. A surface a
+child draws on stops later, because more room is more drawing - but "later" is
+not "never", and reading it as never is how a balanced-diet sheet shipped with a
+209mm blank rectangle taking most of the page. Every helper in this engine now
+states where its own gain runs out (`enough`), a zone stops there, and a page
+that ends early ends at the FOOT, where a teacher trims it.
+
+That is the difference between a generous page and a padded one, and it is
+usually what somebody means when they say a sheet looks generated. Big empty
+rectangles are not generosity: they are the page's arithmetic showing through.
+
+Spare room goes to whatever is still gaining from it, and what is left over is
+paper, not an excuse for two enormous boxes and tiny type elsewhere.
+
+**A picture's file is not a design decision either.** Photographs arrive at
+whatever size and shape the photographer framed, and letting each one print at
+its full canvas hands the page's proportions to a stranger: two dolls a child
+was asked to compare came out 132.6mm and 79.1mm tall because one had been shot
+further back. Sources a child compares are drawn to one height at their own true
+proportions. Where the difference in size IS the evidence, say so
+(`imageFit: "canvas"`); where a photograph carries canvas that is not evidence,
+`crop` trims it. Neither is a licence to stretch a source or to edit one.
 
 Where a measurement is the task - a ruler, a coordinate grid - true scale is not
 negotiable. A schematic whole-part node is the opposite case: its boxes are

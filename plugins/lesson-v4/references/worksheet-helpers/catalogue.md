@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 74 helpers, what each is for, and a working example of each.
+The 75 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -137,7 +137,8 @@ emailed. Never write `imageHref` yourself.
 - `drawing-space` - The surface a child draws on, sized from the work it holds: how many things go on it (`draw`), whether labels and arrows go round them (`annotate`), or the surface stated outright with `heightMm`.
 - `storyboard` - Numbered boxes to draw in with writing lines beneath: a journey, a life cycle, a story retold in order.
 - `fact-file` - Named slots a child fills in.
-- `speech-scene` - Turns of a conversation: a figure, and a bubble either printed to read or empty to fill.
+- `speech-scene` - Turns of a CONVERSATION: a figure and a bubble each, printed to read or empty to fill.
+- `named-claim` - One person, one thing they said, and room to judge it: the claim in a panel with the speaker's name, then a tick-or-cross box and ruled lines.
 
 **Cause, effect and evidence**
 
@@ -2025,7 +2026,7 @@ Smallest usable: **55mm wide x 98mm tall**. Spare height: takes spare height fir
 
 #### `speech-scene`
 
-Turns of a conversation: a figure, and a bubble either printed to read or empty to fill. An instruction that asks for a tick or a cross is given a box to mark.
+Turns of a CONVERSATION: a figure and a bubble each, printed to read or empty to fill. One person saying one thing is named-claim, since every turn here gets its own figure.
 
 Smallest usable: **85mm wide x 70mm tall**. Spare height: takes a normal share of spare height.
 
@@ -2044,6 +2045,22 @@ Smallest usable: **85mm wide x 70mm tall**. Spare height: takes a normal share o
       "lines": 3
     }
   ]
+}
+```
+
+#### `named-claim`
+
+One person, one thing they said, and room to judge it: the claim in a panel with the speaker's name, then a tick-or-cross box and ruled lines. No figures and no bubbles.
+
+Smallest usable: **70mm wide x 70mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
+
+```json
+{
+  "helper": "named-claim",
+  "text": "Tick or cross, then explain how you know.",
+  "speaker": "Ethan",
+  "says": "If I add 1,000 to 4,382, the hundreds digit changes.",
+  "lines": 3
 }
 ```
 

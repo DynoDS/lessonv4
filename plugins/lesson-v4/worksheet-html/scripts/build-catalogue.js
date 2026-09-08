@@ -82,7 +82,7 @@ const FAMILIES = [
   ],
   [
     "Writing, drawing and talk",
-    ["writing-frame", "drawing-space", "storyboard", "fact-file", "speech-scene"],
+    ["writing-frame", "drawing-space", "storyboard", "fact-file", "speech-scene", "named-claim"],
   ],
   [
     "Cause, effect and evidence",

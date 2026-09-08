@@ -112,7 +112,9 @@ module.exports = {
 
   // ─── frames ───
   "speech-scene":
-    "Turns of a conversation: a figure, and a bubble either printed to read or empty to fill. An instruction that asks for a tick or a cross is given a box to mark.",
+    "Turns of a CONVERSATION: a figure and a bubble each, printed to read or empty to fill. One person saying one thing is named-claim, since every turn here gets its own figure.",
+  "named-claim":
+    "One person, one thing they said, and room to judge it: the claim in a panel with the speaker's name, then a tick-or-cross box and ruled lines. No figures and no bubbles.",
   "fact-file":
     "Named slots a child fills in. The field NAMES are what makes it teach: they say what counts as knowing about this thing.",
   "writing-frame":

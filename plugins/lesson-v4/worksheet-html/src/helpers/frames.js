@@ -20,7 +20,7 @@
 // material (orange) or vocabulary (green), and a scaffold is none of those.
 
 const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, promptHtml, linesFor } = require("./shared");
-const { TYPE, RULE, INSET, SPACE } = require("../tokens");
+const { TYPE, RULE, INSET, SPACE, WRITING_LINE_GROWN_RATIO } = require("../tokens");
 
 const WIDEST_ZONE_MM = 261;
 
@@ -199,6 +199,106 @@ function needsSpeechScene(spec) {
     minWidthMm: 85,
     minHeightMm: measureSpeechScene(spec, WIDEST_ZONE_MM),
   };
+}
+
+// ─── named-claim ─────────────────────────────────────────────────────────
+// One person, one thing they said, and room to say whether it holds.
+//
+// `speech-scene` is the right shape for a conversation and the wrong shape for
+// this. It draws a figure and a bubble per turn, so a design that put the
+// child's answer in the scene as a second turn got a second featureless person
+// and a second bubble, and the page said "reply to Ethan in character" when the
+// question was "is he right, and how do you know". A Year 4 maths sheet went out
+// with two head-and-shoulders and a speaker called You on it, and the words on
+// the page were exactly the words the design asked for. The furniture was the
+// problem.
+//
+// So: the claim keeps its speaker, because a claim in a person's mouth reads as
+// theirs and separately from the question about it. It loses the figure, the
+// bubble and the second person, and what a child does about it - a tick or
+// cross, ruled lines, both - is an ordinary response underneath.
+//
+// Reach for `speech-scene` when the exchange is the work: two children
+// disagreeing, a reply written in a bubble. Reach for this when one person said
+// one thing and the child is judging it.
+
+const CLAIM_PAD_V_MM = INSET.card.v;
+const CLAIM_PAD_H_MM = INSET.card.h;
+
+function claimLines(spec) {
+  const asked = spec.lines === undefined ? 3 : Number(spec.lines);
+  if (!Number.isFinite(asked) || asked < 0 || asked > 8) {
+    throw new Error(
+      `named-claim lines is ${spec.lines}. It is how many ruled lines the child ` +
+        "gets to explain their answer on: 0 to 8, or leave it out for 3."
+    );
+  }
+  return Math.floor(asked);
+}
+
+// A claim is a sentence somebody said, so it is the width of that sentence -
+// the same rule and the same measure a printed speech bubble follows, and for
+// the same reason: a short sentence across a full-width panel reads as a box to
+// write in rather than as a thing that was said.
+function claimPanelWidthMm(widthMm) {
+  return Math.min(widthMm, BUBBLE_MEASURE_MM + CLAIM_PAD_H_MM * 2);
+}
+
+function claimSaysMm(spec, widthMm) {
+  const inner = claimPanelWidthMm(widthMm) - CLAIM_PAD_H_MM * 2;
+  return (
+    NOTE_LINE_MM +
+    linesFor(spec.says || "", inner) * LINE_MM +
+    CLAIM_PAD_V_MM * 2 +
+    RULE.line
+  );
+}
+
+function renderNamedClaim(spec, widthMm) {
+  const lineMm = writingLineMm(spec);
+  const lines = claimLines(spec);
+  const panelMm = claimPanelWidthMm(
+    typeof widthMm === "number" && widthMm > 0 ? widthMm : 174
+  );
+  const ruled = Array.from(
+    { length: lines },
+    () => `<span class="h-claim-line" style="height:${lineMm}mm"></span>`
+  ).join("");
+
+  return `
+    <div class="h-claim">
+      ${spec.text ? `<p class="h-claim-stem">${promptHtml(spec.text)}</p>` : ""}
+      <div class="h-claim-panel" style="max-width:${panelMm.toFixed(1)}mm">
+        ${spec.speaker ? `<p class="h-claim-who">${esc(spec.speaker)} says</p>` : ""}
+        <p class="h-claim-says">${esc(spec.says || "")}</p>
+      </div>
+      ${wantsTickOrCross(spec) ? judgeBoxHtml() : ""}
+      ${lines ? `<div class="h-claim-lines">${ruled}</div>` : ""}
+    </div>`;
+}
+
+function measureNamedClaim(spec, widthMm) {
+  const lineMm = writingLineMm(spec);
+  const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + SPACE.tight : 0;
+  const judgeMm = wantsTickOrCross(spec) ? JUDGE_BOX_MM + SPACE.item : 0;
+  const lines = claimLines(spec);
+  const linesMm = lines ? lines * lineMm + SPACE.tight : 0;
+  return stemMm + claimSaysMm(spec, widthMm) + judgeMm + linesMm;
+}
+
+function needsNamedClaim(spec) {
+  return {
+    // Narrower than this and a said sentence starts wrapping into a column.
+    minWidthMm: 70,
+    minHeightMm: measureNamedClaim(spec, WIDEST_ZONE_MM),
+  };
+}
+
+// Ruled lines grow and then stop, exactly as they do everywhere else. The panel
+// and the judge box are a sentence and a box and gain nothing from more page.
+function enoughNamedClaim(spec, widthMm) {
+  const growthMm = writingLineMm(spec) * (WRITING_LINE_GROWN_RATIO - 1);
+  return measureNamedClaim(spec, widthMm) + claimLines(spec) * growthMm;
 }
 
 // ─── fact-file ───────────────────────────────────────────────────────────
@@ -648,6 +748,33 @@ const css = `
   }
   .h-speech-mark { display: block; flex: none; }
 
+  /* ─── named-claim ─── */
+  /* The voice is set apart by a panel and a name, not by a drawn person. The
+     name carries the question colour, so a child scanning the page finds who
+     said it; the words carry ink, because they are the thing being judged. The
+     panel stops at a sentence's measure for the same reason a printed bubble
+     does: a short claim ruled across a full-width box reads as somewhere to
+     write. */
+  .h-claim { font-size: var(--type-body); }
+  .h-claim-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-claim-panel {
+    border: var(--rule-line) solid var(--colour-question);
+    border-radius: 1.5mm;
+    background: var(--colour-tint);
+    padding: var(--inset-card);
+  }
+  .h-claim-who {
+    margin: 0;
+    font-size: var(--type-note);
+    color: var(--colour-question);
+  }
+  .h-claim-says { margin: 0; line-height: 1.35; }
+  .h-claim-lines { margin-top: var(--space-tight); }
+  .h-claim-line {
+    display: block;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+
   /* ─── fact-file ─── */
   .h-ff { font-size: var(--type-body); display: flex; flex-direction: column; height: 100%; }
   .h-ff-title {
@@ -779,6 +906,14 @@ const helpers = {
     // A bubble the child writes in gains from being taller, but a scene is
     // mostly figures and printed speech, which do not.
     greed: 1,
+  },
+  "named-claim": {
+    requires: [],
+    render: renderNamedClaim,
+    measure: measureNamedClaim,
+    needs: needsNamedClaim,
+    greed: 3, // the explanation lines are the right home for spare room
+    enough: enoughNamedClaim,
   },
   "fact-file": {
     requires: ["fields"],
