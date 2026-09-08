@@ -15,8 +15,8 @@
 
 const { pageSize, printableArea, DEFAULT_MARGIN_MM } = require("./page");
 const { renderDecorationLayers } = require("./decorations");
-const { cssVariables, SPACE } = require("./tokens");
-const { NOTE_LINE_MM } = require("./helpers/shared");
+const { cssVariables, SPACE, TYPE } = require("./tokens");
+const { NOTE_LINE_MM, linesFor } = require("./helpers/shared");
 const { LAYOUTS, VARIANTS, flatten } = require("./layouts");
 const { isStack } = require("./helpers/compose");
 const {
@@ -51,13 +51,36 @@ const GUTTER_MM = 6;
 // measured. A header that overlaps the work, or one whose height nothing has
 // paid for, is how the top line of a zone gets clipped.
 //
-// One note line and the tight step beneath it. Compact on purpose: the sheet's
-// title belongs to the lesson and the child already has it from the board, so a
-// banner across the top would cost a question to say what nobody needs telling.
-const HEADER_MM = NOTE_LINE_MM + SPACE.tight;
+// One note line and the tight step beneath it, and a second line when the
+// objective genuinely takes two. Compact on purpose: the sheet's title belongs
+// to the lesson and the child already has it from the board, so a banner across
+// the top would cost a question to say what nobody needs telling.
+//
+// The band is MEASURED rather than fixed because objectives are written by
+// teachers and some of them are a sentence long. A fixed one-line band under a
+// two-line objective is the second line printing over the top of the first
+// zone, which is the fault this whole change exists to stop making at the other
+// edge of the page.
+//
+// The share is what the CSS gives the objective, leaving the sheet code its own
+// corner. Both read it from here so they cannot disagree about where the words
+// wrap.
+const LO_SHARE = 0.72;
+
+function loLinesMm(spec, widthMm) {
+  if (!spec || !spec.lo) return 0;
+  // linesFor prices body text. Note-size characters are narrower in the same
+  // proportion as the type is smaller, so the same words fit a proportionally
+  // narrower measure.
+  const asBodyMm = (widthMm * LO_SHARE * TYPE.body) / TYPE.note;
+  return linesFor(String(spec.lo), asBodyMm) * NOTE_LINE_MM;
+}
 
 function headerMm(spec) {
-  return spec && (spec.lo || spec.code) ? HEADER_MM : 0;
+  if (!spec || (!spec.lo && !spec.code)) return 0;
+  return Math.max(NOTE_LINE_MM, loLinesMm(spec, printableArea(
+    spec.orientation || "portrait", DEFAULT_MARGIN_MM
+  ).widthMm)) + SPACE.tight;
 }
 
 // The page a sheet's ZONES get, which is the printable area less that band.
@@ -706,7 +729,7 @@ ${cssVariables()}
     position: absolute;
     left: ${DEFAULT_MARGIN_MM}mm; top: ${DEFAULT_MARGIN_MM}mm;
     /* Never far enough across to reach the sheet code on the other side. */
-    max-width: ${(area.widthMm * 0.72).toFixed(1)}mm;
+    max-width: ${(area.widthMm * LO_SHARE).toFixed(1)}mm;
     font-size: var(--type-note);
     line-height: 1.35;
     color: var(--colour-quiet);

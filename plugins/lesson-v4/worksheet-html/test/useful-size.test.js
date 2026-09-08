@@ -356,3 +356,48 @@ test("a claim to judge does not need two people and two bubbles", () => {
     "the same claim and the same response cost less page without the furniture"
   );
 });
+
+test("an objective long enough to wrap is paid for, not printed over the work", async () => {
+  // Objectives are written by teachers and some of them are a sentence. A band
+  // fixed at one line under a two-line objective is the second line printing
+  // across the top of the first zone, which is the same fault as the edge it
+  // was just moved off, one row further in.
+  const puppeteer = require("puppeteer-core");
+  const { findChrome } = require("../src/chrome");
+
+  const html = renderSheet({
+    layout: "full",
+    orientation: "portrait",
+    yearGroup: 4,
+    lo: "To add and subtract 1,000 from a four-digit number and explain the effect this has on each digit",
+    code: "C",
+    zones: { a: { question: true, ...transformationTable } },
+  });
+
+  const browser = await puppeteer.launch({
+    executablePath: findChrome(),
+    headless: true,
+    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  });
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "load" });
+    const gap = await page.evaluate(() => {
+      const lo = document.querySelector(".lo").getBoundingClientRect();
+      const area = document.querySelector(".area").getBoundingClientRect();
+      return { loLines: lo.height, clearMm: (area.top - lo.bottom) / (96 / 25.4) };
+    });
+
+    assert.ok(
+      gap.clearMm >= 0,
+      `the objective ran ${(-gap.clearMm).toFixed(1)}mm into the work below it`
+    );
+    assert.ok(
+      gap.clearMm < 5,
+      `the band left ${gap.clearMm.toFixed(1)}mm of nothing under the objective. ` +
+        "It is a heading, not a title page."
+    );
+  } finally {
+    await browser.close();
+  }
+});
