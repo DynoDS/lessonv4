@@ -940,3 +940,8 @@ Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-pa
 - The initial authentic museum toy choice had no verified reusable image route. Independent review caught it before rendering; redesign selected London Museum toy jug 98.2/163 under CC BY-NC 4.0 and revised the visible comparison to its surviving body, open mouth and missing handle.
 - Clearing four slide height diagnostics exposed a separate `TEXT_OVERLOAD` on an earlier slide. A distinct focused repair preserved all teaching content and reached `SLIDE_DESIGN_CHECK_OK: 19 slides`, showing that deterministic slide checks can reveal faults sequentially after layout changes.
 - The expected worksheet remained 20px too tall after its one permitted focused repair (`lines: 5 → 4`); the h-stack allocation grew with the change and the same overlap persisted. The worksheet was excluded rather than released with overlapping print content. This is evidence that reducing a nested response-line count is not a reliable fit lever for that h-stack layout.
+
+# 8 September 2026 - Represent and estimate on a number line lesson review
+
+- The stick-in surface had no live number-line helper, although slides and worksheets did. The run used three exact controlled printable figures and left a complete `number-line` stick-in extension in the run's `pending-helper` folder for later installation and visual regression testing.
+- The local render probe found PDF rendering but no PPTX route despite a successful fixed deck build. Worksheets, stick-ins and the working wall passed page-level review; the deck remained explicitly unverified rather than inheriting a visual pass from its JSON and build checks.

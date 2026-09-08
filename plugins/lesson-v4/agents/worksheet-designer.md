@@ -489,8 +489,9 @@ on the same sheet means you are past the point where a different shape helps,
 and the refusal message tells you plainly - a sheet's zones get about
 260mm of height in portrait and about 173mm in landscape, so content asking for
 500mm is not a layout problem. (The paper gives 267mm and 180mm; the few
-millimetres between the two are the band the learning objective and the sheet
-code sit in, at the top of the printable area.)
+millimetres between the two are the band the sheet code sits in, at the top of
+the printable area. A single-sheet worksheet carries no code and gets the whole
+267mm.)
 
 **Read the verdict that comes back when nothing fits, and act on which kind it
 is.** Whether it arrives from `suggest.js` or as an auto sheet's

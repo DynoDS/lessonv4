@@ -78,6 +78,27 @@ def powerpoint_helper():
     return Path(__file__).resolve().parent / "powerpoint-to-pdf.py"
 
 
+# "I asked and the answer was no" and "I was not allowed to ask" are different
+# answers, and recording them as the same one is how three lesson runs in
+# September 2026 shipped a PowerPoint nobody had looked at. Two of them ran with
+# PowerPoint installed and working: the probe was refused permission to start a
+# child process, wrote `pptxRoutes: []`, and every reviewer downstream read that
+# as "this machine cannot render a deck" and returned UNVERIFIED. A probe that
+# cannot tell a missing tool from a closed door must say so, because the repair
+# is completely different: install something, versus re-run with access.
+class ProbeBlocked(Exception):
+    """A probe could not run at all - not evidence that the tool is absent."""
+
+
+def _is_permission_error(exc):
+    if isinstance(exc, PermissionError):
+        return True
+    # Windows sandboxes surface a refused spawn as EPERM/EACCES on OSError
+    # rather than as PermissionError, and Node's own spawn reports the same
+    # code, which is the `spawnSync python EPERM` line in every run's friction.
+    return isinstance(exc, OSError) and exc.errno in (1, 13)
+
+
 def probe_powerpoint():
     if not is_windows():
         return False
@@ -88,7 +109,13 @@ def probe_powerpoint():
             text=True,
             timeout=POWERPOINT_PROBE_TIMEOUT_SECONDS,
         )
-    except (OSError, subprocess.TimeoutExpired):
+    except subprocess.TimeoutExpired:
+        return False
+    except OSError as exc:
+        if _is_permission_error(exc):
+            raise ProbeBlocked(
+                f"starting the PowerPoint probe was refused: {exc}"
+            ) from exc
         return False
     return completed.returncode == 0 and "POWERPOINT_PROBE_OK" in completed.stdout
 
@@ -131,8 +158,12 @@ def stage_source(src, tmp_dir):
 
 def probe_routes(route_file):
     pptx = []
-    if probe_powerpoint():
-        pptx.append("powerpoint")
+    blocked = []
+    try:
+        if probe_powerpoint():
+            pptx.append("powerpoint")
+    except ProbeBlocked as exc:
+        blocked.append(f"powerpoint: {exc}")
     if find_soffice():
         pptx.append("libreoffice")
     docx = ["libreoffice"] if find_soffice() else []
@@ -146,7 +177,21 @@ def probe_routes(route_file):
         "pptxRoutes": pptx,
         "docxRoutes": docx,
         "pdfRoutes": pdf,
+        "blockedProbes": blocked,
     })
+    # A blocked probe is not an answer, so the caller is told to ask again with
+    # access rather than left to read an empty list as a verdict. Exit 3 keeps
+    # it distinct from 1 (malformed input) and 2 (no route succeeded).
+    if blocked:
+        print("RENDER_PROBE_BLOCKED", file=sys.stderr)
+        for note in blocked:
+            print(f"- {note}", file=sys.stderr)
+        print(
+            "Re-run this probe with permission to start a child process before "
+            "treating any resource as unrenderable.",
+            file=sys.stderr,
+        )
+        return 3
     return 0
 
 
@@ -307,6 +352,81 @@ def render_pdf_pages(pdf_path, routes, out_dir, stem, dpi):
     raise RuntimeError("; ".join(errors) if errors else "no recorded PDF route")
 
 
+# ─── The contact sheet ────────────────────────────────────────────────
+#
+# A reviewer reading twenty full-size slide images spends roughly twenty times
+# the tokens of one image to answer questions most of which are about the deck
+# rather than about any one slide: does the sequence hold together, is the same
+# reference on both slides that need it, does slide 13 suddenly go quiet. That
+# is what an overview is for, and `final-resource-review.md` has told reviewers
+# to "use overviews for continuity, then individual pages" since before anything
+# could produce one.
+#
+# So the render now also lays every page out on one image, numbered, in reading
+# order. It is the cheap first look: one image answers the continuity questions
+# and names the handful of pages that actually need reading at full size. It
+# does not replace them - body text is not legible at tile size, and a review
+# that only ever looked at the contact sheet has not checked whether a child can
+# read the board.
+CONTACT_TILE_PX = 480          # tile width; a 16:9 slide is then 480x270
+CONTACT_COLUMNS_MAX = 4        # more than four across and a tile says nothing
+CONTACT_LABEL_PX = 22          # the band under each tile carrying its number
+CONTACT_GAP_PX = 10
+
+
+def contact_sheet(page_files, out_path):
+    """Lay every rendered page on one numbered image. Returns None if unable.
+
+    The overview is a convenience laid on top of the evidence, never the
+    evidence itself, so anything that stops it being drawn - no Pillow, a page
+    it cannot open, no room to write - leaves the pages and the manifest exactly
+    as they were. A render that produced every page is not a failed render
+    because the thumbnail sheet could not be built.
+    """
+    try:
+        return _contact_sheet(page_files, out_path)
+    except Exception:
+        return None
+
+
+def _contact_sheet(page_files, out_path):
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return None
+    if not page_files:
+        return None
+
+    columns = min(CONTACT_COLUMNS_MAX, len(page_files))
+    rows = (len(page_files) + columns - 1) // columns
+
+    with Image.open(page_files[0]) as first:
+        aspect = first.height / first.width
+    tile_w = CONTACT_TILE_PX
+    tile_h = max(1, round(tile_w * aspect))
+    cell_h = tile_h + CONTACT_LABEL_PX
+
+    sheet_w = columns * tile_w + (columns + 1) * CONTACT_GAP_PX
+    sheet_h = rows * cell_h + (rows + 1) * CONTACT_GAP_PX
+    sheet = Image.new("RGB", (sheet_w, sheet_h), (235, 235, 238))
+    draw = ImageDraw.Draw(sheet)
+
+    for index, page_path in enumerate(page_files):
+        column, row = index % columns, index // columns
+        x = CONTACT_GAP_PX + column * (tile_w + CONTACT_GAP_PX)
+        y = CONTACT_GAP_PX + row * (cell_h + CONTACT_GAP_PX)
+        with Image.open(page_path) as page:
+            thumb = page.convert("RGB").resize((tile_w, tile_h), Image.LANCZOS)
+        # A white ground behind every tile, so a slide with a white background
+        # still reads as a slide with an edge rather than bleeding into the sheet.
+        sheet.paste(thumb, (x, y))
+        draw.rectangle([x, y, x + tile_w - 1, y + tile_h - 1], outline=(120, 120, 128))
+        draw.text((x + 4, y + tile_h + 4), f"page {index + 1}", fill=(20, 20, 20))
+
+    sheet.save(out_path)
+    return out_path
+
+
 def render(source, out_dir, route_file, manifest_file, dpi):
     src = Path(source).resolve()
     if not src.is_file():
@@ -365,6 +485,11 @@ def render(source, out_dir, route_file, manifest_file, dpi):
             shutil.copyfile(produced, placed)
             page_files.append(placed)
 
+        overview_path = out_dir / f"{src.stem}-contact-sheet.png"
+        if overview_path.exists():
+            overview_path.unlink()
+        overview = contact_sheet(page_files, overview_path)
+
         manifest = {
             "version": MANIFEST_VERSION,
             "source": str(src),
@@ -373,6 +498,10 @@ def render(source, out_dir, route_file, manifest_file, dpi):
             "pdfRoute": pdf_route,
             "dpi": dpi,
             "pdf": {"path": str(kept_pdf), "sha256": sha256_file(kept_pdf)},
+            "contactSheet": (
+                {"path": str(overview), "sha256": sha256_file(overview)}
+                if overview else None
+            ),
             "pages": [
                 {"number": number, "path": str(path), "sha256": sha256_file(path)}
                 for number, path in enumerate(page_files, start=1)
@@ -400,6 +529,9 @@ def verify_manifest(manifest_file):
     try:
         checks.append((Path(manifest["source"]), manifest["sourceSha256"], "source"))
         checks.append((Path(manifest["pdf"]["path"]), manifest["pdf"]["sha256"], "pdf"))
+        overview = manifest.get("contactSheet")
+        if overview:
+            checks.append((Path(overview["path"]), overview["sha256"], "contact sheet"))
         pages = manifest["pages"]
         if not isinstance(pages, list) or not pages:
             raise KeyError("pages")

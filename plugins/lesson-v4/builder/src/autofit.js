@@ -14,6 +14,13 @@
 //   AUTOFIT_DEPENDENCY_MISSING   no Python, or no font to measure with. The
 //                                machine needs setting up. Says nothing about
 //                                the lesson.
+//   AUTOFIT_NOT_PERMITTED        Python is here and the sandbox refused to start
+//                                it. Nothing is missing and nothing crashed; the
+//                                same command succeeds with access. Kept apart
+//                                from the two above because the repair is
+//                                different and because every lesson run in
+//                                September 2026 spent one attempt rediscovering
+//                                it as a crash.
 //   AUTOFIT_MEASUREMENT_FAILED   the pass ran but could not measure some box.
 //                                A fault in this tooling.
 //   AUTOFIT_PROCESS_FAILED       the pass itself crashed.
@@ -56,14 +63,19 @@ function runAutofit(pptxPath, options = {}) {
     };
   }
 
+  // Injectable so a test can present a refused spawn without a sandbox, the
+  // same seam `decorations.js` uses for its own child process.
+  const run = options.execFileSync || execFileSync;
   const floor = String(options.floor || 10);
   let lastError = null;
   let ran = false;
   let output = '';
+  let blockedBy = null;
+  let blockedError = null;
 
   for (const bin of interpreters()) {
     try {
-      output = execFileSync(bin, [script, '--floor', floor, pptxPath], {
+      output = run(bin, [script, '--floor', floor, pptxPath], {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
       });
@@ -74,12 +86,31 @@ function runAutofit(pptxPath, options = {}) {
         // This interpreter name does not exist here; try the next.
         continue;
       }
+      if (err && (err.code === 'EPERM' || err.code === 'EACCES')) {
+        // The interpreter exists and we were refused permission to start it.
+        // Trying the next name finds the same wall, so stop and say which it is.
+        blockedBy = bin;
+        blockedError = err;
+        break;
+      }
       // The script ran and exited non-zero. Its own output says why.
       lastError = err;
       output = `${(err && err.stdout) || ''}${(err && err.stderr) || ''}`;
       ran = true;
       break;
     }
+  }
+
+  if (blockedBy) {
+    return {
+      status: 'AUTOFIT_NOT_PERMITTED',
+      message:
+        `starting \`${blockedBy}\` was refused by the sandbox ` +
+        `(${(blockedError && blockedError.code) || 'EPERM'}), so slide text was ` +
+        'NOT measured or shrunk. Nothing is missing and nothing crashed: run ' +
+        'this build again with permission to start a child process.',
+      output,
+    };
   }
 
   if (!ran) {

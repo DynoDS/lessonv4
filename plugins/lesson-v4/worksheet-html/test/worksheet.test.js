@@ -184,20 +184,22 @@ test("the printed code never names the level", () => {
   assert.equal(SHEET_CODES.below, "Sheet A");
 });
 
-test("every sheet prints the same lesson and the same objective", () => {
+test("every sheet belongs to the same lesson, and none carries an objective", () => {
   // All three are the same lesson. A child on Sheet A is working towards what
-  // the class is working towards, and the paper should not say otherwise.
+  // the class is working towards. The objective itself is not on the paper: the
+  // class has it on the board and in their books.
   const sheets = sheetsOf(
     worksheet({
       below: { layout: "full", zones: zones() },
       greaterDepth: { layout: "full", zones: zones() },
     })
   );
-  const los = new Set(sheets.map((s) => s.spec.lo));
   const titles = new Set(sheets.map((s) => s.spec.title));
-  assert.equal(los.size, 1);
   assert.equal(titles.size, 1);
-  assert.equal([...los][0], "To multiply by 3");
+  assert.ok(
+    sheets.every((s) => s.spec.lo === undefined),
+    "no sheet spec carries a learning objective for the renderer to print"
+  );
 });
 
 test("a worksheet with no sheets is named as such rather than built empty", () => {

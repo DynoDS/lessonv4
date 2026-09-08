@@ -8,11 +8,28 @@ The earlier preview and successful build are useful preparation, not this review
 The orchestrator supplies exact output paths, their render manifests, the approved
 lesson design and the corresponding resource specification. Use `render-pages.py`
 with the run's established render route. Verify each manifest before reusing it.
-Inspect every page in order. Use overviews for continuity, then individual pages
-where task wording, small evidence, a table or writing space cannot be judged
-at overview size. Read relevant speaker notes as well as slides. If rendering
-is unavailable, return UNVERIFIED with the reason; never report a visual pass
-from JSON, extracted text or the build exit code alone.
+
+**Look at the contact sheet first.** Every render writes one, at
+`contactSheet` in the manifest: the whole resource laid out on a single numbered
+image in reading order. Read it before opening any page. It answers the
+questions that are about the resource rather than about one page of it - whether
+the sequence holds together, whether a reference is on both pages that need it,
+whether one page is suddenly denser or emptier than its neighbours - and it
+names the handful of pages that need reading at full size. A twenty-slide deck
+costs one image to take in this way instead of twenty.
+
+**Then open the pages that need it, in order.** Body text is not legible at
+tile size, so anything resting on exact wording, small evidence, a table, a
+value in a diagram or the room left to write has to be seen at full size, and a
+review that only ever looked at the contact sheet has not checked whether a
+child can read the board. Judge coverage by the pages you actually opened.
+Read relevant speaker notes as well as slides.
+
+If rendering is unavailable, return UNVERIFIED with the reason; never report a
+visual pass from JSON, extracted text or the build exit code alone. "Unavailable"
+means a probe that ran and found no route. A probe that was refused permission to
+run has found nothing out, so it is not grounds for UNVERIFIED: say it was
+blocked and ask for it to be re-run with access.
 
 Judge the resource as a child using it and as the teacher delivering it:
 

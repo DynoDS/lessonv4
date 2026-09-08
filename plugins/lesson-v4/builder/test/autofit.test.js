@@ -74,6 +74,45 @@ test('a crash in the pass is AUTOFIT_PROCESS_FAILED', () => {
   assert.equal(result.status, 'AUTOFIT_PROCESS_FAILED');
 });
 
+// A refused spawn is not a crash. Every lesson run in September 2026 met
+// `spawnSync python EPERM` on its first build, reported it as
+// AUTOFIT_PROCESS_FAILED - "the pass itself crashed" - and spent its one
+// infrastructure retry rediscovering that the same command works with access.
+// Nothing was broken and nothing was missing; the door was shut.
+test('a spawn the sandbox refuses is not reported as a crash', () => {
+  const refuse = (code) => () => {
+    const err = new Error(`spawnSync python ${code}`);
+    err.code = code;
+    throw err;
+  };
+
+  for (const code of ['EPERM', 'EACCES']) {
+    const result = runAutofit('deck.pptx', {
+      script: fakeScript('print("never reached")\n'),
+      execFileSync: refuse(code),
+    });
+    assert.equal(result.status, 'AUTOFIT_NOT_PERMITTED', code);
+    assert.match(result.message, /refused by the sandbox/);
+    assert.match(result.message, /permission to start a child process/);
+  }
+});
+
+// The discrimination that matters: an interpreter that genuinely is not here
+// still reads as a missing dependency, not as a permission problem.
+test('an interpreter that does not exist is still a missing dependency', () => {
+  const absent = () => {
+    const err = new Error('spawnSync python ENOENT');
+    err.code = 'ENOENT';
+    throw err;
+  };
+
+  const result = runAutofit('deck.pptx', {
+    script: fakeScript('print("never reached")\n'),
+    execFileSync: absent,
+  });
+  assert.equal(result.status, 'AUTOFIT_DEPENDENCY_MISSING');
+});
+
 test('a pass that reports nothing readable is not treated as a pass', () => {
   // Silence is not success: without a result line nothing can confirm the text
   // was ever measured.

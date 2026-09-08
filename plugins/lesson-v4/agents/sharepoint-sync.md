@@ -41,3 +41,10 @@ The script:
 
 Return those results in plain English. If the E: drive is unavailable or any
 file is missing, report the error and leave the local output untouched.
+
+`FILING_NOT_PERMITTED` is a different answer and must be reported as one: the
+folder is there and this run was refused permission to write to it. Say that the
+files are built and waiting, name the folder they were going to, and say the
+filing step needs running again with access to the school drive. Do not report it
+as the drive being unavailable, and do not treat it as a fault in the lesson -
+nothing about the resources is wrong.

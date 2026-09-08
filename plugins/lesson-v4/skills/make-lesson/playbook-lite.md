@@ -1265,8 +1265,15 @@ wall, and stick-in-sheets-designer for stick-ins. Reuse the wall builder's final
 inspection when its evidence still matches the delivered file. Supply exact
 output paths from build results, the resource specification, approved design,
 the run's render route and a separate owned review-result path. Use
-`render-pages.py` to produce a manifest and page PNGs for each file. This is
-review mode, not another creation run or a pre-picture preview.
+`render-pages.py` to produce a manifest, a contact sheet and page PNGs for each
+file. This is review mode, not another creation run or a pre-picture preview.
+
+**Probe the render route once here**, with `render-pages.py --probe-route
+"[WORKING_DIR]/render-routes.json"`, and give that one file to every reviewer.
+`RENDER_PROBE_BLOCKED` means the probe was refused permission to start a child
+process and learnt nothing: re-run it with access. Only an empty `pptxRoutes`
+from a probe that RAN means this machine cannot render a deck; three lessons
+shipped an unreviewed PowerPoint on that confusion (September 2026).
 
 Merge the owners' entries into `[WORKING_DIR]/final-resource-reviews.json`,
 keeping their findings. Route REVISE findings through Phase 3.5;
@@ -1322,11 +1329,23 @@ unavailable` or `none required` nothing was published and there is nothing to
 prove: skip it, and do not treat its absence as a blocking fault. The picture
 results in the run report still tell the teacher what the lesson does without.
 
-Append genuine findings to the shared build review log when source access is
-available, creating the file with its `# Build review log` header if the
-checkout lacks one - a missing file is created, not queued around. Only when
-no writable checkout resolves, write the pending log entry in the working
-directory.
+Append genuine findings to the shared build review log:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/record-build-review.py" \
+  --lesson "[year, subject and objective in plain English]" \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --finding "[one reusable engine finding]" \
+  [--finding "..." for each further finding] \
+  [--source-root "[PLUGIN_SOURCE_ROOT]" when one resolved]
+```
+
+The log lives on the teacher's Desktop, so it does not depend on where the run
+started, and each entry carries the plugin version. Require
+`BUILD_REVIEW_LOG_OK`. Pass `--source-root` only when the run already resolved
+one; there is no pending-log branch and no checkout to go looking for. A finding
+is one a future run would hit again: a check that refused a correct output, a
+renderer that could not draw what the lesson needed, two rules that disagreed.
 
 ---
 

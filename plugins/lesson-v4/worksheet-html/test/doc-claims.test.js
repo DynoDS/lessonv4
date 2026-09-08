@@ -231,19 +231,19 @@ test("the page and zone numbers the designer docs quote (worksheet-designer.md, 
   );
 
   // What a sheet's ZONES actually get, which is the printable area less the
-  // band its own heading sits in. Those were the same number until the learning
-  // objective stopped being printed at the physical corner of the paper.
+  // band its sheet code sits in. The band is one quiet line now: it stopped
+  // having to price a teacher-written objective when sheets stopped printing one.
   const { contentArea } = require("../src/render");
-  const headed = contentArea({ orientation: "portrait", lo: "To add 1,000 to a number" });
+  const headed = contentArea({ orientation: "portrait", code: "C" });
   assert.ok(
     Math.abs(headed.heightMm - 260.7) < 0.5,
-    `a headed portrait sheet gives its zones ${headed.heightMm.toFixed(1)}mm - ` +
+    `a coded portrait sheet gives its zones ${headed.heightMm.toFixed(1)}mm - ` +
       "worksheet-designer.md quotes about 260mm"
   );
-  const headedLandscape = contentArea({ orientation: "landscape", lo: "To add 1,000 to a number" });
+  const headedLandscape = contentArea({ orientation: "landscape", code: "C" });
   assert.ok(
     Math.abs(headedLandscape.heightMm - 173.7) < 0.5,
-    `a headed landscape sheet gives its zones ${headedLandscape.heightMm.toFixed(1)}mm - ` +
+    `a coded landscape sheet gives its zones ${headedLandscape.heightMm.toFixed(1)}mm - ` +
       "worksheet-designer.md quotes about 173mm"
   );
 

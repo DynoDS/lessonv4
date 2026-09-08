@@ -496,7 +496,15 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # re-judge the beats that leaned on the lost source, then returns
         # through Phase 1.25; the helper check's `covered` bullet refuses a
         # lookalike key; and the low-resolution picture line reaches the report.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 69 * 1024)
+        # Raised from 69 KiB when two more demonstrated failures were repaired
+        # here (8 September 2026): three consecutive lessons shipped a
+        # PowerPoint nobody had looked at because each reviewer probed its own
+        # render route and a refused probe read as "no renderer", so the run now
+        # probes once and a blocked probe is not an answer; and three runs'
+        # engine findings were stranded in three output folders because the only
+        # writable home for the shared log depended on where the run started, so
+        # the log has a fixed one and there is no pending-log branch left.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 71 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

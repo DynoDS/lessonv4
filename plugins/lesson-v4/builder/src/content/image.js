@@ -358,8 +358,9 @@ function drawImage(pptx, slide, zone, data, ctx) {
 
   drawOneImage(pptx, slide, frame, data, false, ctx);
 
-  if (data.inset && data.inset.imagePath) {
-    drawInset(pptx, slide, frame, data.inset, ctx);
+  // An inset is either a second picture, or a named part of this one enlarged.
+  if (data.inset && (data.inset.imagePath || data.inset.detail)) {
+    drawInset(pptx, slide, frame, data.inset, ctx, data);
   }
 
   if (hasCaption) {
@@ -449,6 +450,61 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
   });
 }
 
+// ─── Showing one part of a photograph, enlarged ───────────────────────
+//
+// A Year 4 History lesson asked children to compare Edward VI's rattle with a
+// modern one. The rattle is a few millimetres of a full portrait, and at the
+// back of the room it is not there at all. The final review said so three times
+// and the repair could not be made: an inset needed a second photograph, and
+// nobody has a photograph of just that rattle (7 September 2026).
+//
+// So an inset may instead name a RECTANGLE of the picture it sits on:
+//
+//   "inset": { "detail": { "x": 0.41, "y": 0.55, "w": 0.14, "h": 0.12 } }
+//
+// Fractions of the whole image, origin top-left. No second file is sourced, no
+// pixels are processed, and nothing new is rendered: PowerPoint's own crop does
+// it, which is why this was the cheapest of the ways of pointing at a detail.
+// The full photograph still prints behind it, because a child needs to see the
+// object in its source as well as close up - a magnified fragment with no
+// context is a different, worse slide.
+//
+// Deliberately NOT done here: greying the rest of the picture and leaving the
+// detail in colour. It looks the part, and it makes the child's task depend on
+// telling two colours apart, which `final-resource-review.md` refuses outright
+// and which fails a colour-blind child and a black-and-white printout together.
+//
+// The label belongs to the `callout` helper, which already points at things.
+function detailRect(frame, dims, detail) {
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const w = clamp(Number(detail.w) || 0, 0.01, 1);
+  const h = clamp(Number(detail.h) || 0, 0.01, 1);
+  const x = clamp(Number(detail.x) || 0, 0, 1 - w);
+  const y = clamp(Number(detail.y) || 0, 0, 1 - h);
+
+  // Scale so the NAMED REGION covers the inset frame, then crop everything
+  // outside it. The region keeps its own shape, so the part of the frame the
+  // region cannot fill is taken from the picture around it rather than by
+  // stretching - the detail is evidence, and evidence is not stretched.
+  const scale = Math.max(frame.w / (w * dims.w), frame.h / (h * dims.h));
+  const scaledW = dims.w * scale;
+  const scaledH = dims.h * scale;
+  const centreX = (x + w / 2) * scaledW;
+  const centreY = (y + h / 2) * scaledH;
+
+  return {
+    w: scaledW,
+    h: scaledH,
+    sizing: {
+      type: 'crop',
+      x: clamp(centreX - frame.w / 2, 0, Math.max(0, scaledW - frame.w)),
+      y: clamp(centreY - frame.h / 2, 0, Math.max(0, scaledH - frame.h)),
+      w: frame.w,
+      h: frame.h,
+    },
+  };
+}
+
 function insetPosition(frame, position, insetW, insetH) {
   const margin = INSET_MARGIN;
   switch (position) {
@@ -464,7 +520,7 @@ function insetPosition(frame, position, insetW, insetH) {
   }
 }
 
-function drawInset(pptx, slide, frame, inset, ctx) {
+function drawInset(pptx, slide, frame, inset, ctx, parent) {
   const position = inset.position || 'bottom-right';
   const insetW = frame.w * INSET_W_RATIO;
   const insetH = insetW * 0.75;
@@ -477,7 +533,38 @@ function drawInset(pptx, slide, frame, inset, ctx) {
     line: { color: COLOURS.pureWhite, width: INSET_BORDER_W }
   });
 
+  if (inset.detail && !inset.imagePath) {
+    drawDetailInset(slide, pos, inset.detail, parent, ctx);
+    return;
+  }
+
   drawOneImage(pptx, slide, pos, inset, true, ctx);
+}
+
+// The enlarged part of the picture the inset sits on. It reuses the parent's
+// own file and measurements, so there is nothing extra to source or measure.
+function drawDetailInset(slide, pos, detail, parent, ctx) {
+  const raw = parent && parent.imagePath;
+  const resolved = resolveForEmbed(raw, ctx);
+  if (!resolved || !fs.existsSync(resolved)) return;
+
+  const dims = ctx && ctx.imageDims ? ctx.imageDims[raw] : null;
+  if (!dims || !(dims.w > 0) || !(dims.h > 0)) {
+    throw new Error(
+      `IMAGE_DIMENSIONS_UNAVAILABLE: image "${raw}" could not be measured, so ` +
+      'the detail inset cannot be placed. Measure the image before building.'
+    );
+  }
+
+  const cropped = detailRect(pos, dims, detail);
+  slide.addImage({
+    path: resolved,
+    x: pos.x,
+    y: pos.y,
+    w: cropped.w,
+    h: cropped.h,
+    sizing: cropped.sizing,
+  });
 }
 
 // Card-look measure: where the photo (and its caption) will actually sit, so
@@ -550,4 +637,5 @@ module.exports = {
   PICTURE_READABLE_FLOOR,
   pictureFloorFindings,
   clearPictureFloor,
+  detailRect,
 };

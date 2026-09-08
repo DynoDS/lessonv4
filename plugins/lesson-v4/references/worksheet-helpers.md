@@ -36,7 +36,6 @@ artefact and cannot drift apart.
   "meta": {
     "name": "multiplying-by-3",
     "lesson": "Multiplying by 3",
-    "lo": "To multiply a two-digit number by 3",
     "yearGroup": 4,
     "subject": "maths",
     "lessonDesignPath": "/abs/path/lesson-design.json",
@@ -61,11 +60,17 @@ artefact and cannot drift apart.
 |---|---|
 | `name` | required. Names the output file. |
 | `lesson` | required. Prints on every sheet. |
-| `lo` | required. The learning objective, printed small at the top of every sheet. |
 | `yearGroup` | required. 1 to 6. |
 | `subject` | required. Chooses which subject helper file to read. |
 | `lessonDesignPath` | required. Absolute path to `lesson-design.json`. |
 | `adaptationPath` | required when an adaptation exists. |
+
+A sheet does not carry the learning objective, and there is no field for one.
+The class has the objective on the board and writes it in their books, so
+printing it again bought a line of the child's page on every sheet and nothing
+else. Do not reintroduce it as a zone, a title or a note: the room belongs to
+the work. (Dropped 8 September 2026, after two packs shipped with it clipped to
+"To ex" and "To id" by the combined-PDF merge.)
 
 | Top-level field | |
 |---|---|

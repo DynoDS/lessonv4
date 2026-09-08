@@ -444,7 +444,7 @@ function resolveAutoSheet(sheet, meta) {
   const result = suggestLayouts(items, {
     yearGroup: meta && meta.yearGroup,
     orientation,
-    extra: { title: sheet.title, lo: sheet.lo },
+    extra: { title: sheet.title },
   });
 
   if (!result.fits.length) {
@@ -651,12 +651,11 @@ function sheetsOf(worksheet) {
         page: index + 1,
         pageCount: pages.length,
         spec: {
-          // The lesson names the sheet; the level does not. All three are the
-          // same lesson and print the same objective, which is the point: a
-          // child on Sheet A is working towards what the class is working
-          // towards, and the paper should not say otherwise.
+          // The lesson names the sheet; the level does not. The title is used
+          // for naming and reporting, not printed on the page, and no sheet
+          // carries the learning objective: the class has it on the board and
+          // in their books (see the header band in `render.js`).
           title: sheet.title || meta.lesson || "Worksheet",
-          lo: sheet.lo || meta.lo || "",
           code: coded ? SHEET_CODES[key] : "",
           layout: page.layout,
           orientation: page.orientation === "landscape" ? "landscape" : "portrait",

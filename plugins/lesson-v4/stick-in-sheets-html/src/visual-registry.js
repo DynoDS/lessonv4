@@ -13,6 +13,7 @@ const worldWriteOnMap = require("../../shared/visuals/world-write-on-map-svg");
 const geographicalDescriptionFrame = require("../../shared/visuals/geographical-description-frame-svg");
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
+const numberLine = require("../../shared/visuals/number-line-svg");
 
 // A labelled diagram a child sticks in and writes the part names onto. The figure
 // is the SAME one the board shows (the slide's label-diagram), so the cut-out and
@@ -52,8 +53,24 @@ const SOURCE_COPY_CHAR_MM = 2.2;
 //     while the squares stay big enough to count dots and rule lines on; the
 //     width then follows the grid's own aspect, so a wide grid prints wider than
 //     a square one but both keep the same usable square.
-// Adding clock-face / number-line later is a one-line entry here.
+// The number-line entry supplies the write-on extension of the existing
+// numberline family.
 const VISUALS = {
+  // 130mm: the child MARKS this line, so what has to be comfortable is the gap
+  // between two ticks and the band underneath for their handwriting, not the
+  // overall width. Question state is forced on every line here rather than
+  // trusted to the spec: a stick-in is the child's copy, and an answer that
+  // reaches it has given the task away before they start.
+  "number-line": {
+    tightSvg: numberLine.tightSvg,
+    defaultWidthMm: 130,
+    specFn: (s) => Object.assign({}, s, {
+      questionState: true,
+      lines: Array.isArray(s.lines)
+        ? s.lines.map((line) => Object.assign({}, line, { questionState: true }))
+        : s.lines,
+    }),
+  },
   // 127mm: two copies fit the ~277mm landscape printable width (2×127 + 6mm gap = 260mm ✓)
   // and two rows fit the ~185mm landscape printable height (2×89.5 + 6mm gap = 185mm ✓).
   venn: { tightSvg: venn.tightSvg, defaultWidthMm: 127 },
@@ -215,6 +232,13 @@ function missingQuestionContent(item) {
         return "a Carroll diagram needs all four row and column labels";
       }
       return null;
+    case "number-line":
+      try {
+        numberLine.normalise(s);
+        return null;
+      } catch (error) {
+        return error.message;
+      }
     case "reflection-grid":
       if (!Array.isArray(s.shape) || s.shape.length === 0) {
         return "a reflection grid needs a shape to reflect";

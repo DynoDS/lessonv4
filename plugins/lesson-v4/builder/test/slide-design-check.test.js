@@ -740,6 +740,131 @@ test('a turn slide with nothing to work on blocks before the scratch builder run
   }
 });
 
+// The deadlock of 8 September 2026. A roomier free layout has no `questions`
+// field, so the turn's task arrives as prose - and Semantic colour makes a task
+// BLACK. Black, and this check said there was no task; blue, and
+// BLUE_WITHOUT_A_QUESTION said an imperative is not a question. Four slides of
+// the Find 1,000 more/less deck had no legal form, and the deck was rebuilt from
+// scratch to get out of it.
+test('a black imperative IS the turn, and does not have to be painted blue', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'slide-design-imperative-'));
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';
+`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'split-h-60-40',
+          title: 'My Turn',
+          primary: {
+            type: 'stack',
+            items: [
+              { type: 'text', value: 'Find 1,000 more and 1,000 less than 3,412.' },
+              {
+                type: 'place-value-chart',
+                columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+                rows: [{ cells: ['3', '4', '1', '2'] }]
+              }
+            ]
+          },
+          secondary: {
+            type: 'sc-panel',
+            content: { type: 'steps', steps: ['Find the thousands column.'] }
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+    assert.doesNotMatch(result.stdout, /TURN_SLIDE_WITHOUT_ITS_TURN/);
+    // And the task stays black, so the colour rule is not paid to satisfy it.
+    assert.doesNotMatch(result.stdout, /BLUE_WITHOUT_A_QUESTION/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// Semantic colour names three carriers for a question - `color`, `focus-blue`
+// and a `[[ ]]` span inside a line. Only the first two were read here, so a turn
+// whose question is one clause of a longer line looked like no question at all.
+test('a question carried as a [[ ]] span inside a line counts as the turn', () => {
+  const chr10 = String.fromCharCode(10);
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'slide-design-span-'));
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';
+`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'split-h-60-40',
+          title: 'My Turn',
+          primary: {
+            type: 'stack',
+            items: [
+              {
+                type: 'text',
+                value: '9,406 + 1,000 = ___' + chr10 + 'Then take away 1,000. [[Do we get back to 9,406?]]'
+              },
+              {
+                type: 'place-value-chart',
+                columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
+                rows: [{ cells: ['9', '4', '0', '6'] }]
+              }
+            ]
+          },
+          secondary: {
+            type: 'sc-panel',
+            content: { type: 'steps', steps: ['Find the thousands column.'] }
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+    assert.doesNotMatch(result.stdout, /TURN_SLIDE_WITHOUT_ITS_TURN/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// The discrimination the two above must not cost: a slide of facts under a turn
+// title is still the interlude this check exists to refuse. "A thousand is ten
+// hundreds." names something; it does not ask the class to do anything.
+test('a turn slide carrying only statements is still refused', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'slide-design-statements-'));
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';
+`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'split-h-60-40',
+          title: 'My Turn',
+          primary: {
+            type: 'stack',
+            items: [
+              { type: 'text', value: 'A thousand is ten hundreds.' },
+              { type: 'text', value: 'The thousands column sits fourth from the right.' }
+            ]
+          },
+          secondary: {
+            type: 'sc-panel',
+            content: { type: 'steps', steps: ['Name the columns.'] }
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+    assert.match(result.stdout, /"signal":"TURN_SLIDE_WITHOUT_ITS_TURN"/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('a turn slide showing its question, and the answer slide after it, both pass', () => {
   // The discrimination this check has to make: the same reference material is
   // fine on a slide that also carries the turn's question, and an answer slide

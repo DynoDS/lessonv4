@@ -153,12 +153,79 @@ function hasTaskSteps(node, insidePanel) {
   });
 }
 
+// The turn's own task, written as prose rather than carried by a question
+// helper. A roomier free layout has no `questions` field to put it in, so the
+// task arrives as a text node - and because Semantic colour makes a task BLACK
+// ("a task is black either way, because it is a task and not a question",
+// flagged by Daniel 3 September 2026), nothing about that node said "turn".
+//
+// That left one class of slide with no legal way to exist. The Find 1,000
+// more/less deck met it on four slides: black, and TURN_SLIDE_WITHOUT_ITS_TURN
+// said there was no task; blue, and BLUE_WITHOUT_A_QUESTION said an imperative
+// is not a question. Both rules were right. The deck was rebuilt from scratch to
+// escape them (8 September 2026).
+//
+// So an imperative counts as the turn it is. An imperative opens with its verb,
+// which is exactly what distinguishes "Find 1,000 more than 3,412." from the
+// reference material this check exists to catch - "A thousand is ten hundreds."
+// names a fact, and a slide carrying only facts under a turn title is still the
+// interlude the rule refuses.
+const TASK_OPENERS = new RegExp(
+  '^(?:' + [
+    'add', 'answer', 'build', 'calculate', 'change', 'check', 'choose',
+    'circle', 'colour', 'compare', 'complete', 'continue', 'convert', 'copy',
+    'count', 'cross', 'decide', 'describe', 'design', 'discuss', 'divide',
+    'draw', 'estimate', 'explain', 'fill', 'find', 'finish', 'give', 'identify',
+    'join', 'label', 'list', 'look', 'make', 'mark', 'match', 'measure',
+    'multiply', 'name', 'order', 'partition', 'pick', 'plot', 'point', 'prove',
+    'read', 'record', 'round', 'shade', 'share', 'show', 'solve', 'sort',
+    'spot', 'subtract', 'tell', 'test', 'tick', 'try', 'underline', 'use',
+    'work out', 'write',
+  ].join('|') + ')\\b',
+  'i'
+);
+
+function isTaskWording(value) {
+  if (typeof value !== 'string') return false;
+  const text = value.trim();
+  if (!text) return false;
+  // A question already counts through its own routes; this is only about the
+  // imperative half, so a "?" here means the other check owns it.
+  return TASK_OPENERS.test(text);
+}
+
+// A `[[ ]]` span anywhere this node prints. Deliberately not the global
+// FOCUS_SPAN regex: that one carries `lastIndex` between calls, and this is
+// asked the same question about many nodes in a row.
+const FOCUS_SPAN_PRESENT = /\[\[[\s\S]*?\]\]/;
+
+function carriesFocusSpan(node) {
+  return Object.keys(node).some((key) => {
+    if (key === 'speakerNotes' || key === 'decorations') return false;
+    const value = node[key];
+    if (typeof value === 'string') return FOCUS_SPAN_PRESENT.test(value);
+    if (Array.isArray(value)) {
+      return value.some(
+        (entry) => typeof entry === 'string' && FOCUS_SPAN_PRESENT.test(entry)
+      );
+    }
+    return false;
+  });
+}
+
 function carriesItsTurn(slideData) {
   let found = hasTaskSteps(slideData, false);
   walkContent(slideData, (node) => {
     if (found) return;
     if (Array.isArray(node.questions) && node.questions.length) found = true;
     else if (QUESTION_TYPES.has(node.type)) found = true;
+    else if (isTaskWording(node.value) || isTaskWording(node.text)) found = true;
+    // The three carriers Semantic colour names for a question are `color`,
+    // `focus-blue` and a `[[ ]]` span inside a line. Only the first two were
+    // read here, so a turn whose question is one clause of a longer line - the
+    // ordinary shape when a number sentence is followed by the thing to decide -
+    // looked like a slide with no question on it at all.
+    else if (carriesFocusSpan(node)) found = true;
     else if (node.colorRole === 'focus-blue') found = true;
     else if (typeof node.color === 'string' && HOUSE_BLUE.test(node.color.trim())) {
       found = true;
@@ -185,11 +252,13 @@ function turnWarnings(lesson) {
       field: 'title',
       message:
         `"${title}" promises the class a turn, but this slide carries no question, ` +
-        'no task in house blue and no answer - only reference material. Put the ' +
-        "turn's own question or task on it, or fold this content into the slide " +
-        'that does have the question (a reference usually fits beside a task as a ' +
-        'side panel in a row) rather than leaving a reference-only slide wearing a ' +
-        'turn label.'
+        "no task and no answer - only reference material. Put the turn's own " +
+        "question or task on it, or fold this content into the slide that does " +
+        'have the question (a reference usually fits beside a task as a side panel ' +
+        'in a row) rather than leaving a reference-only slide wearing a turn ' +
+        'label. The task stays BLACK: do not reach for house blue to satisfy this ' +
+        'line, because blue is the colour of a question and an imperative painted ' +
+        'blue is refused by BLUE_WITHOUT_A_QUESTION.'
     });
   });
   return warnings;

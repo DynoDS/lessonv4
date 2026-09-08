@@ -154,7 +154,9 @@ const PRIMITIVES = [
       { key: 'turn-anticlockwise', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'anticlockwise' } } }
     ] },
   { id: 'clock', depicts: 'data',           slides: 'clock',           worksheets: 'clock-row',     wall: 'clock',           stickin: false },
-  { id: 'numberline', depicts: 'data',      slides: 'numberline',      worksheets: 'number-line',                   wall: 'numberLine',      stickin: false,
+  // Stick-in write-on geometry: shared/visuals/number-line-svg.js; existing cue
+  // geometry remains the SC source.
+  { id: 'numberline', depicts: 'data',      slides: 'numberline',      worksheets: 'number-line',                   wall: 'numberLine',      stickin: 'number-line',
     geometrySource: 'shared/visuals/numberline-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'jump-right', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'right' } } },

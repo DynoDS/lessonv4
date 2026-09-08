@@ -575,3 +575,71 @@ class LegalRepairsStillPassTests(ItemLevelCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TeacherScriptAndStackWeightsTests(ItemLevelCase):
+    """The two false refusals of 7-8 September 2026.
+
+    Both stopped a repair that had done exactly what it was asked to do, and in
+    both the byte diff showed it. They are tested together because they are one
+    mistake made twice: a field compared more coarsely than the thing it holds.
+    """
+
+    NOTE = "Ask the class what they notice about the thousands column."
+
+    def scripted(self, notes):
+        spec = self.mutated()
+        spec["slides"] = [{"title": "My Turn", "speakerNotes": notes}] if notes else [
+            {"title": "My Turn"}
+        ]
+        return spec
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.before = self.scripted(self.NOTE)
+
+    def test_an_orientation_may_be_prepended_to_existing_speaker_notes(self):
+        prepended = (
+            "Teacher orientation: children cross ten thousand today."
+            + chr(10) + chr(10) + self.NOTE
+        )
+        self.assertAllowed(self.scripted(prepended))
+
+    def test_rewording_the_teacher_s_script_is_still_refused(self):
+        out = self.assertCaught(self.scripted("Talk about place value."))
+        self.assertIn("teacher script", out)
+
+    def test_dropping_the_teacher_s_script_is_still_refused(self):
+        out = self.assertCaught(self.scripted(None))
+        self.assertIn("teacher script", out)
+
+
+class StackWeightsAreHowBigNotWhatTests(ItemLevelCase):
+    """A composition repair re-divides the space. That is what it is for."""
+
+    def stacked(self, question_weight, chart_weight, keep_question=True):
+        spec = self.mutated()
+        items = []
+        if keep_question:
+            items.append({
+                "type": "text",
+                "value": "Find 1,000 more than 3,412.",
+                "weight": question_weight,
+            })
+        items.append({"type": "place-value-chart", "weight": chart_weight})
+        spec["slides"] = [{"title": "My Turn",
+                           "primary": {"type": "stack", "items": items}}]
+        return spec
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.before = self.stacked(0.42, 2.58)
+
+    def test_a_stack_may_be_re_divided_without_preserving_its_weights(self):
+        # The Year 4 History run had to rearrange a slide around this constraint
+        # rather than around the slide: the figure needed more of the page and
+        # the weights had to survive as a multiset to say so.
+        self.assertAllowed(self.stacked(0.9, 3.4))
+
+    def test_losing_the_question_while_re_dividing_is_still_refused(self):
+        self.assertCaught(self.stacked(0.9, 3.4, keep_question=False))

@@ -122,6 +122,17 @@ PRESENTATION_KEYS = {
     "letters",
     "style",
     "notes",
+    # How much of a stack or row a child's content is given. It is the share of
+    # the space, not the content, and re-dividing the space is what a
+    # composition repair IS. Counted as content, the numbers had to survive as a
+    # multiset, so a repair could move a figure into a taller zone only by
+    # finding somewhere else to put the number it used to have: the Year 4
+    # History run rearranged a slide around that constraint rather than around
+    # the slide (7 September 2026). Every value a child actually reads is
+    # counted somewhere else in this file, so releasing these loses no cover.
+    "weight",
+    "weights",
+    "flex",
 }
 
 # Sizes a repair may legitimately grow. Counting "4" as content would call a
@@ -285,6 +296,17 @@ TEACHER_KEYS = {
 # the class.
 METADATA_KEYS = {"meta", "metadata"}
 
+# The teacher's spoken script. It is never on the child's page, and it is the one
+# content field a repair is routinely REQUIRED to add to: the orientation a
+# design review asks for is prepended to the notes that are already there.
+# Counted as an ordinary string, the whole note is one census item, so inserting
+# a sentence at the top reads as the entire original note being deleted and a
+# different one authored - which is exactly what the Find 1,000 more/less run
+# was told on 8 September 2026 while its byte diff showed only the insertion.
+# So these are compared by CONTAINMENT below rather than by equality: the script
+# that was there has to still be there, and a repair may add to it.
+SCRIPT_KEYS = {"speakerNotes"}
+
 # Except for the fields the renderer genuinely prints from it. Blanket-ignoring
 # metadata would be the same mistake pointed the other way: `worksheet.js` falls
 # back to `meta.lesson` or `meta.name` for the sheet's title and to `meta.lo`
@@ -325,6 +347,7 @@ class Census:
         self.objects: Counter = Counter()
         self.content: Counter = Counter()
         self.teacher: Counter = Counter()
+        self.script: list[str] = []
         self.metadata: Counter = Counter()
         self.room: Counter = Counter()
         self.cases: Counter = Counter()
@@ -456,6 +479,10 @@ class Census:
         for key, child in value.items():
             if key in DECORATIVE_KEYS:
                 continue
+            if key in SCRIPT_KEYS:
+                if isinstance(child, str) and child.strip():
+                    self.script.append(child.strip())
+                continue
             if key in PRESENTATION_KEYS or key in SIZING_KEYS:
                 continue
             if key == "parts" and is_width_split(child):
@@ -551,6 +578,28 @@ def read_spec(path: Path, label: str) -> object:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise SystemExit(f"REPAIR_SCOPE_FAILED: {label} is not readable JSON: {exc}")
+
+
+def script_losses(before: list[str], after: list[str]) -> list[str]:
+    """Teacher scripts that did not survive, allowing for an insertion.
+
+    A note survives when the whole of it is still readable inside one of the
+    notes the repair produced. That keeps the guarantee that matters - nobody
+    may quietly drop or reword the teacher's script - while letting a repair do
+    the one thing it is regularly asked to do, which is add a sentence to the
+    front of it. Each surviving note is claimed once, so two notes cannot both
+    be discharged by the same after-note.
+    """
+    remaining = list(after)
+    lost = []
+    for note in before:
+        for index, candidate in enumerate(remaining):
+            if note in candidate:
+                remaining.pop(index)
+                break
+        else:
+            lost.append(note)
+    return lost
 
 
 def losses(before: Counter, after: Counter) -> list[str]:
@@ -652,6 +701,19 @@ def main(argv: list[str] | None = None) -> int:
             lost_teacher,
             "The teacher's copy is content too. A question with no answer "
             "beside it is a question nobody can mark.",
+        )
+        return 1
+
+    lost_script = script_losses(before.script, after.script)
+    if lost_script:
+        report(
+            f"REPAIR_SCOPE_FAILED: {len(lost_script)} teacher script(s) did not "
+            "survive the repair:",
+            [note[:110] + (" ..." if len(note) > 110 else "") for note in lost_script],
+            "Speaker notes are the teacher's own words for delivering the "
+            "lesson. A repair may add to a note - an approved orientation goes "
+            "at the front of one - but what was already there has to still be "
+            "there, and rewording it is authoring, not repair.",
         )
         return 1
 

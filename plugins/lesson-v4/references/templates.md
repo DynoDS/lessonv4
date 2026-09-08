@@ -654,6 +654,17 @@ With an optional inset — a smaller second image overlaid in one corner. Use fo
 
 The inset is drawn at roughly 25% of the big image's width, with a thin white border for contrast. `position` accepts `"top-left"`, `"top-right"`, `"bottom-left"`, `"bottom-right"`. Each image (main and inset) needs its own photo brief and its own expected filename.
 
+**Or the inset can enlarge part of the main photograph** instead of holding a second one. Give it a `detail` rectangle in fractions of the whole image, origin top-left, and no `imagePath`:
+
+```json
+"inset": { "position": "bottom-right",
+           "detail": { "x": 0.41, "y": 0.55, "w": 0.14, "h": 0.12 } }
+```
+
+This is how a slide points at one small thing inside a source: the object a child is asked to compare, the detail a caption names. The full photograph still prints behind it, because a child needs the object in its source as well as close up. Nothing extra is sourced and nothing is generated - it is the same file, cropped - so use it in preference to asking the scout for a second photo of a detail that no stock library has. A Year 4 History deck shipped with Edward VI's rattle unreadable on three slides because this did not exist (7 September 2026).
+
+Keep the rectangle tight to the object and give it a little air around it. Put the words on it with a `callout`, not by tinting the picture: greying the rest of a photograph and leaving the detail in colour makes the task depend on telling two colours apart, which fails a colour-blind child and a black-and-white printout, and `final-resource-review.md` refuses it.
+
 **Fit (default `contain`):** images preserve their natural aspect ratio inside the zone, centred, with the slide background showing through any letterbox bands. Use this when the full photograph or visible evidence must survive. To fill the zone, pass `"fit": "cover"`. Cover preserves natural proportions and removes equal overflow from opposite sides with a centred crop. It never stretches. Use cover only when that crop cannot remove required evidence. Insets use the same true cover crop regardless of the parent. If a real image cannot be measured, the build stops with `IMAGE_DIMENSIONS_UNAVAILABLE` instead of stretching it.
 
 ### `table`

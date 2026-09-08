@@ -113,17 +113,32 @@ def sync_files(
     )
 
     if not dry_run:
-        destination.mkdir(parents=True, exist_ok=True)
-        for path in files:
-            target = destination / path.name
-            # A run that built straight into the resolved SharePoint folder
-            # hands us a file that is already its own destination. Windows
-            # refuses that copy (WinError 32), and a sync that fails over a
-            # file already where it belongs reports a delivery problem that
-            # does not exist.
-            if target.exists() and target.resolve() == path.resolve():
-                continue
-            shutil.copy2(path, target)
+        # Three different things can stop a copy here and they used to arrive as
+        # one message. "The drive is unavailable" sends the teacher to look at a
+        # drive that is mounted and working; what actually happened on 8
+        # September 2026 was that the run had no permission to write outside its
+        # own workspace, and the repair for that is to run the filing step with
+        # access, not to go and find the E: drive.
+        try:
+            destination.mkdir(parents=True, exist_ok=True)
+            for path in files:
+                target = destination / path.name
+                # A run that built straight into the resolved SharePoint folder
+                # hands us a file that is already its own destination. Windows
+                # refuses that copy (WinError 32), and a sync that fails over a
+                # file already where it belongs reports a delivery problem that
+                # does not exist.
+                if target.exists() and target.resolve() == path.resolve():
+                    continue
+                shutil.copy2(path, target)
+        except PermissionError as exc:
+            raise PermissionError(
+                f"FILING_NOT_PERMITTED: {destination} exists and this run was "
+                f"refused permission to write to it ({exc}). Nothing is missing "
+                "and nothing is unmounted: run the filing step again with access "
+                "to the school drive. The lesson's files are untouched where "
+                "they were built."
+            ) from exc
 
     return destination, files
 

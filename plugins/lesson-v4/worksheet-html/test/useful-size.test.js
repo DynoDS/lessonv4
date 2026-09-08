@@ -282,27 +282,48 @@ test("the sheet's heading is aligned to the work, not to the edge of the paper",
     layout: "full",
     orientation: "portrait",
     yearGroup: 4,
-    lo: "To add and subtract 1,000 from a four-digit number",
     code: "C",
     zones: { a: { question: true, ...transformationTable } },
   });
 
   assert.match(
     html,
-    /\.lo \{[^}]*left: 15mm; top: 15mm/s,
-    "the objective sits on the same left edge as the work beneath it"
-  );
-  assert.match(
-    html,
     /\.sheet-code \{[^}]*right: 15mm; top: 15mm/s,
-    "and the code sits on the same right edge"
+    "the code sits on the same right edge as the work beneath it"
+  );
+});
+
+// A sheet does not print the learning objective. The class has it on the board
+// and in their books, so the paper repeating it bought a line of the child's
+// page on every sheet and nothing else. It was also the string the combined-PDF
+// merge corrupted, which is how two September 2026 packs went out headed "To ex"
+// and "To id". The strongest guarantee against a clipped objective is a sheet
+// that has no objective to clip, so this is checked at the renderer rather than
+// asked of a designer.
+test("no sheet prints the learning objective, whatever the spec carries", () => {
+  const html = renderSheet({
+    layout: "full",
+    orientation: "portrait",
+    yearGroup: 4,
+    lo: "To add and subtract 1,000 from a four-digit number",
+    code: "C",
+    zones: { a: { question: true, ...transformationTable } },
+  });
+
+  assert.ok(
+    !html.includes("To add and subtract 1,000 from a four-digit number"),
+    "a stale `lo` left in a spec must not reach the page"
+  );
+  assert.ok(
+    !/class="lo"/.test(html),
+    "and no objective element is emitted at all"
   );
 });
 
 test("the heading's band is paid for before a zone is measured", () => {
   const { contentArea } = require("../src/render");
   const bare = contentArea({ orientation: "portrait" });
-  const headed = contentArea({ orientation: "portrait", lo: "To read a bar chart" });
+  const headed = contentArea({ orientation: "portrait", code: "C" });
 
   assert.ok(
     headed.heightMm < bare.heightMm,
@@ -314,6 +335,24 @@ test("the heading's band is paid for before a zone is measured", () => {
     `the band took ${(bare.heightMm - headed.heightMm).toFixed(1)}mm. It is one ` +
       "quiet line, not a banner: the child already has the lesson's title from " +
       "the board, and a banner costs a question to say so again."
+  );
+});
+
+// The band is now a fixed one line, because the only thing in it is a one- or
+// two-character code. An objective is what used to make it unpredictable.
+test("an objective in the spec cannot change the band's height", () => {
+  const { contentArea } = require("../src/render");
+  const short = contentArea({ orientation: "portrait", code: "C" });
+  const withStaleLo = contentArea({
+    orientation: "portrait",
+    code: "C",
+    lo: "To identify the continuities and changes to children's lives using a range of sources across the Tudor period and the present day",
+  });
+
+  assert.equal(
+    withStaleLo.heightMm,
+    short.heightMm,
+    "the objective is not printed, so it cannot cost the page any height"
   );
 });
 
@@ -357,11 +396,12 @@ test("a claim to judge does not need two people and two bubbles", () => {
   );
 });
 
-test("an objective long enough to wrap is paid for, not printed over the work", async () => {
-  // Objectives are written by teachers and some of them are a sentence. A band
-  // fixed at one line under a two-line objective is the second line printing
-  // across the top of the first zone, which is the same fault as the edge it
-  // was just moved off, one row further in.
+test("the code band clears the work below it", async () => {
+  // The band used to have to price a teacher-written objective, and a band
+  // fixed at one line under a two-line objective was the second line printing
+  // across the top of the first zone. Nothing wraps in it now, but the clearance
+  // it was built to guarantee is still the thing that keeps a zone's top line
+  // readable, so it stays checked on the rendered page rather than in millimetres.
   const puppeteer = require("puppeteer-core");
   const { findChrome } = require("../src/chrome");
 
@@ -369,7 +409,6 @@ test("an objective long enough to wrap is paid for, not printed over the work", 
     layout: "full",
     orientation: "portrait",
     yearGroup: 4,
-    lo: "To add and subtract 1,000 from a four-digit number and explain the effect this has on each digit",
     code: "C",
     zones: { a: { question: true, ...transformationTable } },
   });
@@ -383,18 +422,18 @@ test("an objective long enough to wrap is paid for, not printed over the work", 
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "load" });
     const gap = await page.evaluate(() => {
-      const lo = document.querySelector(".lo").getBoundingClientRect();
+      const code = document.querySelector(".sheet-code").getBoundingClientRect();
       const area = document.querySelector(".area").getBoundingClientRect();
-      return { loLines: lo.height, clearMm: (area.top - lo.bottom) / (96 / 25.4) };
+      return { clearMm: (area.top - code.bottom) / (96 / 25.4) };
     });
 
     assert.ok(
       gap.clearMm >= 0,
-      `the objective ran ${(-gap.clearMm).toFixed(1)}mm into the work below it`
+      `the code ran ${(-gap.clearMm).toFixed(1)}mm into the work below it`
     );
     assert.ok(
       gap.clearMm < 5,
-      `the band left ${gap.clearMm.toFixed(1)}mm of nothing under the objective. ` +
+      `the band left ${gap.clearMm.toFixed(1)}mm of nothing under the code. ` +
         "It is a heading, not a title page."
     );
   } finally {

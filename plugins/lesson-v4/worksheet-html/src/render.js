@@ -34,53 +34,35 @@ const {
 // against content in the next and the two read as one crowded block.
 const GUTTER_MM = 6;
 
-// The band across the top of the sheet where its own heading sits.
+// The band across the top of the sheet where the sheet code sits.
 //
-// The learning objective and the sheet code used to be placed at `left: 0;
-// top: 0` on the body, which is the PHYSICAL corner of the paper - outside the
-// margin, hard against the edge, and in the strip some classroom printers
-// cannot print at all. All six pages of the three packs of 7 September 2026
-// carry it, and not one of them is an agent's decision: it is two lines of CSS
-// making the same placement every time.
-//
-// It is also why "give the worksheet a proper header" could never be answered
-// by an instruction to a designer. There was nowhere for a header to go.
-//
-// So the heading is aligned to the printable content, like everything else on
-// the sheet, and the band it needs is taken off the page before any zone is
+// The code used to be placed at `left: 0; top: 0` on the body, which is the
+// PHYSICAL corner of the paper - outside the margin, hard against the edge, and
+// in the strip some classroom printers cannot print at all. All six pages of
+// the three packs of 7 September 2026 carry it, and not one of them is an
+// agent's decision: it is two lines of CSS making the same placement every
+// time. So the code is aligned to the printable content, like everything else
+// on the sheet, and the band it needs is taken off the page before any zone is
 // measured. A header that overlaps the work, or one whose height nothing has
 // paid for, is how the top line of a zone gets clipped.
 //
-// One note line and the tight step beneath it, and a second line when the
-// objective genuinely takes two. Compact on purpose: the sheet's title belongs
-// to the lesson and the child already has it from the board, so a banner across
-// the top would cost a question to say what nobody needs telling.
+// The learning objective is NOT printed here, and a sheet never carries one.
+// It was dropped on 8 September 2026: the class has the objective on the board
+// and in their books, so repeating it on the paper bought nothing, and it cost.
+// It cost a line of the child's page on every sheet; it was the string the
+// combined-PDF merge corrupted, so two September packs went out headed "To ex"
+// and "To id"; and being teacher-written and sometimes a sentence long, it was
+// the one part of the band whose height no fixed layout could predict. A field
+// nothing prints is a field that cannot be clipped.
 //
-// The band is MEASURED rather than fixed because objectives are written by
-// teachers and some of them are a sentence long. A fixed one-line band under a
-// two-line objective is the second line printing over the top of the first
-// zone, which is the fault this whole change exists to stop making at the other
-// edge of the page.
-//
-// The share is what the CSS gives the objective, leaving the sheet code its own
-// corner. Both read it from here so they cannot disagree about where the words
-// wrap.
-const LO_SHARE = 0.72;
-
-function loLinesMm(spec, widthMm) {
-  if (!spec || !spec.lo) return 0;
-  // linesFor prices body text. Note-size characters are narrower in the same
-  // proportion as the type is smaller, so the same words fit a proportionally
-  // narrower measure.
-  const asBodyMm = (widthMm * LO_SHARE * TYPE.body) / TYPE.note;
-  return linesFor(String(spec.lo), asBodyMm) * NOTE_LINE_MM;
-}
+// The band is therefore one note line and the tight step beneath it. Compact on
+// purpose: a banner across the top would cost a question to say what nobody
+// needs telling.
+const CODE_SHARE = 0.28;
 
 function headerMm(spec) {
-  if (!spec || (!spec.lo && !spec.code)) return 0;
-  return Math.max(NOTE_LINE_MM, loLinesMm(spec, printableArea(
-    spec.orientation || "portrait", DEFAULT_MARGIN_MM
-  ).widthMm)) + SPACE.tight;
+  if (!spec || !spec.code) return 0;
+  return NOTE_LINE_MM + SPACE.tight;
 }
 
 // The page a sheet's ZONES get, which is the printable area less that band.
@@ -720,22 +702,6 @@ ${cssVariables()}
   .area--full .h-stack-item:has(> .h-data) { flex: 1 1 auto; }
   .area--full .h-stack-item > .h-data { height: 100%; }
 
-  /* The learning objective, printed small at the top of the sheet.
-     Aligned to the printable content, not to the edge of the paper. It sat at
-     the physical corner of the page for as long as this file existed - inside
-     the printer's own unprintable strip on some machines, and reading as a
-     stray line of grey rather than as the sheet's heading. See HEADER_MM. */
-  .lo {
-    position: absolute;
-    left: ${DEFAULT_MARGIN_MM}mm; top: ${DEFAULT_MARGIN_MM}mm;
-    /* Never far enough across to reach the sheet code on the other side. */
-    max-width: ${(area.widthMm * LO_SHARE).toFixed(1)}mm;
-    font-size: var(--type-note);
-    line-height: 1.35;
-    color: var(--colour-quiet);
-    z-index: 3;
-  }
-
   /* The sheet's code, when a worksheet holds more than one level. It is a
      CODE and not a level name on purpose: three sheets printed as one file
      have to be sortable into piles by the teacher, and "Below" printed at the
@@ -744,6 +710,7 @@ ${cssVariables()}
   .sheet-code {
     position: absolute;
     right: ${DEFAULT_MARGIN_MM}mm; top: ${DEFAULT_MARGIN_MM}mm;
+    max-width: ${(area.widthMm * CODE_SHARE).toFixed(1)}mm;
     font-size: var(--type-note);
     line-height: 1.35;
     color: var(--colour-quiet);
@@ -754,7 +721,6 @@ ${helperCss}
 </style></head>
 <body data-worksheet-page>
   ${decorationLayers.low}
-  ${spec.lo ? `<div class="lo">${spec.lo}</div>` : ""}
   ${spec.code ? `<div class="sheet-code">${spec.code}</div>` : ""}
   <div class="area${spec.layout === "full" ? " area--full" : ""}">${zones}</div>
   ${decorationLayers.high}
