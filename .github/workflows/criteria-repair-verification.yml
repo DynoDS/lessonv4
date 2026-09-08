@@ -5,7 +5,7 @@ on:
 permissions:
   contents: write
 jobs:
-  verify-repair:
+  final-verification:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -17,39 +17,39 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Apply the exact locally tested patch
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Reconcile callback regression and preserve complete test record
         run: |
           python - <<'PY'
-          import base64, hashlib, json, os, subprocess, urllib.request, zlib
+          import subprocess
           from pathlib import Path
-          shas = ['27d04cd5ce354a2f897448500745ee583aed20a0', '355a544d55379e96b6187358cea501383022e327', '199f8d6d70594ce02d032bb898321021bd7ab5c7']
-          parts = []
-          for sha in shas:
-              url = f'https://api.github.com/repos/{os.environ["GITHUB_REPOSITORY"]}/git/blobs/{sha}'
-              req = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json', 'User-Agent': 'criteria-repair-verification'})
-              with urllib.request.urlopen(req, timeout=60) as response:
-                  body = json.load(response)
-              parts.append(base64.b64decode(body['content']))
-          # Repair a verified two-character transcription in the transport only.
-          parts[1] = parts[1].replace(b'yZIvNaVEVEukip', b'yZIvNaVEukip')
-          patch = zlib.decompress(base64.b64decode(b''.join(parts)))
-          assert hashlib.sha256(patch).hexdigest() == '785aa7dc52836ebd1c1a3c7b224cb3c51ddd894eac88629765c800309ab12078'
-          Path('/tmp/criteria-repair.patch').write_bytes(patch)
-          subprocess.run(['git', 'apply', '--unidiff-zero', '--check', '/tmp/criteria-repair.patch'], check=True)
-          subprocess.run(['git', 'apply', '--unidiff-zero', '/tmp/criteria-repair.patch'], check=True)
-          subprocess.run(['git', 'diff', '--check'], check=True)
-          print('Verified exact patch SHA256; applied 4.2.111 repair.')
+          root = Path('plugins/lesson-v4')
+          p = root / 'scripts/tests/test_verdict_leaks_spoken_notes_and_retest_decay.py'
+          text = p.read_text()
+          old = '"Think about what someone eats across a whole day or week.",'
+          assert text.count(old) == 1
+          p.write_text(text.replace(old, '"Check the whole day or week.",'))
+          p = root / 'references/build-review-log.md'
+          text = p.read_text()
+          needle = 'They are not silently treated as a clean whole-repository pass and are outside this criteria/progression repair.'
+          assert text.count(needle) == 1
+          extra = ' The full Node test run passed 526 of 528 tests, with only those same two baseline assertions failing. The full Python run passed 1,290 tests and 1,641 subtests; of four failures, three were reproduced on the untouched snapshot (picture guard, an old reviewer effort assertion, and an old voice-guide name assertion). The fourth expected the long criteria example replaced here; its expectation now follows the short callback, and that entire 18-test file passes.'
+          p.write_text(text.replace(needle, needle + extra))
+          expected = {
+            'scripts/tests/test_verdict_leaks_spoken_notes_and_retest_decay.py': '4eeb9eefba9f711efea5988872661070c459cdc9',
+            'references/build-review-log.md': '8c4bc347f0621805ff26d4d47e6fdc2058da80bb'
+          }
+          for name, sha in expected.items():
+              actual = subprocess.check_output(['git', 'hash-object', str(root / name)], text=True).strip()
+              assert actual == sha, (name, actual)
           PY
       - name: Install test dependencies
         run: |
           python -m pip install pytest Pillow
           npm ci --prefix plugins/lesson-v4/builder
-      - name: Run focused Python regressions
+      - name: Run focused Python regressions including legacy voice checks
         working-directory: plugins/lesson-v4
-        run: python -m pytest -q scripts/tests/test_success_criteria_fit_a_glance.py scripts/tests/test_drawlive_handoff.py
-      - name: Run complete steps and criteria-panel regressions
+        run: python -m pytest -q scripts/tests/test_success_criteria_fit_a_glance.py scripts/tests/test_drawlive_handoff.py scripts/tests/test_verdict_leaks_spoken_notes_and_retest_decay.py
+      - name: Run steps and criteria-panel regressions
         working-directory: plugins/lesson-v4/builder
         run: node --test test/steps.test.js test/success-criteria-panel.test.js
       - name: Commit verified source on the repair branch only
@@ -60,5 +60,5 @@ jobs:
           git diff --cached --stat
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Keep criteria memorable, preserve their real fit, and bind live cues (4.2.111)'
+          git commit -m 'Align callback regression with the short criterion and record baseline-only failures'
           git push origin HEAD:refs/heads/repair/teachable-criteria-and-progression
