@@ -50,6 +50,35 @@ Judge the resource as a child using it and as the teacher delivering it:
   belong to the child rather than sit under a short block. "Looks premium" is
   not an observation; name what you saw.
 
+  Four of these are worth naming, because three worksheet packs shipped
+  carrying them while every mechanical check passed, and each has a near
+  neighbour that is perfectly fine. What separates them is always the same
+  question: **is this room the child's, or is it the page's arithmetic showing
+  through?**
+
+  - **A box bigger than the answer it holds.** A blank rectangle taking a third
+    of a page under a heading; a 30mm row waiting for one four-digit number.
+    The fine neighbour is a genuinely open drawing or design task, where the
+    surface IS the work. Tell them apart by what the child puts in it: four
+    foods drawn, labelled and annotated wants the room, and one number does
+    not.
+  - **A page composed around a photograph's file** rather than around the
+    object children are asked to look at - one source printing twice the height
+    of the one beside it because the photographer stood further back, or a
+    subject left small inside a canvas of empty studio white. The fine
+    neighbour is a comparison where the difference in size is the evidence, and
+    the design will say so.
+  - **A heading against the physical edge of the paper**, outside the margin
+    the rest of the page is aligned to.
+  - **Furniture standing in for a task**: two drawn figures and two speech
+    bubbles where the work is one claim and an explanation, a second speaker
+    called "You", a sorting table's tinted heading band around what should be
+    paper.
+
+  None of these is repaired by changing the questions, and none is a reason to
+  cut work. Report them with the page and what you saw; composition goes to the
+  resource designer.
+
 Judge a sheet at its printed size with the production font loaded, and check it
 in greyscale as well: nothing a child has to do may depend on telling two
 colours apart. A cosmetic finding never authorises changing content, reducing

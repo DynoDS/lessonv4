@@ -1,6 +1,6 @@
 # Build review log
 
-## 2026-09-06 — Partition 4-digit numbers
+## 2026-09-06 Partition 4-digit numbers
 
 - Final slide review found that slide specifications using the key `notes` produced a deck with empty speaker-note bodies because the fixed builder reads `speakerNotes`. Renaming only the slide-level key on all 15 slides preserved the note text and produced a reviewed PASS after rebuilding.
 
