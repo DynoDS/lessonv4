@@ -1,0 +1,20 @@
+name: Criteria repair verification
+on:
+  push:
+    branches: [repair/teachable-criteria-and-progression]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Export exact source for local verification
+        run: git archive --format=tar HEAD > /tmp/lessonv4-source.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lessonv4-source
+          path: /tmp/lessonv4-source.tar
+          retention-days: 1
