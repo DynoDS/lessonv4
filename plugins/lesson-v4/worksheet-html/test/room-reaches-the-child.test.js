@@ -22,7 +22,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 
 const { renderSheet } = require("../src/render");
-const { tightnessOf } = require("../src/tightness");
+const { tightnessOf, describeTightness } = require("../src/tightness");
 
 const PX_PER_MM = 96 / 25.4;
 
@@ -366,17 +366,21 @@ test("a short support panel beside a full column is not called blank paper", () 
 });
 
 test("a page that really does leave most of itself empty is still reported", () => {
-  // The discrimination. A single full-page zone genuinely owns the whole
-  // printable page, so one short question on it leaves real blank paper and
-  // the report must still say so.
+  // The discrimination, and where it belongs. One short question does not
+  // become a page-tall question just because it is alone on the sheet, so the
+  // ZONE is the size of its question and there is no hole inside the
+  // arrangement to point at. The page is still nearly empty, and that is a
+  // fact about the page rather than about the question.
   const result = tightnessOf({
     layout: "full",
     zones: { a: { question: true, helper: "questions", items: ["What is 4 x 3?"] } },
   });
   assert.ok(
-    result.spare.length > 0,
-    "one short question on a whole page was passed as spending its height"
+    result.pageSpareMm > 200,
+    `one short question on a whole page left only ${Math.round(result.pageSpareMm)}mm ` +
+      "of the page unclaimed, which cannot be right"
   );
+  assert.match(describeTightness(result), /ends [0-9]+mm early/);
 });
 
 // ─── the report has to describe the page the browser draws ───────────────

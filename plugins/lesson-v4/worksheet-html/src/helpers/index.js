@@ -10,6 +10,7 @@
 //   measure(spec, widthMm)  → how tall it naturally wants to be at that width
 //   needs(spec, widthMm?)   → usable floors, at the actual width when supplied
 //   greed                   → how much spare height it should absorb
+//   enough(spec, widthMm)   → the height past which more stops being a gain
 //
 // `needs` is a function of the content, not a constant per helper. A
 // four-column table needs more width than a two-column one, and a chart with
@@ -117,6 +118,7 @@ const {
   needsContent,
   greedContent,
   fillsContent,
+  enoughContent,
   describeContent,
   inspectContent,
 } = makeCompose({
@@ -125,6 +127,7 @@ const {
   needs: (spec, widthMm) => entry(spec.helper).needs(spec, widthMm),
   greed,
   fills,
+  enough,
 });
 
 // Every helper's CSS, gathered for the renderer to drop into the page.
@@ -168,14 +171,45 @@ function greed(helperName) {
 // for the lines, and it is why a drawing box told to take a whole side of a
 // page came out 20mm tall with 140mm blank under it.
 //
-// So a helper whose content IS the space says `fills: true` and has no
-// ceiling. Everything else keeps the half-again cap, which is the number the
-// writing lines were tuned to and stays their default.
+// So a helper whose content IS the space says `fills: true`, which puts it at
+// the FRONT of the queue for spare height. Everything else keeps the half-again
+// cap, which is the number the writing lines were tuned to and stays the
+// default for anything that does not answer the question below.
 const GROWTH_CEILING = 0.5; // of the helper's own natural height
 
 function fills(helperName) {
   const found = REGISTRY[helperName];
   return Boolean(found && found.fills);
+}
+
+// How much room is ENOUGH.
+//
+// `greed` says a helper CAN use spare height and `fills` says it should be
+// first in the queue for it. Neither of them says WHEN TO STOP, and that turned
+// out to be the question three worksheet packs failed on at once (7 September
+// 2026). A recording table holding one four-digit number was drawn with a 30mm
+// blank row because its zone had 30mm going spare; a one-row sorting grid
+// standing in for "somewhere to draw" was drawn 209mm tall because `fills` was
+// read as "no ceiling at all". Neither is a browser fault and neither is a
+// designer's decision: the engine was asked how big to make them and had no
+// answer beyond "as big as there is room for".
+//
+// So a helper may state the height past which more is no longer a gain. It is
+// an ABSOLUTE height at this width, not a multiplier, because what makes a
+// number cell big enough is the size of a child's handwriting and not the size
+// of the table it sits in. State it as the natural height plus the growth that
+// genuinely helps, so it can never come out below what the content measures.
+//
+// Unstated, it is the half-again ceiling this engine has always used. Adding
+// the field to a helper is a decision about that helper; leaving it off changes
+// nothing.
+function enough(spec, widthMm) {
+  const naturalMm = measure(spec, widthMm);
+  const found = REGISTRY[spec.helper];
+  if (!found || typeof found.enough !== "function") {
+    return naturalMm * (1 + GROWTH_CEILING);
+  }
+  return Math.max(naturalMm, found.enough(spec, widthMm));
 }
 
 // The sets a helper cannot be a question without.
@@ -235,6 +269,7 @@ module.exports = {
   needsContent,
   greedContent,
   fillsContent,
+  enoughContent,
   describeContent,
   inspectContent,
   renderHelper,
@@ -243,6 +278,7 @@ module.exports = {
   greed,
   fills,
   requiredSets,
+  enough,
   GROWTH_CEILING,
   helperNames,
   helperCss,

@@ -114,7 +114,14 @@ const REFERENCE_WIDTH_MM = 100;
 // Each takes the same shape as a helper's own, so a group and a helper are
 // interchangeable everywhere. That is what lets them nest.
 
-function makeCompose({ render, measure, needs, greed, fills = () => false }) {
+function makeCompose({
+  render,
+  measure,
+  needs,
+  greed,
+  fills = () => false,
+  enough = null,
+}) {
   // A row divides its width the way a layout divides a page: by proportion.
   // `parts` sets them explicitly. Left unset, the default is NOT equal shares.
   //
@@ -298,10 +305,10 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
       // Shared equally, a sheet with a question above a drawing box printed
       // half the leftover as a hole under the question's two ruled lines and
       // gave the box half the space it should have had.
-      const someFill = items.some((item) => fillsContent(item));
+      const growing = growersIn(items);
       const cells = items
         .map((item, i) => {
-          const grows = someFill ? fillsContent(item) : greedContent(item) > 0;
+          const grows = growing[i];
           const gap = gapAboveMm(items, i);
           const space = gap ? ` style="margin-top:${gap}mm"` : "";
           return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
@@ -398,6 +405,61 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
     return items.some(fillsContent);
   }
 
+  // Which parts of a stack the browser will actually hand the leftover to.
+  // Worked out once here so `renderContent`, `enoughContent` and
+  // `inspectContent` cannot disagree about it - they did, and a report
+  // describing a page nobody printed is worse than no report.
+  function growersIn(items) {
+    const someFill = items.some((item) => fillsContent(item));
+    return items.map((item) =>
+      someFill ? fillsContent(item) : greedContent(item) > 0
+    );
+  }
+
+  // The height past which this content stops gaining.
+  //
+  // The same three rules the minimums compose by, applied to the other end of
+  // the range: a row is as tall as its tallest part, a stack is the sum of its
+  // parts. The one thing a stack does differently is that a part which will not
+  // GROW contributes only its natural height - it is never going to take any of
+  // the leftover, so counting its unused allowance would hand that allowance to
+  // whichever sibling does grow. That is the leak that let a drawing box beside
+  // one instruction line take the instruction's spare room as well as its own.
+  function enoughContent(content, widthMm) {
+    if (!enough) return Infinity;
+    const items = itemsOf(content);
+
+    if (content && content.number !== undefined) {
+      const { number, ...rest } = content;
+      return enoughContent(rest, widthMm - NUMBER_GUTTER_MM);
+    }
+
+    if (isRow(content)) {
+      const widths = widthsIn(content, items, widthMm);
+      const letterMm = content.letters ? 6 : 0;
+      return (
+        Math.max(...items.map((item, i) => enoughContent(item, widths[i]))) +
+        letterMm
+      );
+    }
+
+    if (isStack(content)) {
+      const growing = growersIn(items);
+      return (
+        items.reduce(
+          (sum, item, i) =>
+            sum +
+            (growing[i]
+              ? enoughContent(item, widthMm)
+              : measureContent(item, widthMm)),
+          0
+        ) + stackGapsMm(items)
+      );
+    }
+
+    return enough(content, widthMm);
+  }
+
   // What to call this in an error message. Nested groups are bracketed, and
   // repeats are counted rather than listed: "a row of 4 angles" reads, where
   // "angle, angle, angle, angle" does not, and a refusal nobody can read is
@@ -457,6 +519,15 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
       // so the tightness report can tell dead space apart from workspace
       // without knowing what any individual helper is.
       greed: greedContent(content),
+      // The height past which this content stops gaining. `greed` says spare
+      // room CAN be used here; this says how much of it. Without the pair, a
+      // report cannot tell a writing frame that used its room from a number
+      // cell that was simply handed the rest of the page.
+      usefulHeightMm: enoughContent(content, widthMm),
+      // Whether room past that useful size is still work rather than waste.
+      // A surface a child draws on is the one thing a short column's leftover
+      // can honestly become; see fillShortColumns in render.js.
+      fills: fillsContent(content),
       // Whether the height was IMPOSED or CHOSEN. In a row every item is handed
       // the row's height, so a short item beside a tall one comes out with
       // blank space under it that nobody asked for. In a stack each item takes
@@ -487,10 +558,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
       // cannot drift apart: fill items take it when any exists, greedy items
       // otherwise, and equal flex-grow means equal shares.
       const naturals = items.map((item) => measureContent(item, widthMm));
-      const someFill = items.some((item) => fillsContent(item));
-      const growing = items.map((item) =>
-        someFill ? fillsContent(item) : greedContent(item) > 0
-      );
+      const growing = growersIn(items);
       const growers = growing.filter(Boolean).length;
       const gaps = stackGapsMm(items);
       const leftover = heightMm - naturals.reduce((a, b) => a + b, 0) - gaps;
@@ -514,6 +582,7 @@ function makeCompose({ render, measure, needs, greed, fills = () => false }) {
     needsContent,
     greedContent,
     fillsContent,
+    enoughContent,
     describeContent,
     inspectContent,
   };

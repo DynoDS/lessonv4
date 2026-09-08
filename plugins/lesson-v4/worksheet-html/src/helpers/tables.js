@@ -157,11 +157,27 @@ function measureDataTable(spec, widthMm = 100) {
 //
 // `writing` also takes an array, one entry per column, for the common table
 // that mixes demands: ["word", "tick", "word", "sentence"]. See columnWriting.
+//
+// Each size says two heights, not one. `rowMm` is the floor: the smallest row
+// a child can honestly write that answer in. `grownMm` is where the gain runs
+// out: the tallest that row is still BETTER at.
+//
+// The second number was missing for a long time and its absence produced the
+// maths sheet of 7 September 2026. A single row asking for three four-digit
+// numbers was drawn 30.7mm tall - two and a half times its own floor - because
+// the zone had 30.7mm to give and nothing in the engine had ever been asked
+// whether a box for one number gets better at 30mm. It does not. A number is
+// as tall as the digits a child writes; the rest of the box is a big empty
+// rectangle, which is exactly the look these sheets were being rebuilt to lose.
+//
+// A sentence is the opposite case and the reason this is per response rather
+// than one number for the table: a sentence cell genuinely does keep improving
+// for a while, because the child is fitting more words into it.
 const WRITING = {
-  tick: { columnMm: 16, rowMm: 9 },
-  number: { columnMm: 22, rowMm: 12 },
-  word: { columnMm: 30, rowMm: 12 },
-  sentence: { columnMm: 52, rowMm: 22 },
+  tick: { columnMm: 16, rowMm: 9, grownMm: 11 },
+  number: { columnMm: 22, rowMm: 12, grownMm: 16 },
+  word: { columnMm: 30, rowMm: 12, grownMm: 18 },
+  sentence: { columnMm: 52, rowMm: 22, grownMm: 33 },
 };
 
 // A name this table does not know used to fall back to "word" without a word
@@ -305,6 +321,18 @@ function measureRecordingTable(spec, widthMm) {
   return capMm + headMm + bodyMm + noteMm + 4;
 }
 
+// The tallest this table is still gaining from: its own measured height, plus
+// the room each row can still turn into a better answer. Everything else about
+// the table - a caption, a wrapped heading, a line of small print - is text at
+// a fixed size and gains nothing from being given more page.
+function enoughRecordingTable(spec, widthMm) {
+  const size = writingFor(spec);
+  const perRowMm = Math.max(0, size.grownMm - size.rowMm);
+  return (
+    measureRecordingTable(spec, widthMm) + perRowMm * recordingRows(spec).length
+  );
+}
+
 const css = `
   .h-table {
     width: 100%; border-collapse: collapse;
@@ -413,6 +441,8 @@ const helpers = {
       minHeightMm: flatRecordingHeightMm(spec),
     }),
     greed: 3, // taller rows are more room to write, which is a real gain
+    // And the gain stops where the answer does. See WRITING above.
+    enough: enoughRecordingTable,
   },
 };
 

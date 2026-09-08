@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 73 helpers, what each is for, and a working example of each.
+The 74 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -126,14 +126,15 @@ emailed. Never write `imageHref` yourself.
 - `multiple-choice` - A stem, a tick instruction, then each option on its own line beside a tick box.
 - `circle-the-answer` - A prompt, the options to circle, and room to explain the choice.
 - `chip-bank` - A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text.
-- `sort-grid` - Named columns a child sorts items into, or - with one row - a box to draw in under those names, growing into whatever room its zone has.
+- `sort-grid` - Named columns a child sorts words or items into.
 - `match-up` - Two columns of cards with a dot on each facing edge, for the child to draw the joining line.
 - `card-row` - A row of small titled cards, each optionally carrying a picture: plants along the foot of a sheet, artefacts under a timeline.
 - `timeline` - A line across the page with named bands along it and dated points beneath, for placing events or artefacts onto.
 
-**Writing and talk**
+**Writing, drawing and talk**
 
 - `writing-frame` - Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque.
+- `drawing-space` - The surface a child draws on, sized from the work it holds: how many things go on it (`draw`), whether labels and arrows go round them (`annotate`), or the surface stated outright with `heightMm`.
 - `storyboard` - Numbered boxes to draw in with writing lines beneath: a journey, a life cycle, a story retold in order.
 - `fact-file` - Named slots a child fills in.
 - `speech-scene` - Turns of a conversation: a figure, and a bubble either printed to read or empty to fill.
@@ -263,7 +264,7 @@ Smallest usable: **70mm wide x 25mm tall**. Spare height: never takes spare heig
 
 A table the CHILD completes: supplied cells stay put and the rest stay tall and blank, sized by `writing` - `tick`, `number`, `word` or `sentence`, one size or one per column. Any other size is refused.
 
-Smallest usable: **134mm wide x 92mm tall**. Spare height: takes spare height first (it is writing space).
+Smallest usable: **134mm wide x 92mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
 
 ```json
 {
@@ -1147,7 +1148,7 @@ Smallest usable: **70mm wide x 48mm tall**. Spare height: never takes spare heig
 
 A whole joined to its parts: partitioning, decomposition, a missing addend. Every node says whether the child is handed it, reads it or writes it, and a node that says nothing is refused.
 
-Smallest usable: **81mm wide x 26mm tall**. Spare height: never takes spare height.
+Smallest usable: **74mm wide x 28mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1475,7 +1476,7 @@ Smallest usable: **76mm wide x 30mm tall**. Spare height: never takes spare heig
 
 The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.
 
-Smallest usable: **74mm wide x 43mm tall**. Spare height: never takes spare height.
+Smallest usable: **70mm wide x 35mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1781,9 +1782,9 @@ Smallest usable: **61mm wide x 32mm tall**. Spare height: never takes spare heig
 
 #### `sort-grid`
 
-Named columns a child sorts items into, or - with one row - a box to draw in under those names, growing into whatever room its zone has.
+Named columns a child sorts words or items into. For somewhere to DRAW, use drawing-space: a sorting grid is a table and looks like one.
 
-Smallest usable: **80mm wide x 76mm tall**. Spare height: takes spare height first (it is writing space).
+Smallest usable: **80mm wide x 76mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
 
 ```json
 {
@@ -1929,7 +1930,7 @@ Smallest usable: **168mm wide x 46mm tall**. Spare height: never takes spare hei
 }
 ```
 
-## Writing and talk
+## Writing, drawing and talk
 
 #### `writing-frame`
 
@@ -1956,6 +1957,22 @@ Smallest usable: **90mm wide x 69mm tall**. Spare height: takes spare height fir
       "lines": 2
     }
   ]
+}
+```
+
+#### `drawing-space`
+
+The surface a child draws on, sized from the work it holds: how many things go on it (`draw`), whether labels and arrows go round them (`annotate`), or the surface stated outright with `heightMm`.
+
+Smallest usable: **60mm wide x 80mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
+
+```json
+{
+  "helper": "drawing-space",
+  "text": "Design a balanced lunchbox. Draw four foods, label each one, and add an arrow saying why you chose it.",
+  "draw": 4,
+  "annotate": true,
+  "frame": "outline"
 }
 ```
 

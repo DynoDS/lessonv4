@@ -23,7 +23,7 @@ const {
   measureContent,
   greedContent,
   fillsContent,
-  GROWTH_CEILING,
+  enoughContent,
   describeContent,
   fits,
   helperCss,
@@ -67,8 +67,14 @@ function measureTree(node, spec, widthMm) {
       content,
       natural,
       greed: content ? greedContent(content) : 0,
-      // No useful ceiling: this zone's content IS the space it is given.
+      // First in the queue for spare height: this zone's content IS the space
+      // it is given, so a stack holding both a drawing box and some writing
+      // lines sends the room to the box. It is a PRIORITY and not a licence:
+      // where the growth stops is `useful` below.
       fills: content ? fillsContent(content) : false,
+      // The height past which this zone's content stops gaining anything. See
+      // `enough` in helpers/index.js.
+      useful: content ? enoughContent(content, widthMm - GUTTER_MM) : 0,
       height: natural,
     };
   }
@@ -142,12 +148,17 @@ function recomputeHeights(node) {
 
 // How much a zone may grow past what it asked for.
 //
-// Half again by default, which is the number the writing lines were tuned to:
-// a line gets roomier and never becomes an invitation to write an essay. A
-// zone whose content IS the space has no such point - see `fills` in
-// helpers/index.js - so it is capped only by the page.
+// The content answers this, not the page. Half again is still the default and
+// still the number the writing lines were tuned to, but a helper that knows
+// where its own useful size ends says so, and a zone holding it stops there -
+// see `enough` in helpers/index.js.
+//
+// This used to read `leaf.fills ? Infinity`, which said a box a child draws in
+// can never be too big. It can: a one-row sorting grid standing in for a
+// drawing area was drawn 209mm tall, the whole page bar its instruction, and
+// nothing in the engine thought that was worth mentioning.
 function ceilingFor(leaf) {
-  return leaf.fills ? Infinity : leaf.natural * GROWTH_CEILING;
+  return Math.max(0, leaf.useful - leaf.natural);
 }
 
 // Hand the leftover height to whatever can genuinely use it, capped so nothing
@@ -170,8 +181,18 @@ function growToFit(measured, availableMm) {
   // is left blank. Giving the only zone its actual room does not inflate the
   // helper; it simply lets the browser use the page that the layout promised.
   if (measured.kind === "leaf") {
-    measured.height = availableMm;
-    return { spare: 0, short: 0 };
+    // Up to what the content can genuinely use, though. The whole page is the
+    // zone's to claim, not the zone's to spend: a single recording table
+    // holding one four-digit number was handed the entire printable height and
+    // drew a 30mm blank row with it. The tolerance is kept in full either way,
+    // because that is room for the estimate to be wrong in rather than room
+    // for the content to grow into.
+    const roomy = Math.max(
+      measured.natural + safetyMarginMm(measured.natural),
+      measured.useful
+    );
+    measured.height = Math.min(availableMm, roomy);
+    return { spare: availableMm - measured.height, short: 0 };
   }
 
   // Tolerance first, for EVERY zone, greedy or not. A zone that cannot stretch
@@ -240,11 +261,16 @@ function growToFit(measured, availableMm) {
 // height. It can never turn a sheet that fitted into one that does not,
 // because the room is inside a box the parent row already occupies.
 //
-// Each zone still keeps its own ceiling. A column's leftover is room, not a
-// reason to make a writing line twice the size the question asked for - so the
-// room goes first to a zone whose content IS the space, and what nothing will
-// take is left blank at the foot of the column, exactly as page spare is left
-// at the foot of the page.
+// Each zone still keeps its own ceiling, with one exception, and the exception
+// is the whole reason to tell this room apart from page spare. Spare at the
+// FOOT OF THE PAGE is trimmable: a teacher cuts the strip off, so a helper that
+// stops at its useful size costs nothing by leaving it. A short column's
+// leftover cannot be trimmed by anybody - it is a rectangle in the middle of
+// the sheet - and a surface a child DRAWS on is the one thing that turns it
+// into work rather than a hole. So a zone whose content IS the space takes this
+// room past its useful size; a merely greedy zone still stops where it stops,
+// because a writing line at twice the height a question asked for is a fault
+// wherever the room came from.
 function fillShortColumns(node) {
   if (node.kind === "leaf") return;
   node.children.forEach(fillShortColumns);
@@ -269,6 +295,10 @@ function fillShortColumns(node) {
     const greedTotal = claimants.reduce((s, l) => s + l.greed, 0);
     for (const l of claimants) {
       const share = (room * l.greed) / greedTotal;
+      if (l.fills) {
+        l.height += share;
+        continue;
+      }
       const alreadyGrown = l.height - l.natural - (l.margin || 0);
       const headroom = Math.max(0, ceilingFor(l) - alreadyGrown);
       l.height += Math.min(share, headroom);

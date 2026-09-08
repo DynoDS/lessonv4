@@ -56,6 +56,10 @@ function needsMultipleChoice(spec) {
 
 const SORT_WRITE_ROW_MM = 14; // a cell a child sorts SEVERAL words into, so
                                // roomier than tables.js's single-answer cell
+// And where sorting stops gaining. A column a child writes words down needs
+// room for the words; past about half again, the extra is a bigger empty box
+// rather than a better one. See `enough` in helpers/index.js.
+const SORT_GROWN_ROW_MM = 22;
 
 // A bank entry is a bare string ("torch 🔦") or an object with a real
 // picture: { word: "torch", imagePath: "photos/torch.jpg" }. The picture form
@@ -137,6 +141,22 @@ function measureSortGrid(spec, widthMm) {
   return stemMm + bankMm + headerMm + rows * SORT_WRITE_ROW_MM + 4;
 }
 
+// The tallest a sorting grid is still gaining from: its own measured height,
+// plus the room each row of cells can still turn into easier sorting.
+//
+// This used to be Infinity, by way of `fills: true`, and that is most of how
+// the balanced-diet sheet came to be one 209mm rectangle. The shared helper
+// guide sent "somewhere to draw" here, `fills` was read as "no useful upper
+// size", and the box took the page. A sorting grid is a sorting grid; a
+// surface a child draws on is `drawing-space`, which states the surface it
+// wants instead of taking whatever is going.
+function enoughSortGrid(spec, widthMm) {
+  const rows = spec.rows ?? 4;
+  return (
+    measureSortGrid(spec, widthMm) + rows * (SORT_GROWN_ROW_MM - SORT_WRITE_ROW_MM)
+  );
+}
+
 function needsSortGrid(spec) {
   const cols = (spec.columns || []).length;
   const rows = spec.rows ?? 4;
@@ -147,6 +167,111 @@ function needsSortGrid(spec) {
     // that.
     minWidthMm: Math.max(80, cols * 28),
     minHeightMm: 20 + rows * SORT_WRITE_ROW_MM,
+  };
+}
+
+// ─── drawing-space ───────────────────────────────────────────────────────
+// The surface a child draws on: a lunchbox to design, a habitat to draw and
+// label, a poster panel, an object to sketch beside the one already printed.
+//
+// It exists because the alternative was worse. The shared helper guide used to
+// send "somewhere to draw" to a one-row `sort-grid`, and a sort grid is a
+// TABLE: tinted heading band, ruled cells, and - because sorting cells were
+// declared bottomless - a rectangle that took whatever height the page had
+// going spare. A balanced-diet sheet shipped with a 209mm blank cell under a
+// heading, which is a whole page of generic box, and nothing in the engine
+// disagreed with it because nothing had been asked to.
+//
+// The task was never the problem. Children choosing their own foods, drawing
+// them, labelling them and adding arrows is exactly the work that wants an open
+// surface, and pre-printing the foods or the compartments would take away the
+// decisions the lesson is for. What was missing was anybody DECIDING how much
+// surface the work needs. So this helper asks:
+//
+//   draw       how many separate things go on the surface (default 1)
+//   annotate   true when labels and arrows go around them as well
+//   heightMm   the surface, stated outright, when the designer knows it
+//   areas      names for side-by-side parts of the surface, when it has parts
+//   frame      "outline" (the default) or "none" for bare paper
+//
+// and works out a surface from the answer. `heightMm` beats the arithmetic,
+// because a designer who has looked at the task knows better than a formula.
+// Nothing here decides what the child draws.
+
+// One thing, drawn big enough to be worth drawing and to be marked.
+const DRAW_ONE_MM = 50;
+// Each further thing sharing the same surface. Sub-linear on purpose: four
+// objects on one sheet of paper share the width as well as the height, so the
+// fourth costs less than the first.
+const DRAW_MORE_MM = 12;
+// Labels and arrows live in the space AROUND a drawing, so annotating one adds
+// room rather than multiplying it.
+const DRAW_ANNOTATE_MM = 20;
+// Past this, a surface is a decision rather than a default, and `heightMm` is
+// how a designer makes it. A derived surface that quietly took two thirds of a
+// portrait page would be the old fault in a new helper.
+const DRAW_DERIVED_MAX_MM = 150;
+// The smallest surface anybody can draw on. Below this it is a tick box.
+const DRAW_MIN_MM = 30;
+const DRAW_NAME_MM = 6; // the quiet label at the top of a named area
+
+function drawAreas(spec) {
+  const named = Array.isArray(spec.areas) ? spec.areas.filter((a) => a !== "") : [];
+  return named.length ? named : [null];
+}
+
+function drawSurfaceMm(spec) {
+  if (spec.heightMm !== undefined) {
+    const stated = Number(spec.heightMm);
+    if (!Number.isFinite(stated) || stated < DRAW_MIN_MM || stated > 250) {
+      throw new Error(
+        `drawing-space heightMm is ${spec.heightMm}, which is not a surface a ` +
+          `child can draw on. State it in millimetres, between ${DRAW_MIN_MM} and 250.`
+      );
+    }
+    return stated;
+  }
+  const things = Math.max(1, Math.floor(Number(spec.draw) || 1));
+  const derived =
+    DRAW_ONE_MM +
+    (things - 1) * DRAW_MORE_MM +
+    (spec.annotate ? DRAW_ANNOTATE_MM : 0) +
+    (drawAreas(spec).some(Boolean) ? DRAW_NAME_MM : 0);
+  return Math.min(DRAW_DERIVED_MAX_MM, derived);
+}
+
+function renderDrawingSpace(spec) {
+  const areas = drawAreas(spec);
+  // The frame is named in the class rather than left as the absence of one, so
+  // a page says which of the two it drew.
+  const frame = spec.frame === "none" ? "none" : "outline";
+  const cells = areas
+    .map(
+      (name) =>
+        `<div class="h-draw-area">${
+          name ? `<span class="h-draw-name">${esc(name)}</span>` : ""
+        }</div>`
+    )
+    .join("");
+  return `
+    <div class="h-draw h-draw--frame-${frame}">
+      ${spec.text ? `<p class="h-draw-stem">${esc(spec.text)}</p>` : ""}
+      <div class="h-draw-surface">${cells}</div>
+    </div>`;
+}
+
+function measureDrawingSpace(spec, widthMm) {
+  const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + SPACE.tight : 0;
+  return stemMm + drawSurfaceMm(spec);
+}
+
+function needsDrawingSpace(spec) {
+  const areas = drawAreas(spec).length;
+  return {
+    // An area a child draws in cannot be a strip. Two named areas side by side
+    // need twice what one needs, the same way a sorting grid's columns do.
+    minWidthMm: Math.max(60, areas * 45),
+    minHeightMm: Math.max(DRAW_MIN_MM, drawSurfaceMm(spec) * 0.75),
   };
 }
 
@@ -275,6 +400,39 @@ const css = `
     border: var(--rule-line) solid var(--colour-ink); flex: none;
   }
 
+  /* drawing-space.
+     A surface, not a table. The old route here was a one-row sorting grid, and
+     it looked like one: a tinted heading band, ink-weight cell borders and a
+     word bank on top of a big empty rectangle. What a child needs is paper with
+     an edge, so the outline is the hairline rule rather than the ink, the
+     corner is softened, and a named area carries its name quietly in the corner
+     instead of under a heading bar. */
+  .h-draw { display: flex; flex-direction: column; height: 100%; }
+  .h-draw-stem {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-body); line-height: 1.35;
+    flex: none;
+  }
+  /* The hairline, and the hairline's own meaning: a line the child works on.
+     A box edge at ink weight would say "this is a cell in a table", which is
+     exactly the reading the sorting grid gave this task and exactly the one to
+     lose. */
+  .h-draw-surface {
+    flex: 1; display: flex; min-height: 0;
+    border: var(--rule-hair) solid var(--colour-rule);
+    border-radius: 1.5mm;
+  }
+  .h-draw--frame-none .h-draw-surface { border: none; }
+  .h-draw-area { flex: 1; min-width: 0; position: relative; }
+  .h-draw-area + .h-draw-area {
+    border-left: var(--rule-hair) solid var(--colour-rule);
+  }
+  .h-draw-name {
+    position: absolute;
+    top: var(--inset-card-v); left: var(--inset-card-h);
+    font-size: var(--type-note); color: var(--colour-quiet);
+  }
+
   /* sort-grid */
   .h-sortgrid-stem { margin: 0 0 var(--space-tight); font-size: var(--type-body); }
   .h-sortgrid-bank {
@@ -360,10 +518,28 @@ const helpers = {
     measure: measureSortGrid,
     needs: needsSortGrid,
     greed: 3, // taller rows are more room to sort words into, a real gain
-    // And the gain does not stop. The cells ARE the activity - a child sorts
-    // words into them, or draws in them - so every millimetre is more of the
-    // work, where a writing line reaches its useful size and passes it.
+    // The cells ARE the activity, so this is first in the queue for spare
+    // height and takes a short column's leftover ahead of the writing lines
+    // beside it. First in the queue is not the same as bottomless, though: a
+    // cell to write three words in stops improving at some size, and where it
+    // stops is `enough`.
     fills: true,
+    enough: enoughSortGrid,
+  },
+  "drawing-space": {
+    render: renderDrawingSpace,
+    measure: measureDrawingSpace,
+    needs: needsDrawingSpace,
+    greed: 3, // a bigger surface is more of the work, up to the surface asked for
+    // First in the queue for room nothing else can use: a short column's
+    // leftover prints as a hole beside anything else, and as paper to draw on
+    // here.
+    fills: true,
+    // And it stops at the surface the task was given. The point of this helper
+    // is that somebody DECIDED how much room the drawing needs; letting it then
+    // absorb whatever the page had left over would be deciding it again, by
+    // accident, out of the page's arithmetic.
+    enough: measureDrawingSpace,
   },
   "column-method-grid": {
     render: renderColumnMethodGrid,

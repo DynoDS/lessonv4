@@ -52,10 +52,32 @@ test("blank paper under something that cannot use it is reported", () => {
   assert.match(describeTightness(result), /prints empty/);
 });
 
-test("a helper that turns spare height into workspace is left alone", () => {
-  // Writing lines grow into whatever room they are given, so the same geometry
-  // is the sheet working rather than the sheet wasting. Reporting this would
-  // train the designer to shrink the very thing children write in.
+test("a helper is left alone while the room it was given is room it can use", () => {
+  // Writing lines grow into the room they are given, so a block sitting inside
+  // its own useful range is the sheet working rather than the sheet wasting.
+  // Reporting this would train the designer to shrink the very thing children
+  // write in.
+  const answers = {
+    helper: "written-answers",
+    items: [{ text: "Explain how you know.", lines: 2 }],
+  };
+  const result = tightnessOf(
+    sheet({ stack: [{ helper: "instruction", text: "Answer in full sentences." }, answers] })
+  );
+
+  assert.equal(
+    result.spare.filter((s) => s.label === "written-answers").length,
+    0
+  );
+});
+
+test("writing lines that stopped growing do not hide the paper under them", () => {
+  // The other half of the same rule, and the half this report used to be blind
+  // to. Two ruled lines beside a tall chart are handed the chart's height. They
+  // cannot use it: a line reaches its useful size at half again its own height
+  // and stops, and the rest prints as blank paper INSIDE the block a child
+  // writes in - which is where History Sheet A's gaps came from (8 September
+  // 2026). "It can grow" was being read as "it grew".
   const result = tightnessOf(
     sheet({
       parts: [1.8, 1],
@@ -66,9 +88,17 @@ test("a helper that turns spare height into workspace is left alone", () => {
     })
   );
 
+  const found = result.spare.find((s) => s.label === "written-answers");
+  assert.ok(found, "two ruled lines given a chart's height should be named");
   assert.equal(
-    result.spare.filter((s) => s.zone === "a" && s.label === "written-answers").length,
-    0
+    found.overgrown,
+    true,
+    "this is a box bigger than its answer, not a hole beneath one"
+  );
+  assert.match(
+    describeTightness(result),
+    /bigger than the answer it holds/,
+    "the message has to say which of the two faults it found"
   );
 });
 

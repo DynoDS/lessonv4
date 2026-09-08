@@ -359,11 +359,20 @@ function renderWrittenAnswers(spec, widthMm = 100) {
       // The cap travels with the line because the base height is per phase: a
       // Year 2 line starts taller than a Year 5 one, so one shared ceiling
       // would mean two different things. See WRITING_LINE_GROWN_RATIO.
-      const grownMm = (lineMm * WRITING_LINE_GROWN_RATIO).toFixed(2);
+      const grownMm = lineMm * WRITING_LINE_GROWN_RATIO;
       const ruled = Array.from(
         { length: lines },
-        () => `<span class="h-line" style="height:${lineMm}mm;max-height:${grownMm}mm"></span>`
+        () =>
+          `<span class="h-line" style="height:${lineMm}mm;max-height:${grownMm.toFixed(2)}mm"></span>`
       ).join("");
+      // The cap on the lines has to be a cap on the box that holds them, or it
+      // is not a cap at all - it only moves the problem down one level. Lines
+      // stopped at half again their height while their parent kept stretching,
+      // so the room the lines refused pooled as a hole INSIDE the answer block:
+      // about 28mm under the first response of a real history sheet, with the
+      // room report silent because a block that can grow is assumed to have
+      // grown. The block is worth exactly what its lines are worth.
+      const linesCapMm = (lines * grownMm).toFixed(2);
       // An item may carry ruled lines and no prompt of its own: two lines under
       // each of two claims, where the one instruction above already said what
       // to do. Printing an empty prompt row there costs a line of paper per
@@ -377,12 +386,17 @@ function renderWrittenAnswers(spec, widthMm = 100) {
             <span class="h-text">${esc(q.text)}</span>
           </div>`
         : "";
+      // Spare room is shared out in proportion to how much of it each item can
+      // actually use, and what an item can use is its own line count. Shared
+      // equally, a one-line answer and a four-line answer take the same extra,
+      // so one overflows its cap and leaves a hole while the other is still
+      // short of its own useful size.
       return `
-      <li class="h-q h-written">
+      <li class="h-q h-written" style="flex-grow:${lines}">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         <div class="h-body">
           ${prompt}
-          <div class="h-lines">${ruled}</div>
+          <div class="h-lines" style="max-height:${linesCapMm}mm">${ruled}</div>
         </div>
       </li>`;
     })
@@ -401,6 +415,23 @@ function renderWrittenAnswers(spec, widthMm = 100) {
       ${stem(spec)}
       <ol class="h-questions h-answers">${items}</ol>
     </div>`;
+}
+
+// The tallest a set of written answers is still gaining from: every ruled line
+// grown to its own ceiling, and nothing else changed. A prompt is text at a
+// fixed size, and the gaps between items are gaps - neither is better for being
+// given more page. See WRITING_LINE_GROWN_RATIO in tokens.js.
+function enoughWrittenAnswers(spec, widthMm) {
+  const showNumbers = spec.showNumbers !== false;
+  const baseTextWidth = widthMm - (showNumbers ? 6 : 0);
+  const phase = spec.phase === "upper" ? "upper" : "lower";
+  const lineMm = WRITING_LINE_MM[phase];
+  const growthMm = lineMm * (WRITING_LINE_GROWN_RATIO - 1);
+  const lines = spec.items.reduce(
+    (total, q) => total + writingLinesFor(q, baseTextWidth),
+    0
+  );
+  return measureWrittenAnswers(spec, widthMm) + lines * growthMm;
 }
 
 function measureWrittenAnswers(spec, widthMm) {
@@ -657,7 +688,9 @@ const css = `
      get roomier but never turns into an invitation to write an essay. */
   .h-answers-block { height: 100%; display: flex; flex-direction: column; }
   .h-answers { flex: 1; display: flex; flex-direction: column; }
-  .h-answers .h-written { flex: 1; }
+  /* Grow from the height each item already measured at, not from zero, and by
+     the share the markup states rather than one share each. */
+  .h-answers .h-written { flex: 1 1 auto; }
   .h-answers .h-written:last-child { margin-bottom: 0; }
   .h-answers .h-body { display: flex; flex-direction: column; }
   .h-answers .h-lines { flex: 1; display: flex; flex-direction: column; }
@@ -765,6 +798,9 @@ const helpers = {
     measure: measureWrittenAnswers,
     needs: heightFromContent(measureWrittenAnswers, 70),
     greed: 3, // writing space is the right home for spare room
+    // Up to the point where a roomier line stops being room to write in. Past
+    // that the sheet is asking for an essay the question never set.
+    enough: enoughWrittenAnswers,
   },
   "section-label": {
     render: renderSectionLabel,

@@ -96,7 +96,9 @@ module.exports = {
   "multiple-choice":
     "A stem, a tick instruction, then each option on its own line beside a tick box.",
   "sort-grid":
-    "Named columns a child sorts items into, or - with one row - a box to draw in under those names, growing into whatever room its zone has.",
+    "Named columns a child sorts words or items into. For somewhere to DRAW, use drawing-space: a sorting grid is a table and looks like one.",
+  "drawing-space":
+    "The surface a child draws on, sized from the work it holds: how many things go on it (`draw`), whether labels and arrows go round them (`annotate`), or the surface stated outright with `heightMm`.",
   "column-method-grid":
     "Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row. `showHeadings: true` adds place-value letters above the columns, derived from the numbers' own width.",
 

@@ -269,6 +269,15 @@ module.exports = {
     options: ["14", "16", "18", "22"],
     select: "one",
   },
+  "drawing-space": {
+    text: "Design a balanced lunchbox. Draw four foods, label each one, and add an arrow saying why you chose it.",
+    // How much surface the work needs, said in the work's own terms. State
+    // `heightMm` instead when you already know the surface you want, and
+    // `areas: ["Uses electricity", "Works by hand"]` when it has named parts.
+    draw: 4,
+    annotate: true,
+    frame: "outline", // or "none" for bare paper with no edge drawn
+  },
   "sort-grid": {
     text: "Sort these into the right column.",
     columns: ["Waterproof", "Not waterproof"],

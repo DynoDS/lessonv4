@@ -24,7 +24,7 @@
 
 const { flatten } = require("./layouts");
 const { printableArea, DEFAULT_MARGIN_MM } = require("./page");
-const { sheetGeometry, zoneContentMm, drawnZoneHeights } = require("./render");
+const { sheetGeometry, zoneContentMm, drawnZoneHeights, GUTTER_MM } = require("./render");
 const { inspectContent } = require("./helpers");
 
 // At or below this, a part is at the edge of what a child can use.
@@ -127,10 +127,21 @@ function tightnessOf(spec) {
     // actually is keeps it to one line either way - when a row fills its zone,
     // the row itself has no spare and only the short item inside it speaks up.
     //
-    // `greed` is what makes this safe to say out loud. Writing lines, sorting
-    // frames and blank surfaces all turn spare height into more room to work in,
-    // so their extra height is the sheet doing its job. A chart, a diagram or a
-    // set of questions cannot, so the same extra height is simply blank paper.
+    // What makes this safe to say out loud is knowing how much room each thing
+    // can actually SPEND. A chart, a diagram or a set of questions spends
+    // nothing above its natural height, so everything above it is blank paper.
+    // Writing lines, sorting frames and recording tables spend some and then
+    // stop - see `enough` in helpers/index.js - so the height above THAT is
+    // blank paper too, even though it sits inside a box a child writes in.
+    //
+    // That second case is the one this report used to be blind to. The test was
+    // `greed === 0`, which reads as "anything that can grow has used what it
+    // was given", and a recording table holding one four-digit number was drawn
+    // with a 30mm blank row while the report said the sheet was sound.
+    //
+    // A surface a child DRAWS on is the exception, and it is why `fills` is
+    // asked about here: a short column's leftover has nowhere else to go, and
+    // more paper to draw on is genuinely more of the work.
     // Outermost gap only. A row is handed its zone's height and passes that same
     // height to every item inside it, so an over-tall row and each of its
     // children all show the identical gap. Reporting each one says the same
@@ -139,21 +150,33 @@ function tightnessOf(spec) {
     // alone; when the row itself is the right size, the walk carries on and
     // finds the short item inside it, which is where the gap really is.
     const findSpare = (n) => {
-      const spareMm = n.gotHeightMm - n.needHeightMm;
+      // The height this part can honestly account for: its natural size when
+      // nothing about it gains from more, and its useful size when something
+      // does.
+      const usableMm =
+        n.greed === 0
+          ? n.needHeightMm
+          : Math.max(n.needHeightMm, n.usefulHeightMm);
+      const spareMm = n.gotHeightMm - usableMm;
       const reportable =
         n.heightImposed &&
-        n.greed === 0 &&
+        !n.fills &&
+        Number.isFinite(usableMm) &&
+        usableMm > 0 &&
         spareMm >= SPARE_MM &&
-        Number.isFinite(n.heightHeadroom) &&
-        n.heightHeadroom >= SPARE_RATIO;
+        n.gotHeightMm / usableMm >= SPARE_RATIO;
 
       if (reportable) {
         spare.push({
           zone: zone.id,
           label: n.label,
           gotMm: n.gotHeightMm,
-          needMm: n.needHeightMm,
+          needMm: usableMm,
           spareMm,
+          // Blank paper under something that cannot use height reads
+          // differently from a box drawn bigger than the answer it holds, and
+          // the repair is different too, so the report says which it found.
+          overgrown: n.greed > 0,
           node: n,
         });
         return;
@@ -180,7 +203,30 @@ function tightnessOf(spec) {
     }
   }
 
-  return { zones, cramped, lopsided, squashed, spare };
+  // What no zone claimed.
+  //
+  // Zone heights are content heights, so a page can be half empty with every
+  // zone on it correctly sized - and it should still say so. This used to be
+  // told by accident: a single full-page zone was handed the whole printable
+  // height whatever it held, so one short question on a whole page reported
+  // 200mm of blank paper under itself. That was a true message reached by a
+  // false route, and the route went when zones stopped growing past their
+  // useful size. The message is kept, at the level it belongs to: the page's.
+  const pageSpareMm = Math.max(0, area.heightMm - treeHeightMm(tree, drawn));
+
+  return { zones, cramped, lopsided, squashed, spare, pageSpareMm };
+}
+
+// How tall the drawn page actually is: the same two rules the layout tree is
+// measured by, read off the heights each zone was DRAWN at.
+function treeHeightMm(node, drawn) {
+  if (typeof node === "string") {
+    const h = drawn[node];
+    return Number.isFinite(h) ? h : 0;
+  }
+  const kids = node.children.map((child) => treeHeightMm(child, drawn));
+  if (node.dir === "cols") return Math.max(...kids);
+  return kids.reduce((a, b) => a + b, 0) + (kids.length - 1) * GUTTER_MM;
 }
 
 function describeTightness(result) {
@@ -211,6 +257,14 @@ function describeTightness(result) {
     });
   }
 
+  if (result.pageSpareMm >= SPARE_MM) {
+    lines.push(
+      `\nThe page ends ${Math.round(result.pageSpareMm)}mm early. A strip at the FOOT of a sheet is` +
+        "\n  trimmed and never noticed, so this is not the fault the list below describes - it is" +
+        "\n  worth a look only if the sheet feels short for the lesson."
+    );
+  }
+
   if (!result.cramped.length && !result.squashed.length && !result.spare.length) {
     lines.push("\nNothing is cramped, and nothing is sitting over blank paper.");
     return lines.join("\n");
@@ -232,8 +286,12 @@ function describeTightness(result) {
     );
     for (const s of result.spare) {
       lines.push(
-        `  zone "${s.zone}": ${s.label} needs ${Math.round(s.needMm)}mm and was given ` +
-          `${Math.round(s.gotMm)}mm, so ${Math.round(s.spareMm)}mm below it prints empty`
+        s.overgrown
+          ? `  zone "${s.zone}": ${s.label} stops gaining at ${Math.round(s.needMm)}mm ` +
+            `and was drawn ${Math.round(s.gotMm)}mm, so ${Math.round(s.spareMm)}mm of it is ` +
+            `a box bigger than the answer it holds`
+          : `  zone "${s.zone}": ${s.label} needs ${Math.round(s.needMm)}mm and was given ` +
+            `${Math.round(s.gotMm)}mm, so ${Math.round(s.spareMm)}mm below it prints empty`
       );
     }
     lines.push(

@@ -81,8 +81,8 @@ const FAMILIES = [
     ["multiple-choice", "circle-the-answer", "chip-bank", "sort-grid", "match-up", "card-row", "timeline"],
   ],
   [
-    "Writing and talk",
-    ["writing-frame", "storyboard", "fact-file", "speech-scene"],
+    "Writing, drawing and talk",
+    ["writing-frame", "drawing-space", "storyboard", "fact-file", "speech-scene"],
   ],
   [
     "Cause, effect and evidence",
@@ -145,7 +145,9 @@ function entry(name) {
     "",
     `Smallest usable: **${Math.round(needs.minWidthMm)}mm wide` +
       `${needs.minHeightMm ? ` x ${Math.round(needs.minHeightMm)}mm tall` : ""}**. ` +
-      `Spare height: ${GREED[helper.greed === undefined ? 1 : helper.greed]}.`,
+      `Spare height: ${GREED[helper.greed === undefined ? 1 : helper.greed]}${
+        helper.enough ? ", and it stops when the content stops gaining" : ""
+      }.`,
     "",
     "```json",
     JSON.stringify(asWritten(example), null, 2),
