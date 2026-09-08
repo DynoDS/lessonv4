@@ -1,6 +1,29 @@
 'use strict';
 
 const { FONT, COLOURS, FIT } = require('../styles');
+const { textWidthIn } = require('../glyph-width');
+
+// How big is the number inside a part-whole circle?
+//
+// It was whatever survived. The circle was sized from the ZONE alone, the label
+// size was then guessed from the diameter with a taper of 3/charCount, and the
+// result was clamped up to a 10pt "minimum" that was never checked against the
+// circle it had to fit inside. So the minimum did not mean "small but legible",
+// it meant "overflow quietly": a Year 4 slide put "3,000" in a 0.39in circle at
+// the 10pt floor, where the text is WIDER than the whole circle, and PowerPoint
+// wrapped it to "3,00 / 0" - a four-digit number broken across two lines inside
+// a circle, on the slide teaching four-digit numbers.
+//
+// The zone was the real culprit: 7.75in of width and 1.27in of height. In a
+// vertical model the height is what the circles are cut from, so nearly eight
+// inches of width sat unused while the circles were starved. Nothing checked
+// that, because nothing measured the label.
+//
+// So: the label is measured, the font is the largest that genuinely fits inside
+// the circle, and a zone that cannot give its circles a readable label is
+// refused by name with the height it needs - the same contract place-value-chart
+// and table already keep, so the slide-design check catches it while the spec is
+// still repairable rather than a class meeting a wrapped number.
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD            = 0.08;
@@ -13,7 +36,13 @@ const BORDER_PT      = 2.5;
 const LINE_PT        = 2;
 const CIRCLE_FILL    = 'FFFFFF';
 const LABEL_MAX_PT   = 28;
-const LABEL_MIN_PT   = 10;
+// Board-readable floor, matched to the number line's. Below this a circle is
+// not a small diagram, it is an unreadable one, and the honest answer is that
+// the slide has not given the model enough room.
+const LABEL_MIN_PT   = 14;
+// A circle is not a box. One line of text across a circle has the inscribed
+// square to live in, not the diameter, or it touches the border and wraps.
+const USABLE_FRAC    = 0.72;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 function drawPartWholeModel(pptx, slide, zone, data) {
@@ -28,6 +57,35 @@ function drawPartWholeModel(pptx, slide, zone, data) {
   const innerY = zone.y + PAD;
   const innerW = zone.w - 2 * PAD;
   const innerH = zone.h - 2 * PAD;
+
+  // What this model's own numbers need, before the zone gets a say. The whole
+  // circle is 1.5x a part, so a long whole label is cheaper in part-diameters
+  // than a long part label.
+  const partNeed = Math.max(
+    diamNeededFor(whole) / WHOLE_TO_PART,
+    ...parts.map(diamNeededFor)
+  );
+  const heightFactor = orientation === 'horizontal'
+    ? Math.max(WHOLE_TO_PART, n + (n - 1) * V_GAP_FRAC)
+    : WHOLE_TO_PART * (1 + VERT_DROP_FRAC) + 1;
+  const widthFactor = orientation === 'horizontal'
+    ? WHOLE_TO_PART * (1 + H_GAP_FRAC) + 1
+    : n + (n - 1) * H_GAP_FRAC;
+
+  const gotPart = Math.min(innerH / heightFactor, innerW / widthFactor);
+  if (gotPart < partNeed) {
+    const needH = partNeed * heightFactor + 2 * PAD;
+    const needW = partNeed * widthFactor + 2 * PAD;
+    const longest = [whole].concat(parts).sort(function (a, b) { return b.length - a.length; })[0];
+    throw new Error(
+      'PART_WHOLE_MODEL_DOES_NOT_FIT: a ' + orientation + ' model labelled "' + longest +
+      '" needs a zone of at least ' + needW.toFixed(2) + 'in x ' + needH.toFixed(2) +
+      'in to print its numbers at ' + LABEL_MIN_PT + 'pt, and was given ' +
+      zone.w.toFixed(2) + 'in x ' + zone.h.toFixed(2) + 'in. Give the model a larger share ' +
+      'of its stack, or drop it from this slide - do not let it print a number too small ' +
+      'to read.'
+    );
+  }
 
   if (orientation === 'horizontal') {
     drawHorizontal(pptx, slide, innerX, innerY, innerW, innerH, whole, parts, n);
@@ -191,25 +249,37 @@ function drawConnector(pptx, slide, x1, y1, x2, y2) {
 }
 
 function drawCircle(pptx, slide, cx, cy, r, label) {
-  const d = r * 2;
+  const d  = r * 2;
+  const tw = d * USABLE_FRAC;
   slide.addShape(pptx.shapes.OVAL, {
     x: cx - r, y: cy - r, w: d, h: d,
     fill: { color: CIRCLE_FILL },
     line: { color: BORDER_COLOUR, width: BORDER_PT }
   });
+  // The text box is the circle's inscribed width, so a label that fits is drawn
+  // clear of the border instead of touching it and wrapping.
   slide.addText(label, {
-    x: cx - r, y: cy - r, w: d, h: d,
-    fontFace: FONT, fontSize: labelSize(d, label.length),
+    x: cx - tw / 2, y: cy - tw / 2, w: tw, h: tw,
+    fontFace: FONT, fontSize: labelSize(d, label),
     bold: true, color: COLOURS.body,
     align: 'center', valign: 'middle', margin: 0,
     fit: FIT, objectName: 'NOFIT_pwm-label'
   });
 }
 
-function labelSize(diamInches, charCount) {
-  const raw    = diamInches * 0.38 * 72;
-  const scaled = charCount > 3 ? raw * (3 / charCount) : raw;
-  return Math.max(LABEL_MIN_PT, Math.min(LABEL_MAX_PT, Math.round(scaled)));
+// The largest size this label genuinely fits at inside this circle. Measured,
+// not tapered by character count: "3,000" and "1111" are five and four
+// characters but nothing like the same width, and a comma is not a digit.
+function labelSize(diamInches, label) {
+  const usable = diamInches * USABLE_FRAC;
+  const oneEm  = textWidthIn(String(label), 1, true);
+  if (oneEm <= 0) return LABEL_MAX_PT;
+  return Math.min(LABEL_MAX_PT, Math.floor(usable / oneEm));
+}
+
+// The diameter this label needs before it can be drawn at the floor size.
+function diamNeededFor(label) {
+  return textWidthIn(String(label), LABEL_MIN_PT, true) / USABLE_FRAC;
 }
 
 module.exports = { drawPartWholeModel };

@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-08 Part-whole circles sized from their numbers (4.2.115)
+
+Daniel: "whats up with the part whole model, that didnt work, too small". It printed "3,000" inside a circle as "3,00" over "0" - a four-digit number broken across two lines, on a slide teaching four-digit numbers.
+
+The circle was sized from the zone alone, the label size was then guessed from the diameter and tapered by `3 / charCount`, and the result was clamped up to a 10pt "minimum" that was never checked against the circle it had to sit in. So the minimum did not mean "small but legible", it meant "overflow quietly": at 10pt "3,000" is wider than the 0.39in circle it was placed in, and PowerPoint wrapped it. The taper was also wrong on its own terms, pricing a comma as a digit.
+
+The zone was the underlying fault: 7.75in wide and 1.27in tall. An upright model cuts its circles out of the HEIGHT, so nearly eight inches of width sat unused while the circles were starved. Nothing caught it because nothing measured the label.
+
+The label is now measured with the shared glyph-width table, the font is the largest that genuinely fits the circle's inscribed width, and a zone that cannot seat a readable label is refused by name with the size it needs - the contract place-value-chart and table already keep. The documented flat floor of 1.4in square was itself wrong and now says what it depends on: single digits are happy at 1.4in, four-digit labels need about 2.4 x 2.5in upright or 2.4 x 1.9in on their side.
+
+The reported deck's slide 4 was repaired against the new refusal: the model was laid on its side, which needs about 0.6in less height, and the stack rebalanced 1.2/0.7 to 0.95/1.2. Two of the five new regressions discriminate against the old renderer; the other three are invariants a roomy zone already satisfied.
+
 ## 2026-09-08 Number lines fill the card, and stacked lines say which they are (4.2.114)
 
 Follow-up to 4.2.113, decided by Daniel against a mock deck showing both options side by side. He picked the fuller of the two.

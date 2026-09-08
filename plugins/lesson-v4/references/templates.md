@@ -841,6 +841,10 @@ One whole circle on the left, connected by lines to 2 or 3 part circles stacked 
 
 Lines touch each circle at their own separate edge point so they never converge at a single anchor on the whole.
 
+**Give it real room, and remember the numbers set the size.** A circle only has its inscribed width for one line of text, so the space a model needs depends on the length of the numbers in it, not on the helper. Single digits are happy in 1.4″ square; four-digit labels need roughly 2.4″ × 2.5″ upright, or 2.4″ × 1.9″ lying on its side. The build measures the actual labels and **refuses the zone by name** (`PART_WHOLE_MODEL_DOES_NOT_FIT`) with the size it needs.
+
+The shape that catches people out is a wide, shallow band at the bottom of a stack: an upright model cuts its circles out of the HEIGHT, so eight inches of unused width buys nothing, and a Year 4 slide once printed "3,000" in a 0.39″ circle where it wrapped to "3,00" over "0". In a band like that either lay the model on its side, which needs about 0.6″ less height, or give it a larger share of the stack. If neither is worth the room, the honest answer is that the model has not earned a place on that slide.
+
 Two parts (standard):
 ```json
 { "type": "part-whole-model",
