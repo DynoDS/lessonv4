@@ -601,6 +601,12 @@ python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
   --spec "[WORKING_DIR]/lesson.json" --surface slides
 
 Require: HELPER_DELIVERY_OK
+
+python3 "[PLUGIN_ROOT]/scripts/check-drawlive-handoff.py" \
+  --lesson-design "[WORKING_DIR]/lesson-design.json" \
+  --spec "[WORKING_DIR]/lesson.json"
+
+Require: DRAWLIVE_HANDOFF_OK
 TERMINAL_STATE: COMPLETE
 ```
 

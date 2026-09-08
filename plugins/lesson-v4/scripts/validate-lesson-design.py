@@ -2048,18 +2048,26 @@ def validate_design(
             )
             for i, step in enumerate(steps):
                 expect_string(step, f"{path}.content.steps[{i}]")
-                # Steps are board reference a child glances at mid-task; the
-                # guidance aims for 2-5 words and a 13-word step is a
-                # mini-instruction, not a step (Y4 circuits, 1 Sep 2026:
+                # Steps are a board reference a child glances at mid-task.
+                # The panel fits about five words to a line at the size it is
+                # read from the back, so a longer step wraps and reads as a
+                # sentence. The cap was 12 between 1 and 8 September 2026 and
+                # let a step run to twice the aim: the circuits lesson shipped
                 # "Connect the lamp or buzzer back to the cell to close the
-                # loop"). Generous cap so a genuinely needed longer step
-                # survives; wordiness is caught here, not carried in heads.
+                # loop" (13 words) and its neighbours at 12 to 14, and across
+                # 113 September steps 12% ran past 8. 8 is the old ceiling,
+                # restored, and every step over it in that sample carried a
+                # reason, an alternative or a condition that belonged
+                # elsewhere.
                 words = len(step.split())
                 expect(
-                    words <= 12,
+                    words <= 8,
                     f"{path}.content.steps[{i}] is {words} words; a how-to "
-                    "step is a short verb-first action (aim 2-5 words, cap "
-                    "12) - say the action, not the instructions around it",
+                    "step is a short verb-first action (aim 2-5 words, cap 8). "
+                    "A step this long is usually carrying the reason (it was "
+                    "taught on the Teach slide), an alternative (name one "
+                    "piece of equipment) or a condition (a branch belongs in "
+                    "a reference-table criteria beside the steps)",
                 )
         elif sc_type == "reference-table":
             expect_exact_keys(content, {"columns", "rows"}, {"columns", "rows"}, f"{path}.content")

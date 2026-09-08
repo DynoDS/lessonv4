@@ -77,8 +77,10 @@ class StepsTeachTheInvariantTests(unittest.TestCase):
         else:
             self.fail("13-word step unexpectedly validated")
 
-        # The guidance names the cap so the two cannot silently drift.
-        self.assertIn("the validator refuses a step past 12 words", flat(SKILL_ROUTE))
+        # The guidance names the cap so the two cannot silently drift. It was
+        # 12 between 1 and 8 September 2026, which let a step run to twice the
+        # 2-5 word aim; 8 is the ceiling the guidance has always described.
+        self.assertIn("the validator refuses a step past 8", flat(SKILL_ROUTE))
 
 
 class TheObjectivesOwnTermIsTaughtTests(unittest.TestCase):

@@ -65,6 +65,20 @@ class CriteriaFitAGlanceTests(unittest.TestCase):
         self.assertIn("has 6 steps", str(caught.exception))
         self.assertIn("reference-table", str(caught.exception))
 
+    def test_a_step_carrying_its_reason_is_refused_and_the_message_says_why(self):
+        module = load_validator()
+        design, photos = contract.valid_contract()
+        # The circuits lesson's own step: the "to close the loop" was taught on
+        # the Teach slide, and eight words of panel went on repeating it.
+        design["successCriteria"][0]["content"]["steps"][0] = (
+            "Connect the lamp back to the cell to close the loop"
+        )
+        with self.assertRaises(module.ContractError) as caught:
+            module.validate_design(design, photos)
+        message = str(caught.exception)
+        self.assertIn("cap 8", message)
+        self.assertIn("the reason", message)
+
     def test_a_criteria_table_cell_that_is_a_sentence_is_refused(self):
         module = load_validator()
         design, photos = contract.valid_contract()
@@ -103,8 +117,12 @@ class CriteriaFitAGlanceTests(unittest.TestCase):
     def test_the_guidance_names_the_caps_so_they_cannot_drift(self):
         skill_route = flat(ROOT / "references" / "teaching-sequence-skill-based.md")
         self.assertIn("the validator refuses a sixth", skill_route)
+        self.assertIn("the validator refuses a step past 8", skill_route)
         preferences = flat(ROOT / "references" / "preferences.md")
-        self.assertIn("refuses a sixth step and a cell past eight words", preferences)
+        self.assertIn(
+            "refuses a sixth step, a step past eight words and a cell past eight words",
+            preferences,
+        )
         self.assertIn("A table of facts the child reads is a representation, not the criteria", preferences)
 
 

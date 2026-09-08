@@ -514,12 +514,17 @@ is a curriculum document's sentence. The child's step is:
 
 > Think about what someone eats across a whole day or week.
 
-Extra wording is useful when the criterion itself needs scaffolding.
+A criterion is glanced at while the child works, so it stays short: 2–5 words, 8 at the outside. Extra wording is what a child has to read instead of work, and the three things that lengthen a criterion each belong somewhere else - the reason on the Teach slide, an alternative in the teacher's mouth, a condition in a lookup row beside the steps.
 
-For a struggling class:
+Where a class needs more support, the support goes in the step's own words rather than in an explanation after it:
+
+> Start a sentence with a fronted adverbial.
+
+not
+
 > Try starting some of your sentences in different ways, for example with a fronted adverbial.
 
-That extra explanation earns its place.
+The first names the move the child makes. The second describes it, and by the time a child has read it they have lost the thread of the writing.
 
 ---
 
