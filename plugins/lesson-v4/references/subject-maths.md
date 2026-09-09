@@ -28,7 +28,7 @@ And the trap on the other side of it, kept word for word:
 
 Naming which one a task makes decides what a good version of it looks like.
 
-**Fluency** is executing the taught method reliably: short questions, same skill, difficulty building across the set.
+**Fluency** is executing the taught method reliably: short questions, same skill, difficulty building across the set. Executing is the doing; a fluency beat's `thinking` line names the decision inside the method at that step (`which column decides the next number?`, `do I exchange here, and why?`), never `complete the calculations`, because the decision is what the child has to hold and the calculation is only where it shows.
 
 **Reasoning** is judging the maths itself: is this right, is it always, sometimes or never true, convince me, spot the mistake, this person says this, do you agree, why or why not.
 

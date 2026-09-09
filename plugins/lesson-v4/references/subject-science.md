@@ -50,7 +50,7 @@ Decide who handles the equipment from what children need to notice or learn. Use
 
 ## Make predictions and conclusions useful
 
-Ask for a prediction with a reason based on the child’s current scientific thinking. A blind guess is not useful prediction evidence.
+Ask for a prediction with a reason based on the child’s current scientific thinking. A blind guess is not useful prediction evidence. Recording what happened is the doing; a science beat's `thinking` line names the explanation, prediction or fair-test decision the recording is for (`why did the bulb dim when we added the second one?`), and `write down what you observed` is not a thought, however carefully the observing was done.
 
 Normally make sense of the result while children can still see the equipment, observations or data. Safety or sensible classroom organisation may require clearing or moving equipment first; that practical exception overrides the normal order.
 

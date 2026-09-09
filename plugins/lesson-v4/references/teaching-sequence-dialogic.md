@@ -18,7 +18,7 @@ Choose stimuli that are concrete, understandable and open to several defensible 
 
 A Stimulus can also be an *activity* — a ranking, a sort, a four-corners vote — when the activity itself surfaces children's positions. In that case the Stimulus and the Talk merge into a single working beat: the activity slide carries the items being ranked or sorted, and the Talk happens around the activity rather than after it. Treat this as one combined Stimulus + Talk in the teaching sequence rather than splitting it into two.
 
-**Talk** — children discuss the Stimulus. The active beat. Pick the format that matches the question's shape:
+**Talk** — children discuss the Stimulus. The active beat. Its `thinking` line names the position and the taught knowledge the position has to rest on (`is it ever fair to break this promise, given what we now know a promise is?`); a position children held walking in, reached without the grounding input, is an opinion the lesson has collected rather than thinking it has produced (`preferences.md` → What a Lesson Is For, `Would a child have needed this lesson to say it?`). Pick the format that matches the question's shape:
 - Partner talk with sentence stems ("I think… because…", "I disagree because…")
 - Snowball (pairs → fours → whole class)
 - Four corners (children physically position themselves on agree / strongly agree / disagree / strongly disagree and defend)

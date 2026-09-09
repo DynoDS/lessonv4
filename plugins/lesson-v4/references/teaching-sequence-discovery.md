@@ -38,7 +38,7 @@ The board carries it, not only the script. `takeaway` is the one line children k
 
 ### Use the learning
 
-Give children an opportunity to explain, apply, compare or test the secured idea. Choose the form and amount from the objective. The practice must not depend on discovering another untaught idea.
+Give children an opportunity to explain, apply, compare or test the secured idea. Choose the form and amount from the objective. The practice must not depend on discovering another untaught idea. Its `thinking` line, like the Explore's, names what the pattern lets a child predict or explain (`if we moved the torch closer, where would the shadow fall, and why?`), not the looking or the recording; a line a child could answer before the exploration has made the exploration decoration.
 
 ### Finish purposefully
 

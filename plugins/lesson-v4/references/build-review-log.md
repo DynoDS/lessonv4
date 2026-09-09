@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-09 Would a child have needed this lesson to say it? (4.2.125)
+
+Daniel showed a Year 4 history deck (continuity and change in children's lives, using sources) built that evening on 4.2.123, with the `thinking` field filled on every beat and the plugin's reviewer returning APPROVED. It was thin, and he put the finding plainly: "if you think it's weak, something in your fix didn't really help, maybe just helped that specific thing." He was right. The three questions were all answered; nothing judged the answers.
+
+What the design said. Sticky facts: `Babies had rattles in Tudor times, and babies still have rattles today` and `Apprentices learned skills through work in Tudor times, and they still do today`. Both are sentences a Year 4 could say before the lesson, both were handed over on the Teach slides, and both were the sentences the final task expected (`write one continuity`). Thinking lines: `What is different about these two toys even though they have the same job?` (answered from the picture by a child who knows no history) and `What changed about when children could begin an apprenticeship?` (over a slide printing `before sixteen` and `at least sixteen`). The opening decision sentence named the learning as `children in Tudor England played and learned useful skills, as children do now`. The history file's own test, that a source becomes evidence only when a child has to work out something it does not say outright, sat in the designer's hands throughout, and the per-beat line was never read against it.
+
+The cause is general, so the repair is. `preferences.md` → What a Lesson Is For gains the fourth test, run on the answers to the other three: for each named fact and the opening sentence's `because`, could a child in this class have said it before the lesson; for each thinking line, could a child answer it from the board or from what they knew walking in; and every subject has a doing the objective names that passes for thinking (using sources, using a map, recording results, calculating), so the line is read against the subject file's test too. The limit is stated: retrieval starters, deliberate recaps and fluency practice are meant to repeat what is known. The designer applies it to sticky facts (a fact that is the final task's expected sentence has made the task recall), to the thinking line, and to the quality-lock read-back. The reviewer applies it and names the two lines it approved. The catalogue's How to pick and the field contract carry the walking-in clause.
+
+Daniel asked that this reach every subject and lesson type, not history. Each subject file already held its own doing-versus-thinking test at the level of the lesson; each now ties the per-beat line to it in one sentence: history (what the source does not say outright), geography (interrogating a map, not looking at it), maths (the decision inside the method, never `complete the calculations`), science (the explanation or prediction the recording is for), PSHE (the taught reason or boundary the child applies), with RE's version already in place from 4.2.122. Each lesson type's response beat says what its line names: skill-based Our Turn and Your Turn (the decision, and a Your Turn the class could do before the My Turn practised nothing), dialogic Talk (the position and the grounding it rests on), discovery Use the learning (what the pattern lets a child predict), task-centred Do the task (the decisions inside the task); the content route already asked for the line before the catalogue.
+
+Seventeen new tests. Full run: 1405 pass, the same four pre-existing failures.
+
 ## 2026-09-09 Needed is not tidy, and a final task's moves are practised first (4.2.124)
 
 The same headteacher reviewed the rerun built on 4.2.123 (design only; Daniel stopped the run before the plugin's own reviewer ran, so this is a review of an unreviewed design). Verdict: "stronger structurally ... the final task now draws on the RE content", and "not an improvement in every respect". Daniel's instruction on the repair: "it's not to just fix this lesson, it's to fix all future lessons."
@@ -1134,3 +1146,10 @@ Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-pa
 - The picture-contract section of the Lesson Designer was the residual path: it is where the picture list is actually settled, it routes to nothing about whether a picture is wanted, and its own fields imply the evidence test. It now reads the boundary section at that point and flags an empty `photos` array as the result to check hardest.
 - `subject-re.md` gains a depiction boundary, which was safe to omit only while RE never asked for pictures. Christian art depicts Jesus freely; Islam does not depict Muhammad, and no lesson may request such a picture. Where a tradition's rule is unclear, request the place, object, text or practice rather than the figure.
 - Acceptance limit: no lesson has been rebuilt against these changes. The claim is a reliability improvement in a judgement, not a guarantee - none of it is enforced deterministically, and a designer can still answer the referent test with "nothing" on a slide that names a church. The rerun to do first is the same Year 4 RE Christmas lesson, checking slides 3, 4 and 6 and all three vocabulary words.
+
+## 2026-09-09 - Year 4 Maths: Order 4-digit numbers
+
+*Built by lesson-v4 4.2.124.*
+
+
+- Lesson Designer guidance places orientation before the starter script, while validate-lesson-design requires the starter script to begin with Say to children; the run preserved orientation in teacherOrientation.

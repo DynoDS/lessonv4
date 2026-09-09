@@ -23,7 +23,7 @@ Personal reflection may remain private. Protect it from unnecessary public discl
 
 ## Choose evidence that shows the PSHE learning
 
-Use the lightest form that directly shows whether children understand or can perform the objective. Evidence may be written, spoken, visual or practical. Spoken or practical performance may be stronger than extended writing for an action-based objective.
+Use the lightest form that directly shows whether children understand or can perform the objective. Saying what you would do is the doing; a PSHE beat's `thinking` line names the taught reason or boundary the child applies to decide it (`which of these two replies keeps the agreement, and which rule says so?`), because a choice children would have made before the lesson shows nothing the lesson taught. Evidence may be written, spoken, visual or practical. Spoken or practical performance may be stronger than extended writing for an action-based objective.
 
 Flexibility does not mean weak evidence. The design must still identify enough individual evidence to know whether each child can understand, decide or perform the intended learning rather than relying only on confident speakers.
 
