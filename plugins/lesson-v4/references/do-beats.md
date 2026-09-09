@@ -445,7 +445,7 @@ The teacher has modelled thinking aloud during the Teach; in the Do, a pupil thi
 Younger children and children new to the content usually need the prompt to be precise. "Explain your thinking" leaves them with nothing to hold; the stems below name the exact link being asked for, which is what makes these reachable in Year 2 as well as Year 6.
 
 ### 10.1 Because Sentence
-Children complete a stem that forces the mechanism into the open. *"A shadow forms because…"*, *"The Romans built roads because…"*, *"This soil holds more water because…"*. The test on a finished answer is whether the word "because" is followed by a mechanism or by a restatement.
+Children complete a stem that forces the mechanism into the open. *"A shadow forms because…"*, *"The Romans built roads because…"*, *"This soil holds more water because…"*. The test on a finished answer is whether the word "because" is followed by a mechanism or by a restatement. The test on the stem itself is whether the because is already on the board, or was just spoken, in the words the child will give back: a slide saying `his birth shows God's love for people`, followed by *"This story matters to Christians because..."*, gets the slide read back to it and shows attention rather than learning. When the Teach has stated the reason, ask for it applied to a case the Teach did not cover (a different practice, a different person), or move to 10.4 or 10.9.
 **Best for:** straight after a causal or explanatory Teach, in any subject.
 **SEND access:** the stem carries the sentence structure, so the child supplies only the idea; a spoken version to a partner is a legitimate response.
 

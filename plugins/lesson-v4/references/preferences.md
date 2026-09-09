@@ -11,6 +11,7 @@ Some of these are classroom norms (what tools are used), some are pedagogical pr
 This file serves several agents. The Lesson Designer reads the introduction, contents and the sections named by its runtime route. It returns to the relevant section before making the decision that section governs. The Design Reviewer receives a compact runtime routing card and reads only the named section when its trigger applies. Other agents read the introduction and only the sections named by their runtime route. Written Voice is startup guidance only for an agent that normally authors child-facing or parent-facing wording. An agent that normally copies settled wording exactly reads Written Voice only when it must author a permitted new line, place a paragraph break in settled prose, or report that settled wording is unsuitable. An agent reading Written Voice to author wording reads `teacher-voice.md` with it - the routing note at the top of that file says which of its sections to read when.
 
 - **Written Voice (House Style)** — what every word a child or parent reads must achieve: understanding, density, register roles and house style. Pairs with `teacher-voice.md`, which owns how the voice sounds. Everyone, every run.
+- **What a Lesson Is For** - durable learning named before the task, every stage there because the next needs it, and a final task that draws together what was built rather than checking who listened. Everyone who designs or reviews a lesson, every run.
 - **Classroom Norms** — the lesson-time default, routine teacher autonomy, purposeful partner talk, and the LO's on-slide form.
 - **The Teach → Do → Teach → Do Rhythm** — the load-bearing lesson shape, the pairing test that each Do uses the idea its own Teach taught, naming what a chunk needs children to do with it before choosing any activity, and the variety rules across Do beats.
 - **Cognitive Load Triage on Scaffolds** — what stays blank and what gets pre-filled on any scaffold, on slides and sheets alike.
@@ -138,9 +139,23 @@ When the system generates the objective, create a precise full internal objectiv
 
 ---
 
+## What a Lesson Is For
+
+A lesson exists so that children leave knowing, understanding or able to do something they could not at the start, and still have it next week. That durable learning is what every design decision serves. The objective names the performance the school assesses; the learning behind it is named separately, first, in the designer's own words: the knowledge, the understanding and the thinking children will now be able to do. Where the objective is itself a product (`To explain what Christmas means to me`, `To write a diary entry as an evacuee`), the product can often be made from what a child already had, so a lesson built only to prepare the product can be taught well and leave nothing behind. Name the learning, then decide how the product will show it.
+
+Every stage earns its place because the next stage needs what it leaves behind. That is what turns a run of activities into learning that accumulates: a Teach is there because the Do cannot be done without it, the Do is there because the next Teach builds on what the child has just used, and the final task is there to draw together what the stages built. A stage the rest of the lesson never draws on has been told, not learned, however sound it looks on its own. The question to ask of it is which later stage would fail without it, and the answer is either that stage, named, or a repair: give it the stage that needs it, or take it out of today's learning.
+
+The final task draws together what was built. It is not a check that children were listening, and the test that separates the two is whether a child who missed every piece of teaching could still do it well from what they brought with them. When they could, either the task is reshaped to draw on the learning, or that learning was never today's. A personal reflection can still draw on the learning: a child who places their own meaning beside the two meanings the lesson taught is using them; a child writing about their holiday from memory is not.
+
+The same test sits inside every response moment. A child answering because they remember what the teacher said a minute ago has shown attention, not learning. An answer that needs the idea applied to a case the teaching did not already cover shows the idea has landed, and that is what each Do beat is for. The rhythm below is the shape this takes; the Sticky Knowledge and Apply Slide sections carry the same test into the facts a lesson names and the way it ends.
+
+The limit: this does not chain every slide to the next or test every fact. Vocabulary, a routine, a safeguarding note and setup sit beside the spine, and a brief piece of interesting subject knowledge can earn its minute without becoming an assessed outcome. What it rules out is learning the lesson claims as its own, in its sticky knowledge or its opening decision sentence, that nothing later needs.
+
+---
+
 ## The Teach → Do → Teach → Do Rhythm
 
-This is the load-bearing principle of every lesson design.
+This is the load-bearing shape of every lesson design, and `What a Lesson Is For` above is what the shape serves.
 
 Children do not learn by being told things. They learn by doing something with what they have just been told. Every chunk of teaching — every Teach slide, every My Turn, every new concept — is followed immediately by a beat that requires every child to use what they have just been told before the next chunk arrives.
 
@@ -340,7 +355,7 @@ treatment cute, jokey or trivial.
 
 ## Sticky Knowledge
 
-Up to 3 facts children MUST carry away from this lesson. "For children to succeed at this LO, they need to know this." Zero separate sticky facts is acceptable when nothing distinct earns the role because the objective, representation or success criteria already carries the necessary idea.
+Up to 3 facts or rules children carry away from this lesson and still hold next week. Naming one is a claim that it is part of today's learning, and the lesson has to make good on the claim: the fact is taught, a later stage needs it, and the final task draws on it, or an earned ending checks it where the final task honestly cannot. "For children to succeed at this LO, they need to know this" is still the right test in a skill lesson, where the facts are the method's foundations. In a knowledge subject it is too narrow, because the facts are the learning and a task-shaped objective can be met without them: an RE lesson named `Christmas celebrates the birth of Jesus` as sticky, then ended on a personal reflection that never needed it, and the fact was told and not learned. A fact no later stage uses is either not today's learning or the sign that the stage which would use it is missing (`What a Lesson Is For`). Zero separate sticky facts is acceptable when nothing distinct earns the role because the objective, representation or success criteria already carries the necessary idea.
 
 Short, clear, child-readable. Appears contextually — at the point in the lesson where children need it. Some facts appear during teaching; some during independent practice as a reference; some at both points.
 
@@ -377,6 +392,8 @@ What does not earn it is a one-lesson method with no life after today, a set of 
 ## The Apply Slide
 
 An apply slide is earned through the lesson, not included automatically. The judgement is whether the lesson has accumulated enough that using all of it together asks something the Your Turn didn't; where the Your Turn and its answers already are the synthesis moment, a further slide adds length rather than learning. A lesson that doesn't earn one says so and says why, so the teacher can see it was decided rather than forgotten.
+
+Judge the synthesis against the learning the lesson named, not only the performance the objective names. A Your Turn that shows the performance while a sticky fact or a taught understanding sits outside it has not synthesised the lesson. The first repair is to reshape the final task so it draws on that learning, because the ending exists to draw together what was built; a separate check is the fallback for learning a personal or product task honestly cannot carry (`What a Lesson Is For`).
 
 The rest of it, including what an Apply has to be to earn its place and the shapes it can take, lives in the Apply Slide section of the lesson-designer agent, which is the only place that decides it.
 
@@ -424,7 +441,7 @@ Design a worthwhile check before independent practice of a new procedure when it
 
 ## Purposeful Endings and Linked Lessons
 
-Every lesson ends with purposeful consolidation or useful evidence, but the lesson structure determines its form. A separate exit ticket appears only when it adds useful evidence rather than repeating the ending already present. Use later retrieval or reteaching only when the user supplies genuine linked-lesson context, a sequence or real assessment evidence. Without that context, do not invent results, thresholds, weaknesses or a next-day lesson.
+Every lesson ends with purposeful consolidation or useful evidence, but the lesson structure determines its form. Useful evidence is evidence of the learning the lesson named: a final piece a child could have produced before the lesson began is evidence of a product, not of learning (`What a Lesson Is For`). A separate exit ticket appears only when it adds useful evidence rather than repeating the ending already present. Use later retrieval or reteaching only when the user supplies genuine linked-lesson context, a sequence or real assessment evidence. Without that context, do not invent results, thresholds, weaknesses or a next-day lesson.
 
 ## Source and Scenario Integrity
 

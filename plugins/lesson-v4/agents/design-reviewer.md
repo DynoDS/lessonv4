@@ -140,6 +140,7 @@ Check:
 - the full and displayed learning objectives mean the same thing;
 - in a knowledge subject (history, geography, science content, RE), the Teach labels and headlines read in order are things about the topic, not rules about how to think; a lesson whose Teach beats are each a rule about sources or evidence has put the method in front of the knowledge and is a purposeful design defect, because the class leaves able to recite the rule and knowing nothing about the people (the subject file's own test);
 - substantial teaching and tasks serve the objective, and the FINAL task demonstrates what the objective actually says: read the end performance and ask what a child who does it well now knows and can do. A lesson that keeps the objective's wording while its teaching, evidence and final work are about one corner of it has not delivered it, and a teacher flag naming the narrowing does not repair that. The opposite failure counts too: a token reference to each strand of a broad objective teaches none of them, and one well-chosen case that carries the whole thinking is a sound design, not a narrow one;
+- the learning the design names is learned, not told: take the opening sentence of `design-decisions.md` and the sticky knowledge, and for each piece ask which later stage would fail without it and whether the final task draws on it. A child who missed every Teach and could still produce the final piece well from what they brought with them has met a product, and a lesson whose named learning nothing later needs is a purposeful design defect, not polish, whatever the practice shows about the objective's wording. The repair is the designer's: reshape the final task to draw on the learning, add the stage that needs it, or withdraw the claim (`preferences.md` → What a Lesson Is For). The review view lists, under each sticky fact, the units that reference it and whether any final work does, as a starting point; a reference is availability, not use, so read the final task itself;
 - deferred learning is not taught early;
 - two substantial new demands are not stacked into one lesson without enough teaching, practice and checking for both;
 - any lesson split is honest and visible;
@@ -196,7 +197,7 @@ Check:
 - success criteria are usable actions, decisions or recognition categories that match the taught performance, rather than a list of facts or a lesson outline. Read the object, not its id: a nutrient table is a representation, not the standard for a lunch plan. Say procedural cues aloud while doing the method: are they short, memorable and easy to call back, yet specific enough to act on? Review packet count cues invite this judgement, not automatic rejection or automatic permission. Trim avoidable elaboration; retain essential meaning and distinct actions. A simple condition may stay inline; use a lookup where it makes multiple cases easier to follow. Downstream must fit the complete needed method, not delete steps. Check the visible `drawLive` decision in both directions: a reusable method or reference may deserve it even when false, while a one-off lookup need not be flagged; do not mark everything or ask a validator to decide pedagogy;
 - misconceptions are addressed where they could block learning;
 - assessment opportunities reveal useful evidence. For an inference, try a counterexample: could the supplied evidence remain true while the expected conclusion was false? A snapshot can show current size but cannot alone establish growth. Reliable context or a suitably limited claim may make the inference sound; do not require certainty beyond the objective;
-- the recorded outcome makes the subject learning visible;
+- the recorded outcome makes the subject learning visible, and it is the learning the lesson named rather than only the product the objective names;
 - the recorded resource opportunities match the lesson's own moments: a stick-in `none` while a moment has children marking a figure they could not redraw by hand is a finding, because it skips the worker that would have printed the piece, and a `candidate` naming a moment where children only write answers is one too;
 - an Apply task changes the thinking rather than only adding more work;
 - a named test question is practised at the same structure, scale, response form and demand, with fresh content.
@@ -285,7 +286,7 @@ Check:
 - characters, quantities, prices, dates and claims;
 - vocabulary definitions and later use;
 - success criteria against worked methods;
-- sticky knowledge against teaching;
+- sticky knowledge against teaching, and against the final task or ending that draws on it;
 - questions against answers and scripts;
 - task instructions against structured task meaning;
 - answer visibility against intended pupil thinking;

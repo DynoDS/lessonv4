@@ -175,9 +175,15 @@ PREFERENCE_REVIEW_ROUTES = (
         "units genuinely name no such thing is right to have none.",
     ),
     (
+        "What a Lesson Is For",
+        "Read when the final task could be produced by a child who missed "
+        "the teaching, or a sticky fact or opening-sentence claim is drawn "
+        "on by no later stage.",
+    ),
+    (
         "Sticky Knowledge",
         "Read when a sticky item may be weak, excessive or absent without "
-        "reason.",
+        "reason, or is drawn on by no later stage.",
     ),
     (
         "Success Criteria",
@@ -977,6 +983,52 @@ def require_review_judgements(review_path: Path, review_result: str) -> dict[str
     return judgements
 
 
+# Units whose work is the lesson's final performance. A sticky fact that no
+# later stage draws on has been told rather than learned; this lists the
+# references so the reviewer starts from the design's own claim rather than
+# from memory. References are availability decisions, so the reviewer still
+# reads the task: the designer withholds a fact from a task it would answer.
+FINAL_WORK_KINDS = {
+    "your-turn",
+    "practise",
+    "use-learning",
+    "do-task",
+    "synthesise",
+    "apply",
+    "reflect",
+}
+
+
+def sticky_usage(design: dict) -> dict[str, tuple[list[str], list[str]]]:
+    units = list(design.get("teachingSequence") or [])
+    ending = design.get("ending") or {}
+    beat = ending.get("beat") if ending.get("included") else None
+    if beat:
+        units.append(beat)
+    worksheet = design.get("worksheet") or {}
+    usage: dict[str, tuple[list[str], list[str]]] = {}
+    for row in design.get("stickyKnowledge") or []:
+        sid = row["id"]
+        referenced: list[str] = []
+        final: list[str] = []
+        for unit in units:
+            refs = set(unit.get("stickyKnowledgeRefs") or [])
+            takeaway = (unit.get("content") or {}).get("takeaway") or {}
+            if takeaway.get("kind") == "sticky" and takeaway.get("ref") == sid:
+                refs.add(sid)
+            if sid not in refs:
+                continue
+            label = f"{unit.get('label')} (`{unit.get('kind')}`)"
+            referenced.append(label)
+            if unit.get("kind") in FINAL_WORK_KINDS:
+                final.append(label)
+        if sid in (worksheet.get("stickyKnowledgeRefs") or []):
+            referenced.append("worksheet")
+            final.append("worksheet")
+        usage[sid] = (referenced, final)
+    return usage
+
+
 def criteria_review_cues(row: dict) -> list[str]:
     """Counts invite semantic review; they neither approve nor reject wording."""
     content = row.get("content") or {}
@@ -1112,8 +1164,23 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
     lines.append("")
 
     lines.extend(["## Sticky knowledge", ""])
+    usage = sticky_usage(design)
     for row in design["stickyKnowledge"]:
         lines.append(f"- `{row['id']}` {row['text']}")
+        referenced, final = usage[row["id"]]
+        lines.append(
+            "  - Referenced by: "
+            + (", ".join(referenced) if referenced else "no unit")
+        )
+        lines.append(
+            "  - Drawn on by final work (by reference): "
+            + (
+                ", ".join(final)
+                if final
+                else "none - a reference is availability, not use, so read "
+                "the final task and ending for whether this fact is needed"
+            )
+        )
     lines.append("")
 
     lines.extend(["## Misconceptions", ""])
