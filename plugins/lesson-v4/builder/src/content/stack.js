@@ -108,6 +108,45 @@ function canUseMoreHeight(item) {
     String(item.heightMode || '').toLowerCase() === 'fill';
 }
 
+
+// How much height this stack actually wants.
+//
+// The companion to reflowToUseSpareHeight below: that hands spare room from a
+// hugging item to a growing SIBLING, but when a stack contains nothing that can
+// grow, the room it does not use simply sits there. Reporting the stack's real
+// appetite lets whatever owns the zone - a template deciding how much of the
+// board to give the question - spend it on something that will use it.
+//
+// Same honesty rule as a row: if any item cannot be measured, say nothing.
+function measureStack(zone, data, ctx) {
+  const items = Array.isArray(data.items) ? data.items : [];
+  if (items.length === 0) return null;
+
+  const { measureCompositionExtent } = require('./index');
+  const weights = items.map(function (it) {
+    return (it && typeof it.weight === 'number' && it.weight > 0) ? it.weight : 1;
+  });
+  const totalWeight = weights.reduce(function (a, b) { return a + b; }, 0);
+  const totalGap = GAP * (items.length - 1);
+  const availH = Math.max(0, zone.h - totalGap);
+
+  let wanted = 0;
+  for (let i = 0; i < items.length; i += 1) {
+    const share = availH * (weights[i] / totalWeight);
+    const extent = measureCompositionExtent(
+      { x: zone.x, y: zone.y, w: zone.w, h: share,
+        class: zone.class, noCard: zone.noCard, compactCards: zone.compactCards },
+      items[i],
+      ctx
+    );
+    if (!extent) return null;
+    wanted += Math.min(extent.h, share);
+  }
+
+  const h = wanted + totalGap;
+  return h > 0 ? { h: Math.min(h, zone.h) } : null;
+}
+
 function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
   if (!ctx) return;
   const { measureContentExtent } = require('./index');
@@ -166,5 +205,6 @@ function drawStack(pptx, slide, zone, data, ctx) {
 
 module.exports = {
   drawStack,
-  stackLayout
+  stackLayout,
+  measureStack
 };

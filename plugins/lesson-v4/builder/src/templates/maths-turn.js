@@ -41,6 +41,11 @@ const WORK_LINE_W      = 1.5;
 const VISUAL_GAP       = 0.18;
 
 const QUESTION_FONT    = 28;
+const QUESTION_FONT_MAX = 48;  // the task is the thing the back of the room
+                               // reads; where a slide has room going spare it
+                               // is allowed to grow into it, but not without
+                               // limit - past this it stops being a question
+                               // on a slide and becomes a poster
 // ─── END COORDINATES ──────────────────────────────────────────
 
 // Strip a leading "(a)", "(1)" etc. that an author may have typed,
@@ -83,10 +88,37 @@ function measureQuestionsHeight(questions, boxW, fontSize, options) {
       : raw.replace(/\s*\|\|.*$/, '');
     const availW = boxW - 2 * Q_PAD - (labelThem ? (LABEL_W + LABEL_GAP) : 0)
       - answerGutterW - pictureSlotW;
-    const lines  = Math.max(1, Math.ceil((text.length * glyphW) / Math.max(0.5, availW)));
+    // Count the line breaks the question was WRITTEN with, then wrap each of
+    // those lines in turn.
+    //
+    // Measuring the whole question as one run of characters asks "would these
+    // characters fit across the box", which is a different question from "how
+    // many lines is this". A comparison task written as a heading and two pairs
+    // is three short lines and about thirty characters, so the old count said
+    // one line, the box was built one line tall, and the fit pass then shrank
+    // 28pt type to 19pt to force three lines into it. Every multi-line question
+    // on every maths slide was being sized for a single line and then squeezed;
+    // the longer the task, the smaller it printed. The steps helper already
+    // counts breaks this way.
+    const lines = String(text).split(/\n/).reduce(function (count, line) {
+      return count + Math.max(1, Math.ceil((line.length * glyphW) / Math.max(0.5, availW)));
+    }, 0);
     total += Math.max(lines * lineH, answerMetrics ? answerMetrics.h : 0);
   });
   return total + 2 * Q_PAD;
+}
+
+// The largest size at which this task still fits the height it has been given.
+//
+// Counting DOWN from the ceiling makes this "largest readable fit" rather than
+// "whatever the default happens to be": the first size that fits is the biggest
+// one that does. The floor is the ordinary question size, so a task never comes
+// out SMALLER through this route than it would have anyway.
+function largestQuestionFont(questions, boxW, maxH, options) {
+  for (let pt = QUESTION_FONT_MAX; pt > QUESTION_FONT; pt -= 1) {
+    if (measureQuestionsHeight(questions, boxW, pt, options) <= maxH) return pt;
+  }
+  return QUESTION_FONT;
 }
 
 function drawMathsTurn(pptx, slide, data, ctx) {
@@ -127,6 +159,11 @@ function drawMathsTurn(pptx, slide, data, ctx) {
 function drawQuestions(slide, questions, box, pptx, ctx, options) {
   if (questions.length === 0) return;
   const answerBoxes = options && options.answerBoxes === true;
+  // The size the caller settled for this task, which is the ordinary size
+  // unless the slide found room to spare and grew it.
+  const questionFont = (options && Number(options.questionFont) > 0)
+    ? Number(options.questionFont)
+    : QUESTION_FONT;
   const entries = questions.map(function (q) {
     return { source: q, text: stripLeadingLabel(itemText(q)) };
   });
@@ -136,7 +173,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
   );
   const baseMeasure = measureQuestionsHeight(entries.map(function (entry) {
     return entry.text;
-  }), box.w, null, {
+  }), box.w, questionFont, {
     answerBoxes: answerBoxes,
     questionNumbering: options && options.questionNumbering
   });
@@ -152,7 +189,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
     const withPictures = measureQuestionsHeight(
       entries.map(function (entry) { return entry.text; }),
       box.w,
-      null,
+      questionFont,
       {
         answerBoxes: answerBoxes,
         questionNumbering: options && options.questionNumbering,
@@ -186,7 +223,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
   // keeps its normal independent wording.
   const labelThem = options && options.questionNumbering === 'teacher-led'
     && questions.length > 1;
-  const answerMetrics = answerBoxes ? answerBoxMetrics(QUESTION_FONT, rowH) : null;
+  const answerMetrics = answerBoxes ? answerBoxMetrics(questionFont, rowH) : null;
   const answerGutterW = answerMetrics ? answerMetrics.w + ANSWER_BOX_GAP : 0;
 
   entries.forEach(function (entry, i) {
@@ -203,7 +240,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
       slide.addText(label, {
         x: box.x + Q_PAD, y: rowY,
         w: LABEL_W, h: rowH,
-        fontFace: FONT, fontSize: QUESTION_FONT, bold: true,
+        fontFace: FONT, fontSize: questionFont, bold: true,
         color: COLOURS.questionLabel, align: 'left', valign: 'middle',
         margin: 0, fit: FIT
       });
@@ -222,7 +259,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
       slide.addText(presentationRuns(parsed.text, true, labelledColor, labelledSource), {
         x: box.x + Q_PAD + LABEL_W + LABEL_GAP + ownPictureSlotW, y: rowY,
         w: box.w - 2 * Q_PAD - LABEL_W - LABEL_GAP - answerGutterW - ownPictureSlotW, h: rowH,
-        fontFace: FONT, fontSize: QUESTION_FONT, bold: true,
+        fontFace: FONT, fontSize: questionFont, bold: true,
         color: labelledColor, align: 'left', valign: 'middle',
         margin: 0, fit: FIT
       });
@@ -241,7 +278,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
       slide.addText(presentationRuns(parsed.text, true, plainColor, plainSource), {
         x: box.x + Q_PAD + ownPictureSlotW, y: rowY,
         w: box.w - 2 * Q_PAD - answerGutterW - ownPictureSlotW, h: rowH,
-        fontFace: FONT, fontSize: QUESTION_FONT, bold: true,
+        fontFace: FONT, fontSize: questionFont, bold: true,
         color: plainColor, align: 'left', valign: 'middle',
         margin: 0, fit: FIT
       });
@@ -266,4 +303,5 @@ function drawWorkingSpace(pptx, slide, box) {
   });
 }
 
-module.exports = { drawMathsTurn, drawQuestions, drawWorkingSpace, measureQuestionsHeight };
+module.exports = {
+  largestQuestionFont, drawMathsTurn, drawQuestions, drawWorkingSpace, measureQuestionsHeight };

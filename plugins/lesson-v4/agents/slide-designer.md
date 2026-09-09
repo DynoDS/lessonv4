@@ -254,6 +254,8 @@ When a unit names success-criteria or sticky-knowledge references, read the cond
 
 Keep a structured visual structured. Do not flatten a table, bank, sequence, checklist, diagram or card set into prose.
 
+A key, legend or units line explains the thing beside it, so it goes AFTER that thing, not above it. Reading order is worth something on a slide: whatever sits directly under the task is what a child looks at next, and spending that position on `Th = thousands   H = hundreds` puts a glossary where the work should be and pushes the work down the board. Put the furniture last and small; it is there to be glanced back at, not read first. The same holds for a scale note, a units reminder or a "you may use a calculator" line.
+
 ### 7. Keep vocabulary coherent
 
 The design's `vocabularyIntroductions` says when each word is introduced: one `key-vocabulary` slide per entry, carrying that entry's words, placed after the last slide of the unit the entry names. Two entries on one unit keep the design's order. The timing is a teaching decision already made, so do not merge two entries onto one slide or split one entry across two.

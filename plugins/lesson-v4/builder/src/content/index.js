@@ -62,7 +62,7 @@ const { drawBarChart }       = require('./bar-chart');
 const { drawPictogram }      = require('./pictogram');
 const { drawBarModel }       = require('./bar-model');
 const { drawBlankSurface }   = require('./blank-surface');
-const { drawComparisonSlot } = require('./comparison-slot');
+const { drawComparisonSlot, measureComparisonSlot } = require('./comparison-slot');
 const { drawMethodFrame }    = require('./method-frame');
 const { drawLabelDiagram, measureLabelDiagram }   = require('./label-diagram');
 const { drawGridMap }        = require('./grid-map');
@@ -260,6 +260,7 @@ const TRANSPARENT = new Set(['stack', 'row']);
 // draw must not leave an empty white box behind).
 const MEASURE = {
   'place-value-chart': measurePlaceValueChart,
+  'comparison-slot': measureComparisonSlot,
   text: measureText,
   image: measureImage,
   // Fixed-aspect figures: the card hugs the contained picture, not the zone.
@@ -499,6 +500,24 @@ function measureContentExtent(zone, data, ctx) {
   return { h: drawn.h + 2 * pad };
 }
 
+
+// How much of its zone a whole COMPOSITION will actually use, layout containers
+// included.
+//
+// Deliberately separate from measureContentExtent above, which answers a
+// narrower question - "should this item's card hug its content?" - and whose
+// answer the card look and the stack reflow are both tuned against. Teaching
+// those callers about containers changes how existing slides hug: a fill text
+// beside a stack, for one, is meant to keep the whole zone precisely BECAUSE
+// its partner cannot be measured. A template asking how much of its zone a
+// composition will use wants the broader answer, and only the template wants it.
+function measureCompositionExtent(zone, data, ctx) {
+  if (!data || !data.type) return null;
+  if (data.type === 'stack') return require('./stack').measureStack(zone, data, ctx);
+  if (data.type === 'row') return require('./row').measureRow(zone, data, ctx);
+  return measureContentExtent(zone, data, ctx);
+}
+
 function drawFallback(slide, zone, label, ctx) {
   const PAD = 0.08;
   slide.addText(label || '[missing content]', {
@@ -511,4 +530,4 @@ function drawFallback(slide, zone, label, ctx) {
   });
 }
 
-module.exports = { drawContent, measureContentExtent, ZONE_COMPAT };
+module.exports = { drawContent, measureContentExtent, measureCompositionExtent, ZONE_COMPAT };

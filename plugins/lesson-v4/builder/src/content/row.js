@@ -228,4 +228,41 @@ function drawRow(pptx, slide, zone, data, ctx) {
   );
 }
 
-module.exports = { drawRow };
+
+// How much height this row actually wants, given the width it would get.
+//
+// A row is transparent to the card look and had no measure at all, which meant
+// a row inside a stack always kept its full weighted share however little its
+// contents used. On a Year 4 comparison slide that share was four and a half
+// inches holding two charts under two inches tall, and the difference sat on
+// the board as a band of nothing while the task above it printed small.
+//
+// A row is as tall as its tallest item. If ANY item cannot be measured, the row
+// says nothing rather than guessing: an unmeasured item is one that may well
+// use the whole zone, and a row that under-reports would hand away room its own
+// content needs.
+function measureRow(zone, data, ctx) {
+  const items = Array.isArray(data.items) ? data.items : [];
+  if (items.length === 0) return null;
+
+  const { measureCompositionExtent } = require('./index');
+  const totalGap = GAP * (items.length - 1);
+  const itemW = (zone.w - totalGap) / items.length;
+  if (!(itemW > 0)) return null;
+
+  let tallest = 0;
+  for (const item of items) {
+    const extent = measureCompositionExtent(
+      { x: zone.x, y: zone.y, w: itemW, h: zone.h,
+        class: zone.class, noCard: zone.noCard, compactCards: zone.compactCards },
+      item,
+      ctx
+    );
+    if (!extent) return null;
+    tallest = Math.max(tallest, extent.h);
+  }
+
+  return tallest > 0 ? { h: Math.min(tallest, zone.h) } : null;
+}
+
+module.exports = { drawRow, measureRow };
