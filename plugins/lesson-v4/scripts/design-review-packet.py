@@ -153,9 +153,26 @@ PREFERENCE_REVIEW_ROUTES = (
         "Read when vocabulary selection, definition, quantity or placement "
         "is in doubt.",
     ),
+    # The old trigger here was "read when a vocabulary image may not carry the
+    # intended meaning", which cannot fire on the failure that actually
+    # happens: every word set to none. Eleven consecutive decks shipped a
+    # text-only vocabulary slide and no review ever opened the section,
+    # because absence is not an image that might be wrong.
     (
         "A Picture Beside a Word",
-        "Read when a vocabulary image may not carry the intended meaning.",
+        "Read when any vocabulary word has no visual, and for each such word "
+        "name what a camera could be pointed at before accepting none; also "
+        "read when a vocabulary image may not carry the intended meaning.",
+    ),
+    (
+        "Lesson Designer visual-need boundary",
+        "Read when a teaching or task unit's own content names something "
+        "that exists in the world - an object, food, coin, building, place, "
+        "practice, event or person doing something - and that unit has no "
+        "photograph or representation attached. Count those units from the "
+        "view before judging any of them: a lesson with several is the shape "
+        "of the failure this section exists to catch, and a lesson whose "
+        "units genuinely name no such thing is right to have none.",
     ),
     (
         "Sticky Knowledge",

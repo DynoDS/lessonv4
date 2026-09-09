@@ -489,6 +489,8 @@ If filling the files exposes a conflict with the decisions record, stop and reso
 
 No later picture-contract authoring agent. For every required picture, settle exact teaching requirement, visible evidence, use, authenticity class, source profile, permitted fallback, generation controls when authorised, comparison-set invariants. Compiler derives routes, budgets, prompts, batches.
 
+**Settle WHICH pictures the lesson wants before any of that, and read `preferences.md` → Lesson Designer visual-need boundary here to do it.** Everything below decides how to specify a picture you have already chosen to ask for; nothing below decides whether to ask. Read the fields on this page alone and the implied test becomes "what evidence does a child have to inspect?", which is only one of the reasons a picture belongs in a lesson: the boundary section owns the other one, the thing the class looks at while you explain it. Walk your own units and ask of each what it names that exists in the world. A design that arrives here having settled its whole picture list from evidence alone has already made the decision this section cannot see, and an empty `photos` array is the result to check hardest - a lesson genuinely naming nothing photographable is rare outside maths.
+
 **Choosing the acquisition mode.** The question is never whether a real photograph would be nicer, because it always would. The question is whether a faithful generated photograph would *misteach*. Answer that and the mode follows.
 
 - `authentic-real` - a generated image would be a lie about a real thing: a named person, place, event, source, field or scientific observation. If you cannot write the `fallback_note` naming what the lie would be, this is not the mode.
