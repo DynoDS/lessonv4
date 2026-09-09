@@ -109,6 +109,18 @@ in it, because an unsourced non-essential picture is dropped silently.
 
 ---
 
+## Room is shared out by what things can use, not by counting them
+
+**The engine moves unused room to whatever will read better for having it, so compose by what each part is for and let the sizing settle itself.** A success-criteria panel gives a wrapping sticky line more height than a one-line step. A stack takes back what a hugging item does not use. A row narrows a helper that has stopped growing and widens the ones that have not. A template hands the task the height its diagram will not use, so a slide with a small figure prints its question larger rather than leaving a band of nothing under it.
+
+Two things follow for you.
+
+**Do not hand-tune a size to compensate for a layout that looks wrong.** A `fontSize` picked by eye to suit today's arrangement is a number that stops being right the moment anything beside it changes, and it silently opts that element out of every mechanism above. Compose the slide honestly and let the measured sizing do its work; where the result is still wrong, the fault is in the sizing and wants fixing there, for every lesson, rather than papered over in one spec.
+
+**When a slide does come out with a band of nothing on it, suspect room shared out by count.** That is the shape every one of these faults had: a panel splitting its height equally between lines of very different lengths, a container keeping a share it could not use because nothing had asked it what it wanted, a row giving equal widths to a wide chart and a small ring. Ask which part of the composition was given room on the basis of how many things there were rather than what those things can do with it, and fix it there. `references/build-review-log.md` carries the worked cases.
+
+---
+
 ## The readable floors
 
 Each visual helper has an empirically-tested minimum below which children stop being able to read it from across the room (the "Minimum useful size" notes in §4 of `templates.md` carry the full set). Multiply your item count by the helper's minimum on the zone's *short* axis: if it exceeds what the zone has, you have outgrown the template. Pick a template with a bigger zone, or split across slides — but **never reduce the count of helpers the lesson-designer specified to make geometry fit.** Content count is set upstream and stays whole.

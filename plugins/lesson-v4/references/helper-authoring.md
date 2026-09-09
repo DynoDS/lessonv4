@@ -125,6 +125,19 @@ The `angle` helper (`builder/src/content/angle.js` and `worksheet-html/src/helpe
 
 A flat colour fill behind the figure is the same waste in a different guise — keep the figure on a transparent (or no) background so nothing but the drawing claims space.
 
+## Say how much room you can use
+
+**The no-deadspace principle above is about the ink inside your own box. This one is about the box: a helper that cannot use all the room it is handed has to say so, or that room is lost to everybody.** Layout containers share space out by counting their children - three items in a row get three equal thirds - because before anything is measured, counting is all a container has to go on. That is fine while every child grows with the space. It stops being fine the moment one of them does not: the surplus sits on the board as a gap, and the siblings that would have read better for the extra room never see it. A comparison ring took a third of a row and drew at well under half of it, and the place-value charts either side printed their digits smaller to pay for a gap the ring never wanted.
+
+Two declarations, and a helper needs only the ones that are true of it:
+
+1. **A measure**, registered in `MEASURE` in `builder/src/content/index.js`, returning the box your figure actually draws in for a given zone. This is what lets a card hug your figure instead of the zone, and what lets a container report its own appetite upwards.
+2. **A maximum useful width**, registered in `MAX_USEFUL_WIDTH` in the same file, when your helper stops growing at some size. Return the widest box your figure can ever fill; the row narrows you to it and gives the rest to the items that keep taking whatever they are given. `comparison-slot` is the worked reference.
+
+**Declare a cap only where the helper genuinely refuses more width.** Returning `null` means "I will use whatever you give me", which is the honest answer for most helpers and the safe default: a wrong cap is worse than no cap, because it shrinks a figure that wanted the room and nothing downstream can tell that it did. If your helper grows with width up to a point and then stops, the cap is that point, not the size you happened to like on the lesson you built it with.
+
+---
+
 ---
 
 ## Lay the drawing out from its own content
