@@ -27,12 +27,32 @@ same file. A downstream worker starts only after its authoritative input has
 passed its deterministic check.
 
 Retry once only for an infrastructure failure: a launch that never starts, a
-terminated tool session, or a worker that stalls without writing usable output.
+terminated tool session, or a worker that has genuinely stopped working.
 Use a fresh clean-context worker with the same saved inputs. Do not retry a
 completed semantic result merely because it is inconvenient. Use the explicit
 redesign or focused-repair route instead. After the one infrastructure retry,
 preserve clean outputs from unrelated branches and report the affected output
 as incomplete.
+
+**Judge a worker by its whole working directory, never by its owned outputs.**
+Several roles write their owned file exactly once, at the end, after their
+checks pass: the Slide Designer builds its candidate in
+`lesson.json.tmp.[ATTEMPT_ID]` and only then replaces `lesson.json`. An
+untouched owned output is therefore what a healthy run looks like for most of
+its length, and watching one tells you nothing until the moment it tells you
+everything. A worker is making progress when anything in `[WORKING_DIR]` has
+changed recently, including a temporary or attempt-suffixed file; it has
+stopped when nothing there has moved and the host reports no activity. Kill a
+long worker only on that second reading. A real run lost its deck three times
+over because each attempt was judged dead while it was iterating on a
+13-slide candidate the orchestrator never looked at, and reported a phantom
+infrastructure fault instead of the one-line layout diagnostic that was
+actually blocking it.
+
+That evidence rule is not confined to workers. Read the newest artefact a stage
+actually produced before declaring the stage failed: a run once shipped a deck
+UNVERIFIED because a reviewer read a stale route file and stopped, with a
+current page manifest sitting beside it.
 
 Canonical validated files are the checkpoints. On an interrupted run, resume
 from the latest checkpoint whose validator still passes and whose upstream

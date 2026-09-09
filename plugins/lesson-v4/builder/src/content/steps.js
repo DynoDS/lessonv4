@@ -74,6 +74,41 @@ function largestStepFont(text, widthIn, heightIn) {
   return null;
 }
 
+// An item that opens with ✨ is a sticky-knowledge REFERENCE, not a how-to step:
+// it carries the rule the steps enact, so it must read as a distinct reminder
+// rather than wear a number badge that makes it look like the next thing to do.
+// Only the genuine steps are numbered, and the count skips the reference so the
+// steps stay 1..N.
+function isReferenceStep(step) {
+  return /^\s*✨/.test(normaliseStep(step).text);
+}
+
+// A refusal names the item the way the panel prints it.
+//
+// The steps are numbered 1..N and a reference carries a star where a number
+// would be, so reporting "step 6" on a panel that visibly numbers five steps
+// sends the reader hunting for a step that does not exist. The two also have
+// different owners: a too-long step is wording the designer may tighten, while
+// a too-long reference is a sticky fact from the lesson design that nobody
+// downstream may reword. Saying which one refused is what points the repair at
+// the person who can actually make it.
+function overloadMessage(steps, index) {
+  const reference = isReferenceStep(steps[index]);
+  const stepNumber = steps
+    .slice(0, index + 1)
+    .filter((s) => !isReferenceStep(s)).length;
+
+  return reference
+    ? `STEP_TEXT_OVERLOAD: the sticky-knowledge reference line does not fit its ` +
+        `card at the ${TEXT_FONT_MIN}pt readable minimum. Its wording is ` +
+        `source-authored and is not yours to shorten: carry the fact in its own ` +
+        `on-slide treatment, or give the zone more room. Nothing was shrunk ` +
+        `further or cut.`
+    : `STEP_TEXT_OVERLOAD: step ${stepNumber} does not fit its card at the ` +
+        `${TEXT_FONT_MIN}pt readable minimum. Shorten the step or give the ` +
+        `zone more room; nothing was shrunk further or cut.`;
+}
+
 function drawSteps(pptx, slide, zone, data, ctx) {
   const steps = Array.isArray(data.steps) ? data.steps : [];
   if (steps.length === 0) return;
@@ -138,25 +173,89 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const rowGapForFit = zone.itemCards
     ? Math.min((zone.compactCards ? CARD_COMPACT : CARD).itemGap, rowH * 0.18)
     : 0;
-  const fitHeights = rowH - rowGapForFit;
 
-  const perStepFont = steps.map((s) =>
-    largestStepFont(textOf(s), Math.max(0.3, stepTextW), Math.max(0.1, fitHeights))
+  // The height each item genuinely needs at the readable floor.
+  //
+  // Equal rows are the right default: cards of matching height are what make a
+  // list read as one set. But an equal share is room measured by COUNT, not by
+  // content, and the two part company as soon as one item is a different kind
+  // of thing. A sticky-knowledge reference is a whole sentence where a step is
+  // a short imperative, so on a five-step panel it wraps to three lines and
+  // starves inside the same row that leaves each one-line step half its height
+  // as unused air. That is the shape that used to refuse the build outright,
+  // with every step on the slide sitting in room it did not need.
+  const textNeed = steps.map((s) =>
+    wrappedLineCount(textOf(s), Math.max(0.3, stepTextW), TEXT_FONT_MIN)
+      * (TEXT_FONT_MIN / 72) * 1.28
+  );
+
+  // Equal rows stay exactly equal whenever equal rows work, so every panel that
+  // fits today keeps the layout it already has. Only when an item cannot hold
+  // its equal share does the surplus move from the items sitting in spare room
+  // to the one that is short of it.
+  const equalShareFits = textNeed.every((need) => need <= rowH - rowGapForFit);
+  let rowHeights;
+
+  if (equalShareFits) {
+    rowHeights = steps.map(function () { return rowH; });
+  } else {
+    // A reference takes the height its sentence genuinely needs at the readable
+    // floor, and the numbered steps stay one set sharing what is left equally.
+    //
+    // Sizing every item by its own need instead would be truer to the text and
+    // worse on the board: one step that happens to wrap draws a taller card
+    // than its neighbours, and a list of five instructions stops reading as a
+    // list. The steps are the set the eye reads down, so they keep matching
+    // heights; the reference already sits apart, under its own star and colour,
+    // and is the one item that can take a different height without breaking
+    // anything.
+    const referenceHeights = steps.map((s, i) =>
+      isReferenceStep(s) ? textNeed[i] + rowGapForFit : 0
+    );
+    const referenceTotal = referenceHeights.reduce((total, h) => total + h, 0);
+    const stepCount = steps.filter((s) => !isReferenceStep(s)).length;
+    const stepShare = stepCount ? (innerH - referenceTotal) / stepCount : 0;
+
+    if (referenceTotal > innerH || (stepCount && stepShare <= rowGapForFit)) {
+      // Even at the readable floor the items together want more height than the
+      // zone has. Not printed unreadably small, and not trimmed: either the
+      // words or the room has to change, and both are decisions above this
+      // renderer.
+      throw new Error(
+        overloadMessage(steps, textNeed.indexOf(Math.max(...textNeed)))
+      );
+    }
+
+    rowHeights = steps.map((s, i) =>
+      isReferenceStep(s) ? referenceHeights[i] : stepShare
+    );
+  }
+
+  const rowTops = rowHeights.reduce(function (tops, h, i) {
+    tops.push(i === 0 ? innerY : tops[i - 1] + rowHeights[i - 1]);
+    return tops;
+  }, []);
+  const fitHeights = rowHeights.map((h) => h - rowGapForFit);
+
+  const perStepFont = steps.map((s, i) =>
+    largestStepFont(textOf(s), Math.max(0.3, stepTextW), Math.max(0.1, fitHeights[i]))
   );
 
   const overloadedAt = perStepFont.indexOf(null);
   if (overloadedAt !== -1) {
-    // Not printed unreadably small, and not trimmed. Either the words or the
-    // room has to change, and both of those are decisions above this renderer.
-    throw new Error(
-      `STEP_TEXT_OVERLOAD: step ${overloadedAt + 1} does not fit its card at the ` +
-        `${TEXT_FONT_MIN}pt readable minimum. Shorten the step or give the ` +
-        `zone more room; nothing was shrunk further or cut.`
-    );
+    throw new Error(overloadMessage(steps, overloadedAt));
   }
 
-  const sharedFont = Math.min(...perStepFont);
-  const coherentFont = perStepFont.map(function () { return sharedFont; });
+  // The numbered steps share one size, because they are the set the eye reads
+  // down. A reference line is already marked out as a different kind of thing,
+  // by its own colour and a star where a number would be, so it takes its own
+  // largest fit instead of dragging every step down to the size a full sentence
+  // can manage.
+  const stepOnlyFonts = perStepFont.filter((f, i) => !isReferenceStep(steps[i]));
+  const sharedFont = Math.min(...(stepOnlyFonts.length ? stepOnlyFonts : perStepFont));
+  const coherentFont = perStepFont.map(function (font, i) {
+    return isReferenceStep(steps[i]) ? font : sharedFont;
+  });
   const stepTextGroup = fitGroupId(zone, 'step-text');
 
   const fontForStep = (i, availableW) => {
@@ -165,27 +264,17 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     const fits = largestStepFont(
       textOf(steps[i]),
       Math.max(0.3, availableW),
-      Math.max(0.1, fitHeights)
+      Math.max(0.1, fitHeights[i])
     );
 
     if (fits === null) {
-      throw new Error(
-        `STEP_TEXT_OVERLOAD: step ${i + 1} does not fit its card at the ` +
-          `${TEXT_FONT_MIN}pt readable minimum. Shorten the step or give the ` +
-          `zone more room; nothing was shrunk further or cut.`
-      );
+      throw new Error(overloadMessage(steps, i));
     }
 
     return Math.min(coherentFont[i], fits);
   };
 
-  // An item that opens with ✨ is a sticky-knowledge REFERENCE, not a how-to step:
-  // it carries the rule the steps enact, so it must read as a distinct reminder
-  // rather than wear a number badge that makes it look like the next thing to do.
-  // The drawn star from the signal set marks it (in the badge column, where a
-  // number would sit); only the genuine steps are numbered, and the count skips
-  // the reference so the steps stay 1..N.
-  const isReference = function (step) { return /^\s*✨/.test(normaliseStep(step).text); };
+  const isReference = isReferenceStep;
 
   // The card look's per-row form (zone.itemCards, set by drawContent): each
   // step rides its own white rounded card, the way the reference redesigns
@@ -195,13 +284,13 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const itemCards = !!zone.itemCards;
   const P         = zone.compactCards ? CARD_COMPACT : CARD;
   const rowGap    = itemCards ? Math.min(P.itemGap, rowH * 0.18) : 0;
-  const cardH     = rowH - rowGap;
   const cardPad   = itemCards ? P.pad : 0;
 
   let stepNum = 0;
   steps.forEach(function (rawStep, i) {
     const step = normaliseStep(rawStep);
-    const rowY   = innerY + i * rowH;
+    const rowY   = rowTops[i];
+    const cardH  = rowHeights[i] - rowGap;
     const badgeY = rowY + (cardH - badgeW) / 2;
     const rowX   = cardX + cardPad;
     const rowW   = cardW - 2 * cardPad;
