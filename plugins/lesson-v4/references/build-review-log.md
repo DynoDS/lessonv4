@@ -1,5 +1,23 @@
 # Build review log
 
+## 2026-09-09 Needed is not tidy, and a final task's moves are practised first (4.2.124)
+
+The same headteacher reviewed the rerun built on 4.2.123 (design only; Daniel stopped the run before the plugin's own reviewer ran, so this is a review of an unreviewed design). Verdict: "stronger structurally ... the final task now draws on the RE content", and "not an improvement in every respect". Daniel's instruction on the repair: "it's not to just fix this lesson, it's to fix all future lessons."
+
+Two ways the 4.2.122 rule over-fired when followed hard, and both are now bounded beside the rule that produced them:
+
+**The examples were sharpened into a sort.** To make the final task visibly need the teaching, the designer contrasted Christians (Jesus) with everyone else (family, the tune), one meaning per person. That makes the dependency obvious and teaches a false rule, and the first version's line that one person can value both was lost. The existing designer rule "a contrast that teaches a category changes one thing only" is right for categories and is exactly what produces the sort when the learning is that one thing carries more than one meaning or cannot be read from another. `preferences.md` → What a Lesson Is For gains **Needed is not tidy**; the designer's misconception section gains the limit beside the contrast rule (one case holds both, and the retest asks the inference the wrong rule gets wrong, not a comparison of two stated meanings); the reviewer checks for a sort and for the retest's shape; the RE file drops like-or-unlike as a two-way choice.
+
+**The final task gained a move nobody practised.** The writing ended with a comparison; the star beat's `unlocks` claimed to feed it, and producing two meanings is not comparing your own with someone else's. A prepared model paragraph showed the product and did not have the class make the move. `preferences.md` gains **Read the final task backwards as moves, not facts**; the `unlocks` guidance in the designer and the field contract gain the proof test (could a child who did this beat now do that step without being shown a further move); the content-based route asks for a supported attempt at a new move as the last Do before Practise; the reviewer reads the final task as moves.
+
+The Ava worksheet prompt was pre-authorised for removal because "the last section asks a version of the same question", the same slip in miniature; the designer's fit-priority rule and the field contract now refuse that ground.
+
+Also from the review, carried into the files that own them because they are general rather than this lesson's: the RE subject file now says a festival's date marks a commemoration, not a known date, that a belief names who or what and not merely that an event happened, and that belief is defined for children as something a person accepts as true; and that the protective choices (school, friends or home; little or mixed meaning; a spoken answer) live in the words children hear, not a teacher flag. The voice guide's model-answer section names the clever likeness a comparison model must not reach for.
+
+Not repaired here and worth noting: nothing carries a previous run's strengths forward on a rerun of the same lesson, so the second design dropped care the first had. Each run is a fresh roll.
+
+Fourteen new tests. Full run: 1389 pass, the same four pre-existing failures.
+
 ## 2026-09-09 The thought is written before the activity is chosen (4.2.123)
 
 Follow-on from 4.2.122, from a conversation with Daniel about what learning is as opposed to doing. He rejected an ending-check framing outright ("The slides are not tests. The slides are learning.") and then put the rule in his own words: when the plugin plans a bit of a lesson it should ask three things in this order. What do I want the kids to get out of this bit? What do they need to be thinking about, to get that? What activity makes them think about it? "Right now it starts at number 3."

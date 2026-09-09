@@ -153,6 +153,10 @@ The same test sits inside every response moment. A child answering because they 
 
 The limit: this does not chain every slide to the next or test every fact. Vocabulary, a routine, a safeguarding note and setup sit beside the spine, and a brief piece of interesting subject knowledge can earn its minute without becoming an assessed outcome. What it rules out is learning the lesson claims as its own, in its sticky knowledge or its opening decision sentence, that nothing later needs.
 
+**Needed is not tidy.** The quickest way to make a final task visibly need the teaching is to sharpen every example into a clean contrast: Christians sing the carol for Jesus, everyone else for family. That makes the dependency obvious on the page and teaches a sort that is false, because the same person can hold the belief and love the singing, and the lesson's own point was that you cannot read one from the other. A rerun of a Year 4 RE lesson fixed its spine this way and lost the line its first version had, that one person can value both. So when the idea being taught is that one thing carries more than one meaning, or that one thing cannot be read from another, the set of examples includes a case that holds both, and the lesson says so out loud. The learning has to be needed by the task; it does not have to be made binary to be needed.
+
+**Read the final task backwards as moves, not facts.** Each step of the final task that is a move (compare, explain a difference, justify a choice, weigh two reasons) names the beat where children first made that move with support, on the lesson's own material. A fact well taught does not prepare a move never made: producing two meanings for a star prepares producing meanings, and it does not prepare comparing your own meaning with someone else's. A move whose first performance is the final task is a stage the lesson is missing, and a prepared model paragraph is the product shown, not the move practised. The same RE rerun added a comparison to its writing and never had the class compare anything before it; a well-taught fact was carrying a step it could not carry.
+
 ---
 
 ## The Teach → Do → Teach → Do Rhythm

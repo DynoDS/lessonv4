@@ -440,7 +440,8 @@ Avoid:
 - excessive polish;
 - formal connective chains such as `Firstly... Furthermore... Finally...` unless genuinely appropriate;
 - mechanically balanced sentences;
-- unnecessary first-person hedging such as `I think` when answering a known-content question.
+- unnecessary first-person hedging such as `I think` when answering a known-content question;
+- a clever likeness in a comparison model that the taught facts cannot support: `but we're both waiting for someone to come` is an analogy the child would have to unpack, and `we both save the whole year up` asserts something about Christians the lesson never taught. A model comparison states a plain difference or likeness the lesson gave the child the means to state, because what it teaches is `what am I comparing, and what supports it`, not `how do I find a neat connection`.
 
 Good:
 > The Romans wanted to invade Britain for several reasons. Britain had useful resources, including metals and farmland. The Romans also wanted to make their empire bigger. Claudius wanted a successful invasion because it would make him look like a strong and powerful leader.

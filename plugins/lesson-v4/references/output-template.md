@@ -417,7 +417,7 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
 
 `conceptRef` is required for Skill-based `my-turn`, `our-turn` and `your-turn`; otherwise use `null`.
 
-`unlocks` is one short line naming what children can now do, notice, hold or have produced that a later part of this lesson needs, written as the thing gained rather than the activity done: `They can tell an opaque material from a see-through one, which the shadow explanation needs`, not `They sorted six materials`. It is at most 200 characters, because it is a link and not a summary. This is the field that makes the lesson's spine visible, so write each one by looking forward: name the later beat it feeds, and if you cannot find one, that is the finding rather than a reason to write something vague.
+`unlocks` is one short line naming what children can now do, notice, hold or have produced that a later part of this lesson needs, written as the thing gained rather than the activity done: `They can tell an opaque material from a see-through one, which the shadow explanation needs`, not `They sorted six materials`. It is at most 200 characters, because it is a link and not a summary. This is the field that makes the lesson's spine visible, so write each one by looking forward: name the later beat it feeds, and if you cannot find one, that is the finding rather than a reason to write something vague. When the beat it feeds is the final task, name the move the final task makes with what this beat gave, and check it is the move this beat had children make: a child who did this beat can now do that step without being shown a further move, or the line is not true.
 
 Use `null` when the beat genuinely sits beside the spine rather than on it: a vocabulary introduction moment, a routine, a safeguarding note, setup, or the lesson's final performance with nothing after it. `null` is a real answer and a beat is never given a manufactured artefact so a later one has something to name. At least one teaching-sequence unit must be non-null; a sequence where every beat unlocks nothing has no dependency in it, and the validator refuses that.
 
@@ -808,7 +808,7 @@ A `shared-frame` must be `generated`, must use `required-task-resource`, must us
 
 `fitPriority.protected` lists content or relationships that must survive fitting.
 
-`fitPriority.preAuthorisedRemoval` lists only lower-priority items the lesson-designer explicitly authorises the worksheet-designer to remove first. Use `[]` when nothing may be removed.
+`fitPriority.preAuthorisedRemoval` lists only lower-priority items the lesson-designer explicitly authorises the worksheet-designer to remove first. Use `[]` when nothing may be removed. A misconception's retest, or the sheet's one use of a sticky fact, is never listed here on the ground that another section "asks a version of the same question"; the designer's own rule on that is in its worksheet section.
 
 When the two-page central-write-on-visual exception is earned:
 
