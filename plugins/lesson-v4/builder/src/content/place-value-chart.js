@@ -112,6 +112,8 @@ const HEADER_CELL_INSET = 0.08; // the cell margin and border either side of a
                                // heading, inches
 const CELL_FONT_SIZE   = 18;
 const LABEL_FONT_SIZE  = 14;
+const LABEL_FONT_MIN   = 10;   // a row label below this is furniture, not a
+                               // numeral a child reads from the carpet
 const COUNTER_ROW_H    = 1.20; // inches at scale 1
 const COUNTER_PAD      = 0.08; // inches at scale 1
 const COUNTER_LINE     = '4A4A4A';
@@ -298,6 +300,58 @@ function headingsFor(columns, colW, startPt) {
 
   const short = columns.map(canonicalColumn);
   return { labels: short, font: fitHeadingFont(short, colW, startPt) };
+}
+
+// The largest scale at which this chart's DIGITS still fit the columns it
+// actually has, and the height it was actually given.
+//
+// The old bound priced the chart against a fixed 0.45in reference column: a
+// proxy for "type must not grow wider than its cells", which is the right
+// worry and the wrong measurement. On a many-column chart squeezed into a
+// narrow rail the proxy lands about right. On a four-column chart in a 2.6in
+// zone it is far too cautious: a Year 4 comparison deck drew 18pt digits in
+// 0.44in columns that could carry three times that, and every chart on it used
+// under half the height its template had deliberately set aside. The zone was
+// generous and the chart would not take it.
+//
+// So measure the widest thing a cell must actually print, with the same glyph
+// table the rest of the builder measures with, and let the zone's height be the
+// other bound. A chart in a tall zone now grows into it.
+function digitScaleLimit(dataRows, regColW) {
+  const widest = dataRows.reduce(function (m, row) {
+    return row.cells.reduce(function (n, cell) {
+      return Math.max(n, textWidthEm(String(cell == null ? '' : cell), true));
+    }, m);
+  }, 0);
+
+  if (widest <= 0) return Infinity;
+
+  const usable = Math.max(0.2, regColW - HEADER_CELL_INSET);
+  return ((usable * 72) / widest) / CELL_FONT_SIZE;
+}
+
+// The row label gets its own fit rather than riding the chart's scale.
+//
+// A label is a whole numeral ("3,406") in a column priced at 1.55 digits, so
+// it is always the widest text in the chart by some way. Letting it set the
+// chart's scale meant the longest label decided how big the DIGITS were, and
+// on the comparison deck above a five-character label pinned an otherwise
+// roomy chart to almost exactly its natural size. The headings already solve
+// this by fitting themselves to their column; the label now does the same, and
+// stops at a floor because a label nobody can read from the carpet is not a
+// label.
+function labelFontFor(dataRows, labelColW, startPt) {
+  const widest = dataRows.reduce(function (m, row) {
+    return Math.max(m, textWidthEm(String(row.label || ''), true));
+  }, 0);
+
+  if (widest <= 0) return startPt;
+
+  const usable = Math.max(0.2, labelColW - HEADER_CELL_INSET);
+  return Math.max(
+    LABEL_FONT_MIN,
+    Math.min(startPt, Math.floor((usable * 72) / widest))
+  );
 }
 
 // A column named in a highlight or an exchange cue is matched through the same
@@ -940,11 +994,11 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
   // whatever room the template deliberately gave it. Three charts on a
   // modelling slide therefore occupied a thin strip and were unreadable from
   // the carpet. Scale type and rows together, bounded both by the zone's height
-  // and by the width of an ordinary digit column so a many-column chart does
-  // not acquire type wider than its cells.
+  // and by what the digits genuinely need across a column, so a many-column
+  // chart does not acquire type wider than its cells.
   const scale = Math.max(
     0.65,
-    Math.min(1.7, innerH / naturalH, regColW / 0.45)
+    Math.min(1.7, innerH / naturalH, digitScaleLimit(dataRows, regColW))
   );
   const headerH  = HEADER_H * scale;
   const usedH    = naturalH * scale;
@@ -1042,7 +1096,9 @@ function drawPlaceValueChart(pptx, slide, zone, data) {
   const heading = headingsFor(columns, regColW, Math.round(HEADER_FONT_SIZE * scale));
   const headerFont = heading.font;
   const cellFont = Math.round(CELL_FONT_SIZE * scale);
-  const labelFont = Math.round(LABEL_FONT_SIZE * scale);
+  const labelFont = hasLabels
+    ? labelFontFor(dataRows, colWs[0], Math.round(LABEL_FONT_SIZE * scale))
+    : Math.round(LABEL_FONT_SIZE * scale);
 
   const headerRow = heading.labels.map(function (label) {
     const colColors = COLUMN_COLOURS[canonicalColumn(label)];
@@ -1199,7 +1255,7 @@ function measurePlaceValueChart(zone, data) {
     + (NATURAL_ROW_H + (hasCounters ? COUNTER_ROW_H : 0)) * dataRows.length;
   const scale = Math.max(
     0.65,
-    Math.min(1.7, innerH / naturalH, regColW / 0.45)
+    Math.min(1.7, innerH / naturalH, digitScaleLimit(dataRows, regColW))
   );
   const usedH  = naturalH * scale;
   const startY = headerOnly ? innerY : innerY + (innerH - usedH) / 2;

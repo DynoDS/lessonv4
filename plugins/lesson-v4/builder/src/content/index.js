@@ -62,6 +62,7 @@ const { drawBarChart }       = require('./bar-chart');
 const { drawPictogram }      = require('./pictogram');
 const { drawBarModel }       = require('./bar-model');
 const { drawBlankSurface }   = require('./blank-surface');
+const { drawComparisonSlot } = require('./comparison-slot');
 const { drawMethodFrame }    = require('./method-frame');
 const { drawLabelDiagram, measureLabelDiagram }   = require('./label-diagram');
 const { drawGridMap }        = require('./grid-map');
@@ -151,6 +152,7 @@ const ZONE_COMPAT = {
   pictogram:           ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
   'bar-model':         ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'blank-surface':     ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
+  'comparison-slot':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'method-frame':      ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'label-diagram':     ['A', 'B', 'C', 'D', 'E-wide', 'G'],
   'grid-map':          ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
@@ -220,6 +222,7 @@ const HELPERS = {
   pictogram:           drawPictogram,
   'bar-model':         drawBarModel,
   'blank-surface':     drawBlankSurface,
+  'comparison-slot':   drawComparisonSlot,
   'method-frame':      drawMethodFrame,
   'label-diagram':     drawLabelDiagram,
   'grid-map':          drawGridMap,
@@ -234,7 +237,7 @@ const HELPERS = {
 const OWN_SURFACE = new Set([
   'sc-panel', 'callout', 'question-cards', 'numbered-questions', 'chip-bank',
   'sort-board', 'evidence-cards',
-  'method-frame', 'vocab', 'money', 'blank-surface'
+  'method-frame', 'vocab', 'money', 'blank-surface', 'comparison-slot'
 ]);
 
 // List-shaped content whose card look is per item (one card per row), drawn

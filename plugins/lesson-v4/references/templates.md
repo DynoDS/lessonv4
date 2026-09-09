@@ -57,6 +57,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `bar-model` | A general bar model. `shape: "part-whole"` is one long rectangle (the whole) divided into 2+ labelled parts; `shape: "comparison"` is two stacked bars of different lengths with the shorter bar's shortfall shown as a labelled difference gap. Segment lengths go proportional to part/bar `value`s when given, even otherwise. Any region whose label is empty or ends in `?` becomes a white answer box. Use for money (change, totals), comparison ("how much more?") and multi-step reasoning — the White Rose bar children meet from Year 4. Distinct from `part-whole-model` (circles) and `triangle-square` (SATs puzzle) |
 | `method-frame` | A taught mental strategy printed as a fill-in method: an ordered list of labelled lines (the strategy's own words - "First, add:", "Then, adjust:") inside a green "method" panel, each line a stem in which `___` or `□` becomes a write-in box available for live completion during modelling. Caller sets how many blanks each line carries, so the same frame is shown fully worked, with one blank, or all blank - fade it across a set. The board twin of the worksheet's `method-frame`; for a SINGLE-LINE equation frame use a worksheet `inequality-with-boxes` instead |
 | `blank-surface` | A DRAW-YOUR-OWN working surface the child constructs on, not a pre-drawn fill-in. `surface: "number-line"` is a single faint baseline with a tall empty band above for the child's own jumps (no ticks, no numbers; optional `start`/`end` labels at the ends); `surface: "bar"` is one empty rectangle outline to partition (`bars: 2` for a comparison pair). Use when deciding WHERE the jump goes or HOW to partition is the skill. The slide's blank surface shows the class the surface they will draw their own version of. Distinct from `numberline`/`bar-model` (which draw the finished picture with blanks) |
+| `comparison-slot` | The empty ring a child writes `<`, `>` or `=` into, for the gap between two things being compared. Sized from the room it is given, so it stays in proportion to the charts, bars or numerals either side instead of being pinned to a point size that stops matching them the moment anything beside it changes. Optional `answer` prints the symbol inside the same ring for a reveal. Use this rather than typing a `○` into a text item: a typed circle is text, so it takes a text card and a fixed size, and lines up with nothing |
 | `numbered-questions` | Stacked question cards with auto blue `(1) (2) (3)` labels, for Apply / independent work |
 | `question-cards` | The same question set laid out as separate white cards instead of a list: one card per question, a blue number badge on each card's corner, each card at a degree or two of tilt. The cards pack across the zone and the type grows until the set fills the space. A second way to present a question set, not a replacement; see the entry in §4 for which of the two a set belongs in |
 | `pyramid` | Ranking pyramid: rows of cells stacked from a single cell at the top to wider rows beneath. Used in dialogic lessons for ranking activities (e.g. influences from most to least important) |
@@ -2297,6 +2298,22 @@ A general **bar model** — the White Rose / Singapore picture behind money, com
 
 **The unknown is any region whose label is empty or ends in `?`:** it draws white with a blue dashed outline (the child's write-in space), where a known region draws pale-house-blue with a solid outline. So `"change ?"` and `"Left ?"` become answer boxes that still show their text, `{ "label": "?" }` is a bare write-in box, and an empty `{}` part is a blank box. On a My Turn slide use real labels; on a Your Turn slide leave the unknown empty/`?`. **`wholeLabelPosition`** (part-whole): `"above"` (default) or `"side"`. Omit the `whole` key for no bracket. Give it a roughly wide zone — a bar model is much wider than it is tall.
 
+### `comparison-slot`
+
+The **empty ring a child writes `<`, `>` or `=` into** - the gap between two things being compared. Zone class: A, B, C, D, E-wide, E-narrow, G.
+
+It sizes itself from the room it is given, so it stays in proportion to the charts, bars or numerals either side. Reach for it rather than typing a `○` into a `text` item: a typed circle is text, so it carries a text card and a fixed point size, and the moment anything beside it changes size the ring stops matching. On one Year 4 deck the charts either side grew and a hand-picked 44pt ring became a dot floating in a tall white box.
+
+```json
+{ "type": "comparison-slot" }
+```
+
+Add `answer` to print the symbol inside the same ring for a reveal, so the answer slide reads as the question slide with one thing added rather than a different picture.
+
+```json
+{ "type": "comparison-slot", "answer": "<" }
+```
+
 ### `blank-surface`
 
 A **draw-your-own working surface** - the child constructs the representation rather than filling a pre-drawn one. Use it when *deciding* the representation is the skill: where the jump on a number line goes, or how to partition a bar. The slide's job is to show the bare surface itself, so the class sees exactly the surface they will draw their own version of. It draws only the bare surface and nothing else; for a finished picture with blanks to fill, use `numberline` or `bar-model` instead.
@@ -2643,6 +2660,7 @@ Which content types fit which zone class.
 | `part-whole-model`  | ✓ | ✓ | ✓ |   | ✓ | ✓ |   |   |
 | `bar-model`         | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `blank-surface`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
+| `comparison-slot`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `method-frame`      | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `money`             | ✓ | ✓ | ✓ |   | ✓ | ✓ |   | ✓ |
 | `numbered-questions`| ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |

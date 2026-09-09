@@ -114,3 +114,58 @@ test('verify-geometry stays quiet over an ordinary deck', async () => {
   assert.deepEqual(result.faults, []);
   assert.ok(result.coordinates > 0, 'the check must actually have read coordinates');
 });
+
+// ─── A chart grows into the height its template gave it ───────────────
+//
+// The Compare 4-digit numbers deck drew every chart at exactly 1.07in whether
+// its zone offered 1.41in, 2.17in or 2.66in: the scale was bounded by a fixed
+// 0.45in reference column rather than by what the digits actually needed, so a
+// four-column chart in a roomy zone printed 18pt digits inside 0.44in columns
+// that could carry three times that, and used under half its height.
+
+const { measurePlaceValueChart } = require('../src/content/place-value-chart');
+
+const ONE_ROW = {
+  columns: ['Th', 'H', 'T', 'O'],
+  rows: [{ label: '3,406', cells: ['3', '4', '0', '6'] }],
+};
+
+test('a chart takes the height it is given rather than a fixed size', () => {
+  const short = measurePlaceValueChart({ x: 0, y: 0, w: 2.6, h: 1.41 }, ONE_ROW);
+  const tall  = measurePlaceValueChart({ x: 0, y: 0, w: 2.6, h: 2.17 }, ONE_ROW);
+
+  assert.ok(tall.h > short.h, 'the taller zone drew the same size as the short one');
+  assert.ok(
+    tall.h / 2.17 > 0.7,
+    `a chart in a 2.17in zone used only ${(tall.h / 2.17 * 100).toFixed(0)}% of it`
+  );
+});
+
+test('a long row label no longer decides how big the digits are', () => {
+  // The label is a whole numeral in a column priced at 1.55 digits, so it is
+  // always the widest text in the chart. It fits itself to its own column now,
+  // instead of pinning the whole chart to the size its longest label allows.
+  const shortLabel = measurePlaceValueChart(
+    { x: 0, y: 0, w: 2.6, h: 2.17 },
+    { columns: ['Th', 'H', 'T', 'O'], rows: [{ label: '1', cells: ['3', '4', '0', '6'] }] }
+  );
+  const longLabel = measurePlaceValueChart({ x: 0, y: 0, w: 2.6, h: 2.17 }, ONE_ROW);
+
+  assert.equal(
+    longLabel.h.toFixed(3),
+    shortLabel.h.toFixed(3),
+    'the row label still changed the size of the chart'
+  );
+});
+
+test('a narrow chart is still held back by its own columns', () => {
+  // The width bound is the part that was right: digits must not grow wider
+  // than the cells holding them. A many-column chart in a narrow rail must
+  // still refuse to inflate just because the zone is tall.
+  const narrow = measurePlaceValueChart(
+    { x: 0, y: 0, w: 1.6, h: 3.0 },
+    { columns: ['Th', 'H', 'T', 'O'], rows: [{ label: '3,406', cells: ['3', '4', '0', '6'] }] }
+  );
+
+  assert.ok(narrow.h < 3.0 * 0.75, 'a narrow chart inflated to fill a tall zone');
+});
