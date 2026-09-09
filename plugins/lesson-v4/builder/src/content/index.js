@@ -62,7 +62,7 @@ const { drawBarChart }       = require('./bar-chart');
 const { drawPictogram }      = require('./pictogram');
 const { drawBarModel }       = require('./bar-model');
 const { drawBlankSurface }   = require('./blank-surface');
-const { drawComparisonSlot, measureComparisonSlot } = require('./comparison-slot');
+const { drawComparisonSlot, measureComparisonSlot, maxUsefulWidthComparisonSlot } = require('./comparison-slot');
 const { drawMethodFrame }    = require('./method-frame');
 const { drawLabelDiagram, measureLabelDiagram }   = require('./label-diagram');
 const { drawGridMap }        = require('./grid-map');
@@ -511,6 +511,28 @@ function measureContentExtent(zone, data, ctx) {
 // beside a stack, for one, is meant to keep the whole zone precisely BECAUSE
 // its partner cannot be measured. A template asking how much of its zone a
 // composition will use wants the broader answer, and only the template wants it.
+
+// The widest a piece of content can usefully be, or null when it will use
+// whatever width it is given.
+//
+// A row shares its width out by counting items, which is the same "room by
+// count, not by content" that left charts half the size of their zone. Most
+// helpers genuinely grow with width and should keep taking it; the ones that
+// stop at a size declare where, and a row can then move the difference to the
+// items that will use it. Declare a cap only where the helper truly refuses
+// more width - a wrong cap here shrinks content that wanted the room.
+const MAX_USEFUL_WIDTH = {
+  'comparison-slot': maxUsefulWidthComparisonSlot
+};
+
+function maxUsefulWidth(item) {
+  if (!item || !item.type) return null;
+  const cap = MAX_USEFUL_WIDTH[item.type];
+  if (!cap) return null;
+  const w = cap(item);
+  return Number.isFinite(w) && w > 0 ? w : null;
+}
+
 function measureCompositionExtent(zone, data, ctx) {
   if (!data || !data.type) return null;
   if (data.type === 'stack') return require('./stack').measureStack(zone, data, ctx);
@@ -530,4 +552,4 @@ function drawFallback(slide, zone, label, ctx) {
   });
 }
 
-module.exports = { drawContent, measureContentExtent, measureCompositionExtent, ZONE_COMPAT };
+module.exports = { drawContent, measureContentExtent, measureCompositionExtent, maxUsefulWidth, ZONE_COMPAT };

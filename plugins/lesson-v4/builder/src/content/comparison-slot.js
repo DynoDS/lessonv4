@@ -81,4 +81,17 @@ function measureComparisonSlot(zone) {
   };
 }
 
-module.exports = { drawComparisonSlot, measureComparisonSlot };
+// The widest this slot can ever usefully be. A row shares width out by counting
+// its items, so a slot beside two charts took a third of the row and used a
+// fraction of it, holding the charts either side to two thirds of the width
+// they could have had. Declaring the cap lets the row give that width to the
+// things that can read better for having it.
+function maxUsefulWidthComparisonSlot() {
+  return MAX_D + 2 * PAD;
+}
+
+module.exports = {
+  drawComparisonSlot,
+  measureComparisonSlot,
+  maxUsefulWidthComparisonSlot
+};

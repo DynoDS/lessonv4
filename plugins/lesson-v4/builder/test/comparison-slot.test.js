@@ -60,3 +60,68 @@ test('a revealed answer prints inside the same ring, not instead of it', () => {
   assert.equal(texts[0].content, '<');
   assert.equal(texts[0].x.toFixed(3), shapes[0].x.toFixed(3));
 });
+
+// ─── A row shares its width by appetite, not by counting ──────────────
+//
+// The ring between two place-value charts took a third of the row and drew at
+// well under half of it, holding the charts either side to two thirds of the
+// width they could have had. A slide's digits came out smaller to leave a gap
+// around a ring that never wanted it.
+
+const { drawRow } = require('../src/content/row');
+const { maxUsefulWidth } = require('../src/content');
+
+test('a slot declares the widest it can use; a chart declares nothing', () => {
+  assert.ok(maxUsefulWidth({ type: 'comparison-slot' }) > 0);
+  assert.equal(maxUsefulWidth({ type: 'place-value-chart' }), null,
+    'a chart must keep taking whatever width it is given');
+});
+
+test('the width a slot cannot use goes to the items beside it', () => {
+  const zones = [];
+  const pptx = { shapes: { OVAL: 'oval', ROUNDED_RECTANGLE: 'rr', RECTANGLE: 'rect' } };
+  const slide = { addShape() {}, addText() {}, addImage() {} };
+
+  // Capture the sub-zone each item is handed.
+  const content = require('../src/content');
+  const realDraw = content.drawContent;
+  content.drawContent = function (p, s, zone, item, ctx) {
+    zones.push({ type: item && item.type, w: zone.w });
+  };
+  try {
+    drawRow(pptx, slide, { x: 0, y: 0, w: 9.2, h: 2.5, class: 'C' }, {
+      items: [
+        { type: 'place-value-chart', columns: ['Th', 'H', 'T', 'O'], rows: [{ label: '3,406', cells: ['3','4','0','6'] }] },
+        { type: 'comparison-slot' },
+        { type: 'place-value-chart', columns: ['Th', 'H', 'T', 'O'], rows: [{ label: '2,406', cells: ['2','4','0','6'] }] }
+      ]
+    }, { slideIndex: 0, cardLook: true });
+  } finally {
+    content.drawContent = realDraw;
+  }
+
+  assert.equal(zones.length, 3);
+  const equalShare = (9.2 - 0.2) / 3;
+  assert.ok(zones[1].w < equalShare, 'the slot kept width it cannot use');
+  assert.ok(zones[0].w > equalShare, 'the chart did not gain the released width');
+  assert.equal(zones[0].w.toFixed(3), zones[2].w.toFixed(3), 'the two charts drew at different widths');
+
+  const total = zones.reduce((t, z) => t + z.w, 0) + 0.2;
+  assert.ok(Math.abs(total - 9.2) < 0.01, `the row did not fill its zone (${total.toFixed(2)} of 9.2)`);
+});
+
+test('a row of items that all want width is untouched', () => {
+  const zones = [];
+  const content = require('../src/content');
+  const realDraw = content.drawContent;
+  content.drawContent = function (p, s, zone, item) { zones.push(zone.w); };
+  try {
+    drawRow({ shapes: {} }, { addShape() {}, addText() {} },
+      { x: 0, y: 0, w: 9.2, h: 2.5, class: 'C' },
+      { items: [{ type: 'text', value: 'a' }, { type: 'text', value: 'b' }] },
+      { slideIndex: 0, cardLook: true });
+  } finally {
+    content.drawContent = realDraw;
+  }
+  assert.equal(zones[0].toFixed(3), zones[1].toFixed(3));
+});

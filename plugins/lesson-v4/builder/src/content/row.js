@@ -7,6 +7,37 @@ const { drawGroupAccent } = require('./group-accent');
 const GAP = 0.10;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
+
+// ─── WIDTH SHARING ────────────────────────────────────────────
+const WIDTH_REFLOW_FLOOR = 0.10;
+
+function itemWidths(items, equalW) {
+  const { maxUsefulWidth } = require('./index');
+  const widths = items.map(function () { return equalW; });
+  const growers = [];
+  let released = 0;
+
+  items.forEach(function (item, i) {
+    const cap = maxUsefulWidth(item);
+    if (cap === null) { growers.push(i); return; }
+    const spare = equalW - cap;
+    if (spare > WIDTH_REFLOW_FLOOR) {
+      widths[i] = cap;
+      released += spare;
+    }
+  });
+
+  // Nothing to give it to, so nothing moves: narrowing an item without widening
+  // a neighbour would only turn a gap between items into a gap at the edge.
+  if (!growers.length || released <= WIDTH_REFLOW_FLOOR) {
+    return items.map(function () { return equalW; });
+  }
+
+  const share = released / growers.length;
+  growers.forEach(function (i) { widths[i] += share; });
+  return widths;
+}
+
 function drawRow(pptx, slide, zone, data, ctx) {
   // A row may ask for its items to be numbered or lettered. It is opt-in: a row
   // without `questionNumbering` behaves exactly as it always has. The labels are
@@ -156,6 +187,22 @@ function drawRow(pptx, slide, zone, data, ctx) {
   const totalGap = GAP * (items.length - 1);
   const itemW    = (zone.w - totalGap) / items.length;
 
+  // Width the way a stack already does height: the items that cannot use their
+  // share hand it back, and the items that can use more take it.
+  //
+  // An equal share is width measured by COUNT. A comparison ring between two
+  // place-value charts took a third of the row and drew at well under half of
+  // it, and the charts either side were held to two thirds of the width they
+  // could have had - so the digits a class reads from the carpet came out
+  // smaller to leave a gap around a ring that never wanted it. Only helpers
+  // that genuinely stop growing declare a cap; everything else keeps taking
+  // whatever width it is given, exactly as before.
+  const widths = itemWidths(items, itemW);
+  const lefts = widths.reduce(function (acc, w, i) {
+    acc.push(i === 0 ? zone.x : acc[i - 1] + widths[i - 1] + GAP);
+    return acc;
+  }, []);
+
   // Parallel peers share geometry as well as purpose: when every item is a
   // text card with the same visual role, `equaliseTextCards: true` makes the
   // whole row one family — equal card heights (each measure returns its full
@@ -172,9 +219,9 @@ function drawRow(pptx, slide, zone, data, ctx) {
 
   items.forEach(function (item, i) {
     const subZone = {
-      x: zone.x + i * (itemW + GAP),
+      x: lefts[i],
       y: zone.y,
-      w: itemW,
+      w: widths[i],
       h: zone.h,
       class: zone.class,
       // A noCard panel owns everything in it; see the same line in stack.js.
@@ -250,10 +297,13 @@ function measureRow(zone, data, ctx) {
   const itemW = (zone.w - totalGap) / items.length;
   if (!(itemW > 0)) return null;
 
+  const widths = itemWidths(items, itemW);
+
   let tallest = 0;
-  for (const item of items) {
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
     const extent = measureCompositionExtent(
-      { x: zone.x, y: zone.y, w: itemW, h: zone.h,
+      { x: zone.x, y: zone.y, w: widths[i], h: zone.h,
         class: zone.class, noCard: zone.noCard, compactCards: zone.compactCards },
       item,
       ctx
