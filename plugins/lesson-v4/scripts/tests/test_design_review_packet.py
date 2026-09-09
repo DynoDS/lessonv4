@@ -1902,6 +1902,7 @@ def content_based_design() -> tuple[dict, dict]:
             "kind": kind,
             "conceptRef": None,
             "unlocks": 'They can do the step this beat taught, which the next beat uses.',
+            "thinking": "What has stayed the same, and what has changed?",
             "content": content,
             "pupilInstruction": None,
             "taskStructure": None,

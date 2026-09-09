@@ -177,6 +177,7 @@ UNIT_FIELDS = {
     "kind",
     "conceptRef",
     "unlocks",
+    "thinking",
     "content",
     "pupilInstruction",
     "modellingState",
@@ -191,6 +192,23 @@ UNIT_FIELDS = {
 UNIT_OPTIONAL_FIELDS = {"taskStructure"}
 
 UNLOCKS_MAX_CHARS = 200
+THINKING_MAX_CHARS = 200
+
+# Beats where the teacher acts and children watch or listen. `thinking` may be
+# null there. Everywhere else every child has to do something, and the thought
+# that doing requires is written down before the activity is chosen, so that a
+# thought which is really "find the words on the slide" can be seen for what
+# it is.
+NO_PUPIL_ACTION_KINDS = {
+    "teach",
+    "teach-why",
+    "prepare",
+    "my-turn",
+    "grounding-input",
+    "stimulus",
+    "set-task",
+    "teach-needed",
+}
 
 SCAFFOLD_PLACEHOLDER = "__LESSON_DESIGN_FILL__"
 PLACEHOLDER_REPORT_LIMIT = 10
@@ -1085,6 +1103,18 @@ def validate_source_unit(
         expect(
             len(unlocks) <= UNLOCKS_MAX_CHARS,
             f"{path}.unlocks must be at most {UNLOCKS_MAX_CHARS} characters; it names what children can now do, not how the beat went",
+        )
+    thinking = unit["thinking"]
+    if thinking is not None:
+        thinking = expect_string(thinking, f"{path}.thinking")
+        expect(
+            len(thinking) <= THINKING_MAX_CHARS,
+            f"{path}.thinking must be at most {THINKING_MAX_CHARS} characters; it names the thought a child has to have to do this beat, not the activity",
+        )
+    else:
+        expect(
+            kind in NO_PUPIL_ACTION_KINDS,
+            f"{path}.thinking must name the thought every child has to have to do this beat; null is only for a beat where the teacher acts and children watch, and {kind} is not one",
         )
     expect_nullable_string(unit["pupilInstruction"], f"{path}.pupilInstruction")
     modelling = unit["modellingState"]

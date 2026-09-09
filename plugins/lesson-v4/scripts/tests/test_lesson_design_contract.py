@@ -116,6 +116,7 @@ def source_unit(
         "kind": kind,
         "conceptRef": concept_ref,
         "unlocks": 'They can do the step this beat taught, which the next beat uses.',
+        "thinking": "Which tens go together, and which ones?",
         "content": content,
         "pupilInstruction": pupil_instruction,
         "modellingState": modelling_state,
@@ -158,6 +159,7 @@ def valid_contract():
             "kind": "starter",
             "conceptRef": None,
             "unlocks": None,
+            "thinking": "What goes with this number to make 10?",
             "content": {
                 "activity": "Recall number bonds to 10.",
                 "connection": "Retrieves addition facts used inside today's method.",

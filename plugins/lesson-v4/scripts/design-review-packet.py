@@ -549,6 +549,13 @@ def append_review_unit(
     lines.append(
         f"- Unlocks: {unlocks}" if unlocks else "- Unlocks: none recorded"
     )
+    # The thought this beat makes a child have. Printed beside the content so
+    # the reviewer can read it against what the slide shows: a thought a child
+    # can complete by reading the slide is copying, whatever the format is.
+    thinking = unit.get("thinking")
+    lines.append(
+        f"- Thinking: {thinking}" if thinking else "- Thinking: none recorded"
+    )
     if unit["pupilInstruction"] is not None:
         lines.append(f"- Pupil instruction: {unit['pupilInstruction']}")
     if unit["modellingState"] is not None:

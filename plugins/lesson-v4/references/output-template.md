@@ -391,6 +391,7 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
   "kind": "my-turn",
   "conceptRef": "concept-001",
   "unlocks": "They can partition an amount into pounds and pence, which the adding step needs.",
+  "thinking": "Which of these coins make up the pounds, and which are left as pence?",
   "content": {},
   "pupilInstruction": null,
   "taskStructure": null,
@@ -419,6 +420,10 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
 `unlocks` is one short line naming what children can now do, notice, hold or have produced that a later part of this lesson needs, written as the thing gained rather than the activity done: `They can tell an opaque material from a see-through one, which the shadow explanation needs`, not `They sorted six materials`. It is at most 200 characters, because it is a link and not a summary. This is the field that makes the lesson's spine visible, so write each one by looking forward: name the later beat it feeds, and if you cannot find one, that is the finding rather than a reason to write something vague.
 
 Use `null` when the beat genuinely sits beside the spine rather than on it: a vocabulary introduction moment, a routine, a safeguarding note, setup, or the lesson's final performance with nothing after it. `null` is a real answer and a beat is never given a manufactured artefact so a later one has something to name. At least one teaching-sequence unit must be non-null; a sequence where every beat unlocks nothing has no dependency in it, and the validator refuses that.
+
+`thinking` is one short line naming the thought every child has to have to do this beat: the question their mind is answering while they work, written as that question or that decision, not as the activity. `Why would a walk matter to someone after a busy term?`, not `Complete the sentence stem`. It is written before the activity is chosen, because the activity is chosen to force this thought, and it is at most 200 characters. Read it against what the slide shows: if a child can complete the thought by finding words already on the board, the beat is copying, and the residue of copying is nothing about the idea (`preferences.md` → What a Lesson Is For).
+
+Use `null` only for a beat where the teacher acts and children watch or listen: a Teach, a My Turn, a stimulus, the setting of a task. On every beat where each child does something, the validator refuses `null`.
 
 `pupilInstruction` is the exact short child-facing instruction when this unit needs one. Use `null` when no separate instruction is needed. A downstream designer may choose its physical slot but must render non-null wording exactly once and must not paraphrase it.
 

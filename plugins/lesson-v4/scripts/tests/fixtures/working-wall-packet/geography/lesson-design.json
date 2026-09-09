@@ -19,6 +19,7 @@
     "kind": "starter",
     "conceptRef": null,
     "unlocks": null,
+    "thinking": "What does this part of the lesson ask me to work out?",
     "content": {
       "activity": "Retrieve continents and oceans from a world map with South America highlighted.",
       "connection": "Makes the known world location visible before the lesson zooms in to the Amazon rainforest.",
@@ -236,6 +237,7 @@
       "kind": "teach",
       "conceptRef": null,
       "unlocks": "They can read a value off the scale, which the next comparison needs.",
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "headline": "A biome is a broad type of region.",
         "explanation": null,
@@ -284,6 +286,7 @@
       "kind": "do",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "activity": "Judge a plausible claim that confuses one biome example with the whole category.",
         "format": "Talk and explain.",
@@ -323,6 +326,7 @@
       "kind": "observe",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "activity": "Inspect a world map showing tropical-rainforest areas and the Equator before the explanation is given.",
         "focus": "Where the shaded tropical-rainforest areas sit in relation to the Equator.",
@@ -360,6 +364,7 @@
       "kind": "teach",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "headline": "Tropical rainforests need a warm, wet climate.",
         "explanation": null,
@@ -406,6 +411,7 @@
       "kind": "do",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "activity": "Read the distribution map to identify the continents containing tropical-rainforest areas.",
         "format": "Map reading and naming.",
@@ -445,6 +451,7 @@
       "kind": "teach",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "headline": "The Amazon rainforest crosses national borders.",
         "explanation": null,
@@ -496,6 +503,7 @@
       "kind": "do",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "activity": "Judge a plausible Brazil-only claim using the country borders and rainforest extent on the map.",
         "format": "Map evidence explanation.",
@@ -535,6 +543,7 @@
       "kind": "teach",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "headline": "Geographers describe places from evidence.",
         "explanation": null,
@@ -579,6 +588,7 @@
       "kind": "do",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "activity": "Select the strongest photograph evidence for human presence and name the visible clue.",
         "format": "Source choice and one-line justification.",
@@ -614,6 +624,7 @@
       "kind": "practise",
       "conceptRef": null,
       "unlocks": null,
+      "thinking": "What does this part of the lesson ask me to work out?",
       "content": {
         "activity": "Write a three-part geographical description that combines biome knowledge, nested location and visible Amazon features.",
         "format": "Three-part description using maps and photographs.",
