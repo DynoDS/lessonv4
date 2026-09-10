@@ -9,6 +9,7 @@ const test = require('node:test');
 const requireGlobal = require('../src/require-global');
 const PptxGenJS = requireGlobal('pptxgenjs');
 const { fitGroupId, growFitObjectName } = require('../src/text-fit');
+const { MIN_FONT_PT } = require('../src/styles');
 const { splitAnswerRuns } = require('../src/answer-text');
 const { drawChipBank } = require('../src/content/chip-bank');
 const { drawCallout } = require('../src/content/callout');
@@ -104,8 +105,12 @@ test('numbered question text uses one shared grow-fit group', () => {
   assert.equal(new Set(bodies.map((entry) => groupFromName(entry.objectName))).size, 1);
   assert.ok(bodies.every((entry) => /__40__/.test(entry.objectName)));
   // The floor travels in the name, or the global fit pass shrinks a question
-  // to the deck-wide 10pt beside a table that stops at 20.
-  assert.ok(bodies.every((entry) => /__MIN14__/.test(entry.objectName)));
+  // below what this helper will allow beside a table that stops higher. Read
+  // from the shared floor rather than written out, because a helper's own floor
+  // answers to that one and a number copied here would go stale the next time
+  // it moves - which is exactly how a question ended up allowed down to 10pt.
+  const floor = new RegExp(`__MIN${MIN_FONT_PT}__`);
+  assert.ok(bodies.every((entry) => floor.test(entry.objectName)));
 });
 
 test('chip bank labels use one shared grow-fit group with a 54 point ceiling', () => {

@@ -1,6 +1,6 @@
 'use strict';
 
-const { FONT, COLOURS, FIT } = require('../styles');
+const { FONT, COLOURS, FIT, MIN_FONT_PT } = require('../styles');
 const { textBoxWidthIn } = require('../glyph-width');
 
 // How big are the numbers a child actually reads off a number line?
@@ -46,21 +46,49 @@ const TICK_H           = 0.38;
 const TALL_TICK_H      = 0.60;
 const TICK_W           = 0.05;
 const LABEL_GAP        = 0.08;
-// One line of FONT_SIZE text is 0.33in, so this is the text plus a hair.
-const LABEL_H          = 0.36;
+// The height one line of text actually occupies, measured the way the build's
+// text fitter measures it: the point size, its line spacing, and the inset the
+// fitter takes off a box before it fits anything into it.
+//
+// Reading a line as point-size alone understates it by more than a quarter, so
+// every label band was born short, the fitter shrank the numeral to cope, and a
+// scale a child has to read off the board came out below the projection floor.
+// The numerals are the one thing on a number line the maths cannot be done
+// without, so the band answers to them rather than the other way round.
+// The fit pass's own line model: MEASUREMENT_LINE_HEIGHT_EM (1.2) times
+// LINE_HEIGHT_SAFETY (1.02) in scripts/fit_text_postprocess.py. Taking a
+// rounder, larger figure buys the numerals nothing the fitter asks for and
+// spends the difference out of the arrows, ticks and dots, which on a three-line
+// stack is the difference between an arrow that points and one that does not.
+const LINE_SPACING     = 1.2 * 1.02;
+const FIT_PAD_H        = 0.03;
+const lineHeightAt     = (pt) => (pt / 72) * LINE_SPACING + FIT_PAD_H;
 // Board-readable size for the axis numbers a child reads off. The scale is the
 // point of the task, so the numerals must read from the back of the room. This
 // is now a size they REACH rather than a ceiling they are shrunk from, because
 // the box around each numeral is measured from the numeral.
 const FONT_SIZE        = 24;
+const LABEL_H          = lineHeightAt(FONT_SIZE);
 // The floor every other card helper in here declares and this one never did. A
 // deep stack of lines used to buy its room out of the numerals, which are the
 // one thing on a number line a child cannot do the maths without. Below this
 // the arrows, ticks and dots give up room instead: an arrow only has to point,
 // but a scale has to be read.
-const FONT_MIN         = 14;
+// Axis numerals and point labels are read off the board like any other text, so
+// this floor answers to the shared projection floor rather than sitting under
+// it. The stack has a mechanism for the case where the numerals stop paying for
+// it: hold them at the floor and re-solve the scale for everything else, which
+// is what the block below does.
+const FONT_MIN         = Math.max(14, MIN_FONT_PT);
 const ARROW_STEM_W     = 0.03;
 const ARROW_STEM_H     = 0.26;
+// The shortest stem that still reads as an arrow pointing at a place on the
+// line rather than a tick mark sitting on it. A deck once shipped 0.141in and
+// the arrows were called halved; below about this they stop doing the one job
+// they have. The stack scales the arrows down before it touches the numerals,
+// so this is the point at which there is nothing left to give and the
+// composition, not the drawing, has to change.
+const ARROW_STEM_MIN_H = 0.165;
 const ARROW_HEAD_W     = 0.14;
 const ARROW_HEAD_H     = 0.14;
 const ARROW_COLOUR     = 'CC0000';
@@ -221,14 +249,37 @@ function drawNumberline(pptx, slide, zone, data) {
   // floor, give every text band the height that font actually needs, and solve
   // again for the scale everything ELSE runs at inside the room that leaves.
   if (fontPt < FONT_MIN) {
-    const heldH = FONT_MIN / 72 + 0.03;
+    const heldH = lineHeightAt(FONT_MIN);
     const held  = (innerH - bands * heldH) / elastic;
     if (held > 0) {
       scale  = Math.min(MAX_GROW, held);
       bandH  = heldH;
       fontPt = FONT_MIN;
+    } else {
+      // Even after the arrows, ticks and dots give up everything they have, the
+      // numerals cannot reach the floor. Drawing anyway is the one outcome this
+      // helper exists to prevent: a scale nobody can read is not a smaller
+      // version of the task, it is the task missing, and it goes to the board
+      // looking finished. Refuse by name while the composition can still be
+      // changed - the same answer a fourth stacked line already gets.
+      throw new Error(
+        `NUMBERLINE_ZONE_TOO_SHALLOW: ${lines.length} line` +
+          `${lines.length === 1 ? '' : 's'} cannot show numerals at the ` +
+          `${FONT_MIN}pt readable minimum in a zone this shallow. Give the ` +
+          `visual more height, or show fewer lines on it; the numerals are ` +
+          `what the scale is read from and were not shrunk to fit.`
+      );
     }
   }
+
+  // The band scales with the drawing, but the inset the fitter takes off a box
+  // does not: it is a fixed measure in inches, so on a shrunk stack the scaled
+  // band keeps less of it than the fitter will remove, and the label inside is
+  // dropped a point or two to cope. Measuring the band from the size it is
+  // actually going to hold closes that gap for the last few labels - a point's
+  // letter above the line, a green answer - which are the ones the maths on
+  // this line is about.
+  bandH = Math.max(bandH, lineHeightAt(fontPt));
 
   const lineH           = LINE_H            * scale;
   const tickH           = TICK_H            * scale;
@@ -237,6 +288,17 @@ function drawNumberline(pptx, slide, zone, data) {
   const labelGap        = LABEL_GAP         * scale;
   const arrowStemW      = ARROW_STEM_W      * scale;
   const arrowStemH      = ARROW_STEM_H      * scale;
+
+  if (lines.some((spec) => spec.arrow) && arrowStemH < ARROW_STEM_MIN_H) {
+    throw new Error(
+      `NUMBERLINE_ZONE_TOO_SHALLOW: ${lines.length} line` +
+        `${lines.length === 1 ? '' : 's'} with arrows cannot show both a ` +
+        `readable scale and an arrow that points in a zone this shallow. ` +
+        `Three arrowed lines want about 4in of height at the ${FONT_MIN}pt ` +
+        `minimum. Give the visual more height, or show fewer lines on it.`
+    );
+  }
+
   const arrowHeadW      = ARROW_HEAD_W      * scale;
   const arrowHeadH      = ARROW_HEAD_H      * scale;
   const arrowRaise      = ARROW_RAISE       * scale;

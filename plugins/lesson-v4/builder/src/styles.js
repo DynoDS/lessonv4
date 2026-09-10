@@ -65,7 +65,19 @@ const SIZE_CEILINGS = {
 };
 
 const FIT = 'shrink';
-const MIN_FONT_PT = 10;
+// The projection floor: the smallest text a child at the back of the room can
+// read off the board, and the floor `fit_text_postprocess.py` enforces on the
+// built deck. Helpers take their own floor as `Math.max(LOCAL_MIN, MIN_FONT_PT)`
+// so one number moves them all, and so a helper written later cannot quietly
+// sit below the deck it is drawn into.
+//
+// It was 10 until September 2026, which is a comfortable size on paper held at
+// desk distance and unreadable at four metres. A quarter of the text on decks
+// built under it came out below 20pt and some of it at 10, and the review pass
+// caught one instance of that in three lessons. Text aims for 20 - helpers size
+// their boxes for it - and this is the separate, lower question of what may
+// reach a classroom at all.
+const MIN_FONT_PT = 18;
 
 // The card look (slide visual refresh, Aug 2026): a white rounded card drawn
 // behind each top-level content block so content reads as grouped chunks

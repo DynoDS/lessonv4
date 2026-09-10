@@ -34,6 +34,10 @@ const { textWidthIn } = require('../src/glyph-width');
 
 // A generous board zone, close to the one the Year 4 deck actually used.
 const ZONE = { x: 0.23, y: 0.77, w: 7.98, h: 3.55 };
+// Three arrowed lines want about 4in at the 18pt floor: below that the visual
+// refuses rather than choosing between a readable scale and an arrow that
+// points. Tests about arrows use this; tests about a tight zone use ZONE.
+const ARROW_ZONE = { x: 0.23, y: 0.77, w: 7.98, h: 4.2 };
 
 function draw(zone, data) {
   const pptx = new PptxGenJS();
@@ -138,7 +142,7 @@ test('stacking three arrowed lines no longer halves the arrows', () => {
     assert.ok(red.length >= 2, 'an arrowed line draws a stem and a head');
     return Math.max(...red.map((s) => s.options.h));
   };
-  const three = draw(ZONE, {
+  const three = draw(ARROW_ZONE, {
     lines: [
       { start: 1000, end: 3500, interval: 500, labels: 'ends', arrow: { at: 2500, label: 'P' } },
       { start: 7000, end: 8000, interval: 200, labels: 'ends', arrow: { at: 7400, label: 'Q' } },
@@ -200,14 +204,26 @@ test('a single line is not named, and naming can be turned off', () => {
 test('a stack in a shallow zone takes its room out of the arrows, not the numerals', () => {
   // Three arrowed lines in a 2.2in band: genuinely out of room, so something
   // has to give. It must not be the numbers.
-  const deep = draw({ x: 0.23, y: 0.77, w: 7.98, h: 2.2 }, {
+  assert.throws(
+    () => draw({ x: 0.23, y: 0.77, w: 7.98, h: 2.2 }, {
+      lines: [1, 2, 3].map(() => ({
+        start: 0, end: 10000, interval: 2000, labels: 'ends', arrow: { at: 4000, label: 'A' },
+      })),
+    }),
+    /NUMBERLINE_ZONE_TOO_SHALLOW/,
+    'a scale that cannot be read must fail by name while the spec is repairable'
+  );
+});
+
+test('the same stack keeps its numerals once it has the room it asked for', () => {
+  const deep = draw(ARROW_ZONE, {
     lines: [1, 2, 3].map(() => ({
       start: 0, end: 10000, interval: 2000, labels: 'ends', arrow: { at: 4000, label: 'A' },
     })),
   });
   for (const l of deep.labels) {
     assert.ok(
-      l.opts.fontSize >= 14,
+      l.opts.fontSize >= 18,
       `"${l.text}" was drawn at ${l.opts.fontSize}pt, below the readable floor for a scale`
     );
     assertFits(l, 'a numeral held at the floor');
@@ -230,7 +246,7 @@ test('a fourth stacked line is refused, not quietly shrunk', () => {
 });
 
 test('three stacked lines are still fine', () => {
-  const { labels } = draw(ZONE, {
+  const { labels } = draw(ARROW_ZONE, {
     lines: [1, 2, 3].map(() => ({
       start: 0, end: 10000, interval: 2000, labels: 'ends', arrow: { at: 4000, label: 'A' },
     })),

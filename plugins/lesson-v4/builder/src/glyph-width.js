@@ -103,8 +103,17 @@ function textWidthEm(text, bold) {
 }
 
 // The width of one line of text in slide inches at a given point size.
+//
+// Rounded up to a whole point, because that is what the renderer the fit pass
+// measures with does. The proportional safety above covers a long line, where
+// the rounding is a rounding error; it cannot cover a short one, where a single
+// glyph carries the whole of it. That is why a box drawn to hold one letter -
+// a point named on a number line, a line labelled A - could come back as
+// overflowing while a whole sentence beside it fitted comfortably.
 function textWidthIn(text, fontPt, bold) {
-  return (textWidthEm(text, bold) * Number(fontPt || 0)) / 72;
+  const raw = (textWidthEm(text, bold) * Number(fontPt || 0)) / 72;
+
+  return Math.ceil(raw * 72) / 72;
 }
 
 // PowerPoint reserves a small inset inside every text frame, and the fit pass
