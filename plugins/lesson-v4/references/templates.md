@@ -381,6 +381,8 @@ Geometric. Zones are polymorphic — each accepts any content object whose class
 
 Every free template supports `headerStyle`, `title`, `instruction`, `lo`, `heading` (the latter two used when `headerStyle` is `"starter"`).
 
+**When a picture is the main thing in a zone, its shape chooses the zone.** A photograph, map or diagram is drawn contained: scaled until it meets two sides of its slot and never stretched, because a stretched map draws countries the wrong shape. So the short side of the slot decides how big the picture gets, and a square photograph in the widest zone on the deck is not merely untidy - it is a smaller picture than the slide had room for, with the spare width sitting empty beside it. That is how a picture children work from ends up under the readable floor with nothing about it obviously wrong. Read the shape off the subject before choosing: a single object, a face, a specimen or a model is usually near square and wants a half-width zone or a quarter; a landscape, a map or a timeline is wide and wants a full-width or a shallow band; a tower, a full-length figure or a tall diagram wants a narrow column. Where the picture is incidental, or where other content on the slide genuinely needs the width, the rest of the slide decides and the picture takes what is left. The build measures every contained figure against its slot and names a better-shaped candidate when there is one, so a mismatch is worth fixing when reported rather than guessed at in advance.
+
 ### 3.0 Single-zone layout
 
 #### `body-full`
@@ -389,7 +391,7 @@ Every free template supports `headerStyle`, `title`, `instruction`, `lo`, `headi
 
 **Zones:** `body` (class A).
 
-**Use for:** any slide whose body is a single block of content — a long text extract, one large image, a single paragraph of teaching, a numbered list as the whole body, or a non-numerical My Turn / Your Turn (grammar, punctuation, spelling, comprehension) whose question and options, sentence, `table` or `matching` should fill the slide.
+**Use for:** any slide whose body is a single block of content — a long text extract, a single paragraph of teaching, a numbered list as the whole body, or a non-numerical My Turn / Your Turn (grammar, punctuation, spelling, comprehension) whose question and options, sentence, `table` or `matching` should fill the slide. Also one large image, when that image is itself wide: this zone is about 1.94:1, so a landscape, a map or a timeline fills it, and a near-square or upright picture reaches only a fraction of it and should take a half-width zone or a column instead.
 
 ### 3.1 Two-zone splits
 

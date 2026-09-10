@@ -39,6 +39,59 @@ const COVERAGE_FLOOR = 0.60;
 // on the case it exists for: a big picture in a badly shaped big slot.
 const WASTED_INCHES = 1.0;
 
+// The shapes the free templates can actually offer, worked out from the same
+// layout constants they draw from rather than written down, so a template whose
+// split moves cannot leave a stale suggestion behind.
+//
+// This exists because "give this figure a slot shaped more like it" is true and
+// not yet actionable: it describes the repair without saying where the repair
+// is. A designer reading it has to hold fifty template entries in mind and work
+// out which of them offers, say, something near square. The engine has just
+// measured the picture, so it can say - and a named candidate is the difference
+// between advice and a decision.
+//
+// Advisory, never a promise: what a slot finally measures depends on what else
+// the designer puts beside the picture. It names the family worth opening.
+const GAP = 0.20;
+
+function slotShapes() {
+  const { CONTENT_W, SLIDE_H, MARGIN_BOTTOM } = require('../layout');
+  const bodyW = CONTENT_W;
+  const bodyH = SLIDE_H - MARGIN_BOTTOM - 0.60;
+  const shapes = [];
+
+  const add = (name, w, h) => shapes.push({ name, ratio: w / h });
+
+  add('body-full', bodyW, bodyH);
+  [[50, 50], [60, 40], [70, 30], [75, 25], [80, 20], [90, 10]].forEach(([a, b]) => {
+    const wide = (bodyW - GAP) * (a / 100);
+    add(`split-h-${a}-${b} (the ${a}% side)`, wide, bodyH);
+    add(`split-h-${a}-${b} (the ${b}% side)`, bodyW - GAP - wide, bodyH);
+  });
+  [[50, 50], [60, 40], [70, 30]].forEach(([a, b]) => {
+    const tall = (bodyH - GAP) * (a / 100);
+    add(`split-v-${a}-${b} (the ${a}% band)`, bodyW, tall);
+    add(`split-v-${a}-${b} (the ${b}% band)`, bodyW, bodyH - GAP - tall);
+  });
+  add('thirds-h (one column)', (bodyW - 2 * GAP) / 3, bodyH);
+  add('thirds-v (one band)', bodyW, (bodyH - 2 * GAP) / 3);
+  add('quad-v (one quarter)', (bodyW - GAP) / 2, (bodyH - GAP) / 2);
+
+  return shapes;
+}
+
+// The slot whose proportions sit closest to this picture's, compared as a ratio
+// of ratios so that being twice as wide as wanted counts the same as being
+// twice as tall - the eye does not care which way the mismatch runs.
+function nearestSlot(pictureRatio, currentRatio) {
+  const away = (r) => Math.max(r / pictureRatio, pictureRatio / r);
+  const best = slotShapes()
+    .filter((slot) => away(slot.ratio) < away(currentRatio))
+    .sort((a, b) => away(a.ratio) - away(b.ratio))[0];
+
+  return best || null;
+}
+
 const findings = [];
 
 function clearZoneFill() {
@@ -52,6 +105,18 @@ function zoneFillWarnings() {
 // Record how one contained figure sat in its slot. `zone` is what the template
 // allocated, `drawn` is the rectangle the figure actually occupied, both in
 // slide inches. Called by every helper that contains a figure of a true shape.
+// Name a template family whose slot is closer to this picture's shape, so the
+// finding ends on somewhere to go rather than on what is wrong.
+function suggestion(drawn, zone) {
+  const best = nearestSlot(drawn.w / drawn.h, zone.w / zone.h);
+  if (!best) return '';
+
+  return (
+    ` \`${best.name}\` would give it about ${best.ratio.toFixed(2)}:1, which is ` +
+    `closer to the picture's own shape - check it against what else this slide has to carry.`
+  );
+}
+
 function checkZoneFill(ctx, zone, drawn, label) {
   if (!ctx || typeof ctx.slideIndex !== 'number') return;
   if (!zone || !drawn) return;
@@ -84,8 +149,11 @@ function checkZoneFill(ctx, zone, drawn, label) {
       `so containing it without distorting it cannot use the rest. Give this figure a slot ` +
       `shaped more like it - a wider, shallower zone for a wide picture, or a taller one for a ` +
       `tall picture - or put something beside it in the space it cannot reach. Do not stretch it: ` +
-      `a distorted map draws countries the wrong shape.`,
+      `a distorted map draws countries the wrong shape.` + suggestion(drawn, zone),
   });
 }
 
-module.exports = { checkZoneFill, zoneFillWarnings, clearZoneFill, COVERAGE_FLOOR, WASTED_INCHES };
+module.exports = {
+  checkZoneFill, zoneFillWarnings, clearZoneFill,
+  COVERAGE_FLOOR, WASTED_INCHES, nearestSlot, slotShapes
+};
