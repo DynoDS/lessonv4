@@ -1,0 +1,30 @@
+name: Isolated context-refactor baseline
+on:
+  push:
+    branches: [context-validation-45d8a7e]
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 45d8a7ede51bd7d372777258e42be017f6877e9c
+          persist-credentials: false
+      - name: Package tracked baseline only
+        run: |
+          mkdir -p /tmp/context-baseline
+          git rev-parse HEAD > /tmp/context-baseline/source-commit.txt
+          git archive --format=tar.gz HEAD > /tmp/context-baseline/source.tar.gz
+      - name: Test committed reference reader
+        run: |
+          python3 -m unittest discover -s plugins/lesson-v4/scripts/tests -p test_read_reference.py -v > /tmp/context-baseline/reader-tests.txt 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: context-refactor-baseline
+          path: /tmp/context-baseline/
+          retention-days: 1
+          if-no-files-found: error
