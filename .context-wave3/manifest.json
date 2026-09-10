@@ -1,0 +1,23 @@
+{
+  "baseCommit": "be864e35fa359761aedd0a306a2ca16888722e81",
+  "patchSha256": "34d6a4f2e2192cacc6b603ac876c14b94c96e29bdf008414f7f2b95d267336f2",
+  "after": {
+    "evaluations/lesson-designer-consolidation-and-guards-2026-09-10.md": "fb27d6e28d5523134d6046f97c2eefc6b30130174d40caf5a598e41f242ce247",
+    "plugins/lesson-v4/agents/lesson-designer.md": "d9f8cab2474a7eac529b328ff34f36a54de27b287ee17fb67afa02e53b4a1cc0",
+    "plugins/lesson-v4/agents/slide-designer.md": "06ab525ce953d7dbe33b5ab2c0380febe9c74f08cb02753165d5eed6e4388722",
+    "plugins/lesson-v4/builder/build.js": "6d380de4ac47bbbbdd60f1ea6c82c1fdfd2d786f96229875fa6c413fde9f2ea9",
+    "plugins/lesson-v4/builder/scripts/check-paragraph-props.js": "0520d76634fa6577a13a22d31bd808e988aa7e15eb50802ddb05dbfe58bce5c4",
+    "plugins/lesson-v4/builder/scripts/check-slide-design.js": "53e1593f534faea17103568892675e4bd6b50ef0c1065d28dd857ea6c568f35b",
+    "plugins/lesson-v4/builder/src/content/image.js": "4a790173748ba480363c78be11ba33cf0134a3530be46a683b5dcd7c3f78fe0f",
+    "plugins/lesson-v4/builder/src/decorations.js": "9876d2831a2001bf192b5df1fec7e98f435f6fb390aed3623fa47ee9b9ca5860",
+    "plugins/lesson-v4/builder/test/doc-claims.test.js": "233c92bc048f94330ef4fdf3ed93a2ef071980d432ffda67c1581fc8e9dcc0ea",
+    "plugins/lesson-v4/builder/test/required-picture-publication.test.js": "3a23f1fadf0321b47c12631980fdccc17cbd32f6a5815cdb57b86d176bd43d47",
+    "plugins/lesson-v4/builder/test/template-question-numbering.test.js": "eb5d5deb078e75129f9ac644b79617bf90b2771c0d804e1aa520e9ea828a9a62",
+    "plugins/lesson-v4/references/teacher-voice.md": "8f571a27cf34de0411ecb502aaf46c4a942a63c210b4ffb7b835ed8f0080d6b8",
+    "plugins/lesson-v4/scripts/tests/test_make_lesson_static_contract.py": "730868de7d000ae1a0f3253b44e4a2b300d320e52e216d2ded9ece8f96f8b1ec",
+    "plugins/lesson-v4/scripts/tests/test_planning_consolidation.py": "28b53e9737f2a80dd056e3623758a0197af376126170458a5d554fbc07af3c99",
+    "plugins/lesson-v4/scripts/tests/test_teacher_voice_reach.py": "422a3c5effc329b504375013fbc54114d92fd194e497281d44cb5d26321155e3",
+    "plugins/lesson-v4/shared/visual-parity.js": "0978e6d9b36fe4359980d6bacf661ad6d7a965933e7c662201c45f96b592f026",
+    "plugins/lesson-v4/skills/make-lesson/playbook-lite.md": "ed02e4b518284dad807174c66e7009d77d6e7e19f26791a3211d9aa9db188405"
+  }
+}
