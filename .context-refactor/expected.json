@@ -1,0 +1,22 @@
+{
+  "baseCommit": "45d8a7ede51bd7d372777258e42be017f6877e9c",
+  "copyFiles": [
+    "plugins/lesson-v4/scripts/tests/reference_test_support.py",
+    "plugins/lesson-v4/scripts/tests/test_lesson_designer_component_loading.py",
+    "evaluations/lesson-designer-conditional-context-2026-09-10.md"
+  ],
+  "sha256": {
+    "evaluations/lesson-designer-conditional-context-2026-09-10.md": "a4f9d72c1c39ea4ed0f16850240bceffc5cd5b1f651c50ae78457209fe156efa",
+    "plugins/lesson-v4/agents/lesson-designer.md": "54ad910f999f2d9963c4b747c647981022707836d0ba21f989b8dd2928d0a5e5",
+    "plugins/lesson-v4/references/lesson-designer-components.md": "84ea21fb8a82f89a4c0acb34a66a21cf70903f7f39bfa1e5df1273488bbfc26f",
+    "plugins/lesson-v4/scripts/tests/reference_test_support.py": "7f7f468ba220c8c9acda9de487c4a79010e8ad6cd2aed156f21195b1e6abe281",
+    "plugins/lesson-v4/scripts/tests/test_brief_absorption_and_unrouted_rules.py": "4f1038b45c1a213111570e1db25b59f3f902d0fa09a04d102b6aab15d0f20410",
+    "plugins/lesson-v4/scripts/tests/test_lesson_designer_component_loading.py": "fffd3919a113c79adc8208930fc79867927259ea6cca34cdae6ad5016ff3296f",
+    "plugins/lesson-v4/scripts/tests/test_lesson_designer_loading_guard.py": "f63b9966d00736557f1f9cb26030950b2a924a36c2a043a29fec2e6809f2363f",
+    "plugins/lesson-v4/scripts/tests/test_make_lesson_static_contract.py": "38d0f09275f4bcd5691a9fad6cd113f7360ab67d209e18fbaaefbea26720ac71",
+    "plugins/lesson-v4/scripts/tests/test_needed_is_not_tidy.py": "5023b6f0cbb893952ad3c2414961a0fcaba8c8c27c87f0ce6257b0dfac4cb133",
+    "plugins/lesson-v4/scripts/tests/test_picture_ladder_sources.py": "472aa257f2219992b1a4e0443a1cc5e329f9d82ffb073f435234d886cc96633d",
+    "plugins/lesson-v4/scripts/tests/test_picture_requirements_are_gettable.py": "c04b8c2cfc1b7069f32a4b70ac612544a51083efa62838b06aa08c2c6d8836d7",
+    "plugins/lesson-v4/scripts/tests/test_response_length_and_circular_definitions.py": "7afaac1bd43f0f5e5eaf7e992d549d1e8943a1d7d9157cf61c2be6926a849920"
+  }
+}
