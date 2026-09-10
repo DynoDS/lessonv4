@@ -53,7 +53,7 @@ jobs:
         working-directory: implementation
         run: |
           mkdir -p /tmp/wave3-receipts
-          python -m pip install 'pytest==9.0.2' pytest-subtests
+          python -m pip install 'pytest==9.0.2' pytest-subtests 'Pillow==12.3.0' 'python-pptx==1.0.2' 'fonttools==4.63.0' 'lxml==6.1.1'
           npm ci --prefix plugins/lesson-v4/builder
       - name: Record dependency audit without changing dependency versions
         working-directory: implementation
@@ -85,8 +85,8 @@ jobs:
       - name: Run complete builder checks and worksheet control
         working-directory: implementation
         run: |
-          npm run check --prefix plugins/lesson-v4/builder | tee /tmp/wave3-receipts/builder.txt
-          node --test plugins/lesson-v4/worksheet-html/test/photo-costing.test.js | tee /tmp/wave3-receipts/worksheet-control.txt
+          npm run check --prefix plugins/lesson-v4/builder 2>&1 | tee /tmp/wave3-receipts/builder.txt
+          node --test plugins/lesson-v4/worksheet-html/test/photo-costing.test.js 2>&1 | tee /tmp/wave3-receipts/worksheet-control.txt
       - name: Read back tested files and publish only work without force
         working-directory: implementation
         run: |
