@@ -573,6 +573,7 @@ When decisions, lesson-design.json and photo-requirements.json are written, run 
 - **Learning and evidence:** Check both directions against specific examples. Every distinct case children must do independently needs prior modelling or guidance; teaching one direction does not automatically prepare its reverse. Every essential performance the lesson claims children can now do needs an opportunity for each child to demonstrate it. Identify the actual questions or response moments that provide this evidence, rather than declaring a set "mixed" or "complete". Incidental examples, optional extensions and every possible variation do not each need a separate assessment, and one task can demonstrate several connected moves. Do not add cases beyond the approved learning to fill a checklist.
 - **Classroom sequence:** Walk the transitions with the teacher and child: what is now known, what remains visible or available, what they do next and how long that takes. Count changes of idea and context inside a beat, not just its title. Explain where an optional worksheet fits and what it replaces if used within the lesson; do not budget it as compulsory extra work or leave the teacher to infer the substitution. Keep time estimates internal unless the teacher asks for a per-beat timetable.
 - **Decisions block:** Trace each semantic promise to the actual content carrying it, not merely a matching object label or reference. Confirm vocabulary is used and explanations are present where claimed. Correct the lesson or narrow an unsupported claim in the record without dropping approved learning. Keep this evidence in the existing record where useful; no additional checklist file is needed.
+- **Amount:** Read the finished lesson against `preferences.md` → Pride Lessons, the same test `design-reviewer.md` runs. Per beat: what does the class look at while the teacher talks, and how much must they read before they can act? A beat that hands the class two sources, a scenario and several questions beside a criteria panel at once is too much, whatever its wording. Across the lesson: each time the same object or text comes back, what is new to work out? A second instance of an idea on evidence the class has not seen, and practice that repeats a known move on purpose, are right; the same evidence met again with nothing new to notice is not, and a lesson that does this more than once has been built on one case. Neither question has a number attached; thin a beat or add a fresh instance here, at the decision, rather than leaving it for the review to catch.
 
 Fix at source, update block where fix changes decision. Then done.
 
@@ -591,6 +592,7 @@ Read a named section from its heading to the next heading of the same level.
 **At the start:**
 
 - Read the introduction and contents of `preferences.md`, then `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included, and it is short.
+- Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount.
 - Read the introduction and contents of `evidence-synthesis.md`, then `Lesson Structures` and `Cross-Cutting Principles`.
 - Read the one matching `subject-*.md` file when it exists. List the directory and match the subject. Do not guess a filename.
 
@@ -602,7 +604,6 @@ Read a named section from its heading to the next heading of the same level.
 - Read `Cognitive Load Triage on Scaffolds` when deciding what is visible, blank, constructable or pre-filled.
 - Read the Lesson Designer parts of `Slide Philosophy`: `Lesson Designer content boundaries`, `Lesson Designer visual-need boundary` and `Speaker notes hand-off`. Do not read `Slide Designer presentation rules`.
 - Read `Slide Headings` before writing source-unit labels.
-- Read `Pride Lessons` only when a real calibration example is needed.
 - Use the contents of `evidence-synthesis.md` to open only the evidence sections needed for an uncertain component or trade-off.
 - Read `do-beats.md` core guidance and only the needed registers when a beat needs a short processing form, in any structure.
 - Read `modelling-formats.md` when choosing `modellingState`.

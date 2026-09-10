@@ -26,6 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DESIGN_REVIEWER = ROOT / "agents" / "design-reviewer.md"
+LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
 PACKET = ROOT / "scripts" / "design-review-packet.py"
 
 
@@ -98,6 +99,29 @@ class TheRoutingCardOpensThePrideLessonsEveryReviewTests(unittest.TestCase):
             '"often a lesson returns to the same evidence.',
             text,
         )
+
+
+class TheDesignerHoldsPrideLessonsWhileWritingTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.text = flat(LESSON_DESIGNER)
+
+    def test_pride_lessons_is_read_at_the_start_not_only_as_an_example(self) -> None:
+        self.assertIn(
+            "Read `Pride Lessons` here, not only as a calibration example.",
+            self.text,
+        )
+        self.assertNotIn(
+            "Read `Pride Lessons` only when a real calibration example is needed.",
+            self.text,
+        )
+
+    def test_the_completion_pass_carries_the_same_amount_self_check(self) -> None:
+        self.assertIn(
+            "**Amount:** Read the finished lesson against `preferences.md` → Pride Lessons, "
+            "the same test `design-reviewer.md` runs.",
+            self.text,
+        )
+        self.assertIn("Neither question has a number attached", self.text)
 
 
 if __name__ == "__main__":

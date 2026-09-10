@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-10 The designer holds the pride lessons while it writes, not only after (4.2.134)
+
+Follow-on to 4.2.133, which gave the design reviewer a calibration for how much a beat carries and made it a purposeful design defect returned to the designer. That leaves the designer as the only place the lesson can still be written too heavy, because it read Pride Lessons "only when a real calibration example is needed" and had no self-check for amount before handing off.
+
+Two changes, both to `agents/lesson-designer.md`. Pride Lessons moves into the reading done at the start of every run, beside the rhythm section, with its two tests stated there: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. The stale "only when needed" bullet at the decision point is removed rather than left beside it, since the two could not both stand. The completion pass gains a new **Amount** check, the same two questions run on the finished lesson, so a beat that has grown too heavy or a source that has returned with nothing new is caught and fixed here, at the decision, rather than only being sent back by the reviewer.
+
+Neither change adds a cap. Both ask the same judgement 4.2.133 gave the reviewer, held by the party actually writing the beat.
+
+Not validated by a fresh generation trial: the abandoned history lesson's saved teacher brief holds only a pointer to an attached plan document, not its content, so a fresh design run from it would invent different material and not be a comparable test of this change. The validation that exists is the paired reviewer trial from 4.2.133, run against a design this file's old reading order actually produced, and the guard tests added here, which check the wording landed and the contradiction is gone rather than that a generated lesson is lighter. Future consistency remains an empirical question, as this log says most times a judgement rule changes rather than a mechanical one.
+
+Seven tests now guard both the reviewer and the designer sides of this rule together; full suite not rerun this entry.
+
 ## 2026-09-10 The reviewer holds the pride lessons before it judges fit (4.2.133)
 
 An audit of the whole plugin against Daniel's stated aim (invisible intelligence: a simple, calm, teachable surface carrying the pedagogy underneath) found the aim already written down, word for word, in `preferences.md` → Pride Lessons: "The slides were minimal: the question, the tool, the SC. The teacher's voice filled the rest." The designer reads it "only when a real calibration example is needed" and the reviewer's routing card sent it "only when a difficult quality boundary remains unresolved". No review ever found one. Daniel's architecture for this is one net: the design is made right, the design reviewer catches what is not, and everything downstream is mechanical. So the reviewer is repaired first and the designer's reading order next.
