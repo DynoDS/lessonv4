@@ -14,6 +14,18 @@ const BADGE_MARGIN_MAX = 0.08;
 const BADGE_GAP        = 0.10;
 const BADGE_FONT_MAX   = 20;
 const BADGE_FONT_MIN   = 8;
+// Two different questions, so two different numbers.
+//
+// TARGET is what a step should be set at, and the size every card's height is
+// measured against below, so a card with room to give lands there. MIN is the
+// separate question of when a step is too small to put in front of a class,
+// and it matches DEFAULT_FLOOR_PT in scripts/fit_text_postprocess.py.
+//
+// Sizing to MIN instead would build every card to the smallest size allowed
+// and leave the text there whenever the zone was tight. Blocking at TARGET
+// instead would refuse a whole build over a step that landed at 19pt in a
+// narrow side column, which the teacher read off his own board and passed.
+const TEXT_FONT_TARGET = 20;
 const TEXT_FONT_MIN    = 18;
 const TEXT_FONT_MAX    = 36;
 const DIVIDER_H        = 0.01;
@@ -57,6 +69,18 @@ function wrappedLineCount(text, widthIn, pt) {
   );
 }
 
+// The inset the build's text fitter takes off a box before it measures anything
+// (PAD_W and PAD_H in scripts/fit_text_postprocess.py). Sizing a card without
+// them measures the text against room the fitter will not give it, so the card
+// is born a fraction too short, the fitter drops the text below the projection
+// floor to cope, and a step that this renderer believed fitted comes back as a
+// build overload. The two measurements have to be taken against the same box.
+const FIT_PAD_W = 0.05;
+const FIT_PAD_H = 0.03;
+
+const usableWidth = (widthIn) => Math.max(0.1, widthIn - FIT_PAD_W);
+const usableHeight = (heightIn) => Math.max(0.1, heightIn - FIT_PAD_H);
+
 // The largest size at which this text genuinely fits its card, or null when
 // even the readable floor will not hold it.
 //
@@ -65,10 +89,10 @@ function wrappedLineCount(text, widthIn, pt) {
 // the biggest one that does.
 function largestStepFont(text, widthIn, heightIn) {
   for (let pt = TEXT_FONT_MAX; pt >= TEXT_FONT_MIN; pt -= 1) {
-    const lines = wrappedLineCount(text, widthIn, pt);
+    const lines = wrappedLineCount(text, usableWidth(widthIn), pt);
     const neededHeight = lines * (pt / 72) * 1.28;
 
-    if (neededHeight <= heightIn) return pt;
+    if (neededHeight <= usableHeight(heightIn)) return pt;
   }
 
   return null;
@@ -185,8 +209,19 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   // as unused air. That is the shape that used to refuse the build outright,
   // with every step on the slide sitting in room it did not need.
   const textNeed = steps.map((s) =>
-    wrappedLineCount(textOf(s), Math.max(0.3, stepTextW), TEXT_FONT_MIN)
-      * (TEXT_FONT_MIN / 72) * 1.28
+    wrappedLineCount(textOf(s), usableWidth(Math.max(0.3, stepTextW)), TEXT_FONT_TARGET)
+      * (TEXT_FONT_TARGET / 72) * 1.28 + FIT_PAD_H
+  );
+
+  // What the reference would need if it were held to the floor rather than the
+  // target. This is not the size it will be set at; it is the least room it can
+  // be given without refusing the panel, and it is what the allocation below
+  // falls back to when serving the reference in full would cost the criteria.
+  const referenceFloorNeed = steps.map((s) =>
+    isReferenceStep(s)
+      ? wrappedLineCount(textOf(s), usableWidth(Math.max(0.3, stepTextW)), TEXT_FONT_MIN)
+          * (TEXT_FONT_MIN / 72) * 1.28 + FIT_PAD_H
+      : 0
   );
 
   // Equal rows stay exactly equal whenever equal rows work, so every panel that
@@ -209,9 +244,98 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     // heights; the reference already sits apart, under its own star and colour,
     // and is the one item that can take a different height without breaking
     // anything.
-    const referenceHeights = steps.map((s, i) =>
-      isReferenceStep(s) ? textNeed[i] + rowGapForFit : 0
+    // The criteria are what the class actually works from, so they are served
+    // first and the reference takes what is left.
+    //
+    // Serving the reference in full first is what used to happen, and on a full
+    // panel it quietly cost the criteria their size: a three-line sentence
+    // claimed the room five short imperatives were sharing, and every item
+    // ended up at the floor together. So the reference is cut back toward the
+    // floor exactly as far as the criteria need, and no further - it keeps any
+    // room the criteria are not using, and it never drops below the floor,
+    // where the panel is refused instead of shipping a line nobody can read.
+    // The criteria hold matching heights, so what they need together is the
+    // tallest one's need times their count, not the sum of their separate
+    // needs. Summing understates it: five criteria of which three wrap to two
+    // lines want five two-line rows, and handing them the sum divides it back
+    // into an average that leaves every wrapping one short by exactly the room
+    // the one-line ones were not using.
+    const stepCountForNeed = steps.filter((s) => !isReferenceStep(s)).length;
+    const tallestStepNeed = steps.reduce(
+      (tallest, s, i) => (isReferenceStep(s) ? tallest : Math.max(tallest, textNeed[i])),
+      0
     );
+    const stepNeedTotal = stepCountForNeed * (tallestStepNeed + rowGapForFit);
+
+    // Size the criteria against a panel where the reference is held to its
+    // floor, then hand the reference everything the criteria did not use.
+    //
+    // Reserving room for the criteria in one pass cannot work: what they need
+    // depends on the size they end up at, and that depends on the room left
+    // after the reference, so an estimate either strands room the criteria
+    // could have grown into or claims room they can never use and refuses a
+    // panel that fits. Sizing them once against their guaranteed share settles
+    // it, and the remainder is real room rather than a guess.
+    const referenceFloorTotalRoom = steps.reduce(
+      (total, s, i) => (isReferenceStep(s) ? total + referenceFloorNeed[i] + rowGapForFit : total),
+      0
+    );
+    const stepShareAtRefFloor = stepCountForNeed
+      ? (innerH - referenceFloorTotalRoom) / stepCountForNeed
+      : 0;
+    const stepFontAtRefFloor = steps.reduce((smallest, s, i) => {
+      if (isReferenceStep(s)) return smallest;
+
+      const font = largestStepFont(
+        textOf(s),
+        Math.max(0.3, stepTextW),
+        Math.max(0.1, stepShareAtRefFloor - rowGapForFit)
+      );
+
+      return font === null ? smallest : Math.min(smallest, font);
+    }, TEXT_FONT_MAX);
+    const stepRoomAtBestFont = steps.reduce(
+      (tallest, s, i) =>
+        isReferenceStep(s)
+          ? tallest
+          : Math.max(
+              tallest,
+              wrappedLineCount(textOf(s), usableWidth(Math.max(0.3, stepTextW)), stepFontAtRefFloor)
+                * (stepFontAtRefFloor / 72) * 1.28 + FIT_PAD_H
+            ),
+      0
+    );
+    const stepClaim = stepCountForNeed * (stepRoomAtBestFont + rowGapForFit);
+
+    // A panel where the reference cannot reach its floor even after the criteria
+    // are served has more in it than it can hold. Saying so here names the item
+    // that is over capacity, rather than letting the shortfall fall on whichever
+    // criterion happens to wrap and reporting that one instead.
+    const referenceFloorTotal = steps.reduce(
+      (total, s, i) => (isReferenceStep(s) ? total + referenceFloorNeed[i] + rowGapForFit : total),
+      0
+    );
+
+    if (referenceFloorTotal && stepNeedTotal + referenceFloorTotal > innerH) {
+      throw new Error(
+        overloadMessage(steps, steps.findIndex(isReferenceStep))
+      );
+    }
+    const referenceHeights = steps.map((s, i) => {
+      if (!isReferenceStep(s)) return 0;
+
+      const wanted = textNeed[i] + rowGapForFit;
+      const floorRoom = referenceFloorNeed[i] + rowGapForFit;
+      const spare = innerH - stepClaim;
+
+      // The reference claims the floor, and room beyond that goes to the
+      // criteria first. Letting it claim the target instead is what put a whole
+      // panel at one size: the sentence took the room the criteria would have
+      // grown into, and a fact the class glances at once set the size of the
+      // five lines they work from all lesson. It still keeps whatever the
+      // criteria genuinely cannot use.
+      return Math.max(floorRoom, Math.min(wanted, spare));
+    });
     const referenceTotal = referenceHeights.reduce((total, h) => total + h, 0);
     const stepCount = steps.filter((s) => !isReferenceStep(s)).length;
     const stepShare = stepCount ? (innerH - referenceTotal) / stepCount : 0;

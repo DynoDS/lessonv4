@@ -161,7 +161,18 @@ WIDTH_SAFETY = SUBSTITUTE_WIDTH_SAFETY if FONT_MODE == "substitute" else 1.0
 PAD_W = Emu(0.05 * 914400)
 PAD_H = Emu(0.03 * 914400)
 
-DEFAULT_FLOOR_PT = 10
+# The size below which a slide does not ship. It is a projection floor, not a
+# print one: the 10pt it replaced is a comfortable size on paper held at desk
+# distance and unreadable from the back of a classroom, and a quarter of the
+# text on decks built under it came out below 20pt, some of it at 10.
+#
+# It sits two points under the 20pt the teacher measured in his own room, and
+# the gap is deliberate. 20 is what text should reach, and helpers size their
+# boxes for it. This is the separate question of when to stop a build, and a
+# point or two under target is not what makes a slide unreadable - 12pt is.
+# Blocking on the rounding would cost a repair round and a rebuild to move
+# text from 19pt to 20pt, which no child in the room could tell apart.
+DEFAULT_FLOOR_PT = 18
 
 
 def pick_font_file(bold, italic):

@@ -66,7 +66,11 @@ function runAutofit(pptxPath, options = {}) {
   // Injectable so a test can present a refused spawn without a sandbox, the
   // same seam `decorations.js` uses for its own child process.
   const run = options.execFileSync || execFileSync;
-  const floor = String(options.floor || 10);
+  // Matches DEFAULT_FLOOR_PT in fit_text_postprocess.py: the smallest text a
+  // child at the back of the room can read off the board. Both are stated
+  // because this wrapper passes the floor explicitly, so a change to one
+  // alone would be silently overridden by the other.
+  const floor = String(options.floor || 18);
   let lastError = null;
   let ran = false;
   let output = '';
