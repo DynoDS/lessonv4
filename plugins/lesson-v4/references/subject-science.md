@@ -24,7 +24,7 @@ When an objective appears to combine a new scientific idea with a new formal tec
 
 ## Build the lesson around the scientific sticking point
 
-Name the scientific relationship children must grasp and the strongest predictable wrong model that would block it. Use the practical, demonstration, embodied model, diagram and discussion only when each makes that relationship easier to notice, test or explain. Several activities are coherent when they attack the same sticking point from different angles; a list of science activities is not a sequence by itself.
+Name the scientific relationship children must grasp and the strongest predictable wrong model that would block it. When that relationship is an idea children will use beyond today's circuit or plant (a complete loop, a fair test, a force needs a pair), name it in `concepts` and meet it on a second case with different apparatus; shown on one set of equipment it is a fact about that set. Use the practical, demonstration, embodied model, diagram and discussion only when each makes that relationship easier to notice, test or explain. Several activities are coherent when they attack the same sticking point from different angles; a list of science activities is not a sequence by itself.
 
 Design at least one check that cannot be passed by spotting an incidental picture cue or repeating the previous slide. Change the critical scientific condition while keeping irrelevant features stable, then require children to predict, trace, explain or perform. If a child can answer without using the relationship taught, the check is evidence of noticing rather than understanding.
 

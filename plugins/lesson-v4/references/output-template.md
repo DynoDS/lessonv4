@@ -319,11 +319,17 @@ For a Skill-based concept, define the concept once:
 
 Every My Turn, Our Turn and Your Turn for that concept uses exactly the same `successCriteriaRefs` array.
 
-For non-Skill-based lessons, write:
+In any other route, `concepts` holds the idea the lesson teaches, when its learning is an idea rather than a fact: a way of seeing that transfers to cases the lesson never showed. Continuity and change, cause, significance, what a source can and cannot tell, a pattern with a reason, a fair test, the same practice carrying different meanings. Define it once, with `successCriteriaRefs` as `[]` when no criteria belong to it, and give every beat that is an instance of it that concept's `conceptRef`, including the ending beat when it is one:
 
 ```json
-"concepts": []
+{
+  "id": "concept-001",
+  "name": "Continuity and change: what stayed the same and what changed, seen in a pair of sources",
+  "successCriteriaRefs": []
+}
 ```
+
+An idea is learned across instances: the question holds still and the evidence changes. So a named concept needs at least two beats that carry its `conceptRef`, at least one of them a beat where every child acts, and the validator refuses fewer. Whether those instances genuinely change the evidence is the reviewer's judgement; the review view lists each instance with its pictures for that purpose. A lesson whose learning is a fact about one case writes `"concepts": []` and keeps one well-developed case; the slot is for ideas, and naming one is what stops it being filed as two facts and then defended by repeating the same object (`preferences.md` → What a Lesson Is For, `When the learning is an idea`).
 
 ### Sticky knowledge
 
@@ -415,7 +421,7 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
 }
 ```
 
-`conceptRef` is required for Skill-based `my-turn`, `our-turn` and `your-turn`; otherwise use `null`.
+`conceptRef` is required for Skill-based `my-turn`, `our-turn` and `your-turn`, and is `null` for `prepare` and the starter. In every other route it is `null` unless the lesson names an idea in `concepts` and this beat is an instance of it, in which case it is that concept's id.
 
 `unlocks` is one short line naming what children can now do, notice, hold or have produced that a later part of this lesson needs, written as the thing gained rather than the activity done: `They can tell an opaque material from a see-through one, which the shadow explanation needs`, not `They sorted six materials`. It is at most 200 characters, because it is a link and not a summary. This is the field that makes the lesson's spine visible, so write each one by looking forward: name the later beat it feeds, and if you cannot find one, that is the finding rather than a reason to write something vague. When the beat it feeds is the final task, name the move the final task makes with what this beat gave, and check it is the move this beat had children make: a child who did this beat can now do that step without being shown a further move, or the line is not true.
 

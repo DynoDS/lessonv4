@@ -1006,6 +1006,15 @@ FINAL_WORK_KINDS = {
 }
 
 
+def concept_instances(design: dict, concept_id: str) -> list[dict]:
+    units = list(design.get("teachingSequence") or [])
+    ending = design.get("ending") or {}
+    beat = ending.get("beat") if ending.get("included") else None
+    if beat:
+        units.append(beat)
+    return [u for u in units if u.get("conceptRef") == concept_id]
+
+
 def sticky_usage(design: dict) -> dict[str, tuple[list[str], list[str]]]:
     units = list(design.get("teachingSequence") or [])
     ending = design.get("ending") or {}
@@ -1208,8 +1217,27 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
             lines.append(
                 f"- `{row['id']}` {row['name']} "
                 f"(success criteria: "
-                f"{', '.join(row['successCriteriaRefs'])})"
+                f"{', '.join(row['successCriteriaRefs']) or 'none'})"
             )
+            # An idea is learned across instances whose evidence differs. List
+            # them with their pictures and whether they carry their own source
+            # text, so a reviewer can see at a glance when every instance is
+            # the same pair of objects under a new title.
+            instances = concept_instances(design, row["id"])
+            for unit in instances:
+                content = unit.get("content") or {}
+                own_text = bool(content.get("teachingText")) or bool(content.get("task"))
+                lines.append(
+                    f"  - Instance: {unit.get('label')} (`{unit.get('kind')}`) | pictures: "
+                    + (", ".join(unit.get("photoRefs") or []) or "none")
+                    + (" | carries its own source text" if own_text else "")
+                )
+            photo_sets = {tuple(sorted(u.get("photoRefs") or [])) for u in instances}
+            if len(instances) >= 2 and len(photo_sets) == 1 and next(iter(photo_sets)):
+                lines.append(
+                    "  - Evidence: every instance uses the same pictures; read whether the "
+                    "evidence genuinely changes between them or the idea is being shown once, twice"
+                )
         lines.append("")
 
     lines.extend(["## Teaching sequence", ""])

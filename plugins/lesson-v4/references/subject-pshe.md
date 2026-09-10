@@ -13,7 +13,7 @@ The PSHE label does not determine the route.
 
 ## Teach facts before dependent judgement
 
-Teach necessary factual, legal, anatomical or safeguarding knowledge directly before asking children to make a judgement that depends on it. Do not turn factual knowledge into an opinion poll or present a non-negotiable safety message as though every answer is equally defensible.
+Teach necessary factual, legal, anatomical or safeguarding knowledge directly before asking children to make a judgement that depends on it. When the learning is an idea children will apply beyond today's scenario (a boundary, consent, a fair share), name it in `concepts` and meet it on more than one scenario; a rule shown on one story is a fact about that story. Do not turn factual knowledge into an opinion poll or present a non-negotiable safety message as though every answer is equally defensible.
 
 ## Use safe distance
 

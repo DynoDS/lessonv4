@@ -112,10 +112,20 @@ Use the final configuration ID here because source-unit representation uses refe
 
 `successCriteriaCount` is the number of success-criteria objects already chosen.
 
-For a non-Skill-based lesson, use:
+For a lesson in any other route whose learning is a fact, use:
 
 ```json
 "concepts": []
+```
+
+For a lesson in any other route whose learning is an idea (continuity and change, cause, a pattern, a fair test), add one object for it; `successCriteriaIndexes` may be `[]` when no criteria belong to the idea:
+
+```json
+"concepts": [
+  {
+    "successCriteriaIndexes": []
+  }
+]
 ```
 
 For a Skill-based lesson, add one object per concept in final concept order:
@@ -146,7 +156,7 @@ The indexes are one-based positions in the generated `successCriteria` array. Th
 
 For Skill-based `my-turn`, `our-turn` and `your-turn`, `conceptIndex` is the one-based concept position.
 
-For Skill-based `prepare`, and for every source unit in every non-Skill-based route, `conceptIndex` is `null`.
+For Skill-based `prepare`, `conceptIndex` is `null`. In every other route, `conceptIndex` is `null` unless the lesson names an idea and this unit is an instance of it, in which case it is that idea's one-based position; the design validator requires at least two instances of a named idea.
 
 Use only kinds allowed by the selected route. The scaffold rejects an out-of-order route before writing the files.
 

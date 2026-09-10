@@ -4,7 +4,7 @@ Read this at the start of an RE lesson, before the route is chosen. This file go
 
 ## Teach knowledge before dependent judgement
 
-Teach enough accurate knowledge about the religion or worldview before asking children to make a reflection, comparison or judgement that depends on it. Uninformed opinion is not the intended outcome.
+Teach enough accurate knowledge about the religion or worldview before asking children to make a reflection, comparison or judgement that depends on it. Uninformed opinion is not the intended outcome. When the learning is an idea rather than a fact about one tradition (the same practice carries different meanings; belief and practice are not the same thing), name it in `concepts` and meet it on more than one practice or person.
 
 Use **Content-based** teaching to build and connect knowledge. Use **Dialogic** only when the question is genuinely open after children have the knowledge needed to reason.
 

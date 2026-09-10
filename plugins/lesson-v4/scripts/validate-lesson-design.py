@@ -1091,8 +1091,14 @@ def validate_source_unit(
     if skill_turn:
         concept_ref = expect_string(unit["conceptRef"], f"{path}.conceptRef")
         expect(concept_ref in concept_ids, f"{path}.conceptRef points to unknown concept: {concept_ref}")
-    else:
-        expect(unit["conceptRef"] is None, f"{path}.conceptRef must be null for {kind}")
+    elif unit["conceptRef"] is not None:
+        # In a knowledge lesson a concept is an idea children learn to see
+        # (continuity and change, cause, a pattern, a fair test), and a unit
+        # that names it is an instance of that idea on its own evidence. The
+        # skill route's prepare beat and the starter stay null.
+        expect(kind != "prepare", f"{path}.conceptRef must be null for prepare")
+        concept_ref = expect_string(unit["conceptRef"], f"{path}.conceptRef")
+        expect(concept_ref in concept_ids, f"{path}.conceptRef points to unknown concept: {concept_ref}")
 
     validate_content(kind, unit["content"], f"{path}.content", sticky_ids)
     unlocks = unit["unlocks"]
@@ -1384,6 +1390,44 @@ def validate_worksheet_content_block(
     validate_ref_list(block["stickyKnowledgeRefs"], f"{path}.stickyKnowledgeRefs", sticky_ids)
     validate_ref_list(block["photoRefs"], f"{path}.photoRefs", photo_ids)
     return block_id
+
+
+def idea_instances(root: dict[str, Any], sequence: list[dict[str, Any]], concept_id: str) -> list[dict[str, Any]]:
+    """The units that are instances of an idea: sequence beats plus an
+    included ending beat that carry its conceptRef."""
+    units = list(sequence)
+    ending = root.get("ending") or {}
+    beat = ending.get("beat") if isinstance(ending, dict) and ending.get("included") else None
+    if isinstance(beat, dict):
+        units.append(beat)
+    return [u for u in units if isinstance(u, dict) and u.get("conceptRef") == concept_id]
+
+
+def validate_idea_instances(
+    root: dict[str, Any],
+    sequence: list[dict[str, Any]],
+    concept_items: list[dict[str, Any]],
+) -> None:
+    # An idea is learned across instances: the question holds still and the
+    # evidence changes. An idea shown on one case is a fact about that case, so
+    # a named concept needs at least two beats that are instances of it, and at
+    # least one of them has every child act on it. A history lesson on
+    # continuity and change once held one pair of toy plates for nine slides;
+    # the idea had no slot, so the plates became the learning.
+    for concept in concept_items:
+        concept_id = concept["id"]
+        instances = idea_instances(root, sequence, concept_id)
+        expect(
+            len(instances) >= 2,
+            f"concepts {concept_id} ({concept['name']}) is an idea, and an idea is met on more than one instance; "
+            f"{len(instances)} unit(s) carry its conceptRef. Mark the beats that meet this idea on different evidence, "
+            "or, if today's learning is a fact about one case, do not name a concept",
+        )
+        expect(
+            any(u.get("kind") not in NO_PUPIL_ACTION_KINDS for u in instances),
+            f"concepts {concept_id} ({concept['name']}) is met only where the teacher acts; "
+            "at least one instance must be a beat where every child uses the idea",
+        )
 
 
 def validate_route_sequence(
@@ -2146,8 +2190,9 @@ def validate_design(
             )
     if structure == "Skill-based":
         expect(bool(concept_items), "Skill-based lesson must define at least one concept")
-    else:
-        expect(not concept_items, f"{structure} lesson must use concepts: []")
+    # Any other route may name the idea it teaches here. Whether it must is
+    # the designer's and reviewer's judgement; what this file holds is that a
+    # named idea is met on more than one instance (checked after the sequence).
 
     vocab_items, _ = collect_registry(
         root["vocabulary"], "vocabulary", "id", ID_PATTERNS["vocabulary"]
@@ -2208,8 +2253,6 @@ def validate_design(
             expected_sc = concept_by_id[concept_ref]["successCriteriaRefs"]
             expect(unit["successCriteriaRefs"] == expected_sc,
                    f"{path}.successCriteriaRefs must exactly match {concept_ref}.successCriteriaRefs")
-        elif structure != "Skill-based":
-            expect(unit["conceptRef"] is None, f"{path}.conceptRef must be null for {structure}")
 
     # A lesson whose every beat unlocks nothing has no spine. `null` is a real
     # answer for a beat that sits beside it (a vocabulary moment, a routine, a
@@ -2223,6 +2266,9 @@ def validate_design(
     )
 
     validate_route_sequence(structure, sequence, concept_items)
+
+    if structure != "Skill-based":
+        validate_idea_instances(root, sequence, concept_items)
 
     starter_unit_id = (root.get("starter") or {}).get("sourceUnitId")
     sequence_ids = {unit["sourceUnitId"] for unit in sequence}

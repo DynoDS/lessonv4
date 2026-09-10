@@ -471,19 +471,11 @@ def validate_route_shape(
         )
         return
 
-    require(
-        not concepts,
-        f"{structure} request must use concepts: []",
-    )
-
-    for index, item in enumerate(sequence):
-        require(
-            item["conceptIndex"] is None,
-            (
-                f"teachingSequence[{index}].conceptIndex must be null "
-                f"for {structure}"
-            ),
-        )
+    # Any other route may name the idea it teaches in `concepts`, and any
+    # sequence item may carry its conceptIndex to mark itself an instance of
+    # it. The design validator holds the rule that an idea has more than one
+    # instance; the request only has to point inside the list, which
+    # validate_request already checked.
 
     if structure == "Content-based":
         index = 0
@@ -844,10 +836,11 @@ def validate_request(raw: Any) -> dict[str, Any]:
 
         require(
             isinstance(indexes, list)
-            and bool(indexes),
+            and (bool(indexes) or request["structure"] != "Skill-based"),
             (
                 f"{path}.successCriteriaIndexes "
-                "must be a non-empty array"
+                "must be a non-empty array for a Skill-based concept; "
+                "an idea in another route may use []"
             ),
         )
 
