@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from reference_test_support import component_text
+
 
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
@@ -23,7 +25,7 @@ class ResponseLengthIsNotAQuotaTests(unittest.TestCase):
     """
 
     def test_response_sizes_the_space_rather_than_setting_a_quota(self) -> None:
-        designer = flat(LESSON_DESIGNER)
+        designer = " ".join(component_text("Generated worksheet").split())
         self.assertIn(
             "`response` sizes the space the thinking needs; it is not a quota",
             designer,
@@ -34,7 +36,7 @@ class ResponseLengthIsNotAQuotaTests(unittest.TestCase):
         """Without its boundary this over-fires on a writing lesson, where the
         paragraph IS the learning, and on a test form practised at its real
         demand."""
-        designer = flat(LESSON_DESIGNER)
+        designer = " ".join(component_text("Generated worksheet").split())
         self.assertIn(
             "Prescribe a length only when the length is itself the learning",
             designer,
@@ -44,7 +46,7 @@ class ResponseLengthIsNotAQuotaTests(unittest.TestCase):
     def test_the_rule_gives_a_checkable_tell(self) -> None:
         self.assertIn(
             "ask whether a correct short answer would fail it",
-            flat(LESSON_DESIGNER),
+            " ".join(component_text("Generated worksheet").split()),
         )
 
 

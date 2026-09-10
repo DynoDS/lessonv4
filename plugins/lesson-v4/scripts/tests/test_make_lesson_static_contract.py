@@ -4,6 +4,8 @@ import json
 import unittest
 from pathlib import Path
 
+from reference_test_support import component_text
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL = ROOT / "skills" / "make-lesson" / "SKILL.md"
@@ -488,7 +490,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertNotIn("eq-fractions", text)
 
     def test_stage1_dialogic_synthesis_required(self):
-        text = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+        text = component_text("Dialogic route")
         self.assertIn("After the final discussion, include one honest Synthesise beat.", text)
         self.assertIn("It names and compares the positions, frames or tensions that genuinely appeared.", text)
         self.assertIn("It must not invent class views or announce one predetermined answer.", text)
@@ -496,7 +498,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertNotIn("Add an honest synthesis when useful", text)
 
     def test_stage1_support_fading_summary(self):
-        designer = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+        designer = component_text("Generated worksheet")
         preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
         self.assertIn("Keep support when it enables the intended thinking; remove or reduce it when it supplies that thinking or the answer.", preferences)
         self.assertIn("Keep, reduce or remove support by whether enables target thinking or supplies answer.", designer)
@@ -602,7 +604,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         designer = self._designer_text()
         preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
         self.assertIn(
-            "Read a named section from its heading to the next heading of the same level.",
+            "stops before the next heading at the same or a higher level.",
             designer,
         )
         self.assertIn("### Core rules", preferences)
@@ -614,7 +616,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         # A protected set nobody counted is how a sheet reaches the worksheet
         # designer over a page with no removal authorised, and comes straight
         # back for a decision that was always the designer's.
-        designer = self._designer_text()
+        designer = component_text("Generated worksheet")
         self.assertIn("Price the protected set against the page", designer)
         self.assertIn("250mm", designer)
         self.assertIn("preAuthorisedRemoval: []", designer)

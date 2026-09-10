@@ -29,6 +29,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from reference_test_support import component_text
+
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
 DESIGN_REVIEWER = ROOT / "agents" / "design-reviewer.md"
@@ -97,7 +99,7 @@ class FinalTaskMovesArePractisedTests(unittest.TestCase):
 
 class TheCheckIsNotDroppedBecauseTheTaskCoversItTests(unittest.TestCase):
     def test_designer_and_contract_refuse_the_covered_by_the_final_section_reason(self) -> None:
-        self.assertIn("is never pre-authorised on the ground that the final section", flat(LESSON_DESIGNER))
+        self.assertIn("is never pre-authorised on the ground that the final section", " ".join(component_text("Generated worksheet").split()))
         self.assertIn("is never listed here on the ground that another section", flat(OUTPUT_TEMPLATE))
 
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from reference_test_support import component_text
+
 
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
@@ -51,7 +53,7 @@ class BriefAbsorptionAndUnroutedRuleTests(unittest.TestCase):
         """The worksheet engine embeds real photographs and the photo cap was
         not reached, so a text-only sheet was a choice. Swapping photographs
         for written clues stopped the sheet testing recognition."""
-        designer = flat(LESSON_DESIGNER)
+        designer = " ".join(component_text("Generated worksheet").split())
         self.assertIn(
             "For fresh additional practice, change instances rather than the teaching medium", designer
         )

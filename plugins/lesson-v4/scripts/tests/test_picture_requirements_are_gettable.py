@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from reference_test_support import component_text
+
 
 ROOT = Path(__file__).resolve().parents[2]
 DESIGNER = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
@@ -57,12 +59,12 @@ class PictureRequirementsAreGettableTests(unittest.TestCase):
 
     def test_the_ladder_order_is_the_compilers_and_follows_the_picture(self) -> None:
         """A fixed order spends inspections proving stock has no 1900 classroom."""
-        designer = flat(DESIGNER)
+        designer = flat(component_text("Photograph acquisition"))
         self.assertIn("climbs a ladder ordered for the picture it is fetching", designer)
         self.assertIn("Authentic evidence leads instead with Openverse", designer)
 
     def test_the_designer_names_the_evidence_and_the_scout_fetches_it(self) -> None:
-        designer = flat(DESIGNER)
+        designer = flat(component_text("Photograph acquisition"))
         self.assertIn("Name the evidence, not the file.", designer)
         self.assertIn(
             "What the contract has no field for is *this exact file*",
@@ -80,7 +82,7 @@ class PictureRequirementsAreGettableTests(unittest.TestCase):
         the ordinary judgement: bind to one item when the teaching rests on that
         source, and describe the kind when any faithful example would do.
         """
-        designer = flat(DESIGNER)
+        designer = flat(component_text("Photograph acquisition"))
         self.assertIn("So a specific real source *is* a fair thing to ask for", designer)
         self.assertIn(
             "the Ford End School classroom around 1900, held by Essex Record Office",
@@ -93,7 +95,7 @@ class PictureRequirementsAreGettableTests(unittest.TestCase):
 
     def test_the_designer_knows_how_far_the_route_reaches(self) -> None:
         """A designer that thinks the shelf is two libraries wide designs small."""
-        designer = flat(DESIGNER)
+        designer = flat(component_text("Photograph acquisition"))
         self.assertIn("The Image Scout climbs a ladder", designer)
         for rung in ("Unsplash and Wikimedia", "Openverse", "the open web itself"):
             with self.subTest(rung=rung):

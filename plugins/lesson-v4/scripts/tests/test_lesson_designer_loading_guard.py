@@ -16,6 +16,8 @@ import re
 import unittest
 from pathlib import Path
 
+from reference_test_support import component_text
+
 
 ROOT = Path(__file__).resolve().parents[2]
 REFERENCES = ROOT / "references"
@@ -36,6 +38,13 @@ NOT_REFERENCES = {"design-decisions.md", "design-reviewer.md"}
 
 def role_text() -> str:
     return LESSON_DESIGNER.read_text(encoding="utf-8")
+
+
+def all_guidance_text() -> str:
+    return role_text() + "\n" + "\n".join(component_text(name) for name in (
+        "Dialogic route", "Task-Centred route", "Representation configurations",
+        "Generated worksheet", "Photograph acquisition",
+    ))
 
 
 def loading_section(text: str) -> str:
@@ -72,8 +81,8 @@ def loading_names(section: str, name: str) -> bool:
 
 class ReferenceFilesAreRouted(unittest.TestCase):
     def test_every_reference_the_role_points_at_is_named_by_the_loading_section(self) -> None:
-        text = role_text()
-        section = loading_section(text)
+        text = all_guidance_text()
+        section = loading_section(role_text())
         unrouted = sorted(
             name for name in named_reference_files(text) if not loading_names(section, name)
         )
@@ -106,7 +115,7 @@ class PointedHeadingsExist(unittest.TestCase):
         return [" ".join(words[:n]) for n in range(min(len(words), 8), 0, -1)]
 
     def test_arrow_pointers_resolve_to_a_heading(self) -> None:
-        text = role_text()
+        text = all_guidance_text()
         unresolved = []
         for name, phrase in self.POINTER.findall(text):
             path = REFERENCES / name
@@ -124,7 +133,7 @@ class PointedHeadingsExist(unittest.TestCase):
         )
 
     def test_section_number_pointers_resolve_to_a_numbered_heading(self) -> None:
-        text = role_text()
+        text = all_guidance_text()
         unresolved = []
         for name, number in self.SECTION_NUMBER.findall(text):
             path = REFERENCES / name

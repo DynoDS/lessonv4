@@ -24,6 +24,8 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from reference_test_support import component_text
 from unittest import mock
 
 from PIL import Image
@@ -394,7 +396,7 @@ class ControlledAiIsEarnedByStagingTests(unittest.TestCase):
     """
 
     def test_the_designer_is_told_a_named_object_is_not_staging(self) -> None:
-        text = (ROOT.parent / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+        text = component_text("Photograph acquisition")
         self.assertIn("A single named object is not staging", text)
         self.assertIn("earned by the STAGING", text)
         self.assertIn("`ordinary-real` with `fallback_action: ai`", text)
