@@ -587,13 +587,23 @@ Parse JSONs and run validator per Output Format. Don't return hand-off failing i
 
 Use the authority order near the start of this file.
 
-Read a named section from its heading to the next heading of the same level.
+Read named reference sections with the bundled reader; it returns the source text unchanged and stops before the next heading at the same or a higher level. Batch sections needed for the current decision in one command:
+
+```bash
+python3 "[PLUGIN_ROOT]/scripts/read-reference.py" \
+  --select "preferences.md::Written Voice (House Style) > Core rules" \
+  --select "teacher-voice.md::1. Core voice"
+```
+
+Use `--index "filename.md"` for exact heading paths when a shortened section name in these instructions is not the file's actual heading. Use `filename.md::@intro` for its introduction. Require `REFERENCE_READ_OK` for section reads or `REFERENCE_INDEX_OK` for an index; these confirm extraction, not that the guidance was applied. On a missing or ambiguous section, resolve the exact heading from the index rather than omitting it or loading the whole file. If the reader itself is unavailable, read the named sections directly using the same peer-or-higher boundary and report the tool obstacle through the existing Friction channel.
+
+A direction to read a section means consult its guidance at that decision, not fetch the same text for every field. Reuse text still available in this worker's context. After context loss, a source change or a fresh worker, read the needed sections again; another worker's reading does not count. Do not preload unrelated stages.
 
 **At the start:**
 
-- Read the introduction and contents of `preferences.md`, then `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included, and it is short.
+- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included, and it is short.
 - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount.
-- Read the introduction and contents of `evidence-synthesis.md`, then `Lesson Structures` and `Cross-Cutting Principles`.
+- Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `python3 "[PLUGIN_ROOT]/scripts/read-reference.py" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default.
 - Read the one matching `subject-*.md` file when it exists. List the directory and match the subject. Do not guess a filename.
 
 **At the decision point:**
@@ -604,7 +614,7 @@ Read a named section from its heading to the next heading of the same level.
 - Read `Cognitive Load Triage on Scaffolds` when deciding what is visible, blank, constructable or pre-filled.
 - Read the Lesson Designer parts of `Slide Philosophy`: `Lesson Designer content boundaries`, `Lesson Designer visual-need boundary` and `Speaker notes hand-off`. Do not read `Slide Designer presentation rules`.
 - Read `Slide Headings` before writing source-unit labels.
-- Use the contents of `evidence-synthesis.md` to open only the evidence sections needed for an uncertain component or trade-off.
+- The contents of `evidence-synthesis.md` own component-evidence loading: read a section before making the decision named by its trigger, including when considering the component and deciding not to use it. Do not wait until you feel uncertain; that can hide the guidance needed to recognise a mistake. Leave sections whose decisions this lesson does not touch unread.
 - Read `do-beats.md` core guidance and only the needed registers when a beat needs a short processing form, in any structure.
 - Read `modelling-formats.md` when choosing `modellingState`.
 - Read `reasoning-prompts.md` when Apply or worksheet reasoning is being designed.
