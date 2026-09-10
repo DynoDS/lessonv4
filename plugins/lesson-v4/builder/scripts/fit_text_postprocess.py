@@ -437,6 +437,73 @@ def shape_floor(name, default):
     return max(default, int(match.group(1))) if match else default
 
 
+def text_budget(shape, floor_pt, text):
+    """How much text this box holds at the floor, as a sentence to act on.
+
+    "Does not fit" leaves the reader to find the limit by trying again, and the
+    next attempt is a guess that can be refused for the same reason. The box and
+    the font are both known at the moment it refuses, so the limit is known too,
+    and saying it turns a retry into arithmetic.
+
+    Measured from this text's own characters rather than an average, because the
+    answer has to be true of the words actually on the slide: a line of digits
+    and a line of prose do not fit the same box.
+    """
+    body = " ".join(str(text).split())
+    if not body:
+        return ""
+
+    _, bold, italic = inspect_runs(shape.text_frame)
+    font_file = pick_font_file(bold, italic)
+
+    try:
+        text_w, _ = _rendered_size(body, floor_pt, font_file)
+        line_h = _real_line_height_emu(font_file, floor_pt) * LINE_HEIGHT_SAFETY
+    except Exception:
+        return ""
+
+    usable_w = max((shape.width - PAD_W) / WIDTH_SAFETY, 1)
+    usable_h = max(shape.height - PAD_H, 1)
+    per_char = text_w / len(body)
+    if per_char <= 0 or line_h <= 0:
+        return ""
+
+    chars_per_line = max(1, int(usable_w // per_char))
+    lines = max(1, int(usable_h // line_h))
+    budget = chars_per_line * lines
+    longest_word = max((len(w) for w in body.split()), default=0)
+
+    # Two different problems wear the same refusal, and the repair is different
+    # for each. Too many words is a volume problem, answered by cutting or by a
+    # bigger zone. Words that will not break into lines this short is a shape
+    # problem: the box has the area but not the width, and cutting a sentence
+    # that already fits by count does nothing. Reporting a budget the text is
+    # already inside, with no explanation, reads as the build contradicting
+    # itself and sends the repair at the wrong thing.
+    if len(body) > budget:
+        return (
+            "The box holds about %d characters at %dpt (%d line%s of about %d); "
+            "this one is %d."
+            % (budget, floor_pt, lines, "" if lines == 1 else "s", chars_per_line, len(body))
+        )
+
+    if longest_word > chars_per_line:
+        return (
+            "The box is %d line%s of about %d characters at %dpt, and \"%s\" is "
+            "%d characters, so this text cannot break into lines that short. It "
+            "needs a wider box, not fewer words."
+            % (lines, "" if lines == 1 else "s", chars_per_line, floor_pt,
+               max(body.split(), key=len), longest_word)
+        )
+
+    return (
+        "The box is %d line%s of about %d characters at %dpt. These %d "
+        "characters fit that by count but not once the words break, so the box "
+        "needs to be wider or taller rather than the wording shorter."
+        % (lines, "" if lines == 1 else "s", chars_per_line, floor_pt, len(body))
+    )
+
+
 def measure_shape(shape, ceiling, floor_pt):
     tf = shape.text_frame
     max_size, bold, italic = inspect_runs(tf)
@@ -546,8 +613,14 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             for shape, result in measured:
                 record_change(shape.text_frame, result["current"], shared)
                 if result["hit_floor"]:
-                    preview = shape.text_frame.text.strip().replace("\n", " ")[:60]
-                    overloaded.append((slide_number, shape.name or "<unnamed>", preview))
+                    full = shape.text_frame.text
+                    preview = full.strip().replace("\n", " ")[:60]
+                    overloaded.append((
+                        slide_number,
+                        shape.name or "<unnamed>",
+                        preview,
+                        text_budget(shape, shape_floor(shape.name, floor_pt), full),
+                    ))
 
         for shape in ordinary:
             tf = shape.text_frame
@@ -564,7 +637,12 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
                 record_change(tf, result["current"], result["best"])
                 if result["hit_floor"]:
                     preview = tf.text.strip().replace("\n", " ")[:60]
-                    overloaded.append((slide_number, shape.name or "<unnamed>", preview))
+                    overloaded.append((
+                        slide_number,
+                        shape.name or "<unnamed>",
+                        preview,
+                        text_budget(shape, min(floor_pt, ceiling), tf.text),
+                    ))
             except Exception as error:
                 record_failure(slide_number, shape, error)
 
@@ -573,10 +651,11 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
         f"Fit-text: grown {grown}, shrunk {shrunk}, unchanged {unchanged}, "
         f"skipped {skipped} -- {os.path.basename(path)}"
     )
-    for sn, shape_name, preview in overloaded:
+    for sn, shape_name, preview, budget in overloaded:
+        room = f" {budget}" if budget else ""
         print(
             f"  OVERLOAD slide {sn} box {shape_name!r}: hit {shape_floor(shape_name, floor_pt)}pt floor; "
-            f"content is too heavy for this box. Give it more room or split the slide. "
+            f"content is too heavy for this box.{room} Give it more room or split the slide. "
             f"Text preview: \"{preview}{'...' if len(preview) == 60 else ''}\"",
             file=sys.stderr,
         )
@@ -585,8 +664,8 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
         "grown": grown,
         "shrunk": shrunk,
         "overloaded": [
-            {"slide": sn, "box": shape_name, "preview": preview}
-            for sn, shape_name, preview in overloaded
+            {"slide": sn, "box": shape_name, "preview": preview, "budget": budget}
+            for sn, shape_name, preview, budget in overloaded
         ],
         "measurementFailures": [
             {"slide": sn, "box": shape_name, "error": error}

@@ -370,3 +370,58 @@ def test_no_break_spaces_measure_as_one_unbroken_word():
     narrow = int(whole_w * 0.6)
     assert MODULE.wrap_paragraph(joined, narrow, pt, font) == 1
     assert MODULE.wrap_paragraph(plain, narrow, pt, font) >= 2
+
+
+class _Box:
+    """Just enough of a shape for the budget to measure: a size and some text."""
+
+    class _Run:
+        def __init__(self, text, size):
+            self.text = text
+            self.font = type("F", (), {"size": size, "bold": True, "italic": False})()
+
+    class _Para:
+        def __init__(self, text, size):
+            self.runs = [_Box._Run(text, size)]
+            self.text = text
+            self.line_spacing = None
+            self.space_before = None
+            self.space_after = None
+
+    class _Frame:
+        def __init__(self, text, size):
+            self.text = text
+            self.paragraphs = [_Box._Para(text, size)]
+
+    def __init__(self, text, width_in, height_in, pt=18):
+        from pptx.util import Emu
+
+        self.text_frame = _Box._Frame(text, Emu(int(pt * 12700)))
+        self.width = Emu(int(width_in * 914400))
+        self.height = Emu(int(height_in * 914400))
+        self.name = "Text 1"
+
+
+def test_budget_reports_volume_when_there_are_simply_too_many_words():
+    """Too many words is answered by cutting or by a bigger zone, so the
+    refusal gives the count to cut to."""
+    box = _Box("Put the numbers in descending order and explain your reasoning fully.", 6.0, 0.4)
+    message = MODULE.text_budget(box, 18, box.text_frame.text)
+    assert "holds about" in message
+    assert "this one is 69." in message
+
+
+def test_budget_names_wrapping_when_the_words_fit_by_count():
+    """A box with the area but not the width refuses text that is inside its
+    character budget. Reporting only the budget reads as the build
+    contradicting itself and sends the repair at the wording, which cannot
+    help: the fix is a wider box."""
+    box = _Box("Which column decides the order of the two numbers?", 1.2, 2.4)
+    message = MODULE.text_budget(box, 18, box.text_frame.text)
+    assert "wider" in message
+    assert "holds about" not in message
+
+
+def test_budget_says_nothing_rather_than_guessing_at_empty_text():
+    box = _Box("   ", 3.0, 1.0)
+    assert MODULE.text_budget(box, 18, box.text_frame.text) == ""

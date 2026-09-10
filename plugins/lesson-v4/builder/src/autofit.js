@@ -214,7 +214,11 @@ function autofitDiagnostics(autofit) {
     code: autofit.status,
     owner,
     location: { slide: entry.slide, box: entry.box },
-    message: entry.error || entry.preview || autofit.message,
+    // The budget the fit pass measured, ahead of the words, because the words
+    // are what the reader already has and the limit is what they are missing.
+    message: entry.error
+      || [entry.budget, entry.preview].filter(Boolean).join(' ')
+      || autofit.message,
   }));
 }
 
