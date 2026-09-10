@@ -1,0 +1,36 @@
+name: Pinned work source for consolidation
+on:
+  push:
+    branches: [context-validation-45d8a7e]
+    paths: [.github/workflows/context-wave3.yml]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: be864e35fa359761aedd0a306a2ca16888722e81
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Export changed files and full tree manifest
+        run: |
+          mkdir -p /tmp/wave3-source
+          python3 - <<'PY'
+          import subprocess, pathlib, zipfile
+          out=pathlib.Path('/tmp/wave3-source')
+          base='45d8a7ede51bd7d372777258e42be017f6877e9c'
+          head='be864e35fa359761aedd0a306a2ca16888722e81'
+          assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==head
+          names=subprocess.check_output(['git','diff','--name-only','--diff-filter=ACM',base,head],text=True).splitlines()
+          with zipfile.ZipFile(out/'overlay.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for name in names:z.write(name,name)
+          (out/'tree.txt').write_bytes(subprocess.check_output(['git','ls-tree','-r',head]))
+          (out/'commit.txt').write_text(head+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pinned-work-overlay-be864e3
+          path: /tmp/wave3-source/
+          retention-days: 1
