@@ -5,6 +5,9 @@ on:
     paths: [.github/workflows/publish-context-wave3.yml]
 permissions:
   contents: write
+defaults:
+  run:
+    shell: bash
 jobs:
   verify-publish:
     runs-on: ubuntu-latest
@@ -49,12 +52,24 @@ jobs:
       - name: Install test dependencies
         working-directory: implementation
         run: |
+          mkdir -p /tmp/wave3-receipts
           python -m pip install 'pytest==9.0.2' pytest-subtests
           npm ci --prefix plugins/lesson-v4/builder
+      - name: Record dependency audit without changing dependency versions
+        working-directory: implementation
+        run: |
+          python - <<'PY'
+          import pathlib,subprocess
+          result=subprocess.run(['npm','audit','--prefix','plugins/lesson-v4/builder','--json'],capture_output=True)
+          out=pathlib.Path('/tmp/wave3-receipts')
+          (out/'dependency-audit.json').write_bytes(result.stdout)
+          (out/'dependency-audit.stderr.txt').write_bytes(result.stderr)
+          (out/'dependency-audit-exit.txt').write_text(str(result.returncode)+'\n')
+          print('Dependency audit exit:',result.returncode,'; report retained separately from test results; no automatic upgrade applied')
+          PY
       - name: Validate protected planning, loading, settings and runtime boundaries
         working-directory: implementation
         run: |
-          mkdir -p /tmp/wave3-receipts
           python -m pytest -q --tb=short \
             plugins/lesson-v4/scripts/tests/test_planning_consolidation.py \
             plugins/lesson-v4/scripts/tests/test_rhythm_holds_in_every_route.py \
@@ -66,7 +81,7 @@ jobs:
             plugins/lesson-v4/scripts/tests/test_read_reference.py \
             plugins/lesson-v4/scripts/tests/test_worker_launch.py \
             | tee /tmp/wave3-receipts/python.txt
-          python plugins/lesson-v4/scripts/verify-plugin-root.py plugins/lesson-v4
+          python plugins/lesson-v4/scripts/verify-plugin-root.py "${PWD}/plugins/lesson-v4"
       - name: Run complete builder checks and worksheet control
         working-directory: implementation
         run: |
