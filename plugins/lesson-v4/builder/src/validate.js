@@ -52,6 +52,7 @@ const {
   presentationText,
   validatePresentationSpec
 } = require('./presentation-text');
+const { MIN_FONT_PT } = require('./styles');
 
 // Walk every nested object/array and call fn(value) for each value stored
 // under the given key, wherever it sits (body, stacks, rows, insets, vocab).
@@ -76,6 +77,34 @@ function collectStrings(node, out) {
     Object.keys(node).forEach((k) => collectStrings(node[k], out));
   }
   return out;
+}
+
+// A `fontSize` a designer sets is a CEILING: the size the text starts at before
+// the build's fit pass shrinks it to whatever its box will hold. So a ceiling at
+// or below the projection floor is not a small size, it is no room at all - the
+// fit pass has nowhere to shrink to, and the first line that runs a word long
+// fails the build outright instead of settling a point or two smaller.
+//
+// This is caught here, against the specification, because the alternative is
+// finding it after a scratch build as a text-overflow on a box whose words look
+// perfectly reasonable, which says nothing about the ceiling that caused it.
+function validateFontCeilings(slide, slideNumber, errors) {
+  forEachValue(slide, 'fontSize', (value, owner) => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return;
+    if (value > MIN_FONT_PT) return;
+
+    const text = presentationText(owner);
+    const shown = text == null ? '' : ` ("${String(text).slice(0, 40)}")`;
+
+    errors.push(
+      `slide ${slideNumber}: fontSize ${value} is at or below the ${MIN_FONT_PT}pt ` +
+      `projection floor${shown}, so this text has no room to shrink and the ` +
+      `build fails on the first line that will not fit. A fontSize is the size ` +
+      `text starts at, not the size it ends at: set the ceiling you would like ` +
+      `it to reach and let the fit pass bring it down, or give the text a zone ` +
+      `that holds it.`
+    );
+  });
 }
 
 function validatePresentationFields(slide, slideNumber, errors) {
@@ -190,6 +219,7 @@ function validateLesson(lesson, lessonDir) {
     }
 
     validatePresentationFields(slide, n, errors);
+    validateFontCeilings(slide, n, errors);
 
     // Invented photo paths: the picture stage never obtains a file nobody promised, so
     // the slide would show a grey box (essential) or a silent gap (non-essential).
