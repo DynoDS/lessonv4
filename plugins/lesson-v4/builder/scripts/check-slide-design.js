@@ -830,6 +830,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
         buildPath,
         jsonPath,
         scratchDir,
+        "--design-preview",
       ],
       {
         encoding: 'utf8',

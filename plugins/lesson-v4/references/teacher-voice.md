@@ -19,8 +19,6 @@ This guide owns **how the voice sounds**. What the words must **achieve** is own
 
 When authoring anything a child reads or hears, read sections 1-3, 15 and 17. Read §4 once when considering the whole lesson at completion, not for each string. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison prompt §12, a practical lesson §13. Read §16's calibrated examples only when wording remains uncertain after that.
 
-§6 was missing from that list, and questions and instructions are the most common thing anyone here writes. Two prompts reached real sheets without it: `Choose a job.` on an appliances sheet, which children answered `Fireman`, and `Write one question you would ask before making a stronger judgement.` on a Greater Depth diet sheet. Both were written by an agent that had read every section it was routed to, and §6 is the one that owns them (5 September 2026).
-
 The voice is the same across the primary years: age changes the support, not the humanity. KS1 normally needs more familiar vocabulary, more concrete meaning and stronger reading-access support. KS2 can carry richer vocabulary and more complex thought. Neither phase has a sentence-length target: do not make KS1 robotic by chopping every explanation into tiny sentences, and do not make KS2 abstract or academic merely because the children are older. Year 3 may need either treatment according to the material and the class. Written Voice's access rules (Below resources, Greater Depth) still apply at full strength.
 
 ---

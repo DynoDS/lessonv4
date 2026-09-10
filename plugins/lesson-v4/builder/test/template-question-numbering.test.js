@@ -3,8 +3,9 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const PptxGenJS = require('pptxgenjs');
-const JSZip = require('jszip');
+const PptxGenJS = require('../src/require-global')('pptxgenjs');
+const { loadJSZip } = require('../src/fix-paragraph-props');
+const JSZip = loadJSZip();
 
 const { drawMathsTurnSc } = require('../src/templates/maths-turn-sc');
 const { drawMathsTurnRefSc } = require('../src/templates/maths-turn-ref-sc');

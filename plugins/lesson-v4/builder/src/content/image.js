@@ -82,6 +82,18 @@ const PICTURE_FLOOR_PAIR     = 2.2;
 // (4 September 2026). Mirrors `_zone-fill.js`: the store is cleared between
 // the layout preflight and the real draw so nothing is counted twice.
 const floorFindings = [];
+// A placeholder has no picture relationship for the ZIP verifier to inspect.
+// Record actual required-image omissions separately; composition previews may
+// show them, but the final builder must not publish them as a finished deck.
+const missingPictures = new Map();
+
+function clearMissingPictures() {
+  missingPictures.clear();
+}
+
+function missingPictureFindings() {
+  return Array.from(missingPictures.values(), (finding) => ({ ...finding }));
+}
 
 function clearPictureFloor() {
   floorFindings.length = 0;
@@ -383,6 +395,12 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
     // the placeholder, so a missing must-have image stays visible as a signal
     // that it still needs sourcing.
     if (imageData.essential === false) return;
+    const slideNumber = ctx && Number.isInteger(ctx.slideIndex) ? ctx.slideIndex + 1 : undefined;
+    missingPictures.set(JSON.stringify([slideNumber, raw]), {
+      slide: slideNumber,
+      part: raw,
+      message: `slide ${slideNumber === undefined ? '?' : slideNumber}: required image "${raw}" could not be drawn; only a placeholder was rendered.`,
+    });
     // A load-bearing image that can't be found stays VISIBLE as a grey placeholder
     // AND announces itself, so a missing must-have photo can't hide behind a clean
     // "No warnings" summary — it still needs sourcing before the lesson.
@@ -637,5 +655,7 @@ module.exports = {
   PICTURE_READABLE_FLOOR,
   pictureFloorFindings,
   clearPictureFloor,
+  clearMissingPictures,
+  missingPictureFindings,
   detailRect,
 };

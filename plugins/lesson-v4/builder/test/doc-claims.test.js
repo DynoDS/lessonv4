@@ -808,13 +808,9 @@ test("the deck calibrates against the teacher's visual profile", () => {
   );
 });
 
-test("the photograph fit rules survived the built-deck look being removed", () => {
-  // Crop fit and distortion used to live only in a second Slide Designer spawn
-  // that rendered the finished deck. That spawn is gone: its one real catch is
-  // already deterministic in the builder's readable floor, and the photograph
-  // itself was never the designer's to repair. What had to survive is the half
-  // the designer decides up front - which fit to ask for - because nobody looks
-  // at the deck afterwards to catch a wrong one.
+test("photograph fit is decided before build and checked again on final resources", () => {
+  // The early composition check and final delivered-picture review have
+  // different evidence. Keep both without reviving the obsolete assignment.
   assert.ok(
     !SLIDE_DESIGNER_MD.includes("## The built-deck look"),
     "the built-deck look spawn is back in the role file"
@@ -827,11 +823,12 @@ test("the photograph fit rules survived the built-deck look being removed", () =
     !ORCHESTRATOR_MD.includes("ASSIGNMENT: BUILT_DECK_LOOK"),
     "the orchestrator is launching the built-deck look again"
   );
-  assert.match(ORCHESTRATOR_MD, /Do not reinstate it/);
+  assert.match(ORCHESTRATOR_MD, /review the actual outputs with\s+their final pictures/);
+  assert.match(ORCHESTRATOR_MD, /final-resource-review\.md/);
   for (const token of [
     "Under `contain`, the whole photograph stays visible at its natural proportions",
     "a centred crop fills the frame",
-    "Nobody looks at the built deck after you",
+    "Final resource review checks the delivered pictures",
     "Never place several photographs above one combined answer strip"
   ]) {
     assert.ok(
@@ -1036,10 +1033,13 @@ test("repairable slide-check faults stay inside the original Slide Designer", ()
 
   assert.ok(
     SLIDE_FOCUSED_REPAIR_MD.includes(
-      "This role is an escalation, not a continuation of creation-mode self-check."
+      "Creation-mode composition faults stay with the original Slide Designer until"
     ),
     "the focused Slide Designer role can still act as creation-mode Slide Designer part two"
   );
+  assert.ok(SLIDE_FOCUSED_REPAIR_MD.includes("`Slide self-repair: EXHAUSTED 3/3`"));
+  assert.match(SLIDE_FOCUSED_REPAIR_MD, /Final resource review findings also reach this role directly/);
+  assert.match(SLIDE_FOCUSED_REPAIR_MD, /They do not require exhaustion of the earlier preview budget/);
 });
 
 test("the documented picture reading floor is the one the build enforces", () => {

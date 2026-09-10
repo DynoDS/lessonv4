@@ -22,6 +22,7 @@ const {
   fixParagraphProps,
   dedupeParagraphProps,
   countOffendingParagraphs,
+  loadJSZip,
 } = require('../src/fix-paragraph-props');
 
 let failures = 0;
@@ -78,7 +79,7 @@ async function main() {
   // to be repaired ten minutes before a lesson.
   await check('a deck written by pptxgenjs comes out with one block per paragraph', async function () {
     const PptxGenJS = requireGlobal('pptxgenjs');
-    const JSZip = requireGlobal('jszip');
+    const JSZip = loadJSZip();
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ppr-'));
     const tmp = path.join(dir, 'check.pptx');
 

@@ -51,6 +51,8 @@
 // it here is what makes the absence visible instead of silent.
 
 const PRIMITIVES = [
+  { id: 'comparison-slot', depicts: 'data', slides: 'comparison-slot', worksheets: false, wall: false, stickin: false,
+    note: 'Board-only symbol-entry ring between compared objects, sized to their shared row. Printed questions provide their own answer space; this is not a standalone wall reference or stick-in figure.' },
   // ── Shared-geometry figures (one drawing in shared/visuals/, consumed by every
   //    renderer it reaches). These are the parity-critical set: identical shape on
   //    board, paper, wall and stick-in piece, so a skip shows as words where a picture should be.
@@ -271,6 +273,7 @@ const PRIMITIVES = [
 // visual must say whether it has catalogue-backed compact treatments, should
 // stay full-size, or is unsuitable as a step cue.
 const SUCCESS_CRITERIA_AUDIT = Object.freeze({
+  'comparison-slot': { classification: 'unsuitable', reason: 'An empty answer ring is a task response surface, not a transferable success-criteria cue.' },
   venn: { classification: 'SC-inline', reason: 'Only the destination region survives inline.' },
   carroll: { classification: 'SC-inline', reason: 'Only one-box placement survives inline.' },
   angle: { classification: 'both', reason: 'The arc remains a stable visible mark.' },

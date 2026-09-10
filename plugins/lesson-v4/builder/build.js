@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const requireGlobal = require('./src/require-global');
 const PptxGenJS = requireGlobal('pptxgenjs');
@@ -16,7 +17,7 @@ const { slideCheckpointState, checkpointMessage } = require('./src/slide-checkpo
 const { preflightLayouts } = require('./src/layout-preflight');
 const { capacityWarnings } = require('./src/content/capacity');
 const { zoneFillWarnings, clearZoneFill } = require('./src/content/_zone-fill');
-const { pictureFloorFindings, clearPictureFloor } = require('./src/content/image');
+const { pictureFloorFindings, clearPictureFloor, missingPictureFindings, clearMissingPictures } = require('./src/content/image');
 const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
 const { verifyPictures } = require('./src/verify-pictures');
@@ -97,6 +98,7 @@ async function main() {
   // ignored so older invocations keep working.
   const rawArgs = process.argv.slice(2);
   const cardLook = !rawArgs.includes("--no-cards");
+  const designPreview = rawArgs.includes("--design-preview");
   const skipOptionalDecorations = rawArgs.includes(
     "--skip-optional-decorations"
   );
@@ -104,7 +106,8 @@ async function main() {
     (arg) =>
       arg !== "--cards" &&
       arg !== "--no-cards" &&
-      arg !== "--skip-optional-decorations"
+      arg !== "--skip-optional-decorations" &&
+      arg !== "--design-preview"
   );
   if (args.length < 1) usage();
   const jsonPath = path.resolve(args[0]);
@@ -116,6 +119,17 @@ async function main() {
   }
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  // Pending required pictures are permitted only in the checker's private
+  // scratch directory, never by reusing this switch on a delivery folder.
+  if (designPreview && (
+    path.dirname(outputDir) !== path.resolve(os.tmpdir()) ||
+    !path.basename(outputDir).startsWith('lesson-resources-slide-design-check-') ||
+    fs.lstatSync(outputDir).isSymbolicLink()
+  )) {
+    console.error('DESIGN_PREVIEW_OUTPUT_INVALID: previews require a private slide-design-check scratch directory.');
+    process.exit(1);
   }
 
   clearWarnings();
@@ -277,6 +291,7 @@ async function main() {
   // about its slot is a duplicate of what the real draw is about to record.
   clearZoneFill();
   clearPictureFloor();
+  clearMissingPictures();
 
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
@@ -376,7 +391,7 @@ async function main() {
           `without Priority 3 decoration.`
       );
 
-      const fallback = rebuildWithoutOptionalDecorations(jsonPath, outputDir);
+      const fallback = rebuildWithoutOptionalDecorations(jsonPath, outputDir, { designPreview });
       if (fallback.status !== 0) {
         console.error(
           "The decoration-free fallback build also failed. Its output above is " +
@@ -396,6 +411,7 @@ async function main() {
   // slide that needed it cannot be taught from, and the fault is invisible until
   // someone opens the deck.
   const pictures = await runPictureCheck(tempOutputPath);
+  if (!designPreview) pictures.faults.push(...missingPictureFindings());
   for (const fault of pictures.faults) {
     console.error(`  ✗ ${fault.message}`);
     diagnostic(

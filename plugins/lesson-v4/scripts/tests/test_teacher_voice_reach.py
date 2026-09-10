@@ -81,8 +81,12 @@ class TeacherVoiceGuideTests(unittest.TestCase):
         KS1/KS2 paragraph moved here from Written Voice so age-of-register
         has one owner."""
         voice = flat(VOICE)
-        self.assertNotIn("Year 4", voice)
-        self.assertNotIn("Daniel", voice)
+        # Calibration may name the teacher or the age of an example; neither
+        # makes the operating guidance exclusive to that year group.
+        self.assertIn("The voice is the same across the primary years", voice)
+        self.assertIn("KS1 normally needs", voice)
+        self.assertIn("KS2 can carry", voice)
+        self.assertIn("Neither phase has a sentence-length target", voice)
         self.assertIn("age changes the support, not the humanity", voice)
         preferences = flat(PREFERENCES)
         self.assertNotIn(

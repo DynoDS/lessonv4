@@ -43,16 +43,10 @@ its length, and watching one tells you nothing until the moment it tells you
 everything. A worker is making progress when anything in `[WORKING_DIR]` has
 changed recently, including a temporary or attempt-suffixed file; it has
 stopped when nothing there has moved and the host reports no activity. Kill a
-long worker only on that second reading. A real run lost its deck three times
-over because each attempt was judged dead while it was iterating on a
-13-slide candidate the orchestrator never looked at, and reported a phantom
-infrastructure fault instead of the one-line layout diagnostic that was
-actually blocking it.
+long worker only on that second reading.
 
 That evidence rule is not confined to workers. Read the newest artefact a stage
-actually produced before declaring the stage failed: a run once shipped a deck
-UNVERIFIED because a reviewer read a stale route file and stopped, with a
-current page manifest sitting beside it.
+actually produced before declaring the stage failed.
 
 Canonical validated files are the checkpoints. On an interrupted run, resume
 from the latest checkpoint whose validator still passes and whose upstream

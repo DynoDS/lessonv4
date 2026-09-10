@@ -178,7 +178,8 @@ function rebuildWithoutOptionalDecorations(jsonPath, outputDir, options = {}) {
     options.scriptPath || path.join(__dirname, "..", "build.js");
   return spawn(
     process.execPath,
-    [scriptPath, jsonPath, outputDir, "--skip-optional-decorations"],
+    [scriptPath, jsonPath, outputDir, "--skip-optional-decorations",
+      ...(options.designPreview ? ["--design-preview"] : [])],
     {
       stdio: options.stdio || "inherit",
       env: options.env || process.env,
