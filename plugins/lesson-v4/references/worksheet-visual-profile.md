@@ -46,9 +46,18 @@ partitioning worksheets. One tidied the spacing around the questions. The other
 made the mathematics into the page. He approved the second one, in those words:
 *"Yes that looks incredible and premium."*
 
-The approved artefact is the PDF the teacher was shown. It is not in this
-repository: it was drawn by a standalone script, and it is the aesthetic target
-rather than a production output.
+The original approval PDF was drawn by a standalone script and is retained as
+provenance, not as an unavailable dependency. The repository now carries two
+compact, buildable calibration fixtures made through the production HTML/SVG
+engine:
+
+- `worksheet-html/fixtures/visual-product-compare-numbers.json`
+- `worksheet-html/fixtures/visual-product-number-lines.json`
+
+They generalise the approved visual language: aligned compact page header,
+quiet sheet-code badge, restrained section surface, consistent numbered-task
+emphasis, nested representations around one response, and deliberate panel
+hierarchy. They are calibration examples, not templates to copy literally.
 
 `worksheet-html/fixtures/maths-partition-four-digit-numbers.json` is this
 engine's build of the same tasks, and it is a development fixture rather than a

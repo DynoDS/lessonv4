@@ -10,6 +10,7 @@
 const FONT = "Comic Sans MS";
 
 const COLOUR = {
+  navy: "#17365D", // page/product identity: titles and structural rules.
   question: "#0070C0", // the question or focus. Matches the deck's title blue.
   vocab: "#00B050", // a word that matters. This is the deck's green, carrying
   // the deck's OTHER meaning. On slides green means both a revealed answer and
@@ -18,12 +19,14 @@ const COLOUR = {
   // here and green is unambiguous on paper.
   given: "#E46C0A", // material handed to the child: word banks, supplied values.
   ink: "#000000", // what the child writes, ordinary body text, AND scaffold
+  paper: "#FFFFFF", // explicit printable surface; never a raw CSS colour.
   // sentence-starters, which are set apart by size, weight and their own line
   // rather than by a colour of their own. The deck does the same with a writing
   // frame, and it keeps the system to four meanings instead of five.
   quiet: "#666666", // notes and secondary labels.
   rule: "#999999", // writing lines and hairline borders.
   tint: "#F1F4F5", // the one neutral fill, for a panel that needs separating.
+  surface: "#EAF3F8", // quiet grouping surface; remains distinct in greyscale.
 };
 
 // Deliberately absent: an `answer` colour (a worksheet never shows one) and a
@@ -36,6 +39,7 @@ const TYPE = {
   question: 13,
   questionNumber: 12,
   sectionLabel: 14,
+  pageTitle: 16,
 };
 
 // Millimetres. Four steps only: more than four and the rhythm stops reading

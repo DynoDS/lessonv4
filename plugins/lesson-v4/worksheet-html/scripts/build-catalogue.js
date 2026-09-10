@@ -62,7 +62,7 @@ const FAMILIES = [
       "long-multiplication-grid", "bus-stop-grid", "long-division-grid",
       "method-frame", "number-pyramid", "times-table-grid",
       "place-value-chart", "place-value-counter-chart", "counter-group",
-      "digit-cards",
+      "base-ten-blocks", "digit-cards",
     ],
   ],
   [
@@ -72,7 +72,7 @@ const FAMILIES = [
   [
     "Comparing and ordering",
     [
-      "compare-row", "inequality-with-boxes", "order-numbers", "order-table",
+      "compare-row", "comparison-target", "inequality-with-boxes", "order-numbers", "order-table",
       "data-table-with-ordering",
     ],
   ],

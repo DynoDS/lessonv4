@@ -137,6 +137,8 @@ module.exports = {
   // ─── comparing ───
   "compare-row":
     "Two values with an empty box between them, for less-than, greater-than and equals work.",
+  "comparison-target":
+    "The single empty < > = response target inside a comparisonPair; normally use the composition rather than this helper alone.",
   "inequality-with-boxes":
     "A displayed statement with some digits left as boxes to fill, so the child chooses numbers that make it true.",
   "number-sentence":
@@ -153,6 +155,8 @@ module.exports = {
   // ─── place value ───
   "place-value-counter-chart":
     "Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.",
+  "base-ten-blocks":
+    "Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.",
   "counter-group":
     "The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.",
   "place-value-chart":

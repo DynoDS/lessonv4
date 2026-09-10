@@ -288,7 +288,7 @@ test("the sheet's heading is aligned to the work, not to the edge of the paper",
 
   assert.match(
     html,
-    /\.sheet-code \{[^}]*right: 15mm; top: 15mm/s,
+    /\.sheet-code \{[^}]*right: 15mm; top: 6mm/s,
     "the code sits on the same right edge as the work beneath it"
   );
 });
@@ -320,22 +320,13 @@ test("no sheet prints the learning objective, whatever the spec carries", () => 
   );
 });
 
-test("the heading's band is paid for before a zone is measured", () => {
+test("the compact heading uses the existing top margin, not teaching space", () => {
   const { contentArea } = require("../src/render");
   const bare = contentArea({ orientation: "portrait" });
   const headed = contentArea({ orientation: "portrait", code: "C" });
 
-  assert.ok(
-    headed.heightMm < bare.heightMm,
-    "a heading that costs no height is a heading printed over the top line of " +
-      "the first zone"
-  );
-  assert.ok(
-    bare.heightMm - headed.heightMm < 10,
-    `the band took ${(bare.heightMm - headed.heightMm).toFixed(1)}mm. It is one ` +
-      "quiet line, not a banner: the child already has the lesson's title from " +
-      "the board, and a banner costs a question to say so again."
-  );
+  assert.equal(headed.heightMm, bare.heightMm,
+    "the compact product header belongs in the existing printer margin");
 });
 
 // The band is now a fixed one line, because the only thing in it is a one- or

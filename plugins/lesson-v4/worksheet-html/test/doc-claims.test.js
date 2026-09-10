@@ -230,21 +230,20 @@ test("the page and zone numbers the designer docs quote (worksheet-designer.md, 
     "landscape printable area moved - worksheet-designer.md quotes 180mm of height"
   );
 
-  // What a sheet's ZONES actually get, which is the printable area less the
-  // band its sheet code sits in. The band is one quiet line now: it stopped
-  // having to price a teacher-written objective when sheets stopped printing one.
+  // The compact product header uses the existing printer margin, so coded and
+  // uncoded sheets keep exactly the same teaching area.
   const { contentArea } = require("../src/render");
   const headed = contentArea({ orientation: "portrait", code: "C" });
   assert.ok(
-    Math.abs(headed.heightMm - 260.7) < 0.5,
+    Math.abs(headed.heightMm - 267) < 0.5,
     `a coded portrait sheet gives its zones ${headed.heightMm.toFixed(1)}mm - ` +
-      "worksheet-designer.md quotes about 260mm"
+      "worksheet-designer.md quotes 267mm"
   );
   const headedLandscape = contentArea({ orientation: "landscape", code: "C" });
   assert.ok(
-    Math.abs(headedLandscape.heightMm - 173.7) < 0.5,
+    Math.abs(headedLandscape.heightMm - 180) < 0.5,
     `a coded landscape sheet gives its zones ${headedLandscape.heightMm.toFixed(1)}mm - ` +
-      "worksheet-designer.md quotes about 173mm"
+      "worksheet-designer.md quotes 180mm"
   );
 
   const quarters = LAYOUTS.find((l) => l.id === "quarters");

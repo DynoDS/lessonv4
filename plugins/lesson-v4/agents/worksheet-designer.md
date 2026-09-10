@@ -349,8 +349,8 @@ The gate and build share layout estimates. The fixed builder then measures
 the browser output, corrects fit where possible and refuses unresolved clipping.
 Use the preflight here; do not build a page yourself to measure it.
 
-**Name a layout yourself only when the teaching wants a particular
-arrangement.** The engine cannot tell that a grid a child plots on wants to be
+**Name a layout yourself when the teaching or the page's faithful presentation
+wants a particular arrangement.** The engine cannot tell that a grid a child plots on wants to be
 one big shared grid rather than six small ones, that a page's flanks should
 point inward at a middle, or that a deliberately short sheet is short on
 purpose. There, choose: run
@@ -382,6 +382,12 @@ no arrangement of zones makes it three.
 **Choose the surface from the relationship, not from the shape of the answer.** The upstream `response`, `support`, `visualRequirements` and `representationRefs` fields say what the child is doing to what, and that is what picks the helper. Do not fall to `questions` because the answer is a number or to `written-answers` because the prompt wraps. Where the design named a representation, realise that one, with the supplied and blank states it stated and a real target for every response. `worksheet-visual-profile.md` holds the standard; `shared.md` has the relationship-first table and each subject file the patterns.
 
 Compose locally to make the relationship visible. A side-by-side comparison can live inside an otherwise vertical page; matched cases take matched treatment, each with its own place to answer directly under it; work that repeats takes the same shape each time, and the shape changes only when the task does. Keep a source and the required support where they are usable, not wherever spare room happened to be left.
+
+For two arbitrary representations feeding one response, use `comparisonPair`
+rather than flattening the sides to strings or rebuilding the pattern with an
+ad-hoc row. It accepts `left`, `right`, and an optional response helper; the
+default response is one empty comparison-symbol target. The representations
+retain their own helper semantics and safety checks.
 
 You may choose a different faithful layout, or a supported variant of a helper, when it composes materially better. You may not add or remove cognitive support, reword a prompt, fill a blank, reorder items whose order carries meaning, reveal a strategy, shrink a response below a usable size, or leave work off to make the page attractive. A genuine gap in the content or the representation goes back to its owner through the existing route.
 
@@ -487,11 +493,9 @@ never talk yourself into a smaller picture to get past it.
 that is the finding.** Not a puzzle to keep re-cutting: three or four refusals
 on the same sheet means you are past the point where a different shape helps,
 and the refusal message tells you plainly - a sheet's zones get about
-260mm of height in portrait and about 173mm in landscape, so content asking for
-500mm is not a layout problem. (The paper gives 267mm and 180mm; the few
-millimetres between the two are the band the sheet code sits in, at the top of
-the printable area. A single-sheet worksheet carries no code and gets the whole
-267mm.)
+267mm of height in portrait and 180mm in landscape, so content asking for
+500mm is not a layout problem. The compact title and sheet code use the existing
+top printer margin and do not take space from the zones.
 
 **Read the verdict that comes back when nothing fits, and act on which kind it
 is.** Whether it arrives from `suggest.js` or as an auto sheet's

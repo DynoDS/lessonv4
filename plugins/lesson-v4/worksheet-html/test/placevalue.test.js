@@ -33,8 +33,9 @@ function cellTexts(html, className) {
 
 // ─── the contract ────────────────────────────────────────────────────────
 
-test("all six helpers sign the whole contract", () => {
+test("all seven helpers sign the whole contract", () => {
   const expected = [
+    "base-ten-blocks",
     "place-value-counter-chart",
     "counter-group",
     "place-value-chart",
@@ -68,6 +69,7 @@ test("no colour is hard-coded into the markup", () => {
   // The counter palette is declared by name in the CSS; a hex reaching the
   // page would be a second colour system starting.
   const specs = {
+    "base-ten-blocks": { counts: { thousands: 1, hundreds: 2, tens: 3, ones: 4 } },
     "place-value-counter-chart": { columns: ["ones", ".", "tenths"], counts: { ones: 3 } },
     "place-value-chart": { columns: ["Tens", "Ones"] },
     "digit-cards": { digits: [4, 7] },
@@ -84,6 +86,7 @@ test("a stated minimum height is one the helper can actually be drawn in", () =>
   // If a helper measures TALLER at its own minimum width than the minimum
   // height it claims, the zone that accepted it clips it.
   const specs = {
+    "base-ten-blocks": { counts: { thousands: 1, hundreds: 2, tens: 3, ones: 4 } },
     "place-value-counter-chart": {
       columns: ["hundreds", "tens", "ones"],
       counts: { hundreds: 2, tens: 7, ones: 9 },

@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 75 helpers, what each is for, and a working example of each.
+The 77 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -104,6 +104,7 @@ emailed. Never write `imageHref` yourself.
 - `place-value-chart` - Place names across the top, a row per number.
 - `place-value-counter-chart` - Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.
 - `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
+- `base-ten-blocks` - Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
 - `digit-cards` - A row of cards, one digit each, handed to the child to make numbers from.
 
 **Fractions and money**
@@ -116,6 +117,7 @@ emailed. Never write `imageHref` yourself.
 **Comparing and ordering**
 
 - `compare-row` - Two values with an empty box between them, for less-than, greater-than and equals work.
+- `comparison-target` - The single empty < > = response target inside a comparisonPair; normally use the composition rather than this helper alone.
 - `inequality-with-boxes` - A displayed statement with some digits left as boxes to fill, so the child chooses numbers that make it true.
 - `order-numbers` - Numbers to order on a card, with one blank per number underneath and the separator between them.
 - `order-table` - The same ordering task laid out as a two-row table: values on top, an empty cell under each.
@@ -151,7 +153,7 @@ emailed. Never write `imageHref` yourself.
 
 The mode-of-work heading a block sits under: Fluency, Practise, Apply. Marks the kind of thinking, never the topic. Put it at the top of a stack.
 
-Smallest usable: **25mm wide x 9mm tall**. Spare height: never takes spare height.
+Smallest usable: **25mm wide x 13mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1497,6 +1499,24 @@ Smallest usable: **70mm wide x 35mm tall**. Spare height: never takes spare heig
 }
 ```
 
+#### `base-ten-blocks`
+
+Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
+
+Smallest usable: **150mm wide x 56mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "base-ten-blocks",
+  "counts": {
+    "thousands": 2,
+    "hundreds": 4,
+    "tens": 3,
+    "ones": 6
+  }
+}
+```
+
 #### `digit-cards`
 
 A row of cards, one digit each, handed to the child to make numbers from.
@@ -1624,6 +1644,18 @@ Smallest usable: **52mm wide x 14mm tall**. Spare height: never takes spare heig
   "helper": "compare-row",
   "left": "2.3",
   "right": "7.1"
+}
+```
+
+#### `comparison-target`
+
+The single empty < > = response target inside a comparisonPair; normally use the composition rather than this helper alone.
+
+Smallest usable: **12mm wide x 12mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "comparison-target"
 }
 ```
 

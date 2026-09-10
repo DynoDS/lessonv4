@@ -334,6 +334,7 @@ module.exports = {
 
   // ─── comparing and ordering ───
   "compare-row": { left: "2.3", right: "7.1" },
+  "comparison-target": {},
   "inequality-with-boxes": {
     text: "Write digits that make this true.",
     expression: "5 . □ 2 < 5 . □ 8",
@@ -387,6 +388,9 @@ module.exports = {
   "place-value-counter-chart": {
     columns: ["ones", ".", "tenths"],
     counts: { ones: 3, tenths: 4 },
+  },
+  "base-ten-blocks": {
+    counts: { thousands: 2, hundreds: 4, tens: 3, ones: 6 },
   },
   // The counters on their own, under the claim they are evidence for. Two of
   // these sit side by side where two charts could not. `statement` is the

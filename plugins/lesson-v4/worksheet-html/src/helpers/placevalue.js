@@ -831,6 +831,57 @@ function needsNumberPyramid(spec) {
   };
 }
 
+// ─── base-ten-blocks / Dienes ──────────────────────────────────────────
+// A place-value representation, not an illustration. Every block is native
+// SVG so it stays crisp in print and can be nested inside comparisonPair.
+const BASE10_PLACES = ["thousands", "hundreds", "tens", "ones"];
+const BASE10_COL_MM = 36;
+const BASE10_GAP_MM = SPACE.tight;
+const BASE10_HEAD_MM = NOTE_LINE_MM + 2 * INSET.cell.v;
+const BASE10_BLOCK_MM = 16;
+
+function base10Counts(spec) {
+  const source = spec.counts || {};
+  const counts = {};
+  for (const place of BASE10_PLACES) {
+    const value = Number(source[place] || 0);
+    if (!Number.isInteger(value) || value < 0 || value > 10) {
+      throw new Error(`base-ten-blocks: counts.${place} must be a whole number from 0 to 10`);
+    }
+    counts[place] = value;
+  }
+  return counts;
+}
+
+function base10Svg(place) {
+  if (place === "thousands") return `<svg class="h-b10-shape" viewBox="0 0 40 40" aria-label="one thousand cube"><path d="M8 13 21 5l13 8v16l-13 8-13-8zM8 13l13 8 13-8M21 21v16"/><path class="h-b10-fine" d="M12 11l13 8m-9-11 13 8M8 18l13 8 13-8M8 23l13 8 13-8"/></svg>`;
+  if (place === "hundreds") return `<svg class="h-b10-shape" viewBox="0 0 40 40" aria-label="one hundred flat"><rect x="5" y="5" width="30" height="30"/><path class="h-b10-fine" d="M8 5v30m3-30v30m3-30v30m3-30v30m3-30v30m3-30v30m3-30v30m3-30v30m3-30v30M5 8h30M5 11h30M5 14h30M5 17h30M5 20h30M5 23h30M5 26h30M5 29h30M5 32h30"/></svg>`;
+  if (place === "tens") return `<svg class="h-b10-shape" viewBox="0 0 40 40" aria-label="one ten rod"><rect x="16" y="3" width="8" height="34"/><path class="h-b10-fine" d="M16 6.4h8m-8 3.4h8m-8 3.4h8m-8 3.4h8m-8 3.4h8m-8 3.4h8m-8 3.4h8m-8 3.4h8m-8 3.4h8"/></svg>`;
+  return `<svg class="h-b10-shape" viewBox="0 0 40 40" aria-label="one unit cube"><path d="M12 15 21 10l9 5v11l-9 5-9-5zM12 15l9 5 9-5M21 20v11"/></svg>`;
+}
+
+function renderBaseTenBlocks(spec) {
+  const counts = base10Counts(spec);
+  const columns = BASE10_PLACES.map((place) => {
+    const blocks = Array.from({ length: counts[place] }, () => base10Svg(place)).join("");
+    return `<div class="h-b10-col"><div class="h-b10-head">${PLACES[place].label}</div><div class="h-b10-blocks">${blocks}</div></div>`;
+  }).join("");
+  return `<div class="h-b10">${columns}</div>`;
+}
+
+function measureBaseTenBlocks(spec) {
+  const counts = base10Counts(spec);
+  const rows = Math.max(1, ...BASE10_PLACES.map((p) => Math.ceil(counts[p] / 2)));
+  return BASE10_HEAD_MM + rows * BASE10_BLOCK_MM + Math.max(0, rows - 1) * SPACE.hair;
+}
+
+function needsBaseTenBlocks(spec) {
+  return {
+    minWidthMm: BASE10_PLACES.length * BASE10_COL_MM + (BASE10_PLACES.length - 1) * BASE10_GAP_MM,
+    minHeightMm: measureBaseTenBlocks(spec),
+  };
+}
+
 const css = `
   /* place-value-counter-chart */
 
@@ -879,6 +930,31 @@ const css = `
     font-size: var(--type-sectionLabel); font-weight: bold; line-height: 1.35;
     color: var(--colour-ink);
   }
+
+  /* Base-10 / Dienes blocks */
+  .h-b10 { display: flex; gap: ${BASE10_GAP_MM}mm; width: 100%; }
+  .h-b10-col {
+    flex: 1 1 ${BASE10_COL_MM}mm; min-width: ${BASE10_COL_MM}mm;
+    border: var(--rule-line) solid var(--colour-ink);
+    background: var(--colour-paper); box-sizing: border-box;
+  }
+  .h-b10-head {
+    min-height: ${BASE10_HEAD_MM}mm; box-sizing: border-box;
+    padding: var(--inset-cell); text-align: center;
+    font-size: var(--type-note); font-weight: bold; line-height: 1.35;
+    color: var(--colour-navy); background: var(--colour-surface);
+    border-bottom: var(--rule-hair) solid var(--colour-rule);
+  }
+  .h-b10-blocks {
+    display: grid; grid-template-columns: repeat(2, ${BASE10_BLOCK_MM}mm);
+    justify-content: center; gap: var(--space-hair);
+  }
+  .h-b10-shape {
+    width: ${BASE10_BLOCK_MM}mm; height: ${BASE10_BLOCK_MM}mm;
+    stroke: var(--colour-ink); fill: var(--colour-surface);
+    stroke-width: 1.5; stroke-linejoin: round;
+  }
+  .h-b10-fine { fill: none; stroke: var(--colour-rule); stroke-width: .65; }
 
   /* counter-group */
   .h-cg-statement {
@@ -1039,6 +1115,12 @@ const css = `
 `;
 
 const helpers = {
+  "base-ten-blocks": {
+    render: renderBaseTenBlocks,
+    measure: measureBaseTenBlocks,
+    needs: needsBaseTenBlocks,
+    greed: 0,
+  },
   "counter-group": {
     requires: ["groups"],
     render: renderCounterGroup,

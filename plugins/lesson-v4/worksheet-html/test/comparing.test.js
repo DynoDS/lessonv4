@@ -455,6 +455,7 @@ test("colour comes from the design system, never from a hex code", () => {
 
 test("every helper answers all four parts of the contract", () => {
   const expected = [
+    "comparison-target",
     "compare-row",
     "inequality-with-boxes",
     "number-sentence",
@@ -478,6 +479,7 @@ test("every helper answers all four parts of the contract", () => {
 
 test("no helper asks for more room than a page can ever give it", () => {
   const specs = {
+    "comparison-target": {},
     "compare-row": { id: "1", left: "£3.40", right: "340p" },
     "inequality-with-boxes": { expression: "5 . □ 2 < 5 . □ 8" },
     "order-numbers": { id: "1", numbers: ["0.9", "0.34", "0.6", "0.07"] },

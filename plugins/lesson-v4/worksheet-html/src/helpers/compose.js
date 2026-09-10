@@ -92,9 +92,34 @@ function isStack(content) {
   return content && content.stack !== undefined;
 }
 
+function isComparisonPair(content) {
+  return content && content.comparisonPair !== undefined;
+}
+
+// A semantic mini-layout: any two real representations around one response
+// target. It deliberately composes existing helpers instead of introducing a
+// second rendering path, so charts, bars, diagrams and future helpers retain
+// their own sizing, safety and given/blank rules.
+function normaliseContent(content) {
+  if (!isComparisonPair(content)) return content;
+  const pair = content.comparisonPair || {};
+  if (!pair.left || !pair.right) {
+    throw new Error("comparisonPair: `left` and `right` representations are required");
+  }
+  const response = pair.response || { helper: "comparison-target" };
+  const { comparisonPair, ...outer } = content;
+  return {
+    ...outer,
+    row: [pair.left, response, pair.right],
+    parts: content.parts || [1, 0.22, 1],
+    comparisonPairStyle: true,
+  };
+}
+
 // A row may be written out in full, or as one item and a count. Five identical
 // angles are a count, not five copies of the same JSON.
 function itemsOf(content) {
+  content = normaliseContent(content);
   const { repeat } = content || {};
   const listed = isStack(content) ? content.stack : isRow(content) ? content.row : null;
   if (listed == null) return [];
@@ -241,6 +266,7 @@ function makeCompose({
   // `startAt` continuing the count. Setting both is refused rather than
   // silently printing two numbers.
   function renderContent(content, widthMm = REFERENCE_WIDTH_MM) {
+    content = normaliseContent(content);
     const items = itemsOf(content);
 
     if (content && content.number !== undefined) {
@@ -291,7 +317,7 @@ function makeCompose({
         </div>`;
         })
         .join("");
-      return `<div class="h-row">${cells}</div>`;
+      return `<div class="h-row${content.comparisonPairStyle ? " h-comparison-pair" : ""}">${cells}</div>`;
     }
 
     if (isStack(content)) {
@@ -321,6 +347,7 @@ function makeCompose({
   }
 
   function measureContent(content, widthMm) {
+    content = normaliseContent(content);
     const items = itemsOf(content);
 
     // The number sits in a gutter beside the content, so it costs width and
@@ -353,6 +380,7 @@ function makeCompose({
   }
 
   function needsContent(content, widthMm) {
+    content = normaliseContent(content);
     const items = itemsOf(content);
 
     // The gutter is width the content does not get, so it is added to what the
@@ -392,6 +420,7 @@ function makeCompose({
   // appetite rather than adding them up keeps a group from out-competing a
   // single helper in another zone just for having more parts in it.
   function greedContent(content) {
+    content = normaliseContent(content);
     const items = itemsOf(content);
     if (!items.length) return greed(content.helper);
     return Math.max(...items.map(greedContent));
@@ -400,6 +429,7 @@ function makeCompose({
   // A group has no ceiling if any part of it has none: the room can go to that
   // part and stop at the others.
   function fillsContent(content) {
+    content = normaliseContent(content);
     const items = itemsOf(content);
     if (!items.length) return fills(content.helper);
     return items.some(fillsContent);
@@ -426,6 +456,7 @@ function makeCompose({
   // whichever sibling does grow. That is the leak that let a drawing box beside
   // one instruction line take the instruction's spare room as well as its own.
   function enoughContent(content, widthMm) {
+    content = normaliseContent(content);
     if (!enough) return Infinity;
     const items = itemsOf(content);
 
@@ -465,6 +496,8 @@ function makeCompose({
   // "angle, angle, angle, angle" does not, and a refusal nobody can read is
   // barely better than no refusal.
   function describeContent(content) {
+    if (isComparisonPair(content)) return "a comparison pair";
+    content = normaliseContent(content);
     const items = itemsOf(content);
 
     if (isRow(content) || isStack(content)) {
@@ -494,6 +527,7 @@ function makeCompose({
   // "too tight" is a teacher's judgement, and it should come from real sheets
   // rather than a number picked here.
   function inspectContent(content, widthMm, heightMm, label = "") {
+    content = normaliseContent(content);
     const items = itemsOf(content);
     const need = needsContent(content);
 
@@ -609,6 +643,11 @@ const css = `
     flex: 0 0 ${NUMBER_GUTTER_MM}mm;
     font-size: var(--type-body); font-weight: bold;
     color: var(--colour-ink); line-height: 1.35;
+    background: var(--colour-surface);
+    border-left: var(--rule-heavy) solid var(--colour-navy);
+    border-radius: 1mm;
+    text-align: center;
+    box-sizing: border-box;
     /* Beside the question's FIRST line, never centred down its side. */
     align-self: flex-start;
   }
@@ -619,6 +658,20 @@ const css = `
   .h-row { display: flex; align-items: stretch; gap: ${GAP_MM}mm; width: 100%; height: 100%; }
   .h-row-item { display: flex; flex-direction: column; min-width: 0; }
   .h-row-body { flex: 1; min-height: 0; }
+  .h-comparison-pair {
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+    border-top: var(--rule-heavy) solid var(--colour-question);
+    border-radius: 2mm;
+    background: var(--colour-surface);
+  }
+  .h-comparison-pair > .h-row-item {
+    justify-content: center;
+    background: var(--colour-paper);
+    border: var(--rule-hair) solid var(--colour-rule);
+    border-radius: 1.5mm;
+    box-sizing: border-box;
+  }
   .h-row-letter {
     text-align: center; font-size: var(--type-note);
     color: var(--colour-quiet); margin-bottom: 1mm; flex: none;
@@ -640,4 +693,4 @@ const css = `
   .h-stack-item--grows { flex: 1 1 auto; }
 `;
 
-module.exports = { makeCompose, css, GAP_MM, isRow, isStack, itemsOf };
+module.exports = { makeCompose, css, GAP_MM, isRow, isStack, isComparisonPair, itemsOf };

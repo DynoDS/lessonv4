@@ -164,6 +164,16 @@ same answer: a reviewer whose only choices are a clean pass and a blocked run
 will write the clean pass, and the observation reaches nobody. What must never
 go in advisories is a material access or correctness fault; that is a finding,
 and it blocks.
+
+**A clearly generic or unfinished visual product is not a tiny cosmetic
+difference.** If the page lacks the shared header/product identity, presents
+related tasks as unrelated boxes, or visibly falls short of the accessible
+visual fixtures in `worksheet-html/fixtures/visual-product-*`, record one
+focused `worksheet-designer` finding and trigger the existing single focused
+repair route. Do not multiply findings for every border and gap: name the
+page-level product fault once. A millimetre of spacing, a slightly different
+tint, or another equally coherent arrangement remains advisory and must not
+block.
 Use the actual owner: slide-designer, worksheet-designer, working-wall-builder
 or stick-in-sheets-designer. Do not write placeholder evidence or infer a pass
 from the fact that every page was opened. Counts and hashes establish coverage

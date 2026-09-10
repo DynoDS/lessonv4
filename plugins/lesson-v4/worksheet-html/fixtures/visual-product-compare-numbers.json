@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "lesson": "Compare 4-digit numbers",
+    "lo": "To compare 4-digit numbers",
+    "yearGroup": "Year 4",
+    "subject": "Mathematics",
+    "note": "Visual-product calibration: native place-value representations feed one response target. No values are evaluated and no response is filled."
+  },
+  "sheets": {
+    "expected": {
+      "title": "Compare 4-digit numbers",
+      "code": "Sheet B",
+      "layout": "full",
+      "orientation": "portrait",
+      "zones": {
+        "a": {
+          "stack": [
+            { "helper": "section-label", "text": "Compare the representations" },
+            { "helper": "instruction", "text": "Write <, > or = in each box." },
+            {
+              "question": true,
+              "comparisonPair": {
+                "left": { "helper": "place-value-chart", "columns": ["Th", "H", "T", "O"], "rows": [{ "cells": ["4", "3", "2", "1"] }] },
+                "right": { "helper": "place-value-chart", "columns": ["Th", "H", "T", "O"], "rows": [{ "cells": ["4", "2", "9", "9"] }] }
+              }
+            },
+            {
+              "question": true,
+              "comparisonPair": {
+                "left": { "helper": "place-value-chart", "columns": ["Th", "H", "T", "O"], "rows": [{ "cells": ["6", "0", "4", "2"] }] },
+                "right": { "helper": "place-value-chart", "columns": ["Th", "H", "T", "O"], "rows": [{ "cells": ["6", "0", "2", "4"] }] }
+              }
+            },
+            {
+              "question": true,
+              "stack": [
+                { "helper": "base-ten-blocks", "counts": { "thousands": 2, "hundreds": 4, "tens": 3, "ones": 6 } },
+                { "helper": "questions", "items": ["Write the number shown."] }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "answerKey": {
+    "expected": [
+      { "question": "1", "answer": ">" },
+      { "question": "2", "answer": ">" },
+      { "question": "3", "answer": "2,436" }
+    ]
+  }
+}

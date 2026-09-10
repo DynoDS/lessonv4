@@ -5,7 +5,7 @@
 // science explanation or an RE text depending only on what is put in it.
 
 const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, esc, promptHtml, linesFor } = require("./shared");
-const { SPACE, TYPE } = require("../tokens");
+const { SPACE, TYPE, INSET } = require("../tokens");
 const { formatQuestionLabel } = require("../labels");
 
 // ─── quiet instruction ──────────────────────────────────────────────────
@@ -483,7 +483,8 @@ function renderSectionLabel(spec) {
 }
 
 function measureSectionLabel(spec, widthMm) {
-  return linesFor(spec.text, widthMm) * SECTION_LINE_MM + SPACE.tight;
+  return linesFor(spec.text, widthMm - 2 * INSET.card.h) * SECTION_LINE_MM +
+    2 * INSET.card.v + SPACE.tight;
 }
 
 const SECTION_LINE_MM = TYPE.sectionLabel * PT_MM * 1.35;
@@ -493,7 +494,7 @@ function needsSectionLabel(spec) {
     // Wide enough for the label to sit on one line. A heading that wraps stops
     // reading as a heading, and these are one or two words by design.
     minWidthMm: Math.max(25, String(spec.text || "").length * SECTION_CHAR_MM),
-    minHeightMm: SECTION_LINE_MM + SPACE.tight,
+    minHeightMm: SECTION_LINE_MM + 2 * INSET.card.v + SPACE.tight,
   };
 }
 
@@ -554,9 +555,15 @@ const css = `
      asked rather than something the child writes, and the same size and colour
      a fact file's title and a method frame's title already use. */
   .h-section-label {
+    box-sizing: border-box;
     margin: 0 0 var(--space-tight);
+    padding: var(--inset-card);
     font-size: var(--type-sectionLabel);
-    color: var(--colour-question);
+    font-weight: bold;
+    color: var(--colour-navy);
+    background: var(--colour-surface);
+    border-left: var(--rule-heavy) solid var(--colour-question);
+    border-radius: 0 1.5mm 1.5mm 0;
     line-height: 1.35;
   }
   .h-questions { list-style: none; margin: 0; padding: 0; }

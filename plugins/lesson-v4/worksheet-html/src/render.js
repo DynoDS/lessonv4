@@ -16,7 +16,7 @@
 const { pageSize, printableArea, DEFAULT_MARGIN_MM } = require("./page");
 const { renderDecorationLayers } = require("./decorations");
 const { cssVariables, SPACE, TYPE } = require("./tokens");
-const { NOTE_LINE_MM, linesFor } = require("./helpers/shared");
+const { NOTE_LINE_MM, linesFor, esc } = require("./helpers/shared");
 const { LAYOUTS, VARIANTS, flatten } = require("./layouts");
 const { isStack } = require("./helpers/compose");
 const {
@@ -59,10 +59,14 @@ const GUTTER_MM = 6;
 // purpose: a banner across the top would cost a question to say what nobody
 // needs telling.
 const CODE_SHARE = 0.28;
+const HEADER_MM = 7;
+const HEADER_TOP_MM = 6;
 
 function headerMm(spec) {
-  if (!spec || !spec.code) return 0;
-  return NOTE_LINE_MM + SPACE.tight;
+  // The compact shell uses the existing 15mm printer margin rather than
+  // taking teaching space away from the page. Its bottom rule ends at 13mm;
+  // zone content starts at 15mm, so the two never overlap.
+  return 0;
 }
 
 // The page a sheet's ZONES get, which is the printable area less that band.
@@ -709,19 +713,43 @@ ${cssVariables()}
      builder, which made the same call. */
   .sheet-code {
     position: absolute;
-    right: ${DEFAULT_MARGIN_MM}mm; top: ${DEFAULT_MARGIN_MM}mm;
+    right: ${DEFAULT_MARGIN_MM}mm; top: ${HEADER_TOP_MM}mm;
     max-width: ${(area.widthMm * CODE_SHARE).toFixed(1)}mm;
     font-size: var(--type-note);
     line-height: 1.35;
-    color: var(--colour-quiet);
+    color: var(--colour-navy);
+    border: var(--rule-line) solid var(--colour-question);
+    border-radius: 2mm;
+    background: var(--colour-surface);
+    padding: 1mm 2.5mm;
+    box-sizing: border-box;
     z-index: 3;
+  }
+  .sheet-header {
+    position: absolute;
+    left: ${DEFAULT_MARGIN_MM}mm;
+    right: ${DEFAULT_MARGIN_MM}mm;
+    top: ${HEADER_TOP_MM}mm;
+    height: ${HEADER_MM}mm;
+    display: flex;
+    align-items: flex-start;
+    border-bottom: var(--rule-heavy) solid var(--colour-question);
+    z-index: 3;
+  }
+  .sheet-title {
+    max-width: ${Math.round(area.widthMm * (1 - CODE_SHARE) - SPACE.item)}mm;
+    color: var(--colour-navy);
+    font-size: var(--type-pageTitle);
+    line-height: 1.1;
+    font-weight: bold;
   }
 
 ${helperCss}
 </style></head>
 <body data-worksheet-page>
   ${decorationLayers.low}
-  ${spec.code ? `<div class="sheet-code">${spec.code}</div>` : ""}
+  ${(spec.title || spec.code) ? `<header class="sheet-header">${spec.title ? `<div class="sheet-title">${esc(spec.title)}</div>` : ""}</header>` : ""}
+  ${spec.code ? `<div class="sheet-code">${esc(spec.code)}</div>` : ""}
   <div class="area${spec.layout === "full" ? " area--full" : ""}">${zones}</div>
   ${decorationLayers.high}
 </body></html>`;
