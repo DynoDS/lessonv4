@@ -70,6 +70,12 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       w: zone.w - 2 * PAD,
       h: zone.h - 2 * PAD - LABEL_H,
       class: zone.class || 'C',
+      // Every criteria panel in the deck comes through here, so this is the one
+      // place that knows the text inside it is the lesson designer's wording.
+      // A helper that refuses this zone can then name the lever the slide
+      // designer actually has - a roomier panel, or fewer criteria on the slide
+      // - instead of telling it to shorten words it is not allowed to touch.
+      sourceAuthoredText: true,
       // The panel's interior takes the card look in its compact form: white
       // cards on the green read well (the children prefer them), but only
       // with the tight padding that keeps the step text at full size.

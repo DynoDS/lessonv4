@@ -188,3 +188,57 @@ test('an impossible panel still refuses, and names the reference rather than a s
     /STEP_TEXT_OVERLOAD: the sticky-knowledge reference line/
   );
 });
+
+// A refusal has to name a repair the reader is allowed to make. The slide
+// designer may not reword success criteria, so a criteria panel that refuses
+// must point at the room, not at the words.
+const TIGHT_PANEL = { x: 8.5, y: 0.75, w: 3.0, h: 2.0, class: 'B', itemCards: true };
+const TOO_LONG = [
+  'Match every single place value carefully',
+  'Start with the thousands column',
+  'Same? Move one place right',
+];
+
+function refusal(zone) {
+  try {
+    drawn(zone, { steps: TOO_LONG });
+  } catch (err) {
+    return err.message;
+  }
+
+  return null;
+}
+
+test('a refusal says how much the card actually holds', () => {
+  const message = refusal(TIGHT_PANEL);
+
+  assert.ok(message, 'the panel was expected to refuse');
+
+  // The budget is what turns a retry into arithmetic: without it the next
+  // attempt is a guess, and a guess three words shorter is as likely to be
+  // refused again as it is to pass.
+  assert.match(message, /holds about \d+ characters at \d+pt/);
+  assert.match(message, /this one is 40\./);
+});
+
+test('a criteria panel refuses by naming the room, never the wording', () => {
+  const message = refusal(Object.assign({}, TIGHT_PANEL, { sourceAuthoredText: true }));
+
+  assert.ok(message, 'the criteria panel was expected to refuse');
+  assert.match(message, /criterion 1/);
+  assert.match(message, /not yours to shorten or merge/);
+  assert.match(message, /slide-success-criteria\.md/);
+
+  // The plain-steps wording tells the reader to shorten the step. Reaching a
+  // criteria panel it would set the engine against the reference that forbids
+  // exactly that, and the cheap-looking repair is the one that breaks the
+  // lesson.
+  assert.doesNotMatch(message, /Shorten the step/);
+});
+
+test('a step list that is nobody else\'s wording may still be shortened', () => {
+  const message = refusal(TIGHT_PANEL);
+
+  assert.match(message, /Shorten the step to that/);
+  assert.doesNotMatch(message, /not yours to shorten/);
+});

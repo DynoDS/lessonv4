@@ -116,21 +116,72 @@ function isReferenceStep(step) {
 // a too-long reference is a sticky fact from the lesson design that nobody
 // downstream may reword. Saying which one refused is what points the repair at
 // the person who can actually make it.
-function overloadMessage(steps, index) {
+// How much text this card can actually hold at a given size, as a sentence the
+// reader can act on.
+//
+// A refusal that says only "does not fit" leaves the designer to find the limit
+// by trying again, and the next attempt is a guess: three words shorter is as
+// likely to be refused as it is to pass. The card's width and height are known
+// at the moment it refuses, so the budget is known too, and saying it turns a
+// retry into arithmetic.
+function budgetSentence(widthIn, heightIn, text) {
+  const glyphIn = TEXT_FONT_MIN * 0.52 / 72;
+  const charsPerLine = Math.max(1, Math.floor(usableWidth(widthIn) / glyphIn));
+  const lines = Math.max(
+    1,
+    Math.floor(usableHeight(heightIn) / ((TEXT_FONT_MIN / 72) * 1.28))
+  );
+  const budget = charsPerLine * lines;
+
+  return `The card holds about ${budget} characters at ${TEXT_FONT_MIN}pt ` +
+    `(${lines} line${lines === 1 ? '' : 's'} of about ${charsPerLine}); this ` +
+    `one is ${String(text).length}.`;
+}
+
+// A refusal names the item the way the panel prints it.
+//
+// The steps are numbered 1..N and a reference carries a star where a number
+// would be, so reporting "step 6" on a panel that visibly numbers five steps
+// sends the reader hunting for a step that does not exist. The two also have
+// different owners: a too-long step is wording the designer may tighten, while
+// a too-long reference is a sticky fact from the lesson design that nobody
+// downstream may reword. Saying which one refused is what points the repair at
+// the person who can actually make it.
+function overloadMessage(steps, index, budget, sourceAuthored) {
   const reference = isReferenceStep(steps[index]);
   const stepNumber = steps
     .slice(0, index + 1)
     .filter((s) => !isReferenceStep(s)).length;
+  const room = budget ? ` ${budget}` : '';
 
-  return reference
-    ? `STEP_TEXT_OVERLOAD: the sticky-knowledge reference line does not fit its ` +
-        `card at the ${TEXT_FONT_MIN}pt readable minimum. Its wording is ` +
-        `source-authored and is not yours to shorten: carry the fact in its own ` +
-        `on-slide treatment, or give the zone more room. Nothing was shrunk ` +
-        `further or cut.`
+  // A refusal is only useful if the repair it names is one the reader is
+  // allowed to make. A sticky reference and a success criterion are both the
+  // lesson designer's words, and `slide-success-criteria.md` already tells the
+  // slide designer to move a method that will not fit into a roomier panel
+  // rather than compact it - so telling it here to shorten the step sets the
+  // engine against its own guidance at the one moment the guidance is needed,
+  // and the cheaper-looking repair is the one that breaks the lesson.
+  const roomier =
+    `Give the panel more room instead: a wider or taller \`sc-panel\` ` +
+    `composition, or fewer criteria on this slide. See ` +
+    `\`slide-success-criteria.md\`.`;
+
+  if (reference) {
+    return `STEP_TEXT_OVERLOAD: the sticky-knowledge reference line does not ` +
+      `fit its card at the ${TEXT_FONT_MIN}pt readable minimum.${room} Its ` +
+      `wording is source-authored and is not yours to shorten: carry the fact ` +
+      `in its own on-slide treatment, or give the zone more room. Nothing was ` +
+      `shrunk further or cut.`;
+  }
+
+  return sourceAuthored
+    ? `STEP_TEXT_OVERLOAD: criterion ${stepNumber} does not fit its card at ` +
+        `the ${TEXT_FONT_MIN}pt readable minimum.${room} Its wording is the ` +
+        `lesson designer's and is not yours to shorten or merge. ${roomier} ` +
+        `Nothing was shrunk further or cut.`
     : `STEP_TEXT_OVERLOAD: step ${stepNumber} does not fit its card at the ` +
-        `${TEXT_FONT_MIN}pt readable minimum. Shorten the step or give the ` +
-        `zone more room; nothing was shrunk further or cut.`;
+        `${TEXT_FONT_MIN}pt readable minimum.${room} Shorten the step to that, ` +
+        `or give the zone more room; nothing was shrunk further or cut.`;
 }
 
 function drawSteps(pptx, slide, zone, data, ctx) {
@@ -318,7 +369,12 @@ function drawSteps(pptx, slide, zone, data, ctx) {
 
     if (referenceFloorTotal && stepNeedTotal + referenceFloorTotal > innerH) {
       throw new Error(
-        overloadMessage(steps, steps.findIndex(isReferenceStep))
+        overloadMessage(
+          steps,
+          steps.findIndex(isReferenceStep),
+          undefined,
+          zone.sourceAuthoredText
+        )
       );
     }
     const referenceHeights = steps.map((s, i) => {
@@ -346,7 +402,12 @@ function drawSteps(pptx, slide, zone, data, ctx) {
       // words or the room has to change, and both are decisions above this
       // renderer.
       throw new Error(
-        overloadMessage(steps, textNeed.indexOf(Math.max(...textNeed)))
+        overloadMessage(
+          steps,
+          textNeed.indexOf(Math.max(...textNeed)),
+          undefined,
+          zone.sourceAuthoredText
+        )
       );
     }
 
@@ -367,7 +428,18 @@ function drawSteps(pptx, slide, zone, data, ctx) {
 
   const overloadedAt = perStepFont.indexOf(null);
   if (overloadedAt !== -1) {
-    throw new Error(overloadMessage(steps, overloadedAt));
+    throw new Error(
+      overloadMessage(
+        steps,
+        overloadedAt,
+        budgetSentence(
+          Math.max(0.3, stepTextW),
+          Math.max(0.1, fitHeights[overloadedAt]),
+          textOf(steps[overloadedAt])
+        ),
+        zone.sourceAuthoredText
+      )
+    );
   }
 
   // The numbered steps share one size, because they are the set the eye reads
@@ -392,7 +464,18 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     );
 
     if (fits === null) {
-      throw new Error(overloadMessage(steps, i));
+      throw new Error(
+        overloadMessage(
+          steps,
+          i,
+          budgetSentence(
+            Math.max(0.3, availableW),
+            Math.max(0.1, fitHeights[i]),
+            textOf(steps[i])
+          ),
+          zone.sourceAuthoredText
+        )
+      );
     }
 
     return Math.min(coherentFont[i], fits);
