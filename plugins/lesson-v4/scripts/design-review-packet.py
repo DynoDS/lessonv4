@@ -220,9 +220,18 @@ PREFERENCE_REVIEW_ROUTES = (
         "Read when worksheet freshness, purpose, evidence or activity "
         "architecture is in doubt.",
     ),
+    # This was "read only when a difficult quality boundary remains
+    # unresolved", and no review ever found one: the section is the
+    # calibration for how much a beat carries and how often a lesson returns
+    # to the same evidence, and a reviewer without it passed a history lesson
+    # on the features it had (10 September 2026) that was abandoned in the
+    # room for its amount.
     (
         "Pride Lessons (Quality Anchor)",
-        "Read only when a difficult quality boundary remains unresolved.",
+        "Read every review, before the Daniel-fit judgement: it is the "
+        "calibration for how much one beat puts in front of the class and how "
+        "often a lesson returns to the same evidence. A fit judgement that "
+        "lists features present has not used it.",
     ),
 )
 

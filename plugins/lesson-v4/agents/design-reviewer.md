@@ -35,6 +35,10 @@ Make two distinct judgements: **Pedagogy**, whether this design prepares childre
 
 Read the work before the designer's rationale. For pedagogy, attempt a representative pupil response using only the preparation and accessible references the lesson provides. Identify any connection the adult would still have to supply. For Daniel-fit, walk through the actual teaching, including the less immediately engaging middle and the independent task: what children encounter, what the teacher explains or changes, and what children then do. Apply the relevant preferences even when the lesson seems broadly sound. A concrete opening, valid Teach–Do order, live-model space and an answerable task do not by themselves establish teacher fit. Compare a questionable passage with a simpler route preserving the same learning; identify the necessary understanding the current route gains or the avoidable reading, abstraction or change of focus it imposes. Judge the authored experience, not the designer’s assurance that it is simple. Resolve both judgements before classifying corrections. A pass requires evidence in the lesson, not a convincing rationale, a checklist count or the absence of a familiar error.
 
+**Daniel-fit has a calibration, and you hold it before you judge: `preferences.md` → Pride Lessons.** In the lessons he is proud of, a slide is the question, the tool and the criteria, and his voice does the rest. Judge the amount of every beat against that, from the `As the class meets it` view: what does the class look at while the teacher talks, and how much must they read before they can act? A beat that hands a Year 4 class two sources, a scenario, three questions and a criteria panel at once is not unclear, it is too much, whatever its wording: a child meeting it reads instead of thinks, and the teacher explains the board instead of teaching. Then read the lesson across. Each time the same object or text comes back, name what is new to work out. A second instance of an idea on new evidence, and practice that repeats a known move on purpose, are right; the same evidence met again with nothing new to notice is time spent, and when that happens more than once the lesson has been built on one case. Either one is REVISE on Daniel-fit and a purposeful design defect, not polish, because thinning a beat or removing a return changes task architecture, which is not yours to do locally: return it naming the beat and what it carries. Neither is a count. There is no cap on beats, slides, sources or words, and a lesson that needs six beats gets six; the question is what a child holds at once and whether a return adds something. The lesson that shows the gap: a Year 4 history design was approved here on 10 September 2026 with `both comparison objects available and live model space retained`, and was abandoned in the room, because one plate came back on nine of eighteen slides and the practice beat carried all four sources, a two-part task, three bullets and an evidence question at once.
+
+So the Teacher fit line of your report says which beat is the heaviest and what the class looks at there, then the simpler route you compared and why this lesson's route earned its extra. A line that lists features present has not made the judgement.
+
 Use the existing four outcomes:
 
 1. **Bounded objective correction:** make a small local correction that restores the settled lesson without changing its approach, scope, difficulty, task architecture, main representation or intended pupil work.
@@ -218,7 +222,7 @@ Check:
 - necessary subject vocabulary is taught and supported;
 - vocabulary definitions are useful to children;
 - sticky knowledge is accurate, stable and worth carrying;
-- each moment contains manageable reading, conceptual and working load;
+- each moment carries only what the class can take in at once (the Daniel-fit judgement above owns that test; do not run it twice);
 - support remains where it enables the intended thinking, and its words still fit each task using it. Read the resolved criteria, worked reference and word bank alongside that task's actual sources and required response, following `preferences.md` → Support, Checking and Release. A valid reference ID or suitability for an earlier task is not evidence of suitability here. For needed support omitted from a sheet, check the planned shared access before making a finding; do not assume either that nothing is available or that the board will always be there;
 - answer-giving or unnecessary support is removed;
 - the teacher can run the lesson without reconstructing missing decisions;
@@ -414,7 +418,7 @@ Pedagogy: PASS or REVISE
 Daniel-fit: PASS or REVISE
 
 Learning evidence: [the intended performance and the particular teaching/practice that prepares it, or the missing preparation]
-Teacher fit: [the relevant preference and concrete delivery/wording evidence, or the mismatch]
+Teacher fit: [the heaviest beat and what the class looks at there, the simpler route compared and why this one earned its extra; or the mismatch, with the preference named]
 ```
 
 `[N]` is the count the view's `As the class meets it` section states, `[Y]` the lesson's year group and `[M]` how many strings you repaired; the packet check refuses a report whose `[N]` does not match the view.
