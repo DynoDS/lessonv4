@@ -19,6 +19,8 @@ This guide owns **how the voice sounds**. What the words must **achieve** is own
 
 When authoring anything a child reads or hears, read sections 1-3, 15 and 17. Read §4 once when considering the whole lesson at completion, not for each string. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison prompt §12, a practical lesson §13. Read §16's calibrated examples only when wording remains uncertain after that.
 
+**§6 and §12 are the two most often missed, and they are missed the same way:** the writer does not notice which kind of thing they are writing, so the section that owns it is never opened. Questions and instructions are the most common thing anyone here writes, and a comparison prompt arrives disguised as a heading. Three reached real children. `Choose a job.` on an appliances sheet, which a class answered `Fireman`, and `Write one question you would ask before making a stronger judgement.` on a Greater Depth diet sheet, both §6 (5 September 2026). `What do their reasons share?` on a Year 4 RE slide, where §12's own calibrated wording was already sitting in that same slide's teacher script (11 September 2026). Every one was written by an agent that had read each section it was routed to. Routing by the kind of string only works if you stop and name the kind.
+
 The voice is the same across the primary years: age changes the support, not the humanity. KS1 normally needs more familiar vocabulary, more concrete meaning and stronger reading-access support. KS2 can carry richer vocabulary and more complex thought. Neither phase has a sentence-length target: do not make KS1 robotic by chopping every explanation into tiny sentences, and do not make KS2 abstract or academic merely because the children are older. Year 3 may need either treatment according to the material and the class. Written Voice's access rules (Below resources, Greater Depth) still apply at full strength.
 
 ---
@@ -105,6 +107,16 @@ A teacher gives one instruction at a time and turns the caveat into a question:
 ### Default relationship
 
 **Short/direct can become the slide. Fuller/conversational can expand it in the notes. Do not normally reverse this relationship.**
+
+### The check that catches the reversal
+
+**When the script and the slide ask the same question in different words, the script's wording is the teacher's and the slide's is a compression of it. Put the spoken wording on the board.**
+
+A question gets written twice, once as it will be said and once as it will be printed, and the printed one drifts towards a tidy heading, because it is short, it sits where a label sits, and a compressed noun phrase looks more finished than a plain sentence. A Year 4 RE slide printed `What do their reasons share?` while its own script said `Tell your partner what is the same and what is different`. The plain version was already written, by the same agent, on the same slide. The board got the clever one, and `share` means something different to a nine-year-old than it does to an adult.
+
+So read the two side by side before you finish a slide, and where they ask the same thing, carry the spoken wording across. Trim it to slide length; do not restate it.
+
+The limit is a genuine difference of job. A script that frames, explains or warms up while the slide asks the question is the ordinary split and is not a reversal. Dropping `Tell your partner` on the way to the board is trimming, not rewording, because it is delivery rather than the question. What this check refuses is the words a child reads the question in changing between the two.
 
 ---
 
@@ -344,6 +356,8 @@ may be less clear than:
 > Which is the stronger answer? Explain why.
 
 Always check the pupil's likely interpretation, not only whether the wording sounds like the teacher.
+
+The sharpest version of this is a single ordinary word that means one thing to an adult and another to a child. `What do their reasons share?` uses `share` to mean hold in common; a Year 4 child has spent their whole school life being told that sharing means giving someone half. The word is not unusual, which is exactly why it passes an adult's read. Say the question out loud as the child hears it, and where a common word is carrying an adult sense, use the plain one: `What is the same about their reasons?`
 
 ## The planning nouns stay in the plan
 

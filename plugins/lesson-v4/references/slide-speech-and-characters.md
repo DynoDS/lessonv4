@@ -1,6 +1,16 @@
 # Speech bubbles, claims and characters on slides
 
-The Slide Designer reads this reference whenever a source unit contains a speaking character, voiced claim, misconception, disagreement, prediction to judge or advice-to-a-character move. The speech-bubble templates (`speech-bubbles-1`, `speech-bubbles-2`, `speech-bubbles-3`) fit moments where the settled lesson has characters speaking to the child. This reference holds the rules that keep those slides honest.
+The Slide Designer reads this reference whenever a source unit puts a person in front of the class: a speaking character, a voiced claim, a misconception, a disagreement, a prediction to judge, an advice-to-a-character move, or anyone who simply says what they think, gives their reason or asks a question. The speech-bubble templates (`speech-bubbles-1`, `speech-bubbles-2`, `speech-bubbles-3`) fit moments where the settled lesson has characters speaking to the child. This reference holds the rules that keep those slides honest.
+
+## An invented person is shown, or is not invented
+
+**When the lesson invents a person, the class sees them: a face, and their own words in their own bubble.** A person put on a slide as words alone does not read to a child as a person. They read as something the teacher made up to have something to talk about, which is exactly what they are, and the whole point of a character is that a child stops treating the idea as an exercise and starts treating it as someone's.
+
+This bites hardest where no one is being judged, because the judging moves are the ones everything below was written for. A Year 4 RE deck compared two children's reasons for singing carols. Nobody was right or wrong, so nothing here was opened, and `Nadia says: "..."` and `Grace says: "..."` went onto the board as two text cards with no faces and no photograph. The teacher's note on the slide read: it makes them sound like they are not actually people, just what the teacher wrote down to pretend. So: someone giving their reason, someone saying what they think while you model, someone asking the class a question, and someone making a claim to be judged are all the same shape here. Count the voices and give each one a bubble.
+
+**The other half of the rule is that a person who cannot be shown was not needed.** The same deck framed a task with `A visitor asks why this scene matters to Christians.` No visitor was named, drawn or referred to again; a generic role noun standing in for a person is the tell that nobody was ever going to be shown. Two repairs, in this order. Show them, which is usually right when the person is doing a real job, and explaining something to someone who does not already know it is a real job: give them a name from the run's `CHARACTER_NAMES`, a portrait and a bubble carrying the question. Or cut them, and ask the question directly (`Why does this scene matter to Christians?`), which loses nothing when the person was only there to hold the question.
+
+**The limit: this is about people the lesson invents, not people it reports.** A real person the lesson teaches about (a monarch, a scientist, a named figure in a source) is handled by the photograph and source rules, not given a cartoon portrait and a made-up line. A class the lesson addresses directly needs no character at all, and a slide whose business is the lesson's own (your task, your criteria, what we just noticed) has no person in it to show.
 
 ## Count the voices, then pick the template
 
@@ -17,6 +27,10 @@ When the source carries its own judging question, that question is the title: `I
 ## The named characters
 
 The named class characters are Mr Sear, Miss Brooker and Bailey; every speaker is one of them, or the lesson-designer's named child carried in the source content. Never relabel a speaker "You", which points the claim back at the reader instead of at a character.
+
+**What the three pictures actually show, because the keys mislead.** `mr-sear` is drawn as a boy, `miss-brooker` as a girl, and `bailey` as the class dog. So the pool is two children and an animal, not two teachers and a dog, and a lesson that invents two children has a face for each of them. Read that before deciding a beat cannot be drawn: a designer that takes the keys at face value concludes it has no children available and falls back to text cards, which is how the two carol singers lost their faces. Set `speaker.name` to the lesson's own name for the child and the portrait carries it.
+
+**A recurring character keeps one face as well as one name.** When a child speaks on more than one slide, give them the same portrait each time. A name that arrives on a different face is a different person to the class, and the comparison a later slide is building on quietly comes apart.
 
 ## Each voice in its own bubble, lines verbatim
 
