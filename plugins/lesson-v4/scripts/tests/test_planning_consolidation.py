@@ -5,19 +5,26 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 DESIGNER = (ROOT / 'agents/lesson-designer.md').read_text(encoding='utf-8')
 VOICE = (ROOT / 'references/teacher-voice.md').read_text(encoding='utf-8')
-PLAN = DESIGNER.split('## Settle the Decisions, Then Write', 1)[1].split('### Complete the picture contract here', 1)[0]
+PLAN = DESIGNER.split('## Write the lesson, then the contract', 1)[1].split('### Complete the picture contract here', 1)[0]
 
 
 class PlanningConsolidationTests(unittest.TestCase):
-    def test_one_inventory_guides_planning_and_recording(self):
+    def test_one_inventory_guides_planning_and_the_walk_through_is_the_record(self):
         self.assertIn('Before choosing or polishing activities', PLAN)
-        self.assertIn('using the single decision inventory below', PLAN)
-        self.assertEqual(PLAN.count('Decision inventory:'), 1)
+        self.assertIn('using the decision inventory at the end of this section', PLAN)
+        self.assertEqual(PLAN.count('Then the decisions the walk-through does not show'), 1)
         self.assertNotIn("settle the lesson's learning chain:\n\n-", PLAN)
-        self.assertIn('not to write a second account of the same lesson', PLAN)
+        # The walk-through is written before the read-back, which is written
+        # before the closing decisions: the lesson first, then the checks.
+        self.assertLess(PLAN.index('The journey, in one line'), PLAN.index('Then the read-back'))
+        self.assertLess(PLAN.index('Then the read-back'), PLAN.index('Then the decisions the walk-through does not show'))
 
     def test_unique_decisions_from_both_old_inventories_survive(self):
-        inventory = PLAN.split('Decision inventory:', 1)[1].split('Do not duplicate mechanical IDs', 1)[0]
+        # Obligations that used to be inventory bullets now live in the
+        # walk-through's per-slide entries (the thing on the board, the
+        # explanation through it, the response, the launch, the dependency) or
+        # in the closing decisions. Each is checked against the whole section,
+        # because where it sits changed and what it obliges did not.
         for obligation in (
             'could not at the start', 'fact, a method or an idea', 'instances and how their evidence differs',
             'approved objective', 'exact end performance', 'related content deliberately deferred',
@@ -26,16 +33,13 @@ class PlanningConsolidationTests(unittest.TestCase):
             'nearest alternative', 'exposed, resolved and retested',
             'actual object, text, diagram or working', 'concrete explanation, model or live action',
             'why that medium makes the idea clearer', 'pupil response it prepares',
-            'child-facing lines that teach it', 'a good instance', 'steps',
+            'child-facing lines that teach it', 'example and non-example of the product', 'steps',
             'independent assessment evidence', 'surface cue or copied answer path',
             'success-criteria form', 'fresh worksheet evidence', 'safety constraint',
             'later beat that depends on it', 'movability challenge', 'never forced linking',
             'anything deliberately omitted', 'flagsForTeacher',
         ):
-            # Launch's detailed example/non-example requirement uses the current
-            # contract phrase rather than a new prose paraphrase.
-            if obligation == 'a good instance': obligation = 'example and non-example of the product'
-            with self.subTest(obligation=obligation): self.assertIn(obligation, inventory)
+            with self.subTest(obligation=obligation): self.assertIn(obligation, PLAN)
 
     def test_quality_lock_and_scaffold_order_are_not_removed(self):
         for clause in (

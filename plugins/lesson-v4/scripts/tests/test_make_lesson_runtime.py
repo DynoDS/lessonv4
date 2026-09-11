@@ -504,7 +504,10 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # engine findings were stranded in three output folders because the only
         # writable home for the shared log depended on where the run started, so
         # the log has a fixed one and there is no pending-log branch left.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 71 * 1024)
+        # Raised from 71 KiB when the walk-through began reaching the teacher
+        # (11 September 2026): the lesson had only ever been delivered as a
+        # deck, and the deck is where its story was being lost.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 72 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

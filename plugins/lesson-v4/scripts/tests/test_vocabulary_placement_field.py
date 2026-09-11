@@ -1,15 +1,16 @@
-"""Each word is introduced where it is needed, not all of them at the top.
+"""One vocabulary slide, placed where the design says, and every word on it.
 
-Reading the whole glossary after the starter had not been helping: a definition
-met before it means anything is held as a slogan. What a lesson has to be able
-to say is finer than "all the words, here" - a prerequisite term goes in before
-the instruction that uses it, and a pair of contrast words goes in after the
-noticing that gives them meaning, in the same lesson.
+The card is the reference children glance back at, and a reference is one
+place (the teacher's settled position, 30 August 2026). A definition met before
+it means anything is still held as a slogan, so each word is also taught inside
+the beat that needs it, in that beat's own landed sentence; the slide is not
+where the teaching happens. A deck built with a vocabulary slide at each point
+of need broke its own story twice (11 September 2026), which is why a second
+entry is refused.
 
-`vocabularyIntroductions` says that: an ordered list of introductions, each
-naming the words it introduces and the unit it follows. `vocabularyPlacement`,
-which could only move one slide holding every word, is superseded and still
-read so saved designs keep their original meaning.
+`vocabularyIntroductions` says that: one entry naming every retained word and
+the unit the slide follows. `vocabularyPlacement`, the older field, is
+superseded and still read so saved designs keep their original meaning.
 """
 from __future__ import annotations
 
@@ -75,9 +76,12 @@ def test_a_word_may_be_introduced_before_the_teaching_that_needs_it():
     module.validate_design(design, photos)
 
 
-def test_two_groups_may_land_at_two_different_teaching_points():
-    # The case the superseded field could not hold: one word early because an
-    # instruction needs it, the rest after the beat that gives them meaning.
+def test_a_second_vocabulary_slide_is_refused():
+    # One word early because an instruction needs it, the rest after the beat
+    # that gives them meaning, used to be two slides. It is now one slide and
+    # two beats: the early word is taught in the instruction's own beat, and
+    # the card sits where the design puts it. Two entries is two glossary
+    # stops, and the deck that did that lost its story.
     design, photos = valid_content_contract()
     words = word_ids(design)
     if len(words) < 2:
@@ -87,23 +91,23 @@ def test_two_groups_may_land_at_two_different_teaching_points():
         (starter_id(design), words[:1]),
         (unit_id(design, 0), words[1:]),
     )
-    module.validate_design(design, photos)
+    assert_invalid_contract(design, photos, "one vocabulary slide")
 
 
-def test_a_group_may_hold_several_words_when_they_belong_together():
+def test_the_one_slide_holds_every_word_wherever_it_sits():
     design, photos = valid_content_contract()
     scheduled(design, (unit_id(design, 0), word_ids(design)))
     module.validate_design(design, photos)
 
 
-def test_two_groups_may_share_one_anchor_and_keep_their_listed_order():
+def test_two_entries_on_one_anchor_are_still_two_slides_and_refused():
     design, photos = valid_content_contract()
     words = word_ids(design)
     if len(words) < 2:
         return
     anchor = unit_id(design, 0)
     scheduled(design, (anchor, words[:1]), (anchor, words[1:]))
-    module.validate_design(design, photos)
+    assert_invalid_contract(design, photos, "one vocabulary slide")
 
 
 # ── what is refused, and why ──────────────────────────────────────────────

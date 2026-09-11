@@ -205,9 +205,13 @@ class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
 
     def test_the_route_file_documents_the_field_and_its_limit(self) -> None:
         text = flat(CONTENT_BASED)
-        self.assertIn('"explanation": "the teaching of that idea as the child reads it', text)
-        self.assertIn("`explanation` is the board's teaching of the idea", text)
-        self.assertIn("Use `null` only for a name, a convention or a fact that simply is so", text)
+        # The field keeps its job (the PSHE `pass` slide is still the case it
+        # exists for) and gains its limit: it carries what the board cannot
+        # show, not the landed sentence again (11 September 2026).
+        self.assertIn('"explanation": "only what the thing on the board and the landed sentence cannot say for themselves', text)
+        self.assertIn("`explanation` is what the board has to say that the thing on it and the landed sentence cannot", text)
+        self.assertIn("Use lines for a rule that cannot show its reason", text)
+        self.assertIn("left what pass means in the script", text)
         self.assertIn("It is not the place for the explanation", text)
 
     def test_downstream_renders_it_as_teaching_lines_and_the_reviewer_names_it(self) -> None:

@@ -46,7 +46,7 @@ Read at startup:
 Read before the first affected decision:
 
 - `preferences.md` Written Voice only when you must author narrow child-facing furniture or report a wording fault. Do not use it to rewrite exact source-authored text. At the same trigger read the core sections of `teacher-voice.md`, so the furniture you author sounds like the teacher rather than a template.
-- `preferences.md` Slide Headings before choosing any title, including when a source-unit label looks usable. A planning label is not automatically a child-facing title.
+- `preferences.md` Slide Headings before choosing any title. The source unit's label is the title unless it is an internal slot name (`Do 1`, `Teach 3`, `Apply`, `Practise`); the section says what to do then. A label that names the move (`Does it need a plug?`) is kept as written, because the titles read in order are how a teacher sees where the lesson is going.
 - `preferences.md` Question Labelling before assigning or rendering any question number.
 - `preferences.md` A Picture Beside a Word and Vocabulary before composing a vocabulary or semantic word-picture slide.
 - `preferences.md` Success Criteria and Sticky Knowledge, plus the relevant part of `slide-success-criteria.md`, when a source unit has `successCriteriaRefs` or `stickyKnowledgeRefs`. Read only the inline-helper rule when the first affected unit has `inline:true`.
@@ -258,7 +258,7 @@ A key, legend or units line explains the thing beside it, so it goes AFTER that 
 
 ### 7. Keep vocabulary coherent
 
-The design's `vocabularyIntroductions` says when each word is introduced: one `key-vocabulary` slide per entry, carrying that entry's words, placed after the last slide of the unit the entry names. Two entries on one unit keep the design's order. The timing is a teaching decision already made, so do not merge two entries onto one slide or split one entry across two.
+The design's `vocabularyIntroductions` names the lesson's one `key-vocabulary` slide: every retained word with its definition and visual, placed after the last slide of the unit the entry names. The words are also taught inside the beats that need them, in their own landed sentences with the word in vocabulary green; the card is the reference, not the teaching, so do not add a second vocabulary slide at a later point of need and do not split the set across two. Where the slide sits is a teaching decision already made.
 
 A saved design that carries `vocabularyPlacement` instead means every word in one slide: after the starter when the field is null or absent, after the named unit otherwise.
 

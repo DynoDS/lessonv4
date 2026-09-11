@@ -580,7 +580,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
 
     def test_decisions_record_names_the_learning_chain(self):
         text = self._designer_text()
-        start = text.index("## Settle the Decisions, Then Write")
+        start = text.index("## Write the lesson, then the contract")
         end = text.index("### Complete the picture contract here")
         section = text[start:end]
         for term in (
@@ -595,7 +595,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
 
     def test_decisions_record_covers_deliberate_omissions(self):
         text = self._designer_text()
-        start = text.index("## Settle the Decisions, Then Write")
+        start = text.index("## Write the lesson, then the contract")
         end = text.index("### Complete the picture contract here")
         section = text[start:end]
         self.assertIn("deliberate omissions", section)
@@ -679,7 +679,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         )[0]
 
         for required in (
-            "compact semantic quality lock",
+            "a walk-through a teacher could teach from",
             "By the end, children will",
             "approved curriculum boundary",
             "dominant sticking point or misconception",

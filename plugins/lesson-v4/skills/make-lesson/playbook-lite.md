@@ -1378,6 +1378,10 @@ Write `[WORKING_DIR]/run-report.md` with:
   output could not be visually checked, and BLOCKED for unresolved material faults;
 - delivered resources with exact paths from fixed build summaries or the wall
   builder, each path in backticks;
+- the lesson walk-through: copy `[WORKING_DIR]/design-decisions.md` to
+  `[OUTPUT_DIR]/[lesson title] - walk-through.md`, listed with the delivered
+  resources. It is the lesson as the designer would teach it, and what the
+  teacher reads to see where the lesson is going; it goes wherever the deck goes;
 - excluded earned resources and exact reasons;
 - blocking faults, accepted minor issues and failed build attempts. A minor
   issue is one a check or designer raised and something judged harmless: a

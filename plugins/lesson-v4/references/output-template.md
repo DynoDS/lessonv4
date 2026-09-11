@@ -155,16 +155,15 @@ Use these exact shapes:
 
 Use `[]` when nothing was trimmed.
 
-**`vocabularyIntroductions`** is a top-level ordered array beside the vocabulary array: one entry per moment the lesson introduces vocabulary, in the order they happen.
+**`vocabularyIntroductions`** is a top-level array beside the vocabulary array holding one entry: the lesson's one vocabulary slide, every retained word, and the unit the slide follows. The words are also taught inside the beats that need them, in those beats' own landed sentences; the slide is the reference (`preferences.md` → Vocabulary).
 
-`vocabularyRefs` names the vocabulary ids introduced at that moment. `after` names the unit the introduction follows, which is the starter's `sourceUnitId` or any teaching-sequence `sourceUnitId`, and means after the whole of that unit including its last slide when the unit spans several. Two entries on the same anchor keep their listed order.
+`vocabularyRefs` names every retained vocabulary id. `after` names the unit the slide follows, which is the starter's `sourceUnitId` or any teaching-sequence `sourceUnitId`, and means after the whole of that unit including its last slide when the unit spans several.
 
-Every retained word takes exactly one introduction, and a word may not appear in two. Later reminders and reuse are ordinary teaching and are not listed here. An empty vocabulary array takes an empty introductions array.
+Every retained word is on it, and the validator refuses a second entry: a deck does not stop twice for a glossary. An empty vocabulary array takes an empty introductions array.
 
 ```json
 "vocabularyIntroductions": [
-  { "vocabularyRefs": ["vocab-001"], "after": "lesson-section/starter/unit-001" },
-  { "vocabularyRefs": ["vocab-002", "vocab-003"], "after": "lesson-section/teaching-sequence/unit-002" }
+  { "vocabularyRefs": ["vocab-001", "vocab-002", "vocab-003"], "after": "lesson-section/starter/unit-001" }
 ]
 ```
 
@@ -348,7 +347,7 @@ Instead, the lesson-designer decides exact availability by putting the ID in eac
 
 This is a pedagogical availability decision. Downstream designers may choose where the referenced fact physically sits, but they must not add or remove a sticky-knowledge reference.
 
-When a Teach takeaway is exactly a sticky-knowledge fact, reference it instead of repeating the sentence:
+A Teach slide lands its sentence once. `takeaway` is `null` when the headline is that sentence, which is the usual case. When the sentence is one of the lesson's sticky facts, the takeaway references it and the headline names what is on the board:
 
 ```json
 {
@@ -357,7 +356,7 @@ When a Teach takeaway is exactly a sticky-knowledge fact, reference it instead o
 }
 ```
 
-A non-sticky takeaway uses:
+The validator refuses a headline, an explanation line and a takeaway that repeat each other (`teaching-sequence-content-based.md`, Teach). A saved design may still carry a text takeaway:
 
 ```json
 {

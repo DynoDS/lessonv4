@@ -802,6 +802,10 @@ def validate_representation_refs(
 
 
 def validate_takeaway(raw: Any, path: str, sticky_ids: set[str]) -> None:
+    # Null is the usual Teach case: the headline is the landed sentence, and a
+    # slide lands its sentence once (`validate_teach_says_it_once`).
+    if raw is None:
+        return
     takeaway = expect_dict(raw, path)
     kind = expect_string(takeaway.get("kind"), f"{path}.kind")
     expect(kind in {"text", "sticky"}, f"{path}.kind must be text or sticky")
@@ -812,6 +816,73 @@ def validate_takeaway(raw: Any, path: str, sticky_ids: set[str]) -> None:
         expect_exact_keys(takeaway, {"kind", "ref"}, {"kind", "ref"}, path)
         ref = expect_string(takeaway["ref"], f"{path}.ref")
         expect(ref in sticky_ids, f"{path}.ref points to unknown sticky knowledge: {ref}")
+
+
+_ONCE_STOPWORDS = {
+    "a", "an", "the", "and", "or", "of", "to", "is", "are", "was", "were", "it",
+    "its", "in", "on", "at", "for", "with", "they", "them", "their", "this",
+    "that", "so", "we", "you", "your", "our", "as", "be", "can", "he", "she",
+    "his", "her", "also", "too", "not",
+}
+
+
+def _content_words(text: str) -> list[str]:
+    words = [word.strip("'") for word in re.findall(r"[a-z0-9']+", text.lower())]
+    return [word for word in words if word and word not in _ONCE_STOPWORDS]
+
+
+def _says_the_same(first: str, second: str) -> bool:
+    """Two lines say the same thing when nearly every content word of the
+    shorter is in the longer. Four content words is the floor, so a three-word
+    line beside a fuller one is not a repeat; a line that adds a detail to the
+    other is not either, because its own words are then mostly new."""
+    words_a, words_b = _content_words(first), _content_words(second)
+    shorter, longer = (words_a, words_b) if len(words_a) <= len(words_b) else (words_b, words_a)
+    if len(shorter) < 4:
+        return False
+    longer_set = set(longer)
+    overlap = sum(1 for word in shorter if word in longer_set)
+    return overlap / len(shorter) >= 0.8
+
+
+def _sentences(text: str) -> list[str]:
+    return [part.strip() for part in re.split(r"(?<=[.!?])\s+|\n+", text) if part.strip()]
+
+
+def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: dict[str, Any]) -> None:
+    """A Teach slide lands its sentence once. A teeth slide printed `Incisors
+    cut; canines help tear.` as its headline and `Incisors cut food and
+    canines help tear food.` as its star line, and a child met one fact twice
+    and looked at the teeth for neither. The landed sentence is the headline,
+    or the sticky fact the takeaway references, never both; the explanation is
+    what the board cannot show on its own, not the sentence again."""
+    for index, unit in enumerate(sequence):
+        if unit.get("kind") != "teach":
+            continue
+        path = f"teachingSequence[{index}].content"
+        content = unit["content"]
+        lines: list[tuple[str, str]] = [("headline", content["headline"])]
+        takeaway = content.get("takeaway")
+        if isinstance(takeaway, dict):
+            if takeaway.get("kind") == "text":
+                lines.append(("takeaway", takeaway["text"]))
+            elif takeaway.get("kind") == "sticky":
+                sticky = sticky_by_id.get(takeaway.get("ref")) or {}
+                if isinstance(sticky.get("text"), str):
+                    lines.append(("takeaway (sticky fact)", sticky["text"]))
+        if isinstance(content.get("explanation"), str):
+            for sentence in _sentences(content["explanation"]):
+                lines.append(("explanation", sentence))
+        for first_index in range(len(lines)):
+            for second_index in range(first_index + 1, len(lines)):
+                (name_a, text_a), (name_b, text_b) = lines[first_index], lines[second_index]
+                expect(
+                    not _says_the_same(text_a, text_b),
+                    f"{path}: a Teach slide lands its sentence once, and these say the same "
+                    f"thing: {name_a} `{text_a}` and {name_b} `{text_b}`. The landed sentence "
+                    "is the headline, or the sticky fact the takeaway references, never both; "
+                    "the explanation is only what the board cannot show on its own",
+                )
 
 
 def validate_launch(raw: Any, path: str) -> None:
@@ -1267,7 +1338,7 @@ def validate_source_unit(
 
     if kind == "teach":
         takeaway = unit["content"]["takeaway"]
-        if takeaway["kind"] == "sticky":
+        if takeaway is not None and takeaway["kind"] == "sticky":
             expect(
                 takeaway["ref"] in sticky_refs,
                 f"{path}.content.takeaway sticky ref must also appear in stickyKnowledgeRefs",
@@ -2266,6 +2337,7 @@ def validate_design(
     )
 
     validate_route_sequence(structure, sequence, concept_items)
+    validate_teach_says_it_once(sequence, sticky_by_id)
 
     if structure != "Skill-based":
         validate_idea_instances(root, sequence, concept_items)
@@ -2327,6 +2399,17 @@ def validate_design(
             not missing,
             "every retained word needs a planned introduction, or it reaches the "
             f"class without ever being taught; these have none: {', '.join(missing)}",
+        )
+        # One vocabulary slide. The card is the reference children glance back
+        # at, and a reference is one place; each word is taught inside the beat
+        # that needs it, in that beat's own landed sentence. A second entry is
+        # a second stop for a glossary, and a deck built that way broke its
+        # story twice (`preferences.md` -> Vocabulary).
+        expect(
+            len(introductions) <= 1,
+            "one vocabulary slide: every retained word shares the one key-vocabulary "
+            "slide and is taught inside the beat that needs it, so vocabularyIntroductions "
+            f"holds one entry, not {len(introductions)}",
         )
 
     if has_legacy:
