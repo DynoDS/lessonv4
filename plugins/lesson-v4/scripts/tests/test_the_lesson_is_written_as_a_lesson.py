@@ -61,12 +61,34 @@ class ThePlannerWritesTheLessonFirst(unittest.TestCase):
         # The journey is written before the slides, and tested against the route.
         self.assertIn("The journey, in one line", designer)
         self.assertIn("it is the route, not this lesson's journey", designer)
-        # Every slide carries the four things a teacher reads.
+        # Every slide carries what a teacher reads, in the order they read it.
         self.assertIn("never the slot", designer)
         self.assertIn("on the board: exactly what is there", designer)
         self.assertIn("why it is here", designer)
         # Writing the board is where the amount is judged, not a number.
         self.assertIn("Writing the board out is the amount check", designer)
+
+    def test_the_walk_through_has_a_slot_for_the_thought_and_the_orientation(self) -> None:
+        """The first trial run (Shaftesbury, 11 September 2026) found both
+        holes: the designer had settled a `thinking` line for every beat and
+        the walk-through had nowhere to put it, so it was folded into what the
+        teacher listens for, which is a different thing and after the work
+        rather than during it; and a teacher opening the walk-through met
+        slide 1 with no paragraph saying what the lesson was."""
+        designer = flat(DESIGNER)
+        self.assertIn("the thought: the question a child's mind is answering while they work", designer)
+        # Written before the activity, as 4.2.123 requires, and not confused
+        # with the look-for line.
+        self.assertIn("it is written before the next bullet", designer)
+        self.assertIn("It is not what you are listening for", designer)
+        # The orientation is one paragraph in two places, not a second write-up.
+        self.assertIn("Then the orientation", designer)
+        self.assertIn("write it once and use it in both places", designer)
+
+    def test_the_walk_through_order_puts_the_thought_before_the_activity(self) -> None:
+        text = DESIGNER.read_text(encoding="utf-8")
+        section = text.split("**Then each slide, in order.**", 1)[1].split("**Then the read-back", 1)[0]
+        self.assertLess(section.index("- the thought:"), section.index("- what happens:"))
 
     def test_the_read_back_and_the_closing_decisions_survive(self) -> None:
         designer = flat(DESIGNER)
