@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-11 Vocabulary goes back to as-and-when, and the teeth fault keeps its real repair (4.2.143)
+
+Reverting my own change from 4.2.138. Daniel asked what had happened to vocabulary and then said it plainly: "I like it when lesson designer decides which slides it is before, so vocab is taught when children need it, not at start and have to wait ages before they need it, even if it splits vocab up."
+
+**The misreading.** 4.2.138 collapsed vocabulary to one slide holding every word, on the memory of his 30 August position and the evidence of the teeth deck. His 30 August position was against **a run of single-word slides at the open of a lesson**, which is a different thing from grouped introductions placed at their points of need, and `vocabularyIntroductions` was built on 5 September precisely to tell those two apart. The composition playbook had said so in as many words the whole time ("that is a reason to question a design that plans four separate introductions before anything has happened, not a reason to override one that introduces two words at the point they are used"), and I read past it. Restored: one entry per moment, as many as the lesson needs, the count a teaching decision with no default, in `preferences.md`, the Lesson Designer, the Slide Designer, the composition playbook, the output template, the scaffold reference and the validator, which no longer caps the count.
+
+**What was actually wrong with the teeth deck, which is not about count.** It showed two teeth, asked what was different about their biting edges, and then went straight to a vocabulary slide defining incisors as the front teeth with thin edges that cut, before anybody had answered. That fault survives at any number of vocabulary slides and is now a third boundary beside the two the section already had (not after a word's last use; not handing over what an exploration exists to discover): a card must not answer the question the very next beat is about to ask, so each introduction is read against the beat that follows it as well as the beat that needs the word. The Lesson Designer carries the same test.
+
+**Kept from the two releases in between.** Every entry still requires its own `script` (4.2.140), which is the repair for a class meeting `belief` and `nativity` with the teacher holding nothing, and it is per slide rather than per lesson because each entry is a slide a teacher stands in front of. The RE deck's real vocabulary faults were the empty notes and the placement, not the number of slides.
+
+Four tests changed to match, one added for a second entry's script, and the restored placement suite keeps the timings a lesson has to be able to express. Full run: 1575 pass, the same five pre-existing CRLF subtest failures.
+
 ## 2026-09-11 The class builds the set, and one case is not the group (4.2.142)
 
 The geography half of the comparison, and the first trial run from a real long-term-plan row rather than a bare objective. `To describe how Indigenous peoples use the Amazon rainforest`, lesson 3 of the Year 4 rainforest unit, designed from Daniel's own Kapow plan row and read against the same row written up by an assistant knowing only the voice guide.

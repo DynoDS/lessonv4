@@ -33,7 +33,7 @@ Use exactly these top-level fields:
   "subject": "Science",
   "scope": "Complete lesson",
   "vocabularyCount": 3,
-  "vocabularyIntroductionCount": 1,
+  "vocabularyIntroductionCount": 2,
   "trimmedVocabularyCount": 0,
   "representations": [
     {
@@ -84,7 +84,7 @@ A placeholder is not necessarily a planning note. For starter, observe, apply an
 
 `vocabularyCount`, `vocabularyIntroductionCount`, `trimmedVocabularyCount`, `successCriteriaCount`, `stickyKnowledgeCount`, `misconceptionCount` and `photoCount` are zero or positive integers. They are counts of decisions already made, not targets to fill.
 
-`vocabularyIntroductionCount` is `1` when the lesson has vocabulary and `0` when it has none: the lesson has one vocabulary slide, every retained word on it, placed by the entry's `after` (`preferences.md` → Vocabulary). The words are also taught inside the beats that need them; that teaching is in the units, not in this count.
+`vocabularyIntroductionCount` is how many separate moments the lesson introduces vocabulary at, which is never more than `vocabularyCount` and is `0` when there is no vocabulary. Two words introduced together are one moment; a prerequisite word before an instruction and a contrasting pair after the noticing that gives them meaning are two. It is a teaching decision and there is no default: all the words at one moment is a real answer, and so is one moment each.
 
 Maths is usually 0, because its visual tools are drawn by the engine rather than
 photographed, but it is not required to be: a maths lesson may ask for a

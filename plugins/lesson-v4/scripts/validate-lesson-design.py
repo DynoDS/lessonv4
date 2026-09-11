@@ -2423,17 +2423,10 @@ def validate_design(
             "every retained word needs a planned introduction, or it reaches the "
             f"class without ever being taught; these have none: {', '.join(missing)}",
         )
-        # One vocabulary slide. The card is the reference children glance back
-        # at, and a reference is one place; each word is taught inside the beat
-        # that needs it, in that beat's own landed sentence. A second entry is
-        # a second stop for a glossary, and a deck built that way broke its
-        # story twice (`preferences.md` -> Vocabulary).
-        expect(
-            len(introductions) <= 1,
-            "one vocabulary slide: every retained word shares the one key-vocabulary "
-            "slide and is taught inside the beat that needs it, so vocabularyIntroductions "
-            f"holds one entry, not {len(introductions)}",
-        )
+        # How many introductions a lesson has is the designer's decision: a word
+        # met eight slides before it is used has stopped being a glance reference
+        # by the time anyone glances, so a lesson may introduce words at several
+        # moments (`preferences.md` -> Vocabulary). Nothing here caps the count.
 
     if has_legacy:
         placement = expect_dict(root["vocabularyPlacement"], "vocabularyPlacement")

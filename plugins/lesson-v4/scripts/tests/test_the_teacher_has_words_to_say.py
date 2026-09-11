@@ -93,10 +93,11 @@ class TheCalibrationIsBack(unittest.TestCase):
 
 
 class EverySlideTheTeacherTeachesFromHasWords(unittest.TestCase):
-    def test_the_vocabulary_slide_carries_its_script(self) -> None:
-        self.assertIn("`script` is the words the teacher says while this slide is up", flat(OUTPUT_TEMPLATE))
-        self.assertIn("The entry's `script` is that slide's speaker notes", flat(SLIDE_DESIGNER))
-        self.assertIn("The slide gets a script like any other teaching moment", flat(DESIGNER))
+    def test_every_vocabulary_slide_carries_its_script(self) -> None:
+        self.assertIn("`script` is the words the teacher says while that slide is up", flat(OUTPUT_TEMPLATE))
+        self.assertIn("It is required on every entry", flat(OUTPUT_TEMPLATE))
+        self.assertIn("Each entry's `script` is that slide's speaker notes", flat(SLIDE_DESIGNER))
+        self.assertIn("Each entry carries its own `script`", flat(DESIGNER))
 
     def test_a_split_unit_divides_its_script(self) -> None:
         slide = flat(SLIDE_DESIGNER)

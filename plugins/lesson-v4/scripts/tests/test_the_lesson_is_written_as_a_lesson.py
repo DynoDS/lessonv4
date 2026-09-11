@@ -130,25 +130,35 @@ class TheTeacherReceivesTheLesson(unittest.TestCase):
         self.assertIn("what the teacher reads to see where the lesson is going", playbook)
 
 
-class OneVocabularySlide(unittest.TestCase):
-    def test_the_rule_and_its_reason_are_in_the_preferences(self) -> None:
+class VocabularyArrivesWhenItIsNeeded(unittest.TestCase):
+    """4.2.138 collapsed vocabulary to one slide on my reading of Daniel's
+    30 August position. That position was against a run of single-word slides
+    at the open, which is a different thing, and he corrected it the same day:
+    "I like it when lesson designer decides which slides it is before, so vocab
+    is taught when children need it, not at start and have to wait ages before
+    they need it, even if it splits vocab up." Reverted in 4.2.143. What
+    survives from the teeth deck is the genuine finding, which is about
+    placement rather than count."""
+
+    def test_the_designer_decides_how_many_and_where(self) -> None:
         preferences = flat(PREFERENCES)
-        self.assertIn("One vocabulary slide, and each word taught in the beat that needs it", preferences)
-        self.assertIn("a deck does not stop for a glossary", preferences)
-        # The point-of-need reasoning is kept, moved into the beat.
-        self.assertIn("said before that instruction", preferences)
-        self.assertIn("named after that noticing", preferences)
+        self.assertIn("Introduce each word where it is most useful", preferences)
+        self.assertIn("let the lesson carry as many introductions as it genuinely needs", preferences)
+        self.assertIn("one entry per introduction, in the order they happen", preferences)
+        self.assertIn("one `key-vocabulary` slide per entry", flat(SLIDE_DESIGNER))
 
-    def test_every_owner_renders_one_slide(self) -> None:
-        self.assertIn("do not add a second vocabulary slide", flat(SLIDE_DESIGNER))
-        self.assertIn("Vocabulary is presented on one `key-vocabulary` slide", flat(COMPOSITION))
-        self.assertIn("`vocabularyIntroductionCount` is `1` when the lesson has vocabulary", flat(SCAFFOLD_DOC))
-        self.assertIn("holding one entry", flat(OUTPUT_TEMPLATE))
+    def test_both_ways_of_getting_it_wrong_are_still_named(self) -> None:
+        preferences = flat(PREFERENCES)
+        self.assertIn("putting them all at the top because that is where they went last time", preferences)
+        self.assertIn("splitting a set into one word per slide to look thorough", preferences)
 
-    def test_the_designer_teaches_the_word_in_its_beat(self) -> None:
-        designer = flat(DESIGNER)
-        self.assertIn("Write `vocabularyIntroductions` as one entry", designer)
-        self.assertIn("says the word in its own landed sentence", designer)
+    def test_a_card_may_not_answer_the_next_beats_question(self) -> None:
+        """The teeth deck asked what was different about two teeth's biting
+        edges, then defined incisors on the very next slide."""
+        preferences = flat(PREFERENCES)
+        self.assertIn("a card must not answer the question the very next beat is about to ask", preferences)
+        self.assertIn("Read each introduction against the beat that follows it", preferences)
+        self.assertIn("read each introduction against the beat that follows it", flat(DESIGNER).lower())
 
 
 class TheDesignsLabelIsTheTitle(unittest.TestCase):
