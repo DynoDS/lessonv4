@@ -159,11 +159,17 @@ Use `[]` when nothing was trimmed.
 
 `vocabularyRefs` names every retained vocabulary id. `after` names the unit the slide follows, which is the starter's `sourceUnitId` or any teaching-sequence `sourceUnitId`, and means after the whole of that unit including its last slide when the unit spans several.
 
+`script` is the words the teacher says while this slide is up, beginning `Say to children:`, written to the same standard as any other script (`teacher-voice.md` §16H). It is required, because the slide is a teaching moment and the teacher is standing in front of it: a deck shipped with two vocabulary slides and empty notes on both, and the class met `belief` and `nativity` with nothing said about either. Read each card, and for a word with a visual say what the class is looking at; the boundary decision the Vocabulary preference asks for (`cardboard, opaque or not opaque?`) lives here too.
+
 Every retained word is on it, and the validator refuses a second entry: a deck does not stop twice for a glossary. An empty vocabulary array takes an empty introductions array.
 
 ```json
 "vocabularyIntroductions": [
-  { "vocabularyRefs": ["vocab-001", "vocab-002", "vocab-003"], "after": "lesson-section/starter/unit-001" }
+  {
+    "vocabularyRefs": ["vocab-001", "vocab-002", "vocab-003"],
+    "after": "lesson-section/starter/unit-001",
+    "script": "Say to children: Three words before we start. ..."
+  }
 ]
 ```
 

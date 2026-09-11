@@ -41,7 +41,12 @@ def scheduled(design, *groups):
     """
     design.pop("vocabularyPlacement", None)
     design["vocabularyIntroductions"] = [
-        {"vocabularyRefs": list(refs), "after": anchor} for anchor, refs in groups
+        {
+            "vocabularyRefs": list(refs),
+            "after": anchor,
+            "script": "Say to children: Two words before we start.",
+        }
+        for anchor, refs in groups
     ]
     return design
 
@@ -215,4 +220,30 @@ def test_the_scaffold_asks_for_the_introductions_rather_than_defaulting_them():
 
     assert "vocabularyPlacement" not in design
     entries = design["vocabularyIntroductions"]
-    assert entries and set(entries[0]) == {"vocabularyRefs", "after"}
+    assert entries and set(entries[0]) == {"vocabularyRefs", "after", "script"}
+
+
+# ── the slide is a teaching moment, so it has words ───────────────────────
+
+
+def test_the_vocabulary_slide_needs_its_script():
+    # A Year 4 RE deck put two vocabulary slides in front of a class with
+    # empty speaker notes on both. The schema had nowhere for the words.
+    design, photos = valid_content_contract()
+    scheduled(design, (starter_id(design), word_ids(design)))
+    design["vocabularyIntroductions"][0]["script"] = "Three words before we start."
+    assert_invalid_contract(design, photos, "must begin with 'Say to children:'")
+
+
+def test_an_empty_vocabulary_script_is_refused():
+    design, photos = valid_content_contract()
+    scheduled(design, (starter_id(design), word_ids(design)))
+    design["vocabularyIntroductions"][0]["script"] = "Say to children:"
+    assert_invalid_contract(design, photos, "must contain words after")
+
+
+def test_a_vocabulary_entry_without_the_field_is_refused():
+    design, photos = valid_content_contract()
+    scheduled(design, (starter_id(design), word_ids(design)))
+    del design["vocabularyIntroductions"][0]["script"]
+    assert_invalid_contract(design, photos, "vocabularyIntroductions")

@@ -1328,6 +1328,7 @@ def build_scaffold(
             {
                 "vocabularyRefs": [PLACEHOLDER],
                 "after": PLACEHOLDER,
+                "script": PLACEHOLDER,
             }
             for _
             in range(

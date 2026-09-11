@@ -17,7 +17,7 @@ A sentence can sound like the teacher and still be wrong for the task if it:
 
 This guide owns **how the voice sounds**. What the words must **achieve** is owned by `preferences.md` → Written Voice (House Style) and applies at full strength alongside this file: understanding over decodability, density and paragraph breaks, protecting the answer, the printed-surface habits, and the em dash rule.
 
-When authoring anything a child reads or hears, read sections 1-3, 15 and 17. Read §4 once when considering the whole lesson at completion, not for each string. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison prompt §12, a practical lesson §13. Read §16's calibrated examples only when wording remains uncertain after that.
+When authoring anything a child reads or hears, read sections 1-3, 15 and 17. Read §4 once when considering the whole lesson at completion, not for each string. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison prompt §12, a practical lesson §13. **A speaker-note script opens §16H before the first one you write in a lesson**, because it is the only example here at the real length and the failure it exists for is a note too thin to teach from. Read the rest of §16's calibrated examples only when wording remains uncertain after that.
 
 **§6 and §12 are the two most often missed, and they are missed the same way:** the writer does not notice which kind of thing they are writing, so the section that owns it is never opened. Questions and instructions are the most common thing anyone here writes, and a comparison prompt arrives disguised as a heading. Three reached real children. `Choose a job.` on an appliances sheet, which a class answered `Fireman`, and `Write one question you would ask before making a stronger judgement.` on a Greater Depth diet sheet, both §6 (5 September 2026). `What do their reasons share?` on a Year 4 RE slide, where §12's own calibrated wording was already sitting in that same slide's teacher script (11 September 2026). Every one was written by an agent that had read each section it was routed to. Routing by the kind of string only works if you stop and name the kind.
 
@@ -771,6 +771,31 @@ Why it fits:
 - the slide gives pupils something to do;
 - humour grows naturally out of the activity;
 - explanation can follow their experience.
+
+---
+
+## H. A speaker note, in full
+
+Every other example here is a sentence or two, because every other example is a string that goes on a page. A speaker note is a different kind of thing: it is a minute or two of a teacher talking, and a writer calibrated only on fragments writes fragments. A Year 4 RE lesson went out with 300 words of script across twelve slides, five of which had none at all, and the teacher said there was not enough there to teach from. So these two are the full length, and length is part of what they are showing.
+
+**A Year 4 My Turn, modelling £3.40 + £4.80.**
+
+> Say to children: I'm adding £3.40 and £4.80. First, I split each amount into pounds and pence. £3.40 is £3 and 40p. £4.80 is £4 and 80p. Now I add the pounds. £3 plus £4 is £7. Now the pence. 40p plus 80p is 120p. Stop. Some of you will want to write £7.120 here, and I understand why, but that isn't a real money amount. We never have more than 99p before we exchange. 120p is the same as 100p and 20p, and 100p is the same as £1. So I swap 100p for £1 and add it to my pounds. £7 becomes £8, and I've got 20p left. £8.20.
+
+**A Year 4 RE Teach, on a nativity model.** This is the slide that failed, written as it should have been.
+
+> Say to children: Have a look at this. It's a model of the Christmas story, and it's called a nativity. You'll see these in churches all through December, and some of you might have one at home. Right, the important bit. Can you see the baby, in the middle? That's Jesus. Everything else in this scene is arranged around him, and that's deliberate. Christians believe Jesus is God's Son. So when they set this up at Christmas, they're not only remembering a baby being born a long time ago. They're saying: this is the moment God came close to people. That's why it matters to them. Look at where everyone is facing. They're all turned the same way, aren't they? That tells you something on its own.
+
+Why they fit:
+
+- they are the words, said in order, not a summary of what will be explained;
+- one idea at a time, with the next sentence picking up the last;
+- the teacher points at the thing (`the baby, in the middle`, `40p plus 80p`) rather than naming it abstractly;
+- contractions and small asides (`and I understand why`, `some of you might have one at home`) that a teacher says and a document does not;
+- the wrong answer is named out loud before it is resolved, which is more memorable than only ever showing the right one;
+- they stop where the children's turn starts.
+
+What is **not** in them, and this is the part that goes wrong: no staging instruction (`begin with the photograph, then replace it`), no protective caveat (`these are imagined children, not the people in the photo`), no safeguarding note. Every one of those is real and belongs in the teacher line above, not in the middle of a sentence the teacher is reading aloud to thirty children. Welded into the script they break the delivery, because the teacher is halfway through talking to the class and suddenly reading a note to themselves. That is what makes a note confusing to read rather than merely thin.
 
 ---
 

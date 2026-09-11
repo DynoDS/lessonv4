@@ -145,6 +145,8 @@ This includes:
 - prompts;
 - a content Teach unit's `explanation`, kept as its own short lines;
 - a task's `launch`: its `established` line, its `goodLooksLike` pair and each of its `steps`, as separate pieces on a slide of their own before the task slide;
+
+**When one unit becomes several slides, its script is divided between them, not left on one.** A slide a teacher stands in front of with empty notes is a slide they have to teach from nothing, and the commonest cause is a unit that spanned two slides while its whole script stayed with the first: a launch slide and the task slide it precedes, a Teach whose example arrives on a second slide, a practice split across two. Cut the script at the point the slides cut, so each slide carries the words for what it shows, and change no wording in doing it. Where the split leaves a slide with genuinely nothing to say (an answer reveal whose script would only read the answers aloud), leave its notes empty and say so in your report rather than inventing teaching.
 - instructions supplied through non-null `pupilInstruction`;
 - claims;
 - sentence stems;
@@ -258,7 +260,7 @@ A key, legend or units line explains the thing beside it, so it goes AFTER that 
 
 ### 7. Keep vocabulary coherent
 
-The design's `vocabularyIntroductions` names the lesson's one `key-vocabulary` slide: every retained word with its definition and visual, placed after the last slide of the unit the entry names. The words are also taught inside the beats that need them, in their own landed sentences with the word in vocabulary green; the card is the reference, not the teaching, so do not add a second vocabulary slide at a later point of need and do not split the set across two. Where the slide sits is a teaching decision already made.
+The design's `vocabularyIntroductions` names the lesson's one `key-vocabulary` slide: every retained word with its definition and visual, placed after the last slide of the unit the entry names. The entry's `script` is that slide's speaker notes, copied exactly like any other source-authored script. The words are also taught inside the beats that need them, in their own landed sentences with the word in vocabulary green; the card is the reference, not the teaching, so do not add a second vocabulary slide at a later point of need and do not split the set across two. Where the slide sits is a teaching decision already made.
 
 A saved design that carries `vocabularyPlacement` instead means every word in one slide: after the starter when the field is null or absent, after the named unit otherwise.
 

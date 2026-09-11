@@ -43,7 +43,13 @@ OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities", "vocabularyPlacement", "vo
 # Grouping is a teaching choice, not a quota: one word, two, or a genuinely
 # useful larger set. The rule the validator holds is only that every retained
 # word is introduced exactly once and that the anchor exists.
-VOCABULARY_INTRODUCTION_FIELDS = {"vocabularyRefs", "after"}
+# `script` is the words the teacher says while the vocabulary slide is up. It
+# is required rather than optional because the slide is a teaching moment and
+# the schema used not to have anywhere for its words: a Year 4 RE deck put two
+# vocabulary slides in front of a class with empty speaker notes on both, and
+# the teacher stood in front of `belief` and `nativity` with nothing to say
+# (11 September 2026).
+VOCABULARY_INTRODUCTION_FIELDS = {"vocabularyRefs", "after", "script"}
 
 # The superseded field, still read so saved designs keep their original
 # meaning: `null` or absent puts every word after the starter, and
@@ -161,6 +167,12 @@ SCRIPT_REQUIRED_KINDS = {
     "my-turn",
     "our-turn",
     "teach",
+    # A substantial task is launched, not only instructed, and the launch takes
+    # its own slide: a Year 4 RE deck's `Get ready to explain` reached the class
+    # with empty speaker notes, so the teacher set the lesson's main task with
+    # nothing to say (11 September 2026).
+    "practise",
+    "do-task",
     "stimulus",
     "stimulus-talk",
     "synthesise",
@@ -2386,6 +2398,17 @@ def validate_design(
                 after in anchor_ids,
                 f"{path}.after must name the starter's or a teachingSequence "
                 f"sourceUnitId: {after}",
+            )
+            script = expect_string(entry["script"], f"{path}.script")
+            prefix = "Say to children:"
+            expect(
+                script.startswith(prefix),
+                f"{path}.script must begin with 'Say to children:': the vocabulary "
+                "slide is a teaching moment and the teacher needs the words for it",
+            )
+            expect(
+                script[len(prefix):].strip(),
+                f"{path}.script must contain words after 'Say to children:'",
             )
 
         duplicates = sorted({ref for ref in introduced if introduced.count(ref) > 1})
