@@ -106,10 +106,17 @@ class ThePanelComesOffTheAnswerSlide(unittest.TestCase):
 
 
 class QuestionLabelsAreForMaths(unittest.TestCase):
-    def test_slides_outside_maths_carry_none(self) -> None:
+    def test_the_starter_is_numbered_in_every_subject(self) -> None:
+        """Corrected within the hour: "I didnt mean starters, starters should
+        still have them." A starter is the matching case in every lesson."""
         preferences = flat(PREFERENCES)
-        self.assertIn("question labels are for maths and nothing else", preferences)
-        self.assertIn("in every other subject, slides carry no question labels at all", preferences)
+        self.assertIn("The starter is numbered in every subject", preferences)
+        self.assertIn("every starter numbers its questions, whatever the subject", preferences)
+
+    def test_after_the_starter_labels_are_for_maths(self) -> None:
+        preferences = flat(PREFERENCES)
+        self.assertIn("After the starter, labels are for maths and nothing else", preferences)
+        self.assertIn("in every other subject, number the starter and nothing else on the slides", preferences)
         # The reason, so it generalises rather than being a bare ban.
         self.assertIn("so a child can match what they wrote to the answer being read out", preferences)
 
