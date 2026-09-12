@@ -133,3 +133,43 @@ class QuestionLabelsAreForMaths(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TheExplanationIsSeparatePiecesNotABlock(unittest.TestCase):
+    """4.2.146 got the teaching onto the board and the composition put every
+    line of it in one black card. Daniel, with three hand-built mock-ups of the
+    same science slide: "teaching doesnt have to be all together grouped all
+    black. paragraph breaks, different places, different colours etc."
+
+    Two of his three mock-ups use no colour at all: one lifts the first line to
+    a full-width statement across the top, the other places each line against
+    the part it describes. That is the repair, and it is composition.
+    """
+
+    COMPOSITION = ROOT / "references" / "slide-composition-playbook.md"
+    PROFILE = ROOT / "references" / "teacher-slide-visual-profile.md"
+
+    def test_the_lines_are_composed_as_separate_pieces(self) -> None:
+        composition = flat(self.COMPOSITION)
+        self.assertIn("Compose the explanation's lines as separate pieces, not as one block", composition)
+        self.assertIn("a slab of them in one card is three sentences a child reads as a paragraph", composition)
+
+    def test_three_shapes_are_named_so_there_is_somewhere_to_go(self) -> None:
+        composition = flat(self.COMPOSITION)
+        self.assertIn("stacked as separate cards down one side", composition)
+        self.assertIn("full-width statement across the top", composition)
+        self.assertIn("one above the figure, one beside it, one under it", composition)
+
+    def test_the_choice_is_made_by_what_each_line_is_about(self) -> None:
+        composition = flat(self.COMPOSITION)
+        self.assertIn("a line about one part sits next to that part", composition)
+        self.assertIn("concatenated into one black card because they arrived in one field", composition)
+
+    def test_it_does_not_reach_for_a_colour_the_grammar_has_not_got(self) -> None:
+        """The profile's own line, unchanged: prominence on a black
+        explanatory line is size, position and spacing."""
+        self.assertIn("has no spare one for prominence", flat(self.COMPOSITION))
+        self.assertIn(
+            "Use size, position and spacing, not colour, when prominence alone is the job of a black explanatory line",
+            flat(self.PROFILE),
+        )

@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-12 The teaching is pieces, not a block (4.2.148)
+
+Follow-on to 4.2.146, which put the teaching back on the Teach board and left it looking like a wall. Daniel, on the rebuilt science deck: "I see the teaching finally. It's fine, I just need it visually better. Look at slide 3, teaching is all together in one box as one big black text ... teaching doesnt have to be all together grouped all black. paragraph breaks, different places, different colours etc."
+
+He built three mock-ups of the same slide, and two of them use no colour at all. One lifts the first line to a full-width statement across the top and puts the rest beside the picture. One places each line against what it is about: one above the figure, one in a card beside it, one underneath it. The third keeps the current arrangement and gives the three lines real space inside their card. So the repair is composition, and it goes to the composition playbook: the explanation's lines are composed as separate pieces, never concatenated into one black card because they arrived in one field, with the three shapes named and the choice made by what each line is about. A line describing the whole thing goes above or across, a line about one part sits next to that part, a line about what happens next sits under.
+
+**The colour half is not done and the reason is recorded here.** His mock-ups put one teaching line in orange, and the semantic grammar has no colour free for it: blue is a question to children and nothing else, green is answers and taught vocabulary, purple is sticky knowledge, red is a failed state or a safety warning, and orange already tints a supplied value the question hands the child. `teacher-slide-visual-profile.md` also carries its own line that size, position and spacing rather than colour do this job for a black explanatory line, and the grammar it belongs to was built over several rounds of his own feedback, including the deck where four verbs went out in question blue and left the actual question with nothing to lift it. Spending a colour is his call and it is with him. Until then the separation is layout.
+
+Four new tests. Full run: 1605 pass, the nine known failures unchanged. The three decks are being recomposed against this rule as resource repairs.
+
 ## 2026-09-12 The class is inside the lesson (4.2.147)
 
 The rest of Daniel's 12 September notes on the first three decks, after the four repaired in 4.2.146. Six repairs. What they have in common is that the lesson is correct and the child is standing outside it.
