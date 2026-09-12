@@ -18,7 +18,9 @@ The rest of Daniel's 12 September notes on the first three decks, after the four
 
 **And one existing rule that was missed rather than absent.** A slide of four true black sentences: "its all black too. Could have used little images or the sticky knowledge star thing if they are sticky knowledge." The no-flat-colour rule was already there and the available repair was not, so it now names it: mark a sticky fact as one and it takes the star treatment, or give a line a small image; the wall is the sameness, not the length.
 
-Thirteen new tests. Full run: 1597 pass; the five pre-existing CRLF subtest failures and the four from 4.2.144's model and effort changes, both unchanged by this work.
+**And a bound added the same hour, on Daniel's question.** "Am I going to see `imagine` all the time now." A fair worry: it is the obvious opener, it works, and a model reaches for the concrete word it was shown. The test is whether a child could be in it, not the word, and the bound borrows §4's own framing for a light line: a deck that opens the same door every time has stopped having a voice and started having a habit, which children hear coming. Four other routes are named so there is somewhere else to go, and the limit at the other end is that a real event, place or person is stated plainly, because `Imagine` would be a lie about it.
+
+Sixteen new tests. Full run: 1600 pass; the five pre-existing CRLF subtest failures and the four from 4.2.144's model and effort changes, both unchanged by this work.
 
 ## 2026-09-12 The board teaches again, and a criterion is an instruction (4.2.146)
 

@@ -132,3 +132,25 @@ class TheChildHasRoomToWriteAndSomethingToLookAt(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ImagineDoesNotBecomeATic(unittest.TestCase):
+    """Daniel, the same day the rule landed: "am I going to see `imagine` all
+    the time now." The word is the obvious opener and a model reaches for the
+    concrete example it was given, so the rule needs the bound that the humour
+    section already applies to a light line."""
+
+    def test_the_test_is_the_child_not_the_word(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("The word `Imagine` is one way there and must not become the way", voice)
+        self.assertIn("started having a habit", voice)
+
+    def test_other_routes_are_named_so_there_is_somewhere_else_to_go(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("A class in Year 3 has dance lessons three times a week", voice)
+        self.assertIn("You've got a wet break", voice)
+        self.assertIn("start from the thing rather than the frame", voice)
+
+    def test_a_real_thing_is_not_imagined(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("a real event, a real place or a real person is not imagined", voice)
