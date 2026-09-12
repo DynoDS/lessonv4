@@ -156,8 +156,24 @@ function needsClockRow(spec) {
 const ARROW = "var(--colour-given)";
 const OBJECT = "var(--colour-question)";
 
+// Year 4 place value is taught WITH the comma, and the question beside the
+// line already uses it ("Round 6,734 to the nearest 10."). A line whose ends
+// read 6730 and 6740 under that question puts both conventions in front of a
+// child at once, on the sheet practising the convention. The slide engine made
+// this repair on 8 September 2026 (builder numberline.js); the paper engine had
+// kept String(v). Built by hand rather than through toLocaleString so the sheet
+// reads the same whatever the building machine's locale is. Decimals, values
+// under a thousand and authored string labels are left exactly as written.
 function formatValue(v) {
-  return String(v);
+  if (typeof v !== "number" || !Number.isFinite(v)) return String(v);
+  if (!Number.isInteger(v) || Math.abs(v) < 1000) return String(v);
+  const digits = String(Math.abs(v));
+  let out = "";
+  for (let i = 0; i < digits.length; i++) {
+    if (i > 0 && (digits.length - i) % 3 === 0) out += ",";
+    out += digits[i];
+  }
+  return (v < 0 ? "-" : "") + out;
 }
 
 function buildNumberLineSvg(spec) {

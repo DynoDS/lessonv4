@@ -1,5 +1,21 @@
 # Build review log
 
+## 2026-09-12 The line reads the way its question reads (4.2.161)
+
+Found while rebuilding the Monday rounding sheet with the current engine, not
+reported. "Round to the nearest 10." over 6,734, and under it a number line
+whose ends printed 6730 and 6740. Two conventions for one number on the sheet
+practising the convention.
+
+The slide engine made this repair on 8 September (4.2.113, the builder's
+`formatValue`); the paper engine had kept `String(v)`. The worksheet number
+line now formats a whole number of a thousand or more with the comma, by hand
+rather than through the machine's locale, and leaves decimals, values under a
+thousand and authored string labels exactly as written. The stick-in engine's
+shared line takes its labels as authored strings, so it is not touched.
+
+Three new tests. JavaScript 674 pass, 0 fail.
+
 ## 2026-09-12 The code sits on the line the work starts from (4.2.160)
 
 Daniel: "I think the gd,e,b thing should be in line now actually. When trimming,
