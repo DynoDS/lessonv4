@@ -751,7 +751,11 @@ def test_skill_route_order_is_enforced():
     design["teachingSequence"][0], design["teachingSequence"][1] = design["teachingSequence"][1], design["teachingSequence"][0]
     for index, unit in enumerate(design["teachingSequence"], 1):
         unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
-    assert_invalid_contract(design, photos, "requires at least one My Turn")
+    # The swap leaves an Our Turn with no My Turn in front of it, which is the
+    # fault the message should name rather than a missing-concept count.
+    assert_invalid_contract(
+        design, photos, "out-of-place our-turn unit that no My Turn opens"
+    )
 
 
 def test_content_route_requires_teach_do_pairing_and_practise_last():

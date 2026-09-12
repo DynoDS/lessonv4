@@ -156,7 +156,11 @@ SOURCE_UNIT_RE = re.compile(
 )
 
 ROUTE_KINDS = {
-    "Skill-based": {"prepare", "my-turn", "our-turn", "your-turn"},
+    # `teach` and `practise` are shared with the Content-based route, and a
+    # skill lesson reaches for them where its own pedagogy asks: knowledge the
+    # method needs but does not perform, and the reasoning or problem solving
+    # the objective earns. The cycle kinds carry the method itself.
+    "Skill-based": {"prepare", "my-turn", "our-turn", "your-turn", "teach", "practise"},
     "Content-based": {"observe", "teach", "do", "practise"},
     "Discovery": {"question", "explore", "make-sense", "teach-why", "use-learning", "finish"},
     "Dialogic": {"grounding-input", "stimulus", "talk", "stimulus-talk", "synthesise"},
@@ -1534,68 +1538,103 @@ def validate_route_sequence(
     kinds = [unit["kind"] for unit in sequence]
 
     if structure == "Skill-based":
+        # A cycle is the unit of skill teaching: My Turn, an optional Our Turn,
+        # then its own Your Turn, and it runs uninterrupted. The teacher: "The
+        # your turns are good because they are a quick check of can we do this
+        # before moving on to the next concept, even if its similar." A lesson
+        # that models three times and practises once at the end leaves the
+        # first move a demonstration away from independent work.
+        #
+        # Around the cycles the lesson belongs to the designer. Daniel, 12
+        # September 2026: "i dont want to limit it to starter, answers, key
+        # vocab, mtotyt cycles. If it thinks teach in a place do it, if it
+        # thinks seperate key vocab do it. if it thinks apply now, or problem
+        # solving now do it". So a preparation beat, a Teach beat for knowledge
+        # the method needs but does not perform, and a Practise beat for the
+        # reasoning or problem solving the objective earns may each sit between
+        # cycles or after them, as many times as the lesson genuinely needs.
+        free_kinds = {"prepare", "teach", "practise"}
         index = 0
-        for concept in concept_items:
-            concept_id = concept["id"]
-            while index < len(sequence) and sequence[index]["kind"] == "prepare":
+        cycle_concepts: list[str] = []
+        while index < len(sequence):
+            kind = sequence[index]["kind"]
+            if kind in free_kinds:
                 index += 1
-
-            # A concept runs one or more cycles, and every cycle is My Turn,
-            # then an optional Our Turn, then its own Your Turn. The teacher:
-            # "The your turns are good because they are a quick check of can we
-            # do this before moving on to the next concept, even if its
-            # similar." A lesson that models three times and practises once at
-            # the end leaves the first move a demonstration away from
-            # independent work (12 September 2026). A short preparation unit
-            # may also sit between cycles, which is where a derived shortcut or
-            # a pattern across the cycles belongs.
-            cycles = 0
-            while True:
-                while index < len(sequence) and sequence[index]["kind"] == "prepare":
-                    index += 1
-                if not (index < len(sequence) and sequence[index]["kind"] == "my-turn"):
-                    break
-                if sequence[index]["conceptRef"] != concept_id:
-                    # The next concept's first cycle; leave it to its own pass.
-                    break
-                index += 1
-                cycles += 1
-                expect(
-                    not (index < len(sequence) and sequence[index]["kind"] == "my-turn"),
-                    (
-                        f"Skill-based concept {concept_id} has two My Turn units in a row. "
-                        "Put every example of one modelled move inside that move's own My Turn "
-                        "unit, and give a genuinely different move its own cycle with an Our Turn "
-                        "and a Your Turn of its own, so each move is used before the next is "
-                        "taught (teaching-sequence-skill-based.md, 'Several examples of one move "
-                        "belong inside one My Turn unit')"
-                    ),
-                )
-                if index < len(sequence) and sequence[index]["kind"] == "our-turn":
-                    expect(
-                        sequence[index]["conceptRef"] == concept_id,
-                        f"Skill-based Our Turn must use {concept_id}",
-                    )
-                    index += 1
-                expect(
-                    index < len(sequence) and sequence[index]["kind"] == "your-turn",
-                    (
-                        f"Skill-based concept {concept_id} has a My Turn cycle with no Your Turn "
-                        "after it. Every cycle ends with its own independent check before the "
-                        "next move is modelled, sized to that cycle: a bridging cycle on small "
-                        "numbers earns two questions, not none "
-                        "(teaching-sequence-skill-based.md, 'Every cycle ends with its own Your "
-                        "Turn')"
-                    ),
-                )
+                continue
+            expect(
+                kind == "my-turn",
+                (
+                    f"Skill-based sequence has an out-of-place {kind} unit that no My Turn "
+                    "opens. An Our Turn and a Your Turn belong to the cycle their My Turn "
+                    "starts; independent work that stands on its own, a reasoning or problem "
+                    "solving beat, is a practise unit "
+                    "(teaching-sequence-skill-based.md, 'What else the sequence may hold')"
+                ),
+            )
+            concept_id = sequence[index]["conceptRef"]
+            index += 1
+            expect(
+                not (index < len(sequence) and sequence[index]["kind"] == "my-turn"),
+                (
+                    f"Skill-based concept {concept_id} has two My Turn units in a row. "
+                    "Put every example of one modelled move inside that move's own My Turn "
+                    "unit, and give a genuinely different move its own cycle with an Our Turn "
+                    "and a Your Turn of its own, so each move is used before the next is "
+                    "taught (teaching-sequence-skill-based.md, 'Several examples of one move "
+                    "belong inside one My Turn unit')"
+                ),
+            )
+            if index < len(sequence) and sequence[index]["kind"] == "our-turn":
                 expect(
                     sequence[index]["conceptRef"] == concept_id,
-                    f"Skill-based Your Turn must use {concept_id}",
+                    f"Skill-based Our Turn must use {concept_id}",
                 )
                 index += 1
-            expect(cycles >= 1, f"Skill-based concept {concept_id} requires at least one My Turn")
+            expect(
+                index < len(sequence) and sequence[index]["kind"] == "your-turn",
+                (
+                    f"Skill-based concept {concept_id} has a My Turn cycle with no Your Turn "
+                    "after it. Every cycle runs uninterrupted and ends with its own "
+                    "independent check before the next move is modelled, sized to that cycle: "
+                    "a bridging cycle on small numbers earns two questions, not none. A Teach "
+                    "or Practise beat goes between cycles rather than inside one "
+                    "(teaching-sequence-skill-based.md, 'Every cycle ends with its own Your "
+                    "Turn')"
+                ),
+            )
+            expect(
+                sequence[index]["conceptRef"] == concept_id,
+                f"Skill-based Your Turn must use {concept_id}",
+            )
+            index += 1
+            cycle_concepts.append(concept_id)
 
-        expect(index == len(sequence), "Skill-based sequence has extra or out-of-order units after the final concept")
+        # Every concept is taught, each one's cycles run together rather than
+        # being returned to later, and they run in the order the design lists
+        # them. A free beat between two of a concept's cycles does not break
+        # the run: that is where the derived shortcut belongs.
+        taught: list[str] = []
+        for concept_id in cycle_concepts:
+            if not taught or taught[-1] != concept_id:
+                expect(
+                    concept_id not in taught,
+                    (
+                        f"Skill-based sequence returns to {concept_id} after moving on to "
+                        "another concept. Run a concept's cycles together, and use a practise "
+                        "unit where the lesson comes back to mix concepts already taught "
+                        "(subject-maths.md, 'Where one method runs across several cases')"
+                    ),
+                )
+                taught.append(concept_id)
+        declared = [concept["id"] for concept in concept_items]
+        expect(
+            taught == declared,
+            (
+                "Skill-based sequence must run at least one My Turn cycle for every concept, "
+                f"in the order the design declares them. Declared: {declared}. "
+                f"Taught in the sequence: {taught}"
+            ),
+        )
         return
 
     if structure == "Content-based":

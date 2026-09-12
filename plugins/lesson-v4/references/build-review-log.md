@@ -1,5 +1,21 @@
 # Build review log
 
+## 2026-09-12 The lesson is not limited to its cycles (4.2.155)
+
+Asked whether every maths lesson would now be my turn, our turn, your turn and nothing else, Daniel answered: "i still want good pedgagogical designs, like what weve been doing, i dont want to limit it to starter, answers, key vocab, mtotyt cycles. If it thinks teach in a place do it, if it thinks seperate key vocab do it. if it thinks apply now, or problem solving now do it, etc."
+
+**He was reading the change correctly.** 4.2.154 tightened the Skill-based sequence into cycles and left no room for anything else: the route had four beat kinds, and the check walked the whole sequence as cycles, so a Teach beat in a maths lesson had nowhere to stand and a problem-solving beat had nowhere to stand either. Reasoning and problem solving had to arrive inside the last Your Turn's task or as the earned Apply ending. That is also why a maths lesson could finish with neither and still look complete: nothing in the plan ever made the designer decide about them.
+
+**The route now carries `teach` and `practise` as well.** They are the knowledge route's own kinds with the same fields, so the slide designer, the templates and the script requirement already handle them, and each sits where this lesson earns it rather than at a fixed point, as many times as the lesson needs. Vocabulary was already free in this way, since `vocabularyIntroductions` names the unit each word follows.
+
+**What stays fixed is the cycle, and only the cycle.** Between a My Turn and its Your Turn nothing intervenes, because a class modelled to and then taken somewhere else arrives at its check having lost the thread. Everything else is placement. A concept's cycles still run together and in the declared order, and coming back to a concept after moving on is refused with a message pointing at the practise beat, which is what mixing two taught concepts actually is.
+
+**Two boundaries were needed, or the new kinds eat the old ones.** A Teach beat carries knowledge the method leans on and does not perform, what a kilogram is, that unlabelled ticks are worth the same, why anyone rounds; the moment a beat shows how the method is carried out it is a My Turn and owes the rest of its cycle, and the test is whether a child could attempt a question from having watched. Between `prepare` and `teach`, ask whether anything has to survive the lesson: a preparation beat is spent once the model it set up has run, which is why it has no takeaway field and a Teach beat does.
+
+**And the decision he asked for.** The completion pass now has to write one line in the closing decisions naming the reasoning or problem-solving shape the lesson designed and where it sits, or why the objective does not carry one. Same reasoning as the playful-opportunity line added this morning: a question only asked at the end is a formality, because everything is written and changing nothing is free; a line that has to be written is a decision. `subject-maths.md` names which beat each of the three demands lives in, and records both failure directions, the wing bolted on at the end and the one skipped because the cycles filled the time.
+
+Seventeen new tests. Full run: 1656 pass, the nine known failures unchanged; JavaScript 597 pass, 0 fail.
+
 ## 2026-09-12 Every cycle ends with its own Your Turn (4.2.154)
 
 Daniel, reading the rounding deck: "Ive noticed that maths slides like this one are a different sequence to what Im used to ... It used to be my turn, one or two examples, our turn, one example mainly but could be 2, your turn, quick fire practise 1-4 questions. Then next concept my turn, our turn, your turn same thing." The deck he was holding models rounding to 10 on two numbers, guides one, then moves to hundreds, then to thousands, and the first answer a child writes alone comes near the end on a mixed set.

@@ -48,6 +48,8 @@ Naming which one a task makes decides what a good version of it looks like.
 
 **Where one method runs across several cases, practise each case in a short block before mixing them.** Three place values to round to, three denominators, two operations in one method: a set that mixes them from the first question asks a child to work out which case they are in and then run a method they learned twenty minutes ago, and when the method is that new the choosing crowds out the running. A few on the nearest 10, a few on the nearest 100, a few on the nearest 1,000, then the mixed ones. The mixing is not dropped, because choosing the case is where the learning actually shows and a child who only ever meets the cases in labelled blocks has not been asked the real question: it comes second, in the same session, and the same-number-three-ways item belongs there. The limit is an objective whose difficulty is the choosing (`choose the most efficient method`), where blocking would remove the lesson.
 
+**Each of the three is a beat, and this design decides where it goes.** Fluency lives in the cycles' Your Turns, one per modelled move. Reasoning and problem solving are `practise` units, placed where the lesson has enough behind them to carry them: usually after the cycles, and between them where one concept is the whole of what the problem needs. Neither is a wing bolted on at the end out of habit, and neither is skipped by default because the cycles filled the time. A lesson whose objective supports worthwhile reasoning designs a real shape for it; a lesson whose objective genuinely does not says so (`preferences.md` → Reasoning Is Every Child's Entitlement).
+
 ---
 
 ## The worksheet's sections in maths
