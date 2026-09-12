@@ -31,6 +31,10 @@ Practical implications:
 
 The wall is not a redesign of the lesson's supports. It is the same supports made big enough to glance at from a desk.
 
+**Same form is not the same case.** A lesson usually draws the same shape more than once: a part-whole model introducing the idea on one slide, and another working the number the teacher models on the next. A card that carries a worked example takes the picture of *that* example, so the numbers in the card's words and the numbers in the card's picture are the same numbers. A Year 4 partition card explained 5,346 in its text beside the part-whole model of 2,340 from the slide before it. Both halves were correct on their own, and together they asked a child to follow a method on one number while looking at another, which is worse than no picture: the child who trusts the picture is the one who gets it wrong. When the lesson drew no picture of the case the card works, carry the case the picture does show, or let the card stand on its worked example alone.
+
+This applies to a card that works one case. An anchor card makes no such promise: a place-value chart stacking several numbers for a unit to return to all term is doing a different job, and its numbers are its content rather than a worked example's evidence.
+
 **When the lesson's anchor is a drawn shape, the wall card's anchor should be the same drawn shape.** Where the lesson uses a clock face, a fraction circle, an angle, a fraction bar, or a number line as the central support children look at, attach a `visual` to the card rather than describing the shape in prose. The picture does the lifting; the text becomes a short caption. A clock-rules card without a clock, or a fraction-rules card without a fraction shape, fails the children-glance-from-a-desk test even when the words are perfect.
 
 The full set of rules for when to attach a `visual`, which primitives the renderer can draw today, and how to handle lessons whose anchor isn't yet supported lives in `working-wall-visual-language.md`.

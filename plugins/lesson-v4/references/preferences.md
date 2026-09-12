@@ -347,7 +347,9 @@ A picture passes when it IS the thing (🦴 for spine, 🔦 for torch, 🛹 for 
 
 **When nothing true exists, the word goes on its own.** No picture reads better than a vague one, and it is the right answer rather than a gap to apologise for. Leaving one word bare in a set where the others have pictures is fine — better than reaching for a near-miss to keep the row tidy, because a set where every word wears a picture teaches the child that the pictures mean something, and then one that doesn't quietly lies.
 
-The boundary: this is about a picture whose job is to carry a word's meaning. A photograph that is the lesson's stimulus, a diagram a child labels or reads values off, a drawn model that is itself the teaching — those earn their place as content, and this test does not apply to them.
+**The same test holds when the picture sits beside a whole statement,** and that is where the near-miss is easiest to reach for, because a rule, a permission or a principle often contains no thing to picture at all. "You can pass without giving a reason" is not an object. A wall card carrying it was illustrated with the media player's skip button, which tells a child who cannot read the sentence that something is being fast-forwarded. A picture of what the statement is about still passes: children playing in a 1900 street beside a sentence about street play is the thing itself. What fails is a symbol standing in for the idea, and an interface control standing in for an idea fails twice, because the child has to know the software before the metaphor even starts. The answer is the one above: the statement goes on its own.
+
+The boundary: this is about a picture whose job is to carry meaning a child cannot yet read for themselves. A photograph that is the lesson's stimulus, a diagram a child labels or reads values off, a drawn model that is itself the teaching: those earn their place as content, and this test does not apply to them.
 
 ### Visual priority
 

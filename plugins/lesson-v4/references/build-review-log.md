@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-12 A picture has to be about the same thing the words are (4.2.165)
+
+Two faults from the working-wall review, both traced to a rule that existed and did not reach far enough. Neither was a missing rule in the sense of nobody having thought about it.
+
+**A card explained 5,346 beside a part-whole picture of 2,340.** Both numbers are genuinely the lesson's: slide 3 introduces partitioning with a part-whole model of 2,340, slide 4 models 5,346 in a place-value chart. `Match the lesson's visual supports` told the designer to reproduce the lesson's support in the same form, and it did: partitioning, part-whole model, correct. What no rule said is WHICH drawing of that shape, so the card took the concept picture from the slide before the one it was working. The rule now says same form is not the same case, with the boundary that an anchor card stacking several numbers for a unit is doing a different job and its numbers are its content. Placed in the section that already owns which picture a card takes, which the packet cuts into every wall run.
+
+**A card reading "You can pass without giving a reason" was illustrated with the media player's skip button.** The designer chose that emoji itself; there was no upstream fallback in that run. `A Picture Beside a Word` in `preferences.md` already catches it precisely: a picture passes when it IS the thing and fails when it gestures at the area. Its scope was the problem. It said it was about a picture carrying a word's meaning, and a card whose picture illustrates a whole statement sat outside that. Its scope is now meaning a child cannot yet read for themselves, which reaches a sentence as well as a word, with the discrimination case named: a photograph of children playing in a 1900 street beside a sentence about street play is still the thing itself. What fails is a symbol standing in for an idea, and an interface control fails twice because the child has to know the software before the metaphor starts.
+
+**The rule that needed no change.** The title repeated as a table's first column heading is not a fault: `Same columns as the lesson` says the wall copies the lesson's columns and not to drop any, which is right. Only the title is the wall designer's, and one duplicated word does not earn a rule.
+
+**And one that guidance cannot fix.** A Year 4 science wall gave four tooth names with no meanings, every one paired with a photograph. `Vocab chip cards` already says chips are for words children half-know or whose meaning is obvious in context, and says not to pair every chip because a wall of stock photos reads as clip-art. Incisors, canines, premolars and molars are none of those, on a lesson called describe teeth and their uses. That is guidance being read and not followed, so the repair is not another sentence; it is left as a live question rather than answered with a rule that was already there.
+
+Both changes are extensions of existing rules at their existing owners, and the new text was read back out of a regenerated designer packet rather than assumed to route. JavaScript 125 wall, 0 fail; Python 1698 pass, the ten known failures unchanged.
+
 ## 2026-09-12 The wall is built and checked like everything else (4.2.164)
 
 Daniel asked for a review of every working wall the engine had ever built: 36 documents, 47 A3 sheets, across many versions. Correct, premium, helpful. The answer to the second was mostly no, and five of the causes were one engine fault each.
