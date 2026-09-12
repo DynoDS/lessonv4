@@ -300,7 +300,7 @@ CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
     "starter": ("activity", "connection", "format", "testQuestionPath"),
     "prepare": ("mode", "activity"),
     "my-turn": ("example", "modelledExemplar"),
-    "our-turn": ("example", "guidedQuestions"),
+    "our-turn": ("example",),
     "your-turn": ("activityArchitecture", "task"),
     "observe": ("activity", "focus", "evidenceProduced"),
     "teach": ("headline", "explanation", "takeaway", "teachingText", "keyQuestions"),
@@ -352,7 +352,6 @@ CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
 }
 
 CONTENT_LIST_FIELDS = {
-    "guidedQuestions",
     "keyQuestions",
     "sentenceStems",
     "teacherListensFor",

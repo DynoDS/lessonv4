@@ -56,7 +56,6 @@ CHILD_FACING_CONTENT_KEYS = (
     "keyQuestions",
     "task",
     "example",
-    "guidedQuestions",
     "question",
     "prompt",
     "discussionQuestion",

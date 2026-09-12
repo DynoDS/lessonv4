@@ -951,13 +951,15 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         strings(("example",))
         expect_nullable_string(content["modelledExemplar"], f"{path}.modelledExemplar")
     elif kind == "our-turn":
-        keys = {"example", "guidedQuestions"}
+        # The questions the teacher guides with are spoken, not printed. They
+        # used to sit in `content.guidedQuestions`, which the review packet
+        # counted as child-facing, so every one of them reached the board
+        # beside the example it was meant to draw out of the class. They live
+        # in `speakerNotes.script` now, and the script check below keeps the
+        # obligation that an Our Turn actually asks something.
+        keys = {"example"}
         expect_exact_keys(content, keys, keys, path)
         strings(("example",))
-        qs = expect_list(content["guidedQuestions"], f"{path}.guidedQuestions")
-        expect(bool(qs), f"{path}.guidedQuestions must not be empty")
-        for i, q in enumerate(qs):
-            expect_string(q, f"{path}.guidedQuestions[{i}]")
     elif kind == "your-turn":
         keys = {"activityArchitecture", "task"}
         expect_exact_keys(content, keys, keys, path)
@@ -1294,6 +1296,17 @@ def validate_source_unit(
         expect(
             unit["speakerNotes"]["script"] is not None,
             f"{path}.speakerNotes.script is required for {kind}",
+        )
+    # An Our Turn is the class thinking alongside the teacher, so the script is
+    # where its guiding questions are asked. Without them the beat is a second
+    # demonstration wearing an Our Turn label.
+    if kind == "our-turn":
+        script = unit["speakerNotes"]["script"] or ""
+        expect(
+            "?" in script,
+            f"{path}.speakerNotes.script must ask the class at least one "
+            f"question: an Our Turn's guiding questions are spoken, and this "
+            f"script asks nothing",
         )
 
     allowed_answer_deliveries = set(ANSWER_DELIVERIES)

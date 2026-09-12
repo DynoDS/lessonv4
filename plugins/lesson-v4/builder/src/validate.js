@@ -107,6 +107,61 @@ function validateFontCeilings(slide, slideNumber, errors) {
   });
 }
 
+// The starter header prints the word "Date" as a blank for the class to write
+// beside. A deck is built days before it is taught, so a designer who fills that
+// blank in the spec puts the wrong day on the board: a Year 4 rounding deck built
+// on a Saturday opened with "Saturday 12 September 2026" in the instruction box,
+// under the header's own empty Date label.
+//
+// Only today's date is refused, so a date that is the lesson's own content - a year
+// on a timeline, a date in a source or a word problem - is never touched: a
+// historical date cannot match the day the build is running.
+function buildDateForms(now) {
+  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                  'July', 'August', 'September', 'October', 'November', 'December'];
+  const d = now || new Date();
+  const day = d.getDate();
+  const month = d.getMonth();
+  const year = d.getFullYear();
+  const k = day % 100, j = day % 10;
+  const suffix = (k >= 11 && k <= 13) ? 'th' : (j === 1 ? 'st' : j === 2 ? 'nd' : j === 3 ? 'rd' : 'th');
+
+  const weekdays = [DAYS[d.getDay()], DAYS[d.getDay()].slice(0, 3)];
+  const months = [MONTHS[month], MONTHS[month].slice(0, 3)];
+  const days = [String(day), `${day}${suffix}`];
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const forms = new Set([
+    `${year}-${pad(month + 1)}-${pad(day)}`,
+    `${pad(day)}/${pad(month + 1)}/${year}`,
+    `${day}/${month + 1}/${year}`,
+  ]);
+  months.forEach((mo) => days.forEach((da) => {
+    forms.add(`${da} ${mo} ${year}`);
+    weekdays.forEach((wd) => forms.add(`${wd} ${da} ${mo} ${year}`));
+  }));
+  return [...forms];
+}
+
+function validateNoBuildDate(lesson, errors, now) {
+  const forms = buildDateForms(now);
+  const seen = new Set();
+  collectStrings(lesson).forEach((s) => {
+    const hit = forms.find((f) => s.includes(f));
+    if (!hit || seen.has(hit)) return;
+    seen.add(hit);
+    errors.push(
+      `the spec carries today's date ("${hit}"), which is the day this deck was ` +
+      `built and not the day it will be taught. The starter header already prints ` +
+      `the word "Date" as a blank for the class to write beside, so remove the ` +
+      `date from the spec entirely: from the starter's "instruction", from any ` +
+      `title or body text, and from a top-level "date" field, which the builder ` +
+      `does not read. See templates.md §1.4.`
+    );
+  });
+}
+
 function validatePresentationFields(slide, slideNumber, errors) {
   const checked = new Set();
 
@@ -191,6 +246,8 @@ function validateLesson(lesson, lessonDir) {
   if (!lesson.lessonName) {
     warnings.push('no "lessonName" in the spec — the file will be called "Untitled Lesson.pptx".');
   }
+
+  validateNoBuildDate(lesson, errors);
 
   const photoContract = readPromisedPhotos(lessonDir);
   const promised = photoContract.promised;

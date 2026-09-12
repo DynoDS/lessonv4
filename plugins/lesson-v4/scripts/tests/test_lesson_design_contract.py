@@ -105,7 +105,7 @@ def source_unit(
     misconception_refs: list | None = None,
     photo_refs: list | None = None,
     pupil_instruction: str | None = None,
-    script: str | None = "Say to children: Have a look at this.",
+    script: str | None = "Say to children: Have a look at this. What do you notice?",
     teacher_info: str | None = None,
     look_for: str | None = None,
     answer: dict | None = None,
@@ -291,11 +291,6 @@ def valid_contract():
                 "our-turn",
                 {
                     "example": "32 + 25 =",
-                    "guidedQuestions": [
-                        "What should we partition first?",
-                        "Which tens can we add?",
-                        "Which ones can we add?",
-                    ],
                 },
                 label="Our Turn",
                 concept_ref="concept-001",
@@ -640,11 +635,6 @@ def test_valid_skill_contract_gives_a_second_distinct_move_its_own_cycle():
         "our-turn",
         {
             "example": "57 + 29 =",
-            "guidedQuestions": [
-                "What should we partition first?",
-                "Which tens cross into a new hundred?",
-                "Which ones can we add?",
-            ],
         },
         label="Our Turn",
         concept_ref="concept-001",
@@ -2449,3 +2439,32 @@ def test_an_ordinary_picture_contract_still_validates():
         )
     ]
     module.validate_design(design, photos)
+
+
+# An Our Turn's guiding questions used to sit in `content.guidedQuestions`, which
+# the design-review packet counted as child-facing, so the slide-designer printed
+# every one of them on the board beside the example they were meant to draw out
+# of the class. A Year 4 rounding deck reached the teacher with three spoken
+# prompts on one Our Turn slide (Daniel, 12 September 2026). They live in the
+# spoken script now, and these two checks are what keeps them there: the field
+# cannot come back, and a script that asks the class nothing is not an Our Turn.
+def test_an_our_turn_cannot_carry_printed_guiding_questions():
+    def mutate(design, photos):
+        for unit in design["teachingSequence"]:
+            if unit["kind"] == "our-turn":
+                unit["content"]["guidedQuestions"] = ["Which tens can we add?"]
+                return
+        raise AssertionError("no our-turn unit in the valid contract")
+
+    assert_invalid(mutate, "guidedQuestions")
+
+
+def test_an_our_turn_script_must_ask_the_class_something():
+    def mutate(design, photos):
+        for unit in design["teachingSequence"]:
+            if unit["kind"] == "our-turn":
+                unit["speakerNotes"]["script"] = "Say to children: watch me add the tens."
+                return
+        raise AssertionError("no our-turn unit in the valid contract")
+
+    assert_invalid(mutate, "must ask the class at least one question")
