@@ -67,10 +67,17 @@ class TwoMyTurnsInARowAreRefusedTests(unittest.TestCase):
             self.check(["my-turn", "our-turn", "my-turn", "my-turn", "your-turn"])
 
     def test_the_approved_two_cycle_shape_validates(self):
-        # My Turn, Our Turn, My Turn, Our Turn, Your Turn: the plain move is
-        # practised before the boundary move is taught.
+        # Two whole cycles: the plain move is practised independently before
+        # the boundary move is taught.
         self.check(
-            ["my-turn", "our-turn", "my-turn", "our-turn", "your-turn"]
+            [
+                "my-turn",
+                "our-turn",
+                "your-turn",
+                "my-turn",
+                "our-turn",
+                "your-turn",
+            ]
         )
 
     def test_one_cycle_still_validates_with_and_without_its_our_turn(self):
@@ -88,18 +95,19 @@ class TwoMyTurnsInARowAreRefusedTests(unittest.TestCase):
             "Skill-based", sequence, self.concepts
         )
 
-    def test_a_second_cycle_may_not_smuggle_in_a_second_your_turn(self):
-        with self.assertRaises(self.module.ContractError):
+    def test_a_second_cycle_without_its_own_your_turn_is_refused(self):
+        # Reversed on 12 September 2026. A second cycle used to be refused a
+        # Your Turn of its own, which put every model's practice at the end of
+        # the lesson; the teacher asked for the check back after each move,
+        # "even if its similar ... maybe your turn just has less questions".
+        with self.assertRaises(self.module.ContractError) as caught:
             self.check(
-                [
-                    "my-turn",
-                    "our-turn",
-                    "your-turn",
-                    "my-turn",
-                    "our-turn",
-                    "your-turn",
-                ]
+                ["my-turn", "our-turn", "my-turn", "our-turn", "your-turn"]
             )
+        self.assertIn("no Your Turn after it", str(caught.exception))
+        # And the error says how to size the missing one, or a bridging cycle
+        # gets a token question pair nobody thought about.
+        self.assertIn("sized to that cycle", str(caught.exception))
 
 
 class TheGuidanceMatchesTheCheckTests(unittest.TestCase):
@@ -157,7 +165,8 @@ class TheGuidanceMatchesTheCheckTests(unittest.TestCase):
 
     def test_the_structure_spec_describes_cycles_not_a_run_of_models(self):
         route = flat(SKILL_ROUTE)
-        self.assertIn("**one or more My Turn plus Our Turn cycles**", route)
+        self.assertIn("**one or more cycles**", route)
+        self.assertIn("then **its own Your Turn**", route)
         self.assertNotIn("**one or more My Turn source units**", route)
 
     def test_coverage_cannot_be_read_as_licence_to_stack_my_turns(self):

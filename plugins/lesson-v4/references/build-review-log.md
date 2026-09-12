@@ -1,5 +1,23 @@
 # Build review log
 
+## 2026-09-12 Every cycle ends with its own Your Turn (4.2.154)
+
+Daniel, reading the rounding deck: "Ive noticed that maths slides like this one are a different sequence to what Im used to ... It used to be my turn, one or two examples, our turn, one example mainly but could be 2, your turn, quick fire practise 1-4 questions. Then next concept my turn, our turn, your turn same thing." The deck he was holding models rounding to 10 on two numbers, guides one, then moves to hundreds, then to thousands, and the first answer a child writes alone comes near the end on a mixed set.
+
+**The route file had authorised it in so many words.** A Skill-based concept ran "one or more My Turn plus Our Turn cycles, then exactly one Your Turn", so three cycles and one block of practice at the end was a legal shape, and the validator enforced exactly that. `preferences.md` said the opposite in the same repository, that skill lessons carry practice as "the guided and independent practice that follows each modelled move, never as one block of practice at the end of several models", and the two had sat side by side long enough that the code, which is the half that actually decides, won every time.
+
+**The cost is not tidiness.** The first move goes from one demonstration and one guided question straight into independent work twenty minutes and two more moves later, and nobody finds out whether the class could do it until the evidence is mixed with two other things. The Your Turn is the cheapest check in the lesson and it was being spent once.
+
+So the grammar now reads: a concept runs one or more cycles, and a cycle is My Turn, an optional Our Turn, then its own Your Turn. Both gates enforce it, `validate-lesson-design.py` and `lesson-design-scaffold.py`, and the guard against two My Turn units in a row is unchanged, so the deck's original fault is still refused with its own message rather than swallowed by this one.
+
+**The bit that needed his answer, and got it.** The risk in the change is a bridging cycle: the small-number way in that `subject-maths.md` asks for, 43 and 45 before 3,462, which exists to be left behind. Requiring a Your Turn there could put four token questions on 2-digit numbers into a lesson about 4-digit ones. He settled it: "Even small scale, if we're startring small then scaling, can still do it, maybe your turn just has less questions etc." So the rule ships with its own sizing, in the route file and in the validator's error text: the check is sized to the cycle, a bridging cycle earns two questions rather than none, and the substantial independent practice is still the last cycle's Your Turn, which is where the blocked-then-mixed rule already landed.
+
+**The derived shortcut finally has a home.** The rounding deck's "Why is it always the digit to the right?" beat was written as a My Turn, which is what made it look like a fourth cycle. Nothing is modelled there: the class looks back at cycles they have already run. It is now a `prepare` unit with `mode: pattern-investigation`, named in `subject-maths.md` beside the paragraph that asks for the beat, and a preparation unit may sit between cycles or close a concept.
+
+**Also fixed while in the builder.** A slide whose script is written under `notes` now stops the build and names `speakerNotes`. The maths deck shipped with every teaching script absent because of that one key, the same fault as 6 September, and it had never been made impossible. The message says the text itself is fine, so the repair is a rename rather than a rewrite of good teaching.
+
+Sixteen new tests across the two suites, and the fixtures that encoded the old shape now build two full cycles. Full run: 1639 pass, the nine known failures unchanged; the JavaScript suite is 597 pass, 0 fail, which includes a doc claim that had drifted from a preferences sentence I reworded earlier today.
+
 ## 2026-09-12 One beat holding two tasks (4.2.153)
 
 Daniel, on slide 9 of the rounding deck: "id want things on slide 9 to be their own thing, why did this happen?" He was right that it is two things. The slide carries a claim to judge (`3,448 rounds to 3,500 to the nearest 100 because its ones digit is 8. Is this correct? Explain using the line.`) on one number line, and a separate rounding question (`Round 3,996 to the nearest 100.`) on a second. Two tasks, two lines, two different bits of thinking: spotting a wrong rule, and rounding across a thousand. It is also the busiest board in the deck.

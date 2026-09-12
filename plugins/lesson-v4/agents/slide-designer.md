@@ -138,6 +138,8 @@ Do not pick templates while reading the first unit. A deck gets repetitive when 
 
 ### 2. Treat each source unit as the authority for content
 
+**A slide's script goes in `speakerNotes`, and that is the only key the builder reads.** Not `notes`, which looks equally reasonable, passes every check, and produces a deck whose every slide has empty speaker notes: a Year 4 maths deck shipped with 1,059 words of teaching written into the spec and none of it in the file, twice, six days apart (6 and 12 September 2026). The build now refuses a slide carrying `notes` and names the rename, so this cannot ship silently again, but the key is written here because a refused build is a run you have to repeat.
+
 Copy every source-authored child-facing string exactly unless the template contract explicitly calls for a mechanical transformation such as automatic question labels, or the composition playbook allows a visual line break. Do not polish, shorten, simplify or rewrite wording to make it fit.
 
 This includes:

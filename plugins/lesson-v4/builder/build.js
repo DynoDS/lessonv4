@@ -310,6 +310,22 @@ async function main() {
       console.error(err.stack);
     }
 
+    // A spec carrying `notes` instead of `speakerNotes` used to build clean and
+    // ship with every script missing: the builder reads one key and nothing
+    // checked for the other, so a Year 4 maths deck went out with 1,059 words
+    // of teaching written and none of it in the file (6 and 12 September 2026,
+    // the same fault twice). Refuse it by name rather than dropping it in
+    // silence; the words exist and the key is one rename away.
+    if (coreSlideData.notes !== undefined && coreSlideData.speakerNotes === undefined) {
+      const stray = String(coreSlideData.notes || '').trim();
+      if (stray) {
+        throw new Error(
+          `slide ${i + 1} carries its script under \`notes\`, and the builder reads ` +
+          '`speakerNotes`. Rename the key on every slide that has it; the text itself is fine.'
+        );
+      }
+    }
+
     if (coreSlideData.speakerNotes) {
       slide.addNotes(String(coreSlideData.speakerNotes));
     }

@@ -816,7 +816,7 @@ def test_repeated_teach_and_guided_cycles_survive_scaffolding():
     request["teachingSequence"] = [
         {"kind": kind, "conceptIndex": concept}
         for kind, concept in [
-            ("my-turn", 1), ("our-turn", 1),
+            ("my-turn", 1), ("our-turn", 1), ("your-turn", 1),
             ("my-turn", 1), ("our-turn", 1), ("your-turn", 1),
             ("my-turn", 2), ("your-turn", 2),
         ]
@@ -865,7 +865,7 @@ def test_omitting_your_turn_is_still_rejected():
     try:
         scaffold.validate_request(request)
     except scaffold.ScaffoldError as exc:
-        assert "requires one your-turn" in str(exc)
+        assert "no your-turn after it" in str(exc)
     else:
         raise AssertionError(
             "skill request missing a your-turn unexpectedly validated"

@@ -434,32 +434,49 @@ def validate_route_shape(
                 )
                 index += 1
 
+            # Every cycle is my-turn, optional our-turn, then its own
+            # your-turn, and a prepare unit may sit between cycles. Mirrors
+            # validate-lesson-design.py's grammar for the same route.
             cycles = 0
-            while index < len(sequence) and sequence[index]["kind"] == "my-turn":
-                require(sequence[index]["conceptIndex"] == concept_index,
-                        f"Skill-based My Turn must use conceptIndex {concept_index}")
+            while True:
+                while (
+                    index < len(sequence)
+                    and sequence[index]["kind"] == "prepare"
+                ):
+                    require(
+                        sequence[index]["conceptIndex"] is None,
+                        "Skill-based prepare conceptIndex must be null",
+                    )
+                    index += 1
+                if not (index < len(sequence) and sequence[index]["kind"] == "my-turn"):
+                    break
+                if sequence[index]["conceptIndex"] != concept_index:
+                    # The next concept's first cycle; leave it to its own pass.
+                    break
                 cycles += 1
                 index += 1
-                require(not (index < len(sequence) and sequence[index]["kind"] == "my-turn"),
-                        f"Skill-based conceptIndex {concept_index} cannot have consecutive my-turn units; use the move before teaching the next")
+                require(
+                    not (index < len(sequence) and sequence[index]["kind"] == "my-turn"),
+                    f"Skill-based conceptIndex {concept_index} cannot have consecutive "
+                    "my-turn units; use the move before teaching the next",
+                )
                 if index < len(sequence) and sequence[index]["kind"] == "our-turn":
                     require(sequence[index]["conceptIndex"] == concept_index,
                             f"Skill-based our-turn must use conceptIndex {concept_index}")
                     index += 1
+                require(
+                    index < len(sequence)
+                    and sequence[index]["kind"] == "your-turn"
+                    and sequence[index]["conceptIndex"] == concept_index,
+                    (
+                        f"Skill-based conceptIndex {concept_index} has a my-turn cycle "
+                        "with no your-turn after it; every cycle ends with its own "
+                        "independent check before the next move is modelled"
+                    ),
+                )
+                index += 1
             require(cycles >= 1,
                     f"Skill-based conceptIndex {concept_index} requires at least one my-turn")
-
-            require(
-                index < len(sequence)
-                and sequence[index]["kind"] == "your-turn"
-                and sequence[index]["conceptIndex"] == concept_index,
-                (
-                    "Skill-based conceptIndex "
-                    f"{concept_index} requires one your-turn "
-                    "after its my-turn and optional our-turn cycles"
-                ),
-            )
-            index += 1
 
         require(
             index == len(sequence),

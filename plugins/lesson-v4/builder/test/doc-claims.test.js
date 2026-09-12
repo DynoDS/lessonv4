@@ -261,7 +261,7 @@ test("slide-designer points only at live slide guidance files", () => {
 test("question labels are limited to starter, main independent work, and Maths Our Turn", () => {
   assert.ok(
     PREFERENCES_MD.includes(
-      "The starter and main independent sequence are separate: each starts at (1)."
+      "number the starter and the main independent work, each sequence starting at (1)"
     ),
     "preferences.md does not separate starter numbering from main independent numbering"
   );

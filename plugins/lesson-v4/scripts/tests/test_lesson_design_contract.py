@@ -614,9 +614,10 @@ def test_unresolved_photo_requirement_scaffold_placeholder_is_rejected():
 
 
 def test_valid_skill_contract_gives_a_second_distinct_move_its_own_cycle():
-    # A second modelled move takes a My Turn plus Our Turn cycle of its own, so
-    # children use the first move before the second is taught. A second My Turn
-    # placed beside the first is refused; see
+    # A second modelled move takes a My Turn plus Our Turn cycle of its own, and
+    # that cycle ends with its own Your Turn, so children use the first move
+    # before the second is taught and each move is checked on its own. A second
+    # My Turn placed beside the first is refused; see
     # test_a_my_turn_is_used_before_the_next_is_taught.py.
     design, photos = valid_contract()
     second_model = source_unit(
@@ -646,7 +647,25 @@ def test_valid_skill_contract_gives_a_second_distinct_move_its_own_cycle():
         script="Say to children: which tens cross into a new hundred?",
         answer=exact_answer("86", "teacher-only"),
     )
-    design["teachingSequence"][2:2] = [second_model, second_guided]
+    second_check = source_unit(
+        5,
+        "your-turn",
+        {
+            "activityArchitecture": "Two fresh calculations that cross a hundred.",
+            "task": "64 + 48 =\n75 + 36 =",
+        },
+        label="Your Turn",
+        concept_ref="concept-001",
+        representation_refs=[
+            {"ref": "rep-001", "configuration": "practice", "interaction": "pupil-uses"}
+        ],
+        success_criteria_refs=["sc-001"],
+        pupil_instruction="Solve each calculation.",
+        script=None,
+        look_for="Look for: the new hundred written in the hundreds column.",
+        answer=exact_answer("112\n111", "answer-slide"),
+    )
+    design["teachingSequence"].extend([second_model, second_guided, second_check])
     for index, unit in enumerate(design["teachingSequence"], 1):
         unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
     module.validate_design(design, photos)
