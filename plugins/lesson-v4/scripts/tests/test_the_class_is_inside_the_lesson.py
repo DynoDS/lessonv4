@@ -288,3 +288,32 @@ class LookHarderWithoutLoweringTheBar(unittest.TestCase):
         self.assertIn("The bar does not move with the appetite", voice)
         self.assertIn("a flat line is not a smaller version of that", voice)
         self.assertIn("write none and mean it", voice)
+
+
+class OneBeatDoingTwoJobs(unittest.TestCase):
+    """Slide 9 of a Year 4 maths deck carried a claim to judge and a separate
+    rounding question, with two number lines. Daniel: "id want things on slide
+    9 to be their own thing, why did this happen?" The design put both tasks
+    into one Our Turn `example`, and nothing downstream may split a source
+    string into two beats. Its own `unlocks` line said `reject the wrong-column
+    rule and cross a thousand`, which is the tell."""
+
+    def test_the_unlocks_line_is_the_countable_tell(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("One job twice over, in one beat", designer)
+        self.assertIn("count the gains in it", designer)
+        self.assertIn("reject the wrong-column rule and cross a thousand", designer)
+
+    def test_the_thinking_line_is_the_second_tell(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("one thought cannot cover two tasks", designer)
+        self.assertIn("a beat whose thought fits only half of what it asks is two beats", designer)
+
+    def test_it_says_why_nobody_downstream_can_repair_it(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("the Slide Designer copies your wording exactly", designer)
+
+    def test_the_limit_keeps_a_task_with_parts_as_one_beat(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("a genuine single task with parts", designer)
+        self.assertIn("another way into the same thought or a different thought", designer)

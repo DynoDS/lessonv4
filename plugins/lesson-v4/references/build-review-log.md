@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-12 One beat holding two tasks (4.2.153)
+
+Daniel, on slide 9 of the rounding deck: "id want things on slide 9 to be their own thing, why did this happen?" He was right that it is two things. The slide carries a claim to judge (`3,448 rounds to 3,500 to the nearest 100 because its ones digit is 8. Is this correct? Explain using the line.`) on one number line, and a separate rounding question (`Round 3,996 to the nearest 100.`) on a second. Two tasks, two lines, two different bits of thinking: spotting a wrong rule, and rounding across a thousand. It is also the busiest board in the deck.
+
+**It happened in the design, and every downstream rule behaved correctly.** The Lesson Designer wrote both tasks into one Our Turn beat's `example` field, separated by a blank line. The Slide Designer then did exactly what it must: copy source-authored wording exactly, one beat to one slide. It may not decide that half of a source string is a different beat, because that is a pedagogical decision and is not its to make. So nothing between the design and the class could have repaired it.
+
+**Nothing caught it either, and the tell was sitting in the design's own fields.** That beat's `unlocks` reads `They can reject the wrong-column rule and cross a thousand`, which is two gains joined by an `and`. Its `thinking` reads `Which neighbouring hundred is closer to the original number?`, which covers the rounding question and not the claim at all. Both are countable and neither is read for this. The 4.2.145 repair covers the neighbouring case, a bundled pair of values acted on the same way (`Round 43 and 45`), and does not reach two different tasks in one beat.
+
+So the completion pass gains the inverse of the `Same job twice` check added earlier today, and it hides better, because a beat holding two tasks looks full rather than wrong. Read each beat's `unlocks` and count the gains; read its `thinking` and ask whether one thought covers everything the beat asks. Two gains, or a thought that fits only half, is two beats, and they are split at the design with a `thinking` and an `unlocks` each. The limit is a genuine single task with parts, a claim and the explanation of that same claim, a calculation and the sentence about it, which stays one beat: the question is whether the second thing is another way into the same thought or a different thought.
+
+**Also from the same read, and his own edit rather than the engine's.** He had changed step 5 of the success criteria to `Round to the nearest ten.` and then found it was riding on the nearest-100 slides too, where it names the wrong place value and contradicts step 1 of its own panel (`Read the question: 10s or 100s?`). Both that and the slide 9 split are being made directly in the file on his school drive, since he has hand-edited it since it was built and that copy is the authority.
+
+Four new tests. Full run: 1626 pass, the nine known failures unchanged.
+
 ## 2026-09-12 A light line competes for the board (4.2.152)
 
 Daniel: "humour can go on slides too yaknow, it doesnt have to live in speaker notes, is that in plugin?" It was, in three places: §4 says a light line has no fixed home and may sit on the slide where children read it themselves, the designer's completion pass says the same, and §16B is a worked example of one on a board. Nothing needed adding there.
