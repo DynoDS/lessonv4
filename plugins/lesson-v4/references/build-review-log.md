@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-12 A light line competes for the board (4.2.152)
+
+Daniel: "humour can go on slides too yaknow, it doesnt have to live in speaker notes, is that in plugin?" It was, in three places: §4 says a light line has no fixed home and may sit on the slide where children read it themselves, the designer's completion pass says the same, and §16B is a worked example of one on a board. Nothing needed adding there.
+
+**What was wrong is that two rules cancelled each other.** The Teach-slide ceiling recorded in 4.2.150 is stated in pieces, so a board already holding four things has no room for a fifth, and a light line arriving last goes to the script by default. That is what happened on the science deck: the line went into the pulp script because I had told the worker page 9 was at its ceiling, and neither of us noticed it had been demoted for a reason that has nothing to do with where it belonged. The calibration now says a light line competes here like anything else: if it belongs on the board it is one of the four, and something else moves to the script or to its own slide to make room. It does not lose automatically because it arrived last.
+
+**And the appetite has changed, while the bar has not.** "now slides are simple and better, a bit of humour would make me like them more but has to be funny". Both halves are instructions and the second is the one a model drops, so §4 carries them together. A lean board has room a crowded one never had, and a light line lands differently on it: on a wall of text it is one more thing to read, and on a slide holding four things it is the one a child reads twice. So go back to the material and through the six routes properly. But the bar does not move with the appetite, because what he wants more of is the line with a turn in it, and a flat line is not a smaller version of that. Looking harder and accepting less are the same instruction: go through the routes, and if none hands you a moment that does something unexpected, write none and mean it.
+
+Four new tests. Full run: 1622 pass, the nine known failures unchanged. The three decks are not rebuilt for this: the science lesson's material honestly offered nothing once the one candidate was refused for landing in the `did that hurt` register, and PSHE and maths are deliberately straight.
+
 ## 2026-09-12 Teaching that will not fit gets a slide, and a light line has a turn in it (4.2.151)
 
 Two repairs from Daniel's reading of what I did with his last two notes. Both are corrections to guidance I wrote earlier the same day.

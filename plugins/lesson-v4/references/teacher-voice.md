@@ -212,6 +212,14 @@ That last route is the one always available, which is exactly why it must not be
 
 The same applies to placement. A light line can sit on the slide where children read it themselves, or in the script where the teacher uses it if the room is right, or both. There is no fixed home, and giving it one turns it into a slot to fill.
 
+## Now there is room, so look harder, and refuse harder
+
+Daniel, once the decks had been stripped back to a picture, a landed sentence and a question: "now slides are simple and better, a bit of humour would make me like them more but has to be funny" (12 September 2026). Both halves are instructions.
+
+A lean board has room a crowded one never had, and a light line lands differently on it: on a wall of text it is one more thing to read, and on a slide holding four things it is the one a child reads twice. So the material is worth going back to, and the six routes above are worth going through properly rather than glancing at.
+
+The bar does not move with the appetite. What he wants more of is the line with a turn in it, and a flat line is not a smaller version of that, it is a different thing that costs attention and returns nothing. Looking harder and accepting less are the same instruction here: go through the routes, and if none of them hands you a moment that does something unexpected, write none and mean it.
+
 ## Most lessons hand over nothing
 
 None is the right answer then, and a lesson with no light moment in it is not a lesson with a fault. The cost of a forced line is higher than the cost of a straight one: children can tell, and a joke nobody laughs at spends the room's attention and returns nothing.

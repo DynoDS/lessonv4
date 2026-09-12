@@ -251,3 +251,40 @@ class ALightLineHasATurnInIt(unittest.TestCase):
         self.assertIn("you have written a sentence about the content, which is fine", voice)
         self.assertIn("A light line you had to reach for is not one", voice)
         self.assertIn("the class hears the delivery arrive and nothing land", voice)
+
+
+class ALightLineCompetesForTheBoard(unittest.TestCase):
+    """Two rules quietly cancelled each other. Section 4 says a light line has
+    no fixed home and may sit on the slide; the Teach-slide ceiling is stated
+    in pieces, so a board already holding four had no room for a fifth and the
+    line went to the script by default. Daniel: "humour can go on slides too
+    yaknow, it doesnt have to live in speaker notes, is that in plugin?" It
+    was, and the amount rule was overruling it."""
+
+    def test_the_line_is_one_of_the_four_rather_than_an_extra(self) -> None:
+        preferences = flat(PREFERENCES)
+        self.assertIn("A light line is one of the things this budget is for", preferences)
+        self.assertIn("demoted for a reason that has nothing to do with where it belonged", preferences)
+        self.assertIn("it does not do is lose automatically because it arrived last", preferences)
+
+    def test_the_placement_rule_it_protects_is_still_there(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("A light line can sit on the slide where children read it themselves", voice)
+        self.assertIn("There is no fixed home", voice)
+
+
+class LookHarderWithoutLoweringTheBar(unittest.TestCase):
+    """"now slides are simple and better, a bit of humour would make me like
+    them more but has to be funny" (12 September 2026). Both halves are
+    instructions, and the second is the one a model drops."""
+
+    def test_the_lean_board_is_the_reason_to_look_again(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("Now there is room, so look harder, and refuse harder", voice)
+        self.assertIn("on a slide holding four things it is the one a child reads twice", voice)
+
+    def test_the_bar_does_not_move_with_the_appetite(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("The bar does not move with the appetite", voice)
+        self.assertIn("a flat line is not a smaller version of that", voice)
+        self.assertIn("write none and mean it", voice)
