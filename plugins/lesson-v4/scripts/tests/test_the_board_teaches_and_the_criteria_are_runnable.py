@@ -185,6 +185,11 @@ class TheExplanationIsSeparatePiecesNotABlock(unittest.TestCase):
         self.assertIn("Not on every Teach slide", profile)
         self.assertIn("has a tic rather than a voice", profile)
         self.assertIn("never touches the sticky line", profile)
+        # And not a line carrying a taught term: a PSHE slide put a whole line
+        # in orange around the green word `Oxygen` and the term stopped reading
+        # as vocabulary.
+        self.assertIn("nor a line carrying a taught vocabulary term", profile)
+        self.assertIn("the term wins and the line loses", profile)
         # And the general case is unchanged outside that one permission.
         self.assertIn(
             "Outside that one case, prominence on a black explanatory line is still size, position and spacing",
