@@ -1,5 +1,34 @@
 # Build review log
 
+## 2026-09-12 The code sits on the line the work starts from (4.2.160)
+
+Daniel: "I think the gd,e,b thing should be in line now actually. When trimming,
+I wouldnt have to trim top off sheet because it already starts good but feel like
+now I have to every day trim top. Line them up."
+
+The code was pinned 6mm from the top of the paper, which put it 5mm clear of
+everything else on the page and reading as a stray mark above the sheet rather
+than part of it. It now sits with its BOTTOM edge on the 15mm line the work
+starts from, so the two share a top edge. It still costs the page nothing: it is
+inside the printer margin, in its own layer, which is the Word-header behaviour
+he asked about and was already true.
+
+**Level WITH the first heading was measured and is a different question.** To
+print beside "Fluency" the code has to be inside the work area, and the corner it
+would occupy is not reliably empty: across every saved worksheet spec rebuilt
+with this engine, 8 of 36 pupil pages carry ink in the 12mm by 6mm top-right
+corner, three of them more than half full. Reserving a band above the work does
+not fix that either - a reserved band puts the code in its own strip, which is
+where it already is, just lower.
+
+What reserving WOULD cost is now known rather than guessed: 5.5mm off every
+sheet, and of 61 saved sheet pages only 2 have less than that to spare. The
+median page has 60mm. So it is affordable and it is a decision about the page,
+not a placement, and it is his to make.
+
+Two new tests, one of them asserting the band still takes nothing off the
+content area. JavaScript 671 pass, 0 fail.
+
 ## 2026-09-12 A space a child cannot see is not a space (4.2.159)
 
 Daniel, reading the rebuilt Greater Depth rounding sheet: "whats the gap between

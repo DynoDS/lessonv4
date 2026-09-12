@@ -288,9 +288,12 @@ test("the sheet's heading is aligned to the work, not to the edge of the paper",
 
   assert.match(
     html,
-    /\.sheet-code \{[^}]*right: 15mm; top: 6mm/s,
+    /\.sheet-code \{[^}]*right: 15mm; top: 10.7[0-9]*mm/s,
     "the code sits on the same right edge as the work beneath it"
   );
+  // And on the same TOP edge: its bottom lands on the 15mm line the work
+  // starts from, rather than floating 5mm clear of it in the margin. Daniel
+  // read that gap as a stray mark he would have to trim off every day.
 });
 
 // A sheet does not print the learning objective. The class has it on the board

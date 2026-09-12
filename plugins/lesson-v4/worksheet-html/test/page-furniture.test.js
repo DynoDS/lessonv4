@@ -65,6 +65,36 @@ test("the code is quiet grey text with no badge around it", () => {
   assert.match(html, /class="sheet-code">GD</);
 });
 
+test("the code sits on the line the work starts from, and costs the page nothing", () => {
+  // Two separate claims, and both were Daniel's.
+  //
+  // It used to be pinned 6mm from the top of the paper, 5mm clear of everything
+  // else, and he read it as a stray mark: "feel like now I have to every day
+  // trim top". Its bottom edge is now the 15mm line the work starts from, so
+  // the two read as one top to the page.
+  //
+  // Level WITH the first line is a different thing and is not free: the code
+  // would have to sit inside the work area, and across every saved sheet
+  // rebuilt with this engine 8 of 36 pages carry ink in the corner it would
+  // occupy. That is a decision about reserving page, not a placement.
+  const html = sheet({ code: "GD" });
+  const rule = /\.sheet-code \{[^}]*\}/.exec(html)[0];
+  const top = Number(/top: ([\d.]+)mm/.exec(rule)[1]);
+  const height = TYPE.note * 0.3528 * 1.35;
+  assert.ok(
+    Math.abs(top + height - 15) < 0.05,
+    `the code's bottom edge is at ${(top + height).toFixed(2)}mm, not on the 15mm line`
+  );
+  assert.match(rule, /right: 15mm/, "the code is off the right margin the work uses");
+
+  // And it still takes nothing off the page: the band it sits in is the
+  // printer margin, the way a Word header is its own layer.
+  const { contentArea } = require("../src/render");
+  const withCode = contentArea({ orientation: "portrait", code: "GD" });
+  const without = contentArea({ orientation: "portrait" });
+  assert.equal(withCode.heightMm, without.heightMm);
+});
+
 test("the code abbreviates the level the adaptation designer names", () => {
   // Not "Sheet A": A, B and C are an alphabet laid over three levels, and the
   // teacher sorting the pile has to translate. These are the initials of the

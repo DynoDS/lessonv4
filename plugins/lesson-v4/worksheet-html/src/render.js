@@ -66,7 +66,26 @@ const GUTTER_MM = 6;
 //
 // So the only thing this band carries is the code, and a field nothing prints
 // is a field that cannot be clipped.
-const HEADER_TOP_MM = 6;
+// The code's own height, and where it therefore starts.
+//
+// It used to be pinned 6mm from the top of the paper, which put it 5mm clear of
+// everything else on the sheet and floating alone in the margin. Daniel, holding
+// a rebuilt sheet: "When trimming, I wouldnt have to trim top off sheet because
+// it already starts good but feel like now I have to every day trim top."
+//
+// So it sits ON the line the work starts from: its bottom edge is the content's
+// top edge, and the two read as one top to the page rather than a mark above it.
+// It still costs the page nothing - it is inside the printer margin, in its own
+// layer, the way a Word header is.
+//
+// Level WITH the first line rather than above it was measured and refused. That
+// needs the corner reserved, and a code dropped into the work area unreserved
+// lands on real work: across every saved sheet rebuilt with this engine, 8 of 36
+// pages carry ink in the 12mm by 6mm corner it would occupy, three of them more
+// than half full. Reserving it costs about 5mm off the top of every sheet, which
+// is a question a whole-lesson sheet gets to answer, not this file.
+const CODE_HEIGHT_MM = TYPE.note * 0.3528 * 1.35;
+const HEADER_TOP_MM = DEFAULT_MARGIN_MM - CODE_HEIGHT_MM;
 
 function headerMm(spec) {
   // The compact shell uses the existing 15mm printer margin rather than
