@@ -12,6 +12,7 @@
 // nothing is guessed twice and the two numbers cannot drift apart.
 
 const { esc, heightFromAspect } = require("./shared");
+const jumpsGeo = require("../../../shared/visuals/number-line-jumps");
 
 const INK = "var(--colour-ink)";
 const FONT = "var(--font)";
@@ -155,6 +156,22 @@ function needsClockRow(spec) {
 // the page, it is just the line itself.
 const ARROW = "var(--colour-given)";
 const OBJECT = "var(--colour-question)";
+// A jump is the move the child makes along the spaces, so it takes the focus
+// blue; a highlighted space takes the given orange, as a thick bar over the
+// axis and a pale wash between its two marks. Both read in greyscale by weight
+// and shape, never by hue alone.
+const JUMP = "var(--colour-question)";
+const HIGHLIGHT = "var(--colour-given)";
+const JUMP_TIER_H = 64;
+const JUMP_LABEL_FONT = 26;
+const JUMP_LABEL_MIN = 18;
+const JUMP_LABEL_H = JUMP_LABEL_FONT + 8;
+const JUMP_HEAD = 16;
+const JUMP_STROKE = 3;
+const JUMP_BOX_W = 90;
+const JUMP_GAP = 4;
+const HIGHLIGHT_BAR_H = 10;
+const HIGHLIGHT_WASH = 0.22;
 
 // Year 4 place value is taught WITH the comma, and the question beside the
 // line already uses it ("Round 6,734 to the nearest 10."). A line whose ends
@@ -194,6 +211,13 @@ function buildNumberLineSvg(spec) {
   } = spec;
 
   const allArrows = arrows || (arrow ? [arrow] : []);
+
+  const scaleLine = jumpsGeo.valueLine({ start, end, interval });
+  const jumps = jumpsGeo.resolveJumps(spec, scaleLine);
+  jumpsGeo.refuseCrowding(jumps, spec, ["arrow", "arrows", "boxes", "object"], "this number line");
+  const highlights = jumpsGeo.resolveIntervalHighlight(spec, scaleLine);
+  const jumpsLabelled = jumps.some((j) => j.label || j.box);
+  const jumpLabelH = jumpsLabelled ? JUMP_LABEL_H : 0;
 
   let resolvedWholeTick = wholeTick;
   let resolvedLabels = labels;
@@ -240,10 +264,15 @@ function buildNumberLineSvg(spec) {
     ? objectBarH + objectGap + (object.label ? objectLabelFont + 4 : 0)
     : 0;
 
+  const jumpTopSpace = jumps.length
+    ? JUMP_GAP + jumpsGeo.bandHeight(jumps, JUMP_TIER_H, jumpLabelH)
+    : 0;
+
   const topSpace =
     Math.max(
       (hasBoxes ? boxSize + boxGap : 0) + arrowTopSpace,
-      objectTopSpace + arrowTopSpace
+      objectTopSpace + arrowTopSpace,
+      jumpTopSpace
     ) + 8;
 
   const bottomSpace = (hasLabels ? labelRowH + labelGap : 0) + 8;
@@ -287,6 +316,15 @@ function buildNumberLineSvg(spec) {
   parts.push(
     `<line x1="${padLeft}" y1="${axisY}" x2="${widthPx - padRight}" y2="${axisY}" stroke="${INK}" stroke-width="2.2" stroke-linecap="square" />`
   );
+
+  for (const hl of highlights) {
+    const hx1 = getX(tickValues[hl.fromIndex]);
+    const hx2 = getX(tickValues[hl.toIndex]);
+    parts.push(
+      `<rect x="${hx1}" y="${axisY - tickH / 2}" width="${hx2 - hx1}" height="${tickH}" fill="${HIGHLIGHT}" fill-opacity="${HIGHLIGHT_WASH}" />`,
+      `<rect x="${hx1}" y="${axisY - HIGHLIGHT_BAR_H / 2}" width="${hx2 - hx1}" height="${HIGHLIGHT_BAR_H}" fill="${HIGHLIGHT}" />`
+    );
+  }
 
   for (const v of tickValues) {
     const h = wholeSet.has(v) ? tallTickH : tickH;
@@ -363,13 +401,50 @@ function buildNumberLineSvg(spec) {
     }
   }
 
+  if (jumps.length) {
+    const baseY = axisY - Math.max(tallTickH, tickH) / 2 - JUMP_GAP;
+    let jumpFont = JUMP_LABEL_FONT;
+    for (const j of jumps) {
+      if (!j.label) continue;
+      const span = Math.abs(getX(tickValues[j.toIndex]) - getX(tickValues[j.fromIndex])) - 8;
+      const need = j.label.length * JUMP_LABEL_FONT * 0.62;
+      if (need > span) jumpFont = Math.min(jumpFont, (JUMP_LABEL_FONT * span) / need);
+    }
+    if (jumpFont < JUMP_LABEL_MIN) {
+      throw new Error(
+        "NUMBERLINE_JUMP_LABELS_CROWDED: the jump labels cannot sit over their spaces at a readable size. " +
+          "Label one jump and put the rest in the question (\"Each jump is +10\"), or use fewer intervals."
+      );
+    }
+    for (const j of jumps) {
+      const x1 = getX(tickValues[j.fromIndex]);
+      const x2 = getX(tickValues[j.toIndex]);
+      const h = jumpsGeo.arcHeight(j, x2 - x1, JUMP_TIER_H, jumpLabelH);
+      const geo = jumpsGeo.arcGeometry(x1, x2, baseY, h, JUMP_HEAD);
+      parts.push(
+        `<polyline points="${geo.points.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="${JUMP}" stroke-width="${JUMP_STROKE}" stroke-linecap="round" />`,
+        `<polygon points="${geo.head.map((p) => `${p.x},${p.y}`).join(" ")}" fill="${JUMP}" />`
+      );
+      if (j.label) {
+        parts.push(
+          `<text x="${geo.apex.x}" y="${geo.apex.y - 6}" text-anchor="middle" dominant-baseline="alphabetic" font-family="${FONT}" font-size="${jumpFont}" font-weight="bold" fill="${JUMP}">${esc(j.label)}</text>`
+        );
+      } else if (j.box) {
+        const w = Math.min(JUMP_BOX_W, Math.abs(x2 - x1) - 8);
+        parts.push(
+          `<rect x="${geo.apex.x - w / 2}" y="${geo.apex.y - JUMP_LABEL_H - 2}" width="${w}" height="${JUMP_LABEL_H}" fill="white" stroke="${INK}" stroke-width="2" />`
+        );
+      }
+    }
+  }
+
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${widthPx} ${heightPx}">${parts.join("")}</svg>`;
 
   return {
     svg,
     aspect: widthPx / heightPx,
     labelCount: labelValues.length,
-    featureCount: Math.max(boxes.length, allArrows.length),
+    featureCount: Math.max(boxes.length, allArrows.length, jumps.length),
   };
 }
 

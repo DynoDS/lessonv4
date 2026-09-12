@@ -32,6 +32,8 @@ const BADGE_PX  = 240;          // step badge resolution
 // These produce a TIGHT SVG plus its true aspect; the wall stores that aspect
 // and places the image by it (no square padding), matching the other engines.
 const linePairShared = require('../../shared/visuals/line-pair-svg');
+const jumpsGeo       = require('../../shared/visuals/number-line-jumps');
+const { RING: highlightRing } = require('../../shared/visuals/figure-highlight');
 const angleShared    = require('../../shared/visuals/angle-svg');
 const triangleShared = require('../../shared/visuals/triangle-svg');
 const vennShared     = require('../../shared/visuals/venn-svg');
@@ -268,6 +270,16 @@ function scaleLabel(n) {
 // deliberately a little generous.
 const LABEL_CHAR_RATIO = 0.58;
 
+// Jumps are the move along the spaces, in the board's focus blue; a highlighted
+// space takes the house highlight orange every drawn figure points with. The
+// meaning (which marks a jump joins, how overlapping jumps stack, the arc) comes
+// from shared/visuals/number-line-jumps.js so the wall shows the board's jump.
+const NL_JUMP_COLOUR = '#0070C0';
+const escapeXml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const NL_JUMP_TIER = 0.12;    // arc ceiling per tier, share of the canvas
+const NL_JUMP_HEAD = 0.035;   // arrowhead length, share of the canvas
+const NL_HIGHLIGHT_BAR = 0.022;
+
 function numberLineSvg(spec, sizePx = RENDER_PX) {
   const from = Number(spec.from) || 0;
   const to = Number(spec.to) || 10;
@@ -288,8 +300,19 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
   }
   const xFor = (v) => padX + ((v - from) / range) * (w - 2 * padX);
 
+  const scaleLine = jumpsGeo.valueLine({ start: from, end: to, interval: step });
+  const jumps = jumpsGeo.resolveJumps(spec, scaleLine);
+  jumpsGeo.refuseCrowding(jumps, spec, ['marks'], 'this number line');
+  const highlights = jumpsGeo.resolveIntervalHighlight(spec, scaleLine);
+
   const parts = [];
   parts.push(`<line x1="${fmt(padX)}" y1="${fmt(lineY)}" x2="${fmt(w - padX)}" y2="${fmt(lineY)}" stroke="#000000" stroke-width="4" stroke-linecap="round"/>`);
+  highlights.forEach((hl) => {
+    const x1 = xFor(from + hl.fromIndex * step);
+    const x2 = xFor(from + hl.toIndex * step);
+    parts.push(`<rect x="${fmt(x1)}" y="${fmt(lineY - tickLen)}" width="${fmt(x2 - x1)}" height="${fmt(tickLen * 2)}" fill="#${highlightRing}" fill-opacity="0.22"/>`);
+    parts.push(`<rect x="${fmt(x1)}" y="${fmt(lineY - (h * NL_HIGHLIGHT_BAR) / 2)}" width="${fmt(x2 - x1)}" height="${fmt(h * NL_HIGHLIGHT_BAR)}" fill="#${highlightRing}"/>`);
+  });
 
   // Major ticks at each step value. Separators make the labels wider than they
   // used to be, so the tick type steps down until neighbours clear each other
@@ -306,6 +329,36 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
     parts.push(`<line x1="${fmt(x)}" y1="${fmt(lineY - tickLen)}" x2="${fmt(x)}" y2="${fmt(lineY + tickLen)}" stroke="#000000" stroke-width="3"/>`);
     parts.push(`<text x="${fmt(x)}" y="${fmt(lineY + tickLen + numFont * 1.4)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${tickLabels[i]}</text>`);
   });
+
+  if (jumps.length) {
+    const labelled = jumps.some((j) => j.label || j.box);
+    const labelH = labelled ? numFont * 1.3 : 0;
+    const tierH = h * NL_JUMP_TIER;
+    const baseY = lineY - tickLen - 4;
+    let jumpFont = numFont;
+    jumps.forEach((j) => {
+      if (!j.label) return;
+      const span = Math.abs(j.toIndex - j.fromIndex) * tickGap * 0.85;
+      const need = j.label.length * numFont * LABEL_CHAR_RATIO;
+      if (need > span) jumpFont = Math.min(jumpFont, (numFont * span) / need);
+    });
+    if (jumpFont < 10) {
+      throw new Error('NUMBERLINE_JUMP_LABELS_CROWDED: the jump labels cannot sit over their spaces at a readable size on this card. Label one jump and let the card text say the rest.');
+    }
+    jumps.forEach((j) => {
+      const x1 = xFor(from + j.fromIndex * step);
+      const x2 = xFor(from + j.toIndex * step);
+      const geo = jumpsGeo.arcGeometry(x1, x2, baseY, jumpsGeo.arcHeight(j, x2 - x1, tierH, labelH), h * NL_JUMP_HEAD);
+      parts.push(`<polyline points="${geo.points.map((p) => `${fmt(p.x)},${fmt(p.y)}`).join(' ')}" fill="none" stroke="${NL_JUMP_COLOUR}" stroke-width="4" stroke-linecap="round"/>`);
+      parts.push(`<polygon points="${geo.head.map((p) => `${fmt(p.x)},${fmt(p.y)}`).join(' ')}" fill="${NL_JUMP_COLOUR}"/>`);
+      if (j.label) {
+        parts.push(`<text x="${fmt(geo.apex.x)}" y="${fmt(geo.apex.y - 6)}" text-anchor="middle" font-family="Arial" font-size="${fmt(jumpFont)}" font-weight="bold" fill="${NL_JUMP_COLOUR}">${escapeXml(j.label)}</text>`);
+      } else if (j.box) {
+        const bw = Math.min(numFont * 3, Math.abs(x2 - x1) - 6);
+        parts.push(`<rect x="${fmt(geo.apex.x - bw / 2)}" y="${fmt(geo.apex.y - labelH - 2)}" width="${fmt(bw)}" height="${fmt(labelH)}" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>`);
+      }
+    });
+  }
 
   // Marks: coloured dots above the line, optional label above the dot.
   //
@@ -343,7 +396,12 @@ function numberLineKey(spec) {
   const marks = Array.isArray(spec.marks) ? spec.marks : [];
   const marksKey = marks.map((m) => `${m && m.at != null ? m.at : ''}:${m && m.label ? m.label : ''}`).join(',');
   const dotColour = (spec.dotColour || 'EF4444').replace(/^#/, '');
-  return `numberLine:${from}-${to}:s${step}:[${marksKey}]:${dotColour}`;
+  // Jumps and highlight change the picture, so they are part of its identity;
+  // without them two cards with different jumps would share one cached drawing.
+  const extra = spec.jumps || spec.highlight
+    ? `:j${JSON.stringify(spec.jumps || [])}:h${JSON.stringify(spec.highlight || null)}`
+    : '';
+  return `numberLine:${from}-${to}:s${step}:[${marksKey}]:${dotColour}${extra}`;
 }
 
 // ─── Angle fan ─────────────────────────────────────────────────────────

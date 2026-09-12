@@ -38,7 +38,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `table` | Header row + body rows |
 | `mult-grid` | A multiplication-facts grid (the SATs "missing numbers in this multiplication grid" shape): `×` corner, headers across and down, product cells. Big numbers, blank cells, green `||` answers. Use for a times-tables grid, not the generic `table` |
 | `matching` | A "draw a line to match" layout: two columns of boxes joined by connector lines. One example line on the question, every line green on the answer slide. Use for any match-these-to-those starter or task |
-| `numberline` | Number line with ticks, question arrow, answer dot |
+| `numberline` | Number line with ticks, question arrow, answer dot, jumps along the spaces and a highlighted interval |
 | `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters (set `counterLabels: true` on a row for the value on each counter; enlarge the chart if labels cannot fit), and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart |
 | `fraction-wall` | Stacked rows of equal-width fraction pieces |
 | `part-whole-model` | One whole circle (left) branching to 2–3 part circles (right), with text labels in each |
@@ -750,6 +750,18 @@ Multiple stacked lines, each with its own scale:
     { "start": 0, "end": 100, "interval": 10, "labels": [0, 10, 90, 100], "arrow": { "at": 70, "label": "?" } }
   ] }
 ```
+
+Jumps along the spaces, and one space highlighted:
+```json
+{ "type": "numberline",
+  "start": 40, "end": 90, "interval": 10, "labels": [40, 90],
+  "highlight": { "from": 40, "to": 50 },
+  "jumps": [ { "from": 40, "to": 50, "label": "+10" }, { "from": 50, "to": 60, "label": "+10" } ] }
+```
+
+**`jumps` draw the move between marks; `highlight` shades the space itself.** Counting on, counting back and reading a scale all happen along the spaces, and an arrow at a tick shows a mark, which is the misconception those lessons teach against. Each jump is `{ from, to }` on marks of the line (`to` below `from` counts back) with a `label` of up to eight characters that says the jump's size (`"+10"`, `"-100"`, `"?"`), or `"box": true` for a blank the jump size is written in. Overlapping jumps stack on their own. `highlight` is `{ from, to }` (or an array) between two marks: use it to show what one interval is, or which space is being counted. Both ends of either must sit on a mark; the build refuses one that does not by name.
+
+A jump's label is its size, never where it lands, so labelling the jumps does not answer "what number is at the arrow?". Leave jumps off where deciding the jump IS the child's work, per `subject-maths.md` (use `blank-surface`), and off a line the teacher will draw them onto live. A line carries jumps or an `arrow`/`answer`, not both, because they draw in the same space above it: put the arrow on a second line. When labels will not fit over narrow spaces at a readable size the build refuses with `NUMBERLINE_JUMP_LABELS_CROWDED`; label one jump and let a caption say the rest.
 
 **`labels` — choose which tick values are printed, because on a scale-reading task the labels are part of what the child works out.** Three forms: an explicit array like `[0, 2, 18, 20]` prints only those values; `"ends"` (the default) prints just the start and end; `"all"` prints every tick. When reading the scale is the skill (a starter retrieving "check what each step is worth", an arrow to read off), give a few anchor values so the interval can be deduced and leave the ticks between them bare, so the child counts on rather than reading a printed number off the tick. Reach for `"all"` only when the tick numbers are not themselves what's being worked out and showing them all genuinely helps: a deliberately easy first line, or a line used only to point at a position whose value is already given. This is the "Cognitive Load Triage on Scaffolds" principle in `preferences.md` applied to a scale: the scale is the part the child operates on, so it stays partly blank.
 

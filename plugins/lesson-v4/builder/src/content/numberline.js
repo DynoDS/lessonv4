@@ -2,6 +2,9 @@
 
 const { FONT, COLOURS, FIT, MIN_FONT_PT } = require('../styles');
 const { textBoxWidthIn } = require('../glyph-width');
+const jumpsGeo = require('../../../shared/visuals/number-line-jumps');
+const { RING: HIGHLIGHT_COLOUR } = require('../../../shared/visuals/figure-highlight');
+const { polygon, polyline } = require('./_geom');
 
 // How big are the numbers a child actually reads off a number line?
 //
@@ -130,6 +133,21 @@ const MAX_GROW         = 1.6;
 // is invisible in the spec and only shows up in front of a class.
 const LINE_NAMES       = ['A', 'B', 'C'];
 const NAME_GAP         = 0.18;
+// Jumps: a hop along the spaces between marks, drawn as an arc above the line.
+// One tier is the arc's ceiling; overlapping jumps climb a tier each.
+const JUMP_TIER_H      = 0.46;
+const JUMP_GAP         = 0.03;   // clear air between a tick top and an arc end
+const JUMP_HEAD        = 0.19;   // arrowhead length at the landing end
+const JUMP_HEAD_MIN    = 0.14;
+const JUMP_STROKE_PT   = 3;
+const JUMP_STROKE_MIN_PT = 2.25; // an arc thinner than this reads as a stray line on the board
+const JUMP_COLOUR      = COLOURS.prompt;
+const JUMP_BOX_MIN_W   = 0.7;    // a blank a child's "+100" fits in
+// A highlighted interval: the space itself turns the house highlight colour,
+// thick enough to read as a space and not a thicker line, with a pale wash
+// over the tick height so the room between the two marks is what stands out.
+const HIGHLIGHT_BAR_H  = 0.13;
+const HIGHLIGHT_WASH_TRANSPARENCY = 78;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 // Year 4 place value is taught WITH the comma, and the question beside the line
@@ -181,6 +199,12 @@ function labelValuesFor(spec) {
 function inkFor(spec) {
   let aboveElastic = 0;
   let aboveBands   = 0;
+  const jumps = spec._jumps || [];
+  if (jumps.length) {
+    const tiers = jumpsGeo.tierCount(jumps);
+    aboveElastic = TICK_H / 2 + JUMP_GAP + tiers * JUMP_TIER_H;
+    aboveBands   = jumpsLabelled(jumps) ? tiers : 0;
+  }
   if (spec.arrow) {
     aboveElastic = Math.max(aboveElastic, ARROW_RAISE);
     aboveBands   = 1;
@@ -192,10 +216,31 @@ function inkFor(spec) {
   const tickHalf = spec.wholeTick != null ? TALL_TICK_H / 2 : TICK_H / 2;
   return {
     aboveElastic: Math.max(aboveElastic, tickHalf),
+    jumpBands:    jumps.length && jumpsLabelled(jumps) ? jumpsGeo.tierCount(jumps) : 0,
     aboveBands:   aboveBands,
     belowElastic: tickHalf + LABEL_GAP,
     belowBands:   1
   };
+}
+
+function jumpsLabelled(jumps) {
+  return jumps.some(function (j) { return j.label || j.box; });
+}
+
+// Resolve each line's jumps and highlight once, against its own scale, before
+// anything is measured: a jump off a mark is refused by name here rather than
+// drawn somewhere near where it was meant to go.
+function resolveMarks(spec, lineIdx, count) {
+  const where = count > 1 ? 'line ' + (LINE_NAMES[lineIdx] || lineIdx + 1) : 'this number line';
+  const scale = jumpsGeo.valueLine({
+    start: specOf(spec, 'start', 0), end: specOf(spec, 'end', 10), interval: specOf(spec, 'interval', 1)
+  });
+  const jumps = jumpsGeo.resolveJumps(spec, scale);
+  jumpsGeo.refuseCrowding(jumps, spec, ['arrow', 'answer'], where);
+  return Object.assign({}, spec, {
+    _jumps: jumps,
+    _highlight: jumpsGeo.resolveIntervalHighlight(spec, scale)
+  });
 }
 
 // Keep a text box inside the zone without narrowing it: a label centred on an
@@ -209,7 +254,7 @@ function boxWithin(centreX, w, loX, hiX) {
 }
 
 function drawNumberline(pptx, slide, zone, data) {
-  const lines = Array.isArray(data.lines)
+  const given = Array.isArray(data.lines)
     ? data.lines
     : [{
         start:     data.start    != null ? data.start    : 0,
@@ -218,17 +263,20 @@ function drawNumberline(pptx, slide, zone, data) {
         labels:    data.labels,
         wholeTick: data.wholeTick,
         arrow:     data.arrow,
-        answer:    data.answer
+        answer:    data.answer,
+        jumps:     data.jumps,
+        highlight: data.highlight
       }];
 
-  if (lines.length > MAX_LINES) {
+  if (given.length > MAX_LINES) {
     throw new Error(
-      'NUMBERLINE_TOO_MANY_LINES: ' + lines.length + ' stacked lines were asked for and ' +
+      'NUMBERLINE_TOO_MANY_LINES: ' + given.length + ' stacked lines were asked for and ' +
       MAX_LINES + ' is the most a number line may carry. Every extra line is paid for out of ' +
       'the size of the numerals on all of them. Split these across two slides, or drop the ' +
       'lines this question does not actually compare.'
     );
   }
+  const lines = given.map(function (spec, i) { return resolveMarks(spec, i, given.length); });
 
   const innerX = zone.x + PAD;
   const innerY = zone.y + PAD;
@@ -405,6 +453,60 @@ function drawNumberline(pptx, slide, zone, data) {
   const usedH = inkH + gap * (lines.length - 1);
   let cursorY = innerY + (innerH - usedH) / 2;
 
+  // Jumps sit in their own band above the line. Their words are one line of
+  // text like every other label here, so they take the same band height, and a
+  // run of narrow hops shrinks its labels together rather than one at a time.
+  function drawJumps(jumps, ticks, lineY) {
+    if (!jumps.length) return;
+    const labelled = jumpsLabelled(jumps);
+    const tierH    = JUMP_TIER_H * scale;
+    const labelH   = labelled ? bandH : 0;
+    const baseY    = lineY - tickH / 2 - JUMP_GAP * scale;
+    // A starved stack scales the arc down with everything else, but an
+    // arrowhead below this stops saying which way the jump went.
+    const headSize = Math.max(JUMP_HEAD_MIN, JUMP_HEAD * scale);
+
+    let jumpFont = fontPt;
+    jumps.forEach(function (j) {
+      if (!j.label) return;
+      const span = Math.abs(ticks[j.toIndex].x - ticks[j.fromIndex].x) - LABEL_GUTTER;
+      const need = textBoxWidthIn(j.label, fontPt, true);
+      if (need > span) jumpFont = Math.min(jumpFont, fontPt * span / need);
+    });
+    jumpFont = Math.floor(jumpFont * 10) / 10;
+    if (jumpFont < FONT_MIN) {
+      throw new Error(
+        'NUMBERLINE_JUMP_LABELS_CROWDED: the jump labels cannot sit over their spaces at the ' +
+          FONT_MIN + 'pt readable minimum. Label one jump and let the caption say the rest ' +
+          '("Each jump is +10"), or give the line more width.'
+      );
+    }
+
+    jumps.forEach(function (j) {
+      const x1  = ticks[j.fromIndex].x;
+      const x2  = ticks[j.toIndex].x;
+      const h   = jumpsGeo.arcHeight(j, x2 - x1, tierH, labelH);
+      const geo = jumpsGeo.arcGeometry(x1, x2, baseY, h, headSize);
+      polyline(pptx, slide, geo.points, { lineColor: JUMP_COLOUR, width: Math.max(JUMP_STROKE_MIN_PT, JUMP_STROKE_PT * Math.min(1, scale)) });
+      polygon(pptx, slide, geo.head, { fill: JUMP_COLOUR, lineColor: null });
+      if (j.label) {
+        const w = textBoxWidthIn(j.label, jumpFont, true);
+        slide.addText(j.label, {
+          x: boxWithin(geo.apex.x, w, zone.x, zone.x + zone.w), y: geo.apex.y - bandH, w: w, h: bandH,
+          fontFace: FONT, fontSize: jumpFont, bold: true, color: JUMP_COLOUR,
+          align: 'center', valign: 'bottom', margin: 0, fit: FIT
+        });
+      } else if (j.box) {
+        const w = Math.min(Math.max(JUMP_BOX_MIN_W * scale, textBoxWidthIn('+000', fontPt, true)),
+          Math.abs(x2 - x1) - LABEL_GUTTER);
+        slide.addShape(pptx.shapes.RECTANGLE, {
+          x: geo.apex.x - w / 2, y: geo.apex.y - bandH - 0.02, w: w, h: bandH,
+          fill: { color: COLOURS.pureWhite }, line: { color: COLOURS.body, width: 1.5 }
+        });
+      }
+    });
+  }
+
   lines.forEach(function (spec, lineIdx) {
     const start    = spec.start    != null ? spec.start    : 0;
     const end      = spec.end      != null ? spec.end      : 10;
@@ -437,6 +539,23 @@ function drawNumberline(pptx, slide, zone, data) {
     slide.addShape(pptx.shapes.RECTANGLE, {
       x: lineX1, y: lineY - lineH / 2, w: lineW, h: lineH,
       fill: { color: COLOURS.body }, line: { color: COLOURS.body, width: 0 }
+    });
+
+    // The highlighted space goes down before the ticks, so the two marks that
+    // bound it stay black and crisp on top of it.
+    spec._highlight.forEach(function (h) {
+      const hx1 = ticks[h.fromIndex].x;
+      const hx2 = ticks[h.toIndex].x;
+      slide.addShape(pptx.shapes.RECTANGLE, {
+        x: hx1, y: lineY - tickH / 2, w: hx2 - hx1, h: tickH,
+        fill: { color: HIGHLIGHT_COLOUR, transparency: HIGHLIGHT_WASH_TRANSPARENCY },
+        line: { type: 'none' }
+      });
+      const barH = Math.max(lineH, HIGHLIGHT_BAR_H * scale);
+      slide.addShape(pptx.shapes.RECTANGLE, {
+        x: hx1, y: lineY - barH / 2, w: hx2 - hx1, h: barH,
+        fill: { color: HIGHLIGHT_COLOUR }, line: { type: 'none' }
+      });
     });
 
     ticks.forEach(function (tick) {
@@ -520,6 +639,8 @@ function drawNumberline(pptx, slide, zone, data) {
         align: 'center', valign: 'middle', margin: 0, fit: FIT
       });
     }
+
+    drawJumps(spec._jumps, ticks, lineY);
 
     cursorY += above[lineIdx] + below[lineIdx] + gap;
   });

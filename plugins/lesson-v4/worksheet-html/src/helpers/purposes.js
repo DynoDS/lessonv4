@@ -89,7 +89,7 @@ module.exports = {
   "clock-row":
     "A row of analogue clock faces, each with hands set or left blank for the child to draw.",
   "number-line":
-    "A labelled number line carrying marked or blank jumps, boxes to write in, and an object bracket.",
+    "A labelled number line: `jumps` between marks (`box: true` leaves a jump's size blank) and a `highlight`ed space, or instead `boxes` at ticks, `arrows` and an `object` bracket.",
   "fraction-bar":
     "One or more bars divided into equal parts, some shaded.",
   ruler:

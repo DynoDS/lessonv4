@@ -1,5 +1,21 @@
 # Build review log
 
+## 2026-09-12 A number line can show a jump and a space (4.2.167)
+
+Follow-up to 4.2.166, on Daniel's go. The Year 4 "Read and complete number lines" vocabulary slide asked for the space between 0 and 10 highlighted and a +10 jump over one interval. No engine could draw either, on any surface, so the repair produced a shaded strip floating above the line and an arrow pointing at the 10 tick: a mark, on the slide teaching that an interval is the space between marks.
+
+**One meaning, four drawings.** `shared/visuals/number-line-jumps.js` owns what a jump and a highlight are: both ends on marks (refused by name otherwise, never drawn nearby), counting back allowed, overlapping jumps climbing a tier while touching hops share one, a highlight over the whole line refused because it points at nothing, and the arc and arrowhead geometry. The board (`builder/src/content/numberline.js`), the sheet (`worksheet-html` `number-line`), the wall (`numberLine`) and the stick-in piece (`number-line`, by tick index) each draw from it. Jumps take the focus blue, the stick-in keeps ink; the highlighted space takes the shared highlight orange from `figure-highlight.js` as a bar over the axis and a pale wash between its two marks (grey on the stick-in). A jump label is its size, up to eight characters, or `box: true` for a blank the child writes the size in.
+
+**What a line will not carry.** Jumps share the band above the line with an arrow, an answer dot, worksheet boxes, an object bracket and wall marks, so a line with jumps refuses those by name (`NUMBERLINE_JUMPS_CROWDED`); a second line in the same visual carries the other. Labels that cannot sit over narrow spaces at a readable size are refused (`NUMBERLINE_JUMP_LABELS_CROWDED`) rather than shrunk. On the board a starved stack keeps an arrowhead of at least 0.14in and an arc of at least 2.25pt, because below that the jump stops saying which way it went.
+
+**Where designers learn it.** `templates.md` (with when not to use it: where placing the jump is the child's work, per `subject-maths.md`, or on a line the teacher draws onto live), the worksheet helper example and purpose line (the example now shows jumps and highlight, since the purpose line has to name boxes, arrows and bracket in 220 characters), `working-wall-card-contracts.md` and `stick-in-sheets-pedagogy.md`. Regenerating the worksheet catalogue also brought in two purpose lines 4.2.158 and 4.2.159 had changed in code without regenerating.
+
+**Checked by looking.** Rebuilt the rejected vocabulary slide from the real run's `lesson.json` with `highlight` and `jumps` in place of the strip and arrow: the Interval card shades 0 to 10 on the line, the Scale card shows a +10 arc landing on the 10 mark. Rendered samples on the sheet, wall and stick-in piece too, including counting back, a run of hops, overlapping jumps and a blank jump box.
+
+Builder 611 pass (7 new); worksheet 675 pass; stick-in 43 pass; wall 124 pass with the same 2 document-claim failures as before the change; Python 1700 pass with the same known failures; parity guard OK.
+
+**Still open.** Number-line labels still sit at their own value, so a deliberately wrong completion ("2,500, 2,700, 2,700") cannot be printed at a tick; that run's slide 8 used a separate row of cards and its worksheet task was rewritten. And a non-load-bearing representation still cannot list `requiredFeatures`, so the helper check cannot test a feature that lives only in a description.
+
 ## 2026-09-12 One slide's finding flags the deck, it never withholds it (4.2.166)
 
 A Year 4 maths run ("Read and complete number lines") came back `BLOCKED` with no deck. Eight of nine slides passed final review. Slide 3, the vocabulary slide, did not: the design asked for the space between 0 and 10 highlighted and a +10 jump over one interval, and the slide `numberline` helper draws neither. The focused repair improvised a detached shaded strip and an arrow pointing at the 10 tick, the second review still said REVISE, and with the one repair round spent the orchestrator excluded the whole deck. Daniel: "it shouldnt fail because one slide couldnt accurately show something for vocab".

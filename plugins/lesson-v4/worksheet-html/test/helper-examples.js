@@ -261,11 +261,18 @@ module.exports = {
     letters: true,
   },
   "number-line": {
-    start: 0,
-    end: 100,
+    // Jumps and a highlight are the fields a designer cannot guess; boxes,
+    // arrows and an object bracket are named in the purpose line. A line
+    // carries jumps or those, never both, because they draw in the same space.
+    start: 40,
+    end: 90,
     interval: 10,
-    labels: "ends",
-    boxes: [30, 70],
+    labels: [40, 90],
+    highlight: { from: 40, to: 50 },
+    jumps: [
+      { from: 40, to: 50, label: "+10" },
+      { from: 50, to: 60, box: true },
+    ],
   },
   "fraction-bar": {
     bars: [

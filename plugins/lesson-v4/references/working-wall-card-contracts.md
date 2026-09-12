@@ -481,6 +481,8 @@ Spec: `{ "type": "numberLine", "from": 0, "to": 10, "step": 1, "marks": [{ "at":
 
 Horizontal line with major ticks every `step` from `from` to `to`. Optional `marks` array places coloured dots above the line at named positions. Use for ordering, rounding, fractions on a line, time intervals.
 
+Optional `jumps: [{ "from": 0, "to": 10, "label": "+10" }]` draws blue arcs between marks, the board's jump, for a card anchoring counting on, counting back or what one step of a scale is worth; `label` is the jump's size (up to eight characters). Optional `highlight: { "from": 0, "to": 10 }` shades the space between two marks, for a card saying what an interval is. Both ends sit on ticks. A line carries `jumps` or `marks`, not both.
+
 ### angleFan
 
 Spec: `{ "type": "angleFan", "degrees": 65 }`

@@ -93,3 +93,21 @@ test("marks that are far apart stay on one row", () => {
     "two marks with the whole line between them were staggered for no reason"
   );
 });
+
+// Jumps and a highlighted space on a wall card, from the same shared meaning as
+// the board, and part of the picture's cache identity: without that, two cards
+// with different jumps would share one cached drawing.
+test("a wall number line draws jumps and a highlight, and they change its cache key", () => {
+  const { numberLineKey } = require("../src/svg-renderer");
+  const svg = numberLineSvg({ from: 0, to: 20, step: 10, highlight: { from: 0, to: 10 }, jumps: [{ from: 10, to: 20, label: "+10" }] });
+  assert.strictEqual((svg.match(/<polyline /g) || []).length, 1);
+  assert.ok(svg.includes(">+10</text>"));
+  assert.notStrictEqual(
+    numberLineKey({ from: 0, to: 20, step: 10 }),
+    numberLineKey({ from: 0, to: 20, step: 10, jumps: [{ from: 0, to: 10 }] })
+  );
+  assert.throws(
+    () => numberLineSvg({ from: 0, to: 20, step: 10, marks: [{ at: 10 }], jumps: [{ from: 0, to: 10 }] }),
+    /NUMBERLINE_JUMPS_CROWDED/
+  );
+});

@@ -35,3 +35,21 @@ test("decimals and authored string labels are printed exactly as written", () =>
   assert.deepStrictEqual(labelsOf({ start: 0, end: 1, interval: 0.5, labels: "all" }), ["0", "0.5", "1"]);
   assert.deepStrictEqual(labelsOf({ start: 0, end: 2000, interval: 1000, labels: ["0", "2000"] }), ["0", "2000"]);
 });
+
+// Jumps and a highlighted space: the sheet draws the board's jump from the same
+// shared meaning (shared/visuals/number-line-jumps.js), and refuses what it
+// cannot place rather than drawing an arc through a box.
+test("a sheet number line draws its jumps and highlight, and refuses jumps crowded with boxes", () => {
+  const html = renderHelper(
+    { helper: "number-line", start: 40, end: 90, interval: 10, labels: [40, 90],
+      highlight: { from: 40, to: 50 }, jumps: [{ from: 40, to: 50, label: "+10" }, { from: 50, to: 60, box: true }] },
+    { widthMm: 170, yearGroup: 4 }
+  );
+  assert.strictEqual((html.match(/<polyline /g) || []).length, 2, "two arcs");
+  assert.ok(html.includes(">+10</text>"), "the jump carries its size");
+  assert.strictEqual((html.match(/fill="var\(--colour-given\)"/g) || []).length, 2, "a wash and a bar for the highlight");
+  assert.throws(
+    () => renderHelper({ helper: "number-line", start: 0, end: 10, interval: 1, boxes: [3], jumps: [{ from: 1, to: 2 }] }, { widthMm: 170, yearGroup: 4 }),
+    /NUMBERLINE_JUMPS_CROWDED/
+  );
+});

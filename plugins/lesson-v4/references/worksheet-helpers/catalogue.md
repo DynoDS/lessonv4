@@ -88,7 +88,7 @@ emailed. Never write `imageHref` yourself.
 
 **Number and calculation**
 
-- `number-line` - A labelled number line carrying marked or blank jumps, boxes to write in, and an object bracket.
+- `number-line` - A labelled number line: `jumps` between marks (`box: true` leaves a jump's size blank) and a `highlight`ed space, or instead `boxes` at ticks, `arrows` and an `object` bracket.
 - `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
 - `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
 - `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
@@ -137,7 +137,7 @@ emailed. Never write `imageHref` yourself.
 **Writing, drawing and talk**
 
 - `writing-frame` - Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque.
-- `drawing-space` - The surface a child draws on, sized from the work it holds: how many things go on it (`draw`), whether labels and arrows go round them (`annotate`), or the surface stated outright with `heightMm`.
+- `drawing-space` - The boxed surface a child draws on, sized by what it holds: `draw`, `annotate`, or a stated height.
 - `storyboard` - Numbered boxes to draw in with writing lines beneath: a journey, a life cycle, a story retold in order.
 - `fact-file` - Named slots a child fills in.
 - `speech-scene` - Turns of a CONVERSATION: a figure and a bubble each, printed to read or empty to fill.
@@ -236,7 +236,7 @@ Smallest usable: **70mm wide x 20mm tall**. Spare height: never takes spare heig
 
 Success criteria or the steps of the taught method, in the same green panel the class worked from on the board. Nothing in it is written on.
 
-Smallest usable: **58mm wide x 49mm tall**. Spare height: never takes spare height.
+Smallest usable: **58mm wide x 41mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1110,20 +1110,35 @@ Smallest usable: **47mm wide x 40mm tall**. Spare height: never takes spare heig
 
 #### `number-line`
 
-A labelled number line carrying marked or blank jumps, boxes to write in, and an object bracket.
+A labelled number line: `jumps` between marks (`box: true` leaves a jump's size blank) and a `highlight`ed space, or instead `boxes` at ticks, `arrows` and an `object` bracket.
 
 Smallest usable: **173mm wide x 12mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "number-line",
-  "start": 0,
-  "end": 100,
+  "start": 40,
+  "end": 90,
   "interval": 10,
-  "labels": "ends",
-  "boxes": [
-    30,
-    70
+  "labels": [
+    40,
+    90
+  ],
+  "highlight": {
+    "from": 40,
+    "to": 50
+  },
+  "jumps": [
+    {
+      "from": 40,
+      "to": 50,
+      "label": "+10"
+    },
+    {
+      "from": 50,
+      "to": 60,
+      "box": true
+    }
   ]
 }
 ```
@@ -2020,7 +2035,7 @@ Smallest usable: **90mm wide x 69mm tall**. Spare height: takes spare height fir
 
 #### `drawing-space`
 
-The surface a child draws on, sized from the work it holds: how many things go on it (`draw`), whether labels and arrows go round them (`annotate`), or the surface stated outright with `heightMm`.
+The boxed surface a child draws on, sized by what it holds: `draw`, `annotate`, or a stated height. Rare as plain working room, because children have books.
 
 Smallest usable: **60mm wide x 80mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
 
@@ -2029,8 +2044,7 @@ Smallest usable: **60mm wide x 80mm tall**. Spare height: takes spare height fir
   "helper": "drawing-space",
   "text": "Design a balanced lunchbox. Draw four foods, label each one, and add an arrow saying why you chose it.",
   "draw": 4,
-  "annotate": true,
-  "frame": "outline"
+  "annotate": true
 }
 ```
 
