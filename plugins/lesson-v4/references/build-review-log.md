@@ -1,5 +1,23 @@
 # Build review log
 
+## 2026-09-12 A maths sheet is the lesson continued (4.2.157)
+
+Daniel gave the context rather than a fault: in his maths lessons the worksheet is not a nice-to-have extra, it is what children do at their tables straight after the teaching. He was explicit that this must not enter the plugin as his routine ("i just didn't want 'Daniel does X so do Y'"), and equally explicit that the deck must still carry the whole lesson on its own.
+
+**Traced before writing anything, and there is a real case.** Four built maths sheets, three faithful to their decks, one not. "Find 10 and 100 more or less" modelled the move by shifting counters on a place-value chart and guided the class on the same chart; its sheet had no chart anywhere and opened with circle-the-answer, a data table and an inequality with boxes. The slide half of that same fault was repaired days ago, in `preferences.md` under `Independent work means the child does the thinking`; the worksheet half was never covered. The three good sheets were good by the designer's judgement: the nearest rule, in the generated-worksheet component, is a general one about changing instances rather than the medium.
+
+**The obvious repair was wrong and he said so.** Put to him as "the sheet should meet children in the same terms", the answer was: "that could also be fine, maybe not for below children, but expected might have example from the board, then move on to different context, or greater depth might start straight form different context". Translation cost is a real demand, not a defect. It belongs where the method is secure.
+
+So the rule is graded by tier rather than absolute. Below opens and stays in the board's form. Expected opens there and then moves into a fresh context. Greater Depth may open straight into one, because for a secure child recognising the same maths somewhere unfamiliar IS the extra demand and making them work the board's version first spends the sheet.
+
+**It is written from WHEN the sheet is worked, not from where anyone sits.** That is what makes it general: a maths sheet is worked minutes after the teaching by a child still holding one method, one representation and one set of criteria, in any classroom. The section names no surface and no seating, `subject-maths.md`'s existing position that grouping and response surfaces belong to the teacher is untouched, and the paragraph opens by restating that the deck teaches the lesson alone and printing nothing loses none of it. A test asserts all three.
+
+**And the fault has a second repair, which is the one he actually wanted.** On that deck: "I wish it showed that 100 more less table as an apply thing in the slides or something." The table was a good idea in the wrong place. So the rule runs both ways: where a sheet moves into a form the lesson never used, ask whether the lesson should have met it once first, as a practise or apply beat after the cycles. That beat only became placeable in 4.2.155, two commits ago.
+
+The reviewer's check was one line, `worksheet methods against lesson methods`, and it passed the chartless sheet. It now says to read the opening questions of each tier against the board, and to say when the lesson is the thing that should change.
+
+Ten new tests. Full run: 1666 pass, the nine known failures unchanged; JavaScript 604 pass, 0 fail.
+
 ## 2026-09-12 The question number is a marker, not part of the question (4.2.156)
 
 Daniel, reading the rebuilt rounding deck: "Is it possible to make numbered questions font size 24, aligned left, which means more space for question/ answer text box and answer centred aligned."

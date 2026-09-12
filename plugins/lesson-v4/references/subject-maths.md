@@ -68,6 +68,16 @@ Problem Solving is available to Below when it is pedagogically sound and indepen
 
 This is stated here because it is a maths rule, not a general one: other subjects shape their sheets around whatever the lesson's thinking needs, and no other subject is required to have a fluency block.
 
+**A maths sheet is the lesson continued, and the continuation is graded.** A worksheet is an optional extra in every subject, and that does not change here: the deck teaches the whole lesson on its own, printing nothing loses none of it, and a class that does its independent work in books has still done the lesson. What is different in maths is WHEN the sheet is worked. It is worked minutes after the teaching, by a child still holding one method, one representation and one set of criteria, so the form the sheet opens in is a teaching decision rather than a layout one.
+
+- **Below opens and stays in the board's form.** The representation the lesson taught in is on the sheet, the questions ask for the action that was modelled, and what is new is the numbers. A child still assembling the method has nothing spare for reading an unfamiliar layout.
+- **Expected opens in the board's form, then moves.** The first questions look like the ones the class has just done, so every child gets started; later ones take the same maths into a fresh context, which is where it stops being a routine and becomes something they can use.
+- **Greater Depth may open straight into a new context.** For a secure child, meeting the same maths somewhere unfamiliar IS the extra demand, and making them work the board's version first spends the sheet on what they can already do.
+
+Translation cost is the thing being graded here, and it is not a fault in itself: asking a child to recognise their maths in a form they have not seen is a real and worthwhile demand, which is exactly why it belongs where the method is already secure and not where it is still being built. What the grading prevents is a sheet that stops measuring the lesson. A Year 4 lesson modelled finding 10 and 100 more by moving counters on a place-value chart and guided the class on the same chart; its sheet had no chart anywhere, and opened with circle-the-answer, a data table and an inequality to complete. A child who could do the maths and could not read the layout looked exactly like a child who could not do the maths.
+
+**And it runs the other way: a form worth meeting on the sheet is usually worth meeting once on the board.** That data table was a good idea badly placed, not a bad idea. So where a sheet's later work moves into a form or a context the lesson never used, ask whether the lesson should have met it once first, as a practise or apply beat after the cycles (`teaching-sequence-skill-based.md`, 'What else the sequence may hold'). The teacher of that deck, reading it back: "I wish it showed that 100 more less table as an apply thing in the slides or something." The board meeting a form once is also what earns Expected the right to move into it.
+
 ---
 
 ## Making practice generative
