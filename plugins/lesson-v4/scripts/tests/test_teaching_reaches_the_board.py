@@ -206,11 +206,13 @@ class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
     def test_the_route_file_documents_the_field_and_its_limit(self) -> None:
         text = flat(CONTENT_BASED)
         # The field keeps its job (the PSHE `pass` slide is still the case it
-        # exists for) and gains its limit: it carries what the board cannot
-        # show, not the landed sentence again (11 September 2026).
-        self.assertIn('"explanation": "only what the thing on the board and the landed sentence cannot say for themselves', text)
-        self.assertIn("`explanation` is what the board has to say that the thing on it and the landed sentence cannot", text)
-        self.assertIn("Use lines for a rule that cannot show its reason", text)
+        # exists for). Its default was flipped to null on 11 September while
+        # repairing a slide that said one thing three ways, and three decks
+        # then shipped with every Teach explanation empty; writing it is the
+        # default again (12 September 2026).
+        self.assertIn('"explanation": "what the class needs in order to understand the landed sentence', text)
+        self.assertIn("`explanation` is the teaching, as the child reads it", text)
+        self.assertIn("So the default is to write it", text)
         self.assertIn("left what pass means in the script", text)
         self.assertIn("It is not the place for the explanation", text)
 

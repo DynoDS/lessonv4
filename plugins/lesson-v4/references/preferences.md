@@ -293,15 +293,13 @@ This bites hardest in enquiry-frame lessons, where a brief often carries the rec
 
 Question labels are used only for work that children need to match to their own recorded answers. Labels are always bracketed - (1), (a), (1a) - never bare numbers or letters.
 
-**On lesson slides, number starter questions and the lesson's main independent work.** The starter and main independent sequence are separate: each starts at (1). Do not number smaller questions or tasks between teaching steps, including content-based Do beats, quick checks, discussion questions and short guided responses.
+**On lesson slides, question labels are for maths and nothing else.** A label exists so a child can match what they wrote to the answer being read out, and in maths that matching is constant: a column of short answers, checked as a set, where "number three" has to mean one thing to twenty-eight children. Outside maths it is furniture. A Year 4 science deck numbered its three starter questions and then labelled `(1) Name A, B and C.` on a slide holding one instruction, and neither label told anybody anything (12 September 2026, the teacher's own change from earlier practice). So in maths, number the starter and the main independent work, each sequence starting at (1); in every other subject, slides carry no question labels at all. Do not number smaller questions or tasks between teaching steps in any subject, including content-based Do beats, quick checks, discussion questions and short guided responses.
 
 **A lone question is unnumbered.** A label exists to tell questions apart and match answers back, so a starter or slide block holding exactly one question prints it with no "(1)" at all - the builder's question list drops the label itself, and a designer reaching for another numbered surface for a single question should ask whether it needs numbering at all. The one exception is a run the deck carries on across slides: when a later block continues the numbering, the first question keeps its (1) so the run stays whole.
 
 **In maths, My Turn has no question label.** A Maths Our Turn uses letters - (a), (b), (c) - when it contains two or more discrete questions that the class needs to refer to separately. A single Our Turn prompt has no label. Your Turn starts at (1), and numbering then continues through any connected Problem Solving, Reasoning or Apply work.
 
-In other subjects, do not use letters. Number starter questions and main independent work only.
-
-Worksheets, stick-in pieces and adaptation sheets use bracketed numbers for independent questions. Their numbering belongs to that resource and does not continue from the starter or slide lesson.
+Worksheets, stick-in pieces and adaptation sheets keep bracketed numbers for independent questions in every subject, because the answer key is a separate sheet and has to match. Their numbering belongs to that resource and does not continue from the starter or slide lesson.
 
 ---
 
@@ -384,6 +382,8 @@ Document when each fact appears — not where on the slide (that's the PPT desig
 A live reference, not a framing for what's about to happen. Success criteria earns its place by being visible *while* children work — so they can consult it as they apply it.
 
 Do not put the criteria on their own introductory slide before the My Turn unless the criteria themselves genuinely need teaching, comparison or construction. The teacher is about to demonstrate them; a list of "what we're about to do" teaches nothing. The criteria belong on the My Turn slide and on practice slides, where children see them in use.
+
+**And they come off the answer slide.** A check slide is the moment the class compares what they wrote with what was right, so the panel beside it is the one thing nobody looks at, and it takes a third of the board away from the answers it is sitting next to. A Year 4 maths deck carried the same six-step panel on thirteen of sixteen slides, including all four checks. On the teaching and practice slides that is correct and is what the criteria are for; on the checks it is furniture. The same holds for any slide whose whole job is a reveal.
 
 **The success criteria is whatever a child has to look at to get *this* task right — its form follows the task, so don't default to a list of steps.** When the task is carrying out a procedure, the steps are what the child checks against. But when the task is recognising, naming, or classifying — name this turn, name this word class, sort this shape — there is no procedure to step through; what the child checks an instance against is the **labelled set of the categories themselves**. There the most useful criteria is that set shown and labelled, and it is usually a visual reference or helper rather than a column of imperatives — because "is this a half turn?" is answered by comparing to the turns the child knows, not by running a procedure. So success criteria can be how-to steps, a lookup table, a worked example, or a labelled reference/diagram; pick the form by what a child must glance at to succeed, and use more than one form when both genuinely help.
 

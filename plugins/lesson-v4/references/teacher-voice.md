@@ -529,6 +529,10 @@ is a curriculum document's sentence. The child's step is:
 
 A criterion is a short, memorable cue: easy to say, repeat and call back while children work. Aim for 2-5 words, not an explanation after every instruction. Eight words is a reread point rather than a ban: keep a few extra words when they make the action clearer. `preferences.md` → Success Criteria owns the length and layout judgement. Remove repeated explanations or equipment alternatives; keep a simple condition inline when it is easy to follow. Shorter is not better if the child no longer knows what to do.
 
+**Read each step as an instruction to the weakest child in the class.** Short, imperative, specific and actionable is the shape of a step and not the test of one, so a step can pass every rule above and still fail in front of a child who is stuck. `Find the neighbouring multiples.` is four words, imperative and exact, and `neighbouring multiples` is a phrase a struggling Year 4 does not hold, so the step tells them nothing they can do. `Find the 10s or 100s each side of your number.` is longer, plainer and runnable. The criteria are the thing that child leans on when the teaching has moved on, so every step is written in words they already own: do this, then do this, then do this.
+
+**A condition that does not happen every time is not a step.** `Already a multiple? Keep it and stop.` is true and useful and it is not part of running the method, so as step 2 of six it stops every child on every question to rule out a case most of them do not have. Conditions the method runs every time can stay inline (`Ten ones? Exchange for one ten.`); a case that comes up occasionally goes under the steps as its own short note, where the child who needs it finds it and nobody else has to walk past it.
+
 Where a class needs more support, the support goes in the step's own words rather than in an explanation after it:
 
 > Start a sentence with a fronted adverbial.

@@ -180,11 +180,11 @@ class ATeachSlideLandsItsSentenceOnce(unittest.TestCase):
         self.assertIn("It carries it once.", flat(PREFERENCES))
         self.assertIn("and it carries it once", flat(CONTENT_ROUTE))
         self.assertIn("A Teach slide lands its sentence once", flat(OUTPUT_TEMPLATE))
-        # The explanation's job is stated as what the board cannot show, with
-        # both ends of the limit named: the pride lessons' bare slide, and the
-        # PSHE slide that left what pass means in the script.
-        self.assertIn("which is the shape of the pride lessons", flat(CONTENT_ROUTE))
-        self.assertIn("Use lines for a rule that cannot show its reason", flat(CONTENT_ROUTE))
+        # Saying one thing three ways is the fault; what it is, why it is
+        # there and what it does are three different things and are the
+        # teaching. Both halves have to stay stated together.
+        self.assertIn("Saying the same thing three ways is the fault above", flat(CONTENT_ROUTE))
+        self.assertIn("saying what it is, why it is there and what it does is three different things", flat(CONTENT_ROUTE))
 
 
 # -- the validator holds the mechanical half ----------------------------------
