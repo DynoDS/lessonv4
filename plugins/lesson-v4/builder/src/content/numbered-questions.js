@@ -70,6 +70,17 @@ const CARD_FONT_MAX = 40;     // question font ceiling, points. Set to the large
                               // of the room without a question ever coming out
                               // bigger than a title.
 const LINE_H_RATIO  = 1.30;   // line height as a multiple of font size
+const LABEL_FONT_PT = 24;     // the question number's own size, points. The number
+                              // is a marker a child matches against their book, not
+                              // part of the question, so it is set once and left
+                              // alone rather than growing with the words beside it:
+                              // a two-question check on a whole zone used to print
+                              // "(1)" at 40pt, as big as the number being rounded.
+                              // Held at 24 it also costs the card far less width,
+                              // which is room the question and its answer get back.
+                              // It never exceeds the question's own font, because a
+                              // number bigger than the question it labels reads as
+                              // the point of the card.
 const LABEL_GAP_EM  = 0.24;   // small visible gap after "(1)" without a wide label column
 const QUESTION_PICTURE_MAX_W = 1.55; // height leads; this only restrains very wide artwork
 const MIN_COLUMN_W  = 1.2;    // narrowest column a card may be laid out in, inches.
@@ -130,8 +141,9 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
   // length says one digit.
   const widestLabel =
     (options && options.widestLabel) || '(' + questions.length + ')';
-  const labelTextW = noLabel ? 0 : textBoxWidthIn(widestLabel, fontPt, true);
-  const labelGapW = noLabel ? 0 : LABEL_GAP_EM * fontPt / 72;
+  const labelFontPt = Math.min(LABEL_FONT_PT, fontPt);
+  const labelTextW = noLabel ? 0 : textBoxWidthIn(widestLabel, labelFontPt, true);
+  const labelGapW = noLabel ? 0 : LABEL_GAP_EM * labelFontPt / 72;
   const labelW = labelTextW + labelGapW;
   const answerMetrics = answerBoxes ? answerBoxMetrics(fontPt) : null;
   const answerGutterW = answerMetrics ? answerMetrics.w + ANSWER_BOX_GAP : 0;
@@ -175,6 +187,7 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
       answer: q.answer,
       revealed: q.revealed,
       pictureSlotW: pictureSlots[i],
+      lines: lines,
       h: Math.max(
         lines * lineH + 2 * CARD_PAD_Y,
         Number(minimumCardHeights[i]) || 0
@@ -190,6 +203,7 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
     w: widestRowW + labelW + answerGutterW + 2 * CARD_PAD_X,
     labelW: labelW,
     labelTextW: labelTextW,
+    labelFontPt: labelFontPt,
     answerMetrics: answerMetrics,
     totalH: totalH
   };
@@ -319,6 +333,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
         text: c.text,
         answer: c.answer,
         revealed: c.revealed,
+        lines: c.lines,
         h: c.h * scale
       };
     });
@@ -499,8 +514,8 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       slide.addText(label, {
         x: cardX + CARD_PAD_X, y: cardY,
         w: stack.labelTextW, h: c.h,
-        fontFace: FONT, fontSize: fontPt, bold: true,
-        color: COLOURS.questionLabel, align: 'right', valign: 'middle',
+        fontFace: FONT, fontSize: stack.labelFontPt, bold: true,
+        color: COLOURS.questionLabel, align: 'left', valign: 'middle',
         margin: 0, fit: FIT
       });
     }
@@ -537,7 +552,15 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
         + (pictureOnRight ? 0 : ownPictureSlotW), y: cardY,
       w: stack.w - 2 * CARD_PAD_X - stack.labelW - answerGutterW - ownPictureSlotW, h: c.h,
       fontFace: FONT, fontSize: fontPt, bold: true,
-      color: baseColor, align: 'left', valign: 'middle',
+      // Centred in its own box. The cards share one width, the widest question's,
+      // so every shorter question in the set has slack; left-aligned it pooled on
+      // the right and a check slide read as a column of cards that did not fill.
+      // The limit is a question that wraps: it has already spent the width, so
+      // there is no slack to share, and centring only leaves the last few words
+      // stranded mid-card ("2,649 rounds to 2,650 to the nearest" / "10.").
+      color: baseColor,
+      align: (c.lines || 1) > 1 ? 'left' : 'center',
+      valign: 'middle',
       margin: 0, fit: FIT,
       // The floor travels in the name, or the global fit pass does not know it
       // exists: a question with no MIN in its name is shrunk to the deck-wide

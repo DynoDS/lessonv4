@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-12 The question number is a marker, not part of the question (4.2.156)
+
+Daniel, reading the rebuilt rounding deck: "Is it possible to make numbered questions font size 24, aligned left, which means more space for question/ answer text box and answer centred aligned."
+
+**The number used to grow with the question.** On a two-question check filling a whole zone that meant "(1)" printed at 40pt beside a 40pt "67", the number as loud as the thing being rounded. Worse, the label column is priced from the label, so the wider the number the less width the words had: the number was taking room from the question it was only there to label.
+
+It is now set once at 24pt and pinned to the card's left edge. The one bound is that it never exceeds the question's own font, because a long set in a tight zone drives the question below 24 and a number bigger than its question reads as the point of the card.
+
+**And the width that frees goes to the words.** The question and its revealed answer now sit centred in the box that is left, rather than pooling against the left edge of a card sized to the longest question in the set.
+
+**The limit, found in the render rather than in argument.** Centring shares a card's spare width, and a question that wraps has already spent it: `2,649 rounds to 2,650 to the nearest / 10.` came out with the tail of the sentence stranded in the middle of the card. So a question that wraps keeps its left edge, and only a question that fits on one line is centred.
+
+Seven new tests. JavaScript suite: 604 pass, 0 fail. The Monday maths deck is rebuilt and back on the school drive.
+
 ## 2026-09-12 The lesson is not limited to its cycles (4.2.155)
 
 Asked whether every maths lesson would now be my turn, our turn, your turn and nothing else, Daniel answered: "i still want good pedgagogical designs, like what weve been doing, i dont want to limit it to starter, answers, key vocab, mtotyt cycles. If it thinks teach in a place do it, if it thinks seperate key vocab do it. if it thinks apply now, or problem solving now do it, etc."

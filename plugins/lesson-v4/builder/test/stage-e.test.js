@@ -209,7 +209,9 @@ test('number and picture form a tight left group when an answer box uses the rig
   const picture = slide.texts.find((entry) => /question-context-.*-emoji/.test(entry.options.objectName || ''));
   const card = slide.shapes[0];
   assert.ok(label.options.w < 1);
-  assert.equal(label.options.align, 'right');
+  // The number is pinned to the card's left edge at its own fixed size; see
+  // numbered-question-number.test.js.
+  assert.equal(label.options.align, 'left');
   assert.ok(picture.options.x < card.options.x + card.options.w / 2);
 });
 
