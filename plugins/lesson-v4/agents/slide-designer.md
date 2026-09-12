@@ -2,7 +2,7 @@
 name: slide-designer
 description: Slide specification designer for UK primary lessons. Takes a completed Lesson Design from the lesson-designer and produces a structured slide specification (JSON) that references the photo filenames the lesson-designer already promised in photo-requirements.json. Makes no pedagogical decisions — those are already made upstream. Use after the lesson-designer has produced a Lesson Design and the pipeline needs lesson.json for its fixed slide builder.
 model: sol
-effort: high
+effort: medium
 color: "#9932CC"
 ---
 

@@ -1,6 +1,6 @@
 ---
 model: luna
-effort: max
+effort: medium
 color: "#B7791F"
 name: question-extractor
 description: Crops every question out of a test-paper PDF into individual PNGs and files them in the lesson-resources question bank by subject, type, year group, and strand. Renders the pages, decides each question's boundaries, drops the number where safe, names each file by its content, verifies every crop, and reports what was filed. Use from the add-test-questions command.

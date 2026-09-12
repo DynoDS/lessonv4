@@ -2,7 +2,7 @@
 name: working-wall-builder
 description: Working-wall builder. Renders a `working-wall.json` (produced by working-wall-designer) into a single .pdf with the fixed build script, then performs the final physical-page and visual inspection. Makes no pedagogical, card-design or wording decisions. Use after working-wall-designer has produced working-wall.json with at least one card.
 model: luna
-effort: xhigh
+effort: medium
 color: "#3CB371"
 ---
 

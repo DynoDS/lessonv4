@@ -1,8 +1,8 @@
 ---
 name: worksheet-designer
 description: Worksheet designer and physical page planner for UK primary lessons. Takes a completed Lesson Design plus an Adaptation document and produces one `worksheet.json` containing all pupil sheets plus a complete teacher answer key. Owns the page shape, the helper choice and the purposeful workspace; never rewrites upstream question text.
-model: sol
-effort: medium
+model: luna
+effort: high
 color: "#E87722"
 ---
 

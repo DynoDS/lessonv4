@@ -85,25 +85,25 @@ class SpecTests(unittest.TestCase):
         result = run("spec", "--role", "working-wall-builder")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("model: gpt-5.6-luna", result.stdout)
-        self.assertIn("reasoning_effort: xhigh", result.stdout)
+        self.assertIn("reasoning_effort: medium", result.stdout)
 
     def test_selected_normal_and_repair_roles_resolve_to_the_requested_matrix(self) -> None:
         expected = {
             "lesson-designer": ("gpt-6-astra", "medium"),
             "design-reviewer": ("gpt-6-astra", "high"),
             "adaptation-designer": ("gpt-6-astra", "low"),
-            "slide-designer": ("gpt-5.6-sol", "high"),
-            "worksheet-designer": ("gpt-5.6-sol", "medium"),
+            "slide-designer": ("gpt-5.6-sol", "medium"),
+            "worksheet-designer": ("gpt-5.6-luna", "high"),
             "helper-builder": ("gpt-6-astra", "medium"),
-            "image-scout": ("gpt-5.6-luna", "max"),
+            "image-scout": ("gpt-5.6-luna", "medium"),
             "diagram-anchor": ("gpt-5.6-sol", "medium"),
-            "question-extractor": ("gpt-5.6-luna", "max"),
-            "slide-decorator": ("gpt-5.6-luna", "xhigh"),
+            "question-extractor": ("gpt-5.6-luna", "medium"),
+            "slide-decorator": ("gpt-5.6-luna", "medium"),
             "stick-in-sheets-designer": ("gpt-5.6-luna", "xhigh"),
             "stick-in-sheets-designer-focused-repair": ("gpt-5.6-luna", "xhigh"),
             "slide-designer-focused-repair": ("gpt-5.6-sol", "medium"),
             "worksheet-designer-focused-repair": ("gpt-5.6-sol", "medium"),
-            "working-wall-builder": ("gpt-5.6-luna", "xhigh"),
+            "working-wall-builder": ("gpt-5.6-luna", "medium"),
             "working-wall-designer": ("gpt-5.6-sol", "medium"),
             "working-wall-designer-focused-repair": ("gpt-5.6-sol", "medium"),
         }
@@ -169,7 +169,7 @@ class AuditTests(unittest.TestCase):
                 {
                     "task_name": "image_scout_p1",
                     "model": "gpt-5.6-luna",
-                    "reasoning_effort": "max",
+                    "reasoning_effort": "medium",
                     "fork_turns": "none",
                 },
             ],
@@ -193,7 +193,7 @@ class AuditTests(unittest.TestCase):
         )
         result = self.audit()
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("wanted gpt-5.6-sol/medium", result.stdout)
+        self.assertIn("wanted gpt-5.6-luna/high", result.stdout)
         self.assertIn("launched gpt-5.6-terra/high", result.stdout)
 
     def test_a_repair_role_is_matched_by_its_longest_role_prefix(self) -> None:
