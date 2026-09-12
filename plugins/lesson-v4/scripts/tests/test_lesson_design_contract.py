@@ -888,11 +888,18 @@ def test_load_bearing_configuration_requires_features():
     assert_invalid(mutate, "requiredFeatures must not be empty when loadBearing is true")
 
 
-def test_non_load_bearing_configuration_has_no_required_features():
-    def mutate(design, photos):
-        config = design["representations"][0]["configurations"][-1]
-        config["requiredFeatures"] = ["an irrelevant proactive capability"]
-    assert_invalid(mutate, "requiredFeatures must be empty when loadBearing is false")
+def test_a_supporting_visual_may_name_the_features_its_meaning_depends_on():
+    """A vocabulary line's highlighted space is not load-bearing and still has to be drawn.
+
+    With features forced to [] it lived only in the description, the helper
+    check marked it covered with nothing to test, and a deck reached final
+    review before anyone found no helper could draw it (12 September 2026).
+    """
+    design, photos = valid_contract()
+    configs = [c for rep in design["representations"] for c in rep["configurations"]]
+    supporting = next(c for c in configs if c["loadBearing"] is False)
+    supporting["requiredFeatures"] = ["the space between two marks highlighted, not a tick"]
+    module.validate_design(design, photos)
 
 
 def test_initial_lesson_contract_cannot_reference_adaptation_photo_id():

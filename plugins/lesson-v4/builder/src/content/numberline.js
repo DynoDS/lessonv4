@@ -172,7 +172,8 @@ function specOf(spec, key, fallback) {
   return spec[key] != null ? spec[key] : fallback;
 }
 
-// The values this line writes under its axis, in ascending order.
+// What this line writes under its axis: [{ at, text }] in ascending order. A
+// plain number prints itself; { at, text } prints its own words under that mark.
 function labelValuesFor(spec) {
   const start    = specOf(spec, 'start', 0);
   const end      = specOf(spec, 'end', 10);
@@ -188,7 +189,12 @@ function labelValuesFor(spec) {
       values.push(Math.round((start + i * interval) * 1e9) / 1e9);
     }
   }
-  return values.slice().sort(function (a, b) { return a - b; });
+  const scale = jumpsGeo.valueLine({ start: start, end: end, interval: interval });
+  const entries = values.map(function (v, i) {
+    const entry = jumpsGeo.labelEntry(v, scale, i);
+    return entry ? { at: entry.at, text: entry.text } : { at: v, text: formatValue(v) };
+  });
+  return entries.sort(function (a, b) { return a.at - b.at; });
 }
 
 // The vertical room this line genuinely uses, above and below its axis, split
@@ -374,8 +380,8 @@ function drawNumberline(pptx, slide, zone, data) {
     let rh = 0;
     allLabels.forEach(function (values) {
       if (!values.length) return;
-      lh = Math.max(lh, textBoxWidthIn(formatValue(values[0]), f, true) / 2);
-      rh = Math.max(rh, textBoxWidthIn(formatValue(values[values.length - 1]), f, true) / 2);
+      lh = Math.max(lh, textBoxWidthIn(values[0].text, f, true) / 2);
+      rh = Math.max(rh, textBoxWidthIn(values[values.length - 1].text, f, true) / 2);
     });
     let x1 = zone.x + Math.max(PAD, lh);
     let x2 = zone.x + zone.w - Math.max(PAD, rh);
@@ -399,12 +405,12 @@ function drawNumberline(pptx, slide, zone, data) {
       const start = specOf(spec, 'start', 0);
       const end   = specOf(spec, 'end', 10);
       if (end === start) return;
-      const xs = values.map(function (v) { return geo.x1 + ((v - start) / (end - start)) * geo.w; });
+      const xs = values.map(function (v) { return geo.x1 + ((v.at - start) / (end - start)) * geo.w; });
       let minGap = Infinity;
       for (let k = 1; k < xs.length; k++) minGap = Math.min(minGap, xs[k] - xs[k - 1]);
       const cap  = Math.max(0.20, minGap - LABEL_GUTTER);
       const need = Math.max.apply(null, values.map(function (v) {
-        return textBoxWidthIn(formatValue(v), f, true);
+        return textBoxWidthIn(v.text, f, true);
       }));
       if (need > cap) out = Math.min(out, f * cap / need);
     });
@@ -578,7 +584,7 @@ function drawNumberline(pptx, slide, zone, data) {
 
     const belowY      = lineY + tickH / 2 + labelGap;
     const labelValues = allLabels[lineIdx];
-    const labelXs     = labelValues.map(getX);
+    const labelXs     = labelValues.map(function (v) { return getX(v.at); });
 
     // A label may take the width its own digits need, up to the clear air
     // between it and its neighbour. Only a genuinely crowded axis shrinks.
@@ -589,8 +595,8 @@ function drawNumberline(pptx, slide, zone, data) {
     const widthCap = Number.isFinite(minGap) ? Math.max(0.20, minGap - LABEL_GUTTER) : lineW;
 
     labelValues.forEach(function (val, i) {
-      const boxW = Math.min(textBoxWidthIn(formatValue(val), labelFont, true), widthCap);
-      slide.addText(formatValue(val), {
+      const boxW = Math.min(textBoxWidthIn(val.text, labelFont, true), widthCap);
+      slide.addText(val.text, {
         x: boxWithin(labelXs[i], boxW, zone.x, zone.x + zone.w),
         y: belowY, w: boxW, h: bandH,
         fontFace: FONT, fontSize: labelFont, bold: true, color: COLOURS.body,

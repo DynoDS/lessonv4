@@ -2304,9 +2304,10 @@ def validate_design(
             if load_bearing:
                 expect(bool(features),
                        f"{config_path}.requiredFeatures must not be empty when loadBearing is true")
-            else:
-                expect(not features,
-                       f"{config_path}.requiredFeatures must be empty when loadBearing is false")
+            # A supporting picture can still carry meaning in its form - the
+            # highlighted space on an "interval" vocabulary line - and a
+            # feature written only in the description reaches no check, so
+            # supporting configurations may list features too.
             for feature_index, feature in enumerate(features):
                 expect_string(feature, f"{config_path}.requiredFeatures[{feature_index}]")
 

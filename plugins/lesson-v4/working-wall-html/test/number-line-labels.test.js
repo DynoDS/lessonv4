@@ -111,3 +111,17 @@ test("a wall number line draws jumps and a highlight, and they change its cache 
     /NUMBERLINE_JUMPS_CROWDED/
   );
 });
+
+// A number line printed as a thin strip across the middle of an empty square on
+// a Year 4 wall card. Cropped to its own ink it is wide, so the card places it
+// full width and its numerals grow.
+test("a wall number line is cropped to its own ink, not a square", () => {
+  const { numberLineTight } = require("../src/svg-renderer");
+  const plain = numberLineTight({ from: 40, to: 90, step: 10 });
+  assert.ok(plain.aspect > 2.5, `a bare line should be wide, got aspect ${plain.aspect.toFixed(2)}`);
+  const jumped = numberLineTight({ from: 40, to: 90, step: 10, jumps: [{ from: 40, to: 50, label: "+10" }] });
+  assert.ok(jumped.aspect < plain.aspect, "a jump adds height above the line, so the crop keeps it");
+  const top = Number(/viewBox="0 ([\d.]+)/.exec(jumped.svg)[1]);
+  const labelY = Number(/<text x="[\d.]+" y="([\d.]+)"[^>]*fill="#0070C0">\+10</.exec(jumped.svg)[1]);
+  assert.ok(labelY - 30 >= top - 1, "the jump label sits inside the crop");
+});

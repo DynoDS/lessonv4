@@ -53,3 +53,26 @@ test("a sheet number line draws its jumps and highlight, and refuses jumps crowd
     /NUMBERLINE_JUMPS_CROWDED/
   );
 });
+
+// A sentence about the line is its caption. On a printed Year 4 sheet the
+// sentence went into `unit` (clipped to "Each in") and then into `object`,
+// which drew a blue bar through every answer box (12 September 2026).
+test("a sentence about the line is a caption, and unit and object refuse one", () => {
+  const html = renderHelper(
+    { helper: "number-line", start: 3000, end: 8000, interval: 1000, labels: [3000, 6000, 8000],
+      boxes: [4000, 5000, 7000], caption: "Each interval is worth 1,000." },
+    { widthMm: 170, yearGroup: 4 }
+  );
+  assert.ok(html.includes(">Each interval is worth 1,000.</text>"));
+  assert.ok(!html.includes("var(--colour-question)"), "no blue bracket on a line that measures nothing");
+  const opts = { widthMm: 170, yearGroup: 4 };
+  assert.throws(() => renderHelper({ helper: "number-line", start: 0, end: 10, unit: "Each interval is worth 1." }, opts), /NUMBERLINE_UNIT_TOO_LONG/);
+  assert.throws(() => renderHelper({ helper: "number-line", start: 0, end: 10, boxes: [3], object: { from: 0, to: 10 } }, opts), /NUMBERLINE_OBJECT_CROWDED/);
+});
+
+test("a label can print the wrong number at a mark, for a line children judge", () => {
+  assert.deepStrictEqual(
+    labelsOf({ start: 2400, end: 2900, interval: 100, labels: [2400, 2500, { at: 2600, text: "2,700" }, 2700, 2800, 2900] }),
+    ["2,400", "2,500", "2,700", "2,700", "2,800", "2,900"]
+  );
+});

@@ -59,13 +59,13 @@ function label(value, field) {
   if (text.includes('||')) throw new Error(`number-line ${field} must be a given endpoint, not a reveal`);
   return text;
 }
-function wrap(text) {
+function wrap(text, maxW = LABEL_MAX_W) {
   let fs = FONT_MAX;
-  while (fs > FONT_MIN && measure(text, fs) > LABEL_MAX_W) fs -= 1;
+  while (fs > FONT_MIN && measure(text, fs) > maxW) fs -= 1;
   const lines = [];
   let current = '';
   for (const c of text) {
-    if (current && measure(current + c, fs) > LABEL_MAX_W) {
+    if (current && measure(current + c, fs) > maxW) {
       lines.push(current.trim());
       current = '';
     }
@@ -98,23 +98,37 @@ function normalise(data = {}) {
     if (new Set(arrows.map(a => a.index)).size !== arrows.length || new Set(arrows.map(a => a.label)).size !== arrows.length) {
       throw new Error('number-line arrow indices and letters must be unique on each line');
     }
-    // Explicit labels only, and never reveal them in question state.
-    const tickLabels = questionState ? [] : (s.tickLabels || []);
-    if (!Array.isArray(tickLabels)) throw new Error('number-line tickLabels must be an array');
-    tickLabels.forEach(t => {
+    // Explicit labels only. In question state a label prints only when it is
+    // marked `given: true`: a number the task supplies to count from. An
+    // unmarked label may be the answer, so it stays off the child's copy. With
+    // nothing marked, a Year 4 set of pieces printed only its endpoints: Line A
+    // lost the 5,000 the slide gave, and Line C printed the 10,000 the child had
+    // to find instead of the 9,800 it was given (12 September 2026).
+    const suppliedLabels = s.tickLabels || [];
+    if (!Array.isArray(suppliedLabels)) throw new Error('number-line tickLabels must be an array');
+    suppliedLabels.forEach(t => {
       if (!t || !Number.isInteger(t.index) || t.index <= 0 || t.index >= intervals) throw new Error('number-line tick label index must be interior');
       label(t.text, 'tick label');
     });
+    const tickLabels = questionState ? suppliedLabels.filter(t => t.given === true) : suppliedLabels;
+    // An endpoint the task leaves for the child is still named, so the piece
+    // knows its own line, but it is not printed.
+    ['startBlank', 'endBlank'].forEach(f => {
+      if (s[f] != null && typeof s[f] !== 'boolean') throw new Error(`number-line ${f} must be boolean`);
+    });
+    const caption = s.caption == null ? '' : label(s.caption, 'caption');
     const indexScale = jumpsGeo.indexLine(intervals);
     const jumps = jumpsGeo.resolveJumps(s, indexScale);
     jumpsGeo.refuseCrowding(jumps, s, ['arrows'], 'this number line');
     const highlight = jumpsGeo.resolveIntervalHighlight(s, indexScale);
-    return { start, end, intervals, showTicks: s.showTicks !== false, arrows, tickLabels, questionState, jumps, highlight };
+    return { start, end, intervals, showTicks: s.showTicks !== false, arrows, tickLabels, questionState, jumps, highlight,
+      startBlank: s.startBlank === true, endBlank: s.endBlank === true, caption };
   });
 }
 function describeLayout(data = {}) {
   const specs = normalise(data);
-  const ends = specs.map(s => [wrap(s.start), wrap(s.end)]);
+  const blank = { lines: [], fs: FONT_MAX, w: 0, h: 0 };
+  const ends = specs.map(s => [s.startBlank ? blank : wrap(s.start), s.endBlank ? blank : wrap(s.end)]);
   const x1 = PAD + Math.max(FONT_MAX, ...ends.map(e => e[0].w / 2));
   const x2 = WIDTH - PAD - Math.max(FONT_MAX, ...ends.map(e => e[1].w / 2));
   let top = PAD;
@@ -133,7 +147,8 @@ function describeLayout(data = {}) {
     const jumpBand = s.jumps.length ? TICK_HALF + ARROW_GAP + 4 + jumpsGeo.bandHeight(s.jumps, JUMP_TIER, jumpLabelH) : 0;
     const arrowBand = Math.max(arrows.length ? ARROW_GAP + ARROW_STEM + ARROW_HEAD + tiers.length*FONT_MAX*LINE_HEIGHT : WRITE_HEIGHT, jumpBand);
     const y = top + Math.max(WRITE_HEIGHT, arrowBand);
-    const labels = ends[r].map((e,i) => ({...e, text: i ? s.end : s.start, x: (i ? x2 : x1)-e.w/2, y:y+TICK_HALF+LABEL_GAP}));
+    const labels = ends[r].map((e,i) => ({...e, text: i ? s.end : s.start, x: (i ? x2 : x1)-e.w/2, y:y+TICK_HALF+LABEL_GAP}))
+      .filter((e,i) => !(i ? s.endBlank : s.startBlank));
     s.tickLabels.forEach(t => {
       const e = wrap(String(t.text));
       labels.push({...e, text:String(t.text), x:x1+(x2-x1)*t.index/s.intervals-e.w/2, y:y+TICK_HALF+LABEL_GAP});
@@ -149,7 +164,11 @@ function describeLayout(data = {}) {
     arrows.forEach(a => {
       a.labelBox = {x:a.x-a.w/2, y:y-ARROW_GAP-ARROW_STEM-ARROW_HEAD-(a.tier+1)*FONT_MAX*LINE_HEIGHT, w:a.w, h:FONT_MAX*LINE_HEIGHT};
     });
-    const bottom = Math.max(y+TICK_HALF+LABEL_GAP+WRITE_HEIGHT, ...labels.map(l => l.y+l.h));
+    const captionBox = s.caption ? (() => {
+      const e = wrap(s.caption, WIDTH - 2 * PAD);
+      return { ...e, text: s.caption, x: (WIDTH - e.w) / 2, y: y+TICK_HALF+LABEL_GAP+WRITE_HEIGHT };
+    })() : null;
+    const bottom = Math.max(y+TICK_HALF+LABEL_GAP+WRITE_HEIGHT, ...labels.map(l => l.y+l.h), captionBox ? captionBox.y+captionBox.h : 0);
     const jumpShapes = s.jumps.map(j => {
       const jx1 = x1+(x2-x1)*j.fromIndex/s.intervals, jx2 = x1+(x2-x1)*j.toIndex/s.intervals;
       const geo = jumpsGeo.arcGeometry(jx1, jx2, y-TICK_HALF-ARROW_GAP/2, jumpsGeo.arcHeight(j, jx2-jx1, JUMP_TIER, jumpLabelH), JUMP_HEAD);
@@ -164,7 +183,7 @@ function describeLayout(data = {}) {
       }
       return { ...j, geo, labelBox };
     });
-    const row = { ...s, x1, x2, y, top, bottom, arrows, labels, jumpShapes,
+    const row = { ...s, x1, x2, y, top, bottom, arrows, labels, jumpShapes, captionBox,
       ticks:Array.from({length:s.intervals+1},(_,i)=>({index:i,x:x1+(x2-x1)*i/s.intervals})),
       writeBox:{x:x1+ends[r][0].w/2+LABEL_GAP,y:y+TICK_HALF+LABEL_GAP,
         w:x2-x1-ends[r][0].w/2-ends[r][1].w/2-2*LABEL_GAP,h:WRITE_HEIGHT} };
@@ -187,6 +206,7 @@ function tightSvg(data = {}) {
     });
     r.ticks.filter(t=>r.showTicks || t.index===0 || t.index===r.intervals).forEach(t=>parts.push(line(t.x,r.y-TICK_HALF,t.x,r.y+TICK_HALF)));
     r.labels.forEach(l=>l.lines.forEach((t,i)=>parts.push(text(t,l.x+(l.w-measure(t,l.fs))/2,l.y+(i+0.82)*l.fs*LINE_HEIGHT,l.fs))));
+    if (r.captionBox) { const c=r.captionBox; c.lines.forEach((t,i)=>parts.push(text(t,c.x+(c.w-measure(t,c.fs))/2,c.y+(i+0.82)*c.fs*LINE_HEIGHT,c.fs))); }
     r.jumpShapes.forEach(j=>{
       parts.push(`<polyline points="${j.geo.points.map(p=>`${p.x},${p.y}`).join(' ')}" fill="none" stroke="${INK}" stroke-width="${STROKE}" stroke-linecap="round"/>`);
       parts.push(`<polygon points="${j.geo.head.map(p=>`${p.x},${p.y}`).join(' ')}" fill="${INK}"/>`);

@@ -268,6 +268,7 @@ module.exports = {
     end: 90,
     interval: 10,
     labels: [40, 90],
+    caption: "Each interval is worth 10.",
     highlight: { from: 40, to: 50 },
     jumps: [
       { from: 40, to: 50, label: "+10" },

@@ -88,7 +88,7 @@ emailed. Never write `imageHref` yourself.
 
 **Number and calculation**
 
-- `number-line` - A labelled number line: `jumps` between marks (`box: true` leaves a jump's size blank) and a `highlight`ed space, or instead `boxes` at ticks, `arrows` and an `object` bracket.
+- `number-line` - A labelled number line with a `caption` beneath ("Each interval is worth 100."): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.
 - `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
 - `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
 - `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
@@ -1110,9 +1110,9 @@ Smallest usable: **47mm wide x 40mm tall**. Spare height: never takes spare heig
 
 #### `number-line`
 
-A labelled number line: `jumps` between marks (`box: true` leaves a jump's size blank) and a `highlight`ed space, or instead `boxes` at ticks, `arrows` and an `object` bracket.
+A labelled number line with a `caption` beneath ("Each interval is worth 100."): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.
 
-Smallest usable: **173mm wide x 12mm tall**. Spare height: never takes spare height.
+Smallest usable: **173mm wide x 15mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1124,6 +1124,7 @@ Smallest usable: **173mm wide x 12mm tall**. Spare height: never takes spare hei
     40,
     90
   ],
+  "caption": "Each interval is worth 10.",
   "highlight": {
     "from": 40,
     "to": 50

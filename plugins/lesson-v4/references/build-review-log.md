@@ -1,5 +1,27 @@
 # Build review log
 
+## 2026-09-13 The rest of the number-lines run: the blue line, the vocabulary slide, the stick-ins and the wall (4.2.168)
+
+Daniel asked what the blue line on the Monday worksheet was, why the vocabulary slide did not look like the vocabulary slide, and to fix whatever else the run showed. Every resource from the run was looked at again, and each fault traced to the engine rather than to a one-off choice.
+
+**The blue line was a sentence with nowhere to go.** Every representation said "Visible caption: Each interval is worth 1,000." and the worksheet `number-line` had no caption. The designer used `unit`, the "cm" at the end of a ruler, which clipped it to "Each in". The focused repair moved it to `object`, the bracket a ruler measures, which drew a blue bar the full length of every line with the sentence running through the answer boxes. The second final review passed it. The line now has `caption` (under the numbers, their size, tight enough that five captioned lines still fit one side), `unit` refuses a sentence and `object` refuses to share the band with `boxes`, both by name. Guidance in `worksheet-helpers/maths.md`.
+
+**The vocabulary slide was hand-built because the vocabulary card refused a number line.** `key-vocabulary` accepted a fixed list of card visuals and `numberline` was not on it (2.2in panel), so the slide designer composed the slide from free stacks, which is why it looked nothing like the house slide. The card now takes a number line, with its highlight and jumps, in a 4.6in panel given to every card on that slide so the pictures line up.
+
+**The stick-in pieces printed different numbers from the slide.** The piece hid every interior label in question state, because an unmarked label might be an answer, and could not leave an endpoint blank. So Line A lost the 5,000 it was given, and Line C printed the 10,000 the child had to find in place of the 9,800 it was given. Its reviewer passed all 11 pages. A tick label marked `given: true` now prints, an unmarked one still never does, `endBlank`/`startBlank` leave a target end empty, and `caption` carries the scale. The class set grows from 11 to 16 pages because each piece is one line taller.
+
+**The wall's number line floated in a square.** It was drawn on the square canvas, so a wide thin figure printed as a strip across an empty square. It is now cropped to its own ink and placed full width.
+
+**A wrong number can sit at a mark.** A label may be `{ at, text }` on the board and the sheet, so "Has this line been completed correctly?" shows the mistake on the line. The run's worksheet task had been rewritten and slide 8 used a row of cards because this did not exist.
+
+**Supporting pictures may list what they must show.** A non-load-bearing configuration had to carry `requiredFeatures: []`, so "the space between 0 and 10 highlighted" lived only in a description and the helper check marked it covered with nothing to test. Supporting configurations may now list features; the rule against copying one configuration's requirements onto every use stays.
+
+**Codex was running an old copy.** The run's build commands ran from `.codex/plugins/cache/lessonv4/lesson-v4/4.2.165`, and `codex plugin list` still showed 4.2.165 after 4.2.167 was pushed, so the working-tree marketplace does not make a commit the installed plugin on its own.
+
+Rebuilt Monday's deck, worksheet, stick-in sheets and wall from the run's own specifications with only the changes above, and looked at every page. Helper delivery checks pass on the rebuilt deck and worksheet. Builder 613 pass; worksheet 677 pass; stick-in 43 pass; shared 8 pass; wall 125 pass with the same 2 document-claim failures; Python unchanged apart from the retired empty-features test and its replacement.
+
+**Not changed.** Both final reviewers passed pages with visible faults (text through boxes; pieces missing given numbers). The faults are now refused or impossible at build, so no reviewer rule was added; if a reviewer passes a visible collision again, that is the evidence for one.
+
 ## 2026-09-12 A number line can show a jump and a space (4.2.167)
 
 Follow-up to 4.2.166, on Daniel's go. The Year 4 "Read and complete number lines" vocabulary slide asked for the space between 0 and 10 highlighted and a +10 jump over one interval. No engine could draw either, on any surface, so the repair produced a shaded strip floating above the line and an arrow pointing at the 10 tick: a mark, on the slide teaching that an interval is the space between marks.

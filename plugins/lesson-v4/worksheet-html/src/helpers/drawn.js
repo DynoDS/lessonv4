@@ -172,6 +172,12 @@ const JUMP_BOX_W = 90;
 const JUMP_GAP = 4;
 const HIGHLIGHT_BAR_H = 10;
 const HIGHLIGHT_WASH = 0.22;
+const UNIT_MAX_CHARS = 6;
+// The caption is read like the axis numbers it sits under, so it takes their
+// size and a tight gap: five captioned lines on one side of A4 must still fit
+// where five lines with a clipped `unit` did.
+const CAPTION_FONT = 22;
+const CAPTION_GAP = 2;
 
 // Year 4 place value is taught WITH the comma, and the question beside the
 // line already uses it ("Round 6,734 to the nearest 10."). A line whose ends
@@ -208,7 +214,28 @@ function buildNumberLineSvg(spec) {
     majorInterval,
     unit,
     object,
+    caption,
   } = spec;
+
+  // Three fields a sentence was once pushed through, on a Year 4 sheet whose
+  // every line had to say "Each interval is worth 1,000." `unit` is the "cm" at
+  // the end of a ruler and clipped the sentence to "Each in"; the repair moved
+  // it into `object`, the bracket a ruler measures, which drew a blue bar the
+  // full length of every line with the sentence running through the answer
+  // boxes, and it was printed (12 September 2026). A sentence about the line is
+  // its `caption`; the other two refuse what is not theirs.
+  if (unit != null && String(unit).length > UNIT_MAX_CHARS) {
+    throw new Error(
+      `NUMBERLINE_UNIT_TOO_LONG: unit ${JSON.stringify(String(unit))} is a sentence. \`unit\` is the measuring unit ` +
+        "printed at the end of a ruler (cm, g, ml); put a sentence about the line in `caption`."
+    );
+  }
+  if (object && boxes.length) {
+    throw new Error(
+      "NUMBERLINE_OBJECT_CROWDED: an object bracket and answer boxes draw in the same band above the line. " +
+        "`object` is the thing a ruler measures; a sentence about the line goes in `caption`."
+    );
+  }
 
   const allArrows = arrows || (arrow ? [arrow] : []);
 
@@ -275,7 +302,8 @@ function buildNumberLineSvg(spec) {
       jumpTopSpace
     ) + 8;
 
-  const bottomSpace = (hasLabels ? labelRowH + labelGap : 0) + 8;
+  const captionH = caption ? CAPTION_GAP + CAPTION_FONT + 4 : 0;
+  const bottomSpace = (hasLabels ? labelRowH + labelGap : 0) + (caption ? captionH : 8);
   const axisY = topSpace + Math.max(tallTickH, tickH) / 2;
   const heightPx = axisY + Math.max(tallTickH, tickH) / 2 + bottomSpace;
 
@@ -335,10 +363,19 @@ function buildNumberLineSvg(spec) {
   }
 
   const labelY = axisY + Math.max(tallTickH, tickH) / 2 + labelGap;
-  for (const v of labelValues) {
-    const cx = getX(v);
+  labelValues.forEach((v, i) => {
+    // { at, text } prints its own words under the mark at `at`: the way a
+    // deliberately wrong completion reaches the page (see number-line-jumps.js).
+    const entry = jumpsGeo.labelEntry(v, scaleLine, i);
+    const cx = getX(entry ? entry.at : v);
     parts.push(
-      `<text x="${cx}" y="${labelY}" text-anchor="middle" dominant-baseline="hanging" font-family="${FONT}" font-size="${labelFont}" fill="${INK}">${esc(formatValue(v))}</text>`
+      `<text x="${cx}" y="${labelY}" text-anchor="middle" dominant-baseline="hanging" font-family="${FONT}" font-size="${labelFont}" fill="${INK}">${esc(entry ? entry.text : formatValue(v))}</text>`
+    );
+  });
+
+  if (caption) {
+    parts.push(
+      `<text x="${widthPx / 2}" y="${labelY + (hasLabels ? labelRowH : 0) + CAPTION_GAP}" text-anchor="middle" dominant-baseline="hanging" font-family="${FONT}" font-size="${CAPTION_FONT}" fill="${INK}">${esc(caption)}</text>`
     );
   }
 

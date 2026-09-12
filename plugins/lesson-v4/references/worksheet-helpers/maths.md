@@ -6,6 +6,22 @@ maths, and how a set of them should be sequenced.**
 
 ---
 
+## `number-line`: what each part of the line is for
+
+- **A sentence about the line** ("Each interval is worth 100.") is its "caption",
+  printed under the numbers. "unit" is the "cm" at the end of a ruler and
+  "object" is the thing a ruler measures; a sentence put in either was clipped to
+  "Each in", then drawn as a blue bar through every answer box, on a printed
+  Year 4 sheet. Both now refuse it.
+- **A value for the child to find** is a box in "boxes", at its tick.
+- **A line to judge** ("Has this line been completed correctly?") prints the
+  wrong number where it was written: a label `{ "at": 2600, "text": "2,700" }`
+  puts "2,700" under the 2,600 mark. Without it the only way to ask the question
+  is to rewrite it.
+- **The move along the spaces** is "jumps", and **the space itself** is
+  "highlight"; see the example in `catalogue.md`. A line with jumps carries no
+  boxes, arrows or bracket.
+
 ## The written methods
 
 `column-method-grid`, `short-multiplication-grid`, `long-multiplication-grid`,

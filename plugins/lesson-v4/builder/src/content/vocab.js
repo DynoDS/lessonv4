@@ -20,6 +20,7 @@ const { drawVenn } = require('./venn');
 const { drawCarroll } = require('./carroll');
 const { drawRainforestLayers } = require('./rainforest-layers');
 const { drawPlaceValueMini } = require('./place-value-mini');
+const { drawNumberline } = require('./numberline');
 const { splitAnswerRuns } = require('../answer-text');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
@@ -94,7 +95,7 @@ function resolveVocabVisual(visual, ctx) {
   if (t === 'money' || t === 'turn-diagram' || t === 'angle' ||
       t === 'triangle' || t === 'triangle-nonexample' || t === 'line-pair' ||
       t === 'geoboard' || t === 'polygon' || t === 'venn' || t === 'carroll' ||
-      t === 'rainforest-layers' || t === 'place-value-mini') return visual;
+      t === 'rainforest-layers' || t === 'place-value-mini' || t === 'numberline') return visual;
   if (t === 'text') {
     return (visual.value != null && String(visual.value) !== '') ? visual : null;
   }
@@ -116,6 +117,10 @@ function drawVisual(pptx, slide, zone, visual, ctx) {
   if (visual.type === 'venn') return drawVenn(pptx, slide, zone, visual, ctx);
   if (visual.type === 'carroll') return drawCarroll(pptx, slide, zone, visual, ctx);
   if (visual.type === 'place-value-mini') return drawPlaceValueMini(pptx, slide, zone, visual, ctx);
+  // "Interval", "scale", "count on": words whose meaning is a place on a line.
+  // The card gives it a wide panel (see key-vocabulary.js), because a number
+  // line needs length, not height.
+  if (visual.type === 'numberline') return drawNumberline(pptx, slide, zone, visual, ctx);
   // A layer word ("canopy", "understorey") is best shown as the whole cross
   // section with that one layer highlighted and the other three dimmed — the
   // child sees where in the forest the word lives, not just a patch of green.

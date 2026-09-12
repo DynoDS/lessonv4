@@ -147,6 +147,33 @@ function resolveIntervalHighlight(spec, line) {
   return spans;
 }
 
+// A label entry written as { at, text } prints `text` under the mark at `at`.
+// Its job is the reasoning question "Has this line been completed correctly?":
+// a label is placed by its value, so a wrong completion ("2,500, 2,700, 2,700")
+// could not be printed at all. A Year 4 run had to redesign its worksheet task
+// and put its slide's labels in a row of cards beside the line
+// (12 September 2026). The mark is still found by value, so the geometry stays
+// honest while the words are allowed to be wrong.
+const MAX_LABEL_TEXT_CHARS = 10;
+function labelEntry(raw, line, i) {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const index = tickIndexOf(raw.at, line);
+    if (index == null) {
+      throw new Error(
+        `NUMBERLINE_LABEL_OFF_TICK: labels[${i}].at ${JSON.stringify(raw.at)} must be a value on a tick of this line (${describeLine(line)}).`
+      );
+    }
+    const text = raw.text == null ? '' : String(raw.text).trim();
+    if (!text || text.length > MAX_LABEL_TEXT_CHARS) {
+      throw new Error(
+        `NUMBERLINE_LABEL_INVALID: labels[${i}].text must be the few characters printed under the mark (up to ${MAX_LABEL_TEXT_CHARS}), such as "2,700".`
+      );
+    }
+    return { at: raw.at, text: text, index: index };
+  }
+  return null;
+}
+
 // Refuse the pairings whose ink would land in the same place. An arrow or an
 // answer dot marks a POINT above the line and a jump's arc lives in that same
 // band, so drawing both would put a stem through an arc. One line carries one
@@ -219,5 +246,6 @@ module.exports = {
   arcGeometry,
   arcHeight,
   bandHeight,
+  labelEntry,
   MAX_LABEL_CHARS
 };

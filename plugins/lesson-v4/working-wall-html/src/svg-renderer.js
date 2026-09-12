@@ -280,7 +280,7 @@ const NL_JUMP_TIER = 0.12;    // arc ceiling per tier, share of the canvas
 const NL_JUMP_HEAD = 0.035;   // arrowhead length, share of the canvas
 const NL_HIGHLIGHT_BAR = 0.022;
 
-function numberLineSvg(spec, sizePx = RENDER_PX) {
+function numberLineDrawing(spec, sizePx = RENDER_PX) {
   const from = Number(spec.from) || 0;
   const to = Number(spec.to) || 10;
   const step = Math.max((to - from) / 100, Number(spec.step) || 1);
@@ -296,7 +296,7 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
 
   const range = to - from;
   if (range <= 0) {
-    return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}"></svg>`;
+    return { parts: [], top: 0, bottom: sizePx, sizePx };
   }
   const xFor = (v) => padX + ((v - from) / range) * (w - 2 * padX);
 
@@ -306,6 +306,10 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
   const highlights = jumpsGeo.resolveIntervalHighlight(spec, scaleLine);
 
   const parts = [];
+  // Ink extents, so the wall can place the line by its real shape instead of
+  // floating a thin strip in the middle of a square (see numberLineTight).
+  let inkTop = lineY - tickLen;
+  const inkBottom = lineY + tickLen + numFont * 1.4 + numFont * 0.35;
   parts.push(`<line x1="${fmt(padX)}" y1="${fmt(lineY)}" x2="${fmt(w - padX)}" y2="${fmt(lineY)}" stroke="#000000" stroke-width="4" stroke-linecap="round"/>`);
   highlights.forEach((hl) => {
     const x1 = xFor(from + hl.fromIndex * step);
@@ -351,6 +355,7 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
       const geo = jumpsGeo.arcGeometry(x1, x2, baseY, jumpsGeo.arcHeight(j, x2 - x1, tierH, labelH), h * NL_JUMP_HEAD);
       parts.push(`<polyline points="${geo.points.map((p) => `${fmt(p.x)},${fmt(p.y)}`).join(' ')}" fill="none" stroke="${NL_JUMP_COLOUR}" stroke-width="4" stroke-linecap="round"/>`);
       parts.push(`<polygon points="${geo.head.map((p) => `${fmt(p.x)},${fmt(p.y)}`).join(' ')}" fill="${NL_JUMP_COLOUR}"/>`);
+      inkTop = Math.min(inkTop, geo.apex.y - labelH - 4);
       if (j.label) {
         parts.push(`<text x="${fmt(geo.apex.x)}" y="${fmt(geo.apex.y - 6)}" text-anchor="middle" font-family="Arial" font-size="${fmt(jumpFont)}" font-weight="bold" fill="${NL_JUMP_COLOUR}">${escapeXml(j.label)}</text>`);
       } else if (j.box) {
@@ -375,6 +380,7 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
 
   for (const m of ordered) {
     parts.push(`<circle cx="${fmt(m.x)}" cy="${fmt(lineY)}" r="${dotR}" fill="${dotColour}" stroke="#000000" stroke-width="2"/>`);
+    inkTop = Math.min(inkTop, lineY - dotR - 2);
     if (!m.label) continue;
     const half = (String(m.label).length * numFont * LABEL_CHAR_RATIO) / 2;
     const left = m.x - half;
@@ -383,10 +389,29 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
     while (rows.some((p) => p.row === row && left < p.right && right > p.left)) row += 1;
     rows.push({ row, left, right });
     const y = lineY - dotR - 8 - row * numFont * 1.25;
+    inkTop = Math.min(inkTop, y - numFont);
     parts.push(`<text x="${fmt(m.x)}" y="${fmt(y)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${m.label}</text>`);
   }
 
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
+  return { parts, top: inkTop, bottom: inkBottom, sizePx };
+}
+
+function numberLineSvg(spec, sizePx = RENDER_PX) {
+  const d = numberLineDrawing(spec, sizePx);
+  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${d.parts.join('')}</svg>`;
+}
+
+// A number line is a wide, thin thing. Drawn on the square canvas it printed as
+// a strip across the middle of a big empty square on a Year 4 wall card, with
+// its numerals a fraction of the size the card had room for. Cropped to its own
+// ink, the card places it by its true shape and it grows to fill the width.
+function numberLineTight(spec) {
+  const d = numberLineDrawing(spec, RENDER_PX);
+  const pad = 6;
+  const top = Math.max(0, d.top - pad);
+  const height = Math.min(d.sizePx, d.bottom + pad) - top;
+  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${d.sizePx}" height="${fmt(height)}" viewBox="0 ${fmt(top)} ${d.sizePx} ${fmt(height)}">${d.parts.join('')}</svg>`;
+  return { svg, aspect: d.sizePx / height };
 }
 
 function numberLineKey(spec) {
@@ -842,7 +867,7 @@ async function preRenderSvgs(spec) {
     clock:            { keyFn: clockKey,            svgFn: clockSvg,            collected: {} },
     fractionCircle:   { keyFn: fractionCircleKey,   svgFn: fractionCircleSvg,   collected: {} },
     fractionBar:      { keyFn: fractionBarKey,      svgFn: fractionBarSvg,      collected: {} },
-    numberLine:       { keyFn: numberLineKey,       svgFn: numberLineSvg,       collected: {} },
+    numberLine:       { keyFn: numberLineKey,       tightFn: numberLineTight,   collected: {} },
     angleFan:         { keyFn: angleFanKey,         svgFn: angleFanSvg,         collected: {} },
     'turn-diagram':   { keyFn: turnDiagramKey,      svgFn: turnDiagramSvg,      collected: {} },
     comparisonSymbol: { keyFn: comparisonSymbolKey, svgFn: comparisonSymbolSvg, collected: {} },
@@ -1007,6 +1032,7 @@ module.exports = {
   fractionBarSvg,
   fractionBarKey,
   numberLineSvg,
+  numberLineTight,
   numberLineKey,
   angleFanSvg,
   angleFanKey,

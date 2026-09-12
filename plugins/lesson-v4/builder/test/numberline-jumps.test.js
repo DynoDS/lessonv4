@@ -120,3 +120,36 @@ test('the stick-in piece takes jumps by tick index and keeps them in its cache k
     /NUMBERLINE_JUMPS_CROWDED/
   );
 });
+
+test('a label can print its own words at a mark, for a line children judge', () => {
+  // "Has this number line been completed correctly?" needs the wrong number on
+  // the line. The mark is still found by value, so only the words are wrong.
+  const objects = draw({ start: 2400, end: 2900, interval: 100,
+    labels: [2400, 2500, { at: 2600, text: '2,700' }, 2700, 2800, 2900] });
+  const texts = objects.filter((o) => Array.isArray(o.text)).map((o) => o.text[0].text);
+  assert.deepEqual(texts, ['2,400', '2,500', '2,700', '2,700', '2,800', '2,900']);
+  assert.throws(() => draw({ start: 0, end: 10, interval: 1, labels: [{ at: 2.5, text: '3' }] }), /NUMBERLINE_LABEL_OFF_TICK/);
+});
+
+test('a vocabulary card takes a number line, in a panel wide enough to read it', () => {
+  // The card used to refuse a number line, so a Year 4 vocabulary slide about
+  // intervals was hand-built from free stacks and did not look like the house
+  // vocabulary slide (12 September 2026).
+  const { drawKeyVocabulary } = require('../src/templates/key-vocabulary');
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({ name: 'W', width: 13.333, height: 7.5 });
+  pptx.layout = 'W';
+  const slide = pptx.addSlide();
+  const ctx = { slideIndex: 0, warnings: [] };
+  drawKeyVocabulary(pptx, slide, { words: [
+    { word: 'Interval', definition: 'The space between two neighbouring marks.',
+      visual: { type: 'numberline', start: 0, end: 20, interval: 10, labels: 'all', highlight: { from: 0, to: 10 } } },
+    { word: 'Scale', definition: 'How much each equal interval is worth.',
+      visual: { type: 'numberline', start: 0, end: 20, interval: 10, labels: 'all', jumps: [{ from: 0, to: 10, label: '+10' }] } }
+  ] }, ctx);
+  const texts = slide._slideObjects.filter((o) => Array.isArray(o.text)).map((o) => o.text[0].text);
+  assert.ok(texts.includes('+10'), 'the jump reached the card');
+  const panels = slide._slideObjects.filter((o) => o.options && o.options.fill && o.options.fill.color === 'F2F2F2');
+  assert.equal(panels.length, 2);
+  panels.forEach((p) => assert.ok(p.options.w > 4, `panel ${p.options.w.toFixed(2)}in wide is too narrow for a number line`));
+});

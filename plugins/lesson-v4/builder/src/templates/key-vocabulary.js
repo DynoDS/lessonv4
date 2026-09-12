@@ -19,6 +19,14 @@ const CARD_BORDER     = '00B050';
 const CARD_BORDER_W   = 1.5;
 
 const VISUAL_W        = 2.20;
+// A number line reads along its length: squeezed into the 2.2" square-ish
+// panel its numerals fall below the readable floor, and a Year 4 vocabulary
+// slide about intervals was hand-built from free stacks instead of these cards
+// because the card refused it (12 September 2026). Definitions are short, so
+// the text column gives up the width. Every card on the slide takes the widest
+// panel any card needs, so the pictures still line up down the slide.
+const WIDE_VISUAL_W   = 4.60;
+const WIDE_VISUALS    = new Set(['numberline']);
 const VISUAL_GAP      = 0.20;
 const VISUAL_FILL     = 'F2F2F2';
 const VISUAL_BORDER   = '00B050';
@@ -100,15 +108,17 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
   // six-inch green rectangle. Three or more cards are already over their equal
   // share, so they are clipped back to it and nothing about them moves.
   const visuals = words.map(function (item) { return resolveVocabVisual(item.visual, ctx); });
+  const visualW = visuals.some(function (v) { return v && WIDE_VISUALS.has(v.type); })
+    ? WIDE_VISUAL_W : VISUAL_W;
   const heights = words.map(function (item, i) {
-    return Math.min(shareH, naturalCardHeight(item, visuals[i], fonts));
+    return Math.min(shareH, naturalCardHeight(item, visuals[i], fonts, visualW));
   });
   const stackH = heights.reduce(function (a, b) { return a + b; }, 0) + totalGap;
 
   let cardY = CONTENT_Y + Math.max(0, (CONTENT_H - stackH) / 2);
   words.forEach(function (item, i) {
     drawCard(pptx, slide, item,
-      { x: CONTENT_X, y: cardY, w: CONTENT_W, h: heights[i] }, ctx, fonts, visuals[i]);
+      { x: CONTENT_X, y: cardY, w: CONTENT_W, h: heights[i] }, ctx, fonts, visuals[i], visualW);
     cardY += heights[i] + CARD_GAP;
   });
 }
@@ -116,9 +126,10 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
 // The height this card's own contents ask for, measured the way the card
 // actually divides itself: the word gets WORD_H_RATIO of the text area and the
 // definition the rest, so whichever of the two is tighter sets the height.
-function naturalCardHeight(item, visual, fonts) {
+function naturalCardHeight(item, visual, fonts, visualW) {
+  const panelW = visualW || VISUAL_W;
   const textW = visual
-    ? CONTENT_W - 2 * CARD_PAD - VISUAL_W - VISUAL_GAP
+    ? CONTENT_W - 2 * CARD_PAD - panelW - VISUAL_GAP
     : CONTENT_W - 2 * CARD_PAD;
   const wordNeeds = fonts.word * LINE_RATIO * WORD_LINE_SLACK;
   const defnNeeds =
@@ -128,7 +139,8 @@ function naturalCardHeight(item, visual, fonts) {
   return visual ? Math.max(height, MIN_CARD_H_WITH_VISUAL) : height;
 }
 
-function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual) {
+function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual, visualW) {
+  const panelW = visualW || VISUAL_W;
   const wordFont = (fonts && fonts.word) || WORD_FONT;
   const defnFont = (fonts && fonts.defn) || DEFN_FONT;
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
@@ -147,7 +159,7 @@ function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual) {
     : resolveVocabVisual(item.visual, ctx);
   const hasVisual = !!visual;
   const textW = hasVisual
-    ? card.w - 2 * CARD_PAD - VISUAL_W - VISUAL_GAP
+    ? card.w - 2 * CARD_PAD - panelW - VISUAL_GAP
     : card.w - 2 * CARD_PAD;
   const textX = card.x + CARD_PAD;
   const textY = card.y + CARD_PAD;
@@ -172,9 +184,9 @@ function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual) {
 
   if (hasVisual) {
     drawVisualPanel(pptx, slide, visual, {
-      x: card.x + card.w - CARD_PAD - VISUAL_W,
+      x: card.x + card.w - CARD_PAD - panelW,
       y: card.y + CARD_PAD,
-      w: VISUAL_W,
+      w: panelW,
       h: card.h - 2 * CARD_PAD
     }, ctx);
   }

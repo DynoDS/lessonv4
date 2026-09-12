@@ -52,3 +52,14 @@ test('only explicitly supplied teaching labels can print',()=>{
   assert.deepEqual(out.rows[0].labels.map(l=>l.text),['0','1000','five hundred']);
   assert.notEqual(helper.cacheKey(base),helper.cacheKey({...base,showTicks:false}));
 });
+test('a given interior label, a blank endpoint and a caption reach the child copy; an unmarked label does not',()=>{
+  // A Year 4 line gave 9,500 and 9,800 and left 10,000 for the child. The piece
+  // could print only its endpoints, so it gave the answer and dropped the given.
+  const out=helper.tightSvg({start:'9,500',end:'10,000',endBlank:true,intervals:5,questionState:true,
+    tickLabels:[{index:3,text:'9,800',given:true},{index:4,text:'9,900'}],caption:'Each interval is worth 100.'});
+  const texts=out.rows[0].labels.map(l=>l.text);
+  assert.deepEqual(texts,['9,500','9,800']);
+  assert.ok(!out.svg.includes('>10,000<') && !out.svg.includes('>9,900<'));
+  assert.ok(out.svg.includes('>Each interval is worth 100.<'));
+  assert.ok(out.rows[0].captionBox.y+out.rows[0].captionBox.h<=out.h);
+});
