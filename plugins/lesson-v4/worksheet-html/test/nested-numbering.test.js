@@ -190,3 +190,95 @@ test("a list that says it is not questions takes no numbers at all", () => {
   };
   assert.deepStrictEqual(labelsOf(zones), ["1"]);
 });
+
+// ─── a picture and its one question take the number together ────────────
+//
+// A Year 4 Reasoning block was a number line and then the question about it,
+// with the flag on the question. "(5)" printed under the line, and the line
+// above it read as the end of question 4 (13 September 2026).
+
+function numberOfFirstStack(zones) {
+  return numbered(zones).a.stack[1];
+}
+
+test("the number moves up to cover the picture its one question is about", () => {
+  const zones = {
+    a: {
+      stack: [
+        { helper: "section-label", text: "Reasoning" },
+        {
+          stack: [
+            { helper: "number-line", start: 0, end: 10, boxes: [5] },
+            { helper: "written-answers", question: true, items: [{ text: "Why?", sentences: 2 }] },
+          ],
+        },
+      ],
+    },
+  };
+  const block = numberOfFirstStack(zones);
+  assert.strictEqual(block.number, 1);
+  assert.strictEqual(block.stack[1].number, undefined);
+  assert.strictEqual(block.stack[1].showNumbers, false);
+  assert.deepStrictEqual(labelsOf(zones), ["1"]);
+});
+
+test("a grouped Part keeps its letter when its number moves up", () => {
+  const zones = {
+    a: {
+      stack: [
+        { helper: "instruction", text: "Look at the line." },
+        {
+          stack: [
+            { helper: "number-line", start: 0, end: 10 },
+            { helper: "instruction", question: true, questionGroupId: "g", text: "Complete it." },
+          ],
+        },
+        { question: true, questionGroupId: "g", stack: [{ helper: "written-answers", items: [{ text: "Why?", sentences: 1 }] }] },
+      ],
+    },
+  };
+  assert.deepStrictEqual(labelsOf(zones), ["1a", "1b"]);
+  assert.strictEqual(numberOfFirstStack(zones).number, "1a");
+});
+
+test("the number stays put when the stack is not one question", () => {
+  // Two questions in one stack, and a heading in front of a question, are
+  // both left exactly where the designer put the flags.
+  const two = {
+    a: {
+      stack: [
+        { helper: "number-line", start: 0, end: 10 },
+        { helper: "instruction", question: true, text: "First." },
+        { helper: "instruction", question: true, text: "Second." },
+      ],
+    },
+  };
+  const out = numbered(two).a;
+  assert.strictEqual(out.number, undefined);
+  assert.strictEqual(out.stack[1].number, 1);
+
+  const headed = {
+    a: {
+      stack: [
+        { helper: "section-label", text: "Fluency" },
+        { helper: "number-line", question: true, start: 0, end: 10 },
+      ],
+    },
+  };
+  const kept = numbered(headed).a;
+  assert.strictEqual(kept.number, undefined);
+  assert.strictEqual(kept.stack[1].number, 1);
+});
+
+test("a source followed by a set of questions keeps the set's own run", () => {
+  const zones = {
+    a: {
+      stack: [
+        { helper: "source-text", paragraphs: ["We walked north."] },
+        { helper: "questions", question: true, items: ["Which way?", "How far?"] },
+      ],
+    },
+  };
+  assert.strictEqual(numbered(zones).a.number, undefined);
+  assert.deepStrictEqual(labelsOf(zones), ["1", "2"]);
+});

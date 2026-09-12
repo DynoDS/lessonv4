@@ -265,7 +265,12 @@ function buildNumberLineSvg(spec) {
   const tickH = 26;
   const tallTickH = 40;
   const labelFont = 22;
-  const labelGap = 26;
+  // Under the ticks they name, not floating below them. At 26 the numbers sat
+  // further from their own line than the next question sat from the caption,
+  // so on a sheet of stacked lines each caption read as the heading of the
+  // line underneath it (Year 4, 13 September 2026). The slide line keeps its
+  // numbers about a fifth of a tick below; this is the same proportion.
+  const labelGap = 8;
   const labelRowH = labelFont + 6;
   const boxSize = 80;
   const boxGap = 14;

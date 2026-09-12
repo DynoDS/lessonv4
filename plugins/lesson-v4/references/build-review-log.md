@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-13 Each number-line question reads as its own question (4.2.169)
+
+Daniel said the Monday worksheet's questions were not clear: not enough space and no visual mark for each one, with "Each interval is worth..." too close to the question underneath.
+
+**The line's numbers floated below it.** The worksheet number line put its axis numbers a full tick-height under the ticks (26px against the slide's fifth of a tick). The caption hangs off those numbers, so the space inside one question (line to numbers to caption) was as big as the 4mm step between two questions, and each caption read as the heading of the line below. The numbers now sit a fifth of a tick under the marks, so a line, its numbers and its caption close up into one block and the step between questions is clearly the biggest space. The Expected page went from 99% to 93% full.
+
+**The Reasoning line had no number.** The designer grouped the number line and its one question in a stack and put `question: true` on the question, so (5) printed under the line and the line looked like the end of question 4. The numbering pass now moves the flag up to the stack when it holds exactly one single question after unnumbered material and no section title. Two questions in a stack, a source with a set of questions, and a heading in front are left as written. The answer key is unchanged.
+
+Rebuilt the run's worksheet from its own spec and looked at both pages. Worksheet 681 pass.
+
+**Not changed.** The 4mm step between questions everywhere else. Widening it would separate questions further but costs height on every dense sheet; left for Daniel to decide.
+
 ## 2026-09-13 The rest of the number-lines run: the blue line, the vocabulary slide, the stick-ins and the wall (4.2.168)
 
 Daniel asked what the blue line on the Monday worksheet was, why the vocabulary slide did not look like the vocabulary slide, and to fix whatever else the run showed. Every resource from the run was looked at again, and each fault traced to the engine rather than to a one-off choice.

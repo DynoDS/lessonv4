@@ -92,6 +92,57 @@ const SHEET_CODES = {
 // A numberer holds its count across however many physical pages one pupil
 // level occupies, so the approved two-page exception runs 1, 2, 3, 4 across the
 // pair rather than restarting. A fresh one is made for the next level.
+// Does anything inside this node take a number of its own?
+function takesANumber(node) {
+  if (Array.isArray(node)) return node.some(takesANumber);
+  if (!node || typeof node !== "object") return false;
+  if (node.question) return true;
+  if (
+    (node.helper === "questions" || node.helper === "written-answers") &&
+    Array.isArray(node.items) &&
+    node.items.length > 0 &&
+    node.showNumbers !== false
+  ) {
+    return true;
+  }
+  return Object.values(node).some(takesANumber);
+}
+
+// A picture and the one question about it are one question, so the number goes
+// beside the picture.
+//
+// A Year 4 Reasoning block was a number line and then "Would 9,000 be correct
+// in the blank?", with the flag on the prompt. The number printed halfway down
+// the block and the line above it belonged to nothing: on a sheet of numbered
+// lines it read as the tail of the question before (13 September 2026). The
+// designer had grouped the two in one stack, which already says they are one
+// job, so the number follows the grouping rather than the flag's position.
+//
+// Only a stack whose ONE numbered child is a single question coming after
+// unnumbered material, with no section title in front: a stack holding two
+// questions, or a source and a set of questions about it, is not one question,
+// and a heading has to stay outside the number it heads.
+function questionBehindItsMaterial(node) {
+  if (!node || typeof node !== "object" || node.question || !Array.isArray(node.stack)) {
+    return node;
+  }
+  const items = node.stack;
+  const numbered = items.filter(takesANumber);
+  if (numbered.length !== 1) return node;
+  const at = items.indexOf(numbered[0]);
+  const flagged = items[at];
+  if (at === 0 || !flagged || !flagged.question) return node;
+  // A flagged set of several questions takes a run of numbers, not one.
+  if (Array.isArray(flagged.items) && flagged.items.length > 1) return node;
+  if (items.slice(0, at).some((item) => item && item.helper === "section-label")) return node;
+
+  const { question, questionGroupId, ...inner } = flagged;
+  const hoisted = { ...node, question };
+  if (questionGroupId !== undefined) hoisted.questionGroupId = questionGroupId;
+  hoisted.stack = items.map((item, i) => (i === at ? inner : item));
+  return hoisted;
+}
+
 function makeNumberer() {
   let nextMain = 1;
   let activeGroupId = null;
@@ -187,6 +238,7 @@ function makeNumberer() {
         return node.map((n) => walk(n, zoneId, insideNumberedQuestion));
       }
       if (!node || typeof node !== "object") return node;
+      if (!insideNumberedQuestion) node = questionBehindItsMaterial(node);
 
       if (
         insideNumberedQuestion &&
