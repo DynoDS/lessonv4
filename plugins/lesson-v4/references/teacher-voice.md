@@ -313,6 +313,30 @@ All of these can fit:
 
 Do not standardise every question into one repeated pattern.
 
+## Put the child inside the situation, then ask them
+
+A task built on a scenario has two halves, and both are easy to write the wrong way round. The scenario is a statement of fact about nobody: `It's a wet break indoors.` The instruction is a directive about a task: `Suggest a safe way to be active.` Together they are correct, cold, and about a room the child is not in.
+
+The teacher's version puts them in it and then asks them:
+
+> Imagine it's wet break time.
+> What could you do to still be active?
+> Which parts of your body would move and how?
+
+`Imagine` is doing the work in the first line: it is an invitation rather than a report, so the child is in the hall rather than reading about one. And the second line is a question to them rather than an instruction about a task, which is what makes them answer rather than comply. The two colours follow from the two jobs and `preferences.md` → Slide Designer presentation rules owns them: the scene tells, so it is black; the question asks, so it is blue on its own line.
+
+The same holds for a person or a class the lesson invents. `A class already dances most days` is a fact about strangers, and a child reads past it. `Imagine a class that danced most days`, or `A class in Year 3 has a lot of dance lessons each week`, is somebody they can picture and put themselves beside. The test is whether a child could be in it.
+
+## Say what to do, and where the way in is
+
+An instruction can be short, exact and still leave a child with nothing to start on. `Name A, B and C.` is three words and names nothing about what a name here would be; a child who has lost the thread has no route back in. The teacher's version:
+
+> Label each letter with the name of that layer. Use the word bank to help you.
+
+It names the action (label), what goes in it (the name of that layer), and where to get it (the word bank). Longer, and every extra word is doing something. So when an instruction is the only thing between a child and a blank page, say what the thing they write is, and name the support that is on the slide, so the child who needs it finds it without asking.
+
+The limit is the prompt whose difficulty is the point: a `what do you notice?`, an odd one out, a deliberate puzzle. There, being briefly stuck is the work, and pointing at a word bank would hand it over.
+
 ## Keep instructions economical
 
 Default to the shortest wording that gives pupils everything they need.
