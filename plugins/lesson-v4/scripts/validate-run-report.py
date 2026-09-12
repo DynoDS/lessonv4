@@ -509,6 +509,56 @@ def final_review_failures(working: Path, output: Path, delivered: list[str]) -> 
     return failures
 
 
+# Which review owner speaks for each resource name the report uses.
+REVIEW_OWNERS = {
+    "slides": {"slide-designer"},
+    "worksheets": {"worksheet-designer"},
+    "working wall": {"working-wall-designer", "working-wall-builder"},
+    "stick-in sheets": {"stick-in-sheets-designer"},
+}
+
+
+def withheld_reviewed_resources(working: Path, excluded_names: set[str]) -> list[str]:
+    """A resource that built and was reviewed is delivered, not excluded.
+
+    A finding that survives its repair round is flagged for the teacher, who can
+    fix one slide in a minute; withholding the file costs the whole lesson. A
+    nine-slide deck with eight passing slides was once held back over one
+    vocabulary picture. Exclusion is for a resource that never built.
+    """
+    receipt_path = working / "final-resource-reviews.json"
+    if not receipt_path.is_file() or not excluded_names:
+        return []
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    entries = receipt.get("resources") if isinstance(receipt, dict) else None
+    if not isinstance(entries, list):
+        return []
+    failures = []
+    for name in sorted(excluded_names):
+        owners = REVIEW_OWNERS.get(name)
+        if not owners:
+            continue
+        for entry in entries:
+            if not isinstance(entry, dict) or entry.get("owner") not in owners:
+                continue
+            if entry.get("status") != "REVISE":
+                continue
+            if not Path(str(entry.get("path", ""))).is_file():
+                continue
+            failures.append(
+                f"excluded resources: {name} built and was reviewed, so it is "
+                "delivered, not withheld. List it under Delivered resources, name "
+                "its unresolved finding under Blocking faults and in Teacher flags "
+                "(the page, what is wrong, the change to make by hand), and report "
+                "the package as PARTIAL."
+            )
+            break
+    return failures
+
+
 def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
     failures: list[str] = []
     working = Path(working_dir)
@@ -596,6 +646,8 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 f"excluded resources: {bullet!r} must read "
                 "`- <resource>: NOT DELIVERED - <reason>`."
             )
+
+    failures.extend(withheld_reviewed_resources(working, excluded_names))
 
     double_counted = delivered_names & excluded_names
     if double_counted:

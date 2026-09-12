@@ -1310,8 +1310,14 @@ keeping their findings. Route REVISE findings through Phase 3.5;
 a final visual fault does not need to exhaust the pre-picture self-repair budget.
 Missing teaching or changed learning demand returns to Lesson Designer and design
 review. Rebuild affected resources and obtain a review of the current renders.
-A repair has not passed merely because it builds. Keep unresolved faults visible
-when the existing repair budget is exhausted. Rendering unavailable means UNVERIFIED.
+A repair has not passed merely because it builds. Rendering unavailable means UNVERIFIED.
+
+**A finding that survives its repair round is flagged, never a reason to withhold
+the resource.** A resource that built and passed its own check is delivered, the
+finding named first in the report and in `Teacher flags`: page, fault, and the
+change to make by hand. A teacher fixes one slide in a minute; a withheld deck
+costs the lesson. Exclusion is for a resource that never built or failed its
+own check.
 
 Only a current PASS for every delivered visual resource supports COMPLETE.
 `validate-run-report.py` checks delivered bytes, render evidence and page coverage
@@ -1385,7 +1391,7 @@ Write `[WORKING_DIR]/run-report.md` with:
 
 - outcome: `COMPLETE`, `PARTIAL`, `BLOCKED` or `UNVERIFIED`;
 - final resource review outcomes and unresolved findings. Use UNVERIFIED when an
-  output could not be visually checked, and BLOCKED for unresolved material faults;
+  output could not be visually checked, otherwise as set out below;
 - delivered resources with exact paths from fixed build summaries or the wall
   builder, each path in backticks;
 - the lesson walk-through: copy `[WORKING_DIR]/design-decisions.md` to
@@ -1428,12 +1434,13 @@ teacher-facing report naming the topic, year, subject, objective, lesson scope,
 exact files, pedagogical highlights, design-review result and every teacher
 flag.
 
-A package missing an earned output is `PARTIAL`; an unresolved blocking fault is
-`BLOCKED`; a wall the builder could not verify against its page contract, which
+A package missing an earned output, or delivering one with a flagged review
+finding, is `PARTIAL`; a fault that stopped a resource building or passing its
+own check is `BLOCKED`; a wall the builder could not verify against its page contract, which
 reaches the report as `PAGE_FIT_UNVERIFIED`, is `UNVERIFIED`. Use exact summary
 output paths, never guessed filenames. `BLOCKED` labels the record, not the
-delivery: a blocked package still hands over every resource that built and
-passed its own checks, with the unresolved faults named first.
+delivery: every resource that built and passed its own check is handed over,
+faults named first.
 
 ### Report format
 

@@ -223,6 +223,49 @@ class TestRunReport(RunReportCase):
         self.write_json(receipt, data)
         self.assertNotEqual(self.validate().returncode, 0)
 
+    def test_a_reviewed_resource_with_an_unclosed_finding_is_delivered_not_withheld(self):
+        """One slide's finding flags the deck; it never costs the teacher the deck.
+
+        A nine-slide Year 4 deck with eight passing slides was withheld over one
+        vocabulary picture that survived its repair round (12 September 2026).
+        """
+        receipt = self.working / "final-resource-reviews.json"
+        data = json.loads(receipt.read_text())
+        deck = next(r for r in data["resources"] if r["owner"] == "slide-designer")
+        deck["status"] = "REVISE"
+        deck["findings"] = [{"fault": "Slide 3 has no +10 jump over one interval."}]
+        self.write_json(receipt, data)
+
+        withheld = self.write_report({
+            "outcome": "Package status: BLOCKED",
+            "delivered": f"- worksheets: `{self.worksheets_out}`\n- worksheets: `{self.answers_out}`",
+            "excluded": "- slides: NOT DELIVERED - final review still found slide 3 unresolved.",
+            "blocking": "- Slide 3 has no +10 jump over one interval.",
+        })
+        result = self.validate(withheld)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("delivered, not withheld", result.stdout)
+
+        flagged = self.write_report({
+            "outcome": "Package status: PARTIAL",
+            "blocking": "- Slide 3 has no +10 jump over one interval.",
+        })
+        self.assertEqual(self.validate(flagged).returncode, 0, self.validate(flagged).stdout)
+
+    def test_a_resource_that_never_built_may_still_be_excluded(self):
+        receipt = self.working / "final-resource-reviews.json"
+        data = json.loads(receipt.read_text())
+        deck = next(r for r in data["resources"] if r["owner"] == "slide-designer")
+        deck["status"] = "REVISE"
+        self.write_json(receipt, data)
+        self.slides_out.unlink()
+        self.write_report({
+            "outcome": "Package status: BLOCKED",
+            "delivered": f"- worksheets: `{self.worksheets_out}`\n- worksheets: `{self.answers_out}`",
+            "excluded": "- slides: NOT DELIVERED - the build failed.",
+        })
+        self.assertNotIn("delivered, not withheld", self.validate().stdout)
+
     def test_unverified_resource_cannot_claim_complete(self):
         self.write_report()
         receipt = self.working / "final-resource-reviews.json"

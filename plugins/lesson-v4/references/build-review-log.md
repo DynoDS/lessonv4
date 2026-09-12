@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-12 One slide's finding flags the deck, it never withholds it (4.2.166)
+
+A Year 4 maths run ("Read and complete number lines") came back `BLOCKED` with no deck. Eight of nine slides passed final review. Slide 3, the vocabulary slide, did not: the design asked for the space between 0 and 10 highlighted and a +10 jump over one interval, and the slide `numberline` helper draws neither. The focused repair improvised a detached shaded strip and an arrow pointing at the 10 tick, the second review still said REVISE, and with the one repair round spent the orchestrator excluded the whole deck. Daniel: "it shouldnt fail because one slide couldnt accurately show something for vocab".
+
+**The gate was being read as a withholding rule, and the playbook half-said it was.** `validate-run-report.py` only demands PASS reviews when a package claims COMPLETE, and Phase 4 already said `BLOCKED labels the record, not the delivery`. But "a blocked package still hands over every resource that built and passed its own checks" left "its own checks" open to including the final review, and Phase 3.6 said only "keep unresolved faults visible". The orchestrator read the two together as exclusion. The repair settles it in Phase 3.6: a finding that survives its repair round is flagged (page, fault, the change to make by hand, first in the report and in Teacher flags) and the resource is delivered; exclusion is for a resource that never built or failed its deterministic check. Such a package is PARTIAL, not BLOCKED.
+
+**Enforced, not only worded.** The validator now refuses a report that lists a resource as NOT DELIVERED when that resource's file exists and its final review is REVISE, and says what to do instead. Run against the failed run's own report it fails with exactly that line. A resource whose file never built can still be excluded.
+
+**Found, not changed this round.** (1) The engine cannot draw a jump or a highlighted interval on a number line on any surface, slides, worksheets, wall or stick-in, though counting on and reading intervals are everyday KS2 maths. The same run's worksheet also needed a lesson redesign because number-line labels sit at their value, so a deliberately wrong completion cannot be printed at a tick, and slide 8 worked round it with a separate row of cards. That is a helper build, awaiting Daniel's go. (2) The helper check marked both vocabulary pictures `covered` with no feature checks. A non-load-bearing configuration must carry `requiredFeatures: []`, so the highlight and the jump lived only in the description, which nothing tests. (3) The first slide review reported slide 6's 9,800 as detached from tick 4; the render shows it under tick 4. A single misread, recorded, no change.
+
+Python run-report tests 55 pass; full script suite shows the same five pre-existing failures as before the change, nothing new.
+
 ## 2026-09-12 A picture has to be about the same thing the words are (4.2.165)
 
 Two faults from the working-wall review, both traced to a rule that existed and did not reach far enough. Neither was a missing rule in the sense of nobody having thought about it.
