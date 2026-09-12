@@ -190,6 +190,22 @@ Good:
 
 The joke lands on the wrong idea, so it teaches while it amuses, and a wrong rule is present in most lessons, which is why a lesson with no quirky content is not a lesson with no opportunities.
 
+## A light line has a turn in it; a true sentence said kindly does not
+
+The six routes above tell you where to look. This is how to tell whether what you found is actually one, because the commonest failure is not a bad joke, it is a plain fact delivered in a wry tone and mistaken for a light moment.
+
+The line Daniel liked, about the kinds of teeth:
+
+> Thankfully, your teeth have divided up the jobs rather than all applying for the same one.
+
+A line written into a teeth lesson from the same material, which he did not:
+
+> The softest part of the tooth is the one part that never does any of the biting. It sits in the middle while enamel and dentine do all the hard work.
+
+The second is true, relevant, gently worded and not light at all. What the first has and the second has not is a **turn**: teeth apply for jobs, which is a small absurd picture that arrives and is gone, and `thankfully` is a real person reacting. The second only states an arrangement and leaves the wryness to the reader's tone of voice. The test, and it is quick: say it aloud and find the moment where the sentence does something you did not expect. A word doing two jobs, a picture that does not belong, a real reaction. If there is no such moment, you have written a sentence about the content, which is fine, and it is not a light line, so do not spend one on it.
+
+Two things follow. A light line you had to reach for is not one, and a lesson whose material offers a fact but not a turn has offered nothing (`Most lessons hand over nothing`, below). And forcing the shape without the turn is worse than leaving it straight, because the class hears the delivery arrive and nothing land.
+
 ## Sameness across lessons is the failure, not silence
 
 That last route is the one always available, which is exactly why it must not become the house joke. A teacher whose last three lessons each made a wry remark about the wrong answer has stopped having a voice and started having a habit, and children hear a habit coming. Look at the other five first, and let the material decide which one this lesson gets.

@@ -207,13 +207,47 @@ class HowMuchATeachSlideHolds(unittest.TestCase):
         self.assertIn("Right, and one more thing would be too much", preferences)
         self.assertIn("Slightly over", preferences)
 
-    def test_the_working_ceiling_is_stated_with_its_repair(self) -> None:
+    def test_the_working_ceiling_is_stated(self) -> None:
         preferences = flat(PREFERENCES)
         self.assertIn("about four pieces of text beside its picture", preferences)
-        self.assertIn("move the weakest into the script rather than to shorten all of them", preferences)
+        self.assertIn("the slide is over on pieces rather than on words", preferences)
+
+    def test_teaching_that_will_not_fit_gets_a_slide_not_the_script(self) -> None:
+        """My first instruction sent every over-long line to the script, and on
+        one slide that moved the only place an idea was taught. Daniel: "if
+        theyre important could they have gone to more slides?" """
+        preferences = flat(PREFERENCES)
+        self.assertIn("There are two repairs, and which one you owe depends on what the extra line is", preferences)
+        self.assertIn("A line the final task needs is teaching, always, and may never be moved to the script", preferences)
+        self.assertIn("reach for the second slide first", preferences)
+        self.assertIn("the deck is allowed to be longer, and the board is not", preferences)
 
     def test_it_is_not_a_word_count(self) -> None:
         """The slide he called right carries a long sentence across its whole
         width; the slide he called over carries seven short ones."""
         preferences = flat(PREFERENCES)
         self.assertIn("What none of these judgements is about is word count", preferences)
+
+
+class ALightLineHasATurnInIt(unittest.TestCase):
+    """A teeth deck got a light line added and Daniel's reaction was "you call
+    that humour?" The line was true, relevant, gently worded and not light.
+    Section 4 said where opportunities come from and never how to tell a found
+    one from a plain fact delivered wryly."""
+
+    def test_the_calibrated_pair_is_his_own(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("A light line has a turn in it; a true sentence said kindly does not", voice)
+        self.assertIn("rather than all applying for the same one", voice)
+        self.assertIn("while enamel and dentine do all the hard work", voice)
+
+    def test_the_test_is_the_turn_and_it_is_sayable(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("What the first has and the second has not is a **turn**", VOICE.read_text(encoding="utf-8"))
+        self.assertIn("find the moment where the sentence does something you did not expect", voice)
+
+    def test_no_turn_means_no_light_line_rather_than_a_weaker_one(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("you have written a sentence about the content, which is fine", voice)
+        self.assertIn("A light line you had to reach for is not one", voice)
+        self.assertIn("the class hears the delivery arrive and nothing land", voice)
