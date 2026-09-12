@@ -154,3 +154,66 @@ class ImagineDoesNotBecomeATic(unittest.TestCase):
     def test_a_real_thing_is_not_imagined(self) -> None:
         voice = flat(VOICE)
         self.assertIn("a real event, a real place or a real person is not imagined", voice)
+
+
+class TheBoardsOwnSentenceComesFirst(unittest.TestCase):
+    """Daniel on the chip slide: "I don't like how this sentence flows ...
+    I would have said 'This tooth has lost a piece of enamel.' 'Sometimes,
+    teeth can be chipped or broken if they ...'" The class is looking at the
+    tooth, so the first line they read should be about the tooth."""
+
+    def test_the_rule_and_the_worked_pair(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("Start with what is on the board, then generalise", voice)
+        self.assertIn("the first sentence they read should be about the tooth", voice)
+        self.assertIn("the small version of a whole deck that defines before it shows", voice)
+
+    def test_the_limit_keeps_a_rule_and_its_example_the_right_way_round(self) -> None:
+        voice = flat(VOICE)
+        self.assertIn("a slide whose general statement is the teaching", voice)
+        self.assertIn("there the statement leads and the example follows", voice)
+
+
+class ThePlayfulDecisionIsWrittenDown(unittest.TestCase):
+    """Three decks in a row came out with no light moment anywhere, including
+    a teeth lesson whose tooth types Daniel had previously said hand one over.
+    The question was being asked at the completion pass, where the cheapest
+    answer is to change nothing."""
+
+    def test_the_answer_is_recorded_in_the_closing_decisions(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("Write the answer down, in one line, in the walk-through's closing decisions", designer)
+        self.assertIn("Name what the material offered and what you did with it", designer)
+
+    def test_the_diagnosis_of_why_none_kept_winning_is_stated(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("the cheapest answer is to change nothing", designer)
+        self.assertIn("A line you have to write is a decision", designer)
+
+    def test_none_is_still_a_real_answer(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("`None` is still a perfectly good answer and stays common", designer)
+        self.assertIn("Most lessons hand over nothing", designer)
+
+
+class HowMuchATeachSlideHolds(unittest.TestCase):
+    """His verdicts on real Teach slides, 12 September 2026, as the anchor the
+    Pride Lessons do not give: they are practice slides, and a Teach slide is
+    the other case."""
+
+    def test_the_three_verdicts_are_recorded(self) -> None:
+        preferences = flat(PREFERENCES)
+        self.assertIn("How much a Teach slide holds, calibrated on real boards", preferences)
+        self.assertIn("Right, and one more thing would be too much", preferences)
+        self.assertIn("Slightly over", preferences)
+
+    def test_the_working_ceiling_is_stated_with_its_repair(self) -> None:
+        preferences = flat(PREFERENCES)
+        self.assertIn("about four pieces of text beside its picture", preferences)
+        self.assertIn("move the weakest into the script rather than to shorten all of them", preferences)
+
+    def test_it_is_not_a_word_count(self) -> None:
+        """The slide he called right carries a long sentence across its whole
+        width; the slide he called over carries seven short ones."""
+        preferences = flat(PREFERENCES)
+        self.assertIn("What none of these judgements is about is word count", preferences)

@@ -691,3 +691,15 @@ Two lessons the teacher has taught and been proud of, as reference points for wh
 **Science — vertebrates classification (Y3/Y4):** Starter was an open-ended question with animal pictures ("How would you group these animals?"). Vocabulary had visuals next to definitions (e.g. "vertebrate" with a spine image). The success criteria was a classification table — nothing else on the slide; the teacher spoke through it. Practise had a working space for children to write their reasoning. Sparse slides, teacher voice adding everything else.
 
 Both lessons pass the test: a teacher reading them feels confident delivering, and a child looking at the slide sees exactly what they need to do.
+
+### How much a Teach slide holds, calibrated on real boards
+
+The Pride Lessons above are maths and science practice slides, and they set the bar for a slide whose job is a question and a tool. A Teach slide is the other case and it has no anchor, which is how a deck ends up with either a slogan or a wall. These are the teacher's own verdicts on Teach slides he has read, on 12 September 2026, and they are the calibration.
+
+**Right, and one more thing would be too much.** A science slide carrying a cutaway photograph, one full-width landed sentence across the top, two short lines in separate cards, and the starred sticky fact. And another carrying a photograph, two teaching lines placed beside the parts they describe, one line underneath, and the starred sticky. Both are four pieces of text and a picture, and both are at the ceiling rather than under it.
+
+**Slightly over.** A slide with a lead statement, a definition line under it, two body-response cards side by side, a closing line, and two small drawings. Six pieces. His note was that it is only slightly too much and might be fine, which is what the top of the range looks like.
+
+**Over.** A slide carrying a photograph, two teaching lines, an honesty pair of two more lines, a red safety line and the starred sticky. Seven pieces plus a picture, every one of them defensible on its own.
+
+So the working ceiling for a Teach slide is about four pieces of text beside its picture, with the sticky fact as one of them. Five is the top of the range and wants a reason. Six or more is over, however true each line is, and the repair is to move the weakest into the script rather than to shorten all of them. What none of these judgements is about is word count: the slide he called right carries a long sentence across its whole width, and the slide he called over carries seven short ones.

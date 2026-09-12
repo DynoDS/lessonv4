@@ -313,6 +313,22 @@ All of these can fit:
 
 Do not standardise every question into one repeated pattern.
 
+## Start with what is on the board, then generalise
+
+A slide usually carries a particular thing and a general statement about it, and the order they are written in is not the order they should be read in. A Year 4 science slide showed one chipped tooth and said:
+
+> Teeth do get chipped: a fall in the playground, or biting down on something hard.
+> This tooth has lost a piece of enamel.
+
+The class is looking at the tooth, so the first sentence they read should be about the tooth. The teacher's own order:
+
+> This tooth has lost a piece of enamel.
+> Sometimes, teeth can be chipped or broken if they take a hard knock.
+
+Same two ideas, and now the first line lands on what the eye is already on, with the general statement arriving as the explanation of what they can see rather than as a preamble to it. The general-first version makes a child hold an abstract sentence for a beat before finding out what it is about, which is the small version of a whole deck that defines before it shows.
+
+So when a slide has a thing on it, the sentence about that thing goes first. The limit is a slide whose general statement is the teaching and whose example is the illustration of it (a rule, a definition, a convention): there the statement leads and the example follows, which is what the takeaway and its example already do.
+
 ## Put the child inside the situation, then ask them
 
 A task built on a scenario has two halves, and both are easy to write the wrong way round. The scenario is a statement of fact about nobody: `It's a wet break indoors.` The instruction is a directive about a task: `Suggest a safe way to be active.` Together they are correct, cold, and about a room the child is not in.
