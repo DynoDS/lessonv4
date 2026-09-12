@@ -251,11 +251,11 @@ test("pupil PDF and complete teacher answers build as separate files", async () 
     assert.equal(doc.getPageCount(), 3, "the pupil PDF should contain exactly three sheets");
 
     const answers = fs.readFileSync(answersTxt, "utf8");
-    assert.match(answers, /BELOW \(SHEET A\)[\s\S]*\(1\) 12/);
-    assert.match(answers, /EXPECTED \(SHEET B\)[\s\S]*\(1\) 18/);
+    assert.match(answers, /BELOW \(B\)[\s\S]*\(1\) 12/);
+    assert.match(answers, /EXPECTED \(E\)[\s\S]*\(1\) 18/);
     assert.match(
       answers,
-      /GREATER DEPTH \(SHEET C\)[\s\S]*Answers vary; for example/
+      /GREATER DEPTH \(GD\)[\s\S]*Answers vary; for example/
     );
     assert.equal(
       fs.existsSync(path.join(dir, "Multiply by 3 - Worksheets-answers.html")),

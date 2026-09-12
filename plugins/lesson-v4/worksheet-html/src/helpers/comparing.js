@@ -914,13 +914,16 @@ function needsCircleTheAnswer(spec) {
 
 const css = `
   /* ─── shared parts ─── */
-  /* Bold, black and bracketed, the same as every other number on the sheet.
-     It was question blue and unbracketed, so a sheet carrying one of these
-     beside a numbered question printed the two numbers two different ways. */
+  /* Bold, blue and bracketed, the same as every other number on the sheet.
+     It was once blue and UNBRACKETED, which printed two numbers two different
+     ways on one page; the bracket is what fixed that, and the colour now
+     follows .h-num and .h-numbered-n back to the question blue every question
+     label on the sheet is set in. */
   .h-cq-num {
     display: inline-block; min-width: ${NUM_MIN_MM}mm;
     margin-right: var(--space-tight);
-    color: var(--colour-ink); font-weight: bold; font-size: var(--type-body);
+    color: var(--colour-question); font-weight: bold;
+    font-size: var(--type-questionNumber);
     line-height: 1.35;
   }
   .h-cq-stem {

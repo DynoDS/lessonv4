@@ -92,9 +92,18 @@ generated, not against a count of questions:
   printed question must have one. An answer for a question that is not on the
   sheet, or the same question answered twice, is refused rather than ignored.
 
-`lesson` and `lo` print on every sheet because all three sheets are the same
-lesson: a child on the below sheet is working towards what the class is working
-towards, and the paper should not say otherwise.
+**Neither `lesson` nor `lo` is printed on a sheet.** `lesson` names the built
+file and titles the answer key; `lo` is planning information. Nothing headed is
+drawn on the paper at all.
+
+The objective went first, on 8 September 2026, then the lesson name on 12
+September, and both for the same two reasons. A child is holding the sheet in
+the lesson it belongs to, so a heading tells them nothing they do not already
+know, and the first thing on the page should be the work - "Fluency", not the
+name of what they have spent twenty minutes on. And a heading is teacher-written
+text of unpredictable length in a band of fixed height: "How can being active
+help my mind and body" wrapped onto a second line and printed straight through
+question 1 of the sheet below it.
 
 ### The sheets
 
@@ -108,10 +117,18 @@ A worksheet holding only `expected` is normal and not a degraded case. It is
 what a shared working frame produces, and what any lesson produces when the
 adaptation step was skipped.
 
-**What prints on the page is `Sheet A`, `Sheet B`, `Sheet C`, never the level
-name.** The teacher needs the piles sortable. The child reads the top of their
-own page, and "Below" printed there tells them what their teacher thinks of
+**What prints on the page is `B`, `E`, `GD`, never the level name.** Small,
+grey, top right. The teacher needs the piles sortable; the child reads the top of
+their own page, and "Below" printed there tells them what their teacher thinks of
 them. A single-sheet worksheet carries no code, since there are no piles.
+
+It was `Sheet A`, `Sheet B`, `Sheet C`, in a bordered blue badge. Two things were
+wrong with that. A, B and C are an alphabet laid over three levels, so the
+teacher has to remember which pile is which, and the code shared no vocabulary
+with the document that decides the levels - the adaptation-designer writes
+Below, Expected and Greater Depth, and the paper said A, B and C. And the badge
+was the loudest object on some sheets, for a mark that matters for the two
+seconds it takes to cut the pile into three.
 
 ### A sheet
 

@@ -95,6 +95,16 @@ own line and present each option as a distinct choice. Never embed the bank
 choices inside an instruction or paragraph, including when the bank has only
 two words.
 
+**One bank per question, holding every word.** A child choosing a word has to
+see the set they are choosing from; a set split across two banks is not a set.
+Where one word needs its meaning given and the others do not, write that chip as
+`{ "word": "oxygen", "meaning": "a gas in the air we breathe" }` and leave the
+rest as plain strings - the meaning prints inside the chip, under its word. It is
+the absence of that field that split a real Year 4 bank in two: `muscles` in a
+titled green bank on the left, `oxygen` alone in an untitled blue one on the
+right, sitting higher up the page because it had no title line above it, and only
+one of the two words defined.
+
 **Support sits with the question it serves, and a stimulus comes before its
 questions.** A word bank, reference or picture that serves one question lives
 inside that question's stack, directly beside the element it feeds - never
@@ -862,6 +872,20 @@ Render the upstream pedagogical decision faithfully.
     criteria for layout convenience. A one-line job statement for a reference
     under rule 12 is not a criteria panel.
 
+14. **Criteria and taught method steps are drawn with `steps`, never written as
+    an `instruction`.** `steps` prints the pale green panel the class worked
+    from on the board - green tick heading, numbered badges, one white card per
+    criterion - so a child who followed those steps on the board recognises the
+    same object on their paper and can find step 4 at a glance. Written as an
+    instruction they print as a grey paragraph, which is what a Year 4 rounding
+    sheet shipped: seven lines at the foot of the page, indistinguishable from
+    `Use the place value chart to help you.` The engine now refuses an
+    instruction of three lines or more for exactly this reason. Price the panel
+    honestly when you place it: six criteria stand about 55mm, against the 40mm
+    the same words cost as prose, so a full sheet may have to carry fewer
+    criteria, put the panel beside something in a row, or leave it to the board.
+    Fewer criteria on the paper is a real answer - the board has all of them.
+
 ---
 
 ## Final preflight
@@ -870,7 +894,10 @@ Before the mechanical gate, read each sheet once as the pupil using it:
 
 - Confirm `Pupil prompt` contains only child-facing wording, with planning,
   sourcing and answer information absent.
-- Confirm every word bank has its own `Word bank` label and distinct choices.
+- Confirm every word bank has its own `Word bank` label and distinct choices,
+  and that one question's words are in ONE bank.
+- Confirm any criteria or taught method steps are a `steps` panel, not an
+  instruction carrying a list.
 - Confirm every tick, match, name, circle, write, draw, label or annotate action
   has one obvious usable printed target.
 - Confirm multipart labels describe one connected pupil job. A separate

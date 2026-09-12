@@ -140,9 +140,9 @@ test("the teacher answer key is compact text with clear sheet headings", () => {
 
   const text = renderAnswerKey(spec);
   assert.match(text, /Teacher copy - keep separate from pupil worksheets/);
-  assert.match(text, /BELOW \(SHEET A\)/);
-  assert.match(text, /EXPECTED \(SHEET B\)/);
-  assert.match(text, /GREATER DEPTH \(SHEET C\)/);
+  assert.match(text, /BELOW \(B\)/);
+  assert.match(text, /EXPECTED \(E\)/);
+  assert.match(text, /GREATER DEPTH \(GD\)/);
   assert.match(text, /\(2\) 15/);
 });
 
@@ -161,9 +161,15 @@ test("one sheet carries no code, because there are no piles to tell apart", () =
 });
 
 test("the printed code never names the level", () => {
-  // A child reads the top of their own page. "Sheet A" sorts the pile for the
+  // A child reads the top of their own page. The code sorts the pile for the
   // teacher; "Below" tells the child what the teacher thinks of them. This is
   // the one thing in this file worth a test of its own.
+  //
+  // The code itself changed on 12 September 2026 from "Sheet A/B/C" to the
+  // level's own initials, so the teacher reads the pile as the thing they
+  // already call it - the adaptation-designer writes Below, Expected and
+  // Greater Depth, and the paper used to say A, B and C. What a child can read
+  // off it is unchanged: one or two letters that say nothing about them.
   const sheets = sheetsOf(
     worksheet({
       below: { layout: "full", zones: zones() },
@@ -173,7 +179,7 @@ test("the printed code never names the level", () => {
   );
 
   for (const sheet of sheets) {
-    assert.match(sheet.spec.code, /^Sheet [ABC]$/, `${sheet.key} printed "${sheet.spec.code}"`);
+    assert.match(sheet.spec.code, /^(B|E|GD)$/, `${sheet.key} printed "${sheet.spec.code}"`);
     for (const word of ["Below", "Expected", "Greater", "Depth"]) {
       assert.ok(
         !sheet.spec.code.includes(word),
@@ -181,7 +187,9 @@ test("the printed code never names the level", () => {
       );
     }
   }
-  assert.equal(SHEET_CODES.below, "Sheet A");
+  assert.equal(SHEET_CODES.below, "B");
+  assert.equal(SHEET_CODES.expected, "E");
+  assert.equal(SHEET_CODES.greaterDepth, "GD");
 });
 
 test("every sheet belongs to the same lesson, and none carries an objective", () => {

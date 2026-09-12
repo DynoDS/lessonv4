@@ -46,6 +46,17 @@ module.exports = {
       { text: "Explain how you know the answer is a multiple of four.", sentences: 2 },
     ],
   },
+  steps: {
+    // The title is the lesson's own wording for the panel. Left out it reads
+    // "Success criteria", which is what the board calls it.
+    title: "Use these steps to help you.",
+    steps: [
+      "Read the question: 10s or 100s?",
+      "Find the 10s or 100s each side.",
+      "Draw a number line. Mark your number.",
+      "Find halfway. Before it or after it?",
+    ],
+  },
   "section-label": {
     text: "Fluency",
   },

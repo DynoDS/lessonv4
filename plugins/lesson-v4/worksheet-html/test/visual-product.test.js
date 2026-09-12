@@ -22,18 +22,29 @@ test("comparisonPair keeps arbitrary representations around one empty target", (
   assert.ok(needsContent(pair).minWidthMm > 0);
 });
 
-test("the shared worksheet shell renders a title, code badge and structural rule", () => {
+test("the shared worksheet shell prints the code and nothing else", () => {
+  // The sheet carries no heading of its own. The lesson name went on 12
+  // September 2026, after "How can being active help my mind and body" wrapped
+  // out of a fixed-height band and printed straight through question 1; the
+  // learning objective had gone on 8 September for the same reason. A child is
+  // holding this paper in the lesson it belongs to, so the first thing on the
+  // page should be the work.
+  //
+  // `title` is still accepted and still names the built FILE - it just does not
+  // reach the paper.
   const html = renderSheet({
     title: "Compare numbers",
-    code: "Sheet B",
+    code: "E",
     layout: "full",
     orientation: "portrait",
     zones: { a: { helper: "instruction", text: "Choose the correct symbol." } },
   });
-  assert.match(html, /class="sheet-header"/);
-  assert.match(html, /class="sheet-title">Compare numbers/);
-  assert.match(html, /class="sheet-code">Sheet B/);
-  assert.match(html, /--colour-surface/);
+  assert.match(html, /class="sheet-code">E</);
+  assert.doesNotMatch(html, /class="sheet-header"/);
+  assert.doesNotMatch(html, /class="sheet-title"/);
+  // Not in the body either: the only place the lesson name appears is the
+  // document title the browser uses when it prints the file.
+  assert.doesNotMatch(html.split("<body")[1], /Compare numbers/);
 });
 
 test("base-ten blocks draw thousands, hundreds, tens and ones as native SVG", () => {

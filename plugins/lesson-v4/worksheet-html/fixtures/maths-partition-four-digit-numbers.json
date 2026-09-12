@@ -436,8 +436,13 @@
                   ]
                 },
                 {
-                  "helper": "instruction",
-                  "text": "Use these steps to help you partition each number.\nRead each digit's column.\nWrite each digit's value.\nJoin the values with +."
+                  "helper": "steps",
+                  "title": "Use these steps to help you partition each number.",
+                  "steps": [
+                    "Read each digit's column.",
+                    "Write each digit's value.",
+                    "Join the values with +."
+                  ]
                 }
               ]
             }

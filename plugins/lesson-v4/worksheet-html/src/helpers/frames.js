@@ -19,7 +19,7 @@
 // by having its own line. Colour on paper means question (blue), given
 // material (orange) or vocabulary (green), and a scaffold is none of those.
 
-const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, promptHtml, linesFor } = require("./shared");
+const { BODY_PT, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, promptHtml, linesFor } = require("./shared");
 const { TYPE, RULE, INSET, SPACE, WRITING_LINE_GROWN_RATIO } = require("../tokens");
 
 const WIDEST_ZONE_MM = 261;
@@ -641,6 +641,133 @@ function needsStoryboard(spec) {
   };
 }
 
+// ─── steps ───────────────────────────────────────────────────────────────
+// The lesson's success criteria, or the steps of the method it taught, printed
+// on the sheet as the same object the class worked from on the board.
+//
+// It exists because there was nothing else to reach for. A Year 4 rounding
+// sheet carried its seven-step method as one `instruction` with newlines in it,
+// so the steps the whole lesson was built on printed as a grey paragraph at the
+// foot of the page, indistinguishable from "Use the place value chart to help
+// you." A child scanning for the next step has to read a block of prose to find
+// one line of it, which is most of what the panel on the board was for.
+//
+// The look is the deck's success-criteria panel, deliberately and to the hex:
+// the pale green ground, the green rule, the green tick heading, the numbered
+// green badges and the white step cards. That is not decoration carried across
+// - it is the recognition. A child who followed those steps off the board finds
+// the same panel on their paper and does not have to be told it is the same
+// thing. Where the deck and the paper differ they differ for print: the badge
+// number is set at note size rather than 20pt, and the panel does not claim
+// spare height, because a criteria panel that grew to fill a zone would be the
+// biggest thing on a page it is only there to support.
+//
+// What it is NOT: a place to write. Nothing in here has an answer space, and a
+// step that asks for one is a question and belongs in a question helper.
+
+const STEPS_PAD_V_MM = INSET.panel.v;
+const STEPS_PAD_H_MM = INSET.panel.h;
+const STEPS_BORDER_MM = RULE.line * 2; // top and bottom
+const STEPS_TITLE_MM = TYPE.sectionLabel * PT_MM * 1.35;
+const STEPS_BADGE_MM = 5;
+const STEPS_GAP_MM = SPACE.hair; // between one step card and the next
+// A step card is exactly its line of text, inset at the sides only.
+//
+// The deck has the same two settings and reaches for the tight one on exactly
+// this ground: `compactCards` in success-criteria-panel.js, "the tight padding
+// that keeps the step text at full size". On paper the choice is sharper. Padded
+// top and bottom as well, a six-step panel came out 75mm - a fifth of the sheet
+// spent on criteria - and the Year 4 rounding sheet it was built for would not
+// print at all. Nothing is lost: the card exists to separate one criterion from
+// the next, and the 1mm gap between cards is what does that.
+const STEPS_CARD_PAD_V_MM = 0;
+const STEPS_CARD_PAD_H_MM = INSET.cell.h;
+const STEPS_BADGE_GAP_MM = SPACE.tight;
+const STEPS_TICK = "✓";
+
+function stepList(spec) {
+  return (Array.isArray(spec.steps) ? spec.steps : [])
+    .map((step) => (step == null ? "" : String(step).trim()))
+    .filter((step) => step !== "");
+}
+
+function stepsTitle(spec) {
+  const given = spec.title == null ? "" : String(spec.title).trim();
+  return given === "" ? "Success criteria" : given;
+}
+
+// The room one step's WORDS get: the panel, less its inset, less the badge and
+// the gap after it, less the card's own inset. Every one of those is drawn
+// below, so the estimate and the page are reading the same box.
+function stepTextWidthMm(widthMm) {
+  return Math.max(
+    20,
+    widthMm -
+      2 * STEPS_PAD_H_MM -
+      2 * STEPS_CARD_PAD_H_MM -
+      STEPS_BADGE_MM -
+      STEPS_BADGE_GAP_MM
+  );
+}
+
+function stepCardMm(step, widthMm) {
+  const textMm = linesFor(step, stepTextWidthMm(widthMm)) * LINE_MM;
+  return Math.max(textMm, STEPS_BADGE_MM) + 2 * STEPS_CARD_PAD_V_MM;
+}
+
+function renderSteps(spec) {
+  const steps = stepList(spec);
+  const items = steps
+    .map(
+      (step, i) => `
+        <li class="h-steps-item">
+          <span class="h-steps-badge">${i + 1}</span>
+          <span class="h-steps-text">${esc(step)}</span>
+        </li>`
+    )
+    .join("");
+  return `
+    <div class="h-steps">
+      <p class="h-steps-title">${STEPS_TICK} ${esc(stepsTitle(spec))}</p>
+      <ol class="h-steps-list">${items}</ol>
+    </div>`;
+}
+
+function measureSteps(spec, widthMm) {
+  const steps = stepList(spec);
+  const cards = steps.reduce((h, step) => h + stepCardMm(step, widthMm), 0);
+  const gaps = Math.max(0, steps.length - 1) * STEPS_GAP_MM;
+  const titleMm =
+    linesFor(stepsTitle(spec), widthMm - 2 * STEPS_PAD_H_MM) * STEPS_TITLE_MM +
+    SPACE.tight;
+  return titleMm + cards + gaps + 2 * STEPS_PAD_V_MM + STEPS_BORDER_MM;
+}
+
+function needsSteps(spec, widthMm) {
+  const steps = stepList(spec);
+  // A criterion is a sentence a child reads at a glance mid-task. Two printed
+  // lines is the point at which glancing stops, so the panel asks for the width
+  // that keeps its longest step to two - and the ordinary case, a handful of
+  // short imperatives, asks for very little.
+  const longest = steps.reduce((n, step) => Math.max(n, step.length), 0);
+  const wordsMm = (longest / 2) * (BODY_PT * PT_MM * 0.5);
+  const minWidthMm = Math.min(
+    120,
+    Math.max(
+      55,
+      wordsMm + 2 * STEPS_PAD_H_MM + 2 * STEPS_CARD_PAD_H_MM + STEPS_BADGE_MM + STEPS_BADGE_GAP_MM
+    )
+  );
+  return {
+    minWidthMm,
+    // Measured at the WIDEST a zone could be, for the same reason text.js
+    // does: steps wrap, so the narrowest width states the TALLEST the panel
+    // could ever come out, and a minimum written from it refuses zones that
+    // would have held the panel comfortably.
+    minHeightMm: measureSteps(spec, WIDEST_ZONE_MM),
+  };
+}
+
 const css = `
   /* ─── speech-scene ─── */
   /* This helper claims spare height, so it has to take it, or the extra shows
@@ -859,6 +986,56 @@ const css = `
     border-bottom: var(--rule-hair) dotted var(--colour-rule);
   }
 
+  /* ─── steps ─── */
+  /* The deck's success-criteria panel, drawn for paper. Green here is a
+     SURFACE, which it is nowhere else on a worksheet; see the criteria colour note
+     in tokens.js for why that does not give green a second meaning. */
+  .h-steps {
+    box-sizing: border-box;
+    padding: ${STEPS_PAD_V_MM}mm ${STEPS_PAD_H_MM}mm;
+    background: var(--colour-criteria);
+    border: var(--rule-line) solid var(--colour-vocab);
+    border-radius: 2mm;
+    font-size: var(--type-body);
+  }
+  .h-steps-title {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-vocab);
+    line-height: 1.35;
+  }
+  .h-steps-list {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: ${STEPS_GAP_MM}mm;
+  }
+  /* Each criterion on its own white card, which is what makes a panel of seven
+     scannable rather than a green paragraph. */
+  .h-steps-item {
+    display: flex; align-items: flex-start;
+    gap: ${STEPS_BADGE_GAP_MM}mm;
+    box-sizing: border-box;
+    padding: 0 ${STEPS_CARD_PAD_H_MM}mm;
+    background: var(--colour-paper);
+    border-radius: 1mm;
+  }
+  /* Centred by flex rather than by a line-height equal to the badge's own
+     height: every line-height in this engine is pinned to 1.35 and has to be,
+     because the estimates assume it. */
+  .h-steps-badge {
+    flex: 0 0 ${STEPS_BADGE_MM}mm;
+    width: ${STEPS_BADGE_MM}mm; height: ${STEPS_BADGE_MM}mm;
+    border-radius: 50%;
+    background: var(--colour-vocab);
+    color: var(--colour-paper);
+    font-size: var(--type-note); font-weight: bold;
+    line-height: 1.35;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  /* "flex: 1 1 0" and not "auto", for the same reason a question row uses it:
+     with "auto" a long criterion's own content width is what the flex line
+     tries to honour, and the badge is pushed onto a line of its own. */
+  .h-steps-text { flex: 1 1 0; min-width: 0; line-height: 1.35; color: var(--colour-ink); }
+
   /* ─── storyboard ─── */
   .h-sb { font-size: var(--type-body); }
   .h-sb-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
@@ -883,11 +1060,12 @@ const css = `
     max-height: ${SB_BOX_MAX_MM}mm;
     padding: ${INSET.cell.v}mm ${INSET.cell.h}mm;
   }
-  /* The cell's place in the sequence. Ink and bold like every other number on
+  /* The cell's place in the sequence. Blue and bold like every other number on
      the sheet: a child counting through six boxes should not meet a different
      kind of number from the one beside the questions. */
   .h-sb-num {
-    font-size: var(--type-body); font-weight: bold; color: var(--colour-ink);
+    font-size: var(--type-questionNumber); font-weight: bold;
+    color: var(--colour-question);
     line-height: 1.35;
   }
   .h-sb-lines { display: block; margin-top: 1mm; }
@@ -927,6 +1105,16 @@ const helpers = {
     measure: measureWritingFrame,
     needs: needsWritingFrame,
     greed: 3, // writing space is the right home for spare room
+  },
+  steps: {
+    requires: ["steps"],
+    render: renderSteps,
+    measure: measureSteps,
+    needs: needsSteps,
+    // Nothing in this panel gains from being taller. It is reference material
+    // beside the work, and a criteria panel handed the page's spare height
+    // would end up the biggest object on a sheet it only supports.
+    greed: 0,
   },
   storyboard: {
     render: renderStoryboard,

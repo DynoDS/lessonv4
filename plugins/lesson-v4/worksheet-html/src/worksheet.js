@@ -44,13 +44,22 @@ const SHEET_LABELS = {
 };
 
 // What is PRINTED on the sheet, as against what the teacher's report calls it.
-// A child reads the top of their own page, so it says "Sheet A" rather than
-// "Below". The Word builder made this call and it is not one to quietly drop
-// on the way across.
+//
+// A child reads the top of their own page, so it must not say "Below". That
+// part has never changed. What changed on 12 September 2026 is the other half:
+// "Sheet A" told the TEACHER nothing either. A, B and C are an alphabet laid
+// over three levels, so which pile is which has to be remembered or worked out
+// from the order, and the code shared no vocabulary with the document that
+// decides the levels - the adaptation-designer writes Below, Expected and
+// Greater Depth, and the paper said A, B and C.
+//
+// So the code is now the first letters of the level's real name. The teacher
+// reads it as the thing they already call it; the child reads one or two
+// letters that say nothing about them.
 const SHEET_CODES = {
-  below: "Sheet A",
-  expected: "Sheet B",
-  greaterDepth: "Sheet C",
+  below: "B",
+  expected: "E",
+  greaterDepth: "GD",
 };
 
 // The numbers a CHILD sees, counted here so nobody has to remember them.

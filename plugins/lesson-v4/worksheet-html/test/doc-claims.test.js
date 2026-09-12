@@ -257,10 +257,14 @@ test("the page and zone numbers the designer docs quote (worksheet-designer.md, 
 
   const plain = needsContent({ helper: "questions", items: ["One line."] });
   const numbered = needsContent({ number: 1, helper: "questions", items: ["One line."] });
+  // 8mm of label column plus the 2mm tight step after it. It was 9mm with no
+  // gap at all, which is what "(1a)" measures at body weight, so a grouped Part
+  // filled its column edge to edge and printed "(1a)6,734" with nothing between
+  // the label and the work.
   assert.equal(
     numbered.minWidthMm - plain.minWidthMm,
-    9,
-    "the question-number gutter is no longer 9mm - worksheet-designer.md explains the width cost with it"
+    10,
+    "the question-number gutter has moved again - worksheet-designer.md explains the width cost with it"
   );
 });
 

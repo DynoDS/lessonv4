@@ -15,11 +15,58 @@ const { formatQuestionLabel } = require("../labels");
 // helper, which rendered invalid list markup and made an instruction pretend
 // to be a question.
 
+// An instruction is ONE direction. Three or more lines is a list, and a list
+// printed here is a list printed as prose.
+//
+// Across the saved specs, forty-four instructions carried more than one line and
+// every one of them was something else wearing this helper's clothes. Two kinds,
+// both of which already have a home:
+//
+//   "Use these steps to help you. / Read the question: 10s or 100s? / Find the
+//    10s each side. / ..."        the lesson's method, which is `steps`
+//   "Choose an example ... / What does it mean to you? Explain why. / What does
+//    your meaning share with Hana's?"   three questions, which is a question
+//                                       helper with somewhere to answer
+//
+// The rounding sheet printed the first of those as seven grey lines at the foot
+// of the page, indistinguishable from "Use the place value chart to help you",
+// and a child scanning for the next step had to read the block to find one line
+// of it. The second printed three questions with no number and nowhere to write.
+//
+// Two lines is left alone: a direction genuinely in two parts is common and
+// reads as one direction. Three is where it stops being arguable.
+const INSTRUCTION_MAX_LINES = 2;
+
+function instructionLines(spec) {
+  return String(spec.text == null ? "" : spec.text)
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
+}
+
+function checkInstruction(spec) {
+  const lines = instructionLines(spec);
+  if (lines.length <= INSTRUCTION_MAX_LINES) return;
+  throw new Error(
+    `INSTRUCTION_IS_A_LIST: this instruction carries ${lines.length} lines, ` +
+      "so it is a list and will print as a paragraph of grey text. If they " +
+      'are the lesson\'s success criteria or the steps of its method, use the ' +
+      '"steps" helper, which draws the panel the class worked from on the ' +
+      'board. If they are questions, use "questions" or "written-answers", ' +
+      "which number them and give the child somewhere to answer. An " +
+      `instruction is one direction, in at most ${INSTRUCTION_MAX_LINES} lines.`
+  );
+}
+
 function renderInstruction(spec) {
+  checkInstruction(spec);
   return `<p class="h-instruction">${promptHtml(spec.text, spec.blankWidthMm)}</p>`;
 }
 
 function measureInstruction(spec, widthMm) {
+  // Refused at measuring time too, so a sheet is turned back while the designer
+  // is still choosing a layout rather than after it has been drawn.
+  checkInstruction(spec);
   return linesFor(spec.text, widthMm, spec.blankWidthMm) * LINE_MM;
 }
 
@@ -179,7 +226,7 @@ const SHORT_BLANK_MIN_MM = 20;
 // `.h-text` is now `flex: 1 1 0` with `min-width: 0`, so it takes the room that
 // is left and wraps its words INSIDE that room instead of pushing itself onto a
 // line of its own. The row then has the shape the arithmetic below describes.
-const QUESTION_NUMBER_COL_MM = 9;
+const QUESTION_NUMBER_COL_MM = 8;
 const QUESTION_GAP_MM = SPACE.tight;
 
 // What the words on a question row are actually given, in the two arrangements
@@ -483,8 +530,8 @@ function renderSectionLabel(spec) {
 }
 
 function measureSectionLabel(spec, widthMm) {
-  return linesFor(spec.text, widthMm - 2 * INSET.card.h) * SECTION_LINE_MM +
-    2 * INSET.card.v + SPACE.tight;
+  return linesFor(spec.text, widthMm - 2 * INSET.cell.h) * SECTION_LINE_MM +
+    2 * INSET.cell.v + SPACE.tight;
 }
 
 const SECTION_LINE_MM = TYPE.sectionLabel * PT_MM * 1.35;
@@ -494,7 +541,7 @@ function needsSectionLabel(spec) {
     // Wide enough for the label to sit on one line. A heading that wraps stops
     // reading as a heading, and these are one or two words by design.
     minWidthMm: Math.max(25, String(spec.text || "").length * SECTION_CHAR_MM),
-    minHeightMm: SECTION_LINE_MM + 2 * INSET.card.v + SPACE.tight,
+    minHeightMm: SECTION_LINE_MM + 2 * INSET.cell.v + SPACE.tight,
   };
 }
 
@@ -553,11 +600,21 @@ const css = `
   }
   /* The block's heading. Question blue, because it is part of what is being
      asked rather than something the child writes, and the same size and colour
-     a fact file's title and a method frame's title already use. */
+     a fact file's title and a method frame's title already use.
+     Two things about its BOX, and both are about what a heading costs. Its
+     tinted ground stops at the end of the word, because a band ruled to the
+     right-hand margin behind "Fluency" is a stripe across the sheet announcing
+     one word, and three of them on a page read as the page's main structure
+     when they are only signposts over the work. And it is inset by the cell
+     step rather than the card step: a heading is a line of text with a tint
+     behind it, not a card a child works inside, and the card step was adding
+     4mm of height per heading to say nothing. */
   .h-section-label {
+    display: inline-block;
     box-sizing: border-box;
+    max-width: 100%;
     margin: 0 0 var(--space-tight);
-    padding: var(--inset-card);
+    padding: var(--inset-cell);
     font-size: var(--type-sectionLabel);
     font-weight: bold;
     color: var(--colour-navy);
@@ -582,14 +639,17 @@ const css = `
        quietly clipped. */
     line-height: 1.35;
   }
-  /* Bold, black and bracketed, and the same wherever a number appears. Blue
-     numbers beside black bracketed ones on the same sheet read as two sheets
-     stapled together, which is what a real lesson looked like: three helpers
-     could print their own number and sixty-two had it typed in by hand. */
+  /* Bold, blue and bracketed, and the same wherever a number appears. Two
+     number styles on one sheet read as two sheets stapled together, which is
+     what a real lesson looked like: three helpers could print their own number
+     and sixty-two had it typed in by hand. Blue is the question colour, and a
+     question label is the one part of the question that is pure signposting -
+     so it steps back from the black the child reads and writes in, rather than
+     competing with it. The .h-numbered-n mark in compose.js matches it. */
   .h-num {
-    color: var(--colour-ink);
+    color: var(--colour-question);
     font-weight: bold;
-    font-size: var(--type-body);
+    font-size: var(--type-questionNumber);
     min-width: ${QUESTION_NUMBER_COL_MM}mm;
     /* A number never wraps onto a line of its own, and never shrinks below the
        column every other number on the sheet starts in. */
@@ -673,8 +733,8 @@ const css = `
      the words above it get the full width back. It keeps the left-hand gutter
      so the writing line still starts where every other one does. */
   .h-q--blank-below .h-blank {
-    flex-basis: calc(100% - 9mm);
-    margin-left: 9mm;
+    flex-basis: calc(100% - ${QUESTION_NUMBER_COL_MM}mm);
+    margin-left: ${QUESTION_NUMBER_COL_MM}mm;
   }
 
   .h-written { align-items: flex-start; }

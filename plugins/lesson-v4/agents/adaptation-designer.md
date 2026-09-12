@@ -227,7 +227,7 @@ If the task genuinely qualifies for the two-page central-write-on-visual excepti
 
 ### 6. Mark fit priorities for any separate resource being designed
 
-Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side is about 250mm of stacked height below the title; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes.
+Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side is about 250mm of stacked height, with no title or objective printed above it; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes.
 
 Where the design selected them, a Tier 2 climb's class-sized final item and a Tier 3 resource's `Reaches towards:` item are essential and protected. They are the last thing on the sheet, which makes them the obvious thing to lose when the page runs short, and losing them turns the resource back into the parallel work it was built to avoid. Something earlier in the run goes first. A sheet whose line reads `Not selected` has nothing to protect there and nothing to make room for.
 

@@ -30,9 +30,11 @@ and every sheet that has missed the mark has missed it in one of these ways:
   of a page under a heading; a 30mm row waiting for one four-digit number.
 - **A page composed around a photograph's file** rather than around the object
   a child is being asked to look at.
-- **A heading against the physical edge of the paper**, in the strip a
-  classroom printer may not print, reading as a stray grey line rather than as
-  the sheet's own heading.
+- **Page furniture competing with the work.** A titled header band and a
+  bordered code badge across the top of every sheet, saying what the child
+  already knows; a question number set in a tinted chip with a rule down its
+  side, making the loudest mark in the question the part that only says where
+  you are. Both were real, and both are gone.
 - **Furniture standing in for a task.** Two drawn figures and two speech
   bubbles where the work is one claim and an explanation of whether it holds.
 
@@ -54,10 +56,13 @@ engine:
 - `worksheet-html/fixtures/visual-product-compare-numbers.json`
 - `worksheet-html/fixtures/visual-product-number-lines.json`
 
-They generalise the approved visual language: aligned compact page header,
-quiet sheet-code badge, restrained section surface, consistent numbered-task
-emphasis, nested representations around one response, and deliberate panel
-hierarchy. They are calibration examples, not templates to copy literally.
+They generalise the approved visual language: a restrained section surface,
+consistent numbered-task emphasis, nested representations around one response,
+and deliberate panel hierarchy. They are calibration examples, not templates to
+copy literally. Their page furniture is not: they were built when a sheet still
+carried a titled header band and a bordered sheet-code badge, and both have
+since gone (`worksheet-helpers.md` -> The sheets). Judge the work on the page,
+not the frame round it.
 
 `worksheet-html/fixtures/maths-partition-four-digit-numbers.json` is this
 engine's build of the same tasks, and it is a development fixture rather than a
@@ -157,6 +162,15 @@ rectangles are not generosity: they are the page's arithmetic showing through.
 Spare room goes to whatever is still gaining from it, and what is left over is
 paper, not an excuse for two enormous boxes and tiny type elsewhere.
 
+**A picture narrower than its zone is an invitation, not a frame.** A photograph
+is drawn at the width its own proportions allow, so a landscape picture given a
+full-width row uses about a quarter of it. The engine no longer rules a box round
+the empty part - a card carrying nothing but a picture is as wide as the picture
+- but the room is still there, and it is the designer's to use. Put the question
+beside the picture, or the picture beside the response it feeds. Deadspace is
+only earned where the child writes in it: the leader lines of a labelled diagram
+need their band, and a drawing box is all response.
+
 **A picture's file is not a design decision either.** Photographs arrive at
 whatever size and shape the photographer framed, and letting each one print at
 its full canvas hands the page's proportions to a stranger: two dolls a child
@@ -177,6 +191,16 @@ Mathematics, apparatus, circuit symbols, table headings, counters, scales and
 answer blanks are drawn by the engine as HTML and SVG. Image generation is for
 photographs and authentic evidence through the existing picture route, and it
 never renders an equation, a label or a place to write.
+
+**A callout on a picture a child works from is a label.** Letters, numbers and
+names pointing at parts are drawn by `label-diagram` over a plain picture, not
+generated into the picture, and a worksheet's picture contract asks for the
+picture without them. A generated callout cannot be moved onto the feature it
+names, cannot be turned into a line the child writes on, and fixes the task to
+one form before anyone has chosen it: a Year 4 tooth cutaway arrived with A, B
+and C drawn in, so the only sheet that picture could produce was a lettered
+diagram and a list of blanks underneath, on a page with half of itself empty.
+`shared.md` has the choice the sheet should have been making instead.
 
 ## Print scale is the test, not the screen
 

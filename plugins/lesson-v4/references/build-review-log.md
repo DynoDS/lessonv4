@@ -1,5 +1,115 @@
 # Build review log
 
+## 2026-09-12 The page is the work, not the furniture round it (4.2.158)
+
+Daniel read three built packs together - the Monday rounding sheets, a Year 4
+teeth sheet and a PSHE activity sheet - and everything he named was one kind of
+fault. Not the questions, which he did not object to once. The furniture the page
+puts round them.
+
+**The question label was the clearest case.** It printed as a tinted chip with a
+heavy navy rule down its left edge, and "(1a)" measures 8mm at body weight in a
+column the page had reserved 9mm for, so the sheet came out `|(1a)6,734` with the
+bracket touching the number being rounded. His instruction: "just be (1a), no
+background, just blue text. then space, then question in black."
+
+The chip is gone and the label is blue. The space needed more care than it looks.
+Widening the column is not free - the approved partitioning page fits with about
+3mm of spare width in the whole sheet, and a pair of four-part models side by side
+has less than 4mm, so a 14mm gutter broke both and shrank every photograph on
+every picture-led sheet (a picture is scaled by its width, so a narrower zone
+makes it smaller, and three write-on photographs started fitting a page where two
+is the honest ceiling). So the label is set one step smaller instead, at 10pt
+against 12pt body, and the gutter moves 9mm to 10mm. Measured in Chrome: "(1)"
+now leaves 5.3mm clear, "(1a)" 3.3mm, and "(10a)", the widest a real sheet
+reaches, 1.2mm. The size is also right on its own terms, and the deck settled the
+same point from the other end yesterday when it capped a slide's question number
+under its question.
+
+**One number, one colour, one size, everywhere.** Five classes print their own
+label and all five moved together: the engine's own mark, a question set's
+numbers, the comparing helpers, a method frame's id, a storyboard cell. The test
+that holds them now checks the size too, which is what stops a label drifting
+back to body size and filling its column again.
+
+**Nothing is titled on a sheet any more.** The learning objective went on 8
+September for three reasons and the lesson name had stayed behind with all three
+still true: it is a heading a child holding the sheet in that lesson does not
+need, it costs the top of the page, and it is teacher-written text of
+unpredictable length in a band of fixed height. "How can being active help my
+mind and body" wrapped onto a second line, ran out of the band and printed
+straight through question 1 of the sheet below it. The first thing on the page is
+now "Fluency".
+
+**And the code is the level's own initials.** "Sheet A" in a bordered blue badge
+became "B", "E" and "GD" in small grey text. A, B and C are an alphabet laid over
+three levels, so the teacher had to remember which pile was which, and the paper
+shared no vocabulary with the adaptation document that decides them. What a child
+can read off it is unchanged, which was always the point of a code.
+
+**Section headings stop at the end of their word.** "Fluency" was a tinted band
+ruled to the right-hand margin - a stripe across the sheet announcing one word,
+and three of them on a page reading as the page's main structure. The size was
+already what he asked for, two points above the question text; the height was
+padding, so it takes the cell step now rather than the card step.
+
+**The lesson's method is a panel, and it had nowhere to be.** "Use these steps to
+help you" plus six steps printed as a grey paragraph at the foot of the rounding
+sheet because no worksheet helper drew criteria - the designer reached for
+`instruction` and put newlines in it. There is a `steps` helper now, and it is the
+deck's success-criteria panel to the hex: the pale green ground, the green rule,
+the green tick heading, numbered green badges, one white card per step. A child
+who followed those steps off the board finds the same object on their paper.
+
+That is a producing fault as well as a missing helper, so the producing fault is
+closed too. Across every saved spec, forty-four instructions carried more than one
+line and not one of them was an instruction: they were criteria, or they were
+questions with no number and nowhere to answer. An instruction of three lines or
+more is now refused, with a message naming `steps` for the first case and
+`questions`/`written-answers` for the second. Two lines is left alone, because a
+direction genuinely in two parts reads as one direction. The approved partitioning
+fixture carried one of these and has been converted rather than exempted.
+
+The panel is not free and the guidance says so: six criteria stand about 55mm
+against about 40mm as prose. The Monday Expected sheet is 10mm over with it, which
+is the engine telling the truth - fewer criteria on the paper is a real answer,
+because the board has all of them.
+
+**A picture that fills a quarter of its box no longer draws the other three
+quarters.** A card carrying nothing but a photograph is now as wide as the
+photograph. A card with a title, caption, write line, tick box or join dot keeps
+its column, because a row of artefacts a child compares has to line up. The room
+that frees is the designer's to use, and the visual profile now says to put the
+question in it: deadspace is earned only where the child writes in it.
+
+**A word bank is one bank.** `chip-bank` could not carry a meaning, so a designer
+with one word to gloss split the bank in two - `muscles` in a titled green bank,
+`oxygen` alone in an untitled blue one floating higher up the page, one of the
+two defined. A chip may now be written `{ word, meaning }` and the meaning prints
+inside the chip under its word, at note size.
+
+**The teeth sheet is the one repair that is not in the engine.** Daniel: the
+letters "are now causing children to match and locate and look in different
+places etc." The sheet lettered a tooth cutaway A, B and C and asked for the names
+in a list underneath, on a page whose bottom half was empty. `label-diagram`
+already draws a write-on line at the end of a leader, and `shared.md` already
+chose between the two forms - but only on page cost, never on what each costs the
+child. Writing on the picture is one place to look; a letter and a list is three
+hops, and for the child who needs the sheet most that is where the task is lost.
+So the default is now that the name goes on the picture when naming is the work.
+
+It has an upstream half as well. That photograph arrived with `A`, `B` and `C`
+generated into it, from a picture contract the lesson designer wrote, which left
+`card-row` and a list as the only thing the sheet could do with it. A worksheet
+picture a child labels is now requested plain: the callouts are the engine's to
+draw. That rule is in the lesson-designer's own worksheet guidance and in the
+visual profile beside "draw it, never generate a picture of it", which it always
+followed from.
+
+Fifteen new tests in one file, `page-furniture.test.js`, which is the place a
+later change that puts any of this back fails. JavaScript: 669 pass, 0 fail.
+Python: 1665 pass, the ten known failures unchanged.
+
 ## 2026-09-12 A maths sheet is the lesson continued (4.2.157)
 
 Daniel gave the context rather than a fault: in his maths lessons the worksheet is not a nice-to-have extra, it is what children do at their tables straight after the teaching. He was explicit that this must not enter the plugin as his routine ("i just didn't want 'Daniel does X so do Y'"), and equally explicit that the deck must still carry the whole lesson on its own.

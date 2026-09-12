@@ -302,9 +302,36 @@ and every check passed. So before you write a label-diagram, read what the
 lesson design or the adaptation asked this picture to GIVE the child, and print
 those words. Ask for a word only when naming it is the work.
 
-**This is not a compromise.** Numbering the parts and answering in a list is how
-most published science sheets do this, and it is the form to reach for the moment
-a sheet carries more than two photographs. Three separate photographs is the
+**Which form you choose is a decision about the child first and the page
+second.** The two paragraphs above price them; this is what each asks of a
+child. Writing on the picture is one place to look: the child finds the part,
+names it, and writes the name where the part is. A letter and a list is three:
+read the letter, find the letter's dot, hold the part in mind, look away to row
+B of the list, write. Every one of those hops is work that is not naming the
+part, and for the child who needs the sheet most it is where the task is lost.
+
+So when naming the part IS the work, the writing goes on the picture. Reach for
+the letter-and-list form when the page genuinely cannot hold the other one, when
+a name is too long to write beside the thing it names, or when the list itself is
+doing something the leader lines cannot - a sentence about each part, a
+comparison down a column.
+
+A Year 4 science sheet got this wrong with room to spare: a tooth cutaway
+lettered A, B and C, then `A: ____ B: ____ C: ____` underneath, on a page whose
+bottom half was empty. The room the write-on form needed was sitting unused, and
+the letters bought nothing but the hops.
+
+**The picture has to arrive without the answer written on it.** A photograph or
+diagram a child labels is requested plain, with no letters, numbers or names
+drawn into it, because the callouts are the engine's to draw and a picture that
+already carries them can only be used one way. That tooth cutaway had `A`, `B`
+and `C` generated into the image, which is what left `card-row` and a list as
+the only thing the sheet could do with it. See `worksheet-visual-profile.md` ->
+Draw it, never generate a picture of it.
+
+**Numbering is not a compromise.** Numbering the parts and answering in a list is
+how most published science sheets do this, and it is the form to reach for the
+moment a sheet carries more than two photographs. Three separate photographs is the
 ceiling even numbered, and past that no arrangement of zones exists that
 holds them, so the answer is fewer pictures, or several parts numbered on one
 picture rather than one part each on several.

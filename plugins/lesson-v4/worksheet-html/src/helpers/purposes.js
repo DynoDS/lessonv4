@@ -34,6 +34,9 @@ module.exports = {
     "The mode-of-work heading a block sits under: Fluency, Practise, Apply. Marks the kind of thinking, never the topic. Put it at the top of a stack.",
   "source-text":
     "A passage, account or extract the child reads and works from.",
+  steps:
+    "Success criteria or the steps of the taught method, in the same green panel the class worked from on the board. Nothing in it is written on.",
+
 
   // ─── tables ───
   "data-table":

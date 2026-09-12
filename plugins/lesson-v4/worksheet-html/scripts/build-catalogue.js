@@ -35,7 +35,7 @@ const examples = require("../test/helper-examples");
 // The families the source files already group helpers into, so the designer
 // reads them in the order it would think of them rather than alphabetically.
 const FAMILIES = [
-  ["Text and questions", ["section-label", "instruction", "questions", "written-answers", "source-text"]],
+  ["Text and questions", ["section-label", "instruction", "questions", "written-answers", "source-text", "steps"]],
   ["Tables", ["data-table", "recording-table"]],
   [
     "Charts and diagrams",

@@ -716,11 +716,20 @@ test("a helper only claims spare height if it can actually use it", () => {
 });
 
 test("a question number looks the same wherever it appears", () => {
-  // Daniel's rule: bold, black, in brackets. It was none of those consistently.
-  // Three helpers printed their own number in question blue, one with a full
-  // stop after it and one bare; the other sixty-two had "(1)" typed into their
-  // text by hand in ordinary body text. A single sheet showed three of those at
-  // once, which reads as three sheets stapled together.
+  // Daniel's rule: bold, in brackets, and ONE colour across the whole sheet.
+  // It was none of those consistently. Three helpers printed their own number
+  // in question blue, one with a full stop after it and one bare; the other
+  // sixty-two had "(1)" typed into their text by hand in ordinary body text.
+  // A single sheet showed three of those at once, which reads as three sheets
+  // stapled together.
+  //
+  // The colour is blue, settled on 12 September 2026 after Daniel read the
+  // rounding sheet: "I want it to just be (1a), no background, just blue text.
+  // then space, then question in black." Black had put the label in the same
+  // ink as the work, so the engine's own mark had to earn its separation with a
+  // tinted chip and a heavy navy rule instead, and the loudest thing in the
+  // question became the part that only says where you are. Blue is what "this
+  // is the question" already means on this sheet, so the label needs no box.
   //
   // A number is now the engine's to draw, from `number` on a zone's content, so
   // a helper does not decide this at all. These are the ones that still print
@@ -737,11 +746,23 @@ test("a question number looks the same wherever it appears", () => {
   for (const cls of NUMBER_CLASSES) {
     const rule = new RegExp(String.raw`\.${cls}\s*\{[^}]*\}`).exec(helperCss);
     assert.ok(rule, `${cls} has no styling at all`);
-    assert.match(rule[0], /--colour-ink/, `${cls} is not drawn in ink`);
+    assert.match(rule[0], /--colour-question/, `${cls} is not drawn in question blue`);
     assert.match(rule[0], /bold/, `${cls} is not bold`);
+    // One size as well as one colour. This is what stops a label drifting back
+    // to body size, where it fills its column and touches the question.
+    assert.match(
+      rule[0],
+      /--type-questionNumber/,
+      `${cls} does not use the question-number size`
+    );
     assert.ok(
-      !/--colour-question/.test(rule[0]),
-      `${cls} is still drawn in question blue`
+      !/--colour-ink/.test(rule[0]),
+      `${cls} is still drawn in the ink the child writes in`
+    );
+    // No chip, no rule, no fill. The mark is the colour and nothing else.
+    assert.ok(
+      !/background\s*:|border(-(left|right|top|bottom|radius))?\s*:/.test(rule[0]),
+      `${cls} draws a box around the number`
     );
   }
 });

@@ -1035,10 +1035,31 @@ const CHIP_PAD_Y_MM = INSET.card.v;
 const CHIP_BORDER_MM = RULE.line;
 const CHIP_CHAR_MM = BODY_PT * PT_MM * 0.58; // bold, so wider than prose
 
+// A chip is a word, and OPTIONALLY what that word means.
+//
+// It used to be a word and nothing else, and a designer with a word to gloss
+// had one move left: a second chip-bank beside the first, holding the one word
+// that needed a meaning, with the meaning as a loose instruction under it. That
+// is what a Year 4 activity sheet shipped - "muscles" in a titled green bank on
+// the left, "oxygen" in an untitled blue bank on the right, floating higher up
+// the page because it had no title line above it to push it down, and one of
+// the two words defined. A word bank that is two banks is not a word bank: the
+// child cannot see the set they are choosing from.
+//
+// So a chip may be written as a bare string, or as { word, meaning }, and the
+// bank stays one bank.
 function chipList(spec) {
   return (Array.isArray(spec.chips) ? spec.chips : [])
-    .map((c) => (c == null ? "" : String(c)))
-    .filter((c) => c !== "");
+    .map((c) => {
+      if (c && typeof c === "object" && !Array.isArray(c)) {
+        return {
+          word: c.word == null ? "" : String(c.word).trim(),
+          meaning: c.meaning == null ? "" : String(c.meaning).trim(),
+        };
+      }
+      return { word: c == null ? "" : String(c).trim(), meaning: "" };
+    })
+    .filter((c) => c.word !== "");
 }
 
 // A bank titled "Word bank" is vocabulary by definition, so with no variant
@@ -1064,7 +1085,14 @@ function renderChipBank(spec) {
     ? `<p class="h-chipbank-title">${esc(spec.title)}</p>`
     : "";
   const pills = chips
-    .map((label) => `<span class="h-chip">${esc(label)}</span>`)
+    .map(
+      (chip) =>
+        `<span class="h-chip"><span class="h-chip-word">${esc(chip.word)}</span>` +
+        (chip.meaning
+          ? `<span class="h-chip-meaning">${esc(chip.meaning)}</span>`
+          : "") +
+        `</span>`
+    )
     .join("");
   return `
     <div class="h-chipbank ${chipVariantClass(spec)}">
@@ -1073,12 +1101,44 @@ function renderChipBank(spec) {
     </div>`;
 }
 
-// One chip's printed width at this zone width: its own label, padded and
-// bordered, floored, and never wider than the zone.
-function chipWidthMm(label, widthMm) {
+// One chip's printed width at this zone width: its own word, padded and
+// bordered, floored, and never wider than the zone. A chip carrying a meaning
+// is sized to whichever of the two is wider, the meaning measured at the note
+// size it prints in - otherwise a five-letter word with a six-word gloss under
+// it comes out a stub with its meaning wrapped four times inside it.
+const CHIP_MEANING_CHAR_MM = TYPE.note * PT_MM * 0.5;
+const CHIP_MEANING_MAX_MM = 55; // past this a gloss is prose, not a label
+
+function chipWidthMm(chip, widthMm) {
+  const wordMm = chip.word.length * CHIP_CHAR_MM;
+  const meaningMm = chip.meaning
+    ? Math.min(CHIP_MEANING_MAX_MM, chip.meaning.length * CHIP_MEANING_CHAR_MM)
+    : 0;
   const naturalMm =
-    label.length * CHIP_CHAR_MM + CHIP_PAD_X_MM * 2 + CHIP_BORDER_MM * 2;
+    Math.max(wordMm, meaningMm) + CHIP_PAD_X_MM * 2 + CHIP_BORDER_MM * 2;
   return Math.min(widthMm, Math.max(CHIP_MIN_MM, naturalMm));
+}
+
+// How tall one chip comes out at its own printed width: the word at body size,
+// and any meaning wrapped under it at note size.
+function chipHeightMm(chip, widthMm) {
+  const innerMm = Math.max(
+    4,
+    chipWidthMm(chip, widthMm) - CHIP_PAD_X_MM * 2 - CHIP_BORDER_MM * 2
+  );
+  const wordLines = Math.max(
+    1,
+    Math.ceil((chip.word.length * CHIP_CHAR_MM) / innerMm)
+  );
+  const meaningLines = chip.meaning
+    ? Math.max(1, Math.ceil((chip.meaning.length * CHIP_MEANING_CHAR_MM) / innerMm))
+    : 0;
+  return (
+    wordLines * LINE_MM +
+    meaningLines * NOTE_LINE_MM +
+    CHIP_PAD_Y_MM * 2 +
+    CHIP_BORDER_MM * 2
+  );
 }
 
 // The wrap the browser will produce, simulated greedily: chips go onto a row
@@ -1088,15 +1148,15 @@ function chipRows(chips, widthMm) {
   const rows = [];
   let row = null;
   let usedMm = 0;
-  for (const label of chips) {
-    const wMm = chipWidthMm(label, widthMm);
+  for (const chip of chips) {
+    const wMm = chipWidthMm(chip, widthMm);
     const withGapMm = row ? usedMm + CHIP_GAP_MM + wMm : wMm;
     if (!row || withGapMm > widthMm) {
-      row = [label];
+      row = [chip];
       usedMm = wMm;
       rows.push(row);
     } else {
-      row.push(label);
+      row.push(chip);
       usedMm = withGapMm;
     }
   }
@@ -1111,21 +1171,12 @@ function measureChipBank(spec, widthMm) {
   const titleMm = spec.title ? LINE_MM + SPACE_TIGHT_MM : 0;
   if (chips.length === 0) return stemMm + titleMm;
 
-  // Each row is as tall as its tallest chip. A chip only wraps its own text
-  // when its label is wider than the whole zone, because its width hugs the
-  // label everywhere short of that.
-  const rowsMm = chipRows(chips, widthMm).map((row) => {
-    const lines = Math.max(
-      ...row.map((label) => {
-        const textMm = Math.max(
-          4,
-          chipWidthMm(label, widthMm) - CHIP_PAD_X_MM * 2 - CHIP_BORDER_MM * 2
-        );
-        return Math.max(1, Math.ceil((label.length * CHIP_CHAR_MM) / textMm));
-      })
-    );
-    return lines * LINE_MM + CHIP_PAD_Y_MM * 2 + CHIP_BORDER_MM * 2;
-  });
+  // Each row is as tall as its tallest chip. A chip only wraps its own word
+  // when that word is wider than the whole zone, because its width hugs the
+  // word everywhere short of that; a meaning under it adds its own note lines.
+  const rowsMm = chipRows(chips, widthMm).map((row) =>
+    Math.max(...row.map((chip) => chipHeightMm(chip, widthMm)))
+  );
 
   return (
     stemMm +
@@ -1141,7 +1192,7 @@ function needsChipBank(spec) {
   // once there is more than one: a bank one chip wide is a list, and the
   // separation the borders exist for stops doing any work.
   const widestMm = chips.reduce(
-    (m, label) => Math.max(m, chipWidthMm(label, WIDEST_ZONE_MM)),
+    (m, chip) => Math.max(m, chipWidthMm(chip, WIDEST_ZONE_MM)),
     CHIP_MIN_MM
   );
   const minWidthMm =
@@ -1245,6 +1296,17 @@ const css = `
     border-radius: 1mm;
     text-align: center; font-weight: bold;
     font-size: var(--type-body); line-height: 1.35;
+  }
+  .h-chip-word { display: block; }
+  /* What the word means, inside the chip that carries the word. Note size and
+     not bold, so the word stays the thing being chosen and the gloss is what
+     lets a child choose it. In ink rather than the chip's colour: the meaning
+     is prose the child reads, and the chip's colour is what says where the
+     word came from. */
+  .h-chip-meaning {
+    display: block;
+    font-size: var(--type-note); font-weight: normal;
+    color: var(--colour-ink); line-height: 1.35;
   }
   .h-chipbank--vocab .h-chip {
     border-color: var(--colour-vocab); color: var(--colour-vocab);

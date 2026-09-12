@@ -477,7 +477,12 @@ const css = `
   /* method-frame */
   .h-mframe { font-size: var(--type-body); }
   .h-mframe-stem { margin: 0 0 2mm; color: var(--colour-ink); line-height: 1.35; }
-  .h-mframe-id { color: var(--colour-ink); font-weight: bold; }
+  /* The frame's question label, in the question blue every other label on the
+     sheet uses. */
+  .h-mframe-id {
+    color: var(--colour-question); font-weight: bold;
+    font-size: var(--type-questionNumber);
+  }
   .h-mframe-panel { padding: ${PANEL_PAD_V_MM}mm ${PANEL_PAD_H_MM}mm; }
   .h-mframe-framed {
     background: var(--colour-tint);

@@ -80,7 +80,34 @@ function stackGapsMm(items) {
 // The gutter a question number sits in. Wide enough for "(10)" at body size,
 // because a sheet whose numbering shifts left at question ten reads as two
 // different sheets stapled together.
-const NUMBER_GUTTER_MM = 9;
+// The label column, the gap after it, and the two together - which is the room
+// a numbered question gives up off its own width.
+//
+// It was one 9mm figure doing all three jobs, and 9mm is what "(1a)" measures
+// at body weight, so a grouped Part filled its column edge to edge: the sheet
+// printed "(1a)6,734" with the bracket touching the number being rounded and
+// nothing between the label and the work. A label with no space after it stops
+// reading as a label and starts reading as part of the question.
+//
+// So the label is set one step smaller (see `questionNumber` in tokens.js), the
+// column is sized to hold "(1a)" at that size, and the gap is the same
+// `space-tight` step that separates a number from its words everywhere else on
+// the sheet. Measured in Chrome at 10pt bold Comic Sans, a label leaves this
+// much clear before the question begins:
+//
+//   (1)     4.74mm wide   5.3mm clear
+//   (1a)    6.70mm wide   3.3mm clear
+//   (10a)   8.85mm wide   1.2mm clear   the widest a real sheet reaches
+//
+// The two must add to the gutter, because the gutter is what the measurement
+// takes off the body's width and the CSS is what the browser actually draws.
+// And the gutter is spent width: the approved partitioning page fits with about
+// 3mm to spare, so this is 10mm and not the 14mm that would centre every label
+// comfortably. A label that overruns its column runs into the gap rather than
+// into the words.
+const NUMBER_LABEL_MM = 8;
+const NUMBER_GAP_MM = SPACE.tight;
+const NUMBER_GUTTER_MM = NUMBER_LABEL_MM + NUMBER_GAP_MM;
 
 // ─── which of the three is this? ─────────────────────────────────────────
 
@@ -638,15 +665,18 @@ const css = `
      greedy helpers are told to fill it - and this was the one that handed down
      "as tall as your text" instead. A helper that claims spare height should
      get it wherever it sits, and a numbered question is still a question. */
-  .h-numbered { display: flex; align-items: stretch; height: 100%; }
+  .h-numbered { display: flex; align-items: stretch; height: 100%; gap: ${NUMBER_GAP_MM}mm; }
+  /* The label is a MARKER, not furniture. It used to be set in a tinted chip
+     with a heavy navy rule down its left edge, which made the loudest mark in
+     the question the part that only says where you are. Blue because that is
+     already what "this is the question" means on this sheet, and nothing else:
+     no fill, no rule, no chip. The question itself stays black, so the two are
+     told apart by colour rather than by a box. */
   .h-numbered-n {
-    flex: 0 0 ${NUMBER_GUTTER_MM}mm;
-    font-size: var(--type-body); font-weight: bold;
-    color: var(--colour-ink); line-height: 1.35;
-    background: var(--colour-surface);
-    border-left: var(--rule-heavy) solid var(--colour-navy);
-    border-radius: 1mm;
-    text-align: center;
+    flex: 0 0 ${NUMBER_LABEL_MM}mm;
+    font-size: var(--type-questionNumber); font-weight: bold;
+    color: var(--colour-question); line-height: 1.35;
+    text-align: left;
     box-sizing: border-box;
     /* Beside the question's FIRST line, never centred down its side. */
     align-self: flex-start;

@@ -28,9 +28,16 @@ const LONG_QUESTION = {
 };
 
 test('a worksheet picture disappears when it would add a line of text', () => {
-  // 70mm: the words fit on one line without the picture and need two with it,
+  // 69mm: the words fit on one line without the picture and need two with it,
   // so the picture is costing the child a wrapped question and goes.
-  const html = REGISTRY.questions.render(LONG_QUESTION, 70);
+  //
+  // It was 70mm until 12 September 2026, when the question-number column came
+  // down from 9mm to 8mm (the label is set one step smaller than the question
+  // now, so it needs less room). That hands every question row 1mm back, and
+  // the width at which a picture starts costing a line moves 1mm with it. The
+  // rule is unchanged; the threshold is a measurement, and the 80mm case below
+  // is what holds the rule to a real boundary rather than to a number.
+  const html = REGISTRY.questions.render(LONG_QUESTION, 69);
   assert.doesNotMatch(html, /🐦/);
 });
 

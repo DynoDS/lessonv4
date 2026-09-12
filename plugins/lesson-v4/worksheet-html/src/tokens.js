@@ -27,6 +27,15 @@ const COLOUR = {
   rule: "#999999", // writing lines and hairline borders.
   tint: "#F1F4F5", // the one neutral fill, for a panel that needs separating.
   surface: "#EAF3F8", // quiet grouping surface; remains distinct in greyscale.
+  criteria: "#D5F5E3", // the pale green ground of the steps panel, and the one
+  // place green is a SURFACE rather than a word. It is the deck's own
+  // `scPanelBg`, kept to the hex, because the panel a child worked from on the
+  // board and the panel on their sheet have to be recognisably the same object
+  // - that recognition is the whole reason the panel is on the paper at all.
+  // It does not give green a second meaning: on paper green still means "the
+  // lesson handed you this to lean on", which is what a taught word and a
+  // success criterion both are. What it must never become is a fill behind
+  // ordinary prose, which would make green decoration.
 };
 
 // Deliberately absent: an `answer` colour (a worksheet never shows one) and a
@@ -37,7 +46,24 @@ const TYPE = {
   note: 9,
   body: 12,
   question: 13,
-  questionNumber: 12,
+  // A question LABEL, which is smaller than the question it labels.
+  //
+  // It was body size, so "(1a)" printed 8mm wide and filled the 9mm column the
+  // page had reserved for it - which is why the rounding sheet came out
+  // "(1a)6,734" with nothing between the label and the number being rounded.
+  // The obvious repair, a wider column, is not free: the approved partitioning
+  // page has about 3mm of spare width in total, and a pair of four-part models
+  // side by side has less than 4mm, so every millimetre the label takes is a
+  // millimetre off a model a child writes in. Two points off the label buys
+  // 1.3mm of clear space and costs 1mm of page.
+  //
+  // It is also the right size on its own terms. A label says where you are; it
+  // is not part of the question, and set as large as the question it competes
+  // with the thing it is only there to number. The deck settled the same point
+  // from the other end on 11 September 2026, capping a slide's question number
+  // at 24pt under 40pt questions. The floor is note size: nothing on a
+  // worksheet goes below that, and 10 is one step clear of it.
+  questionNumber: 10,
   sectionLabel: 14,
   pageTitle: 16,
 };

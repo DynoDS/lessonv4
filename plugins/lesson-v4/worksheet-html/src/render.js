@@ -46,20 +46,26 @@ const GUTTER_MM = 6;
 // measured. A header that overlaps the work, or one whose height nothing has
 // paid for, is how the top line of a zone gets clipped.
 //
-// The learning objective is NOT printed here, and a sheet never carries one.
-// It was dropped on 8 September 2026: the class has the objective on the board
-// and in their books, so repeating it on the paper bought nothing, and it cost.
-// It cost a line of the child's page on every sheet; it was the string the
-// combined-PDF merge corrupted, so two September packs went out headed "To ex"
-// and "To id"; and being teacher-written and sometimes a sentence long, it was
-// the one part of the band whose height no fixed layout could predict. A field
-// nothing prints is a field that cannot be clipped.
+// NOTHING IS TITLED HERE. Not the learning objective, and since 12 September
+// 2026 not the lesson name either. They went for the same reason, twice over.
 //
-// The band is therefore one note line and the tight step beneath it. Compact on
-// purpose: a banner across the top would cost a question to say what nobody
-// needs telling.
-const CODE_SHARE = 0.28;
-const HEADER_MM = 7;
+// The objective went on 8 September 2026: the class has it on the board and in
+// their books, so repeating it on the paper bought nothing, and it cost. It was
+// the string the combined-PDF merge corrupted, so two September packs went out
+// headed "To ex" and "To id"; and being teacher-written and sometimes a
+// sentence long, it was the one part of the band whose height no fixed layout
+// could predict.
+//
+// The lesson name was left behind and turned out to be the same field wearing
+// a different name. "How can being active help my mind and body" is longer than
+// a 180mm band holds at 16pt, so it wrapped onto a second line, ran out of a
+// band whose height is fixed, and printed straight through the first question
+// of the sheet. Nor was it worth the room: a child is holding the sheet in the
+// lesson it belongs to, and the first thing on the page should be the work -
+// "Fluency", not the name of what they have spent twenty minutes on.
+//
+// So the only thing this band carries is the code, and a field nothing prints
+// is a field that cannot be clipped.
 const HEADER_TOP_MM = 6;
 
 function headerMm(spec) {
@@ -706,49 +712,28 @@ ${cssVariables()}
   .area--full .h-stack-item:has(> .h-data) { flex: 1 1 auto; }
   .area--full .h-stack-item > .h-data { height: 100%; }
 
-  /* The sheet's code, when a worksheet holds more than one level. It is a
-     CODE and not a level name on purpose: three sheets printed as one file
-     have to be sortable into piles by the teacher, and "Below" printed at the
-     top of a page is read by the child holding it. Carried over from the Word
-     builder, which made the same call. */
+  /* The sheet's code, when a worksheet holds more than one level. It is an
+     ABBREVIATION of the level and not the level written out: three sheets
+     printed as one file have to be sortable into piles by the teacher, and
+     "Below" printed at the top of a page is read by the child holding it.
+     Quiet grey note text, and nothing else - no badge, no border, no tint.
+     It exists for the two seconds a teacher spends cutting the pile into
+     three, and a bordered blue chip in the corner of every page is a piece of
+     the sheet's furniture competing with its work for that. */
   .sheet-code {
     position: absolute;
     right: ${DEFAULT_MARGIN_MM}mm; top: ${HEADER_TOP_MM}mm;
-    max-width: ${(area.widthMm * CODE_SHARE).toFixed(1)}mm;
     font-size: var(--type-note);
     line-height: 1.35;
-    color: var(--colour-navy);
-    border: var(--rule-line) solid var(--colour-question);
-    border-radius: 2mm;
-    background: var(--colour-surface);
-    padding: 1mm 2.5mm;
-    box-sizing: border-box;
-    z-index: 3;
-  }
-  .sheet-header {
-    position: absolute;
-    left: ${DEFAULT_MARGIN_MM}mm;
-    right: ${DEFAULT_MARGIN_MM}mm;
-    top: ${HEADER_TOP_MM}mm;
-    height: ${HEADER_MM}mm;
-    display: flex;
-    align-items: flex-start;
-    border-bottom: var(--rule-heavy) solid var(--colour-question);
-    z-index: 3;
-  }
-  .sheet-title {
-    max-width: ${Math.round(area.widthMm * (1 - CODE_SHARE) - SPACE.item)}mm;
-    color: var(--colour-navy);
-    font-size: var(--type-pageTitle);
-    line-height: 1.1;
+    color: var(--colour-quiet);
     font-weight: bold;
+    z-index: 3;
   }
 
 ${helperCss}
 </style></head>
 <body data-worksheet-page>
   ${decorationLayers.low}
-  ${(spec.title || spec.code) ? `<header class="sheet-header">${spec.title ? `<div class="sheet-title">${esc(spec.title)}</div>` : ""}</header>` : ""}
   ${spec.code ? `<div class="sheet-code">${esc(spec.code)}</div>` : ""}
   <div class="area${spec.layout === "full" ? " area--full" : ""}">${zones}</div>
   ${decorationLayers.high}

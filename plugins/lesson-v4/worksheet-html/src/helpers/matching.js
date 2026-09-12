@@ -401,6 +401,37 @@ function cardImageHtml(card, innerMm, viewportMm) {
   return `<span class="h-card-view" style="width:${box.widthMm.toFixed(2)}mm;height:${box.heightMm.toFixed(2)}mm"><img class="h-card-img" style="${style}" src="${esc(card.imageHref)}" alt=""></span>`;
 }
 
+// A card that is ONLY a picture hugs its picture instead of spanning its share
+// of the zone.
+//
+// The grid gives every card an equal 1fr column, which is right when a card is
+// a titled, captioned thing a child reads or writes on: those cards should line
+// up. It is wrong for the commonest case of all, one photograph handed to the
+// class to look at. The image inside is drawn at the width its own proportions
+// allow at the row's shared height, so a landscape photograph in a full-width
+// card printed about 48mm of picture centred in a 175mm box - 127mm of ruled
+// white space a child does nothing in, and a bordered rectangle around it
+// saying they should. That is the page's arithmetic showing through, and on the
+// Year 4 activity sheet it took most of a question's worth of room.
+//
+// The test is what the card CARRIES, not how many cards there are: the moment a
+// card has a title, a caption, a write line, a tick box or a join dot, its box
+// is doing work beyond holding the picture and it keeps its column, so a row of
+// artefacts to compare is untouched. Where every card in the row is bare, the
+// row hugs and sits left, against the same margin the questions start at.
+//
+// What this does NOT do is fill the room it frees. A picture with space beside
+// it is an invitation to the designer to put the question there; the engine
+// cannot move a question it was not given.
+function cardsArePictureOnly(spec) {
+  const cards = spec.cards || [];
+  if (!cards.length) return false;
+  if (spec.writeLabel || spec.markLabel || cardDotSide(spec)) return false;
+  return cards.every(
+    (card) => card && card.imageHref && !card.title && !card.caption
+  );
+}
+
 function renderCardRow(spec, widthMm) {
   const columns = cardColumns(spec);
   const dot = cardDotSide(spec);
@@ -448,7 +479,7 @@ function renderCardRow(spec, widthMm) {
   return `
     <div class="h-cardrow">
       ${spec.text ? `<p class="h-cardrow-stem">${esc(spec.text)}</p>` : ""}
-      <ul class="h-cardrow-list" style="--h-card-cols:${columns}">${cards}</ul>
+      <ul class="h-cardrow-list${cardsArePictureOnly(spec) ? " h-cardrow-list--hug" : ""}" style="--h-card-cols:${columns}">${cards}</ul>
     </div>`;
 }
 
@@ -664,6 +695,13 @@ const css = `
     display: grid;
     grid-template-columns: repeat(var(--h-card-cols), 1fr);
     gap: ${CARD_GAP_MM}mm;
+  }
+  /* Cards carrying nothing but a picture are as wide as the picture, and the
+     row starts at the left margin like everything else on the sheet. See
+     cardsArePictureOnly above for why the plain grid is kept for the rest. */
+  .h-cardrow-list--hug {
+    grid-template-columns: repeat(var(--h-card-cols), max-content);
+    justify-content: start;
   }
   .h-card {
     box-sizing: border-box;
