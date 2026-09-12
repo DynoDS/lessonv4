@@ -194,7 +194,7 @@ Pictures, matching, sorting, symbols, short prompts, word banks, sentence stems,
 For each question, part or open task, write:
 
 - `Pupil prompt:` — exact child-facing wording;
-- `Response form:` — one value from the vocabulary in `output-template.md` → `responseForm`, and for `written-explanation` a clause saying what the words evidence that no other form would;
+- `Response form:` one value from the vocabulary in `output-template.md` → `responseForm`, and for `written-explanation` a clause saying what the words evidence that no other form would;
 - `Response:` — the printed action and obvious response target;
 - `Support:` — any word bank, stem, given labels, representation or reference;
 - `Visual requirements:` — required content, sourcing and composition information.
