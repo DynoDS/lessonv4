@@ -174,7 +174,7 @@ repair route. Do not multiply findings for every border and gap: name the
 page-level product fault once. A millimetre of spacing, a slightly different
 tint, or another equally coherent arrangement remains advisory and must not
 block.
-Use the actual owner: slide-designer, worksheet-designer, working-wall-builder
+Use the actual owner: slide-designer, worksheet-designer, working-wall-designer
 or stick-in-sheets-designer. Do not write placeholder evidence or infer a pass
 from the fact that every page was opened. Counts and hashes establish coverage
 and freshness; your judgement establishes usability.

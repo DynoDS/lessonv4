@@ -85,9 +85,22 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
   const lineHeight = opts.lineHeight || 1.3;
   const interItem = opts.interItem != null ? opts.interItem : 0.22;
   const charWidthRatio = opts.charWidthRatio || 0.55;
+  // Two different questions, and the same number used to answer both.
+  //
+  // `floorLinesPerItem` is the content budget: how many lines an item may take
+  // at the floor size before the card is refused by name. It is what the
+  // character budget in the designer's brief is derived from, so it stays at 2.
+  //
+  // `maxLinesPerItem` is the layout cap: how far an item may wrap while the
+  // fitter searches for a size. Wrapping one short sentence over four lines of
+  // large type is how a card fills an A3 sheet, so this is deliberately looser.
+  // Holding both at 2 meant the cap, not the page, chose the type size, and a
+  // one-sentence card beside a photo came out at the floor in a panel running
+  // the full height of the sheet.
   const maxLinesPerItem = opts.maxLinesPerItem || 2;
+  const floorLinesPerItem = opts.floorLinesPerItem || 2;
 
-  const fitAt = (pt) => {
+  const fitAt = (pt, cap = maxLinesPerItem) => {
     const charsPerLine = Math.max(1, Math.floor((availWidth * 72) / (pt * charWidthRatio)));
     let totalLines = 0;
     for (const item of items) {
@@ -98,7 +111,7 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
       const longestWord = Math.max(longestWordLen(text), labelLen);
       if (longestWord > charsPerLine) return { fits: false, lines: Infinity };
       const lines = Math.max(1, Math.ceil(adjLen / charsPerLine));
-      if (lines > maxLinesPerItem) return { fits: false, lines };
+      if (lines > cap) return { fits: false, lines };
       totalLines += lines;
     }
     const heightInches = totalLines * (pt * lineHeight / 72) + items.length * interItem;
@@ -108,9 +121,9 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
   // A refusal that says only "something is too long" costs the whole wall: the
   // route allows one focused repair, and a repair aimed at nothing is a guess.
   // Name the card, the item, and the budget it has to come under.
-  const diagnose = (pt) => {
+  const diagnose = (pt, cap = maxLinesPerItem) => {
     const charsPerLine = Math.max(1, Math.floor((availWidth * 72) / (pt * charWidthRatio)));
-    const budget = charsPerLine * maxLinesPerItem;
+    const budget = charsPerLine * cap;
     const where = opts.label ? `${opts.label}` : "this card";
     for (let index = 0; index < items.length; index++) {
       const item = items[index];
@@ -122,20 +135,28 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
       if (longestWord > charsPerLine) {
         return `${where}: item ${index + 1} contains a ${longestWord}-character run that cannot break, and only ${charsPerLine} characters fit on a line at ${pt}pt. Split that word or shorten the item's label.`;
       }
-      if (Math.ceil(adjLen / charsPerLine) > maxLinesPerItem) {
-        return `${where}: item ${index + 1} is ${adjLen} characters including its label, and ${budget} is the most that fits in ${maxLinesPerItem} lines at ${pt}pt (${charsPerLine} per line). Cut it to ${budget} characters or fewer: "${String(text).slice(0, 60)}${text.length > 60 ? "…" : ""}".`;
+      if (Math.ceil(adjLen / charsPerLine) > cap) {
+        return `${where}: item ${index + 1} is ${adjLen} characters including its label, and ${budget} is the most that fits in ${cap} lines at ${pt}pt (${charsPerLine} per line). Cut it to ${budget} characters or fewer: "${String(text).slice(0, 60)}${text.length > 60 ? "…" : ""}".`;
       }
     }
-    const measured = fitAt(pt);
+    const measured = fitAt(pt, cap);
     const over = measured.height != null ? (measured.height - availHeight) : null;
     return `${where}: ${items.length} items need ${measured.height != null ? measured.height.toFixed(1) : "more"}in of panel at ${pt}pt and ${availHeight.toFixed(1)}in is available${over != null ? ` (${over.toFixed(1)}in over)` : ""}. Each item may hold ${budget} characters; remove an item or shorten the longest.`;
   };
 
+  // The content budget is checked first and whatever the search then finds, so
+  // an item written past its budget is still named even when some smaller size
+  // would have squeezed it in. That refusal is the only thing that reaches the
+  // designer, and it is what the one permitted repair aims at.
+  const content = fitAt(minPt, floorLinesPerItem);
+  if (!content.fits) {
+    console.warn(`[autofit] linear body at floor ${minPt}pt does not fit ${size} ${orientation}: ${diagnose(minPt, floorLinesPerItem)}`);
+  }
+
   for (let pt = defaultPt; pt >= minPt; pt -= 4) {
     if (fitAt(pt).fits) return pt;
   }
-  const floor = fitAt(minPt);
-  if (!floor.fits) {
+  if (content.fits && !fitAt(minPt).fits) {
     console.warn(`[autofit] linear body at floor ${minPt}pt does not fit ${size} ${orientation}: ${diagnose(minPt)}`);
   }
   return minPt;

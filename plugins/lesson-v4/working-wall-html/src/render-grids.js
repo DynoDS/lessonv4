@@ -292,11 +292,35 @@ function renderVocabChips(card, style, specDir, ctx = {}) {
   const cellPadding = 120;
   const pillInnerWidthDxa = colWidthDxa - cellPadding * 2;
 
-  // Chip text autofit - pick a size that keeps the longest word on one line
-  // inside the pill, with a floor of 24pt.
   const longestChipChars = chips.reduce((m, c) => Math.max(m, String(c.word).length), 1);
   const hasPhotoChip = chips.some((c) => c.photo);
-  const usableInches = (pillInnerWidthDxa / 1440) - 0.4 - (hasPhotoChip ? 0.8 : 0);
+
+  // How big a chip's picture is drawn.
+  //
+  // It used to be a multiple of the word's own font size (`chipPt * 1.1`, then
+  // read at 96 units to the inch), so it came out at 1.2cm whatever the page had
+  // spare. A Year 4 "Types of teeth" card printed four tooth photographs at that
+  // size, too small to tell an incisor from a molar, with the bottom half of the
+  // A3 sheet blank underneath them. Telling those four apart is the whole job of
+  // the card.
+  //
+  // Size it from the room the rows actually have. Four chips make two rows and a
+  // picture can be inches across; twelve chips make six rows and it cannot. The
+  // word is what a child reads first, so the picture never takes more than a
+  // little over a third of the pill's width, and it never drops below the size
+  // it used to be.
+  const rowCount = Math.ceil(chips.length / cols);
+  const dimsIn = printableInches(card.page.size, card.page.orientation, style);
+  const rowHeightIn = (dimsIn.height - titleBarHeightInches(titlePt)) / rowCount;
+  const OLD_SIDE_IN = 44 / 96;
+  const imageTrueSideIn = hasPhotoChip
+    ? Math.max(OLD_SIDE_IN, Math.min(rowHeightIn * 0.62, (pillInnerWidthDxa / 1440) * 0.36))
+    : 0;
+
+  // Chip text autofit - pick a size that keeps the longest word on one line
+  // inside the pill, with a floor of 24pt. The picture is measured first, so the
+  // word is fitted to what is genuinely left beside it.
+  const usableInches = (pillInnerWidthDxa / 1440) - 0.4 - (hasPhotoChip ? imageTrueSideIn + 0.3 : 0);
   let chipPt = 40;
   for (let pt = 40; pt >= 24; pt -= 2) {
     const widthIn = (longestChipChars * pt * 0.6) / 72;
@@ -304,12 +328,8 @@ function renderVocabChips(card, style, specDir, ctx = {}) {
     chipPt = pt;
   }
 
-  // Image sizing at 96 units per inch: the true rendered side is imagePt / 96
-  // inches. Preserve the existing 96-unit scale.
-  const imagePt = Math.round(chipPt * 1.1);
-  const imageCellWidthDxa = Math.round(imagePt / 72 * 1440) + 200;
+  const imageCellWidthDxa = Math.round(imageTrueSideIn * 1440) + 200;
   const wordCellWidthDxa = pillInnerWidthDxa - imageCellWidthDxa;
-  const imageTrueSideIn = imagePt / 96;
 
   const buildPillHtml = (chip) => {
     const photoBuf = chip.photo ? tryReadPhoto(specDir, chip.photo) : null;

@@ -1,5 +1,31 @@
 # Build review log
 
+## 2026-09-12 The wall is built and checked like everything else (4.2.164)
+
+Daniel asked for a review of every working wall the engine had ever built: 36 documents, 47 A3 sheets, across many versions. Correct, premium, helpful. The answer to the second was mostly no, and five of the causes were one engine fault each.
+
+**Text was being driven to its floor size on three quarters of every sheet ever printed.** Twenty of 47 sat exactly on 36pt against an 80pt ceiling. `stackedBodyOpts` raised the per-item line cap to 4 only for a card carrying a `visual`, so a card carrying a `photo` kept the default cap of 2 in a panel narrowed to 60% of the sheet. In a column that narrow, 2 lines is reached long before the page runs out of height, so the cap and not the page decided the type size and `fitLinearBodySize` walked all the way to the floor. Same card, same space: cap 2 returns 36pt, cap 4 returns 72pt. The cap is now one number for every card, high enough that height binds, and the content budget that decides which cards are refused is split out and left exactly where it was, so nothing that used to build now fails.
+
+**The same two sentences were set at 44pt beside a photograph and 68pt beside a drawing.** Which kind of picture sits next to the text was changing the size of the text. That is the clearest statement of the fault and it is now a test.
+
+**A drawing was rasterised once at 600px whatever size it would print.** A place-value chart placed 31.6cm wide on A3 came off that render at about 41 dots per inch, with visible staircase edges on its digits. The design canvas stays at 600 because stroke widths inside the primitives are absolute against it and scaling it would thin every line; only the raster grows, by four. The widest placement is now about 163 dpi.
+
+**The title bar reserve was a guess and the guess was short.** The panel renderers reserved a flat 1.6in while an A3 bar draws at about 2.19in, because nothing set a line-height and Comic Sans' own line box is nearer 1.4 than the 1.25 the constant assumes. A card fitted against six tenths of an inch it did not have overran, and one shipped with "times the place to its right." alone on a second A3 sheet. `render-grids` had solved this for reference tables long ago: pin the line-height in the CSS, then reserve exactly that. The panel family now does both. Seven cards drop one size step, which is the room they never had.
+
+**A number line wrote its ticks "2500" beside a card that said "2,500",** on the lesson where telling those apart is the point, and two mark labels 500 apart printed as "3,000A = 3,500" because nothing checked whether they met. Both fixed. The separator rule now exists in three engines independently, which is its own finding.
+
+**A vocabulary chip sized its photograph from the word's font size,** giving 1.2cm whatever the page had spare. Four tooth photographs too small to tell an incisor from a molar, with the bottom half of the sheet blank. Sized from row height now: 6.6cm on that card.
+
+**Then Daniel asked why the wall is the only printable with a builder agent.** It was. Slides, worksheets and stick-ins all go through `run-fixed-resource.py`; the wall spawned a model on every run to execute a fixed script and then inspect what it had just made. That builder's own instructions told it to reject a blank page, a picture too small for a wall, unreadable text and overlaps. Every fault above is on that list and it caught none of them. Worse, the playbook let the wall's final review reuse the builder's earlier inspection, making it the one resource signed off by the agent that produced it, on notes written before the final pictures landed.
+
+**So the wall joins the others.** `run-fixed-resource.py` gains a `wall` kind and the wall gets the same collision archiving, marker discovery, hashing and summary envelope; the build script already printed `Built:` and `PDF_SKIPPED`, so it needed no new protocol. The physical-page check moves into the build script, where it runs on every build and cannot be reused from an earlier look: a wall whose PDF holds more sheets than its cards laid out is refused by name. The judgement about a finished sheet goes to `working-wall-designer` at FINAL RESOURCE REVIEW, which is where every other resource's owner already reviews its own, and the reuse clause is gone.
+
+**The builder agent file stays packaged.** `slide-builder`, `worksheet-builder` and `stick-in-sheets-builder` all exist and are not spawned by `make-lesson` either; deleting the wall's would have made it inconsistent in the other direction. Its header now says it is out of the route and why. The revise-in-place route still spawns builders, which is where a worksheet builder had been seen.
+
+**One error caught by the size budget.** The first draft put the reasoning in `playbook-lite.md` and pushed it 232 bytes past its 72 KiB limit. The playbook carries the instruction; the reasoning belongs here and in the agent file, where it costs nothing on every run.
+
+Nineteen new tests, pinning outcomes rather than markup: the old `page-fill.test.js` asserts the CSS that lets a panel grow and passes whether the text landing in it fills the page or sits at the floor in the middle of it. Full run: Python 1698 pass, the ten known failures unchanged; JavaScript 604 slides, 674 worksheet, 125 wall, 43 stick-in, 0 fail.
+
 ## 2026-09-12 The board asks what the child does too (4.2.163)
 
 Daniel, reading back 4.2.162 from the worksheet work: "is this the exact change we did to slides?" It was not. The slides had one rule about starters, which lists other retrieval forms and says to reach for a list of written questions only when the recall genuinely is a list of questions. Past the starter there was nothing. A Do beat's `format` is free text, a Your Turn carries a core action inside `activityArchitecture`, and a deck whose every task beat is a numbered list answered in books breaks no rule at all.

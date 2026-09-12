@@ -333,9 +333,11 @@ async function build(specPath, outDir, options = {}) {
     let outPath;
     try {
       const pdf = await htmlToPdf(html, {});
+      assertPhysicalPages(pdf, pageDivs.length);
       outPath = path.join(outDir, naturalFilename(spec.topic, "pdf"));
       fs.writeFileSync(outPath, pdf);
     } catch (err) {
+      if (err && err.physicalPageMismatch) throw err;
       outPath = path.join(outDir, naturalFilename(spec.topic, "html"));
       fs.writeFileSync(outPath, html);
       console.log(`PDF_SKIPPED: ${err && err.message ? err.message.split("\n")[0] : err}`);
@@ -348,7 +350,44 @@ async function build(specPath, outDir, options = {}) {
   }
 }
 
-module.exports = { build, assertRequiredPhotosAreReadable };
+// ─── Physical page check ────────────────────────────────────────────────
+//
+// The sheets that come off the printer must be the sheets the cards asked for.
+// This used to be the working-wall-builder agent's job: it ran this script by
+// hand, rendered the result to images and looked at them. Every other printable
+// resource is built by one shared command with no agent, and the wall now joins
+// them, so the part a machine can settle lives here and runs on every build.
+//
+// The fault it exists for: a card whose text overran its page pushed the
+// remainder onto a second A3 sheet holding nothing but "times the place to its
+// right." in a box. The build said `Built:` and nobody compared the pages laid
+// out with the pages the file actually held.
+
+function pdfPageCount(buf) {
+  // `/Type /Page` is a sheet and `/Type /Pages` is the tree that owns them, so
+  // the trailing character is what tells them apart. Chrome writes these object
+  // headers uncompressed, which is what makes reading them from the bytes work.
+  const matches = buf.toString("latin1").match(/\/Type\s*\/Page[^s]/g);
+  return matches ? matches.length : 0;
+}
+
+function assertPhysicalPages(pdf, laidOut) {
+  const printed = pdfPageCount(pdf);
+  // Zero means the count could not be read, not that the file is empty. A wall
+  // that is otherwise sound is not withheld because this one check went blind.
+  if (printed === 0 || printed === laidOut) return;
+  const err = new Error(
+    `The cards laid out ${laidOut} page(s) and the PDF holds ${printed} page(s). ` +
+      (printed > laidOut
+        ? `A card has overrun its page and pushed the rest onto a sheet of its own. ` +
+          `Shorten the card that overflowed, or give its page fewer items.`
+        : `A page was lost between the layout and the print.`)
+  );
+  err.physicalPageMismatch = true;
+  throw err;
+}
+
+module.exports = { build, assertRequiredPhotosAreReadable, pdfPageCount, assertPhysicalPages };
 
 if (require.main === module) {
   const args = process.argv.slice(2);

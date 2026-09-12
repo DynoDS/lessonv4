@@ -733,7 +733,7 @@ Working Wall resolves its own Educational SVG requests before writing final
 3. it publishes accepted SVGs through `publish-educational-svg.js`, applies the
    Working Wall failure rules below, and removes every unresolved request;
 4. it writes the final build-ready specification;
-5. `working-wall-builder` renders and verifies that final specification.
+5. The fixed wall build renders that final specification and checks its physical pages.
 
 Do not spawn a separate Educational SVG resolver for any surface.
 

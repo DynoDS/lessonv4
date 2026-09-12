@@ -1044,7 +1044,7 @@ diagnostic permits one focused Worksheet Designer repair and one rebuild.
 This branch remains unavailable while its agents are marked Planned. Do not
 invent it. Mention the omission only when the approved design requested one.
 
-### Track D — Working Wall (working-wall-designer → working-wall-builder, runs after slide-designer; in parallel with Tracks B and the rest of A)
+### Track D — Working Wall (working-wall-designer → fixed wall build, runs after slide-designer; in parallel with Tracks B and the rest of A)
 
 Launch Working Wall Designer on every run, the moment the Slide Designer's
 `lesson.json` passes its checks (beside the Slide Decorator, never after it),
@@ -1078,10 +1078,19 @@ the slides is itself a recognised visual reference. Otherwise it refuses a wall 
 no picture while this lesson holds a published photograph or a drawn visual
 its slides used, because a card that is only words is slide content rather
 than wall furniture; a lesson with no picture at all still passes. Then
-launch the retained Working Wall Builder only when `cards` is non-empty. The
-builder runs the fixed wall script and returns its short Output Report. One
-wall diagnostic permits one focused wall-owner repair and rebuild. Preserve
-its exact returned output path.
+build the wall directly, only when `cards` is non-empty:
+
+```text
+python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" wall   --plugin-root "[PLUGIN_ROOT]"   --working-dir "[WORKING_DIR]"   --output-dir "[OUTPUT_DIR]"   --lesson-name "[TOPIC]"   --chrome-state "[ready|unavailable]"   --summary-output "[WORKING_DIR]/build-results/wall.json"
+```
+
+Same command as the slides, worksheets and stick-ins; no builder agent. The
+build script refuses a wall whose printed sheets do not match the pages its
+cards laid out, and `working-wall-designer` judges the finished sheet at FINAL
+RESOURCE REVIEW.
+
+One wall diagnostic permits one focused wall-owner repair and rebuild. Preserve
+the exact output path from the build result.
 
 ### Track E — Stick-in Spec (stick-in-sheets-designer, runs after slide-designer; in parallel with Tracks B, D and the rest of A)
 
@@ -1280,9 +1289,10 @@ their final pictures. The early composition preview cannot settle their usabilit
 
 For each built resource, launch its existing owner with `FINAL RESOURCE REVIEW`
 and `[PLUGIN_ROOT]/references/final-resource-review.md`: slide-designer for slides,
-worksheet-designer for pupil sheets and answer PDFs, working-wall-builder for the
-wall, and stick-in-sheets-designer for stick-ins. Reuse the wall builder's final
-inspection when its evidence still matches the delivered file. Supply exact
+worksheet-designer for pupil sheets and answer PDFs, working-wall-designer for the
+wall, and stick-in-sheets-designer for stick-ins. Every resource is reviewed on
+the delivered file by the owner that designed it; none reuses an earlier
+inspection. Supply exact
 output paths from build results, the resource specification, approved design,
 the run's render route and a separate owned review-result path. Use
 `render-pages.py` to produce a manifest, a contact sheet and page PNGs for each

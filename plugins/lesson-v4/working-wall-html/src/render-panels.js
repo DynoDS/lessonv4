@@ -8,6 +8,8 @@ const {
   fitLinearBodySize,
   linearBodyFitsAtFloor,
   fitTitleSize,
+  titleBarHeightInches,
+  TITLE_BAR_LINE_HEIGHT,
   tryReadPhoto,
   photoAspect,
 } = require("./layout");
@@ -31,6 +33,26 @@ const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
 function titlePtFor(card, style) {
   const base = card.page.size === "A3" ? style.sizes.a3TitlePt : style.sizes.a4TitlePt;
   return fitTitleSize(card.title || "", base, card.page.size, card.page.orientation, style);
+}
+
+// How much of the page the title bar takes, so the panel below is fitted to the
+// room that is actually left.
+//
+// These renderers used to reserve a flat 1.6in (1.8 with step badges) while an
+// A3 title bar draws at about 2.19in, because nothing set a line-height and
+// Comic Sans' own line box is nearer 1.4 than the 1.25 the constant assumes. A
+// card could therefore be sized against six tenths of an inch it did not have,
+// run past the bottom of the sheet, and push its last words onto a second A3
+// page carrying nothing else - which is how a Year 4 place-value wall shipped
+// with "times the place to its right." alone on its own sheet.
+//
+// render-grids solved this for reference tables long ago and this is the same
+// two moves: pin the line-height in the CSS so the bar's height is decided here
+// rather than by the font, then reserve exactly that.
+const BADGE_COLUMN_INCHES = 0.2;
+
+function titleBarOpts() {
+  return { lineHeight: TITLE_BAR_LINE_HEIGHT };
 }
 
 // One centred bold line per body item. Use padding rather than margins so
@@ -70,7 +92,7 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
 
   const titleText = card.title || "Remember";
   const titlePt = titlePtFor({ ...card, title: titleText }, style);
-  const titleBarEl = titleBarHtml(titleText, style.colours.stickyTitleBarFill, style, titlePt, card.page.size, card.page.orientation);
+  const titleBarEl = titleBarHtml(titleText, style.colours.stickyTitleBarFill, style, titlePt, card.page.size, card.page.orientation, titleBarOpts());
 
   const dims = printableInches(card.page.size, card.page.orientation, style);
   const imagePath = optionalCardImagePath(card);
@@ -90,10 +112,10 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: 1.6 + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + reserve, ...stackedBodyOpts(card, panelFraction) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = 1.6 + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + wideVisualReserve;
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -158,7 +180,7 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
   const definition = card.definition || "";
 
   const titlePt = titlePtFor({ ...card, title: titleText }, style);
-  const titleBarEl = titleBarHtml(titleText, style.colours.vocabDefinitionTitleBarFill, style, titlePt, card.page.size, card.page.orientation);
+  const titleBarEl = titleBarHtml(titleText, style.colours.vocabDefinitionTitleBarFill, style, titlePt, card.page.size, card.page.orientation, titleBarOpts());
 
   const fillColour = style.colours.vocabDefinitionPanelFill;
   const borderColour = style.colours.vocabDefinitionPanelLine;
@@ -189,10 +211,10 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: 1.6 + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + reserve, ...stackedBodyOpts(card, panelFraction) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = 1.6 + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + wideVisualReserve;
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -270,7 +292,7 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
 
   const titleText = card.title || "How to do it";
   const titlePt = titlePtFor({ ...card, title: titleText }, style);
-  const titleBarEl = titleBarHtml(titleText, style.colours.workedExampleTitleBarFill, style, titlePt, card.page.size, card.page.orientation);
+  const titleBarEl = titleBarHtml(titleText, style.colours.workedExampleTitleBarFill, style, titlePt, card.page.size, card.page.orientation, titleBarOpts());
 
   const dims = printableInches(card.page.size, card.page.orientation, style);
   const imagePath = optionalCardImagePath(card);
@@ -290,10 +312,10 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: 1.8 + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + BADGE_COLUMN_INCHES + reserve, ...stackedBodyOpts(card, panelFraction) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = 1.8 + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + BADGE_COLUMN_INCHES + wideVisualReserve;
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -415,7 +437,7 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
 
   const titleText = card.title || "How to explain it";
   const titlePt = titlePtFor({ ...card, title: titleText }, style);
-  const titleBarEl = titleBarHtml(titleText, style.colours.sentenceStemTitleBarFill, style, titlePt, card.page.size, card.page.orientation);
+  const titleBarEl = titleBarHtml(titleText, style.colours.sentenceStemTitleBarFill, style, titlePt, card.page.size, card.page.orientation, titleBarOpts());
 
   const dims = printableInches(card.page.size, card.page.orientation, style);
   const panelFraction = panelFractionFor(card, ctx, false);
@@ -432,10 +454,10 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: 1.6 + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + reserve, ...stackedBodyOpts(card, panelFraction) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = 1.6 + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + wideVisualReserve;
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -506,7 +528,7 @@ function renderMisconception(card, style, specDir, ctx = {}) {
 
   const titleText = card.title || "Look out for";
   const titlePt = titlePtFor({ ...card, title: titleText }, style);
-  const titleBarEl = titleBarHtml(titleText, style.colours.misconceptionTitleBarFill, style, titlePt, card.page.size, card.page.orientation);
+  const titleBarEl = titleBarHtml(titleText, style.colours.misconceptionTitleBarFill, style, titlePt, card.page.size, card.page.orientation, titleBarOpts());
 
   const dims = printableInches(card.page.size, card.page.orientation, style);
   // The Don't/Do pair is always a fixed two-up, so each panel takes half the
@@ -515,7 +537,7 @@ function renderMisconception(card, style, specDir, ctx = {}) {
   const panelFraction = 0.5;
   const widthOverride = dims.width * panelFraction - 0.6;
   // A3-only builder: use the fixed A3 value below.
-  const titleAreaInches = 1.6;
+  const titleAreaInches = titleBarHeightInches(titlePt);
 
   const fitItems = items.length > 0 ? items : [{ text: "" }];
   const bodyPt = fitLinearBodySize(

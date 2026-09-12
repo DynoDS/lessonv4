@@ -102,11 +102,42 @@ function cardLabel(card) {
   return title ? `${type} "${title}"` : type;
 }
 
+// How many lines one item may wrap to before `fitLinearBodySize` calls a size
+// too big. The cap is there to stop a single item sprawling into a paragraph;
+// it is not meant to be what decides the type size. It became that anyway.
+//
+// The cap was lifted off the default 2 only for cards carrying a `visual`, so a
+// card carrying a `photo` got the same panel narrowed to 60% of the sheet and
+// kept a cap of 2. In a column that narrow, 2 lines is reached long before the
+// page runs out of height, so the fitter walked all the way down to the floor
+// and the page never got a say. A review of every wall the engine had built
+// found 35 of 47 sheets at or within a step of the 36pt floor against an 80pt
+// ceiling, and the same two sentences set at 44pt beside a photograph and 68pt
+// beside a drawing. Which kind of picture sits next to the text is not a reason
+// to change the size of the text.
+//
+// One layout cap for every card, high enough that the height check is what
+// binds. Measured over every card the engine has built: 3 shrinks five cards, 4
+// misses one, and nothing above 5 changes another card, so 5 is where it stops
+// paying. The height check already refuses a card that genuinely will not fit.
+const MAX_LINES_PER_ITEM = 5;
+
+// The content budget is left exactly where it was. It decides which cards are
+// refused, so moving it would change what the designer is allowed to write, and
+// that is a teaching decision rather than a layout one. Worth knowing before
+// anyone makes it: the brief tells the designer 62 characters for any card
+// carrying a picture, and this line has been quietly allowing 124 on a card
+// whose picture is drawn rather than photographed.
+function floorLinesPerItem(card, panelFraction) {
+  return (card && card.visual && panelFraction < 1.0) ? 4 : 2;
+}
+
 function stackedBodyOpts(card, panelFraction) {
-  const label = { label: cardLabel(card) };
-  return (card && card.visual && panelFraction < 1.0)
-    ? { ...label, maxLinesPerItem: 4 }
-    : label;
+  return {
+    label: cardLabel(card),
+    maxLinesPerItem: MAX_LINES_PER_ITEM,
+    floorLinesPerItem: floorLinesPerItem(card, panelFraction),
+  };
 }
 
 function panelFractionFor(card, ctx, hasPhoto) {

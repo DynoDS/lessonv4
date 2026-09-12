@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run one fixed lesson-resources command and emit a structured result envelope.
 
-Supported kinds: slides, worksheets, stick-in, sharepoint.
+Supported kinds: slides, worksheets, wall, stick-in, sharepoint.
 The wrapper owns output-family collision archiving, subprocess capture, exact
 builder-marker output discovery, PDF_SKIPPED handling, hashing and the summary
 JSON. It never changes resource content or makes a semantic judgement.
@@ -143,6 +143,16 @@ def actual_family(
         )
         return paths
 
+    if kind == "wall":
+        # The wall names its own file from the spec's topic, exactly as the build
+        # script does, so an earlier run's file is archived before this one writes.
+        spec = read_json(working / "working-wall.json", "working-wall.json")
+        base = safe_filename_component(plugin_root, spec.get("topic"), "Lesson")
+        return [
+            output / f"Working Wall - {base}.pdf",
+            output / f"Working Wall - {base}.html",
+        ]
+
     if kind == "stick-in":
         spec = read_json(working / "stick-in-sheets.json", "stick-in-sheets.json")
         meta = spec.get("meta")
@@ -174,6 +184,13 @@ def command_for(args) -> list[str]:
             str(working / "worksheet.json"),
             str(output),
             f"{args.lesson_name} - Worksheets",
+        ]
+    if args.kind == "wall":
+        return [
+            "node",
+            str(plugin_root / "working-wall-html" / "build.js"),
+            str(working / "working-wall.json"),
+            str(output),
         ]
     if args.kind == "stick-in":
         return [
@@ -273,6 +290,17 @@ def expected_outputs(args, stdout: str) -> tuple[list[Path], bool]:
         require_inside_output(paths, output)
         return paths, degraded
 
+    if args.kind == "wall":
+        paths = marker_paths(stdout, "Built")
+        if len(paths) != 1:
+            raise FixedResourceError(
+                "wall build exited zero without exactly one Built: output"
+            )
+        require_inside_output(paths, output)
+        # No Chrome writes the wall as .html instead of .pdf. The cards are all
+        # there; the print step is still owed, which is what degraded records.
+        return paths, "PDF_SKIPPED" in stdout
+
     if args.kind == "stick-in":
         paths = marker_paths(stdout, "Built")
         if len(paths) != 1:
@@ -370,7 +398,7 @@ def run(args) -> int:
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
-    root.add_argument("kind", choices=("slides", "worksheets", "stick-in", "sharepoint"))
+    root.add_argument("kind", choices=("slides", "worksheets", "wall", "stick-in", "sharepoint"))
     root.add_argument("--plugin-root", required=True)
     root.add_argument("--working-dir", required=True)
     root.add_argument("--output-dir", required=True)

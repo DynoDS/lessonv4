@@ -17,11 +17,14 @@ This plugin splits the work cleanly instead:
 | `image-scout` | Unified picture worker — searches approved real sources, visually checks candidates, continues to authorised AI generation in the same session, stages outputs, and writes a compact result. |
 | `working-wall-designer` | Selects wall-worthy cards, resolves its own Educational SVG P2/P3 requests, applies the resolved-picture-or-remove gate, and writes final builder-ready `working-wall.json`. |
 
-The core `make-lesson` route runs the fixed slide, worksheet and stick-in build
-commands directly after their specifications pass the existing gates.
-`working-wall-builder` remains in the route because it performs the wall's
-physical-page and visual-output verification after the fixed script runs. The
-compatibility builder-agent files remain packaged for direct or legacy use.
+The core `make-lesson` route runs the fixed slide, worksheet, wall and stick-in
+build commands directly after their specifications pass the existing gates. The
+wall was the last to join them: it kept a model builder of its own, spawned on
+every run to execute a fixed script and then verify the pages it had just made.
+The verification a machine can settle now lives in the wall build script, and the
+judgement about a finished sheet belongs to `working-wall-designer` at FINAL
+RESOURCE REVIEW, which is where every other resource's owner already reviews it.
+The compatibility builder-agent files remain packaged for direct or legacy use.
 
 ## How pictures are obtained
 

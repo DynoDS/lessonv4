@@ -207,7 +207,7 @@ Do not paste either file into `teacher-brief.txt`.
 Do not pass `TEACHER_BRIEF_FILE`, `TEACHER_CLARIFICATION_FILES`,
 `ORCHESTRATOR_CONTEXT_FILE`, `LESSON_PLAN_INPUT` or
 `TEACHER_WORKSHEET_INPUT` to `slide-designer`, `slide-decorator`, `worksheet-designer`,
-`working-wall-designer`, `working-wall-builder`, `stick-in-sheets-designer`,
+`working-wall-designer`, `stick-in-sheets-designer`,
 `image-scout`, `diagram-anchor`, deterministic command jobs or any other
 downstream renderer.
 
@@ -239,7 +239,6 @@ section, this pipeline-specific completion rule overrides that reporting section
 for this spawn. Do not add a second summary around an exact required marker or
 structured completion block.
 
-The `working-wall-builder` keeps its existing exact short Output Report block.
 The `helper-builder` keeps the role-required source/test completion report
 because its result is not represented by one canonical lesson output; do not add
 another narrative summary around it.

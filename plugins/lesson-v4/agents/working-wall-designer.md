@@ -397,6 +397,6 @@ Image-scout fetches photos for slides during the same pipeline run. The filename
 | Photo file exists but is wrong shape (very narrow, very tall) | On a sticky-knowledge card the builder fits the photo into a square box, so a wide or tall photo distorts. Prefer a roughly square photo there, or leave `photo` null. A misconception card keeps the photo's true shape. |
 | Teacher-provided lesson-design.json (ingested) lacks expected sections | Designer falls back to whatever it can find, flags it in its final report, may produce fewer cards. |
 | Only 1 card earned for a lesson | Single-page PDF is fine - still produced. |
-| `working-wall-builder` not yet built (graceful degradation) | Designer still runs and writes working-wall.json; orchestrator notes builder missing in final report. |
+| Fixed wall build unavailable (graceful degradation) | Designer still runs and writes working-wall.json; orchestrator notes the build could not run in the final report. |
 | Lesson is dialogic / discovery and has no procedure | No worked example card. Other card types are still assessed individually on their own criteria. |
 | Card content is genuinely text-only — no diagram, no fitting lesson photo, no honest emoji cue — and it isn't a success-criteria card | No card. The content stays on the slides; note it in `rationaleNote`. (The visual gate, rule 2.) |

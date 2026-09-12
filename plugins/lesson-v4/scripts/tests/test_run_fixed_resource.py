@@ -44,6 +44,10 @@ module.exports = { safeFilenameComponent };
             json.dumps({"meta": {"lesson": "Lesson"}, "items": [{}]}) + "\n",
             encoding="utf-8",
         )
+        (self.working / "working-wall.json").write_text(
+            json.dumps({"topic": "Lesson", "cards": [{}]}) + "\n",
+            encoding="utf-8",
+        )
 
     def tearDown(self) -> None:
         self.temp.cleanup()
@@ -275,6 +279,74 @@ console.log('Class set: 1');
             summary["outputs"][0]["path"].endswith(
                 "More-Less patterns - Stick-in Sheets.pdf"
             )
+        )
+
+
+    # ─── wall ────────────────────────────────────────────────────────────
+    #
+    # The wall was the one printable the orchestrator did not build through this
+    # wrapper: it spawned a model builder that ran the same script by hand. That
+    # cost a spawn per lesson and put the wall outside the collision archiving,
+    # marker discovery and summary every other resource gets for free.
+
+    def test_wall_builds_and_reports_its_output(self) -> None:
+        self.js_writer(
+            "working-wall-html/build.js",
+            """const fs=require('fs'); const p=require('path');
+const out=p.join(process.argv[3], 'Working Wall - Lesson.pdf');
+fs.writeFileSync(out, 'pdf');
+console.log('Built: ' + out);
+console.log('Cards: 1');
+""",
+        )
+        self.run_script("wall", "--lesson-name", "Lesson")
+        summary = json.loads((self.root / "summary.json").read_text(encoding="utf-8"))
+        self.assertTrue(summary["ok"])
+        self.assertTrue(summary["outputs"][0]["path"].endswith("Working Wall - Lesson.pdf"))
+
+    def test_wall_requires_expected_output(self) -> None:
+        self.js_writer("working-wall-html/build.js", "console.log('done');\n")
+        self.run_script("wall", "--lesson-name", "Lesson", expected=1)
+        summary = json.loads((self.root / "summary.json").read_text(encoding="utf-8"))
+        self.assertFalse(summary["ok"])
+
+    def test_wall_pdf_skipped_is_degraded_not_failed(self) -> None:
+        # No Chrome on the machine writes the wall as HTML. The content is whole;
+        # the print step is still owed, which is what degraded means here.
+        self.js_writer(
+            "working-wall-html/build.js",
+            """const fs=require('fs'); const p=require('path');
+const out=p.join(process.argv[3], 'Working Wall - Lesson.html');
+fs.writeFileSync(out, 'html');
+console.log('PDF_SKIPPED: no chrome');
+console.log('Built: ' + out);
+console.log('Cards: 1');
+""",
+        )
+        self.run_script("wall", "--lesson-name", "Lesson")
+        summary = json.loads((self.root / "summary.json").read_text(encoding="utf-8"))
+        self.assertTrue(summary["ok"])
+        self.assertTrue(summary["degraded"])
+
+    def test_wall_filename_comes_from_the_spec_topic(self) -> None:
+        (self.working / "working-wall.json").write_text(
+            json.dumps({"topic": "More/Less: patterns", "cards": [{}]}) + "\n",
+            encoding="utf-8",
+        )
+        self.js_writer(
+            "working-wall-html/build.js",
+            """const fs=require('fs'); const p=require('path');
+const out=p.join(process.argv[3], 'Working Wall - More-Less patterns.pdf');
+fs.writeFileSync(out, 'pdf');
+console.log('Built: ' + out);
+console.log('Cards: 1');
+""",
+        )
+        self.run_script("wall", "--lesson-name", "Different CLI title")
+        summary = json.loads((self.root / "summary.json").read_text(encoding="utf-8"))
+        self.assertTrue(summary["ok"])
+        self.assertTrue(
+            summary["outputs"][0]["path"].endswith("Working Wall - More-Less patterns.pdf")
         )
 
     def test_nonzero_build_is_failure_with_captured_stderr(self) -> None:

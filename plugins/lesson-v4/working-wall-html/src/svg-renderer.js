@@ -9,7 +9,22 @@
 // plumbing. Wide visuals (number line) sit at vertical centre with whitespace
 // above and below — slightly less efficient but ships now.
 
-const RENDER_PX = 600;          // clock / fraction / angle / number-line resolution
+// The design canvas. Geometry inside the primitives is worked out from this
+// number, and their stroke widths are absolute against it (`stroke-width="3"`
+// and friends), so changing it would thin every line in every drawing. It stays
+// where it is.
+const RENDER_PX = 600;          // clock / fraction / angle / number-line design canvas
+
+// How many raster pixels each canvas unit becomes. The two are separate because
+// a drawing is placed at whatever width its card has room for, and the widest
+// placement on the wall is a full-bleed A3 landscape figure at about 14.7in. A
+// 600px render across that is roughly 41 dots per inch, and a review of every
+// wall the engine had built found exactly that: a place-value chart blown up to
+// 31.6cm with visible staircase edges on its digits. The SVG is vector, so
+// rendering the same 600-unit drawing at 4x costs nothing in proportion and
+// takes the widest placement to about 163 dots per inch.
+const RENDER_SCALE  = 4;
+const RENDER_OUT_PX = RENDER_PX * RENDER_SCALE;
 const BADGE_PX  = 240;          // step badge resolution
 
 // Shared diagram geometry — the SAME source the slide and worksheet engines
@@ -44,8 +59,12 @@ const parachuteForcesShared = require('../../shared/visuals/parachute-forces-svg
 // with its parts called out and labelled in answer-green.
 const { buildLabelDiagramSvg } = require('../../shared/visuals/label-diagram-svg');
 
-const ANNOTATED_BASE_PX = 700;   // base primitive resolution before callouts overlay
-const ANNOTATED_PX      = 1500;  // composite (diagram + callouts) resolution; bigger so labels stay crisp
+// The base is embedded as a bitmap inside the composite, so it caps how sharp
+// the diagram itself can be however large the composite is rendered. The side
+// margins take 20% each, leaving the diagram 60% of the composite width, so the
+// base wants to be at least that share of ANNOTATED_PX.
+const ANNOTATED_BASE_PX = 1800;  // base primitive resolution before callouts overlay
+const ANNOTATED_PX      = 2400;  // composite (diagram + callouts) resolution; bigger so labels stay crisp
 const WALL_LABEL_GREEN  = '#00B050';  // house answer-green for finished callout labels
 
 function toRad(deg) { return (deg * Math.PI) / 180; }
@@ -235,6 +254,20 @@ function fractionCircleKey(spec) {
 // place coloured dots above the line at specified positions, with optional
 // labels above the dot. The line sits at vertical centre so the SVG stays
 // square (matches every other primitive's aspect for the image transform).
+// A number on the picture is written the way the card writes it in its text.
+// A wall that says "Mark 2,500" beside a scale ticked "2500" is teaching the
+// child to read two different things. Whole numbers only; a decimal scale keeps
+// the plain form it already had.
+function scaleLabel(n) {
+  if (Math.abs(n - Math.round(n)) > 1e-6) return fmt(n);
+  return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// Arial bold runs about 0.58 of its point size per character across digits,
+// commas and spaces. Used to ask whether two labels would meet, so it is
+// deliberately a little generous.
+const LABEL_CHAR_RATIO = 0.58;
+
 function numberLineSvg(spec, sizePx = RENDER_PX) {
   const from = Number(spec.from) || 0;
   const to = Number(spec.to) || 10;
@@ -246,7 +279,7 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
   const padX = w * 0.08;
   const lineY = h / 2;
   const tickLen = h * 0.04;
-  const numFont = Math.round(h * 0.06);
+  let numFont = Math.round(h * 0.06);
   const dotR = Math.round(h * 0.035);
 
   const range = to - from;
@@ -258,21 +291,46 @@ function numberLineSvg(spec, sizePx = RENDER_PX) {
   const parts = [];
   parts.push(`<line x1="${fmt(padX)}" y1="${fmt(lineY)}" x2="${fmt(w - padX)}" y2="${fmt(lineY)}" stroke="#000000" stroke-width="4" stroke-linecap="round"/>`);
 
-  // Major ticks at each step value.
-  for (let v = from; v <= to + 1e-6; v += step) {
+  // Major ticks at each step value. Separators make the labels wider than they
+  // used to be, so the tick type steps down until neighbours clear each other
+  // rather than letting a long scale run its numbers together.
+  const tickValues = [];
+  for (let v = from; v <= to + 1e-6; v += step) tickValues.push(v);
+  const tickLabels = tickValues.map(scaleLabel);
+  const widestTick = tickLabels.reduce((n, s) => Math.max(n, s.length), 0);
+  const tickGap = tickValues.length > 1 ? (w - 2 * padX) / (tickValues.length - 1) : w;
+  while (numFont > 10 && widestTick * numFont * LABEL_CHAR_RATIO > tickGap * 0.95) numFont -= 1;
+
+  tickValues.forEach((v, i) => {
     const x = xFor(v);
     parts.push(`<line x1="${fmt(x)}" y1="${fmt(lineY - tickLen)}" x2="${fmt(x)}" y2="${fmt(lineY + tickLen)}" stroke="#000000" stroke-width="3"/>`);
-    parts.push(`<text x="${fmt(x)}" y="${fmt(lineY + tickLen + numFont * 1.4)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${fmt(v)}</text>`);
-  }
+    parts.push(`<text x="${fmt(x)}" y="${fmt(lineY + tickLen + numFont * 1.4)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${tickLabels[i]}</text>`);
+  });
 
   // Marks: coloured dots above the line, optional label above the dot.
-  for (const m of marks) {
-    if (m == null || m.at == null) continue;
-    const x = xFor(Number(m.at));
-    parts.push(`<circle cx="${fmt(x)}" cy="${fmt(lineY)}" r="${dotR}" fill="${dotColour}" stroke="#000000" stroke-width="2"/>`);
-    if (m.label) {
-      parts.push(`<text x="${fmt(x)}" y="${fmt(lineY - dotR - 8)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${m.label}</text>`);
-    }
+  //
+  // Every label used to be centred on its own dot at the same height with
+  // nothing checking whether two of them met. Two marks 500 apart on a
+  // 2,000-to-4,000 line printed as "3,000A = 3,500". Walk them left to right and
+  // lift a label onto the row above when it would run into one already there,
+  // so the only labels that move are the ones that would have collided.
+  const rows = [];
+  const ordered = marks
+    .filter((m) => m != null && m.at != null)
+    .map((m) => ({ label: m.label, x: xFor(Number(m.at)) }))
+    .sort((a, b) => a.x - b.x);
+
+  for (const m of ordered) {
+    parts.push(`<circle cx="${fmt(m.x)}" cy="${fmt(lineY)}" r="${dotR}" fill="${dotColour}" stroke="#000000" stroke-width="2"/>`);
+    if (!m.label) continue;
+    const half = (String(m.label).length * numFont * LABEL_CHAR_RATIO) / 2;
+    const left = m.x - half;
+    const right = m.x + half;
+    let row = 0;
+    while (rows.some((p) => p.row === row && left < p.right && right > p.left)) row += 1;
+    rows.push({ row, left, right });
+    const y = lineY - dotR - 8 - row * numFont * 1.25;
+    parts.push(`<text x="${fmt(m.x)}" y="${fmt(y)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${m.label}</text>`);
   }
 
   return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
@@ -832,16 +890,22 @@ async function preRenderSvgs(spec) {
           // Shared aspect-true primitive: render at its real proportions and
           // store { png, aspect } so the card places it tight (no square pad).
           const { svg, aspect } = prim.tightFn(primSpec);
-          const resize = aspect >= 1 ? { width: RENDER_PX } : { height: RENDER_PX };
-          const png = await sharp(Buffer.from(svg), { density: 144 })
+          const resize = aspect >= 1 ? { width: RENDER_OUT_PX } : { height: RENDER_OUT_PX };
+          // Density has to rise with the target: sharp rasterises the SVG at its
+          // intrinsic size scaled by density and only then resizes, so leaving it
+          // behind would upscale a small bitmap and cost the sharpness the bigger
+          // target was for.
+          const png = await sharp(Buffer.from(svg), { density: 144 * RENDER_SCALE })
             .resize(resize)
             .png()
             .toBuffer();
           map[key] = { png, aspect };
         } else {
+          // The drawing is still authored on the 600-unit canvas; only the raster
+          // it is baked into is larger.
           const svg = prim.svgFn(primSpec, RENDER_PX);
-          map[key] = await sharp(Buffer.from(svg), { density: 72 })
-            .resize({ width: RENDER_PX })
+          map[key] = await sharp(Buffer.from(svg), { density: 72 * RENDER_SCALE })
+            .resize({ width: RENDER_OUT_PX })
             .png()
             .toBuffer();
         }
