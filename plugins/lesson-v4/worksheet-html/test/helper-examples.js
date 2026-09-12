@@ -287,7 +287,6 @@ module.exports = {
     // `areas: ["Uses electricity", "Works by hand"]` when it has named parts.
     draw: 4,
     annotate: true,
-    frame: "outline", // or "none" for bare paper with no edge drawn
   },
   "sort-grid": {
     text: "Sort these into the right column.",

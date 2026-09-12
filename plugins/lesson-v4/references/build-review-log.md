@@ -1,5 +1,44 @@
 # Build review log
 
+## 2026-09-12 A space a child cannot see is not a space (4.2.159)
+
+Daniel, reading the rebuilt Greater Depth rounding sheet: "whats the gap between
+2 and 3". There was no gap. It was 43mm of working room belonging to question 2,
+asked for as bare paper with no border and no words, and it read as the end of
+the sheet.
+
+He settled what to do about it in one line: "dont want bare paper, if it is a
+question it truly thinks needs working space (that they couldnt just do in book)
+then it should have a box but thats rare."
+
+**So `frame: "none"` is gone, and refused by name rather than corrected.** A
+drawing or working surface is always a box. This is the callout argument in a
+different helper, and the engine already makes it twice: paper left blank because
+that is the task and paper left blank because nothing was put there look
+identical on a page, so something has to tell them apart. A border costs nothing
+and does it. The refusal message names the other half as well, because it is the
+half a designer has to act on: most questions do not earn a box.
+
+**The rarity rule is the part that generalises, and its test is the child's
+book.** A sheet setting aside room for jottings is competing with the exercise
+book already open beside it, and the book is bigger, always there and not being
+printed. So the question is not whether room would help, which it always would,
+but whether the working could be done in the book. Room earns paper when the
+working has to sit with something printed: annotating a supplied diagram, drawing
+on a given number line, a design the sheet collects in. It is in the helper
+guide, in the helper's own one-line purpose, and in the designer's preflight.
+
+**Also measured and NOT a fault, because he asked.** The sheet code in the
+corner does not push the first heading down: built with and without it, the work
+starts at 15mm either way. The code sits at 6mm to 10.3mm, inside the printer
+margin, which is why the two do not line up and why the code costs the page
+nothing. Aligning them would mean dropping the code into the work area, where on
+a sheet that opens with a full-width table it would print on top of it.
+
+Monday's Greater Depth sheet has had that space taken off and is rebuilt; it now
+ends 23mm short at the foot, which is a trim rather than a hole. One new test.
+JavaScript 670 pass, 0 fail; Python 1665 pass, the ten known failures unchanged.
+
 ## 2026-09-12 The page is the work, not the furniture round it (4.2.158)
 
 Daniel read three built packs together - the Monday rounding sheets, a Year 4

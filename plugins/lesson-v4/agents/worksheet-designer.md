@@ -900,6 +900,11 @@ Before the mechanical gate, read each sheet once as the pupil using it:
   instruction carrying a list.
 - Confirm every tick, match, name, circle, write, draw, label or annotate action
   has one obvious usable printed target.
+- Confirm no space on the sheet is plain working room. Children have their books,
+  which are bigger, always open and not being printed, so jotting space belongs
+  there. Room earns a place on paper only when the working has to sit with
+  something printed - annotating a supplied diagram, drawing on a given number
+  line, a design the sheet collects in - and then it is a bordered box.
 - Confirm multipart labels describe one connected pupil job. A separate
   decision or answer route begins a new question even when the stimulus is
   shared.

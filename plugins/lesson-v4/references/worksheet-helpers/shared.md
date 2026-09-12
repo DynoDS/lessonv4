@@ -181,7 +181,22 @@ hold and it works out the size: `draw: 4` is how many separate things go on it,
 `annotate: true` adds room for the labels and arrows that go around them, and
 `areas: ["Uses electricity", "Works by hand"]` names side-by-side parts, so the
 names do the instructing and no second instruction line is needed under it.
-`frame: "none"` gives bare paper with no edge drawn.
+It is always drawn as a box, and there is no option for bare paper.
+
+**Plain working room is rare, and the test is the child's book.** A sheet that
+sets aside space for jottings is competing with the exercise book already open
+beside it, and the book is bigger, always there and not being printed. So the
+question to ask is not "would room help here" - it always would - but "could
+this working be done in the book?" If it could, it belongs in the book and the
+sheet keeps the room for questions. Space earns its place on paper when the
+working has to sit with something printed: annotating a supplied diagram,
+drawing on a given number line, a design the sheet is collecting in.
+
+And whatever earns it gets a border. Paper left blank because that is the task
+and paper left blank because nothing was put there look identical, which is the
+same argument that makes a diagram callout state whether it prints a word or a
+line. A Greater Depth rounding sheet carried 43mm of unbordered working room
+between question 2 and question 3, and it read as the end of the sheet.
 
 **Where you already know the surface, say it: `heightMm: 140`.** A designer who has
 looked at the task knows better than an arithmetic default, and the default is

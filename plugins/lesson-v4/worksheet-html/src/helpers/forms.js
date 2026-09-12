@@ -192,7 +192,19 @@ function needsSortGrid(spec) {
 //   annotate   true when labels and arrows go around them as well
 //   heightMm   the surface, stated outright, when the designer knows it
 //   areas      names for side-by-side parts of the surface, when it has parts
-//   frame      "outline" (the default) or "none" for bare paper
+//
+// IT IS ALWAYS DRAWN AS A BOX. `frame: "none"` used to give bare paper, and on
+// 12 September 2026 Daniel found what that prints as: the Greater Depth rounding
+// sheet had 43mm of working room between question 2 and question 3 with no edge
+// and no words, and it read as the end of the sheet. A space a child cannot see
+// is not a space a child has. He settled it in one line - "dont want bare paper,
+// if it is a question it truly thinks needs working space (that they couldnt
+// just do in book) then it should have a box but thats rare."
+//
+// The same argument the callout rule already makes: paper left blank because
+// that is the question, and paper left blank because nothing was put there, look
+// identical, and only one of them is a design. A border is what tells them
+// apart, and it costs nothing.
 //
 // and works out a surface from the answer. `heightMm` beats the arithmetic,
 // because a designer who has looked at the task knows better than a formula.
@@ -214,6 +226,22 @@ const DRAW_DERIVED_MAX_MM = 150;
 // The smallest surface anybody can draw on. Below this it is a tick box.
 const DRAW_MIN_MM = 30;
 const DRAW_NAME_MM = 6; // the quiet label at the top of a named area
+
+// A saved spec may still carry `frame: "outline"`, which is what it has always
+// drawn and all it can draw now. Anything else is refused by name rather than
+// quietly corrected, because a designer who asked for bare paper was making a
+// decision and should be told it is not one that exists.
+function checkDrawingFrame(spec) {
+  const frame = spec.frame;
+  if (frame === undefined || frame === null || frame === "outline") return;
+  throw new Error(
+    `DRAWING_SPACE_FRAME: frame is ${JSON.stringify(frame)}. A drawing or ` +
+      "working space is always drawn as a box: paper with no edge round it " +
+      "reads as the end of the sheet, and a child cannot tell it from the " +
+      "margin. If this question does not earn a box - most do not, because " +
+      "children have their books - take the space off the sheet instead."
+  );
+}
 
 function drawAreas(spec) {
   const named = Array.isArray(spec.areas) ? spec.areas.filter((a) => a !== "") : [];
@@ -241,10 +269,8 @@ function drawSurfaceMm(spec) {
 }
 
 function renderDrawingSpace(spec) {
+  checkDrawingFrame(spec);
   const areas = drawAreas(spec);
-  // The frame is named in the class rather than left as the absence of one, so
-  // a page says which of the two it drew.
-  const frame = spec.frame === "none" ? "none" : "outline";
   const cells = areas
     .map(
       (name) =>
@@ -254,13 +280,16 @@ function renderDrawingSpace(spec) {
     )
     .join("");
   return `
-    <div class="h-draw h-draw--frame-${frame}">
+    <div class="h-draw">
       ${spec.text ? `<p class="h-draw-stem">${esc(spec.text)}</p>` : ""}
       <div class="h-draw-surface">${cells}</div>
     </div>`;
 }
 
 function measureDrawingSpace(spec, widthMm) {
+  // Refused while measuring as well, so a sheet is turned back before it is
+  // drawn rather than after.
+  checkDrawingFrame(spec);
   const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + SPACE.tight : 0;
   return stemMm + drawSurfaceMm(spec);
 }
@@ -422,7 +451,6 @@ const css = `
     border: var(--rule-hair) solid var(--colour-rule);
     border-radius: 1.5mm;
   }
-  .h-draw--frame-none .h-draw-surface { border: none; }
   .h-draw-area { flex: 1; min-width: 0; position: relative; }
   .h-draw-area + .h-draw-area {
     border-left: var(--rule-hair) solid var(--colour-rule);

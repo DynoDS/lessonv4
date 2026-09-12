@@ -217,6 +217,39 @@ test("a card that does more than hold a picture keeps its column", () => {
   assert.doesNotMatch(renderHelper(joined, 174), /h-cardrow-list--hug/);
 });
 
+// ─── working room is boxed, or it is not there ───────────────────────────
+
+test("a working surface is always a box, and bare paper is refused by name", () => {
+  // Daniel, reading the Greater Depth rounding sheet: "dont want bare paper, if
+  // it is a question it truly thinks needs working space (that they couldnt just
+  // do in book) then it should have a box but thats rare."
+  //
+  // That sheet carried 43mm of unbordered working room between question 2 and
+  // question 3. It was a deliberate response surface and it read as the end of
+  // the page, which is the callout argument again: paper blank because that is
+  // the task and paper blank because nothing was put there look the same.
+  const bare = { helper: "drawing-space", heightMm: 30, frame: "none" };
+  assert.throws(() => renderHelper(bare, 120), /DRAWING_SPACE_FRAME/);
+  assert.throws(() => measure(bare, 120), /DRAWING_SPACE_FRAME/);
+  // The message names the alternative, because "most questions do not earn a
+  // box" is the half a designer has to act on.
+  assert.throws(() => renderHelper(bare, 120), /children have their books/);
+
+  // Stated or left out, it draws the same box.
+  for (const spec of [
+    { helper: "drawing-space", heightMm: 30 },
+    { helper: "drawing-space", heightMm: 30, frame: "outline" },
+  ]) {
+    assert.match(renderHelper(spec, 120), /class="h-draw-surface"/);
+  }
+  const css = require("../src/helpers").helperCss;
+  assert.match(/\.h-draw-surface \{[^}]*\}/.exec(css)[0], /border/);
+  assert.ok(
+    !/h-draw--frame-none/.test(css),
+    "the bare-paper rule is still in the stylesheet"
+  );
+});
+
 // ─── the word bank stays one bank ────────────────────────────────────────
 
 test("a word bank holds every word, and one word can carry its meaning", () => {

@@ -101,7 +101,7 @@ module.exports = {
   "sort-grid":
     "Named columns a child sorts words or items into. For somewhere to DRAW, use drawing-space: a sorting grid is a table and looks like one.",
   "drawing-space":
-    "The surface a child draws on, sized from the work it holds: how many things go on it (`draw`), whether labels and arrows go round them (`annotate`), or the surface stated outright with `heightMm`.",
+    "The boxed surface a child draws on, sized by what it holds: `draw`, `annotate`, or a stated height. Rare as plain working room, because children have books.",
   "column-method-grid":
     "Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row. `showHeadings: true` adds place-value letters above the columns, derived from the numbers' own width.",
 
