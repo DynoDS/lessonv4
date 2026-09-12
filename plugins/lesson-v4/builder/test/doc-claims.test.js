@@ -179,11 +179,13 @@ test("the §5 zone table matches ZONE_COMPAT row for row", () => {
   }
 });
 
-test("the vocabulary card's visual column is the fixed width templates.md quotes", () => {
-  const src = fs.readFileSync(path.join(__dirname, "..", "src", "templates", "key-vocabulary.js"), "utf8");
-  const m = src.match(/const VISUAL_W\s*=\s*([\d.]+)/);
-  assert.ok(m, "key-vocabulary.js no longer has a VISUAL_W constant this guard can read");
-  assert.equal(Number(m[1]), 2.2, "the vocab visual column moved - templates.md and slide-designer.md quote 2.2 inches");
+// The panel is no longer a fixed width: it is sized from the picture (13 September
+// 2026). What templates.md must not do is go back to telling the designer a
+// picture type is refused or that the panel is a fixed 2.2 inches.
+test("templates.md does not tell the designer a vocabulary card refuses a picture", () => {
+  const entry = TEMPLATES_MD.split("#### `key-vocabulary`")[1].split("\n#### ")[0];
+  assert.ok(/Any content object the deck can draw/.test(entry), "the key-vocabulary visual field no longer says it takes any content object");
+  assert.ok(!/fixed 2\.2 inch|is not accepted|deliberate subset/.test(entry), "templates.md is telling the designer the vocabulary card refuses pictures again");
 });
 
 test("centre-big-v is the 22/50/25 split templates.md quotes", () => {

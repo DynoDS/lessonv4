@@ -12,6 +12,20 @@ Rebuilt the run's worksheet from its own spec and looked at both pages. Workshee
 
 **Not changed.** The 4mm step between questions everywhere else. Widening it would separate questions further but costs height on every dense sheet; left for Daniel to decide.
 
+## 2026-09-13 A vocabulary card refuses nothing the deck can draw (4.2.169)
+
+Daniel asked why the vocabulary card refused number lines and what else it refused, then ruled: "they shouldnt refuse anything, sort them!"
+
+**Why it refused.** `resolveVocabVisual` accepted a fixed list of fourteen types and dropped every other picture from the card with a warning, text-only. `templates.md` justified it by the 2.2" panel. The list had not grown since the plugin was packaged on 28 August, and `helper-authoring.md` itself called the vocab gate "the easiest place to forget": most pictures were never refused on purpose, nobody added them. 53 of the 67 content types were refused, among them clock, fraction wall, shaded fraction, bar model, part-whole model, coordinate grid, measuring jug, dial, circuit symbols, timeline, tally chart and map.
+
+**Now.** The gate accepts every type the dispatcher knows and anything without a bespoke small-card treatment draws through the ordinary dispatcher. The card sizes the picture to itself: the picture is drawn once into a throwaway slide at the card's height and the widest panel allowed (7.4"), and the panel keeps the width its ink used, so a clock stays compact and a number line takes its length, and a new helper is sized the day it is registered with nothing to wire. Picture cards share the slide's spare height. A picture made of words and parts (table, chart, question set, sort board, timeline and similar, the one list, `STACKED_VISUALS`) goes under the word at full card width, because beside the text its own labels fell under the readable floor.
+
+**Checked by looking, every type.** A harness built one vocabulary slide per content type from the examples in `templates.md`, on three-word, two-word and one-word slides, and the renders were read. The first design (fixed icon/wide/large panels) put square figures with captions in a short full-width strip and they came out tiny; replaced by measuring the ink. Two stacked pictures on one slide ran the second card off the bottom; now their picture room is shared, and when it would fall under 1.9" the build stops with `VOCAB_PICTURES_TOO_BIG_FOR_ONE_SLIDE` naming the words rather than drawing anything unreadable. A bar chart squeezed below its plot area had been drawing nothing at all and saying nothing, on any slide; it now refuses by name (`BAR_CHART_ZONE_TOO_SMALL`).
+
+**Found on the way, any slide.** The layout preflight read every `type` field as a content object, so a grid map's features (`"type": "physical"`) refused every grid map on every slide; inside a content object a `type` outside a content slot is now that helper's data. And the guide's own examples for `continuum-line`, `fishbone`, `concept-map`, `timeline` and `row` fail on an ordinary full slide (fixed label boxes, or example data that cannot fit); not changed here, they fail the same everywhere.
+
+Updated `templates.md` (the visual field), `helper-authoring.md` step 6 (nothing to wire), and replaced the fixed-2.2" doc-claim guard with one that `templates.md` never again tells the designer a vocabulary card refuses a picture. Builder 617 pass (4 new); worksheet 681; stick-in 43; shared 8; wall 125 with the same 2 failures; Python unchanged.
+
 ## 2026-09-13 The rest of the number-lines run: the blue line, the vocabulary slide, the stick-ins and the wall (4.2.168)
 
 Daniel asked what the blue line on the Monday worksheet was, why the vocabulary slide did not look like the vocabulary slide, and to fix whatever else the run showed. Every resource from the run was looked at again, and each fault traced to the engine rather than to a one-off choice.

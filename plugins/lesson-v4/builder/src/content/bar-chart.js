@@ -80,7 +80,15 @@ function drawBarChart(pptx, slide, zone, data) {
   const plotW = plotRight - plotLeft;
   const plotH = plotBottom - plotTop;
 
-  if (plotW <= 0.1 || plotH <= 0.1) return;
+  // A chart with no room for its bars used to draw nothing and say nothing: a
+  // vocabulary card printed an empty white strip where the chart belonged.
+  if (plotW <= 0.1 || plotH <= 0.1) {
+    throw new Error(
+      `BAR_CHART_ZONE_TOO_SMALL: after its title, axis labels and category names this chart has ` +
+        `${Math.max(0, plotW).toFixed(2)}in by ${Math.max(0, plotH).toFixed(2)}in left for its bars. ` +
+        `Give it a larger zone or drop the title; nothing was drawn in its place.`
+    );
+  }
 
   // Chart title
   if (hasTitle) {

@@ -25,14 +25,22 @@ const { ZONE_COMPAT } = require('./content/index');
 // Every content object on a slide, with the zone it was put in where the slide
 // says so. A container passes its own zone class down to its children, which is
 // what the real renderer does too.
-function eachTyped(node, fn) {
+//
+// Inside a content object, a `type` field is only another content object when it
+// sits in one of the slots that hold content. Anywhere else it is that helper's
+// own data: a grid map's features are `{ "type": "physical" }` or `"human"`, and
+// reading them as content refused every grid map on every slide.
+const CONTENT_SLOTS = new Set(['items', 'content', 'visual', 'words', 'body', 'primary', 'secondary']);
+function eachTyped(node, fn, insideContent = false, slot = null) {
   if (Array.isArray(node)) {
-    node.forEach((n) => eachTyped(n, fn));
+    node.forEach((n) => eachTyped(n, fn, insideContent, slot));
     return;
   }
   if (!node || typeof node !== 'object') return;
-  if (node.type) fn(node);
-  for (const value of Object.values(node)) eachTyped(value, fn);
+  const isHelperData = insideContent && !CONTENT_SLOTS.has(slot) && !ZONE_COMPAT[node.type];
+  if (node.type && !isHelperData) fn(node);
+  const nowInside = insideContent || Boolean(node.type && ZONE_COMPAT[node.type]);
+  for (const [key, value] of Object.entries(node)) eachTyped(value, fn, nowInside, key);
 }
 
 // The registry's own compatibility table, used as a safety net BEFORE drawing.

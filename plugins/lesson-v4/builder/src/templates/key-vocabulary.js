@@ -4,6 +4,8 @@ const { FONT, COLOURS, FIT } = require('../styles');
 const { drawHeader } = require('../headers');
 const { drawVisual, resolveVocabVisual } = require('../content/vocab');
 const { estimateLines } = require('../content/text');
+const { getWarnings, restoreWarnings } = require('../warnings');
+const PptxGenJS = require('../require-global')('pptxgenjs');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const CONTENT_X       = 0.22;
@@ -18,15 +20,43 @@ const CARD_FILL       = 'D5F5E3';
 const CARD_BORDER     = '00B050';
 const CARD_BORDER_W   = 1.5;
 
-const VISUAL_W        = 2.20;
-// A number line reads along its length: squeezed into the 2.2" square-ish
-// panel its numerals fall below the readable floor, and a Year 4 vocabulary
-// slide about intervals was hand-built from free stacks instead of these cards
-// because the card refused it (12 September 2026). Definitions are short, so
-// the text column gives up the width. Every card on the slide takes the widest
-// panel any card needs, so the pictures still line up down the slide.
-const WIDE_VISUAL_W   = 4.60;
-const WIDE_VISUALS    = new Set(['numberline']);
+// A card takes any picture the deck can draw, so the picture decides its room.
+// The panel used to be a fixed 2.2" square and anything that could not live in
+// it was refused, which is how a Year 4 vocabulary slide about intervals was
+// hand-built from free stacks instead of these cards (12 September 2026).
+//
+// Two decisions, both made from the picture itself:
+//
+//   Width. The picture is drawn once into a throwaway slide at the card's real
+//   height and the widest panel allowed, and the panel takes the width its ink
+//   actually used. A clock stays a square; a number line or a bar model takes
+//   the length it reads along. A new helper is sized the same way the day it
+//   is added, so nobody has to remember to put it on a list.
+//
+//   Height. A card carrying a picture takes the slide's spare height, shared
+//   with the other picture cards, so a clock on a three-word slide is not a
+//   thumbnail. Cards without a picture keep hugging their text.
+//
+// A picture made of words and parts - a table, a question set, a sort board,
+// a chart - is read across its width, so it goes UNDER the word and its
+// definition at the card's full width. Beside the text its own labels fell
+// under the readable floor. That is the one list here, and a type missing from
+// it still draws, beside the text, at the width it uses.
+const PANEL_MIN_W = 2.20;
+const PANEL_MAX_W = 7.40;
+const STACKED_VISUALS = new Set([
+  'table', 'bullets', 'steps', 'numbered-questions', 'question-cards', 'chip-bank',
+  'sc-panel', 'method-frame', 'diamond-nine', 'pyramid', 'stack', 'row', 'vocab',
+  'matching', 'fishbone', 'concept-map', 'sort-board', 'evidence-cards',
+  'source-pathway', 'bar-chart', 'line-graph', 'pictogram', 'timeline',
+  'continuum-line', 'mult-grid', 'place-value-chart', 'geographical-description-frame'
+]);
+// The least room a stacked picture gets under its text before the helper's own
+// capacity checks take over and say what does not fit.
+const LARGE_PICTURE_MIN_H = 2.40;
+// Cut back to share a crowded slide, a stacked picture still keeps this much.
+const LARGE_PICTURE_FLOOR_H = 1.90;
+const VISUAL_W        = PANEL_MIN_W;
 const VISUAL_GAP      = 0.20;
 const VISUAL_FILL     = 'F2F2F2';
 const VISUAL_BORDER   = '00B050';
@@ -108,17 +138,50 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
   // six-inch green rectangle. Three or more cards are already over their equal
   // share, so they are clipped back to it and nothing about them moves.
   const visuals = words.map(function (item) { return resolveVocabVisual(item.visual, ctx); });
-  const visualW = visuals.some(function (v) { return v && WIDE_VISUALS.has(v.type); })
-    ? WIDE_VISUAL_W : VISUAL_W;
+  const stacked = visuals.map(function (v) { return !!v && STACKED_VISUALS.has(v.type); });
   const heights = words.map(function (item, i) {
-    return Math.min(shareH, naturalCardHeight(item, visuals[i], fonts, visualW));
+    if (stacked[i]) return stackedTextHeight(item, fonts) + LARGE_PICTURE_MIN_H;
+    // Measured against the widest panel the picture could take, so a panel that
+    // turns out wide never leaves the definition more lines than its card holds.
+    return Math.min(shareH, naturalCardHeight(item, visuals[i], fonts, visuals[i] ? PANEL_MAX_W : 0));
   });
+  // Two stacked pictures each asking for their minimum can ask for more than
+  // the slide has: the second card ran off the bottom. Their picture room is
+  // cut back, all of them by the same share, until the stack fits; the words
+  // above each picture keep their height.
+  const over = heights.reduce(function (a, b) { return a + b; }, 0) - (CONTENT_H - totalGap);
+  const stackedIdx = stacked.map(function (st, i) { return st ? i : -1; }).filter(function (i) { return i >= 0; });
+  if (over > 0 && stackedIdx.length) {
+    const room = stackedIdx.length * LARGE_PICTURE_MIN_H;
+    const keep = Math.max(0, (room - over) / room);
+    if (keep * LARGE_PICTURE_MIN_H < LARGE_PICTURE_FLOOR_H) {
+      throw new Error(
+        'VOCAB_PICTURES_TOO_BIG_FOR_ONE_SLIDE: ' +
+          stackedIdx.map(function (i) { return '"' + (words[i].word || '?') + '"'; }).join(' and ') +
+          ' each carry a picture read across the full card (' +
+          stackedIdx.map(function (i) { return visuals[i].type; }).join(', ') +
+          '), and together with the other words they leave each picture under ' +
+          LARGE_PICTURE_FLOOR_H.toFixed(1) + 'in tall. Give one of these words a smaller picture, or ' +
+          'introduce these words in separate vocabulary entries; nothing was shrunk past readable or dropped.'
+      );
+    }
+    stackedIdx.forEach(function (i) { heights[i] -= LARGE_PICTURE_MIN_H * (1 - keep); });
+  }
+  // Picture cards share whatever height the slide has left.
+  const pictureIdx = visuals.map(function (v, i) { return v && v.type !== 'text' ? i : -1; })
+    .filter(function (i) { return i >= 0; });
+  const spare = CONTENT_H - totalGap - heights.reduce(function (a, b) { return a + b; }, 0);
+  if (spare > 0 && pictureIdx.length) {
+    pictureIdx.forEach(function (i) { heights[i] += spare / pictureIdx.length; });
+  }
   const stackH = heights.reduce(function (a, b) { return a + b; }, 0) + totalGap;
 
   let cardY = CONTENT_Y + Math.max(0, (CONTENT_H - stackH) / 2);
   words.forEach(function (item, i) {
-    drawCard(pptx, slide, item,
-      { x: CONTENT_X, y: cardY, w: CONTENT_W, h: heights[i] }, ctx, fonts, visuals[i], visualW);
+    const card = { x: CONTENT_X, y: cardY, w: CONTENT_W, h: heights[i] };
+    if (stacked[i]) drawStackedCard(pptx, slide, item, card, ctx, fonts, visuals[i]);
+    else drawCard(pptx, slide, item, card, ctx, fonts, visuals[i],
+      visuals[i] ? panelWidthFor(visuals[i], card.h - 2 * CARD_PAD, ctx) : PANEL_MIN_W);
     cardY += heights[i] + CARD_GAP;
   });
 }
@@ -137,6 +200,79 @@ function naturalCardHeight(item, visual, fonts, visualW) {
   const textH = Math.max(wordNeeds / WORD_H_RATIO, defnNeeds / (1 - WORD_H_RATIO));
   const height = 2 * CARD_PAD + textH;
   return visual ? Math.max(height, MIN_CARD_H_WITH_VISUAL) : height;
+}
+
+// How wide a panel this picture uses at this height. The picture is drawn into
+// a throwaway slide at the widest panel allowed and the panel keeps the width
+// its ink covered. Warnings the dry draw raises are set aside: the real draw
+// raises them again. A picture that cannot be drawn this way keeps the widest
+// panel and the real draw reports what went wrong.
+function panelWidthFor(visual, panelH, ctx) {
+  if (visual.type === 'text') return PANEL_MIN_W;
+  const innerH = panelH - 2 * VISUAL_PAD;
+  const innerW = PANEL_MAX_W - 2 * VISUAL_PAD;
+  const saved = getWarnings();
+  const quiet = console.warn;
+  console.warn = function () {};
+  try {
+    const probe = new PptxGenJS();
+    probe.defineLayout({ name: 'PROBE', width: 20, height: 20 });
+    probe.layout = 'PROBE';
+    const slide = probe.addSlide();
+    drawVisual(probe, slide, { x: 1, y: 1, w: innerW, h: innerH }, visual,
+      Object.assign({}, ctx, { cardLook: false }));
+    let minX = Infinity;
+    let maxX = -Infinity;
+    (slide._slideObjects || []).forEach(function (o) {
+      const opt = o.options || {};
+      if (typeof opt.x !== 'number' || typeof opt.w !== 'number') return;
+      minX = Math.min(minX, opt.x);
+      maxX = Math.max(maxX, opt.x + opt.w);
+    });
+    if (!Number.isFinite(minX)) return PANEL_MAX_W;
+    const used = Math.min(innerW, maxX - minX) + 2 * VISUAL_PAD;
+    return Math.max(PANEL_MIN_W, Math.min(PANEL_MAX_W, used + 0.1));
+  } catch (err) {
+    return PANEL_MAX_W;
+  } finally {
+    console.warn = quiet;
+    restoreWarnings(saved);
+  }
+}
+
+// The word and definition across the top of a card, at the card's full width.
+function stackedTextHeight(item, fonts) {
+  const textW = CONTENT_W - 2 * CARD_PAD;
+  const wordH = fonts.word * LINE_RATIO * WORD_LINE_SLACK;
+  const defnH = estimateLines(item.definition || '', fonts.defn, textW) * fonts.defn * LINE_RATIO;
+  return 2 * CARD_PAD + wordH + defnH + VISUAL_GAP;
+}
+
+function drawStackedCard(pptx, slide, item, card, ctx, fonts, visual) {
+  slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+    x: card.x, y: card.y, w: card.w, h: card.h,
+    fill: { color: CARD_FILL },
+    line: { color: CARD_BORDER, width: CARD_BORDER_W },
+    rectRadius: CARD_RADIUS
+  });
+  const textX = card.x + CARD_PAD;
+  const textW = card.w - 2 * CARD_PAD;
+  const wordH = fonts.word * LINE_RATIO * WORD_LINE_SLACK;
+  const defnH = stackedTextHeight(item, fonts) - 2 * CARD_PAD - wordH - VISUAL_GAP;
+  slide.addText(item.word || '', {
+    x: textX, y: card.y + CARD_PAD, w: textW, h: wordH,
+    fontFace: FONT, fontSize: fonts.word, bold: true,
+    color: COLOURS.green, align: 'left', valign: 'middle', margin: 0, fit: FIT
+  });
+  slide.addText(item.definition || '', {
+    x: textX, y: card.y + CARD_PAD + wordH, w: textW, h: defnH,
+    fontFace: FONT, fontSize: fonts.defn, bold: true,
+    color: COLOURS.body, align: 'left', valign: 'top', margin: 0, fit: FIT
+  });
+  const panelY = card.y + CARD_PAD + wordH + defnH + VISUAL_GAP;
+  drawVisualPanel(pptx, slide, visual, {
+    x: textX, y: panelY, w: textW, h: card.y + card.h - CARD_PAD - panelY
+  }, ctx);
 }
 
 function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual, visualW) {

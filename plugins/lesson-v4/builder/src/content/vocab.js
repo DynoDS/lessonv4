@@ -43,20 +43,17 @@ const VISUAL_COL_FRAC  = 0.28;   // fraction of boxW reserved for the visual col
 const VISUAL_INNER_PAD = 0.06;   // padding inside the visual cell
 // ─── END CONSTANTS ────────────────────────────────────────────
 
-// A vocab card draws money, image, turn-diagram, angle, triangle,
-// triangle-nonexample, line-pair, geoboard, polygon, place-value-mini, and
-// non-empty text visuals. Other content types (a fraction wall, a clock, and so
-// on) can't render on a card. turn-diagram,
-// angle, triangle, line-pair, geoboard and polygon are supported because a small turn, angle,
-// triangle, line-pair, shape-on-pegs or named-shape picture is a natural icon for a
-// turns/angles/shapes/lines word — "angle" shown as a quarter turn, "acute angle"
-// shown as the angle itself, "scalene" shown as the scalene triangle with its dashes,
-// "parallel lines" shown as a parallel pair, "trapezium" shown as the trapezium
-// itself on a geoboard, or "regular polygon" shown as a true regular hexagon — and each
-// renders as a self-contained figure just like an image, so it fits the card's visual
-// cell with no extra layout work. (polygon is the right icon for a regular-shape word,
-// where the preset geometry draws a truly regular shape that a geoboard's integer pegs
-// can't seat.)
+// A vocab card draws ANY content the deck can draw. It used to take a fixed
+// list of fourteen, and everything else - a clock for "quarter past", a
+// fraction wall for "equivalent", a bar model for "whole", a number line for
+// "interval" - was dropped from the card with a warning. The list was said to
+// exist because the picture cell was small, but mostly nothing was ever added
+// to it: a Year 4 vocabulary slide was hand-built from free stacks instead of
+// these cards because the card refused its number line (12 September 2026),
+// and Daniel's ruling was that a vocabulary card refuses nothing. The panel is
+// sized to the picture instead (key-vocabulary.js); a picture with a bespoke
+// small-card treatment below keeps it, and everything else draws through the
+// same dispatcher every other slide uses.
 // resolveVocabVisual is the single gate the card layouts call before reserving
 // any space: it returns the visual when it will actually draw, and otherwise
 // returns null so the card treats itself as having no picture — full-width text,
@@ -92,14 +89,12 @@ function resolveVocabVisual(visual, ctx) {
   // kind of thing?" is not the question this gate exists to answer; "will anything
   // appear here?" is.
   if (t === 'image') return imageWillDraw(visual, ctx) ? visual : null;
-  if (t === 'money' || t === 'turn-diagram' || t === 'angle' ||
-      t === 'triangle' || t === 'triangle-nonexample' || t === 'line-pair' ||
-      t === 'geoboard' || t === 'polygon' || t === 'venn' || t === 'carroll' ||
-      t === 'rainforest-layers' || t === 'place-value-mini' || t === 'numberline') return visual;
   if (t === 'text') {
     return (visual.value != null && String(visual.value) !== '') ? visual : null;
   }
-  if (ctx) warn(ctx.slideIndex, 'vocab visual type "' + t + '" can\'t render on a vocab card — left blank (use a supported visual from the key-vocabulary catalogue)');
+  // Lazy: the dispatcher itself requires this file for the `vocab` object.
+  if (Object.prototype.hasOwnProperty.call(require('./index').ZONE_COMPAT, t)) return visual;
+  if (ctx) warn(ctx.slideIndex, 'vocab visual type "' + t + '" is not something the deck can draw, so the card is text-only. Check the type name against templates.md.');
   return null;
 }
 
@@ -150,8 +145,8 @@ function drawVisual(pptx, slide, zone, visual, ctx) {
     });
     return;
   }
-  // Safety net: callers gate on resolveVocabVisual, so an unrenderable type should
-  // never reach here. If one does, draw nothing rather than a placeholder token.
+  // Everything else draws exactly as it would on any other slide.
+  return require('./index').drawContent(pptx, slide, zone, visual, ctx);
 }
 
 function drawVocab(pptx, slide, zone, data, ctx) {
