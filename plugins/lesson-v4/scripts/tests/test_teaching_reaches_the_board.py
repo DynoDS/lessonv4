@@ -217,9 +217,14 @@ class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
         self.assertIn("It is not the place for the explanation", text)
 
     def test_downstream_renders_it_as_teaching_lines_and_the_reviewer_names_it(self) -> None:
+        """It is still child-facing teaching text kept as its own short lines,
+        and since 12 September those lines are composed as separate pieces
+        rather than concatenated into one card between the headline and the
+        example, which is what the teacher saw and called one big black text."""
         self.assertIn("a content Teach unit's `explanation`, kept as its own short lines", flat(SLIDE_DESIGNER))
         playbook = " ".join((ROOT / "references" / "slide-composition-playbook.md").read_text(encoding="utf-8").split())
-        self.assertIn("render it black, as its own short lines, between the headline and the example it explains", playbook)
+        self.assertIn("A content Teach unit's `explanation` is child-facing teaching text", playbook)
+        self.assertIn("Compose the explanation's lines as separate pieces, not as one block", playbook)
 
 
 class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
