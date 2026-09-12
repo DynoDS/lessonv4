@@ -1,5 +1,68 @@
 # Build review log
 
+## 2026-09-12 The child's action is chosen, not defaulted to (4.2.162)
+
+Daniel, on the sheets the plugin has been building: "there's mainly always text
+and children write on line instead of - label a diagram - draw arrows / connect
+pairs - sort cards into boxes - circle / tick / cross - complete part of a table
+- highlight evidence - annotate a picture - sequence items - complete a model -
+correct something directly on an example - draw or construct an answer ... And
+then use answer lines only where explaining something in words is genuinely the
+best task."
+
+**Counted before anything was written.** Eleven worksheet specs built between 5
+and 12 September were read by what they actually draw. Ruled writing lines and a
+plain printed instruction are the two commonest things on every one of them.
+Across all eleven, label-a-diagram, match-up, sort-grid, sequencing and
+correct-an-example appear zero times. The engine draws every one of those, and
+has for weeks.
+
+**The cause is upstream of the page, which is why the September page work did
+not touch it.** `response` was free text. A designer writing `two handwriting
+lines` had settled the form, the worksheet designer is required not to change a
+settled response, and so the page had no way to be anything else. The clearest
+casualty is the Year 4 teeth sheet: objective *name the layers of teeth*, three
+names asked for on three ruled lines, under a labelled diagram the sheet never
+lets a child write on, half the page empty. Its final review passed it with
+"every sheet provides three separate naming targets", which was true.
+
+**So the form is now named where it is chosen.** `responseForm` is required on
+every question block, every question-group part and every stimulus-set prompt,
+from a thirteen-value vocabulary that is Daniel's list: label the visual, mark on
+a visual, match or join, sort into groups, put in order, choose from options,
+complete the table, complete the model, correct the example, draw or construct,
+complete the sentence, short answer, written explanation. `response` keeps its
+job and sizes that action's target.
+
+**`written-explanation` is the one value that carries a reason**, because it is
+the default the list exists to interrupt rather than because it is second best.
+`responseFormReason` says what the words evidence that no other form would, and
+the validator refuses it on any other form so it cannot become a general
+commentary field. Where writing at length IS the objective, the block kind is
+`frame`, which needs no form at all - the frame is the form.
+
+**Five places, one decision each.** The lesson designer and adaptation designer
+choose it as they write the question (the adaptation designer's line is where
+the `Getting the answer down` dial is actually turned, and the tier does not
+decide it alone). The validator enforces the vocabulary. `shared.md` maps every
+value onto the helpers that draw it, and its old "start from what the child
+does" table was rewritten rather than duplicated. The worksheet designer
+realises the named form and returns a gap rather than substituting. The design
+reviewer reads the forms across a sheet against the objective's own verb, and
+is given both failures by name: all-lines, and forms rotated for variety across
+an objective none of them fit.
+
+**Two things this does not do.** It cannot make the chosen form the right one -
+that is judgement, and it is why each agent gets the reason and the boundary
+rather than just the list. And it is a breaking schema change: a design saved
+before today fails the gate until its blocks carry the field, which is what the
+teeth and being-active designs now do.
+
+Twenty new Python tests, plus the engine's guide-name guard now reading the
+vocabulary from the validator so a value can never be enforced with no helper
+route. Python 1686 pass, the nine known failures unchanged. JavaScript 674 pass,
+0 fail.
+
 ## 2026-09-12 The line reads the way its question reads (4.2.161)
 
 Found while rebuilding the Monday rounding sheet with the current engine, not

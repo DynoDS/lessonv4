@@ -194,9 +194,12 @@ Pictures, matching, sorting, symbols, short prompts, word banks, sentence stems,
 For each question, part or open task, write:
 
 - `Pupil prompt:` — exact child-facing wording;
+- `Response form:` — one value from the vocabulary in `output-template.md` → `responseForm`, and for `written-explanation` a clause saying what the words evidence that no other form would;
 - `Response:` — the printed action and obvious response target;
 - `Support:` — any word bank, stem, given labels, representation or reference;
 - `Visual requirements:` — required content, sourcing and composition information.
+
+**`Response form:` is where the `Getting the answer down` dial is actually turned.** Match, tick, sort, circle, label and complete-a-stem are the values of that dial, so a Below sheet that names the dial in its support decision and then writes ruled lines under every question has not turned it. The tier does not choose the form on its own, though: a child who can explain aloud but not in writing needs the form to change, and a child whose barrier is the subject needs the question to change while the form stays as the class's. Say which in `Support and representation decision:`. The same field carries Greater Depth the other way - `correct-the-example` and `mark-on-a-visual` raise the demand on the same objective, where a longer line only asks for more of the same writing.
 
 A word bank is written under `Support` and remains a visibly separate labelled block.
 
@@ -389,6 +392,7 @@ Task form: [same central task with a higher standard / separate practice / separ
 
 For each generated question, part or task:
 - Pupil prompt: [exact child-facing wording]
+- Response form: [one `output-template.md` responseForm value; for written-explanation, add the clause saying what the words evidence]
 - Response: [printed action and target]
 - Support: [reference, representation, vocabulary, scaffold or None]
 - Visual requirements: [required visual and its job, or None]
@@ -438,6 +442,7 @@ Task form: [numbered questions / connected multipart task / open task / shared s
 
 For each generated question, part or task:
 - Pupil prompt: [exact child-facing wording]
+- Response form: [one `output-template.md` responseForm value; for written-explanation, add the clause saying what the words evidence]
 - Response: [printed action and target]
 - Support: [including any separately labelled word bank]
 - Visual requirements: [required visual and its job, or None]

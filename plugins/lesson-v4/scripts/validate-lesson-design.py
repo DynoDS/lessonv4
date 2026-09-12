@@ -139,6 +139,36 @@ WORKSHEET_USES = {"separate-fresh-worksheet", "required-task-resource"}
 WORKSHEET_SHAPES = {"question-set", "frame", "stimulus-set", "child-generated", "mixed"}
 WORKSHEET_BLOCK_KINDS = {"question", "question-group", "frame", "stimulus-set", "child-generated"}
 
+# What the child DOES to answer, chosen when the question is written.
+#
+# Eleven sheets built between 5 and 12 September 2026 were counted by what they
+# actually draw. Ruled writing lines and a plain instruction were the two most
+# used things on every one of them; label-a-diagram, match, sort, sequence and
+# correct-an-example were used zero times between them. The cause was not the
+# page engine, which draws all of those: `response` was free text, so a designer
+# who wrote "two handwriting lines" had made the decision, and the worksheet
+# designer is forbidden to change a settled response. Naming the form makes it a
+# choice from a vocabulary rather than the first thing that fits any answer.
+#
+# `written-explanation` is the one that carries a reason, because it is the
+# default this list exists to interrupt, not because it is second best.
+WORKSHEET_RESPONSE_FORMS = {
+    "label-the-visual",
+    "mark-on-a-visual",
+    "match-or-join",
+    "sort-into-groups",
+    "put-in-order",
+    "choose-from-options",
+    "complete-the-table",
+    "complete-the-model",
+    "correct-the-example",
+    "draw-or-construct",
+    "complete-the-sentence",
+    "short-answer",
+    "written-explanation",
+}
+REASONED_RESPONSE_FORM = "written-explanation"
+
 ID_PATTERNS = {
     "vocabulary": re.compile(r"^vocab-\d{3}$"),
     "representation": re.compile(r"^rep-\d{3}$"),
@@ -1376,6 +1406,32 @@ def validate_source_unit(
     return unit
 
 
+def validate_response_form(item: dict[str, Any], path: str) -> None:
+    """The child's action, and the one form that has to say why.
+
+    The vocabulary is enforced here rather than described, because a free-text
+    response field is what let every sheet reach for ruled lines. The reason on
+    `written-explanation` is not a tax on writing: it is the question "what do
+    the words evidence that another form would not", asked at the one moment
+    somebody can still answer it, which is while the question is being written.
+    """
+    form = expect_string(item.get("responseForm"), f"{path}.responseForm")
+    expect(
+        form in WORKSHEET_RESPONSE_FORMS,
+        f"{path}.responseForm invalid: {form} "
+        f"(expected one of {', '.join(sorted(WORKSHEET_RESPONSE_FORMS))})",
+    )
+    reason = item.get("responseFormReason")
+    if form == REASONED_RESPONSE_FORM:
+        expect_string(reason, f"{path}.responseFormReason")
+        return
+    expect(
+        reason is None,
+        f"{path}.responseFormReason must be null when responseForm is not "
+        f"{REASONED_RESPONSE_FORM}; the form already says what the child does",
+    )
+
+
 def validate_worksheet_content_block(
     raw: Any,
     path: str,
@@ -1390,12 +1446,16 @@ def validate_worksheet_content_block(
     common = {"id", "kind", "representationRefs", "stickyKnowledgeRefs", "photoRefs"}
 
     if kind == "question":
-        allowed = common | {"pupilPrompt", "response", "support", "visualRequirements", "answer"}
+        allowed = common | {
+            "pupilPrompt", "response", "responseForm", "responseFormReason",
+            "support", "visualRequirements", "answer",
+        }
         expect_exact_keys(block, allowed, allowed, path)
         block_id = expect_string(block["id"], f"{path}.id")
         expect(re.fullmatch(r"^ws-q-\d{3}$", block_id) is not None, f"{path}.id must match ws-q-###")
         expect_string(block["pupilPrompt"], f"{path}.pupilPrompt")
         expect_string(block["response"], f"{path}.response")
+        validate_response_form(block, path)
         expect_string(block["support"], f"{path}.support", allow_empty=True)
         expect_string(block["visualRequirements"], f"{path}.visualRequirements", allow_empty=True)
         validate_answer(block["answer"], f"{path}.answer", allowed_deliveries={"teacher-only", "none"})
@@ -1412,7 +1472,8 @@ def validate_worksheet_content_block(
             part_path = f"{path}.parts[{index - 1}]"
             part = expect_dict(raw_part, part_path)
             fields = {
-                "id", "pupilPrompt", "response", "support", "visualRequirements",
+                "id", "pupilPrompt", "response", "responseForm", "responseFormReason",
+                "support", "visualRequirements",
                 "representationRefs", "stickyKnowledgeRefs", "photoRefs", "answer",
             }
             expect_exact_keys(part, fields, fields, part_path)
@@ -1420,6 +1481,7 @@ def validate_worksheet_content_block(
             expect(part["id"] == expected_id, f"{part_path}.id must be exactly {expected_id}")
             expect_string(part["pupilPrompt"], f"{part_path}.pupilPrompt")
             expect_string(part["response"], f"{part_path}.response")
+            validate_response_form(part, part_path)
             expect_string(part["support"], f"{part_path}.support", allow_empty=True)
             expect_string(part["visualRequirements"], f"{part_path}.visualRequirements", allow_empty=True)
             validate_representation_refs(part["representationRefs"], f"{part_path}.representationRefs", rep_by_id)
@@ -1461,7 +1523,8 @@ def validate_worksheet_content_block(
             prompt_path = f"{path}.prompts[{index - 1}]"
             prompt = expect_dict(raw_prompt, prompt_path)
             fields = {
-                "id", "pupilPrompt", "response", "support", "visualRequirements",
+                "id", "pupilPrompt", "response", "responseForm", "responseFormReason",
+                "support", "visualRequirements",
                 "representationRefs", "stickyKnowledgeRefs", "photoRefs", "answer",
             }
             expect_exact_keys(prompt, fields, fields, prompt_path)
@@ -1469,6 +1532,7 @@ def validate_worksheet_content_block(
             expect(prompt["id"] == expected_id, f"{prompt_path}.id must be exactly {expected_id}")
             expect_string(prompt["pupilPrompt"], f"{prompt_path}.pupilPrompt")
             expect_string(prompt["response"], f"{prompt_path}.response")
+            validate_response_form(prompt, prompt_path)
             expect_string(prompt["support"], f"{prompt_path}.support", allow_empty=True)
             expect_string(prompt["visualRequirements"], f"{prompt_path}.visualRequirements", allow_empty=True)
             validate_representation_refs(prompt["representationRefs"], f"{prompt_path}.representationRefs", rep_by_id)

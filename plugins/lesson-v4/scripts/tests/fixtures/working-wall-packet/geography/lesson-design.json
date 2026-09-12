@@ -756,6 +756,8 @@
           {
             "id": "ws-stimulus-001-prompt-01",
             "pupilPrompt": "What is a biome?",
+            "responseForm": "written-explanation",
+            "responseFormReason": "The description is the evidence; no shorter form shows which features were used.",
             "response": "One clear definition; space for two lines.",
             "support": "Think about what places in one biome have in common.",
             "visualRequirements": "No extra visual is needed for this prompt.",
@@ -772,6 +774,8 @@
           {
             "id": "ws-stimulus-001-prompt-02",
             "pupilPrompt": "Name two examples of biomes.",
+            "responseForm": "written-explanation",
+            "responseFormReason": "The description is the evidence; no shorter form shows which features were used.",
             "response": "Two biome names; space for one line.",
             "support": "",
             "visualRequirements": "No extra visual is needed for this prompt.",
@@ -788,6 +792,8 @@
           {
             "id": "ws-stimulus-001-prompt-03",
             "pupilPrompt": "Niko says, \"Someone can be in the Amazon rainforest without being in Brazil.\" Is Niko right? Use the map in your answer.",
+            "responseForm": "written-explanation",
+            "responseFormReason": "The description is the evidence; no shorter form shows which features were used.",
             "response": "A judgement and map-based explanation that locates the rainforest; space for three lines.",
             "support": "Start with the continent. Use the country borders and the shaded area.",
             "visualRequirements": "Keep the South America map directly above this question, with the shading and borders readable.",
@@ -810,6 +816,8 @@
           {
             "id": "ws-stimulus-001-prompt-04",
             "pupilPrompt": "Describe two features of the Amazon rainforest. Use the photographs as evidence.",
+            "responseForm": "written-explanation",
+            "responseFormReason": "The description is the evidence; no shorter form shows which features were used.",
             "response": "Two features with visible evidence; space for four lines.",
             "support": "Say what you can see before you explain what it shows about the place.",
             "visualRequirements": "Keep both photographs together directly above this question and large enough to see vegetation, water, buildings or boats.",

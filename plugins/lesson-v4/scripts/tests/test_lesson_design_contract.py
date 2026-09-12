@@ -350,6 +350,8 @@ def valid_contract():
                     "id": "ws-q-001",
                     "kind": "question",
                     "pupilPrompt": "Add 34 + 25.",
+                    "responseForm": "complete-the-model",
+                    "responseFormReason": None,
                     "response": "Write the answer and show the partition.",
                     "support": "",
                     "visualRequirements": "",
@@ -1509,6 +1511,8 @@ def test_stimulus_prompt_can_carry_its_own_visual_semantics():
                 {
                     "id": "ws-stimulus-001-prompt-01",
                     "pupilPrompt": "Which result is greatest?",
+                    "responseForm": "short-answer",
+                    "responseFormReason": None,
                     "response": "Write one result.",
                     "support": "",
                     "visualRequirements": "Keep the chart visible beside this prompt.",

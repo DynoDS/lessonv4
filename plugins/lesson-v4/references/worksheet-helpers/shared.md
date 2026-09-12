@@ -8,25 +8,49 @@ what a good sheet does with it.** Read it for every lesson.
 
 ## Start from what the child does
 
-Not from what the page looks like. A helper is chosen by the action:
+Not from what the page looks like. Every question arrives carrying a
+`responseForm` - the action the lesson designer or adaptation designer chose
+when they wrote it - and that names the family of helpers that draws it. Your
+job is to realise the named form, not to re-pick it; a form you believe is wrong
+is a `notes` entry, exactly like a question you believe is wrong.
 
-| The child… | Reach for |
+| `responseForm` | Reach for |
 |---|---|
-| gives a short read-off answer, with no structure behind it | `questions` |
-| answers in their own words | `written-answers` |
-| decomposes, composes, calculates, compares or manipulates something | the representation that shows it: `part-whole`, `number-sentence`, `bar-model`, `number-line`, the place-value and method helpers |
-| reads something and works from it | `source-text`, `data-table` |
-| weighs one case against another | matched panels of the same shape - `counter-group`, `card-row`, `speech-scene` - one per case |
-| records what they find | `recording-table`, or a repeated `number-sentence` where the record is numerical |
-| joins one thing to another | `match-up`, `card-row`, `timeline`, `label-diagram` |
-| sorts into groups | `sort-grid`, `venn`, `carroll` |
-| picks from options | `multiple-choice`, `circle-the-answer`, `chip-bank` |
-| completes a taught method | `method-frame`, the grid helpers |
-| draws or plots | `sort-grid` (one row), `blank-surface`, `coordinate-grid`, `storyboard` |
-| writes at length in a shape | `writing-frame`, `fact-file`, `speech-scene` |
-| judges or answers what a named person says | `speech-scene` |
+| `label-the-visual` | `label-diagram` with `given: false` on the parts being named |
+| `mark-on-a-visual` | the thing being marked: `number-line`, `coordinate-grid`, `reflection-grid`, `fraction-bar`, `map`, `grid-map`, `clock-row`, `place-value-counter-chart`, `ruler`, or a `source-text` the child highlights on |
+| `match-or-join` | `match-up`, or `card-row` and `timeline` where the join runs to a line |
+| `sort-into-groups` | `sort-grid`, `venn`, `carroll` |
+| `put-in-order` | `order-numbers`, `order-table`, `data-table-with-ordering`, `process-chain`, `storyboard` |
+| `choose-from-options` | `multiple-choice`, `circle-the-answer`, `chip-bank` |
+| `complete-the-table` | `recording-table`, with `rows` where some cells are supplied |
+| `complete-the-model` | the taught structure: `part-whole`, `number-sentence`, `bar-model`, `method-frame`, `number-pyramid`, `inequality-with-boxes`, `compare-row`, the column-method and place-value grids |
+| `correct-the-example` | the helper that drew the example, printed wrong, with its own response beside it - a `method-frame` carrying the faulty working, an `order-table` in the wrong order, a `named-claim` |
+| `draw-or-construct` | `drawing-space`, `blank-surface`, `geoboard` |
+| `complete-the-sentence` | the stem itself: `writing-frame`, `fact-file`, or an `instruction` carrying the stem where one line is all it is |
+| `short-answer` | `questions` |
+| `written-explanation` | `written-answers`, with `sentences` counted from the prompt |
 
-If two fit, choose the one that leaves the least explaining to do.
+If two fit, choose the one that leaves the least explaining to do. Compose where
+the form needs more than one helper: a `correct-the-example` is the wrong working
+and the place to repair it, and a `choose-from-options` that also asks why is the
+options and the explanation space.
+
+**A form with no helper behind it is a gap, not a licence to substitute.** Say so
+in `notes` with the form and the sheet, and build the nearest honest thing only
+where it is genuinely the same action. Silently answering a
+`label-the-visual` with a lettered picture and a list underneath is the fault
+that shipped on a Year 4 teeth sheet.
+
+**The stimulus is a separate decision from the form.** What the child reads and
+works FROM - `source-text`, `data-table`, `card-row`, `named-claim`,
+`speech-scene` - is chosen by what the material is, and it sits above the
+questions that use it. A form says what the child does; the stimulus says what
+they do it to. Where several cases are weighed against each other, matched panels
+of the same shape carry them, one per case, under `Show the case, then attach its
+response to it` below.
+
+A `frame` block and a `child-generated` block carry no `responseForm`, because
+the frame and the recording surface ARE the form. Render what they describe.
 
 **Choose on the relationship first, and on the shape of the answer second.**
 The first row of that table used to read "answers in a word or a number", and

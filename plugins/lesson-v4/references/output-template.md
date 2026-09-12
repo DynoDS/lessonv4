@@ -846,6 +846,8 @@ Otherwise use `null`.
   "id": "ws-q-001",
   "kind": "question",
   "pupilPrompt": "Exact words the child sees.",
+  "responseForm": "complete-the-model",
+  "responseFormReason": null,
   "response": "Printed action and usable response target.",
   "support": "",
   "visualRequirements": "",
@@ -863,6 +865,45 @@ Otherwise use `null`.
 
 `pupilPrompt` is verbatim child-facing wording. `support` and `visualRequirements` may be empty strings.
 
+##### `responseForm`: what the child DOES to answer
+
+Required on every `question` block, every question-group `part` and every
+stimulus-set `prompt`, and enforced by the validator. It is the action, chosen
+from this list; `response` then says what that action's printed target has to be
+(how many spaces, how much room, what is already in it).
+
+| Value | The child |
+|---|---|
+| `label-the-visual` | writes each part's name onto the picture itself |
+| `mark-on-a-visual` | decides where a mark goes and puts it there: plots, shades, annotates, highlights the evidence in a source, marks a value on a line |
+| `match-or-join` | draws lines joining things in one set to things in another |
+| `sort-into-groups` | places items into named groups, rings or columns |
+| `put-in-order` | sequences items into the right order |
+| `choose-from-options` | ticks, circles or crosses among options the sheet prints |
+| `complete-the-table` | fills the empty cells of a table whose columns are given |
+| `complete-the-model` | writes values into the empty slots of a taught structure: a part-whole, a bar model, a number sentence, a method frame, a column method |
+| `correct-the-example` | repairs a wrong worked example in place, on the example itself |
+| `draw-or-construct` | draws or builds the answer on a bordered surface |
+| `complete-the-sentence` | writes the missing words into a printed stem |
+| `short-answer` | writes one word, number or phrase on a line |
+| `written-explanation` | writes an answer in their own words on ruled lines |
+
+The boundary between the two that overlap: `complete-the-model` fills a slot
+that is already drawn, and `mark-on-a-visual` makes the child decide the
+position. Writing 4,350 into an empty box is the first; marking where 4,350 sits
+on a line is the second, and they are different thinking.
+
+`responseFormReason` is a non-empty string when `responseForm` is
+`written-explanation`, and `null` for every other form. Say what the words
+evidence that no other form on this list would: `the reasoning is the evidence -
+a tick would not show whether the child used place value or guessed`. It is one
+clause, it is teacher-facing, and it is never printed. A run of questions whose
+reasons are the same sentence is telling you they were not chosen one at a time.
+
+**Where writing at length is the objective itself** - a comprehension, a piece of
+extended writing - the block kind is `frame`, whose sections already describe the
+writing. Do not build that sheet as a run of `written-explanation` questions.
+
 #### Worksheet question group
 
 ```json
@@ -877,6 +918,8 @@ Otherwise use `null`.
     {
       "id": "ws-qg-001-part-01",
       "pupilPrompt": "...",
+      "responseForm": "short-answer",
+      "responseFormReason": null,
       "response": "...",
       "support": "",
       "visualRequirements": "",
@@ -937,6 +980,8 @@ Use multipart structure only for one connected pupil job, under the existing ped
     {
       "id": "ws-stimulus-001-prompt-01",
       "pupilPrompt": "...",
+      "responseForm": "written-explanation",
+      "responseFormReason": "The comparison is the evidence; no shorter form shows which features the child weighed.",
       "response": "...",
       "support": "",
       "visualRequirements": "",

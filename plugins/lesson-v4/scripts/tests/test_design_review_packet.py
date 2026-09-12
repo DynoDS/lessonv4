@@ -2032,6 +2032,8 @@ def content_based_design() -> tuple[dict, dict]:
             "id": "ws-q-001",
             "kind": "question",
             "pupilPrompt": "What has stayed the same?",
+            "responseForm": "written-explanation",
+            "responseFormReason": "DESIGNER ONLY reason the words are the evidence",
             "response": "DESIGNER ONLY response size",
             "support": "Start with: I can see...",
             "visualRequirements": "DESIGNER ONLY visual requirement",

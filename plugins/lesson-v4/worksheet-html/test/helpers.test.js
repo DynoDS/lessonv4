@@ -471,8 +471,32 @@ test("the subject guides only name helpers that exist", () => {
     "catalogue", "shared", "maths", "science", "hint", "note", "title",
     "given", "value", "label", "caption", "blank", "blankChars", "chars",
     "cells", "heading", "joiner", "groups", "count", "statement", "digits",
-    "instances", "writing",
+    "instances", "writing", "rows", "sentences", "frame", "child-generated",
+    "responseForm",
   ]);
+
+  // The response forms are read from the validator that enforces them, not
+  // listed again here: shared.md maps each one onto the helpers that draw it,
+  // and a value misspelled in either place is a form whose questions arrive
+  // with no route to a page. This is the only list in the repository that
+  // could drift from the enum silently.
+  const validator = fs.readFileSync(
+    path.join(__dirname, "..", "..", "scripts", "validate-lesson-design.py"),
+    "utf8"
+  );
+  const enumBlock = validator.match(/WORKSHEET_RESPONSE_FORMS = \{([^}]*)\}/);
+  assert.ok(enumBlock, "validate-lesson-design.py no longer defines WORKSHEET_RESPONSE_FORMS");
+  const responseForms = [...enumBlock[1].matchAll(/"([a-z-]+)"/g)].map((m) => m[1]);
+  assert.ok(responseForms.length >= 10, "the response-form vocabulary came back short");
+  for (const form of responseForms) NOT_HELPERS.add(form);
+
+  const sharedText = fs.readFileSync(path.join(dir, "shared.md"), "utf8");
+  const unrouted = responseForms.filter((form) => !sharedText.includes(`\`${form}\``));
+  assert.deepEqual(
+    unrouted,
+    [],
+    `shared.md names no helper for: ${unrouted.join(", ")}`
+  );
 
   for (const file of ["shared.md", "maths.md", "science.md"]) {
     const text = fs.readFileSync(path.join(dir, file), "utf8");
