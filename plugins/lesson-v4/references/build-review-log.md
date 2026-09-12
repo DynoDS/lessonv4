@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-12 The board asks what the child does too (4.2.163)
+
+Daniel, reading back 4.2.162 from the worksheet work: "is this the exact change we did to slides?" It was not. The slides had one rule about starters, which lists other retrieval forms and says to reach for a list of written questions only when the recall genuinely is a list of questions. Past the starter there was nothing. A Do beat's `format` is free text, a Your Turn carries a core action inside `activityArchitecture`, and a deck whose every task beat is a numbered list answered in books breaks no rule at all.
+
+**So the question generalises, and only the question.** Every beat where children produce something now asks what the worksheet side asks of every question: if this child were showing you the answer with the work in front of them, would they point at it, move it, group it, order it, fix it, or tell you. The answer is named in the field the beat already has, in the worksheet's own words for it, so one lesson's two surfaces describe the child's action in one vocabulary rather than two.
+
+**What does not cross over is the closed list, and the reason is not caution.** A worksheet IS the child's response surface, so its form settles what the child does and an enum belongs there. A slide is the board: the same beat can be answered on a whiteboard, in a book, aloud or at the front, and that is the teacher's decision, which `subject-maths.md` has protected since long before this. What the board owes is a form that makes the intended action possible and obvious, not a recording method. Stated as the reason rather than as a hedge, because the obvious next tidy-up is to close the gap by adding the enum here, and that would have the board telling teachers how children record.
+
+**And the list of questions is defended, not merely permitted.** Where the thinking genuinely is the words, or where the skill being practised is answering written questions of that kind, which is most maths fluency, a list is the right answer. The fault is the list that was never chosen.
+
+**One error caught by writing the test.** The first draft told the designer to name the action in the beat's `format`, and Your Turn, Apply and Use Learning have no `format` field. The rule now names the field each beat actually carries, and a test reads those key sets out of the validator so the pointer cannot rot.
+
+Nine new tests. Full run: 1695 pass, the nine known failures unchanged; JavaScript 604 pass, 0 fail.
+
 ## 2026-09-12 The child's action is chosen, not defaulted to (4.2.162)
 
 Daniel, on the sheets the plugin has been building: "there's mainly always text
