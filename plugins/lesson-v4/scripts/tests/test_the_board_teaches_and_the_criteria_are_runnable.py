@@ -165,11 +165,28 @@ class TheExplanationIsSeparatePiecesNotABlock(unittest.TestCase):
         self.assertIn("a line about one part sits next to that part", composition)
         self.assertIn("concatenated into one black card because they arrived in one field", composition)
 
-    def test_it_does_not_reach_for_a_colour_the_grammar_has_not_got(self) -> None:
-        """The profile's own line, unchanged: prominence on a black
-        explanatory line is size, position and spacing."""
-        self.assertIn("has no spare one for prominence", flat(self.COMPOSITION))
+    def test_one_line_may_be_orange_and_layout_comes_first(self) -> None:
+        """Daniel settled the colour question the same day: "Orange was fine
+        to break up black teach, we should do that." Orange is free on a Teach
+        slide because its existing text job tints a value a question hands the
+        child, and a Teach slide is not asking."""
+        profile = flat(self.PROFILE)
+        self.assertIn("One line of a Teach slide's explanation may be orange, and only one", profile)
+        self.assertIn("a Teach slide is not asking", profile)
+        self.assertIn("which line you would say louder", profile)
+        # Layout is still the first reach.
+        self.assertIn("Reach for layout first", flat(self.COMPOSITION))
+
+    def test_the_three_bounds_hold_the_permission(self) -> None:
+        """Without these it becomes the tic Daniel asked about on the last
+        rule the same afternoon."""
+        profile = flat(self.PROFILE)
+        self.assertIn("One line per slide", profile)
+        self.assertIn("Not on every Teach slide", profile)
+        self.assertIn("has a tic rather than a voice", profile)
+        self.assertIn("never touches the sticky line", profile)
+        # And the general case is unchanged outside that one permission.
         self.assertIn(
-            "Use size, position and spacing, not colour, when prominence alone is the job of a black explanatory line",
-            flat(self.PROFILE),
+            "Outside that one case, prominence on a black explanatory line is still size, position and spacing",
+            profile,
         )
