@@ -11,14 +11,18 @@
 // board's were the ones read from the back of the room. Every surface now
 // places this drawing.
 //
-//   tightSvg(spec)          -> { svg, aspect, w, h, anchors }  in design units,
-//                              scaled by the surface (the sheet and the wall)
-//   tightSvg(spec, profile) -> the same, laid out in points at the size it
-//                              prints (shared/visuals/surface-profiles.js): the
-//                              scale numbers print at the profile's size, the
-//                              plot stretches to the box, and a box that cannot
-//                              hold readable numbers is refused by name
-//   cacheKey(spec[, profile])
+//   tightSvg(spec, profile) -> { svg, aspect, w, h, anchors }, laid out in
+//                              points at the size it prints
+//                              (shared/visuals/surface-profiles.js): the scale
+//                              numbers print at the profile's size, the plot
+//                              stretches to the box, and a box that cannot hold
+//                              readable numbers is refused by name
+//   cacheKey(spec, profile)
+//
+// There was also a one-argument form in design units, which the sheet and the
+// wall scaled to fit. It went once they placed the printed-size layout too, so
+// every surface's chart now keeps its scale numbers at a real size rather than
+// at whatever size the scaling left them.
 //
 // The `anchors` map names the parts a "read a bar chart" anatomy poster points at:
 //   title     the chart heading
@@ -161,14 +165,12 @@ function refuse(code, message) {
   throw new Error(`${code}: ${message}`);
 }
 
-// Where everything goes. Without a profile: the design size, scaled whole by
-// the surface. With one: points at the printed size, the plot stretched to the
+// Where everything goes: points at the printed size, the plot stretched to the
 // box, the numbers shrunk no further than the surface's readable floor.
 function layout(data, profile) {
   const s = readSpec(data);
-  if (!profile) {
-    const m = measureAt(s, 1);
-    return { s, m, W: m.naturalW, plotW: m.plotW, plotH: PLOT_H };
+  if (!profile || !(profile.widthPt > 0)) {
+    refuse('BAR_CHART_NO_PROFILE', 'a bar chart is laid out at the size it prints, so it needs the surface profile and width it will print at (shared/visuals/surface-profiles.js).');
   }
   if (!s.categories.length) {
     refuse('BAR_CHART_EMPTY', 'a bar chart needs at least one category with a value; nothing was drawn in its place.');
@@ -308,7 +310,7 @@ function tightSvg(data = {}, profile) {
 
 function cacheKey(data = {}, profile) {
   const s = readSpec(data);
-  const box = profile ? `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}` : '';
+  const box = `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}`;
   return `bar-chart${box}:${s.title}:${s.categories.join(',')}:${s.values.join(',')}:${s.interval}:${s.max}:${s.yLabel}:${s.xLabel}`;
 }
 

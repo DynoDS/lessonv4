@@ -10,14 +10,17 @@
 // 11pt axis numbers, and dropped the graph's title that the sheet and the wall
 // printed. Every surface now places this drawing.
 //
-//   tightSvg(spec)          -> { svg, aspect, w, h, anchors }  in design units,
-//                              scaled by the surface (the sheet and the wall)
-//   tightSvg(spec, profile) -> the same, laid out in points at the size it
-//                              prints (shared/visuals/surface-profiles.js): the
-//                              axis numbers print at the profile's size, the plot
+//   tightSvg(spec, profile) -> { svg, aspect, w, h, anchors }, laid out in
+//                              points at the size it prints
+//                              (shared/visuals/surface-profiles.js): the axis
+//                              numbers print at the profile's size, the plot
 //                              stretches to the box, and a box that cannot hold
 //                              readable numbers is refused by name
-//   cacheKey(spec[, profile])
+//   cacheKey(spec, profile)
+//
+// There was also a one-argument form in design units, which the sheet and the
+// wall scaled to fit. It went once they placed the printed-size layout too, so
+// every surface's graph keeps its axis numbers at a real size.
 //
 // The `anchors` map names the parts a "read a line graph" anatomy poster points at:
 //   title    the graph heading
@@ -137,9 +140,8 @@ function measureAt(data, sc, u, widthCap = null) {
 
 function layout(data, profile) {
   const sc = resolveScale(data);
-  if (!profile) {
-    const m = measureAt(data, sc, 1);
-    return { sc, m, W: m.naturalW, plotW: m.plotW, plotH: PLOT_H };
+  if (!profile || !(profile.widthPt > 0)) {
+    throw new Error('LINE_GRAPH_NO_PROFILE: a line graph is laid out at the size it prints, so it needs the surface profile and width it will print at (shared/visuals/surface-profiles.js).');
   }
   if (!sc.points.length) {
     throw new Error('LINE_GRAPH_EMPTY: a line graph needs at least one point with a numeric x and y; nothing was drawn in its place.');
@@ -277,7 +279,7 @@ function tightSvg(data = {}, profile) {
 function cacheKey(data = {}, profile) {
   const { points, xStep, yStep, xMax, yMax } = resolveScale(data);
   const pts = points.map((p) => `${p.x},${p.y}`).join(';');
-  const box = profile ? `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}` : '';
+  const box = `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}`;
   return `line-graph${box}:${data.title || ''}:${data.xLabel || ''}:${data.yLabel || ''}:${pts}:${xStep}:${yStep}:${xMax}:${yMax}`;
 }
 

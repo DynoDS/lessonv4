@@ -393,8 +393,13 @@ test("content that fits carries no verdict, because there is nothing to explain"
   assert.equal(result.verdict, null);
 });
 
+// Five charts, not four. Since the sheet lays a chart out at its printed size
+// it is shorter than the scaled chart it replaced, and four of them now fit a
+// landscape page; five still cannot.
+const OVERFULL = [TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART];
+
 test("content nothing can hold says how far over it is, in millimetres", () => {
-  const result = suggestLayouts([TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART], {
+  const result = suggestLayouts(OVERFULL, {
     orientation: "landscape",
   });
   assert.equal(result.fits.length, 0);
@@ -415,7 +420,7 @@ test("the verdict never contradicts the refusals printed under it", () => {
   // shortfall across every shape without noticing that shape had failed for a
   // different reason. A reader who believed the headline would keep trying
   // shapes against content that cannot fit on paper.
-  const result = suggestLayouts([TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART], {
+  const result = suggestLayouts(OVERFULL, {
     orientation: "landscape",
   });
 
@@ -472,7 +477,11 @@ test("a shape that squeezes the work is not offered above one that does not", ()
     helper: "written-answers",
     items: [
       { text: "How many more books did Birch read than Willow?", sentences: 1 },
-      { text: "Explain how you worked it out.", sentences: 2 },
+      // Three sentences, so the writing is long enough that the squeezing
+      // shape's fill would have ranked it above the others. With the shorter
+      // printed-size chart, two sentences left every shape on the same fill
+      // and the demotion had nothing to overturn.
+      { text: "Explain how you worked it out.", sentences: 3 },
     ],
   };
 

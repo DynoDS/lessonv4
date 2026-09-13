@@ -5,7 +5,11 @@
 // such a drawing, so every picture moved into shared/visuals/ reaches paper the
 // same way the number line did (13 September 2026).
 //
-//   atPrintedWidth(module, { toSpec, minWidthMm, greed, requires })
+//   atPrintedWidth(module, { toSpec, minWidthMm, maxWidthMm, greed, requires })
+//
+// `maxWidthMm` is for a drawing whose height does not grow with its width, so
+// in a wide zone it would only stretch sideways and lose the shape it has on
+// the other surfaces. It is drawn no wider than that and centred in the zone.
 //
 // `toSpec` maps a sheet spec onto the shared module's fields when they differ;
 // by default the spec is passed as it is, because a shared drawing reads the
@@ -25,9 +29,13 @@ function widthOf(width, fallbackMm) {
 function atPrintedWidth(module, options = {}) {
   const toSpec = options.toSpec || ((spec) => spec);
   const minWidth = options.minWidthMm || 70;
-  const draw = (spec, width) =>
-    module.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: widthOf(width, 170) }));
   const minWidthOf = (spec) => (typeof minWidth === "function" ? minWidth(spec) : minWidth);
+  // A cap never goes under the drawing's own minimum: a chart of many bars
+  // that needs more than the cap is drawn at the width it needs.
+  const capOf = (spec) =>
+    options.maxWidthMm ? Math.max(options.maxWidthMm, minWidthOf(spec)) : Infinity;
+  const draw = (spec, width) =>
+    module.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: Math.min(widthOf(width, 170), capOf(spec)) }));
   const helper = {
     physical: true,
     geometry: module,
@@ -38,7 +46,10 @@ function atPrintedWidth(module, options = {}) {
     // its numerals scaled up and its measured height a lie.
     render: (spec, width) => {
       const out = draw(spec, width);
-      const svg = out.svg.replace(/^<svg /, `<svg style="width:${out.w}pt;max-width:100%;height:auto" `);
+      // The first <svg is the root one, whether or not the drawing opens with
+      // an XML declaration (the charts do, and went unpinned while this
+      // matched only at the very start).
+      const svg = out.svg.replace(/<svg /, `<svg style="width:${out.w}pt;max-width:100%;height:auto" `);
       return `<div class="h-figure">${svg}</div>`;
     },
     // The fit check measures a zone before it asks whether the zone is wide

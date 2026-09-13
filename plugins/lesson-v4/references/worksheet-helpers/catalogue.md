@@ -343,7 +343,7 @@ Smallest usable: **134mm wide x 92mm tall**. Spare height: takes spare height fi
 
 A bar chart to read off. Each bar needs room for its label underneath, so more categories need more width.
 
-Smallest usable: **80mm wide x 60mm tall**. Spare height: never takes spare height.
+Smallest usable: **80mm wide x 77mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -368,7 +368,7 @@ Smallest usable: **80mm wide x 60mm tall**. Spare height: never takes spare heig
 
 A titled time-series line graph with numbered axes.
 
-Smallest usable: **80mm wide x 55mm tall**. Spare height: never takes spare height.
+Smallest usable: **80mm wide x 89mm tall**. Spare height: never takes spare height.
 
 ```json
 {
