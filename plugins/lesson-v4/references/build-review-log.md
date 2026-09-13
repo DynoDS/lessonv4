@@ -1,5 +1,9 @@
 # Build review log
 
+## 2026-09-13 A plan document that cannot be opened says so (4.2.196)
+
+Importing this year's plans into the real letterbox, the maths document named earlier the same day (Maths Long Term Plan - numbered.docx) had been removed from the drive, and python-docx's PackageNotFoundError came out as a traceback. plan-tracker.py now reports PLAN_ERROR: could not open ... as a Word document. The remaining Maths Long Term Plan.docx (edited 12 September, 186 lessons, lesson 7 Find the scale on a number line) was imported with next lesson 8; History next 2; Geography next 1. All three published to claude/lesson-outbox and read back.
+
 ## 2026-09-13 A scheduled run makes the next lesson of any subject's plan (4.2.195)
 
 The July teaching-plugins routine knew which maths lesson came next: the Long Term Plan docx was imported into the letterbox repository as lessons.json, and a progress.json of built_up_to, filed_up_to and a buffer let each nightly run build the next row and stop when far enough ahead. The tracker (maths-plan-tracker.py) had come across to lesson-v4 unused; its saved copy was last year's plan, finished at 189 of 189, and its filed counter was advanced only by the retired login script. The user wants the same for every subject.

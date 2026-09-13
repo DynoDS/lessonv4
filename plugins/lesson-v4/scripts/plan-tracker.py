@@ -112,7 +112,10 @@ def extract_lessons(docx_path: Path) -> list[dict]:
         from docx import Document
     except ModuleNotFoundError:
         raise PlanError("reading a .docx plan needs python-docx; run check-setup.js --fix")
-    document = Document(str(docx_path))
+    try:
+        document = Document(str(docx_path))
+    except Exception as exc:  # python-docx raises its own types for a missing or damaged file
+        raise PlanError(f"could not open {docx_path} as a Word document ({exc})")
     table = None
     for candidate in document.tables:
         headers = [_cell_text(c).lower() for c in candidate.rows[0].cells]
