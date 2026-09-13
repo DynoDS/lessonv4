@@ -55,6 +55,13 @@ const FIGURES = {
   'shaded-fraction': { module: require('../../../shared/visuals/shaded-fraction-svg'), name: 'shaded fraction', caption: {} },
   'fraction-wall': { module: require('../../../shared/visuals/fraction-wall-svg'), name: 'fraction wall' },
   money: { module: require('../../../shared/visuals/money-svg'), name: 'coins' },
+  // A map keeps its true shape, so a slot shaped unlike it leaves the rest
+  // empty; `zoneFill` names it for the check that says so (see _zone-fill.js).
+  map: {
+    module: require('../../../shared/visuals/map-svg'),
+    name: 'map',
+    zoneFill: (data) => `the ${String((data && data.map) || '').trim().toLowerCase().replace(/[ _]+/g, '-')} map`,
+  },
 };
 
 function captionFor(type, data) {
@@ -157,6 +164,9 @@ function drawerFor(type) {
     const h = built.h / 72;
     const x = box.x + (box.w - w) / 2;
     const y = box.y + (box.h - h) / 2;
+    if (FIGURES[type].zoneFill) {
+      require('./_zone-fill').checkZoneFill(ctx, zone, { w, h }, FIGURES[type].zoneFill(data));
+    }
     const store = ctx && ctx.sharedFigures;
     const entry = store && store.get(key);
     if (entry) {

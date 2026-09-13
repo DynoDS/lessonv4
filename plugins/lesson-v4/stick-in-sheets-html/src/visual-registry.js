@@ -9,7 +9,7 @@ const coordinateGrid = require("../../shared/visuals/coordinate-grid-svg");
 const translationShape = require("../../shared/visuals/translation-shape-svg");
 const gridMap = require("../../shared/visuals/grid-map-svg");
 const rainforestLayers = require("../../shared/visuals/rainforest-layers-svg");
-const worldWriteOnMap = require("../../shared/visuals/world-write-on-map-svg");
+const map = require("../../shared/visuals/map-svg");
 const geographicalDescriptionFrame = require("../../shared/visuals/geographical-description-frame-svg");
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
@@ -185,15 +185,16 @@ const VISUALS = {
   // board and the worksheet draw - so the map a child labels in their book is
   // the map they were taught from, and its coastlines are the world's rather
   // than anyone's idea of it. The registry forces the write-on world form even
-  // if a labelled teaching map was copied across by mistake.
-  map: {
-    tightSvg: worldWriteOnMap.tightSvg,
-    defaultWidthMm: 150,
+  // if a labelled teaching map was copied across by mistake. It is the one
+  // shared map (shared/visuals/map-svg.js) in the pack's ink profile, laid out
+  // at the width it prints, so its markers and boxes are sized for a Year 4
+  // pencil rather than as a share of the picture (13 September 2026).
+  map: sharedPiece(map, 150, {
     specFn: (s) => Object.assign({}, s, {
-      map: worldWriteOnMap.MAP_KEY,
+      map: map.WORLD_KEY,
       worksheetMode: "continents-and-oceans",
     }),
-  },
+  }),
   // 145mm wide: this is a handwriting frame, so the ruled lines set the minimum
   // usable size. The registry always forces task mode, preventing optional
   // teacher answers or reveal text copied from a slide from appearing in books.

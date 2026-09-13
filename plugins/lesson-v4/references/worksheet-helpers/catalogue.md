@@ -65,7 +65,7 @@ emailed. Never write `imageHref` yourself.
 - `label-diagram` - A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on.
 - `rainforest-layers` - The rainforest cross-section, labelled by layer.
 - `balanced-pattern-plate` - A neutral proportional food-group plate.
-- `map` - A real map of a real place - one of the shipped world and continent maps - with the lesson's marks on top.
+- `map` - A real shipped map with the lesson's marks on top, the same map the board draws: copy the slide's map object.
 - `grid-map` - A four-figure grid-reference map, usually the whole point of its sheet.
 - `process-chain` - Boxes joined by arrows: a food chain, a life cycle, the order of events.
 - `circuit-diagram` - One series circuit or a row of them in the standard symbols, each carrying its own state.
@@ -586,9 +586,9 @@ Smallest usable: **145mm wide x 116mm tall**. Spare height: never takes spare he
 
 #### `map`
 
-A real map of a real place - one of the shipped world and continent maps - with the lesson's marks on top. `worksheetMode: "continents-and-oceans"` is the full-width landscape write-on world form, Antarctica included.
+A real shipped map with the lesson's marks on top, the same map the board draws: copy the slide's map object. `worksheetMode: "continents-and-oceans"` is the landscape write-on world form.
 
-Smallest usable: **260mm wide x 138mm tall**. Spare height: never takes spare height.
+Smallest usable: **253mm wide x 138mm tall**. Spare height: never takes spare height.
 
 ```json
 {

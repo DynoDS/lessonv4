@@ -32,8 +32,9 @@ const linePairSvg = require("../../../shared/visuals/line-pair-svg");
 const pictogramSvg = require("../../../shared/visuals/pictogram-svg");
 const rainforestLayersSvg = require("../../../shared/visuals/rainforest-layers-svg");
 const balancedPatternPlateSvg = require("../../../shared/visuals/balanced-pattern-plate-svg");
-const realMapSvg = require("../../../shared/visuals/real-map-svg");
-const worldWriteOnMapSvg = require("../../../shared/visuals/world-write-on-map-svg");
+const mapSvg = require("../../../shared/visuals/map-svg");
+const { atPrintedWidth } = require("./at-printed-width");
+const { profileFor, MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
 const reflectionGridSvg = require("../../../shared/visuals/reflection-grid-svg");
 const tallyChartSvg = require("../../../shared/visuals/tally-chart-svg");
 const translationShapeSvg = require("../../../shared/visuals/translation-shape-svg");
@@ -414,9 +415,12 @@ const helpers = {
     }
   ),
 
-  // A real map of a real place, drawn from the map image this package ships in
-  // builder/assets/maps/ - the same asset and the same annotation geometry the
-  // board uses, so a continent on the sheet is the continent on the screen.
+  // A real map of a real place: the one shared map (shared/visuals/map-svg.js),
+  // the drawing the board, the wall and the stick-in pack place too, so a
+  // continent on the sheet is the continent on the screen. It was the sheet's
+  // own SVG, with labels sized as a share of the picture, until 13 September
+  // 2026; every mode now reaches paper, country shading and the globe-to-flat
+  // explanation included.
   //
   // Nothing here draws land. A place is marked ON the real map with a point, a
   // region with a dashed area, a river with a line, each given in fractions of
@@ -440,12 +444,12 @@ const helpers = {
     const WRITE_ON_MAX_HEIGHT_MM = 143;
     const WRITE_ON_DEFAULT_HEIGHT_MM = 138;
 
-    function writeOnMode(spec) {
-      return spec.worksheetMode === "continents-and-oceans";
-    }
+    // Wide enough to find the width a map takes at its requested height, which
+    // is what a zone must give it.
+    const PROBE_WIDTH_MM = 420;
 
     function heightFor(spec) {
-      const writeOn = writeOnMode(spec);
+      const writeOn = spec.worksheetMode === "continents-and-oceans";
       const min = writeOn ? WRITE_ON_MIN_HEIGHT_MM : MIN_HEIGHT_MM;
       const max = writeOn ? WRITE_ON_MAX_HEIGHT_MM : MAX_HEIGHT_MM;
       if (spec.heightMm === undefined) {
@@ -461,51 +465,19 @@ const helpers = {
       return requested;
     }
 
-    function mapSpec(spec) {
-      if (writeOnMode(spec)) {
-        return {
-          map: spec.map,
-          worksheetMode: spec.worksheetMode,
-          continentMarkers: spec.continentMarkers,
-          oceanMarkers: spec.oceanMarkers,
-          seaInitialSpaces: spec.seaInitialSpaces,
-          showEquator: spec.showEquator,
-          showCompass: spec.showCompass,
-          joinedEdges: spec.joinedEdges,
-        };
-      }
-      return {
-        map: spec.map,
-        basin: spec.basin,
-        labels: spec.labels,
-        annotations: spec.annotations,
-        selectedCountry: spec.selectedCountry,
-      };
-    }
+    const toSpec = (spec) => ({ ...spec, heightMm: heightFor(spec) });
 
-    function rendererFor(spec) {
-      return writeOnMode(spec) ? worldWriteOnMapSvg : realMapSvg;
-    }
-
-    return {
-      render: (spec) => {
-        const heightMm = heightFor(spec);
-        const { svg } = rendererFor(spec).tightSvg(mapSpec(spec));
-        return `<div class="h-figure h-figure--fixed" style="height:${heightMm}mm">${svg}</div>`;
-      },
-      measure: (spec) => heightFor(spec),
-      needs: (spec) => {
-        const heightMm = heightFor(spec);
-        const { aspect } = rendererFor(spec).tightSvg(mapSpec(spec));
-        // The width follows from the height it was given and the map's own real
-        // proportions, so a map is never stretched to fill a zone.
-        return {
-          minWidthMm: Math.ceil(heightMm * aspect),
-          minHeightMm: heightMm,
-        };
-      },
+    return atPrintedWidth(mapSvg, {
+      toSpec,
+      // The width follows from the height it was given and the map's own real
+      // proportions, so a map is never stretched to fill a zone. Rounded to the
+      // millimetre below, not up: a zone a fraction of a millimetre narrower
+      // costs the map that fraction of its height, where rounding up refused a
+      // landscape page the write-on form had always fitted.
+      minWidthMm: (spec) =>
+        Math.floor(mapSvg.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: PROBE_WIDTH_MM })).w / MM_TO_PT),
       greed: 0,
-    };
+    });
   })(),
 
   // A dot lattice with a mirror line and a shape to reflect. Same reasoning
