@@ -91,6 +91,7 @@ class SpecTests(unittest.TestCase):
         expected = {
             "lesson-designer": ("gpt-6-astra", "medium"),
             "design-reviewer": ("gpt-6-astra", "high"),
+            "design-reviewer-focused-repair": ("gpt-6-astra", "medium"),
             "adaptation-designer": ("gpt-6-astra", "low"),
             "slide-designer": ("gpt-5.6-sol", "medium"),
             "worksheet-designer": ("gpt-5.6-luna", "high"),

@@ -106,9 +106,14 @@ class ThePlannerWritesTheLessonFirst(unittest.TestCase):
 
 class TheReviewerReadsTheLessonFirst(unittest.TestCase):
     def test_the_walk_through_is_read_before_the_view(self) -> None:
+        """4.2.181: the class's own words come first, so the designer's why
+        lines are tested against the lesson rather than framing it; the
+        walk-through is still read as the lesson before the structured view."""
         reviewer = REVIEWER.read_text(encoding="utf-8")
+        words = reviewer.index("Read the opening section of `[WORKING_DIR]/design-review-view.md`, `As the class meets it`")
         walk = reviewer.index("Read the walk-through that opens `[WORKING_DIR]/design-decisions.md`")
-        view = reviewer.index("Read `[WORKING_DIR]/design-review-view.md` once, straight through")
+        view = reviewer.index("Read the rest of `[WORKING_DIR]/design-review-view.md` once, straight through")
+        self.assertLess(words, walk)
         self.assertLess(walk, view)
 
     def test_the_designers_reasons_still_wait_for_the_drift_check(self) -> None:

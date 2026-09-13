@@ -1,5 +1,29 @@
 # Build review log
 
+## 2026-09-13 The design reviewer reads each thing once, and a small repair stays small (4.2.181)
+
+Daniel had an outside assistant audit the design reviewer for wasted work at 4.2.175 and asked for its changes to be made. Each finding was checked against 4.2.180 before anything changed; all eight held. Nothing in what the reviewer judges was removed.
+
+**The reading pack printed the lesson twice.** `design-review-view.md` opened with every child-facing and spoken string (`As the class meets it`) and then printed the same scripts, prompts, answers and worksheet strings again inside the structured sections. The structured sections now mark a field `(in the class view)` instead of repeating its words, keep everything the words do not show (kinds, references, unlocks, thinking, teacher-only notes, answer delivery, a model the class never sees), and print a drawing's required features once when every configuration shares them. Checked on 40 saved lessons: the class view is byte-identical, no line the old view carried is missing, and the view is 4 to 21 per cent smaller (about 12 on average).
+
+**A later review was held to the first design's picture budget.** The packet already switched its validator to the later-review form after the verified Phase 2 freeze but always ran the photo cap at 16, so a later review with a helper's or an adaptation's 17th picture failed preparation. Both commands now come from one reading of the freeze; after it the cap runs `--stage run` (24). The launch prompt takes the preflight's `validator.command` instead of spelling out the initial-only command.
+
+**The reviewer was sent to reading that is not its own.** The routing card now has a reading contract: `Always read` (Pride Lessons, What a Lesson Is For, whose old trigger was the finding itself, and the voice guide's Final pre-flight check), then conditional sections, and a line that reading notes addressed to other agents do not widen it. A maths subject file is read by an exact `read-reference.py` command that skips `Greater Depth in maths`, which is the Adaptation Designer's. `preferences.md` → Worksheets is split, paragraphs moved but not reworded, into `What the sheet is for` and `The printed page`; the reviewer's trigger opens the first only, and every other reader still gets the whole section by its old name. The contents line saying Written Voice was for everyone every run, which contradicted the paragraph above it, now matches it.
+
+**Checks it could not run at that point.** The maths worksheet check asked the reviewer to judge Below and Greater Depth sheets, which are made after the review. It now judges the base sheet against the same tier rule; the Adaptation Designer, which reads that rule in `subject-maths.md`, owns the other two.
+
+**Route-specific checks for all five routes sat in every review.** They moved verbatim to `design-review-route-checks.md`, and the card prints the command for the lesson's own route.
+
+**Wording repaired before the design was settled.** The voice sweep still hears every string first. The repairs now wait until the checks have decided which beats survive: a string in a beat returned for redesign has its miss named inside that redesign item instead of being polished and then replaced.
+
+**Order of reading.** The class's own words are now read before the walk-through, so the designer's why lines are tested against the lesson rather than framing it. This changes 4.2.138's order (walk-through first); what that release protected is kept: the walk-through is still read as the lesson, before the structured view, and its closing decisions still wait for the drift check.
+
+**A one-sentence repair loaded the whole reviewer.** When the review's own correction fails the validator, the hand-back now launches `design-reviewer-focused-repair` (under 5 KB against 58 KB): it changes only the fields the validator names, keeps the correction's meaning inside the limit, never touches the Result or judgements, and restores the found wording with a teacher flag when the meaning will not fit.
+
+**Also.** The repeated "work a representative answer" instruction has one home in the Pedagogy judgement, and the route, practice and worksheet checks reuse that worked answer. The consolidation report's stale line about the reviewer reading all of `preferences.md` is corrected. The calibration examples in the reviewer (the history, RE and science cases) were kept: each marks a boundary a bare rule missed.
+
+**Not done, and named.** No lesson has been run through this release; the claims are measured on saved designs and the test suite, not on a live review. The older job-spec options in `design-review-packet.py` are unused by the launch but kept, because no caller was proven absent. Tests: 13 new; the Python suite has the same 10 failures as before this release, none in the reviewer's path.
+
 ## 2026-09-13 Every picture is one shared drawing on every surface (4.2.180)
 
 Daniel: "Make everything shared, I know its a big job ... consistency is good, and it stops anything having to be built because 'it can't use that one'". 4.2.179 built the guard and moved the number line; this release moves everything else. `node builder/scripts/sharing-status.js` now reports 52 of 52 pictures drawn from one shared module on the board, the worksheet, the working wall and the stick-in pack, and `SHARING_BACKLOG` is empty, so the guard refuses any picture that is not.

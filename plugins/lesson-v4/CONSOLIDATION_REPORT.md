@@ -14,7 +14,7 @@ The earlier 60 KiB target was an internal consolidation target. It is not an ado
 ## Stage 1 Fixes (retired wording/conflicts)
 - README: removed reference to lesson-designer-workspace/iteration-2 (absent snapshot) and updated structure list to 5 canonical structures
 - do-beats.md: marked Choral Response and Stand If as teacher-owned routines, fixed Think-Pair-Share to not prescribe wait-time management
-- preferences.md: Stage 1 clarified complete startup reading; pull request 69 later replaced the Lesson Designer side with named decision-point loading while the Design Reviewer continues to read the complete file
+- preferences.md: Stage 1 clarified complete startup reading; pull request 69 later replaced the Lesson Designer side with named decision-point loading; the Design Reviewer has since moved to a runtime routing card that names its always-read and conditional sections (4.2.181)
 - evidence-synthesis.md: verified Task-Centred present, no retired route names
 - lesson-designer.md: fixed vocabulary placement (4-structure rule), dialogic Synthesise beat wording, support fading summary exact phrase, subject precedence
 

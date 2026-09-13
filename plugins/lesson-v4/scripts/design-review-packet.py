@@ -174,12 +174,6 @@ PREFERENCE_REVIEW_ROUTES = (
         "units genuinely name no such thing is right to have none.",
     ),
     (
-        "What a Lesson Is For",
-        "Read when the final task could be produced by a child who missed "
-        "the teaching, or a sticky fact or opening-sentence claim is drawn "
-        "on by no later stage.",
-    ),
-    (
         "Sticky Knowledge",
         "Read when a sticky item may be weak, excessive or absent without "
         "reason, or is drawn on by no later stage.",
@@ -214,11 +208,20 @@ PREFERENCE_REVIEW_ROUTES = (
         "Source and Scenario Integrity",
         "Read for real, classic, sensitive or changing sources and claims.",
     ),
+    # Only the teaching half. The page half (columns, pricing, blank space,
+    # typeface) belongs to the page designers, and the reviewer is told not
+    # to choose composition.
     (
-        "Worksheets",
+        "Worksheets > What the sheet is for",
         "Read when worksheet freshness, purpose, evidence or activity "
         "architecture is in doubt.",
     ),
+)
+
+# Read every review, whatever the lesson shows. A trigger that needs the
+# reviewer to have noticed the defect first never fires on the defect the
+# section exists to calibrate.
+ALWAYS_READ_REVIEW_SECTIONS = (
     # This was "read only when a difficult quality boundary remains
     # unresolved", and no review ever found one: the section is the
     # calibration for how much a beat carries and how often a lesson returns
@@ -226,13 +229,107 @@ PREFERENCE_REVIEW_ROUTES = (
     # on the features it had (10 September 2026) that was abandoned in the
     # room for its amount.
     (
+        "preferences.md",
         "Pride Lessons (Quality Anchor)",
         "Read every review, before the Daniel-fit judgement: it is the "
         "calibration for how much one beat puts in front of the class and how "
         "often a lesson returns to the same evidence. A fit judgement that "
         "lists features present has not used it.",
     ),
+    # Its old trigger ("when the final task could be produced by a child who
+    # missed the teaching") was the finding itself, and its own contents line
+    # already says reviewers read it every run.
+    (
+        "preferences.md",
+        "What a Lesson Is For",
+        "The learning-contract checks cite it throughout; read it before them.",
+    ),
+    (
+        "teacher-voice.md",
+        "17. Final pre-flight check",
+        "The test every string in the voice sweep is put through.",
+    ),
 )
+
+# Sections of a subject file written for another agent. The reviewer checks
+# the class lesson; Greater Depth resources are designed after this review.
+SUBJECT_SECTIONS_FOR_OTHER_AGENTS = {
+    "subject-maths.md": ("Greater Depth in maths",),
+}
+
+ROUTE_CHECKS_FILE = "design-review-route-checks.md"
+ROUTE_CHECK_SECTIONS = {
+    "Skill-based": "Skill-based",
+    "Content-based": "Content-based",
+    "Discovery": "Discovery",
+    "Dialogic": "Dialogic",
+    "Task-Centred": "Task-Centred",
+}
+
+
+def _load_reference_reader():
+    import importlib.util
+
+    name = "lesson_v4_read_reference"
+    if name in sys.modules:
+        return sys.modules[name]
+    path = Path(__file__).resolve().parent / "read-reference.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    # Registered before running: its dataclass resolves annotations through
+    # sys.modules, and an unregistered module fails there.
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def subject_scope(subject_path: Path) -> str:
+    return (
+        "every section except those written for another agent"
+        if SUBJECT_SECTIONS_FOR_OTHER_AGENTS.get(subject_path.name)
+        else "complete file"
+    )
+
+
+def subject_selectors(subject_path: Path) -> list[str] | None:
+    """Exact read-reference selectors for the reviewer's part of a subject
+    file, or None when the whole file is the reviewer's."""
+    skipped = SUBJECT_SECTIONS_FOR_OTHER_AGENTS.get(subject_path.name)
+    if not skipped:
+        return None
+    reader = _load_reference_reader()
+    text = subject_path.read_text(encoding="utf-8")
+    entries = reader.headings(text)
+    missing = [title for title in skipped if title not in {h.title for h in entries}]
+    if missing:
+        raise PacketError(
+            f"{subject_path.name} no longer has the section(s) the reviewer skips: "
+            + ", ".join(missing)
+        )
+    top = min((h.level for h in entries if h.level > 1), default=2)
+    selectors = ["@intro"]
+    for heading in entries:
+        if heading.level == top and heading.title not in skipped:
+            selectors.append(" > ".join(heading.path))
+    return selectors
+
+
+def read_reference_command(plugin_root: Path, requests: list[str]) -> str:
+    # Printed for a shell to run as written; a heading carrying a quote, a
+    # dollar or a backtick would run as something else.
+    unsafe = [request for request in requests if re.search(r'["$`]', request)]
+    if unsafe:
+        raise PacketError(
+            "a reviewer reading selector cannot be quoted safely: " + ", ".join(unsafe)
+        )
+    parts = [
+        f'"{sys.executable}"',
+        f'"{(plugin_root / "scripts" / "read-reference.py").resolve()}"',
+        f'--plugin-root "{plugin_root.resolve()}"',
+    ]
+    parts.extend(f'--select "{request}"' for request in requests)
+    return " ".join(parts)
 
 
 class PacketError(ValueError):
@@ -337,6 +434,32 @@ def run_exact(command: list[str], label: str) -> str:
     return result.stdout.strip()
 
 
+def is_later_review(working_dir: Path) -> bool:
+    """True once a verified Phase 2 photo freeze exists.
+
+    One reading of the freeze, used by BOTH prepared commands, because a packet
+    that validated a later review's references while holding its pictures to
+    the initial design budget refused a legitimate 17th picture.
+    """
+    receipt_path = working_dir / "phase2-initial-photo-requirements.receipt.json"
+    if not receipt_path.exists():
+        return False
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        snapshot = Path(receipt["snapshotPath"])
+        if (
+            receipt.get("schemaVersion") != 1
+            or Path(receipt["canonicalPath"]).resolve()
+            != (working_dir / "photo-requirements.json").resolve()
+            or not snapshot.is_file()
+            or sha256_file(snapshot) != receipt["sha256"]
+        ):
+            raise ValueError("freeze receipt does not match its snapshot")
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise PacketError(f"Invalid Phase 2 photo freeze receipt: {exc}") from exc
+    return True
+
+
 def validator_command(
     plugin_root: Path,
     working_dir: Path,
@@ -345,23 +468,7 @@ def validator_command(
     # Its frozen Phase 2 requirement remains provenance, not a fake live use.
     # Keep the strict initial namespace until a verified freeze establishes
     # that this is a later review; all live references still validate below.
-    receipt_path = working_dir / "phase2-initial-photo-requirements.receipt.json"
-    namespace_args = ["--initial-photo-namespace"]
-    if receipt_path.exists():
-        try:
-            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-            snapshot = Path(receipt["snapshotPath"])
-            if (
-                receipt.get("schemaVersion") != 1
-                or Path(receipt["canonicalPath"]).resolve()
-                != (working_dir / "photo-requirements.json").resolve()
-                or not snapshot.is_file()
-                or sha256_file(snapshot) != receipt["sha256"]
-            ):
-                raise ValueError("freeze receipt does not match its snapshot")
-        except (OSError, ValueError, KeyError, TypeError) as exc:
-            raise PacketError(f"Invalid Phase 2 photo freeze receipt: {exc}") from exc
-        namespace_args = []
+    namespace_args = [] if is_later_review(working_dir) else ["--initial-photo-namespace"]
     return [
         sys.executable,
         str(
@@ -381,6 +488,10 @@ def photo_cap_command(
     plugin_root: Path,
     working_dir: Path,
 ) -> list[str]:
+    # 16 bounds the initial design; a review after the verified freeze may be
+    # looking at a helper's, a repair's or an adaptation's later picture, which
+    # the run ceiling exists to allow.
+    stage = "run" if is_later_review(working_dir) else "design"
     return [
         sys.executable,
         str(
@@ -390,6 +501,8 @@ def photo_cap_command(
                 / "check-photo-cap.py"
             ).resolve()
         ),
+        "--stage",
+        stage,
         str((working_dir / "photo-requirements.json").resolve()),
     ]
 
@@ -430,6 +543,23 @@ def run_photo_cap(
     )
 
 
+def review_source_scopes(subject_path: Path | None) -> dict[str, str]:
+    """The reading scope recorded for each hashed source, shared by prepare
+    and verify so the two cannot drift."""
+    scopes = {
+        "preferences": "always-read and conditional sections by exact heading",
+        "doBeats": "decision-point activity section only",
+        "teachingSequence": (
+            "file start through the line before ## Output Format Block"
+        ),
+        "teacherVoice": "Final pre-flight check, then only a section a doubtful string calls for",
+        "routeChecks": "the lesson's own route section only",
+    }
+    if subject_path is not None:
+        scopes["subject"] = subject_scope(subject_path)
+    return scopes
+
+
 def build_review_reference(
     preferences_path: Path,
     do_beats_path: Path,
@@ -439,32 +569,62 @@ def build_review_reference(
     worksheet: dict,
     photo_count: int,
     photo_maximum: int,
+    *,
+    plugin_root: Path,
+    teacher_voice_path: Path,
+    route_checks_path: Path,
 ) -> tuple[str, dict]:
     source_paths = {
         "preferences": preferences_path,
         "doBeats": do_beats_path,
         "teachingSequence": teaching_sequence_path,
-    }
-    source_scopes = {
-        "preferences": "conditional sections by exact heading",
-        "doBeats": "decision-point activity section only",
-        "teachingSequence": (
-            "file start through the line before ## Output Format Block"
-        ),
+        "teacherVoice": teacher_voice_path,
+        "routeChecks": route_checks_path,
     }
     if subject_path is not None:
         source_paths["subject"] = subject_path
-        source_scopes["subject"] = "complete file"
+    source_scopes = review_source_scopes(subject_path)
 
+    always_read = "\n".join(
+        f"- `{name}` → `{heading}`: {why}"
+        for name, heading, why in ALWAYS_READ_REVIEW_SECTIONS
+    )
+    always_read_command = read_reference_command(
+        plugin_root,
+        [f"{name}::{heading}" for name, heading, _ in ALWAYS_READ_REVIEW_SECTIONS],
+    )
     preference_routes = "\n".join(
         f"- `{heading}`: {trigger}"
         for heading, trigger in PREFERENCE_REVIEW_ROUTES
     )
-    subject_instruction = (
-        f"- Subject reference: `{subject_path}` - read the complete file."
-        if subject_path is not None
-        else "- Subject reference: No matching subject file exists."
+    route_section = ROUTE_CHECK_SECTIONS[lesson["structure"]]
+    route_checks_command = read_reference_command(
+        plugin_root, [f"{ROUTE_CHECKS_FILE}::{route_section}"]
     )
+    if subject_path is None:
+        subject_instruction = "- Subject reference: No matching subject file exists."
+    else:
+        selectors = subject_selectors(subject_path)
+        if selectors is None:
+            subject_instruction = (
+                f"- Subject reference: `{subject_path}` - read the complete file."
+            )
+        else:
+            skipped = ", ".join(
+                f"`## {title}`"
+                for title in SUBJECT_SECTIONS_FOR_OTHER_AGENTS[subject_path.name]
+            )
+            subject_instruction = (
+                f"- Subject reference: `{subject_path}` - read every section except "
+                f"{skipped}, which is written for another agent and describes "
+                "resources made after this review. Read it with:\n\n"
+                "```bash\n"
+                + read_reference_command(
+                    plugin_root,
+                    [f"{subject_path.name}::{selector}" for selector in selectors],
+                )
+                + "\n```"
+            )
     source_hashes = "\n".join(
         f"- {key}: `{sha256_file(path)}`"
         for key, path in source_paths.items()
@@ -486,10 +646,25 @@ def build_review_reference(
         f"- Worksheet resource mode: {worksheet['resourceMode']}\n"
         f"- Worksheet use: {worksheet['use']}\n"
         f"- Planned photographs: {photo_count} of {photo_maximum}\n\n"
+        "## Reading contract\n\n"
+        "This card is the whole reading assignment: the sections below marked "
+        "always, and the conditional sections whose trigger you can see in the "
+        "lesson. A reading note inside a reference addressed to another agent, "
+        "or to someone authoring a lesson from scratch, does not widen it.\n\n"
+        "## Always read\n\n"
+        f"{always_read}\n\n"
+        "```bash\n"
+        f"{always_read_command}\n"
+        "```\n\n"
         "## Required semantic references\n\n"
         f"- Teaching-route reference: `{teaching_sequence_path}` - read from "
         "the file start to, but not including, `## Output Format Block`.\n"
         f"{subject_instruction}\n\n"
+        "## Route checks\n\n"
+        f"The review checks for a {lesson['structure']} lesson:\n\n"
+        "```bash\n"
+        f"{route_checks_command}\n"
+        "```\n\n"
         "## Conditional teacher-preference routing\n\n"
         f"{preference_routes}\n\n"
         "## Conditional activity routing\n\n"
@@ -535,6 +710,51 @@ def append_review_json(lines: list[str], label: str, value) -> None:
     )
 
 
+# The structured sections carry what a reviewer needs beyond the words: kinds,
+# references, unlocks, thinking, answer delivery, teacher-only notes and the
+# fields no child meets. A field the class view has already printed in full is
+# named here with this marker instead of printed a second time, so the reviewer
+# still sees that the field is filled and reads its words once, in lesson order.
+IN_CLASS_VIEW = "(in the class view)"
+
+
+def class_view_prints(value) -> bool:
+    """Whether `class_view_strings` prints this value in full."""
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, list) and value:
+        return all(isinstance(item, str) for item in value) and any(
+            item.strip() for item in value
+        )
+    return False
+
+
+def without_class_view_strings(mapping: dict, keys) -> dict:
+    """A copy of `mapping` with each fully printed field replaced by the marker."""
+    copy = dict(mapping)
+    for key in keys:
+        if class_view_prints(copy.get(key)):
+            copy[key] = IN_CLASS_VIEW
+    return copy
+
+
+def review_content(unit: dict) -> dict:
+    content = unit.get("content") or {}
+    keys = list(CHILD_FACING_CONTENT_KEYS)
+    if unit.get("kind") in ACTIVITY_IS_THE_TASK_KINDS:
+        keys.append("activity")
+    residual = without_class_view_strings(content, keys)
+    takeaway = content.get("takeaway")
+    if isinstance(takeaway, dict) and takeaway.get("kind") == "text":
+        residual["takeaway"] = without_class_view_strings(takeaway, ["text"])
+    launch = content.get("launch")
+    if isinstance(launch, dict):
+        residual["launch"] = without_class_view_strings(
+            launch, ["established", "goodLooksLike", "steps"]
+        )
+    return residual
+
+
 def append_review_unit(
     lines: list[str],
     unit: dict,
@@ -565,7 +785,11 @@ def append_review_unit(
         f"- Thinking: {thinking}" if thinking else "- Thinking: none recorded"
     )
     if unit["pupilInstruction"] is not None:
-        lines.append(f"- Pupil instruction: {unit['pupilInstruction']}")
+        instruction = unit["pupilInstruction"]
+        lines.append(
+            "- Pupil instruction: "
+            + (IN_CLASS_VIEW if class_view_prints(instruction) else str(instruction))
+        )
     if unit["modellingState"] is not None:
         lines.append(f"- Modelling state: {unit['modellingState']}")
 
@@ -595,13 +819,18 @@ def append_review_unit(
             )
     lines.append("")
 
-    append_review_json(lines, "Content", unit["content"])
+    append_review_json(lines, "Content", review_content(unit))
     if unit.get("taskStructure") is not None:
         append_review_json(lines, "Task structure", unit["taskStructure"])
 
     notes = unit["speakerNotes"]
+    script = notes["script"]
+    if script is not None:
+        if isinstance(script, str) and script.strip():
+            lines.extend([f"- Speaker script: {IN_CLASS_VIEW}", ""])
+        else:
+            lines.extend(["**Speaker script:**", str(script), ""])
     for label, key in (
-        ("Speaker script", "script"),
         ("Teacher information", "teacherInfo"),
         ("Look for", "lookFor"),
     ):
@@ -620,7 +849,14 @@ def append_review_unit(
         ]
     )
     if answer["content"] is not None:
-        lines.append(f"- Answer/model: {answer['content']}")
+        # The class view prints a model only when children see it; a model the
+        # class never sees is printed here and nowhere else.
+        shown = answer["delivery"] in {"answer-slide", "visible-in-unit"} and bool(
+            answer["content"]
+        )
+        lines.append(
+            "- Answer/model: " + (IN_CLASS_VIEW if shown else str(answer["content"]))
+        )
     if answer["acceptanceCondition"] is not None:
         lines.append(
             f"- Acceptance condition: {answer['acceptanceCondition']}"
@@ -778,6 +1014,64 @@ def class_view_worksheet(
             class_view_strings(block.get("generator"), out)
             class_view_strings(block.get("firstRowWorked"), out)
     return out
+
+
+def review_worksheet_blocks(blocks: list) -> list:
+    """The worksheet's blocks with every string `class_view_worksheet` printed
+    replaced by the marker, keeping response forms, answers and structure."""
+    residual = []
+    for block in blocks or []:
+        if not isinstance(block, dict):
+            residual.append(block)
+            continue
+        kind = block.get("kind")
+        if kind == "question":
+            copy = without_class_view_strings(block, ["pupilPrompt", "support"])
+        elif kind == "question-group":
+            copy = without_class_view_strings(block, ["groupPrompt"])
+            if isinstance(block.get("parts"), list):
+                copy["parts"] = [
+                    without_class_view_strings(part, ["pupilPrompt", "support"])
+                    if isinstance(part, dict)
+                    else part
+                    for part in block["parts"]
+                ]
+        elif kind == "frame":
+            copy = dict(block)
+            if isinstance(block.get("sections"), list):
+                copy["sections"] = [
+                    without_class_view_strings(section, ["heading", "whatGoesHere"])
+                    if isinstance(section, dict)
+                    else section
+                    for section in block["sections"]
+                ]
+        elif kind == "stimulus-set":
+            copy = without_class_view_strings(block, ["stimulus", "pupilAction"])
+            if isinstance(block.get("prompts"), list):
+                copy["prompts"] = [
+                    without_class_view_strings(prompt, ["pupilPrompt", "support"])
+                    if isinstance(prompt, dict)
+                    else prompt
+                    for prompt in block["prompts"]
+                ]
+        elif kind == "child-generated":
+            copy = without_class_view_strings(block, ["generator", "firstRowWorked"])
+        else:
+            copy = block
+        residual.append(copy)
+    return residual
+
+
+def shared_required_features(configurations: list[dict]) -> list[str]:
+    """Features every configuration of a representation repeats, in order."""
+    if len(configurations) < 2:
+        return []
+    first = configurations[0].get("requiredFeatures") or []
+    return [
+        feature
+        for feature in first
+        if all(feature in (row.get("requiredFeatures") or []) for row in configurations[1:])
+    ]
 
 
 def unit_label(design: dict, source_unit_id: str) -> str:
@@ -1124,6 +1418,16 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
     lines.extend(class_view_lines)
     lines.extend(
         [
+            "## Beyond the words",
+            "",
+            (
+                "Everything below adds what the class view does not show: kinds, "
+                "references, what each beat unlocks, teacher-only notes, answer "
+                "delivery and the fields no child meets. A field marked "
+                f"`{IN_CLASS_VIEW}` is filled, and its words are printed above "
+                "under the same heading."
+            ),
+            "",
             "## Teacher orientation",
             "",
             design["teacherOrientation"],
@@ -1139,10 +1443,16 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
     )
 
     lines.extend(["## Vocabulary", ""])
+    scheduled_words = {
+        row["id"] for _, group in vocabulary_schedule(design) for row in group
+    }
     for row in design["vocabulary"]:
+        definition = (
+            IN_CLASS_VIEW if row["id"] in scheduled_words else row["definition"]
+        )
         lines.extend(
             [
-                f"- `{row['id']}` **{row['term']}**: {row['definition']}",
+                f"- `{row['id']}` **{row['term']}**: {definition}",
                 f"  - Visual: {review_json(row['visual'])}",
             ]
         )
@@ -1162,6 +1472,11 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
                 f"- Purpose: {row['purpose']}",
             ]
         )
+        shared = shared_required_features(row["configurations"])
+        if shared:
+            lines.append(
+                "- Required in every configuration: " + "; ".join(shared)
+            )
         for configuration in row["configurations"]:
             lines.append(
                 f"- `{configuration['id']}`: "
@@ -1169,10 +1484,15 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
                 f"(load-bearing: "
                 f"{str(configuration['loadBearing']).lower()})"
             )
-            if configuration["requiredFeatures"]:
+            own = [
+                feature
+                for feature in configuration["requiredFeatures"]
+                if feature not in shared
+            ]
+            if own:
                 lines.append(
                     "  - Required features: "
-                    + "; ".join(configuration["requiredFeatures"])
+                    + "; ".join(own)
                 )
         lines.append("")
 
@@ -1298,6 +1618,8 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         ("Provided worksheet", "providedWorksheet"),
     ):
         value = worksheet[key]
+        if key == "contentBlocks" and worksheet["status"] == "generated":
+            value = review_worksheet_blocks(value)
         if value not in (None, []):
             append_review_json(lines, label, value)
 
@@ -1376,6 +1698,12 @@ def canonical_paths(
         ).resolve(),
         "doBeats": (
             plugin_root / "references" / "do-beats.md"
+        ).resolve(),
+        "teacherVoice": (
+            plugin_root / "references" / "teacher-voice.md"
+        ).resolve(),
+        "routeChecks": (
+            plugin_root / "references" / ROUTE_CHECKS_FILE
         ).resolve(),
     }
 
@@ -1657,6 +1985,9 @@ def prepare(args: argparse.Namespace) -> int:
         worksheet,
         photo_count,
         maximum,
+        plugin_root=plugin_root,
+        teacher_voice_path=paths["teacherVoice"],
+        route_checks_path=paths["routeChecks"],
     )
 
     atomic_write_text(
@@ -1756,6 +2087,8 @@ def prepare(args: argparse.Namespace) -> int:
             [
                 paths["preferences"],
                 paths["doBeats"],
+                paths["teacherVoice"],
+                paths["routeChecks"],
                 reference_paths["teachingSequence"],
                 *(
                     [reference_paths["subject"]]
@@ -1919,13 +2252,12 @@ def require_reference_current(
         plugin_root,
         derived,
     )
+    canonical = canonical_paths(plugin_root, plugin_root)
     expected_sources = {
-        "preferences": (
-            plugin_root / "references" / "preferences.md"
-        ).resolve(),
-        "doBeats": (
-            plugin_root / "references" / "do-beats.md"
-        ).resolve(),
+        "preferences": canonical["preferences"],
+        "doBeats": canonical["doBeats"],
+        "teacherVoice": canonical["teacherVoice"],
+        "routeChecks": canonical["routeChecks"],
         "teachingSequence": routed["teachingSequence"],
         **(
             {"subject": routed["subject"]}
@@ -1933,18 +2265,7 @@ def require_reference_current(
             else {}
         ),
     }
-    expected_scopes = {
-        "preferences": "conditional sections by exact heading",
-        "doBeats": "decision-point activity section only",
-        "teachingSequence": (
-            "file start through the line before ## Output Format Block"
-        ),
-        **(
-            {"subject": "complete file"}
-            if "subject" in routed
-            else {}
-        ),
-    }
+    expected_scopes = review_source_scopes(routed.get("subject"))
 
     if set(sources) != set(expected_sources):
         raise PacketError(

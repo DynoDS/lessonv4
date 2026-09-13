@@ -17,6 +17,8 @@ PACKET = ROOT / "scripts" / "design-review-packet.py"
 VALIDATOR = ROOT / "scripts" / "validate-lesson-design.py"
 PREFERENCES = ROOT / "references" / "preferences.md"
 DO_BEATS = ROOT / "references" / "do-beats.md"
+TEACHER_VOICE = ROOT / "references" / "teacher-voice.md"
+ROUTE_CHECKS = ROOT / "references" / "design-review-route-checks.md"
 SKILL_ROUTE = (
     ROOT
     / "references"
@@ -478,6 +480,8 @@ def copy_packet_plugin_root(
     for source in (
         PREFERENCES,
         DO_BEATS,
+        TEACHER_VOICE,
+        ROUTE_CHECKS,
         SKILL_ROUTE,
         SCIENCE_REFERENCE,
     ):
@@ -590,7 +594,7 @@ def test_prepare_writes_compact_hash_bound_routing_reference():
             packet["reviewReference"][
                 "sources"
             ]["preferences"]["scope"]
-            == "conditional sections by exact heading"
+            == "always-read and conditional sections by exact heading"
         )
         assert (
             packet["reviewReference"]["sources"]
@@ -723,6 +727,8 @@ def test_prepare_writes_immutable_design_review_job_manifest():
             str(view),
             str(PREFERENCES.resolve()),
             str(DO_BEATS.resolve()),
+            str(TEACHER_VOICE.resolve()),
+            str(ROUTE_CHECKS.resolve()),
             str(SKILL_ROUTE.resolve()),
             str(SCIENCE_REFERENCE.resolve()),
             str(teacher_brief),
@@ -735,6 +741,8 @@ def test_prepare_writes_immutable_design_review_job_manifest():
             {"sourcePath": str(view), "mode": "read-only"},
             {"sourcePath": str(PREFERENCES.resolve()), "mode": "read-only"},
             {"sourcePath": str(DO_BEATS.resolve()), "mode": "read-only"},
+            {"sourcePath": str(TEACHER_VOICE.resolve()), "mode": "read-only"},
+            {"sourcePath": str(ROUTE_CHECKS.resolve()), "mode": "read-only"},
             {"sourcePath": str(SKILL_ROUTE.resolve()), "mode": "read-only"},
             {"sourcePath": str(SCIENCE_REFERENCE.resolve()), "mode": "read-only"},
             {"sourcePath": str(teacher_brief), "mode": "read-only"},
@@ -866,6 +874,8 @@ def test_prepare_records_every_optional_reviewer_input():
             str(view.resolve()),
             str(PREFERENCES.resolve()),
             str(DO_BEATS.resolve()),
+            str(TEACHER_VOICE.resolve()),
+            str(ROUTE_CHECKS.resolve()),
             str(SKILL_ROUTE.resolve()),
             str(SCIENCE_REFERENCE.resolve()),
             str(

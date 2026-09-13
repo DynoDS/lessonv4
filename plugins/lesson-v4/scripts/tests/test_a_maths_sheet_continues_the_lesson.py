@@ -146,7 +146,10 @@ class TheGuidanceReachesBothAgentsTests(unittest.TestCase):
         )
         # The old one-line consistency check passed the chartless sheet, so the
         # new one says what to actually look at.
-        self.assertIn("Read each sheet's opening questions against the board", reviewer)
+        self.assertIn("Read the base sheet's opening questions against the board", reviewer)
+        # Below and Greater Depth are made after the review, by the Adaptation
+        # Designer, which reads the same tier rule in subject-maths.md.
+        self.assertIn("Below and Greater Depth sheets do not exist at this stage", reviewer)
         self.assertIn(
             "read the forms rather than confirming the objective matches", reviewer
         )

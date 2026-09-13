@@ -259,8 +259,11 @@ class EachBeatChangesTheStateOfTheLessonTests(unittest.TestCase):
         self.assertNotIn("the lesson reads as one line", text)
         self.assertIn("name what each changes and what later depends on it", text)
         self.assertIn("do not answer it by demanding forced links", text)
-        self.assertIn("arrives one idea at a time with children using each before the next is taught", text)
-        self.assertIn("carries nothing else", text)
+        # Route-specific checks are read for the lesson's own route only.
+        self.assertIn("design-review-route-checks.md", text)
+        checks = flat(ROOT / "references" / "design-review-route-checks.md")
+        self.assertIn("arrives one idea at a time with children using each before the next is taught", checks)
+        self.assertIn("carries nothing else", checks)
 
 
 class TitlesTellTheStoryTests(unittest.TestCase):

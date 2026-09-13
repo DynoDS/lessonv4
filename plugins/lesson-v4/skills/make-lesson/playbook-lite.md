@@ -274,10 +274,7 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/design-review.md
 
 SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
-  --initial-photo-namespace \
-  "[WORKING_DIR]/lesson-design.json" \
-  "[WORKING_DIR]/photo-requirements.json"
+the exact `validator.command` in [WORKING_DIR]/design-review-preflight.json
 Require exactly: LESSON_DESIGN_OK
 The design handed to you already passed this check, so any failure is a
 correction you wrote. Repair your own wording, or restore what you found and
@@ -296,10 +293,14 @@ After return, run `design-review-packet.py verify` with the prepared preflight,
 reference, view and review, writing `design-review-postflight.json`. Require
 `DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.
 
+The preflight's validator and photo-cap commands are already right for the
+review's stage (after the verified Phase 2 freeze: no initial namespace, run
+picture ceiling); never write them out again by hand.
+
 If the packet helper is absent, or `prepare` fails deterministically after its
 one infrastructure retry, run the same reviewer directly against the three
-canonical design files, require `APPROVED` or `REDESIGN REQUIRED` in
-`design-review.md`, and run `validate-lesson-design.py
+canonical design files, with the validator command in its SUCCESS_CHECK, require `APPROVED` or
+`REDESIGN REQUIRED` in `design-review.md`, and run `validate-lesson-design.py
 --initial-photo-namespace` afterwards.
 
 If `verify` fails after a completed review, do not discard or re-run the
@@ -316,9 +317,12 @@ In the direct-review fallback for this later phase, omit
 
 When it fails, the fault is in the review pass's own corrections, because the
 design validated before the reviewer opened it. Send it back to the pass that
-wrote it. Launch one focused clean-context `design-reviewer` job carrying the
-current canonical files, the exact validator failure lines and the in-place
-editing rule from Phase 3.5, and tell it to repair only the fields the validator
+wrote it. Launch one focused clean-context `design-reviewer` job from the compact
+repair role `[PLUGIN_ROOT]/agents/design-reviewer-focused-repair.md` (if that
+file is missing or unreadable, use `[PLUGIN_ROOT]/agents/design-reviewer.md`),
+carrying the current canonical files, `design-review.md`, the exact validator
+failure lines, the prepared `validator.command` and the in-place editing rule
+from Phase 3.5, and tell it to repair only the fields the validator
 names, keep the meaning of its own correction, and leave the `Result` in
 `design-review.md` as it stands. Then re-run `design-review-packet.py verify`.
 Only when that repair also fails has the review pass genuinely corrupted the

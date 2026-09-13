@@ -301,9 +301,12 @@ class ReviewerRoutingReachesSlidePhilosophyTests(unittest.TestCase):
 
     def test_every_routed_heading_exists_in_preferences(self) -> None:
         packet = load("design_review_packet_board_headings", "design-review-packet.py")
+        reader = packet._load_reference_reader()
         text = PREFERENCES.read_text(encoding="utf-8")
         for heading, _trigger in packet.PREFERENCE_REVIEW_ROUTES:
-            self.assertIn(f"## {heading}", text, heading)
+            reader.locate(text, heading)
+        for name, heading, _why in packet.ALWAYS_READ_REVIEW_SECTIONS:
+            reader.locate((PREFERENCES.parent / name).read_text(encoding="utf-8"), heading)
 
 
 if __name__ == "__main__":
