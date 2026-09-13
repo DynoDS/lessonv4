@@ -1,5 +1,21 @@
 # Build review log
 
+## 2026-09-13 Questions stand apart, a scale is a box, one ask per answer, letters run on (4.2.176)
+
+Daniel, on the "Find the scale on a number line" worksheets: the questions felt "too together", "Scale: ___" did not look like something to write on and sat too close to question 2, the Greater Depth prompts fused separate asks ("Find the scale on each line. Why are the scales different...?" over the lines, with unheaded writing lines beneath) and used words children would not follow ("Change just one printed number"), and every figure in the deck and on the sheet said "A".
+
+**The page gave the gap between two questions the same 4mm as the gaps inside one.** Named and deferred in 4.2.169. A stack now puts the section step (8mm) above anything that opens a new question (a plain number, a first Part "1a", a numbered set) and above a section label; a later Part keeps the ordinary gap. This run's Expected went from 94% to 100% full; the older specs that still build gained 1 to 3% and none stopped fitting. A thin dividing line at 6mm was built and compared and left out, for Daniel to choose between if he wants it.
+
+**A caption's blank printed as three underscores in axis-number type.** A caption containing a blank is now a write-in slot: the words, then an answer box with the same stroke as the boxes at the ticks. It sits above the line level with those boxes when one end of that band is clear, which costs no height, and under the numbers otherwise. `maths.md` now says a value about the whole line is a caption with a blank, because the GD designer had used an `instruction` with an underline instead.
+
+**The fused asks and the production words came from the adaptation brief, and nothing upstream named either.** `teacher-voice.md` §6 gains `One ask, then the place to answer it` (two asks answered in two places are two Parts; a follow-up that pushes further is its own Part; `Is Sam correct? Explain your answer.` stays whole), and `The planning nouns stay in the plan` now covers the words a resource is built in (`printed`, `given`, `blank`), which leak from the designer's own visual brief. The adaptation designer's routing names the new part. The worksheet designer gains a composition habit: a settled prompt that reaches it fused is split at its sentence boundary so each sentence sits over its answer, words unchanged.
+
+**No rule said what letter an unknown takes.** `preferences.md` → Question Labelling now says a letter marking an unknown moves on with each new figure through the deck (A, B, C), keeps its letter when the same figure returns, and restarts at A on each worksheet, adaptation sheet and stick-in. The lesson designer's labelling line points there. Not enforced in the validator: letters sit in free text and visual descriptions, where a check would misfire.
+
+Rebuilt this run's worksheet from its own spec (both pages fit) and a preview spec written the way the repaired guidance asks. Worksheet engine 683 tests pass; the Python suite has the same 10 failures before and after (agent model and effort settings, untouched here).
+
+**Not changed.** The stick-in and wall number lines (the shared SVG) still print a caption's blank as text; no stick-in carried one. The Your Turn slides printing "(1) (2)" in the question box beside unnumbered lines was seen and not touched.
+
 ## 2026-09-13 The finished files are no longer reviewed
 
 Daniel: "I dont think we need these reviews", and, on hearing what they caught, "If there's anything like that, I can just tell you to investigate so those things dont happen again".

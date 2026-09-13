@@ -63,12 +63,44 @@ function introduces(item) {
   );
 }
 
+// A new question, and a new section, start at the section step.
+//
+// Everything in a stack used to be 4mm apart, so the join between question 1's
+// last line and question 2's number was the same as the join between question
+// 1's number line and its own "Scale:" slot. On a Year 4 sheet of stacked number
+// lines a child could not see where one question stopped: the slot read as
+// belonging to the question underneath it (13 September 2026). Tightening the
+// inside of a question (4.2.169) helped and was not enough, because the page
+// still gave the two joins the same space. So the step between questions is now
+// bigger than any step inside one. A Part after the first ("1b") is still the
+// same question, and keeps the ordinary gap.
+const QUESTION_START_GAP_MM = SPACE.section;
+
+function opensQuestion(item) {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+  if (item.number !== undefined) {
+    return typeof item.number === "number" || /^\d+a$/.test(String(item.number));
+  }
+  if (item.startAt !== undefined) return true;
+  if (isStack(item) || isRow(item)) {
+    const inner = itemsOf(item);
+    return inner.length > 0 && opensQuestion(inner[0]);
+  }
+  return false;
+}
+
 // The gap above item i of a stack: none above the first, tight under something
-// that introduced it, the ordinary item gap otherwise. Measuring, checking and
-// drawing all read it here, so they cannot disagree about how tall a stack is.
+// that introduced it, the section step above a new question or section, the
+// ordinary item gap otherwise. Measuring, checking and drawing all read it
+// here, so they cannot disagree about how tall a stack is.
 function gapAboveMm(items, i) {
   if (i === 0) return 0;
-  return introduces(items[i - 1]) ? TIGHT_GAP_MM : GAP_MM;
+  if (introduces(items[i - 1])) return TIGHT_GAP_MM;
+  const item = items[i];
+  if (opensQuestion(item) || (item && item.helper === "section-label")) {
+    return QUESTION_START_GAP_MM;
+  }
+  return GAP_MM;
 }
 
 function stackGapsMm(items) {

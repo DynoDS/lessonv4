@@ -202,3 +202,23 @@ test("a refusal names the group in a way a person can read", () => {
   assert.match(text, /stack/);
   assert.match(text, /row/);
 });
+
+// ─── the step between two questions is bigger than any step inside one ────
+//
+// A Year 4 sheet of stacked number lines gave the join between question 1's
+// "Scale:" and question 2's number the same 4mm as the joins inside question 1,
+// so the slot read as belonging to the question below (13 September 2026).
+
+test("a new question starts further down than the next part of the same question", () => {
+  const line = { helper: "number-line", start: 0, end: 10, interval: 1, boxes: [4] };
+  const question = (number) => ({ number, stack: [{ helper: "instruction", text: "Find A." }, line] });
+  const inside = measureContent({ stack: [line, line] }, 170) - 2 * measureContent(line, 170);
+  const between = measureContent({ stack: [question(1), question(2)] }, 170) - 2 * measureContent(question(1), 170);
+  assert.ok(between > inside, `between questions ${between}mm, inside one ${inside}mm`);
+
+  const parts = measureContent({ stack: [question("1a"), question("1b")] }, 170) - 2 * measureContent(question("1a"), 170);
+  assert.equal(parts, inside, "a second Part is the same question and keeps the ordinary gap");
+
+  const html = renderContent({ stack: [question(1), question(2)] }, 170);
+  assert.match(html, new RegExp(`margin-top:${between}mm`), "the page draws the gap it measured");
+});

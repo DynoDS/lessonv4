@@ -178,6 +178,23 @@ const UNIT_MAX_CHARS = 6;
 // where five lines with a clipped `unit` did.
 const CAPTION_FONT = 22;
 const CAPTION_GAP = 2;
+// A caption with a blank in it ("Scale: ___") is a place the child writes, not a
+// sentence they read. Drawn as text, its three underscores printed as a stub a
+// few millimetres wide in the same black as the axis numbers, and on a Year 4
+// sheet it did not look like anything to fill in, while the answer box above
+// the line did (13 September 2026). So the blank is drawn as the line's own
+// kind of answer box: the same stroke, wide enough for a four-digit number with
+// its comma, tall enough for a child's handwriting, and set at the start of the
+// line under its first number, where a written answer starts.
+const CAPTION_BLANK = /_{2,}/;
+const CAPTION_SLOT_GAP = 12;
+const CAPTION_SLOT_H = 60;
+const CAPTION_SLOT_W = 230;
+const CAPTION_SLOT_PAD = 12;
+// The word before the box is read like the question, so it is set larger than
+// the axis numbers.
+const CAPTION_SLOT_FONT = 30;
+const CAPTION_CHAR_W = CAPTION_SLOT_FONT * 0.55;
 
 // Year 4 place value is taught WITH the comma, and the question beside the
 // line already uses it ("Round 6,734 to the nearest 10."). A line whose ends
@@ -307,7 +324,38 @@ function buildNumberLineSvg(spec) {
       jumpTopSpace
     ) + 8;
 
-  const captionH = caption ? CAPTION_GAP + CAPTION_FONT + 4 : 0;
+  const captionSlot = caption != null && CAPTION_BLANK.test(String(caption));
+  // Where the slot goes. Above the line, level with the answer boxes, when the
+  // band they need is already there and one end of it is clear: that band is
+  // mostly empty paper, so the slot costs the page nothing. Otherwise under the
+  // numbers, which costs a row.
+  let slotPlace = null;
+  if (captionSlot) {
+    const [before, ...rest] = String(caption).split(CAPTION_BLANK);
+    const lead = before.trim();
+    const after = rest.join(" ").trim();
+    const leadW = lead ? lead.length * CAPTION_CHAR_W + CAPTION_SLOT_PAD : 0;
+    const afterW = after ? CAPTION_SLOT_PAD + after.length * CAPTION_CHAR_W : 0;
+    const groupW = leadW + CAPTION_SLOT_W + afterW;
+    slotPlace = { lead, after, leadW, groupW, above: false, x: padLeft };
+    const inner = widthPx - padLeft - padRight;
+    if (boxes.length && !hasArrows && !hasObject && !jumps.length && groupW < inner / 2) {
+      const at = (v) => padLeft + ((v - start) / (end - start)) * inner;
+      const clear = boxSize / 2 + 30;
+      const leftEnd = padLeft + groupW;
+      const rightStart = widthPx - padRight - groupW;
+      if (boxes.every((v) => at(v) - clear > leftEnd)) {
+        slotPlace = { ...slotPlace, above: true, x: padLeft };
+      } else if (boxes.every((v) => at(v) + clear < rightStart)) {
+        slotPlace = { ...slotPlace, above: true, x: rightStart };
+      }
+    }
+  }
+  const captionH = !caption
+    ? 0
+    : captionSlot
+    ? slotPlace.above ? 8 : CAPTION_SLOT_GAP + CAPTION_SLOT_H + 4
+    : CAPTION_GAP + CAPTION_FONT + 4;
   const bottomSpace = (hasLabels ? labelRowH + labelGap : 0) + (caption ? captionH : 8);
   const axisY = topSpace + Math.max(tallTickH, tickH) / 2;
   const heightPx = axisY + Math.max(tallTickH, tickH) / 2 + bottomSpace;
@@ -378,7 +426,31 @@ function buildNumberLineSvg(spec) {
     );
   });
 
-  if (caption) {
+  if (captionSlot) {
+    // Words before the blank, the box, then any words after it, on one row
+    // from the left edge of the line.
+    const { lead, after } = slotPlace;
+    const top = slotPlace.above
+      ? axisY - Math.max(tallTickH, tickH) / 2 - boxGap - CAPTION_SLOT_H
+      : labelY + (hasLabels ? labelRowH : 0) + CAPTION_SLOT_GAP;
+    const midY = top + CAPTION_SLOT_H / 2;
+    let x = slotPlace.x;
+    if (lead) {
+      parts.push(
+        `<text x="${x}" y="${midY}" text-anchor="start" dominant-baseline="central" font-family="${FONT}" font-size="${CAPTION_SLOT_FONT}" fill="${INK}">${esc(lead)}</text>`
+      );
+      x += lead.length * CAPTION_CHAR_W + CAPTION_SLOT_PAD;
+    }
+    parts.push(
+      `<rect x="${x}" y="${top}" width="${CAPTION_SLOT_W}" height="${CAPTION_SLOT_H}" fill="white" stroke="${INK}" stroke-width="2" />`
+    );
+    x += CAPTION_SLOT_W + CAPTION_SLOT_PAD;
+    if (after) {
+      parts.push(
+        `<text x="${x}" y="${midY}" text-anchor="start" dominant-baseline="central" font-family="${FONT}" font-size="${CAPTION_SLOT_FONT}" fill="${INK}">${esc(after)}</text>`
+      );
+    }
+  } else if (caption) {
     parts.push(
       `<text x="${widthPx / 2}" y="${labelY + (hasLabels ? labelRowH : 0) + CAPTION_GAP}" text-anchor="middle" dominant-baseline="hanging" font-family="${FONT}" font-size="${CAPTION_FONT}" fill="${INK}">${esc(caption)}</text>`
     );

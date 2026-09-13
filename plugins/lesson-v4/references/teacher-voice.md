@@ -448,6 +448,23 @@ The teacher:
 
 The exception is a term the lesson itself has taught or that assessment will genuinely ask in that form (Written Voice keeps `identify`, `compare` and `evidence` when they are authentic to the learning). A taught word is used normally; an untaught planning word is translated into what the child does.
 
+The words a resource is *built* in leak the same way, and they are harder to spot because the designer has just been writing them. A visual brief says which numbers are `printed`, which labels are `given`, which marks stay `blank`; by the time the prompt is written those words feel like plain description. To a child every number on the sheet is just a number. A Year 4 Greater Depth sheet asked `Change just one printed number to make the line work.` and the teacher's version names the thing the child can see: `Change one of the numbers so the number line works.`
+
+## One ask, then the place to answer it
+
+A child reads a question, does it, and writes the answer in the space just under it. When one prompt holds two asks that are answered in two different places, the second ask sits a long way above its own answer space, and a child working down the page meets writing lines with no question over them. A Year 4 sheet printed:
+
+> Find the scale on each line. Why are the scales different when both lines start and end at the same numbers?
+
+and then both lines with their scale boxes, then two writing lines. The teacher's version puts each ask over its own answer:
+
+> Find the scale on each line. *(the two lines and their scale boxes)*
+> Why are the scales different when both lines start and end at the same numbers? *(the writing lines)*
+
+So when a task has two things to do with two places to record them, write them as two Parts of one question (or two questions). A sentence that only sets the situation up goes over the picture it is about, and a follow-up that pushes further (`There's more than one answer. How do you know when you've found them all?`) is its own Part with its own space, because it is a different thing to do even though it belongs to the same task.
+
+The limit is an ask with one answer in one place. `Is Sam correct? Explain your answer.` is two sentences and one response, so it stays one prompt, and splitting it would give a child two spaces for one answer.
+
 ---
 
 # 7. Scaffolding

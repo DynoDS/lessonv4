@@ -17,7 +17,7 @@ This file serves several agents. The Lesson Designer reads the introduction, con
 - **Cognitive Load Triage on Scaffolds** — what stays blank and what gets pre-filled on any scaffold, on slides and sheets alike.
 - **How Much Fits in One Lesson** — when an LO is honestly two lessons, where to split, and when a lesson is carrying too many new ideas.
 - **Starters** — retrieval-first openers: what each subject retrieves, the forms a starter can take, test-question starters, the on-slide rules.
-- **Question Labelling** — bracketed labels only for starter and main independent work, plus lettered multi-question Maths Our Turn work.
+- **Question Labelling** — bracketed labels only for starter and main independent work, plus lettered multi-question Maths Our Turn work; letters marking unknowns on figures run on through a deck and restart on each sheet.
 - **Vocabulary** — choosing 3–5 cards or genuine vocabulary units, definitions written for children, one coherent visual per card or unit.
 - **A Picture Beside a Word** — the test any meaning-carrying picture must pass before it sits beside a word.
 - **Sticky Knowledge** — up to 3 must-carry facts or rules and when each appears; none is required when no separate fact or rule earns the role.
@@ -302,6 +302,8 @@ After that the subjects part. Maths keeps labelling the main independent work, b
 **In maths, My Turn has no question label.** A Maths Our Turn uses letters - (a), (b), (c) - when it contains two or more discrete questions that the class needs to refer to separately. A single Our Turn prompt has no label. Your Turn starts at (1), and numbering then continues through any connected Problem Solving, Reasoning or Apply work.
 
 Worksheets, stick-in pieces and adaptation sheets keep bracketed numbers for independent questions in every subject, because the answer key is a separate sheet and has to match. Their numbering belongs to that resource and does not continue from the starter or slide lesson.
+
+**A letter that marks an unknown on a figure moves on with each new figure.** The point to find on a number line, the missing side of a shape, the mystery number in a bar model: the first is A, the next figure's is B, then C, running on through the whole deck (a figure holding two unknowns takes the next two letters). A child says "A is 2,400" out loud, writes it in their book and checks it against the answer slide, so a letter is doing the same matching job as a question number. When every figure in a deck says A, "what did you get for A?" has six right answers and the check slide cannot say which one it means. The letter stays with its own figure, so a check slide or a later slide showing that same figure again keeps the letter it had. Like question numbers, each worksheet, adaptation sheet and stick-in piece starts again at A, because it is a separate resource with its own answer key. This is about letters standing for unknown values; a letter that names a thing (Photograph A, Line A and Line B in a comparison) follows what reads best for that task.
 
 ---
 

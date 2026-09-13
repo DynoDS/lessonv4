@@ -14,6 +14,12 @@ maths, and how a set of them should be sequenced.**
   "Each in", then drawn as a blue bar through every answer box, on a printed
   Year 4 sheet. Both now refuse it.
 - **A value for the child to find** is a box in "boxes", at its tick.
+- **A value about the whole line for the child to write** ("Scale: ___") is a
+  "caption" with a blank in it. The engine draws the blank as an answer box
+  like the ones at the ticks, above the line beside them when one end is clear
+  and under the numbers when not. An `instruction` underneath gives the same
+  words a thin line in a different place on every question, and a caption
+  without a blank reads as something given rather than something to fill in.
 - **A line to judge** ("Has this line been completed correctly?") prints the
   wrong number where it was written: a label `{ "at": 2600, "text": "2,700" }`
   puts "2,700" under the 2,600 mark. Without it the only way to ask the question

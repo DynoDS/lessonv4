@@ -405,7 +405,7 @@ in fields - `pupilAction`, `pupilPrompt`, `support`, `stimulus`,
 reads none of them; they read one page. The fields are your ingredients, never
 your layout: a field does not become a printed element just because it arrived
 as a separate string, and a page assembled field by field reads as machine
-output even when every word on it is right. Four habits keep a page composed:
+output even when every word on it is right. Five habits keep a page composed:
 
 - **One voice per task.** `pupilAction`, a prompt's `pupilPrompt` and its
   `support` usually describe the same task from three angles. Print the one
@@ -435,6 +435,17 @@ output even when every word on it is right. Four habits keep a page composed:
   tick columns never use and can cost the page its layout, all-word prints a
   box too small for the explaining it asks for. A bare string remains right
   when every column genuinely takes the same thing.
+- **Each ask sits over its own answer.** A child reads a line, does it, and
+  writes in the space under it. When a settled prompt arrives holding two asks
+  answered in different places (`Find the scale on each line. Why are the
+  scales different...?` over two lines and then writing lines), split it at
+  the sentence boundary and put each sentence directly over the space it is
+  answered in; a sentence that only sets up the picture goes over the picture.
+  This moves words and changes none, so it is composition under rule 1. A
+  prompt with one answer (`Is Sam correct? Explain your answer.`) stays whole.
+  `teacher-voice.md` §6 `One ask, then the place to answer it` is the rule
+  upstream authors write to; this is the same rule catching what reaches you
+  fused.
 
 **Mark each question with `question: true` and never write a number.** The engine
 counts them in reading order, in one format. A question you could not build costs
