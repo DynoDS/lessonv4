@@ -94,7 +94,7 @@ def letterbox_writer() -> dict | None:
     if (direct / ".git").exists():
         return {"clone": str(direct), "branch": branch}
     name = configured.lower().removesuffix(".git").strip("/")
-    places = []
+    places = [plugin_home() / LETTERBOX_CLONE_NAME]
     for start in (Path.cwd(), Path(__file__).resolve()):
         for folder in [start, *start.parents][:6]:
             places.append(folder)
@@ -112,6 +112,58 @@ def letterbox_writer() -> dict | None:
         if remote and (remote.endswith("/" + name) or remote.endswith(":" + name)):
             return {"clone": str(folder), "branch": branch}
     return {"clone": "", "branch": branch, "missing": configured}
+
+
+LETTERBOX_CLONE_NAME = "letterbox-clone"
+
+
+def github_auth_args() -> list[str]:
+    """Git options that sign in to GitHub with GITHUB_TOKEN, or nothing.
+
+    Codex's cloud attaches only one repository and gives the agent no GitHub
+    sign-in, so the letterbox is reached with a key the teacher adds to the
+    environment (a fine-grained token limited to the letterbox repository;
+    proved on 13 September 2026). It is passed as a header on each command
+    rather than written into the clone's remote address, so the key never
+    lands in a file and never appears in git's own messages.
+    """
+    import base64
+
+    token = (os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or "").strip()
+    if not token:
+        return []
+    basic = base64.b64encode(f"x-access-token:{token}".encode()).decode()
+    return ["-c", f"http.https://github.com/.extraheader=AUTHORIZATION: basic {basic}"]
+
+
+def prepare_letterbox(url: str | None = None) -> dict | None:
+    """Fetch the letterbox when the environment names it but nothing attached it.
+
+    Returns the writer (as `letterbox_writer`) with its clone filled in, or with
+    `error` saying why it could not be fetched. Only for a named repository;
+    a folder that is not there is a configuration fault, not something to fetch.
+    """
+    import subprocess
+
+    writer = letterbox_writer()
+    if writer is None or writer.get("clone"):
+        return writer
+    name = writer.get("missing", "").strip().removesuffix(".git").strip("/")
+    if not url and not re.fullmatch(r"[\w.-]+/[\w.-]+", name):
+        return {**writer, "error": f"{name!r} is not a folder or an owner/name repository"}
+    target = plugin_home() / LETTERBOX_CLONE_NAME
+    if not (target / ".git").exists():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        source = url or f"https://github.com/{name}.git"
+        result = subprocess.run(
+            ["git", *github_auth_args(), "clone", "-q", source, str(target)],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            reason = (result.stderr or result.stdout).strip().splitlines()[-1:] or ["no reason given"]
+            hint = "" if github_auth_args() else " No GITHUB_TOKEN is set, and a private letterbox needs one."
+            return {**writer, "error": f"the letterbox could not be fetched ({reason[0]}).{hint}"}
+    return {"clone": str(target), "branch": writer["branch"]}
 
 
 def delivery(ignore_letterbox: bool = False) -> dict:

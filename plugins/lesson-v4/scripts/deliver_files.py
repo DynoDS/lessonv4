@@ -184,7 +184,7 @@ def copy_to_folder(
 
 
 def git(clone: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    result = subprocess.run(["git", "-C", str(clone), *args], capture_output=True, text=True)
+    result = subprocess.run(["git", *plugin_settings.github_auth_args(), "-C", str(clone), *args], capture_output=True, text=True)
     if check and result.returncode != 0:
         raise OSError(f"git {' '.join(args)} failed: {(result.stderr or result.stdout).strip()}")
     return result
@@ -281,9 +281,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if mode == "letterbox":
             if not saved.get("folder") and not args.folder:
-                raise ValueError(
-                    f"the letterbox {saved.get('missing', '')!r} was not found as a clone on this box"
-                )
+                prepared = plugin_settings.prepare_letterbox() or {}
+                if not prepared.get("clone"):
+                    raise ValueError(f"the letterbox is not available on this box: {prepared.get('error', saved.get('missing', ''))}")
+                saved = {**saved, "folder": prepared["clone"]}
             destination, files, skipped = send_to_letterbox(
                 clone=(args.folder or Path(saved["folder"])).resolve(), branch=saved.get("branch") or plugin_settings.DEFAULT_LETTERBOX_BRANCH,
                 source=args.source.resolve(), requested=args.files, year=args.year,

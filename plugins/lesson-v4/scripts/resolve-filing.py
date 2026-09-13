@@ -326,14 +326,20 @@ def today():
 def main(argv=None):
     year, subject, working_root = parse_args(list(sys.argv[1:] if argv is None else argv))
     chosen = plugin_settings.delivery()
+    if chosen["mode"] == "letterbox" and not chosen["folder"]:
+        # Nothing attached the letterbox (Codex's cloud attaches one repository),
+        # so fetch it now, before any design work, while a missing key or a
+        # blocked address can still be fixed.
+        prepared = plugin_settings.prepare_letterbox() or {}
+        chosen = {**chosen, "folder": prepared.get("clone", ""), "missing": prepared.get("error", chosen.get("missing", ""))}
     print(f"DELIVERY={chosen['mode']}")
     if chosen["mode"] == "letterbox":
         # A cloud run. The teacher's computer places the lesson when it collects
         # it, so there is no slot to announce here, only where it is going.
         print(f"LETTERBOX={chosen['folder']}")
         print(f"LETTERBOX_BRANCH={chosen['branch']}")
-        if chosen.get("missing"):
-            print(f"ERROR: the letterbox {chosen['missing']} was not found as a clone on this box")
+        if not chosen["folder"]:
+            print(f"ERROR: the letterbox is not available on this box: {chosen.get('missing', '')}")
     elif chosen["mode"] == "none":
         # Whether the teacher has already been offered the choice, so the
         # offer is made once rather than at the end of every lesson.

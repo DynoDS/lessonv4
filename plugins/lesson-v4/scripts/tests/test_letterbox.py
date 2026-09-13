@@ -167,6 +167,65 @@ class LetterboxJourneyTests(unittest.TestCase):
             self.assertIn(f"'{name}'", check_setup, "check-setup.js refreshes the same files")
 
 
+class CodexCloudFetchesItsLetterboxTests(unittest.TestCase):
+    """Codex's cloud attaches one repository, so the run fetches the letterbox itself."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        self.saved = {k: os.environ.get(k) for k in ("LESSON_RESOURCES_HOME", "GITHUB_TOKEN", "GH_TOKEN", plugin_settings.LETTERBOX_VARIABLE)}
+        os.environ["LESSON_RESOURCES_HOME"] = str(self.root / "home")
+        os.environ.pop("GH_TOKEN", None)
+
+    def tearDown(self):
+        for key, value in self.saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+        self.temp.cleanup()
+
+    def test_the_key_is_sent_as_a_header_and_never_in_plain_form(self):
+        os.environ.pop("GITHUB_TOKEN", None)
+        self.assertEqual(plugin_settings.github_auth_args(), [])
+        os.environ["GITHUB_TOKEN"] = "github_pat_example_secret"
+        args = plugin_settings.github_auth_args()
+        self.assertEqual(args[0], "-c")
+        self.assertIn("extraheader=AUTHORIZATION: basic ", args[1])
+        self.assertNotIn("github_pat_example_secret", " ".join(args))
+
+    def test_a_named_letterbox_nobody_attached_is_fetched_and_a_lesson_posted(self):
+        os.environ.pop("GITHUB_TOKEN", None)
+        remote = self.root / "remote.git"
+        git("init", "-q", "--bare", str(remote))
+        seed = self.root / "seed"
+        git("clone", "-q", str(remote), str(seed))
+        git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start", cwd=seed)
+        git("push", "-q", "origin", "HEAD", cwd=seed)
+        os.environ[plugin_settings.LETTERBOX_VARIABLE] = "Someone/outputs"
+        self.assertEqual(plugin_settings.delivery()["folder"], "", "nothing is attached yet")
+
+        prepared = plugin_settings.prepare_letterbox(url=str(remote))
+        self.assertTrue((Path(prepared["clone"]) / ".git").exists(), prepared)
+
+        built = self.root / "output"
+        built.mkdir()
+        (built / "Fractions.pptx").write_bytes(b"deck")
+        deliver_files.send_to_letterbox(
+            clone=Path(prepared["clone"]), branch=BRANCH, source=built, requested=["Fractions.pptx"],
+            year=4, subject="Maths", lesson="Fractions", dry_run=False,
+        )
+        listing = git("ls-tree", "-r", "--name-only", BRANCH, cwd=remote)
+        self.assertIn("Fractions.pptx", listing)
+
+    def test_a_letterbox_that_cannot_be_fetched_says_why_and_mentions_a_missing_key(self):
+        os.environ.pop("GITHUB_TOKEN", None)
+        os.environ[plugin_settings.LETTERBOX_VARIABLE] = "Someone/outputs"
+        prepared = plugin_settings.prepare_letterbox(url=str(self.root / "no-such-repo.git"))
+        self.assertIn("could not be fetched", prepared["error"])
+        self.assertIn("No GITHUB_TOKEN is set", prepared["error"])
+
+
 class CloudRunFindsItsLetterboxTests(unittest.TestCase):
     def test_a_named_repository_is_found_as_a_clone_beside_the_working_folder(self):
         with tempfile.TemporaryDirectory() as temp:

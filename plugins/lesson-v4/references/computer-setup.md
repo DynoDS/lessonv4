@@ -67,13 +67,34 @@ log lines it prints. `letterbox_filer.py status` shows the last few collections;
 
 ## Scheduled lessons in Codex
 
-Codex can schedule a task in two places. A task in Codex's cloud runs with the
-teacher's computer off, but cannot use the letterbox yet: its agent has no
-internet by default, hands changes back as a diff or pull request rather than
-pushing to GitHub itself, and has no secrets while it works, so its resources
-stay in that cloud task. A task in the Codex app runs on the teacher's own
-computer and saves straight to the save folder like any lesson made there. For
-that local kind, two things to tell the teacher:
+Codex can schedule a task in two places: in Codex's cloud, with the teacher's
+computer off, or in the Codex app on the teacher's own computer.
+
+**In Codex's cloud** the run posts to the letterbox like a Claude cloud run, but
+Codex attaches only one repository, gives the agent no internet by default and
+no GitHub sign-in, and removes secrets before the agent starts. So the
+environment needs these settings, all on its page at
+https://chatgpt.com/codex/settings/environments (proved on 13 September 2026):
+
+1. Repository: the one the plugin lives in.
+2. Environment variables (not Secrets, which are removed before the agent
+   starts): `LESSON_RESOURCES_LETTERBOX` set to `<owner>/<letterbox repository>`,
+   and `GITHUB_TOKEN` set to a fine-grained GitHub token that can reach only the
+   letterbox repository, with Contents read and write and an expiry date.
+   Environment variables are visible to anyone who can edit the environment,
+   which is why the token must reach nothing else. The run fetches the letterbox
+   with it and never writes the token to a file.
+3. Agent internet access On, Domain allowlist None, Allowed HTTP methods All
+   methods, and in Additional allowed domains, separated by commas on one line:
+   `github.com, api.github.com`. Domains on separate lines were read as one
+   address and everything stayed blocked. Add the picture sources the same way
+   (see the list under `Setting up a cloud environment`).
+4. Setup script: Manual, `bash <plugin folder>/scripts/cloud-setup.sh`; the setup
+   script has the internet even when the agent does not, so it is where the
+   builders' libraries are installed.
+
+**In the Codex app** a task runs on the teacher's own computer and saves straight
+to the save folder like any lesson made there. Two things to tell the teacher:
 
 - The computer must be on with the Codex app open when the task is due.
 - A scheduled task runs with nobody to approve anything, using Codex's default

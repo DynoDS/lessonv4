@@ -1,5 +1,11 @@
 # Build review log
 
+## 2026-09-13 Codex's cloud can post to the letterbox too (4.2.190)
+
+4.2.189 said Codex's cloud could not use the letterbox; two probes run from this PC with codex cloud exec proved it can, once configured. With default settings both internet and a GitHub sign-in were missing (CONNECT tunnel failed, response 403; no credential). With a fine-grained token limited to DynoDS/teaching-outputs as the environment variable GITHUB_TOKEN, agent internet On, allowlist None, All methods, the probe still failed until the additional domains were entered as github.com, api.github.com on one line: on separate lines they were read as one address. Then Codex cloud cloned the letterbox, committed and pushed a test branch, which was checked and deleted from this PC.
+
+Codex attaches one repository, so plugin_settings.prepare_letterbox fetches a named letterbox into the plugin folder when nothing attached it, at filing time so a missing key or blocked address surfaces before design; delivery does the same if needed. github_auth_args passes GITHUB_TOKEN as a per-command header, so the token is never written into the clone or git's messages. Rehearsed from this PC against the real repository on a separate test branch (fetched, posted with lesson.json, deleted). computer-setup.md now carries the proven Codex environment settings. Not yet checked: a full lesson built in Codex's cloud, whose picture sources also need allowing.
+
 ## 2026-09-13 Codex schedules lessons on the teacher's computer, not in its cloud (4.2.189)
 
 The cloud setup steps assumed the letterbox would work from Codex's cloud too. OpenAI's documentation says otherwise: Codex cloud agents have no internet by default, return a diff or pull request instead of pushing, and lose secrets before the agent phase; Codex scheduled tasks run in the Codex app on the user's computer with approval_policy never and the default sandbox. references/computer-setup.md now says so, and that an unattended local task saves to the drive and checks slides only with full access, which is the teacher's call. The old TeachingOutputsAutoFile logon task was removed on this PC at the user's request; the new letterbox filer is installed.
