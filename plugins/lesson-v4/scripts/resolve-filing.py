@@ -17,6 +17,8 @@ settings (scripts/plugin_settings.py), and the resolver prints which of three it
     DELIVERY=sorted   copied into SAVE_FOLDER sorted by school year, term, week,
                       subject and (for daily subjects) day, placed by the
                       school's term dates
+    DELIVERY=letterbox a cloud run: pushed to LETTERBOX on LETTERBOX_BRANCH for
+                      the teacher's computer to collect and save at login
 
 Every mode prints, with --working:
     PREVIOUS_LESSON  the working folder of the lesson this run built last in the
@@ -233,12 +235,16 @@ class SortedFiling:
                 best = (rank, folder)
         return best[1] if best else ""
 
-    def run(self, today):
+    def place(self, today):
+        """The slot for a lesson built on `today`, as a dict, or an error dict.
+
+        Shared by this script and the login filer, which places lessons built
+        in the cloud when the teacher's computer can see the drive.
+        """
         # Resolve today's starting target, rolling Fri/weekend forward to the next teaching day.
         target = self.first_teaching_day(today + timedelta(days={4: 3, 5: 2, 6: 1}.get(today.weekday(), 0)))
         if not target:
-            print("ERROR: target date not in any term period")
-            return 1
+            return {"error": "target date not in any term period", "code": 1}
         d = target
         bumped = False
         if self.is_core:
@@ -272,23 +278,43 @@ class SortedFiling:
         # and the teacher redirects if it already holds content.
         res = self.resolve(d)
         if res and res[1] is None:
-            # Exit 2, distinct from "out of term", so the caller asks the teacher
+            # Code 2, distinct from "out of term", so the caller asks the teacher
             # which folder they made for the opening days instead of guessing one.
-            print(f"TERM_FOLDER={res[0]}\nOPENING_WEEK=yes\nERROR: {DAYS[d.weekday()]} {d:%d %B} falls before Week 1 of {res[0]}")
-            return 2
+            return {
+                "error": f"{DAYS[d.weekday()]} {d:%d %B} falls before Week 1 of {res[0]}",
+                "code": 2,
+                "term": res[0],
+            }
         if not res:
+            return {"error": "target date not in any term period", "code": 1}
+        term, week = res
+        return {
+            "term": term,
+            "week": week,
+            "day": DAYS[d.weekday()] if self.is_core else "",
+            "bumped": bumped,
+            "checked": bool(self.year_dir),
+        }
+
+    def run(self, today):
+        slot = self.place(today)
+        if slot.get("code") == 2:
+            print(f"TERM_FOLDER={slot['term']}\nOPENING_WEEK=yes\nERROR: {slot['error']}")
+            return 2
+        if "error" in slot:
             # Exit non-zero so the caller can tell an unresolved destination
             # from a resolved one instead of parsing stdout for the ERROR line.
-            print("ERROR: target date not in any term period")
+            print(f"ERROR: {slot['error']}")
             return 1
-        term, week = res
-        day_out = DAYS[d.weekday()] if self.is_core else ""
-        print(f"TERM_FOLDER={term}\nWEEK_NUM={week}\nDAY={day_out}\nBUMPED={'yes' if bumped else 'no'}\nIS_CORE={'yes' if self.is_core else 'no'}")
+        print(
+            f"TERM_FOLDER={slot['term']}\nWEEK_NUM={slot['week']}\nDAY={slot['day']}\n"
+            f"BUMPED={'yes' if slot['bumped'] else 'no'}\nIS_CORE={'yes' if self.is_core else 'no'}"
+        )
         # Without the year folder nothing was checked, so the slot is only the
         # calendar's guess and must not be announced as free.
-        print(f"DRIVE_CHECKED={'yes' if self.year_dir else 'no'}")
+        print(f"DRIVE_CHECKED={'yes' if slot['checked'] else 'no'}")
         if self.working_root:
-            print(f"PREVIOUS_LESSON={self.previous_lesson(term, week, day_out)}")
+            print(f"PREVIOUS_LESSON={self.previous_lesson(slot['term'], slot['week'], slot['day'])}")
         return 0
 
 
@@ -301,7 +327,14 @@ def main(argv=None):
     year, subject, working_root = parse_args(list(sys.argv[1:] if argv is None else argv))
     chosen = plugin_settings.delivery()
     print(f"DELIVERY={chosen['mode']}")
-    if chosen["mode"] == "none":
+    if chosen["mode"] == "letterbox":
+        # A cloud run. The teacher's computer places the lesson when it collects
+        # it, so there is no slot to announce here, only where it is going.
+        print(f"LETTERBOX={chosen['folder']}")
+        print(f"LETTERBOX_BRANCH={chosen['branch']}")
+        if chosen.get("missing"):
+            print(f"ERROR: the letterbox {chosen['missing']} was not found as a clone on this box")
+    elif chosen["mode"] == "none":
         # Whether the teacher has already been offered the choice, so the
         # offer is made once rather than at the end of every lesson.
         print(f"DELIVERY_OFFERED={'yes' if chosen['offered'] else 'no'}")

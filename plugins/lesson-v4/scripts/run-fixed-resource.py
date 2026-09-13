@@ -216,6 +216,8 @@ def command_for(args) -> list[str]:
         ):
             if value not in (None, ""):
                 command.extend([flag, str(value)])
+        if args.lesson_name:
+            command.extend(["--lesson", args.lesson_name])
         command.extend(["--source", str(output)])
         for filename in args.file:
             command.extend(["--file", filename])

@@ -616,7 +616,9 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         for token in (
             'finalize-picture-assignment.py" provenance',
             "Require `PICTURE_PROVENANCE_OK` before removing transient picture work",
-            "Append genuine findings to the shared build review log",
+            "record-build-review.py",
+            # Written only where the plugin is developed; elsewhere the report says NOT REQUIRED.
+            "developer mode is off: write nothing",
         ):
             with self.subTest(token=token):
                 self.assertIn(token, finalize)

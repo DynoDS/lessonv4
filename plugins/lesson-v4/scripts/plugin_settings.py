@@ -55,14 +55,80 @@ def write_settings(changes: dict) -> dict:
     return merged
 
 
-def delivery() -> dict:
+LETTERBOX_VARIABLE = "LESSON_RESOURCES_LETTERBOX"
+LETTERBOX_BRANCH_VARIABLE = "LESSON_RESOURCES_LETTERBOX_BRANCH"
+# Cloud sessions may always push to a `claude/` branch; other branch names can
+# be refused. A branch of its own also keeps these lessons apart from anything
+# else a letterbox repository carries.
+DEFAULT_LETTERBOX_BRANCH = "claude/lesson-outbox"
+# The files the login filer needs, copied out of the package when it is
+# installed so the task at login does not point into a versioned package folder
+# that the next update removes. check-setup.js keeps its own copy of this list.
+FILER_FILES = ("letterbox_filer.py", "plugin_settings.py", "deliver_files.py", "resolve-filing.py")
+
+
+def _git_remote(folder: Path) -> str:
+    try:
+        text = (folder / ".git" / "config").read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    match = re.search(r'\[remote "origin"\][^\[]*?url\s*=\s*(\S+)', text)
+    return match.group(1) if match else ""
+
+
+def letterbox_writer() -> dict | None:
+    """The letterbox a cloud run drops its resources into, or None.
+
+    A cloud box cannot reach the teacher's computer, so its environment names a
+    clone of a repository both can reach: either the clone's folder, or the
+    repository's name (`owner/name`), in which case the clone is looked for
+    beside the working folder and beside the plugin's own repository, because
+    how a cloud session lays out several attached repositories is not
+    documented and has changed before.
+    """
+    configured = os.environ.get(LETTERBOX_VARIABLE, "").strip()
+    if not configured:
+        return None
+    branch = os.environ.get(LETTERBOX_BRANCH_VARIABLE, "").strip() or DEFAULT_LETTERBOX_BRANCH
+    direct = Path(configured).expanduser()
+    if (direct / ".git").exists():
+        return {"clone": str(direct), "branch": branch}
+    name = configured.lower().removesuffix(".git").strip("/")
+    places = []
+    for start in (Path.cwd(), Path(__file__).resolve()):
+        for folder in [start, *start.parents][:6]:
+            places.append(folder)
+            try:
+                places.extend(child for child in folder.iterdir() if child.is_dir())
+            except OSError:
+                continue
+    seen = set()
+    for folder in places:
+        key = str(folder).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        remote = _git_remote(folder).lower().removesuffix(".git")
+        if remote and (remote.endswith("/" + name) or remote.endswith(":" + name)):
+            return {"clone": str(folder), "branch": branch}
+    return {"clone": "", "branch": branch, "missing": configured}
+
+
+def delivery(ignore_letterbox: bool = False) -> dict:
     """How finished resources leave the run.
 
-    `none`   no folder chosen: resources stay where the run built them.
-    `folder` copied straight into the chosen folder.
-    `sorted` copied into `<folder>/<school year> - Year N/<term>/Week N/<subject>[/<day>]`,
-             placed by the school's term dates.
+    `none`      no folder chosen: resources stay where the run built them.
+    `folder`    copied straight into the chosen folder.
+    `sorted`    copied into `<folder>/<school year> - Year N/<term>/Week N/<subject>[/<day>]`,
+                placed by the school's term dates.
+    `letterbox` a cloud run: pushed to a repository the teacher's computer
+                collects from at login (letterbox_filer.py), where the saved
+                folder and sorting are applied.
     """
+    writer = None if ignore_letterbox else letterbox_writer()
+    if writer is not None:
+        return {"mode": "letterbox", "folder": writer["clone"], "termDates": "", "offered": True,
+                "branch": writer["branch"], "missing": writer.get("missing", "")}
     chosen = read_settings().get("delivery")
     chosen = chosen if isinstance(chosen, dict) else {}
     folder = str(chosen.get("folder") or "").strip()

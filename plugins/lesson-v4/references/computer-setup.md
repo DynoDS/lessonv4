@@ -42,6 +42,49 @@ walk-throughs stay behind. `lesson-settings.py` is
 
 A teacher who later wants a plain folder again: `lesson-settings.py sorting off`.
 
+## Collecting cloud-built lessons at login
+
+A lesson built in the cloud cannot reach the teacher's computer, so it waits in
+a letterbox: a branch of a private GitHub repository the cloud run pushes to.
+This sets the teacher's own computer to collect from it every time they log in,
+and save each lesson the way their settings say. It is optional; without it the
+files can still be downloaded from that branch on GitHub.
+
+Before starting, check three things and fix any that are missing, in order:
+a save folder is chosen (the section above), `git --version` works, and the
+computer can reach the repository (`git ls-remote <repository>`; a private one
+needs `Signing in to GitHub` below). Then run:
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/letterbox_filer.py" install --repo <owner/name>
+```
+
+`LETTERBOX_AT_LOGIN=task` or `startup` means it is set; `none` means this
+computer would not allow it, and the line says how to collect by hand. Then run
+`letterbox_filer.py run` once so the teacher sees it work, and read back the
+log lines it prints. `letterbox_filer.py status` shows the last few collections;
+`uninstall` stops it.
+
+## Setting up a cloud environment
+
+For a teacher who builds lessons in Claude Code on the web or a routine. These
+are settings on the website, so give the steps and let the teacher click:
+
+1. Attach the repository the plugin lives in, and the letterbox repository.
+2. Setup script: `bash <plugin folder>/scripts/cloud-setup.sh`, with the
+   plugin folder as it sits inside that repository.
+3. Environment variable `LESSON_RESOURCES_LETTERBOX=<owner>/<letterbox repository>`.
+   The run finds the attached clone by that name and posts to the
+   `claude/lesson-outbox` branch, a branch name cloud sessions may always push to.
+4. Network access: full access is simplest. The picture finder takes
+   photographs from museum and archive websites it cannot know in advance, so a
+   custom list always loses some pictures. A custom list needs at least the
+   package registries (npm and PyPI), `github.com`, `api.github.com`,
+   `raw.githubusercontent.com`, `storage.googleapis.com` (the browser that
+   prints worksheets), `api.unsplash.com`, `images.unsplash.com`,
+   `commons.wikimedia.org`, `upload.wikimedia.org` and `api.openverse.org`.
+5. On their own computer, `Collecting cloud-built lessons at login` above.
+
 ## Developer mode
 
 For the person who develops the plugin, on their own computer, and nobody else.

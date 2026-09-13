@@ -197,6 +197,32 @@ async function drawingsAccess(env = process.env) {
   });
 }
 
+// ------------------------------------------------------------ login filer
+
+// The login filer runs from a copy in the plugin's own folder, because a task
+// pointing into the package would break when an update replaces it. When a new
+// version changes one of these files the copy is refreshed, or a computer would
+// keep collecting cloud lessons with an old filer long after the fix shipped.
+// scripts/plugin_settings.py keeps the same list.
+const FILER_FILES = ['letterbox_filer.py', 'plugin_settings.py', 'deliver_files.py', 'resolve-filing.py'];
+
+function staleFilerFiles(settings, home = pluginHome()) {
+  const letterbox = settings && settings.letterbox;
+  if (!letterbox || !letterbox.clone) return [];
+  return FILER_FILES.filter((name) => {
+    try {
+      return !fs.readFileSync(path.join(__dirname, name)).equals(fs.readFileSync(path.join(home, 'filer', name)));
+    } catch (_) {
+      return true;
+    }
+  });
+}
+
+function refreshFiler(home = pluginHome()) {
+  fs.mkdirSync(path.join(home, 'filer'), { recursive: true });
+  for (const name of FILER_FILES) fs.copyFileSync(path.join(__dirname, name), path.join(home, 'filer', name));
+}
+
 // --------------------------------------------------------------------- state
 
 function statePath() {
@@ -273,12 +299,15 @@ async function inspect(options = {}) {
     );
   }
 
+  const staleFiler = staleFilerFiles(settings);
+
   const fixes = [];
   for (const gap of nodeGaps) fixes.push(`${gap.engine} libraries (${gap.missing.join(', ')})`);
   if (toInstall.length) fixes.push(`Python libraries (${toInstall.map((l) => l.pip).join(', ')})`);
   if (!browser) fixes.push('a browser to print worksheets');
+  if (staleFiler.length) fixes.push(`the login filer's copy (${staleFiler.join(', ')}) after an update`);
 
-  return { python, nodeGaps, toInstall, browser, powerpoint, libreoffice, drawings, notes, fixes, platform };
+  return { python, nodeGaps, toInstall, browser, powerpoint, libreoffice, drawings, notes, fixes, platform, staleFiler };
 }
 
 function pythonInstallAdvice(platform) {
@@ -385,6 +414,14 @@ async function fix(options = {}) {
     }
   }
 
+  if (before.staleFiler && before.staleFiler.length) {
+    try {
+      refreshFiler();
+    } catch (error) {
+      failures.push(`the login filer's copy: ${error.message}`);
+    }
+  }
+
   if (!before.browser) {
     process.stderr.write('Fetching a browser to print worksheets...\n');
     const step = runStep(process.execPath, [path.join(PLUGIN_ROOT, 'worksheet-html', 'scripts', 'ensure-chrome.js')], PLUGIN_ROOT);
@@ -437,6 +474,8 @@ if (require.main === module) {
 module.exports = {
   ENGINES,
   missingNodeLibraries,
+  staleFilerFiles,
+  FILER_FILES,
   findPowerPoint,
   findLibreOffice,
   hasUnsplashKey,

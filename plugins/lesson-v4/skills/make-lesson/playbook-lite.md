@@ -131,6 +131,11 @@ whatever the mode.
   Say nothing about saving now; the final report offers the choice.
 - `DELIVERY=folder`: say in one line that the resources will be saved to
   `SAVE_FOLDER`.
+- `DELIVERY=letterbox`: this is a cloud run, which cannot reach the teacher's
+  computer. Say in one line that the finished resources will be posted to their
+  letterbox and saved on their computer the next time they log in. An `ERROR:`
+  line means the letterbox clone was not found on this box: say so, and plan to
+  leave the resources in `OUTPUT_DIR`.
 - `DELIVERY=sorted`: a daily subject goes to the first free day after the week's
   filled ones, a weekly subject to this week's folder. Tell the teacher one
   line, e.g. "Monday already has maths, so saving to Autumn 1 > Week 2 > Maths >
@@ -1442,22 +1447,28 @@ a two-lesson scope covers Lesson 1 only and name deferred learning.
 
 ---
 
-## Phase 5 — Save the Resources
+## Phase 5 - Save the Resources
 
 Once every branch has settled, build the explicit list from the teaching
 resources only: the deck, worksheets, answer key, working wall and stick-in
 sheets. The run report and walk-through stay in `OUTPUT_DIR` for the teacher to
 read there; the delivery script skips them if passed.
 
-When `filing.txt` says `DELIVERY=folder` or `DELIVERY=sorted`, run
-`run-fixed-resource.py deliver` directly with `--summary-output
-"[WORKING_DIR]/build-results/delivery.json"`, `--year` and `--subject`, one
-`--file` per exact basename, and in sorted mode the term, week and day from
-`filing.txt` (`--day` only when `IS_CORE=yes`). The year and subject are passed
+When `filing.txt` says `DELIVERY=folder`, `DELIVERY=sorted` or
+`DELIVERY=letterbox`, run `run-fixed-resource.py deliver` directly with
+`--summary-output "[WORKING_DIR]/build-results/delivery.json"`, `--year`,
+`--subject` and `--lesson-name`, one `--file` per exact basename, and in sorted
+mode the term, week and day from `filing.txt` (`--day` only when
+`IS_CORE=yes`). The year and subject are passed
 in every mode because that record is how the next run finds this lesson. Require
 schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`, then tell the teacher
 where it was saved in one line. The save folder is outside the lesson folder, so
-on Codex run it with escalated permissions.
+on Codex run it with escalated permissions. In letterbox mode the delivery also
+prints `LETTERBOX_BRANCH=`: tell the teacher the lesson is waiting in the
+letterbox on that branch and will be saved when their computer next collects it,
+and that the files can be downloaded from that branch on GitHub in the meantime.
+When the host has a way to send a file to the teacher directly, send each
+teaching resource that way too.
 
 Save the delivered files whatever the package outcome: the run report, not the
 saving, is where faults are told. If the save folder is unavailable or the

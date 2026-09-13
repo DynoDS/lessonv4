@@ -9,6 +9,13 @@
 # It finds everything from its own location, so the same file keeps working
 # when the plugin moves to another repository under another folder name.
 #
+# A cloud run cannot reach the teacher's computer. To have its lessons saved
+# there, attach the letterbox repository too and set the environment variable
+# LESSON_RESOURCES_LETTERBOX=<owner>/<letterbox repository>; the run posts to its
+# claude/lesson-outbox branch and the teacher's computer collects at login
+# (scripts/letterbox_filer.py). The full walk-through is "Setting up a cloud
+# environment" in references/computer-setup.md.
+#
 # A cloud box is a clean Linux computer every time. It has Node and usually
 # Python, and none of the rest: the builders' libraries, the Python libraries,
 # LibreOffice to turn slides into pictures, the fonts the pages are measured
@@ -125,4 +132,7 @@ if command -v node >/dev/null 2>&1; then
 fi
 
 lo_can_convert || warn "LibreOffice cannot convert documents here, so slides will be built but not looked at"
+if [ -z "${LESSON_RESOURCES_LETTERBOX:-}" ]; then
+  warn "LESSON_RESOURCES_LETTERBOX is not set, so lessons built here stay on this box; see references/computer-setup.md"
+fi
 say "cloud setup complete"
