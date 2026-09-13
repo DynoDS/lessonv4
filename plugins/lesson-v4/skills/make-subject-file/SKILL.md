@@ -19,10 +19,10 @@ Obtain exactly one `PLUGIN_ROOT_CANDIDATE` from the active host:
 
 Run:
 
-First find the Python to use, without elevated access, and store the path it prints after `PYTHON=` (on `PYTHON_BLOCKED` re-run it once with permission to start a child process):
+First check this computer and find the Python to use, without elevated access, and store the path it prints after `PYTHON=`. On `SETUP_NEEDS_FIX` run its `SETUP_FIX_COMMAND:` line exactly as printed (on Codex with escalated permissions and network access); on `SETUP_BLOCKED` re-run it once with permission to start a program; on `SETUP_NEEDS_PYTHON` ask the teacher before following `Installing Python` in `[PLUGIN_ROOT_CANDIDATE]/references/computer-setup.md`:
 
 ```bash
-node "[PLUGIN_ROOT_CANDIDATE]/scripts/find-python.js"
+node "[PLUGIN_ROOT_CANDIDATE]/scripts/check-setup.js"
 ```
 
 `"[PYTHON]"` below means that path; in PowerShell call it as `& "[PYTHON]" ...`.

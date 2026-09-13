@@ -10,6 +10,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 ENV_FILE = os.path.expanduser("~/.env.unsplash")
 DEFAULT_OUTPUT = os.path.expanduser("~/Pictures/unsplash-fetch")

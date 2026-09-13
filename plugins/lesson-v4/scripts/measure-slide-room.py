@@ -44,6 +44,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 SCHEMA_VERSION = 1
 

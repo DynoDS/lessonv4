@@ -9,6 +9,7 @@ import json
 import os
 import sys
 from pathlib import Path
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SCHEMA_VERSION = 2

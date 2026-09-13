@@ -33,6 +33,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path, PurePosixPath
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 STAGING_DIRNAME = "_staging"
 

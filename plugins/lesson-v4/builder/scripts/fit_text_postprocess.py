@@ -21,7 +21,11 @@ import os
 import re
 import sys
 
-from PIL import ImageFont  # noqa: F401 - kept for compatibility
+# The plugin's own installed libraries (scripts/python_extras.py).
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts"))
+import python_extras  # noqa: F401,E402
+
+from PIL import ImageFont  # noqa: F401,E402 - kept for compatibility
 
 from pptx import Presentation
 from pptx.enum.text import MSO_AUTO_SIZE

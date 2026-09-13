@@ -1,0 +1,17 @@
+{
+  "name": "lessonv4",
+  "owner": {
+    "name": "DynoDS"
+  },
+  "metadata": {
+    "description": "Lesson v4: lesson design and resource creation for UK primary schools"
+  },
+  "plugins": [
+    {
+      "name": "lesson-v4",
+      "description": "Lesson design and resource creation tools for UK primary schools.",
+      "source": "./plugins/lesson-v4",
+      "category": "education"
+    }
+  ]
+}

@@ -31,6 +31,7 @@ import re
 import sys
 from pathlib import Path
 from typing import Any
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 SCHEMA_VERSION = 1
 RENDER_MANIFEST_VERSION = 1
@@ -300,7 +301,8 @@ def build_resource_overviews(
 
 def build_overview(args: argparse.Namespace) -> int:
     try:
-        import fitz
+        # PyMuPDF's own name; `fitz` is the old one and warns on every import.
+        import pymupdf as fitz
     except ImportError:
         print(
             "VISUAL_CONSISTENCY_OVERVIEW_UNAVAILABLE: "

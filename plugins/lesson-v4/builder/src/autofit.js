@@ -44,13 +44,13 @@ function parseResult(output) {
 }
 
 // The interpreter the run found at start-up comes first (scripts/find-python.js,
-// handed down as LESSON_V4_PYTHON by the fixed build wrapper). Without it the
+// handed down as LESSON_RESOURCES_PYTHON by the fixed build wrapper). Without it the
 // common names are tried, and when none of those will start here the finder is
 // asked directly: under Codex every command runs as a sandbox user who cannot
 // start the machine's own Python but can start Codex's, so a name that is
 // refused is not the end of the search (13 September 2026).
 function interpreters(env) {
-  if (env && env.LESSON_V4_PYTHON) return [env.LESSON_V4_PYTHON];
+  if (env && env.LESSON_RESOURCES_PYTHON) return [env.LESSON_RESOURCES_PYTHON];
   return process.platform === 'win32'
     ? ['python', 'python3']
     : ['python3', 'python'];

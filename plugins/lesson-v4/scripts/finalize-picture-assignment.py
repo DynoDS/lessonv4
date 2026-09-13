@@ -12,6 +12,7 @@ import sys
 import tempfile
 import shutil
 from pathlib import Path, PurePosixPath
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 SCHEMA_VERSION = 2
 PUBLISH_ATTEMPTS = 1

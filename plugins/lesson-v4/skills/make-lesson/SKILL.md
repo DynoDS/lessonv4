@@ -338,27 +338,54 @@ with:
 PLUGIN_ROOT_ERROR: verifier is missing at [PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py
 ```
 
-Find the Python this run will use first, because the verifier is a Python
-script. Run this **without** elevated access:
+First check that this computer can build a lesson, which also finds the Python
+this run will use. It runs before anything else because it takes a second when
+all is well, and on a fresh computer, another teacher's computer or a cloud box
+it is the difference between finding a missing library now and finding it after
+the lesson has been designed. Run this **without** elevated access:
 
 ```bash
-node "[PLUGIN_ROOT_CANDIDATE]/scripts/find-python.js"
+node "[PLUGIN_ROOT_CANDIDATE]/scripts/check-setup.js"
 ```
 
-It tries each Python on this computer by running it, and prints
-`PYTHON=<absolute path>` for the first that starts here and can import the
-libraries the build scripts need. Store that path as the literal `PYTHON` for
-this run. Every command written `"[PYTHON]" ...` in the runtime slices and in
-worker instructions means that interpreter; in PowerShell call it as
-`& "[PYTHON]" ...`. Never substitute `python3`, `python` or `py` for it.
+It prints one status line, `PYTHON=<absolute path>` whenever a usable Python
+exists, and one `SETUP_NOTE:` line per thing the teacher should hear. Store the
+`PYTHON=` path as the literal `PYTHON` for this run. Every command written
+`"[PYTHON]" ...` in the runtime slices and in worker instructions means that
+interpreter; in PowerShell call it as `& "[PYTHON]" ...`. Never substitute
+`python3`, `python` or `py` for it. It is found unelevated because the workers
+run unelevated: an interpreter found with extra access can be one no worker can
+start, which is how Codex runs spent their first command in most workers
+rediscovering Python (13 September 2026).
 
-It is found unelevated because the workers run unelevated: an interpreter found
-with extra access can be one no worker can start, which is how Codex runs spent
-their first command in most workers rediscovering Python (13 September 2026).
-On `PYTHON_BLOCKED`, re-run the same command once with permission to start a
-child process, store the result, and record one `FRICTION:` line. On
-`PYTHON_UNAVAILABLE`, stop and report the message exactly: nothing in this run
-can be built without it.
+- `SETUP_OK`: carry on.
+- `SETUP_NEEDS_FIX`: something every build needs is missing: the builders'
+  libraries, Python libraries, or a browser to print worksheets. Tell the
+  teacher in one line that this computer is being set up for its first lesson,
+  then run the `SETUP_FIX_COMMAND:` line exactly as printed. It names the
+  Python this check chose, because the fix runs with more access and would
+  otherwise install into a different one. It downloads and writes outside the
+  lesson folder, so on Codex run it with escalated permissions and network
+  access. Use the `PYTHON=` path the fix prints. If its status is still not
+  `SETUP_OK`, report its `SETUP_FIX_FAILED:` lines exactly and stop: a resource
+  whose libraries are missing fails at the end of the run instead of now.
+- `SETUP_NEEDS_PYTHON`: there is no Python on this computer. Installing a
+  program is the teacher's decision, so ask in one plain question whether to
+  install it. On yes, follow `Installing Python` in
+  `[PLUGIN_ROOT_CANDIDATE]/references/computer-setup.md`, then run the check
+  with `--fix`. On no, stop: nothing in a lesson can be built without it.
+- `SETUP_BLOCKED`: re-run the same command once with permission to start a
+  program, store the result, and record one `FRICTION:` line.
+
+A `SETUP_NOTE:` names something this run will do without: slides nobody could
+look at to check, modern photographs, the optional drawings. None of them stops
+the run. Give each note to the teacher in its own words in the opening update,
+and put it again under `Teacher flags` in the final report, because a teacher
+told only at the start reads the finished deck as checked. When the teacher
+takes up a note's offer, follow the matching section of `computer-setup.md`.
+When they turn down the Unsplash offer, run
+`node "[PLUGIN_ROOT]/scripts/check-setup.js" --decline unsplash` so it is not
+raised again.
 
 Then run:
 

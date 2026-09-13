@@ -27,6 +27,7 @@ Coordinates are page pixels, not PDF points. The caller estimates a box on the
 page image it is viewing, maps it to true pixels, and passes those pixels here.
 """
 import argparse, json, os, sys
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 
 def cmd_pages(args):

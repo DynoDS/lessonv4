@@ -23,6 +23,7 @@ Subcommands:
 """
 import argparse, json, sys
 import os, re
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 
 def find_lesson_table(doc):

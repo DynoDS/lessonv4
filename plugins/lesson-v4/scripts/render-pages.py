@@ -30,6 +30,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 ROUTE_VERSION = 1
 MANIFEST_VERSION = 1
@@ -118,8 +119,14 @@ def powerpoint_interpreters():
             candidates.append(hit)
     local = os.environ.get("LOCALAPPDATA", "")
     if local:
-        for hit in sorted(Path(local, "Programs", "Python").glob("Python3*/python.exe"),
-                          reverse=True):
+        # Codex's sandbox may not even look inside the teacher's own Python
+        # folder; that is one fewer candidate, not a crashed probe.
+        try:
+            installed = sorted(Path(local, "Programs", "Python").glob("Python3*/python.exe"),
+                               reverse=True)
+        except OSError:
+            installed = []
+        for hit in installed:
             candidates.append(str(hit))
     seen = set()
     ordered = []
@@ -176,7 +183,7 @@ def probe_powerpoint():
 
 def probe_pymupdf():
     try:
-        import fitz  # noqa: F401
+        import pymupdf  # noqa: F401
         return True
     except ImportError:
         return False
@@ -390,7 +397,8 @@ def render_pdftoppm(pdf_path, out_dir, stem, dpi):
 
 def render_pymupdf(pdf_path, out_dir, stem, dpi):
     try:
-        import fitz
+        # PyMuPDF's own name; `fitz` is the old one and warns on every import.
+        import pymupdf as fitz
     except ImportError as exc:
         raise RuntimeError("PyMuPDF is unavailable") from exc
     try:

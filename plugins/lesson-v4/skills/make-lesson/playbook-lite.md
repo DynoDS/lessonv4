@@ -1423,8 +1423,8 @@ own check.
 
 Keep the teacher report concise. Always include a `Teacher flags` section, using
 `None` when empty. It carries the design reviewer's unresolved findings, any
-declared cross-resource impact from a repair, and every picture a designer was
-uneasy about. Worksheet pupil sheets and answer key remain separate. State when
+declared cross-resource impact from a repair, every picture a designer was
+uneasy about, and every `SETUP_NOTE:` the start-up check printed. Worksheet pupil sheets and answer key remain separate. State when
 a two-lesson scope covers Lesson 1 only and name deferred learning.
 
 ---

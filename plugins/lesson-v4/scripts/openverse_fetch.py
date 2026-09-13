@@ -33,6 +33,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 
 USER_AGENT = "lesson-resources-image-scout/2.0 (https://github.com/DynoDS/lessonv4; educational lesson-generation tool)"
 DEFAULT_OUTPUT = os.path.expanduser("~/Pictures/openverse-fetch")
