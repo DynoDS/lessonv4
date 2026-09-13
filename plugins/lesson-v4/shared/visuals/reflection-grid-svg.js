@@ -50,6 +50,13 @@ const SHAPE_OUTLINE  = '#0070C0';   // house blue starting-shape outline
 const SHAPE_FILL     = '#CCE2F5';   // pale blue starting shape
 const REFLECT_OUTLINE = '#00B050';  // house answer-green reflected outline
 const REFLECT_FILL    = '#D5F5E3';  // pale green reflected shape (answer)
+
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+// The photocopied pack's version. The mirror line is told from the grid by its
+// dashes, and the reflected answer from the starting shape by which side of the
+// mirror it is on and its paler fill, so none of them needs its colour.
+const INK = { dot: INK_TONES.mid, mirror: INK_TONES.ink, outline: INK_TONES.ink, fill: INK_TONES.light, reflectOutline: INK_TONES.dark, reflectFill: INK_TONES.pale };
+const COLOURS = { dot: DOT_COLOUR, mirror: MIRROR_COLOUR, outline: SHAPE_OUTLINE, fill: SHAPE_FILL, reflectOutline: REFLECT_OUTLINE, reflectFill: REFLECT_FILL };
 // ─── END CONSTANTS ────────────────────────────────────────────────────────
 
 function clampInt(v, dflt) {
@@ -109,7 +116,9 @@ function cacheKey(data) {
 // Build the SVG cropped tight to the grid's bounding box (the dots plus their
 // margin). The grid is always the full dot rectangle, so the tight box is the
 // grid itself — no padded square, no centring-in-deadspace.
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the grid prints in ink.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const cols = clampInt(data.cols, 10);
   const rows = clampInt(data.rows, 8);
   const mirror = resolveMirror(data, cols, rows);
@@ -131,13 +140,13 @@ function tightSvg(data) {
   if (data.showReflection && shape.length >= 2) {
     const reflected = shape.map(function (p) { return reflectPoint(p, mirror); });
     const d = polyPoints(reflected);
-    parts.push(`<polygon points="${d}" fill="${REFLECT_FILL}" stroke="${REFLECT_OUTLINE}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(`<polygon points="${d}" fill="${C.reflectFill}" stroke="${C.reflectOutline}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
   }
 
   // Dot grid.
   for (let i = 0; i <= cols; i++) {
     for (let j = 0; j <= rows; j++) {
-      parts.push(`<circle cx="${f(px(i))}" cy="${f(py(j))}" r="${f(DOT_R)}" fill="${DOT_COLOUR}"/>`);
+      parts.push(`<circle cx="${f(px(i))}" cy="${f(py(j))}" r="${f(DOT_R)}" fill="${C.dot}"/>`);
     }
   }
 
@@ -145,13 +154,13 @@ function tightSvg(data) {
   // never overshoots the dot field.
   const mline = mirrorEndpoints(mirror, cols, rows);
   if (mline) {
-    parts.push(`<line x1="${f(px(mline[0][0]))}" y1="${f(py(mline[0][1]))}" x2="${f(px(mline[1][0]))}" y2="${f(py(mline[1][1]))}" stroke="${MIRROR_COLOUR}" stroke-width="${f(MIRROR_W)}" stroke-dasharray="${f(MIRROR_DASH)},${f(MIRROR_GAP)}" stroke-linecap="round"/>`);
+    parts.push(`<line x1="${f(px(mline[0][0]))}" y1="${f(py(mline[0][1]))}" x2="${f(px(mline[1][0]))}" y2="${f(py(mline[1][1]))}" stroke="${C.mirror}" stroke-width="${f(MIRROR_W)}" stroke-dasharray="${f(MIRROR_DASH)},${f(MIRROR_GAP)}" stroke-linecap="round"/>`);
   }
 
   // Starting shape, on top.
   if (shape.length >= 2) {
     const d = polyPoints(shape);
-    parts.push(`<polygon points="${d}" fill="${SHAPE_FILL}" stroke="${SHAPE_OUTLINE}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(`<polygon points="${d}" fill="${C.fill}" stroke="${C.outline}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
   }
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="0 0 ${f(w)} ${f(h)}">${parts.join('')}</svg>`;

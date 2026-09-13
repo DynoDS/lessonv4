@@ -47,6 +47,43 @@ const PALETTES = Object.freeze({
   }),
 });
 
+// The greys an ink drawing may use where its board drawing tells parts apart by
+// colour. A photocopier keeps brightness and loses hue, so two parts that were
+// blue and orange stay apart only if they land on different steps here. Solid
+// marks take `ink` or `dark`; fills take `light` or `pale`, which stay light
+// enough for a child's pencil to show on top.
+const INK_TONES = Object.freeze({
+  ink: '#1A1A1A',
+  dark: '#4D4D4D',
+  mid: '#8C8C8C',
+  light: '#BFBFBF',
+  pale: '#E6E6E6',
+  paper: '#FFFFFF',
+});
+
+// Whether a drawing is being drawn for a photocopied surface. The older
+// drawings, laid out in their own units and scaled by whoever places them, take
+// a profile for this alone, so they print in ink on the stick-in pack and keep
+// their colours everywhere else.
+function printsInInk(profile) {
+  return Boolean(profile && typeof profile === 'object' && profile.palette === 'ink');
+}
+
+// The grey a colour becomes on a photocopier, for a drawing whose colours are
+// chosen per part (a lesson's own fill, a rainforest band, a food group). Two
+// fills that differed in brightness stay different; `lightest` and `darkest`
+// keep a fill in the range where a pencil mark on top still shows. Returns the
+// colour unchanged if it is not a hex colour, so a caller can pass anything.
+function inkGrey(colour, { lightest = 0xF2, darkest = 0x00 } = {}) {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(colour == null ? '' : colour).trim());
+  if (!m) return colour;
+  const hex = m[1].length === 3 ? m[1].split('').map((c) => c + c).join('') : m[1];
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const level = Math.round(Math.max(darkest, Math.min(lightest, 0.299 * r + 0.587 * g + 0.114 * b)));
+  const two = level.toString(16).padStart(2, '0').toUpperCase();
+  return `#${two}${two}${two}`;
+}
+
 const PROFILES = Object.freeze({
   // 24pt numerals that reach 18pt at the least: the projection floor the deck
   // holds every other piece of board text to (builder/src/styles.js MIN_FONT_PT).
@@ -81,4 +118,4 @@ function profileFor(surface, box = {}) {
   });
 }
 
-module.exports = { PROFILES, PALETTES, FONT, MM_TO_PT, profileFor };
+module.exports = { PROFILES, PALETTES, INK_TONES, FONT, MM_TO_PT, profileFor, printsInInk, inkGrey };

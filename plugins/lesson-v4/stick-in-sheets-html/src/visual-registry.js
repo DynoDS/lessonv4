@@ -53,7 +53,7 @@ const counterGroup = require("../../shared/visuals/counter-group-svg");
 const partWholeModel = require("../../shared/visuals/part-whole-model-svg");
 const pyramid = require("../../shared/visuals/pyramid-svg");
 const multGrid = require("../../shared/visuals/mult-grid-svg");
-const { profileFor } = require("../../shared/visuals/surface-profiles");
+const { profileFor, inkGrey } = require("../../shared/visuals/surface-profiles");
 
 // The one way the pack places a shared drawing laid out at its printed size,
 // in the stick-in profile (ink, because the pack is photocopied). Any picture
@@ -65,6 +65,39 @@ function sharedPiece(module, defaultWidthMm, extra = {}) {
     tightSvg: (spec, box) => module.tightSvg(spec, profileFor("stickin", box || { widthMm: defaultWidthMm })),
     defaultWidthMm,
     ...extra,
+  };
+}
+
+// The same stick-in profile for a shared drawing that is laid out in its own
+// units and scaled to the size the registry decides (`defaultWidthMm` or
+// `fitHeightMm` in `sizing`). The profile is what makes it print in ink: the
+// pack is photocopied, and a blue arc or a coloured fill comes out as a faint
+// grey nobody can tell from the paper. The drawing's size on the page is
+// unchanged by it, because the piece is still scaled to the registry's size.
+function scaledPiece(module, sizing) {
+  const widthMm = sizing.defaultWidthMm || sizing.defaultFigureWidthMm || sizing.fitHeightMm;
+  return {
+    geometry: module,
+    tightSvg: (spec) => module.tightSvg(spec, profileFor("stickin", { widthMm })),
+    ...sizing,
+  };
+}
+
+// The bar chart and the line graph take the stick-in profile for their size but
+// still draw their bars and line in the board's blue and red, and their shared
+// drawings were being changed by other work when the rest of the pack moved to
+// ink (13 September 2026). Until those drawings read the palette themselves,
+// the pack turns each colour they print into the grey it photocopies to. A
+// chart has one series, so no two parts depend on telling colours apart. This
+// belongs in bar-chart-svg.js and line-graph-svg.js, and should go once it is.
+function inkChart(piece) {
+  const greys = (svg) => svg.replace(/((?:fill|stroke)=")(#[0-9a-fA-F]{6})"/g, (all, attr, hex) => `${attr}${inkGrey(hex)}"`);
+  return {
+    ...piece,
+    tightSvg: (spec, box) => {
+      const drawn = piece.tightSvg(spec, box);
+      return { ...drawn, svg: greys(drawn.svg) };
+    },
   };
 }
 
@@ -152,13 +185,13 @@ const VISUALS = {
   "number-network": sharedPiece(numberNetworkShared, 100),
   // 127mm: two copies fit the ~277mm landscape printable width (2×127 + 6mm gap = 260mm ✓)
   // and two rows fit the ~185mm landscape printable height (2×89.5 + 6mm gap = 185mm ✓).
-  venn: { tightSvg: venn.tightSvg, defaultWidthMm: 127 },
+  venn: scaledPiece(venn, { defaultWidthMm: 127 }),
   // 118mm: Carroll's aspect (988/748 ≈ 1.321) is narrower than Venn's so the grid is
   // proportionally taller. At 118mm the tile is ~89mm tall; 2×89 + 6mm gap = 184mm ≤ 185mm
   // (two rows fit). 119mm tips it over. Gives 4 Carrolls on one landscape page like the Venn.
-  carroll: { tightSvg: carroll.tightSvg, defaultWidthMm: 118 },
-  angle: { tightSvg: angle.tightSvg, defaultWidthMm: 45 },
-  triangle: { tightSvg: triangle.tightSvg, defaultWidthMm: 45 },
+  carroll: scaledPiece(carroll, { defaultWidthMm: 118 }),
+  angle: scaledPiece(angle, { defaultWidthMm: 45 }),
+  triangle: scaledPiece(triangle, { defaultWidthMm: 45 }),
   // 88mm tall: the write-on grid is the artefact a child draws on, so usability
   // is the printed square size, not the overall width. At ~88mm tall two grids
   // stack within the ~185mm landscape height (2×88 + 6mm gap = 182mm ✓), so a
@@ -168,7 +201,7 @@ const VISUALS = {
   // grid's aspect) keeps that square comfortable whatever the grid's shape. The
   // QUESTION form (no showReflection) is what the spec carries — the child draws
   // the reflected half themselves.
-  "reflection-grid": { tightSvg: reflectionGrid.tightSvg, fitHeightMm: 88 },
+  "reflection-grid": scaledPiece(reflectionGrid, { fitHeightMm: 88 }),
   // 88mm tall: like the reflection grid, the numbered coordinate grid is the
   // artefact a child plots ON, so usability is the printed square size, not the
   // overall width. At ~88mm tall two grids stack within the ~185mm landscape
@@ -177,7 +210,7 @@ const VISUALS = {
   // a point on. Sizing by height (width follows the grid's aspect, which includes
   // the axis-number gutters) keeps that square comfortable whatever the grid's
   // shape. The BLANK form (no points) is what the spec carries — the child plots.
-  "coordinate-grid": { tightSvg: coordinateGrid.tightSvg, fitHeightMm: 88 },
+  "coordinate-grid": scaledPiece(coordinateGrid, { fitHeightMm: 88 }),
   // 88mm tall: the numbered translation grid is the artefact a child plots the
   // translated image ON, so usability is the printed square size, not the overall
   // width — sized exactly like the reflection/coordinate grids so two rows stack
@@ -185,7 +218,7 @@ const VISUALS = {
   // axis numbers and mark on. The QUESTION form (showImage off) is what the spec
   // carries — the original shape sits on a clear grid and the child plots and joins
   // the translated image themselves.
-  "translation-shape": { tightSvg: translationShape.tightSvg, fitHeightMm: 88 },
+  "translation-shape": scaledPiece(translationShape, { fitHeightMm: 88 }),
   // 88mm tall: dotty paper is the artefact a child rules peg-to-peg lines on, so
   // usability is the printed PEG SPACING, not the overall width - sized by height
   // like the other draw-on grids so two boards stack within the ~185mm landscape
@@ -198,14 +231,14 @@ const VISUALS = {
   // child counts and marks the sides of a shape that is already there - so unlike
   // the rainforest layers there is no specFn forcing one form, because both are
   // genuine write-on tasks rather than one being the printed answer to the other.
-  geoboard: { tightSvg: geoboard.tightSvg, fitHeightMm: 88 },
+  geoboard: scaledPiece(geoboard, { fitHeightMm: 88 }),
   // 120mm wide: the river-town map carries dense grid numbers and feature labels a
   // child reads four-figure references off and annotates, so usability here is
   // keeping those numbers and labels legible, not maximum copies. At 120mm two
   // maps sit across the ~277mm landscape width and print one row per page (2-up),
   // each comfortably large enough to read a 2-digit reference and write on. A
   // per-item widthMm overrides it when a lesson wants it bigger or denser.
-  "grid-map": { tightSvg: gridMap.tightSvg, defaultWidthMm: 120 },
+  "grid-map": scaledPiece(gridMap, { defaultWidthMm: 120 }),
   // 125mm wide: the child writes a layer name on each of the four ruled lines, so
   // usability here is the writing line, not the picture. At 125mm two cross
   // sections sit across the ~277mm landscape width (2x125 + 6mm gap = 256mm) and
@@ -218,11 +251,10 @@ const VISUALS = {
   // would tile a finished answer for all thirty children. A designer who genuinely
   // wants a glued-in labelled reference copy (a support scaffold) still can, by
   // saying `blank: false` outright.
-  "rainforest-layers": {
-    tightSvg: rainforestLayers.tightSvg,
+  "rainforest-layers": scaledPiece(rainforestLayers, {
     defaultWidthMm: 125,
     specFn: (s) => Object.assign({}, s, { blank: s.blank !== false }),
-  },
+  }),
   // 150mm wide: the child writes continent and ocean names beside the numbered
   // and lettered markers, so the handwriting, not the coastline stroke, sets the
   // usable size. The base is the real shipped world map - the same asset the
@@ -242,18 +274,17 @@ const VISUALS = {
   // 145mm wide: this is a handwriting frame, so the ruled lines set the minimum
   // usable size. The registry always forces task mode, preventing optional
   // teacher answers or reveal text copied from a slide from appearing in books.
-  "geographical-description-frame": {
-    tightSvg: geographicalDescriptionFrame.tightSvg,
+  "geographical-description-frame": scaledPiece(geographicalDescriptionFrame, {
     defaultWidthMm: 145,
     specFn: (s) => Object.assign({}, s, { mode: "task", showAnswers: false }),
-  },
+  }),
   // 160mm wide: a write-on recording table is sized by the handwriting its
   // response cells must hold - a Year 4 phrase per cell - so one or two tables
   // sit on a landscape row and the cells stay big enough to write in. The
   // module itself always renders the QUESTION form: any `||`-marked answer
   // cell copied from a check slide is stripped to a blank write-on cell, so
   // copying either the task or the answer table yields the same blank piece.
-  table: { tightSvg: recordingTable.tightSvg, defaultWidthMm: 160 },
+  table: scaledPiece(recordingTable, { defaultWidthMm: 160 }),
 
   // ── Pictures the pack could not draw until 13 September 2026, when every
   //    picture became one shared drawing on every surface. Whether a lesson
@@ -263,36 +294,36 @@ const VISUALS = {
   //    about 9pt or more, so the page still packs tight.
   //
   // 45mm, like the angle: a pair of lines reads at a glance or not at all.
-  "line-pair": { tightSvg: linePair.tightSvg, defaultWidthMm: 45 },
+  "line-pair": scaledPiece(linePair, { defaultWidthMm: 45 }),
   // 110mm: the child writes a number into the dashed part, so the part has to
   // hold a Year 4 hand's digits.
-  "bar-model": { tightSvg: barModel.tightSvg, defaultWidthMm: 110 },
+  "bar-model": scaledPiece(barModel, { defaultWidthMm: 110 }),
   // 120mm: a tally to complete (blank: true) needs its tally cells wide
   // enough for the bundles of five the child strikes through.
-  "tally-chart": { tightSvg: tallyChart.tightSvg, defaultWidthMm: 120 },
+  "tally-chart": scaledPiece(tallyChart, { defaultWidthMm: 120 }),
   // 110mm: the half symbol has to stay visibly half a circle.
-  pictogram: { tightSvg: pictogram.tightSvg, defaultWidthMm: 110 },
+  pictogram: scaledPiece(pictogram, { defaultWidthMm: 110 }),
   // 130mm, like the number line: the empty band above the line is where the
   // child draws their own jumps.
-  "blank-surface": { tightSvg: blankSurface.tightSvg, defaultWidthMm: 130 },
+  "blank-surface": scaledPiece(blankSurface, { defaultWidthMm: 130 }),
   // 180mm: the plate's smallest labels print at about 10pt here; narrower and
   // the food-group names in the thin wedges drop under that.
-  "balanced-pattern-plate": { tightSvg: balancedPatternPlate.tightSvg, defaultWidthMm: 180 },
+  "balanced-pattern-plate": scaledPiece(balancedPatternPlate, { defaultWidthMm: 180 }),
   // 40mm tall, width following the number of circuits: one circuit and a row
   // of three keep the same symbol size, which is what the child compares.
-  "circuit-diagram": { tightSvg: circuitDiagram.tightSvg, fitHeightMm: 40 },
+  "circuit-diagram": scaledPiece(circuitDiagram, { fitHeightMm: 40 }),
   // 30mm tall, width following the number of symbols, so every symbol keeps a
   // cell big enough to tell an open switch from a closed one. It is a long thin
   // strip, so the 7mm band a labelled piece gives up for its letter takes a
   // quarter of its height; at 22mm that left the names at about 7pt.
-  "circuit-symbol-bank": { tightSvg: circuitSymbolBank.tightSvg, fitHeightMm: 30 },
+  "circuit-symbol-bank": scaledPiece(circuitSymbolBank, { fitHeightMm: 30 }),
   // 200mm: seven labels round two parachutes; at this width the smallest
   // prints at about 10pt, which is the thing to protect.
-  "parachute-forces": { tightSvg: parachuteForces.tightSvg, defaultWidthMm: 200 },
+  "parachute-forces": scaledPiece(parachuteForces, { defaultWidthMm: 200 }),
   // The two charts are laid out at the width they print, in the pack's
   // profile, so their scale numbers are set at the pack's own type size.
-  "bar-chart": sharedPiece(barChart, 130),
-  "line-graph": sharedPiece(lineGraph, 130),
+  "bar-chart": inkChart(sharedPiece(barChart, 130)),
+  "line-graph": inkChart(sharedPiece(lineGraph, 130)),
   // The shared shaded fraction, fraction wall and coins, laid out at the width
   // they print, in ink. Both forms of a shaded fraction are real write-on tasks
   // (shade three eighths of a blank bar; say what fraction is shaded), so no
@@ -377,8 +408,8 @@ const VISUALS = {
 // spec doesn't supply figureWidthMm — sized so a one-word answer (e.g. "acute")
 // fits the line and the figure stays big enough to judge.
 const ROW_VISUALS = {
-  "angle-row": { tightSvg: angle.tightSvg, defaultFigureWidthMm: 38 },
-  "triangle-row": { tightSvg: triangle.tightSvg, defaultFigureWidthMm: 42 },
+  "angle-row": scaledPiece(angle, { defaultFigureWidthMm: 38 }),
+  "triangle-row": scaledPiece(triangle, { defaultFigureWidthMm: 42 }),
   // A strip of shapes on dotty paper, each with its own write-on line: count the
   // sides and corners of this one, then name it, then the next. It needs a taller
   // box than an angle or a triangle does, and the reason is the pegs. An angle is
@@ -387,7 +418,7 @@ const ROW_VISUALS = {
   // 5x5 board puts its pegs about 4mm apart, close enough that a finger covers
   // three at once and the count is lost - which is the whole task. 46mm leaves
   // them about 8mm apart, and three shapes still sit across the landscape row.
-  "geoboard-row": { tightSvg: geoboard.tightSvg, defaultFigureWidthMm: 46, boxHeightMm: 46 },
+  "geoboard-row": scaledPiece(geoboard, { defaultFigureWidthMm: 46, boxHeightMm: 46 }),
   // A strip of clock faces, each with its own line for the child to write the
   // time: the sheet's clock-row as a glued piece. 44mm keeps every face's
   // numerals at the pack's readable size.

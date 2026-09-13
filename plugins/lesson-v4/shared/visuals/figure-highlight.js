@@ -38,6 +38,10 @@
 // treatment rather than each figure choosing.
 
 const RING = 'C65911';        // house highlight, the same orange a map mark uses
+// The same ring on a photocopied surface, where orange would come out a pale
+// grey lighter than the lines it surrounds; a dark ring still stands out
+// because everything else fades back.
+const RING_INK = '1A1A1A';
 const RING_WIDTH = 0.012;     // ring stroke, as a share of the figure's long side
 const RING_PAD = 0.35;        // ring clearance round the part, in multiples of stroke
 const DIMMED = 0.28;          // opacity of everything not highlighted
@@ -125,8 +129,9 @@ function opacityFor(highlighted, key) {
 
 // The ring round a highlighted part, given the box that part occupies in the
 // figure's own drawing units. Returns '' when this part is not highlighted, so a
-// figure can call it unconditionally.
-function ringSvg(highlighted, key, box, longSide) {
+// figure can call it unconditionally. `ink` is true when the figure is drawn for
+// the photocopied stick-in pack.
+function ringSvg(highlighted, key, box, longSide, ink) {
   if (!highlighted || !highlighted.has(key)) return '';
   const stroke = Math.max(RING_MIN, longSide * RING_WIDTH);
   const pad = stroke * RING_PAD;
@@ -136,21 +141,22 @@ function ringSvg(highlighted, key, box, longSide) {
   const h = box.h + pad * 2;
   const radius = Math.min(w, h) * 0.14;
   return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) +
-    '" height="' + h.toFixed(1) + '" rx="' + radius.toFixed(1) + '" fill="none" stroke="#' + RING +
+    '" height="' + h.toFixed(1) + '" rx="' + radius.toFixed(1) + '" fill="none" stroke="#' + (ink ? RING_INK : RING) +
     '" stroke-width="' + stroke.toFixed(1) + '"/>';
 }
 
 // The same ring round a round part (a pictogram symbol, a plotted point).
-function ringCircleSvg(highlighted, key, centre, r, longSide) {
+function ringCircleSvg(highlighted, key, centre, r, longSide, ink) {
   if (!highlighted || !highlighted.has(key)) return '';
   const stroke = Math.max(RING_MIN, longSide * RING_WIDTH);
   return '<circle cx="' + centre.x.toFixed(1) + '" cy="' + centre.y.toFixed(1) + '" r="' +
-    (r + stroke * RING_PAD * 2).toFixed(1) + '" fill="none" stroke="#' + RING +
+    (r + stroke * RING_PAD * 2).toFixed(1) + '" fill="none" stroke="#' + (ink ? RING_INK : RING) +
     '" stroke-width="' + stroke.toFixed(1) + '"/>';
 }
 
 module.exports = {
   RING,
+  RING_INK,
   DIMMED,
   resolveHighlight,
   opacityFor,

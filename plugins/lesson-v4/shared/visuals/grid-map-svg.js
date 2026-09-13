@@ -89,6 +89,15 @@ const RING_R        = CELL * 0.27;  // ring radius on the corner
 
 const FONT = 'Comic Sans MS, Comic Sans, Chalkboard SE, sans-serif';
 
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+
+// The photocopied pack's version. The land tint goes, because a grey wash only
+// dims the grid a child reads references off. The river stays a wide pale ribbon
+// and the road a thin dark line, so the two still read apart by width and tone
+// rather than by blue against grey.
+const COLOURS = { land: LAND_FILL, grid: GRID_COLOUR, river: RIVER_COLOUR, road: ROAD_COLOUR, ring: RING_COLOUR };
+const INK = { land: INK_TONES.paper, grid: INK_TONES.mid, river: INK_TONES.light, road: INK_TONES.dark, ring: INK_TONES.ink };
+
 function escapeXml(s) {
   return String(s)
     .replace(/&/g, '&amp;')
@@ -151,7 +160,9 @@ function cacheKey(data) {
 // Build the SVG cropped tight to the map's bounding box (the grid plus its number
 // margins). The whole drawn thing IS the tight box — no padded square, no
 // centring-in-deadspace.
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the map prints in ink.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const s = resolve(data);
   const { eastings, northings, E0, N0, nx, ny } = s;
 
@@ -173,15 +184,15 @@ function tightSvg(data) {
   // ── Faint land tint over the grid rectangle, so the map reads as a map and the
   //    river/features sit on land rather than floating on the slide. Margins stay
   //    transparent (no deadspace fill).
-  parts.push(`<rect x="${f(px(0))}" y="${f(py(ny))}" width="${f(gridW)}" height="${f(gridH)}" fill="${LAND_FILL}"/>`);
+  parts.push(`<rect x="${f(px(0))}" y="${f(py(ny))}" width="${f(gridW)}" height="${f(gridH)}" fill="${C.land}"/>`);
 
   // ── Grid lines. Vertical line per easting, horizontal line per northing. The
   //    crossings ARE the corners a reference names, so they must read clearly.
   for (let i = 0; i <= nx; i++) {
-    parts.push(`<line x1="${f(px(i))}" y1="${f(py(0))}" x2="${f(px(i))}" y2="${f(py(ny))}" stroke="${GRID_COLOUR}" stroke-width="${f(GRID_W)}"/>`);
+    parts.push(`<line x1="${f(px(i))}" y1="${f(py(0))}" x2="${f(px(i))}" y2="${f(py(ny))}" stroke="${C.grid}" stroke-width="${f(GRID_W)}"/>`);
   }
   for (let j = 0; j <= ny; j++) {
-    parts.push(`<line x1="${f(px(0))}" y1="${f(py(j))}" x2="${f(px(nx))}" y2="${f(py(j))}" stroke="${GRID_COLOUR}" stroke-width="${f(GRID_W)}"/>`);
+    parts.push(`<line x1="${f(px(0))}" y1="${f(py(j))}" x2="${f(px(nx))}" y2="${f(py(j))}" stroke="${C.grid}" stroke-width="${f(GRID_W)}"/>`);
   }
 
   // ── Roads UNDER the river (a bridge reads as river-over-road), solid grey.
@@ -190,7 +201,7 @@ function tightSvg(data) {
       .filter(function (p) { return Array.isArray(p) && p.length >= 2; })
       .map(function (p) { return { x: px(ix(p[0])), y: py(iy(p[1])) }; });
     if (pts.length >= 2) {
-      parts.push(`<path d="${smoothPath(pts)}" fill="none" stroke="${ROAD_COLOUR}" stroke-width="${f(ROAD_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+      parts.push(`<path d="${smoothPath(pts)}" fill="none" stroke="${C.road}" stroke-width="${f(ROAD_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
     }
   }
 
@@ -199,7 +210,7 @@ function tightSvg(data) {
     .filter(function (p) { return Array.isArray(p) && p.length >= 2; })
     .map(function (p) { return { x: px(ix(p[0])), y: py(iy(p[1])) }; });
   if (riverPts.length >= 2) {
-    parts.push(`<path d="${smoothPath(riverPts)}" fill="none" stroke="${RIVER_COLOUR}" stroke-width="${f(RIVER_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+    parts.push(`<path d="${smoothPath(riverPts)}" fill="none" stroke="${C.river}" stroke-width="${f(RIVER_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
   }
 
   // ── Features. Each sits inside the cell up-and-right of its square's
@@ -219,7 +230,7 @@ function tightSvg(data) {
   if (s.highlight) {
     const hx = px(ix(s.highlight[0]));
     const hy = py(iy(s.highlight[1]));
-    parts.push(`<circle cx="${f(hx)}" cy="${f(hy)}" r="${f(RING_R)}" fill="none" stroke="${RING_COLOUR}" stroke-width="${f(RING_W)}"/>`);
+    parts.push(`<circle cx="${f(hx)}" cy="${f(hy)}" r="${f(RING_R)}" fill="none" stroke="${C.ring}" stroke-width="${f(RING_W)}"/>`);
   }
 
   // ── Grid numbers LAST, so they sit clearly on top of everything in the margins.

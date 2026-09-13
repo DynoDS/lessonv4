@@ -25,6 +25,20 @@ const TEAL = '#4FA7A2';
 const PAPER = '#FFFFFF';
 const PRACTICE_FILL = '#FAFCFE';
 
+const { printsInInk, inkGrey } = require('./surface-profiles');
+
+// Every colour the plate uses outside its groups, and the same table in the
+// greys a photocopier keeps, for the stick-in pack. The groups are named in
+// words inside their wedges, so their tints going to near-identical pale greys
+// loses nothing a child reads; the edges and the dashed answer spaces stay
+// visible as mid greys.
+const COLOURS = {
+  ink: INK, muted: MUTED, blue: BLUE, orange: ORANGE, paper: PAPER, practiceFill: PRACTICE_FILL,
+  waterFill: '#DFF2FF', waterLevel: '#93D5F5', lessOftenFill: '#FFF7E8', lessOftenText: '#9A5C00', caption: '#EAF3FA'
+};
+const INK_COLOURS = Object.fromEntries(Object.entries(COLOURS).map(([k, v]) => [k, inkGrey(v)]));
+INK_COLOURS.paper = PAPER;
+
 const GROUPS = [
   { key: 'fruit-vegetables', share: 0.40, colour: '#DDF2D8', edge: GREEN,
     label: 'Fruit and vegetables', examples: ['apple', 'carrot', 'peas', 'berries'] },
@@ -154,15 +168,15 @@ function pillLayout(items, maxW, size) {
   };
 }
 
-function pillParts(pills, cx, top, edge) {
+function pillParts(pills, cx, top, edge, C) {
   const parts = [];
   let y = top;
   for (const row of pills.rows) {
     const total = row.reduce((n, p) => n + p.w, 0) + PILL_GAP * (row.length - 1);
     let x = cx - total / 2;
     for (const pill of row) {
-      parts.push('<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(pill.w) + '" height="' + f(pills.rowH) + '" rx="' + f(pills.rowH / 2) + '" fill="' + PAPER + '" fill-opacity="0.92" stroke="' + edge + '" stroke-width="3"/>');
-      parts.push(textLine(pill.item, x + pill.w / 2, y + pills.rowH * 0.68, pills.size, INK, { weight: '600' }));
+      parts.push('<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(pill.w) + '" height="' + f(pills.rowH) + '" rx="' + f(pills.rowH / 2) + '" fill="' + C.paper + '" fill-opacity="0.92" stroke="' + edge + '" stroke-width="3"/>');
+      parts.push(textLine(pill.item, x + pill.w / 2, y + pills.rowH * 0.68, pills.size, C.ink, { weight: '600' }));
       x += pill.w + PILL_GAP;
     }
     y += pills.rowH + PILL_ROW_GAP;
@@ -328,24 +342,24 @@ function layoutInWedge(group, given, geom) {
   return null;
 }
 
-function decisionParts(cx, cy, w, h) {
+function decisionParts(cx, cy, w, h, C) {
   const x = cx - w / 2;
   const y = cy - h / 2;
   return '<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(w) + '" height="' + f(h) +
-    '" rx="18" fill="' + PRACTICE_FILL + '" fill-opacity="0.94" stroke="' + BLUE +
+    '" rx="18" fill="' + C.practiceFill + '" fill-opacity="0.94" stroke="' + C.blue +
     '" stroke-width="4" stroke-dasharray="14 10"/>' +
     '<line x1="' + f(x + w * 0.12) + '" y1="' + f(cy - h * 0.10) + '" x2="' + f(x + w * 0.88) +
-    '" y2="' + f(cy - h * 0.10) + '" stroke="' + MUTED + '" stroke-width="3"/>' +
+    '" y2="' + f(cy - h * 0.10) + '" stroke="' + C.muted + '" stroke-width="3"/>' +
     '<line x1="' + f(x + w * 0.18) + '" y1="' + f(cy + h * 0.24) + '" x2="' + f(x + w * 0.82) +
-    '" y2="' + f(cy + h * 0.24) + '" stroke="' + MUTED + '" stroke-width="3"/>';
+    '" y2="' + f(cy + h * 0.24) + '" stroke="' + C.muted + '" stroke-width="3"/>';
 }
 
-function wedgeParts(block, group) {
-  if (block.kind === 'blank') return decisionParts(block.x, block.y, block.w, block.h);
+function wedgeParts(block, group, C) {
+  if (block.kind === 'blank') return decisionParts(block.x, block.y, block.w, block.h, C);
   const top = block.y - block.h / 2;
-  let parts = textBlock(block.lines, block.x, top, block.font, INK, { lineH: block.lineH });
+  let parts = textBlock(block.lines, block.x, top, block.font, C.ink, { lineH: block.lineH });
   if (block.pills.h) {
-    parts += pillParts(block.pills, block.x, top + block.lines.length * block.lineH + LABEL_GAP, group.edge);
+    parts += pillParts(block.pills, block.x, top + block.lines.length * block.lineH + LABEL_GAP, group.edge, C);
   }
   return parts;
 }
@@ -390,25 +404,25 @@ function lessOftenPanel(label, innerW) {
   };
 }
 
-function calloutParts(panel, x, y, w) {
+function calloutParts(panel, x, y, w, C) {
   const g = panel.group;
   const cx = x + w / 2;
   // A blank callout is the answer space itself, so it carries no tinted panel:
   // one dashed box on the leader reads as somewhere to write, where a box inside
   // a coloured card reads as a card that already says something.
   if (!panel.given) {
-    return decisionParts(cx, y + panel.h / 2, Math.min(w - PANEL_PAD * 2, DECISION_W), DECISION_H * 0.72);
+    return decisionParts(cx, y + panel.h / 2, Math.min(w - PANEL_PAD * 2, DECISION_W), DECISION_H * 0.72, C);
   }
   const parts = ['<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(w) + '" height="' + f(panel.h) +
     '" rx="22" fill="' + g.colour + '" stroke="' + g.edge + '" stroke-width="4"/>'];
-  parts.push(textBlock(panel.lines, cx, y + PANEL_PAD, panel.font, INK, { lineH: panel.lineH }));
+  parts.push(textBlock(panel.lines, cx, y + PANEL_PAD, panel.font, C.ink, { lineH: panel.lineH }));
   if (panel.pills.h) {
-    parts.push(pillParts(panel.pills, cx, y + PANEL_PAD + panel.lines.length * panel.lineH + LABEL_GAP, g.edge));
+    parts.push(pillParts(panel.pills, cx, y + PANEL_PAD + panel.lines.length * panel.lineH + LABEL_GAP, g.edge, C));
   }
   return parts.join('');
 }
 
-function waterParts(panel, x, y, w) {
+function waterParts(panel, x, y, w, C) {
   const gw = 84;
   const gh = 96;
   const labelW = widestLine(panel.lines, 32, '700');
@@ -421,22 +435,22 @@ function waterParts(panel, x, y, w) {
     ' Q ' + f(gx + 15) + ' ' + f(gy + gh + 14) + ' ' + f(gx + 13) + ' ' + f(gy + gh) + ' Z';
   return [
     '<path d="M ' + f(gx) + ' ' + f(gy) + ' L ' + f(gx + gw) + ' ' + f(gy) + body +
-      '" fill="#DFF2FF" stroke="' + BLUE + '" stroke-width="6"/>',
+      '" fill="' + C.waterFill + '" stroke="' + C.blue + '" stroke-width="6"/>',
     '<path d="M ' + f(gx + 6) + ' ' + f(gy + gh * 0.46) +
       ' Q ' + f(gx + gw / 2) + ' ' + f(gy + gh * 0.34) + ' ' + f(gx + gw - 6) + ' ' + f(gy + gh * 0.48) +
-      body + '" fill="#93D5F5"/>',
-    textBlock(panel.lines, gx + gw + gap + labelW / 2, y + panel.h / 2 - 24, 32, BLUE, { lineH: 36 })
+      body + '" fill="' + C.waterLevel + '"/>',
+    textBlock(panel.lines, gx + gw + gap + labelW / 2, y + panel.h / 2 - 24, 32, C.blue, { lineH: 36 })
   ].join('');
 }
 
-function lessOftenParts(panel, x, y, w) {
+function lessOftenParts(panel, x, y, w, C) {
   const cx = x + w / 2;
   const top = y + PANEL_PAD;
   return [
     '<rect x="' + f(x) + '" y="' + f(y) + '" width="' + f(w) + '" height="' + f(panel.h) +
-      '" rx="26" fill="#FFF7E8" stroke="' + ORANGE + '" stroke-width="6" stroke-dasharray="15 10"/>',
-    textBlock(panel.lines, cx, top, 29, INK, { lineH: 35 }),
-    textBlock(['less often', 'small amounts'], cx, top + panel.lines.length * 35 + 12, 28, '#9A5C00', { lineH: 35 })
+      '" rx="26" fill="' + C.lessOftenFill + '" stroke="' + C.orange + '" stroke-width="6" stroke-dasharray="15 10"/>',
+    textBlock(panel.lines, cx, top, 29, C.ink, { lineH: 35 }),
+    textBlock(['less often', 'small amounts'], cx, top + panel.lines.length * 35 + 12, 28, C.lessOftenText, { lineH: 35 })
   ].join('');
 }
 
@@ -469,9 +483,13 @@ function cacheKey(spec) {
 }
 
 // --- the drawing ------------------------------------------------------------
-function tightSvg(spec) {
+// `profile` is optional: the stick-in pack passes its own so the plate prints in
+// the greys its colours photocopy to.
+function tightSvg(spec, profile) {
+  const ink = printsInInk(profile);
+  const C = ink ? INK_COLOURS : COLOURS;
   const s = spec || {};
-  const groups = resolvedGroups(s);
+  const groups = resolvedGroups(s).map(g => (ink ? Object.assign({}, g, { colour: inkGrey(g.colour), edge: inkGrey(g.edge) }) : g));
   const given = givenSet(s);
   const practice = s.mode === 'practice' || s.practice === true;
 
@@ -537,20 +555,20 @@ function tightSvg(spec) {
 
   const parts = [];
   if (instruction) {
-    parts.push(textLine(instruction, W / 2, MARGIN + 34, INSTRUCTION_FONT, MUTED, { weight: '600' }));
+    parts.push(textLine(instruction, W / 2, MARGIN + 34, INSTRUCTION_FONT, C.muted, { weight: '600' }));
   }
 
   for (const group of groups) {
     parts.push('<path d="' + geom.sectorPath(group.a1, group.a2) + '" fill="' + group.colour +
-      '" stroke="' + PAPER + '" stroke-width="8"/>');
+      '" stroke="' + C.paper + '" stroke-width="8"/>');
   }
   parts.push('<circle cx="' + f(CX) + '" cy="' + f(CY) + '" r="' + f(R) +
-    '" fill="none" stroke="' + INK + '" stroke-width="7"/>');
+    '" fill="none" stroke="' + C.ink + '" stroke-width="7"/>');
 
   for (const group of groups) {
     const block = assigned.inside[group.key];
     if (!block) continue;
-    parts.push(wedgeParts(Object.assign({}, block, { x: block.x + CX, y: block.y + CY }), group));
+    parts.push(wedgeParts(Object.assign({}, block, { x: block.x + CX, y: block.y + CY }), group, C));
   }
 
   // Where every space ended up, so the invariant "nothing is clipped and no
@@ -574,13 +592,13 @@ function tightSvg(spec) {
   for (const panel of panels) {
     if (panel.kind === 'callout') {
       parts.push(leaderParts(geom, panel.group, gutterX, y + panel.h / 2));
-      parts.push(calloutParts(panel, gutterX, y, gutterW));
+      parts.push(calloutParts(panel, gutterX, y, gutterW, C));
       const space = layout.spaces.find(s => s.key === panel.group.key);
       space.box = { x: gutterX, y, w: gutterW, h: panel.h };
     } else if (panel.kind === 'water') {
-      parts.push(waterParts(panel, gutterX, y, gutterW));
+      parts.push(waterParts(panel, gutterX, y, gutterW, C));
     } else {
-      parts.push(lessOftenParts(panel, gutterX, y, gutterW));
+      parts.push(lessOftenParts(panel, gutterX, y, gutterW, C));
     }
     y += panel.h + PANEL_GAP;
   }
@@ -588,8 +606,8 @@ function tightSvg(spec) {
   if (caption) {
     const capY = bandTop + bandH + 18;
     parts.push('<rect x="' + f(MARGIN) + '" y="' + f(capY) + '" width="' + f(W - MARGIN * 2) +
-      '" height="' + CAPTION_H + '" rx="26" fill="#EAF3FA"/>');
-    parts.push(textLine(caption, W / 2, capY + CAPTION_H * 0.66, CAPTION_FONT, INK));
+      '" height="' + CAPTION_H + '" rx="26" fill="' + C.caption + '"/>');
+    parts.push(textLine(caption, W / 2, capY + CAPTION_H * 0.66, CAPTION_FONT, C.ink));
   }
 
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H +

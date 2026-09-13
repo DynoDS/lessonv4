@@ -68,6 +68,13 @@ const IMG_DASH      = CELL * 0.11;  // image outline dash length
 const IMG_GAP       = CELL * 0.08;  // image outline dash gap
 
 const ARROW_COLOUR  = '#555555';    // dashed translation arrow (neutral grey)
+
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+// The photocopied pack's version. The original and its image were two blues;
+// here the original is the darker fill with a solid outline and the image the
+// paler fill with a dashed one, so the two still read apart at a glance.
+const INK = { grid: INK_TONES.light, axis: INK_TONES.ink, num: INK_TONES.ink, origOutline: INK_TONES.ink, origFill: INK_TONES.light, imgOutline: INK_TONES.dark, imgFill: INK_TONES.pale, arrow: INK_TONES.dark };
+const COLOURS = { grid: GRID_COLOUR, axis: AXIS_COLOUR, num: NUM_COLOUR, origOutline: ORIG_OUTLINE, origFill: ORIG_FILL, imgOutline: IMG_OUTLINE, imgFill: IMG_FILL, arrow: ARROW_COLOUR };
 const ARROW_W       = CELL * 0.028; // arrow stroke
 const ARROW_DASH    = CELL * 0.12;  // arrow dash length
 const ARROW_GAP     = CELL * 0.09;  // arrow dash gap
@@ -122,7 +129,9 @@ function cacheKey(data) {
 // Build the SVG cropped tight to the grid plus its axis-number gutters — no padded
 // square, no centring-in-deadspace. The drawn extent (grid + gutters) IS the box,
 // exactly like coordinate-grid-svg.js, so every engine places it at true aspect.
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the grid prints in ink.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const cols = clampInt(data.cols, 10);
   const rows = clampInt(data.rows, cols);
   const points = resolvePoints(data);
@@ -147,7 +156,7 @@ function tightSvg(data) {
   if (showImage) {
     parts.push(
       `<defs><marker id="tsHead" markerUnits="userSpaceOnUse" markerWidth="${f(ARROW_HEAD)}" markerHeight="${f(ARROW_HEAD)}" refX="${f(ARROW_HEAD * 0.9)}" refY="${f(ARROW_HEAD / 2)}" orient="auto">` +
-      `<path d="M0,0 L${f(ARROW_HEAD)},${f(ARROW_HEAD / 2)} L0,${f(ARROW_HEAD)} Z" fill="${ARROW_COLOUR}"/></marker></defs>`
+      `<path d="M0,0 L${f(ARROW_HEAD)},${f(ARROW_HEAD / 2)} L0,${f(ARROW_HEAD)} Z" fill="${C.arrow}"/></marker></defs>`
     );
   }
 
@@ -155,32 +164,32 @@ function tightSvg(data) {
   // grid, then the original — same layering discipline as reflection-grid.
   const image = points.map(function (p) { return { x: p.x + t.dx, y: p.y + t.dy }; });
   if (showImage && image.length >= 2) {
-    parts.push(`<polygon points="${polyPoints(image)}" fill="${IMG_FILL}" stroke="${IMG_OUTLINE}" stroke-width="${f(SHAPE_W)}" stroke-dasharray="${f(IMG_DASH)},${f(IMG_GAP)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(`<polygon points="${polyPoints(image)}" fill="${C.imgFill}" stroke="${C.imgOutline}" stroke-width="${f(SHAPE_W)}" stroke-dasharray="${f(IMG_DASH)},${f(IMG_GAP)}" stroke-linejoin="round" stroke-linecap="round"/>`);
   }
 
   // Pale squared-paper gridlines.
   for (let i = 0; i <= cols; i++) {
-    parts.push(`<line x1="${f(px(i))}" y1="${f(top)}" x2="${f(px(i))}" y2="${f(bottom)}" stroke="${GRID_COLOUR}" stroke-width="${f(GRID_W)}"/>`);
+    parts.push(`<line x1="${f(px(i))}" y1="${f(top)}" x2="${f(px(i))}" y2="${f(bottom)}" stroke="${C.grid}" stroke-width="${f(GRID_W)}"/>`);
   }
   for (let j = 0; j <= rows; j++) {
-    parts.push(`<line x1="${f(left)}" y1="${f(py(j))}" x2="${f(right)}" y2="${f(py(j))}" stroke="${GRID_COLOUR}" stroke-width="${f(GRID_W)}"/>`);
+    parts.push(`<line x1="${f(left)}" y1="${f(py(j))}" x2="${f(right)}" y2="${f(py(j))}" stroke="${C.grid}" stroke-width="${f(GRID_W)}"/>`);
   }
 
   // Bold origin axes (x = 0 up the left, y = 0 along the bottom).
-  parts.push(`<line x1="${f(left)}" y1="${f(bottom)}" x2="${f(right)}" y2="${f(bottom)}" stroke="${AXIS_COLOUR}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
-  parts.push(`<line x1="${f(left)}" y1="${f(top)}" x2="${f(left)}" y2="${f(bottom)}" stroke="${AXIS_COLOUR}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
+  parts.push(`<line x1="${f(left)}" y1="${f(bottom)}" x2="${f(right)}" y2="${f(bottom)}" stroke="${C.axis}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
+  parts.push(`<line x1="${f(left)}" y1="${f(top)}" x2="${f(left)}" y2="${f(bottom)}" stroke="${C.axis}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
 
   // Axis numbers, centred on each gridline: across below the base, up to the left.
   for (let i = 0; i <= cols; i++) {
-    parts.push(`<text x="${f(px(i))}" y="${f(bottom + BOTTOM_GUTTER * 0.55)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${NUM_COLOUR}">${escapeXml(i)}</text>`);
+    parts.push(`<text x="${f(px(i))}" y="${f(bottom + BOTTOM_GUTTER * 0.55)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(i)}</text>`);
   }
   for (let j = 0; j <= rows; j++) {
-    parts.push(`<text x="${f(left - LEFT_GUTTER * 0.42)}" y="${f(py(j))}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${NUM_COLOUR}">${escapeXml(j)}</text>`);
+    parts.push(`<text x="${f(left - LEFT_GUTTER * 0.42)}" y="${f(py(j))}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(j)}</text>`);
   }
 
   // Original shape, on top of the grid — the shape a child reads and works from.
   if (points.length >= 2) {
-    parts.push(`<polygon points="${polyPoints(points)}" fill="${ORIG_FILL}" stroke="${ORIG_OUTLINE}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(`<polygon points="${polyPoints(points)}" fill="${C.origFill}" stroke="${C.origOutline}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
   }
 
   // Dashed translation arrow from one original vertex to its matching image vertex
@@ -190,7 +199,7 @@ function tightSvg(data) {
     const idx = Math.max(0, Math.min(points.length - 1, arrowFrom));
     const a = points[idx];
     const b = image[idx];
-    parts.push(`<line x1="${f(px(a.x))}" y1="${f(py(a.y))}" x2="${f(px(b.x))}" y2="${f(py(b.y))}" stroke="${ARROW_COLOUR}" stroke-width="${f(ARROW_W)}" stroke-dasharray="${f(ARROW_DASH)},${f(ARROW_GAP)}" stroke-linecap="round" marker-end="url(#tsHead)"/>`);
+    parts.push(`<line x1="${f(px(a.x))}" y1="${f(py(a.y))}" x2="${f(px(b.x))}" y2="${f(py(b.y))}" stroke="${C.arrow}" stroke-width="${f(ARROW_W)}" stroke-dasharray="${f(ARROW_DASH)},${f(ARROW_GAP)}" stroke-linecap="round" marker-end="url(#tsHead)"/>`);
   }
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="0 0 ${f(w)} ${f(h)}">${parts.join('')}</svg>`;

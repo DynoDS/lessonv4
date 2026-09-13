@@ -45,6 +45,12 @@ const HEADER_TEXT = '#FFFFFF';
 const GRID_COLOUR = '#2D3748';
 const GIVEN_TEXT = '#1A1A1A';
 const CELL_FILL = '#FFFFFF';
+
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+
+// The colours above, and what each becomes on the photocopied stick-in pack.
+const COLOURS = { HEADER_FILL: HEADER_FILL, GRID_COLOUR: GRID_COLOUR, GIVEN_TEXT: GIVEN_TEXT };
+const INK = { HEADER_FILL: INK_TONES.dark, GRID_COLOUR: INK_TONES.ink, GIVEN_TEXT: INK_TONES.ink };
 const FONT = 'Arial';
 // ─── END CONSTANTS ─────────────────────────────────────────────────────────
 
@@ -139,7 +145,11 @@ function textLines(x, yTop, cellH, wrap, colour, weight, anchorMiddle, cellW) {
     .join('');
 }
 
-function tightSvg(data = {}) {
+// `profile` is optional: the stick-in pack passes its own so this prints in
+// ink. The header band stays dark enough for its white
+// words to read after copying.
+function tightSvg(data = {}, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const { headers, rows } = normalise(data);
   if (headers.length < 2) {
     throw new Error('recording-table needs at least two column headers.');
@@ -177,7 +187,7 @@ function tightSvg(data = {}) {
   // Header band.
   let x = OUTER_PAD;
   parts.push(
-    `<rect x="${OUTER_PAD}" y="${OUTER_PAD}" width="${innerW}" height="${headerH.toFixed(2)}" fill="${HEADER_FILL}"/>`
+    `<rect x="${OUTER_PAD}" y="${OUTER_PAD}" width="${innerW}" height="${headerH.toFixed(2)}" fill="${C.HEADER_FILL}"/>`
   );
   headers.forEach((h, i) => {
     parts.push(textLines(x, OUTER_PAD, headerH, headerWraps[i], HEADER_TEXT, 'bold', true, widths[i]));
@@ -190,11 +200,11 @@ function tightSvg(data = {}) {
     let cx = OUTER_PAD;
     for (let c = 0; c < headers.length; c += 1) {
       parts.push(
-        `<rect x="${cx.toFixed(2)}" y="${y.toFixed(2)}" width="${widths[c].toFixed(2)}" height="${rowHeights[r].toFixed(2)}" fill="${CELL_FILL}" stroke="${GRID_COLOUR}" stroke-width="${GRID_STROKE}"/>`
+        `<rect x="${cx.toFixed(2)}" y="${y.toFixed(2)}" width="${widths[c].toFixed(2)}" height="${rowHeights[r].toFixed(2)}" fill="${CELL_FILL}" stroke="${C.GRID_COLOUR}" stroke-width="${GRID_STROKE}"/>`
       );
       const wrap = rowWraps[r][c];
       if (wrap) {
-        parts.push(textLines(cx, y, rowHeights[r], wrap, GIVEN_TEXT, c === 0 ? 'bold' : 'normal', true, widths[c]));
+        parts.push(textLines(cx, y, rowHeights[r], wrap, C.GIVEN_TEXT, c === 0 ? 'bold' : 'normal', true, widths[c]));
       }
       cx += widths[c];
     }
@@ -203,7 +213,7 @@ function tightSvg(data = {}) {
 
   // Outer frame over the top so the boundary reads as one crisp line.
   parts.push(
-    `<rect x="${OUTER_PAD}" y="${OUTER_PAD}" width="${innerW}" height="${(headerH + rowHeights.reduce((a, b) => a + b, 0)).toFixed(2)}" fill="none" stroke="${GRID_COLOUR}" stroke-width="${GRID_STROKE}"/>`
+    `<rect x="${OUTER_PAD}" y="${OUTER_PAD}" width="${innerW}" height="${(headerH + rowHeights.reduce((a, b) => a + b, 0)).toFixed(2)}" fill="none" stroke="${C.GRID_COLOUR}" stroke-width="${GRID_STROKE}"/>`
   );
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H.toFixed(2)}" viewBox="0 0 ${W} ${H.toFixed(2)}">${parts.join('')}</svg>`;

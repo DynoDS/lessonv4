@@ -41,6 +41,8 @@ const EXT_DASH = L * 0.18;     // faint extension hint length, "detached" case
 
 const LINE_COLOUR = '#000000';
 const MARK_COLOUR = '#0070C0';   // house blue — the notation marks
+
+const { INK_TONES, printsInInk } = require('./surface-profiles');
 // ─── END CONSTANTS ─────────────────────────────────────────────────────────
 
 function toRad(deg) { return (deg * Math.PI) / 180; }
@@ -150,7 +152,10 @@ function cacheKey(data) {
 // Build the SVG cropped tight to the two lines' bounding box. Returns the SVG
 // string plus its width:height aspect so the placing engine sizes it with no
 // deadspace.
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the notation marks
+// print in ink. A chevron or a square says what it says by its shape.
+function tightSvg(data, profile) {
+  const markC = printsInInk(profile) ? INK_TONES.ink : MARK_COLOUR;
   const relationship = resolveRelationship(data);
   const form = resolveForm(data, relationship);
   const notation = String(data.notation || 'none');
@@ -225,11 +230,11 @@ function tightSvg(data) {
   });
 
   if (square) {
-    parts.push(`<polyline points="${X(square[0])},${Y(square[0])} ${X(square[1])},${Y(square[1])} ${X(square[2])},${Y(square[2])}" fill="none" stroke="${MARK_COLOUR}" stroke-width="${f(MARK_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+    parts.push(`<polyline points="${X(square[0])},${Y(square[0])} ${X(square[1])},${Y(square[1])} ${X(square[2])},${Y(square[2])}" fill="none" stroke="${markC}" stroke-width="${f(MARK_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
   }
 
   chevrons.forEach(function (ch) {
-    parts.push(`<polyline points="${X(ch[0])},${Y(ch[0])} ${X(ch[1])},${Y(ch[1])} ${X(ch[2])},${Y(ch[2])}" fill="none" stroke="${MARK_COLOUR}" stroke-width="${f(MARK_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+    parts.push(`<polyline points="${X(ch[0])},${Y(ch[0])} ${X(ch[1])},${Y(ch[1])} ${X(ch[2])},${Y(ch[2])}" fill="none" stroke="${markC}" stroke-width="${f(MARK_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
   });
 
   if (meet) {

@@ -124,6 +124,37 @@ const BAND_NOTE_WRAP     = 24;   // characters per line before wrapping
 const DIM_OPACITY = 0.30;   // how far a non-highlighted band falls back
 // ─── END CONSTANTS ────────────────────────────────────────────────────────
 
+const { printsInInk, inkGrey } = require('./surface-profiles');
+
+// Every colour the drawing uses, by the name it has above, and the same
+// table in the greys a photocopier keeps. The band note and the light arrows
+// were blue and orange; as greys they still sit apart from the black names
+// and the band tints they cross.
+const COLOURS = {
+  SKY_TINT: SKY_TINT,
+  CANOPY_TINT: CANOPY_TINT,
+  UNDER_TINT: UNDER_TINT,
+  FLOOR_TINT: FLOOR_TINT,
+  EMERGENT_CROWN: EMERGENT_CROWN,
+  EMERGENT_TRUNK: EMERGENT_TRUNK,
+  CANOPY_LOBE: CANOPY_LOBE,
+  CANOPY_EDGE: CANOPY_EDGE,
+  UNDER_TRUNK: UNDER_TRUNK,
+  UNDER_LEAF: UNDER_LEAF,
+  UNDER_LEAF_EDGE: UNDER_LEAF_EDGE,
+  FLOOR_LITTER: FLOOR_LITTER,
+  FLOOR_ROOT: FLOOR_ROOT,
+  LIGHT_COLOUR: LIGHT_COLOUR,
+  TEXT_DARK: TEXT_DARK,
+  TEXT_MUTED: TEXT_MUTED,
+  FLOOR_TEXT: FLOOR_TEXT,
+  WRITE_LINE: WRITE_LINE,
+  BAND_NOTE_COLOUR: BAND_NOTE_COLOUR
+};
+const INK = Object.fromEntries(Object.entries(COLOURS).map(([k, v]) => [k, inkGrey(v, { lightest: 0xF2 })]));
+INK.BAND_NOTE_COLOUR = '#1A1A1A';
+INK.FLOOR_TEXT = '#FFFFFF';
+
 const ORDER = ['emergent', 'canopy', 'understorey', 'forest-floor'];
 
 const DISPLAY_NAME = {
@@ -245,9 +276,9 @@ function cacheKey(data) {
 // Both halves of a band carry the same dim opacity, so a highlight still fades
 // the whole band as one.
 
-function emergentParts(B) {
+function emergentParts(B, T) {
   const b = B.emergent;
-  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${SKY_TINT}"/>`;
+  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${T.SKY_TINT}"/>`;
   const parts = [];
 
   // A FEW very tall, WIDELY SPACED trees whose small crowns rise clear above
@@ -260,19 +291,19 @@ function emergentParts(B) {
     const topHalf = 9, baseHalf = 17;   // slight taper, thicker at the bottom
     parts.push(
       `<polygon points="${f(x - topHalf)},${f(topY)} ${f(x + topHalf)},${f(topY)} ` +
-      `${f(x + baseHalf)},${f(baseY)} ${f(x - baseHalf)},${f(baseY)}" fill="${EMERGENT_TRUNK}"/>`
+      `${f(x + baseHalf)},${f(baseY)} ${f(x - baseHalf)},${f(baseY)}" fill="${T.EMERGENT_TRUNK}"/>`
     );
     // Small crown — deliberately small, so "rises clear above, but is not big" reads.
-    parts.push(`<ellipse cx="${f(x)}" cy="120" rx="92" ry="66" fill="${EMERGENT_CROWN}"/>`);
-    parts.push(`<ellipse cx="${f(x - 46)}" cy="152" rx="58" ry="42" fill="${EMERGENT_CROWN}"/>`);
-    parts.push(`<ellipse cx="${f(x + 46)}" cy="152" rx="58" ry="42" fill="${EMERGENT_CROWN}"/>`);
+    parts.push(`<ellipse cx="${f(x)}" cy="120" rx="92" ry="66" fill="${T.EMERGENT_CROWN}"/>`);
+    parts.push(`<ellipse cx="${f(x - 46)}" cy="152" rx="58" ry="42" fill="${T.EMERGENT_CROWN}"/>`);
+    parts.push(`<ellipse cx="${f(x + 46)}" cy="152" rx="58" ry="42" fill="${T.EMERGENT_CROWN}"/>`);
   });
   return { bg: bg, ink: parts };
 }
 
-function canopyParts(B) {
+function canopyParts(B, T) {
   const b = B.canopy;
-  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${CANOPY_TINT}"/>`;
+  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${T.CANOPY_TINT}"/>`;
   const parts = [];
   // A CONTINUOUS band of overlapping treetops: lobes spaced closer than their
   // radius so no gap of sky ever shows through — an unbroken roof.
@@ -280,27 +311,27 @@ function canopyParts(B) {
   // offset rows of overlapping crowns on top of it — the second row is what
   // stops the band below the skyline reading as a flat slab of green.
   const r = 104, step = 88, cy = b.top + 78;
-  parts.push(`<rect x="0" y="${f(cy)}" width="${DIAG_W}" height="${f(b.bottom - cy)}" fill="${CANOPY_LOBE}"/>`);
+  parts.push(`<rect x="0" y="${f(cy)}" width="${DIAG_W}" height="${f(b.bottom - cy)}" fill="${T.CANOPY_LOBE}"/>`);
   const row2 = b.top + 176;
   for (let x = -40 + step / 2; x <= DIAG_W + 40; x += step) {
-    parts.push(`<circle cx="${f(x)}" cy="${f(row2)}" r="${f(r * 0.86)}" fill="${CANOPY_LOBE}" stroke="${CANOPY_EDGE}" stroke-width="5"/>`);
+    parts.push(`<circle cx="${f(x)}" cy="${f(row2)}" r="${f(r * 0.86)}" fill="${T.CANOPY_LOBE}" stroke="${T.CANOPY_EDGE}" stroke-width="5"/>`);
   }
   for (let x = -40; x <= DIAG_W + 40; x += step) {
-    parts.push(`<circle cx="${f(x)}" cy="${f(cy)}" r="${f(r)}" fill="${CANOPY_LOBE}" stroke="${CANOPY_EDGE}" stroke-width="5"/>`);
+    parts.push(`<circle cx="${f(x)}" cy="${f(cy)}" r="${f(r)}" fill="${T.CANOPY_LOBE}" stroke="${T.CANOPY_EDGE}" stroke-width="5"/>`);
   }
   return { bg: bg, ink: parts };
 }
 
-function understoreyParts(B) {
+function understoreyParts(B, T) {
   const b = B.understorey;
-  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${UNDER_TINT}"/>`;
+  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${T.UNDER_TINT}"/>`;
   const parts = [];
 
   // Thinner trunks and large leaves in a dimmer green — sparse, so the band reads
   // as "less growing here" beside the solid canopy above it.
   const xs = [90, 250, 400, 560, 720, 900];
   xs.forEach(function (x, i) {
-    parts.push(`<rect x="${f(x - 7)}" y="${f(b.top + 20)}" width="14" height="${f(b.h - 10)}" fill="${UNDER_TRUNK}"/>`);
+    parts.push(`<rect x="${f(x - 7)}" y="${f(b.top + 20)}" width="14" height="${f(b.h - 10)}" fill="${T.UNDER_TRUNK}"/>`);
     // Two or three large leaves per trunk, alternating side and tilt.
     const leaves = (i % 2 === 0) ? [[-1, 90], [1, 190], [-1, 268]] : [[1, 120], [-1, 220]];
     leaves.forEach(function (l) {
@@ -309,17 +340,17 @@ function understoreyParts(B) {
       const cy = b.top + dy;
       const rot = dir > 0 ? 24 : -24;
       parts.push(
-        `<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="66" ry="27" fill="${UNDER_LEAF}" ` +
-        `stroke="${UNDER_LEAF_EDGE}" stroke-width="4" transform="rotate(${rot} ${f(cx)} ${f(cy)})"/>`
+        `<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="66" ry="27" fill="${T.UNDER_LEAF}" ` +
+        `stroke="${T.UNDER_LEAF_EDGE}" stroke-width="4" transform="rotate(${rot} ${f(cx)} ${f(cy)})"/>`
       );
     });
   });
   return { bg: bg, ink: parts };
 }
 
-function floorParts(B) {
+function floorParts(B, T) {
   const b = B['forest-floor'];
-  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${FLOOR_TINT}"/>`;
+  const bg = `<rect x="0" y="${f(b.top)}" width="${DIAG_W}" height="${f(b.h)}" fill="${T.FLOOR_TINT}"/>`;
   const parts = [];
 
   // Roots spreading out from where the trunks meet the ground.
@@ -327,7 +358,7 @@ function floorParts(B) {
     [-1, 1].forEach(function (dir) {
       parts.push(
         `<path d="M ${f(x)} ${f(b.top + 6)} Q ${f(x + dir * 90)} ${f(b.top + 30)} ${f(x + dir * 170)} ${f(b.top + 74)}" ` +
-        `fill="none" stroke="${FLOOR_ROOT}" stroke-width="16" stroke-linecap="round"/>`
+        `fill="none" stroke="${T.FLOOR_ROOT}" stroke-width="16" stroke-linecap="round"/>`
       );
     });
   });
@@ -341,7 +372,7 @@ function floorParts(B) {
   litter.forEach(function (l) {
     const cx = l[0], cy = b.top + l[1], rot = l[2];
     parts.push(
-      `<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="34" ry="13" fill="${FLOOR_LITTER}" ` +
+      `<ellipse cx="${f(cx)}" cy="${f(cy)}" rx="34" ry="13" fill="${T.FLOOR_LITTER}" ` +
       `transform="rotate(${rot} ${f(cx)} ${f(cy)})"/>`
     );
   });
@@ -353,24 +384,24 @@ function floorParts(B) {
 // top of the canopy, two get through it, one reaches the floor. The thinning is
 // the point, so the count and the stroke both drop at each step.
 
-function lightParts(B) {
+function lightParts(B, T) {
   const parts = [];
   const sunX = 905, sunY = 88;
 
-  parts.push(`<circle cx="${sunX}" cy="${sunY}" r="${SUN_R}" fill="${LIGHT_COLOUR}"/>`);
+  parts.push(`<circle cx="${sunX}" cy="${sunY}" r="${SUN_R}" fill="${T.LIGHT_COLOUR}"/>`);
   for (let i = 0; i < 8; i++) {
     const a = (i * Math.PI) / 4;
     const x1 = sunX + Math.cos(a) * (SUN_R + 14);
     const y1 = sunY + Math.sin(a) * (SUN_R + 14);
     const x2 = sunX + Math.cos(a) * (SUN_R + 46);
     const y2 = sunY + Math.sin(a) * (SUN_R + 46);
-    parts.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${LIGHT_COLOUR}" stroke-width="12" stroke-linecap="round"/>`);
+    parts.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${T.LIGHT_COLOUR}" stroke-width="12" stroke-linecap="round"/>`);
   }
 
   function arrow(x, y1, y2, w) {
     const head = w * 2.6;
-    parts.push(`<line x1="${f(x)}" y1="${f(y1)}" x2="${f(x)}" y2="${f(y2 - head)}" stroke="${LIGHT_COLOUR}" stroke-width="${f(w)}" stroke-linecap="round"/>`);
-    parts.push(`<polygon points="${f(x)},${f(y2)} ${f(x - head * 0.7)},${f(y2 - head)} ${f(x + head * 0.7)},${f(y2 - head)}" fill="${LIGHT_COLOUR}"/>`);
+    parts.push(`<line x1="${f(x)}" y1="${f(y1)}" x2="${f(x)}" y2="${f(y2 - head)}" stroke="${T.LIGHT_COLOUR}" stroke-width="${f(w)}" stroke-linecap="round"/>`);
+    parts.push(`<polygon points="${f(x)},${f(y2)} ${f(x - head * 0.7)},${f(y2 - head)} ${f(x + head * 0.7)},${f(y2 - head)}" fill="${T.LIGHT_COLOUR}"/>`);
   }
 
   // Full strength down through the open sky to the top of the canopy.
@@ -389,7 +420,7 @@ function lightParts(B) {
 
 // ── Labels ─────────────────────────────────────────────────────────────────
 
-function labelParts(band, B, opts) {
+function labelParts(band, B, opts, T) {
   const b = B[band];
   const parts = [];
   const gx = DIAG_W + GUTTER_GAP;
@@ -397,13 +428,13 @@ function labelParts(band, B, opts) {
 
   // Short leader from the band edge to its label, so a name can never be read
   // against the wrong band.
-  parts.push(`<line x1="${f(DIAG_W)}" y1="${f(b.mid)}" x2="${f(gx - 8)}" y2="${f(b.mid)}" stroke="${TEXT_MUTED}" stroke-width="5"/>`);
+  parts.push(`<line x1="${f(DIAG_W)}" y1="${f(b.mid)}" x2="${f(gx - 8)}" y2="${f(b.mid)}" stroke="${T.TEXT_MUTED}" stroke-width="5"/>`);
 
   if (opts.blank) {
     // WRITE-ON form: a ruled line the child writes the layer's name on.
     parts.push(
       `<line x1="${f(gx + LEADER_LEN)}" y1="${f(b.mid + 22)}" x2="${f(gx + gw - 20)}" y2="${f(b.mid + 22)}" ` +
-      `stroke="${WRITE_LINE}" stroke-width="6" stroke-linecap="round"/>`
+      `stroke="${T.WRITE_LINE}" stroke-width="6" stroke-linecap="round"/>`
     );
     return parts;
   }
@@ -419,12 +450,12 @@ function labelParts(band, B, opts) {
     const noteLines = wrapNote(note, BAND_NOTE_WRAP);
     let nf = BAND_NOTE_FONT;
     const stack = function (font) {
-      const rows = [{ t: DISPLAY_NAME[band], font: NAME_FONT, lh: NAME_FONT * 1.12, fill: TEXT_DARK, bold: true }];
+      const rows = [{ t: DISPLAY_NAME[band], font: NAME_FONT, lh: NAME_FONT * 1.12, fill: T.TEXT_DARK, bold: true }];
       noteLines.forEach(function (l) {
-        rows.push({ t: l, font: font, lh: font * 1.20, fill: BAND_NOTE_COLOUR, bold: true });
+        rows.push({ t: l, font: font, lh: font * 1.20, fill: T.BAND_NOTE_COLOUR, bold: true });
       });
       if (hasHeight) {
-        rows.push({ t: HEIGHT_TEXT[band], font: HEIGHT_FONT, lh: HEIGHT_FONT * 1.18, fill: TEXT_MUTED, bold: false });
+        rows.push({ t: HEIGHT_TEXT[band], font: HEIGHT_FONT, lh: HEIGHT_FONT * 1.18, fill: T.TEXT_MUTED, bold: false });
       }
       return rows;
     };
@@ -450,12 +481,12 @@ function labelParts(band, B, opts) {
   const nameY = hasHeight ? b.mid - 10 : b.mid;
   parts.push(
     `<text x="${f(gx + LEADER_LEN)}" y="${f(nameY)}" text-anchor="start" dominant-baseline="central" ` +
-    `font-family="${FONT}" font-size="${NAME_FONT}" font-weight="bold" fill="${TEXT_DARK}">${DISPLAY_NAME[band]}</text>`
+    `font-family="${FONT}" font-size="${NAME_FONT}" font-weight="bold" fill="${T.TEXT_DARK}">${DISPLAY_NAME[band]}</text>`
   );
   if (hasHeight) {
     parts.push(
       `<text x="${f(gx + LEADER_LEN)}" y="${f(b.mid + 62)}" text-anchor="start" dominant-baseline="central" ` +
-      `font-family="${FONT}" font-size="${HEIGHT_FONT}" fill="${TEXT_MUTED}">${HEIGHT_TEXT[band]}</text>`
+      `font-family="${FONT}" font-size="${HEIGHT_FONT}" fill="${T.TEXT_MUTED}">${HEIGHT_TEXT[band]}</text>`
     );
   }
   return parts;
@@ -463,7 +494,11 @@ function labelParts(band, B, opts) {
 
 // ── Assembly ───────────────────────────────────────────────────────────────
 
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own and every colour
+// becomes the grey it would photocopy to. The bands were chosen as a brightness
+// ramp so that this still shows the light thinning towards the floor.
+function tightSvg(data, profile) {
+  const T = printsInInk(profile) ? INK : COLOURS;
   const d = data || {};
   const blank = d.blank === true;
   // The write-on form prints no names, so it carries no notes either: a note is a
@@ -480,10 +515,10 @@ function tightSvg(data) {
 
   const B = bandBounds();
   const bodyParts = {
-    emergent: emergentParts(B),
-    canopy: canopyParts(B),
-    understorey: understoreyParts(B),
-    'forest-floor': floorParts(B)
+    emergent: emergentParts(B, T),
+    canopy: canopyParts(B, T),
+    understorey: understoreyParts(B, T),
+    'forest-floor': floorParts(B, T)
   };
 
   // The gutter is measured to its own longest line, never left at a fixed width:
@@ -533,21 +568,21 @@ function tightSvg(data) {
   });
 
   // Outline round the whole cross section, so the four bands read as one figure.
-  parts.push(`<rect x="0" y="0" width="${DIAG_W}" height="${DIAG_H}" fill="none" stroke="${TEXT_DARK}" stroke-width="6"/>`);
+  parts.push(`<rect x="0" y="0" width="${DIAG_W}" height="${DIAG_H}" fill="none" stroke="${T.TEXT_DARK}" stroke-width="6"/>`);
 
   if (light) {
-    parts.push(`<g clip-path="url(#rainClip)">${lightParts(B).join('')}</g>`);
+    parts.push(`<g clip-path="url(#rainClip)">${lightParts(B, T).join('')}</g>`);
     // The number that makes the thinning concrete, printed on the dark floor.
     const fb = B['forest-floor'];
     parts.push(
       `<text x="${f(DIAG_W / 2)}" y="${f(fb.mid + 24)}" text-anchor="middle" dominant-baseline="central" ` +
-      `font-family="${FONT}" font-size="${NOTE_FONT}" font-weight="bold" fill="${FLOOR_TEXT}">about 2 rays in every 100</text>`
+      `font-family="${FONT}" font-size="${NOTE_FONT}" font-weight="bold" fill="${T.FLOOR_TEXT}">about 2 rays in every 100</text>`
     );
   }
 
   if (showLabels) {
     ORDER.forEach(function (band) {
-      parts.push(`<g${dimAttr(band)}>${labelParts(band, B, { blank: blank, heights: heights, notes: notes, gutterW: nameGutterW }).join('')}</g>`);
+      parts.push(`<g${dimAttr(band)}>${labelParts(band, B, { blank: blank, heights: heights, notes: notes, gutterW: nameGutterW }, T).join('')}</g>`);
     });
   }
 

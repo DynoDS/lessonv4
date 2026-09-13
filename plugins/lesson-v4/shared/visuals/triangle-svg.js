@@ -54,6 +54,8 @@ const ARC_COLOUR  = '#0070C0';      // angle arcs, house blue
 const SYM_COLOUR        = '#333333';    // lines of symmetry, neutral dark (question)
 const SYM_COLOUR_ANSWER = '#00B050';    // lines of symmetry, house answer green (reveal)
 
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+
 const SCALE      = 100;             // base size — bounding triangle scaled to this
 const LINE_W     = SCALE * 0.030;   // outline stroke
 const TICK_W     = SCALE * 0.030;   // dash stroke
@@ -249,7 +251,16 @@ function rotate(p, cx, cy, deg) {
 // Build the SVG cropped tight to the triangle's bounding box (including the dash
 // tips, the right-angle square and any angle arcs). Returns the SVG plus its
 // width:height aspect so the placing engine sizes it without deadspace.
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the triangle prints
+// in ink, its body a pale grey a pencil still shows on. The equal sides are read
+// from the dashes, not the colour, so nothing is lost.
+function tightSvg(data, profile) {
+  const ink = printsInInk(profile);
+  const fillC = ink ? INK_TONES.pale : FILL_COLOUR;
+  const markC = ink ? INK_TONES.ink : SQ_COLOUR;
+  const arcC = ink ? INK_TONES.ink : ARC_COLOUR;
+  const outlineC = ink ? INK_TONES.ink : ARM_COLOUR;
+  const tickC = ink ? INK_TONES.ink : TICK_COLOUR;
   const kind = String(data.kind || 'scalene').toLowerCase();
   const sides = data.sides;
   // Same vertices and notation, with slightly heavier ink for the tiny
@@ -281,7 +292,7 @@ function tightSvg(data) {
   // none, which is correct. Note their tips so the tight crop allows for the small
   // overshoot past each end.
   const symSegs = data.symmetryLines === true ? symmetryLineSegs(kind, verts) : [];
-  const symColour = data.symmetryLinesAnswer ? SYM_COLOUR_ANSWER : SYM_COLOUR;
+  const symColour = ink ? INK_TONES.dark : data.symmetryLinesAnswer ? SYM_COLOUR_ANSWER : SYM_COLOUR;
   symSegs.forEach(function (s) {
     note({ x: s.x1, y: s.y1 }); note({ x: s.x2, y: s.y2 });
   });
@@ -375,7 +386,7 @@ function tightSvg(data) {
 
   // Filled triangle body + outline.
   const v0 = T(verts[0]), v1 = T(verts[1]), v2 = T(verts[2]);
-  parts.push(`<polygon points="${f(v0.x)},${f(v0.y)} ${f(v1.x)},${f(v1.y)} ${f(v2.x)},${f(v2.y)}" fill="${FILL_COLOUR}" stroke="${ARM_COLOUR}" stroke-width="${f(lineW)}" stroke-linejoin="round"/>`);
+  parts.push(`<polygon points="${f(v0.x)},${f(v0.y)} ${f(v1.x)},${f(v1.y)} ${f(v2.x)},${f(v2.y)}" fill="${fillC}" stroke="${outlineC}" stroke-width="${f(lineW)}" stroke-linejoin="round"/>`);
 
   // Lines of symmetry (dashed), on top of the body so they read against the fill.
   symSegs.forEach(function (s) {
@@ -386,19 +397,19 @@ function tightSvg(data) {
   // Right-angle square (drawn before dashes so dashes sit on top if they overlap).
   if (sqPath) {
     const q1 = T(sqPath[0]), q2 = T(sqPath[1]), q3 = T(sqPath[2]);
-    parts.push(`<polyline points="${f(q1.x)},${f(q1.y)} ${f(q2.x)},${f(q2.y)} ${f(q3.x)},${f(q3.y)}" fill="none" stroke="${SQ_COLOUR}" stroke-width="${f(ARC_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+    parts.push(`<polyline points="${f(q1.x)},${f(q1.y)} ${f(q2.x)},${f(q2.y)} ${f(q3.x)},${f(q3.y)}" fill="none" stroke="${markC}" stroke-width="${f(ARC_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
   }
 
   // Angle arcs.
   arcs.forEach(function (a) {
     const s = T(a.s), e = T(a.e);
-    parts.push(`<path d="M ${f(s.x)} ${f(s.y)} A ${f(ARC_R)} ${f(ARC_R)} 0 0 ${a.sweep} ${f(e.x)} ${f(e.y)}" fill="none" stroke="${ARC_COLOUR}" stroke-width="${f(ARC_W)}" stroke-linecap="round"/>`);
+    parts.push(`<path d="M ${f(s.x)} ${f(s.y)} A ${f(ARC_R)} ${f(ARC_R)} 0 0 ${a.sweep} ${f(e.x)} ${f(e.y)}" fill="none" stroke="${arcC}" stroke-width="${f(ARC_W)}" stroke-linecap="round"/>`);
   });
 
   // Tick marks.
   tickSegs.forEach(function (s) {
     const a = T({ x: s.x1, y: s.y1 }), b = T({ x: s.x2, y: s.y2 });
-    parts.push(`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${TICK_COLOUR}" stroke-width="${f(tickW)}" stroke-linecap="round"/>`);
+    parts.push(`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${tickC}" stroke-width="${f(tickW)}" stroke-linecap="round"/>`);
   });
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="0 0 ${f(w)} ${f(h)}">${parts.join('')}</svg>`;

@@ -24,6 +24,8 @@ const { A4 } = require("./layout-rules");
 // because a source with its bottom cut off is a different source.
 const PIECE_MAX_H_MM = A4.widthMm - 2 * A4.marginMm - 5;
 const { buildLabelDiagramSvg } = require("../../shared/visuals/label-diagram-svg");
+const { PALETTES } = require("../../shared/visuals/surface-profiles");
+const STICKIN_INK = PALETTES.ink.ink;
 
 const GREY = "#999999";
 
@@ -215,7 +217,10 @@ async function renderLabelDiagram(item, baseDir, opts = {}) {
     width: meta.width,
     height: meta.height,
     callouts: spec.callouts || [],
-    blue: "#0070C0",
+    // The pack is photocopied, so the anchor dots and any answer text print in
+    // the stick-in profile's ink rather than the board's blue and green.
+    blue: STICKIN_INK,
+    answerColour: STICKIN_INK,
   });
 
   const a = aspect;

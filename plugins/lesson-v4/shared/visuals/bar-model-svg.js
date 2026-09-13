@@ -71,6 +71,12 @@ const OPEN_STROKE   = '#1F4E79';   // answer-region outline (house blue, dashed)
 const BRACKET_COL   = '#000000';
 const GUIDE_COL     = '#9AA5B1';   // soft grey alignment guide
 const TEXT_COL      = '#000000';
+
+const { INK_TONES, printsInInk, inkGrey } = require('./surface-profiles');
+
+// The colours above, and what each becomes on the photocopied stick-in pack.
+const COLOURS = { BAR_FILL: BAR_FILL, OPEN_STROKE: OPEN_STROKE, SOLID_STROKE: SOLID_STROKE, TEXT_COL: TEXT_COL };
+const INK = { BAR_FILL: INK_TONES.pale, OPEN_STROKE: INK_TONES.ink, SOLID_STROKE: INK_TONES.ink, TEXT_COL: INK_TONES.ink };
 // ─── END CONSTANTS ───────────────────────────────────────────────────────────
 
 function f(n) { return Number(n).toFixed(2); }
@@ -100,7 +106,12 @@ function num(x) {
   return Number.isFinite(v) ? v : null;
 }
 
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so this prints in
+// ink. A known part keeps a pale grey fill and an answer
+// space stays white with a dashed outline, so the two still read apart. Guide
+// and bracket lines take the grey their colour copies to.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const shape = data && data.shape === 'comparison' ? 'comparison' : 'part-whole';
 
   const parts = [];
@@ -113,14 +124,15 @@ function tightSvg(data) {
   }
 
   function drawRect(x, y, w, h, open) {
-    const fill   = open ? OPEN_FILL : BAR_FILL;
-    const stroke = open ? OPEN_STROKE : SOLID_STROKE;
+    const fill   = open ? OPEN_FILL : C.BAR_FILL;
+    const stroke = open ? C.OPEN_STROKE : C.SOLID_STROKE;
     const dash   = open ? ` stroke-dasharray="${DASH}"` : '';
     parts.push(`<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" fill="${fill}" stroke="${stroke}" stroke-width="${STROKE_W}"${dash}/>`);
     ext(x - STROKE_W / 2, y - STROKE_W / 2, x + w + STROKE_W / 2, y + h + STROKE_W / 2);
   }
 
   function drawLine(x1, y1, x2, y2, colour, width, dash) {
+    if (C === INK) colour = inkGrey(colour);
     const d = dash ? ` stroke-dasharray="${dash}"` : '';
     parts.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${colour}" stroke-width="${width}" stroke-linecap="round"${d}/>`);
     ext(Math.min(x1, x2) - width / 2, Math.min(y1, y2) - width / 2, Math.max(x1, x2) + width / 2, Math.max(y1, y2) + width / 2);
@@ -129,7 +141,7 @@ function tightSvg(data) {
   function drawText(cx, cy, s, fs, anchor) {
     if (s == null || s === '') return;
     const a = anchor || 'middle';
-    parts.push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="${a}" dominant-baseline="central" font-family="${FONT}" font-size="${fs}" font-weight="bold" fill="${TEXT_COL}">${esc(s)}</text>`);
+    parts.push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="${a}" dominant-baseline="central" font-family="${FONT}" font-size="${fs}" font-weight="bold" fill="${C.TEXT_COL}">${esc(s)}</text>`);
     const w = textWidth(s, fs);
     let lx, rx;
     if (a === 'end')       { lx = cx - w; rx = cx; }

@@ -64,6 +64,12 @@ const END_COL = '#333333';
 const END_GAP = 18;        // gap below the baseline to the end label
 // ─── END CONSTANTS ───────────────────────────────────────────────────────────
 
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+
+// The colours above, and what each becomes on the photocopied stick-in pack.
+const COLOURS = { NL_COL: NL_COL, BAR_COL: BAR_COL, END_COL: END_COL };
+const INK = { NL_COL: INK_TONES.mid, BAR_COL: INK_TONES.dark, END_COL: INK_TONES.ink };
+
 function f(n) { return Number(n).toFixed(2); }
 
 function textWidth(s, fs) {
@@ -77,7 +83,11 @@ function esc(s) {
     .replace(/>/g, '&gt;');
 }
 
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so this prints in
+// ink. The line stays faint and the bar outline quiet,
+// in the greys nearest their board colours.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const surface = data && data.surface === 'bar' ? 'bar' : 'number-line';
 
   const parts = [];
@@ -122,17 +132,17 @@ function tightSvg(data) {
     // construct in, not a thin strip cropped to the line itself.
     ext(0, 0, NL_LINE_W, NL_ABOVE_H + NL_BELOW_H);
 
-    drawLine(0, baseY, NL_LINE_W, baseY, NL_COL, NL_STROKE);
+    drawLine(0, baseY, NL_LINE_W, baseY, C.NL_COL, NL_STROKE);
 
     const labelY = baseY + END_GAP + END_FS * 0.5;
-    if (start !== '') drawText(0, labelY, start, END_FS, 'start', END_COL);
-    if (end !== '')   drawText(NL_LINE_W, labelY, end, END_FS, 'end', END_COL);
+    if (start !== '') drawText(0, labelY, start, END_FS, 'start', C.END_COL);
+    if (end !== '')   drawText(NL_LINE_W, labelY, end, END_FS, 'end', C.END_COL);
   } else {
     let n = Number(data.bars);
     n = Number.isFinite(n) ? Math.max(1, Math.min(4, Math.round(n))) : 1;
     let y = 0;
     for (let i = 0; i < n; i++) {
-      drawOutlineRect(0, y, BAR_W, BAR_H, BAR_COL, BAR_STROKE);
+      drawOutlineRect(0, y, BAR_W, BAR_H, C.BAR_COL, BAR_STROKE);
       y += BAR_H + BAR_GAP;
     }
     // y overshoots by one BAR_GAP after the loop; the surface ends at the last
