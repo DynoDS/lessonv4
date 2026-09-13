@@ -12,6 +12,12 @@ Rebuilt the run's worksheet from its own spec and looked at both pages. Workshee
 
 **Not changed.** The 4mm step between questions everywhere else. Widening it would separate questions further but costs height on every dense sheet; left for Daniel to decide.
 
+## 2026-09-13 The teacher's drive gets the teaching resources only (4.2.172)
+
+Daniel: "When I ask for outputs to go on my drive, I only need the lesson outputs, ppt, working wall, worksheet, stick in sheets, no run reports, no walkthroughs etc".
+
+The number-lines run's filing step copied six files into the Monday folder: the worksheets, the plain-text answer key, the wall, the stick-in sheets, the walk-through and the run report. Phase 5 built its list from "exact delivered paths", and the walk-through is listed among the delivered resources, so the records went too; the walk-through and run report were then deleted from the folder by hand. The rule now lives in `sharepoint_sync.py`, which every caller passes through: it copies `.pptx`, `.pdf`, `.docx` and `.xlsx` only, prints `SKIPPED=` for anything else a caller hands it, and leaves those files in the output folder. Phase 5 and the `sharepoint-sync` agent say the same, and a test files a run's full set and checks only the four resources arrive.
+
 ## 2026-09-13 One Python for the whole run, and a true message for two Our Turns (4.2.171)
 
 Daniel: "look into the python thing because I see this all the time. I also see the two our turn examples thing all the time", and, on hearing the cause, that the fix must work for anyone who downloads the plugin rather than for his computer.

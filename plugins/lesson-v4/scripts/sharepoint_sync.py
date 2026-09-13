@@ -11,9 +11,16 @@ from pathlib import Path
 
 
 DEFAULT_SCHOOL_ROOT = Path(r"E:\Felmore Primary School")
-# Only used when a caller passes no --file arguments at all. Keep every lesson
-# output format the sync routine can legitimately receive.
-FALLBACK_EXTENSIONS = {".docx", ".pptx", ".xlsx", ".html", ".pdf"}
+# The teacher's drive gets the teaching resources and nothing else: the deck,
+# the worksheets, the working wall and the stick-in sheets. A run also writes
+# records for the teacher to read where the run was made (the run report, the
+# walk-through, the plain-text answer key, build HTML), and a run once filed its
+# run report and walk-through into the lesson's day folder, where the teacher
+# deleted them (Daniel, 13 September 2026: "only the lesson outputs, ppt,
+# working wall, worksheet, stick in sheets, no run reports, no walkthroughs").
+# So the rule lives here, where every caller passes through it, rather than in
+# each caller's list.
+RESOURCE_EXTENSIONS = {".pptx", ".pdf", ".docx", ".xlsx"}
 
 
 def derive_school_year(term_file: Path) -> str:
@@ -35,7 +42,12 @@ def validate_filename(filename: str) -> str:
     return filename
 
 
-def choose_files(source: Path, requested: list[str]) -> list[Path]:
+def is_resource(path: Path) -> bool:
+    return path.suffix.lower() in RESOURCE_EXTENSIONS and not path.name.startswith("~$")
+
+
+def choose_files(source: Path, requested: list[str]) -> tuple[list[Path], list[Path]]:
+    """The files to copy, and the requested files left behind as run records."""
     if requested:
         names = [validate_filename(name) for name in requested]
         paths = [source / name for name in names]
@@ -44,15 +56,9 @@ def choose_files(source: Path, requested: list[str]) -> list[Path]:
             raise FileNotFoundError(
                 "Requested output files do not exist: " + ", ".join(missing)
             )
-        return paths
+        return [p for p in paths if is_resource(p)], [p for p in paths if not is_resource(p)]
 
-    return sorted(
-        path
-        for path in source.iterdir()
-        if path.is_file()
-        and not path.name.startswith("~$")
-        and path.suffix.lower() in FALLBACK_EXTENSIONS
-    )
+    return sorted(path for path in source.iterdir() if path.is_file() and is_resource(path)), []
 
 
 def destination_for(
@@ -98,7 +104,7 @@ def sync_files(
         raise FileNotFoundError(f"Output folder not found: {source}")
 
     school_year = derive_school_year(term_file)
-    files = choose_files(source, requested)
+    files, skipped = choose_files(source, requested)
     if not files:
         raise FileNotFoundError(f"No lesson output files found in {source}")
 
@@ -140,7 +146,7 @@ def sync_files(
                 "they were built."
             ) from exc
 
-    return destination, files
+    return destination, files, skipped
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -163,7 +169,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        destination, files = sync_files(
+        destination, files, skipped = sync_files(
             term_file=args.term_file.resolve(),
             school_root=args.school_root.resolve(),
             year_group=args.year,
@@ -182,6 +188,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"DESTINATION={destination}")
     for path in files:
         print(f"FILE={path.name}")
+    for path in skipped:
+        print(f"SKIPPED={path.name} (a run record, not a teaching resource; it stays in the output folder)")
     print(f"STATUS={'DRY_RUN' if args.dry_run else 'COPIED'}")
     return 0
 

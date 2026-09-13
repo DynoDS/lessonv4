@@ -39,7 +39,7 @@ The script:
 - validates that every requested file exists before copying anything;
 - prints `DESTINATION=`, one `FILE=` line per copy, and `STATUS=COPIED`.
 
-Return those results in plain English. If the E: drive is unavailable or any
+Return those results in plain English. A `SKIPPED=` line is expected, not a fault: the teacher's drive takes only the teaching resources (deck, worksheets, working wall, stick-in sheets), so a run report, walk-through or answer key stays in the output folder. If the E: drive is unavailable or any
 file is missing, report the error and leave the local output untouched.
 
 `FILING_NOT_PERMITTED` is a different answer and must be reported as one: the

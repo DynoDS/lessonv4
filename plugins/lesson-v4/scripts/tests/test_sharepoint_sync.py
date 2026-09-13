@@ -44,7 +44,7 @@ class SharePointSyncTests(unittest.TestCase):
         wanted.write_bytes(b"pptx")
         (self.source / "Older Lesson.pptx").write_bytes(b"old")
 
-        destination, files = sharepoint_sync.sync_files(
+        destination, files, _ = sharepoint_sync.sync_files(
             term_file=self.term_file,
             school_root=self.school_root,
             year_group=4,
@@ -71,9 +71,9 @@ class SharePointSyncTests(unittest.TestCase):
         self.assertFalse((destination / "Older Lesson.pptx").exists())
 
     def test_foundation_subject_has_no_day_layer(self):
-        (self.source / "Rainforests.html").write_text("lesson", encoding="utf-8")
+        (self.source / "Rainforests.pptx").write_bytes(b"deck")
 
-        destination, _ = sharepoint_sync.sync_files(
+        destination, _, _ = sharepoint_sync.sync_files(
             term_file=self.term_file,
             school_root=self.school_root,
             year_group=4,
@@ -82,7 +82,7 @@ class SharePointSyncTests(unittest.TestCase):
             subject="Geography",
             day="",
             source=self.source,
-            requested=["Rainforests.html"],
+            requested=["Rainforests.pptx"],
             dry_run=False,
         )
 
@@ -104,7 +104,7 @@ class SharePointSyncTests(unittest.TestCase):
         )
         destination.mkdir(parents=True)
         (destination / "Lesson.pptx").write_bytes(b"deck")
-        result_destination, files = sharepoint_sync.sync_files(
+        result_destination, files, _ = sharepoint_sync.sync_files(
             term_file=self.term_file,
             school_root=self.school_root,
             year_group=4,
@@ -119,6 +119,29 @@ class SharePointSyncTests(unittest.TestCase):
         self.assertEqual(result_destination, destination)
         self.assertEqual([path.name for path in files], ["Lesson.pptx"])
         self.assertEqual((destination / "Lesson.pptx").read_bytes(), b"deck")
+
+    def test_only_teaching_resources_reach_the_drive(self):
+        """The teacher's drive gets the deck, worksheets, wall and stick-in
+        sheets. A run once filed its run report and walk-through into the
+        day folder and the teacher deleted them (13 September 2026)."""
+        names = [
+            "Lesson.pptx", "Lesson - Worksheets.pdf", "Working Wall - Lesson.pdf",
+            "Lesson - Stick-in Sheets.pdf", "Lesson - Answers.txt",
+            "Lesson - walk-through.md", "Lesson - run report.md",
+            "Lesson - Worksheets-expected.html",
+        ]
+        for name in names:
+            (self.source / name).write_bytes(b"x")
+        destination, files, skipped = sharepoint_sync.sync_files(
+            term_file=self.term_file, school_root=self.school_root, year_group=4,
+            term_folder="Autumn 1", week=2, subject="Maths", day="Monday",
+            source=self.source, requested=names, dry_run=False,
+        )
+        copied = sorted(p.name for p in destination.iterdir())
+        self.assertEqual(copied, sorted(names[:4]))
+        self.assertEqual(sorted(p.name for p in skipped), sorted(names[4:]))
+        self.assertTrue((self.source / "Lesson - run report.md").is_file(), "records stay where the run made them")
+
 
 if __name__ == "__main__":
     unittest.main()
