@@ -2,15 +2,30 @@
 
 Run: python test_resolve_filing.py   (or: pytest test_resolve_filing.py)
 
-The resolver reads two test-only env vars so a test needs neither the real
-SharePoint drive nor the real calendar:
-  SP_BASE   the SharePoint root that find_year_dir() globs
-  SP_TODAY  the value date.today() should return, as YYYY-MM-DD
+Each test writes its own settings into its own plugin folder
+(LESSON_RESOURCES_HOME), so it needs neither a real save folder nor the real
+calendar; LESSON_RESOURCES_TODAY stands in for today, as YYYY-MM-DD.
 """
-import os, subprocess, sys, tempfile
+import json, os, subprocess, sys, tempfile
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[1] / "resolve-filing.py"
+
+
+def settings_env(base, term_md=None, sorting=True, folder=True, today=None):
+    """An environment whose plugin folder saves to `base`, sorted by `term_md`."""
+    home = Path(base) / "plugin-home"
+    home.mkdir(exist_ok=True)
+    delivery = {}
+    if folder:
+        delivery = {"folder": str(base), "sorting": sorting}
+        if term_md:
+            delivery["termDates"] = str(term_md)
+    (home / "settings.json").write_text(json.dumps({"delivery": delivery}), encoding="utf-8")
+    env = dict(os.environ, LESSON_RESOURCES_HOME=str(home))
+    if today:
+        env["LESSON_RESOURCES_TODAY"] = today
+    return env
 
 # Summer term 6 2026 starts Monday 1 June. Week 1 = Mon 1 .. Fri 5 June.
 TERM_MD = (
@@ -27,9 +42,9 @@ def run(tmp, occupied, today="2026-06-01"):
     for day, fname in occupied.items():
         (maths / day).mkdir(parents=True, exist_ok=True)
         (maths / day / fname).write_text("x", encoding="utf-8")
-    env = dict(os.environ, SP_BASE=str(base), SP_TODAY=today)
+    env = settings_env(base, term_md, today=today)
     out = subprocess.run(
-        [sys.executable, str(SCRIPT), str(term_md), "4", "Maths"],
+        [sys.executable, str(SCRIPT), "4", "Maths"],
         capture_output=True, text=True, env=env,
     )
     kv = {}
@@ -86,9 +101,9 @@ def run_autumn(tmp, subject, today, occupied=None):
         p = base / "2026-2027 - Year 4" / "Autumn 1" / rel
         p.mkdir(parents=True, exist_ok=True)
         (p / "lesson.pptx").write_text("x", encoding="utf-8")
-    env = dict(os.environ, SP_BASE=str(base), SP_TODAY=today)
+    env = settings_env(base, term_md, today=today)
     out = subprocess.run(
-        [sys.executable, str(SCRIPT), str(term_md), "4", subject],
+        [sys.executable, str(SCRIPT), "4", subject],
         capture_output=True, text=True, env=env,
     )
     kv = dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l)
@@ -110,9 +125,9 @@ def test_year_written_as_words_still_reads_the_drive():
             day = base / "2026-2027 - Year 4" / "Autumn 1" / "Week 2" / "Maths" / "Monday"
             day.mkdir(parents=True)
             (day / "lesson.pptx").write_text("x", encoding="utf-8")
-            env = dict(os.environ, SP_BASE=str(base), SP_TODAY="2026-09-13")
+            env = settings_env(base, base / "Term.md", today="2026-09-13")
             out = subprocess.run(
-                [sys.executable, str(SCRIPT), str(base / "Term.md"), year, "Maths"],
+                [sys.executable, str(SCRIPT), year, "Maths"],
                 capture_output=True, text=True, env=env,
             )
             kv = dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l)
@@ -123,25 +138,25 @@ def test_missing_year_folder_says_the_drive_was_not_checked():
         kv, out = run_autumn(tmp, "Maths", "2026-09-13")
         assert kv.get("DRIVE_CHECKED") == "no", out.stdout
 
-def _sync_record(working, slug, subject, week, day=None, with_design=True):
+def _sync_record(working, slug, subject, week, day=None, with_design=True, record_name="delivery.json"):
     import json
     folder = working / slug
     (folder / "build-results").mkdir(parents=True)
     if with_design:
         (folder / "lesson-design.json").write_text("{}", encoding="utf-8")
-    cmd = ["python", "sharepoint_sync.py", "--year", "4", "--term-folder", "Autumn 1",
+    cmd = ["python", "deliver_files.py", "--year", "4", "--term-folder", "Autumn 1",
            "--week", str(week), "--subject", subject]
     if day:
         cmd += ["--day", day]
-    (folder / "build-results" / "sharepoint.json").write_text(
+    (folder / "build-results" / record_name).write_text(
         json.dumps({"ok": True, "command": cmd}), encoding="utf-8")
     return folder
 
 def _resolve_with_working(base, subject, today):
     (base / "Term.md").write_text(AUTUMN_TERM_MD, encoding="utf-8")
-    env = dict(os.environ, SP_BASE=str(base), SP_TODAY=today)
+    env = settings_env(base, base / "Term.md", today=today)
     out = subprocess.run(
-        [sys.executable, str(SCRIPT), str(base / "Term.md"), "Year 4", subject,
+        [sys.executable, str(SCRIPT), "Year 4", subject,
          "--working", str(base / "working")],
         capture_output=True, text=True, env=env,
     )
@@ -196,6 +211,92 @@ def test_full_opening_week_spills_into_week_1_monday():
     with tempfile.TemporaryDirectory() as tmp:
         kv, out = run_autumn(tmp, "Maths", "2026-09-04")
         assert (kv.get("WEEK_NUM"), kv.get("DAY")) == ("1", "Monday"), out.stdout
+
+
+def test_a_run_record_from_before_the_rename_still_counts_as_the_previous_lesson():
+    # Lessons built before 4.2.186 recorded their filing as sharepoint.json.
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        tuesday = _sync_record(w, "tuesday-maths", "Maths", 2, "Tuesday", record_name="sharepoint.json")
+        kv, out = _resolve_with_working(base, "Maths", "2026-09-16")
+        assert Path(kv.get("PREVIOUS_LESSON", "")).name == tuesday.name, out.stdout
+
+
+def _design(working, slug, year, subject):
+    folder = working / slug
+    folder.mkdir(parents=True)
+    (folder / "lesson-design.json").write_text(
+        json.dumps({"lesson": {"yearGroup": year, "subject": subject}}), encoding="utf-8")
+    return folder
+
+
+def _plain_run(base, subject, settings):
+    env = settings_env(base, **settings)
+    out = subprocess.run(
+        [sys.executable, str(SCRIPT), "Year 4", subject, "--working", str(base / "working")],
+        capture_output=True, text=True, env=env,
+    )
+    return dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l), out
+
+
+def test_no_save_folder_means_the_resources_stay_where_they_were_built():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        (base / "working").mkdir()
+        kv, out = _plain_run(base, "Maths", {"folder": False})
+        assert out.returncode == 0, out.stdout + out.stderr
+        assert kv.get("DELIVERY") == "none" and "SAVE_FOLDER" not in kv and "TERM_FOLDER" not in kv, out.stdout
+
+
+def test_a_plain_save_folder_has_no_calendar_and_no_slot():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        (base / "working").mkdir()
+        kv, out = _plain_run(base, "Maths", {"sorting": False})
+        assert out.returncode == 0, out.stdout + out.stderr
+        assert (kv.get("DELIVERY"), kv.get("SAVE_FOLDER")) == ("folder", str(base)), out.stdout
+        assert "TERM_FOLDER" not in kv and "DAY" not in kv, out.stdout
+
+
+def test_sorting_without_term_dates_is_a_plain_folder():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        (base / "working").mkdir()
+        kv, out = _plain_run(base, "Maths", {"sorting": True})
+        assert kv.get("DELIVERY") == "folder", out.stdout
+
+
+def test_without_sorting_the_previous_lesson_is_the_latest_in_the_same_year_and_subject():
+    import time
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        _design(w, "older-maths", 4, "Maths")
+        time.sleep(0.05)
+        _design(w, "science", 4, "Science")
+        _design(w, "year-5-maths", 5, "Maths")
+        time.sleep(0.05)
+        latest = _design(w, "latest-maths", 4, "Maths")
+        kv, out = _plain_run(base, "Maths", {"folder": False})
+        assert Path(kv.get("PREVIOUS_LESSON", "")).name == latest.name, out.stdout
+
+
+def test_term_dates_are_read_whichever_way_the_school_names_its_terms():
+    sys.path.insert(0, str(SCRIPT.parent))
+    import plugin_settings
+    with tempfile.TemporaryDirectory() as tmp:
+        dates = Path(tmp) / "dates.md"
+        dates.write_text(
+            "| Term | Starts | Ends |\n| --- | --- | --- |\n"
+            "| Autumn, term 1 | Tuesday 1 September 2026 | Friday 23 October 2026 |\n"
+            "| Autumn half term | Monday 26 October 2026 | Friday 30 October 2026 |\n"
+            "| Autumn 2 | 2 November 2026 | 18 December 2026 |\n"
+            "| Spring term 3 | 4 January 2027 | 12 February 2027 |\n"
+            "| Summer 2 | 7 June 2027 | 21 July 2027 |\n",
+            encoding="utf-8")
+        names = [name for name, _, _ in plugin_settings.read_term_dates(dates)]
+        assert names == ["Autumn 1", "Autumn 2", "Spring 1", "Summer 2"], names
 
 if __name__ == "__main__":
     failed = 0

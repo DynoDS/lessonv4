@@ -16,10 +16,18 @@ If more than one is waiting, ask which. Install one helper at a time: each one e
 
 ## Resolve the roots
 
-Use the literal absolute path substituted for `${CLAUDE_PLUGIN_ROOT}` as `PLUGIN_ROOT_CANDIDATE`, then:
+Use the literal absolute path substituted for `${CLAUDE_PLUGIN_ROOT}` as `PLUGIN_ROOT_CANDIDATE`.
+
+First check this computer and find the Python to use, without elevated access:
 
 ```bash
-python3 "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
+node "[PLUGIN_ROOT_CANDIDATE]/scripts/check-setup.js"
+```
+
+Store the path it prints after `PYTHON=`. On `SETUP_NEEDS_FIX` run its `SETUP_FIX_COMMAND:` line exactly as printed (on Codex with escalated permissions and network access); on `SETUP_BLOCKED` re-run it once with permission to start a program; on `SETUP_NEEDS_PYTHON` ask the teacher before following `Installing Python` in `[PLUGIN_ROOT_CANDIDATE]/references/computer-setup.md`. `"[PYTHON]"` below means that path; in PowerShell call it as `& "[PYTHON]" ...`.
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
 ```
 
 Store the value after `PLUGIN_ROOT=`. If it fails, stop and report the verifier's error exactly.
@@ -27,15 +35,15 @@ Store the value after `PLUGIN_ROOT=`. If it fails, stop and report the verifier'
 You are writing to the package, so you also need a writable checkout:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
 ```
 
-Store the value after `PLUGIN_SOURCE_ROOT=`. On `PLUGIN_SOURCE_ROOT_UNAVAILABLE`, stop and tell the teacher plainly that there is no writable copy of the package on this machine to install into, and that the helper is safe where it is. Never write to an installed cache copy, and never search for a checkout yourself.
+Store the value after `PLUGIN_SOURCE_ROOT=`. On `PLUGIN_SOURCE_ROOT_UNAVAILABLE`, stop and tell the teacher plainly that this computer is not set up to change the plugin (developer mode is off), and that the helper is safe where it is. The person who develops the plugin turns developer mode on once with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-settings.py" developer on "<their checkout's plugin folder>"`. Never write to an installed cache copy, and never search for a checkout yourself.
 
 ## Read the drop-in before you move anything
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/install-pending-helper.py" check \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/install-pending-helper.py" check \
   --pending "[the pending-helper folder]"
 ```
 
@@ -50,11 +58,11 @@ Read `[PLUGIN_ROOT]/references/helper-authoring.md` in full. It is the authorita
 Preview first, then copy:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/install-pending-helper.py" install \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/install-pending-helper.py" install \
   --pending "[the pending-helper folder]" \
   --source-root "[PLUGIN_SOURCE_ROOT]" --dry-run
 
-python3 "[PLUGIN_ROOT]/scripts/install-pending-helper.py" install \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/install-pending-helper.py" install \
   --pending "[the pending-helper folder]" \
   --source-root "[PLUGIN_SOURCE_ROOT]"
 ```

@@ -363,24 +363,20 @@ console.log('Cards: 1');
         self.assertEqual(summary["exitCode"], 7)
         self.assertIn("boom", summary["stderr"])
 
-    def test_sharepoint_runs_script_directly_and_requires_status_marker(
+    def test_deliver_runs_script_directly_and_requires_status_marker(
         self,
     ) -> None:
         self.write(
-            "scripts/sharepoint_sync.py",
+            "scripts/deliver_files.py",
             """import sys
-print('DESTINATION=E:/Test')
+print('DESTINATION=D:/Lessons')
 print('FILE=Lesson.pptx')
 print('STATUS=COPIED')
 """,
         )
-        term = self.root / "Term.md"
-        term.write_text("dummy\n", encoding="utf-8")
         (self.output / "Lesson.pptx").write_text("x", encoding="utf-8")
         self.run_script(
-            "sharepoint",
-            "--term-file",
-            str(term),
+            "deliver",
             "--year",
             "4",
             "--term-folder",
@@ -399,6 +395,9 @@ print('STATUS=COPIED')
         )
         self.assertTrue(summary["ok"])
         self.assertIn("STATUS=COPIED", summary["stdout"])
+        # The slot is recorded whatever the delivery mode, so the next run can
+        # find the lesson that came before it.
+        self.assertIn("--subject", summary["command"])
 
 
 if __name__ == "__main__":

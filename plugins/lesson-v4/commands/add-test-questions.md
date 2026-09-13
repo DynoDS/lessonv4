@@ -10,27 +10,27 @@ Turn a test-paper PDF into a set of individual question images, filed in the les
 
 Before doing anything else, use the literal absolute path substituted by Claude Code for `${CLAUDE_PLUGIN_ROOT}` as `PLUGIN_ROOT_CANDIDATE`.
 
-Run:
+First check this computer and find the Python to use, without elevated access:
 
 ```bash
-python3 "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
+node "[PLUGIN_ROOT_CANDIDATE]/scripts/check-setup.js"
+```
+
+Store the path it prints after `PYTHON=`. On `SETUP_NEEDS_FIX` run its `SETUP_FIX_COMMAND:` line exactly as printed (on Codex with escalated permissions and network access); on `SETUP_BLOCKED` re-run it once with permission to start a program; on `SETUP_NEEDS_PYTHON` ask the teacher before following `Installing Python` in `[PLUGIN_ROOT_CANDIDATE]/references/computer-setup.md`. `"[PYTHON]"` below means that path; in PowerShell call it as `& "[PYTHON]" ...`.
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
 ```
 
 Store the value after `PLUGIN_ROOT=`. If verification fails, stop and report the verifier's error exactly.
 
-This command also requires `LESSON_RESOURCES_SOURCE_ROOT` in the host environment. If it is absent, stop with:
-
-```text
-PLUGIN_SOURCE_ROOT_ERROR: LESSON_RESOURCES_SOURCE_ROOT is not set.
-```
-
-When it is present, run:
+This command writes to the plugin itself, so it runs only on the computer the plugin is developed on (developer mode). Find that computer's writable checkout:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --source "$LESSON_RESOURCES_SOURCE_ROOT"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
 ```
 
-Store the value after `PLUGIN_SOURCE_ROOT=`. If verification fails, stop before reading the PDF and report the verifier's error exactly. Do not search for another checkout.
+Store the value after `PLUGIN_SOURCE_ROOT=`. On `PLUGIN_SOURCE_ROOT_UNAVAILABLE`, stop before reading the PDF and tell the teacher plainly that this computer is not set up to change the plugin: developer mode is off. The person who develops the plugin turns it on once with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-settings.py" developer on "<their checkout's plugin folder>"`. Do not search for another checkout.
 
 The bank lives in source control at `[PLUGIN_SOURCE_ROOT]/builder/assets/test-questions/`, organised as `<subject>/<type>/<year-group>/<strand>/`. It sits beside the other lesson assets so every lesson-resources agent can read it once the plugin has synced.
 
@@ -51,11 +51,11 @@ A single extractor works through a paper page by page, checking every crop befor
 
 For each PDF you were given:
 
-1. Find its page count cheaply, without rendering anything: `python "[PLUGIN_ROOT]/scripts/question_crop.py" pages "<pdf-path>"`.
+1. Find its page count cheaply, without rendering anything: `"[PYTHON]" "[PLUGIN_ROOT]/scripts/question_crop.py" pages "<pdf-path>"`.
 2. **25 pages or fewer** - spawn one extractor for the whole paper, as described in "Hand the job to the extractor" below. Most papers fall here, and splitting one this size would only add coordination for no real time saved.
 3. **More than 25 pages** - split it:
    - Pick a chunk count: one extractor per roughly 18 pages, capped at 4 even for a very long paper, so it doesn't fragment into more parallel pieces than is worth coordinating.
-   - Render the whole PDF once yourself into a folder of your choosing: `python "[PLUGIN_ROOT]/scripts/question_crop.py" render "<pdf-path>" <folder> --dpi 300`. This is the same mechanical step an extractor would otherwise do itself; doing it once up front lets every chunk share the same rendered pages instead of each re-rendering the whole paper from scratch.
+   - Render the whole PDF once yourself into a folder of your choosing: `"[PYTHON]" "[PLUGIN_ROOT]/scripts/question_crop.py" render "<pdf-path>" <folder> --dpi 300`. This is the same mechanical step an extractor would otherwise do itself; doing it once up front lets every chunk share the same rendered pages instead of each re-rendering the whole paper from scratch.
    - Divide the pages into that many contiguous, roughly even slices.
    - Spawn one extractor per slice, all at once, in-process (so the teacher can watch them work), each given the rendered folder, its own page range, and the one page immediately after its range (except the final slice, which has none) so it can finish off a question that spans the boundary. Use this instruction, filling in the values:
 

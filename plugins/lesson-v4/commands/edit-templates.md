@@ -10,27 +10,27 @@ Tune any lesson slide template or content helper directly in the `lesson-resourc
 
 Before doing anything else, use the literal absolute path substituted by Claude Code for `${CLAUDE_PLUGIN_ROOT}` as `PLUGIN_ROOT_CANDIDATE`.
 
-Run:
+First check this computer and find the Python to use, without elevated access:
 
 ```bash
-python3 "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
+node "[PLUGIN_ROOT_CANDIDATE]/scripts/check-setup.js"
+```
+
+Store the path it prints after `PYTHON=`. On `SETUP_NEEDS_FIX` run its `SETUP_FIX_COMMAND:` line exactly as printed (on Codex with escalated permissions and network access); on `SETUP_BLOCKED` re-run it once with permission to start a program; on `SETUP_NEEDS_PYTHON` ask the teacher before following `Installing Python` in `[PLUGIN_ROOT_CANDIDATE]/references/computer-setup.md`. `"[PYTHON]"` below means that path; in PowerShell call it as `& "[PYTHON]" ...`.
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
 ```
 
 Store the value after `PLUGIN_ROOT=`. If verification fails, stop and report the verifier's error exactly.
 
-This command also requires `LESSON_RESOURCES_SOURCE_ROOT` in the host environment. If it is absent, stop with:
-
-```text
-PLUGIN_SOURCE_ROOT_ERROR: LESSON_RESOURCES_SOURCE_ROOT is not set.
-```
-
-When it is present, run:
+This command writes to the plugin itself, so it runs only on the computer the plugin is developed on (developer mode). Find that computer's writable checkout:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --source "$LESSON_RESOURCES_SOURCE_ROOT"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
 ```
 
-Store the value after `PLUGIN_SOURCE_ROOT=`. If verification fails, stop before editing anything and report the verifier's error exactly.
+Store the value after `PLUGIN_SOURCE_ROOT=`. On `PLUGIN_SOURCE_ROOT_UNAVAILABLE`, stop before editing anything and tell the teacher plainly that this computer is not set up to change the plugin: developer mode is off. The person who develops the plugin turns it on once with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-settings.py" developer on "<their checkout's plugin folder>"`. Do not search for another checkout.
 
 Every bare plugin path in this command, including `builder/`, `worksheet-html/`, `working-wall-html/`, `stick-in-sheets-html/`, `shared/`, `references/`, `.claude-plugin/` and `.codex-plugin/`, is relative to `PLUGIN_SOURCE_ROOT`. Run git commands from `[PLUGIN_SOURCE_ROOT]/..`. Never write to `PLUGIN_ROOT` unless its canonical path is exactly the same as `PLUGIN_SOURCE_ROOT`.
 
@@ -224,6 +224,7 @@ node "[PLUGIN_SOURCE_ROOT]/builder/build.js" \
 The template lives in the source, so any coordinate change you make takes effect on the next `build.js` run with no edit to the demo. To give the teacher a quick look without opening PowerPoint, you can render the slides to PNG via PowerPoint itself:
 
 ```python
+import sys; sys.path.insert(0, r"[PLUGIN_ROOT]/scripts"); import python_extras  # pywin32 may live in the plugin's own folder
 import win32com.client, os
 pptx = r"…/output/<Deck Name>.pptx"; outdir = r"…/render"; os.makedirs(outdir, exist_ok=True)
 app = win32com.client.Dispatch("PowerPoint.Application")

@@ -18,6 +18,7 @@ REQUIRED_PACKAGE_PATHS = (
     "scripts/check-setup.js",
     "scripts/plugin-settings.js",
     "scripts/python_extras.py",
+    "scripts/plugin_settings.py",
     "scripts/photo-contract.py",
     "scripts/collect-helper-uses.py",
     "scripts/check-helper-coverage.py",
@@ -81,40 +82,42 @@ def verify(candidate_text: str, *, source: bool = False) -> Path:
     return root
 
 
-# Where a writable checkout of this package is looked for, in order, when the
-# caller asks for one rather than naming it. The helper route depends on this:
-# it used to wait for an environment value that in practice was never set, so
-# "build the missing helper" was a branch no run could ever take and every
-# lesson needing a new visual silently shipped a substitute instead.
-SOURCE_ENV_VARS = ("LESSON_V4_SOURCE_ROOT", "LESSON_RESOURCES_SOURCE_ROOT")
+# Where a writable checkout of this package is looked for, when the caller asks
+# for one rather than naming it. Writing to the package during a run (the build
+# log in the checkout, installing a helper) is for the computer the plugin is
+# developed on, and only there: on any other teacher's computer a run that edits
+# its own plugin turns it into a private variant that the next update overwrites
+# or clashes with. So a checkout is used only when this computer has been told
+# where it is: `lesson-settings.py developer on <folder>`, or the environment
+# value for a box configured without settings (a cloud environment). Nothing is
+# guessed, neither from the running package nor from a conventional folder name,
+# because a guess is how another teacher's plugin would start changing itself.
+SOURCE_ENV_VAR = "LESSON_RESOURCES_SOURCE_ROOT"
 
-# The conventional checkout location. Absent is a normal answer, not a fault.
-SOURCE_CONVENTIONS = ("Projects/lessonv4/plugins/lesson-v4",)
 
+def find_source(package_root: str | None = None) -> tuple[Path | None, list[str]]:
+    """Locate this computer's writable checkout of the package, or say why not.
 
-def find_source(package_root: str | None) -> tuple[Path | None, list[str]]:
-    """Locate a writable checkout of this package, or say why there isn't one.
-
-    Order: an explicit environment value, the running package root itself
-    (which is the checkout whenever the plugin is run from source), then the
-    conventional location. Every candidate is verified the same way an
-    explicitly named one is, so an unwritable or incomplete tree is rejected
-    rather than half-used.
+    `package_root` is accepted for callers that still pass it and is not used as
+    a candidate. Every candidate is verified the same way an explicitly named
+    one is, so an unwritable or incomplete tree is rejected rather than half-used.
     """
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import plugin_settings
+
     notes: list[str] = []
     candidates: list[tuple[str, str]] = []
-
-    for name in SOURCE_ENV_VARS:
-        value = os.environ.get(name)
-        if value:
-            candidates.append((f"${name}", value))
-
-    if package_root:
-        candidates.append(("the running package root", package_root))
-
-    home = Path.home()
-    for relative in SOURCE_CONVENTIONS:
-        candidates.append((f"~/{relative}", str(home / relative)))
+    value = os.environ.get(SOURCE_ENV_VAR, "").strip()
+    if value:
+        candidates.append((f"${SOURCE_ENV_VAR}", value))
+    configured = plugin_settings.developer_source()
+    if configured:
+        candidates.append(("developer mode in this computer's settings", configured))
+    if not candidates:
+        notes.append(
+            "developer mode is off on this computer, so no run writes to the plugin itself "
+            "(turn it on with lesson-settings.py developer on <folder>)"
+        )
 
     seen: set[str] = set()
     for label, value in candidates:

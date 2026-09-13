@@ -226,6 +226,40 @@ def test_no_personal_checkout_path_remains_in_lesson_resources():
     assert not matches, "\n".join(matches)
 
 
+def test_nothing_a_run_reads_depends_on_one_computer():
+    """The plugin must work the same on a new computer, another teacher's, or a cloud box.
+
+    It used to save to one school's mapped drive, guess its own source copy from
+    one person's folder layout, and read one school's term dates from inside the
+    package. Those are now settings each computer chooses (13 September 2026).
+    The build review log is history and keeps its old paths; tests may name
+    folders to prove they are refused.
+    """
+    runtime = [
+        ROOT / "skills", ROOT / "agents", ROOT / "commands", ROOT / "references",
+        ROOT / "scripts", ROOT / "shared", ROOT / "builder" / "src", ROOT / "builder" / "scripts",
+        ROOT / "worksheet-html" / "src", ROOT / "worksheet-html" / "scripts",
+        ROOT / "working-wall-html" / "src", ROOT / "stick-in-sheets-html" / "src",
+    ]
+    import re
+    forbidden = re.compile(
+        r"felmore|users[\\/]daniel|projects[\\/]lessonv4"
+        # a mapped E: drive path, not a word ending in "e" before a colon
+        r"|(?<![\w])e:[\\/][a-z ]"
+    )
+    matches = []
+    for base in runtime:
+        for path in base.rglob("*"):
+            parts = set(path.relative_to(ROOT).parts)
+            if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
+                continue
+            if parts & {"tests", "test", "node_modules", "__pycache__"} or path.name == "build-review-log.md":
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace").lower()
+            matches.extend(f"{path.relative_to(ROOT)}: {hit.group(0)}" for hit in forbidden.finditer(text))
+    assert not matches, "\n".join(matches)
+
+
 def test_runtime_contract_does_not_require_project_codex_agents():
     runtime_roots = (
         ROOT / "skills",

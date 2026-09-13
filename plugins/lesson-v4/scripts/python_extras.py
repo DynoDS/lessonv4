@@ -19,18 +19,12 @@ fails on a fresh one, which is exactly the case nobody tests by hand.
 """
 from __future__ import annotations
 
-import os
 import site
 import sys
 import sysconfig
 from pathlib import Path
 
-HOME_VARIABLE = "LESSON_RESOURCES_HOME"
-
-
-def plugin_home() -> Path:
-    configured = os.environ.get(HOME_VARIABLE, "").strip()
-    return Path(configured) if configured else Path.home() / ".lesson-resources"
+from plugin_settings import plugin_home
 
 
 def extras_dir() -> Path:

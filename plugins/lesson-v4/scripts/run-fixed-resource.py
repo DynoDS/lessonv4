@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Run one fixed lesson-resources command and emit a structured result envelope.
 
-Supported kinds: slides, worksheets, wall, stick-in, sharepoint.
+Supported kinds: slides, worksheets, wall, stick-in, deliver.
 The wrapper owns output-family collision archiving, subprocess capture, exact
 builder-marker output discovery, PDF_SKIPPED handling, hashing and the summary
 JSON. It never changes resource content or makes a semantic judgement.
@@ -199,35 +199,23 @@ def command_for(args) -> list[str]:
             str(working / "stick-in-sheets.json"),
             str(output),
         ]
-    if args.kind == "sharepoint":
-        if (
-            not args.term_file
-            or args.year is None
-            or not args.term_folder
-            or args.week is None
-            or not args.subject
-        ):
-            raise FixedResourceError(
-                "sharepoint requires --term-file, --year, --term-folder, --week and --subject"
-            )
+    if args.kind == "deliver":
         if not args.file:
-            raise FixedResourceError("sharepoint requires at least one --file")
-        command = [
-            sys.executable,
-            str(plugin_root / "scripts" / "sharepoint_sync.py"),
-            "--term-file",
-            args.term_file,
-            "--year",
-            str(args.year),
-            "--term-folder",
-            args.term_folder,
-            "--week",
-            str(args.week),
-            "--subject",
-            args.subject,
-        ]
-        if args.day:
-            command.extend(["--day", args.day])
+            raise FixedResourceError("deliver requires at least one --file")
+        # Where the files go is the teacher's saved setting, read by the
+        # delivery script itself; the slot arguments only matter when that
+        # setting sorts by term and week, and are recorded either way so the
+        # next run can find the lesson that came before it.
+        command = [sys.executable, str(plugin_root / "scripts" / "deliver_files.py")]
+        for flag, value in (
+            ("--year", args.year),
+            ("--term-folder", args.term_folder),
+            ("--week", args.week),
+            ("--subject", args.subject),
+            ("--day", args.day),
+        ):
+            if value not in (None, ""):
+                command.extend([flag, str(value)])
         command.extend(["--source", str(output)])
         for filename in args.file:
             command.extend(["--file", filename])
@@ -324,7 +312,7 @@ def run(args) -> int:
     output.mkdir(parents=True, exist_ok=True)
 
     archived = []
-    if args.kind != "sharepoint":
+    if args.kind != "deliver":
         if not args.lesson_name:
             raise FixedResourceError(f"{args.kind} requires --lesson-name")
         archived = archive_paths(
@@ -355,17 +343,17 @@ def run(args) -> int:
         print(f"FIXED_RESOURCE_FAILED {args.kind}", file=sys.stderr)
         return 1
 
-    if args.kind == "sharepoint":
+    if args.kind == "deliver":
         if "STATUS=COPIED" not in completed.stdout or "DESTINATION=" not in completed.stdout:
             summary["stderr"] += (
-                "\nsharepoint_sync.py exited zero without STATUS=COPIED and DESTINATION="
+                "\ndeliver_files.py exited zero without STATUS=COPIED and DESTINATION="
             )
             atomic_write_json(Path(args.summary_output), summary)
-            print("FIXED_RESOURCE_FAILED sharepoint", file=sys.stderr)
+            print("FIXED_RESOURCE_FAILED deliver", file=sys.stderr)
             return 1
         summary["ok"] = True
         atomic_write_json(Path(args.summary_output), summary)
-        print("FIXED_RESOURCE_OK sharepoint")
+        print("FIXED_RESOURCE_OK deliver")
         return 0
 
     try:
@@ -402,13 +390,12 @@ def run(args) -> int:
 
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
-    root.add_argument("kind", choices=("slides", "worksheets", "wall", "stick-in", "sharepoint"))
+    root.add_argument("kind", choices=("slides", "worksheets", "wall", "stick-in", "deliver"))
     root.add_argument("--plugin-root", required=True)
     root.add_argument("--working-dir", required=True)
     root.add_argument("--output-dir", required=True)
     root.add_argument("--lesson-name")
     root.add_argument("--summary-output", required=True)
-    root.add_argument("--term-file")
     root.add_argument("--year", type=int)
     root.add_argument("--term-folder")
     root.add_argument("--week", type=int)

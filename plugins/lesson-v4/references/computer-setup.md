@@ -10,6 +10,49 @@ wherever the host lets you. On Codex, every step here writes outside the lesson
 folder or uses the network, so run its commands with escalated permissions and
 network access.
 
+## Choosing where lessons are saved
+
+A run builds its resources in its own output folder. Once the teacher names a
+folder, every later lesson's teaching resources (the deck, worksheets, answer
+key, working wall and stick-in sheets) are copied there too; run reports and
+walk-throughs stay behind. `lesson-settings.py` is
+`"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-settings.py"`.
+
+1. Ask for the folder if they have not named it. A OneDrive or SharePoint
+   folder synced to the computer works like any other. Save it with
+   `lesson-settings.py save-folder "<full path>"`.
+2. If they also want lessons sorted, explain the layout in one line with an
+   example: `2026-2027 - Year 4 > Autumn 1 > Week 2 > Maths > Tuesday`, where
+   daily subjects (maths, English, reading, writing) get a day folder and
+   weekly subjects do not, and a lesson goes to the next free day. Sorting needs
+   the school's term dates, so ask them to paste them or point to a file.
+3. Write the dates as a table in a file in the plugin's own folder, one row per
+   half-term, then save it with `lesson-settings.py sorting on "<that file>"`:
+
+   ```text
+   | Term | Starts | Ends |
+   | --- | --- | --- |
+   | Autumn 1 | Tuesday 1 September 2026 | Friday 23 October 2026 |
+   | Autumn 2 | Monday 2 November 2026 | Friday 18 December 2026 |
+   ```
+
+   Holidays can be listed or left out. Check `TERMS_FOUND=` names all six
+   half-terms; a missing one is a date that did not read.
+4. Tell them what the next lesson will do, in one line.
+
+A teacher who later wants a plain folder again: `lesson-settings.py sorting off`.
+
+## Developer mode
+
+For the person who develops the plugin, on their own computer, and nobody else.
+It lets a run add to the plugin's build log and lets the developer commands
+(installing a helper, editing templates, adding test questions, writing a
+subject file) change the plugin. On any other computer a run that edits its own
+plugin makes a private copy that the next update overwrites, so it stays off
+unless they ask for it by name. Turn it on with
+`lesson-settings.py developer on "<the plugin folder inside their git checkout>"`,
+and off with `lesson-settings.py developer off`.
+
 ## Installing Python
 
 Only after the teacher has said yes. Python is the program the plugin's checking

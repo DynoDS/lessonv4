@@ -17,8 +17,6 @@ Obtain exactly one `PLUGIN_ROOT_CANDIDATE` from the active host:
 - **Codex:** use the absolute path shown for this activated `skills/make-subject-file/SKILL.md`; take the directory containing `SKILL.md`, then its parent twice.
 - **Another host:** use the absolute installed `lesson-resources` package directory supplied by that host.
 
-Run:
-
 First check this computer and find the Python to use, without elevated access, and store the path it prints after `PYTHON=`. On `SETUP_NEEDS_FIX` run its `SETUP_FIX_COMMAND:` line exactly as printed (on Codex with escalated permissions and network access); on `SETUP_BLOCKED` re-run it once with permission to start a program; on `SETUP_NEEDS_PYTHON` ask the teacher before following `Installing Python` in `[PLUGIN_ROOT_CANDIDATE]/references/computer-setup.md`:
 
 ```bash
@@ -33,21 +31,13 @@ node "[PLUGIN_ROOT_CANDIDATE]/scripts/check-setup.js"
 
 Store the value after `PLUGIN_ROOT=`. If verification fails, stop and report the verifier's error exactly. Do not search for another package.
 
-This workflow also requires the host environment variable `LESSON_RESOURCES_SOURCE_ROOT`. It must contain the absolute writable `lesson-resources` directory inside the real `teaching-plugins` checkout.
-
-If it is absent, stop with:
-
-```text
-PLUGIN_SOURCE_ROOT_ERROR: LESSON_RESOURCES_SOURCE_ROOT is not set.
-```
-
-If it is present, run:
+This command writes to the plugin itself, so it runs only on the computer the plugin is developed on (developer mode). Find that computer's writable checkout:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --source "$LESSON_RESOURCES_SOURCE_ROOT"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
 ```
 
-Store the value after `PLUGIN_SOURCE_ROOT=`. If verification fails, stop before Stage 1 and report the verifier's error exactly.
+Store the value after `PLUGIN_SOURCE_ROOT=`. On `PLUGIN_SOURCE_ROOT_UNAVAILABLE`, stop before Stage 1 and tell the teacher plainly that this computer is not set up to change the plugin: developer mode is off. The person who develops the plugin turns it on once with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-settings.py" developer on "<their checkout's plugin folder>"`. Do not search for another checkout.
 
 Every repository-relative write target in this file under `lesson-resources`, including `references/`, `agents/`, `.claude-plugin/` and `.codex-plugin/`, is relative to `PLUGIN_SOURCE_ROOT`. The repository-level `docs/` directory is at `[PLUGIN_SOURCE_ROOT]/../docs/`. Run git commands from `[PLUGIN_SOURCE_ROOT]/..`. Never write to `PLUGIN_ROOT` unless its canonical path is exactly the same as `PLUGIN_SOURCE_ROOT`.
 

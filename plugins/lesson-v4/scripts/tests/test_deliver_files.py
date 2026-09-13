@@ -1,14 +1,18 @@
 import importlib.util
+import json
+import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "sharepoint_sync.py"
-SPEC = importlib.util.spec_from_file_location("sharepoint_sync", SCRIPT)
-sharepoint_sync = importlib.util.module_from_spec(SPEC)
+SCRIPT = Path(__file__).resolve().parents[1] / "deliver_files.py"
+sys.path.insert(0, str(SCRIPT.parent))
+SPEC = importlib.util.spec_from_file_location("deliver_files", SCRIPT)
+deliver_files = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
-SPEC.loader.exec_module(sharepoint_sync)
+SPEC.loader.exec_module(deliver_files)
 
 
 TERM_TEXT = """\
@@ -19,11 +23,11 @@ TERM_TEXT = """\
 """
 
 
-class SharePointSyncTests(unittest.TestCase):
+class DeliverFilesTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
-        self.school_root = self.root / "Felmore Primary School"
+        self.school_root = self.root / "School Resources"
         self.school_root.mkdir()
         self.source = self.root / "output"
         self.source.mkdir()
@@ -35,7 +39,7 @@ class SharePointSyncTests(unittest.TestCase):
 
     def test_derives_school_year_from_term_file(self):
         self.assertEqual(
-            sharepoint_sync.derive_school_year(self.term_file),
+            deliver_files.derive_school_year(self.term_file),
             "2026-2027",
         )
 
@@ -44,7 +48,7 @@ class SharePointSyncTests(unittest.TestCase):
         wanted.write_bytes(b"pptx")
         (self.source / "Older Lesson.pptx").write_bytes(b"old")
 
-        destination, files, _ = sharepoint_sync.sync_files(
+        destination, files, _ = deliver_files.sync_files(
             term_file=self.term_file,
             school_root=self.school_root,
             year_group=4,
@@ -73,7 +77,7 @@ class SharePointSyncTests(unittest.TestCase):
     def test_foundation_subject_has_no_day_layer(self):
         (self.source / "Rainforests.pptx").write_bytes(b"deck")
 
-        destination, _, _ = sharepoint_sync.sync_files(
+        destination, _, _ = deliver_files.sync_files(
             term_file=self.term_file,
             school_root=self.school_root,
             year_group=4,
@@ -91,7 +95,7 @@ class SharePointSyncTests(unittest.TestCase):
 
     def test_rejects_path_traversal(self):
         with self.assertRaises(ValueError):
-            sharepoint_sync.validate_filename("../other.pptx")
+            deliver_files.validate_filename("../other.pptx")
 
 
     def test_a_file_already_at_its_destination_is_left_in_place(self):
@@ -99,12 +103,12 @@ class SharePointSyncTests(unittest.TestCase):
         folder, so source and destination were the same files; the copy
         raised WinError 32 and the report logged a sync failure for a
         delivery that had already happened."""
-        destination = sharepoint_sync.destination_for(
+        destination = deliver_files.destination_for(
             self.school_root, "2026-2027", 4, "Autumn 1", 1, "Maths", "Thursday"
         )
         destination.mkdir(parents=True)
         (destination / "Lesson.pptx").write_bytes(b"deck")
-        result_destination, files, _ = sharepoint_sync.sync_files(
+        result_destination, files, _ = deliver_files.sync_files(
             term_file=self.term_file,
             school_root=self.school_root,
             year_group=4,
@@ -132,7 +136,7 @@ class SharePointSyncTests(unittest.TestCase):
         ]
         for name in names:
             (self.source / name).write_bytes(b"x")
-        destination, files, skipped = sharepoint_sync.sync_files(
+        destination, files, skipped = deliver_files.sync_files(
             term_file=self.term_file, school_root=self.school_root, year_group=4,
             term_folder="Autumn 1", week=2, subject="Maths", day="Monday",
             source=self.source, requested=names, dry_run=False,
@@ -141,6 +145,52 @@ class SharePointSyncTests(unittest.TestCase):
         self.assertEqual(copied, sorted(names[:5]))
         self.assertEqual(sorted(p.name for p in skipped), sorted(names[5:]))
         self.assertTrue((self.source / "Lesson - run report.md").is_file(), "records stay where the run made them")
+
+
+    def test_a_plain_save_folder_gets_the_resources_directly(self):
+        (self.source / "Rainforests.pptx").write_bytes(b"deck")
+        (self.source / "Rainforests - run report.md").write_bytes(b"notes")
+        folder = self.root / "My lessons"
+        destination, files, skipped = deliver_files.copy_to_folder(
+            folder=folder, source=self.source,
+            requested=["Rainforests.pptx", "Rainforests - run report.md"], dry_run=False,
+        )
+        self.assertEqual(destination, folder)
+        self.assertEqual(sorted(p.name for p in folder.iterdir()), ["Rainforests.pptx"])
+        self.assertEqual([p.name for p in skipped], ["Rainforests - run report.md"])
+
+    def test_the_saved_setting_decides_where_the_files_go(self):
+        (self.source / "Rainforests.pptx").write_bytes(b"deck")
+        home = self.root / "plugin-home"
+        home.mkdir()
+        folder = self.root / "Chosen"
+        (home / "settings.json").write_text(json.dumps({"delivery": {"folder": str(folder)}}), encoding="utf-8")
+        previous = os.environ.get("LESSON_RESOURCES_HOME")
+        os.environ["LESSON_RESOURCES_HOME"] = str(home)
+        try:
+            code = deliver_files.main(["--source", str(self.source), "--file", "Rainforests.pptx", "--year", "4", "--subject", "Geography"])
+        finally:
+            if previous is None:
+                os.environ.pop("LESSON_RESOURCES_HOME", None)
+            else:
+                os.environ["LESSON_RESOURCES_HOME"] = previous
+        self.assertEqual(code, 0)
+        self.assertTrue((folder / "Rainforests.pptx").is_file())
+
+    def test_no_saved_folder_copies_nothing_and_says_so(self):
+        (self.source / "Rainforests.pptx").write_bytes(b"deck")
+        home = self.root / "empty-home"
+        home.mkdir()
+        previous = os.environ.get("LESSON_RESOURCES_HOME")
+        os.environ["LESSON_RESOURCES_HOME"] = str(home)
+        try:
+            code = deliver_files.main(["--source", str(self.source), "--file", "Rainforests.pptx"])
+        finally:
+            if previous is None:
+                os.environ.pop("LESSON_RESOURCES_HOME", None)
+            else:
+                os.environ["LESSON_RESOURCES_HOME"] = previous
+        self.assertEqual(code, 1)
 
 
 if __name__ == "__main__":

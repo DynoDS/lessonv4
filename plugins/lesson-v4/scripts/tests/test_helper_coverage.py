@@ -529,18 +529,22 @@ class HelperCoverageTests(unittest.TestCase):
 
 
 class SourceRootDiscoveryTests(unittest.TestCase):
-    """A route gated on a value nobody sets is a route that never runs.
+    """A run writes to the plugin itself only on the computer it is developed on.
 
-    The helper builder could not start without a writable checkout, and the
-    only way to name one was an environment variable that no lesson run had.
-    So "build the missing helper" was unreachable by construction, and every
-    lesson needing a new visual quietly shipped a substitute instead.
+    Discovery used to accept the running package or a conventional folder name,
+    which on another teacher's computer would let a run start editing their
+    copy. It now needs this computer to have been told: developer mode in the
+    settings, or the environment value a cloud box is configured with.
     """
 
-    def find_source(self, root: str, env: dict | None = None) -> subprocess.CompletedProcess:
+    def find_source(self, root: str, env: dict | None = None, developer: str | None = None) -> subprocess.CompletedProcess:
         environ = dict(os.environ)
-        for name in ("LESSON_V4_SOURCE_ROOT", "LESSON_RESOURCES_SOURCE_ROOT"):
-            environ.pop(name, None)
+        environ.pop("LESSON_RESOURCES_SOURCE_ROOT", None)
+        home = tempfile.mkdtemp()
+        if developer:
+            Path(home, "settings.json").write_text(
+                json.dumps({"developer": {"sourceRoot": developer}}), encoding="utf-8")
+        environ["LESSON_RESOURCES_HOME"] = home
         environ.update(env or {})
         return subprocess.run(
             [sys.executable, str(VERIFY), "--find-source", root],
@@ -549,26 +553,29 @@ class SourceRootDiscoveryTests(unittest.TestCase):
             env=environ,
         )
 
-    def test_a_checkout_is_found_without_an_environment_value(self):
+    def test_with_developer_mode_off_nothing_is_found_and_the_reason_says_so(self):
         result = self.find_source(str(ROOT))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("PLUGIN_SOURCE_ROOT_UNAVAILABLE", result.stderr)
+        self.assertIn("developer mode is off", result.stderr)
+
+    def test_developer_mode_in_the_settings_finds_the_checkout(self):
+        result = self.find_source(str(ROOT), developer=str(ROOT))
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertTrue(result.stdout.startswith("PLUGIN_SOURCE_ROOT="))
+        self.assertIn(str(ROOT.resolve()), result.stdout)
 
     def test_an_explicit_environment_value_is_honoured(self):
         result = self.find_source(
-            str(ROOT), {"LESSON_V4_SOURCE_ROOT": str(ROOT)}
+            str(ROOT), {"LESSON_RESOURCES_SOURCE_ROOT": str(ROOT)}
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(str(ROOT.resolve()), result.stdout)
 
     def test_a_tree_that_is_not_a_checkout_is_refused_with_its_reason(self):
         with tempfile.TemporaryDirectory() as temp:
-            result = self.find_source(temp)
-            # Either nothing is found, or discovery falls through to a real
-            # checkout - but the bare temporary directory is never accepted.
+            result = self.find_source(str(ROOT), developer=temp)
             self.assertNotIn(f"PLUGIN_SOURCE_ROOT={temp}", result.stdout)
-            if result.returncode != 0:
-                self.assertIn("PLUGIN_SOURCE_ROOT_UNAVAILABLE", result.stderr)
+            self.assertIn("PLUGIN_SOURCE_ROOT_UNAVAILABLE", result.stderr)
 
 
 class HelperRouteContractTests(unittest.TestCase):

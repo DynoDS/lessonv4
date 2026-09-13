@@ -438,18 +438,16 @@ log, so resolve it at that step rather than up front:
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
 ```
 
-The command looks in a fixed order - an explicit environment value, the running
-package root, then the conventional checkout location - and verifies each
-candidate the same way, so an incomplete or read-only tree is refused rather
-than half-used. On success, store the value after `PLUGIN_SOURCE_ROOT=`. On
-`PLUGIN_SOURCE_ROOT_UNAVAILABLE`, leave it unavailable and follow that step's
-own unavailable-source rule. Do not search for a checkout yourself, and never
-write to an installed package copy.
-
-This used to wait on an environment value alone, which in practice was never
-set, so every step gated on source access was a branch no run could take. A
-gate that can never open is not caution; it is the failure it was meant to
-prevent, taken silently.
+The command finds a checkout only on a computer in developer mode: the one the
+plugin is developed on, which has named its checkout once in the plugin's
+settings (or, on a cloud box, in the `LESSON_RESOURCES_SOURCE_ROOT` environment
+value). It never guesses from the running package or a folder name, because on
+another teacher's computer a run that edits its own plugin turns it into a
+private variant the next update overwrites. On success, store the value after
+`PLUGIN_SOURCE_ROOT=`. On `PLUGIN_SOURCE_ROOT_UNAVAILABLE`, developer mode is
+off: leave it unavailable and follow that step's own unavailable-source rule. Do
+not search for a checkout yourself, and never write to an installed package
+copy.
 
 The active host owns the worker-launch mechanism. Claude Code may launch its
 bundled named agent. Codex or another host may launch a normal worker. In either

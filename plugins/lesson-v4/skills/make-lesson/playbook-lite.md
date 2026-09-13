@@ -114,23 +114,30 @@ summarise the plan into either file. If the path does not resolve, say so and
 stop, unless the message also carries a usable year and objective - then design
 from that and flag the file.
 
-### Say where the lesson will be filed
+### Say where the lesson will be saved
 
 Just before launching the Lesson Designer, run:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[PLUGIN_ROOT]/Knowledge/term/Term.md" "[YEAR]" "[SUBJECT]" --working "[OUTPUT_DIR]/working" > "[WORKING_DIR]/filing.txt"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[YEAR]" "[SUBJECT]" --working "[OUTPUT_DIR]/working" > "[WORKING_DIR]/filing.txt"
 ```
 
-A daily subject goes to the first free day after the week's filled ones, a
-weekly subject to this week's folder. Take
-year and subject from the teacher's words; name an inferred subject aloud. In
-the launch message tell the teacher one line, e.g. "Monday already has maths,
-so filing to Autumn 1 > Week 2 > Maths > Tuesday. Tell me if you'd like it
-somewhere else." Don't wait; a day or week they name wins: rewrite
-`filing.txt`. `OPENING_WEEK=yes`: ask which week. `DRIVE_CHECKED=no`: say the
-day is unchecked. Other errors: plan local-only delivery; filing never gates
-the lesson. Pass a non-empty `PREVIOUS_LESSON=` as `PREVIOUS_LESSON_DIR`.
+Where finished resources go is the teacher's own saved choice, and `DELIVERY=`
+says which. Take year and subject from the teacher's words; name an inferred
+subject aloud. Pass a non-empty `PREVIOUS_LESSON=` as `PREVIOUS_LESSON_DIR`
+whatever the mode.
+
+- `DELIVERY=none`: nothing is chosen yet, so the resources stay in `OUTPUT_DIR`.
+  Say nothing about saving now; the final report offers the choice.
+- `DELIVERY=folder`: say in one line that the resources will be saved to
+  `SAVE_FOLDER`.
+- `DELIVERY=sorted`: a daily subject goes to the first free day after the week's
+  filled ones, a weekly subject to this week's folder. Tell the teacher one
+  line, e.g. "Monday already has maths, so saving to Autumn 1 > Week 2 > Maths >
+  Tuesday. Tell me if you'd like it somewhere else." Don't wait; a day or week
+  they name wins: rewrite `filing.txt`. `OPENING_WEEK=yes`: ask which week.
+  `DRIVE_CHECKED=no`: say the day is unchecked. Other errors: plan to leave the
+  resources in `OUTPUT_DIR`; saving never gates the lesson.
 
 For direct fixed slides, worksheets and stick-in sheets, let
 `run-fixed-resource.py` own output-family collision archiving. The retained wall
@@ -1344,7 +1351,14 @@ unavailable` or `none required` nothing was published and there is nothing to
 prove: skip it, and do not treat its absence as a blocking fault. The picture
 results in the run report still tell the teacher what the lesson does without.
 
-Append genuine findings to the shared build review log:
+The shared build review log is the plugin developer's record, so it is written
+only on the computer the plugin is developed on. Resolve `PLUGIN_SOURCE_ROOT`
+now (see the skill's package-root section). On
+`PLUGIN_SOURCE_ROOT_UNAVAILABLE` developer mode is off: write nothing, and give
+the report's shared investigation log `Status: NOT REQUIRED`, because every
+finding is already in the run report and a teacher who is not developing the
+plugin should not find an engine log on their Desktop. Otherwise append genuine
+findings:
 
 ```text
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/record-build-review.py" \
@@ -1352,15 +1366,14 @@ Append genuine findings to the shared build review log:
   --plugin-root "[PLUGIN_ROOT]" \
   --finding "[one reusable engine finding]" \
   [--finding "..." for each further finding] \
-  [--source-root "[PLUGIN_SOURCE_ROOT]" when one resolved]
+  --source-root "[PLUGIN_SOURCE_ROOT]"
 ```
 
-The log lives on the teacher's Desktop, so it does not depend on where the run
-started, and each entry carries the plugin version. Require
-`BUILD_REVIEW_LOG_OK`. Pass `--source-root` only when the run already resolved
-one; there is no pending-log branch and no checkout to go looking for. A finding
-is one a future run would hit again: a check that refused a correct output, a
-renderer that could not draw what the lesson needed, two rules that disagreed.
+The log lives on the Desktop, so it does not depend on where the run started,
+and each entry carries the plugin version. Require `BUILD_REVIEW_LOG_OK`. There
+is no pending-log branch and no checkout to go looking for. A finding is one a
+future run would hit again: a check that refused a correct output, a renderer
+that could not draw what the lesson needed, two rules that disagreed.
 
 ---
 
@@ -1429,21 +1442,37 @@ a two-lesson scope covers Lesson 1 only and name deferred learning.
 
 ---
 
-## Phase 5 — SharePoint Sync
+## Phase 5 — Save the Resources
 
-Once every branch has settled, build the explicit sync list from the teaching
+Once every branch has settled, build the explicit list from the teaching
 resources only: the deck, worksheets, answer key, working wall and stick-in
 sheets. The run report and walk-through stay in `OUTPUT_DIR` for the teacher to
-read there; the sync script skips them if passed. Run `run-fixed-resource.py sharepoint` directly with `--term-file`, and
-the year, the term, week, subject and day from `[WORKING_DIR]/filing.txt`
-(`--day` only when `IS_CORE=yes`) and one `--file` per exact basename. Require
-schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`, then tell the teacher
-where it was saved in one line.
+read there; the delivery script skips them if passed.
 
-Sync the delivered files whatever the package outcome: the run report, not the
-sync, is where faults are told. If the mapped drive is unavailable or the filing
-destination never resolved, retain local outputs and report the exact local
-folder and resolver error.
+When `filing.txt` says `DELIVERY=folder` or `DELIVERY=sorted`, run
+`run-fixed-resource.py deliver` directly with `--summary-output
+"[WORKING_DIR]/build-results/delivery.json"`, `--year` and `--subject`, one
+`--file` per exact basename, and in sorted mode the term, week and day from
+`filing.txt` (`--day` only when `IS_CORE=yes`). The year and subject are passed
+in every mode because that record is how the next run finds this lesson. Require
+schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`, then tell the teacher
+where it was saved in one line. The save folder is outside the lesson folder, so
+on Codex run it with escalated permissions.
+
+Save the delivered files whatever the package outcome: the run report, not the
+saving, is where faults are told. If the save folder is unavailable or the
+sorted destination never resolved, keep the resources in `OUTPUT_DIR` and report
+that folder and the exact error.
+
+When `filing.txt` says `DELIVERY=none`, the resources are already where the
+teacher can open them: name `OUTPUT_DIR` in the report. When `filing.txt` also
+says `DELIVERY_OFFERED=no`, add one plain offer at the end of the report: "Want
+finished lessons saved somewhere in particular from now on? Tell me the folder,
+and whether you'd like them sorted into term, week and day folders." Then run
+`"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-settings.py" offered`, so a teacher
+who ignores it is not asked again. Whenever the teacher answers, now or in a
+later conversation, follow `Choosing where lessons are saved` in
+`[PLUGIN_ROOT]/references/computer-setup.md`.
 
 ### Edge cases
 

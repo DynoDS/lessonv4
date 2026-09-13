@@ -99,13 +99,13 @@ class MakeLessonStaticContractTests(unittest.TestCase):
 
         # BLOCKED labels the record; built resources are still delivered and synced.
         self.assertIn("`BLOCKED` labels the record, not the delivery", playbook)
-        self.assertIn("Sync the delivered files whatever the package outcome", playbook)
+        self.assertIn("Save the delivered files whatever the package outcome", playbook)
 
         # Report validation repairs the record; it never withholds the teacher report.
         self.assertIn("send the teacher report anyway", playbook)
 
         # An unresolved filing destination degrades to local delivery.
-        self.assertIn("plan local-only delivery", playbook)
+        self.assertIn("saving never gates the lesson", playbook)
 
     def test_wall_designer_is_spawned_every_run_and_stick_in_reads_the_design(self):
         """Wall-worthiness belongs to its designer; the stick-in gate is the design's.
