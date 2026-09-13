@@ -1278,7 +1278,7 @@ Zone class compatibility: fits A, B, C, D, E-wide, E-narrow, G. The figure is cr
 }
 ```
 
-A native explanatory model for a fair parachute comparison. Both canopies use the same billowed-sheet profile; the large canopy is exactly three times the drawn width of the small one. The renderer calculates each load's vertical drop from the shared cord length, so corresponding cords remain equal in Euclidean length instead of merely looking similar. Matching ticks expose that equality, identical load blocks expose the controlled load, unequal upward arrows show more/less air resistance qualitatively, and equal downward arrows show the same gravity comparison. All seven labels are measured, wrapped into external boxes and joined to their targets with leaders. The fixed ratio fields are validated and refused if changed: this helper represents the 60 cm : 20 cm comparison, equal cords and equal loads. It is a schematic teaching model, not photographic evidence. Use in a wide teaching zone after children have gathered results; do not use as a success-criteria icon.
+A native explanatory model for a fair parachute comparison. Both canopies use the same billowed-sheet profile; the large canopy is exactly three times the drawn width of the small one. The renderer calculates each load's vertical drop from the shared cord length, so corresponding cords remain equal in Euclidean length instead of merely looking similar. Matching ticks expose that equality, identical load blocks expose the controlled load, unequal upward arrows show more/less air resistance qualitatively, and equal downward arrows show the same gravity comparison. All seven labels are measured, wrapped into external boxes and joined to their targets with leaders. The fixed ratio fields are validated and refused if changed: this helper represents the 60 cm : 20 cm comparison, equal cords and equal loads. It is a schematic teaching model, not photographic evidence. Use in a wide teaching zone after children have gathered results; do not use as a success-criteria icon. The same drawing reaches the worksheet, the working wall and the stick-in pack, so copy this object field for field; on a worksheet its seven labels need a landscape sheet (about 176mm of width) to print at the sheet's readable size.
 
 ### `circuit-diagram`
 
@@ -1534,7 +1534,7 @@ A board reference containing individually identifiable standard circuit symbols.
 
 `items` contains 2 to 6 entries. `symbol` is exactly one of `cell`, `lamp`, `wire`, `switch-open`, `switch-closed`. `label` is the exact short child-facing name printed below that symbol.
 
-The items keep the supplied order. Every symbol is drawn independently from the shared circuit geometry and receives comparable visual space.
+The items keep the supplied order. Every symbol is drawn independently from the shared circuit geometry and receives comparable visual space. The same bank reaches the worksheet, the working wall and the stick-in pack, so copy this object field for field when a later resource needs the key.
 
 Use `circuit-diagram` instead when the complete loop, connections, component count or switch state of one circuit is the thing children inspect.
 
@@ -2202,7 +2202,7 @@ A line graph with numbered, titled axes and plotted points joined in order — t
   "points": [ { "x": 0, "y": 20 }, { "x": 1, "y": 16 }, { "x": 2, "y": 12 }, { "x": 3, "y": 7 }, { "x": 4, "y": 3 } ] }
 ```
 
-**`points`:** `{ x, y }` data points, joined in the order given. **`xLabel` / `yLabel`:** axis titles (the y-title is rotated up the left edge). **`xMax` / `yMax`:** axis ranges (default: rounded up from the data). **`xStep` (default 1) / `yStep`** (default a "nice" step giving ~5 ticks): tick spacing. Prefers a wide zone (works well at full working-area width with `workingSpace: false`).
+**`points`:** `{ x, y }` data points, joined in the order given. **`xLabel` / `yLabel`:** axis titles (the y-title is rotated up the left edge). **`xMax` / `yMax`:** axis ranges (default: rounded up from the data). **`xStep` (default 1) / `yStep`** (default a "nice" step giving ~5 ticks): tick spacing. **`title`:** optional heading above the graph. Prefers a wide zone (works well at full working-area width with `workingSpace: false`). One drawing on every surface (the board, the worksheet, the working wall and the stick-in pack). On the board the axis numbers print at 24pt, shrinking no further than 18pt; a zone that cannot number both axes at 18pt is refused by name (`LINE_GRAPH_TOO_NARROW`, `LINE_GRAPH_ZONE_TOO_SMALL`): give it more room or a larger `xStep` / `yStep`.
 
 ### `tally-chart`
 
@@ -2240,7 +2240,9 @@ A pictogram — each row is a category label followed by a series of house-blue 
 
 ### `bar-chart`
 
-A bar chart with labelled axes and a clearly numbered y-axis scale: the canonical data-handling visual from Year 3 up. The y-axis interval is always taken from the spec and never defaults to 1, because reading a non-unit scale (each gridline worth 2, 5 or 10) is the whole point of a primary bar-chart lesson, so set `y_interval` to match the data. The same renderer the slides use; bars are school blue.
+A bar chart with labelled axes and a clearly numbered y-axis scale: the canonical data-handling visual from Year 3 up. The y-axis interval is always taken from the spec and never defaults to 1, because reading a non-unit scale (each gridline worth 2, 5 or 10) is the whole point of a primary bar-chart lesson, so set `y_interval` to match the data. One drawing on every surface (the board, the worksheet, the working wall and the stick-in pack), so a chart copied field for field from this slide prints as the same chart everywhere; bars are school blue.
+
+On the board the scale numbers and category names print at 24pt, shrinking no further than 18pt when the zone is tight; names that still will not sit side by side drop every other one to a second row. A zone that cannot number the scale at 18pt is refused by name (`BAR_CHART_TOO_NARROW`, `BAR_CHART_ZONE_TOO_SMALL`): give it more room, fewer categories, shorter names or a larger `y_interval`.
 
 ```json
 { "type": "bar-chart",
@@ -2256,7 +2258,7 @@ A bar chart with labelled axes and a clearly numbered y-axis scale: the canonica
 
 ### `label-diagram`
 
-A photo or drawing with a **labelled-part overlay**: each callout is a small dot on the part, joined by a leader line out to the part's name. Reach for it whenever the teaching move is naming the specific parts of a real diagram: the parts of a plant, the features of a river, the angles on a shape. The leader line is the point: it is what lets a child map each name back to the part it belongs to, so a corner-callout layout (the older `teach-annotated`) cannot stand in for it. The same figure the worksheet and the stick-in pack draw, so the board, the sheet and any glued-in piece show one diagram.
+A photo or drawing with a **labelled-part overlay**: each callout is a small dot on the part, joined by a leader line out to the part's name. Reach for it whenever the teaching move is naming the specific parts of a real diagram: the parts of a plant, the features of a river, the angles on a shape. The leader line is the point: it is what lets a child map each name back to the part it belongs to, so a corner-callout layout (the older `teach-annotated`) cannot stand in for it. The same figure the worksheet, the working wall and the stick-in pack draw, so the board, the sheet, a wall poster and any glued-in piece show one diagram.
 
 Set `given: true` on a callout to print its label: use this for the completed/answer diagram (My Turn), or for a part the lesson hands the child. Omit `given` to draw a blank write-on line instead, which is the question form available for live completion or for child completion (Your Turn). Anchors are percentages of the image, so the same callouts fit the picture at any displayed size; a callout auto-routes its label to the nearest margin, or you can place it with `label_at`.
 

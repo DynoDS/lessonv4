@@ -611,6 +611,24 @@ Spec: `{ "type": "circuit-diagram", "cells": 1, "lamps": 1, "switch": "closed", 
 
 A **series circuit** in the standard primary symbols — cells as long and short plates, lamps as circles with crosses, buzzers as semicircles, switches clearly open or closed. Wall material for an electricity unit: the anchor a child checks their own circuit against all term. Use `circuits` (an array) for a comparison card — "this one lights, this one does not" — and keep each label short so it fits under its own circuit. The same strict drawing the slides and worksheets use, so the wall cannot disagree with the board about what an open switch looks like: state the cells, the components, the switch and the path explicitly, because the drawing refuses to invent, round or drop any of them. A **wide** figure once several circuits share a row. Crops tight and fills its slot.
 
+### circuit-symbol-bank
+
+Spec: `{ "type": "circuit-symbol-bank", "items": [{ "symbol": "cell", "label": "cell" }, { "symbol": "lamp", "label": "lamp" }, { "symbol": "wire", "label": "wire" }, { "symbol": "switch-open", "label": "open switch" }, { "symbol": "switch-closed", "label": "closed switch" }] }`
+
+The `circuit-symbol-bank` is the **key of standard circuit symbols**, each with its child-facing name underneath: the same bank the board teaches from, drawn with the same lines as `circuit-diagram` so the key and the circuit cannot disagree about a symbol. Wall material for an electricity unit, where children look up to check what a symbol means while they draw their own circuits. `items` holds 2 to 6 entries in the order given; `symbol` is exactly one of `cell`, `lamp`, `wire`, `switch-open`, `switch-closed`, and `label` is the short name printed under it (a name wider than its cell is refused, not cut). Copy the slide's object. A **wide** strip, which reads biggest with `"visualScale": "dominant"`. Crops tight and fills its slot.
+
+### blank-surface
+
+Spec: `{ "type": "blank-surface", "surface": "number-line", "start": 0, "end": 100 }`
+
+The `blank-surface` is a **draw-your-own surface**: a faint empty number line (with optional end values) and room above it for jumps, or `"surface": "bar"` for one empty bar outline (`"bars": 2` for a comparison pair). The same surface the board and the sheet use when the skill is deciding where the jumps go or how to split the bar. On the wall it is an anchor for the METHOD rather than an answer: "start with an empty line like this", beside a worked example that fills one in. It draws nothing a child could read an answer from, so pair it with words or a worked card. Copy the slide's object. A **wide** figure. Crops tight and fills its slot.
+
+### label-diagram
+
+Spec: `{ "type": "label-diagram", "imagePath": "photos/sunflower.jpg", "layout": "sides", "callouts": [{ "anchor": [48, 20], "label": "flower head", "given": true }, { "anchor": [52, 70], "label": "stem", "given": true }] }`
+
+The `label-diagram` is a **real photograph with its parts named**: a dot on each part, a leader line out to its name in the margin. The same picture, and the same poster rules, the slide uses, so a class sees on the wall the labelled flower or church they were taught from. `imagePath` is the photo the slide shows, relative to working-wall.json; the build refuses a card whose photo cannot be read. `anchor` is `[x%, y%]` of the photo. On a wall card every label is finished, so give each callout `"given": true` (a callout without it draws a blank line to write on, which is not wall material). Use `"layout": "sides"` for a photograph so the names stand on clear white beside it. This is different from `callouts` on a drawn primitive in a `labelledDiagram` card, which label a diagram the wall draws itself; use this one when the picture is a photograph. Crops tight and fills its slot.
+
 ### translation-shape
 
 Spec: `{ "type": "translation-shape", "cols": 10, "rows": 8, "points": [[1,1],[1,4],[3,4],[3,3],[2,3],[2,1]], "translate": { "dx": 5, "dy": 3 }, "showImage": true }`

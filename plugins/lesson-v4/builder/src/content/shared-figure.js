@@ -31,6 +31,8 @@ const PX_PER_PT = 4;
 // slide shows if a picture could not be made.
 const FIGURES = {
   numberline: { module: require('../../../shared/visuals/number-line-svg'), name: 'number line' },
+  'bar-chart': { module: require('../../../shared/visuals/bar-chart-svg'), name: 'bar chart' },
+  'line-graph': { module: require('../../../shared/visuals/line-graph-svg'), name: 'line graph' },
 };
 
 // One per build. `request` records a drawing the preflight needs; `rasterise`

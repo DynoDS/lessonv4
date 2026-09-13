@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 78 helpers, what each is for, and a working example of each.
+The 80 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -70,6 +70,8 @@ emailed. Never write `imageHref` yourself.
 - `process-chain` - Boxes joined by arrows: a food chain, a life cycle, the order of events.
 - `circuit-diagram` - One series circuit or a row of them in the standard symbols, each carrying its own state.
 - `classification-key` - A branching yes/no identification key down to named living things.
+- `circuit-symbol-bank` - The key of standard circuit symbols (cell, lamp, wire, open and closed switch), each with its name beneath: the same bank the board teaches from.
+- `parachute-forces` - Two model parachutes compared after a fair test: a canopy three times as wide, equal cords and loads, and the force arrows, labelled.
 
 **Shape, space and measure**
 
@@ -850,6 +852,61 @@ Smallest usable: **147mm wide x 60mm tall**. Spare height: never takes spare hei
 }
 ```
 
+#### `circuit-symbol-bank`
+
+The key of standard circuit symbols (cell, lamp, wire, open and closed switch), each with its name beneath: the same bank the board teaches from.
+
+Smallest usable: **123mm wide x 18mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "circuit-symbol-bank",
+  "items": [
+    {
+      "symbol": "cell",
+      "label": "cell"
+    },
+    {
+      "symbol": "lamp",
+      "label": "lamp"
+    },
+    {
+      "symbol": "wire",
+      "label": "wire"
+    },
+    {
+      "symbol": "switch-open",
+      "label": "open switch"
+    },
+    {
+      "symbol": "switch-closed",
+      "label": "closed switch"
+    }
+  ]
+}
+```
+
+#### `parachute-forces`
+
+Two model parachutes compared after a fair test: a canopy three times as wide, equal cords and loads, and the force arrows, labelled.
+
+Smallest usable: **166mm wide x 82mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "parachute-forces",
+  "labels": {
+    "largeCanopy": "More air to push out of the way",
+    "smallCanopy": "Less air to push out of the way",
+    "largeUpForce": "More air resistance",
+    "smallUpForce": "Less air resistance",
+    "downForce": "Gravity pulls down",
+    "cords": "Same cord length",
+    "loads": "Same load"
+  }
+}
+```
+
 ## Shape, space and measure
 
 #### `shape`
@@ -1112,7 +1169,7 @@ Smallest usable: **47mm wide x 40mm tall**. Spare height: never takes spare heig
 
 A labelled number line with a `caption` beneath ("Each interval is worth 100."): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.
 
-Smallest usable: **173mm wide x 15mm tall**. Spare height: never takes spare height.
+Smallest usable: **70mm wide x 26mm tall**. Spare height: never takes spare height.
 
 ```json
 {

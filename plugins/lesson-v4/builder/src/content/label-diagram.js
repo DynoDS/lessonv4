@@ -35,7 +35,7 @@
 const requireGlobal = require('../require-global');
 const { FONT, COLOURS, FIT } = require('../styles');
 const { resolveForEmbed, longPathSafe } = require('../images/resolve');
-const { buildLabelDiagramSvg } = require('../../../shared/visuals/label-diagram-svg');
+const { tightSvg: labelDiagramSvg } = require('../../../shared/visuals/label-diagram-svg');
 const { measureContainedAspect } = require('./contained-extent');
 const fs = require('fs');
 
@@ -92,30 +92,16 @@ async function preRenderLabelDiagrams(lesson, lessonDir) {
       const meta = await sharp(longPathSafe(resolved)).metadata();
       const b64 = fs.readFileSync(resolved).toString('base64');
       // A photo-backed anatomy diagram (parts of a church, parts of a real
-      // flower) reads best as a POSTER: the part names sit out in the margins
-      // beside the picture, joined by leader lines, so dark label text always
-      // lands on clear white space and stays readable against any photograph.
-      // That is the `sides` layout the shared geometry and the working wall
-      // already use — the slide simply forwards the same opt-in flags. When the
-      // designer asks for `sides`, supply poster-friendly defaults: a wide side
-      // band for the names, a slim top/bottom band so the picture keeps its
-      // height, and wrapping for phrase-length names — each still overridable per
-      // spec. Every flag falls back to its prior value, so a white-background
-      // line drawing that places labels with label_at renders exactly as before.
-      const isSides = spec.layout === 'sides';
-      const { svg, w, h, aspect } = buildLabelDiagramSvg({
-        href: `data:${mimeFor(meta.format)};base64,${b64}`,
-        width: meta.width,
-        height: meta.height,
-        callouts: spec.callouts || [],
+      // flower) reads best as a POSTER, the `sides` layout. Its defaults live
+      // in the shared drawing now, so the working wall draws the same poster
+      // the slide shows; the slide passes only its own blue and font.
+      const { svg, aspect } = labelDiagramSvg({
+        ...spec,
+        imageHref: `data:${mimeFor(meta.format)};base64,${b64}`,
+        imageWidth: meta.width,
+        imageHeight: meta.height,
         blue: BLUE,
         font: FONT,
-        layout: spec.layout || 'auto',
-        marginXRatio: spec.marginXRatio != null ? spec.marginXRatio : (isSides ? 0.22 : null),
-        marginYRatio: spec.marginYRatio != null ? spec.marginYRatio : (isSides ? 0.02 : null),
-        labelMaxChars: spec.labelMaxChars != null ? spec.labelMaxChars : (isSides ? 16 : 0),
-        arrow: spec.arrow != null ? spec.arrow : false,
-        labelColour: spec.labelColour || undefined,
       });
       const png = await sharp(Buffer.from(svg), { density: RENDER_DENSITY }).png().toBuffer();
       map[key] = { png, aspect };

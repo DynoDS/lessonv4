@@ -22,6 +22,8 @@ const angleSvg = require("../../../shared/visuals/angle-svg");
 const barModelSvg = require("../../../shared/visuals/bar-model-svg");
 const blankSurfaceSvg = require("../../../shared/visuals/blank-surface-svg");
 const carrollSvg = require("../../../shared/visuals/carroll-svg");
+const circuitSymbolBankSvg = require("../../../shared/visuals/circuit-symbol-bank-svg");
+const parachuteForcesSvg = require("../../../shared/visuals/parachute-forces-svg");
 const coordinateGridSvg = require("../../../shared/visuals/coordinate-grid-svg");
 const geoboardSvg = require("../../../shared/visuals/geoboard-svg");
 const gridMapSvg = require("../../../shared/visuals/grid-map-svg");
@@ -93,13 +95,11 @@ function fromShared(module, toSpec, { capMm, minWidthMm, minHeightMm, greed = 0 
 const helpers = {
   "bar-chart": fromShared(
     barChartSvg,
-    (spec) => ({
-      title: spec.title,
-      categories: spec.categories,
-      values: spec.values,
-      y_max: spec.yMax,
-      y_interval: spec.yInterval,
-    }),
+    // Passed as written: the shared chart reads the board's spelling (y_max,
+    // y_interval, y_label, x_label) and the sheet's older camelCase alike, so a
+    // chart copied from a slide draws here with its axis titles, which the
+    // sheet used to drop (13 September 2026).
+    (spec) => spec,
     {
       capMm: 140,
       // Every bar needs room for its category label underneath, so a chart
@@ -325,6 +325,32 @@ const helpers = {
       rotation: spec.rotation,
     }),
     { capMm: 55, minWidthMm: 40, minHeightMm: 35, greed: 0 }
+  ),
+
+  // The component-symbol key of an electricity lesson, the same bank the board
+  // teaches from. Until 13 September 2026 only the board could draw it, so a
+  // sheet asking a child to name the symbols had to describe them in words.
+  // Each symbol keeps a cell of its own; below about 24mm a cell the switch's
+  // lifted blade and the cell's short plate stop reading as different things.
+  "circuit-symbol-bank": fromShared(
+    circuitSymbolBankSvg,
+    (spec) => ({ items: spec.items }),
+    {
+      capMm: 60,
+      minWidthMm: (spec) => Math.max(70, (Array.isArray(spec.items) ? spec.items.length : 2) * 24),
+      minHeightMm: 18,
+    }
+  ),
+
+  // Two model parachutes compared after a practical: exact 3:1 canopies, equal
+  // cords and loads, and the force arrows. The same picture the board and the
+  // wall show, so a child writing up the fair test reads the diagram they were
+  // taught from. Its seven labels are what set the width: narrower than this
+  // and they print under the sheet's readable floor.
+  "parachute-forces": fromShared(
+    parachuteForcesSvg,
+    (spec) => spec,
+    { capMm: 140, minWidthMm: 160, minHeightMm: 82 }
   ),
 
   // A row-of-symbols pictogram with a key. Width follows both the longest

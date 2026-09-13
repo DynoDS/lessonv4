@@ -35,6 +35,9 @@ const {
   placeValueChartKey,
   circuitDiagramKey,
   parachuteForcesKey,
+  blankSurfaceKey,
+  circuitSymbolBankKey,
+  labelDiagramKey,
   badgeKey,
   calloutKeySuffix,
 } = require("./svg-renderer");
@@ -68,6 +71,9 @@ const VISUAL_KEY_FNS = {
   "place-value-chart": placeValueChartKey,
   "circuit-diagram": circuitDiagramKey,
   "parachute-forces": parachuteForcesKey,
+  "blank-surface": blankSurfaceKey,
+  "circuit-symbol-bank": circuitSymbolBankKey,
+  "label-diagram": labelDiagramKey,
 };
 
 function pickRainbowColour(idx, style) {
