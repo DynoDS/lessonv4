@@ -521,6 +521,43 @@ module.exports = {
     object: { from: 0, to: 6 },
   },
 
+  // A round scale a child reads a mass off. The drawing is the same one the
+  // board shows; `label` is a line of sheet text under it.
+  "dial-scale": {
+    text: "How much flour is on the scales?",
+    max: 1000,
+    majorEvery: 100,
+    minorEvery: 20,
+    value: 350,
+    unit: "g",
+    label: "Scale A",
+  },
+  // A jug showing its level. Leave `value` off for an empty jug the child
+  // marks a level on; a green `levelColor` shows a marked answer.
+  "measuring-jug": {
+    text: "How much water is in the jug?",
+    max: 400,
+    majorEvery: 100,
+    minorEvery: 50,
+    value: 250,
+    unit: "ml",
+    fillColor: "CCE2F5",
+    levelColor: "0070C0",
+    label: "Jug B",
+  },
+  "number-network": {
+    text: "Each line joins two numbers that add to 60. Find the missing numbers.",
+    target: 60,
+    label: "",
+    nodes: [
+      { x: 1, y: 0, value: 25 },
+      { x: 1, y: 1, value: 35 },
+      { x: 0, y: 2, value: null },
+      { x: 2, y: 2, value: null, color: "" },
+    ],
+    edges: [[0, 1], [1, 2], [1, 3]],
+  },
+
   // ─── thinking diagrams ───
   // The board's own spelling. Labels are the exact names a child is taught.
   "circuit-symbol-bank": {
@@ -545,6 +582,37 @@ module.exports = {
       loads: "Same load",
     },
   },
+  "concept-map": {
+    text: "How was cacao used by the Maya?",
+    centre: "Cacao",
+    spokes: [
+      { label: "Money", relationship: "used as" },
+      { label: "Religion", relationship: "used in" },
+      { label: "Power", relationship: "controlled by rulers" },
+      { label: "Afterlife", relationship: "buried with" },
+    ],
+  },
+  fishbone: {
+    text: "Why did the Romans invade Britain?",
+    effect: "The Romans invaded Britain",
+    causes: ["Britain had tin and gold", "Caesar wanted glory", "Britain helped the Gauls", "Rome wanted to expand"],
+  },
+  "continuum-line": {
+    text: "Mark where you stand.",
+    question: "Was it fair to invade Britain?",
+    left: "Completely unfair",
+    right: "Completely fair",
+    middle: "Not sure",
+    marks: 4,
+  },
+  // A line break typed inside a source is kept.
+  "source-pathway": {
+    text: "Where can electricity come from?",
+    sources: ["Mains socket", "Battery", "Solar cell", "Turn handle\nDynamo"],
+    middle: "Electricity",
+    outcome: "Appliance",
+  },
+
   "circuit-diagram": {
     text: "Look at each circuit. Will the lamp light?",
     // The states are MIXED on purpose. A row that is all gaps teaches a child

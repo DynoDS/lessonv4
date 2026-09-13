@@ -65,7 +65,9 @@ function renderSingle(item, opts = {}) {
   const rawSpec = item.spec || {};
   // A drawing laid out at its printed size (the number line) is told the width
   // the piece will print at.
-  const printedWidthMm = item.widthMm ?? def.defaultWidthMm;
+  // A ruler states its own width instead, because it prints at true size.
+  const ownWidthMm = def.widthMmFor ? def.widthMmFor(def.specFn ? def.specFn(rawSpec) : rawSpec) : null;
+  const printedWidthMm = item.widthMm ?? ownWidthMm ?? def.defaultWidthMm;
   let drawn;
   try {
     drawn = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);

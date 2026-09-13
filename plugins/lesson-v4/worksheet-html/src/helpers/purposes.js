@@ -96,6 +96,12 @@ module.exports = {
     "Rows of unit fractions under one whole, each piece named, for comparing and finding equivalent fractions.",
   ruler:
     "A ruler printed at TRUE SIZE for a child to measure against. It refuses a zone too narrow rather than shrinking, because a scaled ruler makes every answer wrong on a page that looks normal.",
+  "dial-scale":
+    "A round weighing scale: 0 at the top, numbered marks round the dial and a red needle at `value`, for reading a mass off a scale. `label` prints a line under it.",
+  "measuring-jug":
+    "A measuring jug with a scale up its side. Leave `value` off for an empty jug the child marks a level on; give it to show the level. `label` prints a line under it.",
+  "number-network":
+    "Circles joined by lines where each joined pair adds to `target`; a circle with no value is a blank the child fills.",
 
   // ─── forms ───
   "multiple-choice":
@@ -206,6 +212,14 @@ module.exports = {
     "A branching yes/no identification key down to named living things.",
   "process-chain":
     "Boxes joined by arrows: a food chain, a life cycle, the order of events. The arrows are the point.",
+  "concept-map":
+    "One central idea joined to two to six others round it, each line optionally naming the relationship.",
+  fishbone:
+    "Cause and effect: causes on ribs off a spine that points at the effect.",
+  "continuum-line":
+    "A line between two opposite ends (disagree to agree) for a child to mark a position on, with optional ticks and a question above.",
+  "source-pathway":
+    "Two to six separate sources joining one middle state and then one outcome, for when the shared middle is the learning.",
 
   // ─── geography ───
   map:

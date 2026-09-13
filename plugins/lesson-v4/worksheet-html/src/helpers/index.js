@@ -38,6 +38,7 @@ const FILES = [
   require("./comparing"),
   require("./placevalue"),
   require("./money"),
+  require("./scales-and-diagrams"),
   require("./geometry"),
   require("./science"),
   require("./geography"),

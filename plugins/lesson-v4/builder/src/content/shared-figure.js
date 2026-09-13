@@ -62,6 +62,19 @@ const FIGURES = {
     name: 'map',
     zoneFill: (data) => `the ${String((data && data.map) || '').trim().toLowerCase().replace(/[ _]+/g, '-')} map`,
   },
+  // A scale's `label` ("The scales show 200g", "Mark 250ml") is the board's
+  // typed caption, as the board's own dial and jug always printed it.
+  'dial-scale': { module: require('../../../shared/visuals/dial-scale-svg'), name: 'dial scale', caption: { h: 0.5, hAnswer: 0.8, font: 24, fontAnswer: 24 } },
+  'measuring-jug': { module: require('../../../shared/visuals/measuring-jug-svg'), name: 'measuring jug', caption: { h: 0.5, hAnswer: 0.8, font: 24, fontAnswer: 24 } },
+  ruler: { module: require('../../../shared/visuals/ruler-svg'), name: 'ruler' },
+  timeline: { module: require('../../../shared/visuals/timeline-svg'), name: 'timeline' },
+  'process-chain': { module: require('../../../shared/visuals/process-chain-svg'), name: 'process chain' },
+  'classification-key': { module: require('../../../shared/visuals/classification-key-svg'), name: 'classification key' },
+  'concept-map': { module: require('../../../shared/visuals/concept-map-svg'), name: 'concept map' },
+  fishbone: { module: require('../../../shared/visuals/fishbone-svg'), name: 'fishbone' },
+  'continuum-line': { module: require('../../../shared/visuals/continuum-line-svg'), name: 'continuum line' },
+  'source-pathway': { module: require('../../../shared/visuals/source-pathway-svg'), name: 'source pathway' },
+  'number-network': { module: require('../../../shared/visuals/number-network-svg'), name: 'number network', caption: { h: 0.5, hAnswer: 0.8, font: 24, fontAnswer: 24 } },
 };
 
 function captionFor(type, data) {
