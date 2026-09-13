@@ -37,23 +37,43 @@ test("a chart on paper is pinned to its printed width and never set under the sh
   for (const [name, spec] of [["bar-chart", BAR], ["line-graph", LINE]]) {
     const html = REGISTRY[name].render(spec, { widthMm: 110 });
     assert.ok(/style="width:/.test(html), `${name} is pinned to its printed width`);
-    assert.ok(Math.min(...fontSizes(html)) >= PROFILES.worksheets.minFontPt, `${name} words at ${Math.min(...fontSizes(html))}pt`);
+    assert.ok(Math.min(...fontSizes(html)) >= PROFILES.worksheets.fontPt, `${name} words at ${Math.min(...fontSizes(html))}pt`);
   }
 });
 
-test("in a wide zone a chart stops at the pack's width rather than stretching sideways", () => {
+// The plot's height over its width, read off the two axis lines.
+const plotShape = (html) => {
+  const axes = [...html.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)" stroke="#000000"/g)].map((m) => m.slice(1).map(Number));
+  const up = axes.find((a) => a[0] === a[2] && a[3] - a[1] > 50);
+  const across = axes.find((a) => a[1] === a[3] && a[2] - a[0] > 50);
+  return (up[3] - up[1]) / (across[2] - across[0]);
+};
+
+test("in a wide zone a chart fills the width as a bigger chart, in the board's shape", () => {
   for (const [name, spec] of [["bar-chart", BAR], ["line-graph", LINE]]) {
+    const narrow = REGISTRY[name].render(spec, { widthMm: 110 });
     const wide = REGISTRY[name].render(spec, { widthMm: 250 });
-    assert.ok(Math.abs(widthPt(wide) - 130 * 72 / 25.4) < 1, `${name} printed ${widthPt(wide)}pt wide`);
-    assert.equal(REGISTRY[name].measure(spec, 250), REGISTRY[name].measure(spec, 130));
+    assert.ok(Math.abs(widthPt(wide) - 250 * 72 / 25.4) < 1, `${name} printed ${widthPt(wide)}pt wide`);
+    assert.ok(REGISTRY[name].measure(spec, 250) > REGISTRY[name].measure(spec, 110) * 1.8, `${name} grew taller with its width`);
+    assert.ok(Math.min(...fontSizes(wide)) > Math.min(...fontSizes(narrow)), `${name} words grew with the chart`);
+    // The scale numbers are the smallest words, and they grow by no more
+    // than the board's factor.
+    assert.ok(
+      Math.min(...fontSizes(wide)) <= PROFILES.worksheets.fontPt * PROFILES.slides.grow + 0.01,
+      `${name} words grew no further than the board's factor`
+    );
+    for (const html of [narrow, wide]) {
+      const shape = plotShape(html);
+      assert.ok(shape > 0.58 && shape < 0.66, `${name} plot is ${shape.toFixed(2)} of its width`);
+    }
   }
 });
 
-test("a chart whose names need more than the cap is drawn as wide as it needs", () => {
+test("a chart of many bars asks for the width its names need, at the sheet's type size", () => {
   const many = { ...BAR, categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Next"], values: [1, 2, 3, 4, 5, 6, 7, 8] };
   const { minWidthMm } = REGISTRY["bar-chart"].needs(many);
-  assert.ok(minWidthMm > 130);
-  assert.ok(Math.abs(widthPt(REGISTRY["bar-chart"].render(many, { widthMm: 250 })) - minWidthMm * 72 / 25.4) < 1);
+  assert.ok(minWidthMm >= 8 * 22);
+  assert.ok(Math.min(...fontSizes(REGISTRY["bar-chart"].render(many, { widthMm: minWidthMm }))) >= PROFILES.worksheets.fontPt);
 });
 
 test("the board's spelling and the sheet's older spelling draw the same chart", () => {

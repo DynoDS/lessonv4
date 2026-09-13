@@ -34,7 +34,7 @@ const rainforestLayersSvg = require("../../../shared/visuals/rainforest-layers-s
 const balancedPatternPlateSvg = require("../../../shared/visuals/balanced-pattern-plate-svg");
 const mapSvg = require("../../../shared/visuals/map-svg");
 const { atPrintedWidth } = require("./at-printed-width");
-const { profileFor, MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
+const { profileFor, MM_TO_PT, PROFILES } = require("../../../shared/visuals/surface-profiles");
 const reflectionGridSvg = require("../../../shared/visuals/reflection-grid-svg");
 const tallyChartSvg = require("../../../shared/visuals/tally-chart-svg");
 const translationShapeSvg = require("../../../shared/visuals/translation-shape-svg");
@@ -101,12 +101,13 @@ function fromShared(module, toSpec, { capMm, minWidthMm, minHeightMm, greed = 0 
 // asking for a wider zone.
 const SHEET_WIDEST_MM = 400;
 
-// A chart's plot keeps one height at the sheet's type size however wide it is
-// drawn, so in a landscape zone it only stretched sideways: a chart three times
-// as wide as tall, where the board's is about one and a half. It stops at the
-// width the stick-in pack prints it, which keeps paper's chart the shape it is
-// on the board and in the pack, and centres in any wider zone.
-const CHART_WIDEST_MM = 130;
+// A chart fills the width of its zone, as the scaled chart it replaced did, and
+// its plot is as tall for that width as the board's. Its words grow with it up
+// to the board's own factor, so a chart in a wide zone prints as a bigger chart
+// with bigger numbers rather than small numbers on a flat chart with paper to
+// spare. They never print under the sheet's type size in a zone wide enough to
+// hold them there.
+const CHART_GROW = PROFILES.slides.grow;
 function narrowestThatDraws(module, floorMm) {
   return (spec) => {
     const floor = floorMm(spec);
@@ -140,7 +141,7 @@ const helpers = {
     minWidthMm: narrowestThatDraws(barChartSvg, (spec) =>
       Math.max(80, (spec.categories || []).length * 22)
     ),
-    maxWidthMm: CHART_WIDEST_MM,
+    grow: CHART_GROW,
   }),
 
   // Sorting into two overlapping properties. A blank one (no items) is the
@@ -330,7 +331,7 @@ const helpers = {
       const ticks = Math.max(1, Math.round(xMax / step));
       return Math.max(80, ticks * 12);
     }),
-    maxWidthMm: CHART_WIDEST_MM,
+    grow: CHART_GROW,
   }),
 
   // The parallel / perpendicular / neither pair. Like angle, it reads or

@@ -59,7 +59,11 @@ const LABEL_FS = 28;   // category labels
 const TICK_FS  = 28;   // y-axis numbers
 const AXIS_TITLE_FS = 28;
 
-const PLOT_H     = 460;   // height of the plotting area, when the box sets none
+// With no depth set by the box (paper, the wall, the pack), the plot is this
+// tall for its width: the shape the board's charts take in a slide zone, where
+// the plot measured 0.61 to 0.64 of its width (13 September 2026). A chart
+// drawn wider is then a bigger chart, not a flatter one.
+const PLOT_H_PER_W = 0.62;
 const SLOT_W_MIN = 110;   // minimum width per category column
 const SLOT_PAD   = 18;    // clear space between two neighbouring category labels
 const BAR_FRAC   = 0.6;   // bar width as a fraction of its slot
@@ -178,11 +182,17 @@ function layout(data, profile) {
   const W = profile.widthPt;
   const floorU = profile.minFontPt / TICK_FS;
   let u = profile.fontPt / TICK_FS;
+  // A surface that grows its drawings into spare room (`grow`) lets the words
+  // grow with a chart given more width than it needs, up to that factor and
+  // never below the profile's own size. Where the box sets the depth (the
+  // board) the depth decides instead, as it always has.
+  const grow = profile.heightPt ? 1 : Math.max(1, profile.grow || 1);
+  const startU = grow > 1 ? u * Math.min(grow, Math.max(1, W / measureAt(s, u, 1, W).naturalW)) : u;
   // Across: the category names have to sit under their bars without meeting.
   // Smaller names on one row first, down to the floor; then the full size on
   // two rows, down to the floor; then a refusal.
   const fitAcross = (tiers) => {
-    let uu = profile.fontPt / TICK_FS;
+    let uu = startU;
     let mm = measureAt(s, uu, tiers, W);
     while (mm.naturalW > W && uu > floorU) { uu = Math.max(floorU, uu - 0.01); mm = measureAt(s, uu, tiers, W); }
     return mm.naturalW <= W ? mm : null;
@@ -220,7 +230,7 @@ function layout(data, profile) {
       );
     }
   } else {
-    plotH = Math.max(PLOT_H * u, need(m));
+    plotH = Math.max((W - 2 * m.margin - m.padLeft - PAD_RIGHT * u) * PLOT_H_PER_W, need(m));
   }
   return { s, m, W, plotW: W - 2 * m.margin - m.padLeft - PAD_RIGHT * u, plotH };
 }

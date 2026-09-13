@@ -5,11 +5,12 @@
 // such a drawing, so every picture moved into shared/visuals/ reaches paper the
 // same way the number line did (13 September 2026).
 //
-//   atPrintedWidth(module, { toSpec, minWidthMm, maxWidthMm, greed, requires })
+//   atPrintedWidth(module, { toSpec, minWidthMm, grow, greed, requires })
 //
-// `maxWidthMm` is for a drawing whose height does not grow with its width, so
-// in a wide zone it would only stretch sideways and lose the shape it has on
-// the other surfaces. It is drawn no wider than that and centred in the zone.
+// `grow` lets a drawing enlarge its words into a zone wider than it needs, up
+// to that factor of the sheet's type size, the way the board's profile does. A
+// drawing that reads the profile's `grow` then fills a wide zone as a bigger
+// picture instead of a small one with paper to spare beside it.
 //
 // `toSpec` maps a sheet spec onto the shared module's fields when they differ;
 // by default the spec is passed as it is, because a shared drawing reads the
@@ -30,12 +31,9 @@ function atPrintedWidth(module, options = {}) {
   const toSpec = options.toSpec || ((spec) => spec);
   const minWidth = options.minWidthMm || 70;
   const minWidthOf = (spec) => (typeof minWidth === "function" ? minWidth(spec) : minWidth);
-  // A cap never goes under the drawing's own minimum: a chart of many bars
-  // that needs more than the cap is drawn at the width it needs.
-  const capOf = (spec) =>
-    options.maxWidthMm ? Math.max(options.maxWidthMm, minWidthOf(spec)) : Infinity;
+  const overrides = options.grow ? { grow: options.grow } : undefined;
   const draw = (spec, width) =>
-    module.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: Math.min(widthOf(width, 170), capOf(spec)) }));
+    module.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: widthOf(width, 170), overrides }));
   const helper = {
     physical: true,
     geometry: module,

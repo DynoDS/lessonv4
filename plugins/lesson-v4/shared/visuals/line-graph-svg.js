@@ -57,7 +57,11 @@ const TITLE_FS      = 36;
 const AXIS_TITLE_FS = 30;   // rotated y-axis title / x-axis title
 const TICK_FS       = 26;   // axis numbers
 
-const PLOT_H     = 460;   // height of the plotting area, when the box sets none
+// With no depth set by the box (paper, the wall, the pack), the plot is this
+// tall for its width: the shape the board's graphs take in a slide zone, where
+// the plot measured 0.62 of its width (13 September 2026). A graph drawn wider
+// is then a bigger graph, not a flatter one.
+const PLOT_H_PER_W = 0.62;
 const X_SLOT     = 82;    // width per x tick interval
 const PLOT_W_MIN = 360;
 const Y_NUM_W    = 54;    // room for the scale numbers left of the axis
@@ -149,6 +153,12 @@ function layout(data, profile) {
   const W = profile.widthPt;
   const floorU = profile.minFontPt / TICK_FS;
   let u = profile.fontPt / TICK_FS;
+  // A surface that grows its drawings into spare room (`grow`) lets the words
+  // grow with a graph given more width than it needs, up to that factor and
+  // never below the profile's own size. Where the box sets the depth (the
+  // board) the depth decides instead, as it always has.
+  const grow = profile.heightPt ? 1 : Math.max(1, profile.grow || 1);
+  if (grow > 1) u *= Math.min(grow, Math.max(1, W / measureAt(data, sc, u, W).naturalW));
   const fixedW = (mm) => mm.padLeft + PAD_RIGHT * mm.u + 2 * mm.margin;
   const fitsAcross = (mm) => fixedW(mm) + mm.minPlotW <= W;
   let m = measureAt(data, sc, u, W);
@@ -180,7 +190,7 @@ function layout(data, profile) {
       );
     }
   } else {
-    plotH = Math.max(PLOT_H * u, need(m));
+    plotH = Math.max((W - fixedW(m)) * PLOT_H_PER_W, need(m));
   }
   return { sc, m, W, plotW: W - fixedW(m), plotH };
 }
