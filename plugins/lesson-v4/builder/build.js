@@ -35,7 +35,6 @@ const { markDecorativeImages } = require("./src/mark-decorative-images");
 const { safeFilenameComponent } = require('../shared/text/filename');
 const { formatUKDate } = require('./src/date');
 const { preResizeAll } = require('./src/images/resize');
-const { preTrimMoney } = require('./src/images/trim-money');
 const { preMeasureAll } = require('./src/images/measure');
 const { createSharedFigureStore } = require('./src/content/shared-figure');
 const { preRenderClocks } = require('./src/content/clock');
@@ -188,7 +187,6 @@ async function main() {
 
   const today = formatUKDate();
   await preResizeAll(coreLesson, lessonDir);
-  await preTrimMoney(coreLesson);
   const imageDims   = await preMeasureAll(coreLesson, lessonDir);
   const clockImages = await preRenderClocks(coreLesson);
   const turnImages  = await preRenderTurns(coreLesson);

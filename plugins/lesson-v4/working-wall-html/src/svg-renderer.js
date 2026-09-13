@@ -33,6 +33,9 @@ const BADGE_PX  = 240;          // step badge resolution
 // and places the image by it (no square padding), matching the other engines.
 const linePairShared = require('../../shared/visuals/line-pair-svg');
 const numberLineShared = require('../../shared/visuals/number-line-svg');
+const shadedFractionShared = require('../../shared/visuals/shaded-fraction-svg');
+const fractionWallShared = require('../../shared/visuals/fraction-wall-svg');
+const moneyShared = require('../../shared/visuals/money-svg');
 const { profileFor } = require('../../shared/visuals/surface-profiles');
 const angleShared    = require('../../shared/visuals/angle-svg');
 const triangleShared = require('../../shared/visuals/triangle-svg');
@@ -202,54 +205,6 @@ function clockKey(spec) {
   return `clock:${hands}:${colour}:${ring}`;
 }
 
-// ─── Fraction circle ───────────────────────────────────────────────────
-// A pie-style circle divided into `denominator` equal slices, the first
-// `numerator` of them filled in `colour`. Slices start at 12 o'clock so the
-// shape reads naturally (the same orientation as the Twinkl FDP poster).
-// `denominator` of 1 renders as a single fully-filled circle (whole). Slices
-// always carry a black outline so empty wedges read as wedges, not as gaps.
-function fractionCircleSvg(spec, sizePx = RENDER_PX) {
-  const numerator = Number(spec.numerator) || 0;
-  const denominator = Math.max(1, Number(spec.denominator) || 1);
-  const colour = hashColour(spec.colour || 'EF4444');
-  const cx = sizePx / 2;
-  const cy = sizePx / 2;
-  const pad = 26;
-  const r = sizePx / 2 - pad;
-
-  const parts = [];
-
-  if (denominator === 1) {
-    const fill = numerator >= 1 ? colour : '#FFFFFF';
-    parts.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#000000" stroke-width="3"/>`);
-  } else {
-    const sliceAngle = 360 / denominator;
-    for (let i = 0; i < denominator; i++) {
-      const startDeg = i * sliceAngle - 90;
-      const endDeg = (i + 1) * sliceAngle - 90;
-      const sRad = toRad(startDeg);
-      const eRad = toRad(endDeg);
-      const x1 = fmt(cx + r * Math.cos(sRad));
-      const y1 = fmt(cy + r * Math.sin(sRad));
-      const x2 = fmt(cx + r * Math.cos(eRad));
-      const y2 = fmt(cy + r * Math.sin(eRad));
-      const largeArc = sliceAngle > 180 ? 1 : 0;
-      const fill = i < numerator ? colour : '#FFFFFF';
-      const path = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-      parts.push(`<path d="${path}" fill="${fill}" stroke="#000000" stroke-width="3"/>`);
-    }
-  }
-
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
-}
-
-function fractionCircleKey(spec) {
-  const numerator = Number(spec.numerator) || 0;
-  const denominator = Math.max(1, Number(spec.denominator) || 1);
-  const colour = (spec.colour || 'EF4444').replace(/^#/, '');
-  return `fractionCircle:${numerator}/${denominator}:${colour}`;
-}
-
 // ─── Number line ────────────────────────────────────────────────────────
 // The one shared number line (shared/visuals/number-line-svg.js), the same
 // drawing the board, the sheet and the stick-in pack place. The wall drew its
@@ -274,6 +229,19 @@ function sharedAtWidth(module, widthMm = WALL_VISUAL_WIDTH_MM) {
 }
 
 const numberLineWall = sharedAtWidth(numberLineShared);
+
+// ─── Fractions and money ───────────────────────────────────────────────
+// The shared shaded fraction, fraction wall and coins, the same drawings the
+// board, the sheet and the stick-in pack place. The wall drew its own red
+// circle and red bar on a square canvas until 13 September 2026, so a quarter
+// shaded soft green on the board was red on the card beside it. A card's
+// `fractionCircle` and `fractionBar` ({ numerator, denominator, colour })
+// are read by the shared drawing, so cards written for the old ones still draw.
+const shadedFractionWall = sharedAtWidth(shadedFractionShared);
+const fractionWallWall = sharedAtWidth(fractionWallShared);
+const moneyWall = sharedAtWidth(moneyShared);
+const fractionCircleKey = shadedFractionWall.keyFn;
+const fractionBarKey = shadedFractionWall.keyFn;
 const numberLineTight = numberLineWall.tightFn;
 const numberLineKey = numberLineWall.keyFn;
 const numberLineSvg = (spec) => numberLineTight(spec).svg;
@@ -408,42 +376,6 @@ function turnDiagramSvg(spec, sizePx = RENDER_PX) {
 function turnDiagramKey(spec) {
   const { quarters, direction } = resolveTurn(spec);
   return `turnDiagram:${quarters}:${direction}`;
-}
-
-// ─── Fraction bar ──────────────────────────────────────────────────────
-// A horizontal rectangle divided into `denominator` equal vertical strips,
-// the first `numerator` of them filled. Singapore-style bar model. Sits at
-// vertical centre on a square canvas (whitespace above/below) so the
-// image transform stays square — same approach as the number line.
-function fractionBarSvg(spec, sizePx = RENDER_PX) {
-  const numerator = Number(spec.numerator) || 0;
-  const denominator = Math.max(1, Number(spec.denominator) || 1);
-  const colour = hashColour(spec.colour || 'EF4444');
-  const w = sizePx;
-  const h = sizePx;
-  const barW = w * 0.84;
-  const barH = h * 0.30;
-  const x0 = (w - barW) / 2;
-  const y0 = (h - barH) / 2;
-  const sliceW = barW / denominator;
-
-  const parts = [];
-  for (let i = 0; i < denominator; i++) {
-    const sx = x0 + i * sliceW;
-    const fill = i < numerator ? colour : '#FFFFFF';
-    parts.push(`<rect x="${fmt(sx)}" y="${fmt(y0)}" width="${fmt(sliceW)}" height="${fmt(barH)}" fill="${fill}" stroke="#000000" stroke-width="3"/>`);
-  }
-  // Heavier outer outline so the bar reads as one shape, not as separate cells.
-  parts.push(`<rect x="${fmt(x0)}" y="${fmt(y0)}" width="${fmt(barW)}" height="${fmt(barH)}" fill="none" stroke="#000000" stroke-width="4"/>`);
-
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
-}
-
-function fractionBarKey(spec) {
-  const numerator = Number(spec.numerator) || 0;
-  const denominator = Math.max(1, Number(spec.denominator) || 1);
-  const colour = (spec.colour || 'EF4444').replace(/^#/, '');
-  return `fractionBar:${numerator}/${denominator}:${colour}`;
 }
 
 // ─── Comparison symbol ─────────────────────────────────────────────────
@@ -714,8 +646,11 @@ async function preRenderSvgs(spec) {
   // entry to pickVisualBuffer in render-card.js.
   const PRIMITIVES = {
     clock:            { keyFn: clockKey,            svgFn: clockSvg,            collected: {} },
-    fractionCircle:   { keyFn: fractionCircleKey,   svgFn: fractionCircleSvg,   collected: {} },
-    fractionBar:      { keyFn: fractionBarKey,      svgFn: fractionBarSvg,      collected: {} },
+    fractionCircle:   { ...sharedAtWidth(shadedFractionShared), collected: {} },
+    fractionBar:      { ...sharedAtWidth(shadedFractionShared), collected: {} },
+    'shaded-fraction': { ...shadedFractionWall, collected: {} },
+    'fraction-wall':  { ...fractionWallWall, collected: {} },
+    money:            { ...moneyWall, collected: {} },
     numberLine:       { ...numberLineWall, collected: {} },
     angleFan:         { keyFn: angleFanKey,         svgFn: angleFanSvg,         collected: {} },
     'turn-diagram':   { keyFn: turnDiagramKey,      svgFn: turnDiagramSvg,      collected: {} },
@@ -876,10 +811,11 @@ async function preRenderSvgs(spec) {
 module.exports = {
   clockSvg,
   clockKey,
-  fractionCircleSvg,
   fractionCircleKey,
-  fractionBarSvg,
   fractionBarKey,
+  shadedFractionKey: shadedFractionWall.keyFn,
+  fractionWallKey: fractionWallWall.keyFn,
+  moneyKey: moneyWall.keyFn,
   numberLineSvg,
   numberLineTight,
   numberLineKey,

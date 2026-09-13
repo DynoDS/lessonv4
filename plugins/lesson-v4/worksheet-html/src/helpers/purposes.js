@@ -91,7 +91,9 @@ module.exports = {
   "number-line":
     "A labelled number line with a `caption` beneath (\"Each interval is worth 100.\"): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.",
   "fraction-bar":
-    "One or more bars divided into equal parts, some shaded.",
+    "A shape cut into equal parts with some shaded: one or more bars (a word under each), or a grid or circle with `shape`. The same picture the board draws from the same fields.",
+  "fraction-wall":
+    "Rows of unit fractions under one whole, each piece named, for comparing and finding equivalent fractions.",
   ruler:
     "A ruler printed at TRUE SIZE for a child to measure against. It refuses a zone too narrow rather than shrinking, because a scaled ruler makes every answer wrong on a page that looks normal.",
 
@@ -173,7 +175,7 @@ module.exports = {
 
   // ─── money and fractions ───
   "coin-strip":
-    "A row of coins and notes drawn at their real sizes relative to each other, over a line for the total.",
+    "A row of the real coin and note pictures, coins to scale with each other and at life size, over a line for the total.",
   "part-whole-money":
     "A whole bubble with parts beneath it, joined by lines. The money-flavoured name for part-whole, kept because saved specs use it; its bubbles may carry coins.",
   "part-whole":

@@ -8,7 +8,7 @@ const {
 const { FONT, COLOURS, FIT } = require('../styles');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { warn } = require('../warnings');
-const { drawMoney } = require('./money');
+const drawMoney = require('./shared-figure').drawerFor('money');
 const { drawImage, imageWillDraw } = require('./image');
 const { drawTurnDiagram } = require('./turn-diagram');
 const { drawAngle } = require('./angle');

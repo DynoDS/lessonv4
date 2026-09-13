@@ -47,7 +47,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `polygon` | One or more named 2D shapes side by side (square, rectangle, triangle, isosceles/scalene triangle, kite, hexagon…), drawn from true geometry. Use for naming shapes and counting right angles / parallel sides; also draws lines of symmetry — the full set for an answer slide, or a single candidate line to TEST (pass/fail + fold preview) for a teaching slide |
 | `translation-grid` | A numbered grid showing one marker translated from a start (orange) to an end (blue) position, with a dashed arrow between. Use for "how far has the shape moved?" translation work |
 | `translation-shape` | A numbered coordinate grid showing a WHOLE shape and, with `showImage: true`, its translated image (the same shape slid by the translation) in lighter dashed blue, with a dashed arrow between matching vertices. Use for "translate this shape" — the signature translation picture. Leave `showImage` off for the task (original only, child plots the image); set it on for the worked answer. Distinct from `translation-grid` (single markers, not a whole shape) |
-| `shaded-fraction` | A shape (bar / grid / circle) split into equal parts with some shaded green. Use for "shade one quarter" and "what fraction is shaded?" — set `shaded: 0` for a blank shape children shade in |
+| `shaded-fraction` | A shape (bar / grid / circle, or a stack of bars) split into equal parts with some shaded green. Use for "shade one quarter" and "what fraction is shaded?"; set `shaded: 0` for a blank shape children shade in |
 | `dial-scale` | An analogue round scale (kitchen/weighing dial): 0 at the top, a full turn = `max`, numbered ticks and a needle on `value`. Use for reading a measuring dial |
 | `line-graph` | A line graph with numbered, titled axes and plotted points joined in order. Use for reading a value off a graph or an interval between two values |
 | `tally-chart` | A tally chart: a group-label column, a tally column whose counts are drawn as bundles of five (four verticals struck through by a fifth diagonal) and remainder strokes, and an optional Total column. Pass `tally` as a NUMBER per row — the marks are drawn for you. Set `blank: true` for empty tally boxes (sized to the expected marks) children fill in as they collect data. A `total` with the green `||` marker (`"||12"`) reveals that frequency as a worked answer — for the modelled rows on a My Turn and the whole column on an answer slide. Use for reading or making a tally chart in statistics — the marks, not raw numbers, are the point |
@@ -855,6 +855,8 @@ For a compact digit-only boundary question, omit `counters`, give `to` one empty
 ```json
 { "type": "fraction-wall", "fractions": [1, 2, 3, 4, 6, 8] }
 ```
+
+One row per denominator, top to bottom, each cut into that many equal pieces and each piece named, the numerator on a bar over the denominator. The names print at one size for the whole wall, never under the board's 18pt readable size: a wall whose smallest pieces cannot be named at that size in its zone stops the build with `FRACTION_WALL_TOO_NARROW` or `FRACTION_WALL_ZONE_TOO_SHALLOW`, so leave out the rows the lesson does not compare or give it a bigger zone. Up to 12 rows, denominators 1 to 24. The same drawing reaches the worksheet, the wall card and the stick-in piece under the same name, `fraction-wall`, from this object.
 
 **Minimum useful size:** ~5″ wide × ~2″ tall for a 6-row wall. Each extra fraction row adds ~0.3″ of height. Below ~4″ wide, the smaller fractions become unreadable.
 
@@ -1873,7 +1875,7 @@ Each item is a string matching a filename (without `.png`) in `builder/assets/mo
 - Notes: `£5`, `£10`, `£20`, `£50`
 - `|` — visible split between coin groups (no coin rendered, just a wider gap). Use when one row carries two amounts and children need to see *which coins make which amount*. Example: `["£2", "£1", "20p", "20p", "|", "£2", "£2", "50p", "20p", "10p"]` shows £3.40 and £4.80 with a clear break between them.
 
-Coins and notes render at **proportional relative sizes** — notes visibly larger than coins — so children see real-world scale. Items lay out left to right; the builder wraps to a new line if the zone is too narrow.
+Coins are drawn **to scale with each other** (a 2p is visibly bigger than a 5p), because size is the first thing a child sorts coins by. Notes are to scale with each other and drawn a little taller than the biggest coin rather than at their real size, which would shrink every coin beside them to a crumb. Items lay out left to right. The same picture, from the same object, reaches the worksheet (`coin-strip`), the wall card and the stick-in piece (`money`), so copy this object when a lesson wants the coins there too. An item that is not in the list below stops the build with `UNKNOWN_DENOMINATION` rather than printing a grey placeholder.
 
 Zone class compatibility: fits A, B, C, E-wide, E-narrow, G (any zone wide enough to hold at least two coins side by side).
 
@@ -1881,7 +1883,7 @@ Zone class compatibility: fits A, B, C, E-wide, E-narrow, G (any zone wide enoug
 - **Single coin** (e.g. "what coin is this?"): 1.0″ × 1.0″ minimum. Single coins are NOT capped by the helper's strip-mode height ceiling — they fill the zone they're given, so size up freely when the coin is the focus of the slide.
 - **Mixed strip** of 6–8 coins: 6.0″ wide minimum. Below this the smaller coins (1p, 5p) drop below the size where children can identify them. A row of 9 coins comfortably needs ~7.0″+.
 
-If the zone is narrower than required, the row wraps to a second line — usually undesirable on a teaching slide; either narrow the coin set or put the money in a wider zone.
+If the zone is narrower than required, the row first shrinks, and only wraps to a second line when shrinking further would put the smallest coin under the readable size; a zone too small even for that stops the build with `MONEY_ZONE_TOO_SMALL`. A wrapped row is usually undesirable on a teaching slide: narrow the coin set or put the money in a wider zone.
 
 ### `map`
 
@@ -2181,7 +2183,9 @@ Bar (equal columns), grid (rows × columns), and circle (equal sectors):
 { "type": "shaded-fraction", "parts": 4,  "shaded": 1, "shape": "circle", "label": "one quarter" }
 ```
 
-**`parts` (required):** total equal parts. **`shaded` (default 0):** how many to fill green. **`shape` (default `bar`):** `bar`, `grid`, or `circle`. **`rows`** (grid only): force the number of rows; otherwise the split is chosen to keep cells near-square. **`label`:** optional caption below the shape.
+**`parts` (required):** total equal parts, 1 to 60. **`shaded` (default 0):** how many to fill green; more than `parts` stops the build, because one shape cannot show more than its whole. **`shape` (default `bar`):** `bar`, `grid`, or `circle`. **`rows`** (grid only): force the number of rows; otherwise the split keeps cells square. **`bars`:** a stack of bars to compare, `[{ "parts": 4, "shaded": 3, "label": "3/4" }, { "parts": 5, "shaded": 2, "label": "2/5" }]`, each bar's `label` drawn under it. **`colour`:** a 6-character hex for the shading. **`label`:** optional caption below the shape, set as text you can edit.
+
+The same drawing reaches the worksheet (`fraction-bar`), the wall card and the stick-in piece (`shaded-fraction`) from this object, so copy it when the lesson wants the shape there too. A zone too small to show the parts at the readable size stops the build with `SHADED_FRACTION_TOO_SMALL` or `SHADED_FRACTION_ZONE_TOO_SHALLOW`.
 
 ### `dial-scale`
 

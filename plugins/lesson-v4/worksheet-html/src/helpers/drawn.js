@@ -166,84 +166,36 @@ function numberLineMinWidthMm(spec) {
 }
 
 // ─── fraction-bar ───────────────────────────────────────────────────────
-// One or more bars divided into equal parts, some shaded. Geometry lifted
-// from fraction-bar.js. The shaded fill has no literal equivalent among the
-// four token colours (the original's pale blue was a one-off), so it borrows
-// "question" (the same blue that marks a focus elsewhere) at reduced opacity
-// rather than reaching for a hex value the token system does not own.
-const SHADE = "var(--colour-question)";
+// Drawn by the one shared shaded fraction (shared/visuals/shaded-fraction-svg.js),
+// which the board, the wall and the stick-in pack place too, laid out at the
+// width the zone prints. The sheet's own spelling (bars of numerator and
+// denominator with a label under each) is read there, and a bar may now be a
+// grid or a circle as it is on the board. This sheet drew its own bars, shaded
+// question blue at a third opacity, until 13 September 2026, while the board
+// shaded the same quarter soft green.
+const shadedFractionShared = require("../../../shared/visuals/shaded-fraction-svg");
 
-function buildFractionBarSvg(spec) {
-  const bars = spec.bars || [];
-  const widthPx = spec.widthPx || 500;
-  const barHeight = spec.barHeight || 60;
-  const gap = spec.gap || 20;
-  const labelFont = 22;
-  const labelGap = 28;
-  const topPad = 6;
+// A part narrower than this loses its divider line into one smudge, so the bar
+// with the most parts sets the floor.
+const FRACTION_CELL_MIN_MM = 8;
 
-  const rowH = (bar) => barHeight + (bar.label ? labelFont + labelGap : 0);
-  const totalH =
-    topPad + bars.reduce((sum, bar, i) => sum + rowH(bar) + (i > 0 ? gap : 0), 0) + 6;
-
-  const parts = [];
-  let curY = topPad;
-  let maxDenominator = 1;
-
-  for (const bar of bars) {
-    const { numerator, denominator, shaded = true, label } = bar;
-    maxDenominator = Math.max(maxDenominator, denominator);
-    const cellW = widthPx / denominator;
-    const borderW = 2;
-
-    if (shaded && numerator > 0) {
-      for (let i = 0; i < numerator; i++) {
-        parts.push(
-          `<rect x="${i * cellW}" y="${curY}" width="${cellW}" height="${barHeight}" fill="${SHADE}" fill-opacity="0.35" />`
-        );
-      }
-    }
-
-    parts.push(
-      `<rect x="${borderW / 2}" y="${curY + borderW / 2}" width="${widthPx - borderW}" height="${barHeight - borderW}" fill="none" stroke="${INK}" stroke-width="${borderW}" />`
-    );
-
-    for (let i = 1; i < denominator; i++) {
-      const x = i * cellW;
-      parts.push(`<line x1="${x}" y1="${curY}" x2="${x}" y2="${curY + barHeight}" stroke="${INK}" stroke-width="1.5" />`);
-    }
-
-    if (label) {
-      const labelY = curY + barHeight + labelGap;
-      parts.push(
-        `<text x="${widthPx / 2}" y="${labelY}" text-anchor="middle" dominant-baseline="hanging" font-family="${FONT}" font-size="${labelFont}" fill="${INK}">${esc(label)}</text>`
-      );
-    }
-
-    curY += rowH(bar) + gap;
-  }
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${widthPx} ${totalH}">${parts.join("")}</svg>`;
-  return { svg, aspect: widthPx / totalH, maxDenominator };
+function fractionBarMinWidthMm(spec) {
+  const shape = shadedFractionShared.normalise(spec);
+  const parts = shape.bars ? Math.max(...shape.bars.map((b) => b.parts)) : 0;
+  return Math.max(60, parts * FRACTION_CELL_MIN_MM);
 }
 
-const FRACTION_CAP_MM = 120; // several stacked bars still should not run away
-const FRACTION_CELL_MIN_MM = 8; // a cell narrower than this loses its divider line
+// ─── fraction-wall ──────────────────────────────────────────────────────
+// Rows of unit fractions under one whole, drawn by the shared fraction wall
+// (shared/visuals/fraction-wall-svg.js) the board places. Only the board could
+// draw one until 13 September 2026. Its smallest pieces have to hold their
+// names at the sheet's readable size, so the row with the most pieces sets the
+// floor: 6mm a piece holds a stacked "12" at 9pt.
+const fractionWallShared = require("../../../shared/visuals/fraction-wall-svg");
+const FRACTION_WALL_PIECE_MIN_MM = 6;
 
-function renderFractionBar(spec) {
-  return `<div class="h-figure">${buildFractionBarSvg(spec).svg}</div>`;
-}
-
-function measureFractionBar(spec, widthMm) {
-  return heightFromAspect(buildFractionBarSvg(spec).aspect, widthMm, FRACTION_CAP_MM);
-}
-
-function needsFractionBar(spec) {
-  const { aspect, maxDenominator } = buildFractionBarSvg(spec);
-  // The bar with the most parts sets the floor: fewer millimetres per cell
-  // than this and the internal divider lines crowd into one smudge.
-  const minWidthMm = Math.max(60, maxDenominator * FRACTION_CELL_MIN_MM);
-  return { minWidthMm, minHeightMm: heightFromAspect(aspect, minWidthMm, FRACTION_CAP_MM) };
+function fractionWallMinWidthMm(spec) {
+  return Math.max(60, Math.max(...fractionWallShared.normalise(spec).fractions) * FRACTION_WALL_PIECE_MIN_MM);
 }
 
 // `.h-figure` is styled once, in render.js, for every SVG-backed helper, so
@@ -258,12 +210,8 @@ const helpers = {
     greed: NEVER_STRETCH,
   },
   "number-line": atPrintedWidth(numberLineShared, { minWidthMm: numberLineMinWidthMm }),
-  "fraction-bar": {
-    render: renderFractionBar,
-    measure: measureFractionBar,
-    needs: needsFractionBar,
-    greed: NEVER_STRETCH,
-  },
+  "fraction-bar": atPrintedWidth(shadedFractionShared, { minWidthMm: fractionBarMinWidthMm }),
+  "fraction-wall": atPrintedWidth(fractionWallShared, { minWidthMm: fractionWallMinWidthMm }),
 };
 
 module.exports = { helpers, css };

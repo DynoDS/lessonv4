@@ -27,13 +27,30 @@ function atPrintedWidth(module, options = {}) {
   const minWidth = options.minWidthMm || 70;
   const draw = (spec, width) =>
     module.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: widthOf(width, 170) }));
+  const minWidthOf = (spec) => (typeof minWidth === "function" ? minWidth(spec) : minWidth);
   const helper = {
     physical: true,
     geometry: module,
-    render: (spec, width) => `<div class="h-figure">${draw(spec, width).svg}</div>`,
-    measure: (spec, width) => draw(spec, width).h / MM_TO_PT,
+    // Pinned to its size in points. `.h-figure svg` stretches every other
+    // drawing to the zone's width, which is right for a drawing sized by its
+    // aspect and wrong for one laid out at its printed size: a clock face that
+    // chose to be 60mm across in a 170mm zone would print 170mm across, with
+    // its numerals scaled up and its measured height a lie.
+    render: (spec, width) => {
+      const out = draw(spec, width);
+      const svg = out.svg.replace(/^<svg /, `<svg style="width:${out.w}pt;max-width:100%;height:auto" `);
+      return `<div class="h-figure">${svg}</div>`;
+    },
+    // The fit check measures a zone before it asks whether the zone is wide
+    // enough, and a drawing that refuses a width below its readable floor would
+    // throw there instead of being refused by name. So a zone narrower than the
+    // stated minimum is measured at that minimum: `needs` refuses it anyway.
+    measure: (spec, width) => {
+      const floor = minWidthOf(spec);
+      return draw(spec, Math.max(widthOf(width, 170), floor)).h / MM_TO_PT;
+    },
     needs: (spec) => {
-      const minWidthMm = typeof minWidth === "function" ? minWidth(spec) : minWidth;
+      const minWidthMm = minWidthOf(spec);
       return { minWidthMm, minHeightMm: draw(spec, minWidthMm).h / MM_TO_PT };
     },
     greed: options.greed == null ? NEVER_STRETCH : options.greed,

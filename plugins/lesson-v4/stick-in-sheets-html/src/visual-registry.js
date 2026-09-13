@@ -14,6 +14,9 @@ const geographicalDescriptionFrame = require("../../shared/visuals/geographical-
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
 const numberLine = require("../../shared/visuals/number-line-svg");
+const shadedFraction = require("../../shared/visuals/shaded-fraction-svg");
+const fractionWall = require("../../shared/visuals/fraction-wall-svg");
+const money = require("../../shared/visuals/money-svg");
 const { profileFor } = require("../../shared/visuals/surface-profiles");
 
 // The one way the pack places a shared drawing laid out at its printed size,
@@ -195,6 +198,18 @@ const VISUALS = {
   // cell copied from a check slide is stripped to a blank write-on cell, so
   // copying either the task or the answer table yields the same blank piece.
   table: { tightSvg: recordingTable.tightSvg, defaultWidthMm: 160 },
+  // The shared shaded fraction, fraction wall and coins, laid out at the width
+  // they print, in ink. Both forms of a shaded fraction are real write-on tasks
+  // (shade three eighths of a blank bar; say what fraction is shaded), so no
+  // form is forced. 110mm leaves a bar's parts wide enough to shade with a
+  // pencil and two pieces side by side on the landscape row.
+  "shaded-fraction": sharedPiece(shadedFraction, 110),
+  // 130mm: the smallest pieces of a twelfths row stay wide enough to name, and
+  // a child can rule across the wall to compare two rows.
+  "fraction-wall": sharedPiece(fractionWall, 130),
+  // 130mm: coins at life size, as on the sheet, with the row wrapping only if
+  // there are more than a strip holds.
+  money: sharedPiece(money, 130),
 };
 
 // Row visuals: one child's piece is a strip of N figures, each with its own
@@ -256,6 +271,18 @@ function missingQuestionContent(item) {
     case "number-line":
       try {
         numberLine.normalise(s);
+        return null;
+      } catch (error) {
+        return error.message;
+      }
+    // A shaded fraction with no parts, a wall with no rows or a coin row with
+    // no coins would tile a blank or wrong copy for every child, so the shared
+    // drawing's own refusal names what is missing and the piece is skipped.
+    case "shaded-fraction":
+    case "fraction-wall":
+    case "money":
+      try {
+        ({ "shaded-fraction": shadedFraction, "fraction-wall": fractionWall, money })[item.visual].normalise(s);
         return null;
       } catch (error) {
         return error.message;

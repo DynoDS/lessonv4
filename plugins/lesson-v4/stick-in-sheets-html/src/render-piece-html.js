@@ -66,12 +66,31 @@ function renderSingle(item, opts = {}) {
   // A drawing laid out at its printed size (the number line) is told the width
   // the piece will print at.
   const printedWidthMm = item.widthMm ?? def.defaultWidthMm;
-  const { svg, w, h, aspect } = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  let drawn;
+  try {
+    drawn = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  } catch (error) {
+    // A shared drawing refuses a box it cannot be read in (numerals under the
+    // pack's readable floor) by name. One piece that cannot draw is skipped and
+    // named, like a piece missing its question, rather than stopping the pack.
+    console.warn(`[stick-in] "${item.label || item.visual}": ${error.message} This item is skipped.`);
+    return null;
+  }
+  const { svg, w, h, aspect } = drawn;
   const a = aspect ?? w / h;
-  const naturalWidthMm = item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
+  // A drawing laid out at its printed size prints at the size it chose, which
+  // may be narrower than the box it was offered (a clock face does not stretch
+  // to the width of the piece); scaling it up would enlarge its numerals past
+  // the size it laid them out at.
+  const laidOutMm = def.laidOutAtWidth ? Math.min(printedWidthMm, w * (25.4 / 72)) : null;
+  const naturalWidthMm = laidOutMm ?? item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
   const reserveTopMm = opts.reserveTopMm || 0;
   const naturalHeightMm = naturalWidthMm / a;
-  const widthMm = reserveTopMm > 0
+  // A drawing laid out at its printed size keeps that size and the handle band
+  // goes on top of it: shrinking it to pay for the band shrinks its words under
+  // the readable size they were laid out at, and a flat drawing pays most (a
+  // 110mm shaded bar came out 60mm wide to find 5mm of height, 13 September 2026).
+  const widthMm = reserveTopMm > 0 && !def.laidOutAtWidth
     ? Math.max(1, naturalHeightMm - reserveTopMm) * a
     : naturalWidthMm;
   const heightMm = widthMm / a;

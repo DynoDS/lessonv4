@@ -137,7 +137,7 @@ Zero is normal.
 
 Some maths LOs are inseparable from a diagram: telling the time leans on a clock face, fractions on a circle, ordering on a number line, angle work on a pair of rays. On those lessons the slide-builder draws the diagram alongside the steps, and a child reading the wall card without the matching shape next to it loses half the support.
 
-The `visual` field exists for exactly this case. The builder renders the primitive from the spec, no picture sourcing needed. Where the lesson's success-criteria slide is a clock with hands set to a worked time, the worked-example card's `visual` should be the same clock. Where the lesson teaches `1/4`, the sticky-knowledge card's `visual` should be a fraction circle showing one quarter. Children glance from desk to wall and see the same picture.
+The `visual` field exists for exactly this case. The builder renders the primitive from the spec, no picture sourcing needed. Where the lesson's success-criteria slide is a clock with hands set to a worked time, the worked-example card's `visual` should be the same clock. Where the lesson teaches `1/4`, the sticky-knowledge card's `visual` should be the slide's `shaded-fraction` circle showing one quarter; where it counts coins, the slide's `money` row; where it compares fractions, the slide's `fraction-wall`. Children glance from desk to wall and see the same picture.
 
 That a card carries a visual is firm (rule 2); *which* visual is the judgement. A drawn primitive is the strongest choice because it is the same shape children saw on the board, so reach for one when:
 
