@@ -65,6 +65,22 @@ computer would not allow it, and the line says how to collect by hand. Then run
 log lines it prints. `letterbox_filer.py status` shows the last few collections;
 `uninstall` stops it.
 
+## Scheduled lessons in Codex
+
+Codex's cloud cannot use the letterbox: its agent has no internet by default,
+hands changes back as a diff or pull request rather than pushing to GitHub
+itself, and has no secrets while it works. Codex's scheduled tasks run in the
+Codex app on the teacher's own computer instead, so they save straight to the
+save folder like any lesson made there. Two things to tell the teacher:
+
+- The computer must be on with the Codex app open when the task is due.
+- A scheduled task runs with nobody to approve anything, using Codex's default
+  permissions. Under the normal restricted permissions it cannot save outside
+  its own folder, install anything or reach PowerPoint, so the lesson stays in
+  Codex's folder unchecked by eye. Only with full access does it save to the
+  drive and check slides; full access lets that task change files and use the
+  network without asking, which is the teacher's decision to make.
+
 ## Setting up a cloud environment
 
 For a teacher who builds lessons in Claude Code on the web or a routine. These

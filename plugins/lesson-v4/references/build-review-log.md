@@ -1,5 +1,9 @@
 # Build review log
 
+## 2026-09-13 Codex schedules lessons on the teacher's computer, not in its cloud (4.2.189)
+
+The cloud setup steps assumed the letterbox would work from Codex's cloud too. OpenAI's documentation says otherwise: Codex cloud agents have no internet by default, return a diff or pull request instead of pushing, and lose secrets before the agent phase; Codex scheduled tasks run in the Codex app on the user's computer with approval_policy never and the default sandbox. references/computer-setup.md now says so, and that an unattended local task saves to the drive and checks slides only with full access, which is the teacher's call. The old TeachingOutputsAutoFile logon task was removed on this PC at the user's request; the new letterbox filer is installed.
+
 ## 2026-09-13 A new computer has one page to follow (4.2.188)
 
 Step 5 of the fresh-computer work. The README's install section described manifests and package roots, and said nothing a teacher setting up a computer needs. It now opens with Before you start: the two things the plugin cannot install for itself (Node.js; Git and a GitHub sign-in while the repository is private), the exact add-plugin commands for Claude Code and Codex, what the first lesson does on its own, and the optional offers, each pointing at references/computer-setup.md. It is written to be pasted to Claude Code or Codex with "set this up for me". The repository root gains a short README pointing at it, because GitHub shows the root one. The old section is kept as How the package finds itself.
