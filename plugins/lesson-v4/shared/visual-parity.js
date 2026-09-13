@@ -214,9 +214,16 @@ const PRIMITIVES = [
     note: 'Grew a per-cell `highlight` and a per-row `label`, and that is what earned it the wall. Before, a place value chart was a grid of digits and a wall card of one would anchor nothing. With a ring round the digit that changed and a caption saying what each row IS ("3,462", "10 more", "100 more"), the card answers the question every place-value unit turns on - WHICH column changed and which held still - from across the room, all term, across 10/100 more and less, exchanging, rounding, and multiplying and dividing by 10. wall draws from shared/visuals/place-value-chart-svg.js, which repeats the board palette so the two match; slides and worksheets keep their own implementations (a pptx table and a CSS grid), like coordinate-grid above. stickin:false - a place value chart is a ruled grid a Year 4 child can draw in a squared book in a minute, and ruling it is part of the work, so it fails the "cannot reproduce this by hand" test a stick-in piece has to pass; the write-on form they need on paper is already the worksheet chart with an empty row. The chart then grew a `pair` MODE (before/after: start chart, labelled arrow, result chart, "same" under each unchanged column, operation and result in a title bar), and it reaches the board AND the wall. It was first built slide-only, on the reasoning that the board has a problem the other surfaces do not (a teach slide of finished end states leaves the movement to the teacher\'s voice) while a wall card already carries the comparison in its stacked-row form. Daniel read that reasoning and overruled it: a child who meets the pair on the board and looks up at a stacked chart on the wall is being shown two dialects of one picture, and the wall\'s job is to be the thing they recognise. So the wall draws the pair too, from the same shared/visuals/place-value-chart-svg.js, with the semantics matched exactly - changed column DERIVED by comparing from/to and never declared, title read off the `to` cells unless overridden, "same" in each column\'s own colour - and drawn bolder, because a card is read across a room. Both forms stay live: the stacked rows still anchor a whole unit compactly, the pair teaches one change. Worksheets keep their own implementation and no pair, because a sheet asks the child to WRITE the result rather than read a finished one. The counter band reached the wall last (4.2.93), and it took a lesson shipping without it to notice: the board grew counters, the shared wall drawing never did, and a Year 4 card headed "Count each column\'s counters" over a worked example of 6,041 printed an entirely empty grid. Both surfaces now draw the same populations in the same arrangement - ten as two rows of five, each counter in the colour of its own column - because a child glancing from the board to the wall has to count the same shapes in the same places.' },
   { id: 'place-value-mini', depicts: 'data', slides: 'place-value-mini', worksheets: false, wall: false, stickin: false,
     note: 'The miniature built for the 2.2-inch panel of a key-vocabulary card: one digit mapping to its value, a highlighted Th/H/T/O column, ten tens becoming a hundred, or the zeros in a numeral. Slide-only because the surface it exists for is slide-only - a worksheet, a wall card and a stick-in piece all carry the FULL place-value-chart above, which reaches those three surfaces on its own entry, and a 2.2-inch version of it there would be the same picture drawn smaller for no reason. It was drawing correctly through content/vocab.js and was missing from the content registry, so the layout preflight refused any deck that used it as templates.md documents and the designer shipped a text-only card instead (5 September 2026); registering it is what brought it here.' },
-  { id: 'money', depicts: 'asset:money',           slides: 'money',           worksheets: ['coin-strip', 'part-whole-money'], wall: false,  stickin: false },
-  { id: 'shaded-fraction', depicts: 'data', slides: 'shaded-fraction', worksheets: 'fraction-bar',                  wall: false,             stickin: false,
-    note: 'wall fraction visuals are the dedicated fractionCircle / fractionBar cards below, drawn from their own wall geometry.' },
+  // Real coin and note pictures from builder/assets/money, placed by one drawing
+  // on every surface (13 September 2026). The part-whole model that carries
+  // coins in its bubbles is part-whole-model's sheet key, not a second money picture.
+  { id: 'money', depicts: 'asset:money',           slides: 'money',           worksheets: 'coin-strip', wall: 'money',  stickin: 'money',
+    geometrySource: 'shared/visuals/money-svg.js' },
+  // One shaded fraction: a bar, a grid, a circle or a stack of bars. The sheet's
+  // fraction-bar and the wall's fractionBar and fractionCircle were three
+  // drawings of it and are now spellings of this one (13 September 2026).
+  { id: 'shaded-fraction', depicts: 'data', slides: 'shaded-fraction', worksheets: 'fraction-bar', wall: ['shaded-fraction', 'fractionBar', 'fractionCircle'], stickin: 'shaded-fraction',
+    geometrySource: 'shared/visuals/shaded-fraction-svg.js' },
 
   // ── Wall-only flavours. These are reference/anchor cards a wall shows; they have no
   //    board or sheet twin (a teaching slide draws the live version a different way).
@@ -224,10 +231,6 @@ const PRIMITIVES = [
     note: 'wall-only — a fan of the angle types as a single anchor poster; the board teaches angles one at a time via the angle figure.' },
   { id: 'comparison-symbol', depicts: 'data', slides: false, worksheets: false, wall: 'comparisonSymbol', stickin: false,
     note: 'wall-only — a < > = reference card; comparison on the board/sheet is done with the compare-box, not a drawn symbol primitive.' },
-  { id: 'fraction-circle', depicts: 'data',   slides: false, worksheets: false, wall: 'fractionCircle',   stickin: false,
-    note: 'wall-only — a fraction-circle anchor card drawn from the wall\'s own geometry; the board shades fractions via shaded-fraction.' },
-  { id: 'fraction-bar', depicts: 'data',      slides: false, worksheets: 'fraction-bar', wall: 'fractionBar', stickin: false,
-    note: 'wall fraction-bar anchor + the worksheet fraction-bar question; the board equivalent is shaded-fraction (tracked separately above).' },
 
   // ── Slide-only figures, thinking-organisers and scaffolds. These are live teaching
   //    visuals built and used on the board only; a wall/sheet/stick-in version would
@@ -259,11 +262,12 @@ const PRIMITIVES = [
     note: 'slide-only sorting/matching activity (draws connector affordances), done live on the board.' },
   { id: 'mult-grid', depicts: 'data',       slides: 'mult-grid',       worksheets: 'times-table-grid', wall: false, stickin: false,
     note: 'worksheets:false — the sheet has its own column/grid arithmetic family (short/long-multiplication-grid); the slide mult-grid is the board model, not the same key.' },
-  { id: 'fraction-wall', depicts: 'data',   slides: 'fraction-wall',   worksheets: false, wall: false, stickin: false },
+  { id: 'fraction-wall', depicts: 'data',   slides: 'fraction-wall',   worksheets: 'fraction-wall', wall: 'fraction-wall', stickin: 'fraction-wall',
+    geometrySource: 'shared/visuals/fraction-wall-svg.js' },
   { id: 'dial-scale', depicts: 'data',      slides: 'dial-scale',      worksheets: false, wall: false, stickin: false },
   { id: 'measuring-jug', depicts: 'data',   slides: 'measuring-jug',   worksheets: false, wall: false, stickin: false },
   { id: 'translation-grid', depicts: 'data', slides: 'translation-grid', worksheets: false, wall: false, stickin: false },
-  { id: 'part-whole-model', depicts: 'data', slides: 'part-whole-model', worksheets: 'part-whole', wall: false, stickin: false,
+  { id: 'part-whole-model', depicts: 'data', slides: 'part-whole-model', worksheets: ['part-whole', 'part-whole-money'], wall: false, stickin: false,
     successCriteriaSource: 'shared/visuals/part-whole-model-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'part-whole', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
@@ -329,8 +333,6 @@ const SUCCESS_CRITERIA_AUDIT = Object.freeze({
   'shaded-fraction': { classification: 'full-size', reason: 'Partition count and shaded amount must match the fraction.' },
   'angle-fan': { classification: 'full-size', reason: 'The comparison set needs several labelled angles.' },
   'comparison-symbol': { classification: 'full-size', reason: 'The symbol direction must match the actual comparison.' },
-  'fraction-circle': { classification: 'full-size', reason: 'The number of sectors and shading are value-specific.' },
-  'fraction-bar': { classification: 'full-size', reason: 'The number of parts and shading are value-specific.' },
   'circuit-symbol-bank': { classification: 'full-size', reason: 'The names are task-specific and the symbol identities must stay individually readable; a tiny bank cues nothing.' },
   map: { classification: 'full-size', reason: 'Geographical detail and labels carry the meaning.' },
   callout: { classification: 'unsuitable', reason: 'It is a presentation container, not a child-made mark.' },
@@ -440,12 +442,8 @@ const SHARING_BACKLOG = Object.freeze({
   "pyramid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "place-value-chart": { slides: 'own', worksheets: 'own', stickin: 'missing' },
   "place-value-mini": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
-  "money": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "shaded-fraction": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "angle-fan": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
   "comparison-symbol": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
-  "fraction-circle": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
-  "fraction-bar": { slides: 'missing', worksheets: 'own', wall: 'own', stickin: 'missing' },
   "map": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'own' },
   "area-grid": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "concept-map": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
@@ -456,7 +454,6 @@ const SHARING_BACKLOG = Object.freeze({
   "fishbone": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "number-network": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "mult-grid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "fraction-wall": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "dial-scale": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "measuring-jug": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "translation-grid": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },

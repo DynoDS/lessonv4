@@ -41,6 +41,7 @@ const {
   esc,
   linesFor,
 } = require("./shared");
+const { MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
 
 // None of the five gains anything from spare page height. The two drawings are
 // locked to their own aspect and capped at the width where a coin is already
@@ -56,9 +57,10 @@ function f(n) {
 }
 
 // ─── coin drawing ────────────────────────────────────────────────────────
-// Shared by coin-strip and by part-whole-money, which can carry coins inside
-// its bubbles. One drawing, so the coins a child is handed in the strip are the
-// same coins they see partitioned in the model.
+// Drawn coins, now used only inside part-whole-money's bubbles. The coin strip
+// places the real coin pictures from shared/visuals/money-svg.js (13 September
+// 2026), and that module exports coinImage for these bubbles to move onto next,
+// so the coins a child sees partitioned are the ones they were handed.
 
 // Real UK coin diameters in millimetres, and the whole coin drawing is laid out
 // in those millimetres: one SVG unit is one millimetre, exactly as the ruler in
@@ -101,14 +103,7 @@ const NOTE_MM = {
 };
 const NOTE_SCALE = 0.42; // puts a £5 at 27mm tall, just over a 50p
 
-const COIN_GAP_MM = 2;
 const COIN_LABEL_RATIO = 0.3; // face value height as a fraction of the coin
-
-// How far the drawing may shrink before a coin stops being identifiable, and how
-// far it may grow. Growth stops at life size on purpose: past that a coin is
-// just a big disc, and the row eats width it has no use for.
-const COIN_SCALE_MAX = 1;
-const COIN_SCALE_MIN = 0.62; // a 5p, the smallest coin, still 11mm across
 
 // Realistic metal colours, and the one place in this file that does not use the
 // token palette. A coin that is not copper or silver is not a recognisable
@@ -317,92 +312,56 @@ function drawNote(denomination, def, x, boxY, boxW, boxH) {
 
 // ─── coin-strip ──────────────────────────────────────────────────────────
 // A row of coins and notes, left to right in the order given, optionally under
-// a prompt and over a dotted line for the total. Mirrors the Word builder's
-// coin-strip-question: text, coins, answerLine.
+// a prompt and over a dotted line for the total. The row is the one shared
+// money picture (shared/visuals/money-svg.js): the real Royal Mint pictures the
+// board, the wall and the stick-in pack place, to scale with each other and at
+// life size on paper. The prompt and the answer line are the sheet's own typed
+// layout around it.
+//
+// Until 13 September 2026 this strip drew its own coins in SVG (flat metal
+// colours, a heptagon, the value on the face), because the Word builder's
+// photographs could not come across without an image library. The shared
+// drawing places prepared copies of those photographs instead, so the coins a
+// child counts on the sheet are the coins they counted on the board.
+const moneyShared = require("../../../shared/visuals/money-svg");
+const { atPrintedWidth } = require("./at-printed-width");
 
-function buildCoinStripSvg(spec) {
-  const coins = spec.coins || [];
-  if (coins.length === 0) {
-    throw new Error("coin-strip: 'coins' must list at least one denomination");
-  }
+// How far the row may shrink before a coin stops being identifiable: a 5p, the
+// smallest coin, still 11mm across. The drawing itself stops growing at life
+// size, because no coin needs to print bigger than the coin in a child's hand.
+const COIN_SCALE_MIN = 0.62;
 
-  const sizes = coins.map(denominationSizeMm);
-  const totalW =
-    sizes.reduce((sum, s) => sum + s.w, 0) + (coins.length - 1) * COIN_GAP_MM;
-  const totalH = sizes.reduce((m, s) => Math.max(m, s.h), 0);
-
-  const parts = [];
-  let cursor = 0;
-  coins.forEach((denomination, i) => {
-    // Bottom-aligned, the way the Word builder composited them: a small coin and
-    // a big one share one baseline, as they would lying on a table. Centred
-    // instead, a 5p floats halfway up the row and the size difference reads as
-    // an accident of layout rather than as the size of the coin.
-    const y = totalH - sizes[i].h;
-    parts.push(...drawDenomination(denomination, cursor, y, 1).parts);
-    cursor += sizes[i].w + COIN_GAP_MM;
-  });
-
-  return {
-    // One unit is one millimetre, so the drawing is laid out in the unit it
-    // prints in and the two widths below are read straight off it.
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f(totalW)} ${f(totalH)}">${parts.join("")}</svg>`,
-    aspect: totalW / totalH,
-    lifeSizeWidthMm: totalW,
-  };
-}
-
-// Life size. The drawing stops growing here and centres in whatever is left.
-function coinStripMaxWidthMm(geometry) {
-  return geometry.lifeSizeWidthMm * COIN_SCALE_MAX;
-}
-
-function coinStripMinWidthMm(geometry) {
-  return geometry.lifeSizeWidthMm * COIN_SCALE_MIN;
-}
-
-function renderCoinStrip(spec) {
-  const geometry = buildCoinStripSvg(spec);
-  const maxMm = coinStripMaxWidthMm(geometry);
-  const stem = spec.text
-    ? `<p class="h-money-stem">${esc(spec.text)}</p>`
-    : "";
-  const answer = spec.answerLine ? `<span class="h-money-answer"></span>` : "";
-  // The ceiling is applied to the drawn element as well as to the arithmetic,
-  // so what is printed and the height it was promised cannot disagree.
-  return `
-    <div class="h-money">
-      ${stem}
-      <div class="h-money-figure" style="max-width:${f(maxMm)}mm">${geometry.svg}</div>
-      ${answer}
-    </div>`;
+function coinStripMinWidthMm(spec) {
+  // Eight coins need more width than three, and a note nearly twice a coin's.
+  // Both fall out of the row's own life-size width rather than being asserted.
+  return moneyShared.describeLayout(spec, "worksheets", { widthMm: 10000 }).w / MM_TO_PT * COIN_SCALE_MIN;
 }
 
 const ANSWER_LINE_MM = WRITING_LINE_MM.lower; // a total, written by a child
 
-function measureCoinStrip(spec, widthMm) {
-  const geometry = buildCoinStripSvg(spec);
-  const stemMm = spec.text
-    ? linesFor(spec.text, widthMm) * LINE_MM + SPACE_TIGHT_MM
-    : 0;
-  const drawnWidth = Math.min(widthMm, coinStripMaxWidthMm(geometry));
-  const figureMm = drawnWidth / geometry.aspect;
-  const answerMm = spec.answerLine ? ANSWER_LINE_MM + SPACE_TIGHT_MM : 0;
-  return stemMm + figureMm + answerMm;
-}
-
-function needsCoinStrip(spec) {
-  const geometry = buildCoinStripSvg(spec);
-  // Eight coins need more width than three. A note needs nearly twice a coin's.
-  // Both fall out of the drawing's own units rather than being asserted.
-  const minWidthMm = coinStripMinWidthMm(geometry);
-  const stemMm = spec.text
-    ? linesFor(spec.text, minWidthMm) * LINE_MM + SPACE_TIGHT_MM
-    : 0;
-  const answerMm = spec.answerLine ? ANSWER_LINE_MM + SPACE_TIGHT_MM : 0;
+// The prompt above and the answer line below, around the shared row.
+function coinStrip(figure) {
+  const extraMm = (spec, widthMm) =>
+    (spec.text ? linesFor(spec.text, widthMm) * LINE_MM + SPACE_TIGHT_MM : 0) +
+    (spec.answerLine ? ANSWER_LINE_MM + SPACE_TIGHT_MM : 0);
   return {
-    minWidthMm,
-    minHeightMm: minWidthMm / geometry.aspect + stemMm + answerMm,
+    ...figure,
+    render: (spec, width) => {
+      const stem = spec.text ? `<p class="h-money-stem">${esc(spec.text)}</p>` : "";
+      const answer = spec.answerLine ? `<span class="h-money-answer"></span>` : "";
+      return `
+    <div class="h-money">
+      ${stem}
+      ${figure.render(spec, width)}
+      ${answer}
+    </div>`;
+    },
+    measure: (spec, widthMm) => extraMm(spec, widthMm) + figure.measure(spec, widthMm),
+    needs: (spec) => {
+      const need = figure.needs(spec);
+      return { minWidthMm: need.minWidthMm, minHeightMm: need.minHeightMm + extraMm(spec, need.minWidthMm) };
+    },
+    greed: NEVER_STRETCH,
   };
 }
 
@@ -1214,13 +1173,14 @@ const css = `
     font-size: var(--type-body); color: var(--colour-ink);
     line-height: 1.35;
   }
-  .h-money-figure { display: flex; justify-content: center; margin: 0 auto; }
-  /* No max-height here, unlike .h-figure. The drawing's width is capped in
-     millimetres by the inline style, so its height follows from the aspect and
-     is known exactly by the measurement. A max-height would silently squash a
-     drawing whose measured height the zone happened to disagree with, and the
-     squashing would look like a design choice. */
-  .h-money-figure svg { width: 100%; height: auto; }
+  /* The shared coin row between the prompt and the answer line. .h-figure
+     claims the full height of what it sits in, which here would push the answer
+     line to the foot of the zone, so inside a strip it takes only its own. No
+     max-height either: the drawing prints at its own width, so its height is
+     known exactly by the measurement, and a max-height would silently squash a
+     row whose measured height the zone happened to disagree with. */
+  .h-money .h-figure { height: auto; }
+  .h-money .h-figure svg { max-height: none; }
   .h-money-answer {
     display: block;
     height: ${ANSWER_LINE_MM}mm;
@@ -1348,12 +1308,7 @@ const helpers = {
     needs: needsFractionSequence,
     greed: NEVER_STRETCH,
   },
-  "coin-strip": {
-    render: renderCoinStrip,
-    measure: measureCoinStrip,
-    needs: needsCoinStrip,
-    greed: NEVER_STRETCH,
-  },
+  "coin-strip": coinStrip(atPrintedWidth(moneyShared, { minWidthMm: coinStripMinWidthMm })),
   // Two names, one renderer. The mathematical object is a whole joined to its
   // parts; money is one thing it can be made of, and the helper spent long
   // enough named after that one thing to be passed over for the partition,

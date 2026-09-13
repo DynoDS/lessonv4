@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 80 helpers, what each is for, and a working example of each.
+The 81 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -114,8 +114,9 @@ emailed. Never write `imageHref` yourself.
 
 - `stacked-fraction` - A fraction written properly, numerator sitting on a rule above the denominator, with a question stem.
 - `fraction-sequence` - The same stacked fractions as a bare row, for use inside a compound question.
-- `fraction-bar` - One or more bars divided into equal parts, some shaded.
-- `coin-strip` - A row of coins and notes drawn at their real sizes relative to each other, over a line for the total.
+- `fraction-bar` - A shape cut into equal parts with some shaded: one or more bars (a word under each), or a grid or circle with `shape`.
+- `fraction-wall` - Rows of unit fractions under one whole, each piece named, for comparing and finding equivalent fractions.
+- `coin-strip` - A row of the real coin and note pictures, coins to scale with each other and at life size, over a line for the total.
 
 **Comparing and ordering**
 
@@ -1681,9 +1682,9 @@ Smallest usable: **30mm wide x 13mm tall**. Spare height: never takes spare heig
 
 #### `fraction-bar`
 
-One or more bars divided into equal parts, some shaded.
+A shape cut into equal parts with some shaded: one or more bars (a word under each), or a grid or circle with `shape`. The same picture the board draws from the same fields.
 
-Smallest usable: **72mm wide x 30mm tall**. Spare height: never takes spare height.
+Smallest usable: **60mm wide x 40mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1703,9 +1704,27 @@ Smallest usable: **72mm wide x 30mm tall**. Spare height: never takes spare heig
 }
 ```
 
+#### `fraction-wall`
+
+Rows of unit fractions under one whole, each piece named, for comparing and finding equivalent fractions.
+
+Smallest usable: **60mm wide x 43mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "fraction-wall",
+  "fractions": [
+    1,
+    2,
+    4,
+    8
+  ]
+}
+```
+
 #### `coin-strip`
 
-A row of coins and notes drawn at their real sizes relative to each other, over a line for the total.
+A row of the real coin and note pictures, coins to scale with each other and at life size, over a line for the total.
 
 Smallest usable: **79mm wide x 41mm tall**. Spare height: never takes spare height.
 

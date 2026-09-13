@@ -68,7 +68,7 @@ const FAMILIES = [
   ],
   [
     "Fractions and money",
-    ["stacked-fraction", "fraction-sequence", "fraction-bar", "coin-strip"],
+    ["stacked-fraction", "fraction-sequence", "fraction-bar", "fraction-wall", "coin-strip"],
   ],
   [
     "Comparing and ordering",

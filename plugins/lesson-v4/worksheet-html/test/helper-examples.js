@@ -281,6 +281,9 @@ module.exports = {
       { numerator: 2, denominator: 5, label: "2/5" },
     ],
   },
+  "fraction-wall": {
+    fractions: [1, 2, 4, 8],
+  },
 
   // ─── things a child writes on or into ───
   "multiple-choice": {

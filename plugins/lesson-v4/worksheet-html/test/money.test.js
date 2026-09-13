@@ -24,113 +24,20 @@ function countOf(haystack, needle) {
 
 // ─── coin-strip ──────────────────────────────────────────────────────────
 
-test("a coin strip draws one coin for every coin listed, repeats included", () => {
+// The coins themselves are the shared money picture, and what the picture must
+// guarantee on every surface (one picture per coin, the real designs, to scale,
+// nothing outside the drawing) is held in shared/test/money-svg.test.js. These
+// hold how the sheet places it.
+
+test("a coin strip places one real coin picture for every coin listed, repeats included", () => {
   // The job this helper exists for is "how much money is shown?". Drop a coin
   // and the answer changes, silently, and the sheet still looks finished.
   const html = helpers["coin-strip"].render({
     coins: ["£2", "£1", "20p", "20p", "10p"],
   });
-  assert.equal(countOf(html, ">£2<"), 1);
-  assert.equal(countOf(html, ">£1<"), 1);
-  assert.equal(countOf(html, ">20p<"), 2, "the second 20p was not drawn");
-  assert.equal(countOf(html, ">10p<"), 1);
-});
-
-test("coins keep the shapes that make them recognisable without reading them", () => {
-  // A child sorting coins knows a 50p by its seven curved sides and a £1 by its
-  // twelve, before they read anything. Draw them all as discs and the helper
-  // still passes every fit and legibility check while teaching nothing.
-  const round = helpers["coin-strip"].render({ coins: ["10p"] });
-  assert.ok(round.includes("<circle"), "a 10p should be round");
-  assert.ok(!round.includes("<path"), "a 10p should not be a polygon");
-
-  const heptagon = helpers["coin-strip"].render({ coins: ["50p"] });
-  assert.ok(heptagon.includes("<path"), "a 50p should be seven-sided");
-  // Curved edges, not a plain straight-sided heptagon: the arcs are the
-  // difference between a 50p and a generic token.
-  assert.match(heptagon, /d="M [^"]*A /, "a 50p's edges should be arcs");
-
-  const pound = helpers["coin-strip"].render({ coins: ["£1"] });
-  assert.ok(pound.includes("<path"), "a £1 should be twelve-sided");
-  // Bimetallic: the silver centre inside the gold ring.
-  assert.ok(pound.includes("<circle"), "a £1 should have its silver centre");
-});
-
-test("a seven-sided coin sits centred in its place in the strip", () => {
-  // A Reuleaux heptagon is NOT centred on its circumcircle: a vertex sits
-  // further from the middle than the arc opposite it does. Drawn from the
-  // circumcentre the 50p hangs above its own box and leans on whatever is above
-  // it, and every other check still passes - it fits, it measures right, the
-  // page looks finished.
-  //
-  // The top of the shape is its apex vertex, which is where the path starts.
-  // The bottom is the middle of the arc opposite that apex, and that arc is
-  // centred ON the apex, so it lies exactly one arc-radius below it. Measuring
-  // by vertices instead would put the bottom at the two low CORNERS and report
-  // a correctly centred coin as lopsided.
-  const html = helpers["coin-strip"].render({ coins: ["50p"] });
-  const [, , boxH] = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(html).map(Number);
-  const d = / d="([^"]+)"/.exec(html)[1];
-  const apexY = Number(/^M [\d.-]+ ([\d.-]+)/.exec(d)[1]);
-  const radius = Number(/A ([\d.-]+)/.exec(d)[1]);
-
-  const above = apexY;
-  const below = boxH - (apexY + radius);
-  assert.ok(
-    Math.abs(above - below) < 0.05,
-    `the 50p leaves ${above.toFixed(2)} above it and ${below.toFixed(2)} below`
-  );
-});
-
-test("no part of a coin is drawn outside the picture it declares", () => {
-  const html = helpers["coin-strip"].render({
-    coins: ["1p", "20p", "50p", "£1", "£2", "£5"],
-  });
-  const [, w, h] = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(html).map(Number);
-  const limit = Math.max(w, h);
-
-  for (const [, d] of html.matchAll(/ d="([^"]+)"/g)) {
-    for (const n of d.match(/-?\d+\.?\d*/g).map(Number)) {
-      assert.ok(n >= -0.01 && n <= limit + 0.01, `a drawn point sits at ${n}`);
-    }
-  }
-  for (const [, cx, cy, r] of html.matchAll(
-    /<circle cx="([\d.-]+)" cy="([\d.-]+)" r="([\d.-]+)"/g
-  )) {
-    assert.ok(Number(cx) - Number(r) >= -0.01, "a coin runs off the left edge");
-    assert.ok(Number(cx) + Number(r) <= w + 0.01, "a coin runs off the right edge");
-    assert.ok(Number(cy) - Number(r) >= -0.01, "a coin runs off the top edge");
-    assert.ok(Number(cy) + Number(r) <= h + 0.01, "a coin runs off the bottom edge");
-  }
-});
-
-test("coins are drawn to scale with each other, smallest to biggest", () => {
-  // The one the Word builder got wrong and the reference doc still recommends
-  // getting wrong. Size is the first thing a child sorts coins by, before colour
-  // and long before they read the number: a 2p is a third wider than a 5p, and a
-  // picture that makes them the same object teaches the opposite of the lesson.
-  // Nothing else catches it - the strip fits, nothing clips, the page looks
-  // finished, and every coin is labelled correctly.
-  const order = ["5p", "1p", "20p", "£1", "10p", "2p", "50p", "£2"];
-  const html = helpers["coin-strip"].render({ coins: order });
-  // Each coin's drawn width, read off the strip in the order it was listed.
-  const widths = [...html.matchAll(/<(?:circle|path)[^>]*fill="#[0-9A-F]{6}" stroke=/g)]
-    .map((m) => m.index)
-    .map((start) => html.slice(start, html.indexOf("/>", start)));
-
-  const spanOf = (denomination) => {
-    const one = helpers["coin-strip"].render({ coins: [denomination] });
-    const [, w] = /viewBox="0 0 ([\d.]+)/.exec(one).map(Number);
-    return w;
-  };
-  const drawn = order.map(spanOf);
-  for (let i = 1; i < drawn.length; i++) {
-    assert.ok(
-      drawn[i] > drawn[i - 1],
-      `a ${order[i]} (${drawn[i]}mm) is not drawn bigger than a ${order[i - 1]} (${drawn[i - 1]}mm)`
-    );
-  }
-  assert.ok(widths.length >= order.length, "not every coin was drawn");
+  assert.equal(countOf(html, "<use "), 5, "a coin was not placed");
+  assert.equal(countOf(html, "<symbol "), 4, "each denomination's picture should go in once");
+  assert.ok(!/<(circle|path)\b/.test(html), "the sheet drew a coin of its own instead of the real picture");
 });
 
 test("a coin prints at its real size when there is room, and never bigger", () => {
@@ -139,31 +46,14 @@ test("a coin prints at its real size when there is room, and never bigger", () =
   // a coin, and eats width the row has no use for.
   const spec = { coins: ["£2", "50p", "10p"] };
   const lifeSizeMm = 28.4 + 27.3 + 24.5 + 2 * 2; // real diameters plus the gaps
-  const drawnAt = (widthMm) =>
-    Number(/max-width:([\d.]+)mm/.exec(helpers["coin-strip"].render(spec))[1]) <= widthMm
-      ? Number(/max-width:([\d.]+)mm/.exec(helpers["coin-strip"].render(spec))[1])
-      : widthMm;
+  const drawnMmAt = (widthMm) =>
+    Number(/style="width:([\d.]+)pt/.exec(helpers["coin-strip"].render(spec, widthMm))[1]) * (25.4 / 72);
 
   assert.ok(
-    Math.abs(drawnAt(260) - lifeSizeMm) < 0.1,
-    `given a whole page the strip draws at ${drawnAt(260)}mm, not its true ${lifeSizeMm}mm`
+    Math.abs(drawnMmAt(260) - lifeSizeMm) < 0.1,
+    `given a whole page the strip draws at ${drawnMmAt(260)}mm, not its true ${lifeSizeMm}mm`
   );
-  assert.equal(drawnAt(60), 60, "in a narrow column it should shrink to fit");
-});
-
-test("the two pound coins do not come out as twins", () => {
-  // Both are gold with a silver centre, so on shape alone a £1 drawn as a
-  // twelve-sided disc and a £2 drawn as a round one are nearly the same picture
-  // at worksheet size. The real difference a child sees first is the width of
-  // the silver middle, and it has to survive.
-  const radiusOf = (coin) =>
-    Number(/<circle[^>]*r="([\d.]+)"[^>]*fill="#CFD3D8"/.exec(
-      helpers["coin-strip"].render({ coins: [coin] })
-    )[1]);
-  assert.ok(
-    radiusOf("£2") > radiusOf("£1") * 1.1,
-    `a £2's centre is ${radiusOf("£2")} and a £1's is ${radiusOf("£1")}`
-  );
+  assert.ok(Math.abs(drawnMmAt(60) - 60) < 0.1, "in a narrow column it should shrink to fit");
 });
 
 test("an unknown denomination is refused by name, with the real ones listed", () => {
@@ -179,7 +69,7 @@ test("an unknown denomination is refused by name, with the real ones listed", ()
 });
 
 test("a strip with no coins is refused rather than printed empty", () => {
-  assert.throws(() => helpers["coin-strip"].render({ coins: [] }), /at least one/);
+  assert.throws(() => helpers["coin-strip"].render({ coins: [] }), /MONEY_EMPTY/);
 });
 
 test("a longer coin strip needs a wider zone than a short one", () => {
@@ -587,21 +477,27 @@ test("a drawing never measures shorter than the shape it actually draws", () => 
   // The failure this catches is the expensive one: an estimate that runs short
   // does not look like a bug, the zone just clips the bottom off and the page
   // still looks finished.
-  for (const name of ["coin-strip", "part-whole-money"]) {
-    const spec = EXAMPLES[name];
-    const svg = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(helpers[name].render(spec));
-    const aspect = Number(svg[1]) / Number(svg[2]);
-    const declaredMax = Number(
-      /max-width:([\d.]+)mm/.exec(helpers[name].render(spec))[1]
+  for (const widthMm of [60, A_HALF_COLUMN_MM, FULL_WIDTH_MM, 260]) {
+    // The coin strip prints its row at the width it states in points, so the
+    // picture's height is that width over the row's own proportions.
+    const strip = helpers["coin-strip"].render(EXAMPLES["coin-strip"], widthMm);
+    const [, vw, vh] = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(strip).map(Number);
+    const printedMm = Number(/style="width:([\d.]+)pt/.exec(strip)[1]) * (25.4 / 72);
+    const stripMm = Math.min(widthMm, printedMm) / (vw / vh);
+    assert.ok(
+      helpers["coin-strip"].measure(EXAMPLES["coin-strip"], widthMm) >= stripMm - 0.01,
+      `"coin-strip" at ${widthMm}mm draws ${stripMm.toFixed(1)}mm of picture but claims less in total`
     );
-    for (const widthMm of [60, A_HALF_COLUMN_MM, FULL_WIDTH_MM, 260]) {
-      const drawnMm = Math.min(widthMm, declaredMax) / aspect;
-      assert.ok(
-        helpers[name].measure(spec, widthMm) >= drawnMm - 0.01,
-        `"${name}" at ${widthMm}mm draws ${drawnMm.toFixed(1)}mm of picture but claims ` +
-          `${helpers[name].measure(spec, widthMm).toFixed(1)}mm in total`
-      );
-    }
+
+    const spec = EXAMPLES["part-whole-money"];
+    const model = helpers["part-whole-money"].render(spec);
+    const svg = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(model);
+    const declaredMax = Number(/max-width:([\d.]+)mm/.exec(model)[1]);
+    const drawnMm = Math.min(widthMm, declaredMax) / (Number(svg[1]) / Number(svg[2]));
+    assert.ok(
+      helpers["part-whole-money"].measure(spec, widthMm) >= drawnMm - 0.01,
+      `"part-whole-money" at ${widthMm}mm draws ${drawnMm.toFixed(1)}mm of picture but claims less in total`
+    );
   }
 });
 
