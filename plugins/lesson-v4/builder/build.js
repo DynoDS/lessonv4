@@ -37,6 +37,7 @@ const { formatUKDate } = require('./src/date');
 const { preResizeAll } = require('./src/images/resize');
 const { preTrimMoney } = require('./src/images/trim-money');
 const { preMeasureAll } = require('./src/images/measure');
+const { createSharedFigureStore } = require('./src/content/shared-figure');
 const { preRenderClocks } = require('./src/content/clock');
 const { preRenderTurns } = require('./src/content/turn-diagram');
 const { preRenderAngles } = require('./src/content/angle');
@@ -225,7 +226,10 @@ async function main() {
 
   // One ctx builder, used by the preflight and by the real render, so the dry
   // run cannot pass because it was handed something the real one is not.
-  const contextForSlide = (i) => ({ slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, clockImages, turnImages, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, geographicalDescriptionFrameImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, mapImages, circuitDiagramImages, parachuteForcesImages, circuitSymbolBankImages, successCriteriaHelperImages });
+  // Shared drawings (shared/visuals/) are laid out at their zone's real size,
+  // so the preflight asks for each one and they are made before the real pass.
+  const sharedFigures = createSharedFigureStore();
+  const contextForSlide = (i) => ({ sharedFigures, slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, clockImages, turnImages, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, geographicalDescriptionFrameImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, mapImages, circuitDiagramImages, parachuteForcesImages, circuitSymbolBankImages, successCriteriaHelperImages });
 
   // Draw everything once into a presentation nobody will open. A slide that
   // cannot be drawn is found here, before a file exists, rather than after the
@@ -268,6 +272,8 @@ async function main() {
     );
     process.exit(1);
   }
+
+  await sharedFigures.rasterise();
 
   const decorationPlans = skipOptionalDecorations
     ? slides.map(() => emptyDecorationPlan())

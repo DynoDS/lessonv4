@@ -63,7 +63,10 @@ function renderSingle(item, opts = {}) {
     return null;
   }
   const rawSpec = item.spec || {};
-  const { svg, w, h, aspect } = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec);
+  // A drawing laid out at its printed size (the number line) is told the width
+  // the piece will print at.
+  const printedWidthMm = item.widthMm ?? def.defaultWidthMm;
+  const { svg, w, h, aspect } = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
   const a = aspect ?? w / h;
   const naturalWidthMm = item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
   const reserveTopMm = opts.reserveTopMm || 0;

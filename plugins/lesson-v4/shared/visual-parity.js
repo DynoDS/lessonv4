@@ -44,14 +44,15 @@
 //   - COVERAGE — every live wall/stick-in key, and every non-layout slide key, must
 //     appear here, so a new figure can't exist in a renderer without a scoping decision.
 //
-// What it deliberately does NOT do: nag that a figure sits in three engines but not a
-// fourth. Whether (say) a geoboard SHOULD also become a write-on stick-in piece is a
-// pedagogical scoping call the helper-builder owns, not a mechanical rule — so an
-// honest `false` with its reason is a recorded decision, not a gap to chase. Recording
-// it here is what makes the absence visible instead of silent.
+// Until 13 September 2026 it deliberately did not nag that a figure reached three
+// engines and not a fourth, treating an honest `false` as a pedagogical scoping
+// call. Daniel overruled that: every picture is drawn once and drawable on every
+// surface, and whether a lesson uses it there is the designers' call at the time.
+// A `false` below is now a gap on SHARING_BACKLOG, not a decision, and the notes
+// that argued for one are history rather than guidance.
 
 const PRIMITIVES = [
-  { id: 'comparison-slot', depicts: 'data', slides: 'comparison-slot', worksheets: false, wall: false, stickin: false,
+  { id: 'comparison-slot', depicts: 'data', slides: 'comparison-slot', worksheets: 'comparison-target', wall: false, stickin: false,
     note: 'Board-only symbol-entry ring between compared objects, sized to their shared row. Printed questions provide their own answer space; this is not a standalone wall reference or stick-in figure.' },
   // ── Shared-geometry figures (one drawing in shared/visuals/, consumed by every
   //    renderer it reaches). These are the parity-critical set: identical shape on
@@ -121,11 +122,15 @@ const PRIMITIVES = [
     ],
     note: 'stickin:false - a blank tally to complete lives on the worksheet, not as a glued strip.' },
   { id: 'pictogram', depicts: 'data',       slides: 'pictogram',       worksheets: 'pictogram',                     wall: 'pictogram',       stickin: false,
+    geometrySource: 'shared/visuals/pictogram-svg.js',
     note: 'stickin:false — a pictogram is read-and-answer; no write-on cut-out.' },
   { id: 'blank-surface', depicts: 'data',   slides: 'blank-surface',   worksheets: 'blank-surface', wall: false,          stickin: false,
+    geometrySource: 'shared/visuals/blank-surface-svg.js',
     note: 'wall/stickin:false — the draw-your-own surface IS the worksheet/board write space; in the book the equivalent write-on is draw-box-row.' },
-  { id: 'grid-map', depicts: 'data',        slides: 'grid-map',        worksheets: 'grid-map',                      wall: 'grid-map',        stickin: 'grid-map' },
+  { id: 'grid-map', depicts: 'data',        slides: 'grid-map',        worksheets: 'grid-map',                      wall: 'grid-map',        stickin: 'grid-map',
+    geometrySource: 'shared/visuals/grid-map-svg.js' },
   { id: 'rainforest-layers', depicts: 'data', slides: 'rainforest-layers', worksheets: 'rainforest-layers', wall: 'rainforest-layers', stickin: 'rainforest-layers',
+    geometrySource: 'shared/visuals/rainforest-layers-svg.js',
     note: 'The central teaching visual of a rainforest layers lesson: four stacked bands (emergent / canopy / understorey / forest floor) whose TINT carries the light gradient, brightest at the top to near dark at the floor. All four, and none of them is optional here. The gradient is the idea the lesson rests on, so the child has to meet the same picture everywhere: taught on the board across several slides (highlight dims two layers so half the diagram can be discussed at a time), read from on the sheet, anchored on the wall all unit, and labelled by the child in their own book. The board/sheet/wall forms are the LABELLED read-and-answer figure; the stick-in is the WRITE-ON form (`blank`), the same bands and trees with a ruled line beside each for the child to name the layers, which is why it reaches the stick-in pack and so the book. UK spelling "understorey" is baked into the shared module, so no engine can ship the American spelling.' },
   { id: 'geographical-description-frame', depicts: 'data', slides: 'geographical-description-frame', worksheets: false, wall: false, stickin: 'geographical-description-frame',
     geometrySource: 'shared/visuals/geographical-description-frame-svg.js',
@@ -139,6 +144,7 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/balanced-pattern-plate-svg.js',
     note: 'Board, worksheet and wall share one proportional plate. The teaching form is a broad reference whose fixed sector shares, measured labels, water cue, less-often cue and across-a-day/over-time caption make it a durable wall overview as well as a slide visual; the practice form leaves pupil-decision spaces while preserving those proportions. stickin:false because the practice plate is a substantial worksheet decision task, not a small cut-and-glue write-on figure.' },
   { id: 'circuit-diagram', depicts: 'data', slides: 'circuit-diagram', worksheets: 'circuit-diagram', wall: 'circuit-diagram', stickin: false,
+    geometrySource: 'shared/visuals/circuit-diagram-svg.js',
     note: 'One series circuit in the standard primary symbols. Wave 5 made the shared module strict and pointed the worksheet and the wall at it, so the board, the sheet and the display now draw the identical circuit rather than three hand-made ones that could disagree about an open switch. The drawing refuses to invent, round, clamp, drop or truncate any part of the science it is given: a lesson asking "will this lamp light?" turns entirely on the cells, the components, the switch and the path being exactly as stated. stickin:false — the pack is for write-on cut-outs a child completes in their book, and a schematic to READ is not that; a draw-your-own-circuit task belongs in blank-surface.' },
   { id: 'parachute-forces', depicts: 'data', slides: 'parachute-forces', worksheets: false, wall: 'parachute-forces', stickin: false,
     geometrySource: 'shared/visuals/parachute-forces-svg.js',
@@ -150,16 +156,17 @@ const PRIMITIVES = [
   //    shared/visuals module, but the same concept the child should meet in each place).
   { id: 'triangle-square', depicts: 'data', slides: 'triangle-square', worksheets: 'triangle-square',               wall: 'triangle-square', stickin: false },
   { id: 'turn-diagram', depicts: 'data',    slides: 'turn-diagram',    worksheets: 'turn-diagram', wall: 'turn-diagram', stickin: false,
-    geometrySource: 'shared/visuals/turn-diagram-cue-svg.js',
+    successCriteriaSource: 'shared/visuals/turn-diagram-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'turn-clockwise', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'clockwise' } } },
       { key: 'turn-anticlockwise', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'anticlockwise' } } }
     ] },
   { id: 'clock', depicts: 'data',           slides: 'clock',           worksheets: 'clock-row',     wall: 'clock',           stickin: false },
-  // Stick-in write-on geometry: shared/visuals/number-line-svg.js; existing cue
-  // geometry remains the SC source.
+  // One number line for every surface (13 September 2026); the tiny cue beside a
+  // success-criteria step keeps its own drawing.
   { id: 'numberline', depicts: 'data',      slides: 'numberline',      worksheets: 'number-line',                   wall: 'numberLine',      stickin: 'number-line',
-    geometrySource: 'shared/visuals/numberline-cue-svg.js',
+    geometrySource: 'shared/visuals/number-line-svg.js',
+    successCriteriaSource: 'shared/visuals/numberline-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'jump-right', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'right' } } },
       { key: 'jump-left', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'left' } } }
@@ -171,20 +178,20 @@ const PRIMITIVES = [
     ],
     note: 'The grid has two distinct uses, split by whether it is BLANK or PLOTTED. A BLANK numbered grid is a live practice/write-on surface: the child plots on it (stickin - a grid they cannot rule accurately by hand in a squared book). A PLOTTED/JOINED grid (points marked, optionally join:true into a shape) is a WORKED EXAMPLE - a plotted point or a joined shape on a numbered grid - which is exactly what a wall reference card shows, so wall added: the wall draws the plotted form (before this, coordinate lessons fell back to a geoboard, losing the axis numbers the whole unit turns on). Slides, worksheet, wall and stick-in uses draw from the one shared module shared/visuals/coordinate-grid-svg.js, including the across-then-up route used by the full-size model and its number-free Success Criteria treatment.' },
   { id: 'point-route', depicts: 'data', slides: false, worksheets: false, wall: false, stickin: false,
-    geometrySource: 'shared/visuals/point-route-svg.js',
+    successCriteriaSource: 'shared/visuals/point-route-svg.js',
     successCriteriaHelpers: [
       { key: 'join-in-order', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { mode: 'join-in-order' } } },
       { key: 'close-the-shape', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { mode: 'close-the-shape' } } }
     ],
     note: 'Success-Criteria-inline only - these tiny route cues show the child\'s next mark. A full-size teaching diagram uses coordinate-grid or geoboard instead, so promoting this into a standalone slide helper would create a fake second visual language.' },
   { id: 'scale-interval', depicts: 'data', slides: false, worksheets: false, wall: false, stickin: false,
-    geometrySource: 'shared/visuals/scale-interval-cue-svg.js',
+    successCriteriaSource: 'shared/visuals/scale-interval-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'count-scale-intervals', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
     ],
     note: 'Success-Criteria-inline only - one equal-interval cue serves dial scales and measuring containers without inventing a task-specific value.' },
   { id: 'pyramid', depicts: 'data',         slides: 'pyramid',         worksheets: 'number-pyramid',                          wall: false,             stickin: false,
-    geometrySource: 'shared/visuals/pyramid-cue-svg.js',
+    successCriteriaSource: 'shared/visuals/pyramid-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'number-pyramid', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
     ] },
@@ -196,6 +203,7 @@ const PRIMITIVES = [
     ],
     note: 'wall via the shared bar-chart-svg, used as the annotated anatomy poster for "read a bar chart" lessons (labelledDiagram + callouts). stickin:false — a bar chart is read-and-answer, not a write-on cut-out.' },
   { id: 'line-graph', depicts: 'data',      slides: 'line-graph',      worksheets: 'line-graph',                    wall: 'line-graph',      stickin: false,
+    geometrySource: 'shared/visuals/line-graph-svg.js',
     note: 'wall via the shared line-graph-svg, used as the annotated anatomy poster for "read a line graph" lessons (labelledDiagram + callouts on title / yAxis / xAxis / line / point / each plotted x). worksheets via line-graph-question, the stimulus-top figure that replaced the data-table fallback a read-a-graph lesson used to be forced into. stickin:false - a line graph is read-and-answer, not a write-on cut-out; the child reads values off it rather than marking it, so like bar-chart/pictogram it has no stick-in piece.' },
   { id: 'chip-bank', depicts: 'data',       slides: 'chip-bank',       worksheets: 'chip-bank',                              wall: false,             stickin: false },
   { id: 'place-value-chart', depicts: 'data', slides: 'place-value-chart', worksheets: ['place-value-chart', 'place-value-counter-chart'], wall: 'place-value-chart', stickin: false,
@@ -234,7 +242,7 @@ const PRIMITIVES = [
   { id: 'callout', depicts: 'data',         slides: 'callout',         worksheets: false, wall: false, stickin: false,
     note: 'A small coloured box holding one short line, with an arrow leaving any side to point at the thing the line is about. Board-only, and the reason is that every other surface already points at its own content a different way. wall:false - the wall annotates a diagram through the `callouts` array on a card visual, composited through the shared label-diagram overlay (the labelledDiagram card); a standalone callout primitive there would be a second way to do the one job, the same reasoning recorded for `map` above. worksheets:false - a sheet points at part of a picture with `label-diagram`, whose leader lines are drawn INTO the figure; the sheet has no free-placed zone beside a figure for a box to point from. stickin:false - a callout is something the teacher points with, never something the child marks, so it fails the write-on test a stick-in piece has to pass. Revisit the worksheet if worksheet zones ever let a figure and a note sit side by side.' },
   { id: 'area-grid', depicts: 'data',       slides: 'area-grid',       worksheets: false, wall: false, stickin: false,
-    geometrySource: 'shared/visuals/area-grid-cue-svg.js',
+    successCriteriaSource: 'shared/visuals/area-grid-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'count-array', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
     ] },
@@ -249,14 +257,14 @@ const PRIMITIVES = [
   { id: 'number-network', depicts: 'data',  slides: 'number-network',  worksheets: false, wall: false, stickin: false },
   { id: 'concept-matching', depicts: 'data', slides: 'matching',       worksheets: false, wall: false, stickin: false,
     note: 'slide-only sorting/matching activity (draws connector affordances), done live on the board.' },
-  { id: 'mult-grid', depicts: 'data',       slides: 'mult-grid',       worksheets: false, wall: false, stickin: false,
+  { id: 'mult-grid', depicts: 'data',       slides: 'mult-grid',       worksheets: 'times-table-grid', wall: false, stickin: false,
     note: 'worksheets:false — the sheet has its own column/grid arithmetic family (short/long-multiplication-grid); the slide mult-grid is the board model, not the same key.' },
   { id: 'fraction-wall', depicts: 'data',   slides: 'fraction-wall',   worksheets: false, wall: false, stickin: false },
   { id: 'dial-scale', depicts: 'data',      slides: 'dial-scale',      worksheets: false, wall: false, stickin: false },
   { id: 'measuring-jug', depicts: 'data',   slides: 'measuring-jug',   worksheets: false, wall: false, stickin: false },
   { id: 'translation-grid', depicts: 'data', slides: 'translation-grid', worksheets: false, wall: false, stickin: false },
-  { id: 'part-whole-model', depicts: 'data', slides: 'part-whole-model', worksheets: false, wall: false, stickin: false,
-    geometrySource: 'shared/visuals/part-whole-model-cue-svg.js',
+  { id: 'part-whole-model', depicts: 'data', slides: 'part-whole-model', worksheets: 'part-whole', wall: false, stickin: false,
+    successCriteriaSource: 'shared/visuals/part-whole-model-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'part-whole', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
     ],
@@ -266,6 +274,13 @@ const PRIMITIVES = [
   //    child draws into, glued into the book.
   { id: 'draw-box-row', depicts: 'data',    slides: false, worksheets: false, wall: false, stickin: 'draw-box-row',
     note: 'stick-in write-on only - a strip of blank boxes the child draws in; never a board or wall figure.' },
+  // ── Pictures the worksheet drew with nobody else able to (added 13 September
+  //    2026, when every picture became one shared drawing on all four surfaces).
+  { id: 'base-ten-blocks', depicts: 'data', slides: false, worksheets: 'base-ten-blocks', wall: false, stickin: false },
+  { id: 'counter-group', depicts: 'data', slides: false, worksheets: 'counter-group', wall: false, stickin: false },
+  { id: 'ruler', depicts: 'data', slides: false, worksheets: 'ruler', wall: false, stickin: false },
+  { id: 'process-chain', depicts: 'data', slides: false, worksheets: 'process-chain', wall: false, stickin: false },
+  { id: 'classification-key', depicts: 'data', slides: false, worksheets: 'classification-key', wall: false, stickin: false },
 ];
 
 // Every visual primitive is explicitly audited for Success Criteria use. This
@@ -334,7 +349,12 @@ const SUCCESS_CRITERIA_AUDIT = Object.freeze({
   'measuring-jug': { classification: 'full-size', reason: 'The vessel and exact scale must match the question.' },
   'translation-grid': { classification: 'full-size', reason: 'The legacy point movement stays full-size; the shape cue uses translation-shape.' },
   'part-whole-model': { classification: 'SC-inline', reason: 'The whole-to-parts structure survives without values.' },
-  'draw-box-row': { classification: 'unsuitable', reason: 'A tiny blank write-on strip gives no actionable cue.' }
+  'draw-box-row': { classification: 'unsuitable', reason: 'A tiny blank write-on strip gives no actionable cue.' },
+  'base-ten-blocks': { classification: 'full-size', reason: 'The number of each block is the value being read.' },
+  'counter-group': { classification: 'full-size', reason: 'The counters and their grouping are the value being read.' },
+  ruler: { classification: 'full-size', reason: 'The scale and the measured length must match the question.' },
+  'process-chain': { classification: 'full-size', reason: 'The stages and their order are content-specific.' },
+  'classification-key': { classification: 'full-size', reason: 'The questions and branches are the content.' }
 });
 
 // Slide content primitives that are pure text/layout containers, not visual figures,
@@ -365,4 +385,103 @@ const SLIDE_LAYOUT_EXEMPT = [
                       // question-cards-style framing.
 ];
 
-module.exports = { PRIMITIVES, SUCCESS_CRITERIA_AUDIT, SLIDE_LAYOUT_EXEMPT };
+// Typed layout rather than pictures. Each surface sets these as its own text,
+// boxes and lines, so a teacher can edit the words in PowerPoint and a sheet can
+// wrap them to its column; the shared-drawing rule (every picture drawn once, in
+// shared/visuals/, and reachable from every surface) applies to PICTURES below
+// and not to these. A thing belongs here when what it shows is words in an
+// arrangement, not marks whose position or shape carries meaning.
+const TYPED_LAYOUT = Object.freeze([
+  'method-frame',     // labelled lines of a written method
+  'chip-bank',        // a bank of word or number chips
+  'concept-matching', // items to match, laid out on the board
+  'source-copy',      // a printed copy of the lesson's own picture file
+  'recording-table',  // a table the child fills in
+  'callout',          // a box of words with an arrow, for pointing
+]);
+
+// Worksheet helpers that are the sheet's own typed layout (questions, writing
+// space, tables, frames of words). Every other worksheet helper must be a
+// picture above, so a new drawing on paper cannot appear without a shared
+// drawing and a place on every surface.
+const WORKSHEET_LAYOUT_EXEMPT = Object.freeze([
+  'instruction', 'questions', 'written-answers', 'section-label', 'source-text',
+  'data-table', 'recording-table', 'multiple-choice', 'sort-grid', 'drawing-space',
+  'column-method-grid', 'short-multiplication-grid', 'long-multiplication-grid',
+  'bus-stop-grid', 'long-division-grid', 'match-up', 'card-row', 'speech-scene',
+  'named-claim', 'fact-file', 'writing-frame', 'steps', 'storyboard',
+  'compare-row', 'inequality-with-boxes', 'number-sentence', 'order-numbers',
+  'order-table', 'data-table-with-ordering', 'circle-the-answer', 'digit-cards',
+  'stacked-fraction', 'fraction-sequence', 'cause-path-grid', 'evidence-chain-frame',
+  'method-frame', 'chip-bank',
+]);
+
+// What is not shared yet, as the code stands. Every picture is meant to be drawn
+// once, in shared/visuals/, and to be drawable on the board, the worksheet, the
+// wall and the stick-in pack from that one drawing (Daniel, 13 September 2026:
+// "Make everything shared ... consistency is good, and it stops anything having
+// to be built because 'it can't use that one'"). Each row says, per surface,
+// what is still wrong: `own` (the surface draws the picture with code of its
+// own) or `missing` (the surface cannot draw it at all).
+//
+// builder/scripts/check-parity.js recomputes this from the code on every check
+// and refuses any difference in either direction, so the list only ever shrinks:
+// a surface that becomes shared must come off the list in the same change, and
+// nothing may be added. `node builder/scripts/sharing-status.js` prints the table;
+// `--backlog` prints this literal.
+const SHARING_BACKLOG = Object.freeze({
+  "comparison-slot": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "label-diagram": { wall: 'missing' },
+  "line-pair": { stickin: 'missing' },
+  "bar-model": { stickin: 'missing' },
+  "tally-chart": { stickin: 'missing' },
+  "pictogram": { stickin: 'missing' },
+  "blank-surface": { wall: 'missing', stickin: 'missing' },
+  "geographical-description-frame": { worksheets: 'missing', wall: 'missing' },
+  "balanced-pattern-plate": { stickin: 'missing' },
+  "circuit-diagram": { stickin: 'missing' },
+  "parachute-forces": { worksheets: 'missing', stickin: 'missing' },
+  "polygon": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "triangle-square": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
+  "turn-diagram": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
+  "clock": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
+  "point-route": { slides: 'missing', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "scale-interval": { slides: 'missing', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "pyramid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "bar-chart": { slides: 'own', stickin: 'missing' },
+  "line-graph": { slides: 'own', stickin: 'missing' },
+  "place-value-chart": { slides: 'own', worksheets: 'own', stickin: 'missing' },
+  "place-value-mini": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "money": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "shaded-fraction": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "angle-fan": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
+  "comparison-symbol": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
+  "fraction-circle": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
+  "fraction-bar": { slides: 'missing', worksheets: 'own', wall: 'own', stickin: 'missing' },
+  "map": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'own' },
+  "circuit-symbol-bank": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "area-grid": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "concept-map": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "source-pathway": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "continuum-line": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "timeline": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "diamond-nine": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "fishbone": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "number-network": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "mult-grid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "fraction-wall": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "dial-scale": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "measuring-jug": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "translation-grid": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
+  "part-whole-model": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "draw-box-row": { slides: 'missing', worksheets: 'missing', wall: 'missing', stickin: 'own' },
+  "base-ten-blocks": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "counter-group": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "ruler": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "process-chain": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+  "classification-key": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
+});
+
+const PICTURES = PRIMITIVES.filter((p) => !TYPED_LAYOUT.includes(p.id));
+
+module.exports = { PRIMITIVES, PICTURES, TYPED_LAYOUT, WORKSHEET_LAYOUT_EXEMPT, SUCCESS_CRITERIA_AUDIT, SLIDE_LAYOUT_EXEMPT, SHARING_BACKLOG };

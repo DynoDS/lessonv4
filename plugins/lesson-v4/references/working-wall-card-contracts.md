@@ -477,11 +477,13 @@ A horizontal bar (Singapore-style bar model) divided into `denominator` equal ve
 
 ### numberLine
 
-Spec: `{ "type": "numberLine", "from": 0, "to": 10, "step": 1, "marks": [{ "at": 7, "label": "7" }] }`
+The same number line the board draws, from the same fields: copy the slide's `numberline` object and change only `type`.
 
-Horizontal line with major ticks every `step` from `from` to `to`. Optional `marks` array places coloured dots above the line at named positions. Use for ordering, rounding, fractions on a line, time intervals.
+Spec: `{ "type": "numberLine", "start": 1200, "end": 2000, "interval": 200, "labels": "all", "answer": { "at": 1800, "text": "A = 1,800" } }`
 
-Optional `jumps: [{ "from": 0, "to": 10, "label": "+10" }]` draws blue arcs between marks, the board's jump, for a card anchoring counting on, counting back or what one step of a scale is worth; `label` is the jump's size (up to eight characters). Optional `highlight: { "from": 0, "to": 10 }` shades the space between two marks, for a card saying what an interval is. Both ends sit on ticks. A line carries `jumps` or `marks`, not both.
+`labels` is `"ends"`, `"all"` or a list of values; `answer` (one or a list) is a green dot on the line with its words above, the worked value a card shows; `arrow` points at a place; `jumps: [{ "from": 1200, "to": 1400, "label": "+200" }]` draws the blue hop along a space and `highlight: { "from": 1200, "to": 1400 }` shades one space. Both ends of a jump or highlight sit on marks, and a line carries jumps or points, not both. Use for ordering, rounding, reading a scale, fractions on a line, time intervals.
+
+Cards written with the wall's older spelling (`from`, `to`, `step`, `marks: [{ "at": 7, "label": "7" }]`) still draw: every tick is labelled and each mark becomes an answer dot.
 
 ### angleFan
 

@@ -145,425 +145,38 @@ function needsClockRow(spec) {
 }
 
 // ─── number-line ────────────────────────────────────────────────────────
-// A labelled number line or ruler, optionally carrying marked or blank jumps,
-// boxes to write in, and an object bracket. Geometry lifted whole from
-// number-line.js: every spec field it read still means the same thing here.
-//
-// Colour choices carried over from the Word version's own palette: the arrow
-// that marks an already-placed value keeps the "given" orange, the object
-// bracket a ruler measures keeps the "question/focus" blue. Everything else
-// (axis, ticks, labels, boxes) is ink, because none of it is colour-coded on
-// the page, it is just the line itself.
-const ARROW = "var(--colour-given)";
-const OBJECT = "var(--colour-question)";
-// A jump is the move the child makes along the spaces, so it takes the focus
-// blue; a highlighted space takes the given orange, as a thick bar over the
-// axis and a pale wash between its two marks. Both read in greyscale by weight
-// and shape, never by hue alone.
-const JUMP = "var(--colour-question)";
-const HIGHLIGHT = "var(--colour-given)";
-const JUMP_TIER_H = 64;
-const JUMP_LABEL_FONT = 26;
-const JUMP_LABEL_MIN = 18;
-const JUMP_LABEL_H = JUMP_LABEL_FONT + 8;
-const JUMP_HEAD = 16;
-const JUMP_STROKE = 3;
-const JUMP_BOX_W = 90;
-const JUMP_GAP = 4;
-const HIGHLIGHT_BAR_H = 10;
-const HIGHLIGHT_WASH = 0.22;
-const UNIT_MAX_CHARS = 6;
-// The caption is read like the axis numbers it sits under, so it takes their
-// size and a tight gap: five captioned lines on one side of A4 must still fit
-// where five lines with a clipped `unit` did.
-const CAPTION_FONT = 22;
-const CAPTION_GAP = 2;
-// A caption with a blank in it ("Scale: ___") is a place the child writes, not a
-// sentence they read. Drawn as text, its three underscores printed as a stub a
-// few millimetres wide in the same black as the axis numbers, and on a Year 4
-// sheet it did not look like anything to fill in, while the answer box above
-// the line did (13 September 2026). So the blank is drawn as the line's own
-// kind of answer box, same stroke, wide enough for a four-digit number with its
-// comma. It stays where the caption always was, centred under the numbers:
-// moved up beside the answer boxes it saved a row, and Daniel said it had been
-// fine where it was and only needed the question under it kept apart, which the
-// gap and grey line between questions now do.
-const CAPTION_BLANK = /_{2,}/;
-const CAPTION_SLOT_GAP = 6;
-const CAPTION_SLOT_H = 50;
-const CAPTION_SLOT_W = 220;
-const CAPTION_SLOT_PAD = 12;
-// The word before the box is read like the question, so it is set a step larger
-// than the axis numbers.
-const CAPTION_SLOT_FONT = 28;
-const CAPTION_CHAR_W = CAPTION_SLOT_FONT * 0.55;
+// Drawn by the one shared number line (shared/visuals/number-line-svg.js),
+// which the board, the wall and the stick-in pack place too. It is laid out at
+// the width the zone really prints, so its numerals are a real size rather than
+// a size that shrinks with the zone; the sheet's own spec fields (boxes, arrows,
+// caption, unit, object, subLabel) all mean the same thing there. This sheet
+// drew its own line until 13 September 2026, and every repair made to it
+// reached no other surface.
+const numberLineShared = require("../../../shared/visuals/number-line-svg");
+const { profileFor, MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
 
-// Year 4 place value is taught WITH the comma, and the question beside the
-// line already uses it ("Round 6,734 to the nearest 10."). A line whose ends
-// read 6730 and 6740 under that question puts both conventions in front of a
-// child at once, on the sheet practising the convention. The slide engine made
-// this repair on 8 September 2026 (builder numberline.js); the paper engine had
-// kept String(v). Built by hand rather than through toLocaleString so the sheet
-// reads the same whatever the building machine's locale is. Decimals, values
-// under a thousand and authored string labels are left exactly as written.
-function formatValue(v) {
-  if (typeof v !== "number" || !Number.isFinite(v)) return String(v);
-  if (!Number.isInteger(v) || Math.abs(v) < 1000) return String(v);
-  const digits = String(Math.abs(v));
-  let out = "";
-  for (let i = 0; i < digits.length; i++) {
-    if (i > 0 && (digits.length - i) % 3 === 0) out += ",";
-    out += digits[i];
-  }
-  return (v < 0 ? "-" : "") + out;
+function numberLineAt(spec, width) {
+  const widthMm = typeof width === "number" ? width : width && width.widthMm;
+  return numberLineShared.tightSvg(spec, profileFor("worksheets", { widthMm: widthMm > 0 ? widthMm : 170 }));
 }
 
-function buildNumberLineSvg(spec) {
-  const {
-    start,
-    end,
-    interval = 1,
-    labels = "ends",
-    wholeTick,
-    boxes = [],
-    arrow,
-    arrows,
-    subLabel,
-    widthPx = 1200,
-    majorInterval,
-    unit,
-    object,
-    caption,
-  } = spec;
-
-  // Three fields a sentence was once pushed through, on a Year 4 sheet whose
-  // every line had to say "Each interval is worth 1,000." `unit` is the "cm" at
-  // the end of a ruler and clipped the sentence to "Each in"; the repair moved
-  // it into `object`, the bracket a ruler measures, which drew a blue bar the
-  // full length of every line with the sentence running through the answer
-  // boxes, and it was printed (12 September 2026). A sentence about the line is
-  // its `caption`; the other two refuse what is not theirs.
-  if (unit != null && String(unit).length > UNIT_MAX_CHARS) {
-    throw new Error(
-      `NUMBERLINE_UNIT_TOO_LONG: unit ${JSON.stringify(String(unit))} is a sentence. \`unit\` is the measuring unit ` +
-        "printed at the end of a ruler (cm, g, ml); put a sentence about the line in `caption`."
-    );
-  }
-  if (object && boxes.length) {
-    throw new Error(
-      "NUMBERLINE_OBJECT_CROWDED: an object bracket and answer boxes draw in the same band above the line. " +
-        "`object` is the thing a ruler measures; a sentence about the line goes in `caption`."
-    );
-  }
-
-  const allArrows = arrows || (arrow ? [arrow] : []);
-
-  const scaleLine = jumpsGeo.valueLine({ start, end, interval });
-  const jumps = jumpsGeo.resolveJumps(spec, scaleLine);
-  jumpsGeo.refuseCrowding(jumps, spec, ["arrow", "arrows", "boxes", "object"], "this number line");
-  const highlights = jumpsGeo.resolveIntervalHighlight(spec, scaleLine);
-  const jumpsLabelled = jumps.some((j) => j.label || j.box);
-  const jumpLabelH = jumpsLabelled ? JUMP_LABEL_H : 0;
-
-  let resolvedWholeTick = wholeTick;
-  let resolvedLabels = labels;
-  if (majorInterval != null) {
-    const majorValues = [];
-    const steps = Math.round((end - start) / majorInterval);
-    for (let i = 0; i <= steps; i++) {
-      majorValues.push(Math.round((start + i * majorInterval) * 1e9) / 1e9);
-    }
-    resolvedWholeTick = majorValues;
-    resolvedLabels = majorValues;
-  }
-
-  const subLabelFont = 36;
-  const subLabelWidth = subLabel ? 100 : 0;
-  const padLeft = 60 + subLabelWidth;
-  const padRight = unit ? 80 : 60;
-  const tickH = 26;
-  const tallTickH = 40;
-  const labelFont = 22;
-  // Under the ticks they name, not floating below them. At 26 the numbers sat
-  // further from their own line than the next question sat from the caption,
-  // so on a sheet of stacked lines each caption read as the heading of the
-  // line underneath it (Year 4, 13 September 2026). The slide line keeps its
-  // numbers about a fifth of a tick below; this is the same proportion.
-  const labelGap = 8;
-  const labelRowH = labelFont + 6;
-  const boxSize = 80;
-  const boxGap = 14;
-  const arrowHeight = 60;
-  const arrowLabelH = 30;
-  const arrowGap = 8;
-  const unitFont = 22;
-  const objectBarH = 10;
-  const objectGap = 12;
-  const objectLabelFont = 20;
-
-  const hasBoxes = boxes.length > 0;
-  const hasArrows = allArrows.length > 0;
-  const hasArrowBoxes = allArrows.some((a) => a.answerBox);
-  const hasLabels = !!resolvedLabels;
-  const hasObject = !!object;
-
-  const arrowTopSpace = hasArrows
-    ? arrowHeight + arrowLabelH + arrowGap + (hasArrowBoxes ? boxSize + boxGap : 0)
-    : 0;
-
-  const objectTopSpace = hasObject
-    ? objectBarH + objectGap + (object.label ? objectLabelFont + 4 : 0)
-    : 0;
-
-  const jumpTopSpace = jumps.length
-    ? JUMP_GAP + jumpsGeo.bandHeight(jumps, JUMP_TIER_H, jumpLabelH)
-    : 0;
-
-  const topSpace =
-    Math.max(
-      (hasBoxes ? boxSize + boxGap : 0) + arrowTopSpace,
-      objectTopSpace + arrowTopSpace,
-      jumpTopSpace
-    ) + 8;
-
-  const captionSlot = caption != null && CAPTION_BLANK.test(String(caption));
-  let slotPlace = null;
-  if (captionSlot) {
-    const [before, ...rest] = String(caption).split(CAPTION_BLANK);
-    const lead = before.trim();
-    const after = rest.join(" ").trim();
-    const leadW = lead ? lead.length * CAPTION_CHAR_W + CAPTION_SLOT_PAD : 0;
-    const afterW = after ? CAPTION_SLOT_PAD + after.length * CAPTION_CHAR_W : 0;
-    const groupW = leadW + CAPTION_SLOT_W + afterW;
-    slotPlace = { lead, after, x: (widthPx - groupW) / 2 };
-  }
-  const captionH = !caption
-    ? 0
-    : captionSlot
-    ? CAPTION_SLOT_GAP + CAPTION_SLOT_H + 4
-    : CAPTION_GAP + CAPTION_FONT + 4;
-  const bottomSpace = (hasLabels ? labelRowH + labelGap : 0) + (caption ? captionH : 8);
-  const axisY = topSpace + Math.max(tallTickH, tickH) / 2;
-  const heightPx = axisY + Math.max(tallTickH, tickH) / 2 + bottomSpace;
-
-  const innerWidth = widthPx - padLeft - padRight;
-  const totalSteps = Math.round((end - start) / interval);
-
-  function getX(value) {
-    return padLeft + ((value - start) / (end - start)) * innerWidth;
-  }
-
-  const tickValues = [];
-  for (let i = 0; i <= totalSteps; i++) {
-    tickValues.push(Math.round((start + i * interval) * 1e9) / 1e9);
-  }
-
-  const wholeSet = new Set(
-    Array.isArray(resolvedWholeTick)
-      ? resolvedWholeTick
-      : resolvedWholeTick != null
-      ? [resolvedWholeTick]
-      : []
-  );
-
-  let labelValues;
-  if (resolvedLabels === "all") labelValues = tickValues.slice();
-  else if (resolvedLabels === "ends") labelValues = [start, end];
-  else if (Array.isArray(resolvedLabels)) labelValues = resolvedLabels;
-  else labelValues = [];
-
-  const parts = [];
-
-  if (subLabel) {
-    parts.push(
-      `<text x="10" y="${axisY + subLabelFont / 3}" text-anchor="start" font-family="${FONT}" font-size="${subLabelFont}" font-weight="bold" fill="${INK}">${esc(subLabel)}</text>`
-    );
-  }
-
-  parts.push(
-    `<line x1="${padLeft}" y1="${axisY}" x2="${widthPx - padRight}" y2="${axisY}" stroke="${INK}" stroke-width="2.2" stroke-linecap="square" />`
-  );
-
-  for (const hl of highlights) {
-    const hx1 = getX(tickValues[hl.fromIndex]);
-    const hx2 = getX(tickValues[hl.toIndex]);
-    parts.push(
-      `<rect x="${hx1}" y="${axisY - tickH / 2}" width="${hx2 - hx1}" height="${tickH}" fill="${HIGHLIGHT}" fill-opacity="${HIGHLIGHT_WASH}" />`,
-      `<rect x="${hx1}" y="${axisY - HIGHLIGHT_BAR_H / 2}" width="${hx2 - hx1}" height="${HIGHLIGHT_BAR_H}" fill="${HIGHLIGHT}" />`
-    );
-  }
-
-  for (const v of tickValues) {
-    const h = wholeSet.has(v) ? tallTickH : tickH;
-    const cx = getX(v);
-    parts.push(
-      `<line x1="${cx}" y1="${axisY - h / 2}" x2="${cx}" y2="${axisY + h / 2}" stroke="${INK}" stroke-width="2" />`
-    );
-  }
-
-  const labelY = axisY + Math.max(tallTickH, tickH) / 2 + labelGap;
-  labelValues.forEach((v, i) => {
-    // { at, text } prints its own words under the mark at `at`: the way a
-    // deliberately wrong completion reaches the page (see number-line-jumps.js).
-    const entry = jumpsGeo.labelEntry(v, scaleLine, i);
-    const cx = getX(entry ? entry.at : v);
-    parts.push(
-      `<text x="${cx}" y="${labelY}" text-anchor="middle" dominant-baseline="hanging" font-family="${FONT}" font-size="${labelFont}" fill="${INK}">${esc(entry ? entry.text : formatValue(v))}</text>`
-    );
-  });
-
-  if (captionSlot) {
-    // Words before the blank, the box, then any words after it, on one row
-    // from the left edge of the line.
-    const { lead, after } = slotPlace;
-    const top = labelY + (hasLabels ? labelRowH : 0) + CAPTION_SLOT_GAP;
-    const midY = top + CAPTION_SLOT_H / 2;
-    let x = slotPlace.x;
-    if (lead) {
-      parts.push(
-        `<text x="${x}" y="${midY}" text-anchor="start" dominant-baseline="central" font-family="${FONT}" font-size="${CAPTION_SLOT_FONT}" fill="${INK}">${esc(lead)}</text>`
-      );
-      x += lead.length * CAPTION_CHAR_W + CAPTION_SLOT_PAD;
-    }
-    parts.push(
-      `<rect x="${x}" y="${top}" width="${CAPTION_SLOT_W}" height="${CAPTION_SLOT_H}" fill="white" stroke="${INK}" stroke-width="2" />`
-    );
-    x += CAPTION_SLOT_W + CAPTION_SLOT_PAD;
-    if (after) {
-      parts.push(
-        `<text x="${x}" y="${midY}" text-anchor="start" dominant-baseline="central" font-family="${FONT}" font-size="${CAPTION_SLOT_FONT}" fill="${INK}">${esc(after)}</text>`
-      );
-    }
-  } else if (caption) {
-    parts.push(
-      `<text x="${widthPx / 2}" y="${labelY + (hasLabels ? labelRowH : 0) + CAPTION_GAP}" text-anchor="middle" dominant-baseline="hanging" font-family="${FONT}" font-size="${CAPTION_FONT}" fill="${INK}">${esc(caption)}</text>`
-    );
-  }
-
-  if (unit) {
-    const ux = widthPx - padRight + 10;
-    parts.push(
-      `<text x="${ux}" y="${labelY}" text-anchor="start" dominant-baseline="hanging" font-family="${FONT}" font-size="${unitFont}" fill="${INK}">${esc(unit)}</text>`
-    );
-  }
-
-  if (hasBoxes) {
-    const boxBottomY = axisY - Math.max(tallTickH, tickH) / 2 - boxGap;
-    for (const v of boxes) {
-      const cx = getX(v);
-      parts.push(
-        `<rect x="${cx - boxSize / 2}" y="${boxBottomY - boxSize}" width="${boxSize}" height="${boxSize}" fill="white" stroke="${INK}" stroke-width="2" />`
-      );
-    }
-  }
-
-  if (hasObject) {
-    const ox1 = getX(object.from);
-    const ox2 = getX(object.to);
-    const barBaseY = axisY - Math.max(tallTickH, tickH) / 2 - objectGap;
-    const barTopY = barBaseY - objectBarH;
-    const midY = barTopY + objectBarH / 2;
-
-    parts.push(`<line x1="${ox1}" y1="${barTopY}" x2="${ox1}" y2="${barBaseY}" stroke="${OBJECT}" stroke-width="2.5" />`);
-    parts.push(`<line x1="${ox2}" y1="${barTopY}" x2="${ox2}" y2="${barBaseY}" stroke="${OBJECT}" stroke-width="2.5" />`);
-    parts.push(`<line x1="${ox1}" y1="${midY}" x2="${ox2}" y2="${midY}" stroke="${OBJECT}" stroke-width="2.5" />`);
-
-    if (object.label) {
-      const midX = (ox1 + ox2) / 2;
-      parts.push(
-        `<text x="${midX}" y="${barTopY - 4}" text-anchor="middle" dominant-baseline="alphabetic" font-family="${FONT}" font-size="${objectLabelFont}" fill="${OBJECT}">${esc(object.label)}</text>`
-      );
-    }
-  }
-
-  if (hasArrows) {
-    const arrowBaseY = axisY - Math.max(tallTickH, tickH) / 2 - (hasBoxes ? boxSize + boxGap + 4 : 6);
-    for (const a of allArrows) {
-      const ax = getX(a.at);
-      const topY = arrowBaseY - arrowHeight;
-
-      parts.push(`<line x1="${ax}" y1="${topY}" x2="${ax}" y2="${arrowBaseY - 8}" stroke="${ARROW}" stroke-width="3" />`);
-      parts.push(
-        `<polygon points="${ax - 7},${arrowBaseY - 10} ${ax + 7},${arrowBaseY - 10} ${ax},${arrowBaseY}" fill="${ARROW}" />`
-      );
-
-      if (a.answerBox) {
-        parts.push(
-          `<rect x="${ax - boxSize / 2}" y="${topY - boxGap - boxSize}" width="${boxSize}" height="${boxSize}" fill="white" stroke="${INK}" stroke-width="2" />`
-        );
-      } else if (a.label) {
-        parts.push(
-          `<text x="${ax}" y="${topY - arrowGap}" text-anchor="middle" dominant-baseline="alphabetic" font-family="${FONT}" font-size="${arrowLabelH}" font-weight="bold" fill="${ARROW}">${esc(a.label)}</text>`
-        );
-      }
-    }
-  }
-
-  if (jumps.length) {
-    const baseY = axisY - Math.max(tallTickH, tickH) / 2 - JUMP_GAP;
-    let jumpFont = JUMP_LABEL_FONT;
-    for (const j of jumps) {
-      if (!j.label) continue;
-      const span = Math.abs(getX(tickValues[j.toIndex]) - getX(tickValues[j.fromIndex])) - 8;
-      const need = j.label.length * JUMP_LABEL_FONT * 0.62;
-      if (need > span) jumpFont = Math.min(jumpFont, (JUMP_LABEL_FONT * span) / need);
-    }
-    if (jumpFont < JUMP_LABEL_MIN) {
-      throw new Error(
-        "NUMBERLINE_JUMP_LABELS_CROWDED: the jump labels cannot sit over their spaces at a readable size. " +
-          "Label one jump and put the rest in the question (\"Each jump is +10\"), or use fewer intervals."
-      );
-    }
-    for (const j of jumps) {
-      const x1 = getX(tickValues[j.fromIndex]);
-      const x2 = getX(tickValues[j.toIndex]);
-      const h = jumpsGeo.arcHeight(j, x2 - x1, JUMP_TIER_H, jumpLabelH);
-      const geo = jumpsGeo.arcGeometry(x1, x2, baseY, h, JUMP_HEAD);
-      parts.push(
-        `<polyline points="${geo.points.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="${JUMP}" stroke-width="${JUMP_STROKE}" stroke-linecap="round" />`,
-        `<polygon points="${geo.head.map((p) => `${p.x},${p.y}`).join(" ")}" fill="${JUMP}" />`
-      );
-      if (j.label) {
-        parts.push(
-          `<text x="${geo.apex.x}" y="${geo.apex.y - 6}" text-anchor="middle" dominant-baseline="alphabetic" font-family="${FONT}" font-size="${jumpFont}" font-weight="bold" fill="${JUMP}">${esc(j.label)}</text>`
-        );
-      } else if (j.box) {
-        const w = Math.min(JUMP_BOX_W, Math.abs(x2 - x1) - 8);
-        parts.push(
-          `<rect x="${geo.apex.x - w / 2}" y="${geo.apex.y - JUMP_LABEL_H - 2}" width="${w}" height="${JUMP_LABEL_H}" fill="white" stroke="${INK}" stroke-width="2" />`
-        );
-      }
-    }
-  }
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${widthPx} ${heightPx}">${parts.join("")}</svg>`;
-
-  return {
-    svg,
-    aspect: widthPx / heightPx,
-    labelCount: labelValues.length,
-    featureCount: Math.max(boxes.length, allArrows.length, jumps.length),
-  };
-}
-
-const NL_CAP_MM = 100; // a ruler with an object bar and arrows stacked above it
-                        // still should not swallow more than this
-
-function renderNumberLine(spec) {
-  return `<div class="h-figure">${buildNumberLineSvg(spec).svg}</div>`;
+function renderNumberLine(spec, widthMm) {
+  return `<div class="h-figure">${numberLineAt(spec, widthMm).svg}</div>`;
 }
 
 function measureNumberLine(spec, widthMm) {
-  return heightFromAspect(buildNumberLineSvg(spec).aspect, widthMm, NL_CAP_MM);
+  return numberLineAt(spec, widthMm).h / MM_TO_PT;
 }
 
 function needsNumberLine(spec) {
-  const { aspect, labelCount, featureCount } = buildNumberLineSvg(spec);
+  const lines = numberLineShared.normalise(spec);
+  const labelCount = Math.max(...lines.map((l) => l.labels.length));
+  const featureCount = Math.max(...lines.map((l) => Math.max(l.boxes.length, l.arrows.length, l.jumps.length)));
   // Each printed label needs room either side of it not to collide with its
-  // neighbour in Comic Sans; each box or arrow needs enough width that two
-  // adjacent ones do not touch. Whichever is the tighter constraint wins.
+  // neighbour; each box or arrow needs enough width that two adjacent ones do
+  // not touch. Whichever is the tighter constraint wins.
   const minWidthMm = Math.max(70, labelCount * 14, featureCount * 22);
-  return { minWidthMm, minHeightMm: heightFromAspect(aspect, minWidthMm, NL_CAP_MM) };
+  return { minWidthMm, minHeightMm: measureNumberLine(spec, minWidthMm) };
 }
 
 // ─── fraction-bar ───────────────────────────────────────────────────────
@@ -659,6 +272,9 @@ const helpers = {
     greed: NEVER_STRETCH,
   },
   "number-line": {
+    // Lays itself out at the printed width and holds its own readable floor,
+    // so the scale-with-the-zone legibility floor does not apply.
+    physical: true,
     render: renderNumberLine,
     measure: measureNumberLine,
     needs: needsNumberLine,

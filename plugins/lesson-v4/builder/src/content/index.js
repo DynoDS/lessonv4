@@ -9,7 +9,10 @@ const { drawSteps } = require('./steps');
 const { drawVocab } = require('./vocab');
 const { drawImage, measureImage } = require('./image');
 const { drawTable } = require('./table');
-const { drawNumberline } = require('./numberline');
+// Pictures drawn once in shared/visuals/ and placed here without a slide file
+// of their own (see shared-figure.js).
+const { drawerFor } = require('./shared-figure');
+const drawNumberline = drawerFor('numberline');
 const { drawPlaceValueChart, measurePlaceValueChart } = require('./place-value-chart');
 const { drawFractionWall } = require('./fraction-wall');
 const { drawMoney } = require('./money');

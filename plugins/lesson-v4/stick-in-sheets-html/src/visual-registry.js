@@ -14,6 +14,7 @@ const geographicalDescriptionFrame = require("../../shared/visuals/geographical-
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
 const numberLine = require("../../shared/visuals/number-line-svg");
+const { profileFor } = require("../../shared/visuals/surface-profiles");
 
 // A labelled diagram a child sticks in and writes the part names onto. The figure
 // is the SAME one the board shows (the slide's label-diagram), so the cut-out and
@@ -62,14 +63,24 @@ const VISUALS = {
   // trusted to the spec: a stick-in is the child's copy, and an answer that
   // reaches it has given the task away before they start.
   "number-line": {
-    tightSvg: numberLine.tightSvg,
+    // The one shared number line, in the stick-in profile: ink only, laid out
+    // at the 130mm it prints, with a band under the numbers to write in.
+    geometry: numberLine,
+    laidOutAtWidth: true,
+    tightSvg: (spec, box) => numberLine.tightSvg(spec, profileFor("stickin", box || { widthMm: 130 })),
     defaultWidthMm: 130,
-    specFn: (s) => Object.assign({}, s, {
-      questionState: true,
-      lines: Array.isArray(s.lines)
-        ? s.lines.map((line) => Object.assign({}, line, { questionState: true }))
-        : s.lines,
-    }),
+    // A piece copied from a slide may carry the slide's answer dot; the child's
+    // copy never shows it.
+    specFn: (s) => {
+      const question = (line) => {
+        const out = Object.assign({}, line, { questionState: true });
+        delete out.answer;
+        return out;
+      };
+      const top = question(s);
+      if (Array.isArray(s.lines)) top.lines = s.lines.map(question);
+      return top;
+    },
   },
   // 127mm: two copies fit the ~277mm landscape printable width (2×127 + 6mm gap = 260mm ✓)
   // and two rows fit the ~185mm landscape printable height (2×89.5 + 6mm gap = 185mm ✓).

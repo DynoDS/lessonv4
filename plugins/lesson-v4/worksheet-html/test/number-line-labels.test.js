@@ -17,7 +17,7 @@ const { renderHelper } = require("../src/helpers");
 
 function labelsOf(spec) {
   const html = renderHelper({ helper: "number-line", ...spec }, { widthMm: 150, yearGroup: 4 });
-  return Array.from(html.matchAll(/dominant-baseline="hanging"[^>]*>([^<]*)<\/text>/g)).map((m) => m[1]);
+  return Array.from(html.matchAll(/<text[^>]*>([^<]*)<\/text>/g)).map((m) => m[1]);
 }
 
 test("a number line in the thousands prints its ends with thousands commas", () => {
@@ -47,7 +47,7 @@ test("a sheet number line draws its jumps and highlight, and refuses jumps crowd
   );
   assert.strictEqual((html.match(/<polyline /g) || []).length, 2, "two arcs");
   assert.ok(html.includes(">+10</text>"), "the jump carries its size");
-  assert.strictEqual((html.match(/fill="var\(--colour-given\)"/g) || []).length, 2, "a wash and a bar for the highlight");
+  assert.strictEqual((html.match(/fill="#C65911"/g) || []).length, 2, "a wash and a bar for the highlight");
   assert.throws(
     () => renderHelper({ helper: "number-line", start: 0, end: 10, interval: 1, boxes: [3], jumps: [{ from: 1, to: 2 }] }, { widthMm: 170, yearGroup: 4 }),
     /NUMBERLINE_JUMPS_CROWDED/
@@ -76,7 +76,8 @@ test("a sentence about the line is a caption, and unit and object refuse one", (
 test("a blank in a caption is drawn as an answer box under the numbers", () => {
   const opts = { widthMm: 170, yearGroup: 4 };
   const base = { helper: "number-line", start: 2100, end: 2500, interval: 100, labels: [2100, 2200], boxes: [2400], caption: "Scale: ___" };
-  const rects = (html) => Array.from(html.matchAll(/<rect [^>]*>/g));
+  // Answer boxes are the rects with an outline; the axis and ticks are filled bars.
+  const rects = (html) => Array.from(html.matchAll(/<rect [^>]*stroke=[^>]*>/g));
   const html = renderHelper(base, opts);
   assert.ok(!html.includes("___"), "no underscores reach the page");
   assert.ok(html.includes(">Scale:</text>"));
@@ -84,7 +85,7 @@ test("a blank in a caption is drawn as an answer box under the numbers", () => {
   assert.strictEqual(all.length, 2, "the A box and the scale box");
   const y = (r) => Number(/ y="([\d.]+)"/.exec(r[0])[1]);
   const [top, bottom] = all.map(y).sort((m, n) => m - n);
-  assert.ok(bottom > top + 80, "the scale box sits under the line, not up beside the A box");
+  assert.ok(bottom > top + 30, "the scale box sits under the line, not up beside the A box");
 
   // A sentence with no blank is still read, not written in.
   assert.ok(renderHelper({ ...base, caption: "Each interval is worth 100." }, opts).includes(">Each interval is worth 100.</text>"));

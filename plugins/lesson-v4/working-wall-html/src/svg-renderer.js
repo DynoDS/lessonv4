@@ -32,8 +32,8 @@ const BADGE_PX  = 240;          // step badge resolution
 // These produce a TIGHT SVG plus its true aspect; the wall stores that aspect
 // and places the image by it (no square padding), matching the other engines.
 const linePairShared = require('../../shared/visuals/line-pair-svg');
-const jumpsGeo       = require('../../shared/visuals/number-line-jumps');
-const { RING: highlightRing } = require('../../shared/visuals/figure-highlight');
+const numberLineShared = require('../../shared/visuals/number-line-svg');
+const { profileFor } = require('../../shared/visuals/surface-profiles');
 const angleShared    = require('../../shared/visuals/angle-svg');
 const triangleShared = require('../../shared/visuals/triangle-svg');
 const vennShared     = require('../../shared/visuals/venn-svg');
@@ -250,183 +250,28 @@ function fractionCircleKey(spec) {
   return `fractionCircle:${numerator}/${denominator}:${colour}`;
 }
 
-// ─── Number line ───────────────────────────────────────────────────────
-// Horizontal line on a square canvas with major ticks at every `step` from
-// `from` to `to`, and the value labelled below each tick. Optional `marks`
-// place coloured dots above the line at specified positions, with optional
-// labels above the dot. The line sits at vertical centre so the SVG stays
-// square (matches every other primitive's aspect for the image transform).
-// A number on the picture is written the way the card writes it in its text.
-// A wall that says "Mark 2,500" beside a scale ticked "2500" is teaching the
-// child to read two different things. Whole numbers only; a decimal scale keeps
-// the plain form it already had.
-function scaleLabel(n) {
-  if (Math.abs(n - Math.round(n)) > 1e-6) return fmt(n);
-  return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
+// ─── Number line ────────────────────────────────────────────────────────
+// The one shared number line (shared/visuals/number-line-svg.js), the same
+// drawing the board, the sheet and the stick-in pack place. The wall drew its
+// own in bold Arial with a red dot until 13 September 2026, and a Year 4 card
+// looked nothing like the slides beside it. The card's `from / to / step /
+// marks` spelling is read by the shared module, so cards written for the old
+// drawing still draw. Laid out at the width a wide wall visual prints across a
+// card, in the wall's profile (bold, read across a room).
+const WALL_NUMBER_LINE_BOX = { widthMm: 180 };
+const wallNumberLineProfile = () => profileFor('wall', WALL_NUMBER_LINE_BOX);
 
-// Arial bold runs about 0.58 of its point size per character across digits,
-// commas and spaces. Used to ask whether two labels would meet, so it is
-// deliberately a little generous.
-const LABEL_CHAR_RATIO = 0.58;
-
-// Jumps are the move along the spaces, in the board's focus blue; a highlighted
-// space takes the house highlight orange every drawn figure points with. The
-// meaning (which marks a jump joins, how overlapping jumps stack, the arc) comes
-// from shared/visuals/number-line-jumps.js so the wall shows the board's jump.
-const NL_JUMP_COLOUR = '#0070C0';
-const escapeXml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const NL_JUMP_TIER = 0.12;    // arc ceiling per tier, share of the canvas
-const NL_JUMP_HEAD = 0.035;   // arrowhead length, share of the canvas
-const NL_HIGHLIGHT_BAR = 0.022;
-
-function numberLineDrawing(spec, sizePx = RENDER_PX) {
-  const from = Number(spec.from) || 0;
-  const to = Number(spec.to) || 10;
-  const step = Math.max((to - from) / 100, Number(spec.step) || 1);
-  const marks = Array.isArray(spec.marks) ? spec.marks : [];
-  const dotColour = hashColour(spec.dotColour || 'EF4444');
-  const w = sizePx;
-  const h = sizePx;
-  const padX = w * 0.08;
-  const lineY = h / 2;
-  const tickLen = h * 0.04;
-  let numFont = Math.round(h * 0.06);
-  const dotR = Math.round(h * 0.035);
-
-  const range = to - from;
-  if (range <= 0) {
-    return { parts: [], top: 0, bottom: sizePx, sizePx };
-  }
-  const xFor = (v) => padX + ((v - from) / range) * (w - 2 * padX);
-
-  const scaleLine = jumpsGeo.valueLine({ start: from, end: to, interval: step });
-  const jumps = jumpsGeo.resolveJumps(spec, scaleLine);
-  jumpsGeo.refuseCrowding(jumps, spec, ['marks'], 'this number line');
-  const highlights = jumpsGeo.resolveIntervalHighlight(spec, scaleLine);
-
-  const parts = [];
-  // Ink extents, so the wall can place the line by its real shape instead of
-  // floating a thin strip in the middle of a square (see numberLineTight).
-  let inkTop = lineY - tickLen;
-  const inkBottom = lineY + tickLen + numFont * 1.4 + numFont * 0.35;
-  parts.push(`<line x1="${fmt(padX)}" y1="${fmt(lineY)}" x2="${fmt(w - padX)}" y2="${fmt(lineY)}" stroke="#000000" stroke-width="4" stroke-linecap="round"/>`);
-  highlights.forEach((hl) => {
-    const x1 = xFor(from + hl.fromIndex * step);
-    const x2 = xFor(from + hl.toIndex * step);
-    parts.push(`<rect x="${fmt(x1)}" y="${fmt(lineY - tickLen)}" width="${fmt(x2 - x1)}" height="${fmt(tickLen * 2)}" fill="#${highlightRing}" fill-opacity="0.22"/>`);
-    parts.push(`<rect x="${fmt(x1)}" y="${fmt(lineY - (h * NL_HIGHLIGHT_BAR) / 2)}" width="${fmt(x2 - x1)}" height="${fmt(h * NL_HIGHLIGHT_BAR)}" fill="#${highlightRing}"/>`);
-  });
-
-  // Major ticks at each step value. Separators make the labels wider than they
-  // used to be, so the tick type steps down until neighbours clear each other
-  // rather than letting a long scale run its numbers together.
-  const tickValues = [];
-  for (let v = from; v <= to + 1e-6; v += step) tickValues.push(v);
-  const tickLabels = tickValues.map(scaleLabel);
-  const widestTick = tickLabels.reduce((n, s) => Math.max(n, s.length), 0);
-  const tickGap = tickValues.length > 1 ? (w - 2 * padX) / (tickValues.length - 1) : w;
-  while (numFont > 10 && widestTick * numFont * LABEL_CHAR_RATIO > tickGap * 0.95) numFont -= 1;
-
-  tickValues.forEach((v, i) => {
-    const x = xFor(v);
-    parts.push(`<line x1="${fmt(x)}" y1="${fmt(lineY - tickLen)}" x2="${fmt(x)}" y2="${fmt(lineY + tickLen)}" stroke="#000000" stroke-width="3"/>`);
-    parts.push(`<text x="${fmt(x)}" y="${fmt(lineY + tickLen + numFont * 1.4)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${tickLabels[i]}</text>`);
-  });
-
-  if (jumps.length) {
-    const labelled = jumps.some((j) => j.label || j.box);
-    const labelH = labelled ? numFont * 1.3 : 0;
-    const tierH = h * NL_JUMP_TIER;
-    const baseY = lineY - tickLen - 4;
-    let jumpFont = numFont;
-    jumps.forEach((j) => {
-      if (!j.label) return;
-      const span = Math.abs(j.toIndex - j.fromIndex) * tickGap * 0.85;
-      const need = j.label.length * numFont * LABEL_CHAR_RATIO;
-      if (need > span) jumpFont = Math.min(jumpFont, (numFont * span) / need);
-    });
-    if (jumpFont < 10) {
-      throw new Error('NUMBERLINE_JUMP_LABELS_CROWDED: the jump labels cannot sit over their spaces at a readable size on this card. Label one jump and let the card text say the rest.');
-    }
-    jumps.forEach((j) => {
-      const x1 = xFor(from + j.fromIndex * step);
-      const x2 = xFor(from + j.toIndex * step);
-      const geo = jumpsGeo.arcGeometry(x1, x2, baseY, jumpsGeo.arcHeight(j, x2 - x1, tierH, labelH), h * NL_JUMP_HEAD);
-      parts.push(`<polyline points="${geo.points.map((p) => `${fmt(p.x)},${fmt(p.y)}`).join(' ')}" fill="none" stroke="${NL_JUMP_COLOUR}" stroke-width="4" stroke-linecap="round"/>`);
-      parts.push(`<polygon points="${geo.head.map((p) => `${fmt(p.x)},${fmt(p.y)}`).join(' ')}" fill="${NL_JUMP_COLOUR}"/>`);
-      inkTop = Math.min(inkTop, geo.apex.y - labelH - 4);
-      if (j.label) {
-        parts.push(`<text x="${fmt(geo.apex.x)}" y="${fmt(geo.apex.y - 6)}" text-anchor="middle" font-family="Arial" font-size="${fmt(jumpFont)}" font-weight="bold" fill="${NL_JUMP_COLOUR}">${escapeXml(j.label)}</text>`);
-      } else if (j.box) {
-        const bw = Math.min(numFont * 3, Math.abs(x2 - x1) - 6);
-        parts.push(`<rect x="${fmt(geo.apex.x - bw / 2)}" y="${fmt(geo.apex.y - labelH - 2)}" width="${fmt(bw)}" height="${fmt(labelH)}" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>`);
-      }
-    });
-  }
-
-  // Marks: coloured dots above the line, optional label above the dot.
-  //
-  // Every label used to be centred on its own dot at the same height with
-  // nothing checking whether two of them met. Two marks 500 apart on a
-  // 2,000-to-4,000 line printed as "3,000A = 3,500". Walk them left to right and
-  // lift a label onto the row above when it would run into one already there,
-  // so the only labels that move are the ones that would have collided.
-  const rows = [];
-  const ordered = marks
-    .filter((m) => m != null && m.at != null)
-    .map((m) => ({ label: m.label, x: xFor(Number(m.at)) }))
-    .sort((a, b) => a.x - b.x);
-
-  for (const m of ordered) {
-    parts.push(`<circle cx="${fmt(m.x)}" cy="${fmt(lineY)}" r="${dotR}" fill="${dotColour}" stroke="#000000" stroke-width="2"/>`);
-    inkTop = Math.min(inkTop, lineY - dotR - 2);
-    if (!m.label) continue;
-    const half = (String(m.label).length * numFont * LABEL_CHAR_RATIO) / 2;
-    const left = m.x - half;
-    const right = m.x + half;
-    let row = 0;
-    while (rows.some((p) => p.row === row && left < p.right && right > p.left)) row += 1;
-    rows.push({ row, left, right });
-    const y = lineY - dotR - 8 - row * numFont * 1.25;
-    inkTop = Math.min(inkTop, y - numFont);
-    parts.push(`<text x="${fmt(m.x)}" y="${fmt(y)}" text-anchor="middle" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${m.label}</text>`);
-  }
-
-  return { parts, top: inkTop, bottom: inkBottom, sizePx };
-}
-
-function numberLineSvg(spec, sizePx = RENDER_PX) {
-  const d = numberLineDrawing(spec, sizePx);
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${d.parts.join('')}</svg>`;
-}
-
-// A number line is a wide, thin thing. Drawn on the square canvas it printed as
-// a strip across the middle of a big empty square on a Year 4 wall card, with
-// its numerals a fraction of the size the card had room for. Cropped to its own
-// ink, the card places it by its true shape and it grows to fill the width.
 function numberLineTight(spec) {
-  const d = numberLineDrawing(spec, RENDER_PX);
-  const pad = 6;
-  const top = Math.max(0, d.top - pad);
-  const height = Math.min(d.sizePx, d.bottom + pad) - top;
-  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${d.sizePx}" height="${fmt(height)}" viewBox="0 ${fmt(top)} ${d.sizePx} ${fmt(height)}">${d.parts.join('')}</svg>`;
-  return { svg, aspect: d.sizePx / height };
+  const { svg, aspect } = numberLineShared.tightSvg(spec, wallNumberLineProfile());
+  return { svg, aspect };
+}
+
+function numberLineSvg(spec) {
+  return numberLineTight(spec).svg;
 }
 
 function numberLineKey(spec) {
-  const from = Number(spec.from) || 0;
-  const to = Number(spec.to) || 10;
-  const step = Number(spec.step) || 1;
-  const marks = Array.isArray(spec.marks) ? spec.marks : [];
-  const marksKey = marks.map((m) => `${m && m.at != null ? m.at : ''}:${m && m.label ? m.label : ''}`).join(',');
-  const dotColour = (spec.dotColour || 'EF4444').replace(/^#/, '');
-  // Jumps and highlight change the picture, so they are part of its identity;
-  // without them two cards with different jumps would share one cached drawing.
-  const extra = spec.jumps || spec.highlight
-    ? `:j${JSON.stringify(spec.jumps || [])}:h${JSON.stringify(spec.highlight || null)}`
-    : '';
-  return `numberLine:${from}-${to}:s${step}:[${marksKey}]:${dotColour}${extra}`;
+  return numberLineShared.cacheKey(spec, wallNumberLineProfile());
 }
 
 // ─── Angle fan ─────────────────────────────────────────────────────────
@@ -867,7 +712,7 @@ async function preRenderSvgs(spec) {
     clock:            { keyFn: clockKey,            svgFn: clockSvg,            collected: {} },
     fractionCircle:   { keyFn: fractionCircleKey,   svgFn: fractionCircleSvg,   collected: {} },
     fractionBar:      { keyFn: fractionBarKey,      svgFn: fractionBarSvg,      collected: {} },
-    numberLine:       { keyFn: numberLineKey,       tightFn: numberLineTight,   collected: {} },
+    numberLine:       { keyFn: numberLineKey,       tightFn: (s) => numberLineShared.tightSvg(s, wallNumberLineProfile()), collected: {} },
     angleFan:         { keyFn: angleFanKey,         svgFn: angleFanSvg,         collected: {} },
     'turn-diagram':   { keyFn: turnDiagramKey,      svgFn: turnDiagramSvg,      collected: {} },
     comparisonSymbol: { keyFn: comparisonSymbolKey, svgFn: comparisonSymbolSvg, collected: {} },

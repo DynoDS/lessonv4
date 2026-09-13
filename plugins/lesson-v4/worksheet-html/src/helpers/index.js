@@ -53,6 +53,7 @@ const FILES = [
 // printed at three and a half point, and every other check passed: it fitted,
 // nothing clipped, the page looked finished.
 function withLegibilityFloor(helper) {
+  if (helper.physical) return helper;
   return {
     ...helper,
     needs: (spec, widthMm) => {

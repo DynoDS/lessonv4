@@ -217,10 +217,10 @@ test("a new question starts further down than the next part of the same question
   assert.ok(between > inside, `between questions ${between}mm, inside one ${inside}mm`);
 
   const parts = measureContent({ stack: [question("1a"), question("1b")] }, 170) - 2 * measureContent(question("1a"), 170);
-  assert.equal(parts, inside, "a second Part is the same question and keeps the ordinary gap");
+  assert.ok(Math.abs(parts - inside) < 1e-9, "a second Part is the same question and keeps the ordinary gap");
 
   const html = renderContent({ stack: [question(1), question(2)] }, 170);
-  assert.match(html, new RegExp(`margin-top:${between}mm`), "the page draws the gap it measured");
+  assert.match(html, new RegExp(`margin-top:${Math.round(between)}mm`), "the page draws the gap it measured");
 });
 
 test("the rule between two questions sits inside the gap and adds no height", () => {

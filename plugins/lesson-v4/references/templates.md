@@ -777,6 +777,8 @@ A jump's label is its size, never where it lands, so labelling the jumps does no
 
 **The axis numerals print with thousands separators** (1,000 and 10,000), matching the way the question beside them is written, so a Year 4 slide is not showing a child both conventions at once. Values under a thousand and decimals are left as they are. Nothing to set: the drawing does it.
 
+**It is the same number line on every surface.** The worksheet, the working wall and the stick-in piece draw this line from these same fields, so a line copied from a slide onto any of them looks like the slide. Three fields exist for paper and work here too: `boxes: [value, ...]` puts an answer box above those marks, `caption` prints a sentence under the line (with a blank in it, `"Scale: ___"`, it becomes words and an answer box), and `unit`/`object` are a ruler's unit and the bracket it measures.
+
 ### `place-value-chart`
 ```json
 { "type": "place-value-chart",

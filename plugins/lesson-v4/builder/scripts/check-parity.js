@@ -249,6 +249,62 @@ for (const engine of COVERAGE_ENGINES) {
   }
 }
 
+// ── ONE DRAWING PER PICTURE, ON EVERY SURFACE ───────────────────────────────
+// The checks above ask whether a surface CAN draw a picture. This one asks
+// whether it draws the SAME picture: the number line was drawn four ways, and a
+// wall card printed a line that looked nothing like the board's (13 September
+// 2026). The backlog in shared/visual-parity.js is the list of what is not
+// shared yet; the code must match it exactly, so it can only shrink.
+{
+  const { sharingStatus, backlogFrom } = require('./sharing-status');
+  const { SHARING_BACKLOG, WORKSHEET_LAYOUT_EXEMPT, PICTURES } = require(path.join(ROOT, 'shared', 'visual-parity'));
+  const actual = backlogFrom(sharingStatus());
+  const recorded = SHARING_BACKLOG || {};
+  const ids = new Set([...Object.keys(actual), ...Object.keys(recorded)]);
+  for (const id of ids) {
+    const a = actual[id] || {};
+    const r = recorded[id] || {};
+    for (const surface of new Set([...Object.keys(a), ...Object.keys(r)])) {
+      if (a[surface] === r[surface]) continue;
+      if (!a[surface]) {
+        problems.push(
+          `"${id}" is now drawn from its shared drawing on ${surface}, but the backlog still lists it as '${r[surface]}'.
+` +
+          `      → take ${surface} off "${id}" in SHARING_BACKLOG (shared/visual-parity.js). The list only shrinks.`
+        );
+      } else if (!r[surface]) {
+        problems.push(
+          `"${id}" on ${surface} is '${a[surface]}', and the backlog does not allow that.
+` +
+          `      → a picture is drawn once, in its shared/visuals module (geometrySource), and every surface draws it from there. ` +
+          `Draw ${surface} from the shared module rather than adding code of its own, or wire the surface up if it is missing. ` +
+          `Nothing new goes on the backlog.`
+        );
+      } else {
+        problems.push(
+          `"${id}" on ${surface} is '${a[surface]}' but the backlog says '${r[surface]}'.
+` +
+          `      → change the backlog only when the surface moved closer to shared (own → missing is not progress).`
+        );
+      }
+    }
+  }
+
+  // Every drawing a sheet can print is a picture with a place on every surface,
+  // or the sheet's own typed layout. A new worksheet drawing cannot slip in
+  // beside the shared set.
+  const pictureWorksheetKeys = new Set(PICTURES.flatMap((p) => declaredKeys(p.worksheets) || []));
+  const typed = new Set(WORKSHEET_LAYOUT_EXEMPT);
+  for (const key of LIVE.worksheets) {
+    if (pictureWorksheetKeys.has(key) || typed.has(key)) continue;
+    problems.push(
+      `the worksheet engine draws "${key}", but it is neither a picture in shared/visual-parity.js nor in WORKSHEET_LAYOUT_EXEMPT.
+` +
+      `      → if it draws a picture, give it one shared drawing and a place on every surface; if it is typed layout (words, writing space, a table), list it as exempt.`
+    );
+  }
+}
+
 // ── Report ──────────────────────────────────────────────────────────────────
 if (problems.length) {
   console.error('Visual-parity gaps — a shared visual is wired into some renderers but not all it should reach:\n');

@@ -19,15 +19,19 @@ const { numberLineSvg } = require("../src/svg-renderer");
 
 // Every <text> in the SVG, with the x and y it is drawn at.
 function texts(svg) {
-  return [...svg.matchAll(/<text x="([-\d.]+)" y="([-\d.]+)"[^>]*font-size="([\d.]+)"[^>]*>([^<]*)<\/text>/g)].map(
-    (m) => ({ x: Number(m[1]), y: Number(m[2]), size: Number(m[3]), text: m[4] })
+  return [...svg.matchAll(/<text x="([-\d.]+)" y="([-\d.]+)"[^>]*font-size="([\d.]+)"[^>]*fill="([^"]+)"[^>]*>([^<]*)<\/text>/g)].map(
+    (m) => ({ x: Number(m[1]), y: Number(m[2]), size: Number(m[3]), fill: m[4], text: m[5] })
   );
 }
 
-// Arial bold is about 0.58 of its point size per character across digits and
-// commas. Deliberately generous: a near miss on the page is still a collision.
+// A mark's label is drawn in the answer green above the line; tick numbers are
+// ink below it.
+const markLabels = (svg) => texts(svg).filter((t) => t.fill === "#00B050");
+
+// Comic Sans bold digits and commas run about 0.61 of the point size per
+// character; generous, because a near miss on the page is still a collision.
 function halfWidth(t) {
-  return (t.text.length * t.size * 0.58) / 2;
+  return (t.text.length * t.size * 0.61) / 2;
 }
 
 test("tick labels on a four-digit line are written the way the card writes them", () => {
@@ -61,7 +65,7 @@ test("two marks close together do not print on top of each other", () => {
 
   // Mark labels sit above the line; tick labels sit below it, and since the
   // ticks are now written with separators too, one of them also reads "3,000".
-  const labels = texts(svg).filter((t) => t.y < 300 && (t.text === "3,000" || t.text === "A = 3,500"));
+  const labels = markLabels(svg).filter((t) => t.text === "3,000" || t.text === "A = 3,500");
   assert.strictEqual(labels.length, 2, "expected both mark labels to be drawn");
 
   const [a, b] = labels.sort((p, q) => p.x - q.x);
@@ -85,7 +89,7 @@ test("marks that are far apart stay on one row", () => {
       { at: 9000, label: "9,000" },
     ],
   });
-  const labels = texts(svg).filter((t) => t.y < 300 && (t.text === "1,000" || t.text === "9,000"));
+  const labels = markLabels(svg).filter((t) => t.text === "1,000" || t.text === "9,000");
   assert.strictEqual(labels.length, 2);
   assert.strictEqual(
     labels[0].y,
@@ -121,7 +125,7 @@ test("a wall number line is cropped to its own ink, not a square", () => {
   assert.ok(plain.aspect > 2.5, `a bare line should be wide, got aspect ${plain.aspect.toFixed(2)}`);
   const jumped = numberLineTight({ from: 40, to: 90, step: 10, jumps: [{ from: 40, to: 50, label: "+10" }] });
   assert.ok(jumped.aspect < plain.aspect, "a jump adds height above the line, so the crop keeps it");
-  const top = Number(/viewBox="0 ([\d.]+)/.exec(jumped.svg)[1]);
   const labelY = Number(/<text x="[\d.]+" y="([\d.]+)"[^>]*fill="#0070C0">\+10</.exec(jumped.svg)[1]);
-  assert.ok(labelY - 30 >= top - 1, "the jump label sits inside the crop");
+  const size = Number(/font-size="([\d.]+)"[^>]*fill="#0070C0">\+10</.exec(jumped.svg)[1]);
+  assert.ok(labelY - size >= 0, "the jump label sits inside the crop");
 });

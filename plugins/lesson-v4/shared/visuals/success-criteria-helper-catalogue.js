@@ -36,12 +36,18 @@ function geometryModuleFor(source) {
   return require('./' + localName);
 }
 
+function sourceFor(primitive) {
+  // A tiny cue can have a drawing of its own (successCriteriaSource) while the
+  // full-size figure is still being moved into one shared drawing.
+  return primitive.successCriteriaSource || primitive.geometrySource;
+}
+
 function buildInlineFromMetadata(primitive, helper) {
-  const module = geometryModuleFor(primitive.geometrySource);
+  const module = geometryModuleFor(sourceFor(primitive));
   const inline = helper.inline || {};
   const method = inline.method || 'tightSvg';
   if (typeof module[method] !== 'function') {
-    throw new Error(`${primitive.geometrySource} does not export ${method} for Success Criteria Helper "${helper.key}"`);
+    throw new Error(`${sourceFor(primitive)} does not export ${method} for Success Criteria Helper "${helper.key}"`);
   }
   const built = module[method](Object.assign({}, inline.spec || {}));
   const valid = built && typeof built.svg === 'string' && built.svg.includes('<svg') &&
@@ -49,11 +55,11 @@ function buildInlineFromMetadata(primitive, helper) {
     Number.isFinite(built.w) && built.w > 0 &&
     Number.isFinite(built.h) && built.h > 0;
   if (!valid) {
-    throw new Error(`${primitive.geometrySource}.${method} did not return measured SVG geometry for Success Criteria Helper "${helper.key}"`);
+    throw new Error(`${sourceFor(primitive)}.${method} did not return measured SVG geometry for Success Criteria Helper "${helper.key}"`);
   }
   const measuredAspect = built.w / built.h;
   if (Math.abs(measuredAspect - built.aspect) > 0.01) {
-    throw new Error(`${primitive.geometrySource}.${method} returned inconsistent dimensions for Success Criteria Helper "${helper.key}"`);
+    throw new Error(`${sourceFor(primitive)}.${method} returned inconsistent dimensions for Success Criteria Helper "${helper.key}"`);
   }
   return built;
 }
@@ -101,12 +107,12 @@ const ENTRIES = Object.freeze(PRIMITIVES.flatMap(function (primitive) {
     }
     // Resolve the module now so a catalogue entry cannot point at a missing or
     // non-shared drawing and fail only when a lesson happens to request it.
-    geometryModuleFor(primitive.geometrySource);
+    geometryModuleFor(sourceFor(primitive));
     const entry = {
       key,
       mode: helper.mode,
       geometry: primitive.id,
-      geometrySource: primitive.geometrySource,
+      geometrySource: sourceFor(primitive),
       fullSize: freezeCopy(helper.fullSize),
       inlineTreatment: helper.inline && helper.inline.treatment,
       inlineSpec: freezeCopy(helper.inline && helper.inline.spec),

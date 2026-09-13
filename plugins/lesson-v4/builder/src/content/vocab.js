@@ -20,7 +20,8 @@ const { drawVenn } = require('./venn');
 const { drawCarroll } = require('./carroll');
 const { drawRainforestLayers } = require('./rainforest-layers');
 const { drawPlaceValueMini } = require('./place-value-mini');
-const { drawNumberline } = require('./numberline');
+const { drawerFor } = require('./shared-figure');
+const drawNumberline = drawerFor('numberline');
 const { splitAnswerRuns } = require('../answer-text');
 
 // ─── CONSTANTS ────────────────────────────────────────────────

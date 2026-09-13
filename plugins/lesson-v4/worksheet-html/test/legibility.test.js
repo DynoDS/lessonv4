@@ -30,6 +30,13 @@ const FLOOR_PT = TYPE.note;
 // which has nothing to be illegible.
 function smallestTextPt(name) {
   const spec = { helper: name, ...EXAMPLES[name] };
+  // A shared drawing laid out at its printed width (the number line) writes
+  // real point sizes: render it at its narrowest width and read them directly.
+  if (REGISTRY[name].physical) {
+    const narrow = REGISTRY[name].render(spec, REGISTRY[name].needs(spec).minWidthMm);
+    const sizes = [...narrow.matchAll(/font-size="([\d.]+)"/g)].map((m) => Number(m[1]));
+    return sizes.length ? Math.min(...sizes) : null;
+  }
   const html = REGISTRY[name].render(spec);
   if (!html.includes("<svg")) return null; // HTML helpers use the token sizes
 
