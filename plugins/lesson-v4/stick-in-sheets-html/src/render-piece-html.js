@@ -66,12 +66,23 @@ function renderSingle(item, opts = {}) {
   // A drawing laid out at its printed size (the number line) is told the width
   // the piece will print at.
   const printedWidthMm = item.widthMm ?? def.defaultWidthMm;
-  const { svg, w, h, aspect } = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  let built;
+  try {
+    built = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  } catch (error) {
+    console.warn(`[stick-in] "${item.label || item.visual}": ${error.message} This item is skipped.`);
+    return null;
+  }
+  const { svg, w, h, aspect } = built;
   const a = aspect ?? w / h;
-  const naturalWidthMm = item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
+  const laidOutMm = def.laidOutAtWidth ? Math.min(printedWidthMm, w * (25.4 / 72)) : null; const naturalWidthMm = laidOutMm ?? item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
   const reserveTopMm = opts.reserveTopMm || 0;
   const naturalHeightMm = naturalWidthMm / a;
-  const widthMm = reserveTopMm > 0
+  // A drawing laid out at its printed size keeps that size under a label band:
+  // shrinking it to pay for the band took a short, wide picture (a counter group,
+  // the small place-value picture) down to a few millimetres, under the readable
+  // floor it had just laid itself out to.
+  const widthMm = reserveTopMm > 0 && !def.laidOutAtWidth
     ? Math.max(1, naturalHeightMm - reserveTopMm) * a
     : naturalWidthMm;
   const heightMm = widthMm / a;

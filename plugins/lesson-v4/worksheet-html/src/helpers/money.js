@@ -406,496 +406,33 @@ function needsCoinStrip(spec) {
   };
 }
 
-// ─── part-whole-money ────────────────────────────────────────────────────
-// A whole bubble with parts beneath it, connected by lines. Geometry lifted
-// from the Word builder's renderPartWholeMoneyPng: the same paddings, gaps,
-// corner radius and coin row layout, so a model looks the same on paper as it
-// did before. What changes is that it is drawn once as SVG rather than
-// composited from PNGs.
-//
-// The Word version threw for anything other than two parts. This one draws
-// however many it is given, because the arithmetic for `needs` has to grow with
-// the part count anyway and refusing to draw a three-part model is a worse
-// answer than drawing one. A two-part model comes out identical.
+// ─── part-whole ──────────────────────────────────────────────────────────
+// The model itself is the shared drawing; a sheet adds only its question stem
+// above it, as typed text a sheet wraps to its column.
+const partWholeModel = require("../../../shared/visuals/part-whole-model-svg");
+const { atPrintedWidth } = require("./at-printed-width");
+const { MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
 
-const PW = {
-  labelFont: 22,
-  bubblePadX: 12,
-  bubblePadY: 10,
-  bubbleStroke: 2,
-  labelGap: 6,
-  // The "+" between two part nodes, drawn in the gap that already separates
-  // them. An additive model whose parts are only adjacent leaves the child to
-  // supply the operator; one that prints it says what the diagram means.
-  joinerFont: 20,
-  joinerClearance: 5, // the white space each side of the operator
-  // The Word builder drew every coin in a bubble at 56 units. That figure is
-  // kept, but as the size of the LARGEST coin: a £2 is 56 units and everything
-  // else follows its real diameter, so the coins inside a bubble are to scale
-  // with each other and with the ones in a coin strip.
-  coinUnitsPerMm: 56 / COIN_MM["£2"],
-  coinGap: 6,
-  coinRowGap: 4,
-  partGap: 28,
-  verticalGap: 36,
-  sidePad: 8,
-  topPad: 4,
-  bottomPad: 8,
-  radius: 14,
-  minInnerW: 60,
-};
-
-// How UK primary resources cluster coins when there are more than three, lifted
-// from the Word builder so a bubble never has to be wide enough for every coin
-// in one strip.
-function coinRowLayout(count) {
-  if (count === 0) return [];
-  if (count <= 3) return [count];
-  if (count === 4) return [2, 2];
-  if (count === 5) return [3, 2];
-  if (count === 6) return [3, 3];
-  const rows = [];
-  let remaining = count;
-  while (remaining > 3) {
-    rows.push(3);
-    remaining -= 3;
-  }
-  if (remaining > 0) rows.push(remaining);
-  return rows;
+function partWholeMinMm(requireIntent) {
+  return (spec) => Math.max(24, partWholeModel.minWidthPt({ ...spec, requireIntent }, "worksheets") / MM_TO_PT);
 }
 
-// What a bubble PRINTS inside itself, and in which of the two meanings.
-//
-// A value is material handed to the child and takes the given colour, the same
-// as a value in a data table. A label is a word the child READS - "Left",
-// "Pounds", "Thousands" - and stays in ink. They are different things, and a
-// bubble that tried to be both would have to print one word in two colours, so
-// the two are refused together rather than silently ranked.
-//
-// `value` is read with `!= null` and never for truthiness. A given zero is a
-// real part of a partition - 6,007 has zero hundreds, and that zero is the
-// whole point of the question - so a bubble carrying 0 prints "0" and is not
-// mistaken for an empty one.
-function bubbleInk(bubble) {
-  const hasValue = bubble.value != null && bubble.value !== "";
-  const hasLabel = bubble.label != null && bubble.label !== "";
-  if (hasValue && hasLabel) {
-    throw new Error(
-      "part-whole: a bubble takes `value` (handed to the child, given colour) " +
-        "or `label` (a word they read, in ink), not both"
-    );
-  }
-  if (hasValue) return { text: String(bubble.value), role: "given" };
-  if (hasLabel) return { text: String(bubble.label), role: "ink" };
-  return null;
-}
-
-// A node the child writes into. Its floor is the engine's own answer for how
-// wide a write-in blank is - BLANK_MM across BLANK_CHARS characters, the same
-// arithmetic a blank in a prompt uses - so a four-digit part and a two-word
-// part do not come out the same size.
-const PW_WRITE_CHARS = 4; // a four-digit number, the commonest thing written here
-const PW_CHAR_MM = BLANK_MM / BLANK_CHARS;
-
-function blankChars(bubble) {
-  if (bubble.blank == null || bubble.blank === false) return 0;
-  const stated = bubble.blankChars;
-  if (stated == null) return PW_WRITE_CHARS;
-  if (typeof stated !== "number" || !Number.isFinite(stated) || stated < 1 || stated > 40) {
-    throw new Error("part-whole: `blankChars` must be a number from 1 to 40");
-  }
-  return Math.ceil(stated);
-}
-
-// The smallest this bubble may PRINT at, in millimetres. Every bubble has one,
-// and the model's own minimum is whichever of them is hardest to satisfy, so a
-// four-part model asks for exactly what its four parts need rather than for a
-// constant somebody chose once.
-function bubbleMinWidthMm(bubble) {
-  const chars = blankChars(bubble);
-  if (chars > 0) {
-    return Math.max(PW_BLANK_MIN_MM, chars * PW_CHAR_MM + 2 * INSET.card.h);
-  }
-  if ((bubble.coins || []).length > 0) return PW_BUBBLE_MIN_MM;
-
-  const ink = bubbleInk(bubble);
-  if (!ink) {
-    // Nothing in it and nothing said about it: the money route's empty whole,
-    // which is a bubble the child writes an amount into. It keeps the write-in
-    // floor it has always had.
-    return PW_BUBBLE_MIN_MM;
-  }
-  // A bubble that only PRINTS needs to be readable, not writable, and the
-  // registry's legibility floor already guarantees the reading. All this adds
-  // is that the box stays a box around its own text.
-  return Math.max(
-    PW_PRINTED_MIN_MM,
-    ink.text.length * TYPE.note * PT_MM * 0.5 + 2 * INSET.card.h
-  );
-}
-
-// Every part of a bubble a designer can state, checked once. `part-whole`
-// requires the intent to be stated, the way a label-diagram's callouts do: a
-// node drawn empty because that is the question and a node drawn empty because
-// nobody said what it was for look identical on paper, and only one of them is
-// a design. The money route keeps its old permissive contract, because specs
-// written against it are already saved.
-function checkBubble(bubble, strict, where) {
-  const ink = bubbleInk(bubble);
-  const chars = blankChars(bubble);
-  const coins = bubble.coins || [];
-  if (chars > 0 && (ink || coins.length > 0)) {
-    throw new Error(
-      `part-whole: ${where} is marked blank and also carries ` +
-        `${ink ? "a value or label" : "coins"}. A blank node is empty; that is ` +
-        "what makes it the question."
-    );
-  }
-  if (strict && chars === 0 && !ink && coins.length === 0) {
-    throw new Error(
-      `PART_WHOLE_INTENT_UNSTATED: ${where} carries nothing and is not marked ` +
-        "`blank: true`. Say whether the child is handed this node or writes it."
-    );
-  }
-}
-
-function bubbleSize(bubble) {
-  const coins = bubble.coins || [];
-  const rows = coinRowLayout(coins.length);
-  // Every row is measured from the actual denominations in it, because they are
-  // no longer all the same size: a row holding a £2 is taller than a row holding
-  // three 5ps, and a note is wider again.
-  const rowWidths = [];
-  const rowHeights = [];
-  let offset = 0;
-  for (const count of rows) {
-    const sizes = coins
-      .slice(offset, offset + count)
-      .map((d) => denominationSizeMm(d));
-    rowWidths.push(
-      sizes.reduce((w, s) => w + s.w * PW.coinUnitsPerMm, 0) +
-        (count - 1) * PW.coinGap
-    );
-    rowHeights.push(
-      sizes.reduce((m, s) => Math.max(m, s.h * PW.coinUnitsPerMm), 0)
-    );
-    offset += count;
-  }
-  const coinW = rowWidths.reduce((m, w) => Math.max(m, w), 0);
-  const coinH =
-    rowHeights.reduce((sum, h) => sum + h, 0) +
-    Math.max(0, rows.length - 1) * PW.coinRowGap;
-  const tallestCoin = rowHeights.reduce((m, h) => Math.max(m, h), 0);
-
-  const ink = bubbleInk(bubble);
-  const chars = blankChars(bubble);
-  // A blank is sized by what will be written in it, so it comes out the width
-  // of the value it is asking for rather than a constant. One character metric
-  // for both, so a four-digit blank and a printed "6,731" are the same box.
-  const textW = ink
-    ? ink.text.length * (PW.labelFont * 0.55)
-    : chars * (PW.labelFont * 0.55);
-  const innerW = Math.max(coinW, textW, PW.minInnerW);
-  const innerH =
-    coinH + (ink ? PW.labelFont + (coins.length > 0 ? PW.labelGap : 0) : 0);
-  // A coin-carrying bubble has to be at least as tall as its biggest coin. A
-  // text-only bubble can be much shorter, and that is what gives the schematic
-  // part-whole its compact look.
-  const minH =
-    coins.length > 0
-      ? tallestCoin + PW.bubblePadY * 2
-      : PW.labelFont + PW.bubblePadY * 2;
-
-  const caption = bubble.caption != null && bubble.caption !== ""
-    ? String(bubble.caption)
-    : null;
-
-  const w = innerW + PW.bubblePadX * 2;
+function withStem(helper) {
+  const stemMm = (spec, widthMm) => (spec.text ? linesFor(spec.text, widthMm) * LINE_MM + SPACE_TIGHT_MM : 0);
   return {
-    w,
-    h: Math.max(innerH + PW.bubblePadY * 2, minH),
-    caption,
-    // A caption names what a node IS ("Thousands"). It is not content in the
-    // node: it prints under the box, quiet and note-sized, so a child never
-    // reads it as something already written in the space they are about to
-    // write in.
-    //
-    // It is printed OUTSIDE the drawing, as ordinary text, and that is not a
-    // detail. Text inside an SVG is scaled with the SVG, so a caption set small
-    // enough to be quiet drags the whole model's minimum width up until that
-    // text reaches note size - and a four-part model then needs more page than
-    // two of them side by side can have. Out here it prints at note size
-    // whatever the model's width, and the width the model asks for is decided
-    // by the boxes a child writes in rather than by the smallest word on it.
-    captionMm: caption ? caption.length * TYPE.note * PT_MM * 0.5 : 0,
-    ink,
-    chars,
-    minWidthMm: bubbleMinWidthMm(bubble),
-    rows,
-    rowHeights,
-    tallestCoin,
-  };
-}
-
-function buildPartWholeSvg(spec, strict) {
-  const whole = spec.whole || {};
-  const parts = spec.parts || [];
-  if (!Array.isArray(parts) || parts.length === 0) {
-    throw new Error("part-whole-money: 'parts' must list at least one part bubble");
-  }
-
-  checkBubble(whole, strict, "the whole");
-  parts.forEach((part, i) => checkBubble(part, strict, `part ${i + 1}`));
-
-  // The operator between two parts. Stated, because a part-whole model is not
-  // always additive: named parts of an amount are joined by nothing, and this
-  // prints only what the designer asked for.
-  const joiner = spec.joiner != null && spec.joiner !== "" ? String(spec.joiner) : null;
-
-  const wholeSize = bubbleSize(whole);
-  const partSizes = parts.map(bubbleSize);
-
-  // A joiner needs room to sit in. Widening the gap rather than shrinking the
-  // boxes keeps the parts the size their content asked for.
-  const joinerW = joiner ? joiner.length * PW.joinerFont * 0.6 : 0;
-  const partGap = joiner
-    ? Math.max(PW.partGap, joinerW + 2 * PW.joinerClearance)
-    : PW.partGap;
-
-  const partsRowW =
-    partSizes.reduce((sum, s) => sum + s.w, 0) + (parts.length - 1) * partGap;
-  const contentW = Math.max(wholeSize.w, partsRowW);
-  const totalW = contentW + PW.sidePad * 2;
-  const tallestPart = partSizes.reduce((m, s) => Math.max(m, s.h), 0);
-  const totalH =
-    PW.topPad + wholeSize.h + PW.verticalGap + tallestPart + PW.bottomPad;
-
-  const wholeX = (totalW - wholeSize.w) / 2;
-  const wholeY = PW.topPad;
-  const partY = wholeY + wholeSize.h + PW.verticalGap;
-  const partXs = [];
-  let cursor = (totalW - partsRowW) / 2;
-  partSizes.forEach((size) => {
-    partXs.push(cursor);
-    cursor += size.w + partGap;
-  });
-
-  const els = [];
-
-  // Connectors first, so the bubbles sit on top of where the lines meet them.
-  const wholeBottom = { x: wholeX + wholeSize.w / 2, y: wholeY + wholeSize.h };
-  partSizes.forEach((size, i) => {
-    const top = { x: partXs[i] + size.w / 2, y: partY };
-    els.push(
-      `<line x1="${f(wholeBottom.x)}" y1="${f(wholeBottom.y)}" x2="${f(top.x)}" y2="${f(top.y)}"` +
-        ` stroke="var(--colour-ink)" stroke-width="${PW.bubbleStroke}" />`
-    );
-  });
-
-  // The operator sits in the gap, on the line through the middle of the boxes.
-  if (joiner) {
-    const midY = partY + partSizes.reduce((m, s) => Math.max(m, s.h), 0) / 2;
-    for (let i = 0; i < partSizes.length - 1; i += 1) {
-      const x = (partXs[i] + partSizes[i].w + partXs[i + 1]) / 2;
-      els.push(
-        `<text x="${f(x)}" y="${f(midY)}" text-anchor="middle" dominant-baseline="central"` +
-          ` font-family="var(--font)" font-size="${PW.joinerFont}" fill="var(--colour-ink)">${esc(joiner)}</text>`
-      );
-    }
-  }
-
-  function drawBubble(bubble, x, y, size) {
-    els.push(
-      `<rect x="${f(x)}" y="${f(y)}" width="${f(size.w)}" height="${f(size.h)}"` +
-        ` rx="${PW.radius}" ry="${PW.radius}" fill="white" stroke="var(--colour-ink)"` +
-        ` stroke-width="${PW.bubbleStroke}" />`
-    );
-
-    const coins = bubble.coins || [];
-    let cy = y + PW.bubblePadY;
-    if (coins.length > 0) {
-      let offset = 0;
-      size.rows.forEach((count, row) => {
-        const slice = coins.slice(offset, offset + count);
-        const sizes = slice.map((d) => denominationSizeMm(d));
-        const rowW =
-          sizes.reduce((w, s) => w + s.w * PW.coinUnitsPerMm, 0) +
-          (count - 1) * PW.coinGap;
-        const rowH = size.rowHeights[row];
-        let cursorX = x + (size.w - rowW) / 2;
-        slice.forEach((denomination, i) => {
-          // Bottom-aligned within the row, matching the coin strip: coins of
-          // different sizes sit on one line rather than floating.
-          const top = cy + rowH - sizes[i].h * PW.coinUnitsPerMm;
-          const drawn = drawDenomination(denomination, cursorX, top, PW.coinUnitsPerMm);
-          els.push(...drawn.parts);
-          cursorX += drawn.widthUnits + PW.coinGap;
-        });
-        cy += rowH + PW.coinRowGap;
-        offset += count;
-      });
-      cy += -PW.coinRowGap + PW.labelGap;
-    }
-
-    if (size.ink) {
-      // A label stays in ink and deliberately: it is as often a prompt the
-      // child reads ("Left", "Pounds") as anything else, and one word cannot be
-      // two colours. A `value` is different - it is material handed over, like
-      // a value in a data table - so it takes the given colour and the weight
-      // that goes with it.
-      const given = size.ink.role === "given";
-      els.push(
-        `<text x="${f(x + size.w / 2)}" y="${f(cy + PW.labelFont * 0.85)}" text-anchor="middle"` +
-          ` font-family="var(--font)" font-size="${PW.labelFont}"` +
-          (given ? ` font-weight="bold"` : "") +
-          ` fill="var(--colour-${given ? "given" : "ink"})">${esc(size.ink.text)}</text>`
-      );
-    }
-
-  }
-
-  drawBubble(whole, wholeX, wholeY, wholeSize);
-  partSizes.forEach((size, i) => drawBubble(parts[i], partXs[i], partY, size));
-
-  // Where each caption goes, as a fraction of the drawing's width, so the text
-  // under the figure lands under the node it names however wide the model is
-  // finally drawn.
-  const captions = [];
-  const anchor = (size, x) => {
-    if (!size.caption) return;
-    captions.push({
-      text: size.caption,
-      // Centre of the node, and the room it has before it runs into its
-      // neighbour's caption.
-      atPct: ((x + size.w / 2) / totalW) * 100,
-      pitchUnits: size.w + partGap,
-      widthMm: size.captionMm,
-    });
-  };
-  anchor(wholeSize, wholeX);
-  partSizes.forEach((size, i) => anchor(size, partXs[i]));
-
-  return {
-    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${f(totalW)} ${f(totalH)}">${els.join("")}</svg>`,
-    aspect: totalW / totalH,
-    unitsWide: totalW,
-    captions,
-    // A caption needs the width its own node's share of the model gives it, or
-    // two captions print into each other. Carried the same way the bubble
-    // floors are: the width the WHOLE model has to reach for this one to fit.
-    captionFloorsMm: captions.map(
-      (c) => ((c.widthMm + CAPTION_CLEARANCE_MM) / c.pitchUnits) * totalW
-    ),
-    // Every bubble's own printed floor, carried as the width the WHOLE model
-    // has to reach for that bubble to get it. The model's minimum is then just
-    // the largest of them, which for a set of equal bubbles is exactly what the
-    // single narrowest-bubble constant used to give.
-    bubbleFloorsMm: [wholeSize, ...partSizes].map(
-      (size) => (size.minWidthMm / size.w) * totalW
-    ),
-    bubbleCeilingsMm: [wholeSize, ...partSizes].map(
-      (size) => (PW_BUBBLE_MAX_MM / size.w) * totalW
-    ),
-    hasCoins:
-      (whole.coins || []).length > 0 ||
-      parts.some((p) => (p.coins || []).length > 0),
-  };
-}
-
-// A bubble a child writes an amount into needs to be a real box on paper, and a
-// coin inside one still needs to be identifiable. Whichever of the two is the
-// tighter constraint sets the width of the whole model, and both grow with what
-// is actually in it: four parts make a wider row than two, and coins in the
-// bubbles raise the floor again.
-const PW_BUBBLE_MIN_MM = 24;
-const PW_BUBBLE_MAX_MM = 46; // wider than this a bubble is just white space
-// The floor for a node the child writes in, below which the box stops being
-// somewhere to write however few characters it holds.
-const PW_BLANK_MIN_MM = 14;
-// And the floor for a node that only prints. Smaller than the write-in floor
-// on purpose: nobody has to fit a pencil into it.
-const PW_PRINTED_MIN_MM = 12;
-// The gap between one caption and the next. A word touching the word beside it
-// is two words nobody can read.
-const CAPTION_CLEARANCE_MM = SPACE.tight;
-// Coins in a bubble are supporting a partition rather than being identified
-// cold, so they may print a little smaller than a strip's before they stop
-// working. They still stop growing at life size.
-const PW_COIN_SCALE_MIN = 0.55;
-const PW_COIN_SCALE_MAX = 1;
-
-// A coin drawn inside a bubble prints at `scale` of its real size when the whole
-// model is this many millimetres wide.
-function partWholeWidthForCoinScale(geometry, scale) {
-  return (scale / PW.coinUnitsPerMm) * geometry.unitsWide;
-}
-
-function partWholeMinWidthMm(geometry) {
-  const byBubble = Math.max(
-    ...geometry.bubbleFloorsMm,
-    ...geometry.captionFloorsMm
-  );
-  const byCoin = geometry.hasCoins
-    ? partWholeWidthForCoinScale(geometry, PW_COIN_SCALE_MIN)
-    : 0;
-  return Math.max(byBubble, byCoin);
-}
-
-function partWholeMaxWidthMm(geometry) {
-  const byBubble = Math.max(...geometry.bubbleCeilingsMm);
-  const byCoin = geometry.hasCoins
-    ? partWholeWidthForCoinScale(geometry, PW_COIN_SCALE_MAX)
-    : 0;
-  // A ceiling under the floor is not a ceiling. A model whose blanks ask for
-  // more width than a bubble is allowed to be pretty at would otherwise be
-  // drawn smaller than its own minimum and refused by its own `needs`.
-  return Math.max(byBubble, byCoin, partWholeMinWidthMm(geometry));
-}
-
-function partWholeCaptionsHtml(geometry) {
-  if (geometry.captions.length === 0) return "";
-  const spans = geometry.captions
-    .map(
-      (c) =>
-        `<span class="h-pw-caption" style="left:${f(c.atPct)}%">${esc(c.text)}</span>`
-    )
-    .join("");
-  return `<div class="h-pw-captions">${spans}</div>`;
-}
-
-function partWholeCaptionMm(geometry) {
-  return geometry.captions.length > 0 ? NOTE_LINE_MM + SPACE.hair : 0;
-}
-
-function renderPartWhole(spec, strict) {
-  const geometry = buildPartWholeSvg(spec, strict);
-  const stem = spec.text ? `<p class="h-money-stem">${esc(spec.text)}</p>` : "";
-  return `
-    <div class="h-money">
-      ${stem}
-      <div class="h-pw-figure" style="max-width:${f(partWholeMaxWidthMm(geometry))}mm">${geometry.svg}${partWholeCaptionsHtml(geometry)}</div>
-    </div>`;
-}
-
-function measurePartWhole(spec, widthMm, strict) {
-  const geometry = buildPartWholeSvg(spec, strict);
-  const stemMm = spec.text
-    ? linesFor(spec.text, widthMm) * LINE_MM + SPACE_TIGHT_MM
-    : 0;
-  const drawnWidth = Math.min(widthMm, partWholeMaxWidthMm(geometry));
-  return stemMm + drawnWidth / geometry.aspect + partWholeCaptionMm(geometry);
-}
-
-function needsPartWhole(spec, strict) {
-  const geometry = buildPartWholeSvg(spec, strict);
-  const minWidthMm = partWholeMinWidthMm(geometry);
-  const stemMm = spec.text
-    ? linesFor(spec.text, minWidthMm) * LINE_MM + SPACE_TIGHT_MM
-    : 0;
-  return {
-    minWidthMm,
-    minHeightMm:
-      minWidthMm / geometry.aspect + stemMm + partWholeCaptionMm(geometry),
+    ...helper,
+    render: (spec, width) => {
+      const stem = spec.text ? `<p class="h-money-stem">${esc(spec.text)}</p>` : "";
+      return `<div class="h-money">${stem}${helper.render(spec, width)}</div>`;
+    },
+    measure: (spec, width) => {
+      const w = typeof width === "number" ? width : width && width.widthMm;
+      return stemMm(spec, w > 0 ? w : 170) + helper.measure(spec, width);
+    },
+    needs: (spec) => {
+      const n = helper.needs(spec);
+      return { minWidthMm: n.minWidthMm, minHeightMm: n.minHeightMm + stemMm(spec, n.minWidthMm) };
+    },
   };
 }
 
@@ -1316,25 +853,6 @@ const css = `
   }
 `;
 
-/* The caption strip under a part-whole model. Each word is anchored to the
-   centre of the node it names, as a percentage of the drawing's width, so it
-   stays under that node however wide the model is finally drawn. */
-const partWholeCss = `
-  /* A block, not the flex row a coin strip uses: the captions are a second row
-     under the drawing, and a flex row would stand them beside it. */
-  .h-pw-figure { display: block; margin: 0 auto; }
-  .h-pw-figure svg { display: block; width: 100%; height: auto; }
-  .h-pw-captions {
-    position: relative; width: 100%;
-    height: ${NOTE_LINE_MM}mm; margin-top: var(--space-hair);
-  }
-  .h-pw-caption {
-    position: absolute; top: 0; transform: translateX(-50%);
-    white-space: nowrap;
-    font-size: var(--type-note); color: var(--colour-quiet); line-height: 1.35;
-  }
-`;
-
 const helpers = {
   "stacked-fraction": {
     render: renderStackedFraction,
@@ -1354,28 +872,18 @@ const helpers = {
     needs: needsCoinStrip,
     greed: NEVER_STRETCH,
   },
-  // Two names, one renderer. The mathematical object is a whole joined to its
-  // parts; money is one thing it can be made of, and the helper spent long
-  // enough named after that one thing to be passed over for the partition,
-  // decomposition and missing-addend work it draws just as well.
+  // Two names, one drawing: the shared part-whole model (shared/visuals/
+  // part-whole-model-svg.js), which the board, the wall and the stick-in pack
+  // place too. The mathematical object is a whole joined to its parts; money is
+  // one thing it can be made of.
   //
   // `part-whole-money` keeps the old permissive contract because specs written
   // against it are already saved. `part-whole` requires every node to say
   // whether the child is handed it or writes it, for the same reason a
   // label-diagram's callouts do: on paper a node left empty because that is the
   // question and a node left empty because nobody decided look identical.
-  "part-whole-money": {
-    render: (spec) => renderPartWhole(spec, false),
-    measure: (spec, widthMm) => measurePartWhole(spec, widthMm, false),
-    needs: (spec) => needsPartWhole(spec, false),
-    greed: NEVER_STRETCH,
-  },
-  "part-whole": {
-    render: (spec) => renderPartWhole(spec, true),
-    measure: (spec, widthMm) => measurePartWhole(spec, widthMm, true),
-    needs: (spec) => needsPartWhole(spec, true),
-    greed: NEVER_STRETCH,
-  },
+  "part-whole-money": withStem(atPrintedWidth(partWholeModel, { minWidthMm: partWholeMinMm(false), toSpec: (spec) => ({ ...spec, requireIntent: false }) })),
+  "part-whole": withStem(atPrintedWidth(partWholeModel, { minWidthMm: partWholeMinMm(true), toSpec: (spec) => ({ ...spec, requireIntent: true }) })),
   "chip-bank": {
     render: renderChipBank,
     measure: measureChipBank,
@@ -1384,4 +892,4 @@ const helpers = {
   },
 };
 
-module.exports = { helpers, css: css + partWholeCss };
+module.exports = { helpers, css };

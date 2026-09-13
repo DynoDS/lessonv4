@@ -157,13 +157,15 @@ module.exports = {
 
   // ─── place value ───
   "place-value-counter-chart":
-    "Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.",
+    "Counters with their values on them in place-value columns: what number is shown, or left empty for the child to draw counters. The place value chart's counter form, the same drawing the slides use.",
   "base-ten-blocks":
     "Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.",
   "counter-group":
     "The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.",
   "place-value-chart":
-    "Place names across the top, a row per number. Fill a row to hand a number over, leave it empty to be written in, label it to say what it is, highlight a cell to pick out the digit that changed.",
+    "The slides' chart: place names across the top, a row per number, filled to hand a number over or empty to write in, labelled, with the changed digit highlighted.",
+  "place-value-mini":
+    "The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.",
   "digit-cards":
     "A row of cards, one digit each, handed to the child to make numbers from.",
   "times-table-grid":
@@ -175,7 +177,7 @@ module.exports = {
   "coin-strip":
     "A row of coins and notes drawn at their real sizes relative to each other, over a line for the total.",
   "part-whole-money":
-    "A whole bubble with parts beneath it, joined by lines. The money-flavoured name for part-whole, kept because saved specs use it; its bubbles may carry coins.",
+    "A whole circle with parts beneath it, joined by lines. The money-flavoured name for part-whole, kept because saved specs use it; its circles may carry coins.",
   "part-whole":
     "A whole joined to its parts: partitioning, decomposition, a missing addend. Every node says whether the child is handed it, reads it or writes it, and a node that says nothing is refused.",
   "chip-bank":

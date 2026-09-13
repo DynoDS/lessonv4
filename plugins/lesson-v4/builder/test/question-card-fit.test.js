@@ -171,31 +171,30 @@ test('a grid leaves no ragged last row', () => {
 // the short names, so a chart headed with the full words missed every lookup
 // and drew entirely in the default grey - and the column colour coding is the
 // half of this picture that says a counter's value comes from where it sits.
-const {
-  drawPlaceValueChart
-} = require('../src/content/place-value-chart');
+//
+// The chart is one shared drawing since 13 September 2026 (shared/visuals/
+// place-value-chart-svg.js), placed on a slide as a picture, so these tests read
+// the drawing's own layout at the board profile for the zone the placer gives it.
+const { describeLayout } = require('../../shared/visuals/place-value-chart-svg');
+const { profileFor } = require('../../shared/visuals/surface-profiles');
+
+// The box the board's placer lays a shared drawing out in: the zone less 0.1in
+// either side.
+function boardLayout(zone, data) {
+  return describeLayout(data, profileFor('slides', { widthPt: (zone.w - 0.2) * 72, heightPt: (zone.h - 0.2) * 72 }));
+}
 
 function chartHeadings(zone, columns, counters = true) {
-  const tables = [];
-  const pptx = new PptxGenJS();
-  const slide = {
-    addShape: () => {},
-    addText: () => {},
-    addImage: () => {},
-    addTable: (rows, opts) => tables.push({ rows, opts }),
-  };
-  drawPlaceValueChart(pptx, slide, zone, {
+  const layout = boardLayout(zone, {
     type: 'place-value-chart',
     columns: columns || ['Thousands', 'Hundreds', 'Tens', 'Ones'],
     rows: [counters
       ? { cells: ['', '', '', ''], counters: { Thousands: 4, Hundreds: 2, Tens: 6, Ones: 1 } }
       : { cells: ['4', '2', '6', '1'] }],
-  }, { slideIndex: 0, lesson: {} });
-  const header = tables
-    .map((t) => t.rows[0])
-    .find((row) => row && row.some((cell) => /^(Thousands|Th)$/.test(cell.text)));
-  const colW = tables.find((t) => Array.isArray(t.opts.colW)).opts.colW;
-  return { header, colW };
+  });
+  const header = layout.texts.filter((t) => t.role === 'heading');
+  const fills = layout.cells.filter((c) => c.role === 'header').map((c) => c.fill);
+  return { header, colW: layout.colW / 72, fills };
 }
 
 // The heading of the thousands column, whichever spelling the chart chose.
@@ -209,36 +208,28 @@ test('a column heading is never wider than the column it sits in', () => {
   const heading = thousandsHeading(drawn);
   assert.ok(heading, 'the chart drew its headings');
   assert.ok(
-    textWidthIn(heading.text, heading.options.fontSize, true) <= drawn.colW[0],
-    `"${heading.text}" at ${heading.options.fontSize}pt needs ` +
-      `${textWidthIn(heading.text, heading.options.fontSize, true).toFixed(2)}in ` +
-      `and its column is ${drawn.colW[0].toFixed(2)}in, so it breaks mid-word and is clipped.`
+    textWidthIn(heading.text, heading.pt, true) <= drawn.colW,
+    `"${heading.text}" at ${heading.pt}pt needs ${textWidthIn(heading.text, heading.pt, true).toFixed(2)}in ` +
+      `and its column is ${drawn.colW.toFixed(2)}in, so it breaks mid-word and is clipped.`
   );
 });
 
 test('a chart too narrow for the word prints the short name, not half the word', () => {
   // The narrowest real case: two four-column charts sharing a speech-bubble
-  // slide's side band. At this width no readable size holds "Thousands", so
-  // shrinking alone can only clip. Digits only, because a chart this narrow
-  // carrying counters is refused outright by the counter floor below - heading
-  // fit and counter size are separate faults and this one is the heading.
+  // slide's side band. Digits only, because a chart this narrow carrying
+  // counters is refused outright by the counter floor below.
   const drawn = chartHeadings({ x: 0.2, y: 1.8, w: 1.9, h: 2.2 }, null, false);
   const heading = thousandsHeading(drawn);
   assert.equal(heading.text, 'Th');
-  assert.ok(
-    textWidthIn(heading.text, heading.options.fontSize, true) <= drawn.colW[0],
-    `even "Th" does not fit at ${heading.options.fontSize}pt`
-  );
+  assert.ok(textWidthIn(heading.text, heading.pt, true) <= drawn.colW, `even "Th" does not fit at ${heading.pt}pt`);
 });
 
 test('a chart with room keeps the full word at full size', () => {
-  // The discrimination: a chart given the width its headings need must not be
-  // shrunk, nor abbreviated, by the same rule. A full-width My Turn chart reads
-  // "Thousands" at full size.
+  // The discrimination: a full-width My Turn chart reads "Thousands" at full size.
   const wide = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 });
   const heading = thousandsHeading(wide);
   assert.equal(heading.text, 'Thousands');
-  assert.ok(heading.options.fontSize >= 13, `full-width headings came out at ${heading.options.fontSize}pt`);
+  assert.ok(heading.pt >= 13, `full-width headings came out at ${heading.pt}pt`);
 });
 
 test('the column palette survives a chart headed with the full words', () => {
@@ -246,12 +237,8 @@ test('the column palette survives a chart headed with the full words', () => {
   // out silently costs the chart its column coding.
   const long = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 });
   const short = chartHeadings({ x: 0.2, y: 1.8, w: 7.9, h: 3.6 }, ['Th', 'H', 'T', 'O']);
-  const fills = (drawn) => drawn.header.map((cell) => cell.options.fill.color);
-  assert.deepEqual(fills(long), fills(short));
-  assert.ok(
-    new Set(fills(long)).size > 1,
-    'every column drew in one colour, so the palette never resolved'
-  );
+  assert.deepEqual(long.fills, short.fills);
+  assert.ok(new Set(long.fills).size > 1, 'every column drew in one colour, so the palette never resolved');
 });
 
 // A chart has always had a height floor and never a width one, and the two are
@@ -264,32 +251,19 @@ test('the column palette survives a chart headed with the full words', () => {
 // with. The columns are too narrow").
 
 function drawCounterChart(zone) {
-  const pptx = new PptxGenJS();
-  const slide = {
-    addShape: () => {},
-    addText: () => {},
-    addImage: () => {},
-    addTable: () => {},
-  };
-  drawPlaceValueChart(pptx, slide, zone, {
+  boardLayout(zone, {
     type: 'place-value-chart',
     columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
     rows: [{ label: 'A', cells: ['', '', '', ''], counters: { Thousands: 6, Hundreds: 2, Tens: 4, Ones: 1 } }],
-  }, { slideIndex: 0, lesson: {} });
+  });
 }
 
 test('a column too narrow for its counters is refused, not shipped small', () => {
   // Half of a 60-40 split's primary: the exact zone each of two charts got.
-  assert.throws(
-    () => drawCounterChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 }),
-    /PLACE_VALUE_COUNTERS_TOO_SMALL/
-  );
+  assert.throws(() => drawCounterChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 }), /PLACE_VALUE_COUNTERS_TOO_SMALL/);
 });
 
 test('the refusal names width, because height is not the lever', () => {
-  // The height refusal beside it already offers a taller zone and fewer rows,
-  // and a designer sent to the wrong lever spends a repair pass measuring the
-  // same number again.
   try {
     drawCounterChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 });
     assert.fail('the chart drew counters it should have refused');
@@ -301,55 +275,36 @@ test('the refusal names width, because height is not the lever', () => {
 });
 
 test('one chart in the same zone draws counters at full size', () => {
-  // The discrimination, and the repair the message names: the whole primary
-  // instead of half of it doubles the column and the counters come out at the
-  // size they were designed for.
   assert.doesNotThrow(() => drawCounterChart({ x: 0.2, y: 1.8, w: 7.2, h: 4.56 }));
 });
 
 test('a chart nobody writes in is judged on height alone', () => {
-  // The discrimination for BOTH width floors: every cell is printed, so there
-  // is nothing to count and nothing to write, and a narrow column costs the
-  // chart nothing. A chart like this is read.
-  const pptx = new PptxGenJS();
-  const slide = { addShape: () => {}, addText: () => {}, addImage: () => {}, addTable: () => {} };
+  // Every cell is printed, so there is nothing to count and nothing to write,
+  // and a narrow column costs the chart nothing.
   assert.doesNotThrow(() =>
-    drawPlaceValueChart(pptx, slide, { x: 0.2, y: 1.8, w: 2.4, h: 3.0 }, {
+    boardLayout({ x: 0.2, y: 1.8, w: 2.4, h: 3.0 }, {
       type: 'place-value-chart',
       columns: ['Th', 'H', 'T', 'O'],
       rows: [{ label: '3,462', cells: ['3', '4', '6', '2'] }],
-    }, { slideIndex: 0, lesson: {} }));
+    }));
 });
 
 // The counter floor above was written as though it were THE width floor, and it
 // is not: it measures counters, so a chart drawing none passes it by having
 // nothing to measure. The chart a teacher writes into is exactly the chart with
-// no counters in it, and the day after the counter floor shipped, the same
-// too-narrow shape shipped again in the same lesson family - two four-column
-// charts with a blank "Value" row sharing a My Turn slide (0.719in a column) and
-// an Our Turn slide (0.639in), flagged by Daniel on 4 September 2026: "there's
-// no way the teacher if they wanted to could write neatly in the columns because
-// they're not wide enough ... I would have instead still used both but on 2
-// different slides, so each get more space".
+// no counters in it: two four-column charts with a blank "Value" row sharing a
+// My Turn slide (0.719in a column) and an Our Turn slide (0.639in), flagged by
+// Daniel on 4 September 2026: "there's no way the teacher if they wanted to
+// could write neatly in the columns because they're not wide enough".
 
 function drawWriteInChart(zone, rows) {
-  const pptx = new PptxGenJS();
-  const slide = {
-    addShape: () => {},
-    addText: () => {},
-    addImage: () => {},
-    addTable: () => {},
-  };
-  drawPlaceValueChart(pptx, slide, zone, {
+  boardLayout(zone, {
     type: 'place-value-chart',
     columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
     rows: rows === undefined
-      ? [
-          { label: '5,346', cells: ['5', '3', '4', '6'] },
-          { label: 'Value', cells: ['', '', '', ''] },
-        ]
+      ? [{ label: '5,346', cells: ['5', '3', '4', '6'] }, { label: 'Value', cells: ['', '', '', ''] }]
       : rows,
-  }, { slideIndex: 0, lesson: {} });
+  });
 }
 
 // Half the body of a body-sidebar, and half the question visual of a
@@ -358,20 +313,11 @@ const SHARED_MY_TURN = { x: 0.2, y: 1.8, w: 4.15, h: 4.44 };
 const SHARED_OUR_TURN = { x: 0.2, y: 1.8, w: 3.71, h: 1.94 };
 
 test('a column too narrow to write in is refused, not shipped narrow', () => {
-  assert.throws(
-    () => drawWriteInChart(SHARED_OUR_TURN),
-    /PLACE_VALUE_WRITE_IN_TOO_NARROW/
-  );
+  assert.throws(() => drawWriteInChart(SHARED_OUR_TURN), /PLACE_VALUE_WRITE_IN_TOO_NARROW/);
 });
 
 test('the counter floor cannot see this chart, so the write-in floor must', () => {
-  // The My Turn zone, and the reason this test exists as well as the one above:
-  // at 0.719in a column it is the marginal case, it draws no counters at all,
-  // and it shipped. A floor that only measures counters is blind to it.
-  assert.throws(
-    () => drawWriteInChart(SHARED_MY_TURN),
-    /PLACE_VALUE_WRITE_IN_TOO_NARROW/
-  );
+  assert.throws(() => drawWriteInChart(SHARED_MY_TURN), /PLACE_VALUE_WRITE_IN_TOO_NARROW/);
 });
 
 test('the refusal names width, and the repair the teacher asked for', () => {
@@ -382,22 +328,15 @@ test('the refusal names width, and the repair the teacher asked for', () => {
     assert.match(error.message, /more WIDTH/);
     assert.match(error.message, /one chart on this slide instead of two/);
     assert.match(error.message, /Height is not the lever/);
-    // The repair that belongs to this floor alone: a chart nobody writes in
-    // should say so rather than be given width it does not need.
     assert.match(error.message, /print the digits in the blank cells/);
   }
 });
 
 test('one chart per slide gives the column the width it needed', () => {
-  // The repair, measured: the whole body instead of half of it took the same
-  // chart from 0.639in a column to 1.529in.
   assert.doesNotThrow(() => drawWriteInChart({ x: 0.2, y: 1.8, w: 8.65, h: 2.68 }));
 });
 
 test('blank cells under counters are the counters speaking, not answer space', () => {
-  // The boundary between the two width floors. Here the counters carry the
-  // value and the digits are deliberately held back, so this chart is the
-  // counter floor's business and must not be reported as a write-in fault.
   try {
     drawWriteInChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 }, [
       { label: 'A', cells: ['', '', '', ''], counters: { Thousands: 6, Hundreds: 2, Tens: 4, Ones: 1 } },
@@ -409,23 +348,13 @@ test('blank cells under counters are the counters speaking, not answer space', (
 });
 
 test('a bare heading strip in a side rail is not asking to be written on', () => {
-  // An explicitly empty rows array is the "Th | H | T | O" reference strip a
-  // quick check puts in its rail so children have the column names to answer
-  // WITH. Nothing is written on it, and a narrow rail is where it belongs.
   assert.doesNotThrow(() => drawWriteInChart({ x: 0.2, y: 1.8, w: 2.93, h: 3.6 }, []));
 });
 
 test('a chart with rows omitted is a write-in chart, and judged as one', () => {
-  // Omitting `rows` means one blank row for the teacher to fill in live - the
-  // chart's own documented default - so it carries the write-in floor even
-  // though no cell was ever written down as empty.
-  const pptx = new PptxGenJS();
-  const slide = { addShape: () => {}, addText: () => {}, addImage: () => {}, addTable: () => {} };
+  // Omitting `rows` means one blank row for the teacher to fill in live.
   assert.throws(
-    () => drawPlaceValueChart(pptx, slide, { x: 0.2, y: 1.8, w: 2.93, h: 3.6 }, {
-      type: 'place-value-chart',
-      columns: ['Th', 'H', 'T', 'O'],
-    }, { slideIndex: 0, lesson: {} }),
+    () => boardLayout({ x: 0.2, y: 1.8, w: 2.93, h: 3.6 }, { type: 'place-value-chart', columns: ['Th', 'H', 'T', 'O'] }),
     /PLACE_VALUE_WRITE_IN_TOO_NARROW/
   );
 });

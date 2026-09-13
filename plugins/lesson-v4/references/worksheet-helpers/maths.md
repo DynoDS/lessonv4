@@ -68,8 +68,10 @@ The board draws the same frame, so the child meets one picture in both places.
 - `digit-cards` - "here are four digit cards", for making numbers from.
 
 The counter chart is a wide object. A four-column one wants most of a portrait
-page's width (about 138mm of the 180, standing only about 39mm tall), and that
-is the truth about counters big enough to see rather than something to squeeze.
+page's width (about 157mm of the 180, standing only about 45mm tall), and that
+is the truth about counters big enough to read the value on rather than something
+to squeeze. It is the same chart the slides draw, so its columns carry the
+board's colours.
 
 **The chart's rows are what make it a teaching picture rather than a grid.**
 Left alone it is one empty row, and setting instances to 3 gives three empty

@@ -19,9 +19,9 @@ const { drawPolygon } = require('./polygon');
 const { drawVenn } = require('./venn');
 const { drawCarroll } = require('./carroll');
 const { drawRainforestLayers } = require('./rainforest-layers');
-const { drawPlaceValueMini } = require('./place-value-mini');
 const { drawerFor } = require('./shared-figure');
 const drawNumberline = drawerFor('numberline');
+const drawPlaceValueMini = drawerFor('place-value-mini');
 const { splitAnswerRuns } = require('../answer-text');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
