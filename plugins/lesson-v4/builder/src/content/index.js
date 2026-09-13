@@ -11,8 +11,15 @@ const { drawImage, measureImage } = require('./image');
 const { drawTable } = require('./table');
 // Pictures drawn once in shared/visuals/ and placed here without a slide file
 // of their own (see shared-figure.js).
-const { drawerFor, measurerFor } = require('./shared-figure');
+const { drawerFor, measurerFor, maxUsefulWidthFor } = require('./shared-figure');
 const drawNumberline = drawerFor('numberline');
+const drawClock = drawerFor('clock');
+const drawTurnDiagram = drawerFor('turn-diagram');
+const drawTriangleSquare = drawerFor('triangle-square');
+const drawPolygon = drawerFor('polygon');
+const drawTranslationGrid = drawerFor('translation-grid');
+const drawAreaGrid = drawerFor('area-grid');
+const drawComparisonSlot = drawerFor('comparison-slot');
 const drawDialScale = drawerFor('dial-scale');
 const drawMeasuringJug = drawerFor('measuring-jug');
 const drawRuler = drawerFor('ruler');
@@ -35,21 +42,15 @@ const { drawNumberedQuestions } = require('./numbered-questions');
 const { drawQuestionCards } = require('./question-cards');
 const { drawCallout } = require('./callout');
 const { drawPyramid } = require('./pyramid');
-const { drawClock }  = require('./clock');
 const { drawDiamondNine }   = require('./diamond-nine');
-const { drawTriangleSquare } = require('./triangle-square');
 const { drawMultGrid }      = require('./mult-grid');
 const { drawMatching }      = require('./matching');
 const { drawCoordinateGrid } = require('./coordinate-grid');
-const { drawPolygon }        = require('./polygon');
-const { drawTranslationGrid } = require('./translation-grid');
 const { drawTranslationShape } = require('./translation-shape');
 const drawShadedFraction = drawerFor('shaded-fraction');
 const drawLineGraph = drawerFor('line-graph');
-const { drawAreaGrid }       = require('./area-grid');
 const { drawReflectionGrid } = require('./reflection-grid');
 const { drawGeoboard }       = require('./geoboard');
-const { drawTurnDiagram }    = require('./turn-diagram');
 const { drawAngle }          = require('./angle');
 const { drawTriangle, drawTriangleNonExample } = require('./triangle');
 const { drawLinePair } = require('./line-pair');
@@ -68,7 +69,6 @@ const drawBarChart = drawerFor('bar-chart');
 const { drawPictogram }      = require('./pictogram');
 const { drawBarModel }       = require('./bar-model');
 const { drawBlankSurface }   = require('./blank-surface');
-const { drawComparisonSlot, measureComparisonSlot, maxUsefulWidthComparisonSlot } = require('./comparison-slot');
 const { drawMethodFrame }    = require('./method-frame');
 const { drawLabelDiagram, measureLabelDiagram }   = require('./label-diagram');
 const { drawGridMap }        = require('./grid-map');
@@ -274,7 +274,7 @@ const TRANSPARENT = new Set(['stack', 'row']);
 // draw must not leave an empty white box behind).
 const MEASURE = {
   'place-value-chart': measurePlaceValueChart,
-  'comparison-slot': measureComparisonSlot,
+  'comparison-slot': measurerFor('comparison-slot'),
   text: measureText,
   image: measureImage,
   // Fixed-aspect figures: the card hugs the contained picture, not the zone.
@@ -544,7 +544,7 @@ function measureContentExtent(zone, data, ctx) {
 // items that will use it. Declare a cap only where the helper truly refuses
 // more width - a wrong cap here shrinks content that wanted the room.
 const MAX_USEFUL_WIDTH = {
-  'comparison-slot': maxUsefulWidthComparisonSlot
+  'comparison-slot': maxUsefulWidthFor('comparison-slot')
 };
 
 function maxUsefulWidth(item) {

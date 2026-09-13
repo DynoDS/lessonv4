@@ -173,6 +173,19 @@ function panelWithVisualHtml(innerHtml, visual, visualLabel, fillColour, borderC
     effectiveVisualHeightIn = maxHeightIn;
     effectiveVisualWidthIn = effectiveVisualHeightIn * aspect;
   }
+  // Nor taller than the card body under its title. Drawings used to arrive on
+  // a square canvas, so the width bound always held the height; a shared
+  // drawing cropped to its own shape can be taller than wide (a clock with its
+  // digital readout under the face), and on a dominant card it ran up over the
+  // title bar and off the foot of the page (13 September 2026).
+  if (opts.bodyHeightIn > 0) {
+    const captionIn = visualLabel ? 0.6 : 0;
+    const capIn = (opts.bodyHeightIn - (2 * paddingDxa) / 1440 - captionIn) * 0.94;
+    if (capIn > 0 && effectiveVisualHeightIn > capIn) {
+      effectiveVisualHeightIn = capIn;
+      effectiveVisualWidthIn = effectiveVisualHeightIn * aspect;
+    }
+  }
 
   const panelEl = panelHtml(innerHtml, fillColour, borderColour, style, size, orientation, { widthMm: panelWidthMm, paddingDxa });
 

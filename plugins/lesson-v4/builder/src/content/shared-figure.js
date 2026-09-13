@@ -75,6 +75,20 @@ const FIGURES = {
   'continuum-line': { module: require('../../../shared/visuals/continuum-line-svg'), name: 'continuum line' },
   'source-pathway': { module: require('../../../shared/visuals/source-pathway-svg'), name: 'source pathway' },
   'number-network': { module: require('../../../shared/visuals/number-network-svg'), name: 'number network', caption: { h: 0.5, hAnswer: 0.8, font: 24, fontAnswer: 24 } },
+  // A clock's caption was tuned to sit small under the face ("(a)"), with the
+  // answer reveal larger and bold so the green time reads from the back row.
+  clock: { module: require('../../../shared/visuals/clock-svg'), name: 'clock', caption: { bandKey: 'clockLabelBandH', h: 0.35, hAnswer: 0.7, font: 13, fontAnswer: 20 } },
+  // Turn names vary in length ("half turn" against "three-quarter turn
+  // clockwise"), so the band holds two lines and a long name wraps at a
+  // board-readable size instead of shrinking to 13pt beside its 24pt neighbours.
+  'turn-diagram': { module: require('../../../shared/visuals/turn-diagram-svg'), name: 'turn diagram', caption: { bandKey: 'turnLabelBandH' } },
+  'triangle-square': { module: require('../../../shared/visuals/triangle-square-svg'), name: 'triangle-square puzzle' },
+  // The row's lettered index ("(a)") or an answer ("(c) ||5 lines"), sized to
+  // match the triangle and angle captions so a mixed row shares a baseline.
+  polygon: { module: require('../../../shared/visuals/polygon-svg'), name: 'shape', caption: { bandKey: 'polygonLabelBandH' } },
+  'translation-grid': { module: require('../../../shared/visuals/translation-grid-svg'), name: 'translation grid' },
+  'area-grid': { module: require('../../../shared/visuals/area-grid-svg'), name: 'area grid' },
+  'comparison-slot': { module: require('../../../shared/visuals/comparison-svg'), name: 'comparison slot' },
 };
 
 function captionFor(type, data) {
@@ -212,4 +226,15 @@ function measurerFor(type) {
   };
 }
 
-module.exports = { FIGURES, CAPTION, createSharedFigureStore, drawerFor, measurerFor, captionBandHeight };
+// The widest a picture can ever usefully be on a slide, for a picture that stops
+// growing (a comparison ring), so a row gives the rest of its width to the
+// items beside it. null when the picture uses whatever it is given.
+function maxUsefulWidthFor(type) {
+  return function maxUsefulWidth(data) {
+    const { module } = FIGURES[type];
+    if (typeof module.maxWidthPt !== 'function') return null;
+    return module.maxWidthPt(data || {}, profileFor('slides', { widthPt: 1000 })) / 72 + 2 * PAD;
+  };
+}
+
+module.exports = { FIGURES, CAPTION, createSharedFigureStore, drawerFor, measurerFor, maxUsefulWidthFor, captionBandHeight };

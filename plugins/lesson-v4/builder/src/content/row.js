@@ -47,15 +47,17 @@ function drawRow(pptx, slide, zone, data, ctx) {
   if (items.length === 0) return;
 
   const { drawContent } = require('./index');
-  const { clockLabelBandHeight } = require('./clock');
-  const { turnLabelBandHeight } = require('./turn-diagram');
+  // Pictures placed by the shared placer reserve the caption band it sets.
+  const { captionBandHeight } = require('./shared-figure');
+  const clockLabelBandHeight = (it) => captionBandHeight('clock', it);
+  const turnLabelBandHeight = (it) => captionBandHeight('turn-diagram', it);
+  const polygonLabelBandHeight = (it) => captionBandHeight('polygon', it);
   const { angleLabelBandHeight } = require('./angle');
   const { triangleLabelBandHeight } = require('./triangle');
   const { linePairLabelBandHeight } = require('./line-pair');
   const { geoboardLabelBandHeight } = require('./geoboard');
   const { vennLabelBandHeight } = require('./venn');
   const { carrollLabelBandHeight } = require('./carroll');
-  const { polygonLabelBandHeight } = require('./polygon');
   const { translationShapeLabelBandHeight } = require('./translation-shape');
   const { rainforestLayersLabelBandHeight } = require('./rainforest-layers');
 

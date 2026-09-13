@@ -10,18 +10,18 @@ const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { warn } = require('../warnings');
 const drawMoney = require('./shared-figure').drawerFor('money');
 const { drawImage, imageWillDraw } = require('./image');
-const { drawTurnDiagram } = require('./turn-diagram');
 const { drawAngle } = require('./angle');
 const { drawTriangle, drawTriangleNonExample } = require('./triangle');
 const { drawLinePair } = require('./line-pair');
 const { drawGeoboard } = require('./geoboard');
-const { drawPolygon } = require('./polygon');
 const { drawVenn } = require('./venn');
 const { drawCarroll } = require('./carroll');
 const { drawRainforestLayers } = require('./rainforest-layers');
 const { drawPlaceValueMini } = require('./place-value-mini');
 const { drawerFor } = require('./shared-figure');
 const drawNumberline = drawerFor('numberline');
+const drawTurnDiagram = drawerFor('turn-diagram');
+const drawPolygon = drawerFor('polygon');
 const { splitAnswerRuns } = require('../answer-text');
 
 // ─── CONSTANTS ────────────────────────────────────────────────

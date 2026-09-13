@@ -31,6 +31,8 @@ const EXAMPLES = {
     ],
     letters: true,
   },
+  "area-grid": { cols: 8, rows: 5, rects: [{ x: 0, y: 0, w: 3, h: 2, label: "A" }] },
+  "translation-grid": { max: 6, from: { x: 1, y: 1 }, to: { x: 4, y: 3 } },
   ruler: {
     end: 10,
     majorInterval: 1,
@@ -40,8 +42,8 @@ const EXAMPLES = {
   },
 };
 
-function svgOf(name, spec) {
-  return helpers[name].render(spec);
+function svgOf(name, spec, widthMm) {
+  return helpers[name].render(spec, widthMm);
 }
 
 // ─── the ruler is a measuring instrument ─────────────────────────────────
@@ -234,14 +236,19 @@ test("a right-angled triangle is drawn with its right angle marked", () => {
   assert.ok(html.includes("6 cm") && html.includes("4 cm"));
 });
 
-test("a shape's height follows the width it is given", () => {
-  const spec = EXAMPLES.shape;
-  const narrow = helpers.shape.measure(spec, A_HALF_COLUMN_MM);
-  const wide = helpers.shape.measure(spec, FULL_WIDTH_MM);
-  assert.ok(
-    Math.abs(wide / narrow - FULL_WIDTH_MM / A_HALF_COLUMN_MM) < 0.01,
-    `doubling the width should double the height: ${narrow}mm then ${wide}mm`
-  );
+test("a shape grows with the width it is given, and prints no wider than its zone", () => {
+  // The shape is the shared drawing laid out at its printed size (13 September
+  // 2026): its measurements stay the sheet's type size, and the body grows with
+  // the zone up to the most one shape ever needs, rather than scaling its
+  // words up with it.
+  const spec = { type: "rectangle", aspect: 2.5, labels: { top: "8 cm", right: "3 cm" } };
+  const narrow = helpers.shape.measure(spec, 50);
+  const wide = helpers.shape.measure(spec, A_HALF_COLUMN_MM);
+  assert.ok(wide > narrow, `a wider zone did not draw a bigger shape: ${narrow}mm then ${wide}mm`);
+  for (const widthMm of [50, A_HALF_COLUMN_MM, FULL_WIDTH_MM]) {
+    const drawn = Number(/width="([\d.]+)"/.exec(svgOf("shape", spec, widthMm))[1]) / (72 / 25.4);
+    assert.ok(drawn <= widthMm + 0.01, `a ${widthMm}mm zone drew a ${drawn.toFixed(1)}mm shape`);
+  }
 });
 
 test("a label reaching the page is escaped", () => {
@@ -309,10 +316,11 @@ test("bigger numbers need a bigger box to write the answer in", () => {
 
 // ─── turn-diagram ────────────────────────────────────────────────────────
 
-function endRayOf(html) {
-  // Two rays are drawn: the start ray straight up, then the end ray.
-  const lines = [...html.matchAll(/<line [^>]*x2="([\d.-]+)" y2="([\d.-]+)"/g)];
-  return { x: Number(lines[1][1]), y: Number(lines[1][2]) };
+// Where the end ray points, from the vertex: the shared turn diagram's own
+// layout, so the test reads the geometry rather than guessing a canvas centre.
+const turnShared = require("../../shared/visuals/turn-diagram-svg");
+function endRayOf(spec) {
+  return turnShared.describeLayout(spec, "worksheets").geos[0].endTip;
 }
 function arcSweepFlagOf(html) {
   return Number(/ A [\d.]+ [\d.]+ 0 (\d) (\d) /.exec(html)[2]);
@@ -322,18 +330,17 @@ test("a quarter turn clockwise ends pointing right, anticlockwise pointing left"
   // The picture IS the question: a child names the turn from where the second
   // ray ended up. If the sweep were drawn the wrong way the diagram would
   // still look like a turn diagram, and every answer to it would be wrong.
-  const clockwise = endRayOf(svgOf("turn-diagram", { quarters: 1, direction: "clockwise" }));
-  const anti = endRayOf(svgOf("turn-diagram", { quarters: 1, direction: "anticlockwise" }));
-  const centre = 140; // half of the 280-unit canvas
+  const clockwise = endRayOf({ quarters: 1, direction: "clockwise" });
+  const anti = endRayOf({ quarters: 1, direction: "anticlockwise" });
 
-  assert.ok(clockwise.x > centre, "a clockwise quarter turn should end pointing right");
-  assert.ok(anti.x < centre, "an anticlockwise quarter turn should end pointing left");
-  assert.ok(Math.abs(clockwise.y - centre) < 1 && Math.abs(anti.y - centre) < 1);
+  assert.ok(clockwise.x > 0, "a clockwise quarter turn should end pointing right");
+  assert.ok(anti.x < 0, "an anticlockwise quarter turn should end pointing left");
+  assert.ok(Math.abs(clockwise.y) < 1 && Math.abs(anti.y) < 1);
 });
 
 test("a half turn ends pointing down, whichever way it went round", () => {
-  const half = endRayOf(svgOf("turn-diagram", { quarters: 2 }));
-  assert.ok(half.y > 140, "a half turn from straight up should end pointing down");
+  const half = endRayOf({ quarters: 2 });
+  assert.ok(half.y > 0, "a half turn from straight up should end pointing down");
 
   // Which leaves the ARC as the only thing telling a child which way it went.
   assert.equal(arcSweepFlagOf(svgOf("turn-diagram", { quarters: 2, direction: "clockwise" })), 1);

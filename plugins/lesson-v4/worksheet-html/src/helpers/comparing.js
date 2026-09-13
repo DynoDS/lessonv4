@@ -216,18 +216,13 @@ function needsCompareRow(spec) {
 }
 
 // The response-only form used by `comparisonPair`: the two sides are arbitrary
-// nested helpers, so this helper owns only the child's < > = target.
-function renderComparisonTarget() {
-  return `<span class="h-comparison-target" aria-label="comparison symbol response"></span>`;
-}
-
-function measureComparisonTarget() {
-  return COMPARE_BOX_MM;
-}
-
-function needsComparisonTarget() {
-  return { minWidthMm: COMPARE_BOX_MM, minHeightMm: COMPARE_BOX_MM };
-}
+// nested helpers, so this helper owns only the child's < > = target. It is the
+// one comparison ring (shared/visuals/comparison-svg.js) the board's
+// comparison-slot and the wall's comparison card draw, so a child writes into
+// the same ring on paper as on the board; it was a blue rounded square of the
+// sheet's own until 13 September 2026.
+const comparisonShared = require("../../../shared/visuals/comparison-svg");
+const { atPrintedWidth } = require("./at-printed-width");
 
 // ─── inequality-with-boxes ───────────────────────────────────────────────
 // A displayed statement in which some tokens are boxes to fill: "5 . □ 2 < 5 .
@@ -970,14 +965,6 @@ const css = `
     margin: 0 ${COMPARE_GAP_MM}mm;
     border: var(--rule-line) solid var(--colour-ink);
   }
-  .h-comparison-target {
-    display: block; box-sizing: border-box;
-    width: ${COMPARE_BOX_MM}mm; height: ${COMPARE_BOX_MM}mm;
-    margin: auto;
-    border: var(--rule-heavy) solid var(--colour-question);
-    border-radius: 2mm;
-    background: var(--colour-paper);
-  }
 
   /* ─── inequality-with-boxes ─── */
   /* Left-anchored, under the instruction that asks for it.
@@ -1131,12 +1118,7 @@ const css = `
 `;
 
 const helpers = {
-  "comparison-target": {
-    render: renderComparisonTarget,
-    measure: measureComparisonTarget,
-    needs: needsComparisonTarget,
-    greed: 0,
-  },
+  "comparison-target": atPrintedWidth(comparisonShared, { minWidthMm: COMPARE_BOX_MM }),
   "compare-row": {
     render: renderCompareRow,
     measure: measureCompareRow,

@@ -13,7 +13,7 @@
 // number, and their stroke widths are absolute against it (`stroke-width="3"`
 // and friends), so changing it would thin every line in every drawing. It stays
 // where it is.
-const RENDER_PX = 600;          // clock / fraction / angle / number-line design canvas
+const RENDER_PX = 600;          // fraction circle / fraction bar design canvas
 
 // How many raster pixels each canvas unit becomes. The two are separate because
 // a drawing is placed at whatever width its card has room for, and the widest
@@ -77,6 +77,20 @@ const circuitSymbolBankShared = require('../../shared/visuals/circuit-symbol-ban
 // A labelled photograph: the same picture, and the same poster rules, the slide
 // uses. Its picture is read from the card's imagePath before it is drawn.
 const labelDiagramShared = require('../../shared/visuals/label-diagram-svg');
+// One drawing each, the same the board, the sheet and the stick-in pack place.
+// Until 13 September 2026 the wall drew its own clock (copied from the board's
+// and grown colour-coded hands, a readout and a minute ring nobody else had),
+// its own turn diagram, triangle-square puzzle, filled angle fan and comparison
+// symbol, each on a square canvas that floated small in a table cell. The
+// cards' older spellings (angleFan, comparisonSymbol) are read by the shared
+// modules, so every card written for them still draws.
+const clockShared = require('../../shared/visuals/clock-svg');
+const turnDiagramShared = require('../../shared/visuals/turn-diagram-svg');
+const triangleSquareShared = require('../../shared/visuals/triangle-square-svg');
+const polygonShared = require('../../shared/visuals/polygon-svg');
+const translationGridShared = require('../../shared/visuals/translation-grid-svg');
+const areaGridShared = require('../../shared/visuals/area-grid-svg');
+const comparisonShared = require('../../shared/visuals/comparison-svg');
 // The annotation overlay (anchor → leader line → label) shared with the slides,
 // worksheets and stick-in pack. The wall uses it to turn any drawn primitive
 // into an "anatomy poster" reference card: the diagram children met on the board,
@@ -101,127 +115,6 @@ function fmt(n) {
 function hashColour(c) {
   if (!c) return '#EF4444';
   return c.startsWith('#') ? c : `#${c}`;
-}
-
-// ─── Clock face ─────────────────────────────────────────────────────────
-// Mirrors lesson-resources/builder/src/content/clock.js#buildSvg so wall
-// clocks look identical to slide clocks. Same proportions, same hand styling.
-//
-// Two optional flags extend the basic face for clock-reading lessons:
-// - `colourCoded: true` — the hour hand renders in red and the minute hand
-//   in blue, with a matching colour-coded digital readout embedded below the
-//   face (e.g. red "3", black colon, blue "40"). Lets a child glance from
-//   the wall and see at once that the long blue hand maps to the blue minute
-//   digits, and the short red hand maps to the red hour digit. The digital
-//   readout is part of the SVG so a separate caption is suppressed.
-// - `minuteRing: true` — an outer ring outside the 1–12 numerals carrying
-//   `:00 :05 :10 … :55` labels at every major position, so children can read
-//   off the minute value the long hand is pointing at without having to
-//   multiply by 5 in their head. Useful when the lesson is teaching minute
-//   reading; not useful once children have internalised the rule.
-function clockSvg(spec, sizePx = RENDER_PX) {
-  const { time, hands = true, colourCoded = false, minuteRing = false } = spec;
-
-  const HOUR_COLOUR = '#DC2626'; // red-600
-  const MIN_COLOUR  = '#2563EB'; // blue-600
-
-  const cx = sizePx / 2;
-
-  // Reserve a strip at the bottom for a digital readout when colour-coded.
-  const readoutH = colourCoded ? Math.round(sizePx * 0.18) : 0;
-  const clockArea = sizePx - readoutH;
-  const cy = clockArea / 2;
-
-  // If a minute ring is present the face must shrink to leave room outside
-  // the 1–12 numerals for the labels.
-  const pad = minuteRing ? Math.round(sizePx * 0.13) : 26;
-  const r = clockArea / 2 - pad;
-
-  const numberR    = r - 34;
-  const majorInner = r - 18;
-  const minorInner = r - 9;
-  const hourLen    = r * 0.55;
-  const minuteLen  = r * 0.82;
-  const numFont    = Math.round(r * 0.21);
-
-  const parts = [];
-  parts.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="white" stroke="#000000" stroke-width="3"/>`);
-
-  for (let i = 0; i < 60; i++) {
-    const rad   = toRad(i * 6 - 90);
-    const major = i % 5 === 0;
-    const inner = major ? majorInner : minorInner;
-    const x1 = (cx + r     * Math.cos(rad)).toFixed(2);
-    const y1 = (cy + r     * Math.sin(rad)).toFixed(2);
-    const x2 = (cx + inner * Math.cos(rad)).toFixed(2);
-    const y2 = (cy + inner * Math.sin(rad)).toFixed(2);
-    parts.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#000000" stroke-width="${major ? 2.5 : 1.5}"/>`);
-  }
-
-  for (let n = 1; n <= 12; n++) {
-    const rad = toRad(n * 30 - 90);
-    const nx = (cx + numberR * Math.cos(rad)).toFixed(2);
-    const ny = (cy + numberR * Math.sin(rad)).toFixed(2);
-    parts.push(`<text x="${nx}" y="${ny}" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="${numFont}" font-weight="bold" fill="#000000">${n}</text>`);
-  }
-
-  if (minuteRing) {
-    // Outer ring at radius slightly outside the face — sits in the padding
-    // we reserved by raising `pad` above. Twelve labels at the major-tick
-    // positions (every 5 minutes), in the minute colour to reinforce the
-    // colour mapping with the minute hand.
-    const ringR = r + Math.round((sizePx * 0.13 - 26) * 0.55);
-    const ringFont = Math.round(r * 0.13);
-    for (let n = 0; n < 12; n++) {
-      const minutes = n * 5;
-      const label = `:${String(minutes).padStart(2, '0')}`;
-      const rad = toRad(n * 30 - 90);
-      const lx = (cx + ringR * Math.cos(rad)).toFixed(2);
-      const ly = (cy + ringR * Math.sin(rad)).toFixed(2);
-      parts.push(`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="${ringFont}" font-weight="bold" fill="${MIN_COLOUR}">${label}</text>`);
-    }
-  }
-
-  if (hands && time) {
-    const [hStr, mStr] = String(time).split(':');
-    const h = parseInt(hStr, 10) % 12;
-    const m = parseInt(mStr, 10);
-
-    const minHandColour  = colourCoded ? MIN_COLOUR  : '#000000';
-    const hourHandColour = colourCoded ? HOUR_COLOUR : '#000000';
-    const minHandWidth   = colourCoded ? 5 : 3;
-    const hourHandWidth  = colourCoded ? 9 : 6;
-
-    const minRad = toRad(m * 6 - 90);
-    parts.push(`<line x1="${cx}" y1="${cy}" x2="${(cx + minuteLen * Math.cos(minRad)).toFixed(2)}" y2="${(cy + minuteLen * Math.sin(minRad)).toFixed(2)}" stroke="${minHandColour}" stroke-width="${minHandWidth}" stroke-linecap="round"/>`);
-
-    const hourRad = toRad(h * 30 + m * 0.5 - 90);
-    parts.push(`<line x1="${cx}" y1="${cy}" x2="${(cx + hourLen * Math.cos(hourRad)).toFixed(2)}" y2="${(cy + hourLen * Math.sin(hourRad)).toFixed(2)}" stroke="${hourHandColour}" stroke-width="${hourHandWidth}" stroke-linecap="round"/>`);
-  }
-
-  parts.push(`<circle cx="${cx}" cy="${cy}" r="5" fill="#000000"/>`);
-
-  if (colourCoded && time && hands) {
-    const [hStr, mStr] = String(time).split(':');
-    const readoutY = clockArea + readoutH * 0.55;
-    const readoutFont = Math.round(readoutH * 0.75);
-    parts.push(
-      `<text x="${cx}" y="${readoutY}" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="${readoutFont}" font-weight="bold">` +
-      `<tspan fill="${HOUR_COLOUR}">${hStr}</tspan>` +
-      `<tspan fill="#000000">:</tspan>` +
-      `<tspan fill="${MIN_COLOUR}">${mStr}</tspan>` +
-      `</text>`
-    );
-  }
-
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
-}
-
-function clockKey(spec) {
-  const hands = spec.hands === false ? 'blank' : (spec.time || 'blank');
-  const colour = spec.colourCoded ? 'cc' : 'plain';
-  const ring   = spec.minuteRing  ? 'ring' : 'noring';
-  return `clock:${hands}:${colour}:${ring}`;
 }
 
 // ─── Number line ────────────────────────────────────────────────────────
@@ -261,6 +154,15 @@ const fractionWallWall = sharedAtWidth(fractionWallShared);
 const moneyWall = sharedAtWidth(moneyShared);
 const fractionCircleKey = shadedFractionWall.keyFn;
 const fractionBarKey = shadedFractionWall.keyFn;
+const clockWall = sharedAtWidth(clockShared);
+const turnDiagramWall = sharedAtWidth(turnDiagramShared);
+const triangleSquareWall = sharedAtWidth(triangleSquareShared);
+const polygonWall = sharedAtWidth(polygonShared);
+const translationGridWall = sharedAtWidth(translationGridShared);
+const areaGridWall = sharedAtWidth(areaGridShared);
+const comparisonWall = sharedAtWidth(comparisonShared);
+// The angle a wall card fills and labels with its size: the shared angle.
+const angleFanWall = sharedAtWidth(angleShared);
 const numberLineTight = numberLineWall.tightFn;
 const numberLineKey = numberLineWall.keyFn;
 const numberLineSvg = (spec) => numberLineTight(spec).svg;
@@ -282,271 +184,6 @@ const continuumLineWall = sharedAtWidth(continuumLineShared, 260);
 const sourcePathwayWall = sharedAtWidth(sourcePathwayShared, 260);
 const numberNetworkWall = sharedAtWidth(numberNetworkShared, 150);
 
-// ─── Angle fan ─────────────────────────────────────────────────────────
-// Two rays meeting at a vertex, with the angle between them filled as a
-// coloured sector and the degree value labelled inside. The first ray points
-// right; the second ray rotates counter-clockwise by `degrees`. Vertex sits
-// in the lower-left third so the angle has room to open up and to the right.
-// Renders cleanly for 1°–359°. Reflex angles (>180°) use the large-arc flag
-// so the sector wraps the long way round.
-function angleFanSvg(spec, sizePx = RENDER_PX) {
-  const degrees = Math.max(1, Math.min(359, Number(spec.degrees) || 90));
-  const colour = hashColour(spec.colour || 'FBBF24');
-  const cx = sizePx * 0.32;
-  const cy = sizePx * 0.68;
-  const rayLen = sizePx * 0.58;
-  const arcR = rayLen * 0.32;
-
-  const r1Rad = 0;                            // first ray: horizontal right
-  const r2Rad = -toRad(degrees);              // second ray: CCW from right
-
-  const r1x = cx + rayLen * Math.cos(r1Rad);
-  const r1y = cy + rayLen * Math.sin(r1Rad);
-  const r2x = cx + rayLen * Math.cos(r2Rad);
-  const r2y = cy + rayLen * Math.sin(r2Rad);
-
-  const a1x = cx + arcR * Math.cos(r1Rad);
-  const a1y = cy + arcR * Math.sin(r1Rad);
-  const a2x = cx + arcR * Math.cos(r2Rad);
-  const a2y = cy + arcR * Math.sin(r2Rad);
-  const largeArc = degrees > 180 ? 1 : 0;
-  const sweep = 0;                            // CCW in math space (= visually opens upward)
-
-  const sector = `M ${fmt(cx)} ${fmt(cy)} L ${fmt(a1x)} ${fmt(a1y)} A ${fmt(arcR)} ${fmt(arcR)} 0 ${largeArc} ${sweep} ${fmt(a2x)} ${fmt(a2y)} Z`;
-
-  // Label sits inside the angle, on the bisector at 1.4× the arc radius —
-  // close enough to read as part of the angle, far enough to not overlap the
-  // vertex marker.
-  const midRad = -toRad(degrees / 2);
-  const labelR = arcR * 1.55;
-  const labelX = cx + labelR * Math.cos(midRad);
-  const labelY = cy + labelR * Math.sin(midRad);
-  const fontSize = Math.round(sizePx * 0.085);
-
-  const parts = [];
-  parts.push(`<path d="${sector}" fill="${colour}" stroke="none"/>`);
-  parts.push(`<line x1="${fmt(cx)}" y1="${fmt(cy)}" x2="${fmt(r1x)}" y2="${fmt(r1y)}" stroke="#000000" stroke-width="5" stroke-linecap="round"/>`);
-  parts.push(`<line x1="${fmt(cx)}" y1="${fmt(cy)}" x2="${fmt(r2x)}" y2="${fmt(r2y)}" stroke="#000000" stroke-width="5" stroke-linecap="round"/>`);
-  parts.push(`<text x="${fmt(labelX)}" y="${fmt(labelY)}" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="${fontSize}" font-weight="bold" fill="#000000">${degrees}°</text>`);
-
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
-}
-
-function angleFanKey(spec) {
-  const degrees = Math.max(1, Math.min(359, Number(spec.degrees) || 90));
-  const colour = (spec.colour || 'FBBF24').replace(/^#/, '');
-  return `angleFan:${degrees}:${colour}`;
-}
-
-// ─── Turn diagram ───────────────────────────────────────────────────────
-// Mirrors lesson-resources/builder/src/content/turn-diagram.js so a wall turn
-// picture looks identical to the slide one: two black rays from a vertex (the
-// start ray points up), with a red curved arrow showing a quarter/half/
-// three-quarter/full turn, clockwise or anticlockwise. Use this — not angleFan —
-// when the lesson teaches angle-as-turn, because the red rotation arrow is the
-// visual that fights the "angle = distance" misconception.
-const TURN_AMOUNT_QUARTERS = {
-  quarter: 1, half: 2,
-  'three-quarter': 3, 'three-quarters': 3, threequarter: 3,
-  full: 4, whole: 4,
-};
-
-function resolveTurn(spec) {
-  let quarters = Number(spec.quarters);
-  if (!Number.isFinite(quarters) || quarters <= 0) {
-    const word = String(spec.amount || '').trim().toLowerCase().replace(/\s+/g, '-');
-    quarters = TURN_AMOUNT_QUARTERS[word] || 1;
-  }
-  const direction = spec.direction === 'anticlockwise' ? 'anticlockwise' : 'clockwise';
-  return { quarters, direction };
-}
-
-function turnDiagramSvg(spec, sizePx = RENDER_PX) {
-  const { quarters, direction } = resolveTurn(spec);
-  const cx = sizePx / 2;
-  const cy = sizePx / 2;
-  const pad = sizePx * 0.14;
-  const R = sizePx / 2 - pad;
-  const arcR = R * 0.52;
-  const ah = sizePx * 0.075;
-  const rayW = sizePx * 0.013;
-  const arcW = sizePx * 0.016;
-  const dotR = sizePx * 0.02;
-
-  const START_ANGLE = -90;          // start ray points straight up
-  const FULL_CAP_DEG = 350;         // a full turn draws just short of 360 so its arrow shows
-  const dir = direction === 'clockwise' ? 1 : -1;
-  const sweepDeg = quarters * 90;
-  const arcSweepDeg = Math.min(sweepDeg, FULL_CAP_DEG);
-  const endRayAngle = START_ANGLE + dir * sweepDeg;
-  const arcEndAngle = START_ANGLE + dir * arcSweepDeg;
-
-  const pt = (angle, radius) => ({
-    x: cx + radius * Math.cos(toRad(angle)),
-    y: cy + radius * Math.sin(toRad(angle)),
-  });
-
-  const startTip = pt(START_ANGLE, R);
-  const endTip = pt(endRayAngle, R);
-  const arcStart = pt(START_ANGLE, arcR);
-  const arcEnd = pt(arcEndAngle, arcR);
-  const sweepFlag = dir > 0 ? 1 : 0;
-  const largeArcFlag = arcSweepDeg > 180 ? 1 : 0;
-
-  const RAY_COLOUR = '#000000';
-  const ARC_COLOUR = '#C00000';
-  const marker = (id, colour) =>
-    `<marker id="${id}" markerUnits="userSpaceOnUse" markerWidth="${fmt(ah)}" markerHeight="${fmt(ah)}" refX="${fmt(ah)}" refY="${fmt(ah / 2)}" orient="auto">` +
-    `<path d="M0,0 L${fmt(ah)},${fmt(ah / 2)} L0,${fmt(ah)} Z" fill="${colour}"/></marker>`;
-
-  const parts = [];
-  parts.push(`<defs>${marker('wwTbk', RAY_COLOUR)}${marker('wwTrd', ARC_COLOUR)}</defs>`);
-  parts.push(`<line x1="${fmt(cx)}" y1="${fmt(cy)}" x2="${fmt(startTip.x)}" y2="${fmt(startTip.y)}" stroke="${RAY_COLOUR}" stroke-width="${fmt(rayW)}" stroke-linecap="round" marker-end="url(#wwTbk)"/>`);
-  parts.push(`<line x1="${fmt(cx)}" y1="${fmt(cy)}" x2="${fmt(endTip.x)}" y2="${fmt(endTip.y)}" stroke="${RAY_COLOUR}" stroke-width="${fmt(rayW)}" stroke-linecap="round" marker-end="url(#wwTbk)"/>`);
-  parts.push(`<path d="M ${fmt(arcStart.x)} ${fmt(arcStart.y)} A ${fmt(arcR)} ${fmt(arcR)} 0 ${largeArcFlag} ${sweepFlag} ${fmt(arcEnd.x)} ${fmt(arcEnd.y)}" fill="none" stroke="${ARC_COLOUR}" stroke-width="${fmt(arcW)}" stroke-linecap="round" marker-end="url(#wwTrd)"/>`);
-  parts.push(`<circle cx="${fmt(cx)}" cy="${fmt(cy)}" r="${fmt(dotR)}" fill="${RAY_COLOUR}"/>`);
-
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
-}
-
-function turnDiagramKey(spec) {
-  const { quarters, direction } = resolveTurn(spec);
-  return `turnDiagram:${quarters}:${direction}`;
-}
-
-// ─── Comparison symbol ─────────────────────────────────────────────────
-// A bold > / < / = symbol, optionally flanked by `left` and `right` values
-// (e.g. "5 > 3"). With both values present the symbol sits in the middle
-// between them; without, the symbol fills the canvas. Used for ordering and
-// comparison LOs.
-function comparisonSymbolSvg(spec, sizePx = RENDER_PX) {
-  const symbol = String(spec.symbol || '>').slice(0, 2);
-  const left = spec.left != null ? String(spec.left) : null;
-  const right = spec.right != null ? String(spec.right) : null;
-  const colour = hashColour(spec.colour || '1F4E79');
-  const w = sizePx;
-  const h = sizePx;
-
-  const parts = [];
-  if (left !== null && right !== null) {
-    const valueFont = Math.round(h * 0.32);
-    const symbolFont = Math.round(h * 0.40);
-    parts.push(`<text x="${fmt(w * 0.20)}" y="${fmt(h / 2)}" text-anchor="middle" dominant-baseline="central" font-family="Arial Black, Arial, sans-serif" font-size="${valueFont}" font-weight="900" fill="#000000">${left}</text>`);
-    parts.push(`<text x="${fmt(w * 0.50)}" y="${fmt(h / 2)}" text-anchor="middle" dominant-baseline="central" font-family="Arial Black, Arial, sans-serif" font-size="${symbolFont}" font-weight="900" fill="${colour}">${symbol}</text>`);
-    parts.push(`<text x="${fmt(w * 0.80)}" y="${fmt(h / 2)}" text-anchor="middle" dominant-baseline="central" font-family="Arial Black, Arial, sans-serif" font-size="${valueFont}" font-weight="900" fill="#000000">${right}</text>`);
-  } else {
-    const bigFont = Math.round(h * 0.55);
-    parts.push(`<text x="${fmt(w / 2)}" y="${fmt(h / 2)}" text-anchor="middle" dominant-baseline="central" font-family="Arial Black, Arial, sans-serif" font-size="${bigFont}" font-weight="900" fill="${colour}">${symbol}</text>`);
-  }
-
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
-}
-
-function comparisonSymbolKey(spec) {
-  const symbol = String(spec.symbol || '>').slice(0, 2);
-  const left = spec.left != null ? String(spec.left) : '';
-  const right = spec.right != null ? String(spec.right) : '';
-  const colour = (spec.colour || '1F4E79').replace(/^#/, '');
-  return `comparisonSymbol:${symbol}:${left}:${right}:${colour}`;
-}
-
-// ─── Triangle-square part-whole puzzle ─────────────────────────────────
-// SATs-style "the two triangles add up to the number in the square" model.
-// Two upward-pointing triangles stacked on the LEFT, each with a number low
-// in its body; connector lines run right to a SQUARE at the vertical midpoint
-// between them, an arrowhead pointing INTO the square. Exactly one of the
-// three shapes is left "" (blank) — the unknown a child reads off the wall.
-// Mirrors the triangle-square drawing so the
-// wall version matches the worksheet version. Laid out at its natural wide
-// aspect and vertically centred on the square canvas (whitespace above/below),
-// same approach as the number line and fraction bar.
-function triangleSquareSvg(spec, sizePx = RENDER_PX) {
-  const triangles = Array.isArray(spec.triangles) ? spec.triangles : ['', ''];
-  const squareText = spec.square != null ? String(spec.square) : '';
-  const upperText = triangles[0] != null ? String(triangles[0]) : '';
-  const lowerText = triangles[1] != null ? String(triangles[1]) : '';
-
-  // Diagram geometry in its own units, then scaled to fit the canvas width.
-  // The triangle base widens with the longest number so multi-digit SATs
-  // values (e.g. "2453", "4200") sit comfortably inside the body rather than
-  // spilling over the sloped sides. The number is placed low (72% down from
-  // the apex) where the triangle is at its widest.
-  const NUM_Y_FRAC = 0.72;        // vertical position of the number, apex = 0
-  const maxDigits = Math.max(1, upperText.length, lowerText.length, squareText.length);
-  const TRI_H = 96, TRI_GAP = 28, H_GAP = 70, PAD = 10;
-  const STROKE_W = 5;             // matches the wall's heavier line weight
-  const NUM_FONT = 38;
-
-  // Interior width available to the number at NUM_Y_FRAC is NUM_Y_FRAC * TRI_W.
-  // Size the base so the number (chars * font * ~0.62) fits within ~80% of it,
-  // with a sensible floor for the common single/double-digit case.
-  const CHAR_W = 0.62;
-  const neededInterior = (maxDigits * NUM_FONT * CHAR_W) / 0.80;
-  const TRI_W = Math.max(110, Math.ceil(neededInterior / NUM_Y_FRAC));
-  // Square scales to roughly match the triangle width so it holds its number too.
-  const SQ = Math.max(84, Math.ceil((maxDigits * NUM_FONT * CHAR_W) / 0.80) + 24);
-
-  const triLeftX = PAD;
-  const upperTop = PAD;
-  const lowerTop = upperTop + TRI_H + TRI_GAP;
-  const midY = (upperTop + lowerTop + TRI_H) / 2;
-  const sqX = triLeftX + TRI_W + H_GAP;
-  const sqY = midY - SQ / 2;
-
-  const diagramW = sqX + SQ + PAD;
-  const diagramH = lowerTop + TRI_H + PAD;
-
-  // Fit the wide diagram inside the square canvas and centre it.
-  const scale = Math.min(sizePx / diagramW, sizePx / diagramH);
-  const offX = (sizePx - diagramW * scale) / 2;
-  const offY = (sizePx - diagramH * scale) / 2;
-  const X = (x) => fmt(offX + x * scale);
-  const Y = (y) => fmt(offY + y * scale);
-  const F = (n) => Math.round(n * scale);
-
-  const parts = [];
-
-  // Apex-at-top triangle with the number low in its body.
-  function triangle(topY, text) {
-    const ax = triLeftX + TRI_W / 2, ay = topY;            // apex
-    const blx = triLeftX, bly = topY + TRI_H;              // bottom-left
-    const brx = triLeftX + TRI_W, bry = topY + TRI_H;      // bottom-right
-    parts.push(`<polygon points="${X(ax)},${Y(ay)} ${X(brx)},${Y(bry)} ${X(blx)},${Y(bly)}" fill="white" stroke="#000000" stroke-width="${F(STROKE_W)}" stroke-linejoin="round"/>`);
-    if (text !== '') {
-      parts.push(`<text x="${X(triLeftX + TRI_W / 2)}" y="${Y(topY + TRI_H * NUM_Y_FRAC)}" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="${F(NUM_FONT)}" font-weight="bold" fill="#000000">${text}</text>`);
-    }
-    // Connector springs from the triangle's right edge at its vertical mid.
-    return [triLeftX + TRI_W * 0.78, topY + TRI_H * 0.6];
-  }
-
-  const upper = triangle(upperTop, upperText);
-  const lower = triangle(lowerTop, lowerText);
-
-  // Connector lines meet at the square's left-edge midpoint.
-  const sqMidX = sqX, sqMidY = midY;
-  parts.push(`<line x1="${X(upper[0])}" y1="${Y(upper[1])}" x2="${X(sqMidX)}" y2="${Y(sqMidY)}" stroke="#000000" stroke-width="${F(STROKE_W)}"/>`);
-  parts.push(`<line x1="${X(lower[0])}" y1="${Y(lower[1])}" x2="${X(sqMidX)}" y2="${Y(sqMidY)}" stroke="#000000" stroke-width="${F(STROKE_W)}"/>`);
-
-  // Arrowhead pointing INTO the square.
-  const ah = 14;
-  parts.push(`<polygon points="${X(sqMidX)},${Y(sqMidY)} ${X(sqMidX - ah)},${Y(sqMidY - ah * 0.7)} ${X(sqMidX - ah)},${Y(sqMidY + ah * 0.7)}" fill="#000000" stroke="none"/>`);
-
-  // Square.
-  parts.push(`<rect x="${X(sqX)}" y="${Y(sqY)}" width="${F(SQ)}" height="${F(SQ)}" fill="white" stroke="#000000" stroke-width="${F(STROKE_W)}"/>`);
-  if (squareText !== '') {
-    parts.push(`<text x="${X(sqX + SQ / 2)}" y="${Y(midY)}" text-anchor="middle" dominant-baseline="central" font-family="Arial" font-size="${F(NUM_FONT)}" font-weight="bold" fill="#000000">${squareText}</text>`);
-  }
-
-  return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">${parts.join('')}</svg>`;
-}
-
-function triangleSquareKey(spec) {
-  const triangles = Array.isArray(spec.triangles) ? spec.triangles : ['', ''];
-  const upper = triangles[0] != null ? String(triangles[0]) : '';
-  const lower = triangles[1] != null ? String(triangles[1]) : '';
-  const square = spec.square != null ? String(spec.square) : '';
-  return `triangleSquare:${upper}:${lower}:${square}`;
-}
 
 // ─── Step badge (green numbered oval, white digit) ──────────────────────
 // Mirrors slide builder's drawSteps badge — green oval, white centred digit
@@ -684,7 +321,7 @@ async function preRenderSvgs(spec, specDir) {
   // renderer. Adding a primitive = add an entry to PRIMITIVES below + an
   // entry to pickVisualBuffer in render-card.js.
   const PRIMITIVES = {
-    clock:            { keyFn: clockKey,            svgFn: clockSvg,            collected: {} },
+    clock:            { ...sharedAtWidth(clockShared), collected: {} },
     fractionCircle:   { ...sharedAtWidth(shadedFractionShared), collected: {} },
     fractionBar:      { ...sharedAtWidth(shadedFractionShared), collected: {} },
     'shaded-fraction': { ...shadedFractionWall, collected: {} },
@@ -703,10 +340,14 @@ async function preRenderSvgs(spec, specDir) {
     'continuum-line': { ...continuumLineWall, collected: {} },
     'source-pathway': { ...sourcePathwayWall, collected: {} },
     'number-network': { ...numberNetworkWall, collected: {} },
-    angleFan:         { keyFn: angleFanKey,         svgFn: angleFanSvg,         collected: {} },
-    'turn-diagram':   { keyFn: turnDiagramKey,      svgFn: turnDiagramSvg,      collected: {} },
-    comparisonSymbol: { keyFn: comparisonSymbolKey, svgFn: comparisonSymbolSvg, collected: {} },
-    'triangle-square': { keyFn: triangleSquareKey, svgFn: triangleSquareSvg, collected: {} },
+    angleFan:         { ...sharedAtWidth(angleShared), collected: {} },
+    'turn-diagram':   { ...sharedAtWidth(turnDiagramShared), collected: {} },
+    comparisonSymbol: { ...sharedAtWidth(comparisonShared), collected: {} },
+    'comparison-slot': { ...sharedAtWidth(comparisonShared), collected: {} },
+    'triangle-square': { ...sharedAtWidth(triangleSquareShared), collected: {} },
+    polygon:          { ...sharedAtWidth(polygonShared), collected: {} },
+    'translation-grid': { ...sharedAtWidth(translationGridShared), collected: {} },
+    'area-grid':      { ...sharedAtWidth(areaGridShared), collected: {} },
     // Shared, aspect-true primitives: `tightFn` returns { svg, aspect } and the
     // pre-render stores both so the card can place the image at its real shape.
     'line-pair':      { keyFn: linePairShared.cacheKey, tightFn: linePairShared.tightSvg, collected: {} },
@@ -883,8 +524,7 @@ async function preRenderSvgs(spec, specDir) {
 }
 
 module.exports = {
-  clockSvg,
-  clockKey,
+  clockKey: clockWall.keyFn,
   fractionCircleKey,
   fractionBarKey,
   shadedFractionKey: shadedFractionWall.keyFn,
@@ -905,14 +545,13 @@ module.exports = {
   continuumLineKey: continuumLineWall.keyFn,
   sourcePathwayKey: sourcePathwayWall.keyFn,
   numberNetworkKey: numberNetworkWall.keyFn,
-  angleFanSvg,
-  angleFanKey,
-  turnDiagramSvg,
-  turnDiagramKey,
-  comparisonSymbolSvg,
-  comparisonSymbolKey,
-  triangleSquareSvg,
-  triangleSquareKey,
+  angleFanKey: angleFanWall.keyFn,
+  turnDiagramKey: turnDiagramWall.keyFn,
+  comparisonKey: comparisonWall.keyFn,
+  triangleSquareKey: triangleSquareWall.keyFn,
+  polygonKey: polygonWall.keyFn,
+  translationGridKey: translationGridWall.keyFn,
+  areaGridKey: areaGridWall.keyFn,
   linePairKey: linePairShared.cacheKey,
   angleKey: angleShared.cacheKey,
   triangleKey: triangleShared.cacheKey,

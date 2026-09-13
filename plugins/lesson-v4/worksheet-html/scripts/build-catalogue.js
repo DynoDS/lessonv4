@@ -53,7 +53,7 @@ const FAMILIES = [
       "shape", "triangle", "angle", "line-pair", "turn-diagram", "ruler",
       "dial-scale", "measuring-jug",
       "clock-row", "coordinate-grid", "reflection-grid", "translation-shape",
-      "geoboard", "triangle-square",
+      "geoboard", "triangle-square", "area-grid", "translation-grid",
     ],
   ],
   [

@@ -928,7 +928,9 @@ Square and one triangle given, the other triangle is the unknown (a **subtract**
   "square": "4200" }
 ```
 
-Leave **exactly one** of the three shapes as `""` — that is the shape the child fills in. For a fully blank diagram intended for live completion during modelling, pass `"triangles": ["", ""]` and `"square": ""`. Numbers of any length render; the label shrinks to fit.
+Leave **exactly one** of the three shapes as `""`: that is the shape the child fills in. For a fully blank diagram intended for live completion during modelling, pass `"triangles": ["", ""]` and `"square": ""`. The shapes widen to hold numbers of any length, so a four-digit value sits inside the sloped sides; a zone too small to print the numbers at the board's readable size is refused by name (`TRIANGLE_SQUARE_TOO_SMALL`) rather than shrinking them.
+
+**It is the same puzzle on every surface.** The worksheet, the working wall and the stick-in piece draw it from these same fields, so a puzzle copied from a slide looks like the slide. A worksheet or a child's piece is a question, so there exactly one shape must be blank.
 
 Zone class compatibility: fits A, B, C, D, E-wide, E-narrow.
 
@@ -1072,9 +1074,17 @@ Multiple clocks in a row — the standard pattern for a Your Turn slide with sev
 
 **`label` field (optional):** A short string rendered below the clock in body typography. Good for answer-slide reveals where you want the clock face and the written time on the same slide.
 
+**`colourCoded` field (optional):** `true` draws the hour hand red and the minute hand blue, with a matching digital readout under the face (the hour digit red, the minutes blue), so a child sees at a glance that the long blue hand is the blue minutes. The readout replaces a caption, so leave `label` off.
+
+**`minuteRing` field (optional):** `true` prints `:00 :05 :10 ... :55` outside the numerals at every five-minute mark, so children read the minutes off the ring rather than multiplying by five. Use both on Year 2 and 3 clock-reading lessons; `colourCoded` alone once children multiply by five in their heads.
+
+**`clocks` and `letters` (optional):** `{ "type": "clock", "clocks": [ { "time": "3:45" }, { "hands": false } ], "letters": true }` draws a row of faces as one picture, every face the same size, with (a) (b) above them. On a slide, a `row` of single clocks with their own labels is usually better, because each caption is then editable text.
+
+**It is the same clock on every surface.** The worksheet (`clock-row`), the working wall and the stick-in piece draw it from these same fields.
+
 Zone class compatibility: fits A, B, C, D, E-wide, E-narrow, G. The clock renders as a square — it centres inside whatever rectangle it is given and scales to fit the smaller dimension.
 
-**Minimum useful size:** 2.0″ × 2.0″ for the clock face to be readable from across the classroom (empirically tested). Below 2″ the hour numerals start to drop below readable size. In a `row` of 3 clocks each column needs ~2.0″ width minimum — so the parent zone needs ~6.0″+ wide. A `row` of 4 needs ~8.0″+, a `row` of 6 needs ~12.0″+.
+**Minimum useful size:** 2.0″ × 2.0″ for the clock face to be readable from across the classroom (empirically tested). The numerals never print below the board's readable size: a face too small for them is refused by name (`CLOCK_TOO_SMALL`). In a `row` of 3 clocks each column needs ~2.0″ width minimum, so the parent zone needs ~6.0″+ wide. A `row` of 4 needs ~8.0″+, a `row` of 6 needs ~12.0″+.
 
 ### `turn-diagram`
 
@@ -1114,7 +1124,9 @@ Several turns in a row — the standard "match the turns to the labels" layout. 
 
 **`label` field (optional):** a short caption below the diagram in body typography, supporting the `||` answer reveal exactly like the clock — `"(a) ||quarter turn clockwise"` shows the identifier on the question slide and the green answer on the reveal.
 
-Zone class compatibility: fits A, B, C, D, E-wide, E-narrow, G. The diagram renders as a square — it centres inside whatever rectangle it is given and scales to the smaller dimension. In a `row` each diagram needs ~1.8″ of width to stay readable from the back of the room.
+**It is the same turn diagram on every surface.** The worksheet, the working wall and the stick-in piece draw it from these same fields. The worksheet's row form is `{ "turns": [ { "quarters": 1 }, { "quarters": 2, "direction": "anticlockwise" } ], "letters": true }`, which draws here too.
+
+Zone class compatibility: fits A, B, C, D, E-wide, E-narrow, G. The diagram is sized from the square it is given, so every turn in a row keeps one ray length, and is cropped to its ink. In a `row` each diagram needs ~1.8″ of width to stay readable from the back of the room.
 
 ### `angle`
 
@@ -1147,6 +1159,8 @@ A row of angles to compare and sort — the standard "which are acute, which are
 **`rightAngle` field (optional):** the right-angle square shows automatically when `degrees` is `90`. Set `true` to force the square on, or `false` to keep a plain arc at 90° (useful when you want children to judge a right angle without the marker giving it away).
 
 **`arc` field (default `true`):** set `false` for a bare pair of arms with no marking, e.g. when the slide asks children to spot where the angle is before it's marked.
+
+**`sector` and `showDegrees` fields (optional, a measured angle):** `"sector": true` fills the opening as a coloured wedge (`colour`, a hex, default amber) and allows a reflex angle up to `359`; `"showDegrees": true` prints the size inside the opening ("50°"). This is the angle-fan picture a working wall uses for "an angle is measured in degrees" reference cards; the same fields draw it on every surface. Leave both off a "classify this angle" question, where the number would answer it.
 
 **`label` field (optional):** a short caption below the angle in body typography, supporting the `||` answer reveal exactly like the clock and turn diagram — `"(a) ||acute"` shows the identifier on the question slide and the green answer on the reveal. Keep labels short (`"acute"`, `"obtuse"`, `"right angle"`) so they stay large on the board.
 
@@ -2196,7 +2210,7 @@ One or more named 2D shapes drawn side by side, each with a caption below, from 
 ] }
 ```
 
-**`shapes`:** each is `{ name, label }`. **`name`** is one of: `square`, `rectangle`, `triangle` (equilateral), `isosceles-triangle`, `scalene-triangle`, `right-triangle`, `pentagon`, `hexagon`, `rhombus`, `parallelogram`, `trapezium`, `kite`. **`label`** is an optional caption (e.g. "Shape P"). Two or three shapes fit comfortably side by side; pair with a `table` in the other zone for children to record properties. (`isosceles-triangle`, `scalene-triangle` and `kite` are drawn from true vertices — the isosceles is a tall symmetric triangle, the scalene genuinely unequal, the kite a true kite with one vertical axis.)
+**`shapes`:** each is `{ name, label }`. **`name`** is one of: `square`, `rectangle`, `triangle` (equilateral), `isosceles-triangle`, `scalene-triangle`, `right-triangle`, `pentagon`, `hexagon`, `rhombus`, `parallelogram`, `trapezium`, `kite`, or `regular-polygon` with `sides` (3 to 10). **`label`** is an optional caption (e.g. "Shape P"). Two or three shapes fit comfortably side by side; pair with a `table` in the other zone for children to record properties. (`isosceles-triangle`, `scalene-triangle` and `kite` are drawn from true vertices: the isosceles is a tall symmetric triangle, the scalene genuinely unequal, the kite a true kite with one vertical axis.)
 
 **Lines of symmetry overlay (answer slides).** Set **`symmetryLines: true`** (on the `polygon` object, applying to every shape in `shapes`) to draw each shape's FULL set of lines of symmetry as dashed lines on top of the shape — the shape itself is unchanged. The correct lines are auto-drawn for the named shape: `square` 4 (2 diagonals plus vertical and horizontal mid-lines), `rectangle` 2 (mid-lines only, not the diagonals), `rhombus`/`diamond` 2 (the diagonals), `triangle` (equilateral) 3 (each vertex to the opposite-side midpoint), `isosceles-triangle` 1, `kite` 1, `pentagon` 5, `hexagon` 6; `parallelogram`, `trapezium`, `scalene-triangle` and `right-triangle` draw 0 lines, which is correct and intended (a parallelogram has none). Add **`symmetryLinesAnswer: true`** to draw the lines in answer-reveal green (the same green the `||` reveal uses) on an answer slide; omit it (the default) and the lines draw in a neutral dark colour for a question slide. Use this for the answer slide of a "how many lines of symmetry?" lesson.
 
@@ -2212,6 +2226,16 @@ One or more named 2D shapes drawn side by side, each with a caption below, from 
 - **`fold`** — `true` reflects the shape across the `candidate` line and draws the result as a translucent pink ghost: when the line IS a line of symmetry the ghost lands exactly on the shape (no pink shows — "the halves match"); when it is NOT, the ghost overhangs / leaves a gap (the visible mismatch). Requires `candidate`.
 
 Drive a lesson with a sequence of these: the square shown four times, each with a different passing `candidate` and a green tick; then a wrong line on a parallelogram or rectangle with `fold: true` and a red cross so the class sees the overhang. The shape shrinks automatically to keep the ghost on the slide.
+
+**Measurements on the sides (perimeter, area, missing lengths).** Per shape, **`sideLabels`** writes a measurement outside each side in drawing order (a rectangle: top, right, bottom, left; a triangle: from the apex round to the right; a `right-triangle`: base, slope, height), `""` leaving a side bare; **`angleLabels`** writes a value inside each corner in blue; **`aspect`** (width : height) draws a longer or squarer rectangle. A `right-triangle` shows its right-angle square.
+
+```json
+{ "type": "polygon", "shapes": [
+  { "name": "rectangle", "aspect": 2.5, "sideLabels": ["8 cm", "3 cm", "", ""] }
+] }
+```
+
+**It is the same shape on every surface.** The worksheet (`shape`), the working wall and the stick-in piece draw it from these same fields. The measurements stay at the board's readable size and the shape shrinks to make room for them; a zone too small to hold both is refused by name (`POLYGON_TOO_SMALL`). The stick-in piece leaves off `symmetryLines`, `verdict` and `fold`, because a child's copy never carries the answer.
 
 ```json
 { "type": "polygon", "shapes": [
@@ -2234,6 +2258,8 @@ A numbered squared grid showing one marker translated from a start position to a
 ```
 
 **`max` (default 10):** range on both axes (use `xMax` / `yMax` to differ). **`from` / `to`:** `{ x, y }` grid positions of the two markers. **`fromLabel` / `toLabel`:** letters on the markers (default "A" / "B"). The arrow runs centre to centre, so the move reads straight off the grid squares. **`showArrow` (default true):** set `false` to show the two markers only, with no line joining them, so children work out the direction of the move for themselves (independent practice) while the modelling slide keeps the arrow. The grid, numbers, marker positions and centring are identical either way — removing the arrow does not reflow or resize anything.
+
+**It is the same grid on every surface** (worksheet, working wall, stick-in piece, from these same fields). The axis numbers and letters never print below the board's readable size: a grid with too many squares for its zone is refused by name (`TRANSLATION_GRID_TOO_SMALL`), so use a smaller `max` or a bigger zone. To move a whole shape, use `translation-shape`.
 
 ### `shaded-fraction`
 
@@ -2407,6 +2433,8 @@ Add `answer` to print the symbol inside the same ring for a reveal, so the answe
 { "type": "comparison-slot", "answer": "<" }
 ```
 
+**It is the same ring on every surface.** The worksheet's `comparisonPair` target, the working wall and the stick-in piece draw it from these same fields (the piece never shows `answer`). Where the ring carries the whole comparison, as on a wall card, add the values either side with `left` and `right` (`{ "type": "comparison-slot", "left": "5", "answer": ">", "right": "3" }`); `ring: false` prints the symbol with no ring.
+
 ### `blank-surface`
 
 A **draw-your-own working surface** - the child constructs the representation rather than filling a pre-drawn one. Use it when *deciding* the representation is the skill: where the jump on a number line goes, or how to partition a bar. The slide's job is to show the bare surface itself, so the class sees exactly the surface they will draw their own version of. It draws only the bare surface and nothing else; for a finished picture with blanks to fill, use `numberline` or `bar-model` instead.
@@ -2488,7 +2516,9 @@ A squared grid with one or more labelled rectangular patches drawn on it, every 
              { "x": 5, "y": 1, "w": 3, "h": 4, "label": "B" } ] }
 ```
 
-**`cols` / `rows` (default 10 × 6):** grid size in unit squares (cells are always square). **`unitLabel`:** caption under the grid stating what one square is worth. **`rects`:** each is `{ x, y, w, h, label, color }` — `x, y` is the patch's **top-left** corner in grid squares (`x` across, `y` down), `w, h` its size in squares, `label` the text inside it, `color` an optional hex fill (otherwise a pale palette cycles). Keep patches inside the grid bounds.
+**`cols` / `rows` (default 10 × 6):** grid size in unit squares (cells are always square). **`unitLabel`:** caption under the grid stating what one square is worth. **`rects`:** each is `{ x, y, w, h, label, color }`: `x, y` is the patch's **top-left** corner in grid squares (`x` across, `y` down), `w, h` its size in squares, `label` the text inside it, `color` an optional hex fill (otherwise a pale palette cycles). A patch outside the grid is refused by name (`AREA_GRID_PATCH_OFF_GRID`).
+
+**It is the same grid on every surface** (worksheet, working wall, stick-in piece, from these same fields). The patch names and the key never print below the board's readable size; squares too small for them are refused by name (`AREA_GRID_TOO_SMALL`).
 
 ### `reflection-grid`
 

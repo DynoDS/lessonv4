@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 88 helpers, what each is for, and a working example of each.
+The 90 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -79,7 +79,7 @@ emailed. Never write `imageHref` yourself.
 
 **Shape, space and measure**
 
-- `shape` - A 2D shape with its measurements written on the sides: the picture a child reads to find a perimeter, area or missing length.
+- `shape` - One or more 2D shapes, the same as the board's polygon: `sideLabels` for a perimeter or missing length, `angleLabels`, or lines of symmetry to test.
 - `triangle` - A classified triangle: filled body, tick marks, and an optional right-angle square or angle arcs.
 - `angle` - A classified angle: two arms and a marking arc or right-angle square.
 - `line-pair` - The parallel, perpendicular or neither pair.
@@ -87,12 +87,14 @@ emailed. Never write `imageHref` yourself.
 - `ruler` - A ruler printed at TRUE SIZE for a child to measure against.
 - `dial-scale` - A round weighing scale: 0 at the top, numbered marks round the dial and a red needle at `value`, for reading a mass off a scale.
 - `measuring-jug` - A measuring jug with a scale up its side.
-- `clock-row` - A row of analogue clock faces, each with hands set or left blank for the child to draw.
+- `clock-row` - A row of analogue clock faces, each with hands set or left blank for the child to draw; the same clock as the board's, with `colourCoded` hands and a `minuteRing`.
 - `coordinate-grid` - A numbered first-quadrant grid a child plots on.
 - `reflection-grid` - A dot lattice with a mirror line and a shape to reflect.
 - `translation-shape` - A numbered grid carrying a shape and its slid image, joined by an arrow.
 - `geoboard` - A dotty-paper peg grid for drawing polygons on.
 - `triangle-square` - The SATs part-whole puzzle: two triangles joined by lines to a square, the arrow pointing into the square.
+- `area-grid` - A squared grid with labelled rectangular patches, for finding each patch's area by counting squares.
+- `translation-grid` - A numbered grid with a marker moved from one position to another, for reading a translation in squares.
 
 **Number and calculation**
 
@@ -128,7 +130,7 @@ emailed. Never write `imageHref` yourself.
 **Comparing and ordering**
 
 - `compare-row` - Two values with an empty box between them, for less-than, greater-than and equals work.
-- `comparison-target` - The single empty < > = response target inside a comparisonPair; normally use the composition rather than this helper alone.
+- `comparison-target` - The single empty < > = ring inside a comparisonPair, the same ring as the board's comparison-slot; normally use the composition rather than this helper alone.
 - `inequality-with-boxes` - A displayed statement with some digits left as boxes to fill, so the child chooses numbers that make it true.
 - `order-numbers` - Numbers to order on a card, with one blank per number underneath and the separator between them.
 - `order-table` - The same ordering task laid out as a two-row table: values on top, an empty cell under each.
@@ -1010,19 +1012,36 @@ Smallest usable: **110mm wide x 57mm tall**. Spare height: never takes spare hei
 
 #### `shape`
 
-A 2D shape with its measurements written on the sides: the picture a child reads to find a perimeter, area or missing length.
+One or more 2D shapes, the same as the board's polygon: `sideLabels` for a perimeter or missing length, `angleLabels`, or lines of symmetry to test.
 
-Smallest usable: **49mm wide x 21mm tall**. Spare height: never takes spare height.
+Smallest usable: **86mm wide x 50mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "shape",
-  "type": "rectangle",
-  "aspect": 2.5,
-  "labels": {
-    "top": "8 cm",
-    "right": "3 cm"
-  }
+  "shapes": [
+    {
+      "name": "rectangle",
+      "aspect": 2.5,
+      "sideLabels": [
+        "8 cm",
+        "3 cm"
+      ],
+      "label": "A"
+    },
+    {
+      "name": "isosceles-triangle",
+      "sideLabels": [
+        "5 cm",
+        "4 cm",
+        "5 cm"
+      ],
+      "angleLabels": [
+        "40°"
+      ],
+      "label": "B"
+    }
+  ]
 }
 ```
 
@@ -1074,7 +1093,7 @@ Smallest usable: **40mm wide x 19mm tall**. Spare height: never takes spare heig
 
 Angle as a turn: two rays from a vertex with a curved arrow sweeping between them.
 
-Smallest usable: **111mm wide x 30mm tall**. Spare height: never takes spare height.
+Smallest usable: **96mm wide x 28mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1163,9 +1182,9 @@ Smallest usable: **35mm wide x 61mm tall**. Spare height: never takes spare heig
 
 #### `clock-row`
 
-A row of analogue clock faces, each with hands set or left blank for the child to draw.
+A row of analogue clock faces, each with hands set or left blank for the child to draw; the same clock as the board's, with `colourCoded` hands and a `minuteRing`.
 
-Smallest usable: **106mm wide x 32mm tall**. Spare height: never takes spare height.
+Smallest usable: **74mm wide x 28mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1289,7 +1308,7 @@ Smallest usable: **70mm wide x 70mm tall**. Spare height: never takes spare heig
 
 The SATs part-whole puzzle: two triangles joined by lines to a square, the arrow pointing into the square.
 
-Smallest usable: **47mm wide x 40mm tall**. Spare height: never takes spare height.
+Smallest usable: **48mm wide x 40mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1299,6 +1318,61 @@ Smallest usable: **47mm wide x 40mm tall**. Spare height: never takes spare heig
     "75"
   ],
   "square": ""
+}
+```
+
+#### `area-grid`
+
+A squared grid with labelled rectangular patches, for finding each patch's area by counting squares.
+
+Smallest usable: **70mm wide x 51mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "area-grid",
+  "cols": 8,
+  "rows": 5,
+  "unitLabel": "Each square = 1m²",
+  "rects": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 3,
+      "h": 2,
+      "label": "A"
+    },
+    {
+      "x": 4,
+      "y": 1,
+      "w": 3,
+      "h": 3,
+      "label": "B"
+    }
+  ]
+}
+```
+
+#### `translation-grid`
+
+A numbered grid with a marker moved from one position to another, for reading a translation in squares.
+
+Smallest usable: **60mm wide x 58mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "translation-grid",
+  "max": 6,
+  "from": {
+    "x": 1,
+    "y": 1
+  },
+  "to": {
+    "x": 4,
+    "y": 3
+  },
+  "fromLabel": "A",
+  "toLabel": "B",
+  "showArrow": true
 }
 ```
 
@@ -1951,7 +2025,7 @@ Smallest usable: **52mm wide x 14mm tall**. Spare height: never takes spare heig
 
 #### `comparison-target`
 
-The single empty < > = response target inside a comparisonPair; normally use the composition rather than this helper alone.
+The single empty < > = ring inside a comparisonPair, the same ring as the board's comparison-slot; normally use the composition rather than this helper alone.
 
 Smallest usable: **12mm wide x 12mm tall**. Spare height: never takes spare height.
 

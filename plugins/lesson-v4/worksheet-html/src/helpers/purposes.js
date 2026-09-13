@@ -87,7 +87,7 @@ module.exports = {
 
   // ─── drawn ───
   "clock-row":
-    "A row of analogue clock faces, each with hands set or left blank for the child to draw.",
+    "A row of analogue clock faces, each with hands set or left blank for the child to draw; the same clock as the board's, with `colourCoded` hands and a `minuteRing`.",
   "number-line":
     "A labelled number line with a `caption` beneath (\"Each interval is worth 100.\"): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.",
   "fraction-bar":
@@ -149,7 +149,7 @@ module.exports = {
   "compare-row":
     "Two values with an empty box between them, for less-than, greater-than and equals work.",
   "comparison-target":
-    "The single empty < > = response target inside a comparisonPair; normally use the composition rather than this helper alone.",
+    "The single empty < > = ring inside a comparisonPair, the same ring as the board's comparison-slot; normally use the composition rather than this helper alone.",
   "inequality-with-boxes":
     "A displayed statement with some digits left as boxes to fill, so the child chooses numbers that make it true.",
   "number-sentence":
@@ -195,11 +195,15 @@ module.exports = {
 
   // ─── geometry ───
   shape:
-    "A 2D shape with its measurements written on the sides: the picture a child reads to find a perimeter, area or missing length.",
+    "One or more 2D shapes, the same as the board's polygon: `sideLabels` for a perimeter or missing length, `angleLabels`, or lines of symmetry to test.",
   "triangle-square":
     "The SATs part-whole puzzle: two triangles joined by lines to a square, the arrow pointing into the square.",
   "turn-diagram":
     "Angle as a turn: two rays from a vertex with a curved arrow sweeping between them.",
+  "area-grid":
+    "A squared grid with labelled rectangular patches, for finding each patch's area by counting squares.",
+  "translation-grid":
+    "A numbered grid with a marker moved from one position to another, for reading a translation in squares.",
 
   // ─── science ───
   "circuit-diagram":

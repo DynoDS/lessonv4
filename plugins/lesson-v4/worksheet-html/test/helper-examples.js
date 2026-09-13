@@ -497,10 +497,21 @@ module.exports = {
 
   // ─── geometry and measures ───
   shape: {
-    type: "rectangle",
-    aspect: 2.5,
-    labels: { top: "8 cm", right: "3 cm" },
+    shapes: [
+      { name: "rectangle", aspect: 2.5, sideLabels: ["8 cm", "3 cm"], label: "A" },
+      { name: "isosceles-triangle", sideLabels: ["5 cm", "4 cm", "5 cm"], angleLabels: ["40°"], label: "B" },
+    ],
   },
+  "area-grid": {
+    cols: 8,
+    rows: 5,
+    unitLabel: "Each square = 1m²",
+    rects: [
+      { x: 0, y: 0, w: 3, h: 2, label: "A" },
+      { x: 4, y: 1, w: 3, h: 3, label: "B" },
+    ],
+  },
+  "translation-grid": { max: 6, from: { x: 1, y: 1 }, to: { x: 4, y: 3 }, fromLabel: "A", toLabel: "B", showArrow: true },
   "triangle-square": { triangles: ["55", "75"], square: "" },
   "turn-diagram": {
     turns: [

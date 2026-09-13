@@ -52,8 +52,9 @@
 // that argued for one are history rather than guidance.
 
 const PRIMITIVES = [
-  { id: 'comparison-slot', depicts: 'data', slides: 'comparison-slot', worksheets: 'comparison-target', wall: false, stickin: false,
-    note: 'Board-only symbol-entry ring between compared objects, sized to their shared row. Printed questions provide their own answer space; this is not a standalone wall reference or stick-in figure.' },
+  { id: 'comparison-slot', depicts: 'data', slides: 'comparison-slot', worksheets: 'comparison-target', wall: ['comparison-slot', 'comparisonSymbol'], stickin: 'comparison-slot',
+    geometrySource: 'shared/visuals/comparison-svg.js',
+    note: 'The ring between two compared things that a child writes < > or = into, with the revealed symbol in answer green inside the same ring, and optional values either side. One drawing since 13 September 2026: the board ring, the sheet\'s comparison-target (a blue rounded square until then) and the wall\'s comparisonSymbol card ("5 > 3" in navy Arial Black) were three pictures of one idea. The wall keeps its comparisonSymbol spelling (symbol, left, right, colour), which draws the symbol without a ring.' },
   // ── Shared-geometry figures (one drawing in shared/visuals/, consumed by every
   //    renderer it reaches). These are the parity-critical set: identical shape on
   //    board, paper, wall and stick-in piece, so a skip shows as words where a picture should be.
@@ -68,8 +69,9 @@ const PRIMITIVES = [
     successCriteriaHelpers: [
       { key: 'carroll-one-box', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', method: 'oneCellCueSvg', spec: {} } }
     ] },
-  { id: 'angle', depicts: 'data',           slides: 'angle',           worksheets: 'angle',          wall: 'angle',           stickin: ['angle', 'angle-row'],
+  { id: 'angle', depicts: 'data',           slides: 'angle',           worksheets: 'angle',          wall: ['angle', 'angleFan'], stickin: ['angle', 'angle-row'],
     geometrySource: 'shared/visuals/angle-svg.js',
+    note: 'The wall\'s angleFan card (a filled wedge labelled with its size) is this angle with `sector` and `showDegrees` on, drawn from the same module since 13 September 2026, so every surface can show the filled form through `angle`.',
     successCriteriaHelpers: [
       { key: 'angle-arc', mode: 'both', fullSize: { type: 'angle', degrees: 60 }, inline: { treatment: 'simplified', spec: { degrees: 60, successCriteriaInline: true } } }
     ] },
@@ -149,19 +151,23 @@ const PRIMITIVES = [
   { id: 'parachute-forces', depicts: 'data', slides: 'parachute-forces', worksheets: 'parachute-forces', wall: 'parachute-forces', stickin: 'parachute-forces',
     geometrySource: 'shared/visuals/parachute-forces-svg.js',
     note: 'A parametric teaching schematic comparing two model parachutes after a practical: exact 3:1 billowed-sheet widths, equal calculated cord lengths, identical loads and qualitative force arrows. All four surfaces draw it from parachute-forces-svg.js; the sheet and the stick-in pack joined on 13 September 2026.' },
-  { id: 'polygon', depicts: 'data',         slides: 'polygon',         worksheets: 'shape',                          wall: false,             stickin: false,
-    note: 'worksheets via shape (the shapes renderer). wall:false — individual polygons appear inside reference cards, not as a standalone wall primitive.' },
+  { id: 'polygon', depicts: 'data',         slides: 'polygon',         worksheets: 'shape',                          wall: 'polygon',         stickin: 'polygon',
+    geometrySource: 'shared/visuals/polygon-svg.js',
+    note: 'One drawing since 13 September 2026: the board\'s named shapes with their symmetry teaching (every line, a candidate line, the fold, a verdict) and the sheet\'s measured sides and angles, which were two separate pictures. The sheet key is still `shape`, and its older single-shape spelling (type, labels, style) still draws. The symmetry maths stays in shared/visuals/polygon-symmetry.js.' },
 
   // ── Other cross-engine figures (separate implementations per engine, not a single
   //    shared/visuals module, but the same concept the child should meet in each place).
-  { id: 'triangle-square', depicts: 'data', slides: 'triangle-square', worksheets: 'triangle-square',               wall: 'triangle-square', stickin: false },
-  { id: 'turn-diagram', depicts: 'data',    slides: 'turn-diagram',    worksheets: 'turn-diagram', wall: 'turn-diagram', stickin: false,
+  { id: 'triangle-square', depicts: 'data', slides: 'triangle-square', worksheets: 'triangle-square',               wall: 'triangle-square', stickin: 'triangle-square',
+    geometrySource: 'shared/visuals/triangle-square-svg.js' },
+  { id: 'turn-diagram', depicts: 'data',    slides: 'turn-diagram',    worksheets: 'turn-diagram', wall: 'turn-diagram', stickin: 'turn-diagram',
+    geometrySource: 'shared/visuals/turn-diagram-svg.js',
     successCriteriaSource: 'shared/visuals/turn-diagram-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'turn-clockwise', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'clockwise' } } },
       { key: 'turn-anticlockwise', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: { direction: 'anticlockwise' } } }
     ] },
-  { id: 'clock', depicts: 'data',           slides: 'clock',           worksheets: 'clock-row',     wall: 'clock',           stickin: false },
+  { id: 'clock', depicts: 'data',           slides: 'clock',           worksheets: 'clock-row',     wall: 'clock',           stickin: ['clock', 'clock-row'],
+    geometrySource: 'shared/visuals/clock-svg.js' },
   // One number line for every surface (13 September 2026); the tiny cue beside a
   // success-criteria step keeps its own drawing.
   { id: 'numberline', depicts: 'data',      slides: 'numberline',      worksheets: 'number-line',                   wall: 'numberLine',      stickin: 'number-line',
@@ -227,10 +233,6 @@ const PRIMITIVES = [
 
   // ── Wall-only flavours. These are reference/anchor cards a wall shows; they have no
   //    board or sheet twin (a teaching slide draws the live version a different way).
-  { id: 'angle-fan', depicts: 'data',         slides: false, worksheets: false, wall: 'angleFan',         stickin: false,
-    note: 'wall-only — a fan of the angle types as a single anchor poster; the board teaches angles one at a time via the angle figure.' },
-  { id: 'comparison-symbol', depicts: 'data', slides: false, worksheets: false, wall: 'comparisonSymbol', stickin: false,
-    note: 'wall-only — a < > = reference card; comparison on the board/sheet is done with the compare-box, not a drawn symbol primitive.' },
 
   // ── Slide-only figures, thinking-organisers and scaffolds. These are live teaching
   //    visuals built and used on the board only; a wall/sheet/stick-in version would
@@ -244,7 +246,8 @@ const PRIMITIVES = [
     note: 'The component-symbol key of a circuit lesson: individually identifiable standard symbols (cell, lamp, wire, open/closed switch) each carrying its own child-facing name. The drawing sits beside the circuit in shared/visuals/circuit-diagram-svg.js so the key and the loop it keys cannot drift apart; circuit-symbol-bank-svg.js names it as a picture every surface places. It was board-only until 13 September 2026, and the guard counted the board as drawing its own because the drawing was called by a name no surface\'s placer looks for.' },
   { id: 'callout', depicts: 'data',         slides: 'callout',         worksheets: false, wall: false, stickin: false,
     note: 'A small coloured box holding one short line, with an arrow leaving any side to point at the thing the line is about. Board-only, and the reason is that every other surface already points at its own content a different way. wall:false - the wall annotates a diagram through the `callouts` array on a card visual, composited through the shared label-diagram overlay (the labelledDiagram card); a standalone callout primitive there would be a second way to do the one job, the same reasoning recorded for `map` above. worksheets:false - a sheet points at part of a picture with `label-diagram`, whose leader lines are drawn INTO the figure; the sheet has no free-placed zone beside a figure for a box to point from. stickin:false - a callout is something the teacher points with, never something the child marks, so it fails the write-on test a stick-in piece has to pass. Revisit the worksheet if worksheet zones ever let a figure and a note sit side by side.' },
-  { id: 'area-grid', depicts: 'data',       slides: 'area-grid',       worksheets: false, wall: false, stickin: false,
+  { id: 'area-grid', depicts: 'data',       slides: 'area-grid',       worksheets: 'area-grid', wall: 'area-grid', stickin: 'area-grid',
+    geometrySource: 'shared/visuals/area-grid-svg.js',
     successCriteriaSource: 'shared/visuals/area-grid-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'count-array', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
@@ -274,7 +277,9 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/dial-scale-svg.js' },
   { id: 'measuring-jug', depicts: 'data', slides: 'measuring-jug', worksheets: 'measuring-jug', wall: 'measuring-jug', stickin: 'measuring-jug',
     geometrySource: 'shared/visuals/measuring-jug-svg.js' },
-  { id: 'translation-grid', depicts: 'data', slides: 'translation-grid', worksheets: false, wall: false, stickin: false },
+  { id: 'translation-grid', depicts: 'data', slides: 'translation-grid', worksheets: 'translation-grid', wall: 'translation-grid', stickin: 'translation-grid',
+    geometrySource: 'shared/visuals/translation-grid-svg.js',
+    note: 'One marker moved on a numbered grid. The newer translation-shape moves a whole shape and is the picture a translation lesson should reach for; this stays so decks written with it still draw.' },
   { id: 'part-whole-model', depicts: 'data', slides: 'part-whole-model', worksheets: ['part-whole', 'part-whole-money'], wall: false, stickin: false,
     successCriteriaSource: 'shared/visuals/part-whole-model-cue-svg.js',
     successCriteriaHelpers: [
@@ -342,8 +347,6 @@ const SUCCESS_CRITERIA_AUDIT = Object.freeze({
   'place-value-mini': { classification: 'unsuitable', reason: 'It is already a miniature, drawn to sit in a 2.2-inch vocabulary panel; shrunk again beside a success-criteria step it carries neither the digit nor the column it exists to point at.' },
   money: { classification: 'full-size', reason: 'Coin and note values must match the question.' },
   'shaded-fraction': { classification: 'full-size', reason: 'Partition count and shaded amount must match the fraction.' },
-  'angle-fan': { classification: 'full-size', reason: 'The comparison set needs several labelled angles.' },
-  'comparison-symbol': { classification: 'full-size', reason: 'The symbol direction must match the actual comparison.' },
   'circuit-symbol-bank': { classification: 'full-size', reason: 'The names are task-specific and the symbol identities must stay individually readable; a tiny bank cues nothing.' },
   map: { classification: 'full-size', reason: 'Geographical detail and labels carry the meaning.' },
   callout: { classification: 'unsuitable', reason: 'It is a presentation container, not a child-made mark.' },
@@ -445,20 +448,11 @@ const WORKSHEET_LAYOUT_EXEMPT = Object.freeze([
 // nothing may be added. `node builder/scripts/sharing-status.js` prints the table;
 // `--backlog` prints this literal.
 const SHARING_BACKLOG = Object.freeze({
-  "comparison-slot": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "polygon": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "triangle-square": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
-  "turn-diagram": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
-  "clock": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
   "pyramid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "place-value-chart": { slides: 'own', worksheets: 'own', stickin: 'missing' },
   "place-value-mini": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
-  "angle-fan": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
-  "comparison-symbol": { slides: 'missing', worksheets: 'missing', wall: 'own', stickin: 'missing' },
-  "area-grid": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "diamond-nine": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "mult-grid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "translation-grid": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "part-whole-model": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "base-ten-blocks": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "counter-group": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },

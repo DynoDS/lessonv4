@@ -7,58 +7,52 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const requireGlobal = require('../src/require-global');
-const PptxGenJS = requireGlobal('pptxgenjs');
-const { drawComparisonSlot, measureComparisonSlot } =
-  require('../src/content/comparison-slot');
+// Since 13 September 2026 the ring is the one comparison picture
+// (shared/visuals/comparison-svg.js) the sheet and the wall draw too, placed on
+// the board by the shared placer.
+const comparison = require('../../shared/visuals/comparison-svg');
+const { profileFor } = require('../../shared/visuals/surface-profiles');
+const { drawerFor, measurerFor, createSharedFigureStore } = require('../src/content/shared-figure');
 
-function drawn(zone, data) {
+const measureComparisonSlot = measurerFor('comparison-slot');
+const onBoard = (zone, data) => comparison.tightSvg(data || {}, profileFor('slides', { widthPt: (zone.w - 0.2) * 72, heightPt: (zone.h - 0.2) * 72 }));
+
+// The box the placer reserves for the picture in the preflight.
+function placed(zone, data) {
   const shapes = [];
-  const texts = [];
-  const pptx = new PptxGenJS();
-  const slide = {
-    addShape: (kind, opts) => shapes.push({ kind, ...opts }),
-    addText: (content, opts) => texts.push({ content, ...opts }),
-  };
-  drawComparisonSlot(pptx, slide, zone, data || {}, { slideIndex: 0 });
-  return { shapes, texts };
+  const slide = { addShape: (kind, opts) => shapes.push(opts), addText() {}, addImage: (opts) => shapes.push(opts) };
+  drawerFor('comparison-slot')({ shapes: { RECTANGLE: 'rect' } }, slide, zone, data || {}, { slideIndex: 0, sharedFigures: createSharedFigureStore() });
+  return shapes[0];
 }
 
 test('the slot is round, not stretched to the shape of its gap', () => {
   // The typed-circle version inherited a text item's full-height card, so in a
   // tall narrow gap it read as a pill with a dot in it.
-  const { shapes } = drawn({ x: 0, y: 0, w: 0.9, h: 2.2 });
-  assert.equal(shapes.length, 1);
-  assert.equal(shapes[0].w.toFixed(3), shapes[0].h.toFixed(3));
+  const out = onBoard({ x: 0, y: 0, w: 0.9, h: 2.2 });
+  assert.equal((out.svg.match(/<circle/g) || []).length, 1);
+  assert.ok(Math.abs(out.w - out.h) < 1, `the ring is ${out.w} by ${out.h}`);
 });
 
 test('the slot grows with the room it is given', () => {
-  const small = measureComparisonSlot({ x: 0, y: 0, w: 0.6, h: 2.2 });
-  const big   = measureComparisonSlot({ x: 0, y: 0, w: 1.4, h: 2.2 });
+  const small = measureComparisonSlot({ x: 0, y: 0, w: 0.6, h: 2.2 }, {});
+  const big   = measureComparisonSlot({ x: 0, y: 0, w: 1.4, h: 2.2 }, {});
   assert.ok(big.w > small.w, 'a wider gap drew the same ring as a narrow one');
 });
 
 test('the slot is centred in its gap so it lines up with what it sits between', () => {
   const zone = { x: 2, y: 1, w: 1.5, h: 2.4 };
-  const box = measureComparisonSlot(zone);
-  assert.equal(
-    (box.x + box.w / 2).toFixed(3),
-    (zone.x + zone.w / 2).toFixed(3),
-    'the ring was not horizontally centred'
-  );
-  assert.equal(
-    (box.y + box.h / 2).toFixed(3),
-    (zone.y + zone.h / 2).toFixed(3),
-    'the ring was not vertically centred'
-  );
+  const box = placed(zone);
+  assert.equal((box.x + box.w / 2).toFixed(3), (zone.x + zone.w / 2).toFixed(3), 'the ring was not horizontally centred');
+  assert.equal((box.y + box.h / 2).toFixed(3), (zone.y + zone.h / 2).toFixed(3), 'the ring was not vertically centred');
 });
 
 test('a revealed answer prints inside the same ring, not instead of it', () => {
-  const { shapes, texts } = drawn({ x: 0, y: 0, w: 1.2, h: 1.2 }, { answer: '<' });
-  assert.equal(shapes.length, 1, 'the ring disappeared when the answer was shown');
-  assert.equal(texts.length, 1);
-  assert.equal(texts[0].content, '<');
-  assert.equal(texts[0].x.toFixed(3), shapes[0].x.toFixed(3));
+  const out = onBoard({ x: 0, y: 0, w: 1.2, h: 1.2 }, { answer: '<' });
+  assert.equal((out.svg.match(/<circle/g) || []).length, 1, 'the ring disappeared when the answer was shown');
+  const text = /<text x="([\d.]+)"[^>]*fill="#00B050"[^>]*>&lt;<\/text>/.exec(out.svg);
+  assert.ok(text, 'the answer is not printed in answer green');
+  const ring = /<circle cx="([\d.]+)"/.exec(out.svg);
+  assert.equal(Number(text[1]).toFixed(1), Number(ring[1]).toFixed(1), 'the answer is not centred in the ring');
 });
 
 // ─── A row shares its width by appetite, not by counting ──────────────
