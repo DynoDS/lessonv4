@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -195,6 +196,45 @@ def letterbox_folder_name(lesson: str, now: datetime) -> str:
     return f"{now:%Y-%m-%d %H%M%S} {safe}"[:120]
 
 
+def write_lesson_folder(destination: Path, files: list[Path], *, lesson: str, year: int | None,
+                        subject: str, now: datetime) -> None:
+    """One lesson as the letterbox carries it: its resources and a lesson.json."""
+    copy_into(destination, files)
+    manifest = {
+        "schemaVersion": 1,
+        "lesson": lesson,
+        "year": year,
+        "subject": subject,
+        "builtAt": now.isoformat(),
+        "files": [path.name for path in files],
+    }
+    (destination / "lesson.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+
+def stage_for_connector(
+    *, stage_root: Path, source: Path, requested: list[str], year: int | None,
+    subject: str, lesson: str, dry_run: bool, now: datetime | None = None,
+) -> tuple[Path, list[Path], list[Path]]:
+    """Lay the lesson out exactly as the letterbox holds it, for the host to post.
+
+    ChatGPT Work's cloud has no git sign-in, but it has its own GitHub tools
+    that can create a branch and commit files (proved on 13 September 2026).
+    A script cannot call those tools, so this writes `lessons/<name>/` under
+    `stage_root`, and the orchestrator commits every file beneath it to the
+    letterbox branch with the same relative paths.
+    """
+    if not source.is_dir():
+        raise FileNotFoundError(f"Output folder not found: {source}")
+    files, skipped = choose_files(source, requested)
+    if not files:
+        raise FileNotFoundError(f"No lesson output files found in {source}")
+    now = now or datetime.now(timezone.utc)
+    destination = stage_root / "lessons" / letterbox_folder_name(lesson or files[0].stem, now)
+    if not dry_run:
+        write_lesson_folder(destination, files, lesson=lesson, year=year, subject=subject, now=now)
+    return destination, files, skipped
+
+
 def send_to_letterbox(
     *, clone: Path, branch: str, source: Path, requested: list[str], year: int | None,
     subject: str, lesson: str, dry_run: bool, now: datetime | None = None,
@@ -225,16 +265,7 @@ def send_to_letterbox(
         git(clone, "checkout", "-B", branch, f"origin/{branch}")
     else:
         git(clone, "checkout", "-B", branch)
-    copy_into(destination, files)
-    manifest = {
-        "schemaVersion": 1,
-        "lesson": lesson,
-        "year": year,
-        "subject": subject,
-        "builtAt": now.isoformat(),
-        "files": [path.name for path in files],
-    }
-    (destination / "lesson.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    write_lesson_folder(destination, files, lesson=lesson, year=year, subject=subject, now=now)
     git(clone, "add", "--", str(relative))
     identity = []
     if not git(clone, "config", "user.email", check=False).stdout.strip():
@@ -259,6 +290,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--mode", choices=("folder", "sorted", "letterbox"), help="overrides the saved setting")
     parser.add_argument("--lesson", default="", help="the lesson's name, for the letterbox folder")
+    parser.add_argument("--letterbox", default="", help="owner/name of the letterbox, for a cloud box with no environment settings")
     parser.add_argument("--folder", type=Path, help="overrides the saved folder")
     parser.add_argument("--term-file", type=Path, help="overrides the saved term dates")
     parser.add_argument("--year", type=int, choices=range(1, 7))
@@ -274,17 +306,39 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.letterbox:
+        os.environ[plugin_settings.LETTERBOX_VARIABLE] = args.letterbox
     saved = plugin_settings.delivery()
     folder = args.folder or (Path(saved["folder"]) if saved["folder"] else None)
     term_file = args.term_file or (Path(saved["termDates"]) if saved["termDates"] else None)
     mode = args.mode or saved["mode"]
     try:
         if mode == "letterbox":
+            branch = saved.get("branch") or plugin_settings.DEFAULT_LETTERBOX_BRANCH
             if not saved.get("folder") and not args.folder:
                 prepared = plugin_settings.prepare_letterbox() or {}
                 if not prepared.get("clone"):
-                    raise ValueError(f"the letterbox is not available on this box: {prepared.get('error', saved.get('missing', ''))}")
+                    # No git sign-in on this box. Stage the lesson for the host's
+                    # own GitHub tools to post, rather than lose the delivery.
+                    destination, files, skipped = stage_for_connector(
+                        stage_root=args.source.resolve() / "letterbox-staging", source=args.source.resolve(),
+                        requested=args.files, year=args.year, subject=args.subject.strip(),
+                        lesson=args.lesson.strip(), dry_run=args.dry_run,
+                    )
+                    print("LETTERBOX_ROUTE=connector")
+                    print(f"LETTERBOX_REPO={saved.get('missing', '')}")
+                    print(f"LETTERBOX_BRANCH={branch}")
+                    print(f"LETTERBOX_STAGED={destination.parent.parent}")
+                    print(f"LETTERBOX_FOLDER=lessons/{destination.name}")
+                    print(f"DESTINATION={destination}")
+                    for path in files:
+                        print(f"FILE={path.name}")
+                    for path in skipped:
+                        print(f"SKIPPED={path.name} (a run record, not a teaching resource; it stays in the output folder)")
+                    print(f"STATUS={'DRY_RUN' if args.dry_run else 'STAGED'}")
+                    return 0
                 saved = {**saved, "folder": prepared["clone"]}
+            print("LETTERBOX_ROUTE=git")
             destination, files, skipped = send_to_letterbox(
                 clone=(args.folder or Path(saved["folder"])).resolve(), branch=saved.get("branch") or plugin_settings.DEFAULT_LETTERBOX_BRANCH,
                 source=args.source.resolve(), requested=args.files, year=args.year,

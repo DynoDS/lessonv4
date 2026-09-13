@@ -226,6 +226,71 @@ class CodexCloudFetchesItsLetterboxTests(unittest.TestCase):
         self.assertIn("No GITHUB_TOKEN is set", prepared["error"])
 
 
+class WorkCloudPostsThroughItsOwnToolsTests(unittest.TestCase):
+    """ChatGPT Work's cloud has no git sign-in but can commit through its GitHub tools."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp.name)
+        self.saved = {k: os.environ.get(k) for k in ("LESSON_RESOURCES_HOME", "GITHUB_TOKEN", "GH_TOKEN", plugin_settings.LETTERBOX_VARIABLE)}
+        os.environ["LESSON_RESOURCES_HOME"] = str(self.root / "home")
+        for key in ("GITHUB_TOKEN", "GH_TOKEN", plugin_settings.LETTERBOX_VARIABLE):
+            os.environ.pop(key, None)
+        self.output = self.root / "output"
+        self.output.mkdir()
+        (self.output / "Fractions.pptx").write_bytes(b"deck")
+        (self.output / "Fractions - run report.md").write_text("notes", encoding="utf-8")
+
+    def tearDown(self):
+        for key, value in self.saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+        self.temp.cleanup()
+
+    def test_a_letterbox_git_cannot_reach_is_staged_in_the_letterbox_layout(self):
+        destination, files, skipped = deliver_files.stage_for_connector(
+            stage_root=self.output / "letterbox-staging", source=self.output,
+            requested=["Fractions.pptx", "Fractions - run report.md"], year=4, subject="Maths",
+            lesson="Fractions", dry_run=False, now=datetime(2026, 9, 14, 2, 0, tzinfo=timezone.utc),
+        )
+        self.assertEqual(destination.parent.name, "lessons")
+        self.assertEqual(sorted(p.name for p in destination.iterdir()), ["Fractions.pptx", "lesson.json"])
+        manifest = json.loads((destination / "lesson.json").read_text(encoding="utf-8"))
+        self.assertEqual((manifest["year"], manifest["subject"], manifest["files"]), (4, "Maths", ["Fractions.pptx"]))
+        self.assertEqual([p.name for p in skipped], ["Fractions - run report.md"])
+
+    def test_delivery_names_the_route_and_the_staged_folder(self):
+        import contextlib
+        import io
+
+        with mock_prepare_failure():
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                code = deliver_files.main([
+                    "--letterbox", "Someone/outputs", "--source", str(self.output), "--file", "Fractions.pptx",
+                    "--year", "4", "--subject", "Maths", "--lesson", "Fractions",
+                ])
+        text = out.getvalue()
+        self.assertEqual(code, 0, text)
+        for line in ("LETTERBOX_ROUTE=connector", "LETTERBOX_REPO=Someone/outputs", f"LETTERBOX_BRANCH={BRANCH}", "STATUS=STAGED"):
+            self.assertIn(line, text)
+        staged = next(l.split("=", 1)[1] for l in text.splitlines() if l.startswith("LETTERBOX_STAGED="))
+        self.assertTrue(list(Path(staged).glob("lessons/*/Fractions.pptx")))
+
+
+class mock_prepare_failure:
+    """prepare_letterbox as it answers on a box with no git sign-in."""
+
+    def __enter__(self):
+        self.original = plugin_settings.prepare_letterbox
+        plugin_settings.prepare_letterbox = lambda url=None: {"clone": "", "branch": BRANCH, "error": "no sign-in"}
+
+    def __exit__(self, *exc):
+        plugin_settings.prepare_letterbox = self.original
+
+
 class CloudRunFindsItsLetterboxTests(unittest.TestCase):
     def test_a_named_repository_is_found_as_a_clone_beside_the_working_folder(self):
         with tempfile.TemporaryDirectory() as temp:

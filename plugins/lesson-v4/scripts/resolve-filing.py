@@ -324,22 +324,41 @@ def today():
 
 
 def main(argv=None):
-    year, subject, working_root = parse_args(list(sys.argv[1:] if argv is None else argv))
+    args = list(sys.argv[1:] if argv is None else argv)
+    if "--letterbox" in args:
+        # A cloud box with no environment settings (ChatGPT Work) names its
+        # letterbox on the command line instead.
+        i = args.index("--letterbox")
+        if i + 1 < len(args):
+            os.environ[plugin_settings.LETTERBOX_VARIABLE] = args[i + 1]
+        del args[i:i + 2]
+    year, subject, working_root = parse_args(args)
     chosen = plugin_settings.delivery()
-    if chosen["mode"] == "letterbox" and not chosen["folder"]:
-        # Nothing attached the letterbox (Codex's cloud attaches one repository),
-        # so fetch it now, before any design work, while a missing key or a
-        # blocked address can still be fixed.
-        prepared = plugin_settings.prepare_letterbox() or {}
-        chosen = {**chosen, "folder": prepared.get("clone", ""), "missing": prepared.get("error", chosen.get("missing", ""))}
+    route = ""
+    if chosen["mode"] == "letterbox":
+        route = "git"
+        if not chosen["folder"]:
+            # Nothing attached the letterbox (Codex's cloud attaches one
+            # repository), so fetch it now, before any design work, while a
+            # missing key or a blocked address can still be fixed.
+            prepared = plugin_settings.prepare_letterbox() or {}
+            chosen = {**chosen, "folder": prepared.get("clone", "")}
+            if not chosen["folder"]:
+                # No git sign-in here. The host's own GitHub tools may still
+                # post it (ChatGPT Work), so this is a route, not a failure.
+                route = "connector"
+                chosen["reason"] = prepared.get("error", "")
     print(f"DELIVERY={chosen['mode']}")
     if chosen["mode"] == "letterbox":
         # A cloud run. The teacher's computer places the lesson when it collects
         # it, so there is no slot to announce here, only where it is going.
-        print(f"LETTERBOX={chosen['folder']}")
+        print(f"LETTERBOX_ROUTE={route}")
         print(f"LETTERBOX_BRANCH={chosen['branch']}")
-        if not chosen["folder"]:
-            print(f"ERROR: the letterbox is not available on this box: {chosen.get('missing', '')}")
+        if route == "git":
+            print(f"LETTERBOX={chosen['folder']}")
+        else:
+            print(f"LETTERBOX_REPO={chosen.get('missing', '')}")
+            print(f"LETTERBOX_NOTE=git could not reach the letterbox ({chosen.get('reason', '')}); post it with this host's GitHub tools")
     elif chosen["mode"] == "none":
         # Whether the teacher has already been offered the choice, so the
         # offer is made once rather than at the end of every lesson.

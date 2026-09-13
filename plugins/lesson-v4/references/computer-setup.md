@@ -65,33 +65,49 @@ computer would not allow it, and the line says how to collect by hand. Then run
 log lines it prints. `letterbox_filer.py status` shows the last few collections;
 `uninstall` stops it.
 
-## Scheduled lessons in Codex
+## Scheduled lessons in ChatGPT Work or Codex
 
-Codex can schedule a task in two places: in Codex's cloud, with the teacher's
-computer off, or in the Codex app on the teacher's own computer.
+OpenAI has three places a scheduled lesson could run. Only two can build one,
+because a lesson needs separate AI workers and only those two can start them
+(each proved on 13 September 2026):
 
-**In Codex's cloud** the run posts to the letterbox like a Claude cloud run, but
-Codex attaches only one repository, gives the agent no internet by default and
-no GitHub sign-in, and removes secrets before the agent starts. So the
-environment needs these settings, all on its page at
-https://chatgpt.com/codex/settings/environments (proved on 13 September 2026):
+- **ChatGPT Work, Cloud.** Runs with the teacher's computer off. It can start
+  workers at the plugin's own models, reach the internet, commit to GitHub
+  through its own GitHub tools, and offer files for download. It has no
+  environment settings and no git sign-in, so the plugin must be in a public
+  repository it can clone, and the letterbox is posted with its GitHub tools
+  (the run does this itself when the delivery prints `LETTERBOX_ROUTE=connector`).
+- **The Codex app on the teacher's computer.** Runs only while the computer is
+  on and the app open, and saves straight to the save folder. See below.
+- **Codex cloud tasks** (the Codex website, or `codex cloud exec`) cannot build a
+  lesson: they have no tool to start a worker, so the Lesson Designer never
+  runs. They can reach the letterbox if configured, but there is nothing to post.
 
-1. Repository: the one the plugin lives in.
-2. Environment variables (not Secrets, which are removed before the agent
-   starts): `LESSON_RESOURCES_LETTERBOX` set to `<owner>/<letterbox repository>`,
-   and `GITHUB_TOKEN` set to a fine-grained GitHub token that can reach only the
-   letterbox repository, with Contents read and write and an expiry date.
-   Environment variables are visible to anyone who can edit the environment,
-   which is why the token must reach nothing else. The run fetches the letterbox
-   with it and never writes the token to a file.
-3. Agent internet access On, Domain allowlist None, Allowed HTTP methods All
-   methods, and in Additional allowed domains, separated by commas on one line:
-   `github.com, api.github.com`. Domains on separate lines were read as one
-   address and everything stayed blocked. Add the picture sources the same way
-   (see the list under `Setting up a cloud environment`).
-4. Setup script: Manual, `bash <plugin folder>/scripts/cloud-setup.sh`; the setup
-   script has the internet even when the agent does not, so it is where the
-   builders' libraries are installed.
+**A ChatGPT Work cloud lesson.** Test it once by hand before scheduling it. In
+ChatGPT, open Work, switch the task from Local to Cloud, and send a message like
+this, changing only the lesson line:
+
+```text
+Make one lesson with the Lesson v4 plugin, unattended.
+
+1. Run `git clone https://github.com/<owner>/<plugin repository>.git` and use
+   <that folder>/<plugin folder> as PLUGIN_ROOT_CANDIDATE.
+2. Follow <plugin folder>/skills/make-lesson/SKILL.md exactly, as the make-lesson
+   skill. Launch its named workers with your subagent tool, at the model and
+   reasoning effort worker-launch.py prints for each role.
+3. The letterbox is <owner>/<letterbox repository>: pass
+   `--letterbox <owner>/<letterbox repository>` to resolve-filing.py and to the
+   delivery, and post the lesson with your GitHub tools when the delivery says
+   LETTERBOX_ROUTE=connector.
+4. Nobody can answer questions. Make the sensible choice and record it.
+   Do not change the plugin repository.
+5. Offer every finished teaching resource for download too.
+
+Lesson: <year, subject and objective>
+```
+
+Once a manual run has put a lesson on the teacher's drive, the same message can
+be scheduled in Work.
 
 **In the Codex app** a task runs on the teacher's own computer and saves straight
 to the save folder like any lesson made there. Two things to tell the teacher:

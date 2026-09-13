@@ -131,11 +131,9 @@ whatever the mode.
   Say nothing about saving now; the final report offers the choice.
 - `DELIVERY=folder`: say in one line that the resources will be saved to
   `SAVE_FOLDER`.
-- `DELIVERY=letterbox`: this is a cloud run, which cannot reach the teacher's
-  computer. Say in one line that the finished resources will be posted to their
-  letterbox and saved on their computer the next time they log in. An `ERROR:`
-  line means the letterbox clone was not found on this box: say so, and plan to
-  leave the resources in `OUTPUT_DIR`.
+- `DELIVERY=letterbox`, or a request that names a letterbox repository: a cloud
+  run. Read `[PLUGIN_ROOT]/references/cloud-delivery.md` now and follow its
+  start-of-run part.
 - `DELIVERY=sorted`: a daily subject goes to the first free day after the week's
   filled ones, a weekly subject to this week's folder. Tell the teacher one
   line, e.g. "Monday already has maths, so saving to Autumn 1 > Week 2 > Maths >
@@ -1463,12 +1461,9 @@ mode the term, week and day from `filing.txt` (`--day` only when
 in every mode because that record is how the next run finds this lesson. Require
 schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`, then tell the teacher
 where it was saved in one line. The save folder is outside the lesson folder, so
-on Codex run it with escalated permissions. In letterbox mode the delivery also
-prints `LETTERBOX_BRANCH=`: tell the teacher the lesson is waiting in the
-letterbox on that branch and will be saved when their computer next collects it,
-and that the files can be downloaded from that branch on GitHub in the meantime.
-When the host has a way to send a file to the teacher directly, send each
-teaching resource that way too.
+on Codex run it with escalated permissions. In letterbox mode follow the
+delivering part of `[PLUGIN_ROOT]/references/cloud-delivery.md` instead, which
+also covers `STATUS=STAGED`.
 
 Save the delivered files whatever the package outcome: the run report, not the
 saving, is where faults are told. If the save folder is unavailable or the

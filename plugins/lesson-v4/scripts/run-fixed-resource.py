@@ -218,6 +218,8 @@ def command_for(args) -> list[str]:
                 command.extend([flag, str(value)])
         if args.lesson_name:
             command.extend(["--lesson", args.lesson_name])
+        if args.letterbox:
+            command.extend(["--letterbox", args.letterbox])
         command.extend(["--source", str(output)])
         for filename in args.file:
             command.extend(["--file", filename])
@@ -346,9 +348,11 @@ def run(args) -> int:
         return 1
 
     if args.kind == "deliver":
-        if "STATUS=COPIED" not in completed.stdout or "DESTINATION=" not in completed.stdout:
+        # STAGED: laid out for the host's own GitHub tools to post (no git sign-in).
+        delivered = "STATUS=COPIED" in completed.stdout or "STATUS=STAGED" in completed.stdout
+        if not delivered or "DESTINATION=" not in completed.stdout:
             summary["stderr"] += (
-                "\ndeliver_files.py exited zero without STATUS=COPIED and DESTINATION="
+                "\ndeliver_files.py exited zero without STATUS=COPIED or STATUS=STAGED and DESTINATION="
             )
             atomic_write_json(Path(args.summary_output), summary)
             print("FIXED_RESOURCE_FAILED deliver", file=sys.stderr)
@@ -404,6 +408,7 @@ def parser() -> argparse.ArgumentParser:
     root.add_argument("--subject")
     root.add_argument("--day")
     root.add_argument("--file", action="append", default=[])
+    root.add_argument("--letterbox", default="")
     root.add_argument(
         "--chrome-state",
         choices=("not-needed", "ready", "unavailable"),
