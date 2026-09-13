@@ -255,7 +255,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         prompt = text[start:end]
 
         markers = [
-            "python3 \"[PLUGIN_ROOT]/scripts/"
+            "\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/"
             "lesson-design-scaffold.py\"",
             "--request \"[WORKING_DIR]/"
             "lesson-design-scaffold-request.initial.json\"",
@@ -264,7 +264,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "--photo-requirements \"[WORKING_DIR]/"
             "photo-requirements.json\"",
             "LESSON_DESIGN_SCAFFOLD_OK",
-            "python3 \"[PLUGIN_ROOT]/scripts/"
+            "\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/"
             "validate-lesson-design.py\"",
             "LESSON_DESIGN_OK",
         ]

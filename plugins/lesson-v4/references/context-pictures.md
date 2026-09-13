@@ -328,7 +328,7 @@ deck could decline most of its slides on nothing but its own word. Both are now
 claims about the drawn page, and the drawn page is measured:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
   --render-manifest "[PREVIEW_DIR]/render-manifest.json" \
   --output "[WORKING_DIR]/slide-room.json"
 ```
@@ -394,7 +394,7 @@ question about the guidance when it was never a question about the guidance.
 Run the check before promoting the deck:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
   --lesson "[the candidate lesson.json]" \
   --room "[WORKING_DIR]/slide-room.json" \

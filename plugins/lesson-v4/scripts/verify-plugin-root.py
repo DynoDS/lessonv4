@@ -14,6 +14,7 @@ REQUIRED_PACKAGE_PATHS = (
     "scripts/make-lesson-runtime.py",
     "scripts/worker-launch.py",
     "scripts/run-fixed-resource.py",
+    "scripts/find-python.js",
     "scripts/photo-contract.py",
     "scripts/collect-helper-uses.py",
     "scripts/check-helper-coverage.py",

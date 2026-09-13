@@ -53,14 +53,14 @@ The command performs the real specification check and a real scratch build in a 
 Then render the preview pages exactly as the designer did:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
   --probe-route "[PREVIEW_DIR]/render-route.json"
-python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
   "[PREVIEW_PPTX]" \
   "[PREVIEW_DIR]/render" \
   --route-file "[PREVIEW_DIR]/render-route.json" \
   --manifest "[PREVIEW_DIR]/render-manifest.json"
-python3 "[PLUGIN_ROOT]/scripts/build-visual-consistency-overview.py" build \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/build-visual-consistency-overview.py" build \
   --output-dir "[PREVIEW_DIR]/overview" \
   --output-manifest "[PREVIEW_DIR]/overview-manifest.json" \
   --manifest "Deck=[PREVIEW_DIR]/render-manifest.json"
@@ -71,7 +71,7 @@ Inspect the overview sheets, opening an individual page only where the overview 
 **If `slide-room.json` is not there, measure the pages you have just rendered.** The file normally arrives from the Slide Designer, but a deck you can see is a deck that can be measured, and an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \n  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \n  --output "[WORKING_DIR]/slide-room.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \n  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \n  --output "[WORKING_DIR]/slide-room.json"
 ```
 
 Only a run with no render route at all answers `full` or `competes` from the specification, and it says so in its report.
@@ -99,7 +99,7 @@ The check prints `SLIDE_DESIGN_OPTIONAL_PICTURES: [D] educational-svg, [E] emoji
 Then check the pass record against the deck and the measurement:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
   --lesson "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
   --room "[WORKING_DIR]/slide-room.json" \

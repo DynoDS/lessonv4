@@ -138,6 +138,7 @@ You are the lesson designer. Read your agent instructions at:
 [PLUGIN_ROOT]/agents/lesson-designer.md
 
 PLUGIN_ROOT: [PLUGIN_ROOT]
+PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
 OUTPUT_DIR: [OUTPUT_DIR]
 
@@ -155,7 +156,7 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson-design-scaffold-request.initial.json
 
 BUILD_SCAFFOLD_ONCE — run this before you fill anything, and never again:
-python3 "[PLUGIN_ROOT]/scripts/lesson-design-scaffold.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-design-scaffold.py" \
   --request "[WORKING_DIR]/lesson-design-scaffold-request.initial.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
   --photo-requirements "[WORKING_DIR]/photo-requirements.json"
@@ -165,7 +166,7 @@ This command writes the empty scaffold over both files. It is a builder, not a
 check. Once any field is filled, running it again would discard the design.
 
 SUCCESS_CHECK:
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
   --initial-photo-namespace \
   "[WORKING_DIR]/lesson-design.json" \
   "[WORKING_DIR]/photo-requirements.json"
@@ -191,7 +192,7 @@ on rather than silence.
 Then run:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/check-photo-cap.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-photo-cap.py" \
   "[WORKING_DIR]/photo-requirements.json"
 ```
 
@@ -221,7 +222,7 @@ Skip only when `design-reviewer` is absent. Otherwise prepare its compact view
 directly:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/design-review-packet.py" prepare \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/design-review-packet.py" prepare \
   --plugin-root "[PLUGIN_ROOT]" \
   --working-dir "[WORKING_DIR]" \
   --teacher-brief "[WORKING_DIR]/teacher-brief.txt" \
@@ -241,6 +242,7 @@ You are the design reviewer. Read your agent instructions at:
 [PLUGIN_ROOT]/agents/design-reviewer.md
 
 PLUGIN_ROOT: [PLUGIN_ROOT]
+PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
 OUTPUT_DIR: [OUTPUT_DIR]
 
@@ -260,7 +262,7 @@ OWNED_OUTPUTS:
 - [WORKING_DIR]/design-review.md
 
 SUCCESS_CHECK - run this yourself before returning, unless you corrected nothing:
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" \
   --initial-photo-namespace \
   "[WORKING_DIR]/lesson-design.json" \
   "[WORKING_DIR]/photo-requirements.json"
@@ -339,7 +341,7 @@ review log when `PLUGIN_SOURCE_ROOT` is available. Read routing values directly
 from the approved `lesson-design.json`, never from prose.
 
 With the design approved, run
-`python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex` and read
+`"[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex` and read
 the result. A design or review worker that ran below its declared setting is
 worth redoing here, where one worker repeats; after Phase 2 the same fault costs
 the whole package. Continue either way and carry the marker to the run report.
@@ -354,7 +356,7 @@ catchable, and the outcome must be written down: a decision nobody records is a
 decision the run walks past.
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" inventory   --lesson-design "[WORKING_DIR]/lesson-design.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" inventory   --lesson-design "[WORKING_DIR]/lesson-design.json"
 ```
 
 Live keys come from the renderers themselves, so the list is what the engine
@@ -452,7 +454,7 @@ emoji or generic decoration.
 Run this after both routes have finished, on every run:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" verdict \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" verdict \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
   --verdict "[WORKING_DIR]/helper-check.json" \
   --photo-requirements "[WORKING_DIR]/photo-requirements.json"
@@ -477,7 +479,7 @@ arrived**, with `--spec` `lesson.json`/`--surface slides` and `worksheet.json`/
 `--surface worksheets`:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery   --verdict "[WORKING_DIR]/helper-check.json"   --spec "[WORKING_DIR]/[spec].json" --surface [surface]
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery   --verdict "[WORKING_DIR]/helper-check.json"   --spec "[WORKING_DIR]/[spec].json" --surface [surface]
 ```
 
 Require `HELPER_DELIVERY_OK`. A failure means a use recorded as drawn by a helper
@@ -489,7 +491,7 @@ designer repair, rebuild, re-check.
 Freeze the approved initial photo contract once:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" freeze-initial \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/photo-contract.py" freeze-initial \
   --canonical "[WORKING_DIR]/photo-requirements.json" \
   --snapshot "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
   --receipt "[WORKING_DIR]/phase2-initial-photo-requirements.receipt.json"
@@ -510,7 +512,7 @@ If the frozen contract's `photos` array is empty, the state is
 Compile assignments directly:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
   --requirements "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
   --expected-prefix p \
   --output-dir "[WORKING_DIR]/picture-assignments/p" \
@@ -587,6 +589,7 @@ You are the slide designer. Read your agent instructions at:
 [PLUGIN_ROOT]/agents/slide-designer.md
 
 PLUGIN_ROOT: [PLUGIN_ROOT]
+PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
 OUTPUT_DIR: [OUTPUT_DIR]
 
@@ -610,13 +613,13 @@ node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
 
 Require: Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides
 
-python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
   --verdict "[WORKING_DIR]/helper-check.json" \
   --spec "[WORKING_DIR]/lesson.json" --surface slides
 
 Require: HELPER_DELIVERY_OK
 
-python3 "[PLUGIN_ROOT]/scripts/check-drawlive-handoff.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-drawlive-handoff.py" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
   --spec "[WORKING_DIR]/lesson.json"
 
@@ -644,6 +647,7 @@ You are the slide decorator. Read your agent instructions at:
 [PLUGIN_ROOT]/agents/slide-decorator.md
 
 PLUGIN_ROOT: [PLUGIN_ROOT]
+PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
 OUTPUT_DIR: [OUTPUT_DIR]
 
@@ -666,7 +670,7 @@ node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
 
 Require: SLIDE_DESIGN_CHECK_OK: [N] slides
 
-python3 "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
   --lesson "[WORKING_DIR]/lesson.json" \
   --room "[WORKING_DIR]/slide-room.json" \
@@ -765,7 +769,7 @@ against the final published image and update only anchor coordinates.
 Build slides directly:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" slides \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" slides \
   --plugin-root "[PLUGIN_ROOT]" \
   --working-dir "[WORKING_DIR]" \
   --output-dir "[OUTPUT_DIR]" \
@@ -815,7 +819,7 @@ reads that path. There is no `adaptation.json`.
 Run `photo-contract.py build-provisional`. Use exactly:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
   --initial "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
   --adaptation "[WORKING_DIR]/adaptation.md" \
   --output "[WORKING_DIR]/adaptation-photo-provisional.json" \
@@ -860,7 +864,7 @@ the adaptation filenames from its receipt (`adaptationFilenames`), so the
 frozen initial pictures Phase 2 already finished are not reopened:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
   --requirements "[WORKING_DIR]/photo-requirements-a-[N].json" \
   --expected-prefix a \
   [one --expected-filename per adaptationFilenames entry in the provisional receipt] \
@@ -909,6 +913,7 @@ You are the worksheet designer. Read your agent instructions at:
 [PLUGIN_ROOT]/agents/worksheet-designer.md
 
 PLUGIN_ROOT: [PLUGIN_ROOT]
+PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
 OUTPUT_DIR: [OUTPUT_DIR]
 
@@ -937,7 +942,7 @@ same number, because the next `select-worksheet` reads the highest-numbered
 receipt and the immutable snapshot that receipt names:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/photo-contract.py" promote-used \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/photo-contract.py" promote-used \
   --initial "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
   --provisional "[WORKING_DIR]/adaptation-photo-provisional.json" \
   --adaptation "[WORKING_DIR]/adaptation.md" \
@@ -965,7 +970,7 @@ canonical `photo-requirements.json`, which a later wave rewrites, and name each
 pending filename so no finished picture is reopened:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/compile-picture-assignments.py" compile \
   --requirements "[WORKING_DIR]/photo-requirements-w-[N].json" \
   --expected-prefix w \
   [one --expected-filename per pendingFilenames entry in the promotion receipt] \
@@ -979,7 +984,7 @@ filename list**. The snapshot also holds every picture Phase 2 finished, so
 validating without the list rejects a correct manifest and loses the sheet:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/validate-image-scout.py" manifest \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-image-scout.py" manifest \
   --requirements "[WORKING_DIR]/photo-requirements-w-[N].json" \
   --manifest "[WORKING_DIR]/picture-assignments/w-[N]/manifest.json" \
   --working-dir "[WORKING_DIR]" \
@@ -1016,15 +1021,15 @@ worksheet's dots are what a child draws their line to, so a sheet built without
 this pass can print "label the parts" over a photograph carrying nothing to
 label.
 
-The build refuses an unanchored set (`EMPTY_SET`), but that refusal costs the
-whole sheet set, so the net is not the fix: run the pass.
+The build refuses an unanchored set (`EMPTY_SET`), but that costs the whole
+sheet set: run the pass.
 
 ---
 
 Build worksheets directly:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" worksheets \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" worksheets \
   --plugin-root "[PLUGIN_ROOT]" \
   --working-dir "[WORKING_DIR]" \
   --output-dir "[OUTPUT_DIR]" \
@@ -1051,7 +1056,7 @@ Launch Working Wall Designer on every run, the moment the Slide Designer's
 after preparing its packet:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare   --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --lesson "[WORKING_DIR]/lesson.json"   --photo-requirements "[applicable photo contract]"   --view-output "[WORKING_DIR]/working-wall-view.md"   --reference-output "[WORKING_DIR]/working-wall-reference.md"   --receipt-output "[WORKING_DIR]/working-wall-packet.receipt.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare   --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --lesson "[WORKING_DIR]/lesson.json"   --photo-requirements "[applicable photo contract]"   --view-output "[WORKING_DIR]/working-wall-view.md"   --reference-output "[WORKING_DIR]/working-wall-reference.md"   --receipt-output "[WORKING_DIR]/working-wall-packet.receipt.json"
 ```
 
 Require `WORKING_WALL_PACKET_OK`. The view holds every string and figure a
@@ -1070,7 +1075,7 @@ finds nothing wall-worthy writes `cards: []` with its rationale for the run
 report. It owns only `working-wall.json`. Its deterministic check is:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
 ```
 
 Require exactly `WORKING_WALL_DESIGN_OK`. An exact reference table retained from
@@ -1081,7 +1086,7 @@ than wall furniture; a lesson with no picture at all still passes. Then
 build the wall directly, only when `cards` is non-empty:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" wall   --plugin-root "[PLUGIN_ROOT]"   --working-dir "[WORKING_DIR]"   --output-dir "[OUTPUT_DIR]"   --lesson-name "[TOPIC]"   --chrome-state "[ready|unavailable]"   --summary-output "[WORKING_DIR]/build-results/wall.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" wall   --plugin-root "[PLUGIN_ROOT]"   --working-dir "[WORKING_DIR]"   --output-dir "[OUTPUT_DIR]"   --lesson-name "[TOPIC]"   --chrome-state "[ready|unavailable]"   --summary-output "[WORKING_DIR]/build-results/wall.json"
 ```
 
 Same command as the slides, worksheets and stick-ins; no builder agent. The
@@ -1099,7 +1104,7 @@ beside the Slide Decorator and Track D. Read the approved design's own
 decision first:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/resource-opportunities.py" stick-in \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/resource-opportunities.py" stick-in \
   --lesson-design "[WORKING_DIR]/lesson-design.json"
 ```
 
@@ -1127,7 +1132,7 @@ Run this build only when `stick-in-sheets.json` has a non-empty `items` list;
 an empty list ends the track.
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" stick-in \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" stick-in \
   --plugin-root "[PLUGIN_ROOT]" \
   --working-dir "[WORKING_DIR]" \
   --output-dir "[OUTPUT_DIR]" \
@@ -1329,7 +1334,7 @@ Run picture provenance once from the final schema-2 requirements and
 `[WORKING_DIR]/orchestration-receipts/picture-terminal/`:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/finalize-picture-assignment.py" provenance \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/finalize-picture-assignment.py" provenance \
   --requirements "[WORKING_DIR]/photo-requirements.json" \
   --terminal-receipts-dir "[WORKING_DIR]/orchestration-receipts/picture-terminal" \
   --working-dir "[WORKING_DIR]" \
@@ -1368,7 +1373,7 @@ results in the run report still tell the teacher what the lesson does without.
 Append genuine findings to the shared build review log:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/record-build-review.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/record-build-review.py" \
   --lesson "[year, subject and objective in plain English]" \
   --plugin-root "[PLUGIN_ROOT]" \
   --finding "[one reusable engine finding]" \

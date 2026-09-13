@@ -493,7 +493,7 @@ SLIDE_DESIGN_CHECK_OK: [N] slides
 Then run exactly, against the same candidate:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
   --verdict "[WORKING_DIR]/helper-check.json" \
   --spec "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
   --surface slides
@@ -532,14 +532,14 @@ After the deterministic check passes, render the preview before promoting the ca
 Run exactly:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
   --probe-route "[PREVIEW_DIR]/render-route.json"
 ```
 
 When that exits 0, run exactly:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
   "[PREVIEW_PPTX]" \
   "[PREVIEW_DIR]/render" \
   --route-file "[PREVIEW_DIR]/render-route.json" \
@@ -549,7 +549,7 @@ python3 "[PLUGIN_ROOT]/scripts/render-pages.py" \
 When that exits 0, run exactly:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/build-visual-consistency-overview.py" build \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/build-visual-consistency-overview.py" build \
   --output-dir "[PREVIEW_DIR]/overview" \
   --output-manifest "[PREVIEW_DIR]/overview-manifest.json" \
   --manifest "Deck=[PREVIEW_DIR]/render-manifest.json"
@@ -618,7 +618,7 @@ The layout is settled and rendered. Now, and not before, measure what is
 actually clear on each page:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
   --render-manifest "[PREVIEW_DIR]/render-manifest.json" \
   --output "[WORKING_DIR]/slide-room.json"
 ```

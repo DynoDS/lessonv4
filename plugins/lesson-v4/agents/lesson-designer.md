@@ -465,7 +465,7 @@ Main agent + matching teaching-sequence ref govern JSON content. On scaffold rou
 On the scaffold route, fill the generated files in place; on the no-scaffold fallback, write JSON via a real serializer. Either way, parse both files after writing. Validator must reject any unresolved `__LESSON_DESIGN_FILL__`. Then run:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"
 ```
 
 Repair validator failures in grouped passes: fix every currently reported
@@ -521,7 +521,7 @@ Use the authority order near the start of this file.
 Read named reference sections with the bundled reader; it returns the source text unchanged and stops before the next heading at the same or a higher level. Batch sections needed for the current decision in one command:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/read-reference.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" \
   --select "preferences.md::Written Voice (House Style) > Core rules" \
   --select "teacher-voice.md::1. Core voice"
 ```
@@ -534,7 +534,7 @@ A direction to read a section means consult its guidance at that decision, not f
 
 - Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included, and it is short.
 - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount.
-- Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `python3 "[PLUGIN_ROOT]/scripts/read-reference.py" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default.
+- Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default.
 - Read the one matching `subject-*.md` file when it exists. List the directory and match the subject. Do not guess a filename.
 
 **At the decision point:**

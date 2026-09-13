@@ -61,13 +61,13 @@ If the triggered narrow reading still does not establish a safe in-authority cor
 Before you change a byte, keep a copy of what you were given:
 
 ```bash
-python3 -c "import shutil,sys; shutil.copyfile(sys.argv[1], sys.argv[2])"   "[WORKING_DIR]/lesson.json" "[WORKING_DIR]/lesson.json.before-repair"
+"[PYTHON]" -c "import shutil,sys; shutil.copyfile(sys.argv[1], sys.argv[2])" "[WORKING_DIR]/lesson.json" "[WORKING_DIR]/lesson.json.before-repair"
 ```
 
 When the repair is finished, before you return:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/check-repair-scope.py"   --before "[WORKING_DIR]/lesson.json.before-repair"   --after "[WORKING_DIR]/lesson.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-repair-scope.py" --before "[WORKING_DIR]/lesson.json.before-repair" --after "[WORKING_DIR]/lesson.json"
 ```
 
 Require `REPAIR_SCOPE_OK` and return that line with your repair-impact fields.

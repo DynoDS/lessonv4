@@ -332,7 +332,11 @@ def run(args) -> int:
         )
 
     command = command_for(args)
-    completed = subprocess.run(command, capture_output=True, text=True)
+    # The Python running this wrapper is one this machine and sandbox can start,
+    # so the builders' own Python step (slide text fitting) uses it too rather
+    # than guessing a name that may be refused.
+    child_env = dict(os.environ, LESSON_V4_PYTHON=sys.executable)
+    completed = subprocess.run(command, capture_output=True, text=True, env=child_env)
     summary = {
         "schemaVersion": SCHEMA_VERSION,
         "ok": False,

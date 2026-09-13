@@ -79,7 +79,7 @@ its first line. Ignore P3 decorations when deriving promised visuals.
 5. Run:
 
    ```
-   python3 "[PLUGIN_ROOT]/scripts/validate-working-wall-evidence.py" \
+   "[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-working-wall-evidence.py" \
      --spec "[WORKING_DIR]/working-wall.json" \
      --evidence "[WORKING_DIR]/working-wall-build-evidence.json" \
      --built-output "[exact built wall path]"

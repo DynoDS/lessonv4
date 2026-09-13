@@ -507,7 +507,13 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # Raised from 71 KiB when the walk-through began reaching the teacher
         # (11 September 2026): the lesson had only ever been delivered as a
         # deck, and the deck is where its story was being lost.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 72 * 1024)
+        # Raised from 72 KiB when every command stopped naming `python3` and
+        # started naming the one interpreter the run finds at start-up
+        # (13 September 2026): under Codex the sandbox user could not start
+        # `python3` or the teacher's own Python, and 22 of 39 recorded runs
+        # spent worker commands rediscovering that. The growth is the longer
+        # placeholder on every command and a PYTHON line on each worker prompt.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 73 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

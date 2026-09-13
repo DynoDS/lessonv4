@@ -371,7 +371,7 @@ If no prepared packet was supplied, use the orchestrator's validator command;
 the initial-design command is:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace \
   "[WORKING_DIR]/lesson-design.json" \
   "[WORKING_DIR]/photo-requirements.json"
 ```

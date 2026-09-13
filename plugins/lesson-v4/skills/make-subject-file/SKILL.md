@@ -19,8 +19,16 @@ Obtain exactly one `PLUGIN_ROOT_CANDIDATE` from the active host:
 
 Run:
 
+First find the Python to use, without elevated access, and store the path it prints after `PYTHON=` (on `PYTHON_BLOCKED` re-run it once with permission to start a child process):
+
 ```bash
-python3 "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
+node "[PLUGIN_ROOT_CANDIDATE]/scripts/find-python.js"
+```
+
+`"[PYTHON]"` below means that path; in PowerShell call it as `& "[PYTHON]" ...`.
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
 ```
 
 Store the value after `PLUGIN_ROOT=`. If verification fails, stop and report the verifier's error exactly. Do not search for another package.
@@ -36,7 +44,7 @@ PLUGIN_SOURCE_ROOT_ERROR: LESSON_RESOURCES_SOURCE_ROOT is not set.
 If it is present, run:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --source "$LESSON_RESOURCES_SOURCE_ROOT"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --source "$LESSON_RESOURCES_SOURCE_ROOT"
 ```
 
 Store the value after `PLUGIN_SOURCE_ROOT=`. If verification fails, stop before Stage 1 and report the verifier's error exactly.

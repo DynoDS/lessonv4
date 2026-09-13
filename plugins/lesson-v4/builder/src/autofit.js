@@ -43,10 +43,14 @@ function parseResult(output) {
   }
 }
 
-// The interpreter is `python` on the teacher's PC but usually only `python3` on
-// a Linux cloud box, so both are tried rather than assuming one and silently
-// skipping the fit step.
-function interpreters() {
+// The interpreter the run found at start-up comes first (scripts/find-python.js,
+// handed down as LESSON_V4_PYTHON by the fixed build wrapper). Without it the
+// common names are tried, and when none of those will start here the finder is
+// asked directly: under Codex every command runs as a sandbox user who cannot
+// start the machine's own Python but can start Codex's, so a name that is
+// refused is not the end of the search (13 September 2026).
+function interpreters(env) {
+  if (env && env.LESSON_V4_PYTHON) return [env.LESSON_V4_PYTHON];
   return process.platform === 'win32'
     ? ['python', 'python3']
     : ['python3', 'python'];
@@ -77,13 +81,30 @@ function runAutofit(pptxPath, options = {}) {
   let blockedBy = null;
   let blockedError = null;
 
-  for (const bin of interpreters()) {
+  const queue = interpreters(options.env || process.env);
+  const tried = new Set();
+  let askedFinder = false;
+  for (;;) {
+    let bin = queue.shift();
+    if (bin === undefined) {
+      if (askedFinder) break;
+      askedFinder = true;
+      const finder = options.findPython || require('../../scripts/find-python').findPython;
+      const found = finder();
+      if (found && found.status === 'PYTHON' && !tried.has(found.exe)) {
+        bin = found.exe;
+      } else {
+        break;
+      }
+    }
+    tried.add(bin);
     try {
       output = run(bin, [script, '--floor', floor, pptxPath], {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
       });
       ran = true;
+      blockedBy = null;
       break;
     } catch (err) {
       if (err && err.code === 'ENOENT') {
@@ -91,11 +112,12 @@ function runAutofit(pptxPath, options = {}) {
         continue;
       }
       if (err && (err.code === 'EPERM' || err.code === 'EACCES')) {
-        // The interpreter exists and we were refused permission to start it.
-        // Trying the next name finds the same wall, so stop and say which it is.
-        blockedBy = bin;
-        blockedError = err;
-        break;
+        // This interpreter exists and we were refused permission to start it.
+        // Another one may still be allowed, so remember the refusal and keep
+        // looking; it is reported only if nothing else starts.
+        blockedBy = blockedBy || bin;
+        blockedError = blockedError || err;
+        continue;
       }
       // The script ran and exited non-zero. Its own output says why.
       lastError = err;

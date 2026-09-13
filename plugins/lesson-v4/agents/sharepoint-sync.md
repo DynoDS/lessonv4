@@ -14,7 +14,7 @@ and provides authoritative values.
 Run the bundled script once:
 
 ```text
-python3 "[PLUGIN_ROOT]/scripts/sharepoint_sync.py" ^
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/sharepoint_sync.py" ^
   --term-file "[TERM_MD]" ^
   --year [YEAR] ^
   --term-folder "[TARGET_TERM]" ^

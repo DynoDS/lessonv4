@@ -987,7 +987,7 @@ The fixed builder verifies the physical fit.
 Then run exactly:
 
 ```
-python3 "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-helper-coverage.py" delivery \
   --verdict "[WORKING_DIR]/helper-check.json" \
   --spec "[WORKING_DIR]/worksheet.json" \
   --surface worksheets

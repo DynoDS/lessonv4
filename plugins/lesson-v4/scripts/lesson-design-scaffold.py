@@ -460,6 +460,12 @@ def validate_route_shape(
                         f"Skill-based our-turn must use conceptIndex {concept_index}")
                 index += 1
             require(
+                not (index < len(sequence) and sequence[index]["kind"] == "our-turn"),
+                f"Skill-based conceptIndex {concept_index} has two our-turn units in a "
+                "row; one our-turn unit holds every guided example of the move, as many "
+                "as the concept needs, so request one and put the examples in it",
+            )
+            require(
                 index < len(sequence)
                 and sequence[index]["kind"] == "your-turn"
                 and sequence[index]["conceptIndex"] == concept_index,

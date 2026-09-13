@@ -1654,6 +1654,19 @@ def validate_route_sequence(
                     f"Skill-based Our Turn must use {concept_id}",
                 )
                 index += 1
+            # A second Our Turn used to fall through to the message below, which
+            # told the designer there was no Your Turn when there was one straight
+            # after it; four runs spent a retry on that (13 September 2026).
+            expect(
+                not (index < len(sequence) and sequence[index]["kind"] == "our-turn"),
+                (
+                    f"Skill-based concept {concept_id} has two Our Turn units in a row. "
+                    "One Our Turn unit holds every guided example of the move, as many as "
+                    "the concept's difficulty needs, so put them together in one unit "
+                    "(teaching-sequence-skill-based.md, Our Turn: 'include several fresh "
+                    "guided attempts rather than defaulting to one')"
+                ),
+            )
             expect(
                 index < len(sequence) and sequence[index]["kind"] == "your-turn",
                 (

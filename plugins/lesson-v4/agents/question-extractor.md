@@ -18,9 +18,10 @@ You are given four values: the PDF path, the subject, the type (`problem-solving
 Your spawn prompt also supplies:
 
 - `PLUGIN_ROOT` — the verified absolute installed package directory containing `scripts/question_crop.py`.
+- `PYTHON`: the interpreter to run it with. If your prompt names none, run `node "[PLUGIN_ROOT]/scripts/find-python.js"` once and use the path it prints after `PYTHON=`; in PowerShell call it as `& "[PYTHON]"`.
 - `PLUGIN_SOURCE_ROOT` — the verified absolute writable source directory where the permanent question bank lives.
 
-Treat both as literal paths. If either is absent, stop before rendering or filing and report which value is missing. Do not search for a package or source checkout.
+Treat `PLUGIN_ROOT` and `PLUGIN_SOURCE_ROOT` as literal paths. If either is absent, stop before rendering or filing and report which value is missing. Do not search for a package or source checkout.
 
 ## Two ways you might be started
 
@@ -39,9 +40,9 @@ A small helper does the mechanical render and crop. You supply every judgement.
 
 Start by making a working folder of your own, so a second extraction running on a different paper at the same time never writes over your pages: `WORKDIR=$(mktemp -d /tmp/question-extract-working.XXXXXX)`. Use `$WORKDIR` everywhere below instead of a fixed path.
 
-- Render the pages: `python "[PLUGIN_ROOT]/scripts/question_crop.py" render "<pdf>" "$WORKDIR" --dpi 300`
+- Render the pages: `"[PYTHON]" "[PLUGIN_ROOT]/scripts/question_crop.py" render "<pdf>" "$WORKDIR" --dpi 300`
   It prints JSON listing each page's PNG path and true pixel size, and writes `page_1.png`, `page_2.png`, and so on inside `$WORKDIR`.
-- Crop one region: `python "[PLUGIN_ROOT]/scripts/question_crop.py" crop <page_png> <x0> <y0> <x1> <y1> <out_png>`
+- Crop one region: `"[PYTHON]" "[PLUGIN_ROOT]/scripts/question_crop.py" crop <page_png> <x0> <y0> <x1> <y1> <out_png>`
   Coordinates are the page image's own pixels. It saves an optimised PNG. Stage crops inside `$WORKDIR` as well.
 
 Render and crop through this helper (run via Bash), and file with Bash — these are binary files, so the Write tool was never the right way to place them.
@@ -69,7 +70,7 @@ Some questions run on past the bottom of a page: the diagram or table sits on on
 
 Crop each page's portion separately, exactly as you would any other crop, then join the pieces into a single picture before filing:
 
-`python "[PLUGIN_ROOT]/scripts/question_crop.py" join "$WORKDIR/<first-half>.png" "$WORKDIR/<second-half>.png" "$WORKDIR/<joined>.png"`
+`"[PYTHON]" "[PLUGIN_ROOT]/scripts/question_crop.py" join "$WORKDIR/<first-half>.png" "$WORKDIR/<second-half>.png" "$WORKDIR/<joined>.png"`
 
 It stacks the images top to bottom in the order you give them, centring any that come out narrower than the widest. Read the joined picture back the same way you check any other crop, then file it as usual.
 

@@ -115,7 +115,7 @@ right.
 Do not open the role file and translate its settings yourself. Ask for them:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" spec --host [codex|claude] --role [role] [--role [role] ...]
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" spec --host [codex|claude] --role [role] [--role [role] ...]
 ```
 
 Copy the printed fields verbatim into the launch. Ask once per branch, naming
@@ -131,7 +131,7 @@ drops its role costs both at once.
 On Codex the host keeps its own record of what it launched. Read it back:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex
 ```
 
 Run it twice: once when the approved design is settled, because a design made at
@@ -339,10 +339,32 @@ with:
 PLUGIN_ROOT_ERROR: verifier is missing at [PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py
 ```
 
-Otherwise run:
+Find the Python this run will use first, because the verifier is a Python
+script. Run this **without** elevated access:
 
 ```bash
-python3 "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
+node "[PLUGIN_ROOT_CANDIDATE]/scripts/find-python.js"
+```
+
+It tries each Python on this computer by running it, and prints
+`PYTHON=<absolute path>` for the first that starts here and can import the
+libraries the build scripts need. Store that path as the literal `PYTHON` for
+this run. Every command written `"[PYTHON]" ...` in the runtime slices and in
+worker instructions means that interpreter; in PowerShell call it as
+`& "[PYTHON]" ...`. Never substitute `python3`, `python` or `py` for it.
+
+It is found unelevated because the workers run unelevated: an interpreter found
+with extra access can be one no worker can start, which is how Codex runs spent
+their first command in most workers rediscovering Python (13 September 2026).
+On `PYTHON_BLOCKED`, re-run the same command once with permission to start a
+child process, store the result, and record one `FRICTION:` line. On
+`PYTHON_UNAVAILABLE`, stop and report the message exactly: nothing in this run
+can be built without it.
+
+Then run:
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py" "[PLUGIN_ROOT_CANDIDATE]"
 ```
 
 The command must exit successfully and print exactly one `PLUGIN_ROOT=` line.
@@ -387,7 +409,7 @@ yet. Only the shared build review log reads this value, and only to append to a
 log, so resolve it at that step rather than up front:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/verify-plugin-root.py" --find-source "[PLUGIN_ROOT]"
 ```
 
 The command looks in a fixed order - an explicit environment value, the running
@@ -406,15 +428,18 @@ prevent, taken silently.
 The active host owns the worker-launch mechanism. Claude Code may launch its
 bundled named agent. Codex or another host may launch a normal worker. In either
 case, every worker prompt must name the bundled role file and contain exactly one
-line in this form:
+of each of these lines:
 
 ```text
 PLUGIN_ROOT: [literal verified PLUGIN_ROOT]
+PYTHON: [literal PYTHON found at start-up]
 ```
 
-In every runtime prompt template, `[PLUGIN_ROOT]` means that literal verified
-value. Replace the placeholder before launching the worker. Do not pass the
-brackets or a host-specific plugin-root variable to the worker or its shell.
+In every runtime prompt template, `[PLUGIN_ROOT]` and `[PYTHON]` mean those
+literal values. Replace the placeholders before launching the worker. Do not pass
+the brackets or a host-specific plugin-root variable to the worker or its shell.
+A worker whose prompt carries no `PYTHON:` line runs
+`node "[PLUGIN_ROOT]/scripts/find-python.js"` once and uses its answer.
 
 ---
 
@@ -431,7 +456,7 @@ Do not open, read or load `playbook-lite.md` directly.
 The only allowed access to that file during a lesson run is:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "[SLICE]"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "[SLICE]"
 ```
 
 The command prints exactly one bounded, authoritative runtime slice. Read and
@@ -442,8 +467,8 @@ Load these two slices in this order, immediately after `PLUGIN_ROOT`
 verification and before any run-specific work:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "execution"
-python3 "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "setup"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "execution"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/make-lesson-runtime.py" --slice "setup"
 ```
 
 **From there, every slice ends with a `## NEXT` block naming what it hands you,

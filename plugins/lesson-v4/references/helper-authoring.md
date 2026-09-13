@@ -252,7 +252,7 @@ The build ends here. Write the drop-in complete, under `[WORKING_DIR]/pending-he
 Then run:
 
 ```bash
-python3 "[PLUGIN_ROOT]/scripts/install-pending-helper.py" check --pending "[WORKING_DIR]/pending-helper/<name>"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/install-pending-helper.py" check --pending "[WORKING_DIR]/pending-helper/<name>"
 ```
 
 Require `PENDING_HELPER_OK`. It proves the manifest is complete, that every file it lists is really there, and that every destination lands inside the package. It does not prove the picture is right; nothing at build time can.
@@ -270,9 +270,9 @@ a built `.pptx`, `.docx` or `.pdf` into one PNG per page. Probe the machine's
 render routes once, then render each artefact against that route file:
 
 ```bash
-python3 "[PLUGIN_SOURCE_ROOT]/scripts/render-pages.py" --probe-route "[a scratch dir]/render-route.json"
+"[PYTHON]" "[PLUGIN_SOURCE_ROOT]/scripts/render-pages.py" --probe-route "[a scratch dir]/render-route.json"
 
-python3 "[PLUGIN_SOURCE_ROOT]/scripts/render-pages.py" "[the built file]" "[a scratch dir]/render" --route-file "[a scratch dir]/render-route.json" --manifest "[a scratch dir]/render.json"
+"[PYTHON]" "[PLUGIN_SOURCE_ROOT]/scripts/render-pages.py" "[the built file]" "[a scratch dir]/render" --route-file "[a scratch dir]/render-route.json" --manifest "[a scratch dir]/render.json"
 ```
 
 Reach for it instead of driving PowerPoint COM or pdftoppm yourself. Neither can

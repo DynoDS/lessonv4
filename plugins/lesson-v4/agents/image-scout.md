@@ -97,7 +97,7 @@ For a no-file result, use only an allowed exact reason.
 Validate with:
 
 ```bash
-python3 "<PLUGIN_ROOT>/scripts/validate-image-scout.py" result \
+"[PYTHON]" "<PLUGIN_ROOT>/scripts/validate-image-scout.py" result \
   --assignment "<ASSIGNMENT_FILE>" \
   --result "<RESULT_FILE>" \
   --working-dir "<WORKING_DIR>" \
