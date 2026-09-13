@@ -60,6 +60,64 @@ def test_empty_week_places_monday():
         kv, out = run(tmp, {})
         assert kv.get("DAY") == "Monday", out.stdout + out.stderr
 
+def test_out_of_term_date_prints_error_and_exits_nonzero():
+    # A date outside every teaching term used to print ERROR but exit 0, so an
+    # unattended run had no way to notice the destination never resolved.
+    with tempfile.TemporaryDirectory() as tmp:
+        kv, out = run(tmp, {}, today="2026-08-10")
+        assert out.returncode != 0, out.stdout + out.stderr
+        assert "ERROR: target date not in any term period" in out.stdout
+        assert "TERM_FOLDER" not in kv
+
+# Autumn term 1 2026 opened on Tuesday 1 September. The teacher's drive calls
+# Mon 7 - Fri 11 September "Week 1" and keeps Thu 3 / Fri 4 in a folder they
+# named by hand, so weeks count from the first Monday, not the first day.
+AUTUMN_TERM_MD = (
+    "| Term | Starts | Ends |\n"
+    "| --- | --- | --- |\n"
+    "| Autumn, term 1 | Tuesday 1 September 2026 | Friday 23 October 2026 |\n"
+)
+
+def run_autumn(tmp, subject, today, occupied=None):
+    base = Path(tmp)
+    term_md = base / "Term.md"
+    term_md.write_text(AUTUMN_TERM_MD, encoding="utf-8")
+    for rel in occupied or []:
+        p = base / "2026-2027 - Year 4" / "Autumn 1" / rel
+        p.mkdir(parents=True, exist_ok=True)
+        (p / "lesson.pptx").write_text("x", encoding="utf-8")
+    env = dict(os.environ, SP_BASE=str(base), SP_TODAY=today)
+    out = subprocess.run(
+        [sys.executable, str(SCRIPT), str(term_md), "4", subject],
+        capture_output=True, text=True, env=env,
+    )
+    kv = dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l)
+    return kv, out
+
+def test_mid_week_term_start_keeps_tuesday_in_the_same_week():
+    # The reported fault: with Monday 14 September filled, the next maths
+    # lesson belongs in Week 2 Tuesday, not a Week 3 that does not exist yet.
+    with tempfile.TemporaryDirectory() as tmp:
+        kv, out = run_autumn(tmp, "Maths", "2026-09-13", ["Week 2/Maths/Monday"])
+        assert (kv.get("WEEK_NUM"), kv.get("DAY")) == ("2", "Tuesday"), out.stdout
+
+def test_mid_week_term_start_thursday_is_week_1():
+    with tempfile.TemporaryDirectory() as tmp:
+        kv, out = run_autumn(tmp, "Science", "2026-09-10")
+        assert kv.get("WEEK_NUM") == "1", out.stdout
+
+def test_opening_days_before_first_monday_ask_rather_than_guess():
+    with tempfile.TemporaryDirectory() as tmp:
+        kv, out = run_autumn(tmp, "Maths", "2026-09-03")
+        assert out.returncode == 2, out.stdout + out.stderr
+        assert kv.get("OPENING_WEEK") == "yes" and "WEEK_NUM" not in kv, out.stdout
+
+def test_full_opening_week_spills_into_week_1_monday():
+    # A lesson planned on Friday 4 September rolls forward to Monday 7, Week 1.
+    with tempfile.TemporaryDirectory() as tmp:
+        kv, out = run_autumn(tmp, "Maths", "2026-09-04")
+        assert (kv.get("WEEK_NUM"), kv.get("DAY")) == ("1", "Monday"), out.stdout
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):
@@ -69,13 +127,3 @@ if __name__ == "__main__":
             except AssertionError as e:
                 failed += 1; print("FAIL", name, str(e)[:200])
     sys.exit(1 if failed else 0)
-
-
-def test_out_of_term_date_prints_error_and_exits_nonzero():
-    # A date outside every teaching term used to print ERROR but exit 0, so an
-    # unattended run had no way to notice the destination never resolved.
-    with tempfile.TemporaryDirectory() as tmp:
-        kv, out = run(tmp, {}, today="2026-08-10")
-        assert out.returncode != 0, out.stdout + out.stderr
-        assert "ERROR: target date not in any term period" in out.stdout
-        assert "TERM_FOLDER" not in kv

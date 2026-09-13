@@ -114,12 +114,24 @@ summarise the plan into either file. If the path does not resolve, say so and
 stop, unless the message also carries a usable year and objective - then design
 from that and flag the file.
 
-Resolve the filing destination with `scripts/resolve-filing.py` using the first
-explicit year and subject in teacher-authored input, then the fixed LO-to-subject
-lookup in the main skill. Tell the teacher the destination before generation.
-If the resolver prints an `ERROR:` line or exits non-zero, continue the run and
-plan local-only delivery: the destination is a filing convenience, never a gate
-on making the lesson.
+### Say where the lesson will be filed, while the designer works
+
+In the same step that launches the Lesson Designer (never before it, never
+waiting on it) run:
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[PLUGIN_ROOT]/Knowledge/term/Term.md" "[YEAR]" "[SUBJECT]" > "[WORKING_DIR]/filing.txt"
+```
+
+It reads the term dates and the teacher's drive: a daily subject goes to the
+first free day after the week's filled ones, a weekly subject to this week's
+subject folder. Year and subject come from teacher-authored input; name an
+inferred subject aloud. In that same message tell the teacher one plain line,
+e.g. "Monday already has maths, so filing to Autumn 1 > Week 2 > Maths >
+Tuesday. Tell me if you'd like it somewhere else." Carry on without waiting; a
+day or week they name wins, so rewrite `filing.txt` with it. `OPENING_WEEK=yes`
+means a short week before Week 1: ask which week. On any other error, plan
+local-only delivery: filing never gates the lesson.
 
 For direct fixed slides, worksheets and stick-in sheets, let
 `run-fixed-resource.py` own output-family collision archiving. The retained wall
@@ -1462,9 +1474,11 @@ a two-lesson scope covers Lesson 1 only and name deferred learning.
 Once every branch has settled, build the explicit sync list from the teaching
 resources only: the deck, worksheets, answer key, working wall and stick-in
 sheets. The run report and walk-through stay in `OUTPUT_DIR` for the teacher to
-read there; the sync script skips them if passed. Run `run-fixed-resource.py sharepoint` directly with `--term-file`, the
-resolved term, year, week, subject/day and one `--file` per exact basename.
-Require schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`.
+read there; the sync script skips them if passed. Run `run-fixed-resource.py sharepoint` directly with `--term-file`, and
+the year, the term, week, subject and day from `[WORKING_DIR]/filing.txt`
+(`--day` only when `IS_CORE=yes`) and one `--file` per exact basename. Require
+schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`, then tell the teacher
+where it was saved in one line.
 
 Sync the delivered files whatever the package outcome: the run report, not the
 sync, is where faults are told. If the mapped drive is unavailable or the filing

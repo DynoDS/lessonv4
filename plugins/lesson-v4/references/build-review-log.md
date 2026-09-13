@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-13 The lesson says where it will be filed, and Tuesdays stay in their week (4.2.174)
+
+Daniel: the master plugin used to look through his drive when he asked for a lesson, find the next free day for a daily subject or this week's folder for a weekly one, and say "filing to term > week > maths > Wednesday, tell me if you'd like it somewhere else". lessonv4 was not doing it, and he asked whether it could run alongside the lesson designer rather than adding time.
+
+**The resolver survived; its instructions did not.** `resolve-filing.py` is master's script almost unchanged, and Phase 5 was still filing to the drive. The setup slice had shrunk to one line when `filing-destination.md` and the old playbook were retired on 28 August: no wording for the message, no reason for a moved day, and a pointer to a subject lookup that no longer exists. The setup slice now carries the message with one example, runs the resolver in the same step as the Lesson Designer launch (it takes a second and nothing waits on it or on the teacher's reply), and writes the answer to `filing.txt` so Phase 5 files to the week the teacher was shown, or to the day or week they named instead.
+
+**Weeks were counted from the term's first day.** Autumn 2026 opened on Tuesday 1 September, so every Tuesday to Friday came out a week early: with Monday 14 September filled, the next maths lesson resolved to Week 3 Tuesday. It worked last year because that term opened on a Monday. Daniel's drive calls Monday 7 September Week 1 and keeps 3 and 4 September in a folder he named by hand ("a one off, not to say it won't happen again"). Week 1 is now the first week of the term that starts on a Monday; a date before it prints `OPENING_WEEK=yes` and exits 2, and the orchestrator asks which week. Against the real drive tonight, maths now resolves to Week 2 Tuesday. Four new resolver tests; the playbook's size check passes without raising its budget.
+
+**Not changed.** The sync still files only into `Week N` folders, so a lesson for a hand-named opening-week folder stays on the computer.
+
 ## 2026-09-13 Each number-line question reads as its own question (4.2.169)
 
 Daniel said the Monday worksheet's questions were not clear: not enough space and no visual mark for each one, with "Each interval is worth..." too close to the question underneath.

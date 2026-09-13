@@ -23,7 +23,10 @@ subjects (Science, History, Geography, Art, DT, Music, PE, RE, PSHE, Computing,
 and the rest) are taught once a week and file straight into the subject folder
 with no day layer, matching how the teacher actually organises the drive.
 
-On a date that falls outside any teaching term it prints a single ERROR line.
+Week 1 is the first week of the term that starts on a Monday. A date in the
+short opening week before it prints TERM_FOLDER, OPENING_WEEK=yes and an ERROR
+line and exits 2; a date outside any teaching term prints a single ERROR line
+and exits 1.
 """
 import sys, re, os, glob
 from datetime import date, timedelta, datetime
@@ -59,16 +62,30 @@ DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday']
 CORE_SUBJECTS = {'maths', 'mathematics', 'english', 'reading', 'writing', 'literacy', 'numeracy'}
 is_core = subject.lower() in CORE_SUBJECTS
 
-def resolve(d):                       # (term, week) when d is a teaching-term weekday, else None
+def term_of(d):                       # (term folder, term start) when d sits in a teaching term, else None
     for name, start, end in rows:
         if start == end: continue
         if start <= d <= end and name in TERM_MAP:
-            return TERM_MAP[name], (d - start).days // 7 + 1
+            return TERM_MAP[name], start
     return None
+
+# Week 1 is the first week that begins on a Monday inside the term, because that
+# is how the teacher numbers the drive. Counting from the term's first day
+# instead put every Tuesday to Friday a week early whenever a term opened
+# mid-week (Autumn 2026 opened on a Tuesday, so Tuesday 15 September came out
+# as Week 3 when the drive calls it Week 2). Days before that first Monday are a
+# short opening week with no week number: the teacher names that folder by hand.
+def resolve(d):                       # (term, week) for a teaching weekday; week is None in a short opening week
+    t = term_of(d)
+    if not t: return None
+    term, start = t
+    week1 = start + timedelta(days=(7 - start.weekday()) % 7)
+    if d < week1: return term, None
+    return term, (d - week1).days // 7 + 1
 
 def first_teaching_day(d, limit=70):  # first weekday on/after d that sits in a teaching term
     for _ in range(limit):
-        if d.weekday() < 5 and resolve(d): return d
+        if d.weekday() < 5 and term_of(d): return d
         d += timedelta(days=1)
     return None
 
@@ -96,7 +113,7 @@ def _has_content(p):
 def occupied(d):
     if not (year_dir and subject): return False
     r = resolve(d)
-    if not r: return False
+    if not r or r[1] is None: return False
     term, week = r
     if is_core:
         p = os.path.join(year_dir, term, "Week %d" % week, subject, DAYS[d.weekday()])
@@ -139,6 +156,11 @@ if target:
     # Foundation subjects: no day layer, no bumping. The week slot resolves once
     # and the teacher redirects if it already holds content.
     res = resolve(d)
+    if res and res[1] is None:
+        # Exit 2, distinct from "out of term", so the caller asks the teacher
+        # which folder they made for the opening days instead of guessing one.
+        print(f"TERM_FOLDER={res[0]}\nOPENING_WEEK=yes\nERROR: {DAYS[d.weekday()]} {d:%d %B} falls before Week 1 of {res[0]}")
+        sys.exit(2)
     if res:
         term, week = res
         day_out = DAYS[d.weekday()] if is_core else ''
