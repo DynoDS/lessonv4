@@ -275,6 +275,11 @@ def main():
     parser.add_argument("--round", type=int, default=1, choices=(1, 2))
     parser.add_argument("--output", default=DEFAULT_OUTPUT)
     args = parser.parse_args()
+    # Every candidate's recorded path is read later by checks that run from
+    # another folder, so it must not depend on where this ran. A relative
+    # --output once recorded 'output/working/...' and a whole two-picture batch
+    # was rejected although both pictures existed (13 September 2026).
+    args.output = os.path.abspath(args.output)
     os.makedirs(args.output, exist_ok=True)
     summary_path = summary_path_for(args.output, args.round)
 

@@ -68,6 +68,39 @@ class PictureSourceTests(unittest.TestCase):
             self.assertEqual(summary["download_failure_count"], 1)
             self.assertEqual(summary["failure_kind"], "transport")
 
+    def test_a_relative_output_folder_still_records_a_path_usable_from_anywhere(self):
+        """A cloud run passed a relative --output; the recorded path then failed
+        the result check, which runs from another folder, and a whole batch of
+        real pictures was rejected (13 September 2026)."""
+        import os
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "run").mkdir()
+            good = self.image(root / "valid.jpg", "JPEG").read_bytes()
+            candidate = {"title": "File:one.jpg", "thumb_url": "https://example.test/one.jpg", "page_url": "https://commons.wikimedia.org/wiki/File:one.jpg", "artist": "Creator", "licence": "CC BY 4.0", "licence_url": "https://creativecommons.org/licenses/by/4.0/", "description": "one"}
+            previous = os.getcwd()
+            os.chdir(root / "run")
+            try:
+                with mock.patch.object(wikimedia, "search_commons", return_value=([candidate], ["object"])), mock.patch.object(wikimedia, "download_image", side_effect=lambda _u, d: Path(d).write_bytes(good)):
+                    with mock.patch.object(sys, "argv", [str(ROOT / "wikimedia_fetch.py"), "object", "--count", "1", "--output", "output/working/pictures"]):
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            try:
+                                wikimedia.main()
+                            except SystemExit as stop:
+                                self.assertEqual(stop.code, 0)
+            finally:
+                os.chdir(previous)
+            summary = json.loads((root / "run" / "output/working/pictures/_search-summary-wikimedia-r1.json").read_text())
+            recorded = Path(summary["results"][0]["path"])
+            self.assertTrue(recorded.is_absolute(), recorded)
+            self.assertTrue(recorded.is_file(), "the recorded path resolves from a different working folder")
+
+    def test_every_fetcher_records_paths_that_do_not_depend_on_where_it_ran(self):
+        for name in ("unsplash_fetch.py", "wikimedia_fetch.py", "openverse_fetch.py", "web_fetch.py"):
+            with self.subTest(fetcher=name):
+                self.assertIn("args.output = os.path.abspath(args.output)", (ROOT / name).read_text(encoding="utf-8"))
+
     def test_wikimedia_complete_jpeg_records_full_decode_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = self.image(Path(tmp) / "candidate.jpg", "JPEG")

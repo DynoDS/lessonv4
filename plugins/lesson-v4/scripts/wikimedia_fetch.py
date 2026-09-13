@@ -276,7 +276,12 @@ def summary_path_for(output_dir, round_number):
 def main():
     parser = argparse.ArgumentParser(description="Fetch licensed images from Wikimedia Commons")
     parser.add_argument("query"); parser.add_argument("--count", type=int, default=3); parser.add_argument("--round", type=int, default=1, choices=(1, 2)); parser.add_argument("--output", default=DEFAULT_OUTPUT)
-    args = parser.parse_args(); os.makedirs(args.output, exist_ok=True); requested = max(args.count, 1); summary_path = summary_path_for(args.output, args.round)
+    args = parser.parse_args()
+    # Every candidate's recorded path is read later by checks that run from
+    # another folder, so it must not depend on where this ran. A relative
+    # --output once recorded 'output/working/...' and a whole two-picture batch
+    # was rejected although both pictures existed (13 September 2026).
+    args.output = os.path.abspath(args.output); os.makedirs(args.output, exist_ok=True); requested = max(args.count, 1); summary_path = summary_path_for(args.output, args.round)
     queries_run = [args.query]
     try: results, queries_run = search_commons(args.query, requested * RESERVE_MULTIPLIER)
     except SourceFailure as exc:

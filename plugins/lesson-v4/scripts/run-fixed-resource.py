@@ -394,6 +394,19 @@ def run(args) -> int:
     return 0
 
 
+def year_number(value: str) -> int:
+    """A year group however it is written: "4", "Y4" or "Year 4".
+
+    resolve-filing.py takes the teacher's own wording, so a run copied "Year 4"
+    across to this step, where a bare integer was required and the delivery
+    was refused (13 September 2026).
+    """
+    digits = re.sub(r"\D", "", str(value))
+    if not digits:
+        raise argparse.ArgumentTypeError(f"not a year group: {value!r}")
+    return int(digits)
+
+
 def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser(description=__doc__)
     root.add_argument("kind", choices=("slides", "worksheets", "wall", "stick-in", "deliver"))
@@ -402,7 +415,7 @@ def parser() -> argparse.ArgumentParser:
     root.add_argument("--output-dir", required=True)
     root.add_argument("--lesson-name")
     root.add_argument("--summary-output", required=True)
-    root.add_argument("--year", type=int)
+    root.add_argument("--year", type=year_number)
     root.add_argument("--term-folder")
     root.add_argument("--week", type=int)
     root.add_argument("--subject")

@@ -1,5 +1,11 @@
 # Build review log
 
+## 2026-09-13 Picture paths and year groups no longer depend on how a run wrote them (4.2.193)
+
+The first complete ChatGPT Work cloud lesson (Year 4 RE, Symbols and their meanings) reached the letterbox with a real PowerPoint and PDFs, every worker at its requested model and effort, and a review that sent the design back once before approving. It was PARTIAL for one engine fault: a Wikimedia candidate was recorded as output/working/..., a path relative to where the scout ran; validate-image-scout.py resolves it from another folder, found no file, and rejected the whole two-picture batch (PICTURE_RESULT_INVALID: candidate path is not a regular file under WORK_ROOT), so the slides first built with five SLIDE_PICTURE_MISSING diagnostics and provenance receipts were never written. All four fetchers (unsplash, wikimedia, openverse, web) recorded str(path) from --output as given; each now makes --output absolute before anything is written. A test runs the Wikimedia fetcher from one folder with a relative --output and resolves the recorded path from another; it fails without the fix.
+
+The same run's delivery was refused with run-fixed-resource.py: argument --year: invalid int value: Year 4, because resolve-filing.py takes the teacher's wording and the wrapper required an integer. The wrapper now accepts 4, Y4 or Year 4, pinned by a test. Not changed: the run also showed several commands first called with missing required arguments and recovered; those are orchestrator slips with clear errors, not engine faults.
+
 ## 2026-09-13 A run keeps going where a finished worker does not wake it (4.2.192)
 
 The first full lesson in ChatGPT Work's cloud spawned the Lesson Designer, then went quiet when it finished; it continued only when the user typed, spawned the reviewer, and went quiet again. Its turn was ending with a worker running, and Work's cloud does not start a new turn when a worker finishes, so an unattended run would stop there. It also started only the slide designer after review, not the worksheet branch beside it. The playbook's rule was "wait for it through the host's ordinary worker-wait mechanism", which on Claude Code and Codex on the teacher's computer is true without extra work.

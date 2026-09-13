@@ -399,6 +399,22 @@ print('STATUS=COPIED')
         # find the lesson that came before it.
         self.assertIn("--subject", summary["command"])
 
+    def test_a_year_written_as_the_teacher_writes_it_is_accepted(self) -> None:
+        # A cloud run passed "Year 4", copied from the filing step, and the
+        # delivery was refused as an invalid integer (13 September 2026).
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("run_fixed_resource_year", SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for written in ("4", "Y4", "Year 4"):
+            with self.subTest(written=written):
+                args = module.parser().parse_args([
+                    "deliver", "--plugin-root", "p", "--working-dir", "w", "--output-dir", "o",
+                    "--summary-output", "s", "--year", written,
+                ])
+                self.assertEqual(args.year, 4)
+
 
 if __name__ == "__main__":
     unittest.main()
