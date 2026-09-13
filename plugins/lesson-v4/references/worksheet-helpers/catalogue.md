@@ -368,7 +368,7 @@ Smallest usable: **80mm wide x 60mm tall**. Spare height: never takes spare heig
 
 A titled time-series line graph with numbered axes.
 
-Smallest usable: **80mm wide x 55mm tall**. Spare height: never takes spare height.
+Smallest usable: **80mm wide x 61mm tall**. Spare height: never takes spare height.
 
 ```json
 {

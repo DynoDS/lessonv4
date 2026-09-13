@@ -34,7 +34,7 @@ const rainforestLayersSvg = require("../../../shared/visuals/rainforest-layers-s
 const balancedPatternPlateSvg = require("../../../shared/visuals/balanced-pattern-plate-svg");
 const mapSvg = require("../../../shared/visuals/map-svg");
 const { atPrintedWidth } = require("./at-printed-width");
-const { profileFor, MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
+const { profileFor, MM_TO_PT, PROFILES } = require("../../../shared/visuals/surface-profiles");
 const reflectionGridSvg = require("../../../shared/visuals/reflection-grid-svg");
 const tallyChartSvg = require("../../../shared/visuals/tally-chart-svg");
 const translationShapeSvg = require("../../../shared/visuals/translation-shape-svg");
@@ -93,22 +93,56 @@ function fromShared(module, toSpec, { capMm, minWidthMm, minHeightMm, greed = 0 
   };
 }
 
-const helpers = {
-  "bar-chart": fromShared(
-    barChartSvg,
-    // Passed as written: the shared chart reads the board's spelling (y_max,
-    // y_interval, y_label, x_label) and the sheet's older camelCase alike, so a
-    // chart copied from a slide draws here with its axis titles, which the
-    // sheet used to drop (13 September 2026).
-    (spec) => spec,
-    {
-      capMm: 140,
-      // Every bar needs room for its category label underneath, so a chart
-      // with eight categories needs far more width than one with three.
-      minWidthMm: (spec) => Math.max(80, (spec.categories || []).length * 22),
-      minHeightMm: 60,
+// The charts are laid out at the width they print, and a chart whose names or
+// title cannot sit across a width at the sheet's readable floor refuses that
+// width by name. So a chart's minimum is the floor the user confirmed on
+// printed rungs, raised to the narrowest width this chart actually draws at:
+// otherwise long category names would make the fit check throw instead of
+// asking for a wider zone.
+const SHEET_WIDEST_MM = 400;
+
+// A chart fills the width of its zone, as the scaled chart it replaced did, and
+// its plot is as tall for that width as the board's. Its words grow with it up
+// to the board's own factor, so a chart in a wide zone prints as a bigger chart
+// with bigger numbers rather than small numbers on a flat chart with paper to
+// spare. They never print under the sheet's type size in a zone wide enough to
+// hold them there.
+const CHART_GROW = PROFILES.slides.grow;
+function narrowestThatDraws(module, floorMm) {
+  return (spec) => {
+    const floor = floorMm(spec);
+    for (let mm = floor; mm <= SHEET_WIDEST_MM; mm += 2) {
+      try {
+        module.tightSvg(spec, profileFor("worksheets", { widthMm: mm }));
+        return mm;
+      } catch (err) {
+        // Only a width that is too narrow is worth widening for. Anything
+        // else (a chart with no data) refuses at every width, and does so by
+        // name when the sheet draws it.
+        if (!/TOO_NARROW|TITLE_TOO_LONG/.test(String(err && err.message))) return floor;
+      }
     }
-  ),
+    return floor;
+  };
+}
+
+const helpers = {
+  // Laid out at the width it prints, as the board and the stick-in pack place
+  // it, so a chart on paper has the proportions it has everywhere else and its
+  // scale numbers print at a real size. Until this the sheet scaled the older
+  // design-size chart to the zone, which made it tall and narrow beside the
+  // board's. The spec is passed as written: the shared chart reads the board's
+  // spelling (y_max, y_interval, y_label, x_label) and the sheet's older
+  // camelCase alike, so a chart copied from a slide draws here with its axis
+  // titles.
+  "bar-chart": atPrintedWidth(barChartSvg, {
+    // Every bar needs room for its category label underneath, so a chart
+    // with eight categories needs far more width than one with three.
+    minWidthMm: narrowestThatDraws(barChartSvg, (spec) =>
+      Math.max(80, (spec.categories || []).length * 22)
+    ),
+    grow: CHART_GROW,
+  }),
 
   // Sorting into two overlapping properties. A blank one (no items) is the
   // frame the child fills; a placed one is the worked example. Nothing about
@@ -284,34 +318,21 @@ const helpers = {
   ),
 
   // A titled time-series line graph with numbered axes. More x-ticks need
-  // more width, or the plotted points crowd into each other.
-  "line-graph": fromShared(
-    lineGraphSvg,
-    (spec) => ({
-      points: spec.points,
-      xLabel: spec.xLabel,
-      yLabel: spec.yLabel,
-      title: spec.title,
-      xMax: spec.xMax,
-      yMax: spec.yMax,
-      xStep: spec.xStep,
-      yStep: spec.yStep,
+  // more width, or the plotted points crowd into each other. Laid out at the
+  // width it prints, like the bar chart above and for the same reason.
+  "line-graph": atPrintedWidth(lineGraphSvg, {
+    minWidthMm: narrowestThatDraws(lineGraphSvg, (spec) => {
+      const step = Number(spec.xStep) > 0 ? Number(spec.xStep) : 1;
+      const dataMax = (spec.points || []).reduce(
+        (m, p) => Math.max(m, Number(p && p.x) || 0),
+        0
+      );
+      const xMax = Number(spec.xMax) > 0 ? Number(spec.xMax) : dataMax || step;
+      const ticks = Math.max(1, Math.round(xMax / step));
+      return Math.max(80, ticks * 12);
     }),
-    {
-      capMm: 130,
-      minWidthMm: (spec) => {
-        const step = Number(spec.xStep) > 0 ? Number(spec.xStep) : 1;
-        const dataMax = (spec.points || []).reduce(
-          (m, p) => Math.max(m, Number(p && p.x) || 0),
-          0
-        );
-        const xMax = Number(spec.xMax) > 0 ? Number(spec.xMax) : dataMax || step;
-        const ticks = Math.max(1, Math.round(xMax / step));
-        return Math.max(80, ticks * 12);
-      },
-      minHeightMm: 55,
-    }
-  ),
+    grow: CHART_GROW,
+  }),
 
   // The parallel / perpendicular / neither pair. Like angle, it reads or
   // fails to read at a glance and gains nothing from growing further.

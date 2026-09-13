@@ -10,14 +10,17 @@
 // 11pt axis numbers, and dropped the graph's title that the sheet and the wall
 // printed. Every surface now places this drawing.
 //
-//   tightSvg(spec)          -> { svg, aspect, w, h, anchors }  in design units,
-//                              scaled by the surface (the sheet and the wall)
-//   tightSvg(spec, profile) -> the same, laid out in points at the size it
-//                              prints (shared/visuals/surface-profiles.js): the
-//                              axis numbers print at the profile's size, the plot
+//   tightSvg(spec, profile) -> { svg, aspect, w, h, anchors }, laid out in
+//                              points at the size it prints
+//                              (shared/visuals/surface-profiles.js): the axis
+//                              numbers print at the profile's size, the plot
 //                              stretches to the box, and a box that cannot hold
 //                              readable numbers is refused by name
-//   cacheKey(spec[, profile])
+//   cacheKey(spec, profile)
+//
+// There was also a one-argument form in design units, which the sheet and the
+// wall scaled to fit. It went once they placed the printed-size layout too, so
+// every surface's graph keeps its axis numbers at a real size.
 //
 // The `anchors` map names the parts a "read a line graph" anatomy poster points at:
 //   title    the graph heading
@@ -54,7 +57,11 @@ const TITLE_FS      = 36;
 const AXIS_TITLE_FS = 30;   // rotated y-axis title / x-axis title
 const TICK_FS       = 26;   // axis numbers
 
-const PLOT_H     = 460;   // height of the plotting area, when the box sets none
+// With no depth set by the box (paper, the wall, the pack), the plot is this
+// tall for its width: the shape the board's graphs take in a slide zone, where
+// the plot measured 0.62 of its width (13 September 2026). A graph drawn wider
+// is then a bigger graph, not a flatter one.
+const PLOT_H_PER_W = 0.62;
 const X_SLOT     = 82;    // width per x tick interval
 const PLOT_W_MIN = 360;
 const Y_NUM_W    = 54;    // room for the scale numbers left of the axis
@@ -137,9 +144,8 @@ function measureAt(data, sc, u, widthCap = null) {
 
 function layout(data, profile) {
   const sc = resolveScale(data);
-  if (!profile) {
-    const m = measureAt(data, sc, 1);
-    return { sc, m, W: m.naturalW, plotW: m.plotW, plotH: PLOT_H };
+  if (!profile || !(profile.widthPt > 0)) {
+    throw new Error('LINE_GRAPH_NO_PROFILE: a line graph is laid out at the size it prints, so it needs the surface profile and width it will print at (shared/visuals/surface-profiles.js).');
   }
   if (!sc.points.length) {
     throw new Error('LINE_GRAPH_EMPTY: a line graph needs at least one point with a numeric x and y; nothing was drawn in its place.');
@@ -147,6 +153,12 @@ function layout(data, profile) {
   const W = profile.widthPt;
   const floorU = profile.minFontPt / TICK_FS;
   let u = profile.fontPt / TICK_FS;
+  // A surface that grows its drawings into spare room (`grow`) lets the words
+  // grow with a graph given more width than it needs, up to that factor and
+  // never below the profile's own size. Where the box sets the depth (the
+  // board) the depth decides instead, as it always has.
+  const grow = profile.heightPt ? 1 : Math.max(1, profile.grow || 1);
+  if (grow > 1) u *= Math.min(grow, Math.max(1, W / measureAt(data, sc, u, W).naturalW));
   const fixedW = (mm) => mm.padLeft + PAD_RIGHT * mm.u + 2 * mm.margin;
   const fitsAcross = (mm) => fixedW(mm) + mm.minPlotW <= W;
   let m = measureAt(data, sc, u, W);
@@ -178,7 +190,7 @@ function layout(data, profile) {
       );
     }
   } else {
-    plotH = Math.max(PLOT_H * u, need(m));
+    plotH = Math.max((W - fixedW(m)) * PLOT_H_PER_W, need(m));
   }
   return { sc, m, W, plotW: W - fixedW(m), plotH };
 }
@@ -277,7 +289,7 @@ function tightSvg(data = {}, profile) {
 function cacheKey(data = {}, profile) {
   const { points, xStep, yStep, xMax, yMax } = resolveScale(data);
   const pts = points.map((p) => `${p.x},${p.y}`).join(';');
-  const box = profile ? `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}` : '';
+  const box = `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}`;
   return `line-graph${box}:${data.title || ''}:${data.xLabel || ''}:${data.yLabel || ''}:${pts}:${xStep}:${yStep}:${xMax}:${yMax}`;
 }
 

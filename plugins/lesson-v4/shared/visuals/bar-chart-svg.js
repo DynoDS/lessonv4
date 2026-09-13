@@ -11,14 +11,18 @@
 // board's were the ones read from the back of the room. Every surface now
 // places this drawing.
 //
-//   tightSvg(spec)          -> { svg, aspect, w, h, anchors }  in design units,
-//                              scaled by the surface (the sheet and the wall)
-//   tightSvg(spec, profile) -> the same, laid out in points at the size it
-//                              prints (shared/visuals/surface-profiles.js): the
-//                              scale numbers print at the profile's size, the
-//                              plot stretches to the box, and a box that cannot
-//                              hold readable numbers is refused by name
-//   cacheKey(spec[, profile])
+//   tightSvg(spec, profile) -> { svg, aspect, w, h, anchors }, laid out in
+//                              points at the size it prints
+//                              (shared/visuals/surface-profiles.js): the scale
+//                              numbers print at the profile's size, the plot
+//                              stretches to the box, and a box that cannot hold
+//                              readable numbers is refused by name
+//   cacheKey(spec, profile)
+//
+// There was also a one-argument form in design units, which the sheet and the
+// wall scaled to fit. It went once they placed the printed-size layout too, so
+// every surface's chart now keeps its scale numbers at a real size rather than
+// at whatever size the scaling left them.
 //
 // The `anchors` map names the parts a "read a bar chart" anatomy poster points at:
 //   title     the chart heading
@@ -55,7 +59,11 @@ const LABEL_FS = 28;   // category labels
 const TICK_FS  = 28;   // y-axis numbers
 const AXIS_TITLE_FS = 28;
 
-const PLOT_H     = 460;   // height of the plotting area, when the box sets none
+// With no depth set by the box (paper, the wall, the pack), the plot is this
+// tall for its width: the shape the board's charts take in a slide zone, where
+// the plot measured 0.61 to 0.64 of its width (13 September 2026). A chart
+// drawn wider is then a bigger chart, not a flatter one.
+const PLOT_H_PER_W = 0.62;
 const SLOT_W_MIN = 110;   // minimum width per category column
 const SLOT_PAD   = 18;    // clear space between two neighbouring category labels
 const BAR_FRAC   = 0.6;   // bar width as a fraction of its slot
@@ -161,14 +169,12 @@ function refuse(code, message) {
   throw new Error(`${code}: ${message}`);
 }
 
-// Where everything goes. Without a profile: the design size, scaled whole by
-// the surface. With one: points at the printed size, the plot stretched to the
+// Where everything goes: points at the printed size, the plot stretched to the
 // box, the numbers shrunk no further than the surface's readable floor.
 function layout(data, profile) {
   const s = readSpec(data);
-  if (!profile) {
-    const m = measureAt(s, 1);
-    return { s, m, W: m.naturalW, plotW: m.plotW, plotH: PLOT_H };
+  if (!profile || !(profile.widthPt > 0)) {
+    refuse('BAR_CHART_NO_PROFILE', 'a bar chart is laid out at the size it prints, so it needs the surface profile and width it will print at (shared/visuals/surface-profiles.js).');
   }
   if (!s.categories.length) {
     refuse('BAR_CHART_EMPTY', 'a bar chart needs at least one category with a value; nothing was drawn in its place.');
@@ -176,11 +182,17 @@ function layout(data, profile) {
   const W = profile.widthPt;
   const floorU = profile.minFontPt / TICK_FS;
   let u = profile.fontPt / TICK_FS;
+  // A surface that grows its drawings into spare room (`grow`) lets the words
+  // grow with a chart given more width than it needs, up to that factor and
+  // never below the profile's own size. Where the box sets the depth (the
+  // board) the depth decides instead, as it always has.
+  const grow = profile.heightPt ? 1 : Math.max(1, profile.grow || 1);
+  const startU = grow > 1 ? u * Math.min(grow, Math.max(1, W / measureAt(s, u, 1, W).naturalW)) : u;
   // Across: the category names have to sit under their bars without meeting.
   // Smaller names on one row first, down to the floor; then the full size on
   // two rows, down to the floor; then a refusal.
   const fitAcross = (tiers) => {
-    let uu = profile.fontPt / TICK_FS;
+    let uu = startU;
     let mm = measureAt(s, uu, tiers, W);
     while (mm.naturalW > W && uu > floorU) { uu = Math.max(floorU, uu - 0.01); mm = measureAt(s, uu, tiers, W); }
     return mm.naturalW <= W ? mm : null;
@@ -218,7 +230,7 @@ function layout(data, profile) {
       );
     }
   } else {
-    plotH = Math.max(PLOT_H * u, need(m));
+    plotH = Math.max((W - 2 * m.margin - m.padLeft - PAD_RIGHT * u) * PLOT_H_PER_W, need(m));
   }
   return { s, m, W, plotW: W - 2 * m.margin - m.padLeft - PAD_RIGHT * u, plotH };
 }
@@ -308,7 +320,7 @@ function tightSvg(data = {}, profile) {
 
 function cacheKey(data = {}, profile) {
   const s = readSpec(data);
-  const box = profile ? `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}` : '';
+  const box = `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}`;
   return `bar-chart${box}:${s.title}:${s.categories.join(',')}:${s.values.join(',')}:${s.interval}:${s.max}:${s.yLabel}:${s.xLabel}`;
 }
 

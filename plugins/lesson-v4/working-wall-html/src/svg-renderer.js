@@ -134,14 +134,19 @@ function hashColour(c) {
 // a key and a drawing function in the wall's profile, at the width a wide wall
 // visual prints across a card. Any picture moved into shared/visuals/ reaches
 // the wall through this.
+//
+// A drawing that names its parts (`anchors`, as the charts and the pictogram
+// do) hands them on, because a labelledDiagram card points its callouts at
+// those parts. Without them every named callout on an anatomy poster would be
+// dropped.
 const WALL_VISUAL_WIDTH_MM = 180;
 function sharedAtWidth(module, widthMm = WALL_VISUAL_WIDTH_MM) {
   const profile = () => profileFor('wall', { widthMm });
   return {
     keyFn: (spec) => module.cacheKey(spec, profile()),
     tightFn: (spec) => {
-      const { svg, aspect } = module.tightSvg(spec, profile());
-      return { svg, aspect };
+      const { svg, aspect, anchors } = module.tightSvg(spec, profile());
+      return anchors ? { svg, aspect, anchors } : { svg, aspect };
     },
   };
 }
@@ -198,6 +203,15 @@ const counterGroupWall = sharedAtWidth(counterGroupShared);
 const partWholeModelWall = sharedAtWidth(partWholeModelShared);
 const pyramidWall = sharedAtWidth(pyramidShared);
 const multGridWall = sharedAtWidth(multGridShared);
+// The bar chart and the line graph, laid out at their printed size as the
+// board, the sheet and the stick-in pack place them. The wall's words print
+// far larger than paper's, so at the default width a chart came out nearly
+// square where the sheet's is wide. Laid out wider, the words take the same
+// share of the chart as they do on paper and the chart keeps its proportions;
+// the card still places the picture by its shape.
+const WALL_CHART_WIDTH_MM = 300;
+const barChartWall = sharedAtWidth(barChartShared, WALL_CHART_WIDTH_MM);
+const lineGraphWall = sharedAtWidth(lineGraphShared, WALL_CHART_WIDTH_MM);
 
 
 
@@ -377,8 +391,8 @@ async function preRenderSvgs(spec, specDir) {
     'translation-shape': { keyFn: translationShapeShared.cacheKey, tightFn: translationShapeShared.tightSvg, collected: {} },
     'tally-chart':    { keyFn: tallyChartShared.cacheKey, tightFn: tallyChartShared.tightSvg, collected: {} },
     pictogram:        { keyFn: pictogramShared.cacheKey, tightFn: pictogramShared.tightSvg, collected: {} },
-    'bar-chart':      { keyFn: barChartShared.cacheKey, tightFn: barChartShared.tightSvg, collected: {} },
-    'line-graph':     { keyFn: lineGraphShared.cacheKey, tightFn: lineGraphShared.tightSvg, collected: {} },
+    'bar-chart':      { ...barChartWall, collected: {} },
+    'line-graph':     { ...lineGraphWall, collected: {} },
     'bar-model':      { keyFn: barModelShared.cacheKey, tightFn: barModelShared.tightSvg, collected: {} },
     'grid-map':       { keyFn: gridMapShared.cacheKey, tightFn: gridMapShared.tightSvg, collected: {} },
     'rainforest-layers': { keyFn: rainforestLayersShared.cacheKey, tightFn: rainforestLayersShared.tightSvg, collected: {} },
@@ -585,8 +599,8 @@ module.exports = {
   translationShapeKey: translationShapeShared.cacheKey,
   tallyChartKey: tallyChartShared.cacheKey,
   pictogramKey: pictogramShared.cacheKey,
-  barChartKey: barChartShared.cacheKey,
-  lineGraphKey: lineGraphShared.cacheKey,
+  barChartKey: barChartWall.keyFn,
+  lineGraphKey: lineGraphWall.keyFn,
   barModelKey: barModelShared.cacheKey,
   gridMapKey: gridMapShared.cacheKey,
   rainforestLayersKey: rainforestLayersShared.cacheKey,

@@ -18,10 +18,15 @@ const BOARD = profileFor('slides', { widthPt: 12 * 72, heightPt: 5 * 72 });
 const CHART = { title: 'Our favourite sports', categories: ['Football', 'Swimming', 'Tennis', 'Netball'], values: [12, 8, 6, 10], y_interval: 2, y_label: 'Children', x_label: 'Sport' };
 
 test('a bar chart reads the board spelling and the sheet spelling as the same chart', () => {
-  const board = barChart.tightSvg(CHART);
-  const sheet = barChart.tightSvg({ ...CHART, y_interval: undefined, y_label: undefined, x_label: undefined, yInterval: 2, yLabel: 'Children', xLabel: 'Sport' });
+  const board = barChart.tightSvg(CHART, BOARD);
+  const sheet = barChart.tightSvg({ ...CHART, y_interval: undefined, y_label: undefined, x_label: undefined, yInterval: 2, yLabel: 'Children', xLabel: 'Sport' }, BOARD);
   assert.equal(board.svg, sheet.svg);
   assert.ok(texts(board.svg).includes('Children') && texts(board.svg).includes('Sport'), 'axis titles print, as they did on the board');
+});
+
+test('a chart is only drawn at the size it prints, so a call without a surface is refused by name', () => {
+  assert.throws(() => barChart.tightSvg(CHART), /BAR_CHART_NO_PROFILE/);
+  assert.throws(() => lineGraph.tightSvg({ points: [{ x: 0, y: 1 }] }), /LINE_GRAPH_NO_PROFILE/);
 });
 
 test('with no interval the scale steps in a number a child counts in, never a silent 1', () => {
