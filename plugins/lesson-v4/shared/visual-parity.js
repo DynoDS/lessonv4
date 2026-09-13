@@ -445,8 +445,6 @@ const SHARING_BACKLOG = Object.freeze({
   "triangle-square": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
   "turn-diagram": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
   "clock": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
-  "point-route": { slides: 'missing', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
-  "scale-interval": { slides: 'missing', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "pyramid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "bar-chart": { slides: 'own', stickin: 'missing' },
   "line-graph": { slides: 'own', stickin: 'missing' },
@@ -482,6 +480,12 @@ const SHARING_BACKLOG = Object.freeze({
   "classification-key": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
 });
 
-const PICTURES = PRIMITIVES.filter((p) => !TYPED_LAYOUT.includes(p.id));
+// Marks that exist only as a success-criteria cue (join the points in order, count
+// equal scale intervals). They are not pictures a lesson places on a surface: they
+// are drawn inside a criteria step, wherever that step is drawn, and a full-size
+// version would be a fake second picture (see their notes above).
+const SUCCESS_CRITERIA_CUES = Object.freeze(['point-route', 'scale-interval']);
 
-module.exports = { PRIMITIVES, PICTURES, TYPED_LAYOUT, WORKSHEET_LAYOUT_EXEMPT, SUCCESS_CRITERIA_AUDIT, SLIDE_LAYOUT_EXEMPT, SHARING_BACKLOG };
+const PICTURES = PRIMITIVES.filter((p) => !TYPED_LAYOUT.includes(p.id) && !SUCCESS_CRITERIA_CUES.includes(p.id));
+
+module.exports = { PRIMITIVES, PICTURES, TYPED_LAYOUT, SUCCESS_CRITERIA_CUES, WORKSHEET_LAYOUT_EXEMPT, SUCCESS_CRITERIA_AUDIT, SLIDE_LAYOUT_EXEMPT, SHARING_BACKLOG };
