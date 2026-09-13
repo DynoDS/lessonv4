@@ -43,6 +43,7 @@ const FAMILIES = [
       "bar-chart", "line-graph", "pictogram", "tally-chart", "venn", "carroll",
       "label-diagram", "rainforest-layers", "balanced-pattern-plate", "map", "grid-map",
       "process-chain", "circuit-diagram", "classification-key",
+      "circuit-symbol-bank", "parachute-forces",
     ],
   ],
   [

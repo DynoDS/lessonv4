@@ -14,6 +14,17 @@ const geographicalDescriptionFrame = require("../../shared/visuals/geographical-
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
 const numberLine = require("../../shared/visuals/number-line-svg");
+const linePair = require("../../shared/visuals/line-pair-svg");
+const barModel = require("../../shared/visuals/bar-model-svg");
+const tallyChart = require("../../shared/visuals/tally-chart-svg");
+const pictogram = require("../../shared/visuals/pictogram-svg");
+const blankSurface = require("../../shared/visuals/blank-surface-svg");
+const balancedPatternPlate = require("../../shared/visuals/balanced-pattern-plate-svg");
+const circuitDiagram = require("../../shared/visuals/circuit-diagram-svg");
+const circuitSymbolBank = require("../../shared/visuals/circuit-symbol-bank-svg");
+const parachuteForces = require("../../shared/visuals/parachute-forces-svg");
+const barChart = require("../../shared/visuals/bar-chart-svg");
+const lineGraph = require("../../shared/visuals/line-graph-svg");
 const { profileFor } = require("../../shared/visuals/surface-profiles");
 
 // The one way the pack places a shared drawing laid out at its printed size,
@@ -195,6 +206,45 @@ const VISUALS = {
   // cell copied from a check slide is stripped to a blank write-on cell, so
   // copying either the task or the answer table yields the same blank piece.
   table: { tightSvg: recordingTable.tightSvg, defaultWidthMm: 160 },
+
+  // ── Pictures the pack could not draw until 13 September 2026, when every
+  //    picture became one shared drawing on every surface. Whether a lesson
+  //    glues one into a book is the book-example designer's call; the pack
+  //    only has to be able to print the same picture the board showed. Each
+  //    width is the smallest at which that drawing's own words still print at
+  //    about 9pt or more, so the page still packs tight.
+  //
+  // 45mm, like the angle: a pair of lines reads at a glance or not at all.
+  "line-pair": { tightSvg: linePair.tightSvg, defaultWidthMm: 45 },
+  // 110mm: the child writes a number into the dashed part, so the part has to
+  // hold a Year 4 hand's digits.
+  "bar-model": { tightSvg: barModel.tightSvg, defaultWidthMm: 110 },
+  // 120mm: a tally to complete (blank: true) needs its tally cells wide
+  // enough for the bundles of five the child strikes through.
+  "tally-chart": { tightSvg: tallyChart.tightSvg, defaultWidthMm: 120 },
+  // 110mm: the half symbol has to stay visibly half a circle.
+  pictogram: { tightSvg: pictogram.tightSvg, defaultWidthMm: 110 },
+  // 130mm, like the number line: the empty band above the line is where the
+  // child draws their own jumps.
+  "blank-surface": { tightSvg: blankSurface.tightSvg, defaultWidthMm: 130 },
+  // 180mm: the plate's smallest labels print at about 10pt here; narrower and
+  // the food-group names in the thin wedges drop under that.
+  "balanced-pattern-plate": { tightSvg: balancedPatternPlate.tightSvg, defaultWidthMm: 180 },
+  // 40mm tall, width following the number of circuits: one circuit and a row
+  // of three keep the same symbol size, which is what the child compares.
+  "circuit-diagram": { tightSvg: circuitDiagram.tightSvg, fitHeightMm: 40 },
+  // 30mm tall, width following the number of symbols, so every symbol keeps a
+  // cell big enough to tell an open switch from a closed one. It is a long thin
+  // strip, so the 7mm band a labelled piece gives up for its letter takes a
+  // quarter of its height; at 22mm that left the names at about 7pt.
+  "circuit-symbol-bank": { tightSvg: circuitSymbolBank.tightSvg, fitHeightMm: 30 },
+  // 200mm: seven labels round two parachutes; at this width the smallest
+  // prints at about 10pt, which is the thing to protect.
+  "parachute-forces": { tightSvg: parachuteForces.tightSvg, defaultWidthMm: 200 },
+  // The two charts are laid out at the width they print, in the pack's
+  // profile, so their scale numbers are set at the pack's own type size.
+  "bar-chart": sharedPiece(barChart, 130),
+  "line-graph": sharedPiece(lineGraph, 130),
 };
 
 // Row visuals: one child's piece is a strip of N figures, each with its own
@@ -345,6 +395,42 @@ function missingQuestionContent(item) {
         }
       }
       return null;
+    // A chart or diagram with nothing to show would tile an empty frame for
+    // every child. Where the drawing itself refuses a spec (a symbol it does
+    // not know, a parachute ratio that is not the fair test), that refusal is
+    // the reason given, so the item is skipped by name rather than crashing
+    // the whole pack.
+    case "bar-chart":
+      if (!Array.isArray(s.categories) || s.categories.length === 0 || !Array.isArray(s.values) || s.values.length === 0) {
+        return "a bar chart needs categories and a value for each";
+      }
+      return null;
+    case "line-graph":
+      if (!Array.isArray(s.points) || !s.points.some((p) => p && Number.isFinite(p.x) && Number.isFinite(p.y))) {
+        return "a line graph needs at least one point with a numeric x and y";
+      }
+      return null;
+    case "pictogram":
+      if (!Array.isArray(s.categories) || s.categories.length === 0) {
+        return "a pictogram needs its categories";
+      }
+      return null;
+    case "tally-chart":
+      if (!Array.isArray(s.rows) || s.rows.length === 0) {
+        return "a tally chart needs at least one row";
+      }
+      return null;
+    case "circuit-diagram":
+    case "circuit-symbol-bank":
+    case "parachute-forces": {
+      const drawing = { "circuit-diagram": circuitDiagram, "circuit-symbol-bank": circuitSymbolBank, "parachute-forces": parachuteForces }[item.visual];
+      try {
+        drawing.tightSvg(s);
+        return null;
+      } catch (error) {
+        return error.message;
+      }
+    }
     default:
       return null;
   }

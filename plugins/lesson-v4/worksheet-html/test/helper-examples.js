@@ -519,6 +519,29 @@ module.exports = {
   },
 
   // ─── thinking diagrams ───
+  // The board's own spelling. Labels are the exact names a child is taught.
+  "circuit-symbol-bank": {
+    items: [
+      { symbol: "cell", label: "cell" },
+      { symbol: "lamp", label: "lamp" },
+      { symbol: "wire", label: "wire" },
+      { symbol: "switch-open", label: "open switch" },
+      { symbol: "switch-closed", label: "closed switch" },
+    ],
+  },
+  // The ratios are fixed by the drawing (3:1 canopies, equal cords and loads);
+  // what a lesson writes is the labels, in its own words.
+  "parachute-forces": {
+    labels: {
+      largeCanopy: "More air to push out of the way",
+      smallCanopy: "Less air to push out of the way",
+      largeUpForce: "More air resistance",
+      smallUpForce: "Less air resistance",
+      downForce: "Gravity pulls down",
+      cords: "Same cord length",
+      loads: "Same load",
+    },
+  },
   "circuit-diagram": {
     text: "Look at each circuit. Will the lamp light?",
     // The states are MIXED on purpose. A row that is all gaps teaches a child

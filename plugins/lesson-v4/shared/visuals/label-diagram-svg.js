@@ -376,6 +376,67 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   return { svg, w: CW, h: CH, aspect: CW / CH };
 }
 
+// A labelled diagram from a lesson's spec, with the board's presentation
+// rules, for any surface that places the picture whole: the board and the
+// working wall. The wall could not show a labelled photograph at all until 13
+// September 2026 (it only overlaid labels on a diagram it had drawn itself), so
+// a unit's anatomy poster of a real flower or a real church had to be left off
+// the wall or rebuilt; now the wall places the same picture the slide shows.
+//
+// The picture has to be read from its file first, which only the surface can
+// do: the spec reaches here with the image already prepared as
+//   imageHref / imageWidth / imageHeight   (href / width / height also read)
+// alongside the lesson's own fields, in the board's spelling:
+//   imagePath  the file (only used in the cache key; the surface reads it)
+//   callouts   [{ anchor, label, label_at?, given? }]  (a sheet's `labels` is read too)
+//   layout, marginXRatio, marginYRatio, labelMaxChars, arrow, labelColour
+//
+// `layout: "sides"` is the poster form for a PHOTO: the names stack in the side
+// margins on clear white, joined by leader lines, so dark label text never
+// lands on the picture. When it is asked for, the board's poster defaults
+// apply (a wide side band, a slim top and bottom band, wrapping at 16
+// characters), each still overridable per spec; every other spec draws exactly
+// as it always has.
+function tightSvg(spec = {}) {
+  const href = spec.imageHref != null ? spec.imageHref : spec.href;
+  const width = Number(spec.imageWidth != null ? spec.imageWidth : spec.width);
+  const height = Number(spec.imageHeight != null ? spec.imageHeight : spec.height);
+  if (!href || !(width > 0) || !(height > 0)) {
+    throw new Error(
+      'LABEL_DIAGRAM_IMAGE_MISSING: a labelled diagram needs its picture read from imagePath before it is drawn; ' +
+        'no picture reached the drawing, so nothing was drawn in its place.'
+    );
+  }
+  const isSides = spec.layout === 'sides';
+  return buildLabelDiagramSvg({
+    href,
+    width,
+    height,
+    callouts: Array.isArray(spec.callouts) ? spec.callouts : Array.isArray(spec.labels) ? spec.labels : [],
+    blue: spec.blue || DEFAULT_BLUE,
+    font: spec.font || 'Comic Sans MS',
+    layout: spec.layout || 'auto',
+    marginXRatio: spec.marginXRatio != null ? spec.marginXRatio : (isSides ? 0.22 : null),
+    marginYRatio: spec.marginYRatio != null ? spec.marginYRatio : (isSides ? 0.02 : null),
+    labelMaxChars: spec.labelMaxChars != null ? spec.labelMaxChars : (isSides ? 16 : 0),
+    arrow: spec.arrow != null ? spec.arrow : false,
+    labelColour: spec.labelColour || undefined,
+  });
+}
+
+// Two diagrams that share a picture and callouts but lay their labels out
+// differently are not the same picture, so the presentation flags belong in
+// the key; the picture is named by its file, never by its inlined bytes.
+function cacheKey(spec = {}) {
+  return [
+    'label-diagram',
+    String(spec.imagePath || spec.image || ''),
+    JSON.stringify(spec.callouts || spec.labels || []),
+    spec.layout || 'auto',
+    spec.marginXRatio, spec.marginYRatio, spec.labelMaxChars, spec.arrow, spec.labelColour,
+  ].join('|');
+}
+
 // Deliberate inline treatment: target dot -> ruled leader -> label line. A base
 // image would be task-specific and unreadable in the narrow Success Criteria
 // slot, but the mark the child must draw remains clear.
@@ -385,4 +446,4 @@ function leaderCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { buildLabelDiagramSvg, leaderCueSvg };
+module.exports = { buildLabelDiagramSvg, tightSvg, cacheKey, leaderCueSvg };

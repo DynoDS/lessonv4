@@ -196,6 +196,10 @@ module.exports = {
   // ─── science ───
   "circuit-diagram":
     "One series circuit or a row of them in the standard symbols, each carrying its own state.",
+  "circuit-symbol-bank":
+    "The key of standard circuit symbols (cell, lamp, wire, open and closed switch), each with its name beneath: the same bank the board teaches from.",
+  "parachute-forces":
+    "Two model parachutes compared after a fair test: a canopy three times as wide, equal cords and loads, and the force arrows, labelled.",
   "classification-key":
     "A branching yes/no identification key down to named living things.",
   "process-chain":

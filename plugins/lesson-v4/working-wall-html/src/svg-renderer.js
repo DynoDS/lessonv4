@@ -55,6 +55,11 @@ const placeValueChartShared = require('../../shared/visuals/place-value-chart-sv
 // the board show one circuit rather than two drawings of it.
 const circuitShared = require('../../shared/visuals/circuit-diagram-svg');
 const parachuteForcesShared = require('../../shared/visuals/parachute-forces-svg');
+const blankSurfaceShared = require('../../shared/visuals/blank-surface-svg');
+const circuitSymbolBankShared = require('../../shared/visuals/circuit-symbol-bank-svg');
+// A labelled photograph: the same picture, and the same poster rules, the slide
+// uses. Its picture is read from the card's imagePath before it is drawn.
+const labelDiagramShared = require('../../shared/visuals/label-diagram-svg');
 // The annotation overlay (anchor → leader line → label) shared with the slides,
 // worksheets and stick-in pack. The wall uses it to turn any drawn primitive
 // into an "anatomy poster" reference card: the diagram children met on the board,
@@ -619,6 +624,9 @@ function badgeKey(number, fillColour) {
 // pre-render and the card renderer agree on one storage key. Exported for
 // render-card.js's pickVisual.
 function calloutKeySuffix(visual) {
+  // A labelled diagram's callouts are its own picture, drawn by its own
+  // drawing, not an overlay laid on top of it.
+  if (visual && visual.type === 'label-diagram') return '';
   return (visual && Array.isArray(visual.callouts) && visual.callouts.length)
     ? '|callouts:' + JSON.stringify(visual.callouts)
     : '';
@@ -706,7 +714,7 @@ async function renderAnnotated(visual, prim, sharp) {
 // glance from desk to wall expecting the picture and find a caption. Step
 // badges are stylistic only (numbered green badges decorating worked-example
 // steps) — they fall back silently to plain step labels if sharp is missing.
-async function preRenderSvgs(spec) {
+async function preRenderSvgs(spec, specDir) {
   const cards = Array.isArray(spec.cards) ? spec.cards : [];
 
   // Each visual type has its own (key → spec) collector and (key → buffer)
@@ -743,6 +751,9 @@ async function preRenderSvgs(spec) {
     'place-value-chart': { keyFn: placeValueChartShared.cacheKey, tightFn: placeValueChartShared.tightSvg, collected: {} },
     'circuit-diagram': { keyFn: circuitShared.cacheKey, tightFn: circuitShared.tightSvg, collected: {} },
     'parachute-forces': { keyFn: parachuteForcesShared.cacheKey, tightFn: parachuteForcesShared.tightSvg, collected: {} },
+    'blank-surface': { keyFn: blankSurfaceShared.cacheKey, tightFn: blankSurfaceShared.tightSvg, collected: {} },
+    'circuit-symbol-bank': { keyFn: circuitSymbolBankShared.cacheKey, tightFn: circuitSymbolBankShared.tightSvg, collected: {} },
+    'label-diagram': { keyFn: labelDiagramShared.cacheKey, tightFn: labelDiagramShared.tightSvg, collected: {} },
   };
 
   const badges = new Set();
@@ -814,6 +825,26 @@ async function preRenderSvgs(spec) {
   }
 
   const map = {};
+
+  // A labelled diagram is drawn over a photograph the card names by file, so
+  // the file is read here, relative to the wall spec, before its drawing is
+  // asked for. A named picture that cannot be read fails the build like any
+  // other promised visual: a poster of parts with no picture labels nothing.
+  for (const [key, visual] of Object.entries(PRIMITIVES['label-diagram'].collected)) {
+    const file = visual.imagePath || visual.image;
+    const abs = file ? require('path').resolve(specDir || '.', file) : null;
+    if (!abs || !require('fs').existsSync(abs)) {
+      throw new Error(`[working-wall] label-diagram names the picture "${file || ''}", which could not be read${specDir ? ` from ${specDir}` : ''}.`);
+    }
+    const meta = await sharp(abs).metadata();
+    const mime = meta.format === 'png' ? 'image/png' : meta.format === 'svg' ? 'image/svg+xml' : 'image/jpeg';
+    PRIMITIVES['label-diagram'].collected[key] = {
+      ...visual,
+      imageHref: `data:${mime};base64,${require('fs').readFileSync(abs).toString('base64')}`,
+      imageWidth: meta.width,
+      imageHeight: meta.height,
+    };
+  }
 
   for (const prim of Object.values(PRIMITIVES)) {
     for (const [key, primSpec] of Object.entries(prim.collected)) {
@@ -912,6 +943,9 @@ module.exports = {
   placeValueChartKey: placeValueChartShared.cacheKey,
   circuitDiagramKey: circuitShared.cacheKey,
   parachuteForcesKey: parachuteForcesShared.cacheKey,
+  blankSurfaceKey: blankSurfaceShared.cacheKey,
+  circuitSymbolBankKey: circuitSymbolBankShared.cacheKey,
+  labelDiagramKey: labelDiagramShared.cacheKey,
   badgeSvg,
   badgeKey,
   calloutKeySuffix,

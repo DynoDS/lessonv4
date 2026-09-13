@@ -282,7 +282,7 @@ async function build(specPath, outDir, options = {}) {
     // Pre-render any SVG primitives the cards need (clock faces, step
     // badges) into PNG buffers before the render loop; one shared pre-render
     // pass feeds every wall renderer.
-    const svgImages = await preRenderSvgs(spec);
+    const svgImages = await preRenderSvgs(spec, specDir);
     const ctx = { svgImages };
 
     // A renderer returns either a single page-inner HTML string, or an ARRAY

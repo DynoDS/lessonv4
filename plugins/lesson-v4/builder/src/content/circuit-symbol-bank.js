@@ -3,15 +3,16 @@
 // Slide-specific work for the shared circuit-symbol bank drawing. The geometry
 // (the symbol cells, the child-facing names, the refusals for an unknown
 // symbol or an unfittable label) lives in
-// shared/visuals/circuit-diagram-svg.js next to the circuit it references;
+// shared/visuals/circuit-diagram-svg.js next to the circuit it references, and
+// every surface reaches it through shared/visuals/circuit-symbol-bank-svg.js;
 // this module owns image preparation, the card-ready measure and the
 // PowerPoint fallback refusal.
 
 const requireGlobal = require('../require-global');
 const {
-  symbolBankSvg,
-  symbolBankCacheKey
-} = require('../../../shared/visuals/circuit-diagram-svg');
+  tightSvg: symbolBankSvg,
+  cacheKey: symbolBankCacheKey
+} = require('../../../shared/visuals/circuit-symbol-bank-svg');
 
 // ─── SLIDE-SPECIFIC CONSTANTS ─────────────────────────────────────────────
 const PAD = 0.10;
