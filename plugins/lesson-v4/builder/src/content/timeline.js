@@ -20,7 +20,10 @@ const STEM_GAP         = 0.08;
 const ERA_H_MAX        = 0.60;   // era band height at full size ...
 const ERA_H_MIN        = 0.36;   // ... and the shortest a band may be squeezed to
 const ERA_FONT_MAX     = 20;
-const ERA_FONT_MIN     = 11;
+// Floors below the 18pt projection floor (4.2.128) were never reachable: the fit
+// pass refuses a box under it, so a label measured as fitting at 11pt failed
+// at the end of the build instead of here.
+const ERA_FONT_MIN     = Math.max(11, MIN_FONT_PT);
 const ERA_PAD_H        = 0.07;   // inset between a band edge and its label
 const ERA_FILLS        = ['D6EEFF', 'FFE0C2', 'D5F5E3', 'FFF8C2', 'E8D5F5'];
 const ERA_LINE         = '8C8C8C';
@@ -35,11 +38,16 @@ const TICK_COLOUR      = '000000';
 const MARK_GAP         = 0.05;   // between a tick's foot and its label
 const MARK_LABEL_LINES = 2;      // a date label may wrap to this many lines
 const MARK_FONT_MAX    = 18;
-const MARK_FONT_MIN    = 11;
+const MARK_FONT_MIN    = Math.max(11, MIN_FONT_PT);
+// Dates close together (1837, 1862, 1897 and 1901 on one Victorian line) left
+// each label a sliver between its neighbours and the timeline refused. When one
+// row cannot hold them, alternate dates drop to a second row on a longer tick,
+// so each label reaches halfway to the next date on ITS row: twice the room.
+const MARK_ROW_GAP     = 0.06;
 const MARK_LABEL_GUTTER = 0.06;  // clear space kept between neighbouring labels
 const LINE_H_PER_PT    = 1.22 / 72; // one line of Comic Sans, inches per point
-const CAPTION_H        = 0.30;
-const CAPTION_FONT     = 12;
+const CAPTION_FONT     = Math.max(12, MIN_FONT_PT);
+const CAPTION_H        = CAPTION_FONT * 1.32 / 72 + 0.08;
 const CAPTION_GAP      = 0.06;
 // A mark this close to either end has half its centred label hanging off the
 // figure, so it tucks inward from its tick instead (the worksheet helper does
@@ -116,13 +124,25 @@ function normaliseMarks(data) {
 // The box each date label may occupy, in inches from the zone's left inner
 // edge. A centred label may reach halfway to each neighbour; a label at the
 // very edge tucks inward from its tick so nothing hangs off the figure.
-function markLabelBoxes(marks, innerX, innerW, lineX0, lineW) {
+function markLabelBoxes(marks, innerX, innerW, lineX0, lineW, rows, offset) {
   const xs = marks.map((mark) => lineX0 + mark.at * lineW);
+  const rowOf = (i) => (rows > 1 ? (i + (offset || 0)) % rows : 0);
   const boxes = [];
   for (let i = 0; i < marks.length; i += 1) {
     const x = xs[i];
-    const leftLimit = i === 0 ? innerX : (xs[i - 1] + x) / 2 + MARK_LABEL_GUTTER / 2;
-    const rightLimit = i === marks.length - 1 ? innerX + innerW : (x + xs[i + 1]) / 2 - MARK_LABEL_GUTTER / 2;
+    let prev = -1;
+    for (let k = i - 1; k >= 0; k -= 1) if (rowOf(k) === rowOf(i)) { prev = k; break; }
+    let next = -1;
+    for (let k = i + 1; k < marks.length; k += 1) if (rowOf(k) === rowOf(i)) { next = k; break; }
+    let leftLimit = prev < 0 ? innerX : (xs[prev] + x) / 2 + MARK_LABEL_GUTTER / 2;
+    let rightLimit = next < 0 ? innerX + innerW : (x + xs[next]) / 2 - MARK_LABEL_GUTTER / 2;
+    // A lower-row tick runs down through the rows above it, so a label on an
+    // upper row stops short of every lower-row tick rather than printing across it.
+    for (let k = 0; k < marks.length; k += 1) {
+      if (rowOf(k) <= rowOf(i)) continue;
+      if (xs[k] < x) leftLimit = Math.max(leftLimit, xs[k] + TICK_W / 2 + MARK_LABEL_GUTTER);
+      if (xs[k] > x) rightLimit = Math.min(rightLimit, xs[k] - TICK_W / 2 - MARK_LABEL_GUTTER);
+    }
     let box;
     if (marks[i].at <= EDGE) {
       box = { x: Math.max(innerX, x - TICK_W / 2), w: rightLimit - Math.max(innerX, x - TICK_W / 2), align: 'left' };
@@ -135,6 +155,7 @@ function markLabelBoxes(marks, innerX, innerW, lineX0, lineW) {
     }
     box.w = Math.max(0, box.w);
     box.tickX = x;
+    box.row = rowOf(i);
     boxes.push(box);
   }
   return boxes;
@@ -184,8 +205,25 @@ function layoutTimeline(zone, data) {
     eraFont = Math.min(eraFont, pt);
   }
 
-  // Date labels share one size too, and may take two lines.
-  const boxes = markLabelBoxes(marks, innerX, innerW, lineX0, lineW);
+  // Date labels share one size too, and may take two lines. One row first;
+  // two rows when one cannot hold them.
+  // Which dates share a row matters as much as how many rows there are: a
+  // short date beside a long one fits on the upper row where the long one
+  // would print across the short one's tick. So every rotation of two and three
+  // rows is tried, fewest rows first.
+  const fitsOn = (rows, offset) => {
+    const trial = markLabelBoxes(marks, innerX, innerW, lineX0, lineW, rows, offset);
+    return marks.every((mark, i) => !mark.label ||
+      fitFont(mark.label, trial[i].w, MARK_FONT_MAX, MARK_FONT_MIN, MARK_LABEL_LINES, true) != null);
+  };
+  let markRows = 1;
+  let markOffset = 0;
+  if (marks.length > 2 && !fitsOn(1, 0)) {
+    const tries = [[2, 0], [2, 1], [3, 0], [3, 1], [3, 2]];
+    const found = tries.find(([rows, offset]) => fitsOn(rows, offset));
+    if (found) [markRows, markOffset] = found;
+  }
+  const boxes = markLabelBoxes(marks, innerX, innerW, lineX0, lineW, markRows, markOffset);
   let markFont = MARK_FONT_MAX;
   marks.forEach((mark, i) => {
     if (!mark.label) return;
@@ -210,7 +248,8 @@ function layoutTimeline(zone, data) {
     if (!mark.label) return most;
     return Math.max(most, wrappedLines(mark.label, markFont, boxes[i].w, true));
   }, marks.length ? 1 : 0);
-  const markLabelH = marks.length ? lineHeightIn(markFont) * markLines + 0.04 : 0;
+  const markRowH = marks.length ? lineHeightIn(markFont) * markLines + 0.04 : 0;
+  const markLabelH = markRows * markRowH + (markRows - 1) * MARK_ROW_GAP;
 
   const stemBlock = stem ? STEM_H + STEM_GAP : 0;
   const captionBlock = caption ? CAPTION_GAP + CAPTION_H : 0;
@@ -253,7 +292,7 @@ function layoutTimeline(zone, data) {
     innerX, innerY, innerW, innerH,
     lineX0, lineW, lineY,
     eraFont, eraH, eraY,
-    markFont, markLabelH, boxes,
+    markFont, markLabelH, markRowH, markRows, boxes,
     stemY, captionY,
     startY, usedH
   };
@@ -302,15 +341,18 @@ function drawTimeline(pptx, slide, zone, data) {
   });
 
   // Ticks hang from the line; labels sit under their tick's foot.
+  // A second-row date's tick runs past the first row, so it still points at
+  // its own label.
   L.marks.forEach((mark, i) => {
     const box = L.boxes[i];
+    const drop = box.row * (L.markRowH + MARK_ROW_GAP);
     slide.addShape(pptx.shapes.RECTANGLE, {
-      x: box.tickX - TICK_W / 2, y: L.lineY, w: TICK_W, h: TICK_H,
+      x: box.tickX - TICK_W / 2, y: L.lineY, w: TICK_W, h: TICK_H + drop,
       fill: { color: TICK_COLOUR }, line: { color: TICK_COLOUR, width: 0 }
     });
     if (mark.label && box.w > 0) {
       slide.addText(mark.label, {
-        x: box.x, y: L.lineY + TICK_H + MARK_GAP, w: box.w, h: L.markLabelH,
+        x: box.x, y: L.lineY + TICK_H + MARK_GAP + drop, w: box.w, h: L.markRowH,
         fontFace: FONT, fontSize: L.markFont, bold: true, color: COLOURS.body,
         align: box.align, valign: 'top', margin: 0, fit: FIT
       });

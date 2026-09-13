@@ -128,7 +128,30 @@ function textBoxWidthIn(text, fontPt, bold) {
   return textWidthIn(text, fontPt, bold) + BOX_INSET_IN;
 }
 
+// How many lines `text` takes at `fontPt` in a box `availW` wide, wrapping at
+// spaces only, measured with the same glyph widths as the boxes. A word wider
+// than the box is Infinity: a helper that meets it has to widen the box or
+// refuse, never let PowerPoint split the word.
+function wrappedLineCount(text, fontPt, availW, bold) {
+  const words = String(text == null ? '' : text).trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return 0;
+  let lines = 1;
+  let current = '';
+  for (const word of words) {
+    if (textBoxWidthIn(word, fontPt, bold) > availW + 1e-6) return Infinity;
+    const candidate = current ? current + ' ' + word : word;
+    if (textBoxWidthIn(candidate, fontPt, bold) <= availW + 1e-6) {
+      current = candidate;
+    } else {
+      lines += 1;
+      current = word;
+    }
+  }
+  return lines;
+}
+
 module.exports = {
+  wrappedLineCount,
   textWidthEm,
   textWidthIn,
   textBoxWidthIn,

@@ -12,6 +12,20 @@ Rebuilt the run's worksheet from its own spec and looked at both pages. Workshee
 
 **Not changed.** The 4mm step between questions everywhere else. Widening it would separate questions further but costs height on every dense sheet; left for Daniel to decide.
 
+## 2026-09-13 Five pictures nobody could draw, and why nobody noticed (4.2.170)
+
+Daniel asked to fix the pictures the vocabulary review found broken on every slide, and why they had never been found.
+
+**Why they were never found.** On 10 September (4.2.128) the projection floor rose from 10pt to 18pt, so text reads from the back of a classroom. `fishbone`, `continuum-line` and `concept-map` were written on 28 August with fixed label boxes sized for small type (cause boxes 1.75in x 0.60in, end labels 1.80in at 16pt, relationship labels 1.55in at 13pt), and from that day none of them could draw a realistic label; their own fixture, `builder/test-lessons/foundation-helpers`, has not built since. Nothing noticed because nothing builds the catalogue: `check-catalogue.js` only checks each type is named in `templates.md`, the fixture decks under `test-lessons/` are built by hand, and the pictures are rare (fishbone and continuum line appear in no real lesson; grid map in none). The `timeline` and `row` examples in `templates.md` carried labels no slide could hold, and designers copy the examples.
+
+**The prevention.** `builder/test/guide-examples-build.test.js` builds the first matching JSON example of every content type in `templates.md` on a full-body slide through the real build script, fit pass included, on every `npm run check` (61 examples; photo-dependent ones skipped). It was proved by breaking the concept map on purpose: the test failed and named the picture. `helper-authoring.md` now says the example is built.
+
+**The five.** Fishbone: effect and cause boxes measured from their words, cause boxes as wide as the ribs leave room for, and a named refusal (`FISHBONE_ZONE_TOO_SMALL`) instead of overflow. Continuum line: labels take up to 45% of the line at 22pt (floor 18) and are as tall as their wrapped lines. Concept map: nodes and relationship labels measured from their words, spokes on an ellipse that uses the zone's width, named refusals. Timeline: floors raised to the 18pt the fit pass actually enforces (a label measured as fitting at 11pt failed at the end of the build), and close dates drop to a second or third row on a longer tick, trying each arrangement so a label never prints across another date's tick; the example's "Port Sunlight classroom April 1897" became "Port Sunlight 1897", and two contradictions in its section (a `note` sentence and a "not to scale" caption) were removed. Row: the example's 42-character caption under a quarter-width photo became "Maya". A shared `wrappedLineCount` joins `glyph-width.js`. The fixture's header instruction was longer than the header's short-cue rule allows and was shortened.
+
+**Vocabulary cards, follow-up.** The picture inside a vocabulary panel no longer wears the deck's white card inside the grey panel (a second inset), and beside a full-width picture a word without a picture hugs its text. All five pictures build on one-word vocabulary slides and four of five on two-word slides; a four-cause fishbone beside another word needs 1.89in and gets 1.82in, and says so by name.
+
+Rendered and read: fishbone, continuum line, concept map and timeline on full slides, a 23-slide two-picture vocabulary deck (no regressions), and Monday's number-lines deck (vocabulary slide unchanged). Builder 618 pass; worksheet 681; stick-in 43; wall 125 with the same 2 failures; Python unchanged.
+
 ## 2026-09-13 A vocabulary card refuses nothing the deck can draw (4.2.169)
 
 Daniel asked why the vocabulary card refused number lines and what else it refused, then ruled: "they shouldnt refuse anything, sort them!"

@@ -143,7 +143,10 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
     if (stacked[i]) return stackedTextHeight(item, fonts) + LARGE_PICTURE_MIN_H;
     // Measured against the widest panel the picture could take, so a panel that
     // turns out wide never leaves the definition more lines than its card holds.
-    return Math.min(shareH, naturalCardHeight(item, visuals[i], fonts, visuals[i] ? PANEL_MAX_W : 0));
+    // Beside a full-width picture a compact card gives up its picture minimum
+    // and hugs its words; the full-width picture needs the height more.
+    const compact = stacked.some(Boolean) && (!visuals[i] || visuals[i].type === 'text');
+    return Math.min(shareH, naturalCardHeight(item, compact ? null : visuals[i], fonts, visuals[i] ? PANEL_MAX_W : 0));
   });
   // Two stacked pictures each asking for their minimum can ask for more than
   // the slide has: the second card ran off the bottom. Their picture room is
@@ -336,9 +339,13 @@ function drawVisualPanel(pptx, slide, visual, panel, ctx) {
     rectRadius: VISUAL_RADIUS
   });
 
+  // The grey panel is the picture's card, so the picture draws bare inside it:
+  // the deck's white card look added a second inset and took a quarter of an
+  // inch of height off every picture.
   const inner = {
     x: panel.x + VISUAL_PAD, y: panel.y + VISUAL_PAD,
-    w: panel.w - 2 * VISUAL_PAD, h: panel.h - 2 * VISUAL_PAD
+    w: panel.w - 2 * VISUAL_PAD, h: panel.h - 2 * VISUAL_PAD,
+    noCard: true
   };
 
   drawVisual(pptx, slide, inner, visual, ctx);

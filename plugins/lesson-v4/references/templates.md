@@ -1719,7 +1719,7 @@ Zone class compatibility: fits A, B, C, E-wide. The line wants width; height can
 
 A timeline for the board: named era bands sitting on a bold horizontal line, with dated ticks hanging beneath it and each date's label under its own tick. Use it wherever a lesson puts sources, events or periods in order - the Victorian period with the two sources the class is reading placed inside it, the four periods a starter retrieves, the years of an enquiry. It is the slide twin of the worksheet `timeline`: the same fields draw the same figure on the sheet, so a placement asked on the board can be asked again on paper.
 
-**Every position is a fraction of the line, from 0 (left end) to 1 (right end), chosen by the designer.** The helper never works positions out from dates. A school timeline is almost never honestly to scale (the Stone Age drawn to scale pushes every later era off the slide), so the spacing is a teaching decision, and `note` is where the slide says so.
+**Every position is a fraction of the line, from 0 (left end) to 1 (right end), chosen by the designer.** The helper never works positions out from dates. The designer works each fraction out from the real dates (see below), so the spacing a child sees is honest.
 
 ```json
 { "type": "timeline",
@@ -1727,7 +1727,7 @@ A timeline for the board: named era bands sitting on a bold horizontal line, wit
   "marks": [
     { "label": "1837", "at": 0.05 },
     { "label": "Hampton timetable 1862", "at": 0.27 },
-    { "label": "Port Sunlight classroom April 1897", "at": 0.55 },
+    { "label": "Port Sunlight 1897", "at": 0.55 },
     { "label": "1901", "at": 0.62 },
     { "label": "today 2026", "at": 0.97 } ]
 }
@@ -1740,13 +1740,13 @@ With a stem above and a caption below:
   "text": "Where do our two sources sit in time?",
   "eras": [ { "label": "Tudor", "from": 0.02, "to": 0.3 }, { "label": "Victorian", "from": 0.5, "to": 0.72 } ],
   "marks": [ { "label": "hornbook", "at": 0.2 }, { "label": "1862", "at": 0.58 }, { "label": "today", "at": 0.98 } ],
-  "caption": "The gaps are not to scale." }
+  "caption": "Our two sources are 300 years apart." }
 ```
 
 Fields:
 
 - `eras` (optional) - an array of `{ "label", "from", "to" }`. Each draws as a labelled band directly above the line spanning `from`..`to`; bands take alternating pale fills so neighbouring eras read apart. The labels share one size and stay on one line.
-- `marks` (optional) - an array of `{ "label", "at" }`. Each draws a tick hanging from the line at `at`, with its label beneath. Labels share one size, may wrap to two lines at a space, and are never split inside a word. A mark within 0.08 of either end tucks its label inward from the tick so nothing hangs off the figure.
+- `marks` (optional) - an array of `{ "label", "at" }`. Each draws a tick hanging from the line at `at`, with its label beneath. Labels share one size, may wrap to two lines at a space, and are never split inside a word. When dates sit too close for one row of labels, alternate dates drop to a second row on a longer tick, and a label never prints across another date's tick. A mark within 0.08 of either end tucks its label inward from the tick so nothing hangs off the figure.
 - `text` (optional) - one short line above the figure, black, left-aligned: the question or stem the timeline serves.
 - `caption` (optional) - one short italic line centred beneath the labels.
 
@@ -1756,7 +1756,7 @@ A timeline with neither eras nor marks draws the bare line. The card hugs the dr
 
 Zone class compatibility: fits A, B, C, E-wide. The line wants width; height can be modest because the bands sit on the line and the labels hang close beneath it. B (a wide strip) is the natural fit when the timeline is one element on a teaching slide, with the sources it dates beside or below it.
 
-**Minimum useful size (empirically tested):** about 1.6" tall with era bands and one-line dates (1.9" with two-line dates or a caption), and roughly 1.1" of line per dated mark so neighbouring labels keep readable type: five marks want 5.5"+ of width, the full body width holds eight comfortably. Below that the helper stops with `TIMELINE_ZONE_TOO_NARROW` (naming the label and the width it needs) or `TIMELINE_ZONE_TOO_SHORT` (naming the height), rather than shrinking a date below 11pt or splitting a word. The lever for a narrow case is the mark spacing or a wider zone; for a short case it is the block's stack share, the caption, or the text line.
+**Minimum useful size (empirically tested):** about 1.6" tall with era bands and one-line dates (1.9" with two-line dates or a caption), and roughly 1.1" of line per dated mark so neighbouring labels keep readable type: five marks want 5.5"+ of width, the full body width holds eight comfortably. Below that the helper stops with `TIMELINE_ZONE_TOO_NARROW` (naming the label and the width it needs) or `TIMELINE_ZONE_TOO_SHORT` (naming the height), rather than shrinking a date below the 18pt readable floor or splitting a word. The lever for a narrow case is the mark spacing or a wider zone; for a short case it is the block's stack share, the caption, or the text line.
 
 ### `fishbone`
 
@@ -2073,7 +2073,7 @@ The horizontal twin of `stack`. Holds two or more content objects and renders th
     { "type": "image", "imagePath": "unsplash/starter-giza.jpg",       "caption": "Egyptians" },
     { "type": "image", "imagePath": "unsplash/starter-colosseum.jpg",  "caption": "Romans" },
     { "type": "image", "imagePath": "unsplash/starter-stonehenge.jpg", "caption": "Ancient Britons" },
-    { "type": "image", "imagePath": "unsplash/starter-chichen.jpg",    "caption": "A civilisation we are learning about today" }
+    { "type": "image", "imagePath": "unsplash/starter-chichen.jpg",    "caption": "Maya" }
   ] }
 ```
 

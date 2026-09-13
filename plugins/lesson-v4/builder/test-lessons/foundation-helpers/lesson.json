@@ -14,7 +14,7 @@
       "template": "body-full",
       "headerStyle": "title",
       "title": "Diamond Nine",
-      "instruction": "Rank these values from most to least important.",
+      "instruction": "Rank these values.",
       "body": {
         "type": "diamond-nine",
         "items": [

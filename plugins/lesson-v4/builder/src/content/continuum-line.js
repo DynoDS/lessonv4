@@ -1,6 +1,7 @@
 'use strict';
 
-const { FONT, COLOURS, FIT } = require('../styles');
+const { FONT, COLOURS, FIT, MIN_FONT_PT } = require('../styles');
+const { wrappedLineCount } = require('../glyph-width');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 // A horizontal continuum line for committing to a position on a
@@ -15,16 +16,30 @@ const END_CAP_H        = 0.30;
 const TICK_W           = 0.04;
 const TICK_H           = 0.18;
 const TICK_COLOUR      = '000000';
-const ANCHOR_LABEL_H   = 0.40;
-const ANCHOR_LABEL_W   = 1.80;
-const ANCHOR_FONT      = 16;
+// The labels were fixed boxes at 16pt and 14pt (end labels 1.80in wide), under
+// the 18pt floor every helper has taken since 4.2.128 (10 September 2026), so
+// "Strongly disagree" could not be drawn and the helper's own example had not
+// built since. Each end label now takes up to this share of the line's width,
+// and every label box is as tall as its wrapped lines.
+const ANCHOR_LABEL_SHARE = 0.45;
+const ANCHOR_FONT      = Math.max(22, MIN_FONT_PT);
 const ANCHOR_GAP       = 0.08;
-const MIDDLE_LABEL_H   = 0.34;
-const MIDDLE_LABEL_W   = 1.60;
-const MIDDLE_FONT      = 14;
-const QUESTION_H       = 0.40;
-const QUESTION_FONT    = 16;
+const MIDDLE_LABEL_SHARE = 0.40;
+const MIDDLE_FONT      = Math.max(18, MIN_FONT_PT);
+const QUESTION_FONT    = Math.max(22, MIN_FONT_PT);
 const QUESTION_GAP     = 0.10;
+const LINE_H_PER_PT    = 1.32 / 72 * 1.04;
+function labelHeight(text, pt, width) {
+  const lines = wrappedLineCount(text, pt, width, true);
+  if (!Number.isFinite(lines)) {
+    throw new Error(
+      `CONTINUUM_LABEL_TOO_WIDE: a word in "${text}" is wider than the ${width.toFixed(2)}in its label ` +
+        `can take at the ${pt}pt readable size. Give the line a wider zone or use a shorter word; ` +
+        `nothing was shrunk further.`
+    );
+  }
+  return Math.max(1, lines) * pt * LINE_H_PER_PT + 0.04;
+}
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 function drawContinuumLine(pptx, slide, zone, data) {
@@ -40,6 +55,11 @@ function drawContinuumLine(pptx, slide, zone, data) {
   const innerH = Math.max(0.5, zone.h - 2 * PAD);
 
   // Vertical layout — question at top (optional), then line, then anchor labels
+  const anchorW = innerW * ANCHOR_LABEL_SHARE;
+  const middleW = innerW * MIDDLE_LABEL_SHARE;
+  const ANCHOR_LABEL_H = Math.max(labelHeight(left, ANCHOR_FONT, anchorW), labelHeight(right, ANCHOR_FONT, anchorW));
+  const MIDDLE_LABEL_H = middle ? labelHeight(middle, MIDDLE_FONT, middleW) : 0;
+  const QUESTION_H = question ? labelHeight(question, QUESTION_FONT, innerW) : 0;
   let cursorY = innerY;
   if (question) {
     slide.addText(question, {
@@ -96,15 +116,15 @@ function drawContinuumLine(pptx, slide, zone, data) {
   const labelY = lineY + END_CAP_H / 2 + ANCHOR_GAP;
   slide.addText(left, {
     x: innerX, y: labelY,
-    w: ANCHOR_LABEL_W, h: ANCHOR_LABEL_H,
+    w: anchorW, h: ANCHOR_LABEL_H,
     fontFace: FONT, fontSize: ANCHOR_FONT, bold: true,
     color: COLOURS.body,
     align: 'left', valign: 'top', margin: 0,
     fit: FIT
   });
   slide.addText(right, {
-    x: innerX + innerW - ANCHOR_LABEL_W, y: labelY,
-    w: ANCHOR_LABEL_W, h: ANCHOR_LABEL_H,
+    x: innerX + innerW - anchorW, y: labelY,
+    w: anchorW, h: ANCHOR_LABEL_H,
     fontFace: FONT, fontSize: ANCHOR_FONT, bold: true,
     color: COLOURS.body,
     align: 'right', valign: 'top', margin: 0,
@@ -114,9 +134,9 @@ function drawContinuumLine(pptx, slide, zone, data) {
   // Optional middle label, below the anchors so it doesn't collide
   if (middle) {
     slide.addText(middle, {
-      x: innerX + (innerW - MIDDLE_LABEL_W) / 2,
+      x: innerX + (innerW - middleW) / 2,
       y: labelY + ANCHOR_LABEL_H + ANCHOR_GAP,
-      w: MIDDLE_LABEL_W, h: MIDDLE_LABEL_H,
+      w: middleW, h: MIDDLE_LABEL_H,
       fontFace: FONT, fontSize: MIDDLE_FONT, italic: true,
       color: COLOURS.dim,
       align: 'center', valign: 'top', margin: 0,
