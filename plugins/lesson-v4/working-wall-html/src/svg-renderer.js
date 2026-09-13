@@ -33,6 +33,9 @@ const BADGE_PX  = 240;          // step badge resolution
 // and places the image by it (no square padding), matching the other engines.
 const linePairShared = require('../../shared/visuals/line-pair-svg');
 const numberLineShared = require('../../shared/visuals/number-line-svg');
+// The one shared map. The wall could not draw a map at all until 13 September
+// 2026, so a Year 4 wall designer left where the Amazon is off the wall.
+const mapShared = require('../../shared/visuals/map-svg');
 const { profileFor } = require('../../shared/visuals/surface-profiles');
 const angleShared    = require('../../shared/visuals/angle-svg');
 const triangleShared = require('../../shared/visuals/triangle-svg');
@@ -277,6 +280,7 @@ const numberLineWall = sharedAtWidth(numberLineShared);
 const numberLineTight = numberLineWall.tightFn;
 const numberLineKey = numberLineWall.keyFn;
 const numberLineSvg = (spec) => numberLineTight(spec).svg;
+const mapWall = sharedAtWidth(mapShared);
 
 // ─── Angle fan ─────────────────────────────────────────────────────────
 // Two rays meeting at a vertex, with the angle between them filled as a
@@ -717,6 +721,7 @@ async function preRenderSvgs(spec) {
     fractionCircle:   { keyFn: fractionCircleKey,   svgFn: fractionCircleSvg,   collected: {} },
     fractionBar:      { keyFn: fractionBarKey,      svgFn: fractionBarSvg,      collected: {} },
     numberLine:       { ...numberLineWall, collected: {} },
+    map:              { ...mapWall, collected: {} },
     angleFan:         { keyFn: angleFanKey,         svgFn: angleFanSvg,         collected: {} },
     'turn-diagram':   { keyFn: turnDiagramKey,      svgFn: turnDiagramSvg,      collected: {} },
     comparisonSymbol: { keyFn: comparisonSymbolKey, svgFn: comparisonSymbolSvg, collected: {} },
@@ -883,6 +888,7 @@ module.exports = {
   numberLineSvg,
   numberLineTight,
   numberLineKey,
+  mapKey: mapWall.keyFn,
   angleFanSvg,
   angleFanKey,
   turnDiagramSvg,

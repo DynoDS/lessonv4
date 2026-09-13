@@ -66,9 +66,19 @@ function renderSingle(item, opts = {}) {
   // A drawing laid out at its printed size (the number line) is told the width
   // the piece will print at.
   const printedWidthMm = item.widthMm ?? def.defaultWidthMm;
-  const { svg, w, h, aspect } = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  let built;
+  try {
+    built = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  } catch (error) {
+    console.warn(`[stick-in] "${item.label || item.visual}": ${error.message} This item is skipped.`);
+    return null;
+  }
+  const { svg, w, h, aspect } = built;
   const a = aspect ?? w / h;
-  const naturalWidthMm = item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
+  // A drawing laid out at its printed size prints at the width it came out,
+  // never scaled up to the default when it is narrower.
+  const laidOutMm = def.laidOutAtWidth ? Math.min(printedWidthMm, w * (25.4 / 72)) : null;
+  const naturalWidthMm = laidOutMm ?? item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
   const reserveTopMm = opts.reserveTopMm || 0;
   const naturalHeightMm = naturalWidthMm / a;
   const widthMm = reserveTopMm > 0

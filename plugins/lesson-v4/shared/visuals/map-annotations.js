@@ -393,19 +393,25 @@ function boxAt(centre, w, h) {
 }
 
 // items: [{ text, anchor: [x, y], preferred: [x, y], colour }]
-// sizeFor(text) -> { w, h } as fractions of the map's width and height.
+// sizeFor(text, item) -> { w, h } as fractions of the map's width and height.
+// The item is passed as well because two labels on one map can print at
+// different sizes (a sea name a little smaller than a continent's), and looking
+// the size up by its words alone went wrong when two labels shared them.
 // obstacles: boxes already on the map that a pill must also keep clear of - the
 // clue markers, so a line's label does not land on the letter beside it (the
 // Equator's "X" once sat touching marker B, and a child read them as one thing).
 function layoutLabels(items, sizeFor, obstacles) {
   const placed = (obstacles || []).map(function (box) { return Object.assign({}, box); });
   return (items || []).filter(function (item) { return item && item.text; }).map(function (item) {
-    const size = sizeFor(item.text);
+    const size = sizeFor(item.text, item);
     const preferred = item.preferred || item.anchor;
     let box = null;
+    // A pill wider or taller than the whole map has nowhere clear to go, and
+    // clamping it to the edge would lay it across the geography it names.
+    const tooBig = size.w > 1 || size.h > 1;
 
     for (const step of CANDIDATE_STEPS) {
-      if (box) break;
+      if (box || tooBig) break;
       const sides = step === 0 ? [[0, 0]] : CANDIDATE_SIDES;
       for (const [dx, dy] of sides) {
         const candidate = boxAt([preferred[0] + dx * step, preferred[1] + dy * step], size.w, size.h);

@@ -31,6 +31,13 @@ const PX_PER_PT = 4;
 // slide shows if a picture could not be made.
 const FIGURES = {
   numberline: { module: require('../../../shared/visuals/number-line-svg'), name: 'number line' },
+  // A map keeps its true shape, so a slot shaped unlike it leaves the rest
+  // empty; `zoneFill` names it for the check that says so (see _zone-fill.js).
+  map: {
+    module: require('../../../shared/visuals/map-svg'),
+    name: 'map',
+    zoneFill: (data) => `the ${String((data && data.map) || '').trim().toLowerCase().replace(/[ _]+/g, '-')} map`,
+  },
 };
 
 // One per build. `request` records a drawing the preflight needs; `rasterise`
@@ -88,6 +95,9 @@ function drawerFor(type) {
     const h = built.h / 72;
     const x = box.x + (box.w - w) / 2;
     const y = box.y + (box.h - h) / 2;
+    if (FIGURES[type].zoneFill) {
+      require('./_zone-fill').checkZoneFill(ctx, zone, { w, h }, FIGURES[type].zoneFill(data));
+    }
     const store = ctx && ctx.sharedFigures;
     const entry = store && store.get(key);
     if (entry) {

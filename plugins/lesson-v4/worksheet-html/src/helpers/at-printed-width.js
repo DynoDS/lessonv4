@@ -27,13 +27,20 @@ function atPrintedWidth(module, options = {}) {
   const minWidth = options.minWidthMm || 70;
   const draw = (spec, width) =>
     module.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: widthOf(width, 170) }));
+  const minWidthOf = (spec) => (typeof minWidth === "function" ? minWidth(spec) : minWidth);
   const helper = {
     physical: true,
     geometry: module,
-    render: (spec, width) => `<div class="h-figure">${draw(spec, width).svg}</div>`,
-    measure: (spec, width) => draw(spec, width).h / MM_TO_PT,
+    render: (spec, width) => {
+      // The sheet's `.h-figure svg { width: 100% }` would stretch a drawing that
+      // laid itself out narrower than its zone, so it prints at its own width.
+      const built = draw(spec, width);
+      const svg = built.svg.replace(/^<svg /, `<svg style="width:${built.w}pt;max-width:100%;height:auto" `);
+      return `<div class="h-figure">${svg}</div>`;
+    },
+    measure: (spec, width) => { const floor = minWidthOf(spec); return draw(spec, Math.max(widthOf(width, 170), floor)).h / MM_TO_PT; },
     needs: (spec) => {
-      const minWidthMm = typeof minWidth === "function" ? minWidth(spec) : minWidth;
+      const minWidthMm = minWidthOf(spec);
       return { minWidthMm, minHeightMm: draw(spec, minWidthMm).h / MM_TO_PT };
     },
     greed: options.greed == null ? NEVER_STRETCH : options.greed,

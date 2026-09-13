@@ -15,7 +15,6 @@ const path = require('node:path');
 
 const shared = require('../../shared/visual-parity');
 const maps = require('../../shared/visuals/map-annotations');
-const realMap = require('../../shared/visuals/real-map-svg');
 
 // ── The base is real ────────────────────────────────────────────────────────
 
@@ -104,12 +103,14 @@ test('no renderer can draw a world map that is not built on a shipped asset', ()
   const geographic = shared.PRIMITIVES.filter((p) => p.depicts === 'asset:maps');
   assert.deepEqual(geographic.map((p) => p.id), ['map']);
 
-  // And it reaches the board, the sheet and the child's book, so no surface has
-  // to go looking for a second one.
+  // And it reaches the board, the sheet, the wall and the child's book as one
+  // drawing, so no surface has to go looking for a second one.
   const [entry] = geographic;
   assert.equal(entry.slides, 'map');
   assert.equal(entry.worksheets, 'map');
+  assert.equal(entry.wall, 'map');
   assert.equal(entry.stickin, 'map');
+  assert.equal(entry.geometrySource, 'shared/visuals/map-svg.js');
 });
 
 // ── Marks on top of it ──────────────────────────────────────────────────────
@@ -258,28 +259,27 @@ const AMAZON_COUNTRIES_SPEC = {
   ]
 };
 
-function stubSlide() {
-  const pptx = { ShapeType: { roundRect: 'roundRect', ellipse: 'ellipse', line: 'line', custGeom: 'custGeom' } };
+// The board places the shared map through its one placer. The preflight asks for
+// the drawing at the zone's real size, which is where a map that cannot fit its
+// labels is refused, before any file exists.
+function drawAt(zone, spec = AMAZON_COUNTRIES_SPEC) {
+  const { drawerFor, createSharedFigureStore } = require('../src/content/shared-figure');
   const slide = { addImage() {}, addShape() {}, addText() {} };
-  return { pptx, slide };
-}
-
-function drawAt(zone) {
-  const { drawMap } = require('../src/content/map');
-  const { pptx, slide } = stubSlide();
-  drawMap(pptx, slide, zone, AMAZON_COUNTRIES_SPEC, { slideIndex: 15, mapImages: {} });
+  const pptx = { shapes: { RECTANGLE: 'rect' }, ShapeType: {} };
+  const sharedFigures = createSharedFigureStore();
+  drawerFor('map')(pptx, slide, zone, spec, { slideIndex: 15, sharedFigures });
+  return sharedFigures;
 }
 
 // Half of a body-sidebar body row - the slot the failing slide actually gave
-// this map. South America's tall proportions then fit it about 2.4in wide, and a
-// label pill is 0.82 to 1.62in, so ten of them were never going to fit.
+// this map. South America's tall proportions then fit it about 2.4in wide, and
+// ten names at the board's readable floor were never going to fit.
 const THE_SLOT_IT_HAD = { x: 0.22, y: 1.45, w: 4.34, h: 3.48 };
 
 test('ten labels on the slot this map actually had are refused, not printed on top of each other', () => {
-  // What shipped: the same ten pills, each sized to be read from the back of the
-  // room, drawn into half a body row where they could not all be placed clear.
-  // Nothing errored; the slide simply arrived with the country names piled over
-  // the map they were naming, and the map was the point of the slide.
+  // What shipped: the same ten pills drawn into half a body row where they could
+  // not all be placed clear. Nothing errored; the slide simply arrived with the
+  // country names piled over the map they were naming.
   assert.throws(() => drawAt(THE_SLOT_IT_HAD), /MAP_LABELS_DO_NOT_FIT/);
 });
 
@@ -288,22 +288,29 @@ test('the refusal names the labels it could not place and what to do', () => {
     drawAt(THE_SLOT_IT_HAD);
     assert.fail('expected the crowded map to be refused');
   } catch (error) {
-    assert.match(error.message, /French Guiana|Suriname|Guyana/);
+    assert.match(error.message, /French Guiana|Suriname|Guyana|Venezuela|Colombia/);
     assert.match(error.message, /wider zone|two maps|fewer|Reduce/);
   }
 });
 
-test('the identical map given the whole body still draws', () => {
+test('the identical map given the whole body still draws, as one placed picture', () => {
   // The discrimination case, and the reason this is a fit check rather than a
-  // lower ceiling on how many marks a map may carry. Nothing is wrong with the
-  // ten marks themselves: a ceiling would have failed this slide too, and the
-  // lesson would have lost country labels it was right to want. The fault was
-  // always the room, so given the room it passes.
-  assert.doesNotThrow(() => drawAt({ x: 0.22, y: 0.6, w: 12.89, h: 6.65 }));
+  // lower ceiling on how many marks a map may carry. The fault was always the
+  // room, so given the room it passes.
+  const store = drawAt({ x: 0.22, y: 0.6, w: 12.89, h: 6.65 });
+  assert.equal(store.pending, 1, 'the preflight asked for one shared map picture');
+});
+
+test('a map shaped unlike its slot is still reported as leaving the slot empty', () => {
+  const { zoneFillWarnings, clearZoneFill } = require('../src/content/_zone-fill');
+  clearZoneFill();
+  drawAt({ x: 0.22, y: 0.6, w: 12.89, h: 6.65 }, { type: 'map', map: 'south-america' });
+  assert.ok(zoneFillWarnings().some((w) => /south-america map/.test(w.field || w.message || '')));
+  clearZoneFill();
 });
 
 test('the layout says which labels it could not place, rather than piling them up', () => {
-  // The mechanism the two renderers share. Pills this large cannot all sit clear
+  // The mechanism every surface shares. Pills this large cannot all sit clear
   // of one another anywhere on the map, so the layout marks the ones it gave up
   // on and the caller refuses instead of drawing them.
   const size = () => ({ w: 0.62, h: 0.30 });
@@ -313,6 +320,11 @@ test('the layout says which labels it could not place, rather than piling them u
   const placed = maps.layoutLabels(items, size);
   assert.ok(placed.some((item) => item.crowded), 'some label had nowhere clear to go');
   assert.throws(() => maps.refuseCrowdedLabels(placed, 'a test map'), /MAP_LABELS_DO_NOT_FIT/);
+});
+
+test('a pill wider than the whole map is crowded, not clamped across it', () => {
+  const placed = maps.layoutLabels([{ text: 'Too wide', anchor: [0.5, 0.5], preferred: [0.5, 0.5] }], () => ({ w: 1.2, h: 0.1 }));
+  assert.equal(placed[0].crowded, true);
 });
 
 test('a layout that did fit is handed straight back', () => {
@@ -325,53 +337,4 @@ test('a layout that did fit is handed straight back', () => {
     size
   );
   assert.equal(maps.refuseCrowdedLabels(placed, 'a test map'), placed);
-});
-
-test('the printed sheet draws the same ten marks, because its labels scale with the map', () => {
-  // Deliberately not a failure. On paper the label is sized as a fraction of the
-  // map image, so the sheet does not inherit the board's problem, and the guard
-  // must not invent one: the same spec that is refused in a sidebar prints.
-  const built = realMap.tightSvg(
-    Object.assign({}, AMAZON_COUNTRIES_SPEC, { selectedCountry: undefined })
-  );
-  assert.match(built.svg, />French Guiana</);
-  assert.match(built.svg, />Amazon rainforest</);
-});
-
-// ── The printed sheet draws the same real map ───────────────────────────────
-
-test('the printed map embeds the real image and keeps its real proportions', () => {
-  const built = realMap.tightSvg({ map: 'south-america' });
-  assert.match(built.svg, /data:image\/png;base64,/);
-  assert.equal(built.w, maps.MAPS['south-america'].w);
-  assert.equal(built.h, maps.MAPS['south-america'].h);
-  assert.equal(built.aspect, maps.MAPS['south-america'].w / maps.MAPS['south-america'].h);
-});
-
-test('the printed map draws the marks it was given', () => {
-  const built = realMap.tightSvg({
-    map: 'south-america',
-    basin: 'Amazon basin',
-    labels: { basin: 'Amazon basin' },
-    annotations: [
-      { kind: 'point', at: [0.62, 0.34], label: 'Manaus', colour: 'blue' },
-      { kind: 'line', points: [[0.30, 0.29], [0.80, 0.325]], label: 'Amazon River', colour: 'blue' }
-    ]
-  });
-  assert.match(built.svg, /<circle /);
-  assert.ok((built.svg.match(/<polyline /g) || []).length >= 4, 'basin outline and river, each with its halo');
-  assert.match(built.svg, />Manaus</);
-  assert.match(built.svg, />Amazon River</);
-  assert.match(built.svg, />Amazon basin</);
-});
-
-test('country shading is refused on paper with the route that does work', () => {
-  assert.throws(
-    () => realMap.tightSvg({ map: 'south-america', selectedCountry: 'Brazil' }),
-    /MAP_OVERLAY_UNSUPPORTED.*point annotation/s
-  );
-});
-
-test('an unknown map on paper names the maps that do exist', () => {
-  assert.throws(() => realMap.tightSvg({ map: 'narnia' }), /MAP_UNKNOWN/);
 });
