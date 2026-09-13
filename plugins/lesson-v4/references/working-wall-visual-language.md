@@ -50,7 +50,7 @@ A card earns space by offering a readable, useful reference to the lesson's lear
 
 Prefer the lesson's own representation where it carries the learning. Use a photograph or genuine P2 cue when it improves recognition or understanding. P3 decoration does not replace teaching content, and an unrelated image does not make a weak card useful. If a necessary visual cannot be provided, report the gap or omit the affected card rather than presenting incomplete teaching.
 
-Judge readability at the intended wall size in final resource review. The deterministic packet check cannot establish whether a picture is pedagogically necessary; the wall designer and rendered review own that judgement.
+Judge readability at the intended wall size. The deterministic packet check cannot establish whether a picture is pedagogically necessary; the wall designer owns that judgement.
 
 
 ## The six design moves the wall is built on

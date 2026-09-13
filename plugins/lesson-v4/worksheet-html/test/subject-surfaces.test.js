@@ -352,7 +352,7 @@ test("every task the approved sheet asks reaches a printed page", () => {
   // never on the whole file: the stylesheet names all three of these classes,
   // so a count over the document counts its own CSS rules. This is a count and
   // not a geometry check - whether each box is big enough to write in on paper
-  // is a question about a printed page, and it belongs to the final review.
+  // is a question about a printed page, and it belongs to the worksheet designer.
   const body = pages
     .replace(/<style[\s\S]*?<\/style>/g, " ")
     .replace(/<!--[\s\S]*?-->/g, " ");

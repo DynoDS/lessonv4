@@ -792,12 +792,6 @@ Build slides directly:
 Require `ok: true` and the exact output paths in the summary. On a semantic
 build diagnostic, run one focused Slide Designer repair and rebuild once.
 
-The finished deck receives the final resource review in Phase 3.6, after its
-pictures arrive. Physical picture-size checks do not establish that an object
-is recognisable, its detail serves the question, or references remain available
-through a slide transition. The review uses the compact review-mode reference
-and the saved outputs, without restarting the full creation workflow.
-
 The Slide Decorator remains the earlier optional-picture stage. It runs the optional drawing pass the
 Slide Designer used to run last, at the same point and over the same private
 preview, in a worker of its own so the wall and stick-in branches need not
@@ -1236,8 +1230,8 @@ is the honest record of a branch that ended, not a fault to repair here.
 
 This is the one repair route the pipeline has, and every track above sends the
 faults into it: a semantic build diagnostic, a picture reference the receipts
-say will never be honoured, a helper-delivery failure, or a material finding
-from the final resource review. Each identifies the resource, location and owner.
+say will never be honoured, or a helper-delivery failure.
+Each identifies the resource, location and owner.
 
 Use the compact focused-repair role for the named owner when present, otherwise
 its full creation role. Give it the exact artefact/location, the required
@@ -1280,8 +1274,8 @@ There is no second round for the same fault. Record the round in the run's
 friction file, whatever its result.
 
 A repair that declares a real cross-resource impact has changed something
-another resource mirrors. Supply both affected resources to the final review
-and recheck that relationship after rebuilding. Carry any unresolved impact
+another resource mirrors. Rebuild both affected resources and recheck that
+relationship. Carry any unresolved impact
 into the run report as a teacher flag.
 
 For a picture that published and is wrong, use the one-filename repair slice and
@@ -1298,49 +1292,13 @@ surfaces, never to exclusion.
 
 ---
 
-## Phase 3.6 - Final Resource Review and Finalisation
+## Phase 3.6 - Finalisation
 
 Every branch has now either built its resource and passed that resource's check
-or been excluded with a reason. Before delivery, review the actual outputs with
-their final pictures. The early composition preview cannot settle their usability.
-
-For each built resource, launch its existing owner with `FINAL RESOURCE REVIEW`
-and `[PLUGIN_ROOT]/references/final-resource-review.md`: slide-designer for slides,
-worksheet-designer for pupil sheets and answer PDFs, working-wall-designer for the
-wall, and stick-in-sheets-designer for stick-ins. Every resource is reviewed on
-the delivered file by the owner that designed it; none reuses an earlier
-inspection. Supply exact
-output paths from build results, the resource specification, approved design,
-the run's render route and a separate owned review-result path. Use
-`render-pages.py` to produce a manifest, a contact sheet and page PNGs for each
-file. This is review mode, not another creation run or a pre-picture preview.
-
-**Probe the render route once here**, with `render-pages.py --probe-route
-"[WORKING_DIR]/render-routes.json"`, and give that one file to every reviewer.
-`RENDER_PROBE_BLOCKED` means the probe was refused permission to start a child
-process and learnt nothing: re-run it with access. Only an empty `pptxRoutes`
-from a probe that RAN means this machine cannot render a deck; three lessons
-shipped an unreviewed PowerPoint on that confusion (September 2026).
-
-Merge the owners' entries into `[WORKING_DIR]/final-resource-reviews.json`,
-keeping their findings. Route REVISE findings through Phase 3.5;
-a final visual fault does not need to exhaust the pre-picture self-repair budget.
-Missing teaching or changed learning demand returns to Lesson Designer and design
-review. Rebuild affected resources and obtain a review of the current renders.
-A repair has not passed merely because it builds. Rendering unavailable means UNVERIFIED.
-
-**A finding that survives its repair round is flagged, never a reason to withhold
-the resource.** A resource that built and passed its own check is delivered, the
-finding named first in the report and in `Teacher flags`: page, fault, and the
-change to make by hand. A teacher fixes one slide in a minute; a withheld deck
-costs the lesson. Exclusion is for a resource that never built or failed its
-own check.
-
-Only a current PASS for every delivered visual resource supports COMPLETE.
-`validate-run-report.py` checks delivered bytes, render evidence and page coverage
-against the final review receipt. It cannot check judgement quality. Retain final
-manifests and page images alongside the review records. Then prove picture
-provenance, tidy transient work and write the record.
+or been excluded with a reason. There is no review of the finished files: the
+design reviewer is the pipeline's one judgement net, and a fault the teacher
+spots in a built resource is investigated and repaired in the engine, so it does
+not recur. Prove picture provenance, tidy transient work and write the record.
 
 Run picture provenance once from the final schema-2 requirements and
 `[WORKING_DIR]/orchestration-receipts/picture-terminal/`:
@@ -1407,8 +1365,6 @@ renderer that could not draw what the lesson needed, two rules that disagreed.
 Write `[WORKING_DIR]/run-report.md` with:
 
 - outcome: `COMPLETE`, `PARTIAL`, `BLOCKED` or `UNVERIFIED`;
-- final resource review outcomes and unresolved findings. Use UNVERIFIED when an
-  output could not be visually checked, otherwise as set out below;
 - delivered resources with exact paths from fixed build summaries or the wall
   builder, each path in backticks;
 - the lesson walk-through: copy `[WORKING_DIR]/design-decisions.md` to
@@ -1451,13 +1407,13 @@ teacher-facing report naming the topic, year, subject, objective, lesson scope,
 exact files, pedagogical highlights, design-review result and every teacher
 flag.
 
-A package missing an earned output, or delivering one with a flagged review
-finding, is `PARTIAL`; a fault that stopped a resource building or passing its
+A package missing an earned output is `PARTIAL`; a fault that stopped a resource building or passing its
 own check is `BLOCKED`; a wall the builder could not verify against its page contract, which
 reaches the report as `PAGE_FIT_UNVERIFIED`, is `UNVERIFIED`. Use exact summary
 output paths, never guessed filenames. `BLOCKED` labels the record, not the
 delivery: every resource that built and passed its own check is handed over,
-faults named first.
+faults named first. Exclusion is for a resource that never built or failed its
+own check.
 
 ### Report format
 

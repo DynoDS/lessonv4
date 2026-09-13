@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-13 The finished files are no longer reviewed
+
+Daniel: "I dont think we need these reviews", and, on hearing what they caught, "If there's anything like that, I can just tell you to investigate so those things dont happen again".
+
+Across the ten run folders holding a `final-resource-reviews.json`, about 35 final reviews ran (each a fresh launch of the resource's designer, 4 to 9 minutes, plus page rendering) and 3 raised a finding: a worksheet title overlapping its header rule, a second worksheet page fault on the Christmas lesson, and a vocabulary slide without the highlighted interval. The rest passed. It was a second judgement net after the design reviewer, which his 10 September ruling ("lesson design reviewer catches anything. Once it's downstream, it's being made") had already said not to have.
+
+**Removed:** Phase 3.6's review of each built resource, the render-route probe and merge that served it, and `references/final-resource-review.md`; the `FINAL RESOURCE REVIEW` entry lines in the slide, worksheet and stick-in designers and the review route in the slide focused repair; review findings as a source for Phase 3.5; the review receipt checks in `validate-run-report.py` (a COMPLETE report no longer needs `final-resource-reviews.json`, and the "delivered, not withheld" check that read its REVISE entries). **Kept:** the design reviewer, every build check and its focused repair, picture provenance, the wall's page check (`PAGE_FIT_UNVERIFIED`), and the rule that a resource which built and passed its own check is delivered, now stated in Phase 4. The page-quality rules the review restated (boxes bigger than their answers, greyscale, furniture standing in for a task) still live in `worksheet-visual-profile.md`, which the worksheet designer reads.
+
+**Checked:** Python suite 10 failing before and after, the same tests; builder and worksheet JS 1303 pass; the wall and stick-in JS suites carry the same two failures as before. No version bump, at Daniel's request.
+
 ## 2026-09-13 The designer reads the lesson children had yesterday
 
 Asked whether the designer still looks at earlier and later lessons when given a plan, the Find the scale run showed it does read the plan's neighbours (its starter retrieves Lesson 6, and it leaves estimating to Lesson 8), but not the lesson already built for Lesson 6. Its "interval" definition drifted from Monday's ("between two neighbouring marks" became "between neighbouring marks"). The designer's rule for reading a prior lesson's files fired only when a brief named that lesson, and nothing told it where the files were. Daniel said yes to passing them.

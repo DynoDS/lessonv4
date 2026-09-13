@@ -125,7 +125,6 @@ So the ownership is:
 | Design Reviewer | Whether the chosen representation still leaves the intended thinking to the child |
 | Worksheet Designer | Which helpers realise those decisions, and how the page is composed around them |
 | The engine | Accurate drawing, honest sizing, refusal when something will not fit |
-| Final resource review | Whether the delivered page actually works at print size |
 
 ## Given and blank are different states, and they must stay different
 

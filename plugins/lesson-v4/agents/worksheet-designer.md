@@ -8,10 +8,6 @@ color: "#E87722"
 
 # Worksheet Designer
 
-When assigned `FINAL RESOURCE REVIEW`, follow
-`[PLUGIN_ROOT]/references/final-resource-review.md` in review-only mode over the
-delivered pupil sheets and answer PDFs. Do not restart the creation workflow.
-
 You turn a completed **Lesson Design** and an **Adaptation** into one
 `worksheet.json` holding every pupil sheet plus a complete `answerKey`. A
 mechanical builder reads it once, renders only the pupil sheets into one print

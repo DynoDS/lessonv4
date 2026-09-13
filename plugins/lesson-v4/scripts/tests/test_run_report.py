@@ -57,37 +57,6 @@ class RunReportCase(unittest.TestCase):
         self.answers_out.write_bytes(b"answers fixture")
 
         self.report = self.working / "run-report.md"
-        self.write_final_reviews([self.slides_out, self.worksheets_out])
-
-    def write_final_reviews(self, paths):
-        entries = []
-        for index, path in enumerate(paths):
-            page = self.working / f"review-page-{index}.png"
-            page.write_bytes(b"rendered page fixture")
-            digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
-            manifest = self.write_json(self.working / f"render-{index}.json", {
-                "version": 1, "source": str(path), "sourceSha256": digest(path),
-                "pdf": {"path": str(path), "sha256": digest(path)},
-                "pages": [{"number": 1, "path": str(page), "sha256": digest(page)}],
-            })
-            owner = "slide-designer" if path.suffix == ".pptx" else "worksheet-designer"
-            evidence = {"readability": "Necessary labels are legible.",
-                        "taskAccess": "Task and reference share the page.",
-                        "responseSpace": "Each answer has a writing area."}
-            if owner == "worksheet-designer":
-                # A sheet answers two more questions than a slide: what the
-                # printed surface expresses, and what it looks like at print
-                # size. See references/final-resource-review.md.
-                evidence["subjectRepresentation"] = (
-                    "The part-whole models show the whole and leave all four parts blank."
-                )
-                evidence["visualFinish"] = (
-                    "Given values and blank boxes read as different states in grey."
-                )
-            entries.append({"path": str(path), "owner": owner,
-                "manifest": str(manifest), "reviewedPages": [1], "status": "PASS", "findings": [],
-                "evidence": evidence})
-        self.write_json(self.working / "final-resource-reviews.json", {"schemaVersion": 1, "resources": entries})
 
     def write_json(self, path: Path, payload) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -144,137 +113,26 @@ class RunReportCase(unittest.TestCase):
 
 
 class TestRunReport(RunReportCase):
-    def test_complete_requires_current_final_review(self):
-        self.write_report()
-        (self.working / "final-resource-reviews.json").unlink()
-        self.assertNotEqual(self.validate().returncode, 0)
+    def test_complete_needs_no_review_of_the_finished_files(self):
+        """The finished files are not reviewed again (13 September 2026).
 
-    def test_rebuild_invalidates_final_review(self):
-        self.write_report()
-        self.slides_out.write_bytes(b"changed final slide")
-        result = self.validate()
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("stale render evidence", result.stdout + result.stderr)
-
-    def test_page_inspection_cannot_be_omitted(self):
-        self.write_report()
-        receipt = self.working / "final-resource-reviews.json"
-        data = json.loads(receipt.read_text())
-        data["resources"][0]["reviewedPages"] = []
-        self.write_json(receipt, data)
-        self.assertNotEqual(self.validate().returncode, 0)
-
-    def test_a_sheet_review_must_carry_the_two_worksheet_criteria(self):
-        """Asking for evidence and not requiring it is the same as not asking.
-
-        The final review gained `subjectRepresentation` and `visualFinish` when
-        worksheets did, because the two failures a specification check cannot
-        see are both physical: a relationship flattened into a prompt and a
-        blank, and a page that has quietly answered part of its own question.
-        For a while the instructions asked for them and the gate did not.
+        Daniel retired the final resource review: the design reviewer is the one
+        judgement net, and a fault he spots in a built resource is investigated
+        and repaired in the engine instead. A COMPLETE report must not be
+        refused for the absence of a review that no longer runs.
         """
-        for field in ("subjectRepresentation", "visualFinish"):
-            with self.subTest(field=field):
-                self.write_report()
-                receipt = self.working / "final-resource-reviews.json"
-                data = json.loads(receipt.read_text())
-                sheet = next(r for r in data["resources"] if r["owner"] == "worksheet-designer")
-                del sheet["evidence"][field]
-                self.write_json(receipt, data)
-                result = self.validate()
-                self.assertNotEqual(result.returncode, 0)
-                self.assertIn(field, result.stdout + result.stderr)
-
-    def test_a_slide_review_is_not_asked_for_the_worksheet_criteria(self):
-        self.write_report()
-        receipt = self.working / "final-resource-reviews.json"
-        data = json.loads(receipt.read_text())
-        deck = next(r for r in data["resources"] if r["owner"] == "slide-designer")
-        self.assertNotIn("subjectRepresentation", deck["evidence"])
-        self.assertEqual(self.validate().returncode, 0)
-
-    def test_an_honest_cosmetic_observation_does_not_block_the_run(self):
-        """The reviewer must have somewhere to put a bounded finish problem.
-
-        A page that is usable but plainer than hoped is not a fault, and a
-        reviewer whose only choices are a clean pass and a blocked run will
-        pick the clean pass. `findings` blocks; `advisories` records.
-        """
-        self.write_report()
-        receipt = self.working / "final-resource-reviews.json"
-        data = json.loads(receipt.read_text())
-        data["resources"][0]["advisories"] = [
-            "The counters wrap three to a row where the reference shows five; "
-            "usable, and no rearrangement improved it."
-        ]
-        self.write_json(receipt, data)
-        self.assertEqual(self.validate().returncode, 0)
-
-        # An empty string is not an observation.
-        data["resources"][0]["advisories"] = [""]
-        self.write_json(receipt, data)
-        self.assertNotEqual(self.validate().returncode, 0)
-
-    def test_a_real_finding_still_blocks(self):
-        self.write_report()
-        receipt = self.working / "final-resource-reviews.json"
-        data = json.loads(receipt.read_text())
-        data["resources"][0]["findings"] = [{"fault": "The source is unreadable at print size."}]
-        self.write_json(receipt, data)
-        self.assertNotEqual(self.validate().returncode, 0)
-
-    def test_a_reviewed_resource_with_an_unclosed_finding_is_delivered_not_withheld(self):
-        """One slide's finding flags the deck; it never costs the teacher the deck.
-
-        A nine-slide Year 4 deck with eight passing slides was withheld over one
-        vocabulary picture that survived its repair round (12 September 2026).
-        """
-        receipt = self.working / "final-resource-reviews.json"
-        data = json.loads(receipt.read_text())
-        deck = next(r for r in data["resources"] if r["owner"] == "slide-designer")
-        deck["status"] = "REVISE"
-        deck["findings"] = [{"fault": "Slide 3 has no +10 jump over one interval."}]
-        self.write_json(receipt, data)
-
-        withheld = self.write_report({
-            "outcome": "Package status: BLOCKED",
-            "delivered": f"- worksheets: `{self.worksheets_out}`\n- worksheets: `{self.answers_out}`",
-            "excluded": "- slides: NOT DELIVERED - final review still found slide 3 unresolved.",
-            "blocking": "- Slide 3 has no +10 jump over one interval.",
-        })
-        result = self.validate(withheld)
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("delivered, not withheld", result.stdout)
-
-        flagged = self.write_report({
-            "outcome": "Package status: PARTIAL",
-            "blocking": "- Slide 3 has no +10 jump over one interval.",
-        })
-        self.assertEqual(self.validate(flagged).returncode, 0, self.validate(flagged).stdout)
+        self.assertFalse((self.working / "final-resource-reviews.json").exists())
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_a_resource_that_never_built_may_still_be_excluded(self):
-        receipt = self.working / "final-resource-reviews.json"
-        data = json.loads(receipt.read_text())
-        deck = next(r for r in data["resources"] if r["owner"] == "slide-designer")
-        deck["status"] = "REVISE"
-        self.write_json(receipt, data)
         self.slides_out.unlink()
-        self.write_report({
+        result = self.validate(self.write_report({
             "outcome": "Package status: BLOCKED",
             "delivered": f"- worksheets: `{self.worksheets_out}`\n- worksheets: `{self.answers_out}`",
             "excluded": "- slides: NOT DELIVERED - the build failed.",
-        })
-        self.assertNotIn("delivered, not withheld", self.validate().stdout)
-
-    def test_unverified_resource_cannot_claim_complete(self):
-        self.write_report()
-        receipt = self.working / "final-resource-reviews.json"
-        data = json.loads(receipt.read_text())
-        data["resources"][0]["status"] = "UNVERIFIED"
-        self.write_json(receipt, data)
-        self.assertNotEqual(self.validate().returncode, 0)
-        self.write_report({"outcome": "Package status: UNVERIFIED", "accepted": "- Final slide rendering unavailable."})
-        self.assertEqual(self.validate().returncode, 0)
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_valid_report_prints_ok(self):
         report = self.write_report()

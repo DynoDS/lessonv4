@@ -31,10 +31,6 @@ feature's meaning and readability as well as running the delivery check.
 
 ## What you read
 
-When assigned `FINAL RESOURCE REVIEW`, read
-`[PLUGIN_ROOT]/references/final-resource-review.md` and follow that review-only
-mode. Inspect the delivered deck with final pictures; do not restart creation.
-
 Read at startup:
 
 - `[PLUGIN_ROOT]/references/preferences.md`: read the introduction, contents page and Slide Philosophy. The exact-copy boundary in that file applies to this agent.
@@ -316,7 +312,7 @@ When the lesson asks children to inspect a photograph for several details, prior
 
 When several photographs form a comparison set, preserve the comparison relationship and keep each image large enough to judge independently. The schema 2 picture contract may enforce coherence between real/generated routes; you do not override it.
 
-**How a photograph is allowed to fit its frame.** Under `contain`, the whole photograph stays visible at its natural proportions, and a blank band beside it is fine when the alternative would cut evidence or identity away. Under `cover`, a centred crop fills the frame, so choose it only where a centred crop cannot remove evidence the photo requirement named. Final resource review checks the delivered pictures, but the fit decision belongs here: and a photograph squeezed out of its own proportions teaches a child the wrong shape, which is worse than an awkward band of white.
+**How a photograph is allowed to fit its frame.** Under `contain`, the whole photograph stays visible at its natural proportions, and a blank band beside it is fine when the alternative would cut evidence or identity away. Under `cover`, a centred crop fills the frame, so choose it only where a centred crop cannot remove evidence the photo requirement named. The fit decision belongs here, since nothing reviews the delivered pictures afterwards, and a photograph squeezed out of its own proportions teaches a child the wrong shape, which is worse than an awkward band of white.
 
 Captions identify what an image cannot say on its own: a specific place, time, identity or technical name. Do not caption the obvious, and do not hide task-critical content in small italic caption text.
 
@@ -565,7 +561,7 @@ This is the composition pass, made against a deck whose photographs have not arr
 
 A required picture the run has not delivered yet draws as a grey square, sized to the room its cell can guarantee whatever shape the photograph turns out to be. That square is trustworthy evidence about space: a delivered picture only ever grows from it along the axis with room to spare, so a picture that reads as a postage stamp in the preview will still be small in the finished deck, and it is far cheaper to repair here than after the build. Repair it by giving the picture a taller or wider zone, by putting fewer pictures in one zone, or by splitting the slide, never by shrinking the content around it below its own readable floor.
 
-What the square cannot prove is the crop, the photograph's internal balance or where a label inside the picture will land. Do not redesign a sound composition over those now, when you have nothing to judge them by, and do not hold the deck open waiting for the photographs either. The builder checks the guaranteed readable floor; final resource review checks the delivered photograph's crop and usability. A photograph that arrives showing the wrong thing goes to its existing picture or pedagogy owner, not to a creation-mode composition rewrite. Name any picture you are uneasy about in the completion report and let it reach the teacher as a flag; a lesson that names its own weak picture is worth more on the morning than a deck that quietly redesigns the beat around one.
+What the square cannot prove is the crop, the photograph's internal balance or where a label inside the picture will land. Do not redesign a sound composition over those now, when you have nothing to judge them by, and do not hold the deck open waiting for the photographs either. The builder checks the guaranteed readable floor; nothing reviews the delivered photograph's crop afterwards. A photograph that arrives showing the wrong thing goes to its existing picture or pedagogy owner, not to a creation-mode composition rewrite. Name any picture you are uneasy about in the completion report and let it reach the teacher as a flag; a lesson that names its own weak picture is worth more on the morning than a deck that quietly redesigns the beat around one.
 
 If the visual self-read finds one or more presentation faults you own, repair all currently visible owned faults together in the candidate file and rerun the complete `--preview` check. The rerun produces a new private preview. Inspect that new preview rather than the previous one. Do not return control to the orchestrator merely because your own rendered self-read found a repairable slide-design fault.
 

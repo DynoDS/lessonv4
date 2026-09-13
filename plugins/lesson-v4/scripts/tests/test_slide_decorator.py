@@ -158,8 +158,6 @@ class SlideDecoratorOrchestrationTests(unittest.TestCase):
             "Wait until Slide Designer, the Slide Decorator (or its degrade) and all",
             finalize,
         )
-        # Optional decoration stays separate from final output judgement.
-        self.assertIn("final resource review in Phase 3.6", finalize)
         self.assertIn("earlier optional-picture stage", finalize)
 
     def test_a_failed_decorator_degrades_and_never_blocks(self) -> None:

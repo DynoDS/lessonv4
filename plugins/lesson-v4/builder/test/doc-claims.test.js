@@ -825,12 +825,12 @@ test("photograph fit is decided before build and checked again on final resource
     !ORCHESTRATOR_MD.includes("ASSIGNMENT: BUILT_DECK_LOOK"),
     "the orchestrator is launching the built-deck look again"
   );
-  assert.match(ORCHESTRATOR_MD, /review the actual outputs with\s+their final pictures/);
-  assert.match(ORCHESTRATOR_MD, /final-resource-review\.md/);
+  // The final resource review was retired too (13 September 2026).
+  assert.ok(!ORCHESTRATOR_MD.includes("FINAL RESOURCE REVIEW"), "the final resource review is back");
   for (const token of [
     "Under `contain`, the whole photograph stays visible at its natural proportions",
     "a centred crop fills the frame",
-    "Final resource review checks the delivered pictures",
+    "The fit decision belongs here, since nothing reviews the delivered pictures afterwards",
     "Never place several photographs above one combined answer strip"
   ]) {
     assert.ok(
@@ -1040,8 +1040,7 @@ test("repairable slide-check faults stay inside the original Slide Designer", ()
     "the focused Slide Designer role can still act as creation-mode Slide Designer part two"
   );
   assert.ok(SLIDE_FOCUSED_REPAIR_MD.includes("`Slide self-repair: EXHAUSTED 3/3`"));
-  assert.match(SLIDE_FOCUSED_REPAIR_MD, /Final resource review findings also reach this role directly/);
-  assert.match(SLIDE_FOCUSED_REPAIR_MD, /They do not require exhaustion of the earlier preview budget/);
+  assert.ok(!/final.resource review/i.test(SLIDE_FOCUSED_REPAIR_MD), "the focused repair still expects final review findings");
 });
 
 test("the documented picture reading floor is the one the build enforces", () => {

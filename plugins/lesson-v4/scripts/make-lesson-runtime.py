@@ -72,10 +72,10 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "focused-repair": (
         "## Phase 3.5 — The Focused Owner-Repair Round",
-        "## Phase 3.6 - Final Resource Review and Finalisation",
+        "## Phase 3.6 - Finalisation",
     ),
     "finalize": (
-        "## Phase 3.6 - Final Resource Review and Finalisation",
+        "## Phase 3.6 - Finalisation",
         "## Phase 4 — Final Assembly and Report",
     ),
     "delivery": (

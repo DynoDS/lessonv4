@@ -489,7 +489,7 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
 //
 // Deliberately NOT done here: greying the rest of the picture and leaving the
 // detail in colour. It looks the part, and it makes the child's task depend on
-// telling two colours apart, which `final-resource-review.md` refuses outright
+// telling two colours apart, which `worksheet-visual-profile.md` refuses outright
 // and which fails a colour-blind child and a black-and-white printout together.
 //
 // The label belongs to the `callout` helper, which already points at things.

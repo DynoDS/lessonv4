@@ -36,9 +36,8 @@ The pipeline splits work across three layers:
    specifications; deterministic commands build the direct fixed resources;
    the retained Working Wall builder performs its required physical-output
    judgement.
-3. **Delivery** — once every branch has settled, have the existing resource
-   owners review the final rendered outputs, resolve or report their findings,
-   prove the pictures and tell the teacher what was made.
+3. **Delivery** — once every branch has settled, prove the pictures and tell
+   the teacher what was made.
 
 The resource-design agents never make pedagogical decisions. They read the
 approved pedagogical contract and specify their own resource. Validated canonical

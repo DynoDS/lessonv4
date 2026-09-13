@@ -94,10 +94,10 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "focused-repair": (
         "## Phase 3.5 — The Focused Owner-Repair Round",
-        "## Phase 3.6 - Final Resource Review and Finalisation",
+        "## Phase 3.6 - Finalisation",
     ),
     "finalize": (
-        "## Phase 3.6 - Final Resource Review and Finalisation",
+        "## Phase 3.6 - Finalisation",
         "## Phase 4 — Final Assembly and Report",
     ),
     "delivery": (
@@ -572,7 +572,6 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             "a semantic build diagnostic",
             "a picture reference the receipts",
             "a helper-delivery failure",
-            "material finding",
             "Each identifies the resource, location and owner",
         ):
             with self.subTest(token=token):
@@ -603,19 +602,18 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         """
         focused = self.slice_text("focused-repair")
 
-        self.assertIn("Supply both affected resources to the final review", focused)
+        self.assertIn("Rebuild both affected resources and recheck that", focused)
         self.assertIn("run report as a teacher flag", focused)
 
     def test_finalize_slice_proves_the_pictures_and_writes_the_record(
         self,
     ) -> None:
-        """Final output judgement runs before provenance and the delivery record."""
+        """Finalisation proves the pictures and writes the record, reviewing nothing."""
         finalize = self.slice_text("finalize")
 
+        self.assertNotIn("FINAL RESOURCE REVIEW", finalize)
+        self.assertNotIn("final-resource-reviews.json", finalize)
         for token in (
-            "final-resource-reviews.json",
-            "final-resource-review.md",
-            "Only a current PASS",
             'finalize-picture-assignment.py" provenance',
             "Require `PICTURE_PROVENANCE_OK` before removing transient picture work",
             "Append genuine findings to the shared build review log",

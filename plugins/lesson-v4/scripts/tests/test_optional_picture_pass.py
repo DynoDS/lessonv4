@@ -496,8 +496,8 @@ class ContractTests(unittest.TestCase):
             decorator.index("Now run one explicit whole-deck pass"),
         )
 
-    def test_final_review_is_distinct_from_the_retired_deck_look(self):
-        """Final review uses current outputs without restoring the retired creation pass."""
+    def test_the_retired_deck_look_stays_retired(self):
+        """Neither the built-deck look nor the final resource review comes back."""
         designer = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
         playbook = (
             ROOT / "skills" / "make-lesson" / "playbook-lite.md"
@@ -506,7 +506,7 @@ class ContractTests(unittest.TestCase):
         self.assertNotIn("BUILT_DECK_LOOK", designer)
         self.assertNotIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
         self.assertNotIn("slide_designer_built_deck_look", playbook)
-        self.assertIn("FINAL RESOURCE REVIEW", playbook)
+        self.assertNotIn("FINAL RESOURCE REVIEW", playbook)
         # The judgement the removed section carried has to survive somewhere
         # the role that sees the drawings rendered still reads: the Slide
         # Decorator, which is that pass in its own worker and not a review of

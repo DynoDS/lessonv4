@@ -10,10 +10,8 @@ color: "#3CB371"
 
 `make-lesson` does not spawn this agent. It builds the wall with
 `run-fixed-resource.py wall`, the same command that builds the slides, the
-worksheets and the stick-ins, and `working-wall-designer` reviews the delivered
-file at FINAL RESOURCE REVIEW the way every other resource's owner reviews its
-own. This agent is kept for direct or legacy use, as the other three builder
-agents are.
+worksheets and the stick-ins. This agent is kept for direct or legacy use, as
+the other three builder agents are.
 
 That change is why the physical-page check below is no longer this agent's alone:
 a wall that prints more sheets than its cards laid out is refused by the build

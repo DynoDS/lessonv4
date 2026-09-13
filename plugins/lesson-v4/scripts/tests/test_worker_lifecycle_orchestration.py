@@ -141,8 +141,8 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertIn("Never refuse to write `lesson.json`", slides)
         self.assertIn("on your first pass", slides)
 
-    def test_track_a_keeps_optional_decoration_and_final_review_distinct(self):
-        """Optional decoration stays early; final review sees the delivered resources."""
+    def test_track_a_keeps_optional_decoration_early_and_reviews_no_built_deck(self):
+        """Optional decoration stays early; nothing reviews the delivered resources."""
         playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
             encoding="utf-8"
         )
@@ -154,8 +154,8 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         self.assertNotIn("ASSIGNMENT: BUILT_DECK_LOOK", playbook)
         self.assertNotIn("slide_designer_built_deck_look", playbook)
         self.assertNotIn("## The built-deck look", designer)
-        # Final output review has an explicit, separate route.
-        self.assertIn("FINAL RESOURCE REVIEW", playbook)
+        # The final resource review was retired on 13 September 2026.
+        self.assertNotIn("FINAL RESOURCE REVIEW", playbook)
 
         decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
         self.assertIn("## Confirm the layer landed where you put it", decorator)
@@ -303,7 +303,7 @@ class WorkerLifecycleOrchestrationTests(unittest.TestCase):
         # The slice markers are the playbook's own headings, so they move together.
         self.assertIn("## Phase 3 — Service Each Branch as It Lands", runtime)
         self.assertIn("## Phase 3.5 — The Focused Owner-Repair Round", runtime)
-        self.assertIn("## Phase 3.6 - Final Resource Review and Finalisation", runtime)
+        self.assertIn("## Phase 3.6 - Finalisation", runtime)
 
 
 if __name__ == "__main__":

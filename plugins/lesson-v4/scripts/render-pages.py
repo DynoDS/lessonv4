@@ -434,9 +434,7 @@ def render_pdf_pages(pdf_path, routes, out_dir, stem, dpi):
 # the tokens of one image to answer questions most of which are about the deck
 # rather than about any one slide: does the sequence hold together, is the same
 # reference on both slides that need it, does slide 13 suddenly go quiet. That
-# is what an overview is for, and `final-resource-review.md` has told reviewers
-# to "use overviews for continuity, then individual pages" since before anything
-# could produce one.
+# is what an overview is for.
 #
 # So the render now also lays every page out on one image, numbered, in reading
 # order. It is the cheap first look: one image answers the continuity questions
