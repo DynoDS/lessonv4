@@ -65,13 +65,33 @@ function renderSingle(item, opts = {}) {
   const rawSpec = item.spec || {};
   // A drawing laid out at its printed size (the number line) is told the width
   // the piece will print at.
-  const printedWidthMm = item.widthMm ?? def.defaultWidthMm;
-  const { svg, w, h, aspect } = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  // A ruler states its own width instead, because it prints at true size.
+  const ownWidthMm = def.widthMmFor ? def.widthMmFor(def.specFn ? def.specFn(rawSpec) : rawSpec) : null;
+  const printedWidthMm = item.widthMm ?? ownWidthMm ?? def.defaultWidthMm;
+  let drawn;
+  try {
+    drawn = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+  } catch (error) {
+    // A shared drawing refuses a box it cannot be read in (numerals under the
+    // pack's readable floor) by name. One piece that cannot draw is skipped and
+    // named, like a piece missing its question, rather than stopping the pack.
+    console.warn(`[stick-in] "${item.label || item.visual}": ${error.message} This item is skipped.`);
+    return null;
+  }
+  const { svg, w, h, aspect } = drawn;
   const a = aspect ?? w / h;
-  const naturalWidthMm = item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
+  // A drawing laid out at its printed size prints at the size it chose, which
+  // may be narrower than the box it was offered (a clock face does not stretch
+  // to the width of the piece); scaling it up would enlarge its numerals past
+  // the size it laid them out at.
+  const laidOutMm = def.laidOutAtWidth ? Math.min(printedWidthMm, w * (25.4 / 72)) : null;
+  const naturalWidthMm = laidOutMm ?? item.widthMm ?? (def.fitHeightMm ? a * def.fitHeightMm : def.defaultWidthMm);
   const reserveTopMm = opts.reserveTopMm || 0;
   const naturalHeightMm = naturalWidthMm / a;
-  const widthMm = reserveTopMm > 0
+  // Nor is a laid-out drawing shrunk to make room for the handle band: a flat
+  // one (a continuum line 11mm tall) lost most of its height to the band and
+  // its words went to a few points (13 September 2026). The band goes above it.
+  const widthMm = reserveTopMm > 0 && laidOutMm == null
     ? Math.max(1, naturalHeightMm - reserveTopMm) * a
     : naturalWidthMm;
   const heightMm = widthMm / a;

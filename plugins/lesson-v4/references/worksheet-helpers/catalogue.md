@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 78 helpers, what each is for, and a working example of each.
+The 85 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -70,6 +70,10 @@ emailed. Never write `imageHref` yourself.
 - `process-chain` - Boxes joined by arrows: a food chain, a life cycle, the order of events.
 - `circuit-diagram` - One series circuit or a row of them in the standard symbols, each carrying its own state.
 - `classification-key` - A branching yes/no identification key down to named living things.
+- `concept-map` - One central idea joined to two to six others round it, each line optionally naming the relationship.
+- `fishbone` - Cause and effect: causes on ribs off a spine that points at the effect.
+- `continuum-line` - A line between two opposite ends (disagree to agree) for a child to mark a position on, with optional ticks and a question above.
+- `source-pathway` - Two to six separate sources joining one middle state and then one outcome, for when the shared middle is the learning.
 
 **Shape, space and measure**
 
@@ -79,6 +83,8 @@ emailed. Never write `imageHref` yourself.
 - `line-pair` - The parallel, perpendicular or neither pair.
 - `turn-diagram` - Angle as a turn: two rays from a vertex with a curved arrow sweeping between them.
 - `ruler` - A ruler printed at TRUE SIZE for a child to measure against.
+- `dial-scale` - A round weighing scale: 0 at the top, numbered marks round the dial and a red needle at `value`, for reading a mass off a scale.
+- `measuring-jug` - A measuring jug with a scale up its side.
 - `clock-row` - A row of analogue clock faces, each with hands set or left blank for the child to draw.
 - `coordinate-grid` - A numbered first-quadrant grid a child plots on.
 - `reflection-grid` - A dot lattice with a mirror line and a shape to reflect.
@@ -107,6 +113,7 @@ emailed. Never write `imageHref` yourself.
 - `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
 - `base-ten-blocks` - Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
 - `digit-cards` - A row of cards, one digit each, handed to the child to make numbers from.
+- `number-network` - Circles joined by lines where each joined pair adds to `target`; a circle with no value is a blank the child fills.
 
 **Fractions and money**
 
@@ -775,7 +782,7 @@ Smallest usable: **110mm wide x 90mm tall**. Spare height: never takes spare hei
 
 Boxes joined by arrows: a food chain, a life cycle, the order of events. The arrows are the point.
 
-Smallest usable: **102mm wide x 24mm tall**. Spare height: never takes spare height.
+Smallest usable: **102mm wide x 21mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -820,7 +827,7 @@ Smallest usable: **136mm wide x 38mm tall**. Spare height: never takes spare hei
 
 A branching yes/no identification key down to named living things.
 
-Smallest usable: **147mm wide x 60mm tall**. Spare height: never takes spare height.
+Smallest usable: **136mm wide x 69mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -847,6 +854,97 @@ Smallest usable: **147mm wide x 60mm tall**. Spare height: never takes spare hei
       }
     }
   }
+}
+```
+
+#### `concept-map`
+
+One central idea joined to two to six others round it, each line optionally naming the relationship.
+
+Smallest usable: **120mm wide x 56mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "concept-map",
+  "text": "How was cacao used by the Maya?",
+  "centre": "Cacao",
+  "spokes": [
+    {
+      "label": "Money",
+      "relationship": "used as"
+    },
+    {
+      "label": "Religion",
+      "relationship": "used in"
+    },
+    {
+      "label": "Power",
+      "relationship": "controlled by rulers"
+    },
+    {
+      "label": "Afterlife",
+      "relationship": "buried with"
+    }
+  ]
+}
+```
+
+#### `fishbone`
+
+Cause and effect: causes on ribs off a spine that points at the effect.
+
+Smallest usable: **140mm wide x 49mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "fishbone",
+  "text": "Why did the Romans invade Britain?",
+  "effect": "The Romans invaded Britain",
+  "causes": [
+    "Britain had tin and gold",
+    "Caesar wanted glory",
+    "Britain helped the Gauls",
+    "Rome wanted to expand"
+  ]
+}
+```
+
+#### `continuum-line`
+
+A line between two opposite ends (disagree to agree) for a child to mark a position on, with optional ticks and a question above.
+
+Smallest usable: **90mm wide x 31mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "continuum-line",
+  "text": "Mark where you stand.",
+  "question": "Was it fair to invade Britain?",
+  "left": "Completely unfair",
+  "right": "Completely fair",
+  "middle": "Not sure",
+  "marks": 4
+}
+```
+
+#### `source-pathway`
+
+Two to six separate sources joining one middle state and then one outcome, for when the shared middle is the learning.
+
+Smallest usable: **110mm wide x 57mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "source-pathway",
+  "text": "Where can electricity come from?",
+  "sources": [
+    "Mains socket",
+    "Battery",
+    "Solar cell",
+    "Turn handle\nDynamo"
+  ],
+  "middle": "Electricity",
+  "outcome": "Appliance"
 }
 ```
 
@@ -962,6 +1060,46 @@ Smallest usable: **119mm wide x 18mm tall**. Spare height: never takes spare hei
     "from": 0,
     "to": 6
   }
+}
+```
+
+#### `dial-scale`
+
+A round weighing scale: 0 at the top, numbered marks round the dial and a red needle at `value`, for reading a mass off a scale. `label` prints a line under it.
+
+Smallest usable: **45mm wide x 66mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "dial-scale",
+  "text": "How much flour is on the scales?",
+  "max": 1000,
+  "majorEvery": 100,
+  "minorEvery": 20,
+  "value": 350,
+  "unit": "g",
+  "label": "Scale A"
+}
+```
+
+#### `measuring-jug`
+
+A measuring jug with a scale up its side. Leave `value` off for an empty jug the child marks a level on; give it to show the level. `label` prints a line under it.
+
+Smallest usable: **35mm wide x 61mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "measuring-jug",
+  "text": "How much water is in the jug?",
+  "max": 400,
+  "majorEvery": 100,
+  "minorEvery": 50,
+  "value": 250,
+  "unit": "ml",
+  "fillColor": "CCE2F5",
+  "levelColor": "0070C0",
+  "label": "Jug B"
 }
 ```
 
@@ -1112,7 +1250,7 @@ Smallest usable: **47mm wide x 40mm tall**. Spare height: never takes spare heig
 
 A labelled number line with a `caption` beneath ("Each interval is worth 100."): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.
 
-Smallest usable: **173mm wide x 15mm tall**. Spare height: never takes spare height.
+Smallest usable: **70mm wide x 26mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1571,6 +1709,58 @@ Smallest usable: **62mm wide x 13mm tall**. Spare height: never takes spare heig
 }
 ```
 
+#### `number-network`
+
+Circles joined by lines where each joined pair adds to `target`; a circle with no value is a blank the child fills.
+
+Smallest usable: **50mm wide x 66mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "number-network",
+  "text": "Each line joins two numbers that add to 60. Find the missing numbers.",
+  "target": 60,
+  "label": "",
+  "nodes": [
+    {
+      "x": 1,
+      "y": 0,
+      "value": 25
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "value": 35
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "value": null
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "value": null,
+      "color": ""
+    }
+  ],
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ]
+  ]
+}
+```
+
 ## Fractions and money
 
 #### `stacked-fraction`
@@ -1959,7 +2149,7 @@ Smallest usable: **96mm wide x 78mm tall**. Spare height: never takes spare heig
 
 A line across the page with named bands along it and dated points beneath, for placing events or artefacts onto.
 
-Smallest usable: **168mm wide x 46mm tall**. Spare height: never takes spare height.
+Smallest usable: **168mm wide x 34mm tall**. Spare height: never takes spare height.
 
 ```json
 {

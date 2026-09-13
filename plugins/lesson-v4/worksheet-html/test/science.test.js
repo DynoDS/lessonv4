@@ -102,8 +102,8 @@ test("a parent in the key sits between its two children, so branches never cross
   // can silently go wrong. A key whose lines cross is not a key: a child
   // following a branch arrives at the wrong creature.
   const html = renderHelper(MINIBEASTS);
-  const boxes = [...html.matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="122"/g)].map(
-    (m) => ({ x: Number(m[1]), y: Number(m[2]) })
+  const boxes = [...html.matchAll(/<rect class="key-(?:question|leaf)" x="([\d.]+)" y="([\d.]+)" width="([\d.]+)"/g)].map(
+    (m) => ({ x: Number(m[1]) + Number(m[3]) / 2, y: Number(m[2]) })
   );
   assert.equal(boxes.length, 7, "a three-question key draws seven boxes");
 
@@ -152,7 +152,7 @@ test("a blank box in a chain stays blank, and a given one prints", () => {
     boxes: ["egg", null, null, "frog"],
   });
   assert.ok(html.includes(">egg<") && html.includes(">frog<"));
-  assert.equal((html.match(/<rect /g) || []).length, 4, "four boxes");
+  assert.equal((html.match(/<rect [^>]*rx=/g) || []).length, 4, "four boxes");
   assert.equal((html.match(/<text /g) || []).length, 2, "only two are filled in");
 });
 
@@ -165,7 +165,7 @@ test("a chain draws one arrow fewer than it has boxes", () => {
       boxes: Array.from({ length: n }, () => null),
     });
     assert.equal(
-      (html.match(/marker-end/g) || []).length,
+      (html.match(/class="chain-arrow"/g) || []).length,
       n - 1,
       `${n} boxes should be joined by ${n - 1} arrows`
     );
@@ -183,12 +183,14 @@ test("a longer chain needs a wider zone", () => {
 
 // ─── all three ───────────────────────────────────────────────────────────
 
-test("none of the three hard-codes a colour outside the token system", () => {
-  // The Word originals carried four hex values between them. These inherit the
-  // ink colour and draw with currentColor, so there is one palette rather than
-  // a second one starting. White is the exception and is paper, not a colour.
+test("the circuit hard-codes no colour outside the token system", () => {
+  // The Word originals carried four hex values between them. The circuit
+  // inherits the ink colour and draws with currentColor. The key and the chain
+  // left this test on 13 September 2026: they are now the shared drawings every
+  // surface places, in the board's own palette (shared/visuals/surface-profiles.js),
+  // which the sheet's contract test already excludes for every shared drawing.
   const examples = require("./helper-examples");
-  for (const name of ["circuit-diagram", "classification-key", "process-chain"]) {
+  for (const name of ["circuit-diagram"]) {
     const html = renderHelper({ helper: name, ...examples[name] });
     const hexes = (html.match(/#[0-9a-fA-F]{3,6}\b/g) || []).filter(
       (h) => h.toUpperCase() !== "#FFFFFF" && h.toUpperCase() !== "#FFF"

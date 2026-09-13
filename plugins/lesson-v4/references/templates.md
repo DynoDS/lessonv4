@@ -87,8 +87,11 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `row` | A container placing its items side by side inside a zone |
 | `diamond-nine` | The ranking diamond: nine cells in the 1-2-3-2-1 shape, most important at the top |
 | `continuum-line` | An agree/disagree (or any two-pole) line with marks a class positions ideas along |
-| `timeline` | A history timeline: named era bands sitting on a bold line, with dated ticks hanging beneath. Every position is a fraction the designer chooses (a school timeline is almost never honestly to scale, and `note` says so in small type); the sheet draws the same figure from the same fields |
+| `timeline` | A history timeline: named era bands sitting on a bold line, with dated ticks hanging beneath. Every position is a fraction the designer chooses, worked out from the real dates; every surface draws the same figure from the same fields |
 | `fishbone` | A cause-and-effect fishbone: a spine to the effect, angled ribs carrying causes |
+| `ruler` | A ruler with centimetre (or millimetre) marks, an optional arrow at a point and an optional bar to measure. On the slide it is a picture of a scale; on paper it prints at true size |
+| `process-chain` | Boxes joined by arrows: a food chain, a life cycle, the order of events. An empty box is one the child fills |
+| `classification-key` | A branching yes/no identification key down to named answers |
 | `concept-map` | A radial concept map: a centre idea with spokes to connected ideas |
 | `callout` | A small coloured box holding one short line of text, with an arrow leaving any side of it to point at the thing the line is about — the chart above it, the number line beside it, a part of a photograph. Set `points` (up/down/left/right) and `at` (how far along that edge the arrow tip lands). Key words in the line carry colour with the ordinary inline markers. Use whenever a slide needs to point at its own content and say one thing about it, instead of leaving that sentence to a text panel or the speaker notes |
 | `sc-panel` | Wraps a success criteria in its green "✓ Success Criteria" box, so the criteria reads as the standard wherever it sits — use when the success criteria has to go somewhere the `maths-*-sc` panel can't reach (a wide visual reference in a full-width strip, a free-template zone). Inside a `*-sc` template's own criteria slot the box is already drawn, so there pass the bare criteria, not this. Carries an optional `flipchart: true` for a draw-live criteria — same corner flipchart drawing as the `*-sc` panels; set it on the `sc-panel` object itself here with `criteriaRef` naming the displayed source criterion |
@@ -1715,7 +1718,9 @@ With a sub-prompt sitting above the line:
 
 Zone class compatibility: fits A, B, C, E-wide. The line wants width; height can be modest because the labels sit close to the line. B (wide strip) is the natural fit when the line is one element on a larger task slide.
 
-**Minimum useful size (empirically tested):** 4.0″ × 1.4″. Below 4″ wide the end labels start truncating; below 1.4″ tall the labels collide with the line.
+**Minimum useful size (empirically tested):** 4.0″ × 1.4″. Below that the build refuses with `CONTINUUM_LABEL_TOO_WIDE` or `CONTINUUM_ZONE_TOO_SHALLOW` rather than shrinking a label.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
 ### `timeline`
 
@@ -1752,7 +1757,9 @@ Fields:
 - `text` (optional) - one short line above the figure, black, left-aligned: the question or stem the timeline serves.
 - `caption` (optional) - one short italic line centred beneath the labels.
 
-A timeline with neither eras nor marks draws the bare line. The card hugs the drawn figure, so spare zone height reads as background rather than as an empty box.
+A timeline with neither eras nor marks draws the bare line.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
 **Place marks and eras in proportion to their real dates, and never label a timeline "not to scale".** The helper draws where you put things, so the honesty of the line is yours: work each fraction out from the span the line covers. A line from 1485 to 2026 covers 541 years, so 1538 sits at (1538 − 1485) ÷ 541 ≈ 0.10 and 1603 at ≈ 0.22; a Tudor band stretched to 0.55 for label room tells a child the Tudors lasted half the way to today. When a label needs more room than its true position leaves, shorten the label or let it wrap to its two lines rather than moving the mark. The teacher wants no "not to scale" note on any timeline (8 September 2026); a spec carrying `note` is refused by name at build.
 
@@ -1783,7 +1790,57 @@ Zone class compatibility: fits A, C, E-wide. Needs horizontal room for the spine
 - **3–4 causes:** 5.0″ × 3.0″.
 - **5–6 causes:** 6.0″ × 3.5″ — extra causes need more spine length to spread.
 
-The effect box is fixed-size on the right; the spine length scales with the remaining width.
+The effect box sits on the right; the cause boxes share the spine's length and are as tall as their words. A seventh cause is refused by name.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
+
+### `ruler`
+
+A ruler with numbered marks, for "how long is the pencil?" and "what length does the arrow show?".
+
+```json
+{ "type": "ruler", "end": 10, "majorInterval": 1, "minorInterval": 0.5, "unit": "cm",
+  "object": { "from": 0, "to": 6, "label": "pencil" } }
+```
+
+**`start`** (default 0) and **`end`** (required): the scale. **`unit`:** `"cm"` (default), `"mm"` or `"m"`. **`majorInterval`** (default 1): numbered marks. **`minorInterval`** (default half of it): small marks. **`arrow`:** `{ "at", "label" }` points at a place, or `{ "at", "answerBox": true }` puts a box to write in above it. **`object`:** `{ "from", "to", "label" }` a bar to measure.
+
+On the slide the ruler grows to fill its zone and is read as a picture of a scale. On the worksheet and in the stick-in pack it prints at TRUE SIZE, so a child can lay a real ruler against it, and a space too narrow to hold it is refused rather than shrunk.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
+
+Zone class compatibility: fits A, B, C, E-wide.
+
+### `process-chain`
+
+Boxes joined by arrows: a food chain, a life cycle, the order of events. The arrows are the point.
+
+```json
+{ "type": "process-chain", "boxes": ["egg", "caterpillar", null, "butterfly"] }
+```
+
+**`boxes`:** the stages in order, up to eight. `null` (or `""`) leaves a box empty for the class to fill. A stage wraps to three lines inside its box; a longer one is refused by name, because a stage is a few words.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
+
+Zone class compatibility: fits A, B, C, E-wide.
+
+### `classification-key`
+
+A branching yes/no identification key down to named answers. You give the questions and answers as a tree, never positions: every question sits over its two branches, so the lines never cross.
+
+```json
+{ "type": "classification-key",
+  "tree": { "q": "Does it have wings?",
+            "no":  { "q": "More than 6 legs?", "no": { "leaf": "ANT" }, "yes": { "leaf": "SPIDER" } },
+            "yes": { "q": "Spotted body?",     "no": { "leaf": "BEE" }, "yes": { "leaf": "LADYBIRD" } } } }
+```
+
+**`tree`:** `{ "q", "no", "yes" }` for a question (`no` branches left, `yes` right) and `{ "leaf" }` for a named answer. A question that takes more than three lines in its box is refused by name.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
+
+Zone class compatibility: fits A, C, E-wide.
 
 ### `concept-map`
 
@@ -1823,7 +1880,9 @@ Zone class compatibility: fits A, C, E-wide. Needs roughly square aspect ratio b
 - **2–4 spokes:** 4.0″ × 4.0″.
 - **5–6 spokes:** 5.0″ × 5.0″ — more spokes need more radius to avoid the spoke boxes touching.
 
-Relationship labels work best when they're 2–4 words. Longer phrases overflow the line.
+Relationship labels work best when they're 2 to 4 words; one that takes more than two lines, or spokes that would meet each other or the centre, is refused with `CONCEPT_MAP_ZONE_TOO_SMALL`. More than six spokes is refused by name.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
 ### `source-pathway`
 
@@ -1843,7 +1902,9 @@ A fan-in pathway for two to six distinct sources that converge on one named inte
 
 `sources`: two to six short labels. Every source is drawn as a separate top node. All source labels share one largest safe text size. `middle`: the state every source leads into. `outcome`: the final object or state reached from `middle`.
 
-The helper draws each source into one joining route, one arrow into `middle`, and one arrow from `middle` to `outcome`. It does not use typed arrow characters or flatten the nodes into one sentence.
+The helper draws each source into one joining route, one arrow into `middle`, and one arrow from `middle` to `outcome`. It does not use typed arrow characters or flatten the nodes into one sentence. A line break typed inside a source is kept.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
 Zone class compatibility: fits A, C and E-wide.
 
@@ -2191,7 +2252,9 @@ An analogue round scale — the kitchen/weighing dial a child reads a value off.
 { "type": "dial-scale", "max": 1000, "value": 200, "unit": "g", "label": "The scales show 200g" }
 ```
 
-**`max` (default 1000):** the value at a full turn. **`value` (default 0):** where the needle points. **`unit`:** shown near the centre (e.g. "g", "ml"). **`majorEvery`** (default `max ÷ 10`) and **`minorEvery`** (default `majorEvery ÷ 5`): tick spacing. **`label`:** optional caption below the dial. Give it a roughly square zone so the face stays circular.
+**`max` (default 1000):** the value at a full turn. **`value` (default 0):** where the needle points; a value off the dial is refused by name. **`unit`:** shown near the centre (e.g. "g", "ml"). **`majorEvery`** (default `max ÷ 10`) and **`minorEvery`** (default `majorEvery ÷ 5`): tick spacing. Numbers print as they are (0.5, 1.5 on a kilogram dial). **`label`:** optional caption below the dial, set as editable slide text. Give it a roughly square zone so the face stays circular; numbers too crowded to read round a small dial are refused with `DIAL_SCALE_TOO_SMALL`.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
 ### `line-graph`
 
@@ -2403,7 +2466,9 @@ Answer (blanks filled, green):
   "edges": [ [0, 1], [1, 2], [1, 3] ] }
 ```
 
-**`target`:** the sum every connected pair must reach (shown as a caption — override the caption with `label`). **`nodes`:** each is `{ x, y, value, color }` — `x` across and `y` **down** (so `y:0` is the top row, matching top/middle/bottom), positioned on an integer layout grid that the helper scales to fill the zone; `value` is the number (use `null` for a blank circle); `color` tints the number (use green `00B050` to reveal an answer). **`edges`:** `[i, j]` index pairs into `nodes`, each drawn as a joining line. Space nodes about one unit apart; the circles size themselves to the spacing.
+**`target`:** the sum every connected pair must reach (shown as a caption; override the caption with `label`). **`nodes`:** each is `{ x, y, value, color }`: `x` across and `y` **down** (so `y:0` is the top row, matching top/middle/bottom), positioned on an integer layout grid that the helper scales to fill the zone; `value` is the number (use `null` for a blank circle); `color` tints the number (use green `00B050` to reveal an answer). **`edges`:** `[i, j]` index pairs into `nodes`, each drawn as a joining line. Space nodes about one unit apart; the circles size themselves to the spacing and leave a visible run of line between neighbours. A `label` is set as editable slide text under the network and replaces the drawn target sentence.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
 ### `area-grid`
 
@@ -2658,7 +2723,9 @@ Answer (level revealed in green):
   "value": 250, "unit": "ml", "levelColor": "00B050", "label": "250ml" }
 ```
 
-**`max` (default 400):** the value at the top of the scale. **`majorEvery` (default max ÷ 4):** spacing of numbered ticks. **`minorEvery` (default majorEvery ÷ 2):** spacing of the small ticks between them. **`value`:** the liquid level to draw — omit for an empty jug. **`unit`:** shown at the top of the scale (e.g. "ml"). **`fillColor` / `levelColor`:** the liquid colour and the level-line/tag colour (default pale blue and blue; use green `00B050` to reveal a marked answer). **`label`:** caption under the jug. Give it a roughly upright zone so the jug stays taller than it is wide.
+**`max` (default 400):** the value at the top of the scale. **`majorEvery` (default max ÷ 4):** spacing of numbered ticks. **`minorEvery` (default majorEvery ÷ 2):** spacing of the small ticks between them. **`value`:** the liquid level to draw; omit for an empty jug. **`unit`:** shown at the top of the scale (e.g. "ml"). **`fillColor` / `levelColor`:** the liquid colour and the level-line/tag colour (default pale blue and blue; use green `00B050` to reveal a marked answer). **`label`:** caption under the jug, set as editable slide text. Give it a roughly upright zone so the jug stays taller than it is wide; numbers too close to read up a short jug are refused with `MEASURING_JUG_TOO_SMALL`.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
 ## 5. Zone class compatibility
 
@@ -2697,6 +2764,9 @@ Which content types fit which zone class.
 | `continuum-line`    | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `timeline`          | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `fishbone`          | ✓ |   | ✓ |   | ✓ |   |   |   |
+| `ruler`             | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
+| `process-chain`     | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
+| `classification-key` | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `concept-map`       | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `source-pathway`    | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `coordinate-grid`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |

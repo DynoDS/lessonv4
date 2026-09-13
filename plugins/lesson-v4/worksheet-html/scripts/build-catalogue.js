@@ -43,12 +43,14 @@ const FAMILIES = [
       "bar-chart", "line-graph", "pictogram", "tally-chart", "venn", "carroll",
       "label-diagram", "rainforest-layers", "balanced-pattern-plate", "map", "grid-map",
       "process-chain", "circuit-diagram", "classification-key",
+      "concept-map", "fishbone", "continuum-line", "source-pathway",
     ],
   ],
   [
     "Shape, space and measure",
     [
       "shape", "triangle", "angle", "line-pair", "turn-diagram", "ruler",
+      "dial-scale", "measuring-jug",
       "clock-row", "coordinate-grid", "reflection-grid", "translation-shape",
       "geoboard", "triangle-square",
     ],
@@ -62,7 +64,7 @@ const FAMILIES = [
       "long-multiplication-grid", "bus-stop-grid", "long-division-grid",
       "method-frame", "number-pyramid", "times-table-grid",
       "place-value-chart", "place-value-counter-chart", "counter-group",
-      "base-ten-blocks", "digit-cards",
+      "base-ten-blocks", "digit-cards", "number-network",
     ],
   ],
   [

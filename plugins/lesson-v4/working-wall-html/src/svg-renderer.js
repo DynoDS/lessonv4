@@ -33,6 +33,17 @@ const BADGE_PX  = 240;          // step badge resolution
 // and places the image by it (no square padding), matching the other engines.
 const linePairShared = require('../../shared/visuals/line-pair-svg');
 const numberLineShared = require('../../shared/visuals/number-line-svg');
+const dialScaleShared = require('../../shared/visuals/dial-scale-svg');
+const measuringJugShared = require('../../shared/visuals/measuring-jug-svg');
+const rulerShared = require('../../shared/visuals/ruler-svg');
+const timelineShared = require('../../shared/visuals/timeline-svg');
+const processChainShared = require('../../shared/visuals/process-chain-svg');
+const classificationKeyShared = require('../../shared/visuals/classification-key-svg');
+const conceptMapShared = require('../../shared/visuals/concept-map-svg');
+const fishboneShared = require('../../shared/visuals/fishbone-svg');
+const continuumLineShared = require('../../shared/visuals/continuum-line-svg');
+const sourcePathwayShared = require('../../shared/visuals/source-pathway-svg');
+const numberNetworkShared = require('../../shared/visuals/number-network-svg');
 const { profileFor } = require('../../shared/visuals/surface-profiles');
 const angleShared    = require('../../shared/visuals/angle-svg');
 const triangleShared = require('../../shared/visuals/triangle-svg');
@@ -277,6 +288,22 @@ const numberLineWall = sharedAtWidth(numberLineShared);
 const numberLineTight = numberLineWall.tightFn;
 const numberLineKey = numberLineWall.keyFn;
 const numberLineSvg = (spec) => numberLineTight(spec).svg;
+
+// The measuring scales and the thinking diagrams, each the one shared drawing
+// the board places (13 September 2026). A diagram full of words is laid out
+// wider than the default so its words keep the wall's size; the card then
+// places the picture by its shape.
+const dialScaleWall = sharedAtWidth(dialScaleShared, 150);
+const measuringJugWall = sharedAtWidth(measuringJugShared, 120);
+const rulerWall = sharedAtWidth(rulerShared, 180);
+const timelineWall = sharedAtWidth(timelineShared, 260);
+const processChainWall = sharedAtWidth(processChainShared, 360);
+const classificationKeyWall = sharedAtWidth(classificationKeyShared, 260);
+const conceptMapWall = sharedAtWidth(conceptMapShared, 260);
+const fishboneWall = sharedAtWidth(fishboneShared, 260);
+const continuumLineWall = sharedAtWidth(continuumLineShared, 260);
+const sourcePathwayWall = sharedAtWidth(sourcePathwayShared, 260);
+const numberNetworkWall = sharedAtWidth(numberNetworkShared, 150);
 
 // ─── Angle fan ─────────────────────────────────────────────────────────
 // Two rays meeting at a vertex, with the angle between them filled as a
@@ -717,6 +744,17 @@ async function preRenderSvgs(spec) {
     fractionCircle:   { keyFn: fractionCircleKey,   svgFn: fractionCircleSvg,   collected: {} },
     fractionBar:      { keyFn: fractionBarKey,      svgFn: fractionBarSvg,      collected: {} },
     numberLine:       { ...numberLineWall, collected: {} },
+    'dial-scale': { ...dialScaleWall, collected: {} },
+    'measuring-jug': { ...measuringJugWall, collected: {} },
+    'ruler': { ...rulerWall, collected: {} },
+    'timeline': { ...timelineWall, collected: {} },
+    'process-chain': { ...processChainWall, collected: {} },
+    'classification-key': { ...classificationKeyWall, collected: {} },
+    'concept-map': { ...conceptMapWall, collected: {} },
+    'fishbone': { ...fishboneWall, collected: {} },
+    'continuum-line': { ...continuumLineWall, collected: {} },
+    'source-pathway': { ...sourcePathwayWall, collected: {} },
+    'number-network': { ...numberNetworkWall, collected: {} },
     angleFan:         { keyFn: angleFanKey,         svgFn: angleFanSvg,         collected: {} },
     'turn-diagram':   { keyFn: turnDiagramKey,      svgFn: turnDiagramSvg,      collected: {} },
     comparisonSymbol: { keyFn: comparisonSymbolKey, svgFn: comparisonSymbolSvg, collected: {} },
@@ -883,6 +921,17 @@ module.exports = {
   numberLineSvg,
   numberLineTight,
   numberLineKey,
+  dialScaleKey: dialScaleWall.keyFn,
+  measuringJugKey: measuringJugWall.keyFn,
+  rulerKey: rulerWall.keyFn,
+  timelineKey: timelineWall.keyFn,
+  processChainKey: processChainWall.keyFn,
+  classificationKeyKey: classificationKeyWall.keyFn,
+  conceptMapKey: conceptMapWall.keyFn,
+  fishboneKey: fishboneWall.keyFn,
+  continuumLineKey: continuumLineWall.keyFn,
+  sourcePathwayKey: sourcePathwayWall.keyFn,
+  numberNetworkKey: numberNetworkWall.keyFn,
   angleFanSvg,
   angleFanKey,
   turnDiagramSvg,

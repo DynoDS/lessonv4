@@ -522,101 +522,51 @@ function needsCardRow(spec) {
 // A line across the page with named bands along it and dated points beneath,
 // for a child to place events or artefacts onto.
 //
-// Positions are given as fractions from 0 to 1, NOT as dates the helper works
-// out for itself. A school timeline is almost never to scale: the Stone Age
-// runs from two million years ago to four thousand, and drawn honestly the
-// last two eras would be invisible. The teacher decides the spacing, because
-// the spacing is a teaching decision.
+// Drawn by the one shared timeline (shared/visuals/timeline-svg.js), the same
+// drawing the board, the wall and the stick-in pack place (13 September 2026).
+// It used to be HTML boxes here, and its dates hung in an absolutely placed
+// strip the page's own fit check could not see, so a sheet carrying a timeline
+// was refused as two blocks printing on top of each other. Positions are still
+// fractions the teacher supplies, never dates the drawing spaces out, because a
+// school timeline is almost never to scale and the spacing is a teaching
+// decision. The question above it stays sheet text.
 
-// An era's name chip. 8mm rather than 7: a note-size label is 4.3mm on its
-// line, and the chip now carries its own box edge as well as its padding, so
-// 7mm left it a tenth of a millimetre short. The chip clips what it cannot
-// hold and says nothing, which is the failure this engine keeps meeting.
-const TL_CHIP_MM = 8;
-const TL_ERA_PAD_V_MM = SPACE.hair;
-const TL_ERA_PAD_H_MM = SPACE.tight;
-const TL_LINE_MM = 10; // the line itself, and the depth its ticks hang down
-const TL_MARK_MM = 20; // a tick plus the date under it, which runs to two short
-// lines at note size ("2,000,000 years ago" does not fit on one). The marks sit
-// in an absolutely-positioned strip, so this height is not negotiable the way an
-// ordinary block's is: a strip too short does not grow, it lets its labels run
-// out of the bottom and over whatever is printed next.
-const TL_CAPTION_MM = 8;
-const TL_LABEL_MM = 26; // how wide one date label is allowed to be before it wraps
+const { atPrintedWidth } = require("./at-printed-width");
+const timelineShared = require("../../../shared/visuals/timeline-svg");
 
-// The marks strip is pulled UP over the line, so its ticks hang from the line
-// rather than starting below it. Only the part below the line adds height.
-const TL_MARKS_BELOW_MM = TL_MARK_MM - TL_LINE_MM;
-
-function percent(value) {
-  return Math.max(0, Math.min(100, Number(value) * 100));
+function timelineStemMm(spec, widthMm) {
+  return spec.text ? linesFor(spec.text, widthMm) * LINE_MM + 2 : 0;
 }
 
-// Which way a date label hangs off its own tick.
-//
-// A timeline's first and last marks are the two that matter most, and they sit
-// at the very ends of the line. Centred on their ticks like every other label,
-// half of each one hangs off the edge of the zone and is sliced away: the
-// printed sheet opened with ",000 years ago" and closed with "4,000 years"
-// running into the margin. So the end labels tuck INWARD from their tick while
-// the ticks themselves stay exactly where the teacher put them.
-const TL_EDGE = 0.08;
-
-function labelShift(at) {
-  const value = Number(at);
-  if (value <= TL_EDGE) return "0";
-  if (value >= 1 - TL_EDGE) return "-100%";
-  return "-50%";
+function withTimelineStem(helper) {
+  return {
+    ...helper,
+    render: (spec, width) => {
+      const figure = helper.render(spec, width);
+      if (!spec.text) return figure;
+      return `<div class="h-figure-block"><p class="h-figure-stem">${esc(spec.text)}</p>${figure}</div>`;
+    },
+    measure: (spec, width) => {
+      const mm = typeof width === "number" ? width : width && width.widthMm;
+      return timelineStemMm(spec, mm || WIDEST_ZONE_MM) + helper.measure(spec, width);
+    },
+    needs: (spec, width) => {
+      const inner = helper.needs(spec, width);
+      // Words wrap onto more lines in a narrower zone, so the shortest this can
+      // come out is whichever of the narrowest and widest zones is shorter.
+      const atNarrowest = inner.minHeightMm + timelineStemMm(spec, inner.minWidthMm);
+      const atWidest = helper.measure(spec, WIDEST_ZONE_MM) + timelineStemMm(spec, WIDEST_ZONE_MM);
+      return { ...inner, minHeightMm: Math.min(atNarrowest, atWidest) };
+    },
+  };
 }
 
-function renderTimeline(spec) {
-  const eras = (spec.eras || [])
-    .map((era) => {
-      const left = percent(era.from);
-      const width = percent(era.to) - left;
-      return `<span class="h-tl-era" style="left:${left}%; width:${width}%">${esc(era.label)}</span>`;
-    })
-    .join("");
-
-  const marks = (spec.marks || [])
-    .map(
-      (mark) => `
-      <span class="h-tl-mark" style="left:${percent(mark.at)}%">
-        <span class="h-tl-tick"></span>
-        <span class="h-tl-mark-label" style="transform:translateX(${labelShift(mark.at)})">${esc(mark.label)}</span>
-      </span>`
-    )
-    .join("");
-
-  return `
-    <div class="h-tl">
-      ${spec.text ? `<p class="h-tl-stem">${esc(spec.text)}</p>` : ""}
-      <div class="h-tl-band">
-        <div class="h-tl-eras">${eras}</div>
-        <div class="h-tl-line"></div>
-        <div class="h-tl-marks">${marks}</div>
-      </div>
-      ${spec.caption ? `<p class="h-tl-caption">${esc(spec.caption)}</p>` : ""}
-    </div>`;
-}
-
-function measureTimeline(spec, widthMm) {
-  const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + 2 : 0;
-  const captionMm = spec.caption ? TL_CAPTION_MM : 0;
-  // TL_MARKS_BELOW_MM, not TL_MARK_MM: the strip overlaps the line, and
-  // counting its full height claimed 10mm the figure never used.
-  return stemMm + TL_CHIP_MM + TL_LINE_MM + TL_MARKS_BELOW_MM + captionMm + 2;
-}
-
-function needsTimeline(spec) {
+// A timeline is a full-width object, and the more it carries the wider it has
+// to be before its dates stop colliding with each other.
+function timelineMinWidthMm(spec) {
   const marks = (spec.marks || []).length;
   const eras = (spec.eras || []).length;
-  return {
-    // A timeline is a full-width object, and the more it carries the wider it
-    // has to be before its dates stop colliding with each other.
-    minWidthMm: Math.min(267, Math.max(140, (marks + eras) * 24)),
-    minHeightMm: measureTimeline(spec, WIDEST_ZONE_MM),
-  };
+  return Math.min(267, Math.max(140, (marks + eras) * 24));
 }
 
 const css = `
@@ -765,56 +715,6 @@ const css = `
     width: ${CARD_MARK_BOX_MM}mm; height: ${CARD_MARK_BOX_MM}mm;
     border: var(--rule-line) solid var(--colour-ink);
   }
-
-  /* ─── timeline ─── */
-  .h-tl { font-size: var(--type-body); }
-  .h-tl-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
-  .h-tl-band { position: relative; }
-  .h-tl-eras { position: relative; height: ${TL_CHIP_MM}mm; }
-  /* An era is a panel that needs separating from the one beside it, which is
-     the job --colour-tint exists for. It was a solid black slab with white
-     text: the heaviest mark on the page, spent on a label rather than on
-     anything the child does, and the only raw colour anywhere in the helpers.
-     Tint plus an ordinary box edge says "these are bands" just as clearly. */
-  .h-tl-era {
-    position: absolute; top: 0;
-    box-sizing: border-box;
-    text-align: center;
-    font-size: var(--type-note); line-height: 1.35;
-    background: var(--colour-tint); color: var(--colour-ink);
-    border: var(--rule-line) solid var(--colour-ink);
-    padding: ${TL_ERA_PAD_V_MM}mm ${TL_ERA_PAD_H_MM}mm;
-    white-space: nowrap; overflow: hidden;
-  }
-  /* The line is the spine of the whole figure, so it is drawn heavier than a
-     writing rule and in the question colour: it is part of what is being
-     asked, not something the child writes on. */
-  .h-tl-line {
-    height: ${TL_LINE_MM}mm;
-    border-top: var(--rule-heavy) solid var(--colour-question);
-    margin-top: 1mm;
-  }
-  .h-tl-marks { position: relative; height: ${TL_MARK_MM}mm; margin-top: -${TL_LINE_MM}mm; }
-  /* The tick sits EXACTLY where the teacher put it and never moves. The label
-     hangs off it, and which way it hangs is decided per mark, so an end date
-     tucks inward instead of being sliced off by the edge of the zone. */
-  .h-tl-mark { position: absolute; top: 0; }
-  .h-tl-tick {
-    position: absolute; left: 0; top: 0;
-    display: block; width: 0; height: ${TL_LINE_MM}mm;
-    border-left: var(--rule-line) dashed var(--colour-quiet);
-  }
-  .h-tl-mark-label {
-    position: absolute; top: ${TL_LINE_MM}mm; left: 0;
-    display: block; width: ${TL_LABEL_MM}mm;
-    text-align: center;
-    font-size: var(--type-note); line-height: 1.35;
-    color: var(--colour-ink);
-  }
-  .h-tl-caption {
-    margin: var(--space-tight) 0 0; text-align: center;
-    font-weight: bold; line-height: 1.35;
-  }
 `;
 
 const helpers = {
@@ -837,15 +737,11 @@ const helpers = {
     // white space inside a border and nothing else.
     greed: 0,
   },
-  timeline: {
-    requires: ["eras"],
-    render: renderTimeline,
-    measure: measureTimeline,
-    needs: needsTimeline,
-    // A timeline gains nothing from being taller; it gains from being wider,
-    // and width is not what greed hands out.
-    greed: 0,
-  },
+  // A timeline gains nothing from being taller; it gains from being wider, and
+  // width is not what greed hands out.
+  timeline: withTimelineStem(
+    atPrintedWidth(timelineShared, { toSpec: (spec) => ({ ...spec, text: undefined }), minWidthMm: timelineMinWidthMm, requires: ["eras"] })
+  ),
 };
 
 module.exports = { helpers, css };

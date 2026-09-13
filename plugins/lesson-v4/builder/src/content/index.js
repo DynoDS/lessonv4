@@ -11,8 +11,19 @@ const { drawImage, measureImage } = require('./image');
 const { drawTable } = require('./table');
 // Pictures drawn once in shared/visuals/ and placed here without a slide file
 // of their own (see shared-figure.js).
-const { drawerFor } = require('./shared-figure');
+const { drawerFor, measurerFor } = require('./shared-figure');
 const drawNumberline = drawerFor('numberline');
+const drawDialScale = drawerFor('dial-scale');
+const drawMeasuringJug = drawerFor('measuring-jug');
+const drawRuler = drawerFor('ruler');
+const drawTimeline = drawerFor('timeline');
+const drawProcessChain = drawerFor('process-chain');
+const drawClassificationKey = drawerFor('classification-key');
+const drawConceptMap = drawerFor('concept-map');
+const drawFishbone = drawerFor('fishbone');
+const drawContinuumLine = drawerFor('continuum-line');
+const drawSourcePathway = drawerFor('source-pathway');
+const drawNumberNetwork = drawerFor('number-network');
 const { drawPlaceValueChart, measurePlaceValueChart } = require('./place-value-chart');
 const { drawFractionWall } = require('./fraction-wall');
 const { drawMoney } = require('./money');
@@ -26,11 +37,6 @@ const { drawCallout } = require('./callout');
 const { drawPyramid } = require('./pyramid');
 const { drawClock }  = require('./clock');
 const { drawDiamondNine }   = require('./diamond-nine');
-const { drawContinuumLine } = require('./continuum-line');
-const { drawTimeline, measureTimeline } = require('./timeline');
-const { drawFishbone }      = require('./fishbone');
-const { drawConceptMap }    = require('./concept-map');
-const { drawSourcePathway } = require('./source-pathway');
 const { drawTriangleSquare } = require('./triangle-square');
 const { drawMultGrid }      = require('./mult-grid');
 const { drawMatching }      = require('./matching');
@@ -39,13 +45,10 @@ const { drawPolygon }        = require('./polygon');
 const { drawTranslationGrid } = require('./translation-grid');
 const { drawTranslationShape } = require('./translation-shape');
 const { drawShadedFraction } = require('./shaded-fraction');
-const { drawDialScale }      = require('./dial-scale');
 const { drawLineGraph }      = require('./line-graph');
-const { drawNumberNetwork }  = require('./number-network');
 const { drawAreaGrid }       = require('./area-grid');
 const { drawReflectionGrid } = require('./reflection-grid');
 const { drawGeoboard }       = require('./geoboard');
-const { drawMeasuringJug }   = require('./measuring-jug');
 const { drawTurnDiagram }    = require('./turn-diagram');
 const { drawAngle }          = require('./angle');
 const { drawTriangle, drawTriangleNonExample } = require('./triangle');
@@ -109,6 +112,11 @@ const ZONE_COMPAT = {
   // labels below the readable floor, and the helper refuses that by name.
   timeline:            ['A', 'B', 'C', 'E-wide'],
   fishbone:            ['A', 'C', 'E-wide'],
+  // Drawn by the worksheet alone until every picture became one shared drawing
+  // (13 September 2026); the board can now place them too.
+  ruler:               ['A', 'B', 'C', 'E-wide'],
+  'process-chain':     ['A', 'B', 'C', 'E-wide'],
+  'classification-key': ['A', 'C', 'E-wide'],
   'concept-map':       ['A', 'C', 'E-wide'],
   'source-pathway':    ['A', 'C', 'E-wide'],
   'coordinate-grid':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
@@ -191,6 +199,9 @@ const HELPERS = {
   'continuum-line':    drawContinuumLine,
   timeline:            drawTimeline,
   fishbone:            drawFishbone,
+  ruler:               drawRuler,
+  'process-chain':     drawProcessChain,
+  'classification-key': drawClassificationKey,
   'concept-map':       drawConceptMap,
   'source-pathway':    drawSourcePathway,
   'coordinate-grid':   drawCoordinateGrid,
@@ -271,9 +282,17 @@ const MEASURE = {
   'circuit-diagram': measureCircuitDiagram,
   'parachute-forces': measureParachuteForces,
   'circuit-symbol-bank': measureCircuitSymbolBank,
-  // The bands, line and dated labels are laid out from their own content and
-  // centred in spare height; the card hugs that figure, not the zone.
-  timeline: measureTimeline
+  // The timeline's card hugs the drawn figure, centred in spare height, as the
+  // board's own timeline did before it became a shared drawing; a figure the
+  // zone cannot hold declines, so no card is drawn round a refusal.
+  timeline: (zone, data) => {
+    try {
+      const m = measurerFor('timeline')(zone, data);
+      return { x: zone.x, y: zone.y + (zone.h - m.h) / 2, w: zone.w, h: m.h };
+    } catch (error) {
+      return null;
+    }
+  }
 };
 
 // Helpers that pad their own content (text 0.08in, image 0.12in). Their card

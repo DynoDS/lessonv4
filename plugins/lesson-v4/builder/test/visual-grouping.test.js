@@ -24,7 +24,6 @@ const { tightSvg } = require('../../shared/visuals/circuit-diagram-svg');
 const { symbolBankSvg } = require('../../shared/visuals/circuit-diagram-svg');
 const { drawSortBoard } = require('../src/content/sort-board');
 const { drawEvidenceCards } = require('../src/content/evidence-cards');
-const { drawSourcePathway } = require('../src/content/source-pathway');
 const { drawImage } = require('../src/content/image');
 const { clearWarnings, getWarnings } = require('../src/warnings');
 const { drawContent, ZONE_COMPAT } = require('../src/content');
@@ -319,38 +318,9 @@ test('a short takeaway card can hug its text and centre as one object', () => {
   assert.equal(texts[0].align, 'center');
 });
 
-test('source pathway keeps four sources distinct before electricity and appliance', () => {
-  const { shapes, texts } = capture(drawSourcePathway, ZONE, {
-    sources: [
-      'Mains socket',
-      'Battery / cell',
-      'Solar cell',
-      'Turn handle\nDynamo'
-    ],
-    middle: 'Electricity',
-    outcome: 'Appliance'
-  });
-  const rendered = texts.map((entry) => entry.content);
-  assert.deepEqual(rendered, [
-    'Mains socket',
-    'Battery / cell',
-    'Solar cell',
-    'Turn handle\nDynamo',
-    'Electricity',
-    'Appliance'
-  ]);
-  const sourceTexts = texts.slice(0, 4);
-  assert.equal(
-    new Set(sourceTexts.map((entry) => groupFromName(entry.objectName))).size,
-    1
-  );
-  const arrows = shapes.filter(
-    (shape) => shape.line && shape.line.endArrowType === 'triangle'
-  );
-  assert.equal(arrows.length, 2);
-  assert.ok(texts[4].y > sourceTexts[0].y);
-  assert.ok(texts[5].y > texts[4].y);
-});
+// The source pathway's own guarantees (four distinct sources at one size, a
+// typed line break kept, two arrows, middle then outcome) moved with its
+// drawing to shared/test/scales-and-diagrams-svg.test.js on 13 September 2026.
 
 test('contain preserves the full natural aspect', (t) => {
   const image = temporaryImage(t);

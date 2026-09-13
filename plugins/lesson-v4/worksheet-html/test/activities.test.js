@@ -237,30 +237,31 @@ test("a reply bubble's tail points at the person saying it", () => {
 
 // ─── timeline ────────────────────────────────────────────────────────────
 
+// The timeline is the one shared drawing (shared/visuals/timeline-svg.js); these
+// hold the sheet's promises against where its parts land at the sheet's size.
+const timelineShared = require("../../shared/visuals/timeline-svg");
+const { profileFor } = require("../../shared/visuals/surface-profiles");
+const SHEET = () => profileFor("worksheets", { widthMm: 180 });
+
 test("a timeline places its eras where the teacher put them", () => {
   // Positions are fractions the teacher supplies, NOT dates the helper works
   // out. A school timeline is almost never to scale, and one drawn to scale
   // from Stone Age dates would show the last two eras as hairlines.
-  const html = renderHelper({
-    helper: "timeline",
-    eras: [{ label: "Neolithic", from: 0.75, to: 1 }],
-    marks: [{ at: 0.5, label: "6,000 years ago" }],
-  });
-  assert.match(html, /left:75%/);
-  assert.match(html, /width:25%/);
-  assert.match(html, /left:50%/);
+  const spec = { eras: [{ label: "Neolithic", from: 0.75, to: 1 }], marks: [{ at: 0.5, label: "6,000 years ago" }] };
+  const L = timelineShared.describeLayout(spec, SHEET());
+  const era = L.n.eras[0];
+  assert.equal(era.from, 0.75);
+  assert.equal(era.to, 1);
+  assert.ok(Math.abs(L.boxes[0].tickX - (L.lineX0 + 0.5 * L.lineW)) < 1e-9, "the date sits halfway along the line");
+  assert.match(renderHelper({ helper: "timeline", ...spec }), /Neolithic/);
 });
 
 test("a timeline refuses to draw outside its own line", () => {
   // A fraction over 1 or under 0 would position a label off the edge of the
   // page, where it prints as a sliver or not at all.
-  const html = renderHelper({
-    helper: "timeline",
-    eras: [{ label: "way past", from: -0.5, to: 4 }],
-    marks: [],
-  });
-  assert.match(html, /left:0%/);
-  assert.match(html, /width:100%/);
+  const L = timelineShared.describeLayout({ eras: [{ label: "way past", from: -0.5, to: 4 }], marks: [] }, SHEET());
+  assert.equal(L.n.eras[0].from, 0);
+  assert.equal(L.n.eras[0].to, 1);
 });
 
 test("a date at either end of a timeline tucks inward instead of off the page", () => {
@@ -269,23 +270,25 @@ test("a date at either end of a timeline tucks inward instead of off the page", 
   // centred on their ticks like every other label, half of each hung off the
   // edge of the zone and was sliced away. The sheet opened with ",000 years
   // ago" and closed with "4,000 years" running into the margin.
-  const html = renderHelper({
-    helper: "timeline",
-    eras: [],
-    marks: [
-      { at: 0, label: "2,000,000 years ago" },
-      { at: 0.5, label: "12,000 years ago" },
-      { at: 1, label: "4,000 years ago" },
-    ],
-  });
-  const shifts = (html.match(/translateX\((-?\d+%?|0)\)/g) || []).map((s) =>
-    s.replace(/translateX\(|\)/g, "")
+  const L = timelineShared.describeLayout(
+    {
+      eras: [],
+      marks: [
+        { at: 0, label: "2,000,000 years ago" },
+        { at: 0.5, label: "12,000 years ago" },
+        { at: 1, label: "4,000 years ago" },
+      ],
+    },
+    SHEET()
   );
   assert.deepEqual(
-    shifts,
-    ["0", "-50%", "-100%"],
+    L.boxes.map((b) => b.align),
+    ["left", "center", "right"],
     "the first label must hang right, the last left, and the middle stay centred"
   );
+  for (const b of L.boxes) {
+    assert.ok(b.x >= -1e-6 && b.x + b.w <= L.W + 1e-6, "every date label stays inside the drawing");
+  }
 });
 
 test("a timeline carrying more dates needs more width to hold them apart", () => {

@@ -97,11 +97,18 @@ test("the drawing itself carries its true size in millimetres", () => {
   assert.ok(widthAttr && heightAttr, "the ruler's SVG does not state a size in millimetres");
   assert.ok(viewBox, "the ruler's SVG has no viewBox");
 
-  // One unit inside the drawing is one millimetre on the paper. If these two
-  // ever differ, the ticks are drawn in units that are not millimetres and the
-  // scale is decorative.
-  assert.equal(Number(viewBox[1]), Number(widthAttr[1]));
-  assert.equal(Number(viewBox[2]), Number(heightAttr[1]));
+  // One unit inside the drawing is one point on the paper (the shared ruler
+  // lays out in points). If the ratio ever drifts from 72 points to 25.4mm, the
+  // ticks are drawn in units that are not the paper's and the scale is
+  // decorative.
+  const PT_PER_MM = 72 / 25.4;
+  assert.ok(Math.abs(Number(viewBox[1]) / Number(widthAttr[1]) - PT_PER_MM) < 0.01);
+  assert.ok(Math.abs(Number(viewBox[2]) / Number(heightAttr[1]) - PT_PER_MM) < 0.01);
+
+  // And a centimetre on it is ten millimetres: the 0 and 10 ticks sit 100mm apart.
+  const ticks = [...html.matchAll(/<line x1="([\d.]+)" y1="[\d.]+" x2="\1"/g)].map((m) => Number(m[1]));
+  const span = (Math.max(...ticks) - Math.min(...ticks)) / PT_PER_MM;
+  assert.ok(Math.abs(span - 100) < 0.05, `a 10cm ruler's end ticks are ${span.toFixed(2)}mm apart`);
 });
 
 test("nothing in the ruler's own styling can stretch it to its zone", () => {

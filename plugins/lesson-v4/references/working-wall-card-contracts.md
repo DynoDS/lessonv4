@@ -30,7 +30,7 @@ Fields that every card shares, whatever its family.
 | `cards[].photo` | Optional on the panel families (`stickyKnowledge`, `workedExample`, `misconception`, `vocabChips`), where a missing file falls back to text with no grey placeholder. **Required, and checked before the build renders anything, on the overview families**: every `photoMapOverview` tile and its map, the `heroCallouts` hero, and each `causeCards` person. There the picture is the content, so the build refuses the whole wall and names each empty or unreadable slot. Path relative to `[WORKING_DIR]`. |
 | `cards[].picture` | Optional P2 context picture from `context-pictures.md`, supported only on `stickyKnowledge`, `workedExample`, and `misconception`, whose existing photo/visual area is the safe home. In final `working-wall.json` it is either a resolved Educational SVG object with the publisher-returned `educationalSvgId`, `educationalSvgSlug` and `imagePath`, or a complete emoji object `{ "kind": "emoji", "value": "...", "alt": "..." }`. Never leave an unresolved Educational SVG request in the final file and never alter protected lesson wording to insert an emoji. |
 | `cards[].decorations` | Optional P3 Educational SVG overlay, supported only on the exact six ordinary card types above. It never changes body fit or earns visual credit. |
-| `cards[].visual` | Optional. A drawn diagram the builder generates from primitives - no Unsplash, no AI image. Supported primitives are listed under "Visual primitives" below: `clock`, `fractionCircle`, `fractionBar`, `numberLine`, `angleFan`, `turn-diagram`, `angle`, `line-pair`, `triangle`, `comparisonSymbol`, `triangle-square`, `venn`, `carroll`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `tally-chart`, `pictogram`, `bar-chart`, `line-graph`, `bar-model`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`. A tall or square primitive sits to the right of the panel; a wide one (roughly wider than it is tall) is placed full width beneath a full-width panel instead, where it prints as a short strip; the optional `label` field renders as a caption beneath the diagram (omit it and the renderer uses a sensible default - the time, the fraction, the degree value). The geometry primitives (`angle`, `line-pair`, `triangle`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`) are the same drawings the slides use, so the wall matches the board. Use a visual whenever the lesson's slide anchor is a drawn diagram and the primitive is supported (see "Diagrammatic LOs"). A `visual` may also carry a `callouts` array (see below) to turn it into a labelled anatomy poster - used by the `labelledDiagram` card. |
+| `cards[].visual` | Optional. A drawn diagram the builder generates from primitives - no Unsplash, no AI image. Supported primitives are listed under "Visual primitives" below: `clock`, `fractionCircle`, `fractionBar`, `numberLine`, `angleFan`, `turn-diagram`, `angle`, `line-pair`, `triangle`, `comparisonSymbol`, `triangle-square`, `venn`, `carroll`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `tally-chart`, `pictogram`, `bar-chart`, `line-graph`, `bar-model`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`, `dial-scale`, `measuring-jug`, `ruler`, `timeline`, `process-chain`, `classification-key`, `concept-map`, `fishbone`, `continuum-line`, `source-pathway`, `number-network`. A tall or square primitive sits to the right of the panel; a wide one (roughly wider than it is tall) is placed full width beneath a full-width panel instead, where it prints as a short strip; the optional `label` field renders as a caption beneath the diagram (omit it and the renderer uses a sensible default - the time, the fraction, the degree value). The geometry primitives (`angle`, `line-pair`, `triangle`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`) are the same drawings the slides use, so the wall matches the board. Use a visual whenever the lesson's slide anchor is a drawn diagram and the primitive is supported (see "Diagrammatic LOs"). A `visual` may also carry a `callouts` array (see below) to turn it into a labelled anatomy poster - used by the `labelledDiagram` card. |
 | `cards[].visual.callouts` | Optional array on a `visual`, the anatomy-poster annotations. Each entry points a leader line and arrow at a part of the diagram and prints its name in answer-green: `{ "part": "key", "label": "The key: what one symbol is worth" }`. Name the part one of two ways - `part` is a named anchor the primitive exposes (the `pictogram` offers `title`, `key`, `half`, and each category label, e.g. `"Monday"`), which is the robust choice because the geometry resolves the exact spot; or `anchor: [x, y]` is a raw percentage of the diagram for any primitive without named anchors yet. `label` is the printed name; optional `label_at: [x, y]` overrides placement; labels print (not blank) by default. Labels wrap to short lines and stack down the two side margins, so 3–4 callouts read cleanly. A callout naming a part the primitive doesn't expose fails the build outright, so a mistyped part surfaces loudly rather than vanishing; name only parts the primitive exposes. |
 | `cards[].visualScale` | Optional. `"panel"` (default) or `"dominant"`. Default `panel` gives the panel ~60% of the card width and the visual ~40%, unless the visual is a wide one, in which case the panel runs full width and the visual is stacked beneath it as a strip - either way the right balance when the steps or body text are the main teaching surface and the diagram supports them. `dominant` flips the balance - the panel shrinks to ~32% and the visual fills the rest of the card. Reach for `dominant` when the diagram itself is the teaching surface and the panel content is more caption than instruction (a colour-coded clock-anatomy poster, a labelled fraction-circle reference, an angle-comparison chart). The Twinkl angle-poster pattern. Don't use `dominant` when the panel carries multi-step instructions children re-read while working - the steps will end up cramped. |
 
@@ -604,6 +604,72 @@ The shared **balanced pattern plate** used on slides and worksheets, now availab
 Spec: `{ "type": "parachute-forces", "canopyShape": "billowed-sheet", "largeCanopyWidthRatio": 3, "cordLengthRatio": 1, "loadSizeRatio": 1, "showEqualityTicks": true, "labels": { "largeCanopy": "More air to push out of the way", "smallCanopy": "Less air to push out of the way", "largeUpForce": "More air resistance", "smallUpForce": "Less air resistance", "downForce": "Gravity pulls down", "cords": "Same cord length", "loads": "Same load" } }`
 
 A wide, front-view **model-parachute force comparison** for a unit anchor. The large billowed sheet is exactly three times the small one's width; corresponding cords are calculated to equal Euclidean length and carry matching ticks; both load blocks and both downward gravity arrows are equal. The longer upward arrow on the large canopy and shorter one on the small canopy show the qualitative difference in air resistance. Labels live outside the objects and point back with leaders. Use it as the finished explanation after practical results are pooled. This is a schematic model, not a photograph, and it deliberately contains no wind streaks, parafoils, people or aircraft. Keep every fixed ratio at the documented value: the renderer refuses a different canopy shape, unequal cords or unequal loads. Use `visualScale: "dominant"` so its labels stay readable across the room.
+
+### dial-scale
+
+Spec: `{ "type": "dial-scale", "max": 1000, "value": 200, "unit": "g", "label": "The scales show 200g" }`
+
+A round weighing **dial scale**: 0 at the top, numbered marks round the face and a red needle at `value`. The same drawing the board shows, from the same fields: copy the slide's object as it is. `majorEvery` and `minorEvery` set the marks; `label` prints as the card's caption under the dial. The reference card for reading a scale: what each small mark is worth, then where the needle points. A square figure.
+
+### measuring-jug
+
+Spec: `{ "type": "measuring-jug", "max": 400, "majorEvery": 100, "minorEvery": 50, "value": 250, "unit": "ml", "levelColor": "00B050", "label": "250ml" }`
+
+A **measuring jug** with a scale up its side and, when `value` is given, the liquid and its level. The same drawing the board shows, from the same fields: copy the slide's object as it is. On a wall card give `value`, so the card shows a worked reading rather than an empty jug; `label` prints as the caption. An upright figure.
+
+### ruler
+
+Spec: `{ "type": "ruler", "end": 10, "majorInterval": 1, "minorInterval": 0.5, "unit": "cm", "object": { "from": 0, "to": 6, "label": "pencil" } }`
+
+A **ruler** with numbered marks, an optional `object` bar to measure and an optional `arrow` at a point. The same drawing the board shows, from the same fields: copy the slide's object as it is. On the wall it is a picture of a scale (on paper it prints at true size). The anchor for "line the object up with 0, then read the end". A wide strip.
+
+### timeline
+
+Spec: `{ "type": "timeline", "eras": [ { "label": "Tudor", "from": 0.02, "to": 0.3 }, { "label": "Victorian", "from": 0.5, "to": 0.72 } ], "marks": [ { "label": "1485", "at": 0.02 }, { "label": "1837", "at": 0.5 }, { "label": "today", "at": 0.98 } ] }`
+
+A **timeline**: named era bands on a bold line, dated ticks beneath. The same drawing the board shows, from the same fields: copy the slide's object as it is. Every position is a fraction of the line worked out from the real dates. Use for the unit's chronology anchor: the periods the class keeps placing things in. A wide strip.
+
+### process-chain
+
+Spec: `{ "type": "process-chain", "boxes": ["egg", "caterpillar", "chrysalis", "butterfly"] }`
+
+A **process chain**: boxes joined by arrows, for a life cycle, a food chain or the order of a process. The same drawing the board shows, from the same fields: copy the slide's object as it is. On a wall card fill every box, since the card is the reference and not the task. A wide strip.
+
+### classification-key
+
+Spec: `{ "type": "classification-key", "tree": { "q": "Does it have wings?", "no": { "leaf": "ANT" }, "yes": { "leaf": "BEE" } } }`
+
+A branching yes/no **classification key** down to named answers, each question over its two branches. The same drawing the board shows, from the same fields: copy the slide's object as it is. Use as the anchor a class checks an identification against. Wider than tall once it has four answers.
+
+### concept-map
+
+Spec: `{ "type": "concept-map", "centre": "Cacao", "spokes": [ { "label": "Money", "relationship": "used as" }, { "label": "Religion", "relationship": "used in" }, { "label": "Power" } ] }`
+
+A **concept map**: one central idea joined to two to six others, each line optionally naming the relationship. The same drawing the board shows, from the same fields: copy the slide's object as it is. Use when the unit keeps returning to how one idea connects out to several. Use `visualScale: "dominant"` so its words stay readable across the room.
+
+### fishbone
+
+Spec: `{ "type": "fishbone", "effect": "Flooding", "causes": ["Heavy rain", "Steep slopes", "Trees cut down"] }`
+
+A cause-and-effect **fishbone**: causes on ribs off a spine that points at the effect. The same drawing the board shows, from the same fields: copy the slide's object as it is. Up to six causes. Use `visualScale: "dominant"` so the cause boxes stay readable across the room. A wide figure.
+
+### continuum-line
+
+Spec: `{ "type": "continuum-line", "left": "Never fair", "right": "Always fair", "middle": "Sometimes fair", "marks": 4 }`
+
+A **continuum line** between two opposite ends, with optional ticks, a middle label and a question above. The same drawing the board shows, from the same fields: copy the slide's object as it is. Use when a unit asks children to place and re-place a judgement on a gradient. A wide strip.
+
+### source-pathway
+
+Spec: `{ "type": "source-pathway", "sources": ["Mains socket", "Battery", "Solar cell"], "middle": "Electricity", "outcome": "Appliance" }`
+
+A **source pathway**: two to six separate sources joining one middle state, then one outcome. The same drawing the board shows, from the same fields: copy the slide's object as it is. Use when the shared middle state is what the unit keeps coming back to. Use `visualScale: "dominant"` so the source words stay readable.
+
+### number-network
+
+Spec: `{ "type": "number-network", "target": 60, "nodes": [ { "x": 1, "y": 0, "value": 25 }, { "x": 0, "y": 1, "value": 35 }, { "x": 2, "y": 1, "value": 35 } ], "edges": [ [0, 1], [0, 2] ] }`
+
+A **number network**: circles joined by lines where each joined pair adds to `target`, printed under it. The same drawing the board shows, from the same fields: copy the slide's object as it is. On a wall card fill every circle, so the card shows the rule worked. A `label` replaces the target sentence as the card's caption.
 
 ### circuit-diagram
 

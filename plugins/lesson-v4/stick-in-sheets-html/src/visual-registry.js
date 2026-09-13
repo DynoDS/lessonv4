@@ -14,6 +14,17 @@ const geographicalDescriptionFrame = require("../../shared/visuals/geographical-
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
 const numberLine = require("../../shared/visuals/number-line-svg");
+const dialScaleShared = require("../../shared/visuals/dial-scale-svg");
+const measuringJugShared = require("../../shared/visuals/measuring-jug-svg");
+const rulerShared = require("../../shared/visuals/ruler-svg");
+const timelineShared = require("../../shared/visuals/timeline-svg");
+const processChainShared = require("../../shared/visuals/process-chain-svg");
+const classificationKeyShared = require("../../shared/visuals/classification-key-svg");
+const conceptMapShared = require("../../shared/visuals/concept-map-svg");
+const fishboneShared = require("../../shared/visuals/fishbone-svg");
+const continuumLineShared = require("../../shared/visuals/continuum-line-svg");
+const sourcePathwayShared = require("../../shared/visuals/source-pathway-svg");
+const numberNetworkShared = require("../../shared/visuals/number-network-svg");
 const { profileFor } = require("../../shared/visuals/surface-profiles");
 
 // The one way the pack places a shared drawing laid out at its printed size,
@@ -92,6 +103,25 @@ const VISUALS = {
       return top;
     },
   },
+  // The measuring scales and the thinking diagrams, each the one shared drawing
+  // the board places (13 September 2026), laid out at the width they print, in
+  // ink. Each width is the smallest at which a child can still read the words
+  // and write in the spaces: a dial or a jug a child reads a level off, a
+  // network with a number to write in each blank circle, and the diagrams wide
+  // enough that their boxes hold their words at the pack's 11pt.
+  "dial-scale": sharedPiece(dialScaleShared, 80),
+  "measuring-jug": sharedPiece(measuringJugShared, 70),
+  // A ruler a child measures against prints at TRUE SIZE, so its piece is as
+  // wide as the ruler itself rather than any fixed width.
+  ruler: sharedPiece(rulerShared, 120, { widthMmFor: (spec) => rulerShared.trueWidthMm(spec) }),
+  timeline: sharedPiece(timelineShared, 200),
+  "process-chain": sharedPiece(processChainShared, 160),
+  "classification-key": sharedPiece(classificationKeyShared, 160),
+  "concept-map": sharedPiece(conceptMapShared, 180),
+  fishbone: sharedPiece(fishboneShared, 200),
+  "continuum-line": sharedPiece(continuumLineShared, 160),
+  "source-pathway": sharedPiece(sourcePathwayShared, 180),
+  "number-network": sharedPiece(numberNetworkShared, 100),
   // 127mm: two copies fit the ~277mm landscape printable width (2×127 + 6mm gap = 260mm ✓)
   // and two rows fit the ~185mm landscape printable height (2×89.5 + 6mm gap = 185mm ✓).
   venn: { tightSvg: venn.tightSvg, defaultWidthMm: 127 },
