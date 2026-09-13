@@ -1,10 +1,14 @@
 # Build review log
 
+## 2026-09-13 A thin grey line between questions (4.2.177)
+
+Daniel, shown the comparison: "no harm in a thin grey line if it doesnt force anything to move". A hairline in the rule grey is drawn across the middle of the 8mm gap above a new question (not above a section heading, which marks itself, and not between Parts of one question). It is positioned inside the gap, so no measurement changes: this run's sheets stayed at 100% and 90% full. The repaired scale worksheet and answer key were rebuilt and copied to the Tuesday Maths folder on the drive, replacing the earlier copies; the originals are kept in the run's `before-4.2.176` folder. Worksheet engine 684 tests pass.
+
 ## 2026-09-13 Questions stand apart, a scale is a box, one ask per answer, letters run on (4.2.176)
 
 Daniel, on the "Find the scale on a number line" worksheets: the questions felt "too together", "Scale: ___" did not look like something to write on and sat too close to question 2, the Greater Depth prompts fused separate asks ("Find the scale on each line. Why are the scales different...?" over the lines, with unheaded writing lines beneath) and used words children would not follow ("Change just one printed number"), and every figure in the deck and on the sheet said "A".
 
-**The page gave the gap between two questions the same 4mm as the gaps inside one.** Named and deferred in 4.2.169. A stack now puts the section step (8mm) above anything that opens a new question (a plain number, a first Part "1a", a numbered set) and above a section label; a later Part keeps the ordinary gap. This run's Expected went from 94% to 100% full; the older specs that still build gained 1 to 3% and none stopped fitting. A thin dividing line at 6mm was built and compared and left out, for Daniel to choose between if he wants it.
+**The page gave the gap between two questions the same 4mm as the gaps inside one.** Named and deferred in 4.2.169. A stack now puts the section step (8mm) above anything that opens a new question (a plain number, a first Part "1a", a numbered set) and above a section label; a later Part keeps the ordinary gap. This run's Expected went from 94% to 100% full; the older specs that still build gained 1 to 3% and none stopped fitting. A thin dividing line was built and compared, and added in 4.2.177 at Daniel's say-so.
 
 **A caption's blank printed as three underscores in axis-number type.** A caption containing a blank is now a write-in slot: the words, then an answer box with the same stroke as the boxes at the ticks. It sits above the line level with those boxes when one end of that band is clear, which costs no height, and under the numbers otherwise. `maths.md` now says a value about the whole line is a caption with a blank, because the GD designer had used an `instruction` with an underline instead.
 

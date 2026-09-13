@@ -74,6 +74,11 @@ function introduces(item) {
 // still gave the two joins the same space. So the step between questions is now
 // bigger than any step inside one. A Part after the first ("1b") is still the
 // same question, and keeps the ordinary gap.
+//
+// A thin grey rule is drawn across the middle of that gap, between two
+// questions only (not above a section heading, which marks itself). It is
+// positioned inside space the gap already takes, so it moves nothing and the
+// measurement does not change.
 const QUESTION_START_GAP_MM = SPACE.section;
 
 function opensQuestion(item) {
@@ -396,7 +401,8 @@ function makeCompose({
           const grows = growing[i];
           const gap = gapAboveMm(items, i);
           const space = gap ? ` style="margin-top:${gap}mm"` : "";
-          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
+          const divided = gap === QUESTION_START_GAP_MM && opensQuestion(item);
+          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
         })
         .join("");
       return `<div class="h-stack">${cells}</div>`;
@@ -753,6 +759,12 @@ const css = `
      still says the stack is sound. Keep each measured basis, then distribute
      only what is genuinely spare. */
   .h-stack-item--grows { flex: 1 1 auto; }
+  .h-stack-item--new-question { position: relative; }
+  .h-stack-item--new-question::before {
+    content: ""; position: absolute; left: 0; right: 0;
+    top: -${QUESTION_START_GAP_MM / 2}mm;
+    border-top: var(--rule-hair) solid var(--colour-rule);
+  }
 `;
 
 module.exports = { makeCompose, css, GAP_MM, isRow, isStack, isComparisonPair, itemsOf };

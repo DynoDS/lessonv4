@@ -222,3 +222,12 @@ test("a new question starts further down than the next part of the same question
   const html = renderContent({ stack: [question(1), question(2)] }, 170);
   assert.match(html, new RegExp(`margin-top:${between}mm`), "the page draws the gap it measured");
 });
+
+test("the rule between two questions sits inside the gap and adds no height", () => {
+  const line = { helper: "number-line", start: 0, end: 10, interval: 1, boxes: [4] };
+  const question = (number) => ({ number, stack: [{ helper: "instruction", text: "Find A." }, line] });
+  const html = renderContent({ stack: [question(1), question(2), question("3a"), question("3b")] }, 170);
+  assert.equal((html.match(/h-stack-item--new-question/g) || []).length, 2, "above (2) and (3a), not above (1) or (3b)");
+  const plainSection = renderContent({ stack: [question(1), { helper: "section-label", text: "Reasoning" }] }, 170);
+  assert.ok(!plainSection.includes("h-stack-item--new-question"), "a heading marks itself");
+});
