@@ -67,11 +67,13 @@ log lines it prints. `letterbox_filer.py status` shows the last few collections;
 
 ## Scheduled lessons in Codex
 
-Codex's cloud cannot use the letterbox: its agent has no internet by default,
-hands changes back as a diff or pull request rather than pushing to GitHub
-itself, and has no secrets while it works. Codex's scheduled tasks run in the
-Codex app on the teacher's own computer instead, so they save straight to the
-save folder like any lesson made there. Two things to tell the teacher:
+Codex can schedule a task in two places. A task in Codex's cloud runs with the
+teacher's computer off, but cannot use the letterbox yet: its agent has no
+internet by default, hands changes back as a diff or pull request rather than
+pushing to GitHub itself, and has no secrets while it works, so its resources
+stay in that cloud task. A task in the Codex app runs on the teacher's own
+computer and saves straight to the save folder like any lesson made there. For
+that local kind, two things to tell the teacher:
 
 - The computer must be on with the Codex app open when the task is due.
 - A scheduled task runs with nobody to approve anything, using Codex's default
