@@ -46,6 +46,13 @@ const polygon = require("../../shared/visuals/polygon-svg");
 const translationGrid = require("../../shared/visuals/translation-grid-svg");
 const areaGrid = require("../../shared/visuals/area-grid-svg");
 const comparison = require("../../shared/visuals/comparison-svg");
+const placeValueChart = require("../../shared/visuals/place-value-chart-svg");
+const placeValueMini = require("../../shared/visuals/place-value-mini-svg");
+const baseTenBlocks = require("../../shared/visuals/base-ten-blocks-svg");
+const counterGroup = require("../../shared/visuals/counter-group-svg");
+const partWholeModel = require("../../shared/visuals/part-whole-model-svg");
+const pyramid = require("../../shared/visuals/pyramid-svg");
+const multGrid = require("../../shared/visuals/mult-grid-svg");
 const { profileFor } = require("../../shared/visuals/surface-profiles");
 
 // The one way the pack places a shared drawing laid out at its printed size,
@@ -345,6 +352,23 @@ const VISUALS = {
       return out;
     },
   }),
+  // The place value family (13 September 2026): the same drawings the board,
+  // the sheet and the wall place, in ink, at the width that keeps each one
+  // usable in a book.
+  // 150mm: a write-in chart: each digit column holds a child's handwritten digit.
+  "place-value-chart": sharedPiece(placeValueChart, 150),
+  // 70mm: a small vocabulary picture glued beside a word.
+  "place-value-mini": sharedPiece(placeValueMini, 70),
+  // 150mm: four columns of blocks a child reads the number from.
+  "base-ten-blocks": sharedPiece(baseTenBlocks, 150),
+  // 120mm: the counters stay big enough to read the value on each.
+  "counter-group": sharedPiece(counterGroup, 120),
+  // 110mm: the circles a child writes a part or whole into.
+  "part-whole-model": sharedPiece(partWholeModel, 110),
+  // 100mm: bricks a child writes a number into.
+  "pyramid": sharedPiece(pyramid, 100),
+  // 90mm: cells a child writes a product into.
+  "mult-grid": sharedPiece(multGrid, 90),
 };
 
 // Row visuals: one child's piece is a strip of N figures, each with its own
@@ -414,14 +438,21 @@ function missingQuestionContent(item) {
       } catch (error) {
         return error.message;
       }
-    // A shaded fraction with no parts, a wall with no rows or a coin row with
-    // no coins would tile a blank or wrong copy for every child, so the shared
-    // drawing's own refusal names what is missing and the piece is skipped.
+    // A picture whose spec cannot draw (a bar with no parts, a coin row with no
+    // coins, a counter group with no counters) would tile a broken copy for every
+    // child, so the shared drawing's own refusal names what is missing.
     case "shaded-fraction":
     case "fraction-wall":
     case "money":
+    case "place-value-chart":
+    case "place-value-mini":
+    case "base-ten-blocks":
+    case "counter-group":
+    case "part-whole-model":
+    case "pyramid":
+    case "mult-grid":
       try {
-        ({ "shaded-fraction": shadedFraction, "fraction-wall": fractionWall, money })[item.visual].normalise(s);
+        VISUALS[item.visual].geometry.normalise(s);
         return null;
       } catch (error) {
         return error.message;

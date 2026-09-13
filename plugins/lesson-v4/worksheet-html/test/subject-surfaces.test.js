@@ -54,12 +54,21 @@ test("the whole is printed and every part is left empty", () => {
 });
 
 test("a caption names its node without printing inside it", () => {
+  // The model is the shared drawing laid out at the size it prints (13
+  // September 2026), so a caption no longer has to live outside the SVG to
+  // print at a real size. What still matters is that it sits UNDER its circle,
+  // never inside it, where it would read as an answer already written in, and
+  // that it prints at the sheet's readable size.
   const html = render("part-whole", PARTITION);
-  // Outside the drawing entirely, so it prints at note size however wide the
-  // model is drawn and cannot be read as an answer already written in.
-  assert.ok(!/<svg[^>]*>[\s\S]*Thousands[\s\S]*<\/svg>/.test(html),
-    "a caption is inside the drawing, where it scales with it");
-  assert.match(html, /class="h-pw-caption"[^>]*>Thousands</);
+  assert.match(html, />Thousands</);
+  const { tightSvg } = require("../../shared/visuals/part-whole-model-svg");
+  const { profileFor } = require("../../shared/visuals/surface-profiles");
+  const { layout } = tightSvg({ ...PARTITION, requireIntent: true }, profileFor("worksheets", { widthMm: 85 }));
+  const captioned = layout.circles.filter((c) => c.caption);
+  assert.equal(captioned.length, 4);
+  for (const c of captioned) assert.equal(c.text, "", `"${c.caption}" names a circle that has something printed in it`);
+  const sizes = [...html.matchAll(/font-size="([\d.]+)"[^>]*>Thousands</g)].map((m) => Number(m[1]));
+  assert.ok(sizes.length && sizes.every((pt) => pt >= 9), `a caption printed at ${sizes}pt`);
 });
 
 test("a given zero prints, because a zero part is the whole question", () => {
@@ -108,8 +117,10 @@ test("the money route keeps its old permissive contract and its old size", () =>
   };
   // An empty whole with nothing said about it is how every saved money spec
   // asks its question. It must keep working, and at the width it always had.
+  // The circles of the shared model are narrower than the old boxes were, so
+  // the width it asks is its own labels' width, not the boxes' 60mm.
   const need = REGISTRY["part-whole-money"].needs(money);
-  assert.ok(need.minWidthMm > 55 && need.minWidthMm < 65, `${need.minWidthMm}mm`);
+  assert.ok(need.minWidthMm > 25 && need.minWidthMm < 65, `${need.minWidthMm}mm`);
   assert.throws(() => render("part-whole", money), /PART_WHOLE_INTENT_UNSTATED/);
 });
 
@@ -130,9 +141,14 @@ test("the model's minimum is set by the boxes, not by its smallest word", () => 
   // the legibility floor would grow the model until the caption reached note
   // size, and the width a child gets to write in would be decided by the
   // quietest thing on the page.
+  // The model now lays itself out at printed size and holds its own floor in
+  // points, so the scale-with-the-zone legibility floor does not apply to it.
+  assert.equal(REGISTRY["part-whole"].physical, true, "the legibility floor is still what sets this model's width");
   const stated = REGISTRY["part-whole"].needs(PARTITION).minWidthMm;
-  assert.ok(reportedMinWidthMm("part-whole", PARTITION) <= stated + 0.01,
-    "the legibility floor is still what sets this model's width");
+  const { minWidthPt } = require("../../shared/visuals/part-whole-model-svg");
+  const { MM_TO_PT } = require("../../shared/visuals/surface-profiles");
+  assert.ok(Math.abs(stated - Math.max(24, minWidthPt({ ...PARTITION, requireIntent: true }, "worksheets") / MM_TO_PT)) < 0.01);
+  void reportedMinWidthMm;
 });
 
 // ─── number-sentence: the terms stay apart, the answer stays blank ───────

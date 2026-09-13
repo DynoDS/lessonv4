@@ -68,6 +68,12 @@ const gridMapShared = require('../../shared/visuals/grid-map-svg');
 const rainforestLayersShared = require('../../shared/visuals/rainforest-layers-svg');
 const balancedPatternPlateShared = require('../../shared/visuals/balanced-pattern-plate-svg');
 const placeValueChartShared = require('../../shared/visuals/place-value-chart-svg');
+const placeValueMiniShared = require('../../shared/visuals/place-value-mini-svg');
+const baseTenBlocksShared = require('../../shared/visuals/base-ten-blocks-svg');
+const counterGroupShared = require('../../shared/visuals/counter-group-svg');
+const partWholeModelShared = require('../../shared/visuals/part-whole-model-svg');
+const pyramidShared = require('../../shared/visuals/pyramid-svg');
+const multGridShared = require('../../shared/visuals/mult-grid-svg');
 // The same strict circuit the slides and the sheets draw, so a wall card and
 // the board show one circuit rather than two drawings of it.
 const circuitShared = require('../../shared/visuals/circuit-diagram-svg');
@@ -183,6 +189,16 @@ const fishboneWall = sharedAtWidth(fishboneShared, 260);
 const continuumLineWall = sharedAtWidth(continuumLineShared, 260);
 const sourcePathwayWall = sharedAtWidth(sourcePathwayShared, 260);
 const numberNetworkWall = sharedAtWidth(numberNetworkShared, 150);
+// The place value family, each the one drawing the board and the sheet place
+// too (13 September 2026), laid out at the width a wide wall visual prints.
+const placeValueChartWall = sharedAtWidth(placeValueChartShared);
+const placeValueMiniWall = sharedAtWidth(placeValueMiniShared);
+const baseTenBlocksWall = sharedAtWidth(baseTenBlocksShared);
+const counterGroupWall = sharedAtWidth(counterGroupShared);
+const partWholeModelWall = sharedAtWidth(partWholeModelShared);
+const pyramidWall = sharedAtWidth(pyramidShared);
+const multGridWall = sharedAtWidth(multGridShared);
+
 
 
 // ─── Step badge (green numbered oval, white digit) ──────────────────────
@@ -367,7 +383,13 @@ async function preRenderSvgs(spec, specDir) {
     'grid-map':       { keyFn: gridMapShared.cacheKey, tightFn: gridMapShared.tightSvg, collected: {} },
     'rainforest-layers': { keyFn: rainforestLayersShared.cacheKey, tightFn: rainforestLayersShared.tightSvg, collected: {} },
     'balanced-pattern-plate': { keyFn: balancedPatternPlateShared.cacheKey, tightFn: balancedPatternPlateShared.tightSvg, collected: {} },
-    'place-value-chart': { keyFn: placeValueChartShared.cacheKey, tightFn: placeValueChartShared.tightSvg, collected: {} },
+    'place-value-chart': { ...placeValueChartWall, collected: {} },
+    'place-value-mini': { ...placeValueMiniWall, collected: {} },
+    'base-ten-blocks': { ...baseTenBlocksWall, collected: {} },
+    'counter-group': { ...counterGroupWall, collected: {} },
+    'part-whole-model': { ...partWholeModelWall, collected: {} },
+    'pyramid': { ...pyramidWall, collected: {} },
+    'mult-grid': { ...multGridWall, collected: {} },
     'circuit-diagram': { keyFn: circuitShared.cacheKey, tightFn: circuitShared.tightSvg, collected: {} },
     'parachute-forces': { keyFn: parachuteForcesShared.cacheKey, tightFn: parachuteForcesShared.tightSvg, collected: {} },
     'blank-surface': { keyFn: blankSurfaceShared.cacheKey, tightFn: blankSurfaceShared.tightSvg, collected: {} },
@@ -570,7 +592,13 @@ module.exports = {
   rainforestLayersKey: rainforestLayersShared.cacheKey,
   balancedPatternPlateKey: balancedPatternPlateShared.cacheKey,
   balancedPatternPlateTightSvg: balancedPatternPlateShared.tightSvg,
-  placeValueChartKey: placeValueChartShared.cacheKey,
+  placeValueChartKey: placeValueChartWall.keyFn,
+  placeValueMiniKey: placeValueMiniWall.keyFn,
+  baseTenBlocksKey: baseTenBlocksWall.keyFn,
+  counterGroupKey: counterGroupWall.keyFn,
+  partWholeModelKey: partWholeModelWall.keyFn,
+  pyramidKey: pyramidWall.keyFn,
+  multGridKey: multGridWall.keyFn,
   circuitDiagramKey: circuitShared.cacheKey,
   parachuteForcesKey: parachuteForcesShared.cacheKey,
   blankSurfaceKey: blankSurfaceShared.cacheKey,

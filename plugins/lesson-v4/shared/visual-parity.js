@@ -196,11 +196,13 @@ const PRIMITIVES = [
       { key: 'count-scale-intervals', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
     ],
     note: 'Success-Criteria-inline only - one equal-interval cue serves dial scales and measuring containers without inventing a task-specific value.' },
-  { id: 'pyramid', depicts: 'data',         slides: 'pyramid',         worksheets: 'number-pyramid',                          wall: false,             stickin: false,
+  { id: 'pyramid', depicts: 'data',         slides: 'pyramid',         worksheets: 'number-pyramid', wall: 'pyramid', stickin: 'pyramid',
+    geometrySource: 'shared/visuals/pyramid-svg.js',
     successCriteriaSource: 'shared/visuals/pyramid-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'number-pyramid', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
-    ] },
+    ],
+    note: 'One drawing for the ranking pyramid and the number pyramid (13 September 2026). The board drew blue-outlined boxes with green `||` answers and row labels; the sheet (`number-pyramid`) drew touching bricks with orange given numbers. Both now place shared/visuals/pyramid-svg.js in the board look, and the sheet spelling (rows of arrays) still draws. Ranking cards with words are baked into the picture on the board, so a teacher no longer edits a card in PowerPoint.' },
   { id: 'method-frame', depicts: 'data',    slides: 'method-frame',    worksheets: 'method-frame', wall: false,            stickin: false },
   { id: 'bar-chart', depicts: 'data',       slides: 'bar-chart',       worksheets: 'bar-chart',                     wall: 'bar-chart',       stickin: 'bar-chart',
     geometrySource: 'shared/visuals/bar-chart-svg.js',
@@ -212,14 +214,15 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/line-graph-svg.js',
     note: 'wall via the shared line-graph-svg, used as the annotated anatomy poster for "read a line graph" lessons (labelledDiagram + callouts on title / yAxis / xAxis / line / point / each plotted x). worksheets via line-graph-question, the stimulus-top figure that replaced the data-table fallback a read-a-graph lesson used to be forced into. The board drew its own graph in PowerPoint shapes until 13 September 2026; the board and the stick-in pack now place the shared drawing laid out at its printed size.' },
   { id: 'chip-bank', depicts: 'data',       slides: 'chip-bank',       worksheets: 'chip-bank',                              wall: false,             stickin: false },
-  { id: 'place-value-chart', depicts: 'data', slides: 'place-value-chart', worksheets: ['place-value-chart', 'place-value-counter-chart'], wall: 'place-value-chart', stickin: false,
+  { id: 'place-value-chart', depicts: 'data', slides: 'place-value-chart', worksheets: ['place-value-chart', 'place-value-counter-chart'], wall: 'place-value-chart', stickin: 'place-value-chart',
     geometrySource: 'shared/visuals/place-value-chart-svg.js',
     successCriteriaHelpers: [
       { key: 'one-per-column', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', method: 'onePerColumnCueSvg', spec: {} } }
     ],
-    note: 'Grew a per-cell `highlight` and a per-row `label`, and that is what earned it the wall. Before, a place value chart was a grid of digits and a wall card of one would anchor nothing. With a ring round the digit that changed and a caption saying what each row IS ("3,462", "10 more", "100 more"), the card answers the question every place-value unit turns on - WHICH column changed and which held still - from across the room, all term, across 10/100 more and less, exchanging, rounding, and multiplying and dividing by 10. wall draws from shared/visuals/place-value-chart-svg.js, which repeats the board palette so the two match; slides and worksheets keep their own implementations (a pptx table and a CSS grid), like coordinate-grid above. stickin:false - a place value chart is a ruled grid a Year 4 child can draw in a squared book in a minute, and ruling it is part of the work, so it fails the "cannot reproduce this by hand" test a stick-in piece has to pass; the write-on form they need on paper is already the worksheet chart with an empty row. The chart then grew a `pair` MODE (before/after: start chart, labelled arrow, result chart, "same" under each unchanged column, operation and result in a title bar), and it reaches the board AND the wall. It was first built slide-only, on the reasoning that the board has a problem the other surfaces do not (a teach slide of finished end states leaves the movement to the teacher\'s voice) while a wall card already carries the comparison in its stacked-row form. Daniel read that reasoning and overruled it: a child who meets the pair on the board and looks up at a stacked chart on the wall is being shown two dialects of one picture, and the wall\'s job is to be the thing they recognise. So the wall draws the pair too, from the same shared/visuals/place-value-chart-svg.js, with the semantics matched exactly - changed column DERIVED by comparing from/to and never declared, title read off the `to` cells unless overridden, "same" in each column\'s own colour - and drawn bolder, because a card is read across a room. Both forms stay live: the stacked rows still anchor a whole unit compactly, the pair teaches one change. Worksheets keep their own implementation and no pair, because a sheet asks the child to WRITE the result rather than read a finished one. The counter band reached the wall last (4.2.93), and it took a lesson shipping without it to notice: the board grew counters, the shared wall drawing never did, and a Year 4 card headed "Count each column\'s counters" over a worked example of 6,041 printed an entirely empty grid. Both surfaces now draw the same populations in the same arrangement - ten as two rows of five, each counter in the colour of its own column - because a child glancing from the board to the wall has to count the same shapes in the same places.' },
-  { id: 'place-value-mini', depicts: 'data', slides: 'place-value-mini', worksheets: false, wall: false, stickin: false,
-    note: 'The miniature built for the 2.2-inch panel of a key-vocabulary card: one digit mapping to its value, a highlighted Th/H/T/O column, ten tens becoming a hundred, or the zeros in a numeral. Slide-only because the surface it exists for is slide-only - a worksheet, a wall card and a stick-in piece all carry the FULL place-value-chart above, which reaches those three surfaces on its own entry, and a 2.2-inch version of it there would be the same picture drawn smaller for no reason. It was drawing correctly through content/vocab.js and was missing from the content registry, so the layout preflight refused any deck that used it as templates.md documents and the designer shipped a text-only card instead (5 September 2026); registering it is what brought it here.' },
+    note: 'One drawing on every surface since 13 September 2026 (shared/visuals/place-value-chart-svg.js). History worth keeping: the per-cell `highlight` and per-row `label` are what earned it the wall, because a ring round the digit that changed answers WHICH column moved from across the room. The `pair` form (start chart, labelled arrow, result chart, "same" under each unchanged column, title read off the `to` cells, changed column derived and never declared) was first built slide-only; Daniel overruled that, because a child who meets the pair on the board and a stacked chart on the wall is shown two dialects of one picture. The counter band reached the wall in 4.2.93 after a card headed "Count each column\'s counters" printed an empty grid. Until 13 September the board drew PowerPoint tables and the sheet drew a CSS grid (no column colours, orange digits, a blue ring) plus a counter chart in purple and red; both now place the shared drawing, the sheet\'s `place-value-counter-chart` spelling included. The board chart is now one picture, so a teacher can no longer type into its cells in PowerPoint.' },
+  { id: 'place-value-mini', depicts: 'data', slides: 'place-value-mini', worksheets: 'place-value-mini', wall: 'place-value-mini', stickin: 'place-value-mini',
+    geometrySource: 'shared/visuals/place-value-mini-svg.js',
+    note: 'The miniature built for the 2.2-inch panel of a key-vocabulary card: one digit mapping to its value, a highlighted Th/H/T/O column, ten tens becoming a hundred, or the zeros in a numeral. It was drawing correctly through content/vocab.js and was missing from the content registry, so decks using it were refused and shipped a text-only card (5 September 2026). Drawn once in shared/visuals/place-value-mini-svg.js since 13 September 2026 and reachable from every surface, so a sheet word bank or a wall vocabulary card can show the same picture of the word.' },
   // Real coin and note pictures from builder/assets/money, placed by one drawing
   // on every surface (13 September 2026). The part-whole model that carries
   // coins in its bubbles is part-whole-model's sheet key, not a second money picture.
@@ -269,8 +272,9 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/number-network-svg.js' },
   { id: 'concept-matching', depicts: 'data', slides: 'matching',       worksheets: false, wall: false, stickin: false,
     note: 'slide-only sorting/matching activity (draws connector affordances), done live on the board.' },
-  { id: 'mult-grid', depicts: 'data',       slides: 'mult-grid',       worksheets: 'times-table-grid', wall: false, stickin: false,
-    note: 'worksheets:false — the sheet has its own column/grid arithmetic family (short/long-multiplication-grid); the slide mult-grid is the board model, not the same key.' },
+  { id: 'mult-grid', depicts: 'data',       slides: 'mult-grid',       worksheets: 'times-table-grid', wall: 'mult-grid', stickin: 'mult-grid',
+    geometrySource: 'shared/visuals/mult-grid-svg.js',
+    note: 'The SATs multiplication-facts grid. The board (`mult-grid`) and the sheet (`times-table-grid`, which reads `operator` for `corner`) drew it separately until 13 September 2026; both now place shared/visuals/mult-grid-svg.js, with square cells, grey headers and green `||` answers, and paper cells held to the 12mm a written product needs.' },
   { id: 'fraction-wall', depicts: 'data',   slides: 'fraction-wall',   worksheets: 'fraction-wall', wall: 'fraction-wall', stickin: 'fraction-wall',
     geometrySource: 'shared/visuals/fraction-wall-svg.js' },
   { id: 'dial-scale', depicts: 'data', slides: 'dial-scale', worksheets: 'dial-scale', wall: 'dial-scale', stickin: 'dial-scale',
@@ -280,21 +284,21 @@ const PRIMITIVES = [
   { id: 'translation-grid', depicts: 'data', slides: 'translation-grid', worksheets: 'translation-grid', wall: 'translation-grid', stickin: 'translation-grid',
     geometrySource: 'shared/visuals/translation-grid-svg.js',
     note: 'One marker moved on a numbered grid. The newer translation-shape moves a whole shape and is the picture a translation lesson should reach for; this stays so decks written with it still draw.' },
-  { id: 'part-whole-model', depicts: 'data', slides: 'part-whole-model', worksheets: ['part-whole', 'part-whole-money'], wall: false, stickin: false,
+  { id: 'part-whole-model', depicts: 'data', slides: 'part-whole-model', worksheets: ['part-whole', 'part-whole-money'], wall: 'part-whole-model', stickin: 'part-whole-model',
+    geometrySource: 'shared/visuals/part-whole-model-svg.js',
     successCriteriaSource: 'shared/visuals/part-whole-model-cue-svg.js',
     successCriteriaHelpers: [
       { key: 'part-whole', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', spec: {} } }
     ],
-    note: 'the money-specific part-whole is tracked under `money` (part-whole-money-question); this is the generic board model.' },
-
-  // ── Stick-in write-on shapes with no board or wall twin: a blank box-row the
-  //    child draws into, glued into the book.
+    note: 'One model since 13 September 2026 (shared/visuals/part-whole-model-svg.js): the board drew circles and the sheet drew rounded boxes with captions, a joiner and coins. The shared drawing keeps the board circles and carries the sheet\'s value/label/blank nodes, captions, joiner, coins and its stricter `part-whole` contract (every node states its intent); `part-whole-money` keeps the permissive one.' },
   { id: 'draw-box-row', depicts: 'data',    slides: false, worksheets: false, wall: false, stickin: 'draw-box-row',
     note: 'stick-in write-on only - a strip of blank boxes the child draws in; never a board or wall figure.' },
   // ── Pictures the worksheet drew with nobody else able to (added 13 September
   //    2026, when every picture became one shared drawing on all four surfaces).
-  { id: 'base-ten-blocks', depicts: 'data', slides: false, worksheets: 'base-ten-blocks', wall: false, stickin: false },
-  { id: 'counter-group', depicts: 'data', slides: false, worksheets: 'counter-group', wall: false, stickin: false },
+  { id: 'base-ten-blocks', depicts: 'data', slides: 'base-ten-blocks', worksheets: 'base-ten-blocks', wall: 'base-ten-blocks', stickin: 'base-ten-blocks',
+    geometrySource: 'shared/visuals/base-ten-blocks-svg.js' },
+  { id: 'counter-group', depicts: 'data', slides: 'counter-group', worksheets: 'counter-group', wall: 'counter-group', stickin: 'counter-group',
+    geometrySource: 'shared/visuals/counter-group-svg.js' },
   { id: 'ruler', depicts: 'data', slides: 'ruler', worksheets: 'ruler', wall: 'ruler', stickin: 'ruler',
     geometrySource: 'shared/visuals/ruler-svg.js' },
   { id: 'process-chain', depicts: 'data', slides: 'process-chain', worksheets: 'process-chain', wall: 'process-chain', stickin: 'process-chain',
@@ -416,6 +420,7 @@ const TYPED_LAYOUT = Object.freeze([
   'callout',          // a box of words with an arrow, for pointing
   'geographical-description-frame', // three headed prompts with writing lines, like writing-frame
   'draw-box-row',     // empty captioned boxes to draw in, like the sheet's drawing-space
+  'diamond-nine',     // nine statements the class ranks live; a teacher drags the cells on the board
 ]);
 
 // Worksheet helpers that are the sheet's own typed layout (questions, writing
@@ -448,14 +453,6 @@ const WORKSHEET_LAYOUT_EXEMPT = Object.freeze([
 // nothing may be added. `node builder/scripts/sharing-status.js` prints the table;
 // `--backlog` prints this literal.
 const SHARING_BACKLOG = Object.freeze({
-  "pyramid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "place-value-chart": { slides: 'own', worksheets: 'own', stickin: 'missing' },
-  "place-value-mini": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
-  "diamond-nine": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
-  "mult-grid": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "part-whole-model": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "base-ten-blocks": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "counter-group": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
 });
 
 // Marks that exist only as a success-criteria cue (join the points in order, count

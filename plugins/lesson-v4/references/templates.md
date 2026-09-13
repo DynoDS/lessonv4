@@ -41,7 +41,9 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `numberline` | Number line with ticks, question arrow, answer dot, jumps along the spaces and a highlighted interval |
 | `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters (set `counterLabels: true` on a row for the value on each counter; enlarge the chart if labels cannot fit), and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart |
 | `fraction-wall` | Stacked rows of equal-width fraction pieces |
-| `part-whole-model` | One whole circle (left) branching to 2–3 part circles (right), with text labels in each |
+| `part-whole-model` | One whole circle (left) branching to 2 or 3 part circles (right), with text labels in each. Nodes may also be blank circles to write in, carry a quiet caption underneath, real coins, and a `+` between parts |
+| `base-ten-blocks` | Dienes blocks in Th / H / T / O columns: thousand cubes, hundred flats, ten rods and unit cubes. Use when the blocks themselves are the representation |
+| `counter-group` | Place-value counters on their own, grouped by value with an operator between groups, under the claim they are evidence for ("5,009 = 5,000 + 9"). Use when two claims sit side by side and a whole chart each would not fit |
 | `triangle-square` | The "two triangles add up to the square" part-whole puzzle in SATs-paper notation: two stacked triangles (left) with arrows pointing into a square (right). Leave one shape blank for the unknown. Use when the lesson recreates this exact paper question type — not the circle-and-line `part-whole-model` |
 | `coordinate-grid` | A numbered first-quadrant grid with plotted, lettered points; optionally joins the points into a closed shape. Use for reading/plotting coordinates and "what shape do these coordinates make?" |
 | `polygon` | One or more named 2D shapes side by side (square, rectangle, triangle, isosceles/scalene triangle, kite, hexagon…), drawn from true geometry. Use for naming shapes and counting right angles / parallel sides; also draws lines of symmetry — the full set for an answer slide, or a single candidate line to TEST (pass/fail + fold preview) for a teaching slide |
@@ -293,7 +295,7 @@ Examples:
 - `{ "word": "exchange", "definition": "...", "visual": { "type": "place-value-mini", "mode": "exchange" } }`
 - `{ "word": "placeholder", "definition": "...", "visual": { "type": "place-value-mini", "mode": "placeholder", "number": "4050" } }`
 
-`place-value-mini` is purpose-built for the small vocabulary panel. `digit-value` shows one digit mapping to its value; `column` shows Th/H/T/O and highlights the named column; `exchange` shows ten small tens counters becoming one hundreds counter; `placeholder` highlights zero cells in a short numeral. Use the full `place-value-chart` on teaching and practice slides, not inside a vocabulary card.
+`place-value-mini` is purpose-built for the small vocabulary panel, and it is the same small picture on a worksheet, a wall card and a stick-in piece. `digit-value` shows one digit mapping to its value; `column` shows Th/H/T/O and highlights the named column; `exchange` shows ten small tens counters becoming one hundreds counter; `placeholder` highlights zero cells in a short numeral. Use the full `place-value-chart` on teaching and practice slides, not inside a vocabulary card.
 - `{ "word": "scalene", "definition": "...", "visual": { "type": "triangle", "kind": "scalene" } }`
 - `{ "word": "equilateral", "definition": "...", "visual": { "type": "triangle", "kind": "equilateral" } }`
 - `{ "word": "trapezium", "definition": "...", "visual": { "type": "geoboard", "cols": 4, "rows": 2, "shape": [[0,0],[4,0],[3,2],[1,2]] } }`
@@ -719,6 +721,7 @@ The multiplication-facts grid — the SATs "write the missing numbers in this mu
 - `cells` — products row-major: `cells[r][c]` sits at row `r`, column `c`. `""` is an empty box — a gap to find.
 - `corner` — optional, defaults to `"×"`.
 - **Answers reveal in the grid, in green.** On the answer slide, fill the previously-empty cells (and any missing header) with the `||` marker — `"||21"`, `"||7"` — and they render green right inside the grid while the givens stay black. No separate answer list is needed; the completed grid *is* the reveal.
+- **One grid everywhere.** The worksheet's `times-table-grid`, the wall and the stick-in pack draw this same grid from these fields.
 - **Match the paper's scale.** If the question being recreated is a 3×3 grid, build a 3×3 grid — shrinking it to 2×2 changes the task. The grid sizes its own cells; give it a class-A, class-C, or E-wide zone and set `workingSpace: false` on the template so it gets the full width (see the working-space note under `maths-turn-sc`).
 
 ### `matching`
@@ -852,6 +855,8 @@ For a compact digit-only boundary question, omit `counters`, give `to` one empty
 
 **One pair is one comparison, always.** Two comparisons that share a starting number (10 more *and* 100 more of 3,462) are **two separate pairs**, never a chain of three charts: a chain of arrows says the third state grew out of the second, which did not happen and which a class will faithfully learn. Put the two pairs in the two zones of a `split-v-50-50`, or on two slides. Sequence gets a chain; comparison gets pairs. This helper only ever draws a pair — composing them is yours.
 
+**It is one picture on every surface, and on the slide it is one picture.** The worksheet, the working wall and the stick-in pack draw this chart from these same fields, so a chart copied from a slide looks like the slide. Two fields exist for paper and work here too: `instances: 3` draws three identical charts side by side, and `digits: false` on a counter row leaves out the digit row (the "what number do the counters show?" form). On the slide the chart is placed as a single picture, so a teacher moves and resizes it but cannot type into its cells; a chart meant for live writing is drawn with its blank row and written on with the pen.
+
 **Minimum useful size:** the stacked-row chart is very tolerant — a 4-column chart reads clearly down to ~2.0″ wide (empirically tested). A digit-only `pair` needs roughly twice the width for the same cell size, so give it ~5″ × ~2.5″ or more; below about 4″ wide the two charts and the arrow between them start to crowd. A counter pair with an exchange cue needs roughly 7″ × 3.5″; use a full-width body zone where possible. The helper auto-scales column widths and font size to fit. Wider columns are still preferable for sentence-length headers; the floor is for digit-only cell content.
 
 ### `fraction-wall`
@@ -908,7 +913,50 @@ Words and labels work in any circle — the builder renders whatever string is s
 
 The builder draws empty circles connected by lines — a ready-to-fill diagram, not a finished answer. Children see the partition constructed during the model rather than reading a reveal. Use `?` (the unknown marker) only when the lesson genuinely has an unknown to be solved (a part-whole problem); use `""` for the modelling case.
 
+**Everything the worksheet's model could say, the slide's can too.** Any node may be an object instead of a string. `{ "value": "6,731" }` is a number handed over, `{ "label": "Pounds" }` a word, `{ "blank": true }` an empty circle sized for a four-digit answer (`blankChars` changes that), `{ "caption": "Thousands" }` a quiet name printed under the circle, outside it, and `{ "coins": ["£1", "20p"] }` real coins inside the circle. `joiner: "+"` prints the operator between parts. A model written with objects is drawn upright unless `orientation` says otherwise. It is the same model on the worksheet, the wall and the stick-in pack.
+
+```json
+{ "type": "part-whole-model",
+  "whole": { "value": "6,731" },
+  "joiner": "+",
+  "parts": [
+    { "blank": true, "caption": "Thousands" },
+    { "blank": true, "caption": "Hundreds" },
+    { "blank": true, "caption": "Tens" },
+    { "blank": true, "caption": "Ones" }
+  ] }
+```
+
 **Minimum useful size:** 1.4″ × 1.4″ per single model (empirically tested). Smaller than this and the part-circle labels stop reading clearly. When two models sit side-by-side as a `row`, each gets half the zone width — so the parent zone needs ~3.0″ wide × 1.4″ tall minimum to host a pair. Stacking two PWMs vertically halves the height available to each, which crushes the circles — use a `row` instead.
+
+### `base-ten-blocks`
+
+Dienes blocks in four columns headed Thousands, Hundreds, Tens and Ones (in the place value chart's column colours): a thousand cube, a hundred flat, a ten rod and a unit cube, two to a row. Use it when the blocks themselves are what the lesson reads a number from; use `place-value-chart` with `counters` when the lesson uses counters.
+
+```json
+{ "type": "base-ten-blocks", "counts": { "Th": 2, "H": 4, "T": 3, "O": 6 } }
+```
+
+- `counts`: how many blocks in each column, a whole number from 0 to 10 each (`thousands`, `hundreds`, `tens`, `ones` also work). A column of more than ten is refused: that is an exchange the lesson should show.
+
+It is the same drawing on the worksheet, the wall and the stick-in pack. **Minimum useful size:** about 4″ × 1.6″ for up to six blocks a column; the build refuses a zone where a hundred flat can no longer show its squares.
+
+### `counter-group`
+
+Place-value counters on their own, each a pill with its value on it, in the place value chart's column colour. Several groups sit side by side joined by an operator, under the claim they are evidence for. Use it when two claims have to be compared and a full chart each would not fit; use `place-value-chart` when the columns are the teaching. It draws exactly the counters given and never a total.
+
+```json
+{ "type": "counter-group",
+  "statement": "5,009 = 5,000 + 9",
+  "joiner": "+",
+  "groups": [ { "value": "1000", "count": 5 }, { "value": "1", "count": 9 } ] }
+```
+
+- `groups`: `{ value, count }` each: the number on the counter and how many, 1 to 20.
+- `joiner`: optional operator between groups.
+- `statement`: optional claim printed above the counters, exactly as the question words it.
+
+It is the same drawing on the worksheet, the wall and the stick-in pack. **Minimum useful size:** about 3″ × 1.5″ for two groups of up to nine.
 
 ### `triangle-square`
 
@@ -1647,6 +1695,8 @@ With items pre-filled (rare — usually for a Synthesise slide showing how one p
 ```
 
 Row labels are optional. When present, they render to the left of each row in small bold text, right-aligned. If no row has a `label`, no label column is reserved and the cells fill the zone width.
+
+**It is one picture on every surface.** The worksheet's number pyramid (`number-pyramid`), the wall and the stick-in pack draw this same pyramid, so a pyramid copied from a slide looks the same everywhere. On the slide it is placed as one picture: a teacher moves and resizes it but does not retype a card inside it.
 
 **Also the addition / number pyramid.** The same object draws the maths "each brick is the sum of the two below it" puzzle — pass the bricks as `items` (apex row first), leaving `""` for any brick the child must find. Givens stay black; on the answer slide, fill the missing bricks with the `||` marker (`"||28"`) and they reveal green inside the pyramid, so the completed pyramid is its own answer reveal with no separate list. As with the grid, set `workingSpace: false` so the pyramid claims the full width.
 
@@ -2783,6 +2833,8 @@ Which content types fit which zone class.
 | `numberline`        | ✓ | ✓ | ✓ |   | ✓ | ✓ |   |   |
 | `place-value-chart` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `place-value-mini`  | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
+| `base-ten-blocks`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
+| `counter-group`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `fraction-wall`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `part-whole-model`  | ✓ | ✓ | ✓ |   | ✓ | ✓ |   |   |
 | `bar-model`         | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |

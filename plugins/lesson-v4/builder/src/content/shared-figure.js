@@ -89,6 +89,13 @@ const FIGURES = {
   'translation-grid': { module: require('../../../shared/visuals/translation-grid-svg'), name: 'translation grid' },
   'area-grid': { module: require('../../../shared/visuals/area-grid-svg'), name: 'area grid' },
   'comparison-slot': { module: require('../../../shared/visuals/comparison-svg'), name: 'comparison slot' },
+  'place-value-chart': { module: require('../../../shared/visuals/place-value-chart-svg'), name: 'place value chart' },
+  'place-value-mini': { module: require('../../../shared/visuals/place-value-mini-svg'), name: 'place value picture' },
+  'base-ten-blocks': { module: require('../../../shared/visuals/base-ten-blocks-svg'), name: 'base-ten blocks' },
+  'counter-group': { module: require('../../../shared/visuals/counter-group-svg'), name: 'counters' },
+  'part-whole-model': { module: require('../../../shared/visuals/part-whole-model-svg'), name: 'part-whole model' },
+  pyramid: { module: require('../../../shared/visuals/pyramid-svg'), name: 'pyramid' },
+  'mult-grid': { module: require('../../../shared/visuals/mult-grid-svg'), name: 'multiplication grid' },
 };
 
 function captionFor(type, data) {
@@ -181,6 +188,15 @@ function drawCaption(slide, laid) {
   });
 }
 
+// Centred in its box, unless the drawing says it belongs at the top: a bare
+// place-value heading strip is a reference in a side rail, and a reference sits
+// where the eye lands first, not halfway down a tall thin column.
+function placeIn(box, built) {
+  const w = built.w / 72;
+  const h = built.h / 72;
+  return { x: box.x + (box.w - w) / 2, y: built.anchor === 'top' ? box.y : box.y + (box.h - h) / 2, w, h };
+}
+
 function drawerFor(type) {
   function draw(pptx, slide, zone, data, ctx) {
     const laid = build(type, zone, data);
@@ -189,8 +205,7 @@ function drawerFor(type) {
     if (!built) return;
     const w = built.w / 72;
     const h = built.h / 72;
-    const x = box.x + (box.w - w) / 2;
-    const y = box.y + (box.h - h) / 2;
+    const { x, y } = placeIn(box, built);
     if (FIGURES[type].zoneFill) {
       require('./_zone-fill').checkZoneFill(ctx, zone, { w, h }, FIGURES[type].zoneFill(data));
     }
@@ -237,4 +252,15 @@ function maxUsefulWidthFor(type) {
   };
 }
 
-module.exports = { FIGURES, CAPTION, createSharedFigureStore, drawerFor, measurerFor, maxUsefulWidthFor, captionBandHeight };
+// The rect a card behind the drawing should cover, in the shape index.js's
+// MEASURE table wants: where the picture is really placed, plus the placer's
+// own breathing margin, so a card hugs the picture rather than its zone.
+function placedRectFor(type) {
+  return function measure(zone, data) {
+    const { box, built } = build(type, zone, data);
+    const at = placeIn(box, built);
+    return { x: at.x - PAD, y: at.y - PAD, w: at.w + 2 * PAD, h: at.h + 2 * PAD };
+  };
+}
+
+module.exports = { FIGURES, CAPTION, createSharedFigureStore, drawerFor, measurerFor, maxUsefulWidthFor, placedRectFor, captionBandHeight };

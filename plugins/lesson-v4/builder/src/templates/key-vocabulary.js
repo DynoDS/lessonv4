@@ -49,7 +49,8 @@ const STACKED_VISUALS = new Set([
   'sc-panel', 'method-frame', 'diamond-nine', 'pyramid', 'stack', 'row', 'vocab',
   'matching', 'fishbone', 'concept-map', 'sort-board', 'evidence-cards',
   'source-pathway', 'bar-chart', 'line-graph', 'pictogram', 'timeline',
-  'continuum-line', 'mult-grid', 'place-value-chart', 'geographical-description-frame'
+  'continuum-line', 'mult-grid', 'place-value-chart', 'geographical-description-frame',
+  'base-ten-blocks'
 ]);
 // The least room a stacked picture gets under its text before the helper's own
 // capacity checks take over and say what does not fit.

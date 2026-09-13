@@ -11,7 +11,7 @@ const { drawImage, measureImage } = require('./image');
 const { drawTable } = require('./table');
 // Pictures drawn once in shared/visuals/ and placed here without a slide file
 // of their own (see shared-figure.js).
-const { drawerFor, measurerFor, maxUsefulWidthFor } = require('./shared-figure');
+const { drawerFor, measurerFor, maxUsefulWidthFor, placedRectFor } = require('./shared-figure');
 const drawNumberline = drawerFor('numberline');
 const drawClock = drawerFor('clock');
 const drawTurnDiagram = drawerFor('turn-diagram');
@@ -31,19 +31,22 @@ const drawFishbone = drawerFor('fishbone');
 const drawContinuumLine = drawerFor('continuum-line');
 const drawSourcePathway = drawerFor('source-pathway');
 const drawNumberNetwork = drawerFor('number-network');
-const { drawPlaceValueChart, measurePlaceValueChart } = require('./place-value-chart');
 const drawFractionWall = drawerFor('fraction-wall');
 const drawMoney = drawerFor('money');
 const drawMap = drawerFor('map');
+const drawPlaceValueChart = drawerFor('place-value-chart');
+const drawPlaceValueMini = drawerFor('place-value-mini');
+const drawBaseTenBlocks = drawerFor('base-ten-blocks');
+const drawCounterGroup = drawerFor('counter-group');
+const drawPartWholeModel = drawerFor('part-whole-model');
+const drawPyramid = drawerFor('pyramid');
+const drawMultGrid = drawerFor('mult-grid');
 const { drawStack } = require('./stack');
 const { drawRow } = require('./row');
-const { drawPartWholeModel } = require('./part-whole-model');
 const { drawNumberedQuestions } = require('./numbered-questions');
 const { drawQuestionCards } = require('./question-cards');
 const { drawCallout } = require('./callout');
-const { drawPyramid } = require('./pyramid');
 const { drawDiamondNine }   = require('./diamond-nine');
-const { drawMultGrid }      = require('./mult-grid');
 const { drawMatching }      = require('./matching');
 const { drawCoordinateGrid } = require('./coordinate-grid');
 const { drawTranslationShape } = require('./translation-shape');
@@ -54,7 +57,6 @@ const { drawGeoboard }       = require('./geoboard');
 const { drawAngle }          = require('./angle');
 const { drawTriangle, drawTriangleNonExample } = require('./triangle');
 const { drawLinePair } = require('./line-pair');
-const { drawPlaceValueMini } = require('./place-value-mini');
 const { drawCircuitDiagram, measureCircuitDiagram } = require('./circuit-diagram');
 const { drawParachuteForces, measureParachuteForces } = require('./parachute-forces');
 const { drawCircuitSymbolBank, measureCircuitSymbolBank } = require('./circuit-symbol-bank');
@@ -146,6 +148,8 @@ const ZONE_COMPAT = {
   // (CONTENT_ZONE_INCOMPATIBLE), and the designer shipped a text-only card
   // instead (5 September 2026). Registered like its sibling card visuals.
   'place-value-mini':  ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
+  'base-ten-blocks':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
+  'counter-group':     ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'circuit-diagram':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'parachute-forces':  ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
   // The component-symbol key for a circuit lesson: individually identifiable
@@ -222,6 +226,8 @@ const HELPERS = {
   'triangle-nonexample': drawTriangleNonExample,
   'line-pair':         drawLinePair,
   'place-value-mini':  drawPlaceValueMini,
+  'base-ten-blocks':   drawBaseTenBlocks,
+  'counter-group':     drawCounterGroup,
   'circuit-diagram':   drawCircuitDiagram,
   'parachute-forces':  drawParachuteForces,
   'circuit-symbol-bank': drawCircuitSymbolBank,
@@ -273,7 +279,7 @@ const TRANSPARENT = new Set(['stack', 'row']);
 // `none: true` suppresses the card entirely (an optional photo that will not
 // draw must not leave an empty white box behind).
 const MEASURE = {
-  'place-value-chart': measurePlaceValueChart,
+  'place-value-chart': placedRectFor('place-value-chart'),
   'comparison-slot': measurerFor('comparison-slot'),
   text: measureText,
   image: measureImage,

@@ -437,6 +437,8 @@ module.exports = {
       { label: "100 more", cells: [] },
     ],
   },
+  // The vocabulary-card picture, beside a word on a sheet.
+  "place-value-mini": { mode: "digit-value", digit: 6, value: 600 },
   "digit-cards": { digits: [0, 3, 4, 7] },
   "times-table-grid": {
     operator: "×",
@@ -480,6 +482,7 @@ module.exports = {
     // `blank: true` is the question and stays empty; `caption` names the node
     // from OUTSIDE the box, so it can never be read as an answer already
     // written in. `blankChars` sizes the box for what goes in it.
+    text: "Partition 6,731.",
     whole: { value: "6,731" },
     joiner: "+",
     parts: [

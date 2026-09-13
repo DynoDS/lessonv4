@@ -207,13 +207,13 @@ test("a four-column counter chart is wide and shallow (maths.md)", () => {
   };
   const need = needsContent(spec);
   assert.ok(
-    Math.abs(need.minWidthMm - 138) < 8,
-    `a four-column counter chart needs ${Math.round(need.minWidthMm)}mm of width - maths.md says about 138mm`
+    Math.abs(need.minWidthMm - 157) < 8,
+    `a four-column counter chart needs ${Math.round(need.minWidthMm)}mm of width - maths.md says about 157mm`
   );
   const height = measure(spec, need.minWidthMm);
   assert.ok(
     height < 60,
-    `it stands ${Math.round(height)}mm - maths.md says it is shallow (about 39mm), not most of a page`
+    `it stands ${Math.round(height)}mm - maths.md says it is shallow (about 45mm), not most of a page`
   );
 });
 

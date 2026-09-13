@@ -19,7 +19,13 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { tightSvg, canonicalColumn } = require('../../shared/visuals/place-value-chart-svg');
+const { tightSvg: drawAt, canonicalColumn } = require('../../shared/visuals/place-value-chart-svg');
+const { profileFor } = require('../../shared/visuals/surface-profiles');
+
+// The chart as the wall places it: the shared drawing at a wide wall visual's
+// printed width (svg-renderer.js sharedAtWidth).
+const WALL = profileFor('wall', { widthMm: 180 });
+const tightSvg = (spec) => drawAt(spec, WALL);
 
 const LONG = ['Thousands', 'Hundreds', 'Tens', 'Ones'];
 const SHORT = ['Th', 'H', 'T', 'O'];
@@ -96,7 +102,8 @@ test('a chart with no counters is unchanged', () => {
 test('two charts differing only in their counters are two pictures', () => {
   // A cache key blind to the populations would render the first and hand the
   // same picture to the second.
-  const { cacheKey } = require('../../shared/visuals/place-value-chart-svg');
+  const { cacheKey: keyAt } = require('../../shared/visuals/place-value-chart-svg');
+  const cacheKey = (spec) => keyAt(spec, WALL);
   const four = { columns: ['Th', 'H', 'T', 'O'], rows: [{ label: 'A', cells: ['', '', '', ''], counters: { T: 4 } }] };
   const five = { columns: ['Th', 'H', 'T', 'O'], rows: [{ label: 'A', cells: ['', '', '', ''], counters: { T: 5 } }] };
   assert.notEqual(cacheKey(four), cacheKey(five));

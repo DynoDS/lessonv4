@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 90 helpers, what each is for, and a working example of each.
+The 91 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -102,7 +102,7 @@ emailed. Never write `imageHref` yourself.
 - `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
 - `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
 - `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
-- `part-whole-money` - A whole bubble with parts beneath it, joined by lines.
+- `part-whole-money` - A whole circle with parts beneath it, joined by lines.
 - `number-sentence` - A number sentence with its terms kept apart: supplied values on their own tiles, operators between them, a box or digit frame where the answer goes.
 - `column-method-grid` - Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row.
 - `short-multiplication-grid` - Column multiplication by a single digit, with a thick-topped answer row and a carry row.
@@ -112,8 +112,9 @@ emailed. Never write `imageHref` yourself.
 - `method-frame` - A taught mental strategy printed as a fill-in method: labelled lines inside a panel, with boxes where the child writes.
 - `number-pyramid` - Each brick is the sum of the two below it.
 - `times-table-grid` - The multiplication-facts grid: headers across and down, products in the body, blanks to find.
-- `place-value-chart` - Place names across the top, a row per number.
-- `place-value-counter-chart` - Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.
+- `place-value-chart` - The slides' chart: place names across the top, a row per number, filled to hand a number over or empty to write in, labelled, with the changed digit highlighted.
+- `place-value-counter-chart` - Counters with their values on them in place-value columns: what number is shown, or left empty for the child to draw counters.
+- `place-value-mini` - The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.
 - `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
 - `base-ten-blocks` - Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
 - `digit-cards` - A row of cards, one digit each, handed to the child to make numbers from.
@@ -1457,11 +1458,12 @@ Smallest usable: **70mm wide x 48mm tall**. Spare height: never takes spare heig
 
 A whole joined to its parts: partitioning, decomposition, a missing addend. Every node says whether the child is handed it, reads it or writes it, and a node that says nothing is refused.
 
-Smallest usable: **74mm wide x 28mm tall**. Spare height: never takes spare height.
+Smallest usable: **63mm wide x 40mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "part-whole",
+  "text": "Partition 6,731.",
   "whole": {
     "value": "6,731"
   },
@@ -1489,9 +1491,9 @@ Smallest usable: **74mm wide x 28mm tall**. Spare height: never takes spare heig
 
 #### `part-whole-money`
 
-A whole bubble with parts beneath it, joined by lines. The money-flavoured name for part-whole, kept because saved specs use it; its bubbles may carry coins.
+A whole circle with parts beneath it, joined by lines. The money-flavoured name for part-whole, kept because saved specs use it; its circles may carry coins.
 
-Smallest usable: **61mm wide x 45mm tall**. Spare height: never takes spare height.
+Smallest usable: **30mm wide x 38mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1649,7 +1651,7 @@ Smallest usable: **95mm wide x 46mm tall**. Spare height: never takes spare heig
 
 Each brick is the sum of the two below it. A blank upper brick is reached by adding, a blank base brick by subtracting.
 
-Smallest usable: **42mm wide x 32mm tall**. Spare height: never takes spare height.
+Smallest usable: **46mm wide x 34mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1675,7 +1677,7 @@ Smallest usable: **42mm wide x 32mm tall**. Spare height: never takes spare heig
 
 The multiplication-facts grid: headers across and down, products in the body, blanks to find.
 
-Smallest usable: **60mm wide x 39mm tall**. Spare height: never takes spare height.
+Smallest usable: **62mm wide x 49mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1717,9 +1719,9 @@ Smallest usable: **60mm wide x 39mm tall**. Spare height: never takes spare heig
 
 #### `place-value-chart`
 
-Place names across the top, a row per number. Fill a row to hand a number over, leave it empty to be written in, label it to say what it is, highlight a cell to pick out the digit that changed.
+The slides' chart: place names across the top, a row per number, filled to hand a number over or empty to write in, labelled, with the changed digit highlighted.
 
-Smallest usable: **81mm wide x 43mm tall**. Spare height: never takes spare height.
+Smallest usable: **79mm wide x 45mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1762,9 +1764,9 @@ Smallest usable: **81mm wide x 43mm tall**. Spare height: never takes spare heig
 
 #### `place-value-counter-chart`
 
-Coloured counters in place-value columns: what number is shown, or left empty for the child to draw counters.
+Counters with their values on them in place-value columns: what number is shown, or left empty for the child to draw counters. The place value chart's counter form, the same drawing the slides use.
 
-Smallest usable: **76mm wide x 30mm tall**. Spare height: never takes spare height.
+Smallest usable: **95mm wide x 33mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1781,11 +1783,26 @@ Smallest usable: **76mm wide x 30mm tall**. Spare height: never takes spare heig
 }
 ```
 
+#### `place-value-mini`
+
+The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.
+
+Smallest usable: **40mm wide x 12mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "place-value-mini",
+  "mode": "digit-value",
+  "digit": 6,
+  "value": 600
+}
+```
+
 #### `counter-group`
 
 The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.
 
-Smallest usable: **70mm wide x 35mm tall**. Spare height: never takes spare height.
+Smallest usable: **66mm wide x 32mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1809,7 +1826,7 @@ Smallest usable: **70mm wide x 35mm tall**. Spare height: never takes spare heig
 
 Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
 
-Smallest usable: **150mm wide x 56mm tall**. Spare height: never takes spare height.
+Smallest usable: **123mm wide x 48mm tall**. Spare height: never takes spare height.
 
 ```json
 {
