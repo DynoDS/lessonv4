@@ -220,6 +220,8 @@ def command_for(args) -> list[str]:
             command.extend(["--lesson", args.lesson_name])
         if args.letterbox:
             command.extend(["--letterbox", args.letterbox])
+        if args.plan and args.plan_index:
+            command.extend(["--plan", args.plan, "--plan-index", str(args.plan_index)])
         command.extend(["--source", str(output)])
         for filename in args.file:
             command.extend(["--file", filename])
@@ -422,6 +424,8 @@ def parser() -> argparse.ArgumentParser:
     root.add_argument("--day")
     root.add_argument("--file", action="append", default=[])
     root.add_argument("--letterbox", default="")
+    root.add_argument("--plan", default="")
+    root.add_argument("--plan-index", type=int)
     root.add_argument(
         "--chrome-state",
         choices=("not-needed", "ready", "unavailable"),

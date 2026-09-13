@@ -112,6 +112,30 @@ class LetterboxJourneyTests(unittest.TestCase):
         self.assertEqual((tuesday / "Round to 10.pptx").read_bytes(), b"deck")
         self.assertEqual(self.waiting(), [], "a saved lesson leaves the letterbox")
 
+    def test_saving_a_lesson_from_a_plan_moves_that_plans_saved_counter_on(self):
+        self.settings()
+        # A plan already lives in the letterbox, as plan-tracker.py import leaves it.
+        git("checkout", "-q", "-B", BRANCH, cwd=self.cloud)
+        folder = self.cloud / "plans" / "year4-maths"
+        folder.mkdir(parents=True)
+        (folder / "plan.json").write_text(json.dumps({"plan": "year4-maths", "year": 4, "subject": "Maths", "buffer": 5}), encoding="utf-8")
+        (folder / "filed.json").write_text(json.dumps({"up_to": 11}), encoding="utf-8")
+        git("add", "plans", cwd=self.cloud)
+        git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "plan", cwd=self.cloud)
+        git("push", "-q", "origin", f"HEAD:refs/heads/{BRANCH}", cwd=self.cloud)
+
+        (self.built / "Round.pptx").write_bytes(b"deck")
+        deliver_files.send_to_letterbox(
+            clone=self.cloud, branch=BRANCH, source=self.built, requested=["Round.pptx"], year=4,
+            subject="Maths", lesson="Round", dry_run=False, plan="year4-maths", plan_index=12,
+            now=datetime(2026, 9, 15, 6, 0, tzinfo=timezone.utc),
+        )
+        letterbox_filer.run(today=date(2026, 9, 14))
+        git("fetch", "-q", "origin", cwd=self.pc)
+        filed = json.loads(git("show", f"origin/{BRANCH}:plans/year4-maths/filed.json", cwd=self.pc))
+        self.assertEqual(filed["up_to"], 12)
+        self.assertEqual(self.waiting(), [])
+
     def test_two_lessons_in_one_login_take_two_days(self):
         self.settings()
         self.post("Lesson A", minute=1)

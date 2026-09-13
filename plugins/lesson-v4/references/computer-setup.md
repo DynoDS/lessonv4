@@ -65,6 +65,34 @@ computer would not allow it, and the line says how to collect by hand. Then run
 log lines it prints. `letterbox_filer.py status` shows the last few collections;
 `uninstall` stops it.
 
+## Working from a long-term plan
+
+So a scheduled run can make "the next lesson" of a subject, each plan is copied
+once into the letterbox, where every run can read it and count where it is up
+to. Needs the login helper installed (the section above), because its clone of
+the letterbox is where plans are written. `plan-tracker.py` is
+`"[PYTHON]" "[PLUGIN_ROOT]/scripts/plan-tracker.py" --plans-dir "<LETTERBOX_CLONE from letterbox_filer.py status>"`.
+
+**Adding a plan.** The document needs a table with a Lesson Objective column
+whose lesson rows begin `LO:`. Ask the teacher which lesson they have already
+taught up to, because the plan starts after it.
+
+1. `plan-tracker.py open`
+2. `plan-tracker.py import "<plan document>" --plan year<N>-<subject> --year <N> --subject <Subject> --start-after <last lesson taught>`
+   Name plans like `year4-maths`. A daily subject builds up to 5 lessons ahead of
+   what has been saved to the drive, a weekly one 2; `--buffer` changes it.
+   Read the first and last lesson objectives back to the teacher to confirm the
+   plan read correctly.
+3. `plan-tracker.py publish --plan <plan>`
+
+**When teaching drifts** ("we're actually on lesson 30"): `open`, then
+`move --plan <plan> --to <the last lesson done>`, then `publish`. `status` shows
+every plan, where it is and what comes next. When the teacher edits the
+document without adding or removing lessons, `resync` refreshes the text.
+
+A scheduled run asks for "the next lesson from the <plan> plan", and follows
+`references/lesson-from-plan.md`.
+
 ## Scheduled lessons in ChatGPT Work or Codex
 
 OpenAI has three places a scheduled lesson could run. Only two can build one,

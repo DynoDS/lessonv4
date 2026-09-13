@@ -197,8 +197,13 @@ def letterbox_folder_name(lesson: str, now: datetime) -> str:
 
 
 def write_lesson_folder(destination: Path, files: list[Path], *, lesson: str, year: int | None,
-                        subject: str, now: datetime) -> None:
-    """One lesson as the letterbox carries it: its resources and a lesson.json."""
+                        subject: str, now: datetime, plan: str = "", plan_index: int | None = None) -> None:
+    """One lesson as the letterbox carries it: its resources and a lesson.json.
+
+    A lesson made from a long-term plan also names the plan and its lesson
+    number, so the computer that saves it can move that plan's saved counter on
+    (plan-tracker.py).
+    """
     copy_into(destination, files)
     manifest = {
         "schemaVersion": 1,
@@ -208,12 +213,16 @@ def write_lesson_folder(destination: Path, files: list[Path], *, lesson: str, ye
         "builtAt": now.isoformat(),
         "files": [path.name for path in files],
     }
+    if plan and plan_index:
+        manifest["plan"] = plan
+        manifest["planIndex"] = plan_index
     (destination / "lesson.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
 def stage_for_connector(
     *, stage_root: Path, source: Path, requested: list[str], year: int | None,
     subject: str, lesson: str, dry_run: bool, now: datetime | None = None,
+    plan: str = "", plan_index: int | None = None,
 ) -> tuple[Path, list[Path], list[Path]]:
     """Lay the lesson out exactly as the letterbox holds it, for the host to post.
 
@@ -231,13 +240,15 @@ def stage_for_connector(
     now = now or datetime.now(timezone.utc)
     destination = stage_root / "lessons" / letterbox_folder_name(lesson or files[0].stem, now)
     if not dry_run:
-        write_lesson_folder(destination, files, lesson=lesson, year=year, subject=subject, now=now)
+        write_lesson_folder(destination, files, lesson=lesson, year=year, subject=subject, now=now,
+                            plan=plan, plan_index=plan_index)
     return destination, files, skipped
 
 
 def send_to_letterbox(
     *, clone: Path, branch: str, source: Path, requested: list[str], year: int | None,
     subject: str, lesson: str, dry_run: bool, now: datetime | None = None,
+    plan: str = "", plan_index: int | None = None,
 ) -> tuple[Path, list[Path], list[Path]]:
     """Cloud delivery: commit the resources to the letterbox branch and push.
 
@@ -265,7 +276,8 @@ def send_to_letterbox(
         git(clone, "checkout", "-B", branch, f"origin/{branch}")
     else:
         git(clone, "checkout", "-B", branch)
-    write_lesson_folder(destination, files, lesson=lesson, year=year, subject=subject, now=now)
+    write_lesson_folder(destination, files, lesson=lesson, year=year, subject=subject, now=now,
+                        plan=plan, plan_index=plan_index)
     git(clone, "add", "--", str(relative))
     identity = []
     if not git(clone, "config", "user.email", check=False).stdout.strip():
@@ -291,6 +303,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--mode", choices=("folder", "sorted", "letterbox"), help="overrides the saved setting")
     parser.add_argument("--lesson", default="", help="the lesson's name, for the letterbox folder")
     parser.add_argument("--letterbox", default="", help="owner/name of the letterbox, for a cloud box with no environment settings")
+    parser.add_argument("--plan", default="", help="the long-term plan this lesson came from (plan-tracker.py)")
+    parser.add_argument("--plan-index", type=int, help="its lesson number in that plan")
     parser.add_argument("--folder", type=Path, help="overrides the saved folder")
     parser.add_argument("--term-file", type=Path, help="overrides the saved term dates")
     parser.add_argument("--year", type=int, choices=range(1, 7))
@@ -324,6 +338,7 @@ def main(argv: list[str] | None = None) -> int:
                         stage_root=args.source.resolve() / "letterbox-staging", source=args.source.resolve(),
                         requested=args.files, year=args.year, subject=args.subject.strip(),
                         lesson=args.lesson.strip(), dry_run=args.dry_run,
+                        plan=args.plan, plan_index=args.plan_index,
                     )
                     print("LETTERBOX_ROUTE=connector")
                     print(f"LETTERBOX_REPO={saved.get('missing', '')}")
@@ -343,6 +358,7 @@ def main(argv: list[str] | None = None) -> int:
                 clone=(args.folder or Path(saved["folder"])).resolve(), branch=saved.get("branch") or plugin_settings.DEFAULT_LETTERBOX_BRANCH,
                 source=args.source.resolve(), requested=args.files, year=args.year,
                 subject=args.subject.strip(), lesson=args.lesson.strip(), dry_run=args.dry_run,
+                plan=args.plan, plan_index=args.plan_index,
             )
             print(f"LETTERBOX_BRANCH={saved.get('branch') or plugin_settings.DEFAULT_LETTERBOX_BRANCH}")
         elif folder is None or mode == "none":

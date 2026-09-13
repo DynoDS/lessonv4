@@ -145,6 +145,30 @@ def file_lesson(lesson_dir: Path, manifest: dict, destination: Path, dry_run: bo
     return ""
 
 
+def mark_plan_saved(clone: Path, manifest: dict) -> str:
+    """Move the lesson's plan on to 'saved up to' its number, in the letterbox.
+
+    The same rule as plan-tracker.py set-filed (never backwards), written here
+    rather than imported because this script runs from a copy that carries only
+    the files it needs. Returns the file changed, relative to the clone, or ''.
+    """
+    plan = str(manifest.get("plan") or "")
+    index = manifest.get("planIndex")
+    folder = clone / "plans" / plan
+    if not plan or not isinstance(index, int) or not (folder / "plan.json").is_file():
+        return ""
+    filed_path = folder / "filed.json"
+    try:
+        current = int(json.loads(filed_path.read_text(encoding="utf-8")).get("up_to", 0))
+    except (OSError, ValueError):
+        current = 0
+    if index <= current:
+        return ""
+    filed_path.write_text(json.dumps({"up_to": index, "updated": datetime.now().isoformat(),
+                                      "why": "saved to the drive"}, indent=2) + "\n", encoding="utf-8")
+    return f"plans/{plan}/filed.json"
+
+
 def wake_onedrive() -> None:
     # Saved files reach the school's copy only once OneDrive syncs them. Start
     # it only when something was saved and it is not already running, so a
@@ -184,7 +208,7 @@ def run(dry_run: bool = False, today: date | None = None) -> int:
 
     ledger = read_ledger()
     today = today or date.today()
-    saved, removed = 0, []
+    saved, removed, plan_files = 0, [], []
     for manifest_path in sorted((clone / "lessons").glob("*/lesson.json")):
         lesson_dir = manifest_path.parent
         name = lesson_dir.name
@@ -211,12 +235,18 @@ def run(dry_run: bool = False, today: date | None = None) -> int:
         ledger[name] = str(destination)
         write_ledger(ledger)
         log(f"{name}: saved to {destination}")
+        changed = mark_plan_saved(clone, manifest)
+        if changed:
+            plan_files.append(changed)
+            log(f"{name}: {manifest['plan']} is now saved up to lesson {manifest['planIndex']}")
         saved += 1
         removed.append(name)
 
     if removed and not dry_run:
         for name in removed:
             git(clone, "rm", "-r", "-q", "--", f"lessons/{name}")
+        for changed in plan_files:
+            git(clone, "add", "--", changed)
         identity = []
         if not git(clone, "config", "user.email", check=False).stdout.strip():
             identity = ["-c", "user.name=Lesson resources", "-c", "user.email=lesson-resources@users.noreply.github.com"]

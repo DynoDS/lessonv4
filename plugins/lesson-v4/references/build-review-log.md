@@ -1,5 +1,13 @@
 # Build review log
 
+## 2026-09-13 A scheduled run makes the next lesson of any subject's plan (4.2.195)
+
+The July teaching-plugins routine knew which maths lesson came next: the Long Term Plan docx was imported into the letterbox repository as lessons.json, and a progress.json of built_up_to, filed_up_to and a buffer let each nightly run build the next row and stop when far enough ahead. The tracker (maths-plan-tracker.py) had come across to lesson-v4 unused; its saved copy was last year's plan, finished at 189 of 189, and its filed counter was advanced only by the retired login script. The user wants the same for every subject.
+
+scripts/plan-tracker.py replaces it for any subject. It reads any plan table with a Lesson Objective column of LO: rows, keeping every other column under its own heading, handling both a Unit column (maths) and unit titles merged across the row (the Kapow geography and history plans); this year's three Year 4 plans read as 189, 18 and 18 lessons with the maths numbering matching the document. Each plan lives at plans/<plan>/ on the letterbox branch as plan.json, lessons.json, built.json and filed.json, the last two separate because a cloud run and the teacher's computer write them. next returns the lesson or a skip reason and writes the plan row as a lesson brief; advance accepts only the next lesson; set-filed never goes backwards; move handles drift; open and publish fetch and push the plan folder. deliver_files.py records plan and planIndex in lesson.json, and letterbox_filer.py moves that plan's filed counter on when it saves the lesson, in the same commit. references/lesson-from-plan.md carries the run steps for both git and connector routes, reached from one sentence in the setup slice. Default buffers are 5 lessons for daily subjects and 2 for weekly ones.
+
+Checked: 11 tracker tests including a plan published from one clone, advanced from another and read back; a letterbox journey where saving lesson 12 moves filed.json from 11 to 12 on the remote. Not yet done: importing this year's plans into the real letterbox (which maths document, and where each subject is up to, are the teacher's answers), and a scheduled run from a plan.
+
 ## 2026-09-13 Teach slides are built from named layouts (4.2.194)
 
 Daniel, on the first cloud-built RE deck (Symbols and their meanings): "did we talk about teach text being seperated instead of one text box and all on one side etc?? its still doing that? visually the slide isnt great". Then, after I had rebuilt his teeth deck and said the plugin was fixed: "i expected all future ones to be like that one. so what happened."

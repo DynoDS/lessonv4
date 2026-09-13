@@ -83,7 +83,9 @@ imitate a missing fixed builder.
 ### Gather and preserve the brief
 
 Require a Year 1–6 and learning objective. Infer only what is explicit or fixed
-by the routing rules; ask only when year or subject is genuinely ambiguous.
+by the routing rules; ask only when year or subject is genuinely ambiguous. A
+request for the next lesson from a plan carries neither: read
+`[PLUGIN_ROOT]/references/lesson-from-plan.md`, which supplies both.
 
 Create `[OUTPUT_DIR]/working/[lesson-slug]` after deriving the slug with
 `scripts/slugify.js`. Archive an existing non-empty working folder to the lowest
