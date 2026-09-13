@@ -19,8 +19,11 @@ DEFAULT_SCHOOL_ROOT = Path(r"E:\Felmore Primary School")
 # deleted them (Daniel, 13 September 2026: "only the lesson outputs, ppt,
 # working wall, worksheet, stick in sheets, no run reports, no walkthroughs").
 # So the rule lives here, where every caller passes through it, rather than in
-# each caller's list.
+# each caller's list. The answer key is the one text file that belongs with the
+# resources: the teacher marks from it (Daniel, 13 September 2026: "yes answer
+# key too").
 RESOURCE_EXTENSIONS = {".pptx", ".pdf", ".docx", ".xlsx"}
+ANSWER_KEY_SUFFIX = " - Answers.txt"
 
 
 def derive_school_year(term_file: Path) -> str:
@@ -43,7 +46,9 @@ def validate_filename(filename: str) -> str:
 
 
 def is_resource(path: Path) -> bool:
-    return path.suffix.lower() in RESOURCE_EXTENSIONS and not path.name.startswith("~$")
+    if path.name.startswith("~$"):
+        return False
+    return path.suffix.lower() in RESOURCE_EXTENSIONS or path.name.endswith(ANSWER_KEY_SUFFIX)
 
 
 def choose_files(source: Path, requested: list[str]) -> tuple[list[Path], list[Path]]:

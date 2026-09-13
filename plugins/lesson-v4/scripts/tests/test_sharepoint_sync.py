@@ -121,14 +121,14 @@ class SharePointSyncTests(unittest.TestCase):
         self.assertEqual((destination / "Lesson.pptx").read_bytes(), b"deck")
 
     def test_only_teaching_resources_reach_the_drive(self):
-        """The teacher's drive gets the deck, worksheets, wall and stick-in
-        sheets. A run once filed its run report and walk-through into the
+        """The teacher's drive gets the deck, worksheets, wall, stick-in
+        sheets and answer key. A run once filed its run report and walk-through into the
         day folder and the teacher deleted them (13 September 2026)."""
         names = [
             "Lesson.pptx", "Lesson - Worksheets.pdf", "Working Wall - Lesson.pdf",
             "Lesson - Stick-in Sheets.pdf", "Lesson - Answers.txt",
             "Lesson - walk-through.md", "Lesson - run report.md",
-            "Lesson - Worksheets-expected.html",
+            "Lesson - Worksheets-expected.html", "notes.txt",
         ]
         for name in names:
             (self.source / name).write_bytes(b"x")
@@ -138,8 +138,8 @@ class SharePointSyncTests(unittest.TestCase):
             source=self.source, requested=names, dry_run=False,
         )
         copied = sorted(p.name for p in destination.iterdir())
-        self.assertEqual(copied, sorted(names[:4]))
-        self.assertEqual(sorted(p.name for p in skipped), sorted(names[4:]))
+        self.assertEqual(copied, sorted(names[:5]))
+        self.assertEqual(sorted(p.name for p in skipped), sorted(names[5:]))
         self.assertTrue((self.source / "Lesson - run report.md").is_file(), "records stay where the run made them")
 
 

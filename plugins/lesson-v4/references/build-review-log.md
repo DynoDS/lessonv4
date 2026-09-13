@@ -12,6 +12,10 @@ Rebuilt the run's worksheet from its own spec and looked at both pages. Workshee
 
 **Not changed.** The 4mm step between questions everywhere else. Widening it would separate questions further but costs height on every dense sheet; left for Daniel to decide.
 
+## 2026-09-13 The answer key goes to the drive too (4.2.173)
+
+Asked whether the plain-text answer key belonged with the resources, Daniel said "yes answer key too". `sharepoint_sync.py` now copies a file ending ` - Answers.txt` alongside `.pptx`, `.pdf`, `.docx` and `.xlsx`, and still skips any other text file, the run report and the walk-through. Phase 5, the `sharepoint-sync` agent and the filing test say the same.
+
 ## 2026-09-13 The teacher's drive gets the teaching resources only (4.2.172)
 
 Daniel: "When I ask for outputs to go on my drive, I only need the lesson outputs, ppt, working wall, worksheet, stick in sheets, no run reports, no walkthroughs etc".

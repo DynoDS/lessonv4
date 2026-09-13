@@ -1460,9 +1460,9 @@ a two-lesson scope covers Lesson 1 only and name deferred learning.
 ## Phase 5 — SharePoint Sync
 
 Once every branch has settled, build the explicit sync list from the teaching
-resources only: the deck, worksheets, working wall and stick-in sheets. The run
-report, walk-through and answer key stay in `OUTPUT_DIR` for the teacher to read
-there; the sync script skips them if passed. Run `run-fixed-resource.py sharepoint` directly with `--term-file`, the
+resources only: the deck, worksheets, answer key, working wall and stick-in
+sheets. The run report and walk-through stay in `OUTPUT_DIR` for the teacher to
+read there; the sync script skips them if passed. Run `run-fixed-resource.py sharepoint` directly with `--term-file`, the
 resolved term, year, week, subject/day and one `--file` per exact basename.
 Require schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`.
 
