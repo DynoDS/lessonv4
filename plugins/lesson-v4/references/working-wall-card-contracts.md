@@ -30,7 +30,7 @@ Fields that every card shares, whatever its family.
 | `cards[].photo` | Optional on the panel families (`stickyKnowledge`, `workedExample`, `misconception`, `vocabChips`), where a missing file falls back to text with no grey placeholder. **Required, and checked before the build renders anything, on the overview families**: every `photoMapOverview` tile and its map, the `heroCallouts` hero, and each `causeCards` person. There the picture is the content, so the build refuses the whole wall and names each empty or unreadable slot. Path relative to `[WORKING_DIR]`. |
 | `cards[].picture` | Optional P2 context picture from `context-pictures.md`, supported only on `stickyKnowledge`, `workedExample`, and `misconception`, whose existing photo/visual area is the safe home. In final `working-wall.json` it is either a resolved Educational SVG object with the publisher-returned `educationalSvgId`, `educationalSvgSlug` and `imagePath`, or a complete emoji object `{ "kind": "emoji", "value": "...", "alt": "..." }`. Never leave an unresolved Educational SVG request in the final file and never alter protected lesson wording to insert an emoji. |
 | `cards[].decorations` | Optional P3 Educational SVG overlay, supported only on the exact six ordinary card types above. It never changes body fit or earns visual credit. |
-| `cards[].visual` | Optional. A drawn diagram the builder generates from primitives - no Unsplash, no AI image. Supported primitives are listed under "Visual primitives" below: `clock`, `fractionCircle`, `fractionBar`, `numberLine`, `angleFan`, `turn-diagram`, `angle`, `line-pair`, `triangle`, `comparisonSymbol`, `triangle-square`, `venn`, `carroll`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `tally-chart`, `pictogram`, `bar-chart`, `line-graph`, `bar-model`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`. A tall or square primitive sits to the right of the panel; a wide one (roughly wider than it is tall) is placed full width beneath a full-width panel instead, where it prints as a short strip; the optional `label` field renders as a caption beneath the diagram (omit it and the renderer uses a sensible default - the time, the fraction, the degree value). The geometry primitives (`angle`, `line-pair`, `triangle`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`) are the same drawings the slides use, so the wall matches the board. Use a visual whenever the lesson's slide anchor is a drawn diagram and the primitive is supported (see "Diagrammatic LOs"). A `visual` may also carry a `callouts` array (see below) to turn it into a labelled anatomy poster - used by the `labelledDiagram` card. |
+| `cards[].visual` | Optional. A drawn diagram the builder generates from primitives - no Unsplash, no AI image. Supported primitives are listed under "Visual primitives" below: `clock`, `fractionCircle`, `fractionBar`, `numberLine`, `angleFan`, `turn-diagram`, `angle`, `line-pair`, `triangle`, `comparisonSymbol`, `comparison-slot`, `triangle-square`, `polygon`, `translation-grid`, `area-grid`, `venn`, `carroll`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `tally-chart`, `pictogram`, `bar-chart`, `line-graph`, `bar-model`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`. A tall or square primitive sits to the right of the panel; a wide one (roughly wider than it is tall) is placed full width beneath a full-width panel instead, where it prints as a short strip; the optional `label` field renders as a caption beneath the diagram (omit it and the renderer uses a sensible default - the time, the fraction, the degree value). The geometry primitives (`angle`, `line-pair`, `triangle`, `geoboard`, `reflection-grid`, `coordinate-grid`, `translation-shape`, `grid-map`, `rainforest-layers`, `balanced-pattern-plate`, `place-value-chart`, `circuit-diagram`, `parachute-forces`) are the same drawings the slides use, so the wall matches the board. Use a visual whenever the lesson's slide anchor is a drawn diagram and the primitive is supported (see "Diagrammatic LOs"). A `visual` may also carry a `callouts` array (see below) to turn it into a labelled anatomy poster - used by the `labelledDiagram` card. |
 | `cards[].visual.callouts` | Optional array on a `visual`, the anatomy-poster annotations. Each entry points a leader line and arrow at a part of the diagram and prints its name in answer-green: `{ "part": "key", "label": "The key: what one symbol is worth" }`. Name the part one of two ways - `part` is a named anchor the primitive exposes (the `pictogram` offers `title`, `key`, `half`, and each category label, e.g. `"Monday"`), which is the robust choice because the geometry resolves the exact spot; or `anchor: [x, y]` is a raw percentage of the diagram for any primitive without named anchors yet. `label` is the printed name; optional `label_at: [x, y]` overrides placement; labels print (not blank) by default. Labels wrap to short lines and stack down the two side margins, so 3–4 callouts read cleanly. A callout naming a part the primitive doesn't expose fails the build outright, so a mistyped part surfaces loudly rather than vanishing; name only parts the primitive exposes. |
 | `cards[].visualScale` | Optional. `"panel"` (default) or `"dominant"`. Default `panel` gives the panel ~60% of the card width and the visual ~40%, unless the visual is a wide one, in which case the panel runs full width and the visual is stacked beneath it as a strip - either way the right balance when the steps or body text are the main teaching surface and the diagram supports them. `dominant` flips the balance - the panel shrinks to ~32% and the visual fills the rest of the card. Reach for `dominant` when the diagram itself is the teaching surface and the panel content is more caption than instruction (a colour-coded clock-anatomy poster, a labelled fraction-circle reference, an angle-comparison chart). The Twinkl angle-poster pattern. Don't use `dominant` when the panel carries multi-step instructions children re-read while working - the steps will end up cramped. |
 
@@ -457,9 +457,13 @@ Example:
 
 A `visual` the builder draws from a spec, no picture sourcing needed. Each primitive sits to the right of the panel. The first ray on the angle fan points right; the second ray rotates counter-clockwise by `degrees`, so the angle opens upward visually.
 
+Every primitive below is the same drawing the slides place, from the same fields. Where a primitive has a slide twin, copy the slide's object and change only `type` (`numberline` to `numberLine`); the wall's older spellings (`angleFan`, `comparisonSymbol`) still draw.
+
 ### clock
 
 Spec: `{ "type": "clock", "time": "8:50", "label": "10 to 9" }`
+
+The same clock face the board draws, from the same fields; a slide's `clock` object copies across unchanged.
 
 `time` as `H:MM` string. Omit `time` and pass `"hands": false` for an annotation-only blank face. Optional `label` renders as caption. Default caption is the time string. **Two extension flags for clock-reading lessons:** `"colourCoded": true` renders the hour hand in red and the minute hand in blue, with a matching colour-coded digital readout embedded below the face (red hour digit, blue minute digit). The colour mapping lets a child glance at the wall and see which hand maps to which half of the digital time. The text caption is suppressed automatically because the digital is already in the picture. `"minuteRing": true` adds an outer ring outside the 1–12 numerals carrying `:00 :05 :10 … :55` labels in blue, so children can read the minute value off the ring without multiplying by 5. Use both together on Year 2/3 clock-reading lessons; use `colourCoded` alone on Year 4+ lessons where children can multiply by 5 in their head but still benefit from the hand–digit mapping.
 
@@ -489,7 +493,7 @@ Cards written with the wall's older spelling (`from`, `to`, `step`, `marks: [{ "
 
 Spec: `{ "type": "angleFan", "degrees": 65 }`
 
-Two rays meeting at a vertex with the angle between them filled and labelled with the degree value. `degrees` 1–359. Optional `colour` (default amber `FBBF24`). Default caption is `"65°"`. Use when the lesson shows the *measured* size; use `angle` (below) when the lesson asks children to *name* the angle.
+Two rays meeting at a vertex with the angle between them filled and labelled with the degree value. `degrees` 1 to 359. Optional `colour` (default amber `FBBF24`). Default caption is `"65°"`. Use when the lesson shows the *measured* size; use `angle` (below) when the lesson asks children to *name* the angle. It is the shared `angle` drawn with its opening filled and its size printed, the form the board and the sheet draw with `"sector": true, "showDegrees": true`.
 
 ### angle
 
@@ -507,7 +511,13 @@ A pair of straight lines to classify as **parallel / perpendicular / neither**. 
 
 Spec: `{ "type": "comparisonSymbol", "symbol": ">", "left": "5", "right": "3" }`
 
-A bold `>`, `<`, or `=` symbol, optionally flanked by left and right values (renders as `5 > 3`). Omit `left`/`right` for the symbol alone, full canvas. Optional `colour` (default deep blue `1F4E79`). No default caption — the symbol is the visual.
+A bold `>`, `<`, or `=` symbol, optionally flanked by left and right values (renders as `5 > 3`). Omit `left`/`right` for the symbol alone. Optional `colour` (a hex; default the house blue). No default caption: the symbol is the visual. It is the same comparison picture as `comparison-slot` below, drawn without the ring.
+
+### comparison-slot
+
+Spec: `{ "type": "comparison-slot", "left": "4,321", "answer": ">", "right": "4,299" }`
+
+The ring a child writes `<`, `>` or `=` into, the same ring the slides and the worksheet draw, with `answer` printed in answer green inside it and optional `left` and `right` values either side. A reference card shows the finished comparison, so give it the `answer`; `ring: false` prints the symbol without the ring. No default caption.
 
 ### triangle
 
@@ -573,13 +583,31 @@ A general **bar model** - the White Rose part-whole and comparison picture behin
 
 Spec: `{ "type": "turn-diagram", "quarters": 1, "direction": "clockwise" }`
 
-A rotation diagram: an arrow sweeping a quarter, half, three-quarter or full turn about a centre, the "amount of turn" picture for shape and position lessons. Set `quarters` (1 to 4) or `amount` (`quarter` / `half` / `three-quarter` / `full`), and `direction` (`clockwise` / `anticlockwise`). The same drawing the slides and worksheets use, so the wall matches the board. Default caption names the turn (e.g. "quarter turn clockwise"). Crops tight and fills its slot.
+A rotation diagram: an arrow sweeping a quarter, half, three-quarter or full turn about a centre, the "amount of turn" picture for shape and position lessons. Set `quarters` (1 to 4) or `amount` (`quarter` / `half` / `three-quarter` / `full`), and `direction` (`clockwise` / `anticlockwise`). Optional `countMarks: true` numbers each quarter turn along the arc, for a card saying a three-quarter turn is three quarter turns. The same drawing the slides and worksheets use, so the wall matches the board. Default caption names the turn (e.g. "quarter turn clockwise"). Crops tight and fills its slot.
 
 ### triangle-square
 
 Spec: `{ "type": "triangle-square", "triangles": ["7", "5"], "square": "12" }`
 
-The SATs part-whole puzzle: two stacked triangles (the `triangles` array) with arrows pointing into a `square` that holds their total. Leave exactly one of the three values as an empty string for the unknown a child works out. Use when the lesson recreates this exact paper question type, distinct from the circle-and-line `part-whole-model`. No default caption: the labelled diagram is the whole content. Crops tight and fills its slot.
+The SATs part-whole puzzle: two stacked triangles (the `triangles` array) with arrows pointing into a `square` that holds their total. Leave exactly one of the three values as an empty string for the unknown a child works out. Use when the lesson recreates this exact paper question type, distinct from the circle-and-line `part-whole-model`. The same drawing the slides and worksheets use. No default caption: the labelled diagram is the whole content. Crops tight and fills its slot.
+
+### polygon
+
+Spec: `{ "type": "polygon", "symmetryLines": true, "symmetryLinesAnswer": true, "shapes": [ { "name": "square", "label": "4 lines" }, { "name": "rectangle", "label": "2 lines" } ] }`
+
+One or more named 2D shapes side by side, the same shapes the slides draw from the same fields: `name` (square, rectangle, triangle, isosceles-triangle, scalene-triangle, right-triangle, pentagon, hexagon, rhombus, kite, parallelogram, trapezium, or regular-polygon with `sides`), a `label` under each, `sideLabels` and `angleLabels` for measurements, and the symmetry teaching (`symmetryLines`, or one `candidate` line with its `verdict` and `fold`). A lines-of-symmetry reference card shows every line in answer green. No default caption. Crops tight and fills its slot.
+
+### translation-grid
+
+Spec: `{ "type": "translation-grid", "max": 8, "from": { "x": 1, "y": 2 }, "to": { "x": 5, "y": 6 } }`
+
+One marker moved on a numbered grid, the start orange and the end blue with a dashed arrow between, the same drawing the slides use. For a whole shape moved, which is the stronger translation anchor, use `translation-shape`. No default caption.
+
+### area-grid
+
+Spec: `{ "type": "area-grid", "cols": 10, "rows": 6, "unitLabel": "Each square = 1m²", "rects": [ { "x": 0, "y": 0, "w": 4, "h": 3, "label": "A" } ] }`
+
+A squared grid with labelled rectangular patches, every square countable, the same drawing the slides use: the "count the squares to find the area" anchor. `x`, `y` place a patch's top-left corner in squares from the top-left of the grid. No default caption. Crops tight and fills its slot.
 
 ### grid-map
 

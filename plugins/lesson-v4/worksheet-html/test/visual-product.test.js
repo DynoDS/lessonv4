@@ -15,7 +15,8 @@ test("comparisonPair keeps arbitrary representations around one empty target", (
   const pair = { number: 1, comparisonPair: { left: chart(["4", "3", "2", "1"]), right: chart(["4", "2", "9", "9"]) } };
   const html = renderContent(pair, 180);
   assert.equal((html.match(/h-pvchart/g) || []).length >= 2, true);
-  assert.equal((html.match(/h-comparison-target/g) || []).length, 1);
+  // One ring, the shared comparison picture the board and the wall draw too.
+  assert.equal((html.match(/<circle/g) || []).length, 1);
   assert.match(html, /h-comparison-pair/);
   assert.match(html, /h-numbered-n/);
   assert.ok(measureContent(pair, 180) > 0);

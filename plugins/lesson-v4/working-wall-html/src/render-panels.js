@@ -137,7 +137,7 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
     const visualLabel = defaultVisualLabel(card.visual);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
+      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn, bodyHeightIn: printableInches(card.page.size, card.page.orientation, style).height - titleBarHeightInches(titlePt) })
     );
   }
 
@@ -235,7 +235,7 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
     const visualLabel = defaultVisualLabel(card.visual);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
+      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn, bodyHeightIn: printableInches(card.page.size, card.page.orientation, style).height - titleBarHeightInches(titlePt) })
     );
   }
 
@@ -356,7 +356,7 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
     const visualLabel = defaultVisualLabel(card.visual);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
+      panelWithVisualHtml(panelChildrenHtml, v, visualLabel, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn, bodyHeightIn: printableInches(card.page.size, card.page.orientation, style).height - titleBarHeightInches(titlePt) })
     );
   }
 
@@ -492,7 +492,7 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
     const v = pickVisual(card.visual, ctx);
     return (
       titleBarEl +
-      panelWithVisualHtml(panelChildrenHtml, v, card.visual.label || null, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn })
+      panelWithVisualHtml(panelChildrenHtml, v, card.visual.label || null, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect: v ? v.aspect : 1, maxVisualHeightIn, bodyHeightIn: printableInches(card.page.size, card.page.orientation, style).height - titleBarHeightInches(titlePt) })
     );
   }
 

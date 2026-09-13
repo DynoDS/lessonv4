@@ -165,7 +165,7 @@ If the card cannot carry its required learning clearly, omit it and report the g
 
 ### Visual primitives
 
-Every primitive the builder draws, with its spec, is in the packet reference under `Visual primitives`, cut to the ones this lesson's slides and representations use (all of them when the lesson has no slides). Each primitive sits to the right of the panel. The first ray on the angle fan points right; the second ray rotates counter-clockwise by `degrees`, so the angle opens upward visually.
+Every primitive the builder draws, with its spec, is in the packet reference under `Visual primitives`, cut to the ones this lesson's slides and representations use (all of them when the lesson has no slides). Each is the same drawing the slides place, so a `clock`, `turn-diagram`, `triangle-square`, `polygon`, `translation-grid`, `area-grid` or `comparison-slot` on a slide copies onto a card field for field. Each primitive sits to the right of the panel. The first ray on the angle fan points right; the second ray rotates counter-clockwise by `degrees`, so the angle opens upward visually.
 
 ---
 

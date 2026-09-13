@@ -14,6 +14,13 @@ const geographicalDescriptionFrame = require("../../shared/visuals/geographical-
 const recordingTable = require("../../shared/visuals/recording-table-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
 const numberLine = require("../../shared/visuals/number-line-svg");
+const clock = require("../../shared/visuals/clock-svg");
+const turnDiagram = require("../../shared/visuals/turn-diagram-svg");
+const triangleSquare = require("../../shared/visuals/triangle-square-svg");
+const polygon = require("../../shared/visuals/polygon-svg");
+const translationGrid = require("../../shared/visuals/translation-grid-svg");
+const areaGrid = require("../../shared/visuals/area-grid-svg");
+const comparison = require("../../shared/visuals/comparison-svg");
 const { profileFor } = require("../../shared/visuals/surface-profiles");
 
 // The one way the pack places a shared drawing laid out at its printed size,
@@ -195,6 +202,53 @@ const VISUALS = {
   // cell copied from a check slide is stripped to a blank write-on cell, so
   // copying either the task or the answer table yields the same blank piece.
   table: { tightSvg: recordingTable.tightSvg, defaultWidthMm: 160 },
+  // The pictures below reached the pack on 13 September 2026, when every
+  // picture became one shared drawing on all four surfaces. Each prints at the
+  // size it lays itself out at in the pack's ink profile, inside the width here.
+  //
+  // 60mm: a blank face is the write-on form (draw the hands), and at 60mm the
+  // five-minute ticks sit far enough apart for a Year 3 hand to aim at one. A
+  // face with hands is a read-and-write piece. A row of faces wants a wider
+  // `widthMm`, or `clock-row` below, which puts a line under each.
+  clock: sharedPiece(clock, 60),
+  // 50mm: a turn to name, about the size of an angle piece.
+  "turn-diagram": sharedPiece(turnDiagram, 50),
+  // 70mm: the blank shape is where the child writes the answer, and the
+  // drawing grows its shapes for handwriting before this width matters.
+  "triangle-square": sharedPiece(triangleSquare, 70),
+  // 70mm: a shape to draw lines of symmetry on or measure. The child's copy
+  // never carries the answer overlay, the fold or the verdict from a slide.
+  polygon: sharedPiece(polygon, 70, {
+    specFn: (s) => {
+      const out = Object.assign({}, s);
+      delete out.symmetryLines;
+      delete out.symmetryLinesAnswer;
+      if (Array.isArray(s.shapes)) {
+        out.shapes = s.shapes.map((shape) => {
+          const one = Object.assign({}, shape);
+          delete one.verdict;
+          delete one.fold;
+          return one;
+        });
+      }
+      return out;
+    },
+  }),
+  // 90mm: a grid the child reads a move off or marks a marker on, sized like
+  // the other draw-on grids so the squares stay big enough to count.
+  "translation-grid": sharedPiece(translationGrid, 90),
+  // 110mm: the child counts squares inside each patch.
+  "area-grid": sharedPiece(areaGrid, 110),
+  // 70mm: room for the two values either side of the ring; a bare ring prints
+  // at its own size, about 15mm, a symbol written comfortably inside it. A
+  // piece copied from an answer slide never carries its revealed symbol.
+  "comparison-slot": sharedPiece(comparison, 70, {
+    specFn: (s) => {
+      const out = Object.assign({}, s);
+      delete out.answer;
+      return out;
+    },
+  }),
 };
 
 // Row visuals: one child's piece is a strip of N figures, each with its own
@@ -214,6 +268,10 @@ const ROW_VISUALS = {
   // three at once and the count is lost - which is the whole task. 46mm leaves
   // them about 8mm apart, and three shapes still sit across the landscape row.
   "geoboard-row": { tightSvg: geoboard.tightSvg, defaultFigureWidthMm: 46, boxHeightMm: 46 },
+  // A strip of clock faces, each with its own line for the child to write the
+  // time: the sheet's clock-row as a glued piece. 44mm keeps every face's
+  // numerals at the pack's readable size.
+  "clock-row": { ...sharedPiece(clock, 44), defaultFigureWidthMm: 44, boxHeightMm: 44 },
 };
 
 const BOXES_PER_ROW = 3; // draw-box-row wraps at this count (same as ROW_PER_ROW)
@@ -281,6 +339,21 @@ function missingQuestionContent(item) {
         return "a recording table needs at least one row to record into";
       }
       return null;
+    case "triangle-square":
+      // A child's piece is a question, so exactly one shape is the unknown.
+      try {
+        triangleSquare.refuseUnlessOneBlank(s);
+        return null;
+      } catch (error) {
+        return error.message;
+      }
+    case "polygon":
+      try {
+        polygon.normalise(s);
+        return null;
+      } catch (error) {
+        return error.message;
+      }
     case "translation-shape":
       // The whole task is to translate a GIVEN shape, so the original shape is
       // load-bearing: without points there is nothing to translate and the piece

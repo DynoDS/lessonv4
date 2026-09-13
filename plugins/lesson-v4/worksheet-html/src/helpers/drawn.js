@@ -1,6 +1,6 @@
 "use strict";
 
-// Three drawings, built as inline SVG rather than the picture-of-a-picture the
+// Drawings built as inline SVG rather than the picture-of-a-picture the
 // Word builder needs. On paper an SVG stays sharp at any size and needs no
 // image library, so the geometry is lifted from the Word builder's own
 // clock-face.js, number-line.js and fraction-bar.js, and everything to do with
@@ -26,122 +26,17 @@ const NEVER_STRETCH = 0;
 
 // ─── clock-row ─────────────────────────────────────────────────────────
 // A row of analogue clock faces, each with hands or left blank for the child
-// to draw. Geometry lifted from clock-face.js: same pad, tick lengths, hand
-// lengths and number placement, drawn once per clock instead of once per PNG.
+// to draw: the one shared clock (shared/visuals/clock-svg.js) the board, the
+// wall and the stick-in pack place too, laid out at the width it prints. The
+// sheet drew its own faces until 13 September 2026.
+const clockShared = require("../../../shared/visuals/clock-svg");
+const { atPrintedWidth } = require("./at-printed-width");
+const { profileFor, MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
 
-function toRad(deg) {
-  return (deg * Math.PI) / 180;
-}
-
-const CLOCK_UNIT = 280; // matches the Word builder's own default widthPx
-const CLOCK_GAP = 30; // breathing room between adjacent faces
-const CLOCK_LABEL_H = 60; // room for the "(a)" letter above a face
-const CLOCK_LABEL_FONT = 42;
-
-function clockFaceParts(cx, cy, size, time, hands) {
-  const pad = 18;
-  const r = size / 2 - pad;
-  const numberR = r - 28;
-  const majorTickInner = r - 14;
-  const minorTickInner = r - 7;
-  const hourHandLen = r * 0.55;
-  const minuteHandLen = r * 0.82;
-  const numberFont = Math.round(r * 0.22);
-
-  const parts = [];
-
-  parts.push(
-    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="white" stroke="${INK}" stroke-width="2.5" />`
-  );
-
-  for (let i = 0; i < 60; i++) {
-    const rad = toRad(i * 6 - 90);
-    const isMajor = i % 5 === 0;
-    const inner = isMajor ? majorTickInner : minorTickInner;
-    const x1 = cx + r * Math.cos(rad);
-    const y1 = cy + r * Math.sin(rad);
-    const x2 = cx + inner * Math.cos(rad);
-    const y2 = cy + inner * Math.sin(rad);
-    parts.push(
-      `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}" stroke="${INK}" stroke-width="${isMajor ? 2 : 1}" />`
-    );
-  }
-
-  for (let n = 1; n <= 12; n++) {
-    const rad = toRad(n * 30 - 90);
-    const nx = cx + numberR * Math.cos(rad);
-    const ny = cy + numberR * Math.sin(rad);
-    parts.push(
-      `<text x="${nx.toFixed(2)}" y="${ny.toFixed(2)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${numberFont}" fill="${INK}">${n}</text>`
-    );
-  }
-
-  if (hands && time) {
-    const [hStr, mStr] = String(time).split(":");
-    const h = parseInt(hStr, 10) % 12;
-    const m = parseInt(mStr, 10);
-
-    const minRad = toRad(m * 6 - 90);
-    const mhx = cx + minuteHandLen * Math.cos(minRad);
-    const mhy = cy + minuteHandLen * Math.sin(minRad);
-    parts.push(
-      `<line x1="${cx}" y1="${cy}" x2="${mhx.toFixed(2)}" y2="${mhy.toFixed(2)}" stroke="${INK}" stroke-width="2.5" stroke-linecap="round" />`
-    );
-
-    const hourRad = toRad(h * 30 + m * 0.5 - 90);
-    const hhx = cx + hourHandLen * Math.cos(hourRad);
-    const hhy = cy + hourHandLen * Math.sin(hourRad);
-    parts.push(
-      `<line x1="${cx}" y1="${cy}" x2="${hhx.toFixed(2)}" y2="${hhy.toFixed(2)}" stroke="${INK}" stroke-width="4.5" stroke-linecap="round" />`
-    );
-  }
-
-  parts.push(`<circle cx="${cx}" cy="${cy}" r="4" fill="${INK}" />`);
-  return parts;
-}
-
-function buildClockRowSvg(spec) {
-  const clocks = spec.clocks || [];
-  const n = Math.max(1, clocks.length);
-  const letters = !!spec.letters;
-  const labelH = letters ? CLOCK_LABEL_H : 0;
-
-  const totalW = n * CLOCK_UNIT + (n - 1) * CLOCK_GAP;
-  const totalH = labelH + CLOCK_UNIT;
-
-  const parts = [];
-  clocks.forEach((c, i) => {
-    const cx = i * (CLOCK_UNIT + CLOCK_GAP) + CLOCK_UNIT / 2;
-    const cy = labelH + CLOCK_UNIT / 2;
-    if (letters) {
-      parts.push(
-        `<text x="${cx}" y="${labelH / 2}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${CLOCK_LABEL_FONT}" font-weight="bold" fill="${INK}">(${String.fromCharCode(97 + i)})</text>`
-      );
-    }
-    parts.push(...clockFaceParts(cx, cy, CLOCK_UNIT, c.time, c.hands ?? true));
-  });
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW} ${totalH}">${parts.join("")}</svg>`;
-  return { svg, aspect: totalW / totalH };
-}
-
-const CLOCK_CAP_MM = 90; // one row of faces never needs more than this to read
-const CLOCK_MIN_MM = 24; // smaller than this and the minute ticks blur together
-const CLOCK_GAP_MIN_MM = 6;
-
-function renderClockRow(spec) {
-  return `<div class="h-figure">${buildClockRowSvg(spec).svg}</div>`;
-}
-
-function measureClockRow(spec, widthMm) {
-  return heightFromAspect(buildClockRowSvg(spec).aspect, widthMm, CLOCK_CAP_MM);
-}
-
-function needsClockRow(spec) {
-  const n = Math.max(1, (spec.clocks || []).length);
-  const minWidthMm = n * CLOCK_MIN_MM + (n - 1) * CLOCK_GAP_MIN_MM;
-  const { aspect } = buildClockRowSvg(spec);
-  return { minWidthMm, minHeightMm: heightFromAspect(aspect, minWidthMm, CLOCK_CAP_MM) };
+// Every face in the row keeps numerals at the sheet's readable floor, so a row
+// of six asks for six faces' worth of paper rather than shrinking them.
+function clockRowMinWidthMm(spec) {
+  return clockShared.minWidthPt(spec, profileFor("worksheets", { widthMm: 170 })) / MM_TO_PT;
 }
 
 // ─── number-line ────────────────────────────────────────────────────────
@@ -153,7 +48,6 @@ function needsClockRow(spec) {
 // drew its own line until 13 September 2026, and every repair made to it
 // reached no other surface.
 const numberLineShared = require("../../../shared/visuals/number-line-svg");
-const { atPrintedWidth } = require("./at-printed-width");
 
 // Each printed label needs room either side of it not to collide with its
 // neighbour; each box or arrow needs enough width that two adjacent ones do not
@@ -251,12 +145,7 @@ function needsFractionBar(spec) {
 const css = "";
 
 const helpers = {
-  "clock-row": {
-    render: renderClockRow,
-    measure: measureClockRow,
-    needs: needsClockRow,
-    greed: NEVER_STRETCH,
-  },
+  "clock-row": atPrintedWidth(clockShared, { minWidthMm: clockRowMinWidthMm }),
   "number-line": atPrintedWidth(numberLineShared, { minWidthMm: numberLineMinWidthMm }),
   "fraction-bar": {
     render: renderFractionBar,
