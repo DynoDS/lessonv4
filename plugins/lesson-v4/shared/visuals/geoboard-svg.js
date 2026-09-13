@@ -91,6 +91,8 @@ const SHAPE_FILL     = '#CCE2F5';   // pale blue default fill (matches reflectio
 const TICK_COLOUR    = '#000000';   // equal-side dashes, drawn on the outline (black)
 const MARK_COLOUR    = '#0070C0';   // chevrons + right-angle squares, house blue
 // House answer green is '#00B050' / fill '#D5F5E3' — set per shape for an answer.
+
+const { INK_TONES, printsInInk, inkGrey } = require('./surface-profiles');
 // ─── END CONSTANTS ────────────────────────────────────────────────────────
 
 function clampInt(v, dflt) {
@@ -104,7 +106,7 @@ function clampInt(v, dflt) {
 // triangle.js (equal-side dashes) and line-pair.js (parallel chevrons,
 // right-angle square). All marks live on or just inside the shape's edges, well
 // within the grid's MARGIN, so the tight-to-grid crop needs no adjustment.
-function notationParts(P, closed, notation, f) {
+function notationParts(P, closed, notation, f, markC = MARK_COLOUR, tickC = TICK_COLOUR) {
   if (!notation) return [];
   const out = [];
   const n = P.length;
@@ -142,7 +144,7 @@ function notationParts(P, closed, notation, f) {
       const bx = c.x + c.u.x * off, by = c.y + c.u.y * off;
       const x1 = bx + c.nrm.x * TICK_LEN, y1 = by + c.nrm.y * TICK_LEN;
       const x2 = bx - c.nrm.x * TICK_LEN, y2 = by - c.nrm.y * TICK_LEN;
-      out.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${TICK_COLOUR}" stroke-width="${f(TICK_W)}" stroke-linecap="round"/>`);
+      out.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${tickC}" stroke-width="${f(TICK_W)}" stroke-linecap="round"/>`);
     }
   });
 
@@ -161,7 +163,7 @@ function notationParts(P, closed, notation, f) {
       const back = { x: cc.x - u.x * (CHEV * 0.55), y: cc.y - u.y * (CHEV * 0.55) };
       const w1 = { x: back.x + nrm.x * CHEV, y: back.y + nrm.y * CHEV };
       const w2 = { x: back.x - nrm.x * CHEV, y: back.y - nrm.y * CHEV };
-      out.push(`<polyline points="${f(w1.x)},${f(w1.y)} ${f(tip.x)},${f(tip.y)} ${f(w2.x)},${f(w2.y)}" fill="none" stroke="${MARK_COLOUR}" stroke-width="${f(ARROW_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+      out.push(`<polyline points="${f(w1.x)},${f(w1.y)} ${f(tip.x)},${f(tip.y)} ${f(w2.x)},${f(w2.y)}" fill="none" stroke="${markC}" stroke-width="${f(ARROW_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
     });
   });
 
@@ -186,7 +188,7 @@ function notationParts(P, closed, notation, f) {
     const p1  = { x: A.x + un.x * SQ_S, y: A.y + un.y * SQ_S };
     const p3  = { x: A.x + wn.x * SQ_S, y: A.y + wn.y * SQ_S };
     const p2  = { x: A.x + (un.x + wn.x) * SQ_S, y: A.y + (un.y + wn.y) * SQ_S };
-    out.push(`<polyline points="${f(p1.x)},${f(p1.y)} ${f(p2.x)},${f(p2.y)} ${f(p3.x)},${f(p3.y)}" fill="none" stroke="${MARK_COLOUR}" stroke-width="${f(SQ_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
+    out.push(`<polyline points="${f(p1.x)},${f(p1.y)} ${f(p2.x)},${f(p2.y)} ${f(p3.x)},${f(p3.y)}" fill="none" stroke="${markC}" stroke-width="${f(SQ_W)}" stroke-linecap="round" stroke-linejoin="round"/>`);
   });
 
   return out;
@@ -289,13 +291,23 @@ function cacheKey(data) {
 // Build the SVG cropped tight to the grid's bounding box (the pegs plus their
 // margin). The board is always the full peg rectangle, so the tight box is the
 // grid itself — no padded square, no centring-in-deadspace.
-function tightSvg(data) {
+//
+// `profile` is optional: the stick-in pack passes its own so the board prints in
+// ink. A lesson's own outline colours all become ink there and its fills become
+// the grey each colour photocopies to, kept light enough to count pegs through.
+function tightSvg(data, profile) {
+  const ink = printsInInk(profile);
   const cols = clampInt(data.cols, 5);
   const rows = clampInt(data.rows, 5);
-  const shapes = resolveShapes(data);
+  const shapes = resolveShapes(data).map(function (s) {
+    return ink ? Object.assign({}, s, { outline: INK_TONES.ink, fill: s.fill ? inkGrey(s.fill, { darkest: 0xBF }) : null }) : s;
+  });
   const emphasise = data.emphasiseVertices === true;
   const symLines = resolveSymmetryLines(data);
-  const symColour = data.symmetryLinesAnswer ? SYM_COLOUR_ANSWER : SYM_COLOUR;
+  const symColour = ink ? INK_TONES.dark : data.symmetryLinesAnswer ? SYM_COLOUR_ANSWER : SYM_COLOUR;
+  const pegC = ink ? INK_TONES.mid : PEG_COLOUR;
+  const markC = ink ? INK_TONES.ink : MARK_COLOUR;
+  const tickC = ink ? INK_TONES.ink : TICK_COLOUR;
 
   // Peg (gx, gy) in SVG space: x across, y DOWN in SVG so flip gy. The grid's
   // bounding box is [0..cols]×[0..rows] cells; add MARGIN on every side.
@@ -317,7 +329,7 @@ function tightSvg(data) {
   // Peg grid.
   for (let i = 0; i <= cols; i++) {
     for (let j = 0; j <= rows; j++) {
-      parts.push(`<circle cx="${f(px(i))}" cy="${f(py(j))}" r="${f(PEG_R)}" fill="${PEG_COLOUR}"/>`);
+      parts.push(`<circle cx="${f(px(i))}" cy="${f(py(j))}" r="${f(PEG_R)}" fill="${pegC}"/>`);
     }
   }
 
@@ -337,7 +349,7 @@ function tightSvg(data) {
   shapes.forEach(function (s) {
     if (!s.notation) return;
     const Pp = s.points.map(function (p) { return { x: px(p[0]), y: py(p[1]) }; });
-    notationParts(Pp, s.closed, s.notation, f).forEach(function (frag) { parts.push(frag); });
+    notationParts(Pp, s.closed, s.notation, f, markC, tickC).forEach(function (frag) { parts.push(frag); });
   });
 
   // Lines of symmetry (explicit, dashed), drawn on top of the shape outlines so

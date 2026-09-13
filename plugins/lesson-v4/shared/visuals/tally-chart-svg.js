@@ -67,6 +67,12 @@ const TITLE_COLOUR = '#1F4E79';   // house deep blue for the heading
 const HEADER_FILL  = '#DEEAF6';   // light house blue for the header row
 const CELL_FILL    = '#FFFFFF';
 
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+
+// The colours above, and what each becomes on the photocopied stick-in pack.
+const COLOURS = { GRID_COLOUR: GRID_COLOUR, MARK_COLOUR: MARK_COLOUR, TEXT_COLOUR: TEXT_COLOUR, ANSWER_COLOUR: ANSWER_COLOUR, TITLE_COLOUR: TITLE_COLOUR, HEADER_FILL: HEADER_FILL };
+const INK = { GRID_COLOUR: INK_TONES.ink, MARK_COLOUR: INK_TONES.ink, TEXT_COLOUR: INK_TONES.ink, ANSWER_COLOUR: INK_TONES.ink, TITLE_COLOUR: INK_TONES.ink, HEADER_FILL: INK_TONES.pale };
+
 const CHAR_W      = 0.58;  // Arial-bold character-width estimate (× font size)
 // ─── END CONSTANTS ──────────────────────────────────────────────────────────
 
@@ -146,7 +152,11 @@ function highlightParts(data) {
     .filter(Boolean);
 }
 
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so this prints in
+// ink. A revealed total was green; a child's copy
+// carries no answers, so it prints like any other number.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const headers = Array.isArray(data.headers) ? data.headers : [];
   const rows = Array.isArray(data.rows) ? data.rows : [];
   const marked = highlight.resolveHighlight(data, highlightParts(data), 'tally chart');
@@ -200,15 +210,15 @@ function tightSvg(data) {
 
   // ── Title ──
   if (title) {
-    parts.push(`<text x="${f(tableW / 2)}" y="${f(TITLE_FS * 0.82)}" text-anchor="middle" font-family="${FONT}" font-size="${TITLE_FS}" font-weight="bold" fill="${TITLE_COLOUR}">${escapeXml(title)}</text>`);
+    parts.push(`<text x="${f(tableW / 2)}" y="${f(TITLE_FS * 0.82)}" text-anchor="middle" font-family="${FONT}" font-size="${TITLE_FS}" font-weight="bold" fill="${C.TITLE_COLOUR}">${escapeXml(title)}</text>`);
   }
 
   // ── Header row cells ──
   const headerTexts = showTotals ? [labelHeader, tallyHeader, totalHeader] : [labelHeader, tallyHeader];
   for (let c = 0; c < colWs.length; c++) {
     const x = colXs[c];
-    parts.push(`<rect x="${f(x)}" y="${f(gridTop)}" width="${f(colWs[c])}" height="${f(headerH)}" fill="${HEADER_FILL}" stroke="${GRID_COLOUR}" stroke-width="${GRID_W}"/>`);
-    parts.push(`<text x="${f(x + colWs[c] / 2)}" y="${f(gridTop + headerH / 2)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${HEADER_FS}" font-weight="bold" fill="${TEXT_COLOUR}">${escapeXml(headerTexts[c])}</text>`);
+    parts.push(`<rect x="${f(x)}" y="${f(gridTop)}" width="${f(colWs[c])}" height="${f(headerH)}" fill="${C.HEADER_FILL}" stroke="${C.GRID_COLOUR}" stroke-width="${GRID_W}"/>`);
+    parts.push(`<text x="${f(x + colWs[c] / 2)}" y="${f(gridTop + headerH / 2)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${HEADER_FS}" font-weight="bold" fill="${C.TEXT_COLOUR}">${escapeXml(headerTexts[c])}</text>`);
   }
 
   // ── Body rows ──
@@ -218,11 +228,11 @@ function tightSvg(data) {
 
     // Cell backgrounds + borders.
     for (let c = 0; c < colWs.length; c++) {
-      parts.push(`<rect x="${f(colXs[c])}" y="${f(rowTop)}" width="${f(colWs[c])}" height="${f(bodyRowH)}" fill="${CELL_FILL}" stroke="${GRID_COLOUR}" stroke-width="${GRID_W}"/>`);
+      parts.push(`<rect x="${f(colXs[c])}" y="${f(rowTop)}" width="${f(colWs[c])}" height="${f(bodyRowH)}" fill="${CELL_FILL}" stroke="${C.GRID_COLOUR}" stroke-width="${GRID_W}"/>`);
     }
 
     // Label cell — left-aligned text.
-    parts.push(`<text x="${f(CELL_PAD_X)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="start" dominant-baseline="central" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${TEXT_COLOUR}">${escapeXml(row && row.label != null ? row.label : '')}</text>`);
+    parts.push(`<text x="${f(CELL_PAD_X)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="start" dominant-baseline="central" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${C.TEXT_COLOUR}">${escapeXml(row && row.label != null ? row.label : '')}</text>`);
 
     // Tally cell — bundles of five (skipped when blank: the box stays empty).
     if (!blank) {
@@ -230,14 +240,14 @@ function tightSvg(data) {
       const markOX = colXs[1] + CELL_PAD_X;
       const markOY = rowTop + (bodyRowH - MARK_H) / 2;
       for (const s of ml.strokes) {
-        parts.push(`<line x1="${f(markOX + s.x1)}" y1="${f(markOY + s.y1)}" x2="${f(markOX + s.x2)}" y2="${f(markOY + s.y2)}" stroke="${MARK_COLOUR}" stroke-width="${STROKE_W}" stroke-linecap="round"/>`);
+        parts.push(`<line x1="${f(markOX + s.x1)}" y1="${f(markOY + s.y1)}" x2="${f(markOX + s.x2)}" y2="${f(markOY + s.y2)}" stroke="${C.MARK_COLOUR}" stroke-width="${STROKE_W}" stroke-linecap="round"/>`);
       }
     }
 
     // Total cell — a revealed answer shows green, a given stays black.
     if (showTotals && !blank) {
       const { text, isAnswer } = resolveTotal(row);
-      const fill = isAnswer ? ANSWER_COLOUR : TEXT_COLOUR;
+      const fill = isAnswer ? C.ANSWER_COLOUR : C.TEXT_COLOUR;
       parts.push(`<text x="${f(colXs[2] + colWs[2] / 2)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${fill}">${escapeXml(text)}</text>`);
     }
   }
@@ -255,7 +265,7 @@ function tightSvg(data) {
       if (fade < 1) {
         parts.push(`<rect x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" fill="#FFFFFF" fill-opacity="${(1 - fade).toFixed(2)}"/>`);
       }
-      parts.push(highlight.ringSvg(marked, key, box, Math.max(w, h)));
+      parts.push(highlight.ringSvg(marked, key, box, Math.max(w, h), C === INK));
     }
   }
 

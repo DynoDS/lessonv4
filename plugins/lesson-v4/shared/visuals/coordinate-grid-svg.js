@@ -56,6 +56,13 @@ const SHAPE_OUTLINE = '#0070C0';    // joined-shape outline (house blue)
 const SHAPE_FILL    = '#CCE2F5';    // joined-shape fill (pale blue)
 const LABEL_COLOUR  = '#C00000';    // point-letter colour (matches the dot)
 const ROUTE_COLOUR  = '#0070C0';    // across-then-up modelling route
+
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+// The photocopied pack's version: pale grey squared paper under dark axes, and
+// plotted points and their letters in ink, which stand out from a pale grid
+// as well as red does.
+const INK = { grid: INK_TONES.light, axis: INK_TONES.ink, num: INK_TONES.ink, point: INK_TONES.ink, outline: INK_TONES.ink, fill: INK_TONES.pale, label: INK_TONES.ink, route: INK_TONES.dark };
+const COLOURS = { grid: GRID_COLOUR, axis: AXIS_COLOUR, num: NUM_COLOUR, point: POINT_COLOUR, outline: SHAPE_OUTLINE, fill: SHAPE_FILL, label: LABEL_COLOUR, route: ROUTE_COLOUR };
 const ROUTE_W       = CELL * 0.055; // heavier than the grid so it survives inline
 const LABEL_FONT    = CELL * 0.40;  // point-letter font size
 const LABEL_OFF     = CELL * 0.10;  // label offset from the dot
@@ -117,7 +124,9 @@ function cacheKey(data) {
 
 // Build the SVG cropped tight to the grid plus its axis-number gutters — no padded
 // square, no centring-in-deadspace. The drawn extent (grid + gutters) IS the box.
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the grid prints in ink.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   data = data || {};
   const size = resolveGridSize(data);
   const cols = size.cols;
@@ -137,26 +146,26 @@ function tightSvg(data) {
   const left = px(0), right = px(cols), top = py(rows), bottom = py(0);
   const parts = [];
   if (route) {
-    parts.push('<defs><marker id="plot-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0070C0"/></marker></defs>');
+    parts.push('<defs><marker id="plot-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="' + C.route + '"/></marker></defs>');
   }
 
   // Joined shape first (answer copy), so the grid and dots sit crisply on top.
   if (data.join && points.length >= 2) {
     const d = points.map(function (p) { return f(px(p.x)) + ',' + f(py(p.y)); }).join(' ');
-    parts.push(`<polygon points="${d}" fill="${SHAPE_FILL}" stroke="${SHAPE_OUTLINE}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(`<polygon points="${d}" fill="${C.fill}" stroke="${C.outline}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
   }
 
   // Pale squared-paper gridlines.
   for (let i = 0; i <= cols; i++) {
-    parts.push(`<line x1="${f(px(i))}" y1="${f(top)}" x2="${f(px(i))}" y2="${f(bottom)}" stroke="${GRID_COLOUR}" stroke-width="${f(GRID_W)}"/>`);
+    parts.push(`<line x1="${f(px(i))}" y1="${f(top)}" x2="${f(px(i))}" y2="${f(bottom)}" stroke="${C.grid}" stroke-width="${f(GRID_W)}"/>`);
   }
   for (let j = 0; j <= rows; j++) {
-    parts.push(`<line x1="${f(left)}" y1="${f(py(j))}" x2="${f(right)}" y2="${f(py(j))}" stroke="${GRID_COLOUR}" stroke-width="${f(GRID_W)}"/>`);
+    parts.push(`<line x1="${f(left)}" y1="${f(py(j))}" x2="${f(right)}" y2="${f(py(j))}" stroke="${C.grid}" stroke-width="${f(GRID_W)}"/>`);
   }
 
   // Bold origin axes (x = 0 up the left, y = 0 along the bottom).
-  parts.push(`<line x1="${f(left)}" y1="${f(bottom)}" x2="${f(right)}" y2="${f(bottom)}" stroke="${AXIS_COLOUR}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
-  parts.push(`<line x1="${f(left)}" y1="${f(top)}" x2="${f(left)}" y2="${f(bottom)}" stroke="${AXIS_COLOUR}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
+  parts.push(`<line x1="${f(left)}" y1="${f(bottom)}" x2="${f(right)}" y2="${f(bottom)}" stroke="${C.axis}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
+  parts.push(`<line x1="${f(left)}" y1="${f(top)}" x2="${f(left)}" y2="${f(bottom)}" stroke="${C.axis}" stroke-width="${f(AXIS_W)}" stroke-linecap="round"/>`);
 
   // A simple two-move route: across first, then up. Both legs have arrowheads
   // so the order remains visible when the numbered full-size grid is reduced
@@ -164,30 +173,30 @@ function tightSvg(data) {
   if (route) {
     const turnX = px(route.x);
     if (route.x > 0) {
-      parts.push(`<line x1="${f(left)}" y1="${f(bottom)}" x2="${f(turnX)}" y2="${f(bottom)}" stroke="${ROUTE_COLOUR}" stroke-width="${f(ROUTE_W)}" stroke-linecap="round" marker-end="url(#plot-arrow)"/>`);
+      parts.push(`<line x1="${f(left)}" y1="${f(bottom)}" x2="${f(turnX)}" y2="${f(bottom)}" stroke="${C.route}" stroke-width="${f(ROUTE_W)}" stroke-linecap="round" marker-end="url(#plot-arrow)"/>`);
     }
     if (route.y > 0) {
-      parts.push(`<line x1="${f(turnX)}" y1="${f(bottom)}" x2="${f(turnX)}" y2="${f(py(route.y))}" stroke="${ROUTE_COLOUR}" stroke-width="${f(ROUTE_W)}" stroke-linecap="round" marker-end="url(#plot-arrow)"/>`);
+      parts.push(`<line x1="${f(turnX)}" y1="${f(bottom)}" x2="${f(turnX)}" y2="${f(py(route.y))}" stroke="${C.route}" stroke-width="${f(ROUTE_W)}" stroke-linecap="round" marker-end="url(#plot-arrow)"/>`);
     }
-    parts.push(`<circle cx="${f(turnX)}" cy="${f(py(route.y))}" r="${f(POINT_R * 1.15)}" fill="${POINT_COLOUR}"/>`);
+    parts.push(`<circle cx="${f(turnX)}" cy="${f(py(route.y))}" r="${f(POINT_R * 1.15)}" fill="${C.point}"/>`);
   }
 
   // Axis numbers, centred on each gridline: across below the base, up to the left.
   if (showNumbers) {
     for (let i = 0; i <= cols; i++) {
-      parts.push(`<text x="${f(px(i))}" y="${f(bottom + bottomGutter * 0.55)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${NUM_COLOUR}">${escapeXml(i)}</text>`);
+      parts.push(`<text x="${f(px(i))}" y="${f(bottom + bottomGutter * 0.55)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(i)}</text>`);
     }
     for (let j = 0; j <= rows; j++) {
-      parts.push(`<text x="${f(left - leftGutter * 0.42)}" y="${f(py(j))}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${NUM_COLOUR}">${escapeXml(j)}</text>`);
+      parts.push(`<text x="${f(left - leftGutter * 0.42)}" y="${f(py(j))}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(j)}</text>`);
     }
   }
 
   // Plotted points and their letters (answer copy / parity only; blank by default).
   points.forEach(function (p) {
     const cx = px(p.x), cy = py(p.y);
-    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(POINT_R)}" fill="${POINT_COLOUR}"/>`);
+    parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(POINT_R)}" fill="${C.point}"/>`);
     if (p.label != null && String(p.label).length) {
-      parts.push(`<text x="${f(cx + POINT_R + LABEL_OFF)}" y="${f(cy - POINT_R - LABEL_OFF)}" text-anchor="start" dominant-baseline="auto" font-family="${FONT}" font-size="${f(LABEL_FONT)}" font-weight="bold" fill="${LABEL_COLOUR}">${escapeXml(p.label)}</text>`);
+      parts.push(`<text x="${f(cx + POINT_R + LABEL_OFF)}" y="${f(cy - POINT_R - LABEL_OFF)}" text-anchor="start" dominant-baseline="auto" font-family="${FONT}" font-size="${f(LABEL_FONT)}" font-weight="bold" fill="${C.label}">${escapeXml(p.label)}</text>`);
     }
   });
 

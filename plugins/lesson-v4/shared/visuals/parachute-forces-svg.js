@@ -34,6 +34,15 @@ const ORANGE = '#F59E0B';
 const LOAD_FILL = '#F4D7A1';
 const LABEL_FILL = '#FFFFFF';
 const LABEL_STROKE = '#93A4B8';
+
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+
+// The drawing's colours, and the photocopied pack's. Each force is named by the
+// label its leader points at and told apart by which way its arrow points, so
+// dark arrows lose nothing; the canopies and loads keep pale grey fills so the
+// two parachutes still read as objects against the cords.
+const COLOURS = { ink: INK, blue: BLUE, bluePale: BLUE_PALE, green: GREEN, orange: ORANGE, loadFill: LOAD_FILL, labelFill: LABEL_FILL, labelStroke: LABEL_STROKE };
+const INK_COLOURS = { ink: INK_TONES.ink, blue: INK_TONES.ink, bluePale: INK_TONES.pale, green: INK_TONES.dark, orange: INK_TONES.ink, loadFill: INK_TONES.light, labelFill: LABEL_FILL, labelStroke: INK_TONES.mid };
 const FONT = 'Arial, sans-serif';
 
 const DEFAULT_LABELS = Object.freeze({
@@ -228,52 +237,54 @@ function canopyPath(box) {
   ].join(' ');
 }
 
-function arrowSvg(a, role) {
-  return `<line data-role="${role}" x1="${f(a.x1)}" y1="${f(a.y1)}" x2="${f(a.x2)}" y2="${f(a.y2)}" stroke="${GREEN}" stroke-width="15" stroke-linecap="round" marker-end="url(#arrow)"/>`;
+function arrowSvg(a, role, C) {
+  return `<line data-role="${role}" x1="${f(a.x1)}" y1="${f(a.y1)}" x2="${f(a.x2)}" y2="${f(a.y2)}" stroke="${C.green}" stroke-width="15" stroke-linecap="round" marker-end="url(#arrow)"/>`;
 }
 
-function tickSvg(c, role) {
+function tickSvg(c, role, C) {
   const half = 12;
   const shiftX = (c.x2 - c.x1) / c.length * 7;
   const shiftY = (c.y2 - c.y1) / c.length * 7;
   return [-1, 1].map((s) => {
     const cx = c.tick.x + shiftX * s, cy = c.tick.y + shiftY * s;
-    return `<line data-role="${role}" x1="${f(cx - c.tick.nx * half)}" y1="${f(cy - c.tick.ny * half)}" x2="${f(cx + c.tick.nx * half)}" y2="${f(cy + c.tick.ny * half)}" stroke="${ORANGE}" stroke-width="8" stroke-linecap="round"/>`;
+    return `<line data-role="${role}" x1="${f(cx - c.tick.nx * half)}" y1="${f(cy - c.tick.ny * half)}" x2="${f(cx + c.tick.nx * half)}" y2="${f(cy + c.tick.ny * half)}" stroke="${C.orange}" stroke-width="8" stroke-linecap="round"/>`;
   }).join('');
 }
 
-function labelSvg(box) {
+function labelSvg(box, C) {
   const edgeX = box.side === 'left' ? box.x + box.w : box.x;
   const edgeY = box.y + box.h / 2;
-  const leaders = box.targets.map((target) => `<path d="M ${f(edgeX)} ${f(edgeY)} L ${f((edgeX + target.x) / 2)} ${f(edgeY)} L ${f(target.x)} ${f(target.y)}" fill="none" stroke="${LABEL_STROKE}" stroke-width="5"/><circle cx="${f(target.x)}" cy="${f(target.y)}" r="6" fill="${ORANGE}"/>`).join('');
+  const leaders = box.targets.map((target) => `<path d="M ${f(edgeX)} ${f(edgeY)} L ${f((edgeX + target.x) / 2)} ${f(edgeY)} L ${f(target.x)} ${f(target.y)}" fill="none" stroke="${C.labelStroke}" stroke-width="5"/><circle cx="${f(target.x)}" cy="${f(target.y)}" r="6" fill="${C.orange}"/>`).join('');
   const firstY = box.y + LABEL_PAD_Y + box.fontSize * 0.82;
   const tspans = box.lines.map((line, i) => `<tspan x="${f(box.x + box.w / 2)}" y="${f(firstY + i * (box.fontSize + LABEL_LINE_GAP))}">${esc(line)}</tspan>`).join('');
-  return `${leaders}<rect data-label-box="${box.key}" x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="18" fill="${LABEL_FILL}" stroke="${LABEL_STROKE}" stroke-width="4"/><text font-family="${FONT}" font-size="${box.fontSize}" font-weight="700" fill="${INK}" text-anchor="middle">${tspans}</text>`;
+  return `${leaders}<rect data-label-box="${box.key}" x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="18" fill="${C.labelFill}" stroke="${C.labelStroke}" stroke-width="4"/><text font-family="${FONT}" font-size="${box.fontSize}" font-weight="700" fill="${C.ink}" text-anchor="middle">${tspans}</text>`;
 }
 
-function tightSvg(spec) {
+// `profile` is optional: the stick-in pack passes its own so the schematic prints in ink.
+function tightSvg(spec, profile) {
+  const C = printsInInk(profile) ? INK_COLOURS : COLOURS;
   const layout = describeLayout(spec);
   const { canvas, canopies, cords, loads, arrows, labels, data } = layout;
   const parts = [];
   parts.push(`<?xml version="1.0" encoding="UTF-8"?>`);
   parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${f(canvas.w)}" height="${f(canvas.h)}" viewBox="0 0 ${f(canvas.w)} ${f(canvas.h)}">`);
-  parts.push(`<defs><marker id="arrow" markerWidth="13" markerHeight="13" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L8,4 z" fill="${GREEN}"/></marker></defs>`);
-  parts.push(`<path data-role="large-canopy" d="${canopyPath(canopies.large)}" fill="${BLUE_PALE}" stroke="${BLUE}" stroke-width="10"/>`);
-  parts.push(`<path data-role="small-canopy" d="${canopyPath(canopies.small)}" fill="${BLUE_PALE}" stroke="${BLUE}" stroke-width="10"/>`);
+  parts.push(`<defs><marker id="arrow" markerWidth="13" markerHeight="13" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L8,4 z" fill="${C.green}"/></marker></defs>`);
+  parts.push(`<path data-role="large-canopy" d="${canopyPath(canopies.large)}" fill="${C.bluePale}" stroke="${C.blue}" stroke-width="10"/>`);
+  parts.push(`<path data-role="small-canopy" d="${canopyPath(canopies.small)}" fill="${C.bluePale}" stroke="${C.blue}" stroke-width="10"/>`);
   for (const [size, pair] of Object.entries(cords)) {
     pair.forEach((c, i) => {
-      parts.push(`<line data-role="${size}-cord-${i}" x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" stroke="${INK}" stroke-width="7"/>`);
-      if (data.showEqualityTicks) parts.push(tickSvg(c, `${size}-cord-tick-${i}`));
+      parts.push(`<line data-role="${size}-cord-${i}" x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" stroke="${C.ink}" stroke-width="7"/>`);
+      if (data.showEqualityTicks) parts.push(tickSvg(c, `${size}-cord-tick-${i}`, C));
     });
   }
   for (const [size, box] of Object.entries(loads)) {
-    parts.push(`<rect data-role="${size}-load" x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="9" fill="${LOAD_FILL}" stroke="${INK}" stroke-width="8"/>`);
+    parts.push(`<rect data-role="${size}-load" x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="9" fill="${C.loadFill}" stroke="${C.ink}" stroke-width="8"/>`);
   }
-  parts.push(arrowSvg(arrows.largeUp, 'large-air-resistance'));
-  parts.push(arrowSvg(arrows.smallUp, 'small-air-resistance'));
-  parts.push(arrowSvg(arrows.largeDown, 'large-gravity'));
-  parts.push(arrowSvg(arrows.smallDown, 'small-gravity'));
-  labels.forEach((box) => parts.push(labelSvg(box)));
+  parts.push(arrowSvg(arrows.largeUp, 'large-air-resistance', C));
+  parts.push(arrowSvg(arrows.smallUp, 'small-air-resistance', C));
+  parts.push(arrowSvg(arrows.largeDown, 'large-gravity', C));
+  parts.push(arrowSvg(arrows.smallDown, 'small-gravity', C));
+  labels.forEach((box) => parts.push(labelSvg(box, C)));
   parts.push('</svg>');
   return { svg: parts.join(''), aspect: canvas.w / canvas.h, w: canvas.w, h: canvas.h, layout };
 }

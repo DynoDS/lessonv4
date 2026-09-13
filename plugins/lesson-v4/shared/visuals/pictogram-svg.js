@@ -46,6 +46,12 @@ const STROKE_W     = 2.2;         // symbol outline width
 const TEXT_COLOUR  = '#000000';
 const TITLE_COLOUR = '#1F4E79';   // house deep blue for the heading
 
+const { INK_TONES, printsInInk } = require('./surface-profiles');
+
+// The colours above, and what each becomes on the photocopied stick-in pack.
+const COLOURS = { ICON_FILL: ICON_FILL, ICON_STROKE: ICON_STROKE, TEXT_COLOUR: TEXT_COLOUR, TITLE_COLOUR: TITLE_COLOUR };
+const INK = { ICON_FILL: INK_TONES.mid, ICON_STROKE: INK_TONES.ink, TEXT_COLOUR: INK_TONES.ink, TITLE_COLOUR: INK_TONES.ink };
+
 const CHAR_W      = 0.60;   // Comic-Sans-bold character-width estimate (× font size)
 const MARGIN      = STROKE_W + 3;  // hair of margin so strokes aren't clipped
 // ─── END CONSTANTS ──────────────────────────────────────────────────────────
@@ -81,7 +87,11 @@ function symbolsFor(value, per) {
   return { full, half, slots: full + (half ? 1 : 0) };
 }
 
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so this prints in
+// ink. A symbol is a mid grey disc with a dark outline,
+// so a half symbol is still plainly half of one.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const categories = Array.isArray(data.categories) ? data.categories : [];
   const values = Array.isArray(data.values) ? data.values : [];
   // A pictogram's parts are its categories, named as the lesson names them.
@@ -137,12 +147,12 @@ function tightSvg(data) {
 
   // ── Title (centred over the full content width, house deep blue). ──
   if (title) {
-    parts.push(`<text x="${f(OX + contentW / 2)}" y="${f(OY + TITLE_FS * 0.82)}" text-anchor="middle" font-family="Comic Sans MS" font-size="${TITLE_FS}" font-weight="bold" fill="${TITLE_COLOUR}">${escapeXml(title)}</text>`);
+    parts.push(`<text x="${f(OX + contentW / 2)}" y="${f(OY + TITLE_FS * 0.82)}" text-anchor="middle" font-family="Comic Sans MS" font-size="${TITLE_FS}" font-weight="bold" fill="${C.TITLE_COLOUR}">${escapeXml(title)}</text>`);
     anchors.title = pct(OX + contentW / 2, OY + TITLE_FS * 0.45);
   }
 
   function circle(cx, cy) {
-    return `<circle cx="${f(cx)}" cy="${f(cy)}" r="${ICON_R}" fill="${ICON_FILL}" stroke="${ICON_STROKE}" stroke-width="${STROKE_W}"/>`;
+    return `<circle cx="${f(cx)}" cy="${f(cy)}" r="${ICON_R}" fill="${C.ICON_FILL}" stroke="${C.ICON_STROKE}" stroke-width="${STROKE_W}"/>`;
   }
   // A symbol standing for HALF the key: the LEFT semicircle is filled, the
   // right semicircle is drawn as an outline only — so the eye reads "half a
@@ -150,15 +160,15 @@ function tightSvg(data) {
   function halfCircle(cx, cy) {
     const top = cy - ICON_R, bot = cy + ICON_R;
     return (
-      `<path d="M ${f(cx)} ${f(top)} A ${ICON_R} ${ICON_R} 0 0 0 ${f(cx)} ${f(bot)} Z" fill="${ICON_FILL}" stroke="${ICON_STROKE}" stroke-width="${STROKE_W}"/>` +
-      `<path d="M ${f(cx)} ${f(top)} A ${ICON_R} ${ICON_R} 0 0 1 ${f(cx)} ${f(bot)}" fill="none" stroke="${ICON_STROKE}" stroke-width="${STROKE_W}"/>`
+      `<path d="M ${f(cx)} ${f(top)} A ${ICON_R} ${ICON_R} 0 0 0 ${f(cx)} ${f(bot)} Z" fill="${C.ICON_FILL}" stroke="${C.ICON_STROKE}" stroke-width="${STROKE_W}"/>` +
+      `<path d="M ${f(cx)} ${f(top)} A ${ICON_R} ${ICON_R} 0 0 1 ${f(cx)} ${f(bot)}" fill="none" stroke="${C.ICON_STROKE}" stroke-width="${STROKE_W}"/>`
     );
   }
 
   // ── Data rows. ──
   for (let i = 0; i < categories.length; i++) {
     const cy = OY + titleH + i * rowH + rowH / 2;
-    parts.push(`<text x="${f(OX + labelColW - LABEL_PAD)}" y="${f(cy)}" text-anchor="end" dominant-baseline="central" font-family="Comic Sans MS" font-size="${LABEL_FS}" fill="${TEXT_COLOUR}">${escapeXml(categories[i])}</text>`);
+    parts.push(`<text x="${f(OX + labelColW - LABEL_PAD)}" y="${f(cy)}" text-anchor="end" dominant-baseline="central" font-family="Comic Sans MS" font-size="${LABEL_FS}" fill="${C.TEXT_COLOUR}">${escapeXml(categories[i])}</text>`);
     const { full, half } = rows[i];
     let cx = OX + firstCx;
     let lastCx = cx;
@@ -172,7 +182,7 @@ function tightSvg(data) {
   // ── Key row: one full symbol followed by "= N label". ──
   const keyCy = OY + titleH + categories.length * rowH + KEY_GAP + keyRowH / 2;
   parts.push(circle(OX + firstCx, keyCy));
-  parts.push(`<text x="${f(OX + firstCx + ICON_R + KEY_TEXT_GAP)}" y="${f(keyCy)}" text-anchor="start" dominant-baseline="central" font-family="Comic Sans MS" font-size="${KEY_FS}" fill="${TEXT_COLOUR}">${escapeXml(keyText)}</text>`);
+  parts.push(`<text x="${f(OX + firstCx + ICON_R + KEY_TEXT_GAP)}" y="${f(keyCy)}" text-anchor="start" dominant-baseline="central" font-family="Comic Sans MS" font-size="${KEY_FS}" fill="${C.TEXT_COLOUR}">${escapeXml(keyText)}</text>`);
   anchors.key = pct(OX + firstCx, keyCy);
 
   // Pointing at one category, drawn last so the veil covers that row's symbols
@@ -187,7 +197,7 @@ function tightSvg(data) {
       if (fade < 1) {
         parts.push(`<rect x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" fill="#FFFFFF" fill-opacity="${(1 - fade).toFixed(2)}"/>`);
       }
-      parts.push(highlight.ringSvg(marked, key, box, Math.max(w, h)));
+      parts.push(highlight.ringSvg(marked, key, box, Math.max(w, h), C === INK));
     }
   }
 

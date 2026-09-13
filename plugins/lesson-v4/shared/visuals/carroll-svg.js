@@ -30,6 +30,7 @@
 //                    label  the shape's name shown in the chip (e.g. "Square")
 
 const highlight = require('./figure-highlight');
+const { INK_TONES, printsInInk } = require('./surface-profiles');
 
 // ─── CONSTANTS (geometry units; the whole drawing scales on placement) ────
 const CELL_W      = 440;         // each cell's width
@@ -132,7 +133,16 @@ function cellOrigin(cell) {
   }
 }
 
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the grid prints in
+// ink. The two criteria still read apart there, because one runs across the top
+// and the other up the side.
+function tightSvg(data, profile) {
+  const ink = printsInInk(profile);
+  const colLabelC = ink ? INK_TONES.ink : COL_LABEL_C;
+  const rowLabelC = ink ? INK_TONES.ink : ROW_LABEL_C;
+  const chipStrokeC = ink ? INK_TONES.ink : CHIP_STROKE_C;
+  const gridC = ink ? INK_TONES.ink : GRID_COLOUR;
+  const chipTextC = ink ? INK_TONES.ink : CHIP_TEXT_C;
   const shapes = resolveShapes(data);
   const marked = highlight.resolveHighlight(data, HIGHLIGHT_PARTS, 'Carroll diagram');
   const f = function (n) { return Number(n).toFixed(2); };
@@ -160,9 +170,9 @@ function tightSvg(data) {
   });
 
   // Grid lines: outer border + the two interior dividers.
-  parts.push(`<rect x="${f(X(gx))}" y="${f(Y(gy))}" width="${gridW}" height="${gridH}" fill="none" stroke="${GRID_COLOUR}" stroke-width="${GRID_STROKE}"/>`);
-  parts.push(`<line x1="${f(X(gx + CELL_W))}" y1="${f(Y(gy))}" x2="${f(X(gx + CELL_W))}" y2="${f(Y(gy + gridH))}" stroke="${GRID_COLOUR}" stroke-width="${GRID_STROKE}"/>`);
-  parts.push(`<line x1="${f(X(gx))}" y1="${f(Y(gy + CELL_H))}" x2="${f(X(gx + gridW))}" y2="${f(Y(gy + CELL_H))}" stroke="${GRID_COLOUR}" stroke-width="${GRID_STROKE}"/>`);
+  parts.push(`<rect x="${f(X(gx))}" y="${f(Y(gy))}" width="${gridW}" height="${gridH}" fill="none" stroke="${gridC}" stroke-width="${GRID_STROKE}"/>`);
+  parts.push(`<line x1="${f(X(gx + CELL_W))}" y1="${f(Y(gy))}" x2="${f(X(gx + CELL_W))}" y2="${f(Y(gy + gridH))}" stroke="${gridC}" stroke-width="${GRID_STROKE}"/>`);
+  parts.push(`<line x1="${f(X(gx))}" y1="${f(Y(gy + CELL_H))}" x2="${f(X(gx + gridW))}" y2="${f(Y(gy + CELL_H))}" stroke="${gridC}" stroke-width="${GRID_STROKE}"/>`);
 
   // Column labels across the top — centred over each column, in house blue. Each
   // is shrunk (down to the floor) so it fits within its cell width, never spilling
@@ -173,8 +183,8 @@ function tightSvg(data) {
   const colAvail = CELL_W - LABEL_FIT_PAD;
   const colFontL = fitFont(data.colLabel, colAvail, COL_LABEL_FONT, LABEL_MIN_FONT);
   const colFontR = fitFont(data.colNotLabel, colAvail, COL_LABEL_FONT, LABEL_MIN_FONT);
-  parts.push(`<text x="${f(X(colMidL))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontL)}" font-weight="bold" fill="${COL_LABEL_C}" text-anchor="middle" dominant-baseline="middle">${esc(data.colLabel || '')}</text>`);
-  parts.push(`<text x="${f(X(colMidR))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontR)}" font-weight="bold" fill="${COL_LABEL_C}" text-anchor="middle" dominant-baseline="middle">${esc(data.colNotLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(colMidL))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontL)}" font-weight="bold" fill="${colLabelC}" text-anchor="middle" dominant-baseline="middle">${esc(data.colLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(colMidR))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontR)}" font-weight="bold" fill="${colLabelC}" text-anchor="middle" dominant-baseline="middle">${esc(data.colNotLabel || '')}</text>`);
 
   // Row labels down the side — centred beside each row and ROTATED to run up the
   // side, in house orange, so the two criteria read distinctly (blue across, orange
@@ -187,8 +197,8 @@ function tightSvg(data) {
   const rowAvail = CELL_H - LABEL_FIT_PAD;
   const rowFontT = fitFont(data.rowLabel, rowAvail, ROW_LABEL_FONT, LABEL_MIN_FONT);
   const rowFontB = fitFont(data.rowNotLabel, rowAvail, ROW_LABEL_FONT, LABEL_MIN_FONT);
-  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidT))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontT)}" font-weight="bold" fill="${ROW_LABEL_C}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidT))})">${esc(data.rowLabel || '')}</text>`);
-  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidB))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontB)}" font-weight="bold" fill="${ROW_LABEL_C}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidB))})">${esc(data.rowNotLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidT))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontT)}" font-weight="bold" fill="${rowLabelC}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidT))})">${esc(data.rowLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidB))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontB)}" font-weight="bold" fill="${rowLabelC}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidB))})">${esc(data.rowNotLabel || '')}</text>`);
 
   // Placed shapes: rounded chips with the shape name, stacked vertically and
   // centred in each cell when several share it.
@@ -207,8 +217,8 @@ function tightSvg(data) {
       let chipTop = cyMid - totalH / 2;
       list.forEach(function (s) {
         const top = chipTop;
-        parts.push(`<rect x="${f(X(cx - CHIP_W / 2))}" y="${f(Y(top))}" width="${CHIP_W}" height="${CHIP_H}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${CHIP_STROKE_C}" stroke-width="${CHIP_STROKE}"/>`);
-        parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${CHIP_TEXT_C}" text-anchor="middle" dominant-baseline="middle">${esc(s.label)}</text>`);
+        parts.push(`<rect x="${f(X(cx - CHIP_W / 2))}" y="${f(Y(top))}" width="${CHIP_W}" height="${CHIP_H}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${chipStrokeC}" stroke-width="${CHIP_STROKE}"/>`);
+        parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${chipTextC}" text-anchor="middle" dominant-baseline="middle">${esc(s.label)}</text>`);
         chipTop += CHIP_H + CHIP_VGAP;
       });
     });
@@ -224,7 +234,7 @@ function tightSvg(data) {
       if (fade < 1) {
         parts.push(`<rect x="${f(box.x)}" y="${f(box.y)}" width="${CELL_W}" height="${CELL_H}" fill="#FFFFFF" fill-opacity="${(1 - fade).toFixed(2)}"/>`);
       }
-      parts.push(highlight.ringSvg(marked, cell, box, Math.max(w, h)));
+      parts.push(highlight.ringSvg(marked, cell, box, Math.max(w, h), ink));
     });
   }
 

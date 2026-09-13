@@ -30,6 +30,7 @@
 //              shape is placed (the chips themselves show the regions).
 
 const highlight = require('./figure-highlight');
+const { INK_TONES, printsInInk } = require('./surface-profiles');
 
 // ─── CONSTANTS (geometry units; the whole drawing scales on placement) ────
 const BOX_W       = 1000;        // universe box width
@@ -70,6 +71,12 @@ const HINT_COLOUR    = '#888888';   // faint region hints
 const CHIP_FILL      = '#FFFFFF';   // placed-chip background
 const CHIP_STROKE_C  = '#00B050';   // placed-chip outline (house green)
 const CHIP_TEXT_C    = '#000000';   // placed-chip text
+
+// The board's colours, and the photocopied pack's. The two circles are told
+// apart by the label printed over each, so on the pack both are drawn in ink;
+// the overlap still reads darker because the two grey tints stack.
+const COLOURS = { box: BOX_COLOUR, left: CIRCLE_LEFT_C, right: CIRCLE_RIGHT_C, fillL: CIRCLE_FILL_L, fillR: CIRCLE_FILL_R, labelL: LABEL_LEFT_C, labelR: LABEL_RIGHT_C, hint: HINT_COLOUR, chip: CHIP_STROKE_C, chipText: CHIP_TEXT_C, region: `#${highlight.RING}` };
+const INK = { box: INK_TONES.ink, left: INK_TONES.ink, right: INK_TONES.ink, fillL: INK_TONES.mid, fillR: INK_TONES.mid, labelL: INK_TONES.ink, labelR: INK_TONES.ink, hint: INK_TONES.mid, chip: INK_TONES.ink, chipText: INK_TONES.ink, region: INK_TONES.mid };
 // ─── END CONSTANTS ────────────────────────────────────────────────────────
 
 const REGIONS = ['leftOnly', 'rightOnly', 'overlap', 'outside'];
@@ -89,23 +96,23 @@ const HIGHLIGHT_PARTS = [
 // region. Every region is "this shape, minus the parts of it that belong to
 // somebody else", which a mask says directly: white shows, black hides.
 function regionFill(region, id, geom) {
-  const { X, Y, cxL, cxR, cy, f } = geom;
+  const { X, Y, cxL, cxR, cy, f, C } = geom;
   const circle = (cx, fill) => `<circle cx="${f(X(cx))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="${fill}"/>`;
   const box = (fill) => `<rect x="${f(X(0))}" y="${f(Y(0))}" width="${f(BOX_W)}" height="${f(BOX_H)}" rx="${BOX_RX}" fill="${fill}"/>`;
 
   let paint;
   let mask;
   if (region === 'overlap') {
-    paint = circle(cxL, `#${highlight.RING}`);
+    paint = circle(cxL, C.region);
     mask = circle(cxR, 'white');
   } else if (region === 'leftOnly') {
-    paint = circle(cxL, `#${highlight.RING}`);
+    paint = circle(cxL, C.region);
     mask = circle(cxL, 'white') + circle(cxR, 'black');
   } else if (region === 'rightOnly') {
-    paint = circle(cxR, `#${highlight.RING}`);
+    paint = circle(cxR, C.region);
     mask = circle(cxR, 'white') + circle(cxL, 'black');
   } else {
-    paint = box(`#${highlight.RING}`);
+    paint = box(C.region);
     mask = box('white') + circle(cxL, 'black') + circle(cxR, 'black');
   }
   return {
@@ -194,7 +201,10 @@ function regionAnchor(region) {
   }
 }
 
-function tightSvg(data) {
+// `profile` is optional: the stick-in pack passes its own so the diagram prints
+// in ink; every other surface draws it in the board's colours.
+function tightSvg(data, profile) {
+  const C = printsInInk(profile) ? INK : COLOURS;
   const shapes = resolveShapes(data);
   const marked = highlight.resolveHighlight(data, HIGHLIGHT_PARTS, 'Venn diagram');
   const showHints = data.showRegionHints !== false && shapes.length === 0;
@@ -213,13 +223,13 @@ function tightSvg(data) {
   const parts = [];
 
   // Universe box.
-  parts.push(`<rect x="${f(X(0))}" y="${f(Y(0))}" width="${f(BOX_W)}" height="${f(BOX_H)}" rx="${BOX_RX}" fill="#FFFFFF" stroke="${BOX_COLOUR}" stroke-width="${BOX_STROKE}"/>`);
+  parts.push(`<rect x="${f(X(0))}" y="${f(Y(0))}" width="${f(BOX_W)}" height="${f(BOX_H)}" rx="${BOX_RX}" fill="#FFFFFF" stroke="${C.box}" stroke-width="${BOX_STROKE}"/>`);
 
   // Pointing at a region: painted under the circle outlines and the chips, so
   // the diagram still reads as a Venn with one region lit rather than as a
   // coloured blob with a Venn somewhere behind it.
   if (marked.size) {
-    const geom = { X, Y, cxL, cxR, cy, f };
+    const geom = { X, Y, cxL, cxR, cy, f, C };
     const defs = [];
     const fills = [];
     [...marked].forEach(function (region, i) {
@@ -232,12 +242,12 @@ function tightSvg(data) {
   }
 
   // Translucent circle fills first (so the overlap reads as the two colours stacked).
-  parts.push(`<circle cx="${f(X(cxL))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="${CIRCLE_FILL_L}" fill-opacity="${CIRCLE_FILL_OP}"/>`);
-  parts.push(`<circle cx="${f(X(cxR))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="${CIRCLE_FILL_R}" fill-opacity="${CIRCLE_FILL_OP}"/>`);
+  parts.push(`<circle cx="${f(X(cxL))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="${C.fillL}" fill-opacity="${CIRCLE_FILL_OP}"/>`);
+  parts.push(`<circle cx="${f(X(cxR))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="${C.fillR}" fill-opacity="${CIRCLE_FILL_OP}"/>`);
 
   // Circle outlines.
-  parts.push(`<circle cx="${f(X(cxL))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="none" stroke="${CIRCLE_LEFT_C}" stroke-width="${CIRCLE_STROKE}"/>`);
-  parts.push(`<circle cx="${f(X(cxR))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="none" stroke="${CIRCLE_RIGHT_C}" stroke-width="${CIRCLE_STROKE}"/>`);
+  parts.push(`<circle cx="${f(X(cxL))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="none" stroke="${C.left}" stroke-width="${CIRCLE_STROKE}"/>`);
+  parts.push(`<circle cx="${f(X(cxR))}" cy="${f(Y(cy))}" r="${CIRCLE_R}" fill="none" stroke="${C.right}" stroke-width="${CIRCLE_STROKE}"/>`);
 
   // Circle labels — each sits in the box's top band over its circle's outer half,
   // fit to the half-box width (wrapping to two lines when long) so a long criterion
@@ -256,15 +266,15 @@ function tightSvg(data) {
       parts.push(`<text x="${f(X(cx))}" y="${f(Y(firstY + i * lineH))}" font-family="Comic Sans MS, sans-serif" font-size="${f(fit.font)}" font-weight="bold" fill="${colour}" text-anchor="middle" dominant-baseline="middle">${esc(ln)}</text>`);
     });
   };
-  emitLabel(data.label1 || '', leftCx, LABEL_LEFT_C);
-  emitLabel(data.label2 || '', rightCx, LABEL_RIGHT_C);
+  emitLabel(data.label1 || '', leftCx, C.labelL);
+  emitLabel(data.label2 || '', rightCx, C.labelR);
 
   // Faint region hints on a blank diagram so a child sees the four places — in
   // particular that "outside" is a real region, the heart of the lesson.
   if (showHints) {
     const hint = function (region, txt) {
       const a = regionAnchor(region);
-      parts.push(`<text x="${f(X(a.x))}" y="${f(Y(a.y))}" font-family="Comic Sans MS, sans-serif" font-size="${HINT_FONT}" fill="${HINT_COLOUR}" text-anchor="middle" dominant-baseline="middle">${esc(txt)}</text>`);
+      parts.push(`<text x="${f(X(a.x))}" y="${f(Y(a.y))}" font-family="Comic Sans MS, sans-serif" font-size="${HINT_FONT}" fill="${C.hint}" text-anchor="middle" dominant-baseline="middle">${esc(txt)}</text>`);
     };
     hint('overlap', 'both');
     hint('outside', 'neither');
@@ -286,8 +296,8 @@ function tightSvg(data) {
       list.forEach(function (s) {
         const cx = a.x;
         const top = chipTop;
-        parts.push(`<rect x="${f(X(cx - CHIP_W / 2))}" y="${f(Y(top))}" width="${CHIP_W}" height="${CHIP_H}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${CHIP_STROKE_C}" stroke-width="${CHIP_STROKE}"/>`);
-        parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${CHIP_TEXT_C}" text-anchor="middle" dominant-baseline="middle">${esc(s.label)}</text>`);
+        parts.push(`<rect x="${f(X(cx - CHIP_W / 2))}" y="${f(Y(top))}" width="${CHIP_W}" height="${CHIP_H}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${C.chip}" stroke-width="${CHIP_STROKE}"/>`);
+        parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${C.chipText}" text-anchor="middle" dominant-baseline="middle">${esc(s.label)}</text>`);
         chipTop += CHIP_H + CHIP_VGAP;
       });
     });

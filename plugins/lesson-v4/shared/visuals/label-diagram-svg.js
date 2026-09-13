@@ -59,6 +59,8 @@
 //                 prints its finished labels in the house answer-green so the card
 //                 reads as a worked reference, matching the rest of its colour
 //                 grammar.
+//   answerColour  the colour of the part of a label after `||`, default the
+//                 answer green. The photocopied stick-in pack passes ink.
 
 const INK = '#1A1A1A';
 const DEFAULT_BLUE = '#0070C0';   // house board blue; engines may pass their own
@@ -139,7 +141,7 @@ function wrapLabel(text, maxChars) {
   return lines;
 }
 
-function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK }) {
+function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN }) {
   const W = width, H = height;
   const maxDim = Math.max(W, H);
 
@@ -356,14 +358,14 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
       // Question and its green answer on one line: the segments flow inline, so
       // the pair still centres on lx as a single block.
       const tspans = rows[0]
-        .map((seg) => `<tspan fill="${seg.g ? ANSWER_GREEN : labelColour}">${escapeXml(seg.t)}</tspan>`)
+        .map((seg) => `<tspan fill="${seg.g ? answerColour : labelColour}">${escapeXml(seg.t)}</tspan>`)
         .join('');
       parts.push(`<text x="${f(lx)}" y="${f(ly + fsize * 0.35)}" font-family="${font}" font-size="${fsize}" font-weight="bold" text-anchor="middle">${tspans}</text>`);
     } else if (c.given) {
       // Wrapped label: stack the rows as tspans, the block centred on ly.
       const blockTop = ly - ((rows.length - 1) * lineHeight) / 2;
       const tspans = rows
-        .map((row, k) => `<tspan x="${f(lx)}" y="${f(blockTop + k * lineHeight + fsize * 0.35)}" fill="${row[0].g ? ANSWER_GREEN : labelColour}">${escapeXml(row.map((seg) => seg.t).join(''))}</tspan>`)
+        .map((row, k) => `<tspan x="${f(lx)}" y="${f(blockTop + k * lineHeight + fsize * 0.35)}" fill="${row[0].g ? answerColour : labelColour}">${escapeXml(row.map((seg) => seg.t).join(''))}</tspan>`)
         .join('');
       parts.push(`<text font-family="${font}" font-size="${fsize}" font-weight="bold" fill="${labelColour}" text-anchor="middle">${tspans}</text>`);
     } else {
