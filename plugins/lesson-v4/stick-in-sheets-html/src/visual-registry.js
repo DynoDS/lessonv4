@@ -16,6 +16,19 @@ const geoboard = require("../../shared/visuals/geoboard-svg");
 const numberLine = require("../../shared/visuals/number-line-svg");
 const { profileFor } = require("../../shared/visuals/surface-profiles");
 
+// The one way the pack places a shared drawing laid out at its printed size,
+// in the stick-in profile (ink, because the pack is photocopied). Any picture
+// moved into shared/visuals/ reaches the pack through this.
+function sharedPiece(module, defaultWidthMm, extra = {}) {
+  return {
+    geometry: module,
+    laidOutAtWidth: true,
+    tightSvg: (spec, box) => module.tightSvg(spec, profileFor("stickin", box || { widthMm: defaultWidthMm })),
+    defaultWidthMm,
+    ...extra,
+  };
+}
+
 // A labelled diagram a child sticks in and writes the part names onto. The figure
 // is the SAME one the board shows (the slide's label-diagram), so the cut-out and
 // the board read as one activity; here the labels are left as blank write-on lines
@@ -64,11 +77,8 @@ const VISUALS = {
   // reaches it has given the task away before they start.
   "number-line": {
     // The one shared number line, in the stick-in profile: ink only, laid out
-    // at the 130mm it prints, with a band under the numbers to write in.
-    geometry: numberLine,
-    laidOutAtWidth: true,
-    tightSvg: (spec, box) => numberLine.tightSvg(spec, profileFor("stickin", box || { widthMm: 130 })),
-    defaultWidthMm: 130,
+    // at the width it prints.
+    ...sharedPiece(numberLine, 130),
     // A piece copied from a slide may carry the slide's answer dot; the child's
     // copy never shows it.
     specFn: (s) => {

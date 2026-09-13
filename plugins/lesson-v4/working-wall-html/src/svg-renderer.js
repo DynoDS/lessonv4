@@ -256,23 +256,27 @@ function fractionCircleKey(spec) {
 // own in bold Arial with a red dot until 13 September 2026, and a Year 4 card
 // looked nothing like the slides beside it. The card's `from / to / step /
 // marks` spelling is read by the shared module, so cards written for the old
-// drawing still draw. Laid out at the width a wide wall visual prints across a
-// card, in the wall's profile (bold, read across a room).
-const WALL_NUMBER_LINE_BOX = { widthMm: 180 };
-const wallNumberLineProfile = () => profileFor('wall', WALL_NUMBER_LINE_BOX);
-
-function numberLineTight(spec) {
-  const { svg, aspect } = numberLineShared.tightSvg(spec, wallNumberLineProfile());
-  return { svg, aspect };
+// drawing still draw.
+// The one way the wall places a shared drawing laid out at its printed size:
+// a key and a drawing function in the wall's profile, at the width a wide wall
+// visual prints across a card. Any picture moved into shared/visuals/ reaches
+// the wall through this.
+const WALL_VISUAL_WIDTH_MM = 180;
+function sharedAtWidth(module, widthMm = WALL_VISUAL_WIDTH_MM) {
+  const profile = () => profileFor('wall', { widthMm });
+  return {
+    keyFn: (spec) => module.cacheKey(spec, profile()),
+    tightFn: (spec) => {
+      const { svg, aspect } = module.tightSvg(spec, profile());
+      return { svg, aspect };
+    },
+  };
 }
 
-function numberLineSvg(spec) {
-  return numberLineTight(spec).svg;
-}
-
-function numberLineKey(spec) {
-  return numberLineShared.cacheKey(spec, wallNumberLineProfile());
-}
+const numberLineWall = sharedAtWidth(numberLineShared);
+const numberLineTight = numberLineWall.tightFn;
+const numberLineKey = numberLineWall.keyFn;
+const numberLineSvg = (spec) => numberLineTight(spec).svg;
 
 // ─── Angle fan ─────────────────────────────────────────────────────────
 // Two rays meeting at a vertex, with the angle between them filled as a
@@ -712,7 +716,7 @@ async function preRenderSvgs(spec) {
     clock:            { keyFn: clockKey,            svgFn: clockSvg,            collected: {} },
     fractionCircle:   { keyFn: fractionCircleKey,   svgFn: fractionCircleSvg,   collected: {} },
     fractionBar:      { keyFn: fractionBarKey,      svgFn: fractionBarSvg,      collected: {} },
-    numberLine:       { keyFn: numberLineKey,       tightFn: (s) => numberLineShared.tightSvg(s, wallNumberLineProfile()), collected: {} },
+    numberLine:       { ...numberLineWall, collected: {} },
     angleFan:         { keyFn: angleFanKey,         svgFn: angleFanSvg,         collected: {} },
     'turn-diagram':   { keyFn: turnDiagramKey,      svgFn: turnDiagramSvg,      collected: {} },
     comparisonSymbol: { keyFn: comparisonSymbolKey, svgFn: comparisonSymbolSvg, collected: {} },

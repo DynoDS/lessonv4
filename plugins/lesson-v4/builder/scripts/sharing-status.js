@@ -151,7 +151,7 @@ function worksheetDrawsFrom(key, geometrySource) {
   const entry = src.slice(at, lineEnd) + (next < 0 ? rest : rest.slice(0, next));
   const base = path.basename(geometrySource, '.js');
   // fromShared(alias, ...) where alias is the module.
-  const direct = /fromShared\(\s*([A-Za-z_$][\w$]*)/.exec(entry);
+  const direct = /(?:fromShared|atPrintedWidth)\(\s*([A-Za-z_$][\w$]*)/.exec(entry);
   if (direct) {
     const alias = direct[1];
     return new RegExp(String.raw`\b` + alias + String.raw`\s*=\s*require\(\s*['"][^'"]*shared/visuals/` + base + String.raw`(?:\.js)?['"]`).test(src);
@@ -182,6 +182,10 @@ function wallDrawsFrom(key, geometrySource) {
   if (!row) return false;
   if (alias && new RegExp(String.raw`(?:tightFn|svgFn)\s*:[^,]*\b` + alias[1] + String.raw`\.tightSvg\b`).test(row[1])) return true;
   if (alias && new RegExp(String.raw`(?:tightFn|svgFn)\s*:\s*` + alias[1] + String.raw`\.`).test(row[1])) return true;
+  // `...sharedAtWidth(module)` spread into the row, or spread from a const made by it.
+  if (alias && new RegExp(String.raw`sharedAtWidth\(\s*` + alias[1] + String.raw`\b`).test(row[1])) return true;
+  const spread = /\.\.\.\s*([A-Za-z_$][\w$]*)/.exec(row[1]);
+  if (alias && spread && new RegExp(String.raw`const\s+` + spread[1] + String.raw`\s*=\s*sharedAtWidth\(\s*` + alias[1] + String.raw`\b`).test(src)) return true;
   if (destructured) {
     const names = destructured[1].split(',').map((x) => x.trim().split(':').pop().trim());
     return names.some((n) => new RegExp(String.raw`(?:tightFn|svgFn)\s*:\s*` + n + String.raw`\b`).test(row[1]));

@@ -153,30 +153,16 @@ function needsClockRow(spec) {
 // drew its own line until 13 September 2026, and every repair made to it
 // reached no other surface.
 const numberLineShared = require("../../../shared/visuals/number-line-svg");
-const { profileFor, MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
+const { atPrintedWidth } = require("./at-printed-width");
 
-function numberLineAt(spec, width) {
-  const widthMm = typeof width === "number" ? width : width && width.widthMm;
-  return numberLineShared.tightSvg(spec, profileFor("worksheets", { widthMm: widthMm > 0 ? widthMm : 170 }));
-}
-
-function renderNumberLine(spec, widthMm) {
-  return `<div class="h-figure">${numberLineAt(spec, widthMm).svg}</div>`;
-}
-
-function measureNumberLine(spec, widthMm) {
-  return numberLineAt(spec, widthMm).h / MM_TO_PT;
-}
-
-function needsNumberLine(spec) {
+// Each printed label needs room either side of it not to collide with its
+// neighbour; each box or arrow needs enough width that two adjacent ones do not
+// touch. Whichever is the tighter constraint wins.
+function numberLineMinWidthMm(spec) {
   const lines = numberLineShared.normalise(spec);
   const labelCount = Math.max(...lines.map((l) => l.labels.length));
   const featureCount = Math.max(...lines.map((l) => Math.max(l.boxes.length, l.arrows.length, l.jumps.length)));
-  // Each printed label needs room either side of it not to collide with its
-  // neighbour; each box or arrow needs enough width that two adjacent ones do
-  // not touch. Whichever is the tighter constraint wins.
-  const minWidthMm = Math.max(70, labelCount * 14, featureCount * 22);
-  return { minWidthMm, minHeightMm: measureNumberLine(spec, minWidthMm) };
+  return Math.max(70, labelCount * 14, featureCount * 22);
 }
 
 // ─── fraction-bar ───────────────────────────────────────────────────────
@@ -271,15 +257,7 @@ const helpers = {
     needs: needsClockRow,
     greed: NEVER_STRETCH,
   },
-  "number-line": {
-    // Lays itself out at the printed width and holds its own readable floor,
-    // so the scale-with-the-zone legibility floor does not apply.
-    physical: true,
-    render: renderNumberLine,
-    measure: measureNumberLine,
-    needs: needsNumberLine,
-    greed: NEVER_STRETCH,
-  },
+  "number-line": atPrintedWidth(numberLineShared, { minWidthMm: numberLineMinWidthMm }),
   "fraction-bar": {
     render: renderFractionBar,
     measure: measureFractionBar,
