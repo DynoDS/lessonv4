@@ -398,6 +398,8 @@ const TYPED_LAYOUT = Object.freeze([
   'source-copy',      // a printed copy of the lesson's own picture file
   'recording-table',  // a table the child fills in
   'callout',          // a box of words with an arrow, for pointing
+  'geographical-description-frame', // three headed prompts with writing lines, like writing-frame
+  'draw-box-row',     // empty captioned boxes to draw in, like the sheet's drawing-space
 ]);
 
 // Worksheet helpers that are the sheet's own typed layout (questions, writing
@@ -431,7 +433,6 @@ const WORKSHEET_LAYOUT_EXEMPT = Object.freeze([
 // `--backlog` prints this literal.
 const SHARING_BACKLOG = Object.freeze({
   "comparison-slot": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "geographical-description-frame": { worksheets: 'missing', wall: 'missing' },
   "polygon": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "triangle-square": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
   "turn-diagram": { slides: 'own', worksheets: 'own', wall: 'own', stickin: 'missing' },
@@ -460,7 +461,6 @@ const SHARING_BACKLOG = Object.freeze({
   "measuring-jug": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "translation-grid": { slides: 'own', worksheets: 'missing', wall: 'missing', stickin: 'missing' },
   "part-whole-model": { slides: 'own', worksheets: 'own', wall: 'missing', stickin: 'missing' },
-  "draw-box-row": { slides: 'missing', worksheets: 'missing', wall: 'missing', stickin: 'own' },
   "base-ten-blocks": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "counter-group": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
   "ruler": { slides: 'missing', worksheets: 'own', wall: 'missing', stickin: 'missing' },
