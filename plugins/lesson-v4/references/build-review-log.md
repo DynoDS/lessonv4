@@ -1,5 +1,9 @@
 # Build review log
 
+## 2026-09-13 The reviewer's fit judgement is User-fit, and the instructions say "the user" (4.2.182)
+
+The user asked for their name to come out of the instructions the agents read. The design reviewer's second judgement is now `User-fit` (the report line, the packet check and the routing card all use it), and every agent and reference file that named them now says "the user". Code comments, test provenance and this log still carry dated history; no model reads those at runtime. Nothing about what is judged changed.
+
 ## 2026-09-13 The design reviewer reads each thing once, and a small repair stays small (4.2.181)
 
 Daniel had an outside assistant audit the design reviewer for wasted work at 4.2.175 and asked for its changes to be made. Each finding was checked against 4.2.180 before anything changed; all eight held. Nothing in what the reviewer judges was removed.

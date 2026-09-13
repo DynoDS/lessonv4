@@ -194,11 +194,11 @@ The joke lands on the wrong idea, so it teaches while it amuses, and a wrong rul
 
 The six routes above tell you where to look. This is how to tell whether what you found is actually one, because the commonest failure is not a bad joke, it is a plain fact delivered in a wry tone and mistaken for a light moment.
 
-The line Daniel liked, about the kinds of teeth:
+The line the user liked, about the kinds of teeth:
 
 > Thankfully, your teeth have divided up the jobs rather than all applying for the same one.
 
-A line written into a teeth lesson from the same material, which he did not:
+A line written into a teeth lesson from the same material, which the user did not:
 
 > The softest part of the tooth is the one part that never does any of the biting. It sits in the middle while enamel and dentine do all the hard work.
 
@@ -214,11 +214,11 @@ The same applies to placement. A light line can sit on the slide where children 
 
 ## Now there is room, so look harder, and refuse harder
 
-Daniel, once the decks had been stripped back to a picture, a landed sentence and a question: "now slides are simple and better, a bit of humour would make me like them more but has to be funny" (12 September 2026). Both halves are instructions.
+The user, once the decks had been stripped back to a picture, a landed sentence and a question: "now slides are simple and better, a bit of humour would make me like them more but has to be funny" (12 September 2026). Both halves are instructions.
 
 A lean board has room a crowded one never had, and a light line lands differently on it: on a wall of text it is one more thing to read, and on a slide holding four things it is the one a child reads twice. So the material is worth going back to, and the six routes above are worth going through properly rather than glancing at.
 
-The bar does not move with the appetite. What he wants more of is the line with a turn in it, and a flat line is not a smaller version of that, it is a different thing that costs attention and returns nothing. Looking harder and accepting less are the same instruction here: go through the routes, and if none of them hands you a moment that does something unexpected, write none and mean it.
+The bar does not move with the appetite. What the user wants more of is the line with a turn in it, and a flat line is not a smaller version of that, it is a different thing that costs attention and returns nothing. Looking harder and accepting less are the same instruction here: go through the routes, and if none of them hands you a moment that does something unexpected, write none and mean it.
 
 ## Most lessons hand over nothing
 
@@ -647,7 +647,7 @@ Do not over-explain the warning.
 
 # 12. Comparison and critique prompts
 
-Name what children are comparing in words you would actually say. Daniel's preference is illustrated by “What has stayed the same about how apprentices learn their jobs?” rather than “What continuity in learning do these sources show?”, and “Children still pretend to do things adults do” rather than “Pretend household play has continued.” The issue is the abstract packaging, not the word continuity: teach and use that word, attached to a concrete meaning. Apply this distinction to other subjects; do not copy these history sentences into unrelated lessons or remove precise vocabulary from the learning.
+Name what children are comparing in words you would actually say. The user's preference is illustrated by “What has stayed the same about how apprentices learn their jobs?” rather than “What continuity in learning do these sources show?”, and “Children still pretend to do things adults do” rather than “Pretend household play has continued.” The issue is the abstract packaging, not the word continuity: teach and use that word, attached to a concrete meaning. Apply this distinction to other subjects; do not copy these history sentences into unrelated lessons or remove precise vocabulary from the learning.
 
 Natural comparison prompts include:
 

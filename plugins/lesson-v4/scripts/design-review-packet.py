@@ -231,7 +231,7 @@ ALWAYS_READ_REVIEW_SECTIONS = (
     (
         "preferences.md",
         "Pride Lessons (Quality Anchor)",
-        "Read every review, before the Daniel-fit judgement: it is the "
+        "Read every review, before the User-fit judgement: it is the "
         "calibration for how much one beat puts in front of the class and how "
         "often a lesson returns to the same evidence. A fit judgement that "
         "lists features present has not used it.",
@@ -1278,7 +1278,7 @@ def require_review_judgements(review_path: Path, review_result: str) -> dict[str
     """Require distinct judgements, not a claim that either was judged well."""
     text = review_path.read_text(encoding="utf-8")
     judgements = {}
-    for label in ("Pedagogy", "Daniel-fit"):
+    for label in ("Pedagogy", "User-fit"):
         matches = re.findall(
             rf"^{re.escape(label)}: (PASS|REVISE)\s*$", text, re.MULTILINE
         )
@@ -1286,7 +1286,7 @@ def require_review_judgements(review_path: Path, review_result: str) -> dict[str
             raise PacketError(f"design-review.md requires exactly one '{label}: PASS' or '{label}: REVISE' line")
         judgements[label] = matches[0]
     if review_result == "APPROVED" and "REVISE" in judgements.values():
-        raise PacketError("APPROVED requires both Pedagogy and Daniel-fit to PASS")
+        raise PacketError("APPROVED requires both Pedagogy and User-fit to PASS")
     if review_result == "REDESIGN REQUIRED" and "REVISE" not in judgements.values():
         raise PacketError("REDESIGN REQUIRED must identify which judgement needs revision")
     return judgements

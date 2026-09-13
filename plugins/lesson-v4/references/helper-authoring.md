@@ -91,7 +91,7 @@ Four things are already settled for you and should not be re-decided per figure:
 
 ## One drawing, on every surface
 
-**A picture is drawn once, in `shared/visuals/<name>-svg.js`, and the board, the worksheet, the working wall and the stick-in pack all place that one drawing.** Four surfaces used to mean four drawings, each surface's author deciding whether a picture belonged there and, often, drawing it again in its own code. The number line ended up drawn four ways: a Year 4 wall card printed it in bold Arial with a red dot beside slides that looked nothing like it, a repair to the worksheet line reached no other surface, and a lesson that needed a picture on a surface that "couldn't use that one" had it built again (13 September 2026). Daniel's ruling: everything shared, so a child meets one picture everywhere and nothing is ever rebuilt for a surface.
+**A picture is drawn once, in `shared/visuals/<name>-svg.js`, and the board, the worksheet, the working wall and the stick-in pack all place that one drawing.** Four surfaces used to mean four drawings, each surface's author deciding whether a picture belonged there and, often, drawing it again in its own code. The number line ended up drawn four ways: a Year 4 wall card printed it in bold Arial with a red dot beside slides that looked nothing like it, a repair to the worksheet line reached no other surface, and a lesson that needed a picture on a surface that "couldn't use that one" had it built again (13 September 2026). The user's ruling: everything shared, so a child meets one picture everywhere and nothing is ever rebuilt for a surface.
 
 So two things are settled before you start, and neither is a decision to make per helper:
 

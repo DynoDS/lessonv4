@@ -1,4 +1,4 @@
-# Daniel-fit regression cases
+# User-fit regression cases
 
 These are evaluation inputs and expected distinctions, not additional runtime instructions or results from model trials. Use the same brief, source material and scoring criteria for baseline and candidate. A schema pass, matching review count or confident PASS does not score a case.
 

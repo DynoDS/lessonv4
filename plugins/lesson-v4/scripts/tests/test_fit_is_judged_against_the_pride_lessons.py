@@ -6,7 +6,7 @@ Lessons: "The slides were minimal: the question, the tool, the SC. The
 teacher's voice filled the rest." The reviewer's routing card sent it there
 "only when a difficult quality boundary remains unresolved", and no review
 ever found one. On 10 September 2026 the reviewer approved a Year 4 history
-design with `Daniel-fit: PASS` on the strength of features present ("both
+design with `User-fit: PASS` on the strength of features present ("both
 comparison objects available and live model space retained"); the lesson was
 abandoned in the room because one practice beat carried four sources, a task
 in three parts and the criteria at once, and the same plate came back on nine
@@ -40,12 +40,12 @@ class TheReviewerJudgesAmountAgainstThePrideLessonsTests(unittest.TestCase):
 
     def test_the_calibration_is_held_before_the_fit_judgement(self) -> None:
         self.assertIn(
-            "Daniel-fit has a calibration, and you hold it before you judge: "
+            "User-fit has a calibration, and you hold it before you judge: "
             "`preferences.md` → Pride Lessons.",
             self.text,
         )
         self.assertIn(
-            "a slide is the question, the tool and the criteria, and his voice does the rest",
+            "a slide is the question, the tool and the criteria, and the user's voice does the rest",
             self.text,
         )
 
@@ -66,7 +66,7 @@ class TheReviewerJudgesAmountAgainstThePrideLessonsTests(unittest.TestCase):
 
     def test_too_much_is_a_defect_the_designer_repairs_not_polish(self) -> None:
         self.assertIn(
-            "Either one is REVISE on Daniel-fit and a purposeful design defect, not polish",
+            "Either one is REVISE on User-fit and a purposeful design defect, not polish",
             self.text,
         )
 
@@ -94,7 +94,7 @@ class TheRoutingCardOpensThePrideLessonsEveryReviewTests(unittest.TestCase):
             text,
         )
         self.assertIn(
-            '"Read every review, before the Daniel-fit judgement: it is the " '
+            '"Read every review, before the User-fit judgement: it is the " '
             '"calibration for how much one beat puts in front of the class and how " '
             '"often a lesson returns to the same evidence.',
             text,

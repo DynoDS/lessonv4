@@ -269,7 +269,7 @@ def write_review(
         f"{voice_sweep}\n\n"
         "## Judgements\n"
         f"Pedagogy: {'PASS' if result == 'APPROVED' else 'REVISE'}\n"
-        "Daniel-fit: PASS\n",
+        "User-fit: PASS\n",
         encoding="utf-8",
     )
     return path
@@ -2172,15 +2172,15 @@ def test_observation_prompt_reaches_voice_review_but_do_metadata_does_not():
 def test_separate_judgements_cannot_be_hidden_by_overall_approval():
     with tempfile.TemporaryDirectory() as directory:
         report = Path(directory) / "review.md"
-        report.write_text("Pedagogy: PASS\nDaniel-fit: REVISE\n", encoding="utf-8")
+        report.write_text("Pedagogy: PASS\nUser-fit: REVISE\n", encoding="utf-8")
         try:
             packet_module.require_review_judgements(report, "APPROVED")
         except packet_module.PacketError as error:
             assert "both" in str(error)
         else:
             raise AssertionError("A failed personal-fit judgement was approved")
-        assert packet_module.require_review_judgements(report, "REDESIGN REQUIRED")["Daniel-fit"] == "REVISE"
-        report.write_text("Pedagogy: PASS\nDaniel-fit: PASS\n", encoding="utf-8")
+        assert packet_module.require_review_judgements(report, "REDESIGN REQUIRED")["User-fit"] == "REVISE"
+        report.write_text("Pedagogy: PASS\nUser-fit: PASS\n", encoding="utf-8")
         assert len(packet_module.require_review_judgements(report, "APPROVED")) == 2
 
 
