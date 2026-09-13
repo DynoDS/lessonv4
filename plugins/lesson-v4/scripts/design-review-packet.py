@@ -180,8 +180,10 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "Success Criteria",
-        "Read when criteria are present: check repeatable wording, any count cues, "
-        "and whether drawLive true or false matches a reference worth retaining.",
+        "Read when criteria are present, with teacher-voice.md → 10. Success "
+        "criteria: check each step runs from its own words for a stuck child, "
+        "any review cues, and whether drawLive true or false matches a "
+        "reference worth retaining.",
     ),
     (
         "The Apply Slide",
@@ -1347,6 +1349,15 @@ def sticky_usage(design: dict) -> dict[str, tuple[list[str], list[str]]]:
     return usage
 
 
+# `Same? Move right.` / `Different? Choose < or >.`: a short question then an
+# instruction. Lookup rows naming content (`Hours → minutes? × 60`) are table
+# cells, not steps, and are not checked here.
+FRAGMENT_CONDITION = re.compile(r"^[^?.!]{1,30}\?\s+\S")
+# A full stop, then a capital: `Look at the equator. Above means north.`
+# Digits (`1.5`) and a leading sparkle-note are not sentence breaks.
+SECOND_SENTENCE = re.compile(r"[a-z0-9)][.!]\s+[A-Z]")
+
+
 def criteria_review_cues(row: dict) -> list[str]:
     """Counts invite semantic review; they neither approve nor reject wording."""
     content = row.get("content") or {}
@@ -1357,15 +1368,33 @@ def criteria_review_cues(row: dict) -> list[str]:
         cues.append(f"{len(steps)} steps: keep necessary actions; check the complete panel fits")
     if len(rows) > 5:
         cues.append(f"{len(rows)} rows: check lookup load and readable placement")
+    # A length cue on its own only ever pushed review towards shorter steps,
+    # and the September 2026 lists the user rewrote were short and vague. Long
+    # steps still get a reread for explanation the teaching already gave; a
+    # question-fragment condition gets one for shorthand the child must unpack.
     for index, step in enumerate(steps, 1):
-        words = len(step.split())
-        if words > 8:
-            cues.append(f"step {index}: {words} words; reread for a short, repeatable action cue")
+        text = step if isinstance(step, str) else str((step or {}).get("text", ""))
+        words = len(text.split())
+        if words > 16:
+            cues.append(
+                f"step {index}: {words} words; reread for explanation the "
+                "teaching already gave, keeping every word that makes it runnable"
+            )
+        if SECOND_SENTENCE.search(text.strip()):
+            cues.append(
+                f"step {index}: more than one sentence; is it two steps, or "
+                "carrying explanation the teaching already gave?"
+            )
+        if FRAGMENT_CONDITION.match(text.strip()):
+            cues.append(
+                f"step {index}: question-fragment condition; would an If... "
+                "sentence save the child unpacking it?"
+            )
     for r, cells in enumerate(rows, 1):
         for c, cell in enumerate(cells, 1):
-            words = len(cell.split())
-            if words > 8:
-                cues.append(f"row {r}, cell {c}: {words} words; reread for a glanceable lookup")
+            words = len(str(cell).split())
+            if words > 16:
+                cues.append(f"row {r}, cell {c}: {words} words; reread for a scannable lookup")
     return cues
 
 

@@ -587,11 +587,7 @@ Do not restate the entire procedure in prose unless it serves a clear teaching p
 
 # 10. Success criteria
 
-Default style:
-- short;
-- imperative;
-- specific;
-- actionable.
+**Use as few words as possible without making the child work out what you mean.** Both halves bind. A step is one imperative sentence, written for a child using it alone once the teaching has moved on, so it has to carry enough of the method that the child could follow it without the teacher translating it, and no more: the panel sits beside the work, and every extra word is read by every child on every question. Shorten until the meaning would start to weaken, then stop. The user's own approved steps are each a single sentence, most of them four to ten words and none longer than about fourteen; that is a calibration of what clear-and-short looks like, not a target to reach. A step that needs a second sentence is usually two steps, or is carrying an explanation the teaching already gave.
 
 Prefer:
 - `Describe what can be seen and heard.`
@@ -602,7 +598,32 @@ Prefer:
 Do not default to:
 > I can use expanded noun phrases.
 
-Criteria are read and used by the child, so they are written in the child's own words. A criterion can be short, imperative, specific and actionable and still fail by being planning language:
+Those four are short and already clear, because each names a move the class has been taught in words the class owns. That is what brevity looks like when it is earned. The failure this section exists for is the opposite one: a step made short by leaving the meaning out.
+
+**Short but vague is the commonest miss.** A tidy five-step list of three-word cues looks finished and still leaves a child decoding every line. The user rewrote real lists like these:
+
+> Read the step size. / Count on across each space. / Check the next label.
+> became
+> Work out what each jump is worth. / Add that amount for each jump. / Check the numbers follow the same pattern.
+
+> Same? Move one place right. / Different? Choose < or >.
+> became
+> If they are the same, compare the hundreds. / Put < or > between the numbers, with the open side facing the greater number.
+
+What changed each time:
+
+- **Name the actual action and what it acts on.** `find`, `work out`, `add`, `compare`, `write`, `check`, with the thing: `Compare the thousands digits first.`, not `Start with the thousands.`
+- **Lesson and task labels need to earn their place.** `starting value`, `step size`, `label`, `space`, `neighbour`, `direction` can all be correct and still make the child translate. Say the thing they can see: `the first number`, `each jump`, `smallest to largest or largest to smallest`.
+- **Write a condition as a sentence, not a slogan.** `If they are the same, compare the hundreds.` is barely longer than `Same? Move right.` and needs no unpacking.
+- **When the child has to choose, give the rule that decides the choice.** `Choose < or >` names the decision; `with the open side facing the greater number` lets the child make it.
+- **Name what a pronoun stands for.** `Divide by that many spaces` makes the child remember what `that` was. `Count on and check` does not say what to count on by; `Count on using the answer to check` does.
+- **Show the arithmetic when the step is a calculation.** `Larger number - smaller number.` and `Difference ÷ number of spaces.` are more immediate than `Find their difference.` and `Divide by that many spaces.` Notation is not less child-friendly than prose when it is what the child writes.
+- **Follow the thinking the child actually does, in that order, outside maths too.** A history comparison became `Choose whether you will describe play or work. / Find something that is the same in both sources. / Find something that has changed. / Use a detail from each source to show how you know.` The broad stages it replaced (`Compare then and now.`, `Match play with play, work with work.`) named the job without saying how to do it. A short reason is allowed when it tells the child what a step is for (`to show how you know`).
+- **Use as many steps as the method has.** Four clear steps are better than five padded or split ones, and six necessary ones are better than five that merge two actions.
+
+These examples show the moves; they are not wording to reuse in another lesson.
+
+Criteria are read and used by the child, so they are written in the child's own words. A step can be imperative and specific and still fail by being planning language:
 
 > Judge balance using the pattern across a day or week.
 
@@ -610,11 +631,13 @@ is a curriculum document's sentence. The child's step is:
 
 > Check the whole day or week.
 
-A criterion is a short, memorable cue: easy to say, repeat and call back while children work. Aim for 2-5 words, not an explanation after every instruction. Eight words is a reread point rather than a ban: keep a few extra words when they make the action clearer. `preferences.md` → Success Criteria owns the length and layout judgement. Remove repeated explanations or equipment alternatives; keep a simple condition inline when it is easy to follow. Shorter is not better if the child no longer knows what to do.
+What a criterion leaves out is explanation the teaching already gave: why the step works, what a word means (`Above the equator means the Northern Hemisphere`), repeated equipment alternatives, examples of what the child might write, a second sentence restating the first. What it keeps is every word that makes the step runnable. Taught subject vocabulary stays when the class owns it (`partition`, `digit`, `fronted adverbial`); an untaught label does not become acceptable because it is shorter.
 
-**Read each step as an instruction to the weakest child in the class.** Short, imperative, specific and actionable is the shape of a step and not the test of one, so a step can pass every rule above and still fail in front of a child who is stuck. `Find the neighbouring multiples.` is four words, imperative and exact, and `neighbouring multiples` is a phrase a struggling Year 4 does not hold, so the step tells them nothing they can do. `Find the 10s or 100s each side of your number.` is longer, plainer and runnable. The criteria are the thing that child leans on when the teaching has moved on, so every step is written in words they already own: do this, then do this, then do this.
+**A step that is already clear is finished.** The repair above is for steps that leave a child guessing, not a licence to lengthen every step. `Use expanded noun phrases.` in a writing lesson that has taught them needs nothing added, and `Use expanded noun phrases to describe the trees, the path and the shadows.` is worse: it spends words and starts choosing the child's content. Ask of each step whether a stuck child could act on it; only where the answer is no do words go in, and only the words that answer it.
 
-**A condition that does not happen every time is not a step.** `Already a multiple? Keep it and stop.` is true and useful and it is not part of running the method, so as step 2 of six it stops every child on every question to rule out a case most of them do not have. Conditions the method runs every time can stay inline (`Ten ones? Exchange for one ten.`); a case that comes up occasionally goes under the steps as its own short note, where the child who needs it finds it and nobody else has to walk past it.
+**Read each step as an instruction to the weakest child in the class.** Short, imperative and specific is the shape of a step and not the test of one, so a step can have that shape and still fail in front of a child who is stuck. `Find the neighbouring multiples.` is four words, imperative and exact, and `neighbouring multiples` is a phrase a struggling Year 4 does not hold, so the step tells them nothing they can do. `Find the 10s or 100s each side of your number.` is longer, plainer and runnable. The criteria are the thing that child leans on when the teaching has moved on, so every step is written in words they already own: do this, then do this, then do this. Scaffold the method, not the answer: a step never supplies the value, verdict or conclusion the child is meant to reach.
+
+**A condition that does not happen every time is not a step.** `If it is already a multiple, keep it.` is true and useful and it is not part of running the method, so as step 2 of six it stops every child on every question to rule out a case most of them do not have. A condition the method meets every time stays in the steps as a sentence (`If you have ten ones, exchange them for one ten.`); a case that comes up occasionally goes under the steps as its own short note, where the child who needs it finds it and nobody else has to walk past it.
 
 Where a class needs more support, the support goes in the step's own words rather than in an explanation after it:
 
@@ -764,7 +787,8 @@ Specific rejected/weak signals from calibration include:
 - `electricity can't just jump over a gap` - too informal for the intended resource;
 - `pop a comma` - too colloquial;
 - `Gap in the circuit = bulb off` - slogan-like compression;
-- `Prove it.` as a generic challenge - too slogan-like / underspecified.
+- `Prove it.` as a generic challenge - too slogan-like / underspecified;
+- `Same digits? Move right.` as a success-criteria step - compressed shorthand the child has to unpack (§10).
 
 ---
 
@@ -891,7 +915,7 @@ What is **not** in them, and this is the part that goes wrong: no staging instru
 Before finalising pupil-facing material, quickly check:
 
 1. **Does this sound natural, or suspiciously polished?**
-2. **Could I remove words without losing useful teaching?**
+2. **Could I remove words without losing useful teaching - and have I already removed words the child needed to know what to do?**
 3. **Does the sentence belong on the slide, or would I actually say it aloud? A script or note must pass as speech: hear the teacher saying it, sentence by sentence.**
 4. **Have I kept useful subject vocabulary where it helps?**
 5. **If I've added scaffolding, what barrier is it solving?**

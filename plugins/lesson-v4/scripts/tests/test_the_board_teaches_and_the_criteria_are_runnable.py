@@ -89,8 +89,8 @@ class CriteriaAreRunnableByTheWeakestChild(unittest.TestCase):
         voice = flat(VOICE)
         self.assertIn("A condition that does not happen every time is not a step", voice)
         self.assertIn("stops every child on every question to rule out a case most of them do not have", voice)
-        # The every-time condition keeps its inline home.
-        self.assertIn("Conditions the method runs every time can stay inline", voice)
+        # The every-time condition keeps its home in the steps, as a sentence.
+        self.assertIn("A condition the method meets every time stays in the steps as a sentence", voice)
 
 
 class ThePanelComesOffTheAnswerSlide(unittest.TestCase):

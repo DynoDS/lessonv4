@@ -57,9 +57,13 @@ class StepsTeachTheInvariantTests(unittest.TestCase):
 
     def test_wordy_steps_remain_a_review_concern_not_a_numeric_ban(self):
         route = flat(SKILL_ROUTE)
-        self.assertIn("repeat as a familiar cue", route)
-        self.assertIn("not automatic rejection", route)
+        self.assertIn("which is not a rejection and not a request to shorten", route)
+        self.assertIn("There is no word or step target", route)
         self.assertIn("Do not compress two distinct actions", route)
+        # Both directions are named, so trimming wordy steps cannot become
+        # compressing clear ones (September 2026 rewrites).
+        self.assertIn("*Too short to run.*", route)
+        self.assertIn("*Too long to use.*", route)
 
 
 class TheObjectivesOwnTermIsTaughtTests(unittest.TestCase):

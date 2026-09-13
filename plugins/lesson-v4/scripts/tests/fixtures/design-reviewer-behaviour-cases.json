@@ -455,7 +455,7 @@
       "materialDifference": "The criteria list uses six necessary, short, runnable actions with stable wording. The supported free-panel composition preserves all steps and adequate working space at the renderer's reading floor, and visual review finds the whole screen usable.",
       "expectedResult": "APPROVED",
       "expectedOwner": "Design Reviewer",
-      "protectedBehaviour": "Judge memorable cues, completeness and actual usability rather than a five-step cap.",
+      "protectedBehaviour": "Judge whether each step runs from its own words, completeness and actual usability rather than a five-step cap.",
       "forbiddenFinding": "Do not merge distinct actions or split the method into two concepts to meet a count."
     },
     {
@@ -463,8 +463,16 @@
       "materialDifference": "Every success-criteria step repeats the teacher's explanation and lists the same equipment alternatives. All necessary meanings can be retained as shorter, familiar action cues, but the design claims that no hard word ceiling makes the prose acceptable.",
       "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
       "expectedOwner": "Design Reviewer",
-      "protectedBehaviour": "Removing a numerical ban does not remove the short, repeatable wording preference.",
+      "protectedBehaviour": "Removing a numerical ban does not license explanation the teaching already gave or repeated alternatives inside a step.",
       "forbiddenFinding": "Do not accept routine verbosity merely because it is structurally valid; do not delete essential teaching."
+    },
+    {
+      "id": "short-vague-criteria-needs-repair",
+      "materialDifference": "Five tidy three- or four-word steps for comparing 4-digit numbers: `Match the place values. / Start with the thousands. / Same? Move one place right. / Different? Choose < or >. / All equal? Write =.` A stuck child cannot tell what to compare or what decides the symbol from the words alone.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "A short, stable list is not evidence of quality; each step must say what to do next, including the rule that decides a choice.",
+      "forbiddenFinding": "Do not approve the list as familiar cues because it is short; do not give away any answer while adding the missing meaning."
     }
   ]
 }
