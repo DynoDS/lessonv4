@@ -1,5 +1,11 @@
 # Build review log
 
+## 2026-09-13 The Scale box goes back under the line (4.2.178)
+
+Daniel: "scale is now above numberline, it was fine where it was, just needed seperation and now that grey line underneath would do that". A caption's answer box is now always centred under the axis numbers, where the caption always was. The above-the-line placement was only there to save height. To pay for the row, the gap above a new question is 6mm rather than 8mm, since the grey line now does most of the separating. This lesson's Expected sheet still ran about 20mm over with the steps panel across the top, so on this sheet it moved into a row beside question 4's writing lines (the worksheet designer's rule 14 already allows this); it now fits at 97%. The rebuilt sheet replaced the copy on the drive. Worksheet engine 684 tests pass.
+
+Open, and put to Daniel: why the four surfaces draw many pictures with separate code (the wall's number line is Arial, bold, with a red dot and an "A = 1,800" readout, unlike the slides), and whether worksheets should follow the slides' colour meanings more fully (slides print a question in blue and a taught word like "scale" in green; worksheets print both in black).
+
 ## 2026-09-13 A thin grey line between questions (4.2.177)
 
 Daniel, shown the comparison: "no harm in a thin grey line if it doesnt force anything to move". A hairline in the rule grey is drawn across the middle of the 8mm gap above a new question (not above a section heading, which marks itself, and not between Parts of one question). It is positioned inside the gap, so no measurement changes: this run's sheets stayed at 100% and 90% full. The repaired scale worksheet and answer key were rebuilt and copied to the Tuesday Maths folder on the drive, replacing the earlier copies; the originals are kept in the run's `before-4.2.176` folder. Worksheet engine 684 tests pass.

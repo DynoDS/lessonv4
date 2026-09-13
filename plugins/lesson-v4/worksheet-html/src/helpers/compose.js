@@ -63,7 +63,7 @@ function introduces(item) {
   );
 }
 
-// A new question, and a new section, start at the section step.
+// A new question, and a new section, start further down than anything inside a question.
 //
 // Everything in a stack used to be 4mm apart, so the join between question 1's
 // last line and question 2's number was the same as the join between question
@@ -72,14 +72,16 @@ function introduces(item) {
 // belonging to the question underneath it (13 September 2026). Tightening the
 // inside of a question (4.2.169) helped and was not enough, because the page
 // still gave the two joins the same space. So the step between questions is now
-// bigger than any step inside one. A Part after the first ("1b") is still the
+// bigger than any step inside one: 6mm, with the grey rule below doing most of
+// the separating. It was the 8mm section step for one release, and a full sheet
+// could not then keep its Scale boxes under the lines where they belong. A Part after the first ("1b") is still the
 // same question, and keeps the ordinary gap.
 //
 // A thin grey rule is drawn across the middle of that gap, between two
 // questions only (not above a section heading, which marks itself). It is
 // positioned inside space the gap already takes, so it moves nothing and the
 // measurement does not change.
-const QUESTION_START_GAP_MM = SPACE.section;
+const QUESTION_START_GAP_MM = SPACE.item + SPACE.tight;
 
 function opensQuestion(item) {
   if (!item || typeof item !== "object" || Array.isArray(item)) return false;

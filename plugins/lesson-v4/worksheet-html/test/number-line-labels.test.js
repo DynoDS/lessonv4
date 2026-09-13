@@ -73,26 +73,18 @@ test("a sentence about the line is a caption, and unit and object refuse one", (
 // A caption with a blank is somewhere to write. "Scale: ___" printed as black
 // text with a three-underscore stub, and did not look like anything to fill in
 // beside the answer box over A (13 September 2026).
-test("a blank in a caption is drawn as an answer box, beside the line's own boxes when one end is clear", () => {
+test("a blank in a caption is drawn as an answer box under the numbers", () => {
   const opts = { widthMm: 170, yearGroup: 4 };
-  const base = { helper: "number-line", start: 2100, end: 2500, interval: 100, labels: [2100, 2200], caption: "Scale: ___" };
-  const rects = (html) => Array.from(html.matchAll(/<rect [^>]*>/g)).length;
-  const { REGISTRY } = require("../src/helpers");
-
-  const beside = renderHelper({ ...base, boxes: [2400] }, opts);
-  assert.ok(!beside.includes("___"), "no underscores reach the page");
-  assert.ok(beside.includes(">Scale:</text>"));
-  assert.strictEqual(rects(beside), 2, "the A box and the scale box");
-  const plain = { ...base, boxes: [2400], caption: undefined };
-  assert.ok(
-    REGISTRY["number-line"].measure({ ...base, boxes: [2400] }, 170) <= REGISTRY["number-line"].measure(plain, 170) + 2,
-    "above the line, in the band the boxes already use, the slot costs no row"
-  );
-
-  // Boxes at both ends leave no room above, so the slot takes a row underneath.
-  const under = { ...base, boxes: [2100, 2500], labels: [2200] };
-  assert.strictEqual(rects(renderHelper(under, opts)), 3);
-  assert.ok(REGISTRY["number-line"].measure(under, 170) > REGISTRY["number-line"].measure({ ...under, caption: undefined }, 170) + 5);
+  const base = { helper: "number-line", start: 2100, end: 2500, interval: 100, labels: [2100, 2200], boxes: [2400], caption: "Scale: ___" };
+  const rects = (html) => Array.from(html.matchAll(/<rect [^>]*>/g));
+  const html = renderHelper(base, opts);
+  assert.ok(!html.includes("___"), "no underscores reach the page");
+  assert.ok(html.includes(">Scale:</text>"));
+  const all = rects(html);
+  assert.strictEqual(all.length, 2, "the A box and the scale box");
+  const y = (r) => Number(/ y="([\d.]+)"/.exec(r[0])[1]);
+  const [top, bottom] = all.map(y).sort((m, n) => m - n);
+  assert.ok(bottom > top + 80, "the scale box sits under the line, not up beside the A box");
 
   // A sentence with no blank is still read, not written in.
   assert.ok(renderHelper({ ...base, caption: "Each interval is worth 100." }, opts).includes(">Each interval is worth 100.</text>"));

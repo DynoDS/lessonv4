@@ -183,17 +183,19 @@ const CAPTION_GAP = 2;
 // few millimetres wide in the same black as the axis numbers, and on a Year 4
 // sheet it did not look like anything to fill in, while the answer box above
 // the line did (13 September 2026). So the blank is drawn as the line's own
-// kind of answer box: the same stroke, wide enough for a four-digit number with
-// its comma, tall enough for a child's handwriting, and set at the start of the
-// line under its first number, where a written answer starts.
+// kind of answer box, same stroke, wide enough for a four-digit number with its
+// comma. It stays where the caption always was, centred under the numbers:
+// moved up beside the answer boxes it saved a row, and Daniel said it had been
+// fine where it was and only needed the question under it kept apart, which the
+// gap and grey line between questions now do.
 const CAPTION_BLANK = /_{2,}/;
-const CAPTION_SLOT_GAP = 12;
-const CAPTION_SLOT_H = 60;
-const CAPTION_SLOT_W = 230;
+const CAPTION_SLOT_GAP = 6;
+const CAPTION_SLOT_H = 50;
+const CAPTION_SLOT_W = 220;
 const CAPTION_SLOT_PAD = 12;
-// The word before the box is read like the question, so it is set larger than
-// the axis numbers.
-const CAPTION_SLOT_FONT = 30;
+// The word before the box is read like the question, so it is set a step larger
+// than the axis numbers.
+const CAPTION_SLOT_FONT = 28;
 const CAPTION_CHAR_W = CAPTION_SLOT_FONT * 0.55;
 
 // Year 4 place value is taught WITH the comma, and the question beside the
@@ -325,10 +327,6 @@ function buildNumberLineSvg(spec) {
     ) + 8;
 
   const captionSlot = caption != null && CAPTION_BLANK.test(String(caption));
-  // Where the slot goes. Above the line, level with the answer boxes, when the
-  // band they need is already there and one end of it is clear: that band is
-  // mostly empty paper, so the slot costs the page nothing. Otherwise under the
-  // numbers, which costs a row.
   let slotPlace = null;
   if (captionSlot) {
     const [before, ...rest] = String(caption).split(CAPTION_BLANK);
@@ -337,24 +335,12 @@ function buildNumberLineSvg(spec) {
     const leadW = lead ? lead.length * CAPTION_CHAR_W + CAPTION_SLOT_PAD : 0;
     const afterW = after ? CAPTION_SLOT_PAD + after.length * CAPTION_CHAR_W : 0;
     const groupW = leadW + CAPTION_SLOT_W + afterW;
-    slotPlace = { lead, after, leadW, groupW, above: false, x: padLeft };
-    const inner = widthPx - padLeft - padRight;
-    if (boxes.length && !hasArrows && !hasObject && !jumps.length && groupW < inner / 2) {
-      const at = (v) => padLeft + ((v - start) / (end - start)) * inner;
-      const clear = boxSize / 2 + 30;
-      const leftEnd = padLeft + groupW;
-      const rightStart = widthPx - padRight - groupW;
-      if (boxes.every((v) => at(v) - clear > leftEnd)) {
-        slotPlace = { ...slotPlace, above: true, x: padLeft };
-      } else if (boxes.every((v) => at(v) + clear < rightStart)) {
-        slotPlace = { ...slotPlace, above: true, x: rightStart };
-      }
-    }
+    slotPlace = { lead, after, x: (widthPx - groupW) / 2 };
   }
   const captionH = !caption
     ? 0
     : captionSlot
-    ? slotPlace.above ? 8 : CAPTION_SLOT_GAP + CAPTION_SLOT_H + 4
+    ? CAPTION_SLOT_GAP + CAPTION_SLOT_H + 4
     : CAPTION_GAP + CAPTION_FONT + 4;
   const bottomSpace = (hasLabels ? labelRowH + labelGap : 0) + (caption ? captionH : 8);
   const axisY = topSpace + Math.max(tallTickH, tickH) / 2;
@@ -430,9 +416,7 @@ function buildNumberLineSvg(spec) {
     // Words before the blank, the box, then any words after it, on one row
     // from the left edge of the line.
     const { lead, after } = slotPlace;
-    const top = slotPlace.above
-      ? axisY - Math.max(tallTickH, tickH) / 2 - boxGap - CAPTION_SLOT_H
-      : labelY + (hasLabels ? labelRowH : 0) + CAPTION_SLOT_GAP;
+    const top = labelY + (hasLabels ? labelRowH : 0) + CAPTION_SLOT_GAP;
     const midY = top + CAPTION_SLOT_H / 2;
     let x = slotPlace.x;
     if (lead) {
