@@ -1,5 +1,11 @@
 # Build review log
 
+## 2026-09-13 The designer reads the lesson children had yesterday
+
+Asked whether the designer still looks at earlier and later lessons when given a plan, the Find the scale run showed it does read the plan's neighbours (its starter retrieves Lesson 6, and it leaves estimating to Lesson 8), but not the lesson already built for Lesson 6. Its "interval" definition drifted from Monday's ("between two neighbouring marks" became "between neighbouring marks"). The designer's rule for reading a prior lesson's files fired only when a brief named that lesson, and nothing told it where the files were. Daniel said yes to passing them.
+
+`resolve-filing.py --working [OUTPUT_DIR]/working` now also prints `PREVIOUS_LESSON=`: the working folder whose sync record names the latest slot before this one in the same year and subject (a weekly subject takes an earlier week), ignoring records from before this school year and folders with no `lesson-design.json`. For tonight it names `read-and-complete-number-lines`. The setup slice runs it just before the designer launch and passes the folder as `PREVIOUS_LESSON_DIR`; the designer reads that design first and reuses its steps, definitions, sticky knowledge and representation word for word where today continues it, and only for the starter where today moves on. Three new resolver tests. No version bump, at Daniel's request.
+
 ## 2026-09-13 "Year 4" finds the drive too (4.2.175)
 
 The first Codex run on 4.2.174 told Daniel "filed to Autumn 1 > Week 2 > Maths > Monday", and Monday already held a lesson. The session log shows the orchestrator passed the year as `Year 4`; the resolver looked for a folder ending ` - Year Year 4`, found none, checked nothing and offered the calendar's first day as free. The same call with `4` gives Tuesday, and so does the Codex sandbox, so the drive itself was readable. The resolver now keeps only the digits of the year, and prints `DRIVE_CHECKED=no` when the year folder is missing so the message says the day is unchecked rather than announcing it as free. That run's `filing.txt` had already been corrected to Tuesday before its sync. Two new resolver tests.

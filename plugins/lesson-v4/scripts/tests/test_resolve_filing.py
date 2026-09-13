@@ -123,6 +123,63 @@ def test_missing_year_folder_says_the_drive_was_not_checked():
         kv, out = run_autumn(tmp, "Maths", "2026-09-13")
         assert kv.get("DRIVE_CHECKED") == "no", out.stdout
 
+def _sync_record(working, slug, subject, week, day=None, with_design=True):
+    import json
+    folder = working / slug
+    (folder / "build-results").mkdir(parents=True)
+    if with_design:
+        (folder / "lesson-design.json").write_text("{}", encoding="utf-8")
+    cmd = ["python", "sharepoint_sync.py", "--year", "4", "--term-folder", "Autumn 1",
+           "--week", str(week), "--subject", subject]
+    if day:
+        cmd += ["--day", day]
+    (folder / "build-results" / "sharepoint.json").write_text(
+        json.dumps({"ok": True, "command": cmd}), encoding="utf-8")
+    return folder
+
+def _resolve_with_working(base, subject, today):
+    (base / "Term.md").write_text(AUTUMN_TERM_MD, encoding="utf-8")
+    env = dict(os.environ, SP_BASE=str(base), SP_TODAY=today)
+    out = subprocess.run(
+        [sys.executable, str(SCRIPT), str(base / "Term.md"), "Year 4", subject,
+         "--working", str(base / "working")],
+        capture_output=True, text=True, env=env,
+    )
+    return dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l), out
+
+def test_previous_lesson_is_the_latest_earlier_slot_in_the_same_subject():
+    # Target Wednesday 16 Sept, Week 2. Tuesday's maths is the one to reuse;
+    # Monday is older, Thursday is later, science is another subject, and a
+    # run with no design file has nothing to read.
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        _sync_record(w, "monday-maths", "Maths", 2, "Monday")
+        tuesday = _sync_record(w, "tuesday-maths", "Maths", 2, "Tuesday")
+        _sync_record(w, "thursday-maths", "Maths", 2, "Thursday")
+        _sync_record(w, "science", "Science", 2)
+        _sync_record(w, "broken-maths", "Maths", 2, "Tuesday", with_design=False)
+        kv, out = _resolve_with_working(base, "Maths", "2026-09-16")
+        assert kv.get("DAY") == "Wednesday", out.stdout
+        assert Path(kv.get("PREVIOUS_LESSON", "")).name == tuesday.name, out.stdout
+
+def test_previous_weekly_lesson_comes_from_an_earlier_week():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        last_week = _sync_record(w, "science-week-1", "Science", 1)
+        _sync_record(w, "science-week-2", "Science", 2)
+        kv, out = _resolve_with_working(base, "Science", "2026-09-14")
+        assert kv.get("WEEK_NUM") == "2", out.stdout
+        assert Path(kv.get("PREVIOUS_LESSON", "")).name == last_week.name, out.stdout
+
+def test_no_earlier_lesson_prints_an_empty_previous_lesson():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        (base / "working").mkdir()
+        kv, out = _resolve_with_working(base, "Maths", "2026-09-14")
+        assert kv.get("PREVIOUS_LESSON") == "", out.stdout
+
 def test_mid_week_term_start_thursday_is_week_1():
     with tempfile.TemporaryDirectory() as tmp:
         kv, out = run_autumn(tmp, "Science", "2026-09-10")

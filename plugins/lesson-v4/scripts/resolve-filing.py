@@ -6,7 +6,7 @@ difference below) stays in one place instead of being duplicated inside the
 orchestrator.
 
 Usage:
-    python3 resolve-filing.py <Term.md path> <year group> <subject>
+    python3 resolve-filing.py <Term.md path> <year group> <subject> [--working <OUTPUT_DIR>/working]
 
 It prints five KEY=VALUE lines the caller stores:
     TERM_FOLDER   the half-term folder, e.g. "Summer 2"
@@ -18,6 +18,9 @@ It prints five KEY=VALUE lines the caller stores:
     IS_CORE       "yes" for core subjects, "no" for foundation; the caller passes
                   DAY to the sync only when this is "yes"
     DRIVE_CHECKED "no" when the year folder was not found, so no slot was checked
+    PREVIOUS_LESSON  with --working only: the working folder of the lesson this
+                  run built last in the same year and subject, before this slot
+                  (empty when none), so the designer can reuse its exact words
 
 Core subjects are taught daily and filed by day (Maths/Monday/). Foundation
 subjects (Science, History, Geography, Art, DT, Music, PE, RE, PSHE, Computing,
@@ -29,15 +32,21 @@ short opening week before it prints TERM_FOLDER, OPENING_WEEK=yes and an ERROR
 line and exits 2; a date outside any teaching term prints a single ERROR line
 and exits 1.
 """
-import sys, re, os, glob
+import sys, re, os, glob, json
 from datetime import date, timedelta, datetime
 
-term_md = sys.argv[1]
+argv = sys.argv[1:]
+working_root = ''
+if '--working' in argv:
+    i = argv.index('--working')
+    working_root = argv[i + 1] if i + 1 < len(argv) else ''
+    del argv[i:i + 2]
+term_md = argv[0]
 # Callers pass the year the way the teacher wrote it ("Year 4", "Y4", "4").
 # Only the number finds the drive folder; "Year 4" once missed it silently and
 # a full Monday was offered as free.
-year    = re.sub(r'\D', '', sys.argv[2]) if len(sys.argv) > 2 else ''
-subject = sys.argv[3] if len(sys.argv) > 3 else ''
+year    = re.sub(r'\D', '', argv[1]) if len(argv) > 1 else ''
+subject = argv[2] if len(argv) > 2 else ''
 
 def parse_date(s):
     s = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', s.strip())
@@ -125,6 +134,39 @@ def occupied(d):
         p = os.path.join(year_dir, term, "Week %d" % week, subject)
     return _has_content(p)
 
+# The lesson children had last in this subject. Children read a reworded success
+# criterion as a new rule, so the designer copies yesterday's words, and the plan
+# only says what yesterday covered, never how the slides put it. Each run's sync
+# record already names the slot it filed to, so the latest slot before this one
+# is found without guessing from folder names. Records from before this school
+# year are ignored, or last September's Week 1 would pass for this one's.
+TERM_ORDER = list(TERM_MAP.values())
+def slot_key(term, week, day):
+    return (TERM_ORDER.index(term), int(week), DAYS.index(day) if day in DAYS else -1)
+
+def previous_lesson(term, week, day):
+    target = slot_key(term, week, day if is_core else '')
+    year_start = min((s for _, s, _ in rows), default=date.min) - timedelta(days=42)
+    best = None
+    for record in glob.glob(os.path.join(working_root, '*', 'build-results', 'sharepoint.json')):
+        try:
+            if date.fromtimestamp(os.path.getmtime(record)) < year_start: continue
+            with open(record, encoding='utf-8') as fh: data = json.load(fh)
+            if not data.get('ok'): continue
+            cmd = data.get('command') or []
+            arg = lambda flag: cmd[cmd.index(flag) + 1] if flag in cmd else ''
+            if arg('--year') != year or arg('--subject').lower() != subject.lower(): continue
+            key = slot_key(arg('--term-folder'), arg('--week'), arg('--day') if is_core else '')
+        except (OSError, ValueError, IndexError):
+            continue
+        if key >= target: continue
+        folder = os.path.dirname(os.path.dirname(os.path.abspath(record)))
+        if not os.path.isfile(os.path.join(folder, 'lesson-design.json')): continue
+        rank = (key, os.path.getmtime(record))
+        if best is None or rank > best[0]:
+            best = (rank, folder)
+    return best[1] if best else ''
+
 # Resolve today's starting target, rolling Fri/weekend forward to the next teaching day.
 today_env = os.environ.get('SP_TODAY')
 today = datetime.strptime(today_env, '%Y-%m-%d').date() if today_env else date.today()
@@ -172,6 +214,8 @@ if target:
         # Without the year folder nothing was checked, so the slot is only the
         # calendar's guess and must not be announced as free.
         print(f"DRIVE_CHECKED={'yes' if year_dir else 'no'}")
+        if working_root:
+            print(f"PREVIOUS_LESSON={previous_lesson(term, week, day_out)}")
     else:
         # Exit non-zero so the caller can tell an unresolved destination
         # from a resolved one instead of parsing stdout for the ERROR line.

@@ -114,24 +114,23 @@ summarise the plan into either file. If the path does not resolve, say so and
 stop, unless the message also carries a usable year and objective - then design
 from that and flag the file.
 
-### Say where the lesson will be filed, while the designer works
+### Say where the lesson will be filed
 
-In the same step that launches the Lesson Designer, not before it, run:
+Just before launching the Lesson Designer, run:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[PLUGIN_ROOT]/Knowledge/term/Term.md" "[YEAR]" "[SUBJECT]" > "[WORKING_DIR]/filing.txt"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[PLUGIN_ROOT]/Knowledge/term/Term.md" "[YEAR]" "[SUBJECT]" --working "[OUTPUT_DIR]/working" > "[WORKING_DIR]/filing.txt"
 ```
 
-It reads the term dates and the teacher's drive: a daily subject goes to the
-first free day after the week's filled ones, a weekly subject to this week's
-subject folder. Take year and subject from the teacher's words; name an
-inferred subject aloud. In that same message tell the teacher one plain line,
-e.g. "Monday already has maths, so filing to Autumn 1 > Week 2 > Maths >
-Tuesday. Tell me if you'd like it somewhere else." Don't wait; a day or week
-they name wins: rewrite `filing.txt`. `OPENING_WEEK=yes`
-means a short week before Week 1: ask which week. `DRIVE_CHECKED=no`: say
-the day is unchecked. On any other error, plan
-local-only delivery: filing never gates the lesson.
+A daily subject goes to the first free day after the week's filled ones, a
+weekly subject to this week's folder. Take
+year and subject from the teacher's words; name an inferred subject aloud. In
+the launch message tell the teacher one line, e.g. "Monday already has maths,
+so filing to Autumn 1 > Week 2 > Maths > Tuesday. Tell me if you'd like it
+somewhere else." Don't wait; a day or week they name wins: rewrite
+`filing.txt`. `OPENING_WEEK=yes`: ask which week. `DRIVE_CHECKED=no`: say the
+day is unchecked. Other errors: plan local-only delivery; filing never gates
+the lesson. Pass a non-empty `PREVIOUS_LESSON=` as `PREVIOUS_LESSON_DIR`.
 
 For direct fixed slides, worksheets and stick-in sheets, let
 `run-fixed-resource.py` own output-family collision archiving. The retained wall
@@ -160,6 +159,7 @@ TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt
 [ORCHESTRATOR_CONTEXT_FILE when present]
 [LESSON_PLAN_INPUT when supplied]
 [TEACHER_WORKSHEET_INPUT when supplied]
+[PREVIOUS_LESSON_DIR when found]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/design-decisions.md
