@@ -30,7 +30,9 @@ const { VISUAL_KEY_FNS } = require("../src/visuals.js");
 
 const refDir = path.join(__dirname, "..", "..", "references");
 const agentsDir = path.join(__dirname, "..", "..", "agents");
-const read = (p) => fs.readFileSync(p, "utf8");
+// A Windows checkout gives these files CRLF line endings, and a heading search
+// written with a bare newline then finds nothing; read them the same everywhere.
+const read = (p) => fs.readFileSync(p, "utf8").replace(/\r\n/g, "\n");
 
 test("the body autofit runs from 80pt down to a 36pt floor", () => {
   assert.equal(style.sizes.a3BodyPt, 80, "A3 body start size moved");

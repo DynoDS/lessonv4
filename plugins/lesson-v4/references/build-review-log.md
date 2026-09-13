@@ -1,5 +1,29 @@
 # Build review log
 
+## 2026-09-13 Every picture is one shared drawing on every surface (4.2.180)
+
+Daniel: "Make everything shared, I know its a big job ... consistency is good, and it stops anything having to be built because 'it can't use that one'". 4.2.179 built the guard and moved the number line; this release moves everything else. `node builder/scripts/sharing-status.js` now reports 52 of 52 pictures drawn from one shared module on the board, the worksheet, the working wall and the stick-in pack, and `SHARING_BACKLOG` is empty, so the guard refuses any picture that is not.
+
+**How it was done.** Six agents each took a family in its own worktree, with the number line as the worked example and the four adapters as the only way a surface may place a drawing; the branches were merged one at a time with every suite run after each merge.
+- Charts and reach: the board's bar chart and line graph now use the shared charts (board numerals 24pt, never under 18pt, where the board had printed 11pt); the circuit symbol key, labelled diagram, blank surface, parachute, line pair, bar model, tally chart, pictogram, food plate and circuit reach the surfaces that could not draw them.
+- Geometry and time: clock, turn diagram, triangle-square, polygon (sheet `shape`), translation grid, area grid, and one comparison ring (board `comparison-slot`, sheet `comparison-target`, wall `comparisonSymbol`); the wall's angle fan is the shared angle with its opening filled.
+- Place value: the chart (board tables and the sheet's CSS grid replaced), the vocabulary miniature, base-ten blocks, counter groups, the part-whole model (sheet `part-whole` and `part-whole-money`), pyramid and multiplication grid.
+- Fractions and money: one shaded fraction (bar, grid, circle or stack; the sheet's `fraction-bar` and the wall's `fractionBar` and `fractionCircle` still draw it), the fraction wall, and money placing the real coin pictures everywhere (prepared 500px copies in `builder/assets/money/placed/`); the part-whole model's coins come from the same `coinImage`.
+- Measures and diagrams: ruler, dial scale, measuring jug, timeline, process chain, classification key, concept map, fishbone, continuum line, source pathway, number network.
+- Map: one `map-svg.js` composing the map assets and annotations; the wall draws maps for the first time, and the Brazil fill and globe-to-flat now draw on paper too.
+
+Every older field spelling a designer used still draws, and each surface's dated comments moved into the shared module. Typed layout stays each surface's own and is listed: the geographical description frame, the draw-box row and the diamond nine joined it (words and writing space in an arrangement; a teacher drags the nine cells).
+
+**Shared plumbing repaired on the way.** The board placer gained an editable PowerPoint caption under a picture (`caption` on a FIGURES row), a zone-fill check and a card measure; the sheet adapter pins a drawing to its printed width (the sheet's CSS was stretching any drawing narrower than its zone) and measures a too-narrow zone at the minimum so a refusal is named; a stick-in piece prints at the width its drawing chose, is not shrunk to pay for its label band, and a drawing that refuses is skipped with its reason rather than stopping the pack. The worksheet's unused cartoon coin code is removed.
+
+**Checked against real lessons.** Every deck, sheet, wall and pack in `lesson-resources-output/working/` was built with 4.2.178 and with this release. One deck got worse: the Year 4 number-lines vocabulary card's 20-part strip was refused, because the shaded fraction held a part's width and a bar's depth to the 18pt text floor although neither carries words. Both now answer to a smaller floor (0.9 of the text floor, never under 11pt), and the deck builds and matches its old render slide for slide. Every other refusal is one the old version gave too.
+
+**Behaviour that changed on purpose.** Board pictures are placed as one picture (captions stay editable text), so a teacher cannot type into a chart cell or retype a diagram's words on the slide. Worksheet shapes, part-whole circles, place value colours and the comparison ring now look like the board's. Map labels print at each surface's floor, so a small map crowded with country names is refused and asks for more room. Stick-in pieces print at a readable size, so some packs take more pages (one old pack 11 to 16).
+
+**Also fixed.** The wall's two document-claims tests had failed for weeks because a Windows checkout gives the reference files CRLF endings and the test searched with a bare newline; it now normalises them.
+
+**Not yet done.** The sheet and the wall still place the older chart modules at a scaled size rather than the printed-size layout the board uses. The translation grid is kept but translation-shape is the better picture. The stick-in angle piece still prints its arc in colour. Tests: builder 577, worksheet 683, wall 130, stick-in 46, shared 117, all passing; the Python suite has the same 10 failures as before this work.
+
 ## 2026-09-13 One drawing per picture, on every surface: the guard, and the number line (4.2.179)
 
 Daniel saw that the wall's number line looked nothing like the slides and asked why everything is not shared. Then: "Make everything shared ... consistency is good, and it stops anything having to be built because 'it can't use that one'".

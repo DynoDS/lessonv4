@@ -53,14 +53,18 @@ const MIN_STROKE_PT = 0.75; // points: thinner than this and a cut vanishes on p
 const BAR_SHARE = 0.2; // a bar's depth as a share of its width, before the limits below
 const BAR_H_MIN = 2.5;
 const BAR_H_MAX = 5;
-const BAR_H_FLOOR = 1.4; // the shallowest a squeezed bar may go
 const BAR_GAP = 1; // between two bars in a stack
 const LABEL_GAP = 0.3; // between a bar and the word under it
 const BAND = 1.3; // one line of text, with its leading
 const CIRCLE_D = 12; // a circle's natural diameter
 const CIRCLE_D_MIN = 4; // in ems of the readable floor: smaller and the sectors blur
 const GRID_CELL = 4; // a grid cell's natural side
-const MIN_PART = 1.5; // in ems of the readable floor: the narrowest a part may print
+// The narrowest a part may print. A part carries no words, so this is about
+// counting and shading it, not reading it: tied to the text floor at 1.5 ems it
+// asked 27pt a part on the board, and a Year 4 vocabulary card's 20-part strip,
+// clearly countable at about 0.3in a part, was refused (13 September 2026).
+const MIN_PART = 0.9; // in ems of the readable floor
+const MIN_PART_PT = 11; // and never under this, so a paper part still takes a pencil
 const MAX_PARTS = 60;
 const DEFAULT_SHADE = '#A9DFBF'; // the board's soft green, the deck's answer-green family
 const INK_SHADE = '#BFBFBF'; // photocopied: a mid grey that still shows as shaded
@@ -192,7 +196,7 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   if (n.shape === 'bar') {
     const bars = n.bars;
     const minPart = Math.max(...bars.map((b) => b.parts));
-    if ((W - st.outline) / minPart < MIN_PART * floor) throw tooSmall(`a bar of ${minPart} parts cannot fit its parts across this width`, profile);
+    if ((W - st.outline) / minPart < Math.max(MIN_PART_PT, MIN_PART * floor)) throw tooSmall(`a bar of ${minPart} parts cannot fit its parts across this width`, profile);
     // One word size for every bar's label, so the stack reads as one picture.
     let labelPt = T;
     bars.forEach((b) => {
@@ -206,7 +210,9 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
     if (H) {
       const room = (H - textH - gaps - st.outline) / bars.length;
       barH = Math.min(barH * grow, room);
-      if (barH < BAR_H_FLOOR * floor) {
+      // The bar itself carries no words, so it may go as shallow as a part may be
+      // narrow; only its labels are held to the text floor.
+      if (barH < Math.max(MIN_PART_PT, MIN_PART * floor)) {
         throw new Error(
           `SHADED_FRACTION_ZONE_TOO_SHALLOW: ${bars.length} bar${bars.length === 1 ? '' : 's'} cannot show their parts and labels in a space this shallow. ` +
             'Give the picture more height, or show fewer bars on it.'
@@ -249,7 +255,7 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   const { rows, cols } = gridSplit(n.parts, n.rows);
   let side = Math.min(GRID_CELL * T, (W - st.outline) / cols);
   if (H) side = Math.min(GRID_CELL * T * grow, (W - st.outline) / cols, (H - st.outline) / rows);
-  if (side < MIN_PART * floor) throw tooSmall(`a grid of ${rows} by ${cols} cannot fit its parts`, profile);
+  if (side < Math.max(MIN_PART_PT, MIN_PART * floor)) throw tooSmall(`a grid of ${rows} by ${cols} cannot fit its parts`, profile);
   const cells = [];
   for (let k = 0; k < n.parts; k++) {
     cells.push({ x: half + (k % cols) * side, y: half + Math.floor(k / cols) * side, w: side, h: side, shaded: k < n.shaded });
