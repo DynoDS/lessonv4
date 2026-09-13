@@ -135,6 +135,20 @@ function optionalPictureLayout(zone, data, ctx, indent, fs, value) {
   return { picture: picture, metrics: metrics, slotW: slotW };
 }
 
+// Cards that belong together on one slide share one text size, wherever they
+// sit. A row could already do this for its own members, but a column of cards
+// beside a picture, or the captions under three pictures, live in separate
+// zones, and each one used to settle on the largest size its own words
+// allowed: a short line came out huge beside a long one and the slide read as
+// random (the teacher, 13 September 2026: "we make sure things are spaced same
+// width and height in different elements too"). Every text item carrying the
+// same `sizeGroup` on a slide joins one fit group, which settles on the size
+// its longest member needs.
+function sizeGroupName(data, ceiling) {
+  if (typeof data.sizeGroup !== 'string' || !data.sizeGroup.trim()) return null;
+  return growFitObjectName('size-' + data.sizeGroup.trim(), ceiling, 'size-group');
+}
+
 function drawText(pptx, slide, zone, data, ctx) {
   let value = data.value || data.text || '';
   if (!value) return;
@@ -192,7 +206,10 @@ function drawText(pptx, slide, zone, data, ctx) {
     fontFace: FONT, fontSize: ceiling, bold: true,
     color: displayColor, align: align, valign: 'middle',
     margin: 0, fit: FIT,
-    objectName: zone.textFitGroup
+    objectName: sizeGroupName(
+      data,
+      heightMode === 'fill' ? (data.fontSize || fillGrowCeiling(value)) : ceiling
+    ) || (zone.textFitGroup
       ? growFitObjectName(zone.textFitGroup, ceiling, 'row-text')
       : (heightMode === 'fill'
           ? growFitObjectName(
@@ -200,7 +217,7 @@ function drawText(pptx, slide, zone, data, ctx) {
               data.fontSize || fillGrowCeiling(value),
               'fill-text'
             )
-          : undefined)
+          : undefined))
   });
 
   if (pictureLayout) {

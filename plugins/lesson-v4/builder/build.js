@@ -24,6 +24,7 @@ const { verifyPictures } = require('./src/verify-pictures');
 const { verifyMarkers } = require('./src/verify-markers');
 const { verifyGeometry } = require('./src/verify-geometry');
 const { sanitizeHouseStyle } = require('../shared/text/house-style');
+const { expandTeachLayouts, TeachLayoutError } = require('./src/teach-layouts');
 const { withoutDecorations } = require("../shared/decorations");
 const {
   emptyDecorationPlan,
@@ -137,6 +138,16 @@ async function main() {
     raw = JSON.parse(source);
   } catch (err) {
     console.error(friendlyParseError(jsonPath, source, err));
+    process.exit(1);
+  }
+  // A teach-layout slide names an arrangement; it becomes ordinary slides here,
+  // before validation, so every later check and helper sees what is drawn.
+  try {
+    raw = expandTeachLayouts(raw);
+  } catch (err) {
+    if (!(err instanceof TeachLayoutError)) throw err;
+    console.error(`TEACH_LAYOUT_INVALID: ${err.message}`);
+    diagnostic('TEACH_LAYOUT_INVALID', 'composition', {}, err.message);
     process.exit(1);
   }
   const lesson = sanitizeHouseStyle(raw);

@@ -15,6 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const { validateLesson, friendlyParseError } = require('../src/validate');
+const { expandTeachLayouts, TeachLayoutError } = require('../src/teach-layouts');
 
 const arg = process.argv[2];
 if (!arg) {
@@ -33,6 +34,14 @@ try {
   lesson = JSON.parse(source);
 } catch (err) {
   console.error(friendlyParseError(jsonPath, source, err));
+  process.exit(1);
+}
+
+try {
+  lesson = expandTeachLayouts(lesson);
+} catch (err) {
+  if (!(err instanceof TeachLayoutError)) throw err;
+  console.error(`TEACH_LAYOUT_INVALID: ${err.message}`);
   process.exit(1);
 }
 

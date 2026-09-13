@@ -189,6 +189,8 @@ Use `teacher-slide-visual-profile.md` for stable teacher preferences, `slide-com
 
 Choose the surface from the learning relationship. Then protect the smallest load-bearing visual. A row is not automatically better than a stack. If a row makes the critical item too small, stack, rebalance or split while preserving the source sequence and task.
 
+**A Teach unit's slide is a `teach-layout`.** Name the arrangement and fill its slots; the builder centres the words and matches the cards, which a hand-composed Teach slide did not reliably do. Choose each Teach slide's layout with the whole run of Teach slides in view, so neighbours differ (`slide-composition-playbook.md` → Teaching and pupil action; the catalogue and slots are in `templates.md` → `teach-layout`). The check refuses a Teach unit built from free zones and two consecutive Teach slides that share a layout.
+
 ### 4. Preserve representation and modelling state
 
 When `representationRefs` or `modellingState` is present, read the named conditional references before composing the affected slide. Preserve identity, configuration, colour, orientation, role and prepared-versus-live state exactly. Do not improve, swap or reinterpret a source-authored representation.

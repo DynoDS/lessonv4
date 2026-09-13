@@ -223,6 +223,72 @@ These older templates force working columns and, in the combined variants, omit 
 
 Opinionated templates for specific teaching moves. Each shape carries meaning — use them when the shape matches what the slide is doing.
 
+#### `teach-layout`
+
+**The slide for a Teach unit.** You name an arrangement and supply the words and pictures; the builder arranges them. Every layout centres its text, gives cards that belong together the same width, height and text size, and keeps the gaps even, so a deck of Teach slides looks deliberate rather than assembled. The check refuses a Teach unit's slide built any other way (`TEACH_SLIDE_NEEDS_TEACH_LAYOUT`) and two consecutive Teach slides sharing a layout unless they carry the same unit (`TEACH_LAYOUT_REPEATED`). The playbook's Teaching and pupil action section says how to choose.
+
+```json
+{ "template": "teach-layout",
+  "layout": "lead-picture-lines",
+  "title": "Can one candle have two meanings?",
+  "headerStyle": "title",
+  "designUnitId": "lesson-section/teaching-sequence/unit-003",
+  "lead": { "value": "One candle can hold a belief and a memory.",
+            "emphasis": [{ "text": "belief", "role": "vocabulary" }] },
+  "pictures": [{ "type": "image", "imagePath": "unsplash/candle.jpg" }],
+  "lines": [
+    "Many Christians use a candle to remember Jesus as the light of the world.",
+    { "value": "Its light can stand for the hope they believe Jesus brings.", "orange": true }
+  ],
+  "question": "What might a candle remind someone of?",
+  "speakerNotes": "Say to children: ..." }
+```
+
+**The slots.** Each is copied exactly from the design, like any other child-facing string.
+
+For a content Teach unit the design's fields map straight across: `headline` is the `lead`, each line of `explanation` is an entry in `lines`, `takeaway` is the `sticky`, `keyQuestions` are the `question`, and `teachingText` is the `extract`. The other teaching beats map the same way: discovery's `teach-why` puts `accurateExplanation` in `lines` and `takeaway` in `sticky`, and when it names an explanation to correct, `compare-words` sets the wrong idea beside the right one; task-centred `teach-needed` puts `enablingInput` in `lead` and its `explanation` in `lines`.
+
+- `lead`: the line describing the whole slide, often the headline. `statement` is the same kind of line on `two-speakers`.
+- `lines`: the explanation, one short statement per entry.
+- `question`: printed in question blue. The layouts with a column of cards also take a list of two, when the unit carries two key questions.
+- `sticky`: the line to remember. The builder adds the star and the purple, so write the sentence alone.
+- `captions`: one line per picture, printed under it in the same order.
+- `pictures`: ordinary content objects with a `type` (an `image`, a `label-diagram`, or another drawn visual), with their usual fields such as `essential` and `fit`.
+- `sides`: for the compare layouts, two entries of `heading`, `text`, and on `compare-pictures` a `picture`. Add `headingRole: "vocabulary"` when the two headings are taught words.
+- `speakers`, `steps`, `columns` (`heading` and `text`), `answers` and `extract` (a passage read closely, kept left-aligned because prose is read line by line) are as they read.
+
+A text slot is a string, or an object with `value` plus `emphasis` for inline taught words and `"orange": true` for the one explanation line you would say louder (`teacher-slide-visual-profile.md` → Semantic colour owns its limits; the build refuses a second orange line, orange on a question or the line to remember, and orange on a line carrying a taught word). `align`, `fontSize`, `color` and the other sizing fields are refused on these slots, because the layout owns them. A slot the chosen layout does not arrange is refused with the names of the layouts that do, so nothing you write is ever silently left off the board. Slide-level fields (`title`, `headerStyle`, `instruction`, `designUnitId`, `speakerNotes`, `decorations` and the reference arrays) sit beside the slots as on any slide.
+
+| Layout | Slots | What it is for |
+|---|---|---|
+| `lead-picture-lines` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | The big idea across the top, one picture below it, the explanation beside the picture. Cards in total: 1 to 4. |
+| `picture-top-cards` | `pictures`, `lines` 2 to 3 | A wide picture across the top, two or three equal cards in a row underneath. |
+| `two-pictures-captions` | `pictures` 2, `captions` 2, `sticky` optional, `lead` optional | Two pictures compared, each line directly under its own picture, one idea joining them along the bottom. |
+| `question-lines-picture` | `question`, `pictures`, `lines` 1 to 3, `sticky` optional | The question in a band across the top, then the explanation beside the picture that answers it. Cards in total: 1 to 4. |
+| `compare-pictures` | `sides` 2, `headingRole` optional | Two things, or a wrong idea and the truth, in two matching cards, each with its own picture and line. |
+| `picture-statement-question` | `pictures`, `lead`, `question` | Half the slide is the picture; the other half is one big statement with a smaller question under it. |
+| `picture-three-cards` | `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | A two by two grid of equal squares: the picture in one, one idea in each of the other three. Cards in total: 3. |
+| `three-pictures-captions` | `pictures` 3, `captions` 3 | One idea shown three ways, or three parts: three pictures in a row, each line directly under its picture. |
+| `zigzag` | `pictures` 2, `lines` 2 | Two steps or a before and after: picture then words on the top row, words then picture on the bottom row. |
+| `big-fact-picture` | `lead`, `pictures`, `sticky` | One big fact fills the top of the slide; the picture and the line to remember sit underneath. |
+| `labelled-picture-lines` | `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | A picture with its parts labelled on it, and the explanation beside it in equal cards. Cards in total: 2 to 4. |
+| `question-picture-answer` | `question`, `pictures`, `lines` | A big question on one half; the picture and the answer on the other. |
+| `banner-picture-sidebar` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | A short banner, a big picture under it, and equal key-point cards down the side. Cards in total: 2 to 3. |
+| `picture-steps` | `pictures`, `steps` 2 to 5 | The explanation as numbered steps beside the picture, for something that happens in order. |
+| `picture-with-statement` | `pictures`, `lead` | The picture takes most of the slide, with one statement along the bottom. |
+| `one-speaker` | `pictures`, `speakers` | The object on one side and one person's claim on the other, for the class to test. |
+| `two-speakers` | `statement`, `speakers` 2 | The idea across the top, two people underneath each saying what it means to them. |
+| `statement-support-sticky` | `lead`, `lines`, `sticky` | One big statement, a supporting line under it, and the line to remember along the bottom. |
+| `two-cards-bar` | `lines` 2, `sticky` optional, `lead` optional | Two equal cards side by side, with the idea that joins them along the bottom. |
+| `lead-three-cards` | `lead`, `lines` 3 | A lead line across the top, three equal cards in a row underneath. |
+| `four-cards` | `lines` 2 to 4, `question` optional, `sticky` optional | Four equal cards in a two by two grid, one idea each. Cards in total: 4. |
+| `question-answer-sticky` | `question`, `lines`, `sticky` | The question on top, the answer in the middle and the line to remember at the bottom, all one width. |
+| `steps` | `steps` 3 to 6 | Numbered steps, one per row, for a process or a method with no picture. |
+| `compare-words` | `sides` 2, `headingRole` optional | Two words, or a wrong idea and the truth, in two matching cards with no pictures. |
+| `word-meaning-example` | `columns` 3 | Three equal columns with a heading each, such as the word, what it means and an example. |
+| `question-three-answers` | `question`, `answers` 3 | One big question, then three possible answers in equal cards for the class to weigh up. |
+| `source-text` | `lead` optional, `extract`, `lines` optional (up to 2), `question` optional, `sticky` optional | A written source or passage children read closely: the lead line on top, the passage full width, then any explanation, question and line to remember under it. |
+
 #### `teach-compare`
 
 **Purpose:** Compare/contrast teaching move. Two labelled white cards sit side by side, with a blue border on the left and an orange border on the right. The category borders help children track which is which at a glance without turning the whole card into a coloured block.
@@ -598,6 +664,8 @@ Green answer text is not an ordinary emphasis option. Do not set text `color` to
 ```json
 { "type": "text", "value": "What we see.", "color": "0070C0" }
 ```
+
+**Optional `sizeGroup`:** a short name. Every text item on the same slide carrying the same `sizeGroup` settles on one text size, the size its longest member needs, wherever each sits: a column of cards beside a picture, the captions under a row of pictures. Teach layouts set it for you.
 
 **Optional `align`:** `"left"` is the unchanged default. Use `"center"` or `"right"` only when the text's role and surrounding geometry require it.
 

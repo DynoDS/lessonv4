@@ -154,11 +154,20 @@ class TheExplanationIsSeparatePiecesNotABlock(unittest.TestCase):
         self.assertIn("Compose the explanation's lines as separate pieces, not as one block", composition)
         self.assertIn("a slab of them in one card is three sentences a child reads as a paragraph", composition)
 
-    def test_three_shapes_are_named_so_there_is_somewhere_to_go(self) -> None:
+    def test_the_arrangements_are_built_layouts_not_described_shapes(self) -> None:
+        """Superseded on 13 September 2026. Naming three shapes in prose left
+        the cheapest one to assemble, a column of cards down one side, as the
+        one every Teach slide of the next unsupervised deck used. The good
+        arrangements are now named layouts the builder draws, and the check
+        refuses a Teach unit built any other way; see
+        builder/test/teach-layouts.test.js for what is built."""
         composition = flat(self.COMPOSITION)
-        self.assertIn("stacked as separate cards down one side", composition)
-        self.assertIn("full-width statement across the top", composition)
-        self.assertIn("one above the figure, one beside it, one under it", composition)
+        self.assertIn("slide is `template: \"teach-layout\"` with a `layout`", composition)
+        self.assertIn("`TEACH_SLIDE_NEEDS_TEACH_LAYOUT`", composition)
+        self.assertIn("**The next Teach slide takes a different layout.**", composition)
+        self.assertIn("`TEACH_LAYOUT_REPEATED`", composition)
+        # The column down one side is no longer offered as the first good shape.
+        self.assertNotIn("stacked as separate cards down one side", composition)
 
     def test_the_choice_is_made_by_what_each_line_is_about(self) -> None:
         composition = flat(self.COMPOSITION)

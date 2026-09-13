@@ -8,6 +8,7 @@ const { spawnSync } = require('node:child_process');
 
 const { capacityWarnings } = require('../src/content/capacity');
 const { friendlyParseError } = require('../src/validate');
+const { expandTeachLayouts, TeachLayoutError, LAYOUTS } = require('../src/teach-layouts');
 
 const BLOCKING_CAPACITY_SIGNALS = new Set([
   'FIXED_CAPTION_CAPACITY',
@@ -658,6 +659,98 @@ function stickyEmphasisWarnings(lesson) {
   return warnings;
 }
 
+// Teach slides take a named layout, and the next Teach slide takes a different one.
+//
+// 4.2.148 answered "the teaching is one black block" with guidance naming three
+// good shapes, and the next deck the plugin made unsupervised put a picture on
+// one half and a column of equal cards on the other on every Teach slide. The
+// guidance did not lose an argument; it lost to effort, because free zones make
+// that one arrangement the cheapest to assemble. `teach-layout` makes every
+// arrangement the teacher approved equally cheap, and these two checks are what
+// stop a run walking round it: a Teach unit's slide that was built from free
+// zones, and two Teach slides in a row sharing an arrangement.
+//
+// Which slides are Teach slides comes from the lesson design beside lesson.json.
+// Without one (a hand-built spec, a fixture) the first check has nothing to read
+// and stays quiet, and the repetition check still runs on the layouts named.
+const TEACH_KINDS = new Set(['teach', 'teach-why', 'teach-needed']);
+
+function slideUnitIds(slideData) {
+  if (!slideData || typeof slideData !== 'object') return [];
+  const ids = [];
+  if (typeof slideData.designUnitId === 'string') ids.push(slideData.designUnitId);
+  if (Array.isArray(slideData.designUnitIds)) {
+    slideData.designUnitIds.forEach((id) => { if (typeof id === 'string') ids.push(id); });
+  }
+  return ids;
+}
+
+function teachUnitIds(jsonPath) {
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return null;
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+  } catch {
+    return null;
+  }
+  const ids = new Set();
+  const visit = (unit) => {
+    if (unit && typeof unit === 'object' && TEACH_KINDS.has(unit.kind) &&
+        typeof unit.sourceUnitId === 'string') {
+      ids.add(unit.sourceUnitId);
+    }
+  };
+  (Array.isArray(design.teachingSequence) ? design.teachingSequence : []).forEach(visit);
+  return ids;
+}
+
+function teachLayoutWarnings(lesson, jsonPath) {
+  const slides = Array.isArray(lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  const teachIds = teachUnitIds(jsonPath);
+  const catalogue = Object.keys(LAYOUTS).join(', ');
+
+  if (teachIds && teachIds.size) {
+    slides.forEach((slideData, index) => {
+      if (!slideData || slideData.template === 'teach-layout') return;
+      const unit = slideUnitIds(slideData).find((id) => teachIds.has(id));
+      if (!unit) return;
+      warnings.push({
+        slide: index + 1,
+        field: 'template',
+        signal: 'TEACH_SLIDE_NEEDS_TEACH_LAYOUT',
+        message:
+          `this slide carries the Teach unit ${unit} but is built from "${slideData.template}". ` +
+          'A Teach slide uses template "teach-layout" with a named layout, so its words are ' +
+          'centred, its cards match in size and the deck does not settle into one arrangement. ' +
+          `Choose the layout whose shape fits what this slide holds (templates.md, teach-layout): ${catalogue}.`
+      });
+    });
+  }
+
+  let previous = null;
+  slides.forEach((slideData, index) => {
+    if (!slideData || slideData.template !== 'teach-layout') return;
+    const units = slideUnitIds(slideData);
+    if (previous && previous.layout === slideData.layout &&
+        !(units.length && units.some((id) => previous.units.includes(id)))) {
+      warnings.push({
+        slide: index + 1,
+        field: 'layout',
+        signal: 'TEACH_LAYOUT_REPEATED',
+        message:
+          `this Teach slide uses "${slideData.layout}", the same layout as the Teach slide before it ` +
+          `(slide ${previous.slide}). Consecutive Teach slides take different layouts so the ` +
+          'lesson does not look like one slide repeated; more than one layout fits almost any ' +
+          'set of words and pictures. Slides that carry the same unit may share one.'
+      });
+    }
+    previous = { layout: slideData.layout, units, slide: index + 1 };
+  });
+  return warnings;
+}
+
 function presentationDiagnostic(warning) {
   return `BUILD_DIAGNOSTIC: ${JSON.stringify({
     signal: warning.signal,
@@ -744,6 +837,28 @@ function runSlideDesignCheck(inputPath, options = {}) {
   }
 
   const slideCount = Array.isArray(lesson.slides) ? lesson.slides.length : 0;
+  // Read against the slides as written, before teach layouts become ordinary slides.
+  const teachLayout = teachLayoutWarnings(lesson, jsonPath);
+  try {
+    lesson = expandTeachLayouts(lesson);
+  } catch (error) {
+    if (!(error instanceof TeachLayoutError)) throw error;
+    return {
+      ok: false,
+      reason: 'TEACH_LAYOUT_INVALID',
+      slideCount,
+      stdout: `BUILD_DIAGNOSTIC: ${JSON.stringify({
+        signal: 'TEACH_LAYOUT_INVALID', artifact: 'slides', faultClass: 'composition',
+        location: {}, message: error.message
+      })}
+`,
+      stderr: `
+TEACH_LAYOUT_INVALID: ${error.message}
+Fix that slide's layout slots, then run the check again.
+`,
+      scratchOutputPath: null,
+    };
+  }
   const optionalPictures = countOptionalPictures(lesson);
   const capacity = capacityWarnings(lesson);
   if (capacity.length) {
@@ -766,7 +881,8 @@ function runSlideDesignCheck(inputPath, options = {}) {
     };
   }
 
-  const presentation = presentationWarnings(lesson)
+  const presentation = teachLayout
+    .concat(presentationWarnings(lesson))
     .concat(turnWarnings(lesson))
     .concat(consecutiveModellingWarnings(lesson))
     .concat(mixedBlockWarnings(lesson))
