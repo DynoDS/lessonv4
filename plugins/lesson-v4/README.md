@@ -4,6 +4,49 @@ The Lesson v4 plugin is for UK primary teachers. It takes a learning objective a
 
 This repository is the installable Lesson v4 package for Codex and Claude Code.
 
+## Before you start
+
+Setting up a new computer takes about ten minutes, once. You can paste this
+whole section into Claude Code or Codex and say "set this up for me": it will
+do each step it can and tell you the ones only you can do.
+
+**You need these first. The plugin cannot install them for you.**
+
+1. **Node.js**, the program the plugin's builders run on. Windows:
+   `winget install --exact --id OpenJS.NodeJS.LTS`. Mac: `brew install node`.
+2. **Git, and a GitHub sign-in.** The plugin's repository is private for now,
+   so the computer has to be signed in to a GitHub account that can see it.
+   Windows: `winget install --exact --id Git.Git` and
+   `winget install --exact --id GitHub.cli`, then run `gh auth login` yourself
+   (in Claude Code, type `! gh auth login`).
+
+**Then add the plugin.**
+
+- **Claude Code:** `claude plugin marketplace add DynoDS/lessonv4`, then
+  `claude plugin install lesson-v4@lessonv4`.
+- **Codex:** `codex plugin marketplace add DynoDS/lessonv4`, then
+  `codex plugin add lesson-v4@lessonv4`.
+
+**Then make a lesson.** Nothing else needs doing by hand. Every lesson starts
+with a quick check of the computer (a second or two). On a new computer the
+first lesson spends a minute or two installing what the builders need, and
+Codex asks your permission once to download them. If the computer has no
+Python, it asks before installing that too.
+
+**Things the first lesson may offer you, all optional:**
+
+- **Checking slides by eye.** Needs PowerPoint or LibreOffice (free). Without
+  either, slides are still built but nobody looks at them.
+- **Modern photographs.** A free Unsplash key; it walks you through getting one.
+- **Where lessons are saved.** A folder of your choice, and whether to sort
+  lessons into term, week and day folders (which needs your school's term dates).
+- **Lessons built in the cloud saved on your computer at login.** See "Setting
+  up a cloud environment" in `references/computer-setup.md`.
+
+Each of these is explained, step by step, in `references/computer-setup.md`.
+**Developer mode** is only for the person who develops the plugin, on their own
+computer; leave it off everywhere else.
+
 ## Why pedagogy and rendering are separate
 
 Bundling pedagogical reasoning and slide blueprinting into a single agent produces good lessons, but the agent has to think about two different domains at once — and the pedagogical decisions become hard to trace or improve separately from the slide output. Stripping the designer down to a thin template-filler is fast but loses the pedagogical reasoning entirely.
@@ -85,9 +128,10 @@ Takes year group + learning objective (plus any extra context the teacher provid
 4. **The teacher's voice is the lesson.** Slides support the teacher; they don't replace the teacher.
 5. **Apply slides are earned, not automatic.**
 
-## Installing as a plugin
+## How the package finds itself
 
-This package supports Claude Code and Codex.
+This package supports Claude Code and Codex. Installing it is covered in
+`Before you start` above.
 
 - **Claude Code:** use the existing `.claude-plugin/plugin.json` manifest. Claude supplies the installed package location at the host boundary; the skill verifies it and passes the resulting literal `PLUGIN_ROOT` into the lesson pipeline.
 - **Codex:** use `.codex-plugin/plugin.json`. Codex installs the package and activates its `skills/`; the skill derives the package root from its activated `SKILL.md` path, verifies it, and passes the resulting literal `PLUGIN_ROOT` into the same lesson pipeline.

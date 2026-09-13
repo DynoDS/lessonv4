@@ -1,5 +1,9 @@
 # Build review log
 
+## 2026-09-13 A new computer has one page to follow (4.2.188)
+
+Step 5 of the fresh-computer work. The README's install section described manifests and package roots, and said nothing a teacher setting up a computer needs. It now opens with Before you start: the two things the plugin cannot install for itself (Node.js; Git and a GitHub sign-in while the repository is private), the exact add-plugin commands for Claude Code and Codex, what the first lesson does on its own, and the optional offers, each pointing at references/computer-setup.md. It is written to be pasted to Claude Code or Codex with "set this up for me". The repository root gains a short README pointing at it, because GitHub shows the root one. The old section is kept as How the package finds itself.
+
 ## 2026-09-13 A lesson built in the cloud reaches the teacher's drive by itself (4.2.187)
 
 Steps 3 and 4 of the fresh-computer work. A cloud run cannot reach the teacher's computer. In July the teaching-plugins routines solved this with a letterbox (the private `DynoDS/teaching-outputs` repository, branch `claude/outbox`) and a login script on this PC, `teaching-outputs-sync/autofile.ps1`, run by the task `TeachingOutputsAutoFile`. That script is not in any repository, points at teaching-plugins, and has this PC's paths written into it, so a new PC would lose it and Lesson v4 cloud runs were never filed.
