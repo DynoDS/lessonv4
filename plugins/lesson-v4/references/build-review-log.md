@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-13 Charts print at their size on paper, and every stick-in piece prints in ink (4.2.184)
+
+The two things 4.2.180 left open, each done by its own agent in a worktree and merged one at a time.
+
+**Charts on the sheet and the wall.** The worksheet and the wall had kept placing the bar chart and line graph by scaling a board-sized drawing, so numerals shrank with the zone. Both now go through their adapters like every other picture: the sheet through `atPrintedWidth` (the chart fills its zone's width, plot height about 0.62 of that width, words allowed to grow up to 1.6 times the sheet floor), the wall through `sharedAtWidth` at 300mm with anchors. The old one-argument chart call is removed. A first attempt capped sheet charts at 130mm and left them small with dead space beside them; it was sent back. Catalogue minimums are now 80 x 60mm (bar) and 80 x 61mm (line). Honest note: on a narrow sheet zone a chart is a little shorter than before, because its height follows its width rather than the zone's height. Tests: `charts-at-printed-width.test.js`, `charts-on-the-wall.test.js`.
+
+**Stick-in pieces in ink.** Older drawings placed on the stick-in pack (angle arc, Venn, Carroll, triangle and square, mirror line, translated shape, river) printed in the board's colours. They now go through `scaledPiece`, which reads the stick-in palette, with a grey-tones helper in `surface-profiles.js`: the mirror line is dashed, the translated shape paler and dashed, the river a grey ribbon. Bar and line charts are recoloured to greys by `inkChart` in the stick-in registry; that belongs in the chart drawings themselves and should move there. Test: `pieces-print-in-ink.test.js`.
+
+**Seen but not changed.** Coin pictures on a stick-in piece are still colour photographs. A tally chart copied from an answer slide carries the revealed total onto the child's copy.
+
+**Checked.** `sharing-status.js` 52 of 52. Tests: builder 577, worksheet 688, wall 132, stick-in 50, shared 118, all passing.
+
 ## 2026-09-13 A success criterion says what to do, not which stage you are at (4.2.183)
 
 The user was still unhappy with criteria wording on slides, worksheets and walls, and brought an outside evidence page (Notion, "Success Criteria Testing"): five real lists, verbatim, each rewritten with them and approved. Two of the five are the Year 4 number-line lessons of 12 and 13 September (`Read the step size.`, `Divide by that many spaces.`); the others are ordering and comparing 4-digit numbers and a history source comparison. Every rewrite came out longer and plainer, and the page's working principle is `Use as few words as possible without making the child work out what you mean.`
