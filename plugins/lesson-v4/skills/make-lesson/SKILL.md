@@ -101,6 +101,23 @@ inheritance does not.
 A retry or focused repair is a new task-scoped worker. Give it the current saved
 state and the one current fault; do not give it the earlier worker conversation.
 
+### When a finished worker does not wake you
+
+Claude Code and Codex on the teacher's computer start your next turn when a
+worker finishes, so ending a turn while workers run is safe there and nothing
+here changes. ChatGPT Work's cloud does not: a turn that ends with a worker
+still running is where the run stops, because nothing starts the next turn, and
+an unattended or scheduled run has nobody to type one (a real run stalled after
+each of its first three workers, 13 September 2026).
+
+On such a host, or whenever you notice a finished worker did not wake you,
+never end your turn while a worker is running or a step of the lesson remains.
+Launch every worker that is due at that moment before waiting (the slide
+designer and the worksheet branch together, the image scouts of one wave
+together), then wait on all of them with the host's wait tool (`wait_agent` in
+ChatGPT Work) and service each as it returns. A progress update is written
+without ending the turn.
+
 ---
 
 ## Worker launch settings

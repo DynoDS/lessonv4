@@ -794,6 +794,20 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertIn("No praise lines - live teacher's job.", designer)
         self.assertNotIn("No fake praise.", designer)
 
+    def test_a_host_that_does_not_wake_the_orchestrator_is_waited_on_not_left(self):
+        """A ChatGPT Work cloud run stalled after each worker because its turn ended.
+
+        The rule is scoped: hosts that wake the orchestrator when a worker
+        finishes (Claude Code, Codex on the teacher's computer) already work
+        and must keep their behaviour.
+        """
+        skill = SKILL.read_text(encoding="utf-8")
+        section = skill.split("### When a finished worker does not wake you", 1)[1].split("---", 1)[0]
+        self.assertIn("nothing\nhere changes", section)
+        self.assertIn("never end your turn while a worker is running", section)
+        self.assertIn("Launch every worker that is due at that moment before waiting", section)
+        self.assertIn("`wait_agent`", section)
+
 
 if __name__ == "__main__":
     unittest.main()

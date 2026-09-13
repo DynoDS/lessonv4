@@ -1,5 +1,11 @@
 # Build review log
 
+## 2026-09-13 A run keeps going where a finished worker does not wake it (4.2.192)
+
+The first full lesson in ChatGPT Work's cloud spawned the Lesson Designer, then went quiet when it finished; it continued only when the user typed, spawned the reviewer, and went quiet again. Its turn was ending with a worker running, and Work's cloud does not start a new turn when a worker finishes, so an unattended run would stop there. It also started only the slide designer after review, not the worksheet branch beside it. The playbook's rule was "wait for it through the host's ordinary worker-wait mechanism", which on Claude Code and Codex on the teacher's computer is true without extra work.
+
+The make-lesson skill now has one short scoped section, When a finished worker does not wake you: on such a host (or when a finished worker visibly did not wake the run) never end the turn while a worker runs or a step remains, launch every worker due at that moment before waiting, wait on them with the host's tool (wait_agent in Work) and service each as it returns. It states that hosts which do wake the orchestrator are unchanged, and a static test pins both the rule and that scope. A nudge sent mid-run with the older wording (wait on each worker straight away) would itself have serialised the branches; the corrected wording launches first, then waits. Not yet checked: a Work cloud run that finishes without being prompted.
+
 ## 2026-09-13 ChatGPT Work's cloud can build a lesson and post it through its own GitHub tools (4.2.191)
 
 A real Year 4 Science lesson sent to a Codex cloud task stopped at the Lesson Designer: the orchestrator launched it as a nested codex exec, which the network proxy refused (HTTP CONNECT 403 to api.openai.com), and a follow-up probe showed Codex cloud tasks expose no spawn_agent tool at all. The same probe in ChatGPT Work with Cloud selected listed collaboration.spawn_agent, spawned workers at gpt-6-astra and gpt-5.6-sol medium, reached npm, PyPI, Wikimedia and api.github.com, committed a test file to DynoDS/teaching-outputs through its GitHub connector (checked from this PC and deleted), and offered a file for download. It had no environment settings and no git sign-in, so it could not clone the then-private plugin; the user made DynoDS/lessonv4 public, after a history scan found no credentials.
