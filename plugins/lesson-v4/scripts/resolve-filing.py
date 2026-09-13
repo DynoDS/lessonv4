@@ -17,6 +17,7 @@ It prints five KEY=VALUE lines the caller stores:
                   slot (core only), so the announcement can lead with the move
     IS_CORE       "yes" for core subjects, "no" for foundation; the caller passes
                   DAY to the sync only when this is "yes"
+    DRIVE_CHECKED "no" when the year folder was not found, so no slot was checked
 
 Core subjects are taught daily and filed by day (Maths/Monday/). Foundation
 subjects (Science, History, Geography, Art, DT, Music, PE, RE, PSHE, Computing,
@@ -32,7 +33,10 @@ import sys, re, os, glob
 from datetime import date, timedelta, datetime
 
 term_md = sys.argv[1]
-year    = sys.argv[2] if len(sys.argv) > 2 else ''
+# Callers pass the year the way the teacher wrote it ("Year 4", "Y4", "4").
+# Only the number finds the drive folder; "Year 4" once missed it silently and
+# a full Monday was offered as free.
+year    = re.sub(r'\D', '', sys.argv[2]) if len(sys.argv) > 2 else ''
 subject = sys.argv[3] if len(sys.argv) > 3 else ''
 
 def parse_date(s):
@@ -165,6 +169,9 @@ if target:
         term, week = res
         day_out = DAYS[d.weekday()] if is_core else ''
         print(f"TERM_FOLDER={term}\nWEEK_NUM={week}\nDAY={day_out}\nBUMPED={'yes' if bumped else 'no'}\nIS_CORE={'yes' if is_core else 'no'}")
+        # Without the year folder nothing was checked, so the slot is only the
+        # calendar's guess and must not be announced as free.
+        print(f"DRIVE_CHECKED={'yes' if year_dir else 'no'}")
     else:
         # Exit non-zero so the caller can tell an unresolved destination
         # from a resolved one instead of parsing stdout for the ERROR line.

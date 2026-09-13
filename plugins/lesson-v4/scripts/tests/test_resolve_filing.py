@@ -101,6 +101,28 @@ def test_mid_week_term_start_keeps_tuesday_in_the_same_week():
         kv, out = run_autumn(tmp, "Maths", "2026-09-13", ["Week 2/Maths/Monday"])
         assert (kv.get("WEEK_NUM"), kv.get("DAY")) == ("2", "Tuesday"), out.stdout
 
+def test_year_written_as_words_still_reads_the_drive():
+    # A Codex run passed "Year 4", missed the folder and offered a full Monday.
+    for year in ("Year 4", "Y4"):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            (base / "Term.md").write_text(AUTUMN_TERM_MD, encoding="utf-8")
+            day = base / "2026-2027 - Year 4" / "Autumn 1" / "Week 2" / "Maths" / "Monday"
+            day.mkdir(parents=True)
+            (day / "lesson.pptx").write_text("x", encoding="utf-8")
+            env = dict(os.environ, SP_BASE=str(base), SP_TODAY="2026-09-13")
+            out = subprocess.run(
+                [sys.executable, str(SCRIPT), str(base / "Term.md"), year, "Maths"],
+                capture_output=True, text=True, env=env,
+            )
+            kv = dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l)
+            assert (kv.get("DAY"), kv.get("DRIVE_CHECKED")) == ("Tuesday", "yes"), out.stdout
+
+def test_missing_year_folder_says_the_drive_was_not_checked():
+    with tempfile.TemporaryDirectory() as tmp:
+        kv, out = run_autumn(tmp, "Maths", "2026-09-13")
+        assert kv.get("DRIVE_CHECKED") == "no", out.stdout
+
 def test_mid_week_term_start_thursday_is_week_1():
     with tempfile.TemporaryDirectory() as tmp:
         kv, out = run_autumn(tmp, "Science", "2026-09-10")

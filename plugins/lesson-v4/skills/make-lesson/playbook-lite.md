@@ -116,8 +116,7 @@ from that and flag the file.
 
 ### Say where the lesson will be filed, while the designer works
 
-In the same step that launches the Lesson Designer (never before it, never
-waiting on it) run:
+In the same step that launches the Lesson Designer, not before it, run:
 
 ```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[PLUGIN_ROOT]/Knowledge/term/Term.md" "[YEAR]" "[SUBJECT]" > "[WORKING_DIR]/filing.txt"
@@ -125,12 +124,13 @@ waiting on it) run:
 
 It reads the term dates and the teacher's drive: a daily subject goes to the
 first free day after the week's filled ones, a weekly subject to this week's
-subject folder. Year and subject come from teacher-authored input; name an
+subject folder. Take year and subject from the teacher's words; name an
 inferred subject aloud. In that same message tell the teacher one plain line,
 e.g. "Monday already has maths, so filing to Autumn 1 > Week 2 > Maths >
-Tuesday. Tell me if you'd like it somewhere else." Carry on without waiting; a
-day or week they name wins, so rewrite `filing.txt` with it. `OPENING_WEEK=yes`
-means a short week before Week 1: ask which week. On any other error, plan
+Tuesday. Tell me if you'd like it somewhere else." Don't wait; a day or week
+they name wins: rewrite `filing.txt`. `OPENING_WEEK=yes`
+means a short week before Week 1: ask which week. `DRIVE_CHECKED=no`: say
+the day is unchecked. On any other error, plan
 local-only delivery: filing never gates the lesson.
 
 For direct fixed slides, worksheets and stick-in sheets, let

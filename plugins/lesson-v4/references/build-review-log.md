@@ -1,5 +1,9 @@
 # Build review log
 
+## 2026-09-13 "Year 4" finds the drive too (4.2.175)
+
+The first Codex run on 4.2.174 told Daniel "filed to Autumn 1 > Week 2 > Maths > Monday", and Monday already held a lesson. The session log shows the orchestrator passed the year as `Year 4`; the resolver looked for a folder ending ` - Year Year 4`, found none, checked nothing and offered the calendar's first day as free. The same call with `4` gives Tuesday, and so does the Codex sandbox, so the drive itself was readable. The resolver now keeps only the digits of the year, and prints `DRIVE_CHECKED=no` when the year folder is missing so the message says the day is unchecked rather than announcing it as free. That run's `filing.txt` had already been corrected to Tuesday before its sync. Two new resolver tests.
+
 ## 2026-09-13 The lesson says where it will be filed, and Tuesdays stay in their week (4.2.174)
 
 Daniel: the master plugin used to look through his drive when he asked for a lesson, find the next free day for a daily subject or this week's folder for a weekly one, and say "filing to term > week > maths > Wednesday, tell me if you'd like it somewhere else". lessonv4 was not doing it, and he asked whether it could run alongside the lesson designer rather than adding time.
