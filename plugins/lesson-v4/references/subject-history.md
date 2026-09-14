@@ -134,6 +134,15 @@ Choose the response from what children need to show about the past. A comparison
 
 **A why lesson is not only explaining, over and over.** When the objective is to explain why people did something, the reflex is to make every Do beat an explanation to a partner, and the lesson arrives as a situation, a question, a situation, a question. The Tudor lesson the user rebuilt (14 September 2026) did its thinking with its hands instead: match each child's job to what it gave the family (fetching wood, a fire for cooking); sort what an apprentice got into `helped him straight away` and `helped him when he grew up`; sort the hard working conditions against the reasons families still chose it, then decide which mattered more and say why; and only then write explanations of new cases. Each of those makes the child take the same causal decision a sentence would, and the reason for the hardest placement is where the explanation goes. The catalogue is `do-beats.md` §5 (sort, match, odd one out) and §6 (rank, weigh); the written explanation is the final performance, not every beat on the way to it.
 
+**What a Do beat looks like in history.** The history moves above, done with cards and a pencil in two minutes. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and the cards are cases the Teach did not show:
+
+- **Place it in time.** Put three events on the timeline, or in order (`do-beats.md` 5.8), when the order lets children reason with it: what happened before the law could not have been caused by it.
+- **Build the chain.** Arrange what led to what and say which link matters (5.9): the fire, the wooden houses, the wind, the missing fire service.
+- **Match the evidence to the claim.** Which of these three sources could show that Tudor children worked, and which could not? The wrong one is a source that is about the right period and the wrong question.
+- **Sort what changed and what stayed the same.** Features of a Victorian and a modern classroom into only then, both, and only now, then say which change was biggest (5.10).
+- **Say what the source cannot tell us.** One thing this record shows, one thing it cannot, about a source children have not seen.
+- **Fix the claim.** `All Tudor children went to school` or `the Vikings only raided`: correct it with one fact from today, so the misconception is named out loud and then undone (8.8).
+
 **Talk when it helps children form or show an answer.** Partner rehearsal can prepare writing; an individual spoken explanation can itself be the outcome. Make each child's understanding available to the teacher rather than relying on the most confident group spokesperson.
 
 **Write a paragraph when a connected answer earns it.** Prepare the knowledge and connections first, and model how evidence supports the answer when children need that help. A short comparison with precise then-and-now details may show this lesson's learning better than an extended argument. Talk, sort and write are available approaches, not a compulsory sequence.

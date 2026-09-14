@@ -54,6 +54,19 @@ Ask for a prediction with a reason based on the child’s current scientific thi
 
 Normally make sense of the result while children can still see the equipment, observations or data. Safety or sensible classroom organisation may require clearing or moving equipment first; that practical exception overrides the normal order.
 
+## What a Do beat looks like in science
+
+A science Do beat makes children use the scientific relationship, not describe what they saw. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and each changes the case from the one the Teach showed:
+
+- **Predict with a reason.** Will the bulb light in this circuit? Which ice cube melts first? The prediction has to be decided by the taught idea, and changing one thing is the cleanest way to make it so (`do-beats.md` 10.3, 10.4).
+- **Which is not?** Three examples and one non-example of the category just taught, with the boundary case where the misconception lives: a whale among the fish, an aluminium can among the steel ones.
+- **Sort by the property.** Materials, animals or changes sorted by the taught property, including one the class has not handled.
+- **Complete the mechanism.** Fill the missing step: the sun heats the puddle, the water ___, the vapour rises (10.2).
+- **Label a new diagram.** The same parts on a different plant, tooth or circuit from the one taught, so the label is recognised rather than remembered.
+- **Which result supports it?** Choose the result that is evidence for the claim, and say what rules the others out (10.8).
+- **Keep it fair.** Which one thing must stay the same in this test, and what would go wrong if it changed?
+- **Prove Sam wrong.** `Sam says all metals are attracted to magnets.` Find the case that breaks it (8.8).
+
 ## Support the teacher without spoiling the enquiry
 
 When useful, give the teacher accurate teacher-facing information about:

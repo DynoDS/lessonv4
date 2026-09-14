@@ -29,6 +29,20 @@ Flexibility does not mean weak evidence. The design must still identify enough i
 
 A personal reflection or a piece about the child's own life names the product. The PSHE learning behind it is the knowledge or the decision the lesson taught, and the reflection draws on it or the lesson has only been told. A child explaining their own choice with the reason the lesson taught, or placing their own situation against the boundary the lesson drew, is using the learning; a child describing their day from memory is not (`preferences.md` → What a Lesson Is For).
 
+## What a Do beat looks like in PSHE
+
+A PSHE Do beat has children apply the taught reason or boundary to a situation, always someone else's. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and each uses a scenario the Teach did not already settle:
+
+- **Sort the behaviours.** Kind, unkind or not sure, for short scenarios the class has not discussed, with the taught rule deciding the hard one.
+- **Spot the warning sign.** Which phrase in this message is trying to pressure Mia? Which detail in the story is the risk?
+- **Safest next step.** Three things Leo could do; choose the safest and name the rule that makes it so.
+- **Order the steps.** What to do first, next and last when something online worries you (`do-beats.md` 5.8).
+- **What could she say?** Choose, or write, the sentence that keeps the boundary clearly and kindly.
+- **Who could help?** Match the situation to the trusted adult or service that fits it.
+- **Now or later?** Sort consequences into what happens straight away and what builds up over time.
+
+No beat needs a child's own experience to be completed; a private choice can stay private (`Use safe distance` above).
+
 ## Food and diet
 
 Diet lessons recur in every primary year, and three accuracy boundaries from UK guidance hold in all of them. They exist because a diet lesson fighting one simplistic rule (`it has an apple, so it is balanced`) most easily fails by installing a more sophisticated one.

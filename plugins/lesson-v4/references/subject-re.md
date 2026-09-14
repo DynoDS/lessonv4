@@ -24,6 +24,21 @@ RE is full of things a camera can be pointed at - a church, a mosque, a festival
 
 A festival's date marks when a tradition celebrates an event, not a known date of the event: Christians celebrate Jesus' birth on Christmas Day, and the Bible gives no date, so `the day Christians believe Jesus was born` teaches a claim the tradition does not make. Write `the day they celebrate his birth`, and a crib figure added that morning `shows the birth in the story`, not a birth that has not yet happened. A belief names what a tradition holds about who or what something is, not merely that an event occurred: the Christian belief in this lesson is that Jesus is God's Son, and `believes Jesus was born` is a different and weaker claim that a non-Christian could share. Define belief for children as something a person accepts as true; building certainty or proof into the definition (`sure it is true even when nobody can prove it`) teaches a caricature and makes the word harder to use.
 
+## What a Do beat looks like in RE
+
+An RE Do beat makes children connect what people do with what they believe, and see who is speaking. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and each uses a practice, person or text the Teach did not already explain:
+
+- **Match the practice to the belief.** Which belief helps explain lighting a candle at Advent, or giving at Eid? The practice is a new one; the belief is the one taught.
+- **Doing and meaning.** Sort cards into what a person does and what it means to them, so the two stop being one thing.
+- **Whose voice?** Is this one person, many people in the tradition, or the tradition's own teaching? Sort three statements.
+- **More than one view inside a tradition.** Which two responses could both come from Christians? Built so one person can hold more than one meaning (`preferences.md` → What a Lesson Is For, `Needed is not tidy`).
+- **Order the practice.** The stages of a ceremony or a festival day, in order (`do-beats.md` 5.8).
+- **Which teaching explains it?** Choose the line from the extract that supports this practice, and say how.
+- **Fix the claim.** `All Christians celebrate Christmas in the same way`: correct it with what the lesson taught (8.8).
+- **Religious, non-religious or either?** Sort reasons someone might give for helping a neighbour.
+
+Children observe and reason about practices in these beats; none asks them to perform worship (below).
+
 ## Do not ask children to pretend to worship
 
 Children may observe, discuss and understand religious practices. A teacher may demonstrate a posture, object or sequence when that helps children understand what happens. Do not ask children to perform worship as though the belief or practice were their own.

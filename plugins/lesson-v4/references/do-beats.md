@@ -28,7 +28,7 @@ Each entry follows the same shape — what it is, register, best for, why it wor
 
 1. Settle the intended thinking or checking purpose, using `preferences.md` → The Teach → Do → Teach → Do Rhythm, `Name what the chunk needs children to do with it`. That list is what a purpose is stated in; arriving here without one is how a beat ends up chosen by topic. Then write the beat's `thinking` line, the actual question a child's mind answers while working, and keep it beside you as you compare formats: a format that lets the child answer that question by reading the slide, or from what they knew walking in, is out, whatever section it came from; and read the line against the subject file's own doing-versus-thinking test, because reading a source, a map or a result is the doing the objective names and not yet the thought.
 2. Notice the response form's actual demands and supports, such as writing load, spoken language, public performance, reading, movement, fine-motor control, partner dependence or visual structure.
-3. Compare plausible activities for that purpose using the contents below; choose the one whose actual pupil action best serves the learning and supplied pupil needs. A fact may suit recall or a sort, a process labelling, sketching or sequencing, and a judgement ranking or talk; these are starting possibilities, not routes that settle the choice. An explanation, cause, mechanism or relationship is the case with no obvious channel, and the one most often answered with a summary that only says it back: §10 holds the beats that use it, and talk (§2), writing (§3) or a diagram (§4) can each carry them. The contents are indexed by response channel, so more than one section will usually hold a candidate for a single purpose.
+3. Compare plausible activities for that purpose using the subject file's `What a Do beat looks like` and the contents below; choose the one whose actual pupil action best serves the learning and supplied pupil needs. A fact may suit recall or a sort, a process labelling, sketching or sequencing, and a judgement ranking or talk; these are starting possibilities, not routes that settle the choice. An explanation, cause, mechanism or relationship is the case with no obvious channel, and the one most often answered with a summary that only says it back: §10 holds the beats that use it, and talk (§2), writing (§3) or a diagram (§4) can each carry them. The contents are indexed by response channel, so more than one section will usually hold a candidate for a single purpose.
 4. Read the sequence of pupil actions together against the purposeful-variety judgement in `preferences.md`. Keep useful repetition; reconsider a string of generic explanations even when each individually matches the taught content.
 
 There is no compulsory non-writing activity, fixed content-to-format route or SEND format. Familiar repetition is appropriate when it builds the target skill.
@@ -41,10 +41,10 @@ Use the contents to open only the activity families relevant to the intended thi
 - **§2 Talk** — eight oral-rehearsal formats (turn and talk, think-pair-share, convince your partner). Read when children need to say it before they can write it: explanations, comparisons, opinions, why-questions.
 - **§3 Write** — eight committed-record formats, including the hinge and diagnostic questions. Read when a chunk needs committing in writing, or when you need a move-on-or-reteach decision mid-lesson.
 - **§4 Visual / Draw** — eight dual-coding formats (quick sketch, labelled diagram, fishbone, concept map). Read when the chunk has spatial, sequential or diagrammatic structure, or the lesson's writing load is stacking up.
-- **§5 Sort / Classify** — seven keyed decision formats (card sort, odd one out, always/sometimes/never). Read when the chunk is category-forming or misconception-prone; every keyed format here passes through the answer-scatter principle above.
+- **§5 Sort / Classify** — ten keyed decision formats (card sort, odd one out, always/sometimes/never, put it in order, causal chain, same and different). Read when the chunk is category-forming or misconception-prone; every keyed format here passes through the answer-scatter principle above.
 - **§6 Rank / Position** — five commit-and-defend formats (diamond nine, continuum line, vote with reason). Read when the chunk is significance, values or judgement: PSHE, RE, historical significance and interpretation.
 - **§7 Movement / Embodied** — seven body-as-channel formats (freeze frame, conscience alley, gesture-as-memory). Read for narrative, sequence or vocabulary chunks, and when an embodied response improves access or understanding.
-- **§8 Generative** — seven make-something-new formats (write the question, apply to a new case, spot the mistake). Read when a chunk is understood and now needs using: transfer, application, generating fresh examples.
+- **§8 Generative** — eight make-something-new formats (write the question, apply to a new case, spot the mistake, prove Sam wrong). Read when a chunk is understood and now needs using: transfer, application, generating fresh examples.
 - **§9 Metacognitive** — seven thinking-about-thinking formats (confidence vote, muddiest point, three-two-one). Read when you need the class's own read on where they are, or the lesson targets a misconception or a shifted view.
 - **§10 Explain, predict, infer and connect**: ten formats for using an explanation as an explanation (because sentence, explain the link, predict before reveal, words to diagram and back, what can we tell, connect to earlier learning). Read whenever the Teach that just finished explained a cause, a mechanism, a reason or a relationship, or handed children evidence to reason from. This is the commonest chunk in a content lesson and the easiest one to answer with a summary that only says it back.
 
@@ -260,6 +260,7 @@ Six short statements. Pupils mark T/F and write a one-line reason (Edutopia retr
 A small column of terms; a small column of definitions/effects/dates. Pupils draw lines or letter-match (common across primary subjects).
 **Best for:** vocabulary, cause–effect pairings, date–event recall.
 **SEND access:** the pairing is finite; no production of language, just identification.
+**What makes it thinking:** the items are fresh cases of what was taught, not the slide's own words, and one card belongs nowhere so the last pair cannot be won by elimination (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `A quick match, sort or label is a real Do beat`).
 
 ### 5.5 Always / Sometimes / Never
 Statement on the board; pupils choose *A / S / N* and justify in one line (mathematical reasoning tradition; transfers to history and science).
@@ -275,6 +276,21 @@ Teacher (or peer) gives three statements; pupils identify the false one.
 Teacher shows examples and non-examples one at a time; pupils try to work out the rule that separates them (Bruner concept-attainment model). Lasts 2–3 minutes if tight.
 **Best for:** introducing or consolidating a definition (e.g. *what counts as a vertebrate?*).
 **SEND access:** the rule emerges from concrete cases — easier than starting from abstract definition.
+
+### 5.8 Put It in Order
+Four to six short cards (events, stages of a process, steps of a practice), shown scrambled; children number or letter them in order at their seats. *"Put these in the order they happened: the fire starts at the bakery, the wind blows it west, houses are pulled down, the fire stops."* Scramble the display so the order has to be decided, then keep the true order in the answer.
+**Best for:** chronology in history, processes in science and geography, the stages of a religious practice, the steps for getting help in PSHE.
+**SEND access:** reading is on short cards; the response is a number or letter, and a partly filled order (first and last given) shortens it.
+
+### 5.9 Causal Chain
+Three or four cards that each caused the next; children arrange them into the chain and say which link would break it if it were missing. *"Heavy rain, the ground is full, water runs into the river, the town floods."* Different from 5.8: the order is one of because, not only of time, so the check is the link, not the date.
+**Best for:** why something happened in history, how a process leads to an effect in geography and science.
+**SEND access:** the chain is given as cards; the child decides the order, and the missing-link question can be spoken.
+
+### 5.10 Same and Different
+Two cases side by side (two places, two periods, two practices, two materials); children sort feature cards into *only this one*, *both* and *only that one*, then name the difference that matters most for today's question. The criteria for comparing come from what was taught, or the sort is a spot-the-difference picture game.
+**Best for:** comparing places in geography, then and now in history, two traditions or two people in RE.
+**SEND access:** the three columns carry the structure; the one named difference can be spoken.
 
 ---
 
@@ -294,6 +310,7 @@ Pupils place their response on a line from *agree* to *disagree* (or *true* to *
 **SEND access:** the mark is the commit; the prose is small.
 
 ### 6.3 Human Bar Chart (standing version) or Seated Bar Chart
+**Not used.** This is the move-to-show family 7.5 rules out, and the seated pointing version is the same routine; it stays listed so it is recognised, not so it is chosen. Use 6.2 Continuum Line or 6.4 Vote with Reason, where the choice is written.
 Four corners of the room labelled *strongly agree / agree / disagree / strongly disagree*; pupils move to the corner. Without the standing version, label four parts of the room and pupils point/face that direction (Facing History *Four Corners*; *Barometer*).
 **Best for:** values chunks in RE and PSHE; opinion-rich history questions.
 **SEND access:** physical position is itself the response — no language production required.
@@ -364,9 +381,9 @@ Reverse a recall task: *"I'll tell you the answer is 1066. Write me three questi
 **SEND access:** the answer is given; the cognitive load lives in the question-shaping.
 
 ### 8.2 Predict the Next Slide
-*"From what we've just learnt, what do you predict will happen next? Write one prediction."* Activates prior knowledge for the upcoming Teach (Rosenshine — connecting new to prior).
-**Best for:** the seam between Teach chunks; gets pupils thinking ahead.
-**SEND access:** prediction has no wrong answer at the entry level — anything reasoned earns the credit.
+*"From what we've just learnt, what do you predict will happen next? Write one prediction and the reason."* Activates prior knowledge for the upcoming Teach (Rosenshine — connecting new to prior). The prediction is only worth making when what was just taught decides it; one a child could make from general good sense is a guess, and the next Teach then only tells them whether they were lucky (10.3 holds the stronger form).
+**Best for:** the seam between Teach chunks, where the idea just taught points at what comes next.
+**SEND access:** a choice between two predictions lowers the writing load; the reason can be spoken.
 
 ### 8.3 Apply to a New Case
 *"We've just seen how the Romans built roads. Where else would you build a road like that? Why?"* Forces transfer (Willingham — transfer requires deep structure; Boxer on responsive teaching).
@@ -392,6 +409,11 @@ A short paragraph or diagram with a deliberate error; pupils find it and fix it 
 *"In one headline, sum up the most important thing we've learnt so far."* (Edutopia tweet-length tradition; Agarwal *headline test*.) Forces ruthless selection plus a touch of voice.
 **Best for:** end of a major Teach chunk; bridge into the lesson's main Practise.
 **SEND access:** offer a stem: "How a Roman… / Why a Viking…"
+
+### 8.8 Prove Sam Wrong
+A character states a rule that sounds right and is not always true; children find one case that breaks it. *"Sam says all metals are attracted to magnets. Find one that proves him wrong."* *"Sam says every Tudor child worked for money."* The case has to come from what was taught, so the lesson must have supplied it or the idea to find it.
+**Best for:** a generalisation children tend to over-stretch, in maths, science, history and geography.
+**SEND access:** one case is the whole answer; offer three cards to choose the counterexample from when finding one unaided is too open.
 
 ---
 
