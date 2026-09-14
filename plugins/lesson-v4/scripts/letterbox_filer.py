@@ -23,6 +23,8 @@ the copies when a new version changes them.
 Safety, because it runs unattended:
 - a lesson leaves the letterbox only after every one of its files is confirmed
   in place;
+- a file whose size or fingerprint differs from the `checks` in its lesson.json
+  was broken while being posted and is never saved: the lesson stays;
 - an existing file with different contents is never overwritten: the lesson
   stays in the letterbox and the log says why;
 - a lesson already saved (recorded in `letterbox-filed.json`) is never saved a
@@ -129,6 +131,16 @@ def file_lesson(lesson_dir: Path, manifest: dict, destination: Path, dry_run: bo
     names = [name for name in manifest.get("files") or [] if (lesson_dir / name).is_file()]
     if not names:
         return "it holds none of the files its lesson.json lists"
+    # A file that no longer matches what was built was broken on its way into
+    # the letterbox, and saving it puts a resource on the drive that will not
+    # open. A lesson posted before checks were recorded has none to compare.
+    checks = manifest.get("checks") if isinstance(manifest.get("checks"), dict) else {}
+    for name in names:
+        expected = checks.get(name)
+        if isinstance(expected, dict) and deliver_files.file_check(lesson_dir / name) != expected:
+            got = (lesson_dir / name).stat().st_size
+            return (f"{name} arrived damaged ({got} bytes where {expected.get('bytes')} were built), "
+                    "so it was broken while being posted; post it again from the run's output")
     for name in names:
         target = destination / name
         if target.exists() and not filecmp.cmp(lesson_dir / name, target, shallow=False):

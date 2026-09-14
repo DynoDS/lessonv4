@@ -12,6 +12,7 @@ a teacher who names a one-off destination.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -196,6 +197,14 @@ def letterbox_folder_name(lesson: str, now: datetime) -> str:
     return f"{now:%Y-%m-%d %H%M%S} {safe}"[:120]
 
 
+def file_check(path: Path) -> dict:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(block)
+    return {"bytes": path.stat().st_size, "sha256": digest.hexdigest()}
+
+
 def write_lesson_folder(destination: Path, files: list[Path], *, lesson: str, year: int | None,
                         subject: str, now: datetime, plan: str = "", plan_index: int | None = None) -> None:
     """One lesson as the letterbox carries it: its resources and a lesson.json.
@@ -203,6 +212,12 @@ def write_lesson_folder(destination: Path, files: list[Path], *, lesson: str, ye
     A lesson made from a long-term plan also names the plan and its lesson
     number, so the computer that saves it can move that plan's saved counter on
     (plan-tracker.py).
+
+    `checks` records each file's size and SHA-256 as built. A host that posts
+    through its own GitHub tools reads each binary as base64 text, and on 13
+    September 2026 a read cut to "...474280 bytes omitted..." was decoded and
+    posted as the RE deck; the computer saved a PowerPoint that would not open.
+    The filer compares every file with these before saving it.
     """
     copy_into(destination, files)
     manifest = {
@@ -212,6 +227,7 @@ def write_lesson_folder(destination: Path, files: list[Path], *, lesson: str, ye
         "subject": subject,
         "builtAt": now.isoformat(),
         "files": [path.name for path in files],
+        "checks": {path.name: file_check(path) for path in files},
     }
     if plan and plan_index:
         manifest["plan"] = plan

@@ -53,9 +53,16 @@ meanwhile.
    deck is 1.6 million characters of base64, so read any file over 700 KB in
    base64 pieces of at most 900,000 characters from the start, join them, and
    check the joined length before creating the blob. Reading it whole first
-   truncated silently and cost a wasted blob (14 September 2026).
-3. Read the branch back and confirm every file and `lesson.json` are there
-   before telling the teacher the lesson is in their letterbox.
+   truncated silently and cost a wasted blob (14 September 2026). A cut-off
+   read can also look complete: on 13 September the middle of the RE deck came
+   back as the words "474280 bytes omitted", was decoded and posted, and the
+   teacher got a PowerPoint that would not open. `lesson.json` records each
+   file's `checks` (its bytes and SHA-256 as built): the decoded bytes you post
+   must match them.
+3. Read the branch back and confirm every file and `lesson.json` are there,
+   each file the size its `checks` names, before telling the teacher the lesson
+   is in their letterbox. The teacher's computer refuses a file that does not
+   match, so a mismatch you miss leaves the lesson waiting, not saved.
 
 If a step fails, say exactly which, and that the resources are in `OUTPUT_DIR`.
 

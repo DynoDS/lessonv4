@@ -159,6 +159,20 @@ class LetterboxJourneyTests(unittest.TestCase):
         self.assertEqual((self.drive / "Rainforests.pptx").read_bytes(), b"the teacher's own edit")
         self.assertEqual(len(self.waiting()), 1, "the lesson waits for the teacher rather than being lost")
 
+    def test_a_file_broken_while_being_posted_is_never_saved(self):
+        # 13 September 2026: a host posting through its own GitHub tools decoded
+        # a cut-off base64 read, and the drive got an RE deck that would not open.
+        self.settings(sorting=False)
+        destination, _, _ = self.post("Symbols", subject="RE", content=b"PK whole deck")
+        (destination / "Symbols.pptx").write_bytes(b"PK whole 474280 bytes omitted")
+        git("add", "-A", cwd=self.cloud)
+        git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "damaged", cwd=self.cloud)
+        git("push", "-q", "origin", f"HEAD:refs/heads/{BRANCH}", cwd=self.cloud)
+        letterbox_filer.run(today=date(2026, 9, 14))
+        self.assertFalse((self.drive / "Symbols.pptx").exists())
+        self.assertEqual(len(self.waiting()), 1, "the lesson waits to be posted again")
+        self.assertIn("arrived damaged", (self.home / "letterbox.log").read_text(encoding="utf-8"))
+
     def test_a_lesson_saved_before_a_failed_clear_is_not_saved_twice(self):
         self.settings()
         _, _, _ = self.post("Round to 10")
@@ -283,6 +297,7 @@ class WorkCloudPostsThroughItsOwnToolsTests(unittest.TestCase):
         self.assertEqual(sorted(p.name for p in destination.iterdir()), ["Fractions.pptx", "lesson.json"])
         manifest = json.loads((destination / "lesson.json").read_text(encoding="utf-8"))
         self.assertEqual((manifest["year"], manifest["subject"], manifest["files"]), (4, "Maths", ["Fractions.pptx"]))
+        self.assertEqual(manifest["checks"]["Fractions.pptx"]["bytes"], 4, "the host can compare what it posts")
         self.assertEqual([p.name for p in skipped], ["Fractions - run report.md"])
 
     def test_delivery_names_the_route_and_the_staged_folder(self):
