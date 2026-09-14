@@ -1358,7 +1358,7 @@ FRAGMENT_CONDITION = re.compile(r"^[^?.!]{1,30}\?\s+\S")
 SECOND_SENTENCE = re.compile(r"[a-z0-9)][.!]\s+[A-Z]")
 
 
-def criteria_review_cues(row: dict) -> list[str]:
+def criteria_review_cues(row: dict, vocabulary_terms: list[str] | None = None) -> list[str]:
     """Counts invite semantic review; they neither approve nor reject wording."""
     content = row.get("content") or {}
     steps = content.get("steps") or []
@@ -1390,6 +1390,18 @@ def criteria_review_cues(row: dict) -> list[str]:
                 f"step {index}: question-fragment condition; would an If... "
                 "sentence save the child unpacking it?"
             )
+        # 14 September 2026: `Decide which two landmarks the number lies
+        # between.` read as a clear sentence and passed, because the lesson had
+        # given `landmark` a vocabulary slide. The cue only points; a subject
+        # word the learning needs is right to stay.
+        for term in vocabulary_terms or []:
+            pattern = r"\b" + re.escape(term) + r"(s|es)?\b"
+            if re.search(pattern, text, re.IGNORECASE):
+                cues.append(
+                    f"step {index}: uses `{term}` from this lesson's vocabulary; "
+                    "is it the subject's own word, or a name for something the "
+                    "child can already see and the step could name?"
+                )
     for r, cells in enumerate(rows, 1):
         for c, cell in enumerate(cells, 1):
             words = len(str(cell).split())
@@ -1526,13 +1538,18 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         lines.append("")
 
     lines.extend(["## Success criteria", ""])
+    vocabulary_terms = [
+        str(row.get("term") or "").strip()
+        for row in design.get("vocabulary") or []
+        if str(row.get("term") or "").strip()
+    ]
     for row in design["successCriteria"]:
         lines.append(
             f"- `{row['id']}` {row['type']} "
             f"(drawLive: {str(row['drawLive']).lower()}): "
             f"{review_json(row['content'])}"
         )
-        for cue in criteria_review_cues(row):
+        for cue in criteria_review_cues(row, vocabulary_terms):
             lines.append(f"  - Review cue (not a failure): {cue}.")
     lines.append("")
 

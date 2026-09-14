@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-14 A lesson's own word for something the child can see is not owned vocabulary (4.2.209)
+
+A scheduled Year 4 "estimate positions on a number line" design came back with seven full-sentence steps: `Read both end values.` / `Find the gap: last end value - first end value.` / ... / `Decide which two landmarks the number lies between.` / `Decide which of those landmarks your number is nearer.` / `Place and label a sensible estimate.` Daniel: "I dont understand it at all, so how will children." 4.2.183 had fixed short fragments; this list has none, so it passed every check.
+
+**Why.** The designer gave `landmark` a vocabulary slide (for the two ends and the halfway mark), and §10's "taught subject vocabulary stays when the class owns it" then licensed it in the steps. `first end value` and `the gap` were invented to head off the sticking point. Steps 5-7 name a decision with nothing saying what it changes on the line, and `sensible` is the marking notes' word. The designer's run-through cannot see its own labels, and the review packet only flagged fragments and second sentences.
+
+**The change.** `teacher-voice.md` §10: a word the lesson brings in to name something the child can already see is not owned vocabulary, vocabulary slide or not; a subject word the learning needs stays. The decision-rule bullet now says a deciding step names what the decision changes on the page. Designer self-check, skill route label tell and reviewer's fresh-example read carry the same point. The review packet cues any step using one of the lesson's own vocabulary terms, as a question, not a failure.
+
+**Trial (subagents writing criteria only).** Number line, new guidance, two runs: no `landmark`, a distance check decides nearer, the last step puts the mark closer (6 and 8 steps; the 8-step run added a draw-the-line step and a halfway check, a little long). Old guidance, one run: dropped `landmark` this time but kept `Decide...` steps with no consequence. Rounding cousin (vocabulary `benchmark number`, `rounding boundary`): both replaced by the hundreds either side and the halfway number, four steps. Column subtraction control: `exchange` kept as the subject's word. Python 1823 pass with the same 10 pre-existing failures.
+
 ## 2026-09-14 A sort's two groups are a plain contrast (4.2.208)
 
 Editing the Tudor deck to the 4.2.205 Do beats, slide 14 kept its sort `Hard working conditions` / `A reason families still chose it` under the title `Hard working conditions, or a reason to choose it?`. Daniel: "dont understand this one... so kids wont either". Naming the thing (`Would a Tudor family still choose an apprenticeship?`) fixed the title, and he still said "i dont get the difference between the 2 groups". The groups were a description against a reason, and one card (`no school in the village`) honestly fitted both. The slide now sorts `Bad things about being an apprentice` / `Good things about being an apprentice` with that card removed. He then asked whether the plugin would make the same mistakes.

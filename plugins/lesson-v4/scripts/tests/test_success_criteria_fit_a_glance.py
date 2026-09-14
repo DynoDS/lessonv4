@@ -129,3 +129,27 @@ def test_guidance_names_both_misses_so_clear_steps_are_not_lengthened():
     voice = (ROOT / 'references/teacher-voice.md').read_text(encoding='utf-8')
     assert 'A step that is already clear is finished' in voice
     assert 'A step that needs a second sentence is usually two steps' in voice
+
+def test_a_step_leaning_on_the_lessons_own_vocabulary_is_brought_to_review():
+    # 14 September 2026: full sentences, no fragments, and still unreadable,
+    # because `landmark` had a vocabulary slide and named marks the child sees.
+    sc = {'content': {'steps': ['Read both end values.',
+                                'Decide which two landmarks the number lies between.']}}
+    cues = packet.criteria_review_cues(sc, ['landmark', 'midpoint'])
+    assert any('step 2: uses `landmark`' in cue for cue in cues)
+    assert not any('step 1' in cue for cue in cues)
+    assert packet.criteria_review_cues(sc) == []
+
+def test_review_view_passes_the_lessons_vocabulary_to_the_criteria_cues():
+    design, photos = contract.valid_contract()
+    term = design['vocabulary'][0]['term']
+    design['successCriteria'][0]['content']['steps'] = [f'Find the {term} on the page.']
+    view = packet.build_review_view(design, photos)
+    assert f'uses `{term}` from this lesson' in view
+
+def test_guidance_says_a_lesson_label_for_something_visible_is_not_owned_vocabulary():
+    voice = (ROOT / 'references/teacher-voice.md').read_text(encoding='utf-8')
+    assert 'A word the lesson brings in to name something the child can already see is not vocabulary the class owns' in voice
+    assert 'says what the decision changes on the page' in voice
+    designer = (ROOT / 'agents/lesson-designer.md').read_text(encoding='utf-8')
+    assert 'a child who has only the page and not your plan' in designer
