@@ -464,6 +464,14 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
     cards = wider.stack.cards;
   }
 
+  // One alignment for the whole set. Each card used to choose its own (centred
+  // on one line, left once it wrapped), so a two-question starter printed
+  // `What is a source?` centred above a wrapped second question hard left, and
+  // the teacher saw two questions that did not belong together (14 September
+  // 2026). Centring is still the default; a set in which any question wraps is
+  // left-aligned throughout, for the reason the per-card rule gave.
+  const setAlign = cards.some(function (c) { return (c.lines || 1) > 1; }) ? 'left' : 'center';
+
   const rowCount = Math.ceil(cards.length / columns);
   const rowHeights = [];
   for (let row = 0; row < rowCount; row += 1) {
@@ -558,8 +566,9 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       // The limit is a question that wraps: it has already spent the width, so
       // there is no slack to share, and centring only leaves the last few words
       // stranded mid-card ("2,649 rounds to 2,650 to the nearest" / "10.").
+      // When one card wraps the whole set goes left (setAlign, above).
       color: baseColor,
-      align: (c.lines || 1) > 1 ? 'left' : 'center',
+      align: setAlign,
       valign: 'middle',
       margin: 0, fit: FIT,
       // The floor travels in the name, or the global fit pass does not know it

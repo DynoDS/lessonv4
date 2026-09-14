@@ -1,5 +1,9 @@
 # Build review log
 
+## 2026-09-14 A set of questions shares one alignment (4.2.204)
+
+Daniel, on the Tudor starter as the plugin built it: "why is question one kind of centred and question two aligned left? That came from the original, so that must be something in the plugin." It was. `numbered-questions.js` chose alignment per card (4.2.156): centred when a question fits one line, left once it wraps, so a two-question starter with one short and one long question printed them differently. Each half of that rule had a good reason (centring shares the slack of a card sized to the widest question; a wrapped question centred strands its last words mid-card), and the fault was applying it card by card. The set now takes one alignment: centred unless any question wraps, then left throughout. Test `question-set-alignment.test.js` (one wrapped question sends both left; two one-line questions stay centred) fails on the old code. Builder 637 pass. The Tudor deck on the drive was rebuilt with it.
+
 ## 2026-09-14 Breaks between questions, centred categories, one long card, and captions once (4.2.203)
 
 Four visual things from Daniel's read of the rebuilt Tudor deck. On slide 4 the cards printed at 19pt, under his 20, with short cards sitting in white space ("some things in these text boxes could have been made bigger"). Two questions in one place had no break between them ("they're still two questions, so they do need a break... paragraph breaks are more preferred; the slide designer can use line breaks if paragraph breaks don't fit as well"). Category cards (`Helped him straight away` / `Helped him when he grew up`) were left-aligned ("because these are category cards, they should be centred"). And every picture had a caption, including every Teach slide and every repeat ("if these were taken away, the pictures could have been bigger").
