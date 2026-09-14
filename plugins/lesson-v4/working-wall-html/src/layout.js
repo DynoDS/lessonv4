@@ -121,10 +121,19 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
   // A refusal that says only "something is too long" costs the whole wall: the
   // route allows one focused repair, and a repair aimed at nothing is a guess.
   // Name the card, the item, and the budget it has to come under.
+  //
+  // Every problem is named at once. Stopping at the first over-long item hid a
+  // panel three inches too tall behind a two-character overrun: the one repair
+  // shortened the item, the rebuild found the panel, and the wall was lost
+  // (14 September 2026). The remedy is named by who may apply it, because a
+  // focused repair may move and split content but not reword it.
   const diagnose = (pt, cap = maxLinesPerItem) => {
     const charsPerLine = Math.max(1, Math.floor((availWidth * 72) / (pt * charWidthRatio)));
     const budget = charsPerLine * cap;
     const where = opts.label ? `${opts.label}` : "this card";
+    const problems = [];
+    let reword = false;
+    let totalLines = 0;
     for (let index = 0; index < items.length; index++) {
       const item = items[index];
       const obj = (typeof item === "string") ? { text: item } : (item || {});
@@ -132,16 +141,28 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
       const labelLen = obj.label ? obj.label.length + 2 : 0;
       const adjLen = text.length + labelLen;
       const longestWord = Math.max(longestWordLen(text), labelLen);
+      totalLines += Math.max(1, Math.ceil(adjLen / charsPerLine));
       if (longestWord > charsPerLine) {
-        return `${where}: item ${index + 1} contains a ${longestWord}-character run that cannot break, and only ${charsPerLine} characters fit on a line at ${pt}pt. Split that word or shorten the item's label.`;
-      }
-      if (Math.ceil(adjLen / charsPerLine) > cap) {
-        return `${where}: item ${index + 1} is ${adjLen} characters including its label, and ${budget} is the most that fits in ${cap} lines at ${pt}pt (${charsPerLine} per line). Cut it to ${budget} characters or fewer: "${String(text).slice(0, 60)}${text.length > 60 ? "…" : ""}".`;
+        problems.push(`item ${index + 1} contains a ${longestWord}-character run that cannot break, and only ${charsPerLine} characters fit on a line at ${pt}pt. Split that word or shorten the item's label.`);
+        reword = true;
+      } else if (Math.ceil(adjLen / charsPerLine) > cap) {
+        problems.push(`item ${index + 1} is ${adjLen} characters including its label, and ${budget} is the most that fits in ${cap} lines at ${pt}pt (${charsPerLine} per line). Cut it to ${budget} characters or fewer: "${String(text).slice(0, 60)}${text.length > 60 ? "…" : ""}".`);
+        reword = true;
       }
     }
-    const measured = fitAt(pt, cap);
-    const over = measured.height != null ? (measured.height - availHeight) : null;
-    return `${where}: ${items.length} items need ${measured.height != null ? measured.height.toFixed(1) : "more"}in of panel at ${pt}pt and ${availHeight.toFixed(1)}in is available${over != null ? ` (${over.toFixed(1)}in over)` : ""}. Each item may hold ${budget} characters; remove an item or shorten the longest.`;
+    const height = totalLines * (pt * lineHeight / 72) + items.length * interItem;
+    const panelOver = height > availHeight;
+    if (panelOver) {
+      problems.push(`${items.length} items need ${height.toFixed(1)}in of panel at ${pt}pt and ${availHeight.toFixed(1)}in is available (${(height - availHeight).toFixed(1)}in over). Each item may hold ${budget} characters.`);
+    }
+    const remedies = [];
+    if (panelOver) {
+      remedies.push("Splitting the items in order over a second card keeps every word and is a layout change (a wall takes two teaching cards); otherwise remove an item or shorten the longest");
+    }
+    if (reword) {
+      remedies.push("an item over its own budget fits only reworded, which is the wall designer's decision, not a focused repair's");
+    }
+    return `${where}: ${problems.join(" ")}${remedies.length ? ` ${remedies.join("; ")}.` : ""}`;
   };
 
   // The content budget is checked first and whatever the search then finds, so

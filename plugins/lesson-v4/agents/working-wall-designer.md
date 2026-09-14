@@ -272,7 +272,7 @@ A card's real capacity depends on the page, the orientation, the column widths a
 node "[PLUGIN_ROOT]/working-wall-html/build.js" "[WORKING_DIR]/working-wall.json" --validate-only
 ```
 
-It draws the pages and reports without writing a PDF. `WORKING_WALL_LAYOUT_OK` means the wall will build. A `Layout validation failed:` line names the card, the exact overrun and the budget it has to come inside — shorten the text, simplify the card, choose a supported larger layout or drop it, then run it again. Skipping this does not save the work, it moves it: the builder runs the same check and fails, and a wall that overruns by one character or a tenth of an inch then costs a full designer-and-builder repair round instead of one command here. Cards `[]` needs no check.
+It draws the pages and reports without writing a PDF. `WORKING_WALL_LAYOUT_OK` means the wall will build. A `Layout validation failed:` line names every overrun on the card at once and the budget each has to come inside — shorten the text, split a too-tall card's items in order over a second card when the wall has room for one, simplify the card, choose a supported larger layout or drop it, then run it again. Skipping this does not save the work, it moves it: the builder runs the same check and fails, and a wall that overruns by one character or a tenth of an inch then costs a full designer-and-builder repair round instead of one command here. Cards `[]` needs no check.
 
 ---
 

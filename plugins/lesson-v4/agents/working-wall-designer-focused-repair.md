@@ -83,4 +83,6 @@ node "[PLUGIN_ROOT]/working-wall-html/build.js" "[WORKING_DIR]/working-wall.json
 
 `WORKING_WALL_LAYOUT_OK` means the wall will build. A second `Layout validation failed:` line means the repair did not reach the budget the message names, and it is cheaper to keep going here than to hand the builder a spec that will fail again.
 
+A panel too tall for its page is a layout fault you can repair without touching a word: put the card's items, in their order, on two cards of the same type and title, when the wall holds only one teaching card (it takes two). `check-repair-scope.py` accepts a list split that way. An item over its own character budget is different: it fits only reworded, and rewording is not this round's to do, so leave that finding unrepaired and say it needs the wall designer's wording.
+
 Return only the assignment's required terminal state, marker and repair-impact fields, plus any permitted `Friction:` lines under the pipeline completion footer.

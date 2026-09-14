@@ -272,3 +272,50 @@ class EveryEngineIsActuallyReadTests(RepairScopeCase):
         result = self.run_check(unreadable, unreadable)
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("no content object was recognised", result.stdout)
+
+
+def wall_card(items: list, title: str = "How to estimate") -> dict:
+    return {"type": "workedExample", "page": {"size": "A3", "orientation": "landscape"}, "title": title, "items": items, "photo": None}
+
+
+WALL_STEPS = [
+    {"label": "Step 1", "text": "Read the numbers at both ends of the line."},
+    {"label": "Step 2", "text": "Find the midpoint: add the two ends and halve the total."},
+    {"label": "Step 3", "text": "Decide which side of the midpoint your number is."},
+    {"label": "Example", "text": "The midpoint is 6,000. Place 7,000 just right of 6,000."},
+]
+
+
+class SplitAcrossCardsTests(RepairScopeCase):
+    """A worked example too tall for one A3 card may be split over two.
+
+    The 14 September 2026 cloud run's wall overran by three inches; the one
+    repair that kept every word was to put the steps on two cards, and this
+    check refused it because it read the card's step list as one ordered chain
+    that had vanished.
+    """
+
+    def test_steps_split_over_two_cards_in_order_are_a_repair(self):
+        before = {"cards": [wall_card(WALL_STEPS)]}
+        after = {"cards": [wall_card(WALL_STEPS[:2]), wall_card(WALL_STEPS[2:])]}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("REPAIR_SCOPE_OK", result.stdout)
+
+    def test_steps_reordered_while_split_are_still_caught(self):
+        before = {"cards": [wall_card(WALL_STEPS)]}
+        after = {"cards": [wall_card(WALL_STEPS[2:]), wall_card(WALL_STEPS[:2])]}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_step_dropped_while_split_is_still_caught(self):
+        before = {"cards": [wall_card(WALL_STEPS)]}
+        after = {"cards": [wall_card(WALL_STEPS[:2]), wall_card(WALL_STEPS[3:])]}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_summand_order_is_still_protected(self):
+        before = {"slides": [{"template": "body-full", "body": {"type": "number-sentence", "items": [9, 4000, 50, 200]}}]}
+        after = {"slides": [{"template": "body-full", "body": {"type": "number-sentence", "items": [4000, 200, 50, 9]}}]}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)

@@ -354,6 +354,9 @@ class Census:
         # Room, keyed by the case that holds it, so a question cannot pay for
         # its neighbour's extra line with one of its own.
         self.case_room: Counter = Counter()
+        # Every ordered value sequence, in the order the walk met it, so a
+        # sequence split over consecutive containers can be recognised whole.
+        self.sequences: list[tuple[str, str, tuple, int]] = []
         self._visit(node, 1, False, "pupil")
 
     # ─── one node's own room to write ───
@@ -505,6 +508,7 @@ class Census:
                     sequence = value_sequence(child)
                     if sequence is not None:
                         self._note_key(key, ", ".join(sequence), times, own, child_channel)
+                        self.sequences.append((child_channel, key, sequence, times))
                 sub, sub_room, sub_case = self._visit(
                     child, times, key in LAYOUT_SLOT_KEYS, child_channel,
                     item_default if key == "items" else None,
@@ -602,6 +606,44 @@ def script_losses(before: list[str], after: list[str]) -> list[str]:
     return lost
 
 
+def rejoin_split_sequences(before: "Census", after: "Census") -> None:
+    """Treat an ordered sequence split over consecutive containers as unchanged.
+
+    The steps of a worked example are an ordered sequence, and their order is
+    protected like the order of a number sentence's summands. But a card too tall
+    for its page keeps every word when its steps go on two cards, first steps on
+    the first, and reading the list as one chain that vanished refused exactly
+    that repair on the 14 September 2026 cloud run. So when a sequence is missing
+    after the repair and the next sequences under the same key, in order, join
+    back into it exactly, the pieces stand for the original. Reordered, dropped
+    or added values do not join back, so they are still reported.
+    """
+    for channel, key, whole, times in before.sequences:
+        entry = f"{key}: {', '.join(whole)}"
+        wanted = before.content[entry] if channel == "pupil" else 0
+        if channel != "pupil" or after.content.get(entry, 0) >= wanted:
+            continue
+        pieces = [(i, seq, t) for i, (c, k, seq, t) in enumerate(after.sequences) if c == channel and k == key]
+        for start in range(len(pieces)):
+            joined: tuple = ()
+            used = []
+            for index, seq, t in pieces[start:]:
+                if t != times or tuple(whole[len(joined):len(joined) + len(seq)]) != seq:
+                    break
+                joined += seq
+                used.append(seq)
+                if joined == whole:
+                    break
+            if joined == whole and len(used) > 1:
+                after.content[entry] += times
+                for seq in used:
+                    piece = f"{key}: {', '.join(seq)}"
+                    after.content[piece] -= times
+                    if after.content[piece] <= 0:
+                        del after.content[piece]
+                break
+
+
 def losses(before: Counter, after: Counter) -> list[str]:
     reports = []
     for kind in sorted(before):
@@ -655,6 +697,8 @@ def main(argv: list[str] | None = None) -> int:
 
     before = Census(read_spec(Path(args.before), "--before"))
     after = Census(read_spec(Path(args.after), "--after"))
+
+    rejoin_split_sequences(before, after)
 
     lost = losses(before.objects, after.objects)
     if lost:
