@@ -332,6 +332,8 @@ On the board: *Should the museum return the marbles? A: Yes. B: No.* Pupils choo
 **Register:** movement-embodied.
 **Mechanism:** Use movement, gesture, mime or physical sequencing when the action meaningfully represents the content (Sullivan, 2018; Macedonia & Knosche, 2011; *Frontiers in Psychology* embodied-learning syntheses). Do not claim automatic retention or SEND benefits. Consider mobility, sensory, anxiety and behaviour barriers and provide an equivalent seated or non-performing role where needed.
 
+**The user keeps a calm classroom.** He does not use stand-up routines, and a beat that gets the class out of seats, moving round the room or performing at the front works against the room he runs. So a seated form comes first: order cards at the table (5.8) rather than Human Sequencing, a partner discussion rather than Conscience Alley. Gesture-as-Memory and Mime It can be done sitting down and stay available. Choose a whole-class movement beat only when the teacher asks for it.
+
 ### 7.1 Freeze Frame
 Pupils (in pairs or fours) create a still image with their bodies showing a moment — *the king signs the Magna Carta, the rainforest before the loggers came, Pip meeting Estella*. 60 seconds to plan, 15 to hold (Drama Primary National Strategy; dramaresource.com).
 **Best for:** history, literature, RE narratives, geography scenarios.
@@ -452,6 +454,7 @@ After a Hinge Question, pupils write a one-line explanation of why a wrong answe
 Pupils show thumbs up / sideways / down to *I get it / I'm fuzzy / I'm lost* (variant of Lemov's **Show Me**, *TLAC 3.0*, Technique 8). No whiteboards needed.
 **Best for:** lightning-fast mid-Teach check; whole class in 5 seconds.
 **SEND access:** visible commit without writing; teach pupils that "sideways" is a respected answer.
+**The limit:** the user finds it "a bit better" than Stand If and still a weak Do beat. A thumb reports how a child feels, and a child who has misunderstood can feel sure, so it never stands in for a beat where every child uses the idea; it is not a Do beat at all, only a quick read the teacher may add beside one.
 
 ### 9.7 Think-Aloud Reverse
 The teacher has modelled thinking aloud during the Teach; in the Do, a pupil thinks aloud through the same kind of problem while the class watches (EEF *Metacognition* guidance — explicit modelling becomes pupil rehearsal). 60–90 seconds.

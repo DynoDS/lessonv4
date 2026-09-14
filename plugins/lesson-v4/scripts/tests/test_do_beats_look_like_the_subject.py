@@ -69,5 +69,20 @@ class TheCatalogueAgreesWithItself(unittest.TestCase):
         self.assertIn("This is the move-to-show family 7.5 rules out", text)
 
 
+class ACalmClassroom(unittest.TestCase):
+    """His follow-up the same evening: calm room; thumbs up is weak."""
+
+    def test_movement_beats_give_way_to_seated_forms(self) -> None:
+        text = flat(REF / "do-beats.md")
+        self.assertIn("**The user keeps a calm classroom.**", text)
+        self.assertIn("Choose a whole-class movement beat only when the teacher asks for it.", text)
+
+    def test_thumbs_up_is_not_a_do_beat(self) -> None:
+        self.assertIn("it is not a Do beat at all, only a quick read the teacher may add beside one", flat(REF / "do-beats.md"))
+
+    def test_the_venn_is_offered_for_comparing_two_cases(self) -> None:
+        self.assertIn("**Comparing two cases.**", flat(REF / "templates.md"))
+
+
 if __name__ == "__main__":
     unittest.main()

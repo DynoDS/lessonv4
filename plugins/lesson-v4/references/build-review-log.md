@@ -1,5 +1,13 @@
 # Build review log
 
+## 2026-09-14 A Venn compares two cases, and a calm room sits down (4.2.206)
+
+Daniel, following 4.2.205: "stand up if I don't really like. I like calm in my classroom. Thumbs up if is a bit better. But I think it's kind of a weak do beat... Same with true or false." And yes to giving the Venn a history and geography example, so the new same-and-different beat has a picture.
+
+**Found before writing the example.** Rendering `Victorian classroom` / `Classroom today` with `Children sat in rows` showed the chip text running out of its box: `venn-svg.js` drew every chip at a fixed 188 wide with one line of 30-unit text, fine for `Square` and broken past about nine letters. An example alone would have led the designer straight into that. Chips now wrap onto up to three lines (two lines split evenly), grow taller, stack by their real heights, and share one font across the diagram so a long word does not shrink only its own chip; chips inside the circles are 220 wide, the corner `outside` chip stays 188 so it clears the right circle, and a taller outside stack grows upward. The maths shapes Venn renders as before with slightly wider chips. Test `venn-chip-labels.test.js` (5; the fit and wrap cases fail on the old code). One engine file, so board, worksheet, wall and stick-in change together.
+
+**Guidance.** `templates.md` venn gains `Comparing two cases` with a then-and-now and a Manaus-and-London example, the blank-plus-chip-bank pupil form, and features-not-sentences; the worksheet purpose line says the same (catalogue regenerated). `do-beats.md` §7 now says the user keeps a calm classroom, so a seated form comes first and whole-class movement only on request; 9.6 thumbs gets his limit (a feeling, not a use of the idea, never the Do beat itself). True or false already carried his "can be cheap" limit and is unchanged. Python 1813 pass with the same 10 pre-existing failures; builder 642, worksheet 688, wall 135, stick-in 50 pass.
+
 ## 2026-09-14 A Do beat looks like its subject, and a quick match uses fresh cases (4.2.205)
 
 Daniel asked for his deep-research report on Do beats (`deep-research-report(2).md`, Downloads) to be read against the plugin, with contradictions decided together. The report was written without seeing the plugin and assumes a screen-based app (drag and drop, click feedback), so part of it does not apply to a taught deck.

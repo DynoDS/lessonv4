@@ -52,12 +52,18 @@ const LABEL_HALF_GAP = 44;       // clear gap kept either side of the box's cent
 const GLYPH_W        = 0.62;     // rough Comic Sans glyph width (× font size) for fit estimates
 const HINT_FONT   = 30;          // faint region-hint font on a blank diagram
 
-const CHIP_W      = 188;         // placed-shape chip width
+const CHIP_W      = 188;         // placed-shape chip width in the outside corner
+const CHIP_W_INNER = 220;        // chip width inside the circles, where there is room
 const CHIP_H      = 70;          // placed-shape chip height
 const CHIP_RX     = 14;          // chip corner radius
 const CHIP_FONT   = 30;          // chip label font size
 const CHIP_STROKE = 3;           // chip outline width
 const CHIP_VGAP   = 12;          // vertical gap when several chips stack in one region
+const CHIP_PAD_X  = 10;          // side room inside a chip before its words
+const CHIP_PAD_Y  = 12;          // top and bottom room inside a chip that wraps
+const CHIP_MIN_FONT = 24;        // floor a chip's words shrink to only when one word will not fit
+const CHIP_MAX_LINES = 3;        // a chip is a few words, not a sentence
+const CHIP_GLYPH_W = 0.56;       // bold Comic Sans chip glyph width (× font), measured on rendered chips with a little margin
 
 const BOX_COLOUR     = '#000000';   // universe box outline (black)
 const CIRCLE_LEFT_C  = '#0070C0';   // left circle outline (house blue)
@@ -156,6 +162,59 @@ function fitLabel(text) {
     return { lines: [t], font: Math.max(LABEL_MIN_FONT, Math.min(LABEL_FONT, oneLineFont)) };
   }
   return { lines: [best.a, best.b], font: twoLineFont };
+}
+
+// Chips inside the circles are wider than the corner `outside` chip: the side
+// regions have the room, and the overlap chip already sits across both circle
+// lines, while the corner chip must stay clear of the right circle.
+function chipWidth(region) {
+  return region === 'outside' ? CHIP_W : CHIP_W_INNER;
+}
+
+// Fit a chip's words inside its width. A shape name stays one line at the chip
+// font; a few words (`Children sat in rows`) wrap onto up to three lines at that
+// same font, and the chip grows taller to hold them. The font drops towards the
+// floor only when a single word is wider than the chip, so a comparison Venn in
+// history or geography reads at the size a maths one does.
+function wrapWords(words, font, width) {
+  const maxChars = (width - 2 * CHIP_PAD_X) / (CHIP_GLYPH_W * font);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    if (word.length > maxChars) return null;
+    const next = line ? line + ' ' + word : word;
+    if (next.length <= maxChars) { line = next; continue; }
+    lines.push(line);
+    line = word;
+  }
+  if (line) lines.push(line);
+  // Two lines split evenly (`Built by / a river`), not full-then-leftover.
+  if (lines.length === 2) {
+    let best = lines;
+    let bestLonger = Math.max(lines[0].length, lines[1].length);
+    for (let i = 1; i < words.length; i++) {
+      const a = words.slice(0, i).join(' ');
+      const b = words.slice(i).join(' ');
+      const longer = Math.max(a.length, b.length);
+      if (longer < bestLonger) { best = [a, b]; bestLonger = longer; }
+    }
+    return best;
+  }
+  return lines;
+}
+
+function fitChip(text, width, startFont) {
+  const words = String(text == null ? '' : text).trim().split(/\s+/).filter(Boolean);
+  let font = startFont;
+  if (!words.length) return { lines: [''], font: font, h: CHIP_H };
+  let lines = wrapWords(words, font, width);
+  while ((!lines || lines.length > CHIP_MAX_LINES) && font > CHIP_MIN_FONT) {
+    font -= 1;
+    lines = wrapWords(words, font, width);
+  }
+  if (!lines) lines = [words.join(' ')];
+  const h = Math.max(CHIP_H, lines.length * font * LABEL_LINE_GAP + 2 * CHIP_PAD_Y);
+  return { lines, font, h };
 }
 
 // Normalise the spec's placed shapes into [{ region, label }], dropping anything
@@ -287,18 +346,39 @@ function tightSvg(data, profile) {
     REGIONS.forEach(function (r) { byRegion[r] = []; });
     shapes.forEach(function (s) { byRegion[s.region].push(s); });
 
+    // Every chip in the diagram shares one font: the chips are one set, and a
+    // single long word shrinking only its own chip reads as a mistake. Fit each
+    // at the ceiling, take the smallest font any needed, and fit again at it.
+    let sharedFont = CHIP_FONT;
+    for (let pass = 0; pass < 3; pass++) {
+      const smallest = shapes.reduce(function (min, s) {
+        return Math.min(min, fitChip(s.label, chipWidth(s.region), sharedFont).font);
+      }, sharedFont);
+      if (smallest === sharedFont) break;
+      sharedFont = smallest;
+    }
+
     REGIONS.forEach(function (region) {
       const list = byRegion[region];
       if (!list.length) return;
       const a = regionAnchor(region);
-      const totalH = list.length * CHIP_H + (list.length - 1) * CHIP_VGAP;
+      const CHIP_WIDTH = chipWidth(region);
+      const fits = list.map(function (s) { return fitChip(s.label, CHIP_WIDTH, sharedFont); });
+      const totalH = fits.reduce(function (sum, fit) { return sum + fit.h; }, 0) + (list.length - 1) * CHIP_VGAP;
       let chipTop = a.y - totalH / 2;
-      list.forEach(function (s) {
+      // The outside anchor sits in the box's bottom corner, so a taller stack
+      // grows upward from there instead of past the box edge.
+      if (region === 'outside') chipTop = Math.min(chipTop, BOX_H - 18 - totalH);
+      fits.forEach(function (fit) {
         const cx = a.x;
         const top = chipTop;
-        parts.push(`<rect x="${f(X(cx - CHIP_W / 2))}" y="${f(Y(top))}" width="${CHIP_W}" height="${CHIP_H}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${C.chip}" stroke-width="${CHIP_STROKE}"/>`);
-        parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${C.chipText}" text-anchor="middle" dominant-baseline="middle">${esc(s.label)}</text>`);
-        chipTop += CHIP_H + CHIP_VGAP;
+        parts.push(`<rect x="${f(X(cx - CHIP_WIDTH / 2))}" y="${f(Y(top))}" width="${CHIP_WIDTH}" height="${f(fit.h)}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${C.chip}" stroke-width="${CHIP_STROKE}"/>`);
+        const lineH = fit.font * LABEL_LINE_GAP;
+        const firstY = top + fit.h / 2 - (fit.lines.length * lineH) / 2 + lineH / 2;
+        fit.lines.forEach(function (ln, i) {
+          parts.push(`<text x="${f(X(cx))}" y="${f(Y(firstY + i * lineH))}" font-family="Comic Sans MS, sans-serif" font-size="${f(fit.font)}" font-weight="bold" fill="${C.chipText}" text-anchor="middle" dominant-baseline="middle">${esc(ln)}</text>`);
+        });
+        chipTop += fit.h + CHIP_VGAP;
       });
     });
   }

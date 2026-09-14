@@ -48,7 +48,7 @@ module.exports = {
   "bar-chart":
     "A bar chart to read off. Each bar needs room for its label underneath, so more categories need more width.",
   venn:
-    "Sorting into two overlapping properties. Blank is the frame the child fills; placed is the worked example. Not maths-only.",
+    "Sorting into two overlapping properties, or comparing two cases (then and now, two places) with what they share in the middle. Blank is the frame the child fills; placed is the worked example.",
   carroll:
     "A 2x2 sorting grid: the same idea as a Venn, read off a grid instead of overlapping rings.",
   angle:

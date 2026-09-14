@@ -60,7 +60,7 @@ emailed. Never write `imageHref` yourself.
 - `line-graph` - A titled time-series line graph with numbered axes.
 - `pictogram` - A row-of-symbols pictogram with a key, where one symbol stands for several.
 - `tally-chart` - A tally table: bundles of five drawn as marks rather than the number written out.
-- `venn` - Sorting into two overlapping properties.
+- `venn` - Sorting into two overlapping properties, or comparing two cases (then and now, two places) with what they share in the middle.
 - `carroll` - A 2x2 sorting grid: the same idea as a Venn, read off a grid instead of overlapping rings.
 - `label-diagram` - A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on.
 - `rainforest-layers` - The rainforest cross-section, labelled by layer.
@@ -458,7 +458,7 @@ Smallest usable: **91mm wide x 53mm tall**. Spare height: never takes spare heig
 
 #### `venn`
 
-Sorting into two overlapping properties. Blank is the frame the child fills; placed is the worked example. Not maths-only.
+Sorting into two overlapping properties, or comparing two cases (then and now, two places) with what they share in the middle. Blank is the frame the child fills; placed is the worked example.
 
 Smallest usable: **108mm wide x 58mm tall**. Spare height: never takes spare height.
 

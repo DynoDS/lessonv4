@@ -1605,6 +1605,25 @@ A **placed** Venn — the same frame with shapes already sorted into named regio
   ] }
 ```
 
+**Comparing two cases.** The same frame is the same-and-different sort (`do-beats.md` 5.10) in any subject: each circle is one case rather than a property, the overlap is what they share, and the chips are features. Reach for it when a history or geography comparison is the Do beat or the Practise, instead of two text columns, because the overlap makes "what stayed the same" a place a child puts something:
+```json
+{ "type": "venn", "label1": "Victorian classroom", "label2": "Classroom today",
+  "shapes": [
+    { "region": "leftOnly",  "label": "Slates" },
+    { "region": "overlap",   "label": "A teacher" },
+    { "region": "rightOnly", "label": "Computers" }
+  ] }
+```
+```json
+{ "type": "venn", "label1": "Manaus, Brazil", "label2": "London, UK",
+  "shapes": [
+    { "region": "leftOnly",  "label": "Hot all year" },
+    { "region": "overlap",   "label": "Built by a river" },
+    { "region": "rightOnly", "label": "Cold winters" }
+  ] }
+```
+Blank, with the feature cards as a `chip-bank` beside it, is the pupil version; `outside` is left out of a two-case comparison unless a feature genuinely belongs to neither. A chip holds a few words and wraps onto up to three lines inside its box, so write features, not sentences (`Children sat in rows`, not `In Victorian times children had to sit in rows`), and keep to about three chips a region so they stay inside the circle.
+
 **`label1` / `label2` fields (required):** the property criteria for the left and right circles (e.g. `"has a right angle"`, `"has 4 equal sides"`). A long criterion ("has at least one pair of parallel sides") now wraps to two lines and stays inside the box automatically, so it never clips — a concise label still prints largest, but length is safe.
 
 **`shapes` field (optional):** an array of placed tokens; omit it (or pass `[]`) for a blank diagram. Each token is `{ "region": …, "label": … }` where `region` is one of `"leftOnly"` | `"rightOnly"` | `"overlap"` | `"outside"`, and `label` is the shape's name shown in the chip. Several tokens may share a region — they stack neatly.
