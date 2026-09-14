@@ -685,7 +685,9 @@ function slideUnitIds(slideData) {
   return ids;
 }
 
-function teachUnitIds(jsonPath) {
+// Every Teach unit in the design beside lesson.json, by id, with whether its
+// design carries a script. Null when there is no design to read.
+function teachUnits(jsonPath) {
   const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
   if (!fs.existsSync(designPath)) return null;
   let design;
@@ -694,21 +696,37 @@ function teachUnitIds(jsonPath) {
   } catch {
     return null;
   }
-  const ids = new Set();
+  const units = new Map();
   const visit = (unit) => {
     if (unit && typeof unit === 'object' && TEACH_KINDS.has(unit.kind) &&
         typeof unit.sourceUnitId === 'string') {
-      ids.add(unit.sourceUnitId);
+      const script = unit.speakerNotes && typeof unit.speakerNotes === 'object'
+        ? unit.speakerNotes.script : null;
+      units.set(unit.sourceUnitId, { hasScript: typeof script === 'string' && script.trim().length > 0 });
     }
   };
   (Array.isArray(design.teachingSequence) ? design.teachingSequence : []).forEach(visit);
-  return ids;
+  return units;
+}
+
+// The slots on a teach-layout slide that carry teaching a class reads: an
+// explanation line, a question, the line to remember, a passage, steps. A
+// lead and a picture on their own are a caption under a photograph.
+const TEACHING_SLOTS = ['lines', 'question', 'sticky', 'extract', 'steps', 'captions',
+  'sides', 'answers', 'speakers', 'columns', 'statement'];
+
+function carriesTeaching(slideData) {
+  return TEACHING_SLOTS.some((slot) => {
+    const value = slideData[slot];
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== undefined && value !== null && value !== '';
+  });
 }
 
 function teachLayoutWarnings(lesson, jsonPath) {
   const slides = Array.isArray(lesson.slides) ? lesson.slides : [];
   const warnings = [];
-  const teachIds = teachUnitIds(jsonPath);
+  const teachIds = teachUnits(jsonPath);
   const catalogue = Object.keys(LAYOUTS).join(', ');
 
   if (teachIds && teachIds.size) {
@@ -726,6 +744,55 @@ function teachLayoutWarnings(lesson, jsonPath) {
           'centred, its cards match in size and the deck does not settle into one arrangement. ' +
           `Choose the layout whose shape fits what this slide holds (templates.md, teach-layout): ${catalogue}.`
       });
+    });
+
+    // A Teach unit that spans two slides is one beat the layout had to divide,
+    // and both halves are still teaching. On 14 September 2026 a Year 4
+    // history beat was divided into a photograph with the label `A Tudor farm
+    // household` and, on the next slide, every word with no picture and no
+    // notes; the teacher met the first half and had nothing to teach from.
+    // So each half carries teaching the class reads, and each carries the
+    // words the teacher says for what it shows (slide-composition-playbook.md,
+    // Space-pressure order, and the Slide Designer's script rule).
+    const slidesByUnit = new Map();
+    slides.forEach((slideData, index) => {
+      slideUnitIds(slideData).forEach((id) => {
+        if (!teachIds.has(id)) return;
+        if (!slidesByUnit.has(id)) slidesByUnit.set(id, []);
+        slidesByUnit.get(id).push(index);
+      });
+    });
+    slides.forEach((slideData, index) => {
+      if (!slideData) return;
+      const unit = slideUnitIds(slideData).find((id) => teachIds.has(id));
+      if (!unit) return;
+      const notes = slideData.speakerNotes;
+      if (teachIds.get(unit).hasScript && !(typeof notes === 'string' && notes.trim())) {
+        warnings.push({
+          slide: index + 1,
+          field: 'speakerNotes',
+          signal: 'TEACH_SLIDE_WITHOUT_ITS_SCRIPT',
+          message:
+            `this slide carries the Teach unit ${unit}, whose design has a script, and its speakerNotes ` +
+            'are empty. A teacher stands in front of every slide of a Teach beat, so when the beat ' +
+            'spans more than one slide the script is cut where the slides cut and each slide carries ' +
+            'the words for what it shows. Move the sentences that teach this slide into its speakerNotes.'
+        });
+      }
+      if (slideData.template === 'teach-layout' && slidesByUnit.get(unit).length > 1 &&
+          !carriesTeaching(slideData)) {
+        warnings.push({
+          slide: index + 1,
+          field: 'layout',
+          signal: 'TEACH_SPLIT_LEAVES_A_LABEL',
+          message:
+            `this slide is one part of the Teach unit ${unit} and carries only a picture and a lead line. ` +
+            'That is a photograph with a caption, not teaching: a teacher who has not read the notes ' +
+            'has nothing to say from it. Split a Teach beat where its teaching turns (the scene set ' +
+            'on one slide, the look and the landed sentence on the next), keep the picture on both ' +
+            'halves, and give each half at least one explanation line, question or line to remember.'
+        });
+      }
     });
   }
 

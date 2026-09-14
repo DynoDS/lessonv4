@@ -78,6 +78,16 @@ Rather than:
 
 The second version can sound completely natural when spoken, but that does not mean it belongs on the slide.
 
+The other direction fails too, and on a Teach slide it fails more often, because "tighter" gets read as "compressed". A Teach board carries the route to its idea in whole sentences a teacher could say, and tighter means fewer of them than the script, never clipped ones:
+
+> In Tudor times there were no shops, and no light switches on the walls.
+
+Rather than:
+
+> Tudor England, 1485 to 1603. No shops, no switches.
+
+The user met the second on a built deck and called it "quick, punchy and summarised. It doesn't sound warm. It doesn't sound human" (14 September 2026). A clipped line is a label, and a teacher who does not know the topic cannot teach from a label; the sentence with its verb in is something they can say. The slide and the script are the same voice, the same route, at two lengths.
+
 ## Speaker notes / spoken teaching
 
 Speaker notes can contain:

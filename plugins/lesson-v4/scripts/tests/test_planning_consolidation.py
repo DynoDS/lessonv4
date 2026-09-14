@@ -32,7 +32,7 @@ class PlanningConsolidationTests(unittest.TestCase):
             'new learning (knowledge, decision or procedure)', 'supported practice to independence',
             'nearest alternative', 'exposed, resolved and retested',
             'actual object, text, diagram or working', 'concrete explanation, model or live action',
-            'why that medium makes the idea clearer', 'pupil response it prepares',
+            'the route in whole sentences', 'pupil response it prepares',
             'child-facing lines that teach it', 'example and non-example of the product', 'steps',
             'independent assessment evidence', 'surface cue or copied answer path',
             'success-criteria form', 'fresh worksheet evidence', 'safety constraint',

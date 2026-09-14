@@ -276,6 +276,64 @@ test('one Teach unit carried over two slides may keep its layout', (t) => {
   assert.doesNotMatch(result.stdout || '', /TEACH_LAYOUT_REPEATED/);
 });
 
+// ─── a split Teach beat is still teaching on both halves ─────────────────
+//
+// The Tudor deck of 14 September 2026: one Teach beat was divided into a
+// photograph with the label `A Tudor farm household` (all the notes on it)
+// and every word on the next slide (no picture, no notes).
+
+const TEACH_WITH_SCRIPT = [{ kind: 'teach', sourceUnitId: 'lesson-section/teaching-sequence/unit-001',
+  speakerNotes: { script: 'Say to children: think about your home.' } }];
+
+test('a half of a split Teach beat that is only a picture and a lead line is refused', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-label-');
+  const specPath = writeLesson(dir, [
+    teachSlide('picture-with-statement', { designUnitId: 'lesson-section/teaching-sequence/unit-001' }),
+    teachSlide('four-cards', { designUnitId: 'lesson-section/teaching-sequence/unit-001' })
+  ]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.equal(result.ok, false);
+  assert.match(result.stdout, /TEACH_SPLIT_LEAVES_A_LABEL/);
+  assert.match(result.stdout, /"slide":1/);
+});
+
+test('a Teach beat on one slide may be a picture with one statement', (t) => {
+  // Discrimination: the big-fact slide is a shape in the catalogue; the fault
+  // is a split that leaves one half with nothing to teach from.
+  const dir = tmpDir(t, 'teach-layouts-one-statement-');
+  const specPath = writeLesson(dir, [
+    teachSlide('picture-with-statement', { designUnitId: 'lesson-section/teaching-sequence/unit-001' })
+  ]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.doesNotMatch(result.stdout || '', /TEACH_SPLIT_LEAVES_A_LABEL/);
+});
+
+test('every slide of a Teach beat carries its share of the script', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-script-');
+  const specPath = writeLesson(dir, [
+    teachSlide('lead-picture-lines', { designUnitId: 'lesson-section/teaching-sequence/unit-001' }),
+    teachSlide('four-cards', { designUnitId: 'lesson-section/teaching-sequence/unit-001', speakerNotes: '' })
+  ]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.equal(result.ok, false);
+  assert.match(result.stdout, /TEACH_SLIDE_WITHOUT_ITS_SCRIPT/);
+  assert.match(result.stdout, /"slide":2/);
+});
+
+test('a Teach beat whose design has no script is not asked for one', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-no-script-');
+  const specPath = writeLesson(dir, [
+    teachSlide('lead-picture-lines', { designUnitId: 'lesson-section/teaching-sequence/unit-001', speakerNotes: '' })
+  ]);
+  designFor(dir, [{ kind: 'teach', sourceUnitId: 'lesson-section/teaching-sequence/unit-001',
+    speakerNotes: { script: null } }]);
+  const result = runSlideDesignCheck(specPath);
+  assert.doesNotMatch(result.stdout || '', /TEACH_SLIDE_WITHOUT_ITS_SCRIPT/);
+});
+
 // ─── the catalogue the designer reads is the catalogue that exists ─────────
 
 test('templates.md lists every layout the builder has, and no other', () => {

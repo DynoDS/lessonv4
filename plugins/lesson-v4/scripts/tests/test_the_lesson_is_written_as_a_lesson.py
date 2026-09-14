@@ -185,11 +185,12 @@ class ATeachSlideLandsItsSentenceOnce(unittest.TestCase):
         self.assertIn("It carries it once.", flat(PREFERENCES))
         self.assertIn("and it carries it once", flat(CONTENT_ROUTE))
         self.assertIn("A Teach slide lands its sentence once", flat(OUTPUT_TEMPLATE))
-        # Saying one thing three ways is the fault; what it is, why it is
-        # there and what it does are three different things and are the
-        # teaching. Both halves have to stay stated together.
+        # Saying one thing three ways is the fault; walking the route (what the
+        # class has, the new thing, the look, the landed sentence) is three or
+        # four different things and is the teaching. Both halves have to stay
+        # stated together.
         self.assertIn("Saying the same thing three ways is the fault above", flat(CONTENT_ROUTE))
-        self.assertIn("saying what it is, why it is there and what it does is three different things", flat(CONTENT_ROUTE))
+        self.assertIn("walking the route is three or four different things and is the teaching itself", flat(CONTENT_ROUTE))
 
 
 # -- the validator holds the mechanical half ----------------------------------
@@ -213,7 +214,7 @@ def test_a_text_takeaway_that_repeats_the_headline_is_refused():
     design, photos = valid_content_contract()
     teach = first_teach(design)
     teach["content"]["headline"] = "Incisors cut; canines help tear."
-    teach["content"]["explanation"] = None
+    teach["content"]["explanation"] = "Run your tongue along your front teeth. Feel how thin the edges are. Now look at the pointed one at the corner of the mouth in the picture."
     teach["content"]["takeaway"] = {"kind": "text", "text": "Incisors cut food and canines help tear food."}
     assert_invalid_contract(design, photos, "lands its sentence once")
 
@@ -224,7 +225,7 @@ def test_a_sticky_takeaway_that_repeats_the_headline_is_refused():
     sticky = design["stickyKnowledge"][0]
     sticky["text"] = "Incisors cut food and canines help tear food."
     teach["content"]["headline"] = "Incisors cut; canines help tear."
-    teach["content"]["explanation"] = None
+    teach["content"]["explanation"] = "Run your tongue along your front teeth. Feel how thin the edges are. Now look at the pointed one at the corner of the mouth in the picture."
     teach["content"]["takeaway"] = {"kind": "sticky", "ref": sticky["id"]}
     if sticky["id"] not in teach["stickyKnowledgeRefs"]:
         teach["stickyKnowledgeRefs"] = list(teach["stickyKnowledgeRefs"]) + [sticky["id"]]
@@ -253,7 +254,7 @@ def test_a_headline_that_names_the_thing_beside_a_sticky_fact_is_allowed():
     sticky = design["stickyKnowledge"][0]
     sticky["text"] = "At Christmas, Christians celebrate Jesus' birth. They believe he is God's Son."
     teach["content"]["headline"] = "A nativity scene tells the Christmas story."
-    teach["content"]["explanation"] = None
+    teach["content"]["explanation"] = "You have probably seen one of these in a school hall or a shop window. Look at who is in it: a mother, a father, a baby in a manger, and visitors who have come a long way. Every figure is there to tell one part of the story."
     teach["content"]["takeaway"] = {"kind": "sticky", "ref": sticky["id"]}
     if sticky["id"] not in teach["stickyKnowledgeRefs"]:
         teach["stickyKnowledgeRefs"] = list(teach["stickyKnowledgeRefs"]) + [sticky["id"]]

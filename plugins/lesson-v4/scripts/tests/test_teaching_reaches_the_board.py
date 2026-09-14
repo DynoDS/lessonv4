@@ -197,8 +197,12 @@ class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
             "You can say \"I'd like to pass.\" You don't have to explain why."
         )
         validator.validate_design(design, photos)
+        # Null was allowed until 14 September 2026, when a Teach board that was
+        # a label under a photograph reached the user; the route is required.
         teach["content"]["explanation"] = None
-        validator.validate_design(design, photos)
+        with self.assertRaises(validator.ContractError) as refused:
+            validator.validate_design(design, photos)
+        self.assertIn("route", str(refused.exception))
         del teach["content"]["explanation"]
         with self.assertRaises(validator.ContractError):
             validator.validate_design(design, photos)
@@ -210,7 +214,7 @@ class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
         # repairing a slide that said one thing three ways, and three decks
         # then shipped with every Teach explanation empty; writing it is the
         # default again (12 September 2026).
-        self.assertIn('"explanation": "what the class needs in order to understand the landed sentence', text)
+        self.assertIn('"explanation": "the route to the landed sentence, in whole sentences the teacher could say', text)
         self.assertIn("`explanation` is the teaching, as the child reads it", text)
         self.assertIn("So the default is to write it", text)
         self.assertIn("left what pass means in the script", text)

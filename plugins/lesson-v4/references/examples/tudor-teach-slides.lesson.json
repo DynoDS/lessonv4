@@ -1,0 +1,170 @@
+{
+  "lessonName": "Tudor Teach slides (the calibration the user chose, 14 September 2026)",
+  "yearGroup": "Year 4",
+  "subject": "History",
+  "lo": "To explain why Tudor children worked.",
+  "notes": [
+    "The three Teach beats of a Year 4 history lesson (To explain why Tudor children worked), hand-built on 14 September 2026 and chosen by the user from four versions. Read with preferences.md, Pride Lessons, What a Teach slide holds. The pictures are the run's reconstructions (unsplash/tudor-farm-reconstruction.jpg, unsplash/tudor-workshop-reconstruction.jpg) and are not shipped here; the layouts, slots, wording and speaker notes are the calibration."
+  ],
+  "slides": [
+    {
+      "template": "teach-layout",
+      "layout": "lead-picture-lines",
+      "headerStyle": "title",
+      "title": "Why did a family need help?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-001",
+      "photoRefs": [
+        "photo-001"
+      ],
+      "lead": "Every home needs food, a fire and a roof, every single day.",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "unsplash/tudor-farm-reconstruction.jpg",
+          "caption": "Tudor England 1485 to 1603, reconstructed",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        {
+          "value": "In Tudor times there were no shops, and no light switches on the walls.",
+          "orange": true
+        }
+      ],
+      "speakerNotes": "Say to children: Think about your home. What does it need every single day? Food. A fire to cook on and keep warm. Somewhere to sleep. Now we're going back to Tudor England, between 1485 and 1603. That's after the Romans and long before the Victorians. Look at this farm. No shop on the corner. No switch on the wall, no electricity at all. So everything a home needed had to come from somewhere, and somebody had to go and get it.\n\nTeacher information: The picture is a modern reconstruction, not a photograph of a real Tudor child; the caption says so."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "question-lines-picture",
+      "headerStyle": "title",
+      "title": "Why did a family need help?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-001",
+      "photoRefs": [
+        "photo-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "unsplash/tudor-farm-reconstruction.jpg",
+          "caption": "Tudor England 1485 to 1603, reconstructed",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "If you needed wood, it had to be fetched. Wheat had to be carried in by hand."
+      ],
+      "question": "Look at her. She isn't being paid to do this. So how does carrying those sticks help her family?",
+      "sticky": "Many Tudor children helped their households get food, fuel or money.",
+      "speakerNotes": "Say to children: If you wanted a fire tonight, somebody went and fetched the wood. If you wanted bread, somebody cut the wheat and carried it in. All of it by hand. Now look at her. What's she carrying? Sticks. What are they for? The fire, for cooking. Nobody is paying her a penny for this, but tonight the family eats because of what's in her arms. So how does carrying those sticks help her family? That's why Tudor children worked: the house needed doing, and everyone who could, helped.\n\nTeacher information: Facts follow the supplied Lesson 2 and the Shakespeare Birthplace Trust's A Day in the Life of a Tudor."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "lead-picture-lines",
+      "headerStyle": "title",
+      "title": "What did an apprentice get?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-003",
+      "photoRefs": [
+        "photo-002"
+      ],
+      "lead": {
+        "value": "Some children left home to learn a trade from someone called a master.",
+        "emphasis": [
+          {
+            "text": "trade",
+            "role": "vocabulary"
+          }
+        ]
+      },
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "unsplash/tudor-workshop-reconstruction.jpg",
+          "caption": "A leather workshop, reconstructed",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "Look: he shows, and the boy copies. That is how you learned a trade, by doing it next to someone who could."
+      ],
+      "speakerNotes": "Say to children: Not every child worked at home. Some left home to live with a master and learn a trade: making shoes, baking bread, sewing clothes. Look at this workshop. The master is showing, and the boy is copying. That's how you learned a trade, by doing it next to someone who could, for years. About seven years, usually.\n\nTeacher information: Modern summary: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1 to 2. The craft is illustrative, not a record of a named apprentice."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "picture-three-cards",
+      "headerStyle": "title",
+      "title": "What did an apprentice get?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-003",
+      "photoRefs": [
+        "photo-002"
+      ],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "unsplash/tudor-workshop-reconstruction.jpg",
+          "fit": "contain",
+          "essential": false
+        }
+      ],
+      "lines": [
+        {
+          "value": "This was the deal. The apprentice works for the master, and in exchange the master gives him food, clothes and a bed.",
+          "emphasis": [
+            {
+              "text": "apprentice",
+              "role": "vocabulary"
+            }
+          ]
+        }
+      ],
+      "question": "He isn't paid. So what does that boy get out of it?",
+      "sticky": "An apprenticeship could provide food and a home now, and a way to earn a living later.",
+      "speakerNotes": "Say to children: Now here's the deal. The apprentice works for the master. In exchange for that work, the master gives him his food, his clothes and a bed to sleep in. No wages. So what does that boy get out of it? Two things. Right now, he's fed and he's got a roof over his head. And later, when he can make a shoe that fits and lasts, he can earn his own living. Two different reasons, and one apprenticeship gave both.\n\nTeacher information: Modern summary: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1 to 2."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "question-lines-picture",
+      "headerStyle": "title",
+      "title": "Why keep working when it was hard?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-005",
+      "photoRefs": [
+        "photo-002"
+      ],
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "unsplash/tudor-workshop-reconstruction.jpg",
+          "caption": "A leather workshop, reconstructed",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "question": "So why would a family still choose this for their child, even though he isn't paid?",
+      "lines": [
+        "It had a hard side. Long days, strict rules, and there was little free time. Some masters were kind, and some were not kind to their apprentices.",
+        {
+          "value": "But there was no school for most children.",
+          "orange": true
+        },
+        {
+          "value": "The family needed what that deal gave them: food now and a trade later. Even families with money paid for it, because it was that valuable.",
+          "emphasis": [
+            {
+              "text": "trade",
+              "role": "vocabulary"
+            }
+          ]
+        }
+      ],
+      "speakerNotes": "Say to children: Now, I'm not going to pretend this was easy. The days were long. The rules were strict. There wasn't much free time. Some masters looked after their apprentices well, and some treated them badly. So here's my question. Why would a family still choose this for their child, when he isn't even paid? Were they cruel? No. Think about what else there was. For most children, there was no school to go to. And the family needed what that deal gave them: the child fed and housed now, and a trade to earn a living with later. Even families with plenty of money paid for an apprenticeship, because a trade was that valuable. So when we explain why a Tudor child worked, we explain it with what was possible then, not with what we've got now.\n\nTeacher information: Conditions: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1 to 2. Schooling context follows the supplied plan. Do not infer treatment or hours from the reconstruction."
+    }
+  ]
+}

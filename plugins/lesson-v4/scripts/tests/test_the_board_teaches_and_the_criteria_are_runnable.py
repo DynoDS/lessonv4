@@ -53,21 +53,24 @@ class TheTeachBoardTeaches(unittest.TestCase):
         route = flat(CONTENT_ROUTE)
         self.assertIn("So the default is to write it", route)
         self.assertIn("`explanation` is the teaching, as the child reads it", route)
-        # What it carries, in the child's terms.
-        self.assertIn("what it is, why it is there, what it does, what it has to do with them", route)
+        # What it carries, in the child's terms: the route, not the destination
+        # (14 September 2026).
+        self.assertIn("the route from what the class already has to the sentence the slide lands", route)
 
     def test_the_two_faults_are_held_apart(self) -> None:
         """Or the repair for one becomes the other."""
         route = flat(CONTENT_ROUTE)
         self.assertIn("Saying the same thing three ways is the fault above", route)
-        self.assertIn("saying what it is, why it is there and what it does is three different things", route)
+        self.assertIn("walking the route is three or four different things and is the teaching itself", route)
 
     def test_the_test_is_a_teacher_who_does_not_know_the_content(self) -> None:
         route = flat(CONTENT_ROUTE)
         self.assertIn("a teacher who does not already know this content and has not opened the notes", route)
         self.assertIn("The children learn a label rather than a layer", route)
-        # Null stays available, as the exception you can defend.
-        self.assertIn("`null` is the exception you can defend", route)
+        # Null was the exception you could defend until 14 September 2026, when
+        # a Teach board that was a label under a photograph reached the user;
+        # the validator refuses it now.
+        self.assertIn("the validator refuses `null`", route)
 
     def test_a_key_question_is_not_a_second_response_demand(self) -> None:
         route = flat(CONTENT_ROUTE)

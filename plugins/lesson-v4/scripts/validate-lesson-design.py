@@ -241,20 +241,32 @@ UNLOCKS_MAX_CHARS = 200
 THINKING_MAX_CHARS = 200
 
 # Beats where the teacher acts and children watch or listen. `thinking` may be
-# null there. Everywhere else every child has to do something, and the thought
-# that doing requires is written down before the activity is chosen, so that a
-# thought which is really "find the words on the slide" can be seen for what
-# it is.
+# null there. Everywhere else the thought the beat requires is written down
+# before the activity is chosen, so that a thought which is really "find the
+# words on the slide" can be seen for what it is.
+#
+# A Teach beat is not on this list. It was, until 14 September 2026, on the
+# reasoning that the teacher acts and children watch, and every Teach beat in
+# 28 saved designs wrote null: the one beat with no thought in it was the
+# teaching, and the boards came out as facts, a question and a star line. The
+# thought on a Teach is what the class is working out while the teacher
+# teaches, usually what the key question makes them look for on the board
+# (`Why would she carry sticks if nobody pays her?`), and writing it is what
+# turns telling into teaching (preferences.md, Slide Philosophy, "The fact is
+# the destination").
 NO_PUPIL_ACTION_KINDS = {
-    "teach",
-    "teach-why",
     "prepare",
     "my-turn",
     "grounding-input",
     "stimulus",
     "set-task",
-    "teach-needed",
 }
+
+# Beats where the teacher presents and no child produces anything. An idea
+# met only on these is told, not used, whatever thought the class had while
+# listening; the Teach kinds belong here even though each now carries a
+# thinking line.
+TEACHER_PRESENTS_KINDS = NO_PUPIL_ACTION_KINDS | {"teach", "teach-why", "teach-needed"}
 
 SCAFFOLD_PLACEHOLDER = "__LESSON_DESIGN_FILL__"
 PLACEHOLDER_REPORT_LIMIT = 10
@@ -1006,9 +1018,17 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         keys = {"headline", "explanation", "takeaway", "teachingText", "keyQuestions"}
         expect_exact_keys(content, keys, keys, path)
         strings(("headline",))
-        # The teaching of the idea as the child reads it. Null only when the
-        # headline, takeaway and visible example already carry it.
-        expect_nullable_string(content["explanation"], f"{path}.explanation")
+        # The teaching of the idea as the child reads it: the route from what
+        # the class already has to the sentence the slide lands. Required. It
+        # was nullable, "when the board already says it", and a Year 4 history
+        # deck reached the teacher on 14 September 2026 as a picture, the label
+        # `A Tudor farm household` and nothing to teach from; the route was in
+        # the notes he was not reading. The board carries the route
+        # (preferences.md, Slide Philosophy, "The fact is the destination").
+        expect(
+            isinstance(content["explanation"], str) and content["explanation"].strip(),
+            f"{path}.explanation must carry the teaching as the child reads it: the route from what the class already has, through the thing on the board, to the sentence the slide lands, in whole sentences the teacher could say. A headline, a picture and a star fact is a label, and a teacher who does not know the topic cannot teach from it with the notes closed",
+        )
         validate_takeaway(content["takeaway"], f"{path}.takeaway", sticky_ids)
         expect_nullable_string(content["teachingText"], f"{path}.teachingText")
         qs = expect_list(content["keyQuestions"], f"{path}.keyQuestions")
@@ -1239,7 +1259,7 @@ def validate_source_unit(
     else:
         expect(
             kind in NO_PUPIL_ACTION_KINDS,
-            f"{path}.thinking must name the thought every child has to have to do this beat; null is only for a beat where the teacher acts and children watch, and {kind} is not one",
+            f"{path}.thinking must name the thought every child has to have during this beat; null is only for a beat where the teacher acts and children watch (a My Turn, a stimulus, the setting of a task), and {kind} is not one. On a Teach it is what the class works out while you teach, usually what the key question makes them look for on the board",
         )
     expect_nullable_string(unit["pupilInstruction"], f"{path}.pupilInstruction")
     modelling = unit["modellingState"]
@@ -1588,7 +1608,7 @@ def validate_idea_instances(
             "or, if today's learning is a fact about one case, do not name a concept",
         )
         expect(
-            any(u.get("kind") not in NO_PUPIL_ACTION_KINDS for u in instances),
+            any(u.get("kind") not in TEACHER_PRESENTS_KINDS for u in instances),
             f"concepts {concept_id} ({concept['name']}) is met only where the teacher acts; "
             "at least one instance must be a beat where every child uses the idea",
         )
