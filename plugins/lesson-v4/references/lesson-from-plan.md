@@ -21,6 +21,8 @@ the request names the letterbox), because it says which route this box has.
   `plans/<plan>/` on `LETTERBOX_BRANCH` of `LETTERBOX_REPO` into
   `[WORKING_DIR]/plan-files/plans/<plan>/`, byte for byte. The plans folder is
   `[WORKING_DIR]/plan-files`. A missing `built.json` or `filed.json` means zero.
+  That copy is not a git clone, so `open` and `publish` never apply to it: the
+  GitHub tools fetch and save the plan's files on this route.
 
 If the plan is not there, stop and say which plan was asked for and that it has
 not been imported.

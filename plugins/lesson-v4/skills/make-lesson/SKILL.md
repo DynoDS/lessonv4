@@ -380,10 +380,13 @@ rediscovering Python (13 September 2026).
   libraries, Python libraries, or a browser to print worksheets. Tell the
   teacher in one line that this computer is being set up for its first lesson,
   then run the `SETUP_FIX_COMMAND:` line exactly as printed. It names the
-  Python this check chose, because the fix runs with more access and would
+  Python this check chose, because the fix may run with more access and would
   otherwise install into a different one. It downloads and writes outside the
-  lesson folder, so on Codex run it with escalated permissions and network
-  access. Use the `PYTHON=` path the fix prints. If its status is still not
+  lesson folder. Where the host sandboxes commands and grants more access on
+  request (Codex on the teacher's computer), ask for escalated permissions and
+  network access. Where the host refuses escalation (a cloud box such as
+  ChatGPT Work, which already has the network), run it as it is. Use the
+  `PYTHON=` path the fix prints. If its status is still not
   `SETUP_OK`, report its `SETUP_FIX_FAILED:` lines exactly and stop: a resource
   whose libraries are missing fails at the end of the run instead of now.
 - `SETUP_NEEDS_PYTHON`: there is no Python on this computer. Installing a

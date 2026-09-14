@@ -49,6 +49,11 @@ meanwhile.
    keeping each file's path relative to `LETTERBOX_STAGED` exactly (it begins
    with `LETTERBOX_FOLDER`). A PowerPoint or PDF is binary: send its bytes,
    never a text rendering of it, or the teacher's computer saves a broken file.
+   A command's output is cut off at about a million characters, and a 1.2 MB
+   deck is 1.6 million characters of base64, so read any file over 700 KB in
+   base64 pieces of at most 900,000 characters from the start, join them, and
+   check the joined length before creating the blob. Reading it whole first
+   truncated silently and cost a wasted blob (14 September 2026).
 3. Read the branch back and confirm every file and `lesson.json` are there
    before telling the teacher the lesson is in their letterbox.
 

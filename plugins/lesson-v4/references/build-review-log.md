@@ -1,5 +1,11 @@
 # Build review log
 
+## 2026-09-14 The first scheduled cloud lesson, and three cloud tidy-ups (4.2.197)
+
+The first scheduled ChatGPT Work Cloud run (after a scheduled task created outside Work Cloud had no internet and no subagent tool) built year4-maths lesson 8, Estimate positions on a number line, with the teacher's computer off: review sent it back once for a guided check a child could pass with the halve-the-last-number misconception, then approved; slides and worksheets built; the lesson was posted through the GitHub connector and the plan's built counter moved to 8. At 10:40 the teacher's login helper saved it to Week 2 > Maths > Wednesday and moved filed to 8. The working wall failed and is under investigation separately.
+
+Three cloud frictions from that run are repaired in the owning text. The setup fix told Codex to ask for escalated permissions, and Work's approval policy refuses any escalation request; the skill now asks only where the host grants it and runs the command as it is on a cloud box that already has the network. The orchestrator ran plan-tracker open on the connector route's copied plan files, which are not a clone; lesson-from-plan.md now says open and publish never apply there. Posting the 1,219,844-byte deck through the connector truncated a whole base64 read at about a million characters and wasted a blob before a 13-chunk re-read; cloud-delivery.md now says to read any file over 700 KB in pieces of at most 900,000 characters from the start and check the joined length.
+
 ## 2026-09-13 A plan document that cannot be opened says so (4.2.196)
 
 Importing this year's plans into the real letterbox, the maths document named earlier the same day (Maths Long Term Plan - numbered.docx) had been removed from the drive, and python-docx's PackageNotFoundError came out as a traceback. plan-tracker.py now reports PLAN_ERROR: could not open ... as a Word document. The remaining Maths Long Term Plan.docx (edited 12 September, 186 lessons, lesson 7 Find the scale on a number line) was imported with next lesson 8; History next 2; Geography next 1. All three published to claude/lesson-outbox and read back.
