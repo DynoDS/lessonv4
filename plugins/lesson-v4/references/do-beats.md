@@ -254,6 +254,7 @@ Three or four items on the board. *"Which is the odd one out — and why?"* Mult
 Six short statements. Pupils mark T/F and write a one-line reason (Edutopia retrieval list; Lemov *Hinge Question* family).
 **Best for:** recall-heavy chunks where misconceptions are likely.
 **SEND access:** the binary T/F is the entry; the justification is the stretch.
+**The limit:** the user finds true or false "fine, but can be cheap". A statement a child can mark by remembering the slide is surface; it earns its place only when the statement is one a child in the class could genuinely believe (`Tudor families sent children to work because they didn't care about them`) and the reason is written. Prefer a sort, a match or an odd one out when those force the same decision.
 
 ### 5.4 Match the Pairs
 A small column of terms; a small column of definitions/effects/dates. Pupils draw lines or letter-match (common across primary subjects).
@@ -335,7 +336,7 @@ Teach a short gesture with the new term (*"erosion — fingers wearing down a fi
 **Demands and supports:** fine-motor gesture, visual and auditory encoding; repetition supports recall; not a guarantee of retention.
 
 ### 7.5 Stand If…
-**Teacher-owned response routine:** do not select this unless the teacher explicitly requests it.
+**Not used.** The user does not use stand-up or show-me routines in his lessons ("Hate stand if things. Never those!", 14 September 2026). It stays listed so it is recognised, not so it is chosen; do not select it, and do not reach for a four-corners or move-to-show variant as a substitute.
 *"Stand if you can name a Tudor monarch."* *"Stand if you agree."* Whole class commits visibly without writing (common across primary; cf. Lemov's **Show Me** family).
 **Best for:** quick poll, energy reset between Teach chunks.
 **Demands and supports:** standing and physical response; binary decision; teacher chooses whether standing is appropriate and offers seated alternative.

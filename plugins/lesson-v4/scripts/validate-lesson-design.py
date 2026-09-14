@@ -943,6 +943,76 @@ def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: di
                 )
 
 
+def _unit_words(unit: dict[str, Any]) -> str:
+    """Everything a beat puts in front of the class or says to it, lower-cased."""
+    parts: list[str] = []
+
+    def walk(value: Any) -> None:
+        if isinstance(value, str):
+            parts.append(value)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+        elif isinstance(value, dict):
+            for item in value.values():
+                walk(item)
+
+    walk(unit.get("content"))
+    walk(unit.get("pupilInstruction"))
+    walk(unit.get("taskStructure"))
+    walk((unit.get("speakerNotes") or {}).get("script"))
+    return " ".join(parts).lower()
+
+
+def _word_patterns(term: str) -> list[str]:
+    """Patterns for the plain forms a sentence uses a taught term in. A paired
+    card (`greater than / less than`, `continuity and change`) is used when
+    either of its words is; a plural or a hyphen (`place-value`) still counts."""
+    patterns = []
+    for part in re.split(r"\s*/\s*|\s+and\s+", term.strip().lower()):
+        part = part.strip()
+        if not part:
+            continue
+        # `equal to` is used when a sentence says `equal`; the joining word is
+        # not the term.
+        part = re.sub(r"\s+(?:to|than|of)$", "", part)
+        stem = part[:-1] if part.endswith("s") else part
+        words = [re.escape(w) for w in stem.split()]
+        patterns.append(r"\b" + r"[\s-]+".join(words) + r"(?:s|es|ies)?\b")
+    return patterns
+
+
+def validate_vocabulary_is_used(
+    introductions: list[Any], vocab_items: list[dict[str, Any]], sequence: list[dict[str, Any]]
+) -> None:
+    """A vocabulary slide is there because the beats after it need the word.
+    A Year 4 history lesson (14 September 2026) introduced `working conditions`
+    on its own slide and then never said it again, on the board, in a question
+    or in a script, so the class met a definition that nothing asked them to
+    use. The designer's rule that every card has a landing was written down and
+    unchecked. The word, or a plain form of it, appears in a later beat."""
+    order = {unit["sourceUnitId"]: index for index, unit in enumerate(sequence)}
+    words = {item["id"]: item.get("term") for item in vocab_items}
+    for index, raw in enumerate(introductions):
+        if not isinstance(raw, dict):
+            continue
+        after = raw.get("after")
+        start = order.get(after, -1) + 1
+        later = " ".join(_unit_words(unit) for unit in sequence[start:])
+        for ref in raw.get("vocabularyRefs") or []:
+            word = words.get(ref)
+            if not isinstance(word, str) or not word.strip():
+                continue
+            expect(
+                any(re.search(pattern, later) for pattern in _word_patterns(word)),
+                f"vocabularyIntroductions[{index}]: `{word}` is introduced and then never used. "
+                "A word earns its vocabulary slide because the beats after it need it: write it into "
+                "the next beat's board, its question or task, and its script, so children use the word "
+                "rather than only meet its definition. If nothing after the card needs the word, it is "
+                "not this lesson's vocabulary",
+            )
+
+
 def validate_launch(raw: Any, path: str) -> None:
     """The launch of a substantial task: what the lesson has established, a
     good instance beside a weak one, and the steps. Null when children can
@@ -2589,6 +2659,7 @@ def validate_design(
         # met eight slides before it is used has stopped being a glance reference
         # by the time anyone glances, so a lesson may introduce words at several
         # moments (`preferences.md` -> Vocabulary). Nothing here caps the count.
+        validate_vocabulary_is_used(introductions, vocab_items, sequence)
 
     if has_legacy:
         placement = expect_dict(root["vocabularyPlacement"], "vocabularyPlacement")

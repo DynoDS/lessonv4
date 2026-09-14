@@ -389,6 +389,29 @@ It names the action (label), what goes in it (the name of that layer), and where
 
 The limit is the prompt whose difficulty is the point: a `what do you notice?`, an odd one out, a deliberate puzzle. There, being briefly stuck is the work, and pointing at a word bank would hand it over.
 
+## Say what you mean, and give a second question that leads to the first
+
+A question can be the right question and still be written for a reader who already knows what it is getting at. `Which part helps the apprentice now, and which part could help later?` leaves a Year 4 child asking: part of what? `What did an apprentice get out of it?` leaves them asking: out of what? The words that make the question make sense (the meals, the bed, the lessons; the deal) are in the teacher's head and not in the sentence. The user, on a Year 4 history deck (14 September 2026): "They seem like they'd be great for college kids to discuss, but for primary school children they feel a little too abstract... only my smarter children will answer, because SEND, EAL, low children still need to get it."
+
+Two repairs, and most questions a child thinks hard about need both.
+
+**Name the thing.** Put the actual things into the question, so a child can answer it without first working out what it refers to:
+
+> Tom got meals, a bed, and lessons in making bread. Which of these helped him straight away?
+
+Rather than:
+
+> Which part helped Tom now?
+
+**Add a second question that walks towards the first.** The first question is the one the lesson wants answered; the second is a smaller, concrete question a child who is stuck can answer, and answering it puts them most of the way to the first:
+
+> Why might Tudor families like Sam's still have wanted their child to learn to make clothes?
+> How could making clothes help Sam when he grew up?
+
+The second question does not hand over the answer. It points at the part of the story or the idea the answer comes from, and the child still makes the link. `What would happen to the wheat if the rain got to it first?` leads to why the family needed Mary at harvest; `The answer is food` does not lead, it tells. On a slide both questions are blue, the first larger, and the script says the second as the way in (`If you're stuck, think about...`).
+
+The limit: a quick recall question (`What is a source?`), a question already concrete enough to answer cold, and a prompt whose difficulty is the point (a `what do you notice?`, an odd one out) do not get a second question; adding one to every question is a habit children stop reading.
+
 ## Keep instructions economical
 
 Default to the shortest wording that gives pupils everything they need.

@@ -402,6 +402,13 @@ def valid_content_contract():
             source_unit(4, "practise", {"launch": None, "activity": "Explain the chain", "format": "short written explanation", "task": "Explain how a new road could lead to more forest being cleared."}, answer={"kind": "model", "content": "The road makes the area easier to reach, so more people may enter and clear land.", "acceptanceCondition": "Accept an accurate causal explanation.", "delivery": "answer-slide"}),
         ],
     )
+    # The shared fixture's vocabulary word is a maths term; this route's lesson
+    # is about roads, and a carded word has to be used after its card
+    # (validate_vocabulary_is_used), so the word here is one the lesson uses.
+    for item in design.get("vocabulary") or []:
+        if item.get("term") == "exchange":
+            item["term"] = "road"
+            item["definition"] = "A road is a wide path that people and vehicles use to travel."
     return design, photos
 
 
