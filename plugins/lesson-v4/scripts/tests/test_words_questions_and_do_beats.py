@@ -109,5 +109,27 @@ class AWhyLessonDoesMoreThanExplain(unittest.TestCase):
         self.assertIn("a lesson whose Do beats all share one response channel", flat(ROOT / "agents" / "design-reviewer.md"))
 
 
+class TheBoardLooksAsCarefulAsItReads(unittest.TestCase):
+    """Four visual lessons from the same deck (14 September 2026)."""
+
+    def test_two_questions_take_a_break_and_a_paragraph_break_is_preferred(self) -> None:
+        text = flat(ROOT / "references" / "preferences.md")
+        self.assertIn("**Two questions are two moves, always.**", text)
+        self.assertIn("**Prefer a paragraph break (a blank line between them,", text)
+        self.assertIn("use a line break", text)
+
+    def test_category_cards_are_centred(self) -> None:
+        text = flat(ROOT / "references" / "slide-composition-playbook.md")
+        self.assertIn("and that alignment is **centred**", text)
+
+    def test_one_long_card_holds_its_group_down(self) -> None:
+        text = flat(ROOT / "references" / "slide-composition-playbook.md")
+        self.assertIn("**Cards that share one text size are only as big as the longest of them.**", text)
+
+    def test_a_caption_earns_its_line_once(self) -> None:
+        self.assertIn("**A caption costs the picture its height, so it earns its line once.**", flat(ROOT / "references" / "slide-composition-playbook.md"))
+        self.assertIn("Say it once: a set of reconstruction pictures", flat(ROOT / "references" / "subject-history.md"))
+
+
 if __name__ == "__main__":
     unittest.main()
