@@ -92,7 +92,8 @@ class TheCalibrationIsAtBothOwners(unittest.TestCase):
         self.assertIn("### What a Teach slide holds: the Tudor calibration", text)
         # The chosen boards, verbatim, so the designer writes to them.
         self.assertIn("Every home needs food, a fire and a roof, every single day.", text)
-        self.assertIn("Look at her. She isn't being paid to do this. So how does carrying those sticks help her family?", text)
+        self.assertIn("How does carrying those sticks help her family?", text)
+        self.assertIn("Look at her. She isn't being paid to do this.", text)
         # And what he rejected, so the amount rule is not the only guard.
         self.assertIn("No shops, no switches", text)
         self.assertIn("over-fragmented", text)
@@ -149,6 +150,40 @@ class ATeachBeatSplitsWhereItsTeachingTurns(unittest.TestCase):
         self.assertIn("A Teach beat splits where its teaching turns, and both halves are still teaching.", flat(PLAYBOOK))
         self.assertIn("TEACH_SPLIT_LEAVES_A_LABEL", flat(PLAYBOOK))
         self.assertIn("the split falls where the teaching turns, never at the page boundary", flat(FOCUSED_REPAIR))
+
+
+class AnInventedCaseTeachesTheGroup(unittest.TestCase):
+    """The same evening the user taught from the rebuilt deck and found every
+    practice question asked about one invented child: "some children will just
+    think THAT child experienced it, rather than this was a different time in
+    history and many children experienced this." The names stay; the question
+    moves to the group."""
+
+    def test_the_rule_sits_beside_one_case_is_not_the_group(self) -> None:
+        text = flat(PREFERENCES)
+        self.assertIn("**One case is not the group, and the class hears so.**", text)
+        self.assertIn("**An invented case is evidence about the group, so the question asks about the group.**", text)
+        self.assertIn("Why did Tudor families like Mary's need their children at harvest time?", text)
+        # Its limit: a person who really is the subject, and a maths scenario.
+        self.assertIn("a case whose person really is the subject", text)
+
+    def test_the_designer_is_told_at_the_point_it_names_a_person(self) -> None:
+        self.assertIn("a named person in a knowledge lesson is an example of the group the objective is about, not its subject", flat(LESSON_DESIGNER))
+
+    def test_the_reviewer_reads_the_practice_run_for_it(self) -> None:
+        self.assertIn("teaches the child, not the group", flat(DESIGN_REVIEWER))
+
+    def test_history_is_told_in_the_past_tense_with_the_period_in_view(self) -> None:
+        text = flat(HISTORY)
+        self.assertIn("**Tell the past in the past tense, and keep the period in view.**", text)
+        self.assertIn("`Why did Tudor children work?`, not `Why did these children work?`", text)
+
+    def test_the_example_is_the_deck_he_taught(self) -> None:
+        spec = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+        titles = [s["title"] for s in spec["slides"]]
+        self.assertTrue(all("Tudor" in t or t == "Why keep working when it was hard?" for t in titles))
+        deal = spec["slides"][3]["lines"][0]["value"]
+        self.assertIn("The apprentice worked for the master.", deal)
 
 
 class TheHistorySketchIsBack(unittest.TestCase):
