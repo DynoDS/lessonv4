@@ -403,6 +403,8 @@ Rather than:
 
 > Which part helped Tom now?
 
+A slide title and the headings of a sort are read the same way, and they are easier to miss because they do not look like questions. `Hard working conditions, or a reason to choose it?` leaves the child asking: choose what? `Would a Tudor family still choose an apprenticeship?` names it.
+
 **Add a second question that walks towards the first.** The first question is the one the lesson wants answered; the second is a smaller, concrete question a child who is stuck can answer, and answering it puts them most of the way to the first:
 
 > Why might Tudor families like Sam's still have wanted their child to learn to make clothes?

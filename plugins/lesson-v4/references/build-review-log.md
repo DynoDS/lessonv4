@@ -1,5 +1,13 @@
 # Build review log
 
+## 2026-09-14 A sort's two groups are a plain contrast (4.2.208)
+
+Editing the Tudor deck to the 4.2.205 Do beats, slide 14 kept its sort `Hard working conditions` / `A reason families still chose it` under the title `Hard working conditions, or a reason to choose it?`. Daniel: "dont understand this one... so kids wont either". Naming the thing (`Would a Tudor family still choose an apprenticeship?`) fixed the title, and he still said "i dont get the difference between the 2 groups". The groups were a description against a reason, and one card (`no school in the village`) honestly fitted both. The slide now sorts `Bad things about being an apprentice` / `Good things about being an apprentice` with that card removed. He then asked whether the plugin would make the same mistakes.
+
+**Would it.** Yes, and it was teaching it: `subject-history.md`'s "A why lesson is not only explaining" (4.2.202) held this exact sort up as the model. `teacher-voice.md` §6 `Name the thing` covered questions only, so a title and group headings were never read that way, and 4.2.205's praise of the "hardest placement" had no line separating a hard card with one right home from a card that belongs in both. The slide 5 fault (matching the slide's own words) is already owned by 4.2.205.
+
+**The change.** `preferences.md` fresh-cases paragraph gains the groups: say their difference in one plain sentence a nine-year-old would follow, name both as the same kind of thing, and a card that belongs in both is confusion unless the idea taught is that one thing can be both (`Needed is not tidy`). `teacher-voice.md` §6 extends naming the thing to slide titles and sort headings. The history example now sorts what was bad and good about being an apprentice. The reviewer reads titles, sort headings and group contrast with its existing question check. Four tests. Python 1820 pass with the same 10 pre-existing failures.
+
 ## 2026-09-14 Each Do beat idea names what every child does (4.2.207)
 
 I offered Daniel seven ideas cut from the research, written as questions (`which website would you trust for health information?`). His reply: "i dont get it how theyre beats, theyre questions?" He was right, and it is the plugin's own rule: a question to the room is not a Do beat. I then claimed the 4.2.205 subject lists were already written as doings; rechecking showed nine items opening on a bare question (`Which village is upstream of the dam?`, `Will the bulb light?`), which is exactly the shape a designer would copy into a key question and call a Do.

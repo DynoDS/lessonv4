@@ -111,6 +111,25 @@ class EachIdeaNamesWhatEveryChildDoes(unittest.TestCase):
         self.assertIn("**Estimate first:**", maths)
         self.assertIn("**Compare two methods:**", maths)
 
+class ASortsGroupsAreAPlainContrast(unittest.TestCase):
+    """Daniel on the rebuilt Tudor sort: "i dont get the difference between the 2 groups"."""
+
+    def test_preferences_asks_for_one_plain_sentence_between_the_groups(self) -> None:
+        text = flat(REF / "preferences.md")
+        self.assertIn("Say the difference between the two groups in one plain sentence a nine-year-old would follow.", text)
+        self.assertIn("is confusion rather than challenge, unless the idea being taught is that one thing can be both", text)
+
+    def test_titles_and_headings_name_the_thing(self) -> None:
+        self.assertIn("A slide title and the headings of a sort are read the same way", flat(REF / "teacher-voice.md"))
+
+    def test_the_history_example_no_longer_models_the_muddy_sort(self) -> None:
+        text = flat(REF / "subject-history.md")
+        self.assertNotIn("the reasons families still chose it", text)
+        self.assertIn("sort what was bad and what was good about being an apprentice", text)
+
+    def test_the_reviewer_reads_sort_headings(self) -> None:
+        self.assertIn("a sort whose two groups a child could not tell apart in one plain sentence", flat(ROOT / "agents" / "design-reviewer.md"))
+
 
 if __name__ == "__main__":
     unittest.main()
