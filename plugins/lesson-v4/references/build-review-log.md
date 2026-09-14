@@ -1,5 +1,11 @@
 # Build review log
 
+## 2026-09-14 Each Do beat idea names what every child does (4.2.207)
+
+I offered Daniel seven ideas cut from the research, written as questions (`which website would you trust for health information?`). His reply: "i dont get it how theyre beats, theyre questions?" He was right, and it is the plugin's own rule: a question to the room is not a Do beat. I then claimed the 4.2.205 subject lists were already written as doings; rechecking showed nine items opening on a bare question (`Which village is upstream of the dam?`, `Will the bulb light?`), which is exactly the shape a designer would copy into a key question and call a Do.
+
+**The change.** Each subject list's intro now says every idea names what every child does with the cards, map or page, because a question alone is answered by the hands that go up. The nine items are rewritten as doings (circle the village upstream, tick the circuits that light, underline the pressure phrase). With his yes, the seven go in as doings: geography `Local, national or global?` (sort six cards); science `Model or real?` (tick and cross on the diagram); RE `Which beliefs clash?` (circle two belief cards); PSHE `Which website would you trust?` (rank three, write the clue) and `What does each person need?` (match need cards); maths `Estimate first` (circle the sensible answer before calculating) and `Compare two methods` (tick the quicker one, say why) beside Reasoning. Tests: three more in `test_do_beats_look_like_the_subject.py`, including one that no list item opens on a bare question (fails on the 4.2.206 files). Python 1816 pass with the same 10 pre-existing failures.
+
 ## 2026-09-14 A Venn compares two cases, and a calm room sits down (4.2.206)
 
 Daniel, following 4.2.205: "stand up if I don't really like. I like calm in my classroom. Thumbs up if is a bit better. But I think it's kind of a weak do beat... Same with true or false." And yes to giving the Venn a history and geography example, so the new same-and-different beat has a picture.

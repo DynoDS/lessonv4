@@ -56,15 +56,16 @@ Normally make sense of the result while children can still see the equipment, ob
 
 ## What a Do beat looks like in science
 
-A science Do beat makes children use the scientific relationship, not describe what they saw. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and each changes the case from the one the Teach showed:
+A science Do beat makes children use the scientific relationship, not describe what they saw. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each changes the case from the one the Teach showed:
 
-- **Predict with a reason.** Will the bulb light in this circuit? Which ice cube melts first? The prediction has to be decided by the taught idea, and changing one thing is the cleanest way to make it so (`do-beats.md` 10.3, 10.4).
+- **Predict with a reason.** Children tick the circuits whose bulb will light, or write the letter of the ice cube that melts first, with one reason, before anything is tested. The prediction has to be decided by the taught idea, and changing one thing is the cleanest way to make it so (`do-beats.md` 10.3, 10.4).
 - **Which is not?** Three examples and one non-example of the category just taught, with the boundary case where the misconception lives: a whale among the fish, an aluminium can among the steel ones.
 - **Sort by the property.** Materials, animals or changes sorted by the taught property, including one the class has not handled.
 - **Complete the mechanism.** Fill the missing step: the sun heats the puddle, the water ___, the vapour rises (10.2).
 - **Label a new diagram.** The same parts on a different plant, tooth or circuit from the one taught, so the label is recognised rather than remembered.
 - **Which result supports it?** Choose the result that is evidence for the claim, and say what rules the others out (10.8).
-- **Keep it fair.** Which one thing must stay the same in this test, and what would go wrong if it changed?
+- **Keep it fair.** From four cards describing the test, children circle the one thing that must stay the same and write what would go wrong if it changed.
+- **Model or real?** On a diagram the lesson used (the Earth and Sun with arrows, particles as dots), children tick what is really there and cross what is drawn only to help us understand.
 - **Prove Sam wrong.** `Sam says all metals are attracted to magnets.` Find the case that breaks it (8.8).
 
 ## Support the teacher without spoiling the enquiry

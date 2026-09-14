@@ -31,15 +31,17 @@ A personal reflection or a piece about the child's own life names the product. T
 
 ## What a Do beat looks like in PSHE
 
-A PSHE Do beat has children apply the taught reason or boundary to a situation, always someone else's. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and each uses a scenario the Teach did not already settle:
+A PSHE Do beat has children apply the taught reason or boundary to a situation, always someone else's. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a scenario the Teach did not already settle:
 
 - **Sort the behaviours.** Kind, unkind or not sure, for short scenarios the class has not discussed, with the taught rule deciding the hard one.
-- **Spot the warning sign.** Which phrase in this message is trying to pressure Mia? Which detail in the story is the risk?
+- **Spot the warning sign.** Children underline the phrase in Mia's message that is trying to pressure her, or the detail in the story that is the risk.
 - **Safest next step.** Three things Leo could do; choose the safest and name the rule that makes it so.
 - **Order the steps.** What to do first, next and last when something online worries you (`do-beats.md` 5.8).
 - **What could she say?** Choose, or write, the sentence that keeps the boundary clearly and kindly.
 - **Who could help?** Match the situation to the trusted adult or service that fits it.
 - **Now or later?** Sort consequences into what happens straight away and what builds up over time.
+- **Which website would you trust?** Three website cards for one health question: children rank them 1 to 3 and write the clue that decided the top one.
+- **What does each person need?** A story with three characters and a set of need cards: children match each need to the character it belongs to.
 
 No beat needs a child's own experience to be completed; a private choice can stay private (`Use safe distance` above).
 

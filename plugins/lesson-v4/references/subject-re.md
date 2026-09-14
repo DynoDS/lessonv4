@@ -26,15 +26,16 @@ A festival's date marks when a tradition celebrates an event, not a known date o
 
 ## What a Do beat looks like in RE
 
-An RE Do beat makes children connect what people do with what they believe, and see who is speaking. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and each uses a practice, person or text the Teach did not already explain:
+An RE Do beat makes children connect what people do with what they believe, and see who is speaking. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a practice, person or text the Teach did not already explain:
 
-- **Match the practice to the belief.** Which belief helps explain lighting a candle at Advent, or giving at Eid? The practice is a new one; the belief is the one taught.
+- **Match the practice to the belief.** Practice cards (lighting a candle at Advent, giving at Eid) matched to the belief cards that help explain them. The practice is a new one; the belief is the one taught.
 - **Doing and meaning.** Sort cards into what a person does and what it means to them, so the two stop being one thing.
-- **Whose voice?** Is this one person, many people in the tradition, or the tradition's own teaching? Sort three statements.
-- **More than one view inside a tradition.** Which two responses could both come from Christians? Built so one person can hold more than one meaning (`preferences.md` → What a Lesson Is For, `Needed is not tidy`).
+- **Whose voice?** Children sort three statements into one person, many people in the tradition, and the tradition's own teaching.
+- **More than one view inside a tradition.** From four responses, children tick the two that could both come from Christians, built so one person can hold more than one meaning (`preferences.md` → What a Lesson Is For, `Needed is not tidy`).
 - **Order the practice.** The stages of a ceremony or a festival day, in order (`do-beats.md` 5.8).
-- **Which teaching explains it?** Choose the line from the extract that supports this practice, and say how.
+- **Which teaching explains it?** Children underline the line in the extract that supports this practice, and write how.
 - **Fix the claim.** `All Christians celebrate Christmas in the same way`: correct it with what the lesson taught (8.8).
+- **Which beliefs clash?** A short story card with four belief cards beneath: children circle the two that pull against each other in this situation.
 - **Religious, non-religious or either?** Sort reasons someone might give for helping a neighbour.
 
 Children observe and reason about practices in these beats; none asks them to perform worship (below).

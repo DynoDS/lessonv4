@@ -42,6 +42,8 @@ Naming which one a task makes decides what a good version of it looks like.
 
 **Reasoning** is judging the maths itself: is this right, is it always, sometimes or never true, convince me, spot the mistake, this person says this, do you agree, why or why not.
 
+Two reasoning moves are easy to leave out because they happen before or beside the calculation. **Estimate first:** three calculations, each with three possible answers of which one is sensible, and children circle the sensible one before working anything out, so the size of the answer is decided by the numbers rather than found afterwards. **Compare two methods:** the same calculation done two ways, and children tick the quicker one for these numbers and write what about the numbers made it quicker, because choosing a method is part of knowing it.
+
 **Problem solving** is one-step and two-step word problems, open-ended questions, or problems where the child has to use the fluency at some point to solve them.
 
 **Spending the fluency, once it is secure**, looks like: the same work in a different context, modelled examples gone wrong for the child to catch, marking a set of answers to judge which are right, then on into reasoning and problem solving. It does not look like more of the same examples.

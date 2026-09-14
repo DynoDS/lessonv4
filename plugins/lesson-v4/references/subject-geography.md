@@ -71,16 +71,17 @@ Map work includes decoding symbols and keys, constructing maps, reading distribu
 
 ## What a Do beat looks like in geography
 
-A geography Do beat has a map, a photograph, a graph or a place in it, and the child gets something out of it. These are starting points to choose from by the beat's `thinking` line, not a list to work through, and each works on a place or map the Teach did not already use:
+A geography Do beat has a map, a photograph, a graph or a place in it, and the child gets something out of it. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each works on a place or map the Teach did not already use:
 
 - **Mark it.** Put the river, city or biome on a blank map, working outward from what the class already holds.
-- **Where is it from here?** Which village is upstream of the dam, which town is nearer the coast, which way would you travel: the spatial relationship, not the name.
-- **Spot the pattern, then the one that doesn't fit.** What do the shaded areas have in common, and which one breaks the pattern? The reason comes after the noticing.
+- **Where is it from here?** On a map in front of them, children circle the village upstream of the dam, or tick the town nearer the coast: the decision is the spatial relationship, not the name.
+- **Spot the pattern, then the one that doesn't fit.** Children choose from three statements the one that describes where the shaded areas are, then cross the place that breaks the pattern. The reason comes after the noticing.
 - **Order the process.** Put the stages of a river's journey or the water cycle in order, or fill the stage that is missing (`do-beats.md` 5.8, 5.9).
 - **Map to sentence, sentence to map.** Turn the climate graph into two true sentences, or mark on the map where a description puts the town (10.5, 10.6).
 - **Sort physical and human.** Cards from a place children have not studied yet, sorted by the features the lesson taught them to see.
 - **Same and different.** Two places on the criteria the lesson taught (climate, relief, how people live), with the difference that matters named (5.10).
-- **Try it on a new place.** You know why this coast wears away quickly; which of these two unseen coasts will wear away faster?
+- **Local, national or global?** Six cards (litter in the park, a flood in one town, plastic in the ocean) sorted into three columns by how far the issue reaches.
+- **Try it on a new place.** Two photographs of coasts the class has not seen: children tick the one that will wear away faster and write the feature from today's teaching that decided it.
 
 ---
 

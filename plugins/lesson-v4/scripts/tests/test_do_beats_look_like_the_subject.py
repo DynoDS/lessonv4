@@ -83,6 +83,34 @@ class ACalmClassroom(unittest.TestCase):
     def test_the_venn_is_offered_for_comparing_two_cases(self) -> None:
         self.assertIn("**Comparing two cases.**", flat(REF / "templates.md"))
 
+class EachIdeaNamesWhatEveryChildDoes(unittest.TestCase):
+    """Daniel: "i dont get it how theyre beats, theyre questions?" (14 September 2026)."""
+
+    def test_every_list_says_a_question_alone_is_not_the_beat(self) -> None:
+        for subject in ("history", "geography", "science", "re", "pshe"):
+            with self.subTest(subject=subject):
+                self.assertIn(
+                    "each names what every child does with the cards, map or page",
+                    flat(REF / f"subject-{subject}.md"),
+                )
+
+    def test_no_list_item_opens_its_body_with_a_bare_question(self) -> None:
+        pattern = re.compile(r"^- \*\*[^*]+\*\* (Which|What|Will|Is|Where|How)", re.M)
+        for subject in ("history", "geography", "science", "re", "pshe"):
+            with self.subTest(subject=subject):
+                text = (REF / f"subject-{subject}.md").read_text(encoding="utf-8")
+                self.assertEqual(pattern.findall(text), [])
+
+    def test_the_seven_added_ideas_are_there(self) -> None:
+        self.assertIn("**Local, national or global?**", flat(REF / "subject-geography.md"))
+        self.assertIn("**Model or real?**", flat(REF / "subject-science.md"))
+        self.assertIn("**Which beliefs clash?**", flat(REF / "subject-re.md"))
+        self.assertIn("**Which website would you trust?**", flat(REF / "subject-pshe.md"))
+        self.assertIn("**What does each person need?**", flat(REF / "subject-pshe.md"))
+        maths = flat(REF / "subject-maths.md")
+        self.assertIn("**Estimate first:**", maths)
+        self.assertIn("**Compare two methods:**", maths)
+
 
 if __name__ == "__main__":
     unittest.main()
