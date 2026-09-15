@@ -854,7 +854,11 @@ def validate_answer(
                 )
             if task_structure["kind"] == "sort":
                 expect(kind == "exact", f"{path}.structure for sort is allowed only when kind is exact")
-                expect(answer["acceptanceCondition"] is None, f"{path}.acceptanceCondition must be null for a structured sort")
+                # A sort's placements are one key, and a card can honestly
+                # belong in two groups (`knowing when bread is baked just
+                # right`: learned now, earns a living later). The teacher-only
+                # acceptance condition is where that second placement and its
+                # reason live, so a child who defends it is not marked wrong.
             else:
                 expect(kind == "model", f"{path}.structure for evidence-classification is allowed only when kind is model")
             validate_answer_structure(structure, f"{path}.structure", task_structure=task_structure)

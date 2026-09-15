@@ -96,9 +96,12 @@ class AWhyLessonDoesMoreThanExplain(unittest.TestCase):
         self.assertIn("open §5 and §6 for at least one of them", text)
 
     def test_the_history_file_shows_what_the_rebuilt_lesson_did(self) -> None:
+        # The rebuilt lesson is kept as the calibration for both halves: the
+        # match that worked and the sorts that did not (15 September 2026).
         text = flat(ROOT / "references" / "subject-history.md")
         self.assertIn("**A why lesson is not only explaining, over and over.**", text)
         self.assertIn("`helped him straight away`", text)
+        self.assertIn("from everyday sense, with no Tudor knowledge at all", text)
 
     def test_stand_if_is_not_used_and_true_or_false_is_bounded(self) -> None:
         text = flat(ROOT / "references" / "do-beats.md")

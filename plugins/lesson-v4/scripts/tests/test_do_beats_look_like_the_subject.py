@@ -127,6 +127,17 @@ class ASortsGroupsAreAPlainContrast(unittest.TestCase):
         self.assertNotIn("the reasons families still chose it", text)
         self.assertIn("sort what was bad and what was good about being an apprentice", text)
 
+    def test_the_history_file_no_longer_certifies_the_tudor_sorts_as_the_thinking(self) -> None:
+        # Taught on 15 September 2026, the two rebuilt sorts could be completed
+        # from everyday sense. The file keeps them as approved wording and
+        # names the test a hands-on beat has to pass; it does not hold them up
+        # as evidence that children can explain the choice.
+        text = flat(REF / "subject-history.md")
+        self.assertIn("approved for their wording and their plain headings", text)
+        self.assertIn("could a child place every card without the history the lesson just taught?", text)
+        self.assertIn("it is not evidence that children can explain the choice", text)
+        self.assertNotIn("did its thinking with its hands instead", text)
+
     def test_the_reviewer_reads_sort_headings(self) -> None:
         self.assertIn("a sort whose two groups a child could not tell apart in one plain sentence", flat(ROOT / "agents" / "design-reviewer.md"))
 

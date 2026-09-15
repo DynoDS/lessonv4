@@ -1,5 +1,13 @@
 # Build review log
 
+## 2026-09-15 The rebuilt Tudor sorts were approved for wording, not as the thinking (branch lesson-designer-quality-2026-09-15, unreleased)
+
+Daniel taught the rebuilt deck `Why did Tudor children work?` on 15 September 2026. The starter worked and the job match (slide 5) was simple but fine. The now/later sort (slide 10) and the good/bad sort (slide 14) felt abstract and shallow: children could complete them from everyday sense rather than from anything the lesson had taught, the class spent too long on the carpet with whiteboards, and by the time the written cases arrived (slides 16 to 18, the ones that actually needed the history) he wanted the class at tables doing that work.
+
+**Correction to the record, not a rewrite of it.** The 4.2.202 and 4.2.205 entries below held those two sorts up as the model of a why lesson "doing its thinking with its hands", and `subject-history.md` carried that sentence as active guidance. What was genuinely approved on 14 September, and stays approved, is the wording, the plain group headings (4.2.208), the past tense and the period in the titles (4.2.201), the Teach boards (4.2.200) and the variety away from partner explanation. What was not established, and is now withdrawn from the active guidance, is that those two sorts evidenced historical reasoning. `subject-history.md` → `A why lesson is not only explaining` now keeps the lesson as the calibration for both halves and names the test a hands-on beat has to pass. The exclusive key on `knowing when bread is baked just right` (learned now, earns a living later) in `preferences.md` → the rhythm section is replaced by the three honest repairs, and a structured sort may now carry an `acceptanceCondition` so a second defensible placement reaches the teacher's notes.
+
+**Not yet seen.** No fresh lesson has been built or taught against the narrowed guidance. The branch's evaluation folder (`evaluations/lesson-designer-quality-2026-09-15/`) records what was and was not tested.
+
 ## 2026-09-15 Success criteria use colour to pick out what matters (4.2.212)
 
 Daniel: success criteria "should be able to use colour to make things stand out so its not all just black." Talked through one decision at a time: all three kinds of colour are wanted, in the order picture part, then taught word, then the part to look at or decide, and orange for that last one.
