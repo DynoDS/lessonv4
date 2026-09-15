@@ -251,6 +251,19 @@ ALWAYS_READ_REVIEW_SECTIONS = (
         "17. Final pre-flight check",
         "The test every string in the voice sweep is put through.",
     ),
+    # The two probes in the thinking checks (can weak understanding still
+    # pass; can good understanding be marked wrong) need a calibration across
+    # subjects, or a reviewer passes by rejecting every sort and praising
+    # every explanation. Six short contrasts, each with the case where the
+    # simpler task is right.
+    (
+        "task-contrasts.md",
+        "The contrasts",
+        "Read before the thinking, practice and evidence checks: what a task "
+        "actually requires a child to know, beside the simpler task that is "
+        "exactly right. It calibrates the two probes; it is not a list of "
+        "banned activities.",
+    ),
 )
 
 # Sections of a subject file written for another agent. The reviewer checks

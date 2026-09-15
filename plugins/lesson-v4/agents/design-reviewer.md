@@ -109,7 +109,7 @@ When the packet is unavailable:
 - read the authoritative lesson and photo files directly;
 - read the matching subject file when one exists, skipping any section it reserves for another agent (in Maths, `## Greater Depth in maths` is the Adaptation Designer's);
 - read only the selected teaching-route file, and only its section of `references/design-review-route-checks.md`;
-- always read `preferences.md` → Pride Lessons (Quality Anchor) and What a Lesson Is For, and `teacher-voice.md` → Final pre-flight check;
+- always read `preferences.md` → Pride Lessons (Quality Anchor) and What a Lesson Is For, `teacher-voice.md` → Final pre-flight check, and `task-contrasts.md` → The contrasts;
 - use the same conditional preference triggers;
 - read the child-facing and spoken strings in lesson order first, then the walk-through that opens `design-decisions.md`, and its closing decisions last, as on the packet route.
 
@@ -177,6 +177,16 @@ an authoritative source. For an answer accepting a class of cases ("any",
 "always", "exactly"), test the stated condition at its boundary and try a
 counterexample; one correct model example does not validate the whole rule.
 Preserve a sound simplification when its limits do not misteach the task.
+
+**Two probes on the worked answer, before the checks below.** You have already worked a representative successful response (`Material-defect boundary`). Now run it twice more on the main task, and on any Do beat the design relies on as evidence of an important understanding, with `task-contrasts.md` → The contrasts as the calibration.
+
+*Can weak understanding still pass?* Name one plausible misunderstanding a child in this class could hold after the teaching (`an apprenticeship was worth it because the child was fed; learning the trade did not matter`), then attempt the task holding it, using only what is on the board and everyday sense. Name the bypass and the answer it permits: sorting by pleasant and unpleasant wording, following the answer's colour or position, lifting the expected conclusion from the slide before, a general opinion that never uses the learning. A good/bad apprentice sort passes the misunderstanding untouched; a shoemaker who fed Will and never taught him does not. This is a logical check of the task, not a claim to have simulated a child, and "this might be too easy" is not a finding without the answer written out.
+
+*Can good understanding be marked wrong?* Try a defensible alternative answer, interpretation or placement and read the key against it. `knowing when bread is baked just right` under `helped him straight away`, because he was learning it now, is right, and a key that allows only `when he grew up` marks that child wrong; the `acceptanceCondition` is where the second placement belongs. Tell genuine ambiguity from a deliberate challenge whose reading the lesson has established. An open or interpretive task needs a justified acceptance boundary, not an invented single answer, and in a subject involving belief or reflection, agreement with a supplied view is never evidence of learning.
+
+Apply both with their limits. A retrieval starter is meant to use what children already know. A quick check straight after a Teach may only establish that the class caught a new distinction, and the design saying so makes it right. Repeated calculations practise a method. A source on the page may be exactly what children should read and interpret. Do not reject any of these because the information is supplied or the task is straightforward; judge what the task claims to accomplish, so a pleasant/unpleasant sort is adequate as a brief orientation and insufficient as the main evidence of an explanation. Stronger reasoning never means untaught knowledge, trick wording or avoidable reading.
+
+A material finding from either probe names the exact task, the response that bypasses or challenges it, the learning left untested or misrepresented, and the smallest repair: a different case, a changed condition, a connection still to be taught, a second accepted placement. When the repair changes the stimulus, the thinking demand, the main activity, the sequence or the preparation, it is a purposeful design defect for the Lesson Designer; a bounded wording or answer-key correction that keeps the settled pedagogy is yours under the existing boundary.
 
 Check:
 

@@ -473,6 +473,46 @@
       "expectedOwner": "Design Reviewer",
       "protectedBehaviour": "A short, stable list is not evidence of quality; each step must say what to do next, including the rule that decides a choice.",
       "forbiddenFinding": "Do not approve the list as familiar cues because it is short; do not give away any answer while adding the missing meaning."
+    },
+    {
+      "id": "shallow-sort-passes-a-misunderstanding",
+      "materialDifference": "The lesson's main evidence for `explain why Tudor children worked` is a sort of six cards into `Bad things about being an apprentice` / `Good things about being an apprentice` (`up before sunrise`, `hot meals every day`, `a strict master`, `his own shop one day`). A child holding `the deal was worth it because he was fed; the trade did not matter` sorts all six correctly from the wording alone.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "protectedBehaviour": "Attempt the main task holding a plausible misunderstanding; when it passes untouched, name the bypass (pleasant/unpleasant wording), the learning left untested (that the trade was the point), and the smallest repair (a case with the connection missing, or a changed condition).",
+      "forbiddenFinding": "Do not reject the sort because it is a sort; the same six cards under `Which two would a Tudor family have minded losing most?` would be a sound task, and the sort is fine as a named two-minute orientation before the question that matters."
+    },
+    {
+      "id": "exclusive-key-marks-a-defensible-placement-wrong",
+      "materialDifference": "A now/later sort keys `knowing when bread is baked just right` to `helped him when he grew up` only, with `acceptanceCondition` null. A child who places it under `helped him straight away` because he was learning it now has a good reason and is marked wrong.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Try a defensible alternative placement against the key; record the accepted second placement and its reason in the answer's acceptanceCondition (or name a cleaner card) so the teacher hears the reason rather than the column.",
+      "forbiddenFinding": "Do not add a `both` group to every sort, and do not treat a card a child could place wrongly for a bad reason as ambiguous."
+    },
+    {
+      "id": "quick-check-after-a-teach-is-legitimate",
+      "materialDifference": "Straight after a Teach that named the four tooth types on a diagram, a Do beat asks children to label the same four teeth on a fresh outline. The design says the beat secures the names before the next chunk uses them.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "A quick check may establish only that the class caught a new distinction when the design says so; judge what the beat claims, not whether a misunderstanding could pass a beat that never claimed to test one.",
+      "forbiddenFinding": "Do not demand reasoning, a because sentence or fresh cases from a beat whose stated job is securing the names; do not call a supplied diagram answer leakage."
+    },
+    {
+      "id": "purposeful-repetition-and-a-visible-reference-are-not-shallow",
+      "materialDifference": "A rounding Practise runs eight fresh three-digit numbers through the same taught method with the steps visible beside the questions and the number line drawn but the halfway mark unmarked.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "Repetition of a known move on new numbers is what practice is; a reference that enables the method without making the decision (the halfway mark stays the child's) stays.",
+      "forbiddenFinding": "Do not ask for novelty, harder numbers or a written explanation to make the practice look rigorous; do find a fault if the halfway mark or target hundred were pre-marked, because that support would supply the decision being assessed."
+    },
+    {
+      "id": "early-practise-is-judged-by-readiness-not-position",
+      "materialDifference": "A content lesson places its written explanations after the second Teach/Do pair, then a third pair teaches the harder distinction (a master who never taught the trade) and a short Do checks it on a new case. Every fact the explanations run on was taught in the first two pairs.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "A Practise before the last Teach is legal and judged by readiness: the pairs before it supply what it runs on, and the pair after it teaches something the work earned.",
+      "forbiddenFinding": "Do not return the lesson because practice is not last; do return one whose early practice runs on knowledge the later pair was still to teach, or whose later beats are kept only because they were already written."
     }
   ]
 }
