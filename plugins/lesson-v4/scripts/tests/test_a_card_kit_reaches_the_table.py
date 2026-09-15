@@ -164,6 +164,42 @@ class TheDesignSaysHowASortIsHandledTests(unittest.TestCase):
         self.assertIsNone(self.module.sort_handled_as_cards(unit))
 
 
+class AWholeDesignWithACardSortStillValidatesTests(unittest.TestCase):
+    """End to end through the real validator: a saved-style content design
+    whose Do beat is a card sort validates, the same design without the block
+    validates (every saved design keeps its meaning), and a malformed block is
+    refused by name."""
+
+    def setUp(self):
+        sys.path.insert(0, str(TESTS))
+        import test_lesson_design_contract as contract  # noqa: WPS433
+        self.contract = contract
+        self.module = load("vld_handling_whole", "validate-lesson-design.py")
+
+    def design_with_card_sort(self):
+        design, photos = self.contract.valid_content_contract()
+        unit = design["teachingSequence"][2]  # the Do beat
+        unit["pupilInstruction"] = "Put each card under a heading."
+        unit["taskStructure"] = copy.deepcopy(SORT)
+        unit["answer"] = copy.deepcopy(ANSWER)
+        design["resourceOpportunities"] = {
+            "stickIn": {"decision": "candidate", "sourceUnitIds": [unit["sourceUnitId"]], "reason": "A card kit for the sort."},
+            "workingWall": {"decision": "uncertain", "sourceUnitIds": [], "reason": "Not sure."},
+        }
+        return design, photos
+
+    def test_the_design_validates_with_and_without_handling(self):
+        design, photos = self.design_with_card_sort()
+        self.contract.module.validate_design(design, photos)
+        design["teachingSequence"][2]["taskStructure"].pop("handling")
+        self.contract.module.validate_design(design, photos)
+
+    def test_a_malformed_handling_block_is_refused_by_name(self):
+        design, photos = self.design_with_card_sort()
+        design["teachingSequence"][2]["taskStructure"]["handling"]["per"] = "table"
+        self.contract.assert_invalid_contract(design, photos, "handling.per invalid")
+
+
 class TheKitMatchesTheUnitTests(unittest.TestCase):
     def setUp(self):
         self.module = load("resource_opportunities_kits", "resource-opportunities.py")
