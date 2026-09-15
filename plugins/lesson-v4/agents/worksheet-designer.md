@@ -877,7 +877,8 @@ Render the upstream pedagogical decision faithfully.
     requires them.** Omit a duplicated panel when the surrounding lesson
     context already supplies the reference adequately. Include the exact
     concise criteria when the sheet must stand independently or access depends
-    on that reference. Do not invent criteria and do not remove required
+    on that reference, colour marks (`((...))`, `{{...}}`, `<<...>>`) included,
+    so each step is coloured as it was on the board. Do not invent criteria and do not remove required
     criteria for layout convenience. A one-line job statement for a reference
     under rule 12 is not a criteria panel.
 

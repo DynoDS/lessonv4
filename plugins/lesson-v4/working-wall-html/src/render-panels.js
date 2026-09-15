@@ -26,6 +26,14 @@ const {
 } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
 const { esc, mm, hash, imgTag, visualTag, titleBarHtml, panelHtml, panelWithVisualHtml, twoUpPanelsHtml } = require("./shared");
+const { criteriaSegments, plainCriteria } = require("../../shared/text/criteria-marks");
+
+// A step's marked parts in the colour the board gave them.
+function criteriaHtml(text) {
+  return criteriaSegments(text)
+    .map((segment) => (segment.colour ? `<span style="color:${segment.colour};">${esc(segment.text)}</span>` : esc(segment.text)))
+    .join("");
+}
 
 const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
 
@@ -260,7 +268,7 @@ function stepBadgeRowHtml(badgeBuf, text, bodyPt, badgeIn, style, stepNumber) {
     `<div style="display:flex;align-items:flex-start;box-sizing:border-box;padding:${vPadMm}mm 0;">` +
     `<div style="flex:none;width:${badgeMm}mm;margin-right:${gapMm}mm;">${badgeInnerHtml}</div>` +
     `<div style="flex:1 1 auto;text-align:left;font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};` +
-    `font-weight:bold;font-size:${bodyPt}pt;color:${hash(style.colours.body)};">${esc(text)}</div>` +
+    `font-weight:bold;font-size:${bodyPt}pt;color:${hash(style.colours.body)};">${criteriaHtml(text)}</div>` +
     `</div>`
   );
 }
@@ -286,6 +294,9 @@ function modelExampleParagraphHtml(label, text, bodyPt, labelPt, accentColour, s
 
 function renderWorkedExample(card, style, specDir, ctx = {}) {
   const items = card.items || [];
+  // Steps copied from the board keep their colour marks; the fit reads only
+  // the words a child sees.
+  const fitItems = items.map((item) => (typeof item.text === "string" ? { ...item, text: plainCriteria(item.text) } : item));
   const fillColour = style.colours.workedExamplePanelFill;
   const borderColour = style.colours.workedExamplePanelLine;
   const labelColour = style.colours.workedExampleLabel;
@@ -307,7 +318,7 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
   // size its steps need in order to print a bigger diagram.
   const bodyFitsAtFloor = (reserve) =>
     linearBodyFitsAtFloor(
-      items.length > 0 ? items : [{ text: "" }],
+      fitItems.length > 0 ? fitItems : [{ text: "" }],
       minBodyPt(card, style),
       card.page.size,
       card.page.orientation,
@@ -321,7 +332,7 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
 
   const bodyPt = fitLinearBodySize(
-    items.length > 0 ? items : [{ text: "" }],
+    fitItems.length > 0 ? fitItems : [{ text: "" }],
     defaultBodyPt(card, style),
     minBodyPt(card, style),
     card.page.size,

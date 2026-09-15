@@ -363,6 +363,53 @@ def reject_long_dashes(node: Any, path: str) -> None:
     )
 
 
+# The colour marks a success criterion may carry (shared/text/criteria-marks.js
+# draws them): ((a picture part)) in that part's own colour, {{a taught word}}
+# in green, <<the part to look at or decide>> in orange, **bold**. A picture
+# mark must name a part the engine colours, which today is a place-value column.
+PICTURE_PART_WORDS = {
+    "million", "millions", "hundred thousand", "hundred thousands", "ten thousand",
+    "ten thousands", "thousand", "thousands", "hundred", "hundreds", "ten", "tens",
+    "one", "ones", "unit", "units", "tenth", "tenths", "hundredth", "hundredths",
+    "thousandth", "thousandths",
+}
+PICTURE_PART_KEYS = {"M", "HTh", "TTh", "Th", "H", "T", "O", "t", "h", "th"}
+CRITERIA_MARK = re.compile(r"\(\(([\s\S]+?)\)\)|\{\{([\s\S]+?)\}\}|<<([\s\S]+?)>>|\*\*([\s\S]+?)\*\*")
+
+
+def picture_part(words: str) -> bool:
+    raw = words.strip()
+    if raw in PICTURE_PART_KEYS:
+        return True
+    folded = re.sub(r" (?:column|place)$", "", " ".join(raw.lower().split()))
+    return folded in PICTURE_PART_WORDS
+
+
+def reject_bad_criteria_marks(node: Any, path: str) -> None:
+    if isinstance(node, dict):
+        for key, value in node.items():
+            reject_bad_criteria_marks(value, f"{path}.{key}")
+        return
+    if isinstance(node, list):
+        for index, value in enumerate(node):
+            reject_bad_criteria_marks(value, f"{path}[{index}]")
+        return
+    if not isinstance(node, str):
+        return
+    for match in CRITERIA_MARK.finditer(node):
+        if match.group(1) is not None and not picture_part(match.group(1)):
+            raise ContractError(
+                f"{path}: (({match.group(1)})) names no coloured part of a picture; "
+                "a picture mark names a place-value column (thousands, hundreds, tens, "
+                "ones, tenths, or Th, H, T, O, t). Use {{...}} for a taught word or "
+                "<<...>> for the part to look at or decide"
+            )
+    leftover = CRITERIA_MARK.sub("", node)
+    for opener in ("((", "))", "{{", "}}", "<<", ">>", "**"):
+        if opener in leftover:
+            raise ContractError(f"{path}: a colour mark is left open or stray ({opener!r})")
+
+
 def expect(condition: bool, message: str) -> None:
     if not condition:
         raise ContractError(message)
@@ -2504,6 +2551,9 @@ def validate_design(
                     config = expect_string(item["configuration"], f"{item_path}.configuration")
                     expect(config in {c["id"] for c in rep_by_id[rep_id]["configurations"]},
                            f"{item_path}.configuration unknown for {rep_id}: {config}")
+
+    for index, item in enumerate(sc_items):
+        reject_bad_criteria_marks(item.get("content"), f"successCriteria[{index}].content")
 
     sticky_items, sticky_by_id = collect_registry(
         root["stickyKnowledge"], "stickyKnowledge", "id", ID_PATTERNS["stickyKnowledge"]

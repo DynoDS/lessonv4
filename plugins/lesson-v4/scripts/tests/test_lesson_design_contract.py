@@ -2525,3 +2525,32 @@ def test_an_our_turn_script_must_ask_the_class_something():
         raise AssertionError("no our-turn unit in the valid contract")
 
     assert_invalid(mutate, "must ask the class at least one question")
+
+
+def test_success_criteria_colour_marks_are_checked():
+    # 15 Sept 2026: a criterion may colour a picture part, a taught word and the
+    # part to decide. A mark the engine cannot draw is refused here, in words.
+    design, photos = valid_contract()
+    steps_row = next(row for row in design["successCriteria"] if row["type"] == "steps")
+    steps_row["content"]["steps"][0] = "Compare the ((thousands)) first, then <<stop at the first different digit>>"
+    module.validate_design(design, photos)
+
+    steps_row["content"]["steps"][0] = "Compare the ((biggest part)) first"
+    assert_invalid_contract(design, photos, "names no coloured part of a picture")
+
+    steps_row["content"]["steps"][0] = "Compare the {{thousands first"
+    assert_invalid_contract(design, photos, "left open or stray")
+
+
+def test_picture_words_match_the_engine():
+    import subprocess
+    words = sorted(module.PICTURE_PART_WORDS | module.PICTURE_PART_KEYS) + ["biggest part", "."]
+    script = (
+        "const {pictureColour}=require('./shared/text/criteria-marks');"
+        "const w=JSON.parse(process.argv[1]);"
+        "console.log(JSON.stringify(w.map(x=>Boolean(pictureColour(x)))))"
+    )
+    root = Path(module.__file__).resolve().parents[1]
+    out = subprocess.run(["node", "-e", script, json.dumps(words)], cwd=root, capture_output=True, text=True, check=True)
+    engine = json.loads(out.stdout)
+    assert engine == [module.picture_part(word) for word in words], dict(zip(words, engine))

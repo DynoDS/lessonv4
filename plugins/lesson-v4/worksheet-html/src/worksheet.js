@@ -24,6 +24,7 @@
 // and nothing else. Its knowledge of what a worksheet is - three levels, one
 // file, expected always present - carries over untouched.
 
+const { plainCriteria } = require("../../shared/text/criteria-marks");
 const { checkFit } = require("./render");
 const { renderContent, requiredSets } = require("./helpers");
 const { canonicalQuestionLabel, formatQuestionLabel } = require("./labels");
@@ -979,7 +980,8 @@ const WRITE_IN_BLANK = /_{2,}/g; // printed as a write-in box, not as underscore
 const INLINE_EMPHASIS = /\*\*/g; // methods.js turns **this** into <strong>
 
 function comparableText(value) {
-  return String(value)
+  // A criterion's colour marks print as colour, not as characters.
+  return plainCriteria(String(value))
     .replace(INLINE_EMPHASIS, "")
     .replace(WRITE_IN_BLANK, "")
     .replace(/\s+/g, "")

@@ -43,6 +43,8 @@ const MARKERS = [
   { name: '[[focus blue]]', pattern: /\[\[\S[\s\S]*?\]\]/ },
   { name: '{{answer green}}', pattern: /\{\{\S[\s\S]*?\}\}/ },
   { name: '<<supplied orange>>', pattern: /<<\S[\s\S]*?>>/ },
+  // Only brackets round a drawn part's name are a mark; "((2 + 3) x 4)" is maths.
+  { name: '((picture colour))', pattern: /\(\((?:thousands?|hundreds?|tens?|ones?|units?|tenths?|hundredths?|thousandths?|Th|H|T|O|t|h|th|M|TTh|HTh)\)\)/i },
 ];
 
 function unescapeXml(text) {

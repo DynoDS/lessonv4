@@ -1,6 +1,7 @@
 'use strict';
 
 const { COLOURS } = require('./styles');
+const { pictureColour } = require('../../shared/text/criteria-marks');
 
 // Inline text formatting for rendered strings — questions, table cells, steps,
 // option lists, and grid/pyramid reveals all pass through here. Returns the
@@ -30,7 +31,11 @@ const { COLOURS } = require('./styles');
 //           deck's vocabulary colour — e.g. "across is the {{x-axis}}"
 //   <<x>>   bold + supplied orange — information the question gives the child to
 //           work from: a given value, a word-bank item, or the known part of a
-//           missing-number equation — e.g. "<<367>> + ___ = <<478>>"
+//           missing-number equation — e.g. "<<367>> + ___ = <<478>>". In a
+//           success criterion the same orange marks the part to look at or
+//           decide (shared/text/criteria-marks.js)
+//   ((x))   bold, in the colour of the picture part the words name, so a
+//           criterion's "((thousands))" matches the thousands column
 //
 // `bold` sets the weight for unmarked text; callers pass true for question and
 // answer text. `baseColor` sets the colour of the unmarked text and of **bold**
@@ -85,7 +90,8 @@ function splitAnswerRuns(text, bold, baseColor) {
     str.indexOf('**') !== -1 ||
     str.indexOf('[[') !== -1 ||
     str.indexOf('{{') !== -1 ||
-    str.indexOf('<<') !== -1;
+    str.indexOf('<<') !== -1 ||
+    str.indexOf('((') !== -1;
   const hasReveal = str.indexOf('||') !== -1;
   if (!hasInline && !hasReveal) return str;
 
@@ -145,7 +151,7 @@ function splitAnswerRuns(text, bold, baseColor) {
   };
 
   const re =
-    /\*\*([\s\S]+?)\*\*|\[\[([\s\S]+?)\]\]|\{\{([\s\S]+?)\}\}|<<([\s\S]+?)>>/g;
+    /\*\*([\s\S]+?)\*\*|\[\[([\s\S]+?)\]\]|\{\{([\s\S]+?)\}\}|<<([\s\S]+?)>>|\(\(([\s\S]+?)\)\)/g;
   let last = 0;
   let match;
   while ((match = re.exec(str)) !== null) {
@@ -158,6 +164,12 @@ function splitAnswerRuns(text, bold, baseColor) {
       pushSpan(match[3], COLOURS.green, true);
     } else if (match[4] !== undefined) {
       pushSpan(match[4], SUPPLIED_ORANGE, true);
+    } else if (match[5] !== undefined) {
+      // ((thousands)): a part of the picture, in that part's own colour. Words
+      // naming nothing drawn are ordinary brackets and print as written.
+      const colour = pictureColour(match[5]);
+      if (colour) pushSpan(match[5], colour.replace('#', ''), true);
+      else pushPlain(match[0]);
     }
     last = re.lastIndex;
   }

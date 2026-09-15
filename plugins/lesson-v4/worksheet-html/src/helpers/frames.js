@@ -20,6 +20,7 @@
 // material (orange) or vocabulary (green), and a scaffold is none of those.
 
 const { BODY_PT, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, promptHtml, linesFor } = require("./shared");
+const { criteriaSegments, plainCriteria } = require("../../../shared/text/criteria-marks");
 const { TYPE, RULE, INSET, SPACE, WRITING_LINE_GROWN_RATIO } = require("../tokens");
 
 const WIDEST_ZONE_MM = 261;
@@ -691,6 +692,23 @@ function stepList(spec) {
     .filter((step) => step !== "");
 }
 
+// A criterion carries its colour marks inside its words, copied verbatim from
+// the board. Measuring counts only the words a child reads; drawing gives each
+// marked part its colour, the same colour the board gave it.
+function stepWords(step) {
+  return plainCriteria(step);
+}
+
+function stepHtml(step) {
+  return criteriaSegments(step)
+    .map((segment) =>
+      segment.colour || segment.bold
+        ? `<span style="font-weight:bold;${segment.colour ? `color:${segment.colour};` : ""}">${esc(segment.text)}</span>`
+        : esc(segment.text)
+    )
+    .join("");
+}
+
 function stepsTitle(spec) {
   const given = spec.title == null ? "" : String(spec.title).trim();
   return given === "" ? "Success criteria" : given;
@@ -711,7 +729,7 @@ function stepTextWidthMm(widthMm) {
 }
 
 function stepCardMm(step, widthMm) {
-  const textMm = linesFor(step, stepTextWidthMm(widthMm)) * LINE_MM;
+  const textMm = linesFor(stepWords(step), stepTextWidthMm(widthMm)) * LINE_MM;
   return Math.max(textMm, STEPS_BADGE_MM) + 2 * STEPS_CARD_PAD_V_MM;
 }
 
@@ -722,7 +740,7 @@ function renderSteps(spec) {
       (step, i) => `
         <li class="h-steps-item">
           <span class="h-steps-badge">${i + 1}</span>
-          <span class="h-steps-text">${esc(step)}</span>
+          <span class="h-steps-text">${stepHtml(step)}</span>
         </li>`
     )
     .join("");
@@ -749,7 +767,7 @@ function needsSteps(spec, widthMm) {
   // lines is the point at which glancing stops, so the panel asks for the width
   // that keeps its longest step to two - and the ordinary case, a handful of
   // short imperatives, asks for very little.
-  const longest = steps.reduce((n, step) => Math.max(n, step.length), 0);
+  const longest = steps.reduce((n, step) => Math.max(n, stepWords(step).length), 0);
   const wordsMm = (longest / 2) * (BODY_PT * PT_MM * 0.5);
   const minWidthMm = Math.min(
     120,

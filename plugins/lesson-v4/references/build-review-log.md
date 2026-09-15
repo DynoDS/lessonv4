@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-15 Success criteria use colour to pick out what matters (4.2.212)
+
+Daniel: success criteria "should be able to use colour to make things stand out so its not all just black." Talked through one decision at a time: all three kinds of colour are wanted, in the order picture part, then taught word, then the part to look at or decide, and orange for that last one.
+
+**What was there.** Slides could already colour part of a string through inline marks, and the visual profile asked for taught words in green inside criteria, but nothing told anyone to mark criteria and the `vocabulary` role it named is dropped by `steps` in silence. The last three real decks had all-black criteria. Worksheets and the wall printed step text plain, so any mark would have printed as characters.
+
+**The change.** The marks live in the lesson designer's own criterion wording, so every verbatim copy carries them: `((thousands))` takes the picture part's colour (place-value columns, the darkened `SAME_COLOURS` the charts already use), `{{word}}` vocabulary green, `<<...>>` orange. `shared/text/criteria-marks.js` reads them for the worksheet steps panel and the wall's worked-example steps (measured on the words alone); the slide reader gains `((...))`, and brackets naming nothing drawn stay ordinary brackets. `validate-lesson-design.py` refuses a picture mark naming nothing coloured and a mark left open, and a test holds its word list to the engine's. The drawlive copy check, the slide marker leak check and the worksheet every-word check read the new mark. Guidance: the owning paragraph is `preferences.md` → Success Criteria (with an example and the limit: usually one or two marked parts, a step with nothing to pick out stays plain); the visual profile, the skill-based table rule, `slide-success-criteria.md`, the worksheet designer and the wall designer point at it and copy marks as they arrive.
+
+**Not yet seen.** No lesson has been built with marked criteria; the next run is the first real look.
+
 ## 2026-09-15 Success criteria never take more than half a slide (4.2.211)
 
 Daniel, reading the 15 Sept run where the slide designer widened six criteria panels: "whatever it did was fine, it looks good. I never want success criteria to take more than 50% though." Asked whether a slide whose only job is the criteria counts: "That slide is allowed to be full slide of course."

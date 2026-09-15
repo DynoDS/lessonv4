@@ -69,7 +69,7 @@ def plain(value) -> str:
     if isinstance(value, dict):
         value = value.get("text", value.get("value", ""))
     text = str(value or "")
-    for marker in ("**", "[[", "]]", "{{", "}}", "<<", ">>", "||"):
+    for marker in ("**", "[[", "]]", "{{", "}}", "<<", ">>", "((", "))", "||"):
         text = text.replace(marker, "")
     return " ".join(text.split())
 
