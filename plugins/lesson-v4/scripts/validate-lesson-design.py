@@ -593,6 +593,57 @@ def bullet_items(text: str) -> list[str]:
     return items
 
 
+SORT_HANDLING_KINDS = {"cards"}
+SORT_HANDLING_PER = {"child", "pair", "group"}
+
+
+def validate_sort_handling(raw: Any, path: str) -> None:
+    """How a sort is done in the room, when it is not done on the board.
+
+    Absent (or null) means the sort is shown on the board and children record
+    their placements: the shape every saved design has. `cards` means children
+    move printed cards under printed headings at tables, so a kit has to be
+    printed for them; the stick-in track prints it, and the run cannot close
+    COMPLETE without it. `per` says who shares a set, and a group count is
+    stated rather than guessed, because the plugin does not know the class.
+    `where` is the teacher's one-line preparation note.
+    """
+    if raw is None:
+        return
+    handling = expect_dict(raw, path)
+    expect_exact_keys(
+        handling,
+        {"kind", "per", "groupCount", "where"},
+        {"kind", "per", "groupCount", "where"},
+        path,
+    )
+    kind = expect_string(handling["kind"], f"{path}.kind")
+    expect(kind in SORT_HANDLING_KINDS, f"{path}.kind invalid: {kind}")
+    per = expect_string(handling["per"], f"{path}.per")
+    expect(per in SORT_HANDLING_PER, f"{path}.per invalid: {per}")
+    count = handling["groupCount"]
+    if per == "group":
+        expect(
+            isinstance(count, int) and not isinstance(count, bool) and count >= 1,
+            f"{path}.groupCount must be a positive integer when per is group",
+        )
+    else:
+        expect(count is None, f"{path}.groupCount must be null unless per is group")
+    where = expect_string(handling["where"], f"{path}.where")
+    expect(bool(where.strip()), f"{path}.where must say where the activity happens")
+
+
+def sort_handled_as_cards(unit: dict[str, Any]) -> dict[str, Any] | None:
+    """The unit's `handling` block when its sort is done with printed cards."""
+    task = unit.get("taskStructure")
+    if not isinstance(task, dict) or task.get("kind") != "sort":
+        return None
+    handling = task.get("handling")
+    if isinstance(handling, dict) and handling.get("kind") == "cards":
+        return handling
+    return None
+
+
 def validate_task_structure(
     raw: Any,
     path: str,
@@ -641,10 +692,11 @@ def validate_task_structure(
     if kind == "sort":
         expect_exact_keys(
             structure,
-            {"kind", "groups", "items"},
+            {"kind", "groups", "items", "handling"},
             {"kind", "groups", "items"},
             path,
         )
+        validate_sort_handling(structure.get("handling"), f"{path}.handling")
         groups = expect_list(structure["groups"], f"{path}.groups")
         expect(2 <= len(groups) <= 6, f"{path}.groups must contain 2 to 6 groups")
         group_ids: set[str] = set()

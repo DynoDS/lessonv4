@@ -121,6 +121,31 @@ def design_skipped_stick_in(design) -> bool:
     return isinstance(entry, dict) and entry.get("decision") == "none"
 
 
+def design_requires_card_kit(design) -> list[str]:
+    """Units whose sort the approved design says children do with printed cards.
+
+    A kit the main activity depends on is not a bonus sheet: without it the
+    lesson as designed cannot be taught, so its absence can never be quiet.
+    """
+    if not isinstance(design, dict):
+        return []
+    units = [design.get("starter"), *(design.get("teachingSequence") or [])]
+    ending = design.get("ending") or {}
+    if isinstance(ending, dict) and ending.get("included") and isinstance(ending.get("beat"), dict):
+        units.append(ending["beat"])
+    required = []
+    for unit in units:
+        if not isinstance(unit, dict):
+            continue
+        task = unit.get("taskStructure")
+        if not isinstance(task, dict) or task.get("kind") != "sort":
+            continue
+        handling = task.get("handling")
+        if isinstance(handling, dict) and handling.get("kind") == "cards":
+            required.append(str(unit.get("sourceUnitId")))
+    return required
+
+
 def earned_resources(working_dir: Path) -> list[str]:
     """Resources this run earned, derived from the specifications themselves."""
     earned: list[str] = []
@@ -567,6 +592,25 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 "resource with a reason, not skip the decision silently."
             )
 
+    # ── A kit the main activity depends on is delivered, or the report says so ──
+    kit_units = design_requires_card_kit(design)
+    kit_missing = bool(kit_units) and "stick-in sheets" not in delivered_names
+    if kit_missing and "stick-in sheets" not in excluded_names:
+        stick_in_spec = read_json(working / "stick-in-sheets.json", "stick-in-sheets.json", [])
+        card_sets = [
+            item for item in ((stick_in_spec or {}).get("items") or [])
+            if isinstance(item, dict) and item.get("visual") == "card-set"
+        ] if isinstance(stick_in_spec, dict) else []
+        failures.append(
+            "stick-in sheets: the approved design handles a sort with printed cards ("
+            + ", ".join(kit_units)
+            + ") and the pack is under neither Delivered nor Excluded resources"
+            + ("; the stick-in spec holds no card-set for it" if not card_sets else "")
+            + ". The kit is part of the main activity, not a bonus sheet: list it under "
+            "Excluded resources with the reason and name the missing kit under Blocking "
+            "faults."
+        )
+
     # ── Every delivered path exists ──────────────────────────────────────
     for bullet in delivered_bullets:
         tokens = path_tokens(bullet)
@@ -738,6 +782,13 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 "COMPLETE: earned resource(s) excluded: "
                 + ", ".join(excluded_earned)
                 + "; a package that omits what it earned is PARTIAL, not COMPLETE."
+            )
+        if kit_missing:
+            failures.append(
+                "COMPLETE: the approved design handles a sort with printed cards ("
+                + ", ".join(kit_units)
+                + ") and the stick-in pack that carries the kit was not delivered; "
+                "a lesson whose main activity's materials are missing is PARTIAL, not COMPLETE."
             )
         if "PAGE_FIT_UNVERIFIED" in text:
             failures.append(

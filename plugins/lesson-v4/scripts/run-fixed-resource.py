@@ -161,6 +161,7 @@ def actual_family(
         return [
             output / f"{base} - Stick-in Sheets.pdf",
             output / f"{base} - Stick-in Sheets.html",
+            output / f"{base} - Stick-in Sheets - Answers.txt",
         ]
 
     return []
@@ -301,6 +302,14 @@ def expected_outputs(args, stdout: str) -> tuple[list[Path], bool]:
             raise FixedResourceError(
                 "stick-in build exited zero without exactly one Built: output"
             )
+        # A pack holding a card kit also writes the teacher's key beside it
+        # (`Built answers:`), never for a pack of write-on pieces alone.
+        answers = marker_paths(stdout, "Built answers")
+        if len(answers) > 1:
+            raise FixedResourceError(
+                "stick-in build exited zero with more than one Built answers: output"
+            )
+        paths = [*paths, *answers]
         require_inside_output(paths, output)
         return paths, "PDF_SKIPPED" in stdout
 

@@ -513,7 +513,12 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # `python3` or the teacher's own Python, and 22 of 39 recorded runs
         # spent worker commands rediscovering that. The growth is the longer
         # placeholder on every command and a PYTHON line on each worker prompt.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 73 * 1024)
+        # Raised from 73 KiB on 15 September 2026 for the stick-in kit check
+        # (Track E) and the kit's teacher file (Track F, Phase 5): about 500
+        # bytes the playbook has to say, because a card kit the main activity
+        # depends on is gated and delivered here. The per-slice budget below
+        # is unchanged and is the one a worker actually pays.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 74 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

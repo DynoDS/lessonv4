@@ -27,6 +27,7 @@ const { safeFilenameComponent } = require("../shared/text/filename");
 const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-rules");
 const { selectContextPictureSet } = require("../shared/context-picture-set");
 const { renderPieceHtml, esc } = require("./src/render-piece-html");
+const { normaliseCardSet, renderKitPages, answersText } = require("./src/render-card-set");
 
 const GREY = "#999999";
 
@@ -214,7 +215,19 @@ function buildHtml(moments, classSize) {
     return `<div class="page"><div class="caption">${esc(captionText)}</div>${shelfDivs.join("")}</div>`;
   });
 
-  const html = `<!doctype html><html><head><meta charset="utf-8"><style>
+  const html = wrapDocument(pageDivs);
+
+  return { html, pageDivs, pages: pages.length, totalSlips: classSize * moments.length };
+}
+
+// One landscape page: the grey caption the teacher reads while cutting, then
+// the body the caller laid out.
+function pageDiv(caption, body) {
+  return `<div class="page"><div class="caption">${esc(caption)}</div>${body}</div>`;
+}
+
+function wrapDocument(pageDivs) {
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
 @page { size: A4 landscape; margin: 0; }
 html, body { margin: 0; padding: 0; }
 body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
@@ -225,8 +238,43 @@ body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
 }
 .caption { color: ${GREY}; font-size: 9pt; height: 5mm; }
 </style></head><body>${pageDivs.join("")}</body></html>`;
+}
 
-  return { html, pages: pages.length, totalSlips: classSize * moments.length };
+function naturalAnswersFilename(lesson) {
+  return `${safeFilenameComponent(lesson)} - Stick-in Sheets - Answers.txt`;
+}
+
+// The card kits: each `card-set` item becomes its own run of pages (sets of
+// heading and item cards with cut guides), and the key for every kit goes to
+// one teacher text file beside the pack. A kit whose spec cannot be printed
+// faithfully is refused by name, like a moment that cannot draw.
+function buildKits(cardSetItems, classSize) {
+  const kits = [];
+  const dropped = [];
+  for (const item of cardSetItems) {
+    const kit = normaliseCardSet(item, classSize);
+    if (typeof kit === "string") {
+      console.warn(`[stick-in] card kit "${item.label || "card-set"}": ${kit} - this kit is NOT in the pack.`);
+      dropped.push(item.label || "card-set");
+      continue;
+    }
+    kits.push(kit);
+  }
+  const pageDivs = [];
+  const summaries = [];
+  for (const kit of kits) {
+    const laid = renderKitPages(kit, {
+      printableWMm: PRINTABLE_W_MM,
+      printableHMm: PRINTABLE_H_MM,
+      pageHtml: pageDiv,
+    });
+    pageDivs.push(...laid.pages);
+    summaries.push(
+      `${kit.tag ? `${kit.tag} ` : ""}${kit.label}: ${kit.setCount} set${kit.setCount === 1 ? "" : "s"} of ` +
+      `${kit.cards.length} cards under ${kit.headings.length} headings, ${laid.setsPerPage} set${laid.setsPerPage === 1 ? "" : "s"} a page`
+    );
+  }
+  return { kits, pageDivs, summaries, dropped };
 }
 
 async function build(specPath, outDir) {
@@ -240,19 +288,33 @@ async function build(specPath, outDir) {
   }
 
   const classSize = Number.isFinite(spec.classSize) && spec.classSize > 0 ? spec.classSize : CLASS_SIZE;
-  const { moments, dropped } = await renderMoments(items, baseDir);
+  const cardSetItems = items.filter((item) => item && item.visual === "card-set");
+  const pieceItems = items.filter((item) => !(item && item.visual === "card-set"));
+  const { moments, dropped } = await renderMoments(pieceItems, baseDir);
+  const kitsBuilt = buildKits(cardSetItems, classSize);
+  const allDropped = [...dropped, ...kitsBuilt.dropped];
 
-  if (moments.length === 0) {
+  if (moments.length === 0 && kitsBuilt.kits.length === 0) {
     console.error(
-      `None of the ${items.length} write-on moment${items.length === 1 ? "" : "s"} could be drawn, ` +
+      `None of the ${items.length} moment${items.length === 1 ? "" : "s"} could be drawn, ` +
       `so no Stick-in Sheets file was written.`
     );
-    console.error(`Missing: ${dropped.join(", ")}. The [stick-in] lines above say why for each.`);
+    console.error(`Missing: ${allDropped.join(", ")}. The [stick-in] lines above say why for each.`);
     process.exitCode = 1;
     return null;
   }
 
-  const { html, pages, totalSlips } = buildHtml(moments, classSize);
+  let pageDivs = [];
+  let pages = 0;
+  let totalSlips = 0;
+  if (moments.length > 0) {
+    const laid = buildHtml(moments, classSize);
+    pageDivs = laid.pageDivs;
+    pages = laid.pages;
+    totalSlips = laid.totalSlips;
+  }
+  pageDivs = [...pageDivs, ...kitsBuilt.pageDivs];
+  const html = wrapDocument(pageDivs);
   const lesson = spec.meta && spec.meta.lesson;
 
   // PDF through the worksheets' Chrome step; the HTML itself when that step
@@ -271,17 +333,30 @@ async function build(specPath, outDir) {
   }
 
   console.log(`Built: ${outPath}`);
-  console.log(`Moments: ${moments.length} (${moments.map((m) => m.item.label || m.item.visual).join(", ")})`);
 
-  const classSetLine =
-    `Class set: ${moments.length} moment${moments.length === 1 ? "" : "s"} × ${classSize} children = ` +
-    `${totalSlips} slips, laid out so each child's set stays together, across ${pages} page${pages === 1 ? "" : "s"}`;
+  // The teacher's key for every card kit, beside the pack and never on a
+  // pupil page. Delivery already carries any file ending " - Answers.txt".
+  if (kitsBuilt.kits.length > 0) {
+    const answersPath = path.join(outDir, naturalAnswersFilename(lesson));
+    fs.writeFileSync(answersPath, answersText(kitsBuilt.kits, lesson || "this lesson"), "utf8");
+    console.log(`Built answers: ${answersPath}`);
+    console.log(`Kits: ${kitsBuilt.kits.length} (${kitsBuilt.summaries.join("; ")})`);
+  }
 
-  if (dropped.length) {
+  if (moments.length > 0) {
+    console.log(`Moments: ${moments.length} (${moments.map((m) => m.item.label || m.item.visual).join(", ")})`);
+  }
+
+  const classSetLine = moments.length > 0
+    ? `Class set: ${moments.length} moment${moments.length === 1 ? "" : "s"} × ${classSize} children = ` +
+      `${totalSlips} slips, laid out so each child's set stays together, across ${pages} page${pages === 1 ? "" : "s"}`
+    : `Class set: no write-on pieces; the pack is ${kitsBuilt.kits.length} card kit${kitsBuilt.kits.length === 1 ? "" : "s"} across ${kitsBuilt.pageDivs.length} page${kitsBuilt.pageDivs.length === 1 ? "" : "s"}`;
+
+  if (allDropped.length) {
     console.log(`${classSetLine}.`);
     console.error(
-      `\n${dropped.length} of ${items.length} write-on moments could not be drawn and ` +
-      `${dropped.length === 1 ? "is" : "are"} NOT in this pack: ${dropped.join(", ")}.`
+      `\n${allDropped.length} of ${items.length} moments could not be drawn and ` +
+      `${allDropped.length === 1 ? "is" : "are"} NOT in this pack: ${allDropped.join(", ")}.`
     );
     console.error(
       'The [stick-in] lines above say why for each. A missing moment leaves no gap on the ' +
@@ -307,4 +382,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { build, buildHtml, renderMoments };
+module.exports = { build, buildHtml, renderMoments, buildKits, wrapDocument, naturalAnswersFilename };

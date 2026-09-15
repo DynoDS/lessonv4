@@ -1134,10 +1134,16 @@ On `STICK_IN_LAUNCH`, launch the stick-in designer directly with approved
 `lesson-design.json`, `lesson.json` and applicable picture contract. The
 write-on test is the designer's judgement, never decided here; a lesson with
 no write-on moment gets an empty `items` list with a short rationale. It owns
-only `stick-in-sheets.json`. Its check is `check-json.py` over that file:
-no stick-in-specific validator exists, and "require its role validator"
-named one that does not, so two runs improvised a check apiece. The build
-in Track F is what refuses a spec the engine cannot draw.
+only `stick-in-sheets.json`. Its check is `check-json.py` over that file,
+then `"[PYTHON]" "[PLUGIN_ROOT]/scripts/resource-opportunities.py" stick-in-kits
+--lesson-design "[WORKING_DIR]/lesson-design.json" --stick-in
+"[WORKING_DIR]/stick-in-sheets.json"`. Require `STICK_IN_KITS_OK`: a sort the
+design handles with printed cards is part of its beat, and each
+`STICK_IN_KIT_FAULT:` line names the card-set missing or differing from the
+unit. One fault round permits one focused stick-in designer repair and a
+recheck; a run still failing carries the lines into blocking faults, excludes
+the pack with that reason, and cannot close `COMPLETE`. The build in Track F
+refuses a spec it cannot draw.
 
 On `STICK_IN_SKIP: [reason]`, the reviewed lesson recorded that no moment
 earns a piece and the validator found no unit contradicting it, so no worker
@@ -1163,8 +1169,9 @@ an empty list ends the track.
   --summary-output "[WORKING_DIR]/build-results/stick-in.json"
 ```
 
-Require `ok: true` and its exact output paths. One semantic diagnostic permits
-one focused stick-in designer repair and one rebuild.
+Require `ok: true` and its exact output paths (a card kit adds the teacher's
+`- Stick-in Sheets - Answers.txt`). One semantic diagnostic permits one
+focused stick-in designer repair and one rebuild.
 
 ---
 
@@ -1459,8 +1466,9 @@ a two-lesson scope covers Lesson 1 only and name deferred learning.
 ## Phase 5 - Save the Resources
 
 Once every branch has settled, build the explicit list from the teaching
-resources only: the deck, worksheets, answer key, working wall and stick-in
-sheets. The run report and walk-through stay in `OUTPUT_DIR` for the teacher to
+resources only: the deck, worksheets, answer key, working wall, stick-in
+sheets and, when the pack holds a card kit, its `- Stick-in Sheets -
+Answers.txt` teacher file. The run report and walk-through stay in `OUTPUT_DIR` for the teacher to
 read there; the delivery script skips them if passed.
 
 When `filing.txt` says `DELIVERY=folder`, `DELIVERY=sorted` or

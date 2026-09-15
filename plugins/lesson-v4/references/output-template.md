@@ -505,6 +505,14 @@ Each field `id` is local to the source unit and uses `field-###`. Each item `id`
 
 Keep `pupilInstruction` short and non-null when `taskStructure` is present. It names only the action. Do not repeat group labels, item labels or item details inside `pupilInstruction` or `content.task`.
 
+A sort is done on the board unless the design says otherwise: the class sees the cards and headings on the slide and records placements on whiteboards or in books. When the lesson chooses to have children move printed cards under printed headings at tables, the sort carries an optional `handling` block, and the stick-in track then prints the kit and its teacher key:
+
+```json
+"handling": { "kind": "cards", "per": "pair", "groupCount": null, "where": "At tables, one set between two, after the deal is taught." }
+```
+
+`per` is `child`, `pair` or `group`; `groupCount` is a positive integer only when `per` is `group` (the plugin never guesses the class), otherwise `null`; `where` is the teacher's one-line preparation note. Leave `handling` out for a board sort. The kit is part of the main activity: a run whose design carries `handling` cannot close `COMPLETE` without the printed pack.
+
 Each group `id` is local to the source unit and uses `group-###`. Each item `id` is local to the source unit and uses `item-###`. `label` and non-null `detail` are exact child-facing strings. `photoRef` is `null` or one ID already present in the source unit's `photoRefs`.
 
 `modellingState` is one of the four existing canonical states when the unit models something, otherwise `null`:

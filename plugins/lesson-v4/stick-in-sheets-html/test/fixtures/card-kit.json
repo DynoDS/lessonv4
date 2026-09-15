@@ -1,0 +1,40 @@
+{
+  "meta": { "lesson": "Why did Tudor children work", "yearGroup": "Year 4", "subject": "History" },
+  "classSize": 30,
+  "items": [
+    {
+      "visual": "card-set",
+      "tag": "Deal",
+      "label": "Which parts of the deal would a Tudor family have minded losing most?",
+      "spec": {
+        "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+        "instruction": "Put each card under a heading. Then choose the two cards a Tudor family would have minded losing most.",
+        "headings": [
+          { "id": "group-001", "label": "Helped the family straight away" },
+          { "id": "group-002", "label": "Helped the child when he grew up" }
+        ],
+        "cards": [
+          { "id": "item-001", "label": "a hot dinner every day" },
+          { "id": "item-002", "label": "one less mouth to feed at home" },
+          { "id": "item-003", "label": "knowing when bread is baked just right" },
+          { "id": "item-004", "label": "his own bakery one day" },
+          { "id": "item-005", "label": "a straw mattress by the oven" },
+          { "id": "item-006", "label": "a warm coat for winter" }
+        ],
+        "sets": { "per": "pair", "groupCount": null },
+        "teacher": {
+          "where": "At tables, one set between two, after slide 9 (the deal).",
+          "answer": [
+            { "cardId": "item-001", "headingId": "group-001" },
+            { "cardId": "item-002", "headingId": "group-001" },
+            { "cardId": "item-003", "headingId": "group-002" },
+            { "cardId": "item-004", "headingId": "group-002" },
+            { "cardId": "item-005", "headingId": "group-001" },
+            { "cardId": "item-006", "headingId": "group-001" }
+          ],
+          "alsoAccept": "The baking card under either heading: he learned it now, and it earned his living later. The two the family minded losing most: knowing when bread is baked just right (the trade) and one less mouth to feed."
+        }
+      }
+    }
+  ]
+}
