@@ -154,7 +154,7 @@ The indexes are one-based positions in the generated `successCriteria` array. Th
 }
 ```
 
-For Skill-based `my-turn`, `our-turn` and `your-turn`, `conceptIndex` is the one-based concept position.
+For Skill-based `my-turn`, `our-turn` and `your-turn`, `conceptIndex` is the one-based concept position. A cycle has one `our-turn` unit however many guided examples it walks through: the examples are written inside that one unit, so a concept guided through three fresh examples still requests a single `our-turn`. A second guided unit is only right after a new My Turn, as part of a new cycle.
 
 For Skill-based `prepare`, `conceptIndex` is `null`. In every other route, `conceptIndex` is `null` unless the lesson names an idea and this unit is an instance of it, in which case it is that idea's one-based position; the design validator requires at least two instances of a named idea.
 
@@ -177,9 +177,11 @@ Use the final worksheet routing values already decided:
   "status": "generated",
   "resourceMode": "per-child",
   "use": "separate-fresh-worksheet",
-  "sheetShape": "mixed"
+  "sheetShape": "question-set"
 }
 ```
+
+`sheetShape` names the kind of content block the sheet will be built from: `question-set` for questions (the usual case), `frame`, `stimulus-set` or `child-generated` for a sheet of only that kind. `mixed` is only for a sheet that holds two or more of those kinds together; questions of several types are still one `question-set`.
 
 For a teacher-provided worksheet, `status` is `provided-by-teacher`, `resourceMode` is `per-child`, and `sheetShape` is `null`.
 

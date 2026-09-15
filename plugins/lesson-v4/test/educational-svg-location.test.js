@@ -253,3 +253,36 @@ test("the reference sends designers to the resolver and the packaged search", ()
   // The promise that stopped being true when the drawings moved out.
   assert.ok(!reference.includes("does not search the computer or use the network"));
 });
+
+test("a machine that reaches the internet through a proxy fetches through it", async () => {
+  // Cloud runs sit behind an HTTPS_PROXY that git and Python follow on their
+  // own and Node does not. Before this, the clone and the photo fetchers worked
+  // on such a machine while every drawing request went nowhere, and the run
+  // said only that the library "could not be reached".
+  const http = require("node:http");
+  const library = require("../shared/educational-svg-library");
+  const tunnels = [];
+  const proxy = http.createServer();
+  proxy.on("connect", (request, socket) => {
+    tunnels.push(request.url);
+    socket.end("HTTP/1.1 403 Forbidden\r\n\r\n");
+  });
+  await new Promise((resolve) => proxy.listen(0, "127.0.0.1", resolve));
+  try {
+    const env = sealed({ offline: false });
+    env.HTTPS_PROXY = `http://127.0.0.1:${proxy.address().port}`;
+    delete env.NO_PROXY;
+    delete env.no_proxy;
+    const resolved = await library.resolveLibrary({ env });
+
+    assert.equal(resolved.root, null);
+    assert.ok(tunnels.includes("raw.githubusercontent.com:443"), "the plain file address goes through the proxy");
+    assert.match(resolved.notes.join("\n"), /proxy refused the connection \(HTTP 403\)/);
+
+    env.NO_PROXY = "githubusercontent.com";
+    assert.equal(library.proxyFor("https://raw.githubusercontent.com/x", env), null);
+    assert.ok(library.proxyFor("https://api.github.com/x", env));
+  } finally {
+    proxy.close();
+  }
+});

@@ -21,7 +21,9 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const zlib = require("node:zlib");
+const http = require("node:http");
 const https = require("node:https");
+const tls = require("node:tls");
 const { execFileSync } = require("node:child_process");
 
 const STYLES = Object.freeze(["standard", "cartoon", "solid"]);
@@ -161,19 +163,85 @@ function githubToken(env) {
   return tokenCache;
 }
 
-function request(url, { token, timeout, raw }) {
+// Cloud machines reach the internet through a proxy named in HTTPS_PROXY. git,
+// curl and Python's urllib follow it on their own; Node's https does not, so
+// without this every drawing request on such a machine goes nowhere while the
+// clone and the photo fetchers beside it work.
+function proxyFor(url, env) {
+  const source = environment(env);
+  const configured = (
+    source.HTTPS_PROXY || source.https_proxy || source.ALL_PROXY || source.all_proxy || ""
+  ).trim();
+  if (!configured) return null;
+  const host = new URL(url).hostname.toLowerCase();
+  const bypass = (source.NO_PROXY || source.no_proxy || "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase().replace(/:\d+$/, ""))
+    .filter(Boolean);
+  if (
+    bypass.some(
+      (entry) =>
+        entry === "*" ||
+        host === entry.replace(/^\./, "") ||
+        host.endsWith(entry.startsWith(".") ? entry : `.${entry}`)
+    )
+  ) {
+    return null;
+  }
+  try {
+    return new URL(configured.includes("://") ? configured : `http://${configured}`);
+  } catch (_) {
+    return null;
+  }
+}
+
+function tunnelAgent(proxy) {
+  const agent = new https.Agent({ keepAlive: false });
+  agent.createConnection = (options, callback) => {
+    const headers = { Host: `${options.host}:${options.port || 443}` };
+    if (proxy.username) {
+      const credentials = `${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`;
+      headers["Proxy-Authorization"] = `Basic ${Buffer.from(credentials).toString("base64")}`;
+    }
+    const connect = http.request({
+      host: proxy.hostname,
+      port: proxy.port || 80,
+      method: "CONNECT",
+      path: `${options.host}:${options.port || 443}`,
+      headers,
+      timeout: options.timeout,
+    });
+    connect.on("connect", (response, socket) => {
+      if (response.statusCode !== 200) {
+        socket.destroy();
+        callback(new Error(`proxy refused the connection (HTTP ${response.statusCode})`));
+        return;
+      }
+      callback(null, tls.connect({ socket, servername: options.host }));
+    });
+    connect.on("timeout", () => connect.destroy(new Error("proxy timed out")));
+    connect.on("error", (error) => callback(error));
+    connect.end();
+  };
+  return agent;
+}
+
+function request(url, { token, timeout, raw, env }) {
   return new Promise((resolve) => {
     const headers = {
       "User-Agent": "lesson-v4-educational-svg",
       Accept: raw ? "application/vnd.github.raw" : "application/vnd.github+json",
     };
     if (token) headers.Authorization = `Bearer ${token}`;
+    const proxy = proxyFor(url, env);
+    const options = { headers, timeout };
+    if (proxy) options.agent = tunnelAgent(proxy);
 
-    const call = https.get(url, { headers, timeout }, (response) => {
+    const call = https.get(url, options, (response) => {
       const status = response.statusCode || 0;
       if (status >= 300 && status < 400 && response.headers.location) {
         response.resume();
-        resolve(request(response.headers.location, { token, timeout, raw }));
+        resolve(request(response.headers.location, { token, timeout, raw, env }));
         return;
       }
       const chunks = [];
@@ -210,14 +278,39 @@ function contentsUrl(env, libraryId) {
   );
 }
 
+// The plain file address for a public library. It is not counted against
+// GitHub's API allowance, which is 60 requests an hour for a machine with no
+// token, and a cloud machine shares its address with every other user on it,
+// so the API alone can be used up before a run asks for its first drawing.
+function rawUrl(env, libraryId) {
+  return (
+    `https://raw.githubusercontent.com/${repository(env)}/` +
+    `${encodeURIComponent(reference(env))}/library/${libraryId}`
+  );
+}
+
+function failure(answer) {
+  return answer.error || `HTTP ${answer.status}`;
+}
+
+// Tries the plain file first and the API second (a private library, or a
+// token-only route), and keeps both reasons when neither works, so a failed
+// run says what stopped it rather than only that something did.
+async function download(env, libraryId, timeout) {
+  const token = githubToken(env);
+  const plain = await request(rawUrl(env, libraryId), { token, timeout, raw: true, env });
+  if (plain.status === 200 && plain.body && plain.body.length) return { answer: plain, reasons: [] };
+  const api = await request(contentsUrl(env, libraryId), { token, timeout, raw: true, env });
+  if (api.status === 200 && api.body && api.body.length) return { answer: api, reasons: [] };
+  return { answer: null, reasons: [`file address: ${failure(plain)}`, `API: ${failure(api)}`] };
+}
+
 async function reachable(env) {
-  if (offline(env)) return false;
-  const answer = await request(`https://api.github.com/repos/${repository(env)}`, {
-    token: githubToken(env),
-    timeout: PROBE_TIMEOUT_MS,
-    raw: false,
-  });
-  return answer.status === 200;
+  if (offline(env)) return { ok: false, reasons: ["fetching is switched off"] };
+  const ids = readIndex(env) || [];
+  if (!ids.length) return { ok: false, reasons: ["no drawing named in the index to test with"] };
+  const { answer, reasons } = await download(env, ids[0], PROBE_TIMEOUT_MS);
+  return { ok: Boolean(answer), reasons };
 }
 
 // ------------------------------------------------------------------ resolve
@@ -263,10 +356,13 @@ async function resolveLibrary({ env, probe = true } = {}) {
   // still uses every drawing this machine has already fetched rather than
   // reporting the whole layer off.
   if (!probe || hasDrawings(cache)) return fetching();
-  if (await reachable(source)) return fetching();
+  const probed = await reachable(source);
+  if (probed.ok) return fetching();
 
+  const proxy = proxyFor(rawUrl(source, "standard/aa/a.svg"), source);
   notes.push(
-    `${repository(source)}: could not be reached, and no drawing has been ` +
+    `${repository(source)}: could not be reached (${probed.reasons.join("; ")}` +
+      `${proxy ? `; through proxy ${proxy.host}` : ""}), and no drawing has been ` +
       `fetched to ${cache} yet`
   );
   return { root: null, label: null, mode: null, notes };
@@ -297,15 +393,9 @@ async function fetchDrawing(libraryId, { env, root } = {}) {
     return { path: null, error: `not cached, and fetching is switched off: ${libraryId}` };
   }
 
-  const answer = await request(contentsUrl(source, libraryId), {
-    token: githubToken(source),
-    timeout: FETCH_TIMEOUT_MS,
-    raw: true,
-  });
-
-  if (answer.status !== 200 || !answer.body || !answer.body.length) {
-    const reason = answer.error || `HTTP ${answer.status}`;
-    return { path: null, error: `could not fetch ${libraryId}: ${reason}` };
+  const { answer, reasons } = await download(source, libraryId, FETCH_TIMEOUT_MS);
+  if (!answer) {
+    return { path: null, error: `could not fetch ${libraryId}: ${reasons.join("; ")}` };
   }
   if (!looksLikeUsableSvg(answer.body)) {
     return { path: null, error: `fetched file is not a usable SVG: ${libraryId}` };
@@ -455,6 +545,7 @@ module.exports = {
   knownIds,
   listLocal,
   normalise,
+  proxyFor,
   readIndex,
   resolveLibrary,
   scoreLabel,

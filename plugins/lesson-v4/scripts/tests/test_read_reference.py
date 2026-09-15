@@ -172,6 +172,18 @@ class ReferenceReaderTests(unittest.TestCase):
         text = self.menu_source().replace("condition for Skill-based", "first line\ncontinuation matters")
         self.assertIn("continuation matters", reader.structure_menu(text)[0])
 
+    def test_menu_joins_a_batched_select(self):
+        # The designer reads the menu at the same moment as its start-of-lesson
+        # sections and is told to batch a moment's reads; that call used to fail.
+        self.put("## A\nkeep\n")
+        (self.root / "references" / "evidence-synthesis.md").write_text(self.menu_source(), encoding="utf-8")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = reader.main(["--plugin-root", str(self.root), "--select", "sample.md::A", "--structure-menu"])
+        self.assertEqual(rc, 0)
+        self.assertIn("keep", out.getvalue())
+        self.assertEqual(out.getvalue().count("**Use when.**"), 5)
+
     def test_success_marker_and_no_writes(self):
         self.put("## A\nkeep\n")
         before = {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()}

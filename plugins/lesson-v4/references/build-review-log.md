@@ -1,5 +1,20 @@
 # Build review log
 
+## 2026-09-15 Drawings reach a cloud run, and five first-try stumbles removed (4.2.210)
+
+The 15 Sept scheduled Work Cloud run (year4-maths lesson 9, Compare and order 4-digit numbers) was COMPLETE, but its report carried one cloud fault and several first-try stumbles.
+
+**Drawings.** `EDUCATIONAL_SVG_UNAVAILABLE: could not be reached`. The library has been public since 30 August, so access was not the cause. Every picture fetcher is Python urllib, which follows the cloud box's `HTTPS_PROXY`; the drawing library was the only Node fetcher, and Node's https ignores the proxy (confirmed: the 4.2.209 code with a proxy set never touched it). It also used only the GitHub API, which allows 60 requests an hour per address with no token, and a cloud address is shared. `educational-svg-library.js` now tunnels through `HTTPS_PROXY`/`ALL_PROXY` (honouring `NO_PROXY`), tries the plain `raw.githubusercontent.com` address before the API, probes with a real drawing from the index, and names each route's failure in the note instead of discarding it. Tested direct, through a local CONNECT proxy (fetched), through a refusing proxy (note names HTTP 403), and with NO_PROXY.
+
+**Stumbles, each fixed where it was made.**
+- `read-reference.py`: `--structure-menu` with `--select` was refused, though the designer is told to batch a moment's reads and the menu is read at that moment (also in a 13 Sept run). The two now combine; `--index` still reads alone.
+- Worksheet shape: the scaffold reference's worksheet example said `mixed`, and the designer declares the shape before writing a single block. The example is now `question-set` with one line on when `mixed` applies, and the validator's refusal names the family the blocks actually are.
+- Two `our-turn` units: the scaffold's error was already clear (4.2.171), but the scaffold reference, the page open when the request is written, did not say it. One sentence there now does.
+- Em dashes: six beat titles reached the reviewer carrying them. Nothing enforced the rule, so `validate-lesson-design.py` now refuses an em or en dash anywhere in the lesson design (5 of the last 25 local designs carried one, mostly en-dash ranges in teacher notes); the reviewer's reading duty for dashes is removed.
+- `validate-run-report.py` was named in the playbook without its three required arguments; the exact command is now printed.
+
+**Not changed.** The design reviewer's combined reading was truncated once and recovered; the card already gives separate commands and the truncation limit was not evidenced, so no durable change. `apply_patch` hunk order, the setup install, the clone folder and the missing worker-launch record are host behaviour on a fresh box. Pre-existing test failures (10 Python, unchanged by this work) remain.
+
 ## 2026-09-14 A lesson's own word for something the child can see is not owned vocabulary (4.2.209)
 
 A scheduled Year 4 "estimate positions on a number line" design came back with seven full-sentence steps: `Read both end values.` / `Find the gap: last end value - first end value.` / ... / `Decide which two landmarks the number lies between.` / `Decide which of those landmarks your number is nearer.` / `Place and label a sensible estimate.` Daniel: "I dont understand it at all, so how will children." 4.2.183 had fixed short fragments; this list has none, so it passed every check.

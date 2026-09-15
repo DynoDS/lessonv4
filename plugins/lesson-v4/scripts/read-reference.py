@@ -156,25 +156,32 @@ def structure_menu(text: str) -> tuple[str, int]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--plugin-root", type=Path, default=Path(__file__).resolve().parents[1])
-    operation = parser.add_mutually_exclusive_group(required=True)
-    operation.add_argument("--select", action="append", metavar="FILE::HEADING")
-    operation.add_argument("--index", metavar="FILE")
-    operation.add_argument("--structure-menu", action="store_true")
+    parser.add_argument("--select", action="append", metavar="FILE::HEADING")
+    parser.add_argument("--index", metavar="FILE")
+    # The menu is read at the same moment as the start-of-lesson sections, and
+    # the instructions say to batch a moment's reads, so it joins a --select.
+    parser.add_argument("--structure-menu", action="store_true")
     args = parser.parse_args(argv)
+    if args.index and (args.select or args.structure_menu):
+        parser.error("--index is read on its own: run it without --select or --structure-menu")
+    if not (args.index or args.select or args.structure_menu):
+        parser.error("one of --select, --index or --structure-menu is required")
     # Configure before reading so even missing Unicode headings report safely.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8")
     try:
-        if args.select:
-            output, size = selected_text(args.plugin_root, args.select)
-        elif args.index:
+        if args.index:
             source = read_source(args.plugin_root, args.index)
             output = "\n".join(" > ".join(h.path) for h in headings(source))
             size = 0
         else:
-            output, size = structure_menu(read_source(args.plugin_root, "evidence-synthesis.md"))
+            output, size = selected_text(args.plugin_root, args.select) if args.select else ("", 0)
+            if args.structure_menu:
+                menu, menu_size = structure_menu(read_source(args.plugin_root, "evidence-synthesis.md"))
+                output = f"{output}\n<!-- structure menu: evidence-synthesis.md -->\n{menu}" if output else menu
+                size += menu_size
         print(output, end="" if output.endswith("\n") else "\n")
         print(f"REFERENCE_READ_OK: {size} source bytes" if not args.index else "REFERENCE_INDEX_OK")
         return 0

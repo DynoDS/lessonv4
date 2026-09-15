@@ -1419,7 +1419,16 @@ Write `[WORKING_DIR]/run-report.md` with:
   faults` above lists only what is still broken;
 - shared investigation-log status.
 
-Run `validate-run-report.py` and require `RUN_REPORT_OK`. On failure, repair
+Run the report check and require `RUN_REPORT_OK`:
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-run-report.py" \
+  --working-dir "[WORKING_DIR]" \
+  --output-dir "[OUTPUT_DIR]" \
+  --report "[WORKING_DIR]/run-report.md"
+```
+
+On failure, repair
 the report from its printed failure list and re-run the check; it reports every
 failure at once, so one pass is normally enough. Validation keeps the record
 honest, it never withholds it: if the check still fails after two repair passes,

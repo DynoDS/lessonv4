@@ -325,6 +325,44 @@ def reject_unresolved_scaffold_placeholders(node: Any, path: str) -> None:
     )
 
 
+LONG_DASHES = ("\u2014", "\u2013")
+
+
+def reject_long_dashes(node: Any, path: str) -> None:
+    """The em and en dash are not in the teacher's voice anywhere.
+
+    Every string here reaches the slides, the worksheets, the notes or the
+    teacher, and nobody downstream may reword it. Left to review, a run's
+    beat titles reached the reviewer carrying six of them, so the file that
+    carries them does not pass.
+    """
+    found: list[str] = []
+
+    def walk(value: Any, where: str) -> None:
+        if isinstance(value, str):
+            if any(dash in value for dash in LONG_DASHES):
+                found.append(where)
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                walk(item, f"{where}.{key}")
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                walk(item, f"{where}[{index}]")
+
+    walk(node, path)
+    if not found:
+        return
+    shown = found[:PLACEHOLDER_REPORT_LIMIT]
+    remainder = len(found) - len(shown)
+    tail = f", and {remainder} more" if remainder else ""
+    raise ContractError(
+        f"{len(found)} string(s) contain an em dash or en dash, which is not part of the "
+        "teacher's written voice: rewrite each with a colon, a comma, brackets, a full stop "
+        "or a spaced hyphen ( - ), choosing whichever the sentence needs, and write a number "
+        f"range with 'to' or a hyphen. At: {', '.join(shown)}{tail}"
+    )
+
+
 def expect(condition: bool, message: str) -> None:
     if not condition:
         raise ContractError(message)
@@ -2281,6 +2319,7 @@ def validate_design(
     initial_photo_namespace: bool = False,
 ) -> None:
     reject_unresolved_scaffold_placeholders(design, "lesson-design.json")
+    reject_long_dashes(design, "lesson-design.json")
     reject_unresolved_scaffold_placeholders(photos, "photo-requirements.json")
 
     root = expect_dict(design, "lesson-design.json")
@@ -2806,7 +2845,9 @@ def validate_design(
             expect(blocks[0]["kind"] == "frame", "shared-frame worksheet content block must be kind frame")
         elif shape_kind == "mixed":
             expect(len(block_families) >= 2,
-                   "worksheet.sheetShape.kind mixed requires at least two content-block families")
+                   "worksheet.sheetShape.kind mixed requires at least two content-block families; "
+                   f"every content block here is {sorted(block_families)[0] if block_families else 'absent'}, "
+                   "so set sheetShape.kind to that")
         else:
             expect(
                 block_families == {shape_kind},

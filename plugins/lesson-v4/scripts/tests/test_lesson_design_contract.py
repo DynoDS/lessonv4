@@ -601,6 +601,22 @@ def test_unresolved_lesson_design_scaffold_placeholder_is_rejected():
     )
 
 
+def test_em_and_en_dashes_are_rejected_wherever_they_sit():
+    for dash in ("\u2014", "\u2013"):
+        design, photos = valid_contract()
+        design["vocabulary"][0]["term"] = f"compare {dash} thousands first"
+
+        assert_invalid_contract(
+            design,
+            photos,
+            "contain an em dash or en dash",
+        )
+
+    design, photos = valid_contract()
+    design["vocabulary"][0]["term"] = "compare - thousands first"
+    module.validate_design(design, photos)
+
+
 def test_unresolved_photo_requirement_scaffold_placeholder_is_rejected():
     design, photos = valid_contract()
     design["lesson"]["subject"] = "Science"
