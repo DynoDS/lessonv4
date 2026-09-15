@@ -53,7 +53,10 @@ test('every picture example in templates.md builds on a slide', { timeout: 60000
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'guide-examples-'));
   const lesson = {
     lessonName: 'Guide examples', yearGroup: 'Year 4', subject: 'Maths', lo: 'Guide examples',
-    slides: types.map((t) => ({ template: 'body-full', headerStyle: 'title', title: t, body: all[t] }))
+    // A criteria panel may fill a slide only on the criteria slide itself.
+    slides: types.map((t) => (t === 'sc-panel'
+      ? { template: 'success-criteria', headerStyle: 'title', title: t, criteria: all[t] }
+      : { template: 'body-full', headerStyle: 'title', title: t, body: all[t] }))
   };
   const lessonPath = path.join(dir, 'lesson.json');
   fs.writeFileSync(lessonPath, JSON.stringify(lesson));

@@ -137,3 +137,25 @@ test('an undersized criteria panel still refuses unreadable steps instead of dro
     { criteria: { type: 'steps', steps: SIX_STEPS } },
     { slideIndex: 0, imageDims: {}, cardLook: true }), /STEP_TEXT_OVERLOAD/);
 });
+
+test('a criteria panel is held to half the slide, except on the criteria slide itself', () => {
+  // The teacher's limit (15 Sept 2026): criteria beside the work never take
+  // more than half the slide. A slide whose only job is the criteria may fill it.
+  const { drawSuccessCriteria } = require('../src/templates/success-criteria');
+  const pptx = new PptxGenJS();
+  const criteria = { type: 'steps', steps: ['Compare the thousands first'] };
+  const ctx = () => ({ slideIndex: 0, imageDims: {}, cardLook: true });
+
+  assert.throws(
+    () => drawScPanelContent(pptx, fakeSlide(), { x: 0, y: 1, w: 13.333, h: 4.5, class: 'A' }, { content: criteria }, ctx()),
+    /SC_PANEL_TOO_LARGE: the success criteria panel takes 60%/
+  );
+  assert.doesNotThrow(() =>
+    drawScPanelContent(pptx, fakeSlide(), { x: 0, y: 1, w: 6.6665, h: 7.5, class: 'A' }, { content: criteria }, ctx())
+  );
+  const slideCtx = ctx();
+  assert.doesNotThrow(() =>
+    drawSuccessCriteria(pptx, { ...fakeSlide(), addNotes: () => {} }, { title: 'Success Criteria', criteria: { type: 'sc-panel', content: criteria } }, slideCtx)
+  );
+  assert.equal(slideCtx._criteriaSlide, false, 'the allowance ends with the criteria slide');
+});

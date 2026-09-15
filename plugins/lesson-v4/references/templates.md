@@ -1717,6 +1717,8 @@ Use it when the criteria has to go somewhere those templates' panel can't reach:
 
 Do **not** wrap criteria in `sc-panel` when it already sits in a `maths-*-sc` template's `criteria` slot — that slot draws the green box itself, so wrapping would double it. `sc-panel` is for criteria placed *outside* those panels.
 
+A panel takes at most half the slide's area; the build refuses a bigger one (`SC_PANEL_TOO_LARGE`) everywhere except a `success-criteria` slide, whose only job is the criteria.
+
 ### `callout`
 
 One short line of text in a small coloured box, with an arrow that leaves the box and points at the thing the line is about. The slide's way of pointing at its own content: a note under a place value chart with an arrow up to the column that changed, a note beside a number line pointing at a jump, a note beside a photograph pointing at the feature it names.

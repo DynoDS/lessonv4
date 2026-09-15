@@ -163,7 +163,7 @@ function overloadMessage(steps, index, budget, sourceAuthored) {
   // and the cheaper-looking repair is the one that breaks the lesson.
   const roomier =
     `Give the panel more room instead: a wider or taller \`sc-panel\` ` +
-    `composition, or fewer criteria on this slide. See ` +
+    `composition up to half the slide, or fewer criteria on this slide. See ` +
     `\`slide-success-criteria.md\`.`;
 
   if (reference) {

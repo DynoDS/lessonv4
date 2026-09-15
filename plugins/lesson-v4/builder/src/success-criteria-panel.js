@@ -15,6 +15,7 @@
 const { FONT, FIT } = require('./styles');
 const { warn } = require('./warnings');
 const { drawSignalTopRight } = require('./signals');
+const { SLIDE_W, SLIDE_H } = require('./layout');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD         = 0.15;
@@ -25,12 +26,27 @@ const LINE_W      = 1.5;
 const RADIUS      = 0.08;
 const LABEL_FONT  = 28;
 const LABEL_COLOR = '00B050';
+// The teacher's limit: the criteria support the work and never take more than
+// half the slide. Only a slide whose one job is the criteria may go further.
+const MAX_SLIDE_SHARE = 0.5;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   const { drawContent } = require('./content');
   const label = data.criteriaLabel || data.label || '\u2713 Success Criteria';
   const criteria = data.criteria || data.content;
+
+  const share = (zone.w * zone.h) / (SLIDE_W * SLIDE_H);
+  if (share > MAX_SLIDE_SHARE + 0.005 && !(ctx && ctx._criteriaSlide)) {
+    throw new Error(
+      `SC_PANEL_TOO_LARGE: the success criteria panel takes ${Math.round(share * 100)}% ` +
+      `of the slide, and the teacher never wants criteria over half a slide beside ` +
+      `the work. Give it a zone of at most half the slide (a 50-50 split, or the ` +
+      `smaller side of a wider one). If the criteria then do not fit at 18pt, use ` +
+      `a composition that shows fewer criteria on this slide, or put them on their ` +
+      `own \`success-criteria\` slide. Nothing was drawn smaller or cut.`
+    );
+  }
 
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
     x: zone.x, y: zone.y, w: zone.w, h: zone.h,

@@ -18,7 +18,15 @@ function drawSuccessCriteria(pptx, slide, data, ctx) {
   const bz = bodyZone(headerStyle);
   bz.class = 'A';
   if (data.criteria) {
-    drawContent(pptx, slide, bz, data.criteria, ctx);
+    // This slide's whole job is the criteria, so its panel may fill the body;
+    // everywhere else a panel is held to half the slide.
+    const hadWholeSlide = !!ctx._criteriaSlide;
+    ctx._criteriaSlide = true;
+    try {
+      drawContent(pptx, slide, bz, data.criteria, ctx);
+    } finally {
+      ctx._criteriaSlide = hadWholeSlide;
+    }
   }
 }
 

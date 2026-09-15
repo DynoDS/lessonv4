@@ -1,5 +1,13 @@
 # Build review log
 
+## 2026-09-15 Success criteria never take more than half a slide (4.2.211)
+
+Daniel, reading the 15 Sept run where the slide designer widened six criteria panels: "whatever it did was fine, it looks good. I never want success criteria to take more than 50% though." Asked whether a slide whose only job is the criteria counts: "That slide is allowed to be full slide of course."
+
+**Why it needed code.** Nothing capped a panel. `STEP_TEXT_OVERLOAD` tells the designer to give the panel more room, and any split up to 90-10 could hand the panel the bigger side. Measured over 159 panels in local decks: nearly all under half; four slides of the PSHE rules lesson at 51%, one `body-full` at 61%.
+
+**The change.** `success-criteria-panel.js`, the one geometry every criteria panel is drawn through, refuses a panel over half the slide's area with `SC_PANEL_TOO_LARGE` (found by the preflight, so nothing publishes), naming the repair: a zone of at most half, fewer criteria on the slide, or a `success-criteria` slide. That template marks its drawing as the criteria slide and may fill the body. The overload message, `slide-success-criteria.md`, `templates.md` and the slide builder's signal table say the same. The catalogue example test builds `sc-panel` on the criteria slide, since a full-width body is the case now refused.
+
 ## 2026-09-15 Drawings reach a cloud run, and five first-try stumbles removed (4.2.210)
 
 The 15 Sept scheduled Work Cloud run (year4-maths lesson 9, Compare and order 4-digit numbers) was COMPLETE, but its report carried one cloud fault and several first-try stumbles.
