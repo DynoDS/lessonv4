@@ -504,14 +504,30 @@ def validate_route_shape(
     # validate_request already checked.
 
     if structure == "Content-based":
+        # Same shape as `validate_route_sequence` in the validator, which
+        # owns the rule: Teach -> Do pairs, an Observe only just before a
+        # Teach, and a Practise wherever the lesson has taught enough for it,
+        # once or more, with pairs allowed to continue after it. The parity
+        # test in scripts/tests keeps the two copies saying the same thing.
         index = 0
-        pairs = 0
+        pairs_before_first_practise = 0
+        practises = 0
 
-        while (
-            index < len(sequence)
-            and sequence[index]["kind"] != "practise"
-        ):
-            if sequence[index]["kind"] == "observe":
+        while index < len(sequence):
+            kind = sequence[index]["kind"]
+            if kind == "practise":
+                require(
+                    pairs_before_first_practise >= 1,
+                    (
+                        "Content-based practise needs at least one "
+                        "teach -> do pair before it"
+                    ),
+                )
+                practises += 1
+                index += 1
+                continue
+
+            if kind == "observe":
                 index += 1
                 require(
                     index < len(sequence)
@@ -526,8 +542,8 @@ def validate_route_shape(
                 index < len(sequence)
                 and sequence[index]["kind"] == "teach",
                 (
-                    "Content-based request must use teach -> do pairs "
-                    "before practise"
+                    "Content-based request must be built from "
+                    "teach -> do pairs"
                 ),
             )
             index += 1
@@ -541,21 +557,21 @@ def validate_route_shape(
                 ),
             )
             index += 1
-            pairs += 1
+            if practises == 0:
+                pairs_before_first_practise += 1
 
         require(
-            pairs >= 1,
+            pairs_before_first_practise >= 1,
             (
                 "Content-based request requires at least one "
                 "teach -> do pair"
             ),
         )
         require(
-            index == len(sequence) - 1
-            and sequence[index]["kind"] == "practise",
+            practises >= 1,
             (
-                "Content-based practise must occur exactly once "
-                "and last"
+                "Content-based request requires a practise after "
+                "at least one teach -> do pair"
             ),
         )
         return

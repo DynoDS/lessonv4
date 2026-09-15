@@ -1890,10 +1890,32 @@ def validate_route_sequence(
         return
 
     if structure == "Content-based":
+        # The rhythm is fixed: every Teach is used by its own Do at once, and
+        # an Observe only ever sets up the Teach after it. Where the Practise
+        # sits is the designer's: it used to be pinned to the very end, so a
+        # class that was ready for its substantial work after two chunks
+        # (Year 4 history, 15 September 2026) sat through every remaining
+        # short beat on the carpet first, and the guidance that said "treat a
+        # substantial beat as main practice" had nowhere earlier to put it.
+        # A Practise may now follow any complete pair, and teaching that the
+        # work earned (feedback, the next distinction, a short transfer check)
+        # continues as ordinary Teach -> Do pairs after it. What stays refused
+        # is a lesson with no Practise, a Practise before anything was taught,
+        # and any beat outside a pair.
         index = 0
-        pairs = 0
-        while index < len(sequence) and sequence[index]["kind"] != "practise":
-            if sequence[index]["kind"] == "observe":
+        pairs_before_first_practise = 0
+        practises = 0
+        while index < len(sequence):
+            kind = sequence[index]["kind"]
+            if kind == "practise":
+                expect(
+                    pairs_before_first_practise >= 1,
+                    "Content-based Practise needs at least one Teach -> Do pair before it",
+                )
+                practises += 1
+                index += 1
+                continue
+            if kind == "observe":
                 index += 1
                 expect(
                     index < len(sequence) and sequence[index]["kind"] == "teach",
@@ -1901,7 +1923,7 @@ def validate_route_sequence(
                 )
             expect(
                 index < len(sequence) and sequence[index]["kind"] == "teach",
-                "Content-based sequence must use Teach -> Do pairs before Practise",
+                "Content-based sequence must be built from Teach -> Do pairs",
             )
             index += 1
             expect(
@@ -1909,11 +1931,15 @@ def validate_route_sequence(
                 "Every Content-based Teach must be followed immediately by Do",
             )
             index += 1
-            pairs += 1
-        expect(pairs >= 1, "Content-based sequence requires at least one Teach -> Do pair")
+            if practises == 0:
+                pairs_before_first_practise += 1
         expect(
-            index == len(sequence) - 1 and sequence[index]["kind"] == "practise",
-            "Content-based Practise must occur exactly once and last",
+            pairs_before_first_practise >= 1,
+            "Content-based sequence requires at least one Teach -> Do pair",
+        )
+        expect(
+            practises >= 1,
+            "Content-based sequence requires a Practise after at least one Teach -> Do pair",
         )
         return
 
