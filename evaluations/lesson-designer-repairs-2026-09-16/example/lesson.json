@@ -1,0 +1,227 @@
+{
+  "lessonName": "Why did Tudor children work - repair example",
+  "yearGroup": "Year 4",
+  "subject": "History",
+  "lo": "To explain why Tudor children worked.",
+  "notes": [],
+  "slides": [
+    {
+      "template": "teach-layout",
+      "layout": "lead-picture-lines",
+      "headerStyle": "title",
+      "title": "What did a Tudor apprentice get?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-003",
+      "photoRefs": [
+        "photo-002"
+      ],
+      "lead": {
+        "value": "Some Tudor children left home to learn a trade from someone called a master.",
+        "emphasis": [
+          {
+            "text": "trade",
+            "role": "vocabulary"
+          }
+        ]
+      },
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "unsplash/tudor-workshop-reconstruction.jpg",
+          "caption": "A leather workshop, reconstructed",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "Look: the master shows, and the boy copies.",
+        {
+          "value": "That's how Tudor apprentices learned a trade: by working next to someone who could, often for seven years.",
+          "emphasis": [
+            {
+              "text": "trade",
+              "role": "vocabulary"
+            }
+          ]
+        }
+      ],
+      "speakerNotes": "Say to children: Not every Tudor child worked at home. Some left home to live with a master and learn a trade: making shoes, baking bread, sewing clothes. Look at this workshop. The master is showing, and the boy is copying. That's how you learned a trade in Tudor times, by doing it next to someone who could, day after day. It usually took about seven years.\n\nTeacher information: Modern summary: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1 to 2. The craft is illustrative, not a record of a named apprentice."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "picture-three-cards",
+      "headerStyle": "title",
+      "title": "What did a Tudor apprentice get?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-003",
+      "photoRefs": [
+        "photo-002"
+      ],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "unsplash/tudor-workshop-reconstruction.jpg",
+          "fit": "contain",
+          "essential": false
+        }
+      ],
+      "lines": [
+        {
+          "value": "This was the deal.\nThe apprentice worked for the master.\nThe master gave him food, clothes and a bed.\nHe wasn't paid.",
+          "emphasis": [
+            {
+              "text": "apprentice",
+              "role": "vocabulary"
+            }
+          ]
+        }
+      ],
+      "question": "So what did an apprentice get out of it?",
+      "sticky": "An apprenticeship could provide food and a home now, and a way to earn a living later.",
+      "speakerNotes": "Say to children: Here's how the deal worked. The apprentice worked for the master. In return, the master gave him his food, his clothes and a bed to sleep in. No wages. So what did an apprentice get out of it? Two things. Straight away, he was fed and he had a roof over his head. And later, once he could make a shoe that fitted and lasted, he could earn his own living. Two different reasons, and one apprenticeship gave both.\n\nTeacher information: Modern summary: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1 to 2."
+    },
+    {
+      "template": "split-h-50-50",
+      "headerStyle": "title",
+      "title": "Help now or help later?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-004",
+      "primarySide": "left",
+      "primary": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "An apprenticeship gave two kinds of help: food and a home now, and a way to earn a living later.",
+            "weight": 0.8
+          },
+          {
+            "type": "text",
+            "value": "A weak reason says: \"I put it there because it goes there.\"",
+            "weight": 0.7,
+            "sizeGroup": "pair"
+          },
+          {
+            "type": "text",
+            "value": "A strong reason says: \"I put a pair of shoes his master made him under Helped him straight away, because he could wear them now.\" The strong one says when it helped him.",
+            "weight": 1.1,
+            "sizeGroup": "pair"
+          }
+        ]
+      },
+      "secondary": {
+        "type": "steps",
+        "steps": [
+          "Read each card with your partner.",
+          "Put each card under a heading.",
+          "Pick the card that was hardest to place.",
+          "Write why you put it there."
+        ]
+      },
+      "speakerNotes": "Say to children: Before you start, here's what we know, and here's what a good reason looks like. The strong one is about shoes, not about Tom, so the thinking about Tom's cards is still yours."
+    },
+    {
+      "template": "split-h-50-50",
+      "headerStyle": "title",
+      "title": "Help now or help later?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-004",
+      "photoRefs": [
+        "photo-003"
+      ],
+      "primarySide": "left",
+      "primary": {
+        "type": "image",
+        "imagePath": "unsplash/tudor-bread-making.jpg",
+        "caption": "Reconstruction of Tudor bread-making",
+        "fit": "contain",
+        "essential": true
+      },
+      "secondary": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Imagined Tudor case: a baker takes on an apprentice called Tom.",
+            "weight": 0.8
+          },
+          {
+            "type": "text",
+            "value": "Helped him straight away",
+            "sizeGroup": "headings",
+            "align": "center",
+            "weight": 0.6
+          },
+          {
+            "type": "text",
+            "value": "Helped him when he grew up",
+            "sizeGroup": "headings",
+            "align": "center",
+            "weight": 0.6
+          },
+          {
+            "type": "text",
+            "value": "Put each card under a heading. Then pick the card that was hardest to place, and write why you put it there.",
+            "colorRole": "focus-blue",
+            "weight": 1.0
+          }
+        ]
+      },
+      "speakerNotes": "Say to children: This is Tom. He's a baker's apprentice, and these cards are his deal. With your partner, read each card and put it under a heading: did it help Tom straight away, or when he grew up? Then, on your own, pick the card that was hardest to place, and write why you put it there.\n\nTeacher information: Tom is an imagined case built from the taught deal. Show photo-003 with the case, captioned 'Reconstruction of Tudor bread-making'.\n\nLook for: knowing when bread is baked just right placed with a reason about when it helped."
+    },
+    {
+      "template": "split-h-50-50",
+      "headerStyle": "title",
+      "title": "Help now or help later? - check",
+      "designUnitId": "lesson-section/teaching-sequence/unit-004",
+      "primarySide": "left",
+      "primary": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Helped him straight away",
+            "align": "center",
+            "weight": 0.8
+          },
+          {
+            "type": "text",
+            "value": "||a hot dinner every day",
+            "sizeGroup": "key"
+          },
+          {
+            "type": "text",
+            "value": "||a straw mattress by the oven",
+            "sizeGroup": "key"
+          },
+          {
+            "type": "text",
+            "value": "||a warm coat for winter",
+            "sizeGroup": "key"
+          }
+        ]
+      },
+      "secondary": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Helped him when he grew up",
+            "align": "center",
+            "weight": 0.8
+          },
+          {
+            "type": "text",
+            "value": "||knowing when bread is baked just right",
+            "sizeGroup": "key"
+          },
+          {
+            "type": "text",
+            "value": "||his own bakery one day",
+            "sizeGroup": "key"
+          }
+        ]
+      },
+      "speakerNotes": "Say to children: Check your cards against these. Then read your reason for the hardest card to your partner.\n\nAcceptance condition: Accept knowing when bread is baked just right under either heading when the reason says Tom was learning it now or would use it to earn a living later."
+    }
+  ]
+}

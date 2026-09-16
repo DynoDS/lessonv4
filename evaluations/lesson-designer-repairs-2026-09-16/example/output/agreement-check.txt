@@ -1,0 +1,58 @@
+AGREE    route is ['teach', 'do', 'teach', 'practise']: a Teach -> Do pair, then a Teach used by the Practise straight after it
+AGREE    the two apprentice Teach slides are the teacher-approved boards, unchanged
+AGREE    Teach explanation line is on the board: 'Some Tudor children left home to learn a trade from someone called a master.'
+AGREE    Teach explanation line is on the board: 'Look: the master shows, and the boy copies.'
+AGREE    Teach explanation line is on the board: "That's how Tudor apprentices learned a trade: by working next to someone who could, often for seven years."
+AGREE    Teach explanation line is on the board: 'This was the deal.'
+AGREE    Teach explanation line is on the board: 'The apprentice worked for the master.'
+AGREE    Teach explanation line is on the board: 'The master gave him food, clothes and a bed.'
+AGREE    Teach explanation line is on the board: "He wasn't paid."
+AGREE    the sticky sentence the sort rests on (help now, help later) is on the deal slide
+AGREE    the deal slide teaches 'food', which a straight-away card uses
+AGREE    the deal slide teaches 'clothes', which a straight-away card uses
+AGREE    the deal slide teaches 'bed', which a straight-away card uses
+AGREE    the deal slide teaches earning a living later, which a grew-up card uses
+AGREE    kit instruction equals the design's pupilInstruction
+AGREE    the task slide shows the same instruction
+AGREE    the teacher's file carries the same instruction
+AGREE    preparation line agrees across design, kit and teacher file
+AGREE    kit headings equal the design's groups
+AGREE    the task slide shows both headings
+AGREE    the teacher's file names the same headings
+AGREE    kit card item-001 equals the design item, label and detail
+AGREE    card label printed once per set (15): 'a hot dinner every day'
+AGREE    card detail printed once per set (15): "Tom eats at the baker's table."
+AGREE    kit card item-002 equals the design item, label and detail
+AGREE    card label printed once per set (15): 'knowing when bread is baked just right'
+AGREE    card detail printed once per set (15): 'The baker shows Tom how to tell.'
+AGREE    kit card item-003 equals the design item, label and detail
+AGREE    card label printed once per set (15): 'a straw mattress by the oven'
+AGREE    card detail printed once per set (15): 'Tom sleeps in the warm bakehouse.'
+AGREE    kit card item-004 equals the design item, label and detail
+AGREE    card label printed once per set (15): 'his own bakery one day'
+AGREE    card detail printed once per set (15): 'A trained baker can sell his own bread.'
+AGREE    kit card item-005 equals the design item, label and detail
+AGREE    card label printed once per set (15): 'a warm coat for winter'
+AGREE    card detail printed once per set (15): 'The baker buys Tom a coat.'
+AGREE    heading card printed once per set: 'Helped him straight away'
+AGREE    heading card printed once per set: 'Helped him when he grew up'
+AGREE    every printed card and heading carries the kit's tag
+AGREE    kit key equals the design's structured answer
+AGREE    teacher file places 'a hot dinner every day'
+AGREE    teacher file places 'knowing when bread is baked just right'
+AGREE    teacher file places 'a straw mattress by the oven'
+AGREE    teacher file places 'his own bakery one day'
+AGREE    teacher file places 'a warm coat for winter'
+AGREE    check slide column 'Helped him straight away' matches the key
+AGREE    check slide column 'Helped him when he grew up' matches the key
+AGREE    acceptance condition agrees across design, kit and teacher file
+AGREE    the check slide's notes carry the same acceptance condition
+AGREE    no key or acceptance note on the pupil pages
+AGREE    the launch's strong reason is about a pair of shoes, not one of Tom's cards
+AGREE    the launch slide shows the design's steps
+AGREE    no em or en dash in lesson-design.json
+AGREE    no em or en dash in lesson.json
+AGREE    no em or en dash in stick-in-sheets.json
+AGREE    no em or en dash in Why did Tudor children work - Stick-in Sheets - Answers.txt
+
+56 of 56 checks agree

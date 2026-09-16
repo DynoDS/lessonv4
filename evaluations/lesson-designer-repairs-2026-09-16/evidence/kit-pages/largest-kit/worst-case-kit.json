@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "lesson": "Worst case kit",
+    "yearGroup": "Year 4",
+    "subject": "History"
+  },
+  "classSize": 30,
+  "items": [
+    {
+      "visual": "card-set",
+      "tag": "Cases",
+      "label": "Worst case",
+      "spec": {
+        "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+        "instruction": "Put each card under a heading.",
+        "headings": [
+          {
+            "id": "group-001",
+            "label": "A long heading number 1 for the group"
+          },
+          {
+            "id": "group-002",
+            "label": "A long heading number 2 for the group"
+          },
+          {
+            "id": "group-003",
+            "label": "A long heading number 3 for the group"
+          },
+          {
+            "id": "group-004",
+            "label": "A long heading number 4 for the group"
+          },
+          {
+            "id": "group-005",
+            "label": "A long heading number 5 for the group"
+          },
+          {
+            "id": "group-006",
+            "label": "A long heading number 6 for the group"
+          }
+        ],
+        "cards": [
+          {
+            "id": "item-001",
+            "label": "Case 1: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-002",
+            "label": "Case 2: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-003",
+            "label": "Case 3: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-004",
+            "label": "Case 4: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-005",
+            "label": "Case 5: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-006",
+            "label": "Case 6: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-007",
+            "label": "Case 7: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-008",
+            "label": "Case 8: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-009",
+            "label": "Case 9: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-010",
+            "label": "Case 10: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-011",
+            "label": "Case 11: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          },
+          {
+            "id": "item-012",
+            "label": "Case 12: an apprentice in a busy workshop",
+            "detail": "He was fed and housed there for seven years but was never once shown how to make the goods himself."
+          }
+        ],
+        "sets": {
+          "per": "group",
+          "groupCount": 2
+        },
+        "teacher": {
+          "where": "At tables, one set per group.",
+          "answer": [
+            {
+              "cardId": "item-001",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-002",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-003",
+              "headingId": "group-003"
+            },
+            {
+              "cardId": "item-004",
+              "headingId": "group-004"
+            },
+            {
+              "cardId": "item-005",
+              "headingId": "group-005"
+            },
+            {
+              "cardId": "item-006",
+              "headingId": "group-006"
+            },
+            {
+              "cardId": "item-007",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-008",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-009",
+              "headingId": "group-003"
+            },
+            {
+              "cardId": "item-010",
+              "headingId": "group-004"
+            },
+            {
+              "cardId": "item-011",
+              "headingId": "group-005"
+            },
+            {
+              "cardId": "item-012",
+              "headingId": "group-006"
+            }
+          ],
+          "alsoAccept": null
+        }
+      }
+    }
+  ]
+}

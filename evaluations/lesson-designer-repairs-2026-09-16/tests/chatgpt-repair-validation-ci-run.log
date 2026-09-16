@@ -1,0 +1,510 @@
+snapshot	UNKNOWN STEP	﻿2026-09-16T13:12:35.0716075Z Current runner version: '2.337.0'
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0756900Z ##[group]Runner Image Provisioner
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0758171Z Hosted Compute Agent
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0759765Z Version: 20260828.587
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0760892Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0761999Z Build Date: 2026-08-28T16:44:25Z
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0763047Z Worker ID: {de6cb934-8ceb-4455-87f5-f23270159594}
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0764652Z Azure Region: eastus2
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0765541Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0768120Z ##[group]Operating System
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0769386Z Ubuntu
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0770228Z 24.04.5
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0771141Z LTS
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0771963Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0772889Z ##[group]Runner Image
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0773835Z Image: ubuntu-24.04
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0774704Z Version: 20260907.300.1
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0776758Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0780117Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0781787Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0783722Z ##[group]GITHUB_TOKEN Permissions
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0786793Z Contents: read
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0787730Z Metadata: read
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0789045Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0792642Z Secret source: Actions
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0794220Z Cache mode: write
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.0795743Z Prepare workflow directory
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.1271596Z Prepare all required actions
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.1340352Z Getting action download info
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.3691075Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.4608666Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.5534570Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.6373364Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.8627384Z Complete job name: snapshot
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9457636Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9466934Z ##[group]Run actions/checkout@v4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9467629Z with:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9468105Z   ref: 88f53347b61440acd354226579232957e74514e7
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9468940Z   persist-credentials: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9469466Z   repository: DynoDS/lessonv4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9473751Z   token: ***
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9474247Z   ssh-strict: true
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9474697Z   ssh-user: git
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9475126Z   clean: true
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9475570Z   sparse-checkout-cone-mode: true
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9476127Z   fetch-depth: 1
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9476559Z   fetch-tags: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9477056Z   show-progress: true
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9477507Z   lfs: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9477921Z   submodules: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9478369Z   set-safe-directory: true
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9478983Z   allow-unsafe-pr-checkout: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:35.9479715Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0579475Z Syncing repository: DynoDS/lessonv4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0582667Z ##[group]Getting Git version info
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0583811Z Working directory is '/home/runner/work/lessonv4/lessonv4'
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0585526Z [command]/usr/bin/git version
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0597589Z git version 2.55.0
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0622645Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0660391Z Temporarily overriding HOME='/home/runner/work/_temp/fa5da6d4-c8e8-4fa8-be2d-9c33fae36c83' before making global git config changes
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0662753Z Adding repository directory to the temporary git global config as a safe directory
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0681056Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/lessonv4/lessonv4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0741961Z Deleting the contents of '/home/runner/work/lessonv4/lessonv4'
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0744576Z ##[group]Initializing the repository
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0752092Z [command]/usr/bin/git init /home/runner/work/lessonv4/lessonv4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0872581Z hint: Using 'master' as the name for the initial branch. This default branch name
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0881371Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0883493Z hint: to use in all of your new repositories, which will suppress this warning,
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0887522Z hint: call:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0888209Z hint:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0889486Z hint: 	git config --global init.defaultBranch <name>
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0890551Z hint:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0891535Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0893189Z hint: 'development'. The just-created branch can be renamed via this command:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0894417Z hint:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0895139Z hint: 	git branch -m <name>
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0895912Z hint:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0896940Z hint: Disable this message with "git config set advice.defaultBranchName false"
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0899201Z Initialized empty Git repository in /home/runner/work/lessonv4/lessonv4/.git/
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0902734Z [command]/usr/bin/git remote add origin https://github.com/DynoDS/lessonv4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0952738Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0954126Z ##[group]Disabling automatic garbage collection
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.0960023Z [command]/usr/bin/git config --local gc.auto 0
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1012920Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1014799Z ##[group]Setting up auth
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1021603Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1070042Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1517575Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1570051Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1849690Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.1892486Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.2183297Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.2229179Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.2230465Z ##[group]Fetching the repository
+snapshot	UNKNOWN STEP	2026-09-16T13:12:36.2240548Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 88f53347b61440acd354226579232957e74514e7
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9411824Z From https://github.com/DynoDS/lessonv4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9413534Z  * branch            88f53347b61440acd354226579232957e74514e7 -> FETCH_HEAD
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9418121Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9419863Z ##[group]Determining the checkout info
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9421277Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9423515Z [command]/usr/bin/git sparse-checkout disable
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9481157Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9521382Z ##[group]Checking out the ref
+snapshot	UNKNOWN STEP	2026-09-16T13:12:41.9527431Z [command]/usr/bin/git checkout --progress --force 88f53347b61440acd354226579232957e74514e7
+snapshot	UNKNOWN STEP	2026-09-16T13:12:42.9892504Z Updating files:  59% (1768/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.0204009Z Updating files:  60% (1782/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.0505034Z Updating files:  61% (1812/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.0743694Z Updating files:  62% (1841/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.1090600Z Updating files:  63% (1871/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.1220841Z Updating files:  64% (1901/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.1376194Z Updating files:  65% (1930/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.1500684Z Updating files:  66% (1960/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.1615146Z Updating files:  67% (1990/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.1896472Z Updating files:  68% (2019/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.2244849Z Updating files:  69% (2049/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.2541045Z Updating files:  70% (2079/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.2937070Z Updating files:  71% (2108/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3202253Z Updating files:  72% (2138/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3222343Z Updating files:  73% (2168/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3244314Z Updating files:  74% (2198/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3263234Z Updating files:  75% (2227/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3277419Z Updating files:  76% (2257/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3294192Z Updating files:  77% (2287/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3314033Z Updating files:  78% (2316/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3333600Z Updating files:  79% (2346/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3353062Z Updating files:  80% (2376/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3410085Z Updating files:  81% (2405/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3472437Z Updating files:  82% (2435/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3507465Z Updating files:  83% (2465/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3533095Z Updating files:  84% (2494/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3557045Z Updating files:  85% (2524/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3587051Z Updating files:  86% (2554/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3610613Z Updating files:  87% (2584/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3636271Z Updating files:  88% (2613/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3739395Z Updating files:  89% (2643/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3764188Z Updating files:  90% (2673/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3796012Z Updating files:  91% (2702/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3830001Z Updating files:  92% (2732/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3849536Z Updating files:  93% (2762/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3865671Z Updating files:  94% (2791/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3956894Z Updating files:  95% (2821/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3958010Z Updating files:  96% (2851/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3959105Z Updating files:  97% (2880/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3969645Z Updating files:  98% (2910/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3996923Z Updating files:  99% (2940/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3997511Z Updating files: 100% (2969/2969)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.3998030Z Updating files: 100% (2969/2969), done.
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4038871Z Note: switching to '88f53347b61440acd354226579232957e74514e7'.
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4039387Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4039793Z You are in 'detached HEAD' state. You can look around, make experimental
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4040549Z changes and commit them, and you can discard any commits you make in this
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4041098Z state without impacting any branches by switching back to a branch.
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4041408Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4041634Z If you want to create a new branch to retain commits you create, you may
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4042194Z do so (now or later) by using -c with the switch command. Example:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4042478Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4042643Z   git switch -c <new-branch-name>
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4042843Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4042990Z Or undo this operation with:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4043183Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4043318Z   git switch -
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4043473Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4043736Z Turn off this advice by setting config variable advice.detachedHead to false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4044075Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4044330Z HEAD is now at 88f5334 Record the evaluation commit in the manifest and report
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4088991Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4140977Z [command]/usr/bin/git log -1 --format=%H
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4174015Z 88f53347b61440acd354226579232957e74514e7
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4186455Z ##[group]Removing auth
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4191340Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4231464Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4482246Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4514382Z http.https://github.com/.extraheader
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4522684Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4571939Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4821793Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.4859946Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5106180Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5367248Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5369125Z ##[group]Run actions/setup-node@v4
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5369451Z with:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5369706Z   node-version: 22
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5369985Z   always-auth: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5370261Z   check-latest: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5373184Z   token: ***
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.5373446Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.6865599Z Found in cache @ /opt/hostedtoolcache/node/22.23.2/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.6869536Z (node:2333) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.6870310Z (Use `node --trace-deprecation ...` to show where the warning was created)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:43.6872976Z ##[group]Environment details
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.0809305Z node: v22.23.2
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.0809946Z npm: 10.9.8
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.0810239Z yarn: 1.22.22
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.0812011Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1004502Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1005950Z ##[group]Run actions/setup-python@v5
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1006229Z with:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1006453Z   python-version: 3.13
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1006726Z   check-latest: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1009875Z   token: ***
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1010111Z   update-environment: true
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1010374Z   allow-prereleases: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1010612Z   freethreaded: false
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.1010874Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2517448Z ##[group]Installed versions
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2603815Z (node:2364) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2605273Z (Use `node --trace-deprecation ...` to show where the warning was created)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2606117Z Successfully set up CPython (3.13.15)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2606870Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2770645Z ##[group]Run python -m pip install pytest pytest-subtests pillow python-pptx fonttools lxml pymupdf reportlab
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2771558Z [36;1mpython -m pip install pytest pytest-subtests pillow python-pptx fonttools lxml pymupdf reportlab[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2772484Z [36;1mfor d in plugins/lesson-v4/builder plugins/lesson-v4/worksheet-html plugins/lesson-v4/working-wall-html plugins/lesson-v4/stick-in-sheets-html; do[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2773221Z [36;1m  if test -f "$d/package-lock.json"; then (cd "$d" && npm ci); fi[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2773846Z [36;1mdone[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2827577Z shell: /usr/bin/bash -e {0}
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2827887Z env:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2828181Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2828644Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2829255Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2829768Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2830205Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2830593Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+snapshot	UNKNOWN STEP	2026-09-16T13:12:44.2830930Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:12:46.9764892Z Collecting pytest
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.0362731Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.0551821Z Collecting pytest-subtests
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.0659928Z   Downloading pytest_subtests-0.15.0-py3-none-any.whl.metadata (6.0 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.2402272Z Collecting pillow
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.2486259Z   Downloading pillow-12.3.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.2662023Z Collecting python-pptx
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.2740728Z   Downloading python_pptx-1.0.2-py3-none-any.whl.metadata (2.5 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.4208518Z Collecting fonttools
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.4285163Z   Downloading fonttools-4.65.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (125 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.6756598Z Collecting lxml
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.6833241Z   Downloading lxml-6.1.3-cp313-cp313-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (3.3 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.8141772Z Collecting pymupdf
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.8222682Z   Downloading pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl.metadata (26 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.9272061Z Collecting reportlab
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.9347074Z   Downloading reportlab-5.0.1-py3-none-any.whl.metadata (1.6 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.9504502Z Collecting iniconfig>=1.0.1 (from pytest)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.9583084Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.9762157Z Collecting packaging>=22 (from pytest)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:47.9840862Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.0010343Z Collecting pluggy<2,>=1.5 (from pytest)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.0092107Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.0298372Z Collecting pygments>=2.7.2 (from pytest)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.0371829Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.0571423Z Collecting attrs>=19.2.0 (from pytest-subtests)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.0646974Z   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.0989755Z Collecting XlsxWriter>=0.5.7 (from python-pptx)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.1073822Z   Downloading xlsxwriter-3.2.9-py3-none-any.whl.metadata (2.7 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.1281184Z Collecting typing-extensions>=4.9.0 (from python-pptx)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.1360336Z   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.2521808Z Collecting charset-normalizer (from reportlab)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.2600424Z   Downloading charset_normalizer-3.5.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (45 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.2782121Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.3127824Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.3222316Z Downloading pytest_subtests-0.15.0-py3-none-any.whl (9.2 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.3313733Z Downloading pillow-12.3.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.9 MB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.5152996Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 39.5 MB/s  0:00:00
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.5230311Z Downloading python_pptx-1.0.2-py3-none-any.whl (472 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.5380366Z Downloading fonttools-4.65.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.4 MB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.5951787Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.4/5.4 MB 95.0 MB/s  0:00:00
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.6030351Z Downloading lxml-6.1.3-cp313-cp313-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (5.2 MB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.6448406Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.2/5.2 MB 127.3 MB/s  0:00:00
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.6528554Z Downloading pymupdf-1.28.2-cp310-abi3-manylinux_2_28_x86_64.whl (25.8 MB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.7785908Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 25.8/25.8 MB 207.5 MB/s  0:00:00
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.7871746Z Downloading reportlab-5.0.1-py3-none-any.whl (2.0 MB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.7960500Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 264.7 MB/s  0:00:00
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8039241Z Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8141567Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8233708Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8329838Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8410101Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 179.3 MB/s  0:00:00
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8487689Z Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8589300Z Downloading xlsxwriter-3.2.9-py3-none-any.whl (175 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:48.8695042Z Downloading charset_normalizer-3.5.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (250 kB)
+snapshot	UNKNOWN STEP	2026-09-16T13:12:49.1344080Z Installing collected packages: XlsxWriter, typing-extensions, pymupdf, pygments, pluggy, pillow, packaging, lxml, iniconfig, fonttools, charset-normalizer, attrs, reportlab, python-pptx, pytest, pytest-subtests
+snapshot	UNKNOWN STEP	2026-09-16T13:12:54.5378432Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:54.5404468Z Successfully installed XlsxWriter-3.2.9 attrs-26.1.0 charset-normalizer-3.5.1 fonttools-4.65.0 iniconfig-2.3.0 lxml-6.1.3 packaging-26.3 pillow-12.3.0 pluggy-1.6.0 pygments-2.21.0 pymupdf-1.28.2 pytest-9.1.1 pytest-subtests-0.15.0 python-pptx-1.0.2 reportlab-5.0.1 typing-extensions-4.16.0
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1594909Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1595769Z added 32 packages, and audited 33 packages in 1s
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1596207Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1596462Z 5 packages are looking for funding
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1596933Z   run `npm fund` for details
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1635329Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1636162Z 3 high severity vulnerabilities
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1636512Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1636949Z To address all issues (including breaking changes), run:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1637537Z   npm audit fix --force
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1637774Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:56.1637973Z Run `npm audit` for details.
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6536234Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6536939Z added 89 packages, and audited 90 packages in 2s
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6537357Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6537609Z 7 packages are looking for funding
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6538056Z   run `npm fund` for details
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6599895Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6610352Z 3 high severity vulnerabilities
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6610878Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6611536Z To address all issues (including breaking changes), run:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6612391Z   npm audit fix --force
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6612844Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:58.6613221Z Run `npm audit` for details.
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3427616Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3428533Z added 13 packages, and audited 14 packages in 612ms
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3429221Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3429478Z 5 packages are looking for funding
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3430357Z   run `npm fund` for details
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3457578Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3457927Z 1 high severity vulnerability
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3458198Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3458449Z To address all issues (including breaking changes), run:
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3459047Z   npm audit fix --force
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3459246Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:12:59.3459368Z Run `npm audit` for details.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0125147Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0125931Z added 13 packages, and audited 14 packages in 598ms
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0126349Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0126595Z 5 packages are looking for funding
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0127398Z   run `npm fund` for details
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0158659Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0159836Z 1 high severity vulnerability
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0160176Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0160565Z To address all issues (including breaking changes), run:
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0161137Z   npm audit fix --force
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0161378Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0161560Z Run `npm audit` for details.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0339883Z ##[group]Run mkdir -p /tmp/repair-evidence
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0340279Z [36;1mmkdir -p /tmp/repair-evidence[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0340645Z [36;1mgit rev-parse HEAD > /tmp/repair-evidence/base-sha.txt[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0341141Z [36;1mtar --exclude=.git -czf /tmp/repair-evidence/source-with-node-deps.tar.gz .[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0384608Z shell: /usr/bin/bash -e {0}
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0384889Z env:
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0385173Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0385629Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0386088Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0386469Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0386858Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0387258Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+snapshot	UNKNOWN STEP	2026-09-16T13:13:00.0387660Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8645971Z ##[group]Run set +e
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8646248Z [36;1mset +e[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8646476Z [36;1mcd plugins/lesson-v4[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8647216Z [36;1mpython -m pytest scripts/tests scripts/test-validate-lesson-design.py scripts/test_question_crop.py -q -p no:cacheprovider > /tmp/repair-evidence/python-baseline.log 2>&1[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8648021Z [36;1mecho "python=$?" >> /tmp/repair-evidence/exit-codes.txt[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8648491Z [36;1m(cd builder && npm run check) > /tmp/repair-evidence/builder-baseline.log 2>&1[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8649463Z [36;1mecho "builder=$?" >> /tmp/repair-evidence/exit-codes.txt[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8650057Z [36;1m(cd stick-in-sheets-html && node --test) > /tmp/repair-evidence/stick-in-baseline.log 2>&1[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8650592Z [36;1mecho "stick_in=$?" >> /tmp/repair-evidence/exit-codes.txt[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8650964Z [36;1mcat /tmp/repair-evidence/exit-codes.txt[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8651363Z [36;1mtail -25 /tmp/repair-evidence/python-baseline.log[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8651755Z [36;1mtail -20 /tmp/repair-evidence/builder-baseline.log[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8652133Z [36;1mtail -15 /tmp/repair-evidence/stick-in-baseline.log[0m
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8694824Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8695303Z env:
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8695590Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8696118Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8696544Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8696934Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8697309Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8697680Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+snapshot	UNKNOWN STEP	2026-09-16T13:13:18.8698001Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1502217Z python=2
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1502616Z builder=0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1502926Z stick_in=0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1517766Z 
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1518118Z ==================================== ERRORS ====================================
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1518973Z _____________ ERROR collecting scripts/tests/test_plan_tracker.py ______________
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1520535Z ImportError while importing test module '/home/runner/work/lessonv4/lessonv4/plugins/lesson-v4/scripts/tests/test_plan_tracker.py'.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1521677Z Hint: make sure your test modules/packages have valid Python names.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1522047Z Traceback:
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1522907Z /opt/hostedtoolcache/Python/3.13.15/x64/lib/python3.13/importlib/__init__.py:88: in import_module
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1523515Z     return _bootstrap._gcd_import(name[level:], package, level)
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1523920Z            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1524328Z scripts/tests/test_plan_tracker.py:10: in <module>
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1524662Z     from docx import Document
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1525015Z E   ModuleNotFoundError: No module named 'docx'
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1525469Z =========================== short test summary info ============================
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1525878Z ERROR scripts/tests/test_plan_tracker.py
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1526315Z !!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1526664Z 1 error in 2.48s
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1529389Z ok 642 - nothing is recorded without a slide to attach it to
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1529903Z   ---
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1530248Z   duration_ms: 0.1995
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1530594Z   type: 'test'
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1530908Z   ...
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1531595Z # Subtest: a zero-sized slot or figure is ignored rather than divided by
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1532654Z ok 643 - a zero-sized slot or figure is ignored rather than divided by
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1533205Z   ---
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1533549Z   duration_ms: 0.234863
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1533792Z   type: 'test'
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1534246Z   ...
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1534437Z 1..643
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1534630Z # tests 643
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1534825Z # suites 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1535026Z # pass 643
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1535214Z # fail 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1535407Z # cancelled 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1535609Z # skipped 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1535801Z # todo 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1536016Z # duration_ms 14151.002645
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1540583Z # Subtest: a source copy taller than the page is refused with the height named, never cropped
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1541397Z ok 57 - a source copy taller than the page is refused with the height named, never cropped
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1542042Z   ---
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1542359Z   duration_ms: 9.334091
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1542709Z   type: 'test'
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1543014Z   ...
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1543334Z 1..57
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1543619Z # tests 57
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1543901Z # suites 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1544182Z # pass 57
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1544556Z # fail 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1544826Z # cancelled 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1545107Z # skipped 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1545380Z # todo 0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1545608Z # duration_ms 4379.814771
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1597227Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1598479Z ##[group]Run actions/upload-artifact@v4
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1599066Z with:
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1599289Z   name: final-repair-baseline
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1599553Z   path: /tmp/repair-evidence/
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1599799Z   retention-days: 7
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1600025Z   if-no-files-found: warn
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1600266Z   compression-level: 6
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1600489Z   overwrite: false
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1600709Z   include-hidden-files: false
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1600947Z env:
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1601218Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1601719Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib/pkgconfig
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1602203Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1602583Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1602995Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.15/x64
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1603375Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.15/x64/lib
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.1603702Z ##[endgroup]
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.3310907Z (node:4336) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.3311776Z (Use `node --trace-deprecation ...` to show where the warning was created)
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.3411988Z With the provided path, there will be 6 files uploaded
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.3413059Z Artifact name is valid!
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.3413885Z Root directory input is valid!
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.5530471Z Beginning upload of artifact content to blob storage
+snapshot	UNKNOWN STEP	2026-09-16T13:13:44.8722027Z (node:4336) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:45.2493706Z Uploaded bytes 8388608
+snapshot	UNKNOWN STEP	2026-09-16T13:13:45.3774191Z Uploaded bytes 16777216
+snapshot	UNKNOWN STEP	2026-09-16T13:13:45.6089341Z Uploaded bytes 25165824
+snapshot	UNKNOWN STEP	2026-09-16T13:13:45.9055028Z Uploaded bytes 33554432
+snapshot	UNKNOWN STEP	2026-09-16T13:13:46.2175830Z Uploaded bytes 41943040
+snapshot	UNKNOWN STEP	2026-09-16T13:13:46.4340302Z Uploaded bytes 50331648
+snapshot	UNKNOWN STEP	2026-09-16T13:13:46.6767522Z Uploaded bytes 58720256
+snapshot	UNKNOWN STEP	2026-09-16T13:13:46.9957375Z Uploaded bytes 67108864
+snapshot	UNKNOWN STEP	2026-09-16T13:13:47.3087766Z Uploaded bytes 75497472
+snapshot	UNKNOWN STEP	2026-09-16T13:13:47.6113373Z Uploaded bytes 83886080
+snapshot	UNKNOWN STEP	2026-09-16T13:13:47.8490233Z Uploaded bytes 92274688
+snapshot	UNKNOWN STEP	2026-09-16T13:13:48.1970185Z Uploaded bytes 100663296
+snapshot	UNKNOWN STEP	2026-09-16T13:13:48.4707201Z Uploaded bytes 109051904
+snapshot	UNKNOWN STEP	2026-09-16T13:13:48.7337585Z Uploaded bytes 117440512
+snapshot	UNKNOWN STEP	2026-09-16T13:13:48.9894119Z Uploaded bytes 125829120
+snapshot	UNKNOWN STEP	2026-09-16T13:13:49.3993934Z Uploaded bytes 134217728
+snapshot	UNKNOWN STEP	2026-09-16T13:13:49.6674801Z Uploaded bytes 142606336
+snapshot	UNKNOWN STEP	2026-09-16T13:13:49.9069347Z Uploaded bytes 150994944
+snapshot	UNKNOWN STEP	2026-09-16T13:13:50.1505117Z Uploaded bytes 159383552
+snapshot	UNKNOWN STEP	2026-09-16T13:13:50.4516693Z Uploaded bytes 167772160
+snapshot	UNKNOWN STEP	2026-09-16T13:13:50.7420794Z Uploaded bytes 176160768
+snapshot	UNKNOWN STEP	2026-09-16T13:13:50.9962252Z Uploaded bytes 184549376
+snapshot	UNKNOWN STEP	2026-09-16T13:13:51.2664798Z Uploaded bytes 192937984
+snapshot	UNKNOWN STEP	2026-09-16T13:13:51.5020660Z Uploaded bytes 201326592
+snapshot	UNKNOWN STEP	2026-09-16T13:13:51.8170573Z Uploaded bytes 209715200
+snapshot	UNKNOWN STEP	2026-09-16T13:13:52.0735466Z Uploaded bytes 218103808
+snapshot	UNKNOWN STEP	2026-09-16T13:13:52.3018982Z Uploaded bytes 226492416
+snapshot	UNKNOWN STEP	2026-09-16T13:13:52.5848479Z Uploaded bytes 234881024
+snapshot	UNKNOWN STEP	2026-09-16T13:13:52.8794147Z Uploaded bytes 243269632
+snapshot	UNKNOWN STEP	2026-09-16T13:13:53.1178601Z Uploaded bytes 251658240
+snapshot	UNKNOWN STEP	2026-09-16T13:13:53.5418205Z Uploaded bytes 260046848
+snapshot	UNKNOWN STEP	2026-09-16T13:13:53.5736806Z Uploaded bytes 268435456
+snapshot	UNKNOWN STEP	2026-09-16T13:13:53.9140102Z Uploaded bytes 276824064
+snapshot	UNKNOWN STEP	2026-09-16T13:13:54.1655849Z Uploaded bytes 285212672
+snapshot	UNKNOWN STEP	2026-09-16T13:13:54.4520782Z Uploaded bytes 293601280
+snapshot	UNKNOWN STEP	2026-09-16T13:13:54.6130026Z Uploaded bytes 301989888
+snapshot	UNKNOWN STEP	2026-09-16T13:13:54.8690220Z Uploaded bytes 310378496
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.2614805Z Uploaded bytes 318767104
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.3933894Z Uploaded bytes 320124876
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.4086430Z Finished uploading artifact content to blob storage!
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.4089762Z SHA256 digest of uploaded artifact zip is d5602743d44e943bf929889db2089d2b06da0678453aedb341982b3aa0cdb722
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.4091462Z Finalizing artifact upload
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.6487368Z Artifact final-repair-baseline.zip successfully finalized. Artifact ID 10448385612
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.6488466Z Artifact final-repair-baseline has been successfully uploaded! Final size is 320124876 bytes. Artifact ID is 10448385612
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.6495717Z Artifact download URL: https://github.com/DynoDS/lessonv4/actions/runs/35100440685/artifacts/10448385612
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.6715688Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.6716932Z Post job cleanup.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.7970610Z (node:4351) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.7971949Z (Use `node --trace-deprecation ...` to show where the warning was created)
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.8135156Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.8137178Z Post job cleanup.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.9534701Z (node:4359) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.9535564Z (Use `node --trace-deprecation ...` to show where the warning was created)
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.9785604Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+snapshot	UNKNOWN STEP	2026-09-16T13:13:55.9787649Z Post job cleanup.
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.0751591Z [command]/usr/bin/git version
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.0814312Z git version 2.55.0
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.0867268Z Temporarily overriding HOME='/home/runner/work/_temp/515fb8d9-1cab-471c-ad7d-d448ed04eec9' before making global git config changes
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.0869535Z Adding repository directory to the temporary git global config as a safe directory
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.0877753Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/lessonv4/lessonv4
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.0954122Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.1019310Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.1332305Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.1376695Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.1665477Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.1716603Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.2156271Z Cleaning up orphan processes
+snapshot	UNKNOWN STEP	2026-09-16T13:13:56.2478219Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

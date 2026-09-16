@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Content-based",
+    "yearGroup": 4,
+    "subject": "History",
+    "lo": "To explain why Tudor children worked.",
+    "displayedLo": "To explain why Tudor children worked.",
+    "durationMinutes": 45,
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "Children may name jobs but not explain how work met household needs or prepared an adult livelihood, especially when conditions were hard."
+  },
+  "teacherOrientation": "Teacher orientation: This lesson teaches children to explain why Tudor children worked. They use a farm household and an apprentice's work to connect a job with what a family needed now and what a child might need later. Each child finishes with explanations about two new classroom cases. The tricky move is explaining why a family might choose difficult work: this is modelled through apprenticeship and practised before the final questions. Pictures illustrate reconstructed Tudor work; the short information texts are modern summaries, not children's surviving words.",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "Childhood in the past",
+    "kind": "starter",
+    "conceptRef": null,
+    "unlocks": "They recall using sources to compare childhoods, ready to explain one aspect of Tudor children's lives.",
+    "thinking": "What did a source help us find out about childhood last lesson?",
+    "content": {
+      "activity": "What is a source?\nGive one change in children's lives from last lesson.",
+      "connection": "Retrieves the supplied unit's Lesson 1, using sources to compare children's lives.",
+      "format": "short-answer",
+      "testQuestionPath": null
+    },
+    "pupilInstruction": null,
+    "taskStructure": null,
+    "modellingState": null,
+    "representationRefs": [],
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "misconceptionRefs": [],
+    "photoRefs": [],
+    "speakerNotes": {
+      "script": "Say to children: Last lesson we used sources to find out about children's lives. What is a source? Think back to a particular example before you explain a change.",
+      "teacherInfo": null,
+      "lookFor": "Look for: a specific taught comparison rather than a claim that every childhood was the same."
+    },
+    "answer": {
+      "kind": "model",
+      "content": "A source gives us information about the past.\nOne example: some Tudor children worked during years when children today go to school.",
+      "acceptanceCondition": "Accept another accurate comparison from Lesson 1; require an actual change rather than just a period name.",
+      "delivery": "answer-slide"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "apprentice",
+      "definition": "An apprentice learns a job by working with someone skilled.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-002"
+      }
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "trade",
+      "definition": "A trade is a skilled job, such as making shoes.",
+      "visual": {
+        "kind": "emoji",
+        "value": "👞"
+      }
+    },
+    {
+      "id": "vocab-003",
+      "sourceUnitId": "lesson-section/vocabulary/unit-003",
+      "term": "working conditions",
+      "definition": "Working conditions are what a job is like, including its hours and how safely people work.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-002"
+      }
+    }
+  ],
+  "trimmedVocabulary": [],
+  "representations": [],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "labelled-reference",
+      "drawLive": false,
+      "content": {
+        "items": [
+          {
+            "label": "Reason",
+            "text": "What the family needed or hoped for",
+            "representationRef": null,
+            "configuration": null
+          },
+          {
+            "label": "Detail",
+            "text": "Something from the case that explains your answer",
+            "representationRef": null,
+            "configuration": null
+          }
+        ]
+      }
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "Many Tudor children helped their households get food, fuel or money."
+    },
+    {
+      "id": "sk-002",
+      "text": "An apprenticeship could provide food and a home now, and a way to earn a living later."
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mc-001",
+      "belief": "A family chose hard work because they did not care about their child.",
+      "correctiveFact": "A family might want the child to have food, a home and training even when the work was hard.",
+      "strategy": "Explain the limited alternatives in unit-005; guided family-choice explanation in unit-006; apprenticeship practice retests the causal account.",
+      "reason": "Present-day moral judgement can replace explaining historical circumstances."
+    },
+    {
+      "id": "mc-002",
+      "belief": "Only children from poor families had a reason to work.",
+      "correctiveFact": "Families with enough money could still want an apprenticeship so a child learned a trade.",
+      "strategy": "Teach the possibility of paying for training in unit-003; change family resources in the final practice question.",
+      "reason": "Checks whether future livelihood has been distinguished from immediate poverty."
+    }
+  ],
+  "concepts": [
+    {
+      "id": "concept-001",
+      "name": "Cause: explain children's work through household needs and future livelihood.",
+      "successCriteriaRefs": [
+        "sc-001"
+      ]
+    }
+  ],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "Why did a family need help?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They connect unpaid tasks with food and fuel, which the next consequence question and final farm case need.",
+      "thinking": null,
+      "content": {
+        "headline": "A Tudor farm household",
+        "explanation": "England, 1485 to 1603.\nChildren could feed animals, gather fuel and help bring in crops. Without that work, a household could have less food or fuel.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-001"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "How would gathering fuel help this household?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: We're going back to Tudor England, between 1485 and 1603. That's after Roman Britain and before Victorian Britain. Think about what a household needs every day. Food, somewhere to live, and fuel to cook and keep warm. Tudor households needed those things too. Much of this work was done by hand. A child could gather sticks while an adult did another job. Gathering sticks wasn't earning coins, but those sticks still helped the family: they could burn them to cook. Some children worked for money or food outside their own homes. Working did not always mean getting wages. Families had different amounts of money, and children did different jobs.",
+        "teacherInfo": "Modern summary based on the supplied Lesson 2 and Shakespeare Birthplace Trust, A Day in the Life of a Tudor: https://www.shakespeare.org.uk/explore-shakespeare/blogs/day-life-tudor/. Caption the picture 'Reconstruction of Tudor farm work'. Do not identify any pictured person as a documented Tudor child.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "What if that job wasn't done?",
+      "kind": "do",
+      "conceptRef": "concept-001",
+      "unlocks": "They explain how unpaid work supports a household, ready to understand apprenticeship support without assuming wages.",
+      "thinking": "What would this household lose if nobody collected its fuel?",
+      "content": {
+        "activity": "Each child predicts a consequence before explaining it to a partner.",
+        "format": "spoken explanation",
+        "task": "A Tudor child gathers fuel while the adults bring in crops. What might happen if nobody gathered the fuel?\nYou could start: Without the fuel, …"
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: The adults are still bringing in the crops. The one thing we've changed is that nobody gathers the fuel. Think through what that would mean at home. Settle your own answer, then explain it to your partner.",
+        "teacherInfo": "If children say only 'less money', return to cooking with fuel: this job helps even without wages.",
+        "lookFor": "Look for: cooking or warmth needing fuel, or another worker having to leave the harvest."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The family might not have enough fuel to cook or keep warm. Someone would need to stop another job and collect it.",
+        "acceptanceCondition": "Accept a plausible direct consequence of missing fuel; it must connect to household needs.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "What did an apprentice get?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They distinguish support now from a future livelihood, needed for the baker case and the final apprenticeship explanation.",
+      "thinking": null,
+      "content": {
+        "headline": "Learning a trade",
+        "explanation": "An apprentice worked for a skilled worker, called a master. The master provided training, food, clothes and somewhere to live.\nSome families could pay for this training.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-002"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "Why would learning the whole trade take years?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [
+        "mc-002"
+      ],
+      "photoRefs": [
+        "photo-002"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Look at the work on the leather. Making something that fits and lasts needs skill. A Tudor apprentice learned by working with a master. The apprentice helped in the workshop; the master was meant to teach the trade and provide food, clothes and a place to live. Many apprenticeships lasted about seven years. This could help a family now because the child was being fed and housed. It could also help later. A trained shoemaker could earn a living making and repairing shoes. Those are two different reasons, and one apprenticeship could offer both. Some families could pay for training. An apprenticeship wasn't only for children whose families had no money.",
+        "teacherInfo": "Modern summary: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1–2: https://www.shakespeare.org.uk/documents/1681/The_Tudor_apprentice_.pdf. Caption 'Reconstruction of a Tudor leather workshop'. The craft is illustrative, not a record of a named apprentice.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "Help now or help later?",
+      "kind": "do",
+      "conceptRef": "concept-001",
+      "unlocks": "They can explain both benefits of apprenticeship, which the later hard-work judgement needs.",
+      "thinking": "Which benefits meet today's needs, and which help the child earn a living in the future?",
+      "content": {
+        "activity": "Each child identifies and explains immediate and future benefits in a fresh trade.",
+        "format": "spoken explanation",
+        "task": "Imagined Tudor case: a baker teaches an apprentice to make bread and gives the apprentice meals and a bed.\nWhich part helps the apprentice now, and which part could help later?"
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-003"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Use what we learned about the workshop, but think about this baker. A bed and a skill do different jobs in this child's life. Which part helps the apprentice now, and which part could help later?",
+        "teacherInfo": "Show photo-003 with the case, captioned 'Reconstruction of Tudor bread-making'. It makes the work visible; the imagined text supplies the meals, bed and training arrangement.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "Meals and a bed help the apprentice now. Learning to make bread could help the apprentice earn a living later.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-005",
+      "label": "Why keep working when it was hard?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They can explain why difficult conditions did not remove a family's reasons for work, needed in the guided and independent apprentice cases.",
+      "thinking": null,
+      "content": {
+        "headline": "Work could take much of a child's day",
+        "explanation": "Some apprentices worked long hours and followed strict rules. Treatment varied: some were cared for and others were treated badly.\nSchool wasn't available to every child, and a family could lose needed help if a child stopped working.",
+        "takeaway": null,
+        "teachingText": null,
+        "keyQuestions": [
+          "Why might a family still choose an apprenticeship?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [
+        "photo-002"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Learning a trade could be useful and still be hard. Some apprentices worked for much of the day, with strict rules and little free time. Their treatment wasn't all the same. Some masters cared for apprentices; others treated them badly. That doesn't mean a family chose work because they wanted their child to suffer. They might be trying to make sure the child had food and could earn a living later. School wasn't an easy replacement for every child. Places and opportunities differed, and even where schooling was possible, a family could need the child's work. We need to explain the choices using what was possible then.",
+        "teacherInfo": "Conditions: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1–2. Schooling context follows the supplied plan. Do not infer treatment or hours from the reconstruction.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+      "label": "Explain the family's choice",
+      "kind": "do",
+      "conceptRef": "concept-001",
+      "unlocks": "They link learning a specific trade to a future livelihood, ready to explain why the final family is unhappy when promised training is missing.",
+      "thinking": "What could a family hope the child would gain from this difficult work?",
+      "content": {
+        "activity": "Each child forms a causal explanation, rehearses it with a partner, then the class improves a shared response.",
+        "format": "spoken explanation",
+        "task": "Imagined Tudor case: an apprentice learns to make clothes but works long days.\nWhy might the family still want the child to learn this trade?\nYou could start: The family might choose this because …"
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Question and reference",
+      "representationRefs": [],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [
+        "photo-004"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Start with what the family might hope the child would gain. Then use the trade to explain it. 'The child made clothes' tells us the job. What does learning that job make possible? Settle your reason before you share it. We can join the reason and the detail: the family might choose this because learning to make clothes could help the child earn a living later, even though the days were long.",
+        "teacherInfo": "Show photo-004, captioned 'Reconstruction of Tudor clothing work'. It shows sewing, not hours. Take children's attempts before modelling the final sentence. Preserve room for the shared sentence beside the question; the final response is completed live.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The family might choose this because learning to make clothes could help the child earn a living later, even though the days were long.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-007",
+      "label": "Why did these children work?",
+      "kind": "practise",
+      "conceptRef": "concept-001",
+      "unlocks": null,
+      "thinking": "How do each child's tasks and arrangements explain the family's reasons, and what changes when the family has enough money?",
+      "content": {
+        "activity": "Independent explanations linking a harvest deadline to food and missing training to the family's unmet hopes; changed family resources then check the poverty-only rule.",
+        "format": "written-explanation",
+        "task": "Imagined Tudor case: rain is coming. A Tudor child helps carry cut wheat into shelter. The family needs the grain for food.\nWhy might the family need the child's help today?\n\nImagined Tudor case: a shoemaker promised to train an apprentice. The child gets meals and a bed, but only sweeps the workshop and is never taught to make shoes.\nWhy might the family be unhappy with this apprenticeship?\n\nIf the apprentice's family already had enough food and money, could learning the trade still be useful? Explain why.",
+        "launch": null
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001",
+        "mc-002"
+      ],
+      "photoRefs": [
+        "photo-005",
+        "photo-006"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: These are imagined cases built from the historical information we've learned. In each one, think about what the family needs and what the child's work makes possible. Read carefully: the workshop arrangement has changed. The last question changes what the family already has.",
+        "teacherInfo": "Use separate slides within this practice set: Q1 with photo-005 captioned 'Reconstruction of Tudor harvest work'; Q2 with photo-006 captioned 'Reconstruction of work in a Tudor workshop'; Q3 retains photo-006 and refers back to that apprentice. Text establishes the weather risk and missing training; images illustrate the work. Keep all answers withheld until independent attempts finish. Optional sheet replaces this same practice, completed once.",
+        "lookFor": "Look for: protecting food before rain, missing training despite present support, and future livelihood after poverty is removed."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The child's help could get more wheat into shelter before the rain spoils it. The family needs that grain for food, so the work helps even without wages.\n\nThe family wanted the child to learn shoemaking and earn a living later. Meals and a bed help now, but sweeping alone won't teach the child to make shoes.\n\nYes. The child could still learn to make and repair shoes and earn a living in the future. Needing food now wasn't the only reason for an apprenticeship.",
+        "acceptanceCondition": "Accept equivalent explanations using relevant details. The last answer must retain future livelihood after immediate poverty is removed.",
+        "delivery": "answer-slide"
+      }
+    }
+  ],
+  "ending": {
+    "included": false,
+    "kind": "Apply",
+    "reason": "The independent set already synthesises household needs and apprenticeship benefits, then changes family circumstances to test transfer; a further Apply would repeat this thinking.",
+    "beat": null
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": {
+      "coreActionAndEvidence": "Printed alternative to unit-007, completed once. Q1 explains urgent harvest help before rain; Q2 explains the missing future benefit when an apprentice gets support but no training; Q3 tests future benefit when immediate poverty is removed.",
+      "amount": "Three substantive explanations on one page, matching the main practice.",
+      "variationAndBoundaryPlan": "Change the household problem from fuel to threatened grain, remove promised training from an apprenticeship, then change family resources.",
+      "organisation": "Each labelled imagined case and matching reconstruction immediately above its question; the apprentice case and photo serve Q2 and Q3. Two compact stimuli about 110 mm, six handwriting lines about 75 mm, prompts and concise criteria about 50 mm: approximately 235 mm total."
+    },
+    "sheetShape": {
+      "kind": "question-set",
+      "reason": "The thinking is a causal explanation, so case-led questions with writing space serve the history directly."
+    },
+    "demand": "Use taught Tudor circumstances to explain the reasons behind each case. Writing is the causal evidence, not a length target.",
+    "successCriteriaRefs": [
+      "sc-001"
+    ],
+    "stickyKnowledgeRefs": [],
+    "fitPriority": {
+      "protected": [
+        "Both imagined case texts and matching work reconstructions above their questions",
+        "All three explanation questions",
+        "Usable handwriting space: two full-width lines per explanation",
+        "Concise success criteria"
+      ],
+      "preAuthorisedRemoval": [
+        "Optional sentence starts, if needed for fit; children have already rehearsed explanations and retain the concise criteria."
+      ]
+    },
+    "centralWriteOnVisualException": null,
+    "contentBlocks": [
+      {
+        "id": "ws-q-001",
+        "kind": "question",
+        "pupilPrompt": "Imagined Tudor case: rain is coming. A Tudor child helps carry cut wheat into shelter. The family needs the grain for food.\n\nWhy might the family need the child's help today?",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The explanation shows how unpaid tasks meet household needs; naming or ticking a task would not.",
+        "response": "Two full-width handwriting lines.",
+        "support": "This work helped because …",
+        "visualRequirements": "Show photo-005 with this case, captioned 'Reconstruction of Tudor harvest work'. Preserve visible wheat and carrying into shelter; no answer labels.",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [
+          "photo-005"
+        ],
+        "answer": {
+          "kind": "model",
+          "content": "The child's help could get more wheat into shelter before the rain spoils it. The family needs that grain for food, so the work helps even without wages.",
+          "acceptanceCondition": "Accept an equivalent accurate causal explanation using this case.",
+          "delivery": "teacher-only"
+        }
+      },
+      {
+        "id": "ws-q-002",
+        "kind": "question",
+        "pupilPrompt": "Imagined Tudor case: a shoemaker promised to train an apprentice. The child gets meals and a bed, but only sweeps the workshop and is never taught to make shoes.\n\nWhy might the family be unhappy with this apprenticeship?",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The child explains the family's unmet reason for choosing apprenticeship when promised training is absent despite meals and lodging.",
+        "response": "Two full-width handwriting lines.",
+        "support": "The family might be unhappy because …",
+        "visualRequirements": "Show photo-006 with this case, captioned 'Reconstruction of work in a Tudor workshop'. It illustrates sweeping; the text establishes the repeated lack of training. This stimulus also serves Q3.",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [
+          "photo-006"
+        ],
+        "answer": {
+          "kind": "model",
+          "content": "The family wanted the child to learn shoemaking and earn a living later. Meals and a bed help now, but sweeping alone won't teach the child to make shoes.",
+          "acceptanceCondition": "Accept an equivalent accurate causal explanation using this case.",
+          "delivery": "teacher-only"
+        }
+      },
+      {
+        "id": "ws-q-003",
+        "kind": "question",
+        "pupilPrompt": "If the apprentice's family already had enough food and money, could learning the trade still be useful? Explain why.",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The explanation reveals whether future livelihood remains a reason when poverty is removed.",
+        "response": "Two full-width handwriting lines.",
+        "support": "",
+        "visualRequirements": "Refers to the apprentice case and photo-006 above; retain access without printing a duplicate image.",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [
+          "photo-006"
+        ],
+        "answer": {
+          "kind": "model",
+          "content": "Yes. The child could still learn to make and repair shoes and earn a living in the future. Needing food now wasn't the only reason for an apprenticeship.",
+          "acceptanceCondition": "Accept an equivalent accurate causal explanation using this case.",
+          "delivery": "teacher-only"
+        }
+      }
+    ],
+    "answerKeyMode": "required",
+    "providedWorksheet": null
+  },
+  "resourceOpportunities": {
+    "stickIn": {
+      "decision": "none",
+      "sourceUnitIds": [],
+      "reason": "Every response is a child-authored explanation; no figure is written on and no fine source detail needs individual reading."
+    },
+    "workingWall": {
+      "decision": "candidate",
+      "sourceUnitIds": [
+        "lesson-section/teaching-sequence/unit-001",
+        "lesson-section/teaching-sequence/unit-003"
+      ],
+      "reason": "The two durable reasons for work support the unit's later comparison of childhoods."
+    }
+  },
+  "vocabularyIntroductions": [
+    {
+      "vocabularyRefs": [
+        "vocab-001",
+        "vocab-002"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-002",
+      "script": "Say to children: An apprentice is learning while working. A trade is the skilled job they are learning. Look at the leather work and the shoe. Would watching someone make one shoe make you a trained shoemaker? No: learning to do the whole job took practice over years."
+    },
+    {
+      "vocabularyRefs": [
+        "vocab-003"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-004",
+      "script": "Say to children: Knowing what someone makes isn't the same as knowing what the job is like. A short day and a very long day could involve the same job. When we talk about those differences, we're talking about working conditions. Look back at the workshop: the picture shows work, but it can't tell us how long the day lasted."
+    }
+  ],
+  "slideDesignNotes": [
+    "Caption farm and workshop visuals as reconstructions, not photographs from Tudor times. They illustrate work; modern text supplies the historical information.",
+    "Keep the guide's family-choice sentence constructable live and preserve the question and criteria during it.",
+    "Practice is a question set; display each case with its matching work reconstruction and question on separate slides, then the changed-circumstances question with the apprentice referent retained. Keep answers withheld until all independent attempts are complete."
+  ],
+  "flagsForTeacher": []
+}

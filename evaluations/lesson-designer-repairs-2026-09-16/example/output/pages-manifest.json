@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\Why did Tudor children work - repair example.pptx",
+  "sourceSha256": "b8c69172d2aea31d11f23a33e5a98424ed86b0e233b8804b78374d681c8b88ad",
+  "officeRoute": "powerpoint",
+  "pdfRoute": "pdftoppm",
+  "dpi": 110,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\pages\\Why did Tudor children work - repair example-source.pdf",
+    "sha256": "ad8d5329ea71a25d156f4d54f5b30877e2329cae41dc3dd72be93251bf42e776"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\pages\\Why did Tudor children work - repair example-contact-sheet.png",
+    "sha256": "2eb070b3f7dca8c38e220ff06122fa77275e2c90f76cc571253f289a091f1a50"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\pages\\Why did Tudor children work - repair example-page-01.png",
+      "sha256": "940cc975988bcd7c0be36552fbe255d61ce029339624eb53d28cbbc6b9ee225f"
+    },
+    {
+      "number": 2,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\pages\\Why did Tudor children work - repair example-page-02.png",
+      "sha256": "fd274f25b7d306237bf3990b947906da1ab72b5d63883b1adc3c2d9952f5b921"
+    },
+    {
+      "number": 3,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\pages\\Why did Tudor children work - repair example-page-03.png",
+      "sha256": "9a74070785d54aae87ea236b3604d9e6aaf23fe468e282893672aa4eabde8d0a"
+    },
+    {
+      "number": 4,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\pages\\Why did Tudor children work - repair example-page-04.png",
+      "sha256": "a0e9a4af3523db707444d47b4da8c13bffa63ca220e3c4a3195f7541020e1463"
+    },
+    {
+      "number": 5,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-cumulative\\evaluations\\lesson-designer-repairs-2026-09-16\\example\\output\\pages\\Why did Tudor children work - repair example-page-05.png",
+      "sha256": "b7ed732bbdd31fce8d39ba788b3950881c43bff163f8765b85e02e8b5b6c6a9d"
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "schema_version": 2,
+  "lesson_name": "Why did Tudor children work?",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A reconstruction of Tudor English farm work, gathering firewood beside a rural timber farmhouse",
+      "pedagogical_constraint": "Show as a reconstruction, never as a surviving depiction of a named Tudor child. Period-appropriate hand tools and clothing, no modern machinery.",
+      "teaching_requirement": "Give children a concrete view of unpaid household work and fuel collection.",
+      "load_bearing_evidence": [
+        "wood gathered for fuel",
+        "rural work setting consistent with sixteenth-century England"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/tudor-farm-reconstruction.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A calm museum-style reconstruction of Tudor farm fuel gathering: an older child carries a small bundle of sticks near a simple rural timber farmhouse.",
+        "must_avoid": [
+          "modern machinery",
+          "modern clothing",
+          "injury or threatening treatment",
+          "posing as a named historical person"
+        ],
+        "text_rule": "No readable lettering, labels or branding.",
+        "composition": "One clear scene, the hand work visible, landscape framing. Educational reconstruction, natural light."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "A reconstruction of a Tudor English leather workshop with a skilled adult demonstrating hand leatherwork to a young learner",
+      "pedagogical_constraint": "Show as a reconstruction, never as a surviving depiction of a named Tudor child. Period-appropriate hand tools and clothing, no modern machinery.",
+      "teaching_requirement": "Give children a concrete view of learning a skilled trade beside an adult.",
+      "load_bearing_evidence": [
+        "leather and hand tools on a workbench",
+        "a skilled worker and a young learner attending to the same craft"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/tudor-workshop-reconstruction.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A calm museum-style reconstruction of a sixteenth-century English leather workshop: a craftworker shows an adolescent apprentice how to work leather by hand at a wooden bench.",
+        "must_avoid": [
+          "modern machinery",
+          "modern clothing",
+          "injury or threatening treatment",
+          "posing as a named historical person"
+        ],
+        "text_rule": "No readable lettering, labels or branding.",
+        "composition": "One clear scene, the hand work visible, landscape framing. Educational reconstruction, natural light."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "A reconstruction of a skilled baker and an adolescent learner making bread by hand, with dough and loaves visible in a sixteenth-century English bakehouse",
+      "pedagogical_constraint": "Label as a reconstruction, not a surviving depiction of a named child. Period-appropriate clothing and hand tools. The picture illustrates the task; it must not purport to establish hours, pay, motives or what happens on other days.",
+      "teaching_requirement": "Make bread-making by hand visible beside its imagined classroom case.",
+      "load_bearing_evidence": [
+        "a baker and young learner working with dough",
+        "work setting consistent with sixteenth-century England"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/tudor-bread-making.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A calm museum-style educational reconstruction of a skilled baker and an adolescent learner making bread by hand, with dough and loaves visible in a sixteenth-century English bakehouse.",
+        "must_avoid": [
+          "modern machinery",
+          "modern clothing",
+          "injury or threatening treatment",
+          "posing as a named historical person"
+        ],
+        "text_rule": "No readable lettering, labels or branding.",
+        "composition": "One clear work scene, landscape framing. Make the described physical task legible without adding captions or conclusions."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "A reconstruction of a skilled tailor and an adolescent learner sewing cloth by hand in a sixteenth-century English workshop",
+      "pedagogical_constraint": "Label as a reconstruction, not a surviving depiction of a named child. Period-appropriate clothing and hand tools. The picture illustrates the task; it must not purport to establish hours, pay, motives or what happens on other days.",
+      "teaching_requirement": "Make sewing clothing by hand visible beside its imagined classroom case.",
+      "load_bearing_evidence": [
+        "cloth, a needle and a partly made garment",
+        "work setting consistent with sixteenth-century England"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/tudor-clothing-work.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A calm museum-style educational reconstruction of a skilled tailor and an adolescent learner sewing cloth by hand in a sixteenth-century English workshop.",
+        "must_avoid": [
+          "modern machinery",
+          "modern clothing",
+          "injury or threatening treatment",
+          "posing as a named historical person"
+        ],
+        "text_rule": "No readable lettering, labels or branding.",
+        "composition": "One clear work scene, landscape framing. Make the described physical task legible without adding captions or conclusions."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "A reconstruction of a child and adults carrying manageable bundles of cut wheat towards a simple timber barn in rural sixteenth-century England",
+      "pedagogical_constraint": "Label as a reconstruction, not a surviving depiction of a named child. Period-appropriate clothing and hand tools. The picture illustrates the task; it must not purport to establish hours, pay, motives or what happens on other days.",
+      "teaching_requirement": "Make carrying cut wheat into shelter visible beside its imagined classroom case.",
+      "load_bearing_evidence": [
+        "cut wheat bundles and a barn entrance",
+        "work setting consistent with sixteenth-century England"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "unsplash/tudor-harvest-work.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A calm museum-style educational reconstruction of a child and adults carrying manageable bundles of cut wheat towards a simple timber barn in rural sixteenth-century England.",
+        "must_avoid": [
+          "modern machinery",
+          "modern clothing",
+          "injury or threatening treatment",
+          "posing as a named historical person"
+        ],
+        "text_rule": "No readable lettering, labels or branding.",
+        "composition": "One clear work scene, landscape framing. Make the described physical task legible without adding captions or conclusions."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-006",
+      "subject": "A reconstruction of an adolescent sweeping the floor of a sixteenth-century English shoemaker's workshop, with leather, unfinished shoes and hand tools on a bench nearby",
+      "pedagogical_constraint": "Label as a reconstruction, not a surviving depiction of a named child. Period-appropriate clothing and hand tools. The picture illustrates the task; it must not purport to establish hours, pay, motives or what happens on other days.",
+      "teaching_requirement": "Make sweeping a shoemaker's workshop visible beside its imagined classroom case.",
+      "load_bearing_evidence": [
+        "a broom in use and shoemaking materials nearby",
+        "work setting consistent with sixteenth-century England"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "unsplash/work-in-a-tudor-workshop.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A calm museum-style educational reconstruction of an adolescent sweeping the floor of a sixteenth-century English shoemaker's workshop, with leather, unfinished shoes and hand tools on a bench nearby.",
+        "must_avoid": [
+          "modern machinery",
+          "modern clothing",
+          "injury or threatening treatment",
+          "posing as a named historical person"
+        ],
+        "text_rule": "No readable lettering, labels or branding.",
+        "composition": "One clear work scene, landscape framing. Make the described physical task legible without adding captions or conclusions."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

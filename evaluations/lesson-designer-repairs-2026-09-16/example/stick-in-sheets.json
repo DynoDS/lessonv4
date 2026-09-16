@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "lesson": "Why did Tudor children work",
+    "yearGroup": "Year 4",
+    "subject": "History"
+  },
+  "classSize": 30,
+  "items": [
+    {
+      "visual": "card-set",
+      "tag": "Tom's deal",
+      "label": "Help now or help later?",
+      "spec": {
+        "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+        "instruction": "Put each card under a heading. Then pick the card that was hardest to place, and write why you put it there.",
+        "headings": [
+          {
+            "id": "group-001",
+            "label": "Helped him straight away"
+          },
+          {
+            "id": "group-002",
+            "label": "Helped him when he grew up"
+          }
+        ],
+        "cards": [
+          {
+            "id": "item-001",
+            "label": "a hot dinner every day",
+            "detail": "Tom eats at the baker's table."
+          },
+          {
+            "id": "item-002",
+            "label": "knowing when bread is baked just right",
+            "detail": "The baker shows Tom how to tell."
+          },
+          {
+            "id": "item-003",
+            "label": "a straw mattress by the oven",
+            "detail": "Tom sleeps in the warm bakehouse."
+          },
+          {
+            "id": "item-004",
+            "label": "his own bakery one day",
+            "detail": "A trained baker can sell his own bread."
+          },
+          {
+            "id": "item-005",
+            "label": "a warm coat for winter",
+            "detail": "The baker buys Tom a coat."
+          }
+        ],
+        "sets": {
+          "per": "pair",
+          "groupCount": null
+        },
+        "teacher": {
+          "where": "At tables, one set between two, straight after the deal slide.",
+          "answer": [
+            {
+              "cardId": "item-001",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-002",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-003",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-004",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-005",
+              "headingId": "group-001"
+            }
+          ],
+          "alsoAccept": "Accept knowing when bread is baked just right under either heading when the reason says Tom was learning it now or would use it to earn a living later."
+        }
+      }
+    }
+  ]
+}

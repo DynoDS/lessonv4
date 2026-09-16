@@ -1,0 +1,34 @@
+{
+  "failures": 3,
+  "results": {
+    "original_text_fixture": {
+      "passed_expected_check": true,
+      "faults": []
+    },
+    "missing_kit": {
+      "passed_expected_check": true,
+      "faults": [
+        "lesson-section/teaching-sequence/unit-006: the design handles this sort with printed cards and the stick-in spec has no card-set for it"
+      ]
+    },
+    "changed_label": {
+      "passed_expected_check": true,
+      "faults": [
+        "lesson-section/teaching-sequence/unit-006: card-set cards differ from the unit's sort items"
+      ]
+    },
+    "missing_required_card_detail": {
+      "passed_expected_check": false,
+      "faults": []
+    },
+    "missing_required_card_photo": {
+      "passed_expected_check": false,
+      "faults": []
+    },
+    "changed_instruction_that_reveals_answer": {
+      "passed_expected_check": false,
+      "faults": []
+    }
+  }
+}
+EXIT=1

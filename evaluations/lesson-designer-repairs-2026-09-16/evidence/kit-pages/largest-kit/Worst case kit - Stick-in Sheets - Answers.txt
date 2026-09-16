@@ -1,0 +1,20 @@
+Card kits for Worst case kit: teacher notes. Keep this away from the pupil pages.
+
+Kit Cases: Worst case
+Unit: lesson-section/teaching-sequence/unit-001
+Prepare: At tables, one set per group. (2 sets printed, one per group).
+Children are told: Put each card under a heading.
+Headings: A long heading number 1 for the group | A long heading number 2 for the group | A long heading number 3 for the group | A long heading number 4 for the group | A long heading number 5 for the group | A long heading number 6 for the group
+Answer:
+  Case 1: an apprentice in a busy workshop -> A long heading number 1 for the group
+  Case 2: an apprentice in a busy workshop -> A long heading number 2 for the group
+  Case 3: an apprentice in a busy workshop -> A long heading number 3 for the group
+  Case 4: an apprentice in a busy workshop -> A long heading number 4 for the group
+  Case 5: an apprentice in a busy workshop -> A long heading number 5 for the group
+  Case 6: an apprentice in a busy workshop -> A long heading number 6 for the group
+  Case 7: an apprentice in a busy workshop -> A long heading number 1 for the group
+  Case 8: an apprentice in a busy workshop -> A long heading number 2 for the group
+  Case 9: an apprentice in a busy workshop -> A long heading number 3 for the group
+  Case 10: an apprentice in a busy workshop -> A long heading number 4 for the group
+  Case 11: an apprentice in a busy workshop -> A long heading number 5 for the group
+  Case 12: an apprentice in a busy workshop -> A long heading number 6 for the group

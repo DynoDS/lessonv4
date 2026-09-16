@@ -1,0 +1,120 @@
+PDF_SKIPPED: Cannot find module 'puppeteer-core'
+Built: C:\Users\Daniel\AppData\Local\Temp\stickin-nyfJ48\To identify angles - Stick-in Sheets.html
+Moments: 2 (Name each angle, Sort the shapes)
+Class set: 2 moments × 32 children = 64 slips, laid out so each child's set stays together, across 16 pages - print once, cut along the dashed lines, each child's set comes off together.
+No write-on moments - Stick-in Sheets not written (no write-on moments in this lesson).
+[stick-in] "Label the plant": image not found at C:\Users\Daniel\Projects\lessonv4-cumulative\plugins\lesson-v4\stick-in-sheets-html\test\fixtures\no-such-photo-on-disk.jpg, skipping this item.
+[stick-in] "Label the plant": no figures/boxes - skipping this item.
+PDF_SKIPPED: Cannot find module 'puppeteer-core'
+
+1 of 3 moments could not be drawn and is NOT in this pack: Label the plant.
+The [stick-in] lines above say why for each. A missing moment leaves no gap on the page, so this pack looks complete and is not: it needs rebuilding once that is fixed.
+Built: C:\Users\Daniel\AppData\Local\Temp\stickin-T8aVLh\To identify angles - Stick-in Sheets.html
+Moments: 2 (Name each angle, Sort the shapes)
+Class set: 2 moments × 32 children = 64 slips, laid out so each child's set stays together, across 16 pages.
+[stick-in] "Name each angle": no figures/boxes - skipping this item.
+[stick-in] "Sort the shapes": a Venn needs both circle labels (label1 and label2), so this item is skipped rather than tiled as blank copies.
+[stick-in] "Sort the shapes": no figures/boxes - skipping this item.
+None of the 2 moments could be drawn, so no Stick-in Sheets file was written.
+Missing: Name each angle, Sort the shapes. The [stick-in] lines above say why for each.
+No write-on moments - Stick-in Sheets not written (no write-on moments in this lesson).
+PDF_SKIPPED: Cannot find module 'puppeteer-core'
+Built: C:\Users\Daniel\AppData\Local\Temp\stickin-d3HcTT\To identify angles - Stick-in Sheets.html
+Moments: 2 (Name each angle, Sort the shapes)
+Class set: 2 moments × 32 children = 64 slips, laid out so each child's set stays together, across 16 pages - print once, cut along the dashed lines, each child's set comes off together.
+✔ build writes a PDF or fallback HTML when items exist (9.6034ms)
+✔ each cut-out in a multi-piece pack is stamped with its question handle (2.2058ms)
+✔ build writes nothing and returns null when items is empty (0.835ms)
+✔ a pack missing one of its moments names it and does not report success (2.9076ms)
+✔ every moment failing is told apart from a lesson that had none (1.5356ms)
+✔ a pack with every moment drawn still reports success (3.7411ms)
+PDF_SKIPPED: Cannot find module 'puppeteer-core'
+Built: C:\Users\Daniel\AppData\Local\Temp\stickin-kit-CLzCR2\Why did Tudor children work - Stick-in Sheets.html
+Built answers: C:\Users\Daniel\AppData\Local\Temp\stickin-kit-CLzCR2\Why did Tudor children work - Stick-in Sheets - Answers.txt
+Kits: 1 (Deal Which parts of the deal would a Tudor family have minded losing most?: 15 sets of 6 cards under 2 headings, 3 sets a page)
+Class set: no write-on pieces; the pack is 1 card kit across 5 pages - print once, cut along the dashed lines, each child's set comes off together.
+[stick-in] card kit "Which parts of the deal would a Tudor family have minded losing most?": answer leaves "a warm coat for winter" unplaced - this kit is NOT in the pack.
+None of the 1 moment could be drawn, so no Stick-in Sheets file was written.
+Missing: Which parts of the deal would a Tudor family have minded losing most?. The [stick-in] lines above say why for each.
+PDF_SKIPPED: Cannot find module 'puppeteer-core'
+Built: C:\Users\Daniel\AppData\Local\Temp\stickin-kit-gxpq8k\To identify angles - Stick-in Sheets.html
+Built answers: C:\Users\Daniel\AppData\Local\Temp\stickin-kit-gxpq8k\To identify angles - Stick-in Sheets - Answers.txt
+Kits: 1 (Deal Which parts of the deal would a Tudor family have minded losing most?: 15 sets of 6 cards under 2 headings, 3 sets a page)
+Moments: 2 (Name each angle, Sort the shapes)
+Class set: 2 moments × 30 children = 60 slips, laid out so each child's set stays together, across 15 pages - print once, cut along the dashed lines, each child's set comes off together.
+[stick-in] card kit "Which parts of the deal would a Tudor family have minded losing most?": one row of cards needs 577 mm and the page holds 185 mm; shorten the card with the most words or split its detail, because the kit will not shrink text or cut a card - this kit is NOT in the pack.
+✔ a card kit prints every card and heading once per set, with cut guides, and the key never reaches a pupil page (4.0594ms)
+✔ the printed order is stable between builds and is not the key's order (1.4516ms)
+✔ orderForPrint breaks an order that would give the sort away (0.672ms)
+✔ build writes the pack and a separate answers file naming the key, the preparation and the accepted alternative (13.907ms)
+✔ a kit whose key leaves a card unplaced, names an unknown heading, or repeats a card is refused (1.0949ms)
+✔ a pack whose only kit is refused reports failure rather than writing a pack that looks complete (2.2059ms)
+✔ a pack can hold write-on pieces and a card kit together, and the kit pages follow the pieces (13.4163ms)
+✔ a card's detail prints under its label, so the account a card carries reaches the table (0.5185ms)
+✔ a card that carries a picture, or a kit with no tag, is refused by name rather than printed short (0.6056ms)
+✔ a set taller than a page continues onto the next page at a row boundary, and no page is overfilled (1.5628ms)
+✔ the largest kit the contract allows, with long labels, details and headings, still lays out without overfilling a page (0.4186ms)
+✔ a single card too tall for any page is refused with the heights named, never shrunk or cut (0.7941ms)
+✔ a kit that cannot be laid out is dropped from the pack by name (0.3711ms)
+✔ the builder uses the documented printable page (0.76ms)
+✔ a set of small pieces packs four children to a page (2.6059ms)
+✔ a set of full-width pieces takes a page per child (1.952ms)
+✔ the class-set quantity is 32 by default and the spec's classSize wins (0.4553ms)
+✔ a question-like handle is bracketed (0.8343ms)
+✔ a handle already written with brackets is not double-bracketed (0.1087ms)
+✔ a descriptive handle keeps the designer's own word (0.1573ms)
+✔ a generated fallback letter is bracketed like any question label (0.155ms)
+✔ a single-piece pack still needs no handle (0.1544ms)
+✔ a designer's tag is preferred over the generated letter (0.8935ms)
+✔ every piece the pack can draw has a sample here, so a new piece is checked too (1.695ms)
+✔ every stick-in piece prints in ink (74.0067ms)
+✔ a labelled photo diagram's dots and answers print in ink (41.4309ms)
+✔ the same drawings keep their colours everywhere but the pack (0.5944ms)
+[stick-in] "table": a recording table needs at least two column headers, so this item is skipped rather than tiled as blank copies.
+[stick-in] "table": a recording table needs at least one row to record into, so this item is skipped rather than tiled as blank copies.
+✔ renderPieceHtml draws a write-on recording table (2.8201ms)
+✔ an answer table copied from a check slide is blanked to the question form (0.2779ms)
+✔ a table without its question-defining content is skipped, not tiled blank (0.5416ms)
+✔ draw-box-row makes one bordered square per box (0.8474ms)
+✔ draw-box-row: 6 boxes wrap into 2 rows of 3 (0.1615ms)
+✔ draw-box-row: returns null for empty boxes array (0.1139ms)
+[stick-in] "geoboard": a geoboard given shapes needs each one to carry at least two vertices with numeric x and y, so this item is skipped rather than tiled as blank copies.
+[stick-in] "geoboard-row": a geoboard given shapes needs each one to carry at least two vertices with numeric x and y, so this item is skipped rather than tiled as blank copies.
+✔ angle-row draws each figure with a write-on line beneath (2.1004ms)
+✔ angle-row: 6 figures wrap into 2 rows of 3 (0.3976ms)
+✔ angle-row: returns null for empty figures array (0.202ms)
+✔ triangle-row is supported the same way (0.7695ms)
+✔ angle-row: honours spec.figureWidthMm to produce a wider piece (0.3283ms)
+✔ a geoboard prints as a single write-on board sized by its peg spacing (0.5747ms)
+✔ a wide geoboard prints wider and keeps the same peg spacing as a square one (0.3203ms)
+✔ geoboard-row gives each shape its own write-on line (0.5045ms)
+✔ geoboard-row keeps its pegs countable by declaring its own taller box (0.357ms)
+✔ a geoboard promising shapes it cannot draw is skipped, not tiled blank (0.7865ms)
+[stick-in] "venn": a Venn needs both circle labels (label1 and label2), so this item is skipped rather than tiled as blank copies.
+✔ renderPieceHtml draws a blank labelled venn and sizes it in mm (2.073ms)
+✔ renderPieceHtml falls back to the visual's default width (0.457ms)
+✔ the world map a child labels in their book is the real shipped one (3.7332ms)
+✔ a labelled teaching map copied across still prints as a write-on piece (0.8508ms)
+✔ renderPieceHtml rejects an unknown visual (0.451ms)
+✔ renderPieceHtml skips a Venn with no labels (0.5166ms)
+✔ renderPieceHtml renders label-diagram through its own sharp dependency (42.1535ms)
+[stick-in] "bar-chart": a bar chart needs categories and a value for each, so this item is skipped rather than tiled as blank copies.
+[stick-in] "line-graph": a line graph needs at least one point with a numeric x and y, so this item is skipped rather than tiled as blank copies.
+[stick-in] "circuit-symbol-bank": CIRCUIT_BANK_INVALID: items[0].symbol "resistor" is not a symbol this bank draws. Known: cell, lamp, wire, switch-open, switch-closed., so this item is skipped rather than tiled as blank copies.
+[stick-in] "parachute-forces": PARACHUTE_FORCES_RATIO_INVALID: largeCanopyWidthRatio must be 3., so this item is skipped rather than tiled as blank copies.
+✔ every picture the board shows can be printed as a piece (11.5257ms)
+✔ a symbol bank of two symbols or of four keeps its symbols the same size (0.3964ms)
+✔ a chart with nothing to show, or a drawing the shared module refuses, is skipped not tiled (0.6563ms)
+✔ a source copy prints the picture at book width with its caption beneath and no write-on line (38.0127ms)
+✔ widthMm on the item or the spec overrides the default (4.6855ms)
+✔ a source copy with no file, no caption or no path is refused with a reason (1.1615ms)
+✔ a source copy taller than the page is refused with the height named, never cropped (9.3147ms)
+ℹ tests 63
+ℹ suites 0
+ℹ pass 63
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 267.5895
+EXIT=0

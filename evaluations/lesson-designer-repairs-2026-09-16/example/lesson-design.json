@@ -1,0 +1,444 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Content-based",
+    "yearGroup": 4,
+    "subject": "History",
+    "lo": "To explain why Tudor children worked.",
+    "displayedLo": "To explain why Tudor children worked.",
+    "durationMinutes": 25,
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "Children may list what an apprentice got without saying when each part helped him: while he was learning, or once he was grown up."
+  },
+  "teacherOrientation": "Teacher orientation: This short lesson teaches children what a Tudor apprenticeship gave a child. After a farm household and one consequence question, the class meets the apprentice's deal, then sorts a baker's apprentice's cards at tables under two headings: helped him straight away, or helped him when he grew up. Prepare one card set between two. The tricky card is knowing when bread is baked just right, which helped him both then and later; either heading is right with a reason.",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "Childhood in the past",
+    "kind": "starter",
+    "conceptRef": null,
+    "unlocks": "They recall using sources to compare childhoods, ready to explain one aspect of Tudor children's lives.",
+    "thinking": "What did a source help us find out about childhood last lesson?",
+    "content": {
+      "activity": "What is a source?\nGive one change in children's lives from last lesson.",
+      "connection": "Retrieves the supplied unit's Lesson 1, using sources to compare children's lives.",
+      "format": "short-answer",
+      "testQuestionPath": null
+    },
+    "pupilInstruction": null,
+    "taskStructure": null,
+    "modellingState": null,
+    "representationRefs": [],
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "misconceptionRefs": [],
+    "photoRefs": [],
+    "speakerNotes": {
+      "script": "Say to children: Last lesson we used sources to find out about children's lives. What is a source? Think back to a particular example before you explain a change.",
+      "teacherInfo": null,
+      "lookFor": "Look for: a specific taught comparison rather than a claim that every childhood was the same."
+    },
+    "answer": {
+      "kind": "model",
+      "content": "A source gives us information about the past.\nOne example: some Tudor children worked during years when children today go to school.",
+      "acceptanceCondition": "Accept another accurate comparison from Lesson 1; require an actual change rather than just a period name.",
+      "delivery": "answer-slide"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "apprentice",
+      "definition": "An apprentice learns a job by working with someone skilled.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-002"
+      }
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "trade",
+      "definition": "A trade is a skilled job, such as making shoes.",
+      "visual": {
+        "kind": "emoji",
+        "value": "👞"
+      }
+    }
+  ],
+  "trimmedVocabulary": [],
+  "representations": [],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "labelled-reference",
+      "drawLive": false,
+      "content": {
+        "items": [
+          {
+            "label": "Reason",
+            "text": "What the family needed or hoped for",
+            "representationRef": null,
+            "configuration": null
+          },
+          {
+            "label": "Detail",
+            "text": "Something from the case that explains your answer",
+            "representationRef": null,
+            "configuration": null
+          }
+        ]
+      }
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "Many Tudor children helped their households get food, fuel or money."
+    },
+    {
+      "id": "sk-002",
+      "text": "An apprenticeship could provide food and a home now, and a way to earn a living later."
+    }
+  ],
+  "misconceptions": [],
+  "concepts": [
+    {
+      "id": "concept-001",
+      "name": "Cause: explain children's work through household needs and future livelihood.",
+      "successCriteriaRefs": [
+        "sc-001"
+      ]
+    }
+  ],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "Why did a family need help?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They connect unpaid tasks with food and fuel, which the next consequence question and final farm case need.",
+      "thinking": "How does fetching fuel help a household with no shop and no electricity?",
+      "content": {
+        "headline": "A Tudor farm household",
+        "explanation": "England, 1485 to 1603.\nChildren could feed animals, gather fuel and help bring in crops. Without that work, a household could have less food or fuel.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-001"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "How would gathering fuel help this household?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: We're going back to Tudor England, between 1485 and 1603. That's after Roman Britain and before Victorian Britain. Think about what a household needs every day. Food, somewhere to live, and fuel to cook and keep warm. Tudor households needed those things too. Much of this work was done by hand. A child could gather sticks while an adult did another job. Gathering sticks wasn't earning coins, but those sticks still helped the family: they could burn them to cook. Some children worked for money or food outside their own homes. Working did not always mean getting wages. Families had different amounts of money, and children did different jobs.",
+        "teacherInfo": "Modern summary based on the supplied Lesson 2 and Shakespeare Birthplace Trust, A Day in the Life of a Tudor: https://www.shakespeare.org.uk/explore-shakespeare/blogs/day-life-tudor/. Caption the picture 'Reconstruction of Tudor farm work'. Do not identify any pictured person as a documented Tudor child.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "What if that job wasn't done?",
+      "kind": "do",
+      "conceptRef": "concept-001",
+      "unlocks": "They explain how unpaid work supports a household, ready to understand apprenticeship support without assuming wages.",
+      "thinking": "What would this household lose if nobody collected its fuel?",
+      "content": {
+        "activity": "Each child predicts a consequence before explaining it to a partner.",
+        "format": "spoken explanation",
+        "task": "A Tudor child gathers fuel while the adults bring in crops. What might happen if nobody gathered the fuel?\nYou could start: Without the fuel, …"
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: The adults are still bringing in the crops. The one thing we've changed is that nobody gathers the fuel. Think through what that would mean at home. Settle your own answer, then explain it to your partner.",
+        "teacherInfo": "If children say only 'less money', return to cooking with fuel: this job helps even without wages.",
+        "lookFor": "Look for: cooking or warmth needing fuel, or another worker having to leave the harvest."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The family might not have enough fuel to cook or keep warm. Someone would need to stop another job and collect it.",
+        "acceptanceCondition": "Accept a plausible direct consequence of missing fuel; it must connect to household needs.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "What did a Tudor apprentice get?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They know the deal gave help now (food, clothes, a bed) and help later (a trade to earn a living), which the card sort straight after it uses.",
+      "thinking": "The apprentice was not paid, so what did he get for his work?",
+      "content": {
+        "headline": "What did a Tudor apprentice get?",
+        "explanation": "Some Tudor children left home to learn a trade from someone called a master.\nLook: the master shows, and the boy copies.\nThat's how Tudor apprentices learned a trade: by working next to someone who could, often for seven years.\nThis was the deal.\nThe apprentice worked for the master.\nThe master gave him food, clothes and a bed.\nHe wasn't paid.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-002"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "So what did an apprentice get out of it?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-002"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Not every Tudor child worked at home. Some left home to live with a master and learn a trade: making shoes, baking bread, sewing clothes. Look at this workshop. The master is showing, and the boy is copying. That's how you learned a trade in Tudor times, by doing it next to someone who could, day after day. It usually took about seven years. Here's how the deal worked. The apprentice worked for the master. In return, the master gave him his food, his clothes and a bed to sleep in. No wages. So what did an apprentice get out of it? Two things. Straight away, he was fed and he had a roof over his head. And later, once he could make a shoe that fitted and lasted, he could earn his own living. Two different reasons, and one apprenticeship gave both.",
+        "teacherInfo": "Modern summary: Shakespeare Birthplace Trust, The Tudor Apprentice, pages 1 to 2. The craft is illustrative, not a record of a named apprentice.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "Help now or help later?",
+      "kind": "practise",
+      "conceptRef": "concept-001",
+      "unlocks": null,
+      "thinking": "When did this part of Tom's deal help him: while he was still learning, once he was grown up, or both?",
+      "content": {
+        "activity": "Pairs sort the cards for Tom, a baker's apprentice, under two headings at tables; then each child writes one reason for the card they found hardest to place.",
+        "format": "card sort at tables, then one written reason",
+        "task": "Imagined Tudor case: a baker takes on an apprentice called Tom.\nPut each card under a heading. Then pick the card that was hardest to place, and write why you put it there.",
+        "launch": {
+          "established": "An apprenticeship gave two kinds of help: food and a home now, and a way to earn a living later.",
+          "goodLooksLike": "A weak reason says: \"I put it there because it goes there.\" A strong reason says: \"I put a pair of shoes his master made him under Helped him straight away, because he could wear them now.\" The strong one says when it helped him.",
+          "steps": [
+            "Read each card with your partner.",
+            "Put each card under a heading.",
+            "Pick the card that was hardest to place.",
+            "Write why you put it there."
+          ]
+        }
+      },
+      "pupilInstruction": "Put each card under a heading. Then pick the card that was hardest to place, and write why you put it there.",
+      "taskStructure": {
+        "kind": "sort",
+        "groups": [
+          {
+            "id": "group-001",
+            "label": "Helped him straight away"
+          },
+          {
+            "id": "group-002",
+            "label": "Helped him when he grew up"
+          }
+        ],
+        "items": [
+          {
+            "id": "item-001",
+            "label": "a hot dinner every day",
+            "detail": "Tom eats at the baker's table.",
+            "photoRef": null
+          },
+          {
+            "id": "item-002",
+            "label": "knowing when bread is baked just right",
+            "detail": "The baker shows Tom how to tell.",
+            "photoRef": null
+          },
+          {
+            "id": "item-003",
+            "label": "a straw mattress by the oven",
+            "detail": "Tom sleeps in the warm bakehouse.",
+            "photoRef": null
+          },
+          {
+            "id": "item-004",
+            "label": "his own bakery one day",
+            "detail": "A trained baker can sell his own bread.",
+            "photoRef": null
+          },
+          {
+            "id": "item-005",
+            "label": "a warm coat for winter",
+            "detail": "The baker buys Tom a coat.",
+            "photoRef": null
+          }
+        ],
+        "handling": {
+          "kind": "cards",
+          "per": "pair",
+          "groupCount": null,
+          "where": "At tables, one set between two, straight after the deal slide."
+        }
+      },
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-003"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: This is Tom. He's a baker's apprentice, and these cards are his deal. With your partner, read each card and put it under a heading: did it help Tom straight away, or when he grew up? Then, on your own, pick the card that was hardest to place, and write why you put it there.",
+        "teacherInfo": "Tom is an imagined case built from the taught deal. Show photo-003 with the case, captioned 'Reconstruction of Tudor bread-making'.",
+        "lookFor": "Look for: knowing when bread is baked just right placed with a reason about when it helped."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": null,
+        "structure": {
+          "kind": "sort",
+          "placements": [
+            {
+              "itemRef": "item-001",
+              "groupRef": "group-001"
+            },
+            {
+              "itemRef": "item-002",
+              "groupRef": "group-002"
+            },
+            {
+              "itemRef": "item-003",
+              "groupRef": "group-001"
+            },
+            {
+              "itemRef": "item-004",
+              "groupRef": "group-002"
+            },
+            {
+              "itemRef": "item-005",
+              "groupRef": "group-001"
+            }
+          ]
+        },
+        "acceptanceCondition": "Accept knowing when bread is baked just right under either heading when the reason says Tom was learning it now or would use it to earn a living later.",
+        "delivery": "answer-slide"
+      }
+    }
+  ],
+  "ending": {
+    "included": false,
+    "kind": "Apply",
+    "reason": "The independent set already synthesises household needs and apprenticeship benefits, then changes family circumstances to test transfer; a further Apply would repeat this thinking.",
+    "beat": null
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": {
+      "coreActionAndEvidence": "A printed alternative for a child who cannot join the table sort: one part of Tom's deal and a written reason for when it helped him.",
+      "amount": "One question on a short sheet.",
+      "variationAndBoundaryPlan": "The same headings as the sort, on one card the child chooses.",
+      "organisation": "The two headings, the five cards listed, the question and two handwriting lines."
+    },
+    "sheetShape": {
+      "kind": "question-set",
+      "reason": "One reason for one card is the evidence the sort's written step gives."
+    },
+    "demand": "Say when one part of the deal helped Tom and why.",
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [
+      "sk-002"
+    ],
+    "fitPriority": {
+      "protected": [
+        "The question and its writing lines"
+      ],
+      "preAuthorisedRemoval": []
+    },
+    "centralWriteOnVisualException": null,
+    "contentBlocks": [
+      {
+        "id": "ws-q-001",
+        "kind": "question",
+        "pupilPrompt": "Tom is a baker's apprentice. Pick one card from his deal: a hot dinner every day, knowing when bread is baked just right, a straw mattress by the oven, his own bakery one day, a warm coat for winter.\n\nDid it help him straight away, or when he grew up? Write why.",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The reason shows whether the child knows when that part of the deal helped.",
+        "response": "Two full-width handwriting lines.",
+        "support": "",
+        "visualRequirements": "",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "answer": {
+          "kind": "model",
+          "content": "A warm coat for winter helped him straight away, because he needed it while he was living with the baker.",
+          "acceptanceCondition": "Accept any card with a reason that says when it helped Tom; knowing when bread is baked just right fits either heading.",
+          "delivery": "teacher-only"
+        }
+      }
+    ],
+    "answerKeyMode": "required",
+    "providedWorksheet": null
+  },
+  "resourceOpportunities": {
+    "stickIn": {
+      "decision": "candidate",
+      "sourceUnitIds": [
+        "lesson-section/teaching-sequence/unit-004"
+      ],
+      "reason": "A card kit for Tom's help now or help later sort, done in pairs at tables."
+    },
+    "workingWall": {
+      "decision": "none",
+      "sourceUnitIds": [],
+      "reason": "A short lesson; the sticky sentence stays on the deal slide."
+    }
+  },
+  "vocabularyIntroductions": [
+    {
+      "vocabularyRefs": [
+        "vocab-001",
+        "vocab-002"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-002",
+      "script": "Say to children: An apprentice is learning while working. A trade is the skilled job they are learning. Look at the leather work and the shoe. Would watching someone make one shoe make you a trained shoemaker? No: learning to do the whole job took practice over years."
+    }
+  ],
+  "slideDesignNotes": [
+    "Caption farm and workshop visuals as reconstructions, not photographs from Tudor times, once each.",
+    "The card sort's headings, cards and instruction are the printed kit's; copy them exactly."
+  ],
+  "flagsForTeacher": []
+}

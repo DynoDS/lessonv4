@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "lesson": "Why did Tudor children work",
+    "yearGroup": "Year 4",
+    "subject": "History"
+  },
+  "items": [
+    {
+      "visual": "card-set",
+      "tag": "Deal",
+      "label": "Which parts of the deal would a Tudor family have minded losing most?",
+      "spec": {
+        "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+        "instruction": "Put each card under a heading. Then choose the two cards a Tudor family would have minded losing most.",
+        "headings": [
+          {
+            "id": "group-001",
+            "label": "Helped the family straight away"
+          },
+          {
+            "id": "group-002",
+            "label": "Helped the child when he grew up"
+          }
+        ],
+        "cards": [
+          {
+            "id": "item-001",
+            "label": "Case 1: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-002",
+            "label": "Case 2: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-003",
+            "label": "Case 3: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-004",
+            "label": "Case 4: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-005",
+            "label": "Case 5: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-006",
+            "label": "Case 6: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-007",
+            "label": "Case 7: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-008",
+            "label": "Case 8: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-009",
+            "label": "Case 9: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-010",
+            "label": "Case 10: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-011",
+            "label": "Case 11: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          },
+          {
+            "id": "item-012",
+            "label": "Case 12: A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods."
+          }
+        ],
+        "sets": {
+          "per": "group",
+          "groupCount": 1
+        },
+        "teacher": {
+          "where": "At tables, one set between two, after slide 9 (the deal).",
+          "answer": [
+            {
+              "cardId": "item-001",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-002",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-003",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-004",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-005",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-006",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-007",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-008",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-009",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-010",
+              "headingId": "group-002"
+            },
+            {
+              "cardId": "item-011",
+              "headingId": "group-001"
+            },
+            {
+              "cardId": "item-012",
+              "headingId": "group-002"
+            }
+          ],
+          "alsoAccept": "The baking card under either heading: he learned it now, and it earned his living later. The two the family minded losing most: knowing when bread is baked just right (the trade) and one less mouth to feed."
+        }
+      }
+    }
+  ],
+  "classSize": 30
+}
