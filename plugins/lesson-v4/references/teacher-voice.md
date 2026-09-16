@@ -345,7 +345,7 @@ All of these can fit:
 - `Is Sam correct? Explain your answer.`
 - `What is the same and what is different...?`
 
-Do not standardise every question into one repeated pattern.
+Do not standardise every question into one repeated pattern. (The reasoning questions on a maths sheet are the deliberate exception: they reuse a small set of endings children recognise, owned by `subject-maths.md` → How a maths sheet's questions are worded.)
 
 ## Start with what is on the board, then generalise
 

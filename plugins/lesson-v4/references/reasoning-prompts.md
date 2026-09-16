@@ -13,7 +13,7 @@ A reasoning shape is not the same as a Do beat. The small consolidation beats be
 
 ## Reasoning prompt types
 
-Choose the reasoning form from the important thinking in the actual objective. Error analysis, comparison, generalisation, boundary testing and other forms are options; procedural or conceptual pairings are useful tendencies, not fixed routes. Decide what children must inspect, connect or work out before choosing a frame. A character's claim is useful when judging that claim serves the learning; a direct question or comparison may make the same thinking clearer with less reading. There is no default character format and no requirement to vary formats for its own sake.
+Choose the reasoning form from the important thinking in the actual objective. Error analysis, comparison, generalisation, boundary testing and other forms are options; procedural or conceptual pairings are useful tendencies, not fixed routes. Decide what children must inspect, connect or work out before choosing a frame. A character's claim is useful when judging that claim serves the learning; a direct question or comparison may make the same thinking clearer with less reading. There is no default character format and no requirement to vary formats for its own sake. A maths worksheet is the exception: a statement children judge there is said by a named child (`subject-maths.md` → How a maths sheet's questions are worded).
 
 | Type | Example move |
 |---|---|

@@ -2,7 +2,7 @@
 
 Read this at the start of the run when the lesson is Maths, before the structure is chosen. The adaptation-designer reads it too, before making the Greater Depth and Below resource decisions.
 
-This file refines the general guidance for Maths. The Lesson Designer uses the class-lesson sections together with the general teaching rules. The Adaptation Designer also reads the Greater Depth section. A mathematical requirement does not disappear because a general example was written from another subject, and a general access or support boundary does not disappear because the lesson is Maths.
+This file refines the general guidance for Maths. The Lesson Designer uses the class-lesson sections together with the general teaching rules. The Adaptation Designer also reads the Greater Depth section and How a maths sheet's questions are worded. A mathematical requirement does not disappear because a general example was written from another subject, and a general access or support boundary does not disappear because the lesson is Maths.
 
 Maths lessons here rarely fail on accuracy, and they do not fail through rote success either. Rote fluency is a foundation this school deliberately builds, not a weakness to design around. The failure is what happens after the fluency is built: children who can already do it easily just get more examples. The fluency gets built and never spent. Wasted time. The gate runs both ways: for a genuinely new repeatable method, children normally need reasonable execution before later selection or reasoning, unless that thinking is inseparable from understanding the mathematics itself, and once they are secure, staying is the failure.
 
@@ -79,6 +79,35 @@ This is stated here because it is a maths rule, not a general one: other subject
 Translation cost is the thing being graded here, and it is not a fault in itself: asking a child to recognise their maths in a form they have not seen is a real and worthwhile demand, which is exactly why it belongs where the method is already secure and not where it is still being built. What the grading prevents is a sheet that stops measuring the lesson. A Year 4 lesson modelled finding 10 and 100 more by moving counters on a place-value chart and guided the class on the same chart; its sheet had no chart anywhere, and opened with circle-the-answer, a data table and an inequality to complete. A child who could do the maths and could not read the layout looked exactly like a child who could not do the maths.
 
 **And it runs the other way: a form worth meeting on the sheet is usually worth meeting once on the board.** That data table was a good idea badly placed, not a bad idea. So where a sheet's later work moves into a form or a context the lesson never used, ask whether the lesson should have met it once first, as a practise or apply beat after the cycles (`teaching-sequence-skill-based.md`, 'What else the sequence may hold'). The teacher of that deck, reading it back: "I wish it showed that 100 more less table as an apply thing in the slides or something." The board meeting a form once is also what earns Expected the right to move into it.
+
+---
+
+## How a maths sheet's questions are worded
+
+Read by the lesson-designer when it writes the Expected sheet and by the adaptation-designer when it writes Below and Greater Depth.
+
+The standard is the Classroom Secrets reasoning and problem-solving sheets the user holds up as the way a maths question should read (16 September 2026). Their questions are short, concrete and the same few shapes week after week, so a child reading alone spends one read on the sentence and the rest of their thinking on the maths. Generated Greater Depth sheets had drifted the other way, and children struggled with questions whose maths was sound: `Explain why the whole number just before your smallest number and the whole number just after your largest number do not round to 3,000.` The maths can be as hard as the objective allows; the sentence carrying it stays easy.
+
+**A reasoning or problem-solving question is built from three parts.**
+
+- **A named child, doing something ordinary, with the actual numbers.** One or two short sentences: `Aria has £20. She wants to buy a ball that costs half of her money.` or `Kenneth is thinking of a number.` Use an everyday situation only where the maths genuinely lives in it (money, measures, sharing out, time); a claim about bare numbers needs only the child. Use plain first names: the lesson-designer takes them from the run's `CHARACTER_NAMES`, and the adaptation-designer picks its own, different from the lesson's characters and from the names in this section.
+- **Anything to be judged is said by that child, in their own words.** `Hans says: "The number shown is 4,197."` A statement printed with nobody saying it (`2,748 rounds to 2,800 because the ones digit is 8. Is this right?`) reads as a fact from the sheet, and the child first has to work out that they are allowed to disagree with it. Clues and conditions go in the same place, one short sentence each: `My number is odd. It is less than 30. It is a multiple of 3.`
+- **One closing ask from a small set children already recognise:** `Is she correct? Explain your answer.`, `Who is correct? Explain your answer.`, `Do you agree? Explain why.`, `Explain how you know.`, `Find as many ways as you can.`, `What could his number be? Find all the possibilities.`, or the plain question the problem asks (`How much change will she get?`). Reusing these across questions and sheets is the point, because a child who knows the ending reads it at a glance; the caution against standardising question stems in `teacher-voice.md` §6 does not apply to them. `Prove it.` stays off the list (`teacher-voice.md` §15).
+
+**Four habits keep the sentence easy, whatever the maths.**
+
+- **Write the number, not a description of it.** `2,949`, never `the whole number just before your smallest number`. When printing the number would give away an earlier answer, take one concrete step from the child's own work: `Take 1 away from your smallest number. Does it still round to 3,000? Explain your answer.`
+- **Name what the child can see, in the lesson's words.** Visual requirements talk about `matching pairs of marks`, `endpoints` and `aligned ticks`; the child sees two number lines with numbers on them, so the question says `the number under it on line B` or `the numbers at each end`. A term the lesson taught (`halfway`, `interval`, `exchange`) is used normally.
+- **Keep only the conditions the task cannot work without, one to a line.** `Draw another number line with 4,000 at its midpoint. Use different endpoints from lines A and B. Keep both endpoints between 0 and 10,000. Label the endpoints and midpoint.` reads like a specification; `Draw your own number line with 4,000 exactly halfway. It can't start and end at the same numbers as line A or line B.` is the same task.
+- **Let a child state the pattern; don't state it and ask why.** `Explain why the difference stays the same` hands over the finding and then asks for a proof. `Jen says: "The numbers on line B are always the same amount bigger than the numbers above them on line A."` then `Is she correct? Explain your answer.` leaves the finding with the child.
+
+**Greater Depth uses the same shapes and endings as Expected.** Its extra demand comes from the case, not the sentence: harder in-year numbers, numbers written in words, a boundary case, more clues, more possibilities to find, a claim that is only sometimes true, less picture support. A Greater Depth question that needs a longer or more general sentence than its Expected neighbour has put the difficulty in the wrong place.
+
+**Precision belongs in the answer key, not the question.** Working out every boundary case and every answer the key must refuse is right, and it is what makes the key trustworthy, but each of them does not earn a clause in the question. When a loophole would genuinely spoil the task, choose numbers or a case where it cannot arise, and add one short condition line only when that fails.
+
+**Limits.** Fluency items stay bare (`Round 3,249 to the nearest 100.`); this section is about the questions children reason or solve problems with. The named child is right often enough that the verdict cannot be read off the shape (`lesson-designer.md` → Misconceptions): the example sheets fail here, with every claim on some sheets wrong. And a named child with a familiar ending does not rescue a question whose numbers or situation don't make sense; Written Voice still applies in full.
+
+**Read each question once as a child of that year group alone with the sheet.** After one read, could they say which numbers to look at and what to write? If they would need to read it again to find out, rewrite the sentence, not the maths.
 
 ---
 
