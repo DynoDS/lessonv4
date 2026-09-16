@@ -21,7 +21,7 @@ Commits, oldest first:
 2. `424c1aa0` The Tudor example puts the thinking in the consequence, and a sequence contrast joins (`task-contrasts.md`, `subject-history.md`, build review log, Phase 1 test count).
 3. `0b084af5` The review checks inflation, real links and the correctness handover in its existing pass (`design-reviewer.md`, new wiring test).
 4. `f3882707` Freeze the follow-on case pack and trial protocol before any trial runs.
-5. The evaluation record (this folder): development record, trials, review, rendered excerpt, report, manifest.
+5. `afc419d0` The evaluation record (this folder): development record, trials, review, rendered excerpt, report, manifest.
 
 ## 2. Retained, replaced and newly changed
 

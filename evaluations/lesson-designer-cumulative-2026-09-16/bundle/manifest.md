@@ -2,7 +2,7 @@
 
 Base `21b7c508` (Phase 1 completion). Head: the evaluation commit on branch `lesson-designer-cumulative-2026-09-16`, recorded below once committed. Everything here was produced on 16 September 2026 on this machine. No credentials, pupil data or conversation history. The teacher's taught deck is referenced by path in the Phase 1 record and not copied.
 
-Head revision: HEAD_REVISION
+Head revision: `afc419d0` (evaluation commit; last guidance change `0b084af5`)
 
 | File | What it is | Belongs to |
 |---|---|---|
