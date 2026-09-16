@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-16 A lesson builds on what children can use (branch lesson-designer-cumulative-2026-09-16, unreleased)
+
+Follow-on to the entry below. Daniel approved the direction of a short Tudor sequence in which children learn the apprenticeship arrangement, rebuild it, use it on a case missing its training, and reconsider it for a family who already had money: "you used a story like structure, with do beats, that also built on top of each other." The same conversation showed two opposite failures: varied-looking tasks answerable from everyday sense, and tasks made to look historical by adding untaught, unverified laws and guild rules.
+
+**Correction to the entry below.** Two things written into the active guidance on 15 September were tidier than the history. The contrast offered `Which two would a Tudor family have minded losing most?` with a single keyed answer, and both the contrast and `subject-history.md` treated "Will swept the floor and learned nothing" as the thinking, when the case states the missing training outright. Both now put the thinking in the consequence (what Will would miss out on when he grew up), and the changed family no longer implies that food and a bed were worthless. The approved direction is kept as the teacher's calibration, not as a pattern other lessons must follow.
+
+**The change.** Shared guidance, not new fields: what children can work with at a given point (`preferences.md` → What a Lesson Is For); material and thinking chosen together, each subject's kinds of material as examples, a link read in the content with a correctness handover, and what each kind of work can honestly claim (the rhythm section); an optional operations table in `do-beats.md`; one short-sequence contrast; and pointers from the designer and the reviewer's existing pass.
+
+**Not yet seen.** No lesson has been built or taught against it. The branch's evaluation folder records what was tested.
+
 ## 2026-09-15 The rebuilt Tudor sorts were approved for wording, not as the thinking (branch lesson-designer-quality-2026-09-15, unreleased)
 
 Daniel taught the rebuilt deck `Why did Tudor children work?` on 15 September 2026. The starter worked and the job match (slide 5) was simple but fine. The now/later sort (slide 10) and the good/bad sort (slide 14) felt abstract and shallow: children could complete them from everyday sense rather than from anything the lesson had taught, the class spent too long on the carpet with whiteboards, and by the time the written cases arrived (slides 16 to 18, the ones that actually needed the history) he wanted the class at tables doing that work.

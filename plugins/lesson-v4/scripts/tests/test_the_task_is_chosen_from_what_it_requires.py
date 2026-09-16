@@ -92,8 +92,10 @@ class TheDesignerWorksInOneOrderTests(unittest.TestCase):
 class TheContrastsReachBothAgentsTests(unittest.TestCase):
     def test_the_file_holds_a_boundary_case_for_every_contrast(self):
         text = CONTRASTS.read_text(encoding="utf-8")
-        self.assertEqual(text.count("### "), 6)
-        self.assertEqual(text.count("**Where the simpler task is right.**"), 6)
+        # Six single-task contrasts and, since the follow-on (16 September
+        # 2026), one short-sequence contrast, each with its boundary case.
+        self.assertEqual(text.count("### "), 7)
+        self.assertEqual(text.count("**Where the simpler task is right.**"), 7)
         self.assertIn("A sort can be the stronger task and a sentence the weaker one", text)
         self.assertIn("never asked to match an example's names, order or materials", text)
 
