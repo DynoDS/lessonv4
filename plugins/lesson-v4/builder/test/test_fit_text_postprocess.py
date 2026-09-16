@@ -422,6 +422,17 @@ def test_budget_names_wrapping_when_the_words_fit_by_count():
     assert "holds about" not in message
 
 
+def test_budget_names_height_when_the_box_cannot_hold_one_line():
+    """A strip shallower than one readable line holds nothing, however wide.
+    Calling it one line that the words fit by count sent a repair at the
+    wording and the width, when only more height helps."""
+    box = _Box("Round to the nearest 100:", 7.83, 0.25)
+    message = MODULE.text_budget(box, 18, box.text_frame.text)
+    assert "cannot hold a single line" in message
+    assert "taller" in message
+    assert "fit that by count" not in message
+
+
 def test_budget_says_nothing_rather_than_guessing_at_empty_text():
     box = _Box("   ", 3.0, 1.0)
     assert MODULE.text_budget(box, 18, box.text_frame.text) == ""

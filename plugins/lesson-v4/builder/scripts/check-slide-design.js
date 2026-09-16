@@ -928,26 +928,6 @@ Fix that slide's layout slots, then run the check again.
   }
   const optionalPictures = countOptionalPictures(lesson);
   const capacity = capacityWarnings(lesson);
-  if (capacity.length) {
-    return {
-      ok: false,
-      reason: 'SLIDE_DESIGN_CAPACITY',
-      slideCount,
-      stdout: `${capacity.map(buildDiagnostic).join('\n')}\n`,
-      stderr:
-        `\n${capacity.length} slide-design composition problem(s) - scratch build not run:\n` +
-        capacity
-          .map(
-            (warning) =>
-              `  ✗ slide ${warning.slide} ${warning.field}: ` +
-              `${warning.signal}: ${warning.message}`
-          )
-          .join('\n') +
-        '\nFix only the slide composition, then run the check again.\n',
-      scratchOutputPath: null,
-    };
-  }
-
   const presentation = teachLayout
     .concat(presentationWarnings(lesson))
     .concat(turnWarnings(lesson))
@@ -957,26 +937,68 @@ Fix that slide's layout slots, then run the check again.
     .concat(starterColourWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
     .concat(pictureWarnings(lesson));
-  if (presentation.length) {
-    return {
-      ok: false,
-      reason: 'SLIDE_DESIGN_PRESENTATION',
-      slideCount,
-      stdout: `${presentation.map(presentationDiagnostic).join('\n')}\n`,
-      stderr:
-        `\n${presentation.length} slide-design presentation problem(s) - ` +
-        `scratch build not run:\n` +
-        presentation
-          .map(
-            (warning) =>
-              `  x slide ${warning.slide} ${warning.field}: ` +
-              `${warning.signal}: ${warning.message}`
-          )
-          .join('\n') +
-        '\nRepair only what each line names, then run the check again.\n',
-      scratchOutputPath: null
-    };
+
+  // What the spec alone shows is reported WITH what the build shows, never
+  // instead of it.
+  //
+  // These rules used to return before the scratch build ran, and the build
+  // stopped at its own first stage too, so each run showed one layer of faults:
+  // a designer fixed the wording, met the layout faults, fixed those, and only
+  // then met the text that did not fit. On a Year 4 rounding deck (16 September
+  // 2026) the last layer arrived after the repair passes were spent, eleven
+  // slides at once, and the whole deck was withheld. The build takes about two
+  // seconds, so every stage runs and every fault is listed in one go.
+  const early = { stdout: '', stderr: '', reason: null };
+  if (capacity.length) {
+    early.reason = 'SLIDE_DESIGN_CAPACITY';
+    early.stdout += `${capacity.map(buildDiagnostic).join('\n')}\n`;
+    early.stderr +=
+      `\n${capacity.length} slide-design composition problem(s):\n` +
+      capacity
+        .map(
+          (warning) =>
+            `  ✗ slide ${warning.slide} ${warning.field}: ` +
+            `${warning.signal}: ${warning.message}`
+        )
+        .join('\n') +
+      '\n';
   }
+  if (presentation.length) {
+    early.reason = early.reason || 'SLIDE_DESIGN_PRESENTATION';
+    early.stdout += `${presentation.map(presentationDiagnostic).join('\n')}\n`;
+    early.stderr +=
+      `\n${presentation.length} slide-design presentation problem(s):\n` +
+      presentation
+        .map(
+          (warning) =>
+            `  x slide ${warning.slide} ${warning.field}: ` +
+            `${warning.signal}: ${warning.message}`
+        )
+        .join('\n') +
+      '\n';
+  }
+  if (early.reason) {
+    early.stderr +=
+      'The scratch build ran as well, so anything else it found is listed with ' +
+      'these. Repair what every line names, then run the check again.\n';
+  }
+
+  // Folds the spec-only faults into whatever the build reported. The reason
+  // stays the earliest stage that failed, which is the one callers already
+  // route on; the build's own faults come through in its output beside them.
+  const withEarly = (result) => {
+    if (!early.reason || !result) return result;
+    const merged = {
+      ...result,
+      ok: false,
+      reason: early.reason,
+      stdout: `${early.stdout}${result.stdout || ''}`,
+      stderr: `${early.stderr}${result.stderr || ''}`,
+    };
+    delete merged.previewDir;
+    delete merged.previewOutputPath;
+    return merged;
+  };
 
   let scratchDir;
   try {
@@ -984,14 +1006,14 @@ Fix that slide's layout slots, then run the check again.
       path.join(os.tmpdir(), 'lesson-resources-slide-design-check-')
     );
   } catch (error) {
-    return {
+    return withEarly({
       ok: false,
       reason: 'SCRATCH_DIRECTORY_FAILED',
       slideCount,
       stdout: '',
       stderr: `Could not create the slide-design scratch directory: ${error.message}\n`,
       scratchOutputPath: null,
-    };
+    });
   }
 
   let outcome;
@@ -1128,7 +1150,7 @@ Fix that slide's layout slots, then run the check again.
               scratchOutputPath,
             };
 
-            if (options.retainPreview) {
+            if (options.retainPreview && !early.reason) {
               // --preview: the deck above is a scratch artifact the finally
               // block is about to delete. Copy it into a private preview
               // directory that outlives the check, so the designer can render
@@ -1191,6 +1213,7 @@ Fix that slide's layout slots, then run the check again.
     }
   }
 
+  outcome = withEarly(outcome);
   if (outcome) outcome.optionalPictures = optionalPictures;
 
   return outcome;

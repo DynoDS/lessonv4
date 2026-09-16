@@ -44,7 +44,7 @@ function ordinaryLesson() {
   };
 }
 
-test('a long fixed caption blocks before the scratch builder runs', () => {
+test('a long fixed caption blocks, and the scratch build still runs', () => {
   const root = makeRoot();
   try {
     const builderMarker = path.join(root, 'builder-ran.txt');
@@ -71,13 +71,15 @@ test('a long fixed caption blocks before the scratch builder runs', () => {
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'SLIDE_DESIGN_CAPACITY');
     assert.match(result.stdout, /"signal":"FIXED_CAPTION_CAPACITY"/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('internal lesson-stage titles block before the scratch builder runs', () => {
+test('internal lesson-stage titles block, and the scratch build still runs', () => {
   const root = makeRoot();
   try {
     const builderMarker = path.join(root, 'builder-ran.txt');
@@ -102,13 +104,15 @@ test('internal lesson-stage titles block before the scratch builder runs', () =>
     assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
     assert.match(result.stdout, /"signal":"INTERNAL_STAGE_TITLE"/);
     assert.match(result.stdout, /"faultClass":"presentation"/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('a whole-blue block that tells and then asks blocks before the scratch builder runs', () => {
+test('a whole-blue block that tells and then asks blocks, and the scratch build still runs', () => {
   // Geography slide 6 painted "Look at the tropical rainforest regions. What
   // pattern do you notice around the Equator?" as one blue card, hiding the
   // question inside the instruction.
@@ -153,7 +157,9 @@ test('a whole-blue block that tells and then asks blocks before the scratch buil
     const hits = result.stdout.match(/"signal":"MIXED_BLOCK_WHOLE_BLUE"/g) || [];
     assert.equal(hits.length, 1);
     assert.match(result.stdout, /"slide":1/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -166,7 +172,7 @@ test('a whole-blue block that tells and then asks blocks before the scratch buil
 // problem red on two slides that way and finished with no purple anywhere
 // (flagged by Daniel, 2 September 2026). A span *inside* the line is a different
 // thing entirely and stays allowed.
-test('an emphasis covering a whole sticky line is refused before the build', () => {
+test('an emphasis covering a whole sticky line is refused, and the build still runs', () => {
   const root = makeRoot();
   try {
     const builderMarker = path.join(root, 'builder-ran.txt');
@@ -210,7 +216,9 @@ test('an emphasis covering a whole sticky line is refused before the build', () 
     assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
     assert.match(result.stdout, /"signal":"STICKY_LINE_RECOLOURED"/);
     assert.match(result.stderr, /let the sticky line keep its colour/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -503,6 +511,38 @@ test('a failed preview check retains no preview', () => {
   }
 });
 
+test('a spec-only fault fails the check beside a clean build, and retains no preview', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `const fs = require('node:fs');\n` +
+        `const path = require('node:path');\n` +
+        `const out = path.join(process.argv[3], 'Scratch Check.pptx');\n` +
+        `fs.writeFileSync(out, 'deck');\n` +
+        `console.log('Wrote: ' + out);\n`
+    );
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [{ template: 'title', title: 'Do 2' }]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, {
+      buildPath: fakeBuilder,
+      retainPreview: true
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(result.stdout, /"signal":"INTERNAL_STAGE_TITLE"/);
+    assert.equal(result.previewDir, undefined);
+    assert.equal(result.previewOutputPath, undefined);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('the CLI ends malformed JSON with the exact failure marker', () => {
   const root = makeRoot();
   try {
@@ -525,7 +565,7 @@ test('the CLI ends malformed JSON with the exact failure marker', () => {
   }
 });
 
-test('a blue line that asks the class nothing blocks before the scratch builder runs', () => {
+test('a blue line that asks the class nothing blocks, and the scratch build still runs', () => {
   // The Year 4 history deck ran "Explain your answer using the photograph." and
   // three `[[ ]]` task steps in house blue, so the board was almost all blue and
   // the colour stopped marking the questions (flagged by Daniel, 3 September
@@ -578,13 +618,15 @@ test('a blue line that asks the class nothing blocks before the scratch builder 
     assert.equal(hits.length, 2);
     assert.match(result.stdout, /Explain your answer using the photograph/);
     assert.match(result.stdout, /Point to the details/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
 
-test('a starter whose every question is blue blocks before the scratch builder runs', () => {
+test('a starter whose every question is blue blocks, and the scratch build still runs', () => {
   // A starter is questions all the way down, so blue there marks nothing a child
   // cannot already see. One question stays black; several alternate black, blue,
   // black, blue so the colour separates one from the next.
@@ -622,7 +664,9 @@ test('a starter whose every question is blue blocks before the scratch builder r
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
     assert.match(result.stdout, /"signal":"STARTER_QUESTIONS_ALL_BLUE"/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -690,7 +734,7 @@ test('an alternating starter and a black instruction under a blue question both 
   }
 });
 
-test('a turn slide with nothing to work on blocks before the scratch builder runs', () => {
+test('a turn slide with nothing to work on blocks, and the scratch build still runs', () => {
   // A Year 4 place-value My Turn was split when its chart would not fit, and the
   // reference half kept the turn label: a slide holding a column-value chart, a
   // tenfold-relationship strip and a sticky fact, and nothing for the class to do
@@ -734,7 +778,9 @@ test('a turn slide with nothing to work on blocks before the scratch builder run
     assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
     assert.match(result.stdout, /"signal":"TURN_SLIDE_WITHOUT_ITS_TURN"/);
     assert.match(result.stdout, /"slide":1/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -945,7 +991,7 @@ function modellingSlide(title) {
   };
 }
 
-test('two modelling slides in a row block before the scratch builder runs', () => {
+test('two modelling slides in a row block, and the scratch build still runs', () => {
   // The Year 4 "find 10 and 100 more or less" deck went My Turn (cross a
   // hundred), My Turn (cross a thousand), one Our Turn, Your Turn. The teacher
   // abandoned the lesson on the second model: the class had watched two moves
@@ -979,7 +1025,9 @@ test('two modelling slides in a row block before the scratch builder runs', () =
     assert.match(result.stdout, /"slide":2/);
     // The message has to name the repair, not only the fault.
     assert.match(result.stdout, /its own cycle with an Our Turn between/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -1050,7 +1098,7 @@ function pictureSlide(title, primaryItems, secondaryItems) {
 
 const REFERENCE = { type: 'image', imagePath: 'generated/counter-values.png' };
 
-test('one picture drawn twice on one slide blocks before the scratch builder runs', () => {
+test('one picture drawn twice on one slide blocks, and the scratch build still runs', () => {
   const root = makeRoot();
   try {
     const builderMarker = path.join(root, 'builder-ran.txt');
@@ -1078,7 +1126,9 @@ test('one picture drawn twice on one slide blocks before the scratch builder run
     assert.match(result.stdout, /"slide":1/);
     // The message has to name the repair, not only the fault.
     assert.match(result.stdout, /Keep the copy that is the right size/);
-    assert.equal(fs.existsSync(builderMarker), false);
+    // The build runs beside the spec-only rules, so its faults arrive in the
+    // same report rather than on the next attempt.
+    assert.equal(fs.existsSync(builderMarker), true);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

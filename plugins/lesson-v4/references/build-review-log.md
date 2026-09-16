@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-16 One slide check reports every fault, not the first layer (4.2.214)
+
+Second of four follow-ups from the Y4 "round to the nearest 100" run. Daniel: "yes do that next", after "i dont want this happening again".
+
+**What was there.** `check-slide-design.js` returned before the scratch build whenever its spec-only rules (capacity, wording and colour, turns, pictures) found anything, and `build.js` exited at the layout preflight before the real draw, the text fit and the picture, marker and geometry checks. Each run showed one layer. On the rounding run the designer's first check named only three blue-block faults; its next checks named slides 18 and 22; the eleven criteria-card overloads and slide 14's heading strip were only reachable after both layers were clear, which happened in the focused repair after the budget was spent. Running every stage costs about two seconds on a 23-slide deck (0.4s when it stopped early), so nothing was being saved.
+
+**The change.** The spec-only faults are collected and the scratch build runs anyway; the result keeps the earliest stage's reason (`SLIDE_DESIGN_CAPACITY`, then `SLIDE_DESIGN_PRESENTATION`, then the build's own) so callers route as before, with every diagnostic in one output and no preview retained. In the build, a slide the preflight refuses is left blank, the rest of the deck is drawn and put through every check, and nothing is published or decorated while any slide is blank; spec validation (unknown template, unpromised picture) still stops the build, because those leave nothing sound to draw. A box shallower than one 18pt line is now reported as needing height, not as "1 line of about 60 characters" the words "fit by count". `slide-builder.md` says the other faults arrive in the same output. Tests: `check-reports-every-fault.test.js` (a wording, a layout and a text-fit fault in one run), a clean build beside a spec-only fault still fails and keeps no preview, nine tests that pinned "the builder never ran" now pin that it did, and a fitter test for the height message. Builder 646 pass; Python has the same 11 failures before and after (model settings and others, untouched).
+
+**Evidence.** The rounding run's own attempts, rechecked: the first attempt now lists the three blue blocks, both criteria panels, slide 14's strip and a `NUMBERLINE_TOO_NARROW` on slide 23 that no check in the run ever showed. A blank slide still cannot report faults inside itself (the portraits on 18 and 22 surfaced once those slides could be drawn).
+
+**Still open.** The character portraits held to the 3" floor, and a build refusal withholding the whole deck.
+
 ## 2026-09-16 A criteria card the layout passes is a card the final check passes (4.2.213)
 
 Daniel's Y4 "round to the nearest 100" run (Codex, 4.2.212) withheld the whole deck, the wall and the stick-ins: "i dont want this happening again".

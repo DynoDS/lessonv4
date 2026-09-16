@@ -472,6 +472,19 @@ def text_budget(shape, floor_pt, text):
     if per_char <= 0 or line_h <= 0:
         return ""
 
+    # A box shorter than one line of readable text holds none of it, however
+    # wide it is. Counting it as one line reported a heading strip on a Year 4
+    # Your Turn (0.25" tall) as "1 line of about 60 characters" that its 25
+    # characters "fit by count", which sends the repair at the words or the
+    # width when only height will do (16 September 2026).
+    if usable_h < line_h:
+        return (
+            "The box is %.2f\" tall, and one line at %dpt needs about %.2f\", so it "
+            "cannot hold a single line. It needs to be taller; the wording and the "
+            "width are not the problem."
+            % (shape.height / 914400.0, floor_pt, (line_h + PAD_H) / 914400.0)
+        )
+
     chars_per_line = max(1, int(usable_w // per_char))
     lines = max(1, int(usable_h // line_h))
     budget = chars_per_line * lines

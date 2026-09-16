@@ -243,9 +243,20 @@ async function main() {
     contextForSlide,
   });
 
+  // A slide that cannot be laid out is left blank in this build, and the rest
+  // of the deck is still built and checked. The build used to exit here, so a
+  // text box too small for its words on another slide was only found on the
+  // next run, after this fault was repaired: on a Year 4 rounding deck (16
+  // September 2026) that next run came after the repair passes were spent and
+  // refused eleven slides at once. Nothing is published while any slide is
+  // blank, so this changes what is reported, not what ships.
+  const layoutFailedSlides = new Set();
   if (preflight.errors.length) {
+    for (const error of preflight.errors) {
+      if (error.slide) layoutFailedSlides.add(error.slide);
+    }
     console.error(
-      `\n${preflight.errors.length} layout problem(s) — nothing was built:`
+      `\n${preflight.errors.length} layout problem(s):`
     );
     for (const error of preflight.errors) {
       console.error(`  ✗ slide ${error.slide}: ${error.signal}: ${error.message}`);
@@ -260,20 +271,10 @@ async function main() {
         error.message
       );
     }
-    console.error('Fix the slide spec, then rebuild.');
-    // Nothing has been written, so whatever deck was already there is exactly as
-    // it was. Said out loud, because "nothing was built" and "your existing file
-    // is intact" are two different reassurances.
-    const existing = path.join(
-      outputDir,
-      `${safeFilenameComponent(lessonName, 'Untitled Lesson')}.pptx`
-    );
     console.error(
-      fs.existsSync(existing)
-        ? `The existing ${path.basename(existing)} was left exactly as it was. Nothing was overwritten.`
-        : 'No PowerPoint was written.'
+      'Those slides are left blank in this build so the rest of the deck is still ' +
+        'checked. No deck will be published until they are fixed.'
     );
-    process.exit(1);
   }
 
   await sharedFigures.rasterise();
@@ -312,7 +313,7 @@ async function main() {
       decorationPlan: decorationPlans[i],
     };
     try {
-      drawSlide(pptx, slide, coreSlideData, ctx);
+      if (!layoutFailedSlides.has(i + 1)) drawSlide(pptx, slide, coreSlideData, ctx);
     } catch (err) {
       failedSlides.push(i + 1);
       console.error(`[error] slide ${i + 1}: ${err.message}`);
@@ -392,6 +393,7 @@ async function main() {
   if (
     autofit.status === "AUTOFIT_OK" &&
     failedSlides.length === 0 &&
+    layoutFailedSlides.size === 0 &&
     !skipOptionalDecorations &&
     hasDecorationPlans(decorationPlans)
   ) {
@@ -481,6 +483,7 @@ async function main() {
   const publishable =
     autofit.status === 'AUTOFIT_OK' &&
     failedSlides.length === 0 &&
+    layoutFailedSlides.size === 0 &&
     pictures.faults.length === 0 &&
     markers.faults.length === 0 &&
     geometry.faults.length === 0;
@@ -533,6 +536,16 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
     // It also used to print before the text had been measured at all, so a deck
     // whose autofit never ran read as clean.
     console.log('No warnings.');
+  }
+
+  if (layoutFailedSlides.size) {
+    const numbers = [...layoutFailedSlides].sort((a, b) => a - b);
+    console.error(
+      `\n${numbers.length} of ${slides.length} ${slides.length === 1 ? 'slide' : 'slides'} ` +
+        `could not be laid out: ${numbers.join(', ')}. The layout problem(s) above say ` +
+        'why. Fix the slide spec, then rebuild.'
+    );
+    process.exitCode = 1;
   }
 
   // Last, so it is the line still on screen, and loudest, because everything
