@@ -29,6 +29,7 @@ function setup() {
     meta: { lesson: "Pending picture", yearGroup: 4, subject: "geography" },
     sheets: {
       expected: {
+        recording: "sheet",
         layout: "full",
         orientation: "portrait",
         zones: {

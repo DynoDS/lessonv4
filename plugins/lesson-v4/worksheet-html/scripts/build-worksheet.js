@@ -38,9 +38,11 @@ const {
   renderAnswerKey,
   resolveAutoLayouts,
   WorksheetError,
+  SHEET_LABELS,
 } = require("../src/worksheet");
 const { resolveImages } = require("../src/images");
 const { prepareWorksheetDecorations } = require("../src/decorations");
+const { recordingProblems, buildSlips } = require("../src/slips");
 
 // The same fault, twice: once for a person and once for a machine.
 //
@@ -150,6 +152,25 @@ async function main() {
     throw e;
   }
 
+  // Books or sheet. The designer's preflight refuses a missing or mistaken
+  // choice; here, where refusing would cost the class its worksheets, a
+  // mistaken one is corrected and said out loud instead. A sheet marked books
+  // whose words need the printed page ("Circle...", "on the line") is printed
+  // as a sheet, because slips would ask children to circle something they do
+  // not have.
+  for (const problem of recordingProblems(worksheet)) {
+    const label = sheetLabel(problem.sheet);
+    const corrected = problem.signal === "RECORDING_NEEDS_SHEET" ? "sheet" : undefined;
+    worksheet = withRecording(worksheet, problem.sheet, corrected);
+    console.log(
+      `RECORDING_CHANGED: ${label} - ${problem.message} ` +
+        (corrected
+          ? 'Printed with the "sheet" mark and no question slips.'
+          : "Printed with no mark and no question slips.")
+    );
+    diagnostic("RECORDING_CHANGED", "content", { sheet: problem.sheet }, problem.message);
+  }
+
   // Answers are a different audience. Validate complete coverage before pupil
   // pages are written, and keep the resulting teacher text out of `sheets`
   // entirely so it cannot be appended to a pupil print job.
@@ -240,11 +261,39 @@ async function main() {
     rendered.push({ sheet, html, htmlPath });
   }
 
+  // The levels marked books get a page of question slips each, printed after
+  // every sheet so the file still reads Below, Expected, Greater Depth first.
+  // One level on the approved two-page exception has a write-on visual at its
+  // heart and is never a books sheet, so it gets none.
+  const slipSheets = sheets.filter((s) => s.spec.recording === "books" && s.pageCount === 1);
+  const slipsPathFor = (sheet) => path.join(outDir, `${base}-slips-${sheet.key}.html`);
+  const reportSlips = (sheet, result) => {
+    if (result.skipped) {
+      console.log(`SLIPS_SKIPPED: ${sheet.label} - no question slips, because ${result.skipped}. The sheet itself is unchanged.`);
+      diagnostic("SLIPS_SKIPPED", "composition", { sheet: sheet.key }, result.skipped);
+      return;
+    }
+    const across = result.cols === 2 ? "2 across" : "1 across";
+    console.log(
+      `SLIPS: ${sheet.label} - ${result.cols * result.rows} slips a page ` +
+        `(${across}, ${result.rows} down), at the back of the file.`
+    );
+  };
+
   const blocker = pdfBlocker();
   let fitVerified = false;
   if (blocker) {
     console.log(`PDF_SKIPPED: ${blocker}`);
     for (const r of rendered) console.log(`Built HTML: ${r.htmlPath}`);
+    for (const sheet of slipSheets) {
+      const result = await buildSlips({ sheetSpec: sheet.spec, title: base });
+      if (!result.skipped) {
+        const slipsPath = slipsPathFor(sheet);
+        fs.writeFileSync(slipsPath, result.html);
+        console.log(`Built HTML: ${slipsPath}`);
+      }
+      reportSlips(sheet, result);
+    }
     // The HTML is still the worksheet on a browserless box, and it is still
     // unverified. Those are two different facts and both get said: claiming a
     // verified fit here would be claiming a measurement nobody took.
@@ -291,6 +340,19 @@ async function main() {
       pdfs.push(settled.pdf);
       for (const problem of settled.fitProblems) {
         clipped.push({ sheet: r.sheet, problem });
+      }
+    }
+
+    // Slips only once every sheet has printed clean: a refused sheet refuses
+    // the build below, and slips for it would be slips for nothing.
+    if (!clipped.length) {
+      for (const sheet of slipSheets) {
+        const result = await buildSlips({ sheetSpec: sheet.spec, title: base, browser, htmlToPdf });
+        if (!result.skipped) {
+          fs.writeFileSync(slipsPathFor(sheet), result.html);
+          pdfs.push(result.pdf);
+        }
+        reportSlips(sheet, result);
       }
     }
 
@@ -402,6 +464,23 @@ async function main() {
         .join("\n")
     );
   }
+}
+
+function sheetLabel(key) {
+  return SHEET_LABELS[key] || key;
+}
+
+// The worksheet with one level's recording choice replaced, or removed when
+// `recording` is undefined. The spec on disk is left as the designer wrote it.
+function withRecording(worksheet, key, recording) {
+  const { recording: _old, ...sheet } = worksheet.sheets[key];
+  return {
+    ...worksheet,
+    sheets: {
+      ...worksheet.sheets,
+      [key]: recording === undefined ? sheet : { ...sheet, recording },
+    },
+  };
 }
 
 // The zone a problem line names, for the machine-readable location. The human

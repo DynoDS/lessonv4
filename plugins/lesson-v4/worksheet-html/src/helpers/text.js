@@ -272,6 +272,10 @@ function promptIsShort(question, widthMm, picture, showNumbers = true) {
 
 function renderQuestions(spec, widthMm = 100) {
   const showNumbers = spec.showNumbers !== false;
+  // On a question slip (src/slips.js) the answer goes in the child's book, so
+  // the answer blank is left off. A blank inside the prompt stays: it is part
+  // of the question the child copies.
+  const slip = spec.slip === true;
   const pictures = selectContextPictures(
     spec.items,
     questionTextWidths(widthMm, false, showNumbers)
@@ -280,7 +284,7 @@ function renderQuestions(spec, widthMm = 100) {
     .map(
       (q, i) => `
       <li class="h-q${
-        blankBelow(questionText(q), widthMm, pictures && pictures[i], showNumbers)
+        !slip && blankBelow(questionText(q), widthMm, pictures && pictures[i], showNumbers)
           ? " h-q--blank-below"
           : ""
       }${
@@ -291,7 +295,7 @@ function renderQuestions(spec, widthMm = 100) {
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         ${pictureMarkup(pictures && pictures[i])}
         <span class="h-text">${promptHtml(questionText(q))}</span>
-        <span class="h-blank"></span>
+        ${slip ? "" : '<span class="h-blank"></span>'}
       </li>`
     )
     .join("");
@@ -438,12 +442,14 @@ function renderWrittenAnswers(spec, widthMm = 100) {
       // equally, a one-line answer and a four-line answer take the same extra,
       // so one overflows its cap and leaves a hole while the other is still
       // short of its own useful size.
+      // A question slip leaves the ruled lines off: the answer is written in
+      // the child's book. See src/slips.js.
       return `
       <li class="h-q h-written" style="flex-grow:${lines}">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         <div class="h-body">
           ${prompt}
-          <div class="h-lines" style="max-height:${linesCapMm}mm">${ruled}</div>
+          ${spec.slip === true ? "" : `<div class="h-lines" style="max-height:${linesCapMm}mm">${ruled}</div>`}
         </div>
       </li>`;
     })

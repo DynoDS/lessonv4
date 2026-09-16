@@ -614,6 +614,22 @@ A fit problem never authorises shrinking a required visual until it is unusable,
 removing a required support, converting a picture-led task to text or silently
 changing the pedagogical amount.
 
+### 5. Say whether the sheet can go in books
+
+Once a sheet's content is settled, set its `recording`: `"books"` when every
+question on it could be answered in an exercise book from a shared copy, or
+`"sheet"` when any question needs the printed page. The teacher's school is
+cutting paper, and a books sheet prints a small book mark and a page of question
+slips children stick in, so an honest `"books"` saves a class set of copies. Read
+`[PLUGIN_ROOT]/references/books-or-sheet.md` at this step, the first time in a run:
+the call turns on the year group, and the same number line is `"books"` in Year 4
+and `"sheet"` in Year 2.
+
+Decide each level on its own sheet, and treat the mark as a report on the sheet
+you built, never a target: the question, its form and its visual stay exactly as
+upstream settled them. On a `"books"` sheet, add `"onSlip": false` to any figure the
+children will draw for themselves in their books, so the slips leave it off.
+
 ---
 
 ## Pupil sheets and the separate answer key

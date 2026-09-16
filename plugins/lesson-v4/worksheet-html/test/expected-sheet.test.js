@@ -22,6 +22,7 @@ const CHECK = path.join(__dirname, "..", "scripts", "check-worksheet.js");
 
 function sheet() {
   return {
+    recording: "sheet",
     layout: "full",
     orientation: "portrait",
     zones: {

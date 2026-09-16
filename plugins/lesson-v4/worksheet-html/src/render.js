@@ -19,6 +19,7 @@ const { cssVariables, SPACE, TYPE } = require("./tokens");
 const { NOTE_LINE_MM, linesFor, esc } = require("./helpers/shared");
 const { LAYOUTS, VARIANTS, flatten } = require("./layouts");
 const { isStack } = require("./helpers/compose");
+const { recordingIcon } = require("./slips");
 const {
   renderContent,
   measureContent,
@@ -748,12 +749,25 @@ ${cssVariables()}
     font-weight: bold;
     z-index: 3;
   }
+  /* Books or sheet (src/slips.js): a small line drawing in the code's own
+     grey, sitting on the code's line. A suggestion to the teacher, so it is
+     no louder than the code beside it. */
+  .sheet-recording {
+    width: 1.35em;
+    height: 1.35em;
+    margin-left: 0.35em;
+    vertical-align: -0.3em;
+  }
 
 ${helperCss}
 </style></head>
 <body data-worksheet-page>
   ${decorationLayers.low}
-  ${spec.code ? `<div class="sheet-code">${esc(spec.code)}</div>` : ""}
+  ${
+    spec.code || spec.recording
+      ? `<div class="sheet-code">${esc(spec.code || "")}${recordingIcon(spec.recording)}</div>`
+      : ""
+  }
   <div class="area${spec.layout === "full" ? " area--full" : ""}">${zones}</div>
   ${decorationLayers.high}
 </body></html>`;

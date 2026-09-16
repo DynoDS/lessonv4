@@ -20,6 +20,7 @@ const {
   WorksheetError,
 } = require("../src/worksheet");
 const { tightnessOf, describeTightness } = require("../src/tightness");
+const { recordingProblems } = require("../src/slips");
 
 function fail(signal, message) {
   console.log(`${signal}: ${message}`);
@@ -291,6 +292,13 @@ function main() {
     if (process.exitCode === 1) return;
   }
 
+  // Books or sheet, on every sheet. Reported alongside everything below rather
+  // than stopping the check, because it is one field to set and the designer
+  // should hear about the page's other faults in the same run.
+  for (const problem of recordingProblems(worksheet, { required: true })) {
+    fail(problem.signal, problem.message);
+  }
+
   try {
     // Inside the try, so a photograph the spec names but the disk lacks exits
     // as a named IMAGE_MISSING like the build's, not a raw stack trace.
@@ -419,6 +427,7 @@ function main() {
     throw error;
   }
 
+  if (process.exitCode === 1) return;
   console.log("WORKSHEET_PREFLIGHT_OK");
 }
 

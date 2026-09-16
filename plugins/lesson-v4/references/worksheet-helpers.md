@@ -42,9 +42,9 @@ artefact and cannot drift apart.
     "adaptationPath": "/abs/path/adaptation.md"
   },
   "sheets": {
-    "below":        { "layout": "auto",          "zones": [ { }, { } ] },
-    "expected":     { "layout": "auto",          "zones": [ { }, { }, { } ] },
-    "greaterDepth": { "layout": "halves-side", "orientation": "landscape",
+    "below":        { "recording": "sheet", "layout": "auto", "zones": [ { }, { } ] },
+    "expected":     { "recording": "books", "layout": "auto", "zones": [ { }, { }, { } ] },
+    "greaterDepth": { "recording": "books", "layout": "halves-side", "orientation": "landscape",
                       "zones": { "a": { }, "b": { } } }
   },
   "answerKey": {
@@ -137,6 +137,11 @@ seconds it takes to cut the pile into three.
 | `layout` | required. `"auto"` for the normal case — the engine chooses the shape. Or a named page shape from `worksheet-compositions.md`, when the teaching wants a particular arrangement. |
 | `orientation` | `portrait` (default for a named layout) or `landscape`. Per sheet, though one lesson's sheets normally share one: see below. With `"auto"`, stating one constrains the choice to it; omitting it lets the engine try both. |
 | `zones` | required. With `"auto"`: an ARRAY of zone contents in reading order. With a named layout: an object with one entry per lettered zone. |
+| `recording` | required. `"books"` when every question can be answered in an exercise book from a shared copy, `"sheet"` when at least one needs the printed page. Prints a small book or pencil beside the level code, and a `"books"` sheet also gets a page of question slips at the back of the file. `books-or-sheet.md` has the test and the age guide. |
+
+Any figure inside a `"books"` sheet that the children will draw for themselves
+in their books carries `"onSlip": false`, so the question slips leave it off
+(see `books-or-sheet.md`). It changes nothing on the sheet itself.
 
 **One lesson's sheets normally share an orientation.** The teacher prints the
 file once and cuts it into piles, so a portrait Below on top of a landscape
@@ -355,6 +360,10 @@ reported rather than just the first.
 | `WORD_BANK_MISSING` | Pupil wording tells the child to use the word bank and the sheet has none. |
 | `SECTION_LABEL_IN_TEXT` | A block's mode-of-work heading (`Fluency`, `Reasoning`, `Practise`...) opens a question's own words, so it prints as part of that question. Lift it into a `section-label` above the block; the heading is wanted, just not there. |
 | `NOT_FOR_THE_CHILD` | Pupil wording names the page's machinery rather than the work (`answer line`, `writing lines`, `sentence stem`, `prefilled`, `placeholder`). Say what the child does and let the helper supply the room to do it. |
+| `SLIPS: ...` | A `"books"` sheet's question slips were added at the back of the PDF, with how many fit a page. |
+| `SLIPS_SKIPPED` | A `"books"` sheet got no slips (its questions are too long for a slip shorter than a page, or nothing is left once the answer room is taken out). The sheet itself is unchanged. Information, not a fault. |
+| `RECORDING_CHANGED` | A sheet's `recording` was unusable: marked `"books"` with wording that needs the printed page (printed as `"sheet"`, no slips), or not one of the two choices (printed unmarked). The build still delivers; the preflight is where this is fixed. |
+| `RECORDING_MISSING` / `RECORDING_INVALID` / `RECORDING_NEEDS_SHEET` | Preflight only. A sheet has no `recording`, a value other than `"books"` or `"sheet"`, or is marked `"books"` while its words ask for something only the printed page allows. Fix the field; never reword the question. |
 | `NO_SHEETS` | The JSON has none of `below`, `expected`, `greaterDepth`. |
 | `SPEC_INVALID` | The JSON is malformed, a sheet name is not one of the three, or answers were stored as `sheets.answers`. |
 

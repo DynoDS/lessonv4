@@ -26,7 +26,10 @@ const FIXTURE = path.join(
 // A spec the ordinary preflight already accepts, so these tests measure only
 // the directed-sheet gate layered on top of it.
 function baseSpec() {
-  return JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+  const spec = JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+  // Every sheet a designer writes says books or sheet; the preflight refuses one that does not.
+  for (const sheet of Object.values(spec.sheets)) sheet.recording = "sheet";
+  return spec;
 }
 
 function runCheck(dir, worksheet, extraArgs = []) {

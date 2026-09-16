@@ -719,6 +719,13 @@ function sheetsOf(worksheet) {
           // in their books (see the header band in `render.js`).
           title: sheet.title || meta.lesson || "Worksheet",
           code: coded ? SHEET_CODES[key] : "",
+          // Books or sheet: a small mark beside the code, and the switch for
+          // this level's question slips. Checked in src/slips.js; anything
+          // other than the two choices prints no mark.
+          recording:
+            sheet.recording === "books" || sheet.recording === "sheet"
+              ? sheet.recording
+              : null,
           layout: page.layout,
           orientation: page.orientation === "landscape" ? "landscape" : "portrait",
           zones: numberer.numberZones(

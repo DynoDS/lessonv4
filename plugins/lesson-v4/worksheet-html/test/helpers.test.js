@@ -666,8 +666,11 @@ test("a helper's example shows every field the helper reads", () => {
     // written-answers item sits inside an outer numbered question. A designer
     // never sets it - the worksheet-designer rule is that the engine owns the
     // duplicate number, and showing the field here would invite them to.
-    questions: ["startAt", "showNumbers"],
-    "written-answers": ["phase", "startAt", "showNumbers"],
+    //
+    // `slip` is set by src/slips.js on the copy it prints as a question slip,
+    // to leave the answer space off. It is never written into a sheet.
+    questions: ["startAt", "showNumbers", "slip"],
+    "written-answers": ["phase", "startAt", "showNumbers", "slip"],
     "circle-the-answer": ["phase"],
     "fact-file": ["phase"],
     // Turns the panel border off. The framed form is the one to reach for, and

@@ -32,6 +32,7 @@ function specNaming(imagePaths) {
     meta: { lesson: "Electrical appliances", yearGroup: 4, subject: "science" },
     sheets: {
       below: {
+        recording: "sheet",
         layout: "full",
         orientation: "portrait",
         zones: {
