@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-16 The letterbox keeps every file byte for byte, whatever the computer's line-ending setting (4.2.217)
+
+Daniel asked for the cloud's "Round to the nearest 10" lesson to be saved by hand to Week 2 Maths Thursday. Asked whether to fix the helper after the save was refused, Daniel: "fix the helper".
+
+**What was there.** Git for Windows sets `core.autocrlf=true` system-wide. The filer's clone checked out `Round to the nearest 10 - Answers.txt` with CRLF endings (1503 bytes on disk, 1480 in the pushed blob, 23 lines), `file_lesson` compared it with the check recorded at build time and refused it as "arrived damaged ... post it again". Nothing was damaged: the deck, worksheets, wall and stick-ins matched, and the blob matched the build. Every text file would have been refused on any Windows computer, and a PC run posting through git could have converted a text file on the way in.
+
+**The change.** `plugin_settings.letterbox_git_args()` adds `-c core.autocrlf=false` before the GitHub key, and every git command that touches the letterbox uses it: `deliver_files.git`, `plan-tracker.py`'s `git`, the cloud clone in `prepare_letterbox`, and the filer's install clone. A command-line setting outranks the computer's own, so no clone's config needs changing. Test: `test_a_computer_that_rewrites_line_endings_still_saves_the_answers` sets a global `autocrlf=true`, posts an answers file and runs the filer; it failed with the exact refusal before the change and passes after. Letterbox and plan-tracker tests 28 pass.
+
+**Evidence.** On Daniel's PC the lesson was saved once the clone stopped converting (all five files match their checks); `core.autocrlf=false` was also set in that clone by hand. The unwanted "Round to the nearest 100" lesson was removed from the letterbox and the plan moved to build lesson 12 next.
+
+**Still open.** A clone that already checked out converted files before this change keeps them until git rewrites them; none are waiting on Daniel's PC.
+
 ## 2026-09-16 A deck the repairs could not clear is delivered with its slides flagged (4.2.216)
 
 Last of four follow-ups from the Y4 "round to the nearest 100" run, which lost its deck, working wall and stick-in sheets over faults on a handful of slides. Daniel: "yes, flag the slides and deliver it".

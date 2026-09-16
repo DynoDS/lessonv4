@@ -338,7 +338,7 @@ def install(repo: str, branch: str) -> int:
     clone = home() / "letterbox"
     if not (clone / ".git").exists():
         home().mkdir(parents=True, exist_ok=True)
-        cloned = subprocess.run(["git", "clone", "-q", url, str(clone)], capture_output=True, text=True)
+        cloned = subprocess.run(["git", *plugin_settings.letterbox_git_args(), "clone", "-q", url, str(clone)], capture_output=True, text=True)
         if cloned.returncode != 0:
             print(f"LETTERBOX_ERROR: the letterbox could not be cloned ({cloned.stderr.strip()}). "
                   "If it is private, this computer must be signed in to GitHub first.")

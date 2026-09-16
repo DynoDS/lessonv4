@@ -259,7 +259,7 @@ def git(clone: Path, *args: str, check: bool = True):
 
     import plugin_settings
 
-    result = subprocess.run(["git", *plugin_settings.github_auth_args(), "-C", str(clone), *args],
+    result = subprocess.run(["git", *plugin_settings.letterbox_git_args(), "-C", str(clone), *args],
                             capture_output=True, text=True)
     if check and result.returncode != 0:
         raise PlanError(f"git {' '.join(args)} failed: {(result.stderr or result.stdout).strip()}")

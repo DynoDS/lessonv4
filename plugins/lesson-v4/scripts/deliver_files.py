@@ -186,7 +186,7 @@ def copy_to_folder(
 
 
 def git(clone: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
-    result = subprocess.run(["git", *plugin_settings.github_auth_args(), "-C", str(clone), *args], capture_output=True, text=True)
+    result = subprocess.run(["git", *plugin_settings.letterbox_git_args(), "-C", str(clone), *args], capture_output=True, text=True)
     if check and result.returncode != 0:
         raise OSError(f"git {' '.join(args)} failed: {(result.stderr or result.stdout).strip()}")
     return result

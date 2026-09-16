@@ -136,6 +136,18 @@ def github_auth_args() -> list[str]:
     return ["-c", f"http.https://github.com/.extraheader=AUTHORIZATION: basic {basic}"]
 
 
+def letterbox_git_args() -> list[str]:
+    """Git options for every command that touches the letterbox.
+
+    The letterbox carries finished files byte for byte, and each lesson records
+    a check of every file as it was built. Git for Windows turns line-ending
+    conversion on for every repository, which rewrote the answers text on its
+    way out of the clone and made the filer refuse it as damaged (16 September
+    2026), so conversion is switched off here whatever the computer's setting.
+    """
+    return ["-c", "core.autocrlf=false", *github_auth_args()]
+
+
 def prepare_letterbox(url: str | None = None) -> dict | None:
     """Fetch the letterbox when the environment names it but nothing attached it.
 
@@ -156,7 +168,7 @@ def prepare_letterbox(url: str | None = None) -> dict | None:
         target.parent.mkdir(parents=True, exist_ok=True)
         source = url or f"https://github.com/{name}.git"
         result = subprocess.run(
-            ["git", *github_auth_args(), "clone", "-q", source, str(target)],
+            ["git", *letterbox_git_args(), "clone", "-q", source, str(target)],
             capture_output=True, text=True,
         )
         if result.returncode != 0:
