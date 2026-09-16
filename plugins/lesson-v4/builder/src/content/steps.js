@@ -5,6 +5,7 @@ const { splitAnswerRuns } = require('../answer-text');
 const { drawSignal } = require('../signals');
 const { drawSuccessCriteriaHelper, helperKeyForStep } = require('../success-criteria-helpers');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
+const { textWidthEm, RENDER_SAFETY } = require('../../../shared/text/comic-glyph-width');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.15;
@@ -56,16 +57,51 @@ function normaliseStep(step) {
 // not the words fitted across it, and a short row got small text even when the
 // words would have fitted at a larger size on two lines. Wrapping is what makes
 // the difference between those two, so it is measured rather than assumed.
+//
+// It is measured the way the build's final text check measures it: the words
+// the child actually sees (marks removed), in bold Comic Sans widths, breaking
+// only between words. Counting letters instead said "Choose the nearer hundred;
+// at halfway, choose the greater hundred." took three lines in a 3.35" card
+// when the real words take four, so the card passed here, came out a millimetre
+// short, and the final check refused eleven slides of a Year 4 deck after every
+// repair pass had been spent (16 September 2026). A word wider than the card
+// cannot wrap at all, so it needs more lines than any card has.
+//
+// The widths are the font's own advances, without the render allowance the
+// picture helpers add. That allowance makes a box a little wider than its words,
+// which is right for a box drawn to hold a label; here the card is already
+// drawn and the question is only whether the words wrap as the final check will
+// wrap them. Its real-font measure of a line comes out just under the advances,
+// so this stays a whisker on the cautious side, and adding the allowance too
+// refused a criterion the final check passes.
+function lineWidthIn(text, pt) {
+  return (textWidthEm(text, true) / RENDER_SAFETY) * pt / 72;
+}
+
 function wrappedLineCount(text, widthIn, pt) {
-  const glyphIn = pt * 0.52 / 72;
-  const charsPerLine = Math.max(1, Math.floor(widthIn / glyphIn));
+  const runs = splitAnswerRuns(text, true);
+  const shown = Array.isArray(runs) ? runs.map((run) => run.text).join('') : String(runs);
 
   return Math.max(
     1,
-    String(text).split(/\n/).reduce(
-      (count, line) => count + Math.max(1, Math.ceil(line.length / charsPerLine)),
-      0
-    )
+    shown.split(/\n/).reduce((count, line) => {
+      const words = line.split(/[ \t\r\f\v]+/).filter(Boolean);
+      let lines = 1;
+      let current = '';
+
+      for (const word of words) {
+        if (lineWidthIn(word, pt) > widthIn + 1e-6) return Infinity;
+        const candidate = current ? `${current} ${word}` : word;
+        if (lineWidthIn(candidate, pt) <= widthIn + 1e-6) {
+          current = candidate;
+        } else {
+          lines += 1;
+          current = word;
+        }
+      }
+
+      return count + lines;
+    }, 0)
   );
 }
 
@@ -125,17 +161,31 @@ function isReferenceStep(step) {
 // at the moment it refuses, so the budget is known too, and saying it turns a
 // retry into arithmetic.
 function budgetSentence(widthIn, heightIn, text) {
-  const glyphIn = TEXT_FONT_MIN * 0.52 / 72;
-  const charsPerLine = Math.max(1, Math.floor(usableWidth(widthIn) / glyphIn));
+  // Counted from the words the card shows and measured as the lines are, so the
+  // budget and the refusal cannot disagree: a letter-count budget once said a
+  // criterion was inside it while the real words took a line more than the
+  // card had.
+  const runs = splitAnswerRuns(text, true);
+  const shown = (Array.isArray(runs) ? runs.map((run) => run.text).join('') : String(runs))
+    .replace(/\s+/g, ' ')
+    .trim();
+  const perChar = shown.length ? lineWidthIn(shown, TEXT_FONT_MIN) / shown.length : 0;
+  const charsPerLine = perChar > 0
+    ? Math.max(1, Math.floor(usableWidth(widthIn) / perChar))
+    : 1;
   const lines = Math.max(
     1,
     Math.floor(usableHeight(heightIn) / ((TEXT_FONT_MIN / 72) * 1.28))
   );
   const budget = charsPerLine * lines;
+  const takes = wrappedLineCount(text, usableWidth(widthIn), TEXT_FONT_MIN);
+  const wraps = Number.isFinite(takes)
+    ? `, which wrap to ${takes} line${takes === 1 ? '' : 's'}`
+    : ', and one word is wider than the card';
 
   return `The card holds about ${budget} characters at ${TEXT_FONT_MIN}pt ` +
     `(${lines} line${lines === 1 ? '' : 's'} of about ${charsPerLine}); this ` +
-    `one is ${String(text).length}.`;
+    `one is ${shown.length} characters${wraps}.`;
 }
 
 // A refusal names the item the way the panel prints it.
@@ -413,6 +463,49 @@ function drawSteps(pptx, slide, zone, data, ctx) {
 
     rowHeights = steps.map((s, i) =>
       isReferenceStep(s) ? referenceHeights[i] : stepShare
+    );
+  }
+
+  // A criterion that cannot hold its matching share at the readable floor
+  // takes the height it needs, when the panel has that room to give.
+  //
+  // Matching heights are what make the steps read as one set, so they stay
+  // whenever they work. But a panel refused over one long criterion, while the
+  // short ones beside it sit in room they do not use, costs the teacher the
+  // whole deck for a millimetre: a Year 4 rounding panel of three short steps
+  // and one four-line step was refused on eleven slides with over an inch of
+  // spare height between them (16 September 2026). So only the steps that need
+  // more are made taller, by exactly what they need, and every other step keeps
+  // one shared height out of what is left. Refusing stays for a panel whose
+  // steps genuinely need more height together than it has.
+  const stepFloorNeed = steps.map((s) =>
+    isReferenceStep(s)
+      ? 0
+      : wrappedLineCount(textOf(s), usableWidth(Math.max(0.3, stepTextW)), TEXT_FONT_MIN)
+          * (TEXT_FONT_MIN / 72) * 1.28 + FIT_PAD_H + rowGapForFit
+  );
+  const stepIndexes = steps.map((s, i) => i).filter((i) => !isReferenceStep(steps[i]));
+  const stepRoom = innerH - steps.reduce(
+    (total, s, i) => (isReferenceStep(s) ? total + rowHeights[i] : total),
+    0
+  );
+  const shortOfFloor = stepIndexes.some((i) => rowHeights[i] < stepFloorNeed[i] - 1e-9);
+  const stepNeedSum = stepIndexes.reduce((total, i) => total + stepFloorNeed[i], 0);
+
+  if (shortOfFloor && stepIndexes.length && stepNeedSum <= stepRoom + 1e-9) {
+    let taller = new Set();
+    let shared = stepRoom / stepIndexes.length;
+
+    for (;;) {
+      const next = new Set(stepIndexes.filter((i) => stepFloorNeed[i] > shared + 1e-9));
+      if (next.size === taller.size) break;
+      taller = next;
+      const tallerRoom = [...taller].reduce((total, i) => total + stepFloorNeed[i], 0);
+      shared = (stepRoom - tallerRoom) / (stepIndexes.length - taller.size);
+    }
+
+    rowHeights = rowHeights.map((h, i) =>
+      isReferenceStep(steps[i]) ? h : (taller.has(i) ? stepFloorNeed[i] : shared)
     );
   }
 

@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-16 A criteria card the layout passes is a card the final check passes (4.2.213)
+
+Daniel's Y4 "round to the nearest 100" run (Codex, 4.2.212) withheld the whole deck, the wall and the stick-ins: "i dont want this happening again".
+
+**What was there.** `steps.js` sized every criteria card by counting letters at 0.52em each, while `fit_text_postprocess.py` wraps the real words in real bold Comic Sans. Criterion 4, "Choose the nearer hundred; at halfway, choose the greater hundred.", counted as three lines and wraps to four, so on the fixed `maths-turn-sc` and `maths-your-turn-sc` panel the card came out 1.27" where the words need 1.30". The layout passed it on all eleven My Turn and Your Turn slides, the preflight never reported it, and the slide designer spent its three passes on slides 18 and 22. The focused repair cleared those, the scratch build ran for the first time and the fitter refused eleven protected slides at once. Colour marks were not the cause: the same failure reproduces with every mark stripped.
+
+**The change.** Cards wrap the shown words (marks removed) with the font's own advances from `shared/text/comic-glyph-width.js`, without the render allowance picture helpers add, which lands a whisker on the cautious side of the fitter; with the allowance the preflight refused a criterion the fitter passes. When a step cannot hold its matching share at 18pt but the panel holds every step's need, only that step's card grows by what it needs and the rest keep one shared height, so the rounding panel draws three 1.25" cards and one 1.31" card instead of refusing. A refusal's budget now counts the shown characters and says how many lines they wrap to. `test/criteria-card-fit.test.js` builds real panels through the check and fails if the fitter refuses a card the layout passed. Rechecking the fifteen saved decks in `lesson-resources-output/working` changed no outcome except this one, where slides 4 to 15 now pass.
+
+**Still open from this run.** Slide 14's heading strip (a stack `text` item at weight 0.38, 0.25" tall) is refused only by the fitter, the same late-refusal shape through a box the preflight does not measure; the check stops at preflight faults, so late faults stay hidden until repairs are spent; the Miss Brooker and Mr Sear portraits were held to the 3" floor for pictures children work from; and a build refusal withholds the deck where a review finding would not.
+
 ## 2026-09-16 A lesson builds on what children can use (branch lesson-designer-cumulative-2026-09-16, unreleased)
 
 Follow-on to the entry below. Daniel approved the direction of a short Tudor sequence in which children learn the apprenticeship arrangement, rebuild it, use it on a case missing its training, and reconsider it for a family who already had money: "you used a story like structure, with do beats, that also built on top of each other." The same conversation showed two opposite failures: varied-looking tasks answerable from everyday sense, and tasks made to look historical by adding untaught, unverified laws and guild rules.
@@ -17,6 +27,7 @@ Daniel taught the rebuilt deck `Why did Tudor children work?` on 15 September 20
 **Correction to the record, not a rewrite of it.** The 4.2.202 and 4.2.205 entries below held those two sorts up as the model of a why lesson "doing its thinking with its hands", and `subject-history.md` carried that sentence as active guidance. What was genuinely approved on 14 September, and stays approved, is the wording, the plain group headings (4.2.208), the past tense and the period in the titles (4.2.201), the Teach boards (4.2.200) and the variety away from partner explanation. What was not established, and is now withdrawn from the active guidance, is that those two sorts evidenced historical reasoning. `subject-history.md` → `A why lesson is not only explaining` now keeps the lesson as the calibration for both halves and names the test a hands-on beat has to pass. The exclusive key on `knowing when bread is baked just right` (learned now, earns a living later) in `preferences.md` → the rhythm section is replaced by the three honest repairs, and a structured sort may now carry an `acceptanceCondition` so a second defensible placement reaches the teacher's notes.
 
 **Not yet seen.** No fresh lesson has been built or taught against the narrowed guidance. The branch's evaluation folder (`evaluations/lesson-designer-quality-2026-09-15/`) records what was and was not tested.
+
 
 ## 2026-09-15 Success criteria use colour to pick out what matters (4.2.212)
 
@@ -2338,3 +2349,12 @@ Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-pa
 
 
 - The slide designer exhausted its self-repair budget when exact labelled success-criteria statements were placed beside practice photographs; the focused repair succeeded by widening or heightening those criteria zones and splitting one dense teaching unit across consecutive slides.
+
+## 2026-09-16 - Year 4 maths: round to the nearest 100
+
+*Built by lesson-v4 4.2.212.*
+
+
+- The slide design check exposed eleven repeated 18pt success-criteria text overloads across slides 4–15 only after a focused repair cleared later slide faults, leaving no permitted repair route for the newly surfaced protected-slide diagnostics.
+
+- The single-speaker slide compositions could not simultaneously fit a named character, number-line working visual and complete live success criteria; half-slide fallbacks then reduced the character portraits below the readable picture floor.

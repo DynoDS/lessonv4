@@ -218,7 +218,7 @@ test('a refusal says how much the card actually holds', () => {
   // attempt is a guess, and a guess three words shorter is as likely to be
   // refused again as it is to pass.
   assert.match(message, /holds about \d+ characters at \d+pt/);
-  assert.match(message, /this one is 40\./);
+  assert.match(message, /this one is 40 characters, which wrap to \d+ lines?\./);
 });
 
 test('a criteria panel refuses by naming the room, never the wording', () => {
