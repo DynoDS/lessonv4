@@ -114,9 +114,6 @@ INTERACTIONS = {"view", "teacher-completes", "pupil-uses", "pupil-writes-on"}
 # resource designer is launched on `candidate` and `uncertain` (and when the
 # block is absent altogether); only a validated `none` lets the run skip it.
 RESOURCE_DECISIONS = {"candidate", "none", "uncertain"}
-# Task shapes that leave a figure in the child's book to sort or classify into,
-# which is the stick-in pedagogy's own test for a printed piece.
-WRITE_ON_TASK_KINDS = {"sort", "evidence-classification"}
 ANSWER_KINDS = {"exact", "model", "standard", "none"}
 ANSWER_DELIVERIES = {"teacher-only", "answer-slide", "visible-in-unit", "none"}
 MAIN_ANSWER_SLIDE_KINDS = {
@@ -2406,14 +2403,16 @@ def write_on_evidence(unit: dict[str, Any]) -> str | None:
     None when nothing in the unit says so. The stick-in pedagogy's own test is
     whether the child writes onto a figure they could not redraw by hand; the
     two facts the contract records that point at it are a representation the
-    pupil writes on and a task that sorts or classifies into a structure.
+    pupil writes on and a sort children do with printed cards. A sort done from
+    the board, placed on whiteboards or in books, prints nothing: treating it as
+    evidence refused an honest `none` and launched a worker to find nothing
+    (Year 4 history, 16 September 2026).
     """
     for ref in unit.get("representationRefs") or []:
         if isinstance(ref, dict) and ref.get("interaction") == "pupil-writes-on":
             return f"children write on {ref.get('ref')} (interaction pupil-writes-on)"
-    task = unit.get("taskStructure")
-    if isinstance(task, dict) and task.get("kind") in WRITE_ON_TASK_KINDS:
-        return f"its task is a {task.get('kind')} children record into"
+    if sort_handled_as_cards(unit):
+        return "its sort is done with printed cards, which is a card kit"
     return None
 
 

@@ -142,7 +142,7 @@ def test_none_is_refused_while_children_write_on_a_representation():
     validator.validate_design(design, photos)
 
 
-def test_none_is_refused_while_a_task_sorts_into_a_structure():
+def test_a_board_sort_does_not_contradict_none_but_a_card_sort_does():
     design, photos = design_with(NONE)
     unit = design["teachingSequence"][-1]
     unit["pupilInstruction"] = "Sort each shape into the right group."
@@ -157,8 +157,16 @@ def test_none_is_refused_while_a_task_sorts_into_a_structure():
             {"id": "item-002", "label": "equilateral triangle", "detail": None, "photoRef": None},
         ],
     }
+    # Done from the board: nothing to print, so the honest none stands.
+    validator.validate_design(design, photos)
+    assert run_command(design).stdout.strip() == f"STICK_IN_SKIP: {NONE['reason']}"
+
+    # The same sort done with printed cards is a card kit, so none is refused.
+    unit["taskStructure"]["handling"] = {
+        "kind": "cards", "per": "pair", "groupCount": None, "where": "At tables, one set between two."
+    }
     message = failure(design, photos)
-    assert "contradicted by" in message and "sort" in message, message
+    assert "contradicted by" in message and "printed cards" in message, message
     assert unit["sourceUnitId"] in message
 
 

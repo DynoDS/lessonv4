@@ -224,7 +224,7 @@ Check:
 - pupil wording is clear, natural, accurate and age-appropriate;
 - a model answer reads as strong, attainable pupil writing rather than adult prose;
 - necessary subject vocabulary is taught and supported;
-- vocabulary definitions are useful to children;
+- vocabulary definitions are useful to children, and describe the same concept the teaching uses and the success criteria assess;
 - sticky knowledge is accurate, stable and worth carrying;
 - each moment carries only what the class can take in at once (the User-fit judgement above owns that test; do not run it twice);
 - support remains where it enables the intended thinking, and its words still fit each task using it. Read the resolved criteria, worked reference and word bank alongside that task's actual sources and required response, following `preferences.md` → Support, Checking and Release. A valid reference ID or suitability for an earlier task is not evidence of suitability here. For needed support omitted from a sheet, check the planned shared access before making a finding; do not assume either that nothing is available or that the board will always be there;

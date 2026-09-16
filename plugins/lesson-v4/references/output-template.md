@@ -1093,7 +1093,7 @@ The lesson's own word on the two printed extras it might earn, so a resource des
 }
 ```
 
-`decision` is exactly `candidate`, `none` or `uncertain`. `candidate` names at least one source unit; `none` names no unit and gives, in a sentence, why the child's book alone carries the lesson; `uncertain` gives its reason and launches the specialist as `candidate` does. Only a validated stick-in `none` skips the stick-in designer, and the validator refuses one while any unit has children writing on a representation or sorting into a task structure, naming the unit. The wall entry is recorded for evidence and never skips the wall designer.
+`decision` is exactly `candidate`, `none` or `uncertain`. `candidate` names at least one source unit; `none` names no unit and gives, in a sentence, why the child's book alone carries the lesson; `uncertain` gives its reason and launches the specialist as `candidate` does. Only a validated stick-in `none` skips the stick-in designer, and the validator refuses one while any unit has children writing on a representation or sorting printed cards (`handling.kind` is `cards`), naming the unit. A sort done from the board does not contradict a `none`. The wall entry is recorded for evidence and never skips the wall designer.
 
 ### Slide design notes
 

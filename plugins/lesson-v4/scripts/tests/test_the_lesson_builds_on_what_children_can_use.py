@@ -148,6 +148,24 @@ class TheOptionalOperationsTableTests(unittest.TestCase):
         self.assertIn("when the operation of a beat the lesson relies on is unclear", flat(DESIGNER))
 
 
+class TheCleanupPassReachesItsOwnersTests(unittest.TestCase):
+    """Wiring only, for the bounded cleanup after the Victorian lesson
+    (16 September 2026): the words are where the designer and reviewer read
+    them. Behaviour is not proven here."""
+
+    def test_history_labels_made_up_children_and_sizes_the_final_claim(self):
+        history = flat(HISTORY)
+        self.assertIn("**A made-up child is labelled as made up where children read the story.**", history)
+        self.assertIn("**The final task claims no more than the evidence children studied.**", history)
+        self.assertIn("an answer that generalises from the one story alone claims more than one story can show", flat(PREFERENCES))
+
+    def test_vocabulary_and_worksheet_choices_are_owned(self):
+        self.assertIn("Read each definition beside the teaching that uses the term and the success criteria that assess it", flat(DESIGNER))
+        self.assertIn("describe the same concept the teaching uses and the success criteria assess", flat(ROOT / "agents" / "design-reviewer.md"))
+        self.assertIn("When the sheet asks for essentially the same performance as the slide Practise, choose one", flat(PREFERENCES))
+        self.assertIn("A sort done from the board, recorded on whiteboards or in books, prints nothing", flat(DESIGNER))
+
+
 class ContrastsAndHistoryTests(unittest.TestCase):
     def test_the_contrasts_calibrate_a_short_sequence_with_its_boundary(self):
         text = read_section("task-contrasts.md::The contrasts")
