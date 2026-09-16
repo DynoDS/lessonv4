@@ -156,6 +156,22 @@ function imageWillDraw(imageData, ctx) {
 // and never count at all.
 const WORKING_PICTURE_SKIP_KEYS = new Set(['inset', 'words', 'supports', 'decorations', 'speakerNotes']);
 
+// The class characters (Mr Sear, Miss Brooker, Bailey) are drawings of who is
+// speaking. Children read what the character says, never the drawing, so a
+// portrait is context however small it lands, exactly as a picture marked
+// `essential: false` is: out of the readable-floor check and out of the count
+// of pictures children work from. A Year 4 rounding deck set Miss Brooker and
+// Mr Sear beside a claim and a number line, and the build held each face to the
+// 3" floor for the only picture on the slide and refused both slides (16
+// September 2026). Matched on the engine's own character folder, wherever the
+// plugin is installed, because a run writes its install path into the spec;
+// a sourced photograph that merely shares a file name keeps its floor.
+const CLASS_CHARACTER_PORTRAIT = /(^|[\\/])assets[\\/]children[\\/](mr-sear|miss-brooker|bailey)\.png$/i;
+
+function isClassCharacterPortrait(imagePath) {
+  return typeof imagePath === 'string' && CLASS_CHARACTER_PORTRAIT.test(imagePath);
+}
+
 function workingPicturePaths(slideSpec) {
   const paths = [];
   const visit = (node) => {
@@ -164,7 +180,12 @@ function workingPicturePaths(slideSpec) {
       return;
     }
     if (!node || typeof node !== 'object') return;
-    if (node.type === 'image' && node.essential !== false && typeof node.imagePath === 'string') {
+    if (
+      node.type === 'image' &&
+      node.essential !== false &&
+      typeof node.imagePath === 'string' &&
+      !isClassCharacterPortrait(node.imagePath)
+    ) {
       paths.push(node.imagePath);
     }
     for (const [key, value] of Object.entries(node)) {
@@ -267,6 +288,7 @@ function pictureShape(data, ctx) {
 function checkPictureCellSize(zone, data, ctx) {
   if (!ctx || !data || data.essential === false) return;
   if (!data.imagePath) return;
+  if (isClassCharacterPortrait(data.imagePath)) return;
   if (resolveFit(data, false) !== 'contain') return;
   const shape = pictureShape(data, ctx);
   if (!shape) return;

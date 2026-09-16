@@ -238,6 +238,44 @@ test('supporting context is out of the check, however small its corner', () => {
   );
 });
 
+// The class characters (Mr Sear, Miss Brooker, Bailey) show who is speaking.
+// Children read the words beside them, not the drawing, so a face is context
+// however small it is drawn. A Year 4 rounding deck had Miss Brooker and Mr Sear
+// beside a claim and a number line held to the 3" hero floor, and the slide
+// was refused over drawings nobody works from (16 September 2026). The path is
+// matched wherever the plugin happens to be installed, because a run bakes its
+// own install folder into the spec.
+const PORTRAITS = [
+  'C:/Users/Daniel/.codex/plugins/cache/lessonv4/lesson-v4/4.2.212/builder/assets/children/miss-brooker.png',
+  'D:\\Teaching\\plugins\\lesson-v4\\builder\\assets\\children\\mr-sear.png',
+  '/home/user/plugins/lesson-v4/builder/assets/children/bailey.png',
+];
+
+test('a class character portrait is out of the check, however small it is drawn', () => {
+  for (const imagePath of PORTRAITS) {
+    const data = { type: 'image', imagePath, fit: 'contain' };
+    assert.equal(
+      floorWarning(HEIGHT_BOUND, data, { slideIndex: 0, lesson: lessonWith(data) }),
+      null,
+      `${imagePath} was held to a picture floor`
+    );
+  }
+});
+
+test('a class character portrait does not count towards another picture\'s tier', () => {
+  const data = { type: 'image', imagePath: 'unsplash/river.jpg' };
+  const lesson = lessonWith(data, 0, [{ type: 'image', imagePath: PORTRAITS[0] }]);
+  const message = floorWarning(TWO_POINT_FOUR, data, { slideIndex: 0, lesson });
+  assert.ok(message, 'the photograph is still the only picture children work from');
+  assert.match(message, /the only picture children work from on this slide/);
+});
+
+test('a sourced photograph that happens to share a character\'s file name keeps its floor', () => {
+  const data = { type: 'image', imagePath: 'unsplash/mr-sear.png' };
+  const message = floorWarning(TWO_POINT_FOUR, data, { slideIndex: 0, lesson: lessonWith(data) });
+  assert.ok(message, 'only the engine\'s own character drawings are exempt');
+});
+
 test('a vocabulary card picture keeps the base floor, not the hero floor', () => {
   // A picture beside a word is not one children study, and it is drawn from
   // `words`, which the tier walk skips. It is held to 1.6" as it always was.

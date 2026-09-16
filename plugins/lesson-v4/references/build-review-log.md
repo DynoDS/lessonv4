@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-16 A class character's face is context, not a picture children work from (4.2.215)
+
+Third of four follow-ups from the Y4 "round to the nearest 100" run. Asked whether the class characters should be treated as supporting pictures and never held to the 3" rule, or kept big, Daniel: "Thats fine".
+
+**What was there.** The slide designer set Miss Brooker (slide 18) and Mr Sear (slide 22) as `image` objects beside a claim and a number line. The readable-floor check counts every `image` without `essential: false` as a picture children work from, so each face was "the only picture children work from on this slide" and held to 3.0", drawn at 1.45" and 1.12", and `PICTURE_BELOW_READABLE_FLOOR` refused both slides. The message's own way out (`essential: false`) was never taken.
+
+**The change.** `image.js` recognises the engine's character drawings (`assets/children/mr-sear.png`, `miss-brooker.png`, `bailey.png`) under any install path, since a run writes its install folder into the spec, and treats them as `essential: false` is treated: out of the floor check and out of the tier count, so a photograph beside a portrait is still the only picture children work from. A sourced photograph that happens to share a character's file name keeps its floor. `slide-visual-sizing.md` names the exemption beside `essential: false`. Tests: a portrait at three install paths raises nothing, a portrait does not lift a photograph's tier, a same-named photograph is still checked. Builder 649 pass; Python unchanged (same 11 failures as before).
+
+**Evidence.** The run's final `lesson.json`, rechecked, now fails only on slide 14's 0.25" heading strip, a composition fault the check reports in full.
+
+**Still open.** A build refusal withholds the whole deck.
+
 ## 2026-09-16 One slide check reports every fault, not the first layer (4.2.214)
 
 Second of four follow-ups from the Y4 "round to the nearest 100" run. Daniel: "yes do that next", after "i dont want this happening again".
