@@ -172,11 +172,16 @@ def command_for(args) -> list[str]:
     working = Path(args.working_dir)
     output = Path(args.output_dir)
     if args.kind == "slides":
+        # A lesson run hands over a deck whose faults survived the repair round,
+        # every faulty slide named, instead of withholding it (Daniel, 16
+        # September 2026: "flag the slides and deliver it"). A deck PowerPoint
+        # would call broken is still refused by the build itself.
         return [
             "node",
             str(plugin_root / "builder" / "build.js"),
             str(working / "lesson.json"),
             str(output),
+            "--deliver-flagged",
         ]
     if args.kind == "worksheets":
         return [
@@ -228,6 +233,21 @@ def command_for(args) -> list[str]:
             command.extend(["--file", filename])
         return command
     raise FixedResourceError(f"unsupported kind: {args.kind}")
+
+
+def slides_flagged(stdout: str) -> dict:
+    """The slides a delivered deck still carries faults on, from the build's
+    one `SLIDES_FLAGGED:` line. No line means nothing to check."""
+    for line in stdout.splitlines():
+        if line.startswith("SLIDES_FLAGGED: "):
+            try:
+                payload = json.loads(line[len("SLIDES_FLAGGED: "):])
+            except json.JSONDecodeError as exc:
+                raise FixedResourceError(f"unreadable SLIDES_FLAGGED line: {exc}")
+            if not isinstance(payload, dict):
+                raise FixedResourceError("SLIDES_FLAGGED line is not an object")
+            return payload
+    return {}
 
 
 def marker_paths(stdout: str, marker: str) -> list[Path]:
@@ -394,12 +414,21 @@ def run(args) -> int:
         print(f"FIXED_RESOURCE_FAILED {args.kind}", file=sys.stderr)
         return 1
 
+    if args.kind == "slides":
+        flags = slides_flagged(completed.stdout)
+        summary["flaggedSlides"] = flags.get("slides", [])
+        summary["flaggedFaults"] = flags.get("faults", [])
+
     summary["degraded"] = degraded
     summary["outputs"] = [
         {"path": str(path), "sha256": sha256_file(path)} for path in paths
     ]
     summary["ok"] = True
     atomic_write_json(Path(args.summary_output), summary)
+    if summary.get("flaggedSlides"):
+        numbers = ", ".join(str(n) for n in summary["flaggedSlides"])
+        print(f"FIXED_RESOURCE_FLAGGED {args.kind}: {numbers}")
+        return 0
     marker = "FIXED_RESOURCE_DEGRADED" if degraded else "FIXED_RESOURCE_OK"
     print(f"{marker} {args.kind}")
     return 0

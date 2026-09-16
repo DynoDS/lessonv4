@@ -660,7 +660,8 @@ only when this machine had no render route; treat that as a quieter run, not a
 fault. It is not a licence to skip the measurement: the Slide Decorator renders
 the deck again for its own pass, so where this file is missing it measures those
 pages itself before answering whether any slide has room. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
-repair.
+repair. On `SLIDE_DESIGN_CHECK_FAILED`, first copy its `Retained candidate:` to
+`[WORKING_DIR]/lesson.json`, the file the repair edits.
 
 **The moment `lesson.json` passes, three workers start together:** the Slide
 Decorator below, the Working Wall Designer (Track D) and the stick-in route
@@ -807,6 +808,8 @@ Build slides directly:
 
 Require `ok: true` and the exact output paths in the summary. On a semantic
 build diagnostic, run one focused Slide Designer repair and rebuild once.
+`FIXED_RESOURCE_FLAGGED slides: [numbers]` is a delivered deck; slides not yet
+repaired get their one round first.
 
 The Slide Decorator remains the earlier optional-picture stage. It runs the optional drawing pass the
 Slide Designer used to run last, at the same point and over the same private
@@ -1296,6 +1299,12 @@ repair's confirmation, and a repair whose rebuild still fails has not worked.
 There is no second round for the same fault. Record the round in the run's
 friction file, whatever its result.
 
+**A deck the round did not clear still ships**, its slides flagged for the
+teacher (Daniel, 16 September 2026: "flag the slides and deliver it"). Hand `lesson.json` on as it stands: start any wall
+or stick-in track waiting for it, skip the Slide Decorator with
+`SLIDE_DECORATION_OMITTED: slide check did not pass`, and build as Track A
+says. Exclude the deck only when the build cannot write one.
+
 A repair that declares a real cross-resource impact has changed something
 another resource mirrors. Rebuild both affected resources and recheck that
 relationship. Carry any unresolved impact
@@ -1317,8 +1326,8 @@ surfaces, never to exclusion.
 
 ## Phase 3.6 - Finalisation
 
-Every branch has now either built its resource and passed that resource's check
-or been excluded with a reason. There is no review of the finished files: the
+Every branch has now either built its resource or been excluded with a
+reason. There is no review of the finished files: the
 design reviewer is the pipeline's one judgement net, and a fault the teacher
 spots in a built resource is investigated and repaired in the engine, so it does
 not recur. Prove picture provenance, tidy transient work and write the record.
@@ -1449,14 +1458,14 @@ A package missing an earned output is `PARTIAL`; a fault that stopped a resource
 own check is `BLOCKED`; a wall the builder could not verify against its page contract, which
 reaches the report as `PAGE_FIT_UNVERIFIED`, is `UNVERIFIED`. Use exact summary
 output paths, never guessed filenames. `BLOCKED` labels the record, not the
-delivery: every resource that built and passed its own check is handed over,
+delivery: every resource that built is handed over,
 faults named first. Exclusion is for a resource that never built or failed its
 own check.
 
 ### Report format
 
 Keep the teacher report concise. Always include a `Teacher flags` section, using
-`None` when empty. It carries the design reviewer's unresolved findings, any
+`None` when empty. It carries each flagged slide and its fault, the design reviewer's unresolved findings, any
 declared cross-resource impact from a repair, every picture a designer was
 uneasy about, and every `SETUP_NOTE:` the start-up check printed. Worksheet pupil sheets and answer key remain separate. State when
 a two-lesson scope covers Lesson 1 only and name deferred learning.

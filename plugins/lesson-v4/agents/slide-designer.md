@@ -600,7 +600,7 @@ Do not repair:
 When the check still fails after the allowed self-repair passes, or every remaining required repair is outside your authority:
 
 * leave canonical `[WORKING_DIR]/lesson.json` unchanged;
-* retain `[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]`;
+* retain `[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]`, and name it on one `Retained candidate: [path]` line. It is not discarded: the orchestrator hands it to the focused repair, and if that repair cannot clear it either, the deck is built from it and delivered with its faulty slides named for the teacher to check, so leave it the best candidate you reached;
 * return `SLIDE_DESIGN_CHECK_FAILED`;
 * reproduce every unresolved `BUILD_DIAGNOSTIC:` line verbatim;
 * name whether the unresolved owner is content, helper, technical, picture or slide composition;

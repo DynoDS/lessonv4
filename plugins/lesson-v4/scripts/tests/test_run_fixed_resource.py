@@ -107,6 +107,50 @@ console.log('Wrote: ' + out);
         self.assertEqual(summary["kind"], "slides")
         self.assertEqual(len(summary["outputs"][0]["sha256"]), 64)
 
+    def test_slides_with_faults_are_delivered_flagged(self) -> None:
+        # Daniel, 16 September 2026: "flag the slides and deliver it". The
+        # lesson run asks the slide build to hand over a deck whose faults
+        # survived the repair round, and the summary names every slide to check.
+        self.js_writer(
+            "builder/build.js",
+            """const fs=require('fs'); const p=require('path');
+if (!process.argv.includes('--deliver-flagged')) { console.error('not asked to deliver flagged'); process.exit(1); }
+const out=p.join(process.argv[3], 'Lesson.pptx');
+fs.writeFileSync(out, 'pptx');
+console.log('Wrote: ' + out);
+console.log('SLIDES_FLAGGED: ' + JSON.stringify({slides:[14,18], faults:[
+  {slide:14, signal:'TEXT_OVERLOAD', message:'too shallow'},
+  {slide:18, signal:'STEP_TEXT_OVERLOAD', message:'criterion 1 does not fit'}]}));
+""",
+        )
+        completed = self.run_script("slides", "--lesson-name", "Lesson")
+        summary = json.loads(
+            (self.root / "summary.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(summary["ok"])
+        self.assertEqual(summary["flaggedSlides"], [14, 18])
+        self.assertEqual(
+            [f["signal"] for f in summary["flaggedFaults"]],
+            ["TEXT_OVERLOAD", "STEP_TEXT_OVERLOAD"],
+        )
+        self.assertIn("FIXED_RESOURCE_FLAGGED slides: 14, 18", completed.stdout)
+
+    def test_a_clean_slide_build_names_no_flags(self) -> None:
+        self.js_writer(
+            "builder/build.js",
+            """const fs=require('fs'); const p=require('path');
+const out=p.join(process.argv[3], 'Lesson.pptx');
+fs.writeFileSync(out, 'pptx');
+console.log('Wrote: ' + out);
+""",
+        )
+        completed = self.run_script("slides", "--lesson-name", "Lesson")
+        summary = json.loads(
+            (self.root / "summary.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(summary["flaggedSlides"], [])
+        self.assertIn("FIXED_RESOURCE_OK slides", completed.stdout)
+
     def test_existing_output_is_archived_before_build(self) -> None:
         (self.output / "Lesson.pptx").write_text("old", encoding="utf-8")
         self.js_writer(

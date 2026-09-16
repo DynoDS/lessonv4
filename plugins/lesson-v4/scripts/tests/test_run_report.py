@@ -284,6 +284,48 @@ class TestRunReport(RunReportCase):
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def flag_slides(self, numbers):
+        self.write_json(
+            self.working / "build-results" / "slides.json",
+            {"ok": True, "kind": "slides", "flaggedSlides": numbers, "flaggedFaults": []},
+        )
+
+    def test_a_flagged_deck_names_its_slides_and_is_partial(self):
+        """Daniel, 16 September 2026: "flag the slides and deliver it". A deck
+        whose faults survived the repair round is handed over, and the teacher
+        is told exactly which slides to look at before teaching."""
+        self.flag_slides([14, 18])
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL\n\nSlides to check: 14, 18",
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_flagged_slide_left_off_the_report_is_rejected(self):
+        self.flag_slides([14, 18])
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL\n\nSlides to check: 14",
+        }))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("18", result.stdout)
+
+    def test_a_flagged_deck_cannot_be_complete(self):
+        self.flag_slides([14])
+        result = self.validate(self.write_report({
+            "outcome": "Package status: COMPLETE\n\nSlides to check: 14",
+        }))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("PARTIAL, not COMPLETE", result.stdout)
+
+    def test_a_flagged_deck_is_never_reported_as_withheld(self):
+        self.flag_slides([14])
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL\n\nSlides to check: 14",
+            "delivered": f"- worksheets: `{self.worksheets_out}`\n- worksheets: `{self.answers_out}`",
+            "excluded": "- slides: NOT DELIVERED - slide 14 did not fit.",
+        }))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Delivered resources", result.stdout)
+
     def test_excluded_earned_resource_cannot_be_complete(self):
         self.write_json(self.working / "working-wall.json", {"cards": [{"type": "words"}]})
         report = self.write_report(

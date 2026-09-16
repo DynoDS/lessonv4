@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-16 A deck the repairs could not clear is delivered with its slides flagged (4.2.216)
+
+Last of four follow-ups from the Y4 "round to the nearest 100" run, which lost its deck, working wall and stick-in sheets over faults on a handful of slides. Daniel: "yes, flag the slides and deliver it".
+
+**What was there.** Any fault left after the focused repair round meant `build.js` wrote no deck, the wall and stick-in tracks never started, and the report excluded all three. The 4.2.166 deliver-not-withhold rule covered review findings on a built deck, not a build that refused.
+
+**The change.** `build.js --deliver-flagged` (passed only by `run-fixed-resource.py slides`, never in a design preview) writes the deck anyway: a slide the preflight cannot lay out becomes a "check this slide" page (title, a plain red note, script still in the notes; the engine's reason goes to the report, because on the first render it read as nonsense on a Year 4 board), every other slide is drawn as designed, and `SLIDES_FLAGGED:` names each slide carrying a fault that would have withheld it (layout, render, text fit, missing picture, literal marker, picture floor, caption and criteria capacity). A file PowerPoint would call broken, or text never measured, still stops the build. Without the switch the build refuses exactly as before, so the slide designer's check still sends faults back and a hand rebuild never replaces a working deck with a faulty one. The runner records `flaggedSlides` and `flaggedFaults` and prints `FIXED_RESOURCE_FLAGGED slides: [numbers]`. `validate-run-report.py` requires a `Slides to check:` line naming every flagged slide, refuses a flagged deck listed as withheld, and refuses `COMPLETE`. The slide designer names its `Retained candidate:` on failure; the playbook copies it to `lesson.json` for the repair, and Phase 3.5 says a deck the round did not clear still ships (wall and stick-ins start, decorator skipped with `SLIDE_DECORATION_OMITTED`). The playbook text was written tight to stay inside the runtime size budgets rather than raise them; the validator's messages carry the exact line to add.
+
+**Evidence.** The run's pre-repair `lesson.json` through the real runner: `FIXED_RESOURCE_FLAGGED slides: 14, 18, 22`, a 23-slide deck written. Rendered: slide 14's shallow heading strip reads fine on the board, slides 18 and 22 are "check this slide" pages. Tests: builder `deliver-flagged.test.js` (refused without the switch; written and named with it), runner flagged and clean summaries, four report tests. Builder 651 pass; Python unchanged (same 11 failures as before).
+
 ## 2026-09-16 A class character's face is context, not a picture children work from (4.2.215)
 
 Third of four follow-ups from the Y4 "round to the nearest 100" run. Asked whether the class characters should be treated as supporting pictures and never held to the 3" rule, or kept big, Daniel: "Thats fine".

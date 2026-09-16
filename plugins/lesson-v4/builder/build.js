@@ -9,7 +9,7 @@ const requireGlobal = require('./src/require-global');
 const PptxGenJS = requireGlobal('pptxgenjs');
 
 const { SLIDE_W, SLIDE_H } = require('./src/layout');
-const { COLOURS, SUBJECT_COLOURS } = require('./src/styles');
+const { FONT, COLOURS, SUBJECT_COLOURS } = require('./src/styles');
 const { drawSlide } = require('./src/templates');
 const { getWarnings, clearWarnings, note } = require('./src/warnings');
 const { validateLesson, friendlyParseError } = require('./src/validate');
@@ -75,6 +75,23 @@ function usage() {
 //
 // It adds facts and decides nothing. Who owns a fault, and what should change
 // because of it, stays where it already lives.
+// Every diagnostic this build printed, so a flagged delivery can name the
+// slides that carry one without parsing its own output back.
+const recordedDiagnostics = [];
+
+// The faults that would have withheld the deck. A delivered deck names every
+// slide that carries one of these; advisory notes (a figure with spare room, a
+// busy slide) are not faults and flag nothing.
+const FLAGGING_SIGNALS = new Set([
+  'TEXT_OVERLOAD',
+  'SLIDE_RENDER_FAILED',
+  'SLIDE_PICTURE_MISSING',
+  'SLIDE_MARKER_LITERAL',
+  'PICTURE_BELOW_READABLE_FLOOR',
+  'FIXED_CAPTION_CAPACITY',
+  'SUCCESS_CRITERIA_CAPACITY',
+]);
+
 function diagnostic(signal, faultClass, location, message) {
   const payload = {
     signal,
@@ -85,7 +102,42 @@ function diagnostic(signal, faultClass, location, message) {
     ),
     message: String(message).replace(/\s+/g, ' ').trim(),
   };
+  recordedDiagnostics.push(payload);
   console.log(`BUILD_DIAGNOSTIC: ${JSON.stringify(payload)}`);
+}
+
+// What a slide that could not be laid out looks like in a delivered deck: its
+// title, and a plain note to the teacher saying the slide needs checking. Left
+// blank, it read as a slide meant to be empty; the note is what makes it
+// impossible to teach past without noticing. The engine's reason goes to the
+// run report, not onto the board: "criterion 1 does not fit its card at the
+// 18pt readable minimum" is a sentence for whoever repairs the spec, and it
+// read as nonsense on a Year 4 slide. The slide's script is still in its notes.
+function drawCheckThisSlide(slide, slideData) {
+  const title = String((slideData && slideData.title) || '').trim();
+  if (title) {
+    slide.addText(title, {
+      x: 0.6, y: 0.4, w: 12.1, h: 1.0,
+      fontFace: FONT, fontSize: 32, bold: true, color: COLOURS.body,
+      align: 'left', valign: 'middle', margin: 0,
+      objectName: 'NOFIT_check-this-slide-title',
+    });
+  }
+  slide.addText(
+    [
+      { text: 'Check this slide before teaching.', options: { bold: true, color: 'C00000', breakLine: true } },
+      {
+        text: 'What it needs to show would not fit, so it has not been drawn. ' +
+          'Its script is in the notes, and the run report says what did not fit.',
+        options: { color: COLOURS.body },
+      },
+    ],
+    {
+      x: 0.6, y: 1.8, w: 12.1, h: 4.6,
+      fontFace: FONT, fontSize: 28, align: 'left', valign: 'top', margin: 0,
+      objectName: 'NOFIT_check-this-slide-note',
+    }
+  );
 }
 
 async function main() {
@@ -100,12 +152,21 @@ async function main() {
   const skipOptionalDecorations = rawArgs.includes(
     "--skip-optional-decorations"
   );
+  // The lesson run builds with this: a deck whose faults survived the repair
+  // round is written anyway, each faulty slide named on `SLIDES_FLAGGED:`,
+  // because a teacher fixes one slide in a minute and a withheld deck costs the
+  // lesson (Daniel, 16 September 2026: "flag the slides and deliver it").
+  // Without it the build refuses as before, which is what keeps the slide
+  // designer's own check sending faults back for repair. Never in a design
+  // preview: that check exists to refuse.
+  const deliverFlagged = rawArgs.includes("--deliver-flagged") && !designPreview;
   const args = rawArgs.filter(
     (arg) =>
       arg !== "--cards" &&
       arg !== "--no-cards" &&
       arg !== "--skip-optional-decorations" &&
-      arg !== "--design-preview"
+      arg !== "--design-preview" &&
+      arg !== "--deliver-flagged"
   );
   if (args.length < 1) usage();
   const jsonPath = path.resolve(args[0]);
@@ -253,7 +314,10 @@ async function main() {
   const layoutFailedSlides = new Set();
   if (preflight.errors.length) {
     for (const error of preflight.errors) {
-      if (error.slide) layoutFailedSlides.add(error.slide);
+      if (error.slide) {
+        layoutFailedSlides.add(error.slide);
+        FLAGGING_SIGNALS.add(error.signal);
+      }
     }
     console.error(
       `\n${preflight.errors.length} layout problem(s):`
@@ -272,8 +336,11 @@ async function main() {
       );
     }
     console.error(
-      'Those slides are left blank in this build so the rest of the deck is still ' +
-        'checked. No deck will be published until they are fixed.'
+      deliverFlagged
+        ? 'Those slides carry a "check this slide" note in the deck, and the rest of ' +
+            'the deck is built and checked as normal.'
+        : 'Those slides are left blank in this build so the rest of the deck is still ' +
+            'checked. No deck will be published until they are fixed.'
     );
   }
 
@@ -313,7 +380,11 @@ async function main() {
       decorationPlan: decorationPlans[i],
     };
     try {
-      if (!layoutFailedSlides.has(i + 1)) drawSlide(pptx, slide, coreSlideData, ctx);
+      if (!layoutFailedSlides.has(i + 1)) {
+        drawSlide(pptx, slide, coreSlideData, ctx);
+      } else if (deliverFlagged) {
+        drawCheckThisSlide(slide, coreSlideData);
+      }
     } catch (err) {
       failedSlides.push(i + 1);
       console.error(`[error] slide ${i + 1}: ${err.message}`);
@@ -418,7 +489,7 @@ async function main() {
           `without Priority 3 decoration.`
       );
 
-      const fallback = rebuildWithoutOptionalDecorations(jsonPath, outputDir, { designPreview });
+      const fallback = rebuildWithoutOptionalDecorations(jsonPath, outputDir, { designPreview, deliverFlagged });
       if (fallback.status !== 0) {
         console.error(
           "The decoration-free fallback build also failed. Its output above is " +
@@ -480,13 +551,29 @@ async function main() {
     );
   }
 
-  const publishable =
+  const clean =
     autofit.status === 'AUTOFIT_OK' &&
     failedSlides.length === 0 &&
     layoutFailedSlides.size === 0 &&
     pictures.faults.length === 0 &&
     markers.faults.length === 0 &&
     geometry.faults.length === 0;
+  // A flagged deck still has to be a deck: every shape at a coordinate
+  // PowerPoint can read, and every text box measured. Text measured and too
+  // heavy is a fault on a slide; text never measured is a machine that needs
+  // setting up, and says nothing about which slides to check.
+  const flaggable =
+    deliverFlagged &&
+    geometry.faults.length === 0 &&
+    (autofit.status === 'AUTOFIT_OK' || autofit.status === 'TEXT_OVERLOAD');
+  const publishable = clean || flaggable;
+
+  if (autofit.status !== 'AUTOFIT_OK' && publishable) {
+    console.error(`${autofit.status}: ${autofit.message}`);
+    for (const item of autofitDiagnostics(autofit)) {
+      diagnostic(item.code, item.owner, item.location, item.message);
+    }
+  }
 
   if (!publishable) {
     if (pictures.faults.length) {
@@ -530,7 +617,7 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
   if (warnings.length) {
     console.log(`\n${warnings.length} warning(s):`);
     warnings.forEach(w => console.log('  ' + w));
-  } else if (publishable) {
+  } else if (clean) {
     // Only ever say this when it is true. "No warnings." used to print beside
     // seven render errors, which is the one line in this output a reader trusts.
     // It also used to print before the text had been measured at all, so a deck
@@ -545,7 +632,7 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
         `could not be laid out: ${numbers.join(', ')}. The layout problem(s) above say ` +
         'why. Fix the slide spec, then rebuild.'
     );
-    process.exitCode = 1;
+    if (!publishable) process.exitCode = 1;
   }
 
   // Last, so it is the line still on screen, and loudest, because everything
@@ -560,11 +647,14 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
       `${slides.length === 1 ? 'slide' : 'slides'} failed to render: ` +
       `${failedSlides.join(', ')}.`
     );
+    const outcome = publishable
+      ? 'the deck was delivered with it flagged'
+      : 'no deck was published';
     console.error(
       one
-        ? 'That slide could not be drawn, so no deck was published. The [error] line ' +
+        ? `That slide could not be drawn, so ${outcome}. The [error] line ` +
           'above says what went wrong.'
-        : 'Those slides could not be drawn, so no deck was published. The [error] lines ' +
+        : `Those slides could not be drawn, so ${outcome}. The [error] lines ` +
           'above say what went wrong on each one.'
     );
     for (const slideNumber of failedSlides) {
@@ -578,8 +668,26 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
     // exitCode rather than exit(), so every line above still flushes. An
     // incomplete deck is never renamed over a good one: the temporary file was
     // deleted above, and the [error] lines are how you find out which slide
-    // broke.
-    process.exitCode = 1;
+    // broke. A flagged delivery was asked to hand it over named, and has.
+    if (!publishable) process.exitCode = 1;
+  }
+
+  // The one line a caller reads to know which slides the teacher must check.
+  // Every slide carrying a fault that would have withheld the deck is on it,
+  // including a picture below its readable floor, which the build itself
+  // never refuses but the slide check does.
+  if (deliverFlagged && publishable) {
+    const faults = recordedDiagnostics
+      .filter((d) => FLAGGING_SIGNALS.has(d.signal) && Number.isInteger(d.location.slide))
+      .map((d) => ({ slide: d.location.slide, signal: d.signal, message: d.message }));
+    const flaggedSlides = [...new Set(faults.map((f) => f.slide))].sort((a, b) => a - b);
+    if (flaggedSlides.length) {
+      console.log(`SLIDES_FLAGGED: ${JSON.stringify({ slides: flaggedSlides, faults })}`);
+      console.error(
+        `\nDelivered with ${flaggedSlides.length} slide(s) to check before teaching: ` +
+          `${flaggedSlides.join(', ')}.`
+      );
+    }
   }
 }
 

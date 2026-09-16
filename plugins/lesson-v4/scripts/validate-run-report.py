@@ -635,6 +635,47 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                     f"delivered resources: path does not exist: {token}{hint}"
                 )
 
+    # ── A flagged deck is delivered, and its slides are named ────────────
+    # Daniel, 16 September 2026: "flag the slides and deliver it". The slide
+    # build hands over a deck whose faults survived the repair round and names
+    # every such slide; the report must carry each number to the teacher, and
+    # may neither withhold the deck nor call the package finished.
+    slide_build = read_json(working / "build-results" / "slides.json", "slides build summary", [])
+    flagged_slides = []
+    if isinstance(slide_build, dict) and isinstance(slide_build.get("flaggedSlides"), list):
+        flagged_slides = [n for n in slide_build["flaggedSlides"] if isinstance(n, int)]
+    if flagged_slides:
+        check_lines = [
+            line.strip() for line in sections.get("## Outcome", "").splitlines()
+            if line.strip().lower().startswith("slides to check:")
+        ]
+        named = set(int(n) for n in re.findall(r"\d+", " ".join(check_lines)))
+        missing = [n for n in flagged_slides if n not in named]
+        if not check_lines:
+            failures.append(
+                "outcome: the deck was delivered with slide(s) "
+                + ", ".join(str(n) for n in flagged_slides)
+                + " flagged; add a `Slides to check: <numbers>` line so the teacher "
+                "knows which slides to look at before teaching."
+            )
+        elif missing:
+            failures.append(
+                "outcome: `Slides to check:` leaves out flagged slide(s) "
+                + ", ".join(str(n) for n in missing)
+                + "."
+            )
+        if "slides" in excluded_names or "slides" not in delivered_names:
+            failures.append(
+                "slides: the build delivered the deck with its faulty slides flagged; "
+                "list it under Delivered resources, not as withheld."
+            )
+        if package_status == "COMPLETE":
+            failures.append(
+                "COMPLETE: the deck carries flagged slide(s) "
+                + ", ".join(str(n) for n in flagged_slides)
+                + "; a package with slides to check is PARTIAL, not COMPLETE."
+            )
+
     # Every retained picture failure and friction record must be reported.
     obligations = report_obligations(working, failures)
     require_obligations(
