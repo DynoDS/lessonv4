@@ -22,9 +22,9 @@ None of these is a recipe. A lesson is never asked to match an example's names, 
 
 **Weak.** Two circuits drawn side by side, one with a visibly thicker, brighter bulb symbol. `Which bulb will be brighter?` Requires: looking at the drawing. The picture answers the question the relationship was meant to answer.
 
-**Stronger, same purpose.** Two circuits drawn identically except for wire length, bulbs unlit. `Which bulb will be brighter, and what in the circuit tells you?` Requires: the taught relationship, because nothing else on the board differs. A change-one-condition version is the same strength: `We add a second cell to the long-wire circuit. What happens now?`
+**Stronger, same purpose.** Two circuits drawn identically except for wire length, bulbs unlit. `Which bulb will be brighter, and what in the circuit tells you?` Requires: the taught relationship, because nothing else on the board differs. A changed condition is the same strength when it stays inside the relationship that was taught: `We make the long wire even longer. What happens to the bulb now?` Adding a second cell brings in a second relationship (more cells, a brighter bulb), so it is a fair question only once that has been taught as well; it is not the same thinking with a new variable.
 
-**Where the simpler task is right.** A clear diagram and a short one-line prediction are enough; do not add a paragraph, a table or an extra variable to make it look rigorous. And a diagram that supplies the information the prediction needs (the wire lengths, the number of cells) is not answer leakage; it is the question.
+**Where the simpler task is right.** A clear diagram and a short one-line prediction are enough; do not add a paragraph, a table or an extra variable to make it look rigorous. And a diagram that supplies the information the prediction needs (the wire lengths) is not answer leakage; it is the question.
 
 ### Geography: reading a map versus using one
 
@@ -40,27 +40,27 @@ None of these is a recipe. A lesson is never asked to match an example's names, 
 
 **Purpose.** Children round three-digit numbers to the nearest hundred.
 
-**Weak.** Every question's number line is drawn with the target hundred already highlighted, or the questions run 349, 351, 449, 451 so a child can pattern the answers from position. Requires: following the highlight, or spotting the pattern. The support supplies the very decision being assessed.
+**Weak.** The check the lesson relies on as evidence of each child's decision draws every number line with the target hundred already highlighted. Requires: following the highlight. The support supplies the very decision being assessed.
 
 **Stronger, same purpose.** The same method on fresh numbers in no pattern, with the number line drawn and the halfway mark unmarked, then one where the ones digit is 5. Requires: finding the halfway point and deciding which side the number sits, every time.
 
-**Where the simpler task is right.** New numbers using the same taught method is exactly what practice is; repetition of a known move is the point, and a reference (the steps, a worked example beside the questions) stays where it enables the method without making the decision. Do not replace fluency with novelty to look harder.
+**Where the simpler task is right.** An ordered run such as 349, 351, 449, 451 is good teaching: set side by side, it shows the class where the boundary sits and what one hundred more does. It is weaker only as evidence, when the answers can be read from position rather than decided, so the questions the lesson treats as each child's decision come in no pattern. New numbers using the same taught method is exactly what practice is; repetition of a known move is the point, and a reference (the steps, a worked example beside the questions) stays where it enables the method without making the decision. Do not replace fluency with novelty to look harder.
 
 ### English: a count is not the quality
 
 **Purpose.** Children write a setting description that makes a reader feel the place.
 
-**Weak.** `Write three sentences about the forest. Include at least two adjectives in each.` Requires: counting adjectives. `The big green forest had tall dark trees` meets it and does nothing the objective asked for.
+**Weak.** `Write three sentences about the forest. Include at least two adjectives in each.` Requires: counting adjectives. `The big green forest had tall dark trees` meets it. The sentence may still give the place some feeling, but the task never asked the writer to choose words for that, so what a child writes cannot show whether they did.
 
 **Stronger, same purpose.** One model sentence beside a flat one, the difference named (`the flat one tells you the forest is scary; the strong one shows you the branches catching your sleeve`). Then: `Write two sentences that make the reader feel the forest without saying scary, cold or dark.` Requires: choosing detail that does the work, which is the taught quality.
 
 **Where the simpler task is right.** A short grammar drill (`add a fronted adverbial to each of these sentences`) is legitimate practice of a move, and a one-sentence example can be the whole task; not every English task becomes discussion or a paragraph.
 
-### RE and PSHE: agreement is not understanding, and reflection can be the point
+### RE and PSHE: an opinion is not evidence of understanding, and reflection can be the point
 
 **Purpose (RE).** Children understand why a carol matters to a Christian, and that the same act can carry different meanings for different people.
 
-**Weak.** `Do you like singing carols? Why?` after a slide showing a family singing. Requires: an opinion. A child who learned nothing about belief answers it well, and a child who says `yes, because of Jesus` has agreed with the board, not understood it.
+**Weak.** `Do you like singing carols? Why?` after a slide showing a family singing. Requires: an opinion. A child who learned nothing about belief answers it well. A child who says `yes, because of Jesus` may understand more than that and may be repeating the board; the answer is too short to tell, and the question gives no way to find out.
 
 **Stronger, same purpose.** `Layla sings this carol for two reasons; Ethan sings it for one. What is the difference, and could you tell it from watching them?` Requires: the two taught meanings and the taught idea that belief cannot be read from the act.
 

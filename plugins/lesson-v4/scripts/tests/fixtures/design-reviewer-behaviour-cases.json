@@ -513,6 +513,22 @@
       "expectedOwner": "Design Reviewer",
       "protectedBehaviour": "A Practise before the last Teach is legal and judged by readiness: the pairs before it supply what it runs on, and the pair after it teaches something the work earned.",
       "forbiddenFinding": "Do not return the lesson because practice is not last; do return one whose early practice runs on knowledge the later pair was still to teach, or whose later beats are kept only because they were already written."
+    },
+    {
+      "id": "launch-model-answers-the-task-it-launches",
+      "materialDifference": "A Year 4 history Practise launch shows the strong answer `Sigurd came because there was not enough farmland at home for him, and the monastery had silver and nobody to fight back`; the task slide straight after asks `Why did Vikings like Sigurd sail to Britain?` and `Why did families like Halla's sail to Britain?`, and the design calls both explanations independent evidence.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "protectedBehaviour": "Read what children have just seen before the task, not the task alone: a model on the very question children then answer supplies that answer, so only the Halla question can show each child's own explanation.",
+      "forbiddenFinding": "Do not ask for the model to be removed or for launches to stop showing good answers; the repair is a parallel case for the model, or an honest label that the Sigurd answer is supported rehearsal."
+    },
+    {
+      "id": "parallel-launch-model-before-independent-task",
+      "materialDifference": "The same launch shows its strong answer on a third ship, Ulf's, whose story children are not asked about, and the task then asks about Sigurd's and Halla's ships.",
+      "expectedResult": "APPROVED",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "A model on a parallel case shows what good looks like and leaves the decision on the task's own cases to each child.",
+      "forbiddenFinding": "Do not treat any model answer in a launch as leakage because it shares the task's shape or sentence frame."
     }
   ]
 }

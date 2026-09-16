@@ -16,8 +16,10 @@ The repair lives in the existing owners rather than in new fields:
 - the rhythm section chooses material and thinking together before the response
   form, names each subject's kinds of material as examples, reads a link in the
   content with a correctness handover, and says what each kind of work can claim;
-- `do-beats.md` carries an optional operations table, read only when a task
-  looks thin;
+- `do-beats.md` carries an optional operations table, opened when a beat's
+  operation is unclear; the rhythm section names the operations in a line at
+  the point the task is chosen, and separates what a task is from how hard it
+  is (review, 16 September 2026);
 - `task-contrasts.md` adds one short-sequence contrast; the history file and
   the history contrast stop treating "name what is missing" as the thinking;
 - the designer and reviewer point at those owners.
@@ -135,9 +137,15 @@ class TheOptionalOperationsTableTests(unittest.TestCase):
         self.assertIn("It is not a taxonomy to fill, a formula for choosing a task, a field to record, or a ladder", text)
         self.assertIn("a later row is not a better row", text)
 
-    def test_it_is_reached_only_when_a_task_looks_thin(self):
-        self.assertIn("When the obvious candidate looks thin, `Operations to think with` at the end of this file", flat(DO_BEATS))
-        self.assertIn("Read its `Operations to think with (optional)` section only when the obvious task for a beat looks thin", flat(DESIGNER))
+    def test_the_operations_are_named_where_the_task_is_chosen_and_the_table_stays_conditional(self):
+        # The trigger used to be "when the task looks thin", which relied on the
+        # designer noticing the weakness the table exists to help it avoid.
+        rhythm = " ".join(read_section("preferences.md::The Teach → Do → Teach → Do Rhythm").split())
+        self.assertIn("say in a few words what the child does with the material", rhythm)
+        self.assertIn("That is what the task is, not how hard it is", rhythm)
+        self.assertIn("An operation is not a band", flat(DO_BEATS))
+        self.assertNotIn("same choices at two grain sizes", flat(DO_BEATS))
+        self.assertIn("when the operation of a beat the lesson relies on is unclear", flat(DESIGNER))
 
 
 class ContrastsAndHistoryTests(unittest.TestCase):

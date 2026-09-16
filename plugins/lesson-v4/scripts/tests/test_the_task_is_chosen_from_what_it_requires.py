@@ -151,6 +151,8 @@ class TheReviewerProbesTheTaskTests(unittest.TestCase):
             "quick-check-after-a-teach-is-legitimate",
             "purposeful-repetition-and-a-visible-reference-are-not-shallow",
             "early-practise-is-judged-by-readiness-not-position",
+            "launch-model-answers-the-task-it-launches",
+            "parallel-launch-model-before-independent-task",
         ):
             self.assertIn(case, ids)
 
