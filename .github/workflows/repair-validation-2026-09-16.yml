@@ -1,0 +1,53 @@
+name: Isolated final-repair verification
+on:
+  push:
+    branches: [repair-validation-2026-09-16]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 88f53347b61440acd354226579232957e74514e7
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install existing dependencies
+        run: |
+          python -m pip install pytest pytest-subtests pillow python-pptx fonttools lxml pymupdf reportlab
+          for d in plugins/lesson-v4/builder plugins/lesson-v4/worksheet-html plugins/lesson-v4/working-wall-html plugins/lesson-v4/stick-in-sheets-html; do
+            if test -f "$d/package-lock.json"; then (cd "$d" && npm ci); fi
+          done
+      - name: Archive exact source and installed Node dependencies
+        run: |
+          mkdir -p /tmp/repair-evidence
+          git rev-parse HEAD > /tmp/repair-evidence/base-sha.txt
+          tar --exclude=.git -czf /tmp/repair-evidence/source-with-node-deps.tar.gz .
+      - name: Baseline checks
+        shell: bash
+        run: |
+          set +e
+          cd plugins/lesson-v4
+          python -m pytest scripts/tests scripts/test-validate-lesson-design.py scripts/test_question_crop.py -q -p no:cacheprovider > /tmp/repair-evidence/python-baseline.log 2>&1
+          echo "python=$?" >> /tmp/repair-evidence/exit-codes.txt
+          (cd builder && npm run check) > /tmp/repair-evidence/builder-baseline.log 2>&1
+          echo "builder=$?" >> /tmp/repair-evidence/exit-codes.txt
+          (cd stick-in-sheets-html && node --test) > /tmp/repair-evidence/stick-in-baseline.log 2>&1
+          echo "stick_in=$?" >> /tmp/repair-evidence/exit-codes.txt
+          cat /tmp/repair-evidence/exit-codes.txt
+          tail -25 /tmp/repair-evidence/python-baseline.log
+          tail -20 /tmp/repair-evidence/builder-baseline.log
+          tail -15 /tmp/repair-evidence/stick-in-baseline.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-repair-baseline
+          path: /tmp/repair-evidence/
+          retention-days: 7
