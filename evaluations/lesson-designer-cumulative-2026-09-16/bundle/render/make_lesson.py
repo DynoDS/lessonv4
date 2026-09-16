@@ -1,0 +1,128 @@
+"""Build the slide spec for a five-slide excerpt of the candidate science episode.
+
+Every child-facing string and script is copied from the episode's
+design-decisions.md (slides 5, 6, 7, 8 and 10). Nothing is reworded; only the
+slide layout is chosen here, because the episode has no slide-designer pass.
+The towel photograph on slide 8 is left out (no image generation in this
+evaluation), and the episode never depended on it.
+"""
+import json
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+
+evap_table = {
+    "type": "table",
+    "headers": ["Where it was", "Evaporated"],
+    "rows": [["Sunny windowsill", "40 ml"], ["Classroom shelf", "15 ml"], ["Fridge", "2 ml"]],
+}
+
+slides = [
+    {
+        "template": "split-v-60-40", "primarySide": "top", "headerStyle": "title",
+        "title": "How much water went into the air?",
+        "primary": {
+            "type": "table",
+            "headers": ["Where it was", "At the start", "Left after two days", "Evaporated"],
+            "rows": [
+                ["Sunny windowsill", "50 ml", "10 ml", "50 ml - 10 ml = 40 ml"],
+                ["Classroom shelf", "50 ml", "35 ml", "?"],
+                ["Fridge", "50 ml", "48 ml", "?"],
+            ],
+        },
+        "secondary": {"type": "stack", "items": [
+            {"type": "text", "value": "Watch out! The table shows the water left in each saucer. We want the water that went into the air."},
+            {"type": "text", "value": "Work out how much water evaporated from the saucer on the shelf and the saucer in the fridge.", "color": "0070C0"},
+        ]},
+        "speakerNotes": (
+            "Say to children: Right, the important bit. This table tells us how much water was left in each saucer. "
+            "But we want to know how much water evaporated, how much went into the air. They're not the same thing. "
+            "We already did the windowsill one. It started with 50 ml and had 10 ml left, so 50 take away 10 is 40 ml that evaporated. "
+            "Watch out, because this catches a lot of people out: the fridge saucer has the biggest number, 48 ml, but that's the water that stayed. "
+            "Now you do the other two. How much water evaporated from the saucer on the shelf, and how much from the saucer in the fridge?\n\n"
+            "Teacher information: Go through 15 ml and 2 ml with the class before the next slide, because the sentences there are judged from this column. "
+            "A class that carries 35 ml and 48 ml forward will reach the opposite conclusion.\n\n"
+            "Answer to question(s) on this slide: Shelf 15 ml. Fridge 2 ml.\n\n"
+            "Look for: 35 ml and 48 ml copied from the water left; point at the windowsill row, where 10 ml was left but 40 ml evaporated."
+        ),
+    },
+    {
+        "template": "split-h-50-50", "primarySide": "left", "headerStyle": "title",
+        "title": "What do our results show?",
+        "primary": evap_table,
+        "secondary": {"type": "stack", "items": [
+            {"type": "text", "value": "Which sentence do our results show?", "color": "0070C0"},
+            {"type": "text", "value": "A: Water only evaporates in warm places.", "sizeGroup": "options"},
+            {"type": "text", "value": "B: The warmer the place, the more water evaporated.", "sizeGroup": "options"},
+            {"type": "text", "value": "C: The colder the place, the more water evaporated.", "sizeGroup": "options"},
+            {"type": "text", "value": "Choose one of the other sentences. Which saucer shows it's wrong?", "color": "0070C0"},
+        ]},
+        "speakerNotes": (
+            "Say to children: Here are our amounts: 40 ml from the windowsill, 15 ml from the shelf and 2 ml from the fridge. "
+            "Here are three sentences about what these results show. Only one of them fits every saucer. "
+            "Check each sentence against the table, one saucer at a time. Write the letter of the sentence our results show. "
+            "Then choose one of the other sentences and write which saucer shows it's wrong.\n\n"
+            "Answer to question(s) on this slide: B. A is wrong because the fridge was the coldest place and its saucer still lost 2 ml. "
+            "C is wrong because the fridge was the coldest and lost the least, while the windowsill was the warmest and lost the most.\n\n"
+            "Look for: A usually means the child thinks cold water doesn't evaporate at all; point them to the fridge row. C usually means they are reading the water left column."
+        ),
+    },
+    {
+        "template": "split-h-50-50", "primarySide": "left", "headerStyle": "title",
+        "title": "Which saucer was evaporating the fastest?",
+        "primary": evap_table,
+        "secondary": {"type": "stack", "items": [
+            {"type": "text", "value": "All three saucers had exactly the same two days. So the saucer that lost the most water was evaporating the fastest."},
+            {"type": "text", "value": "Even the fridge saucer lost 2 ml. Cold water still evaporates. It just happens very slowly."},
+            {"type": "text", "value": "**The warmer the water, the faster it evaporates.**"},
+        ]},
+        "speakerNotes": (
+            "Say to children: You chose B: the warmer the place, the more water evaporated. Now think about the time. "
+            "All three saucers had exactly the same two days. So if the windowsill saucer lost 40 ml and the fridge saucer lost only 2 ml in the same time, "
+            "which one was evaporating faster? The windowsill, by miles. The water there was warmer, so it was turning into water vapour much faster. "
+            "And look at the fridge. Even in there, 2 ml got out into the air. Not exactly a quick escape, but it still happened. "
+            "So water doesn't have to boil, and it doesn't even have to be warm, to evaporate. Cold water evaporates too. It just happens very slowly. "
+            "So here's the rule our saucers showed us: the warmer the water, the faster it evaporates."
+        ),
+    },
+    {
+        "template": "split-h-50-50", "primarySide": "left", "headerStyle": "title",
+        "title": "Is Leo right about the hot day?",
+        "primary": {"type": "stack", "items": [
+            {"type": "text", "value": "Two towels are just as wet as each other. One is hung outside on a hot, sunny day. The other is hung outside on a cold, cloudy day.", "weight": 1.5},
+            {"type": "text", "value": "Leo says: \"The towel on the hot day will dry quicker, because the sun makes the water disappear faster.\"", "weight": 1.2},
+            {"type": "text", "value": "Is Leo right that the towel on the hot day will dry quicker? Use our saucer results to explain.", "color": "0070C0", "weight": 1.2},
+            {"type": "text", "value": "Our saucer results show...", "weight": 0.6},
+        ]},
+        "secondary": evap_table,
+        "speakerNotes": (
+            "Say to children: Leo's thinking about two wet towels on a washing line. One goes out on a hot, sunny day and one goes out on a cold, cloudy day. "
+            "Leo's said two things, and we're going to check them one at a time. First, is he right that the towel on the hot day will dry quicker? "
+            "Don't just tell me what you think. Use our saucer results to show it. The table's there to help you. "
+            "If you're not sure how to start, begin with \"Our saucer results show...\" This one is on your own.\n\n"
+            "Teacher information: Keep the star facts off this slide; the table stays because using it is the task.\n\n"
+            "Answer/model for this slide: Yes. Warmer water evaporates faster. The saucer on the sunny windowsill was the warmest, and 40 ml of its water evaporated in two days. "
+            "The fridge saucer only lost 2 ml. So the towel on the hot day will dry quicker.\n\n"
+            "Look for: 40 ml and 2 ml used as water that evaporated, not water left; \"Yes, because the sun dries things\" with no numbers is everyday sense, so ask which saucer it matches."
+        ),
+    },
+    {
+        "template": "body-full", "headerStyle": "title",
+        "title": "Is Leo right about the hot day? - check",
+        "body": {"type": "text", "value": "{{Yes. Warmer water evaporates faster. The saucer on the sunny windowsill was the warmest, and 40 ml of its water evaporated in two days. The fridge saucer only lost 2 ml. So the towel on the hot day will dry quicker.}}"},
+        "speakerNotes": (
+            "Say to children: Here's a strong answer. Look at what it does. It says yes, it gives the rule, and then it proves it with two saucers, "
+            "the warmest and the coldest. Check yours. Did you use the water that evaporated, 40 ml and 2 ml, and not the water left?"
+        ),
+    },
+]
+
+lesson = {
+    "lessonName": "Evaporation and temperature - episode excerpt",
+    "yearGroup": "Year 4",
+    "subject": "Science",
+    "lo": "To explain how temperature affects how quickly water evaporates.",
+    "slides": slides,
+}
+(HERE / "lesson.json").write_text(json.dumps(lesson, indent=2, ensure_ascii=False), encoding="utf-8")
+print("slides:", len(slides))
