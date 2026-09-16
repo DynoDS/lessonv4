@@ -8,7 +8,7 @@ One report for the branch `lesson-designer-quality-2026-09-15` in `DynoDS/lesson
 |---|---|
 | Base revision | `38c6a07cdd800cbb6e81785e065ad06a25f17a4c` (4.2.212), the plan's verified baseline; the working copy was at exactly this commit when work began |
 | Local branch | `lesson-designer-quality-2026-09-15`, in the worktree `C:\Users\Daniel\Projects\lessonv4-designer-quality` (the main checkout at `C:\Users\Daniel\Projects\lessonv4` was not touched; its untracked output folders are preserved) |
-| Head revision | see the last line of `git log` below (the evaluation commit is the last) |
+| Head revision | `6fb9df8b`, the evaluation commit; the last code commit is `5affc7ff` |
 | Version | unchanged at 4.2.212; nothing is released, installed or published, and the branch has not been pushed |
 
 Commits, oldest first, each one purpose:
@@ -19,7 +19,7 @@ Commits, oldest first, each one purpose:
 4. `113dab9b` A sort done with cards at tables arrives as a printed kit, or the run says so (7C: handling field, card-set renderer, kit check, run-report rule, delivery, docs, tests).
 5. `0e117037` A whole content design with a card sort runs through the real validator (7C end-to-end fixture test).
 6. `5affc7ff` Tighten the designer's working order and kit decision.
-7. (final) The evaluation folder: cases, protocol, results, this report and the bundle manifest.
+7. `6fb9df8b` The evaluation folder: cases, protocol, trials, comparison, results, this report and the bundle manifest.
 
 Changed files: 31 in the plugin (`git diff --stat 38c6a07c..5affc7ff`: 1,901 insertions, 71 deletions) plus the evaluation folder.
 
