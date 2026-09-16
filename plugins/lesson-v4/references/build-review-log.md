@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-16 Short questions sit side by side on a slip, so a page holds more (4.2.219)
+
+Daniel, looking at the first built slips: "the e, its got 1a1b1c etc down, but there was space to put them together ... horizontally to fill the space which might get more on page. I also see going deeper sheet didnt fill the page".
+
+**What was there.** A slip kept the sheet's one-question-per-line shape, which only existed to hold each answer blank. The Y4 rounding Expected slip ran (1a) to (1f) down the slip and fitted 4 to a page. The Greater Depth slip was a few millimetres too tall for two rows, because "Smallest" and "Largest" each took a line, so it printed 2 to a page with half the page empty.
+
+**The change.** `packShortQuestions` in `src/slips.js` lays a run of numbered questions whose whole content is one short item (16 characters or fewer, no picture, stem or blank) out in even columns (up to 4 across, filler cells keeping the last row's columns aligned). A run never crosses a question group. The half-width choice is judged on the unpacked questions, because a packed row asks for sheet-sized minimum widths a one-number question never needs; the rendered-fit probe still catches a row that does not fit. On a slip, a `questions` helper whose items are all short runs them across one line (`h-questions--inline`). The sheets themselves are unchanged.
+
+**Evidence.** The same rounding spec: Expected 6 slips a page (was 4), laid out as the approved mock-up; Greater Depth 4 a page, filling it (was 2). Tests: two packing tests in `slips.test.js`. Worksheet engine 704 pass.
+
 ## 2026-09-16 A sheet children can do in their books says so, and brings its own question slips (4.2.218)
 
 Daniel's school asked staff to use less paper. Talked through with him over one session: one mark per whole sheet, not per question (a half-and-half sheet still needs a print per child and only adds trimming); an age-aware call, since his Year 4 Expected children draw simple number lines in books and Year 2 could not; and, because a book page without its question is unreadable at book monitoring, a page of question slips at the back of the same file. He approved a mock-up built from the Y4 "Round to the nearest 100" sheets: "One file, slips at the back, go ahead and build it". Stick-in sheets were deliberately left exactly as they are.
@@ -10,7 +20,7 @@ Daniel's school asked staff to use less paper. Talked through with him over one 
 
 **Evidence.** The run's own `round-to-the-nearest-100/worksheet.json` with Below `"sheet"`, Expected and Greater Depth `"books"` and the number lines `onSlip: false`: one 5-page PDF, Expected slips 4 to a page, Greater Depth 2 to a page (five long reasoning questions). Tests: `worksheet-html/test/slips.test.js` (14: the gate, wording caught and left alone, the corner mark, what a slip keeps and drops, the page plan, a real build with slips at the back, a mislabelled sheet built as sheet); the preflight fixtures now carry `recording`. Worksheet engine 702 pass; Python unchanged (same 11 failures as before).
 
-**Still open.** Not yet seen on a fresh lesson run, so the designer's first real calls against the age table are unvalidated. Slips keep the sheet's generous gaps between questions, so text-heavy reasoning sheets get only 2 a page.
+**Still open.** Not yet seen on a fresh lesson run, so the designer's first real calls against the age table are unvalidated. (Slips fitting too few to a page: repaired in 4.2.219.)
 
 ## 2026-09-16 The letterbox keeps every file byte for byte, whatever the computer's line-ending setting (4.2.217)
 

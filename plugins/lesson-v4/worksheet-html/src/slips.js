@@ -228,6 +228,84 @@ function slipContentOf(sheetSpec) {
     .filter((content) => content != null);
 }
 
+// ─── short questions side by side ────────────────────────────────────────
+//
+// On the sheet, "(1a) 38" sits on its own line because the line is where the
+// answer goes. On a slip the answer is in the book, so a run of six one-number
+// questions stacked down a slip is mostly empty paper, and it is the difference
+// between two slips a page and four. Daniel, looking at the first built slips
+// (16 September 2026): "there was space to put them together ... horizontally
+// to fill the space which might get more on page". So a run of short questions
+// is laid out in even columns, reading across then down, numbers unchanged.
+//
+// Only a question whose whole content is one short item is packed: anything
+// with a picture, a stem, a blank in its words or a figure keeps its own line.
+// A run stops where a question group changes, so (1f) never shares a row with
+// (2).
+const SHORT_QUESTION_CHARS = 16;
+const BODY_CHAR_MM = 12 * 0.3528 * 0.5; // body type, the width the engine's line estimate assumes
+const NUMBER_ROOM_MM = 10; // the "(1a)" label and the gap after it, with a little to spare
+const MAX_ACROSS = 4;
+
+function shortQuestionText(node) {
+  if (!node || typeof node !== "object" || node.number === undefined) return null;
+  let inner = node;
+  if (isStack(node)) {
+    if (!Array.isArray(node.stack) || node.stack.length !== 1) return null;
+    inner = node.stack[0];
+  }
+  if (!inner || inner.helper !== "questions" || inner.text || inner.stem) return null;
+  if (!Array.isArray(inner.items) || inner.items.length !== 1) return null;
+  const item = inner.items[0];
+  const text = typeof item === "string" ? item : null;
+  if (text === null || /_{2,}/.test(text) || text.length > SHORT_QUESTION_CHARS) return null;
+  return text;
+}
+
+// An invisible cell that keeps the last row's columns under the ones above.
+const COLUMN_FILLER = () => ({ helper: "instruction", text: " " });
+
+function packShortQuestions(content, widthMm) {
+  if (!isStack(content) || !Array.isArray(content.stack)) return content;
+
+  const out = [];
+  let run = [];
+  const flush = () => {
+    const longest = Math.max(0, ...run.map((r) => r.text.length));
+    const cellMm = NUMBER_ROOM_MM + longest * BODY_CHAR_MM + GAP_MM;
+    const across = Math.min(MAX_ACROSS, Math.floor((widthMm + GAP_MM) / (cellMm + GAP_MM)));
+    if (run.length < 2 || across < 2) {
+      out.push(...run.map((r) => r.node));
+    } else {
+      for (let i = 0; i < run.length; i += across) {
+        const cells = run.slice(i, i + across).map((r) => r.node);
+        while (cells.length < across) cells.push(COLUMN_FILLER());
+        out.push({ row: cells, parts: cells.map(() => 1) });
+      }
+    }
+    run = [];
+  };
+
+  for (const node of content.stack) {
+    const text = shortQuestionText(node);
+    const group = node && node.questionGroupId;
+    if (text !== null && (!run.length || run[0].group === group)) {
+      run.push({ node, text, group });
+      continue;
+    }
+    flush();
+    if (text !== null) run.push({ node, text, group });
+    else out.push(node);
+  }
+  flush();
+  return { ...content, stack: out };
+}
+
+// The slip's content laid out for its printed width.
+function slipNodesFor(nodes, cols) {
+  return nodes.map((node) => packShortQuestions(node, contentWidthMm(cols)));
+}
+
 // ─── page plan ───────────────────────────────────────────────────────────
 
 const PAGE_W_MM = 210;
@@ -305,6 +383,11 @@ const SLIP_CSS = `
      On a slip the blank has gone, so the last question in a list gives that
      room back; the gaps between questions stay as the sheet has them. */
   .slip-item .h-questions > .h-q:last-child { margin-bottom: 0; }
+  .slip-item .h-questions--inline { display: flex; flex-wrap: wrap; column-gap: 12mm; }
+  .slip-item .h-questions--inline > .h-q { margin-bottom: 0; }
+  /* A row of packed short questions: each cell holds one line, so it does not
+     stretch to the tallest neighbour's full height. */
+  .slip-item .h-row { height: auto; }
   .slip-code {
     position: absolute;
     right: ${PAD_SIDE_MM}mm;
@@ -413,25 +496,31 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   // more to the page. Whichever puts more slips on the page wins, and on a tie
   // the one with fewer cuts.
   const plans = [];
-  for (const cols of columnsFor(nodes) === 2 ? [2, 1] : [1]) {
+  // Judged on the questions before packing: a packed row asks for its cells'
+  // sheet-sized minimum widths, which a one-number question never needs, and
+  // the rendered-fit check below catches a row that genuinely does not fit.
+  const across = columnsFor(nodes) === 2 ? [2, 1] : [1];
+  for (const cols of across) {
+    const laid = slipNodesFor(nodes, cols);
     let contentMm;
     try {
       contentMm = browser
-        ? await measuredContentMm(browser, nodes, cols)
-        : estimatedContentMm(nodes, cols);
+        ? await measuredContentMm(browser, laid, cols)
+        : estimatedContentMm(laid, cols);
     } catch (error) {
       return { skipped: `its slip could not be measured (${String(error.message || error).split("\n")[0]})` };
     }
     // A hair of margin over the browser's measurement, as the sheets keep.
     const rows = rowsFor(contentMm + (browser ? 1 : 0));
-    if (rows >= 1) plans.push({ cols, rows });
+    if (rows >= 1) plans.push({ cols, rows, laid });
   }
   plans.sort((a, b) => b.cols * b.rows - a.cols * a.rows || a.cols + a.rows - (b.cols + b.rows));
   if (!plans.length) return { skipped: "its questions are too long to fit a slip shorter than a page" };
 
-  let { cols, rows } = plans[0];
+  const { cols, laid } = plans[0];
+  let { rows } = plans[0];
   while (rows >= 1) {
-    const html = renderSlipsPage({ nodes, cols, rows, code, title });
+    const html = renderSlipsPage({ nodes: laid, cols, rows, code, title });
     if (!browser) return { html, cols, rows };
     const { pdf, fitProblems } = await htmlToPdf(html, { browser, inspectFit: true });
     if (!fitProblems.length) return { html, pdf, cols, rows };
@@ -447,6 +536,8 @@ module.exports = {
   sheetOnlyWording,
   forSlip,
   slipContentOf,
+  slipNodesFor,
+  packShortQuestions,
   columnsFor,
   estimatedContentMm,
   rowsFor,

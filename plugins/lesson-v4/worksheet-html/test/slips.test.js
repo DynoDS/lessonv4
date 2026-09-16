@@ -245,3 +245,57 @@ test("a sheet marked books that needs the page is printed as a sheet, with no sl
   assert.match(stdout, /^RECORDING_CHANGED: Expected - /m);
   assert.doesNotMatch(stdout, /^SLIPS: /m);
 });
+
+// ─── short questions side by side ────────────────────────────────────────
+
+const { packShortQuestions } = require("../src/slips");
+
+function oneNumber(number, text, group) {
+  return {
+    number,
+    ...(group ? { questionGroupId: group } : {}),
+    stack: [{ helper: "questions", showNumbers: false, items: [text], slip: true }],
+  };
+}
+
+test("a run of one-number questions is laid out across the slip, in even columns", () => {
+  // Daniel, on the first built slips: "there was space to put them together ...
+  // horizontally to fill the space which might get more on page".
+  const content = {
+    stack: [
+      { helper: "instruction", text: "Round to the nearest 100." },
+      ...["38", "850", "3,249", "5,970", "700"].map((t, i) =>
+        oneNumber(`1${String.fromCharCode(97 + i)}`, t, "g1")
+      ),
+      oneNumber(2, "Explain why 2,748 rounds to 2,700 and not to 2,800 here."),
+    ],
+  };
+  const packed = packShortQuestions(content, 87);
+  assert.equal(packed.stack[0].helper, "instruction");
+  const rows = packed.stack.filter((node) => node.row);
+  assert.equal(rows.length, 2);
+  assert.deepEqual(rows[0].row.map((n) => n.number), ["1a", "1b", "1c"]);
+  // The short last row keeps its columns under the ones above.
+  assert.equal(rows[1].row.length, 3);
+  assert.deepEqual(rows[1].row.slice(0, 2).map((n) => n.number), ["1d", "1e"]);
+  // A long question keeps its own line.
+  assert.equal(packed.stack[packed.stack.length - 1].number, 2);
+});
+
+test("packing never joins two question groups or packs a question with more in it", () => {
+  const content = {
+    stack: [
+      oneNumber("1a", "38", "g1"),
+      oneNumber("1b", "850", "g1"),
+      oneNumber("2a", "3,249", "g2"),
+      oneNumber("2b", "5,970", "g2"),
+      { number: 3, stack: [{ helper: "questions", items: ["7 + ___ = 10"] }] },
+      { number: 4, stack: [{ helper: "questions", items: ["38"] }, { helper: "instruction", text: "Show it." }] },
+    ],
+  };
+  const packed = packShortQuestions(content, 87);
+  assert.deepEqual(
+    packed.stack.map((n) => (n.row ? n.row.filter((c) => c.number !== undefined).map((c) => c.number) : n.number)),
+    [["1a", "1b"], ["2a", "2b"], 3, 4]
+  );
+});

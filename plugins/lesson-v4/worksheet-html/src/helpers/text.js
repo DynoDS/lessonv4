@@ -299,9 +299,15 @@ function renderQuestions(spec, widthMm = 100) {
       </li>`
     )
     .join("");
+  // A slip with nothing but short items ("Smallest", "Largest") runs them
+  // across one line: each was only on a line of its own to hold its blank.
+  const inline =
+    slip &&
+    spec.items.length > 1 &&
+    spec.items.every((q) => typeof q === "string" && q.length <= 16 && !/_{2,}/.test(q));
   return `
     ${stem(spec)}
-    <ol class="h-questions">${items}</ol>`;
+    <ol class="h-questions${inline ? " h-questions--inline" : ""}">${items}</ol>`;
 }
 
 function measureQuestions(spec, widthMm) {
