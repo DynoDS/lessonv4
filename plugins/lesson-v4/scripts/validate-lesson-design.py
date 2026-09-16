@@ -734,6 +734,17 @@ def validate_task_structure(
                     item["photoRef"] in unit_photo_refs,
                     f"{item_path}.photoRef must also appear in the source unit photoRefs",
                 )
+                # A printed card kit carries words only. A card whose picture
+                # is part of what children decide from would print without it
+                # and the kit would still look complete, so refuse it here,
+                # where the designer can still choose.
+                expect(
+                    not (isinstance(structure.get("handling"), dict)
+                         and structure["handling"].get("kind") == "cards"),
+                    f"{item_path}.photoRef: a sort handled as printed cards prints words only, "
+                    "so this card's picture would be lost from the kit; handle this sort on the "
+                    "board, or put what the picture shows into the card's detail",
+                )
         return structure
 
     expect_exact_keys(

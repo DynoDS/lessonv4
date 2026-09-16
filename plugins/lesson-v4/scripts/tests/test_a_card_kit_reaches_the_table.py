@@ -157,6 +157,14 @@ class TheDesignSaysHowASortIsHandledTests(unittest.TestCase):
                 with self.assertRaises(self.module.ContractError):
                     self.structure(bad)
 
+    def test_a_card_sort_cannot_rest_on_a_picture_the_kit_would_lose(self):
+        sort = copy.deepcopy(SORT)
+        sort["items"][0]["photoRef"] = "bakery"
+        with self.assertRaisesRegex(self.module.ContractError, "prints words only"):
+            self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs={"bakery"})
+        sort.pop("handling")
+        self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs={"bakery"})
+
     def test_the_helper_tells_a_card_sort_from_a_board_sort(self):
         unit = kit_design()["teachingSequence"][0]
         self.assertIsNotNone(self.module.sort_handled_as_cards(unit))
@@ -230,6 +238,33 @@ class TheKitMatchesTheUnitTests(unittest.TestCase):
                 mutate(item["spec"])
                 faults = self.faults(kit_design(), [item])
                 self.assertTrue(any(phrase in f for f in faults), faults)
+
+    def test_what_a_card_carries_beyond_its_label_is_compared_too(self):
+        # The review's reproductions: a kit that dropped a card's detail, or
+        # carried a different instruction, or no tag, passed this check.
+        design = kit_design()
+        design["teachingSequence"][0]["taskStructure"]["items"][0]["detail"] = "Tom is fed at the bakery."
+        item = faithful_card_set()
+        faults = self.faults(design, [item])
+        self.assertTrue(any("cards differ" in f for f in faults), faults)
+        item["spec"]["cards"][0]["detail"] = "Tom is fed at the bakery."
+        self.assertEqual(self.faults(design, [item]), [])
+        for phrase, mutate in {
+            "instruction differs": lambda i: i["spec"].__setitem__("instruction", "Sort the cards."),
+            "has no tag": lambda i: i.pop("tag"),
+            "carry a picture the kit cannot print": lambda i: i["spec"]["cards"][0].__setitem__("photoRef", "bakery"),
+        }.items():
+            with self.subTest(phrase=phrase):
+                changed = copy.deepcopy(item)
+                mutate(changed)
+                faults = self.faults(design, [changed])
+                self.assertTrue(any(phrase in f for f in faults), faults)
+
+    def test_a_pictured_card_in_the_design_refuses_the_kit(self):
+        design = kit_design()
+        design["teachingSequence"][0]["taskStructure"]["items"][0]["photoRef"] = "bakery"
+        faults = self.faults(design, [faithful_card_set()])
+        self.assertTrue(any("carry a picture" in f for f in faults), faults)
 
     def test_a_kit_for_a_board_sort_is_refused_too(self):
         design = kit_design()

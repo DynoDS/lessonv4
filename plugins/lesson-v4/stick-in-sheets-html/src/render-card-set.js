@@ -37,6 +37,12 @@ const LINE_MM = 6;         // 12pt line height, in the pack's Comic Sans
 const HEADING_LINE_MM = 6.5;
 const TAG_BAND_MM = 4;
 const CHARS_PER_LINE = 19; // at 12pt over the card's usable width
+// A card's detail prints at 11pt under its label: the account or evidence a
+// card carries is read at a table, closer than a board, and stays above the
+// pack's readable floor.
+const DETAIL_PT = 11;
+const DETAIL_LINE_MM = 5.5;
+const DETAIL_CHARS_PER_LINE = 21;
 
 const MIN_CARDS = 2;
 const MAX_CARDS = 12;
@@ -156,6 +162,20 @@ function normaliseCardSet(item, classSize) {
     if (labels.has(key)) return fault(`duplicate label "${row.label}"`);
     labels.add(key);
   }
+  for (const card of cards) {
+    // A card prints everything a child reads on it. A picture cannot be
+    // printed on a card yet, so a card that carries one is refused by name
+    // rather than printed without the thing children were meant to look at.
+    if (card.photoRef || card.imagePath || card.picture) {
+      return fault(`card "${card.label}" carries a picture, and a card kit prints words only`);
+    }
+    if (card.detail != null && typeof card.detail !== "string") {
+      return fault(`card "${card.label}" has a detail that is not text`);
+    }
+  }
+  if (typeof item.tag !== "string" || !item.tag.trim()) {
+    return fault("no tag: every card is stamped with the kit's tag so a card found after cutting still says which activity it belongs to");
+  }
 
   const sets = spec.sets && typeof spec.sets === "object" ? spec.sets : null;
   if (!sets || !PER_SET.has(sets.per)) {
@@ -216,74 +236,136 @@ function renderSetHtml(kit, geometry) {
   const tagHtml = kit.tag
     ? `<div style="font-size:8pt;color:${GREY};height:${TAG_BAND_MM}mm;line-height:${TAG_BAND_MM}mm">${esc(kit.tag)}</div>`
     : "";
-  const cell = (label, isHeading) => {
-    const h = Math.max(headingHMm, cardHMm);
+  const h = Math.max(headingHMm, cardHMm);
+  const cell = (label, detail, isHeading) => {
     const border = isHeading ? `0.6mm solid ${INK}` : `0.3mm solid ${INK}`;
     const font = isHeading ? "font-weight:bold;font-size:13pt" : "font-size:12pt";
+    const detailHtml = detail
+      ? `<div style="font-size:${DETAIL_PT}pt;margin-top:1mm">${esc(detail)}</div>`
+      : "";
     return (
       `<div style="width:${cardWMm}mm;height:${h}mm;box-sizing:border-box;padding:${CARD_PAD_MM}mm;` +
       `display:flex;flex-direction:column;justify-content:center;">` +
       `<div style="border:${border};border-radius:2mm;height:100%;box-sizing:border-box;padding:2mm;` +
       `display:flex;flex-direction:column;justify-content:center;text-align:center;${font};color:${INK}">` +
-      `${tagHtml}<div>${esc(label)}</div></div></div>`
+      `${tagHtml}<div>${esc(label)}</div>${detailHtml}</div></div>`
     );
   };
   // Headings first, then the cards, flowing through one grid so a set uses
   // the page rather than leaving the heading row half empty. Every cell in the
   // set is the same size, so a row's height is the taller of the two kinds.
-  const rows = [];
   const cells = [
-    ...kit.headings.map((h) => cell(h.label, true)),
-    ...kit.printOrder.map((c) => cell(c.label, false)),
+    ...kit.headings.map((hd) => cell(hd.label, null, true)),
+    ...kit.printOrder.map((c) => cell(c.label, c.detail, false)),
   ];
-  const rowHMm = Math.max(headingHMm, cardHMm);
-  for (let i = 0; i < cells.length; i += cols) rows.push({ cells: cells.slice(i, i + cols), hMm: rowHMm });
-  const html = rows
+  const rows = [];
+  for (let i = 0; i < cells.length; i += cols) {
+    const rowCells = cells.slice(i, i + cols)
+      .map((c, j, all) => `<div style="${j + 1 < all.length ? `border-right:0.3mm dashed ${GREY};` : ""}">${c}</div>`)
+      .join("");
+    rows.push({ cells: rowCells, hMm: h });
+  }
+  return { rows, heightMm: rows.reduce((s, r) => s + r.hMm, 0) };
+}
+
+function rowsHtml(rows) {
+  return rows
     .map((row, r) => {
-      const cells = row.cells
-        .map((c, i) => `<div style="${i + 1 < row.cells.length ? `border-right:0.3mm dashed ${GREY};` : ""}">${c}</div>`)
-        .join("");
       const below = r + 1 < rows.length ? `border-bottom:0.3mm dashed ${GREY};` : "";
-      return `<div style="display:flex;align-items:stretch;height:${row.hMm}mm;${below}">${cells}</div>`;
+      return `<div style="display:flex;align-items:stretch;height:${row.hMm}mm;${below}">${row.cells}</div>`;
     })
     .join("");
-  const heightMm = rows.reduce((s, r) => s + r.hMm, 0);
-  return { html, heightMm };
 }
 
 function geometryFor(kit, printableWMm) {
-  const cardLines = Math.max(...kit.cards.map((c) => wrapLines(c.label, CHARS_PER_LINE).length));
+  const cardLines = Math.max(...kit.cards.map((c) =>
+    wrapLines(c.label, CHARS_PER_LINE).length * LINE_MM +
+    (c.detail ? wrapLines(c.detail, DETAIL_CHARS_PER_LINE).length * DETAIL_LINE_MM + 1 : 0)
+  ));
   const headingLines = Math.max(...kit.headings.map((h) => wrapLines(h.label, CHARS_PER_LINE - 2).length));
   const tagMm = kit.tag ? TAG_BAND_MM : 0;
-  const cardHMm = cardLines * LINE_MM + 2 * CARD_PAD_MM + 4 + tagMm;
+  const cardHMm = cardLines + 2 * CARD_PAD_MM + 4 + tagMm;
   const headingHMm = headingLines * HEADING_LINE_MM + 2 * CARD_PAD_MM + 4 + tagMm;
   const cardWMm = CARD_W_MM + 2 * CARD_PAD_MM;
   const cols = Math.max(1, Math.floor((printableWMm + CARD_GAP_MM) / (cardWMm + CARD_GAP_MM)));
   return { cardWMm, cardHMm, headingHMm, cols };
 }
 
-// Lay the kit's sets onto landscape pages: as many whole sets per page as fit,
-// a thicker dashed guide between sets, the page caption naming the kit.
+// Lay the kit's sets onto landscape pages. Whole sets share a page while they
+// fit, with a thicker dashed guide between sets. A set taller than one page
+// continues onto the next page at a row boundary, with its caption saying so,
+// and every card still carries the kit's tag. Nothing is shrunk, dropped or
+// allowed to run off the page: a single row taller than the page is refused
+// with the heights named. Returns { error } instead of pages when refused.
 function renderKitPages(kit, { printableWMm, printableHMm, pageHtml }) {
   const geometry = geometryFor(kit, printableWMm);
   const set = renderSetHtml(kit, geometry);
   const SET_GAP_MM = 4;
-  const setsPerPage = Math.max(1, Math.floor((printableHMm + SET_GAP_MM) / (set.heightMm + SET_GAP_MM)));
-  const pages = [];
-  for (let s = 0; s < kit.setCount; s += setsPerPage) {
-    const count = Math.min(setsPerPage, kit.setCount - s);
-    const blocks = [];
-    for (let i = 0; i < count; i++) {
-      const last = i + 1 === count;
-      blocks.push(
-        `<div style="${last ? "" : `border-bottom:0.5mm dashed ${GREY};margin-bottom:${SET_GAP_MM}mm;padding-bottom:0;`}">${set.html}</div>`
-      );
-    }
-    const per = kit.per === "child" ? "one set per child" : kit.per === "pair" ? "one set between two" : "one set per group";
-    const caption = `✂ ${kit.tag ? `${kit.tag}: ` : ""}cut along the dashed lines. ${per[0].toUpperCase()}${per.slice(1)}; ${kit.setCount} set${kit.setCount === 1 ? "" : "s"}. Thick border = heading.`;
-    pages.push(pageHtml(caption, blocks.join("")));
+  const tallestRow = Math.max(...set.rows.map((r) => r.hMm));
+  if (tallestRow > printableHMm) {
+    return {
+      error:
+        `one row of cards needs ${Math.ceil(tallestRow)} mm and the page holds ${printableHMm} mm; ` +
+        "shorten the card with the most words or split its detail, because the kit will not shrink text or cut a card",
+    };
   }
-  return { pages, setsPerPage, setHeightMm: set.heightMm, cardsPerSet: kit.cards.length + kit.headings.length };
+  const per = kit.per === "child" ? "one set per child" : kit.per === "pair" ? "one set between two" : "one set per group";
+  const baseCaption = `✂ ${kit.tag}: cut along the dashed lines. ${per[0].toUpperCase()}${per.slice(1)}; ${kit.setCount} set${kit.setCount === 1 ? "" : "s"}. Thick border = heading.`;
+  const pages = [];
+  const pageHeights = [];
+  const splitSet = set.heightMm > printableHMm;
+  let setsPerPage;
+  if (!splitSet) {
+    setsPerPage = Math.floor((printableHMm + SET_GAP_MM) / (set.heightMm + SET_GAP_MM));
+    for (let s = 0; s < kit.setCount; s += setsPerPage) {
+      const count = Math.min(setsPerPage, kit.setCount - s);
+      const blocks = [];
+      for (let i = 0; i < count; i++) {
+        const last = i + 1 === count;
+        blocks.push(
+          `<div style="${last ? "" : `border-bottom:0.5mm dashed ${GREY};margin-bottom:${SET_GAP_MM}mm;`}">${rowsHtml(set.rows)}</div>`
+        );
+      }
+      pages.push(pageHtml(baseCaption, blocks.join("")));
+      pageHeights.push(count * set.heightMm + (count - 1) * SET_GAP_MM);
+    }
+  } else {
+    setsPerPage = 0;
+    // Group the set's rows into page-sized runs, the same split for every set.
+    const runs = [];
+    let run = [];
+    let used = 0;
+    for (const row of set.rows) {
+      if (run.length && used + row.hMm > printableHMm) {
+        runs.push(run);
+        run = [];
+        used = 0;
+      }
+      run.push(row);
+      used += row.hMm;
+    }
+    if (run.length) runs.push(run);
+    for (let s = 0; s < kit.setCount; s++) {
+      runs.forEach((r, i) => {
+        const caption = `${baseCaption} Set ${s + 1}, page ${i + 1} of ${runs.length}: keep these pages together.`;
+        pages.push(pageHtml(caption, rowsHtml(r)));
+        pageHeights.push(r.reduce((sum, row) => sum + row.hMm, 0));
+      });
+    }
+  }
+  const over = pageHeights.find((ph) => ph > printableHMm);
+  if (over !== undefined) {
+    return { error: `a page would need ${Math.ceil(over)} mm and holds ${printableHMm} mm` };
+  }
+  return {
+    pages,
+    setsPerPage,
+    splitSet,
+    pagesPerSet: splitSet ? Math.ceil(pages.length / kit.setCount) : 0,
+    setHeightMm: set.heightMm,
+    pageHeightsMm: pageHeights,
+    cardsPerSet: kit.cards.length + kit.headings.length,
+  };
 }
 
 // The teacher's half: the key and the preparation note, in plain text, never

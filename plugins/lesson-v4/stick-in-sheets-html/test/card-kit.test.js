@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { build, buildKits, naturalAnswersFilename } = require("../build");
-const { normaliseCardSet, orderForPrint, followsTheKey } = require("../src/render-card-set");
+const { normaliseCardSet, orderForPrint, followsTheKey, renderKitPages } = require("../src/render-card-set");
 
 const FIXTURE = path.join(__dirname, "fixtures/card-kit.json");
 const spec = () => JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
@@ -135,4 +135,86 @@ test("a pack can hold write-on pieces and a card kit together, and the kit pages
   }
   const answers = fs.readdirSync(out).find((f) => f.endsWith(" - Answers.txt"));
   assert.ok(answers, "the kit's answers file is written even when pieces share the pack");
+});
+
+// ─── Everything on a card reaches the page, and nothing runs off it ──────
+
+const PRINTABLE = { printableWMm: 277, printableHMm: 185, pageHtml: (caption, body) => `<div class="page"><div class="caption">${caption}</div>${body}</div>` };
+
+test("a card's detail prints under its label, so the account a card carries reaches the table", () => {
+  const withDetail = spec();
+  withDetail.items[0].spec.cards[0].detail = "Tom, aged 12, is fed at the bakery and sleeps by the oven.";
+  const { pageDivs, dropped } = buildKits(withDetail.items, 30);
+  assert.deepStrictEqual(dropped, []);
+  const html = pageDivs.join("");
+  assert.strictEqual(html.split(">Tom, aged 12, is fed at the bakery and sleeps by the oven.<").length - 1, 15);
+});
+
+test("a card that carries a picture, or a kit with no tag, is refused by name rather than printed short", () => {
+  for (const [name, mutate, pattern] of [
+    ["picture", (item) => { item.spec.cards[0].photoRef = "workshop"; }, /carries a picture/],
+    ["image path", (item) => { item.spec.cards[0].imagePath = "unsplash/x.jpg"; }, /carries a picture/],
+    ["no tag", (item) => { delete item.tag; }, /no tag/],
+  ]) {
+    const item = JSON.parse(JSON.stringify(spec().items[0]));
+    mutate(item);
+    const result = normaliseCardSet(item, 30);
+    assert.strictEqual(typeof result, "string", `${name}: expected a refusal`);
+    assert.match(result, pattern, name);
+  }
+});
+
+function tallKit({ label, detail, headingLabel, headings = 6, groupCount = 2 }) {
+  const item = JSON.parse(JSON.stringify(spec().items[0]));
+  item.spec.headings = Array.from({ length: headings }, (_, i) => ({ id: `group-00${i + 1}`, label: `${headingLabel} ${i + 1}` }));
+  item.spec.cards = Array.from({ length: 12 }, (_, i) => ({ id: `item-${String(i + 1).padStart(3, "0")}`, label: `Case ${i + 1}: ${label}`, ...(detail ? { detail } : {}) }));
+  item.spec.teacher.answer = item.spec.cards.map((c, i) => ({ cardId: c.id, headingId: item.spec.headings[i % headings].id }));
+  item.spec.sets = { per: "group", groupCount };
+  return normaliseCardSet(item, 30);
+}
+
+test("a set taller than a page continues onto the next page at a row boundary, and no page is overfilled", () => {
+  const kit = tallKit({
+    label: "A child worked long days in a workshop and was fed and housed there but was not taught how to make the goods.",
+    headingLabel: "Helped the family",
+    headings: 2,
+    groupCount: 1,
+  });
+  assert.notStrictEqual(typeof kit, "string", kit);
+  const laid = renderKitPages(kit, PRINTABLE);
+  assert.ok(!laid.error, laid.error);
+  assert.ok(laid.splitSet, "this set does not fit one page");
+  assert.ok(laid.pageHeightsMm.every((h) => h <= 185), `page heights ${laid.pageHeightsMm}`);
+  assert.strictEqual(laid.pages.length, kit.setCount * laid.pagesPerSet);
+  const html = laid.pages.join("");
+  for (const card of kit.cards) assert.strictEqual(html.split(`>${card.label}<`).length - 1, kit.setCount, card.label);
+  assert.match(laid.pages[0], /Set 1, page 1 of 2: keep these pages together/);
+});
+
+test("the largest kit the contract allows, with long labels, details and headings, still lays out without overfilling a page", () => {
+  const kit = tallKit({
+    label: "a long label that wraps over several lines on the card",
+    detail: "A longer account of what happened to this child, which a group reads together before deciding where it goes.",
+    headingLabel: "A long heading number",
+  });
+  assert.notStrictEqual(typeof kit, "string", kit);
+  const laid = renderKitPages(kit, PRINTABLE);
+  assert.ok(!laid.error, laid.error);
+  assert.ok(laid.pageHeightsMm.every((h) => h <= 185), `page heights ${laid.pageHeightsMm}`);
+});
+
+test("a single card too tall for any page is refused with the heights named, never shrunk or cut", () => {
+  const kit = tallKit({ label: "short", detail: "word ".repeat(400).trim(), headingLabel: "Heading", headings: 2, groupCount: 1 });
+  assert.notStrictEqual(typeof kit, "string", kit);
+  const laid = renderKitPages(kit, PRINTABLE);
+  assert.ok(laid.error, "expected a refusal");
+  assert.match(laid.error, /needs \d+ mm and the page holds 185 mm/);
+});
+
+test("a kit that cannot be laid out is dropped from the pack by name", () => {
+  const item = JSON.parse(JSON.stringify(spec().items[0]));
+  item.spec.cards[0].detail = "word ".repeat(400).trim();
+  const { kits, dropped } = buildKits([item], 30);
+  assert.strictEqual(kits.length, 0);
+  assert.deepStrictEqual(dropped, [item.label]);
 });

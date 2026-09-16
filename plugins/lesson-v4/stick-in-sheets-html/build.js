@@ -262,19 +262,29 @@ function buildKits(cardSetItems, classSize) {
   }
   const pageDivs = [];
   const summaries = [];
+  const laidOut = [];
   for (const kit of kits) {
     const laid = renderKitPages(kit, {
       printableWMm: PRINTABLE_W_MM,
       printableHMm: PRINTABLE_H_MM,
       pageHtml: pageDiv,
     });
+    if (laid.error) {
+      console.warn(`[stick-in] card kit "${kit.label}": ${laid.error} - this kit is NOT in the pack.`);
+      dropped.push(kit.label);
+      continue;
+    }
+    laidOut.push(kit);
     pageDivs.push(...laid.pages);
+    const fit = laid.splitSet
+      ? `each set runs over ${laid.pagesPerSet} pages`
+      : `${laid.setsPerPage} set${laid.setsPerPage === 1 ? "" : "s"} a page`;
     summaries.push(
-      `${kit.tag ? `${kit.tag} ` : ""}${kit.label}: ${kit.setCount} set${kit.setCount === 1 ? "" : "s"} of ` +
-      `${kit.cards.length} cards under ${kit.headings.length} headings, ${laid.setsPerPage} set${laid.setsPerPage === 1 ? "" : "s"} a page`
+      `${kit.tag} ${kit.label}: ${kit.setCount} set${kit.setCount === 1 ? "" : "s"} of ` +
+      `${kit.cards.length} cards under ${kit.headings.length} headings, ${fit}`
     );
   }
-  return { kits, pageDivs, summaries, dropped };
+  return { kits: laidOut, pageDivs, summaries, dropped };
 }
 
 async function build(specPath, outDir) {

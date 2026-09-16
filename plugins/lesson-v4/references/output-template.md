@@ -511,7 +511,7 @@ A sort is done on the board unless the design says otherwise: the class sees the
 "handling": { "kind": "cards", "per": "pair", "groupCount": null, "where": "At tables, one set between two, after the deal is taught." }
 ```
 
-`per` is `child`, `pair` or `group`; `groupCount` is a positive integer only when `per` is `group` (the plugin never guesses the class), otherwise `null`; `where` is the teacher's one-line preparation note. Leave `handling` out for a board sort. The kit is part of the main activity: a run whose design carries `handling` cannot close `COMPLETE` without the printed pack.
+`per` is `child`, `pair` or `group`; `groupCount` is a positive integer only when `per` is `group` (the plugin never guesses the class), otherwise `null`; `where` is the teacher's one-line preparation note. Leave `handling` out for a board sort. A printed kit carries each item's label and detail but not its picture, so a sort whose items carry `photoRef` stays on the board. The kit is part of the main activity: a run whose design carries `handling` cannot close `COMPLETE` without the printed pack.
 
 Each group `id` is local to the source unit and uses `group-###`. Each item `id` is local to the source unit and uses `item-###`. `label` and non-null `detail` are exact child-facing strings. `photoRef` is `null` or one ID already present in the source unit's `photoRefs`.
 

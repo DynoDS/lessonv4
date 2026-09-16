@@ -92,6 +92,7 @@ def kit_faults(design: dict, stick_in: dict) -> list[str]:
     items = stick_in.get("items") if isinstance(stick_in, dict) else None
     items = items if isinstance(items, list) else []
     kits = {}
+    kit_items_by_unit = {}
     for item in items:
         if not isinstance(item, dict) or item.get("visual") != "card-set":
             continue
@@ -104,6 +105,7 @@ def kit_faults(design: dict, stick_in: dict) -> list[str]:
             faults.append(f"{unit_id}: two card-set items claim this unit")
             continue
         kits[unit_id] = spec
+        kit_items_by_unit[unit_id] = item
 
     units_by_id = {unit.get("sourceUnitId"): unit for unit in lesson_units(design)}
     required = {unit["sourceUnitId"]: unit for unit in card_kit_units(design)}
@@ -126,13 +128,34 @@ def kit_faults(design: dict, stick_in: dict) -> list[str]:
             continue
         task = unit["taskStructure"]
         handling = task.get("handling") or {}
-        want_cards = {row["id"]: row["label"] for row in task.get("items") or []}
+        # A card is everything children read on it: the label and, when the
+        # unit gives one, the detail. Comparing labels alone let a kit drop
+        # the account a card existed to carry and still pass.
+        want_cards = {
+            row["id"]: (row["label"], row.get("detail") or None)
+            for row in task.get("items") or []
+        }
         want_headings = {row["id"]: row["label"] for row in task.get("groups") or []}
         got_cards = {
-            row.get("id"): row.get("label")
+            row.get("id"): (row.get("label"), row.get("detail") or None)
             for row in (spec.get("cards") or [])
             if isinstance(row, dict)
         }
+        pictured = [row["id"] for row in task.get("items") or [] if row.get("photoRef")]
+        if pictured:
+            faults.append(
+                f"{unit_id}: cards {', '.join(pictured)} carry a picture, and a printed card kit "
+                "prints words only; the kit is refused rather than printed without them"
+            )
+        if any(isinstance(row, dict) and (row.get("photoRef") or row.get("imagePath")) for row in (spec.get("cards") or [])):
+            faults.append(f"{unit_id}: card-set cards carry a picture the kit cannot print")
+        if (spec.get("instruction") or "").strip() != (unit.get("pupilInstruction") or "").strip():
+            faults.append(f"{unit_id}: card-set instruction differs from the unit's pupilInstruction")
+        if not isinstance(kit_items_by_unit.get(unit_id, {}).get("tag"), str) or not kit_items_by_unit[unit_id]["tag"].strip():
+            faults.append(
+                f"{unit_id}: card-set has no tag, so a card found after cutting could not be "
+                "matched back to its activity"
+            )
         got_headings = {
             row.get("id"): row.get("label")
             for row in (spec.get("headings") or [])
