@@ -436,7 +436,7 @@ def test_route_mismatch_is_rejected_before_files_are_written():
         scaffold.validate_request(request)
     except scaffold.ScaffoldError as exc:
         assert (
-            "teach must be followed immediately by do"
+            "practise needs at least one teach -> do pair before it"
             in str(exc)
         )
     else:

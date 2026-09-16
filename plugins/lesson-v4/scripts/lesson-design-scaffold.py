@@ -505,24 +505,24 @@ def validate_route_shape(
 
     if structure == "Content-based":
         # Same shape as `validate_route_sequence` in the validator, which
-        # owns the rule: Teach -> Do pairs, an Observe only just before a
-        # Teach, and a Practise wherever the lesson has taught enough for it,
-        # once or more, with pairs allowed to continue after it. The parity
-        # test in scripts/tests keeps the two copies saying the same thing.
+        # owns the rule: every teach used at once by a do or by the practise
+        # after it, an observe only just before a teach, at least one
+        # teach -> do pair before the first practise, and a practise wherever
+        # the lesson has taught enough for it, with pairs allowed to continue
+        # after it. The parity test in scripts/tests keeps the two copies
+        # saying the same thing.
         index = 0
         pairs_before_first_practise = 0
         practises = 0
+        before_it = (
+            "Content-based practise needs at least one "
+            "teach -> do pair before it"
+        )
 
         while index < len(sequence):
             kind = sequence[index]["kind"]
             if kind == "practise":
-                require(
-                    pairs_before_first_practise >= 1,
-                    (
-                        "Content-based practise needs at least one "
-                        "teach -> do pair before it"
-                    ),
-                )
+                require(pairs_before_first_practise >= 1, before_it)
                 practises += 1
                 index += 1
                 continue
@@ -550,12 +550,14 @@ def validate_route_shape(
 
             require(
                 index < len(sequence)
-                and sequence[index]["kind"] == "do",
+                and sequence[index]["kind"] in {"do", "practise"},
                 (
                     "Every Content-based teach must be followed "
-                    "immediately by do"
+                    "immediately by do, or by the practise that uses it"
                 ),
             )
+            if sequence[index]["kind"] == "practise":
+                continue
             index += 1
             if practises == 0:
                 pairs_before_first_practise += 1

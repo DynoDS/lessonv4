@@ -7,9 +7,11 @@ explanations after the second chunk and instead sat through every remaining
 short beat on the carpet; the guidance already said "treat a substantial beat
 as main practice", but the route had nowhere earlier to put one.
 
-The rhythm is unchanged: every Teach is used by its own Do at once, an
-Observe only ever sets up the Teach after it, and a Practise needs teaching
-before it. What moved is the Practise, which may now follow any complete pair,
+The rhythm is unchanged: every Teach is used at once, an Observe only ever
+sets up the Teach after it, and a Practise needs a Teach -> Do pair before
+it. A Teach may be used by the Practise straight after it, because a Do that
+became substantial is main practice in the same place, and requiring a
+separate Do first only added a token beat (review, 16 September 2026). What moved is the Practise, which may now follow any complete pair,
 once or more, with teaching the work earned continuing after it as ordinary
 pairs. The scaffold refuses the same shapes as the validator, because it
 checks the request before any file is written.
@@ -39,13 +41,18 @@ def load(name: str, filename: str):
 CONVENTIONAL = ["teach", "do", "teach", "do", "practise"]
 EARLY_MAIN_WORK = ["teach", "do", "teach", "do", "practise", "teach", "do"]
 OBSERVE_THEN_EARLY = ["observe", "teach", "do", "practise", "teach", "do", "practise"]
+# A Do that became substantial is the Practise in the same place: no token
+# Do is needed between its Teach and the work that uses it.
+PROMOTED_IN_PLACE = ["teach", "do", "teach", "practise"]
+PROMOTED_THEN_MORE = ["observe", "teach", "do", "teach", "practise", "teach", "do"]
 
 # Each malformed shape with the phrase its refusal has to carry, so a repair
 # knows what to move rather than guessing.
 MALFORMED = [
     (["practise", "teach", "do"], "before it"),
     (["teach", "do"], "requires a Practise"),
-    (["teach", "practise"], "followed immediately by Do"),
+    (["teach", "practise"], "before it"),
+    (["observe", "teach", "practise", "teach", "do"], "before it"),
     (["teach", "do", "practise", "teach"], "followed immediately by Do"),
     (["teach", "do", "practise", "do"], "Teach -> Do pairs"),
     (["do", "teach", "do", "practise"], "Teach -> Do pairs"),
@@ -71,6 +78,10 @@ class TheValidatorLetsThePractiseMoveTests(unittest.TestCase):
 
     def test_an_observe_opening_and_a_second_practise_are_both_allowed(self):
         self.check(OBSERVE_THEN_EARLY)
+
+    def test_a_substantial_beat_can_be_the_practise_straight_after_its_teach(self):
+        self.check(PROMOTED_IN_PLACE)
+        self.check(PROMOTED_THEN_MORE)
 
     def test_a_genuinely_malformed_route_is_still_refused(self):
         for kinds, phrase in MALFORMED:
@@ -107,7 +118,7 @@ class TheScaffoldRefusesTheSameShapesTests(unittest.TestCase):
         return True
 
     def test_both_copies_agree_on_every_shape(self):
-        shapes = [CONVENTIONAL, EARLY_MAIN_WORK, OBSERVE_THEN_EARLY] + [kinds for kinds, _ in MALFORMED]
+        shapes = [CONVENTIONAL, EARLY_MAIN_WORK, OBSERVE_THEN_EARLY, PROMOTED_IN_PLACE, PROMOTED_THEN_MORE] + [kinds for kinds, _ in MALFORMED]
         for kinds in shapes:
             with self.subTest(kinds=kinds):
                 self.assertEqual(self.scaffold_ok(kinds), self.validator_ok(kinds))

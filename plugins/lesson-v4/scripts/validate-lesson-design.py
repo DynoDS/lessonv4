@@ -1957,28 +1957,32 @@ def validate_route_sequence(
         return
 
     if structure == "Content-based":
-        # The rhythm is fixed: every Teach is used by its own Do at once, and
-        # an Observe only ever sets up the Teach after it. Where the Practise
-        # sits is the designer's: it used to be pinned to the very end, so a
-        # class that was ready for its substantial work after two chunks
-        # (Year 4 history, 15 September 2026) sat through every remaining
-        # short beat on the carpet first, and the guidance that said "treat a
-        # substantial beat as main practice" had nowhere earlier to put it.
-        # A Practise may now follow any complete pair, and teaching that the
-        # work earned (feedback, the next distinction, a short transfer check)
-        # continues as ordinary Teach -> Do pairs after it. What stays refused
-        # is a lesson with no Practise, a Practise before anything was taught,
-        # and any beat outside a pair.
+        # The rhythm is fixed: every Teach is used at once, and an Observe
+        # only ever sets up the Teach after it. Where the Practise sits is the
+        # designer's: it used to be pinned to the very end, so a class that
+        # was ready for its substantial work after two chunks (Year 4
+        # history, 15 September 2026) sat through every remaining short beat
+        # on the carpet first. A Practise may follow any complete pair, and
+        # teaching the work earned continues as ordinary pairs after it.
+        #
+        # A Teach is used by the Do after it, or by the Practise after it.
+        # The guidance says a sort or explanation that becomes substantial is
+        # main practice in the same place, and requiring a separate Do first
+        # made the designer add a token beat to satisfy the format. What is
+        # kept on purpose is the preparation: before the first Practise the
+        # class has used something it was taught in at least one short
+        # Teach -> Do pair, so the main work is never the first time children
+        # use the lesson's knowledge. Still refused: a lesson with no
+        # Practise, a Practise before that first pair, and any beat outside a
+        # pair.
         index = 0
         pairs_before_first_practise = 0
         practises = 0
+        before_it = "Content-based Practise needs at least one Teach -> Do pair before it"
         while index < len(sequence):
             kind = sequence[index]["kind"]
             if kind == "practise":
-                expect(
-                    pairs_before_first_practise >= 1,
-                    "Content-based Practise needs at least one Teach -> Do pair before it",
-                )
+                expect(pairs_before_first_practise >= 1, before_it)
                 practises += 1
                 index += 1
                 continue
@@ -1994,9 +1998,12 @@ def validate_route_sequence(
             )
             index += 1
             expect(
-                index < len(sequence) and sequence[index]["kind"] == "do",
-                "Every Content-based Teach must be followed immediately by Do",
+                index < len(sequence) and sequence[index]["kind"] in {"do", "practise"},
+                "Every Content-based Teach must be followed immediately by Do, "
+                "or by the Practise that uses it",
             )
+            if sequence[index]["kind"] == "practise":
+                continue
             index += 1
             if practises == 0:
                 pairs_before_first_practise += 1
