@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "structure": "Content-based",
+  "yearGroup": 4,
+  "subject": "Science",
+  "scope": "Complete lesson",
+  "vocabularyCount": 3,
+  "vocabularyIntroductionCount": 2,
+  "trimmedVocabularyCount": 0,
+  "representations": [
+    {
+      "configurations": [
+        { "id": "whole-path-live", "loadBearing": true },
+        { "id": "worksheet-three-blanks", "loadBearing": true }
+      ]
+    },
+    {
+      "configurations": [
+        { "id": "eardrum-named", "loadBearing": true }
+      ]
+    }
+  ],
+  "successCriteriaCount": 1,
+  "stickyKnowledgeCount": 3,
+  "misconceptionCount": 2,
+  "concepts": [],
+  "teachingSequence": [
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "do", "conceptIndex": null },
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "do", "conceptIndex": null },
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "do", "conceptIndex": null },
+    { "kind": "practise", "conceptIndex": null }
+  ],
+  "endingIncluded": true,
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "sheetShape": "question-set"
+  },
+  "photoCount": 5
+}

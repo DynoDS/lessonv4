@@ -1,0 +1,665 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Content-based",
+    "yearGroup": 4,
+    "subject": "Science",
+    "lo": "To explain how sound travels from a source to our ears.",
+    "displayedLo": "To explain how sound travels from a source to our ears",
+    "durationMinutes": 45,
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "Children hold sound as a thing that flies across the room on its own, with the air as the empty gap in between, so the air never gets a job in their explanation."
+  },
+  "teacherOrientation": "Teacher orientation: Children already know that sounds are made when something vibrates. Today they learn what happens next: the vibrating object shakes the air right next to it, each bit of air passes the shaking on to the bit beside it, and the shaking arrives at the eardrum. They record a prediction about a speaker and a piece of tissue paper, a yes or no about shouting in space, the order of a sound's journey from a bank of cards, and then a written explanation of how a clap at the front of the room reached them at the back. The tricky move is that nothing flies across the room: each bit of air only shakes on the spot and hands the shake on, and that is taught on the path diagram in \"How does the shaking reach you?\". Have a speaker or tablet and a strip of tissue paper ready for the demonstration. The main written work sits near the end, at \"Trace the clap to your ear\".",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "Sounds we made",
+    "kind": "starter",
+    "conceptRef": null,
+    "unlocks": "They have the vibrating object back in mind, which every beat today starts from.",
+    "thinking": "What is actually going on inside something that is making a sound?",
+    "content": {
+      "activity": "What has to happen to make a sound?\n\nYou press your hand flat on a drum skin that is still ringing. Why does the sound stop?\n\nA triangle is hanging still. Is it making a sound? How do you know?",
+      "connection": "Retrieves the prior learning today builds on: a sound is made when something vibrates, and it stops when the vibrating stops.",
+      "format": "Three short written questions answered individually, then checked together off the answer slide.",
+      "testQuestionPath": null
+    },
+    "pupilInstruction": null,
+    "taskStructure": null,
+    "modellingState": null,
+    "representationRefs": [],
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "misconceptionRefs": [],
+    "photoRefs": [
+      "photo-001"
+    ],
+    "speakerNotes": {
+      "script": "Say to children: Before we start anything new, three quick ones about the instruments we played. Number one: what has to happen to make a sound? Number two: you press your hand flat on a drum skin while it's still ringing, and the sound stops. Why? And number three: that triangle is hanging there, completely still. Is it making a sound? How do you know? Write all three down. You've got four minutes, and you already know all of this.",
+      "teacherInfo": null,
+      "lookFor": "Look for: the word vibrating, or shaking, in all three answers rather than only the first."
+    },
+    "answer": {
+      "kind": "exact",
+      "content": "1. Something has to vibrate. 2. Your hand stops the skin vibrating, so the sound stops. 3. No. Nothing is vibrating, so there is no sound.",
+      "acceptanceCondition": "Accept shaking, wobbling or moving quickly instead of vibrating.",
+      "delivery": "answer-slide"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "sound source",
+      "definition": "The sound source is the thing making the sound, and it is the thing that is vibrating.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-003"
+      }
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "vibration",
+      "definition": "A vibration is a very fast shaking, backwards and forwards, over and over.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-002"
+      }
+    },
+    {
+      "id": "vocab-003",
+      "sourceUnitId": "lesson-section/vocabulary/unit-003",
+      "term": "eardrum",
+      "definition": "Your eardrum is a thin piece of skin stretched tight just inside your ear, like the skin on a drum.",
+      "visual": {
+        "kind": "representation",
+        "representationRef": "rep-002",
+        "configuration": "eardrum-named"
+      }
+    }
+  ],
+  "trimmedVocabulary": [],
+  "representations": [
+    {
+      "id": "rep-001",
+      "name": "Sound path from source to ear",
+      "purpose": "Show the vibration being handed on through the air, so children can see the air doing something rather than a sound crossing an empty gap.",
+      "configurations": [
+        {
+          "id": "whole-path-live",
+          "description": "The sound source at one end, a row of separate bits of air across the middle and an ear at the other end, with the gaps between neighbouring bits of air left empty so the teacher draws each passing-on arrow live.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "the sound source at one end and an ear at the other end",
+            "the air drawn as a row of separate bits, never as one solid band",
+            "a clear empty gap between each neighbouring pair of air bits, big enough for a drawn arrow",
+            "every bit of air stays in its own place along the row"
+          ]
+        },
+        {
+          "id": "worksheet-three-blanks",
+          "description": "The same path printed for the worksheet, an ice-cream van at one end and a girl in a garden at the other, with three empty boxes spaced along the path for the child to write in.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "an ice-cream van at one end and a listening child at the other end",
+            "the air drawn as a row of separate bits between them",
+            "exactly three empty write-on boxes spaced along the path",
+            "nothing already written inside the boxes"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rep-002",
+      "name": "Labelled ear diagram",
+      "purpose": "Give the eardrum a real place, so the last step of the journey is somewhere children can point to.",
+      "configurations": [
+        {
+          "id": "eardrum-named",
+          "description": "A simple side view of an ear: the outer ear, the canal running inwards from it, and the eardrum stretched across the end of the canal and labelled.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "the outer ear",
+            "the ear canal running inwards from it",
+            "the eardrum drawn as a thin sheet stretched right across the end of the canal",
+            "the eardrum labelled"
+          ]
+        }
+      ]
+    }
+  ],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "steps",
+      "drawLive": true,
+      "content": {
+        "steps": [
+          "Name the {{sound source}}, the thing that vibrated.",
+          "Say what the air right next to it did.",
+          "Say how the {{vibration}} got all the way across the room.",
+          "Say what happened at your {{eardrum}}."
+        ]
+      }
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "A vibrating object makes the air right next to it vibrate too."
+    },
+    {
+      "id": "sk-002",
+      "text": "Each bit of air passes the vibration on to the next bit, all the way to your ear."
+    },
+    {
+      "id": "sk-003",
+      "text": "The vibrating air makes your eardrum vibrate, and that is when you hear the sound."
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mc-001",
+      "belief": "A sound leaves the object and flies across the room on its own, and the air is just the empty space in between.",
+      "correctiveFact": "A sound is a vibration being passed on from one bit of air to the next, so with no air there is nothing to pass it on.",
+      "strategy": "A counter-example that makes the wrong rule visibly fail: in space there is no air, so a shout reaches nobody. Retested once when children reject the odd card out.",
+      "reason": "It is the wrong rule the objective is built on, and it survives every lesson that only says sound travels."
+    },
+    {
+      "id": "mc-002",
+      "belief": "The air itself travels across the room to your ear, like a puff of breath.",
+      "correctiveFact": "Each bit of air shakes where it is and passes the shake on; the air stays put.",
+      "strategy": "One explicit teaching line on the board in \"How does the shaking reach you?\", and one claim to judge on the worksheet.",
+      "reason": "It is a real second wrong rule, but it blocks less than the first, so it gets one clean touch rather than a place in every beat."
+    }
+  ],
+  "concepts": [],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "What is the air doing?",
+      "kind": "teach",
+      "conceptRef": null,
+      "unlocks": "They know the air right next to a vibrating object is vibrating too, which the tissue-paper prediction needs.",
+      "thinking": "If the drum skin is pushing the air next to it, what is that air doing?",
+      "content": {
+        "headline": "A drum skin, and the air touching it.",
+        "explanation": "You already know this bit. The drum is our sound source, its skin vibrates when we hit it, and that's why the rice is jumping.\n\nHere's the new bit. A sound source doesn't vibrate in an empty space. There's air pressed right up against that skin, and every time the skin moves, it pushes the air.\n\nSo look at the rice, and then think about the air right beside it.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-001"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "The sound source is shaking. What do you think the air right next to it is doing?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-002"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Look at this drum. Somebody has put grains of rice on the skin, then hit it, and the rice has jumped. You know why. The drum is the sound source, its skin is vibrating, and it's throwing the rice up. That bit you already had. Now here's the new bit, and it's the whole lesson really. That sound source isn't vibrating in an empty space. There's air pressed right up against the skin. Air is a real thing, even though you can't see it, and it's touching that skin all over. So every single time the skin moves out, it shoves the air. And every time it moves back, the air follows it. Look at the rice jumping, and now think about the air right beside it. The sound source is shaking. What do you think the air right next to it is doing?",
+        "teacherInfo": "The one thing to land is that air is a substance touching the skin, not empty space. A child who says \"the air blows away\" is worth hearing now, because the next slide but one says exactly what the air does and does not do.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "It is vibrating too, because the skin is pushing it backwards and forwards.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "Will the paper move?",
+      "kind": "do",
+      "conceptRef": null,
+      "unlocks": "They have seen vibrating air push something it isn't touching, which the eardrum beat needs.",
+      "thinking": "If the speaker is shaking the air, what will that air do to a piece of paper hanging in it?",
+      "content": {
+        "activity": "Children commit a written prediction, then the teacher holds a strip of tissue paper in front of a playing speaker.",
+        "format": null,
+        "task": "This speaker is about to play some music. The front of it will vibrate, in and out, very fast.\n\nThe tissue paper isn't touching it. What will the paper do? Write what you think, and one reason why."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Physical-demonstration support",
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-003"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Prediction time, and I want everybody to have written something down before I press play. This speaker is going to play music, and the front of it, this round part here, will vibrate in and out really fast, just like the drum skin did. I'm going to hold this strip of tissue paper in front of it. Not touching. There's a gap. So: what will the paper do? Write what you think, and next to it, write why. Thirty seconds, everybody. ... Right, watch. Look at it go. It's fluttering like mad, and nothing is touching it. Nothing at all. So what's hitting that paper? The air. The speaker is vibrating the air, and the vibrating air is pushing the paper about.",
+        "teacherInfo": "Keep the volume moderate and hold the tissue about 10cm from the speaker without touching it; music with some bass works best and a tablet speaker is enough. A child who predicts nothing, because sound is invisible, is holding the wrong rule the next two slides are built on.",
+        "lookFor": "Look for: the air named as the thing pushing the paper, not the music or the sound."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "The paper flutters and shakes. The speaker is vibrating the air, and the vibrating air pushes the paper.",
+        "acceptanceCondition": "Accept any prediction that the paper moves because the vibrating air pushes it.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "How does the shaking reach you?",
+      "kind": "teach",
+      "conceptRef": null,
+      "unlocks": "They can follow the vibration being handed from one bit of air to the next, which the space case and the written explanation both rest on.",
+      "thinking": "If each bit of air only shakes on the spot, how does the vibration get all the way to me?",
+      "content": {
+        "headline": "From the drum to your ear.",
+        "explanation": "So the air right next to the drum is vibrating. Now watch what that air does to the air beside it.\n\nEach bit of air gives the next bit a tiny push, and then that bit pushes the one after it. The vibration gets handed on, bit by bit, all the way across the room.\n\nHere's the part that catches people out. The air doesn't fly across the room to you. Each bit of air just shakes where it is and passes the shake on.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-002"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "Follow my arrows. What is passing the vibration along to your ear?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Live-complete helper",
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "whole-path-live",
+          "interaction": "teacher-completes"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [
+        "mc-001",
+        "mc-002"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Here's the drum, and here's you, over on this side of the room. In between is all the air. Look at the bit right next to the drum. We've just said that bit is vibrating, because the skin keeps pushing it. Now watch what happens next. That bit of air gives the bit beside it a tiny push. That one pushes the next. That one pushes the next. On and on, bit to bit, all the way across the room, until it gets here, to your ear. Now, here's the part that catches people out, so listen carefully. The air does not fly across the room to you. Not one bit of it leaves its place. Each one just shakes where it is and passes the shake on to its neighbour. It's the shaking that travels, not the air. So follow my arrows. What is passing the vibration along to your ear?",
+        "teacherInfo": "Draw one arrow at a time, in the gap between each pair of air bits, so the class watches the vibration move while the air stays put; the last arrow reaches the ear. If a child says the air travels, point at one bit and ask whether that one has gone anywhere.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "Every gap between neighbouring bits of air has an arrow in it, running from the drum across to the ear, with each bit of air still sitting in its own place.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "Could you hear it in space?",
+      "kind": "do",
+      "conceptRef": null,
+      "unlocks": "They have decided that with no air there is nothing to pass the vibration on, which is what makes the air a real step in their written explanation.",
+      "thinking": "If there's no air out there, what is left to pass the shaking along?",
+      "content": {
+        "activity": "Children commit yes or no with a reason before the answer is taken.",
+        "format": null,
+        "task": "Out in space there is no air at all. None.\n\nTwo astronauts are floating right next to each other. One of them shouts as loudly as they can.\n\nWould the other one hear it? Write yes or no, and say why."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [
+        "photo-004"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Here's a strange one. Out in space there is no air at all. None. Not thin air, not a little bit of air. Nothing. These two astronauts are floating right next to each other, close enough to touch. One of them shouts as loudly as she possibly can. Would the other one hear it? Write yes or no, and then write why. Don't call it out, because I want everybody to decide for themselves. ... Right. The answer is no. Her throat still vibrates. Her mouth still vibrates. But look at the gap between them: there's nothing in it to pass the vibration on. No air, no next bit, nowhere for my arrow to go. The shaking gets nowhere. And that's why astronauts talk to each other on the radio. They can be floating an arm's length apart and still have to call each other up.",
+        "teacherInfo": "A child who writes yes because the sound would still travel is holding the idea today replaces; take that answer seriously and go back to the arrows rather than correcting it flat. Radio signals are not sound and do not need air, and that is as far as Year 4 needs to go.",
+        "lookFor": "Look for: no air, or nothing in between, given as the reason, rather than just that space is quiet."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "No. The shouting astronaut's throat still vibrates, but there is no air between them to pass the vibration on, so nothing reaches the other one's ear.",
+        "acceptanceCondition": "Accept any no whose reason is that there is no air, or nothing in between, to pass the vibration on.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-005",
+      "label": "What happens when it reaches your ear?",
+      "kind": "teach",
+      "conceptRef": null,
+      "unlocks": "They can name what the vibration does at the eardrum, which is the last step of the explanation they are about to write.",
+      "thinking": "What does the vibrating air do to something as thin as an eardrum?",
+      "content": {
+        "headline": "An ear, from the outside in.",
+        "explanation": "The vibration has travelled all the way across the room, and it has just arrived at your ear.\n\nJust inside, at the end of that little tunnel, is your eardrum: a thin piece of skin pulled tight, exactly like the skin on the drum we started with.\n\nThe vibrating air arrives and pushes on it, so the eardrum starts vibrating too. Your brain turns that into the sound you hear.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-003"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "Your eardrum is like the drum skin we started with. What do you think the vibrating air does to it?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-002",
+          "configuration": "eardrum-named",
+          "interaction": "view"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-003"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Our vibration has made it. It's come all the way across the room, bit of air to bit of air, and now it has arrived at your ear. Look at the diagram. Here's the part on the outside, and here's the little tunnel going inwards. Right at the end of that tunnel is your eardrum, and I want you to look at how it's drawn: a thin piece of skin, pulled tight, stretched right across. Exactly like the skin on the drum we started with. Now think about the tissue paper in front of the speaker. The vibrating air arrives at your eardrum and pushes on it, so your eardrum starts vibrating too. Your brain takes that vibrating and turns it into the sound you hear. Your eardrum is like that tissue paper, only it's inside your head. So, what do you think the vibrating air does to it?",
+        "teacherInfo": "Point along the canal to the eardrum while you talk, so the class sees where the vibration arrives. Nothing past the eardrum is Year 4 content, so stop there rather than naming the little bones or the cochlea.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "It makes the eardrum vibrate too, just like the speaker made the tissue paper move.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+      "label": "Put the journey in order",
+      "kind": "do",
+      "conceptRef": null,
+      "unlocks": "They can lay a sound's journey out in the right order with the wording given, which the written explanation asks them to do without it.",
+      "thinking": "Which of these actually happens, and in what order?",
+      "content": {
+        "activity": "Children order four of the five cards and reject the one that does not happen.",
+        "format": null,
+        "task": "Four of these five things happen when you hear the school bell. One of them never happens at all."
+      },
+      "pupilInstruction": "Write the four letters in the order they happen, then the odd letter out and why.",
+      "taskStructure": {
+        "kind": "option-bank",
+        "items": [
+          {
+            "id": "item-001",
+            "label": "Your eardrum starts to vibrate."
+          },
+          {
+            "id": "item-002",
+            "label": "Each bit of air passes the vibration on to the next bit."
+          },
+          {
+            "id": "item-003",
+            "label": "The school bell is struck and starts to vibrate."
+          },
+          {
+            "id": "item-004",
+            "label": "The sound flies across the room on its own."
+          },
+          {
+            "id": "item-005",
+            "label": "The air right next to the bell starts to vibrate."
+          }
+        ]
+      },
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Five cards. Four of them really happen when you hear the school bell go. One of them doesn't happen at all, and it's an idea a lot of people have, so read all five properly before you write anything. Then write the four letters in the order they happen, and last of all the letter of the one that doesn't belong, and why. Off you go. ... Let's take it. We start with C, the bell is struck and vibrates. Then E, the air right next to it starts vibrating. Then B, each bit of air passes the vibration on to the next. Then A, your eardrum vibrates. And D is out. A sound isn't an object. It can't fly across a room on its own. It's a vibration, and the air is what passes it along.",
+        "teacherInfo": "This is the last check on the wrong rule before they write on their own; a child who keeps D, or who puts B before E, still has sound as a travelling object and will skip the middle of their explanation.",
+        "lookFor": "Look for: the reason given for rejecting D, not just the letter."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "C, E, B, A. D is the odd one out: a sound is not an object that can fly anywhere on its own, it is a vibration the air passes along.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-007",
+      "label": "Trace the clap to your ear",
+      "kind": "practise",
+      "conceptRef": null,
+      "unlocks": "They have written the whole journey forwards for one sound, which the ending asks them to run backwards.",
+      "thinking": "What was the air doing between their hands and my ear?",
+      "content": {
+        "activity": "Each child writes a four-step explanation of a clap reaching them, with the success criteria beside them.",
+        "format": "A written explanation, one sentence for each of the four steps.",
+        "task": "Your teacher claps their hands at the front of the room. You're sitting right at the back, and you hear it straight away.\n\nExplain how the sound of that clap got all the way to your ear.",
+        "launch": {
+          "established": "We know a sound starts with a sound source vibrating, that the air right next to it vibrates too, that each bit of air passes the vibration on, and that your eardrum vibrates at the end.",
+          "goodLooksLike": "Two answers to a different question: how you heard a whistle blown across the playground.\n\nA weak one: \"The whistle made a noise and the noise went over to my ear.\" It never says what the air is doing.\n\nA strong one: \"The whistle vibrated when the teacher blew it. The air right next to the whistle started vibrating. Each bit of air passed the vibration on to the next, all the way over to me. The vibrating air made my eardrum vibrate, and that's when I heard it.\"\n\nThe difference: the strong one says what the air is doing at every step.",
+          "steps": [
+            "Use all four steps, in order.",
+            "Read it back and check the air is doing something in the middle, not only at the start."
+          ]
+        }
+      },
+      "pupilInstruction": "Write your explanation, one sentence for each step.",
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Right, this is the big one, and this one is yours on your own. Listen. ... Everybody at the back heard that, didn't you? You're right across the room from my hands, and you heard it at the same moment I did it. Your job is to explain how. And I don't want \"the sound travelled\". I want to know what the air was doing, every step of the way. Four steps, one sentence each, and the steps are on the screen next to you the whole time. Start with the thing that vibrated, and finish at your eardrum.",
+        "teacherInfo": "Clap once, hard, just before they start, so the sound they explain is one they have this second heard. The step children drop is the third; a child who writes that the sound travelled through the air has named the air without giving it a job, so ask what each bit of air did.",
+        "lookFor": "Look for: the air doing something in the middle of the answer, not only named as where the sound went."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The teacher's hands hit each other and vibrated. The air right next to their hands started vibrating. Each bit of air passed the vibration on to the next bit, all the way to the back of the room. The vibrating air made my eardrum vibrate, and that's when I heard the clap.",
+        "acceptanceCondition": "Accept any explanation in the child's own words that names the vibrating object, says the air next to it vibrated, says the vibration was passed from bit to bit, and ends at the eardrum.",
+        "delivery": "answer-slide"
+      }
+    }
+  ],
+  "ending": {
+    "included": true,
+    "kind": "Apply",
+    "reason": "The whole lesson runs forwards from a source. Turning the question round asks children to start from the hearing and reason back to a vibration and a path they never saw, which the practice never asks for and which takes two minutes.",
+    "beat": {
+      "sourceUnitId": "lesson-section/apply/unit-001",
+      "label": "You heard it, so what must have happened?",
+      "kind": "apply",
+      "conceptRef": null,
+      "unlocks": null,
+      "thinking": "If I heard it and saw nothing, what had to be going on that I couldn't see?",
+      "content": {
+        "activity": "You're in the garden with your back to the house. You hear the back door close behind you. You didn't see anything at all.\n\nWrite two things that must have happened, even though you couldn't see them."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-005"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Last one, and it's a thinking one. You're out in the garden with your back to the house. Behind you, the back door closes. You hear it, but you didn't see a single thing, because you were looking the other way the whole time. Now: you know it happened, because you heard it. So write me two things that must have happened out there, even though nobody saw them. Two minutes. ... Let's have them. Something vibrated, and it was the door, banging into the frame. And the air, all the way between that door and your ear, must have passed the vibration on, bit by bit, until it got to your eardrum. You've just worked out something invisible from nothing but a sound. That's the whole lesson.",
+        "teacherInfo": null,
+        "lookFor": "Look for: both halves, something vibrating and the air passing it on. Many will give only the first."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "Something must have vibrated: the door, as it hit the frame. And the air between the door and my ear must have passed that vibration on, bit by bit, until it reached my eardrum.",
+        "acceptanceCondition": "Accept any two answers, in the child's own words, that name a vibrating object and the air passing the vibration on to the ear.",
+        "delivery": "answer-slide"
+      }
+    }
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": {
+      "coreActionAndEvidence": "Each child explains how a sound reached a listener, saying what the air does at every step. Three performances: completing a drawn path, writing one full explanation, and judging a claim about the air itself travelling.",
+      "amount": "Three questions: a three-box completion on a drawn path, a written explanation of about four sentences, and a claim to judge with a reason. Roughly fifteen minutes of real work for Year 4.",
+      "variationAndBoundaryPlan": "Three sound sources the lesson never used: an ice-cream van's chime, a balloon popping and a shout across a playground. The claim question is the boundary case, where the air is said to travel across rather than pass the vibration on.",
+      "organisation": "The drawn path and its three boxes sit top left with their prompt under them, and the explanation question follows in the same column. The claim question starts fresh in the other column. The four success-criteria steps come after the work in the reading order."
+    },
+    "sheetShape": {
+      "kind": "question-set",
+      "reason": "All three are questions a child answers alone; the drawn path is a question whose response form is completing a model, not a frame the class fills together."
+    },
+    "demand": "Expected demand is a child who can explain the journey with the steps beside them. The completion question is the way in for the weakest writer, and the claim question is where the strongest have to reason rather than recount.",
+    "successCriteriaRefs": [
+      "sc-001"
+    ],
+    "stickyKnowledgeRefs": [],
+    "fitPriority": {
+      "protected": [
+        "the drawn sound path and its three empty boxes",
+        "the writing space for the balloon explanation",
+        "the four success-criteria steps"
+      ],
+      "preAuthorisedRemoval": []
+    },
+    "centralWriteOnVisualException": null,
+    "contentBlocks": [
+      {
+        "id": "ws-q-001",
+        "kind": "question",
+        "pupilPrompt": "An ice-cream van plays its chime in the street. The girl in the garden hears it.\n\nFill in the three boxes to show how the sound got to her ear.",
+        "responseForm": "complete-the-model",
+        "responseFormReason": null,
+        "response": "Three empty boxes along the drawn path, each with room for one short sentence in a child's hand.",
+        "support": "",
+        "visualRequirements": "The sound path drawn with the ice-cream van at one end and the girl at the other, the air between them drawn as a row of separate bits, and exactly three empty boxes spaced along the path with nothing already written in them.",
+        "representationRefs": [
+          {
+            "ref": "rep-001",
+            "configuration": "worksheet-three-blanks",
+            "interaction": "pupil-writes-on"
+          }
+        ],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "answer": {
+          "kind": "exact",
+          "content": "Box 1: the chime vibrates. Box 2: the air right next to it starts vibrating. Box 3: each bit of air passes the vibration on to the next, all the way to her eardrum.",
+          "acceptanceCondition": "Accept the child's own words for each step as long as the order is right and the air is doing something in the middle box.",
+          "delivery": "teacher-only"
+        }
+      },
+      {
+        "id": "ws-q-002",
+        "kind": "question",
+        "pupilPrompt": "A balloon pops at a party. Explain how you hear the bang.",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The steps and their order are the evidence; a tick or a label would not show whether the child gave the air a job or skipped straight to the ear.",
+        "response": "An explanation of about four sentences, with room for four lines of a child's handwriting.",
+        "support": "Use the four steps to help you.",
+        "visualRequirements": "",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "answer": {
+          "kind": "model",
+          "content": "The balloon skin bursts and vibrates. The air right next to it starts vibrating. Each bit of air passes the vibration on to the next bit, all the way to me. The vibrating air makes my eardrum vibrate, and that's when I hear the bang.",
+          "acceptanceCondition": "Accept any explanation that names the vibrating object, says the air next to it vibrated, says the vibration was passed on, and ends at the eardrum.",
+          "delivery": "teacher-only"
+        }
+      },
+      {
+        "id": "ws-q-003",
+        "kind": "question",
+        "pupilPrompt": "Mia says: \"When I shout to my friend across the playground, my breath travels all the way to her ear.\"\n\nIs Mia right? Explain your answer.",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The verdict on its own is a coin toss; only the reason shows whether the child thinks the air travels across or passes the vibration on.",
+        "response": "A yes or no with a reason, with room for two lines.",
+        "support": "",
+        "visualRequirements": "",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "answer": {
+          "kind": "model",
+          "content": "No. Mia's breath doesn't go all that way. Her voice makes the air next to her vibrate, and each bit of air passes the vibration on to the next bit until it reaches her friend's ear. The air stays where it is.",
+          "acceptanceCondition": "Accept any no whose reason is that the air passes the vibration on rather than travelling across itself.",
+          "delivery": "teacher-only"
+        }
+      }
+    ],
+    "answerKeyMode": "required",
+    "providedWorksheet": null
+  },
+  "resourceOpportunities": {
+    "stickIn": {
+      "decision": "none",
+      "sourceUnitIds": [],
+      "reason": "Every response in this lesson is written in the child's own hand or given as letters from a board bank, and no slide asks a child to write onto a figure they could not draw themselves."
+    },
+    "workingWall": {
+      "decision": "candidate",
+      "sourceUnitIds": [
+        "lesson-section/teaching-sequence/unit-003",
+        "lesson-section/teaching-sequence/unit-007"
+      ],
+      "reason": "The sound path diagram and the four explanation steps are what the rest of the sound unit assumes, and the criteria are already marked to be built live."
+    }
+  },
+  "vocabularyIntroductions": [
+    {
+      "vocabularyRefs": [
+        "vocab-001",
+        "vocab-002"
+      ],
+      "after": "lesson-section/starter/unit-001",
+      "script": "Say to children: Two words before we go on, and you already know most of both. A vibration is a very fast shaking, backwards and forwards, over and over. That's exactly what the drum skin was doing until you put your hand on it, and it's what the triangle wasn't doing while it hung there. Look at the rice on that drum skin: every one of those grains is being thrown up by a vibration. The second word is sound source. The sound source is the thing making the sound, and it's the thing that's vibrating. So, quick one: when I hit a drum with a beater, which is the sound source, the beater or the drum? The drum. It's the one that vibrates. The beater just sets it off."
+    },
+    {
+      "vocabularyRefs": [
+        "vocab-003"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-004",
+      "script": "Say to children: One more word, and then we're going to follow the vibration all the way in. Look at this ear. Here's the part on the outside that you can see, and here's the little tunnel going inwards. Right at the end of that tunnel is your eardrum: a thin piece of skin stretched tight, just like the skin on the drum we started with. Say it with me: eardrum. There's a tiny drum skin inside your head, and it's been there the whole time."
+    }
+  ],
+  "slideDesignNotes": [
+    "\"How does the shaking reach you?\" may not fit one board at a readable size. Split it where the teaching turns: the handing-on from bit to bit on the first slide, and the line that the air does not fly across the room on the second, with the path diagram on both."
+  ],
+  "flagsForTeacher": []
+}

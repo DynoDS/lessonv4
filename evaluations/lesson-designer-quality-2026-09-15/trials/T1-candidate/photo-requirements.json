@@ -1,0 +1,116 @@
+{
+  "schema_version": 2,
+  "lesson_name": "Why the Vikings came to Britain",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A farm on a narrow strip of flat green land beside a Norwegian fjord, with steep rocky mountains rising straight out of the water behind it",
+      "pedagogical_constraint": "The steep ground and the small amount of flat farmland must both be visible in the same frame.",
+      "teaching_requirement": "See how little land a Viking family had to farm, so the shortage of farmland is something children look at rather than a fact they are told.",
+      "load_bearing_evidence": [
+        "steep mountainside or rock coming down to the water",
+        "a narrow strip of flat green farmland at the water's edge",
+        "at least one farm building or field on that strip",
+        "water of a fjord or inlet"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/fjord-farm-narrow-strip.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A small farm with two or three buildings and a couple of fields on a thin strip of flat green land between deep water and steep mountains.",
+        "must_avoid": [
+          "wide flat open farmland",
+          "a town or a road",
+          "modern machinery",
+          "people"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "One clear landscape frame showing the water, the narrow farmed strip and the mountain behind it."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "The ruins of Lindisfarne Priory on Holy Island, Northumberland, with the sea and the shoreline visible close behind it",
+      "pedagogical_constraint": "The sea or the shore must be visible in the same frame as the monastery, and there must be no wall or fortification standing between them.",
+      "teaching_requirement": "See that a British monastery stood right beside the water with nothing defending it, which is what made it reachable and worth raiding.",
+      "load_bearing_evidence": [
+        "the stone ruins of Lindisfarne Priory",
+        "the sea or the shoreline close behind or beside the ruins",
+        "open ground around the monastery with no defensive wall"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/lindisfarne-priory-ruins-sea.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A generated image would invent a real place children can visit, and the raid of 793 that this slide teaches is tied to that island.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "A Viking-age silver hoard from Britain on museum display: silver coins, arm-rings and a silver cup or bowl",
+      "pedagogical_constraint": "Real Viking-age silver objects, not jewellery from another period and not a film prop.",
+      "teaching_requirement": "See what the treasure in a monastery actually looked like, so that silver is a real object rather than a word.",
+      "load_bearing_evidence": [
+        "silver objects from the Viking age",
+        "more than one object, so it reads as a hoard rather than a single item",
+        "objects clear enough to see their shape"
+      ],
+      "use": "slide",
+      "essential": false,
+      "filename": "wikimedia/viking-age-silver-hoard.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "omit",
+      "fallback_note": "A generated hoard would be invented objects presented as real finds, and the slide still teaches without it because Lindisfarne carries the beat.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "Wide, flat arable farmland in eastern England beside a river, with large open fields of wheat or barley running to the horizon",
+      "pedagogical_constraint": "The land must read as flat and open with a lot of it, so it contrasts with the narrow fjord strip children saw earlier.",
+      "teaching_requirement": "See how much good flat farmland Britain had, which is the reason Viking families came to stay rather than to take things home.",
+      "load_bearing_evidence": [
+        "flat low-lying farmland",
+        "large open crop fields",
+        "the fields continuing into the distance",
+        "a river or waterway in the scene"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/flat-arable-farmland-river-england.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "Flat, low-lying English farmland with large open fields of wheat or barley either side of a river, stretching to the horizon.",
+        "must_avoid": [
+          "mountains or steep hills",
+          "a town or industrial buildings",
+          "modern tractors or machinery",
+          "people"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "One wide landscape frame with a low horizon so the amount of flat land is obvious."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "T1-A": "candidate",
+  "T1-B": "baseline",
+  "T2-A": "baseline",
+  "T2-B": "candidate",
+  "T3-A": "candidate",
+  "T3-B": "baseline"
+}

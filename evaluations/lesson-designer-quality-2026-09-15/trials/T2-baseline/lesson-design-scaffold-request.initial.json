@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "structure": "Content-based",
+  "yearGroup": 4,
+  "subject": "Science",
+  "scope": "Complete lesson",
+  "vocabularyCount": 3,
+  "vocabularyIntroductionCount": 2,
+  "trimmedVocabularyCount": 0,
+  "representations": [
+    {
+      "configurations": [
+        {
+          "id": "room-chain",
+          "loadBearing": true
+        }
+      ]
+    },
+    {
+      "configurations": [
+        {
+          "id": "ear-labelled",
+          "loadBearing": true
+        }
+      ]
+    }
+  ],
+  "successCriteriaCount": 1,
+  "stickyKnowledgeCount": 3,
+  "misconceptionCount": 2,
+  "concepts": [
+    {
+      "successCriteriaIndexes": [
+        1
+      ]
+    }
+  ],
+  "teachingSequence": [
+    {
+      "kind": "teach",
+      "conceptIndex": 1
+    },
+    {
+      "kind": "do",
+      "conceptIndex": 1
+    },
+    {
+      "kind": "teach",
+      "conceptIndex": 1
+    },
+    {
+      "kind": "do",
+      "conceptIndex": 1
+    },
+    {
+      "kind": "teach",
+      "conceptIndex": 1
+    },
+    {
+      "kind": "do",
+      "conceptIndex": 1
+    },
+    {
+      "kind": "practise",
+      "conceptIndex": 1
+    }
+  ],
+  "endingIncluded": true,
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "sheetShape": "mixed"
+  },
+  "photoCount": 7
+}

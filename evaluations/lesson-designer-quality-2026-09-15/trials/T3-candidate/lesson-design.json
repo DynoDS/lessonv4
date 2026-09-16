@@ -1,0 +1,672 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Skill-based",
+    "yearGroup": 4,
+    "subject": "Maths",
+    "lo": "To multiply a two-digit number by a one-digit number using partitioning.",
+    "displayedLo": "To multiply a two-digit number by a one-digit number using partitioning",
+    "durationMinutes": 45,
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "After partitioning, children multiply the tens and then simply add the ones digit on, so 26 × 3 comes out as 60 + 6 = 66. The part they split off stops being something to multiply and becomes something to carry along."
+  },
+  "teacherOrientation": "Teacher orientation: Children learn to multiply a two-digit number by a one-digit number by partitioning it into tens and ones, multiplying each part, and adding the two answers. They work in books: a starter, two short practice sets and a final question where they judge somebody else's working. The tricky move is that both parts have to be multiplied. A child who has just split 26 into 20 and 6 very often multiplies the 20 and then adds the 6 on, and that is met head-on in the second My Turn, on 26 × 3. Have the board ready to write on, because every My Turn and Our Turn carries a blank part-whole model the class watches you fill.",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "Tens, ones and times tables",
+    "kind": "starter",
+    "conceptRef": null,
+    "unlocks": "They have the tens-and-ones split and the multiplication facts ready, which the first modelled example uses on its very first line.",
+    "thinking": "How many tens and how many ones are in this number, and what is that ten actually worth?",
+    "content": {
+      "activity": "Partition 46 into tens and ones.\n\nPartition 70 into tens and ones.\n\n8 × 7 =\n\n5 × 9 =",
+      "connection": "Today's method splits a two-digit number into tens and ones and multiplies each part, so both halves have to be ready: the split itself, including the case where there are no ones at all, and quick recall of the facts each part is multiplied by.",
+      "format": "Four short written questions, numbered, answered individually, then checked together off the answer slide.",
+      "testQuestionPath": null
+    },
+    "pupilInstruction": null,
+    "taskStructure": null,
+    "modellingState": null,
+    "representationRefs": [],
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "misconceptionRefs": [],
+    "photoRefs": [],
+    "speakerNotes": {
+      "script": "Say to children: Four quick ones to warm up. Number them one to four in your books. The first two are partitioning, which you can already do, so watch the second one, it catches people out. Then two multiplication facts. Off you go, you've got four minutes.",
+      "teacherInfo": "70 is the one to listen for. A child who answers 7 and 0 has read the digits rather than their value, and the whole method today depends on knowing the 7 is worth 70.",
+      "lookFor": null
+    },
+    "answer": {
+      "kind": "exact",
+      "content": "40 and 6\n\n70 and 0\n\n56\n\n45",
+      "acceptanceCondition": null,
+      "delivery": "answer-slide"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "partition",
+      "definition": "When you partition a number, you split it into parts that add back together. 46 partitions into 40 and 6.",
+      "visual": {
+        "kind": "representation",
+        "value": null,
+        "photoRef": null,
+        "representationRef": "rep-001",
+        "configuration": "worked-reference"
+      }
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "product",
+      "definition": "A product is the answer you get when you multiply two numbers. The product of 20 and 3 is 60.",
+      "visual": {
+        "kind": "built-in",
+        "value": "20 × 3 = 60",
+        "photoRef": null,
+        "representationRef": null,
+        "configuration": null
+      }
+    }
+  ],
+  "trimmedVocabulary": [],
+  "representations": [
+    {
+      "id": "rep-001",
+      "name": "Part-whole model",
+      "purpose": "Shows the two-digit number split into its tens and its ones, so children can see the two multiplications the method makes and where the two answers they add come from.",
+      "configurations": [
+        {
+          "id": "whole-filled-parts-blank",
+          "description": "The whole carries the two-digit number from the question. Both parts are empty, and there is clear room beside each part for the multiplication that goes with it.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "the whole showing the two-digit number from this question",
+            "two empty parts joined to the whole, the tens part first",
+            "usable writing room beside each part for its multiplication and answer"
+          ]
+        },
+        {
+          "id": "worked-reference",
+          "description": "The same model with both parts filled, used as a small worked reference rather than something to complete.",
+          "loadBearing": false,
+          "requiredFeatures": [
+            "both parts filled, the tens value in the first and the ones value in the second"
+          ]
+        }
+      ]
+    }
+  ],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "steps",
+      "drawLive": true,
+      "content": {
+        "steps": [
+          "{{Partition}} the two-digit number into tens and ones.",
+          "Multiply the tens by the other number.",
+          "Multiply the ones by the other number <<as well>>.",
+          "Add your two answers together."
+        ]
+      }
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "3 lots of 2 tens is 6 tens, so 3 × 20 = 60."
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mc-001",
+      "belief": "Once the number is partitioned, only the tens part gets multiplied and the ones digit is simply added on, so 26 × 3 is 60 + 6 = 66.",
+      "correctiveFact": "Both parts were part of the number, so both parts get multiplied. The 6 became 18, and 60 + 18 is 78.",
+      "strategy": "Named out loud in the first My Turn at the moment it tempts, made most visible in the second My Turn where 6 turns into 18, watched for in both Our Turns, and retested once at the end on Chloe's working.",
+      "reason": "It is the dominant sticking point: the partition puts the ones digit in front of the child looking exactly as it did before, so carrying it along feels like the natural next move."
+    },
+    {
+      "id": "mc-002",
+      "belief": "3 × 20 is 6, because you multiply the digits and the ten disappears.",
+      "correctiveFact": "20 is 2 tens, so 3 × 20 is 6 tens, which is 60.",
+      "strategy": "One clean touch. The short explanation before the first model derives it in tens, the teacher line there says what to listen for, and it is checked once more on the worksheet's reasoning question about 40 × 5.",
+      "reason": "It is real but secondary: it blocks the first line of every question, so it is worth heading off, and it is not what the lesson is built on."
+    }
+  ],
+  "concepts": [
+    {
+      "id": "concept-001",
+      "name": "Multiply a two-digit number by a one-digit number by partitioning it",
+      "successCriteriaRefs": [
+        "sc-001"
+      ]
+    }
+  ],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "What is 3 lots of 20?",
+      "kind": "prepare",
+      "conceptRef": null,
+      "unlocks": "They can multiply a whole ten by a one-digit number, which is the first line of the modelled example on 23 × 3 and of every question after it.",
+      "thinking": "If 3 lots of 2 is 6, what is 3 lots of 2 tens?",
+      "content": {
+        "mode": "explanation",
+        "activity": "20 is 2 tens.\n\n3 lots of 2 tens is 6 tens.\n\n6 tens is 60, so 3 × 20 = 60."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [
+        "mc-002"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Before we start, one quick thing, and everything today rests on it. Look at 20. It's 2 tens, isn't it. Now, 3 lots of 2 is 6. You all know that one. So what is 3 lots of 2 tens? It's 6 tens. And 6 tens is 60. So 3 × 20 is 60, and you can hear it if you say it in tens: three lots of two tens, six tens. Try one in your heads with me now. 4 × 30. Don't shout it out, just think. 4 lots of 3 tens. How many tens is that? Twelve tens. And twelve tens is 120. Hold on to that, because we're going to need it in about a minute.",
+        "teacherInfo": "Listen for anyone saying 3 × 20 is 6. They have multiplied the digits and dropped the ten. Say it back in tens rather than telling them to add a zero, so the 60 comes from counting tens.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "4 × 30 = 120, because 4 lots of 3 tens is 12 tens.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "My Turn - 23 × 3",
+      "kind": "my-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "They have watched the whole method run once on a clean example, which is what the guided attempt on 34 × 2 repeats with them.",
+      "thinking": null,
+      "content": {
+        "example": "23 × 3 =",
+        "modelledExemplar": null
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Live-complete helper",
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "whole-filled-parts-blank",
+          "interaction": "teacher-completes"
+        }
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: My turn. 23 × 3. Watch what I do, because you're doing one of these in a minute. First I partition 23. 23 is 20 and 3, so 20 goes in this part and 3 goes in this part. Look what that's done. I've got two easy multiplications now instead of one hard one. I'll take the tens first. 20 × 3. That's 3 lots of 2 tens, so it's 6 tens. 60. The product of 20 and 3 is 60, and I'll write it right next to the 20 so I don't lose it. Now the ones. 3 × 3 is 9. That goes next to the 3. Stop. This is the bit people get wrong, so watch me. Some of you will want to take my 60 and just put the 3 on the end, because the 3 is sitting right there looking at you. But the 3 didn't stay as a 3. I multiplied it, and it turned into 9. Both parts get multiplied. Both. So now I add my two answers, 60 and 9, and that gives me 69. 23 × 3 = 69.",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "23 × 3 = 69, from 20 × 3 = 60 and 3 × 3 = 9.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "Our Turn - 34 × 2",
+      "kind": "our-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "They have run the method once with help, which is what makes the two questions in the Your Turn attemptable on their own.",
+      "thinking": "Which part of 34 do I multiply first, and what is that part actually worth?",
+      "content": {
+        "example": "34 × 2 ="
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Live-complete helper",
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "whole-filled-parts-blank",
+          "interaction": "teacher-completes"
+        }
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Our turn. 34 × 2. You're doing the thinking this time and I'm doing the writing. How do we partition 34? What goes in each part? Good. Which part are we multiplying first? Right, the tens. Tell your partner what 30 × 2 is and how you know. Now say it to me in tens. Three tens, doubled, is six tens. So the product is 60. Now the other part. What's 4 × 2? And what do I do with that 8? Yes. It gets added to the 60. So what's our answer? 68. Say the whole thing back to me: 34 × 2 is 68.",
+        "teacherInfo": "If anyone offers 64, they have multiplied the 30 and then added the 4 without multiplying it. Point at the 8 you have just written and ask which of those two numbers belongs in the addition.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "34 × 2 = 68, from 30 × 2 = 60 and 4 × 2 = 8.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "Your Turn - partition and multiply",
+      "kind": "your-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "They can run the method themselves on clean numbers, which is exactly what the next model changes by making the ones answer bigger than ten.",
+      "thinking": "What is the tens part worth, and have I multiplied both parts before I add?",
+      "content": {
+        "activityArchitecture": "Two calculations of the move just modelled, and two only: this is the quick check on whether the class can do it yet, not the main practice. Both have a small ones digit so the two answers add without crossing a ten, and nothing new is being asked. What changes between them is the tens digit and the multiplier, so the child runs the whole method twice rather than reusing one fact. A blank part-whole model sits beside each question and the criteria stay visible.",
+        "task": "Partition each number, then multiply.\n\n21 × 4 =\n\n32 × 3 ="
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "whole-filled-parts-blank",
+          "interaction": "pupil-uses"
+        }
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Your turn. Two of them. Partition first, then multiply both parts, then add. The steps are up there if you get stuck. Four minutes.",
+        "teacherInfo": null,
+        "lookFor": "Look for: both parts multiplied, not just the tens; 80 and 4 written down separately before they are added."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "21 × 4 = 84, from 20 × 4 = 80 and 1 × 4 = 4.\n\n32 × 3 = 96, from 30 × 3 = 90 and 2 × 3 = 6.",
+        "acceptanceCondition": null,
+        "delivery": "answer-slide"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-005",
+      "label": "My Turn - 26 × 3",
+      "kind": "my-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "They have seen what happens when the ones answer goes past ten, which the mixed set needs because half of its questions do it.",
+      "thinking": null,
+      "content": {
+        "example": "26 × 3 =",
+        "modelledExemplar": null
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Live-complete helper",
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "whole-filled-parts-blank",
+          "interaction": "teacher-completes"
+        }
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: My turn again, and there's a change in this one. 26 × 3. I partition 26 into 20 and 6, same as always. Tens first. 20 × 3 is 6 tens, so the product is 60. Now the ones. 6 × 3. That's 18. Have a look at that. 18 is bigger than ten, and that is completely fine. It doesn't break anything. But here's where it catches people out. If I forget to multiply and I just bring the 6 along, I get 66, and 66 is wrong. My 6 didn't stay a 6. It became 18. So I add 60 and 18, and that gives me 78. 26 × 3 = 78. Say it with me. Sixty, add eighteen, is seventy-eight.",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "26 × 3 = 78, from 20 × 3 = 60 and 6 × 3 = 18.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+      "label": "Our Turn - 24 × 4",
+      "kind": "our-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "They have handled a ones answer bigger than ten with help, so the mixed set can put the two cases next to each other.",
+      "thinking": "The ones answer is bigger than ten. Does that change what I add on?",
+      "content": {
+        "example": "24 × 4 ="
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Live-complete helper",
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "whole-filled-parts-blank",
+          "interaction": "teacher-completes"
+        }
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Our turn, and this one has the change in it too. 24 × 4. Partition it for me. What are the two parts? Now the tens: what is 20 × 4? Say it in tens first. Eight tens, so the product is 80. Now the ones: 4 × 4? 16. Bigger than ten again. So what am I adding to my 80? Not 4. Tell your partner why not. Right, 16, because we multiplied it. 80 add 16. What have we got? 96.",
+        "teacherInfo": null,
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "24 × 4 = 96, from 20 × 4 = 80 and 4 × 4 = 16.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-007",
+      "label": "Your Turn - all four",
+      "kind": "your-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "They can run the method unaided on both cases, which is what the last question asks them to judge in somebody else's working.",
+      "thinking": "Is my ones answer big enough to change what I add, and have I kept my tens answer as tens?",
+      "content": {
+        "activityArchitecture": "The main practice and the mixed set. Each cycle's Your Turn was a block of one case, so the two cases are shuffled here: 43 × 2 and 52 × 4 keep the ones answer small, 27 × 3 and 36 × 5 push it past ten, and the last two take the answer over 100 so the method is used at the size the objective names. No two questions share a fact. No part-whole model is printed: children draw their own, because by now building it is part of the method. The criteria stay visible.",
+        "task": "Partition each number, then multiply.\n\nDraw your own part-whole model for each one.\n\n43 × 2 =\n\n27 × 3 =\n\n52 × 4 =\n\n36 × 5 ="
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Your turn, four this time, and they're mixed up. Some of them have a big ones answer and some don't, so check every one. Draw your own part-whole model for each question, the way I've been drawing mine. Seven minutes.",
+        "teacherInfo": null,
+        "lookFor": "Look for: both parts multiplied every time; the tens answer written as 80 or 200, not 8 or 2."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "43 × 2 = 86, from 80 and 6.\n\n27 × 3 = 81, from 60 and 21.\n\n52 × 4 = 208, from 200 and 8.\n\n36 × 5 = 180, from 150 and 30.",
+        "acceptanceCondition": null,
+        "delivery": "answer-slide"
+      }
+    }
+  ],
+  "ending": {
+    "included": true,
+    "kind": "Apply",
+    "reason": "The Your Turn shows children running the method. The Apply asks for something it never asked: using the method backwards on work a child did not produce, where the first line is correct and the error is in the second. It is also the one retest of the lesson's central error, on a number the lesson never used.",
+    "beat": {
+      "sourceUnitId": "lesson-section/apply/unit-001",
+      "label": "Is Chloe right?",
+      "kind": "apply",
+      "conceptRef": null,
+      "unlocks": null,
+      "thinking": "Chloe's two lines both look right on their own. Which part of 34 never got multiplied?",
+      "content": {
+        "activity": "Chloe worked out 34 × 3. She wrote:\n\n30 × 3 = 90\n\n90 + 4 = 94\n\nIs Chloe right? Explain your answer.\n\nWhat happened to Chloe's 4?"
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Last one, and you're not working this one out. You're checking somebody else's. This is Chloe's work. Read her two lines. Her first line is right, isn't it. 30 × 3 really is 90, so she hasn't gone wrong there. So is she right or not? Have a good look at where her 4 goes. Tell your partner what you think first, then write me your answer in a sentence. If you're stuck, ask yourself this: what happened to Chloe's 4?",
+        "teacherInfo": "The first line being correct is deliberate. A child who answers no without reading it has guessed, so ask that child which line is wrong.",
+        "lookFor": "Look for: the word multiplied used about the 4; 90 + 12 written; the answer 102."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "No, Chloe is wrong. She partitioned 34 into 30 and 4 and she multiplied the 30, but she never multiplied the 4. She just added it on. 4 × 3 is 12, so she should have added 90 and 12. 34 × 3 = 102.",
+        "acceptanceCondition": "Accept any answer that says the 4 was added instead of multiplied, with or without the corrected answer of 102.",
+        "delivery": "answer-slide"
+      }
+    }
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": {
+      "coreActionAndEvidence": "The child partitions a two-digit number, multiplies both parts by the one-digit number and adds the two answers. Six performances of that action in all: four calculations, one judgement of a claim about multiplying a whole ten, and one word problem where the child has to decide the calculation first.",
+      "amount": "Four fluency calculations, one reasoning question and one word problem. Four is enough because each one is a full run of a four-step method with written working, not a recalled fact.",
+      "variationAndBoundaryPlan": "Question one has a ones answer over ten (23 × 4), question two crosses a ten in the addition (45 × 2), question three takes the answer past 100 (37 × 3) and question four uses the largest fact the class holds (62 × 8). The reasoning question is the boundary case: 40 × 5, where there are no ones at all, which is where the lost-ten error shows most clearly. None of these numbers appears anywhere in the deck.",
+      "organisation": "Fluency first as one group under a single instruction, because the child needs reliable execution before spending it. The first two questions keep a blank part-whole model beside them, which is the form the board was in minutes earlier; the last two are bare calculations, so the sheet moves on without changing method. The reasoning question and the word problem then stand on their own."
+    },
+    "sheetShape": {
+      "kind": "question-set",
+      "reason": "The thinking is running a taught method on new numbers, plus two questions about it, so a set of questions is what the child would actually do with a pencil."
+    },
+    "demand": "Same objective as the class practice, at the same demand for the four calculations and slightly above it for the last two: the reasoning question asks the child to judge a claim rather than calculate, and the word problem makes them choose the calculation before running the method.",
+    "successCriteriaRefs": [
+      "sc-001"
+    ],
+    "stickyKnowledgeRefs": [
+      "sk-001"
+    ],
+    "fitPriority": {
+      "protected": [
+        "The two blank part-whole models on the first two questions: they are the form the class was taught in and the sheet is worked minutes later, so a child still assembling the method has nothing spare for an unfamiliar layout.",
+        "The reasoning question about 40 × 5: it is the only place the lost-ten error is retested away from the board.",
+        "Real working room under each calculation: the method is four written steps, not an answer box."
+      ],
+      "preAuthorisedRemoval": [
+        "The word problem, first and only: the four calculations and the reasoning question together already evidence the objective, and the deck's own ending carries a comparable step up in thinking."
+      ]
+    },
+    "centralWriteOnVisualException": null,
+    "contentBlocks": [
+      {
+        "id": "ws-qg-001",
+        "kind": "question-group",
+        "groupPrompt": "Partition each number, then multiply.",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [
+          "sk-001"
+        ],
+        "photoRefs": [],
+        "parts": [
+          {
+            "id": "ws-qg-001-part-01",
+            "pupilPrompt": "23 × 4 =",
+            "response": "the two parts written into the model, the working, and the answer",
+            "responseForm": "complete-the-model",
+            "responseFormReason": null,
+            "support": "",
+            "visualRequirements": "A blank part-whole model beside the question, 23 in the whole, both parts empty, with writing room beside each part.",
+            "representationRefs": [
+              {
+                "ref": "rep-001",
+                "configuration": "whole-filled-parts-blank",
+                "interaction": "pupil-writes-on"
+              }
+            ],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "23 × 4 = 92, from 20 × 4 = 80 and 3 × 4 = 12.",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-qg-001-part-02",
+            "pupilPrompt": "45 × 2 =",
+            "response": "the two parts written into the model, the working, and the answer",
+            "responseForm": "complete-the-model",
+            "responseFormReason": null,
+            "support": "",
+            "visualRequirements": "A blank part-whole model beside the question, 45 in the whole, both parts empty, with writing room beside each part.",
+            "representationRefs": [
+              {
+                "ref": "rep-001",
+                "configuration": "whole-filled-parts-blank",
+                "interaction": "pupil-writes-on"
+              }
+            ],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "45 × 2 = 90, from 40 × 2 = 80 and 5 × 2 = 10.",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-qg-001-part-03",
+            "pupilPrompt": "37 × 3 =",
+            "response": "the working and the answer",
+            "responseForm": "short-answer",
+            "responseFormReason": null,
+            "support": "",
+            "visualRequirements": "No model printed. Room under the question for the child to draw their own and write the two multiplications.",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "37 × 3 = 111, from 30 × 3 = 90 and 7 × 3 = 21.",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-qg-001-part-04",
+            "pupilPrompt": "62 × 8 =",
+            "response": "the working and the answer",
+            "responseForm": "short-answer",
+            "responseFormReason": null,
+            "support": "",
+            "visualRequirements": "No model printed. Room under the question for the child to draw their own and write the two multiplications.",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "62 × 8 = 496, from 60 × 8 = 480 and 2 × 8 = 16.",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ws-q-001",
+        "kind": "question",
+        "pupilPrompt": "Nadia says 40 × 5 is 20.\n\nIs Nadia right? Explain your answer.",
+        "response": "an explanation",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The child has to say what Nadia did to the ten, and only words show whether they know 40 is 4 tens rather than a 4 with a zero after it. A corrected answer on its own would not tell the teacher which of those the child holds.",
+        "support": "Think about how many tens are in 40.",
+        "visualRequirements": "None. The claim is the whole stimulus.",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [
+          "sk-001"
+        ],
+        "photoRefs": [],
+        "answer": {
+          "kind": "model",
+          "content": "No. 40 is 4 tens, so 40 × 5 is 20 tens, which is 200. Nadia multiplied 4 by 5 and forgot the ten.",
+          "acceptanceCondition": "Accept any answer that says 40 is 4 tens, or that the ten was lost, with or without the answer 200.",
+          "delivery": "teacher-only"
+        }
+      },
+      {
+        "id": "ws-q-002",
+        "kind": "question",
+        "pupilPrompt": "A box holds 24 pencils.\n\nHow many pencils are in 3 boxes?",
+        "response": "the working and the answer",
+        "responseForm": "short-answer",
+        "responseFormReason": null,
+        "support": "",
+        "visualRequirements": "None printed. Room for the child's own model and working.",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "answer": {
+          "kind": "exact",
+          "content": "24 × 3 = 72 pencils, from 20 × 3 = 60 and 4 × 3 = 12.",
+          "acceptanceCondition": null,
+          "delivery": "teacher-only"
+        }
+      }
+    ],
+    "answerKeyMode": "required",
+    "providedWorksheet": null
+  },
+  "resourceOpportunities": {
+    "stickIn": {
+      "decision": "none",
+      "sourceUnitIds": [],
+      "reason": "Every written moment in this lesson is a calculation a child records in their own book, and the only figure they use is a part-whole model, which is two circles and a box that any Year 4 can draw for themselves."
+    },
+    "workingWall": {
+      "decision": "candidate",
+      "sourceUnitIds": [
+        "lesson-section/teaching-sequence/unit-002"
+      ],
+      "reason": "The four-step method is marked to be built live and it runs across the whole multiplication unit, so the class will want it on the wall next lesson when it is no longer on the screen."
+    }
+  },
+  "vocabularyIntroductions": [
+    {
+      "vocabularyRefs": [
+        "vocab-001",
+        "vocab-002"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-001",
+      "script": "Say to children: Two words before we start, and you'll be using both of them all lesson. The first one is partition. When you partition a number, you split it into parts that add back together. 46 partitions into 40 and 6. You can already do that, and today we're going to partition and then do something to each part. The second word is product. A product is just the answer you get when you multiply two numbers together. The product of 20 and 3 is 60. So when I ask you for the product, I'm asking what you get when you multiply them."
+    }
+  ],
+  "slideDesignNotes": [],
+  "flagsForTeacher": [
+    "The brief says partitioning and the 2, 3, 4, 5 and 8 facts are secure, but it does not say whether the class can already multiply a whole ten, which is the first step of every question today. The lesson teaches it briefly before the first model. If your class already has it, skip that slide and start at the My Turn."
+  ]
+}

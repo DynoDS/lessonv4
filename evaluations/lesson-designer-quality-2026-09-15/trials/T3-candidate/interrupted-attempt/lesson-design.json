@@ -1,0 +1,529 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Skill-based",
+    "yearGroup": 4,
+    "subject": "Maths",
+    "lo": "__LESSON_DESIGN_FILL__",
+    "displayedLo": "__LESSON_DESIGN_FILL__",
+    "durationMinutes": "__LESSON_DESIGN_FILL__",
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "__LESSON_DESIGN_FILL__"
+  },
+  "teacherOrientation": "__LESSON_DESIGN_FILL__",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "__LESSON_DESIGN_FILL__",
+    "kind": "starter",
+    "conceptRef": null,
+    "unlocks": "__LESSON_DESIGN_FILL__",
+    "thinking": "__LESSON_DESIGN_FILL__",
+    "content": {
+      "activity": "__LESSON_DESIGN_FILL__",
+      "connection": "__LESSON_DESIGN_FILL__",
+      "format": "__LESSON_DESIGN_FILL__",
+      "testQuestionPath": "__LESSON_DESIGN_FILL__"
+    },
+    "pupilInstruction": "__LESSON_DESIGN_FILL__",
+    "taskStructure": "__LESSON_DESIGN_FILL__",
+    "modellingState": "__LESSON_DESIGN_FILL__",
+    "representationRefs": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "successCriteriaRefs": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "stickyKnowledgeRefs": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "misconceptionRefs": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "photoRefs": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "speakerNotes": {
+      "script": "__LESSON_DESIGN_FILL__",
+      "teacherInfo": "__LESSON_DESIGN_FILL__",
+      "lookFor": "__LESSON_DESIGN_FILL__"
+    },
+    "answer": {
+      "kind": "__LESSON_DESIGN_FILL__",
+      "content": "__LESSON_DESIGN_FILL__",
+      "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+      "delivery": "__LESSON_DESIGN_FILL__"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "__LESSON_DESIGN_FILL__",
+      "definition": "__LESSON_DESIGN_FILL__",
+      "visual": "__LESSON_DESIGN_FILL__"
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "__LESSON_DESIGN_FILL__",
+      "definition": "__LESSON_DESIGN_FILL__",
+      "visual": "__LESSON_DESIGN_FILL__"
+    }
+  ],
+  "trimmedVocabulary": [],
+  "representations": [
+    {
+      "id": "rep-001",
+      "name": "__LESSON_DESIGN_FILL__",
+      "purpose": "__LESSON_DESIGN_FILL__",
+      "configurations": [
+        {
+          "id": "tens-model",
+          "description": "__LESSON_DESIGN_FILL__",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "__LESSON_DESIGN_FILL__"
+          ]
+        },
+        {
+          "id": "tens-guided",
+          "description": "__LESSON_DESIGN_FILL__",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "__LESSON_DESIGN_FILL__"
+          ]
+        },
+        {
+          "id": "partition-reference",
+          "description": "__LESSON_DESIGN_FILL__",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "__LESSON_DESIGN_FILL__"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rep-002",
+      "name": "__LESSON_DESIGN_FILL__",
+      "purpose": "__LESSON_DESIGN_FILL__",
+      "configurations": [
+        {
+          "id": "guided-blank",
+          "description": "__LESSON_DESIGN_FILL__",
+          "loadBearing": false,
+          "requiredFeatures": []
+        },
+        {
+          "id": "sheet-blank",
+          "description": "__LESSON_DESIGN_FILL__",
+          "loadBearing": false,
+          "requiredFeatures": []
+        }
+      ]
+    }
+  ],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "__LESSON_DESIGN_FILL__",
+      "drawLive": "__LESSON_DESIGN_FILL__",
+      "content": "__LESSON_DESIGN_FILL__"
+    },
+    {
+      "id": "sc-002",
+      "type": "__LESSON_DESIGN_FILL__",
+      "drawLive": "__LESSON_DESIGN_FILL__",
+      "content": "__LESSON_DESIGN_FILL__"
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "__LESSON_DESIGN_FILL__"
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mc-001",
+      "belief": "__LESSON_DESIGN_FILL__",
+      "correctiveFact": "__LESSON_DESIGN_FILL__",
+      "strategy": "__LESSON_DESIGN_FILL__",
+      "reason": "__LESSON_DESIGN_FILL__"
+    },
+    {
+      "id": "mc-002",
+      "belief": "__LESSON_DESIGN_FILL__",
+      "correctiveFact": "__LESSON_DESIGN_FILL__",
+      "strategy": "__LESSON_DESIGN_FILL__",
+      "reason": "__LESSON_DESIGN_FILL__"
+    },
+    {
+      "id": "mc-003",
+      "belief": "__LESSON_DESIGN_FILL__",
+      "correctiveFact": "__LESSON_DESIGN_FILL__",
+      "strategy": "__LESSON_DESIGN_FILL__",
+      "reason": "__LESSON_DESIGN_FILL__"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "concept-001",
+      "name": "__LESSON_DESIGN_FILL__",
+      "successCriteriaRefs": [
+        "sc-001"
+      ]
+    },
+    {
+      "id": "concept-002",
+      "name": "__LESSON_DESIGN_FILL__",
+      "successCriteriaRefs": [
+        "sc-002"
+      ]
+    }
+  ],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "__LESSON_DESIGN_FILL__",
+      "kind": "my-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "__LESSON_DESIGN_FILL__",
+      "thinking": "__LESSON_DESIGN_FILL__",
+      "content": {
+        "example": "__LESSON_DESIGN_FILL__",
+        "modelledExemplar": "__LESSON_DESIGN_FILL__"
+      },
+      "pupilInstruction": "__LESSON_DESIGN_FILL__",
+      "taskStructure": "__LESSON_DESIGN_FILL__",
+      "modellingState": "__LESSON_DESIGN_FILL__",
+      "representationRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "misconceptionRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "photoRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "speakerNotes": {
+        "script": "__LESSON_DESIGN_FILL__",
+        "teacherInfo": "__LESSON_DESIGN_FILL__",
+        "lookFor": "__LESSON_DESIGN_FILL__"
+      },
+      "answer": {
+        "kind": "__LESSON_DESIGN_FILL__",
+        "content": "__LESSON_DESIGN_FILL__",
+        "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+        "delivery": "__LESSON_DESIGN_FILL__"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "__LESSON_DESIGN_FILL__",
+      "kind": "our-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "__LESSON_DESIGN_FILL__",
+      "thinking": "__LESSON_DESIGN_FILL__",
+      "content": {
+        "example": "__LESSON_DESIGN_FILL__"
+      },
+      "pupilInstruction": "__LESSON_DESIGN_FILL__",
+      "taskStructure": "__LESSON_DESIGN_FILL__",
+      "modellingState": "__LESSON_DESIGN_FILL__",
+      "representationRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "misconceptionRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "photoRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "speakerNotes": {
+        "script": "__LESSON_DESIGN_FILL__",
+        "teacherInfo": "__LESSON_DESIGN_FILL__",
+        "lookFor": "__LESSON_DESIGN_FILL__"
+      },
+      "answer": {
+        "kind": "__LESSON_DESIGN_FILL__",
+        "content": "__LESSON_DESIGN_FILL__",
+        "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+        "delivery": "__LESSON_DESIGN_FILL__"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "__LESSON_DESIGN_FILL__",
+      "kind": "your-turn",
+      "conceptRef": "concept-001",
+      "unlocks": "__LESSON_DESIGN_FILL__",
+      "thinking": "__LESSON_DESIGN_FILL__",
+      "content": {
+        "activityArchitecture": "__LESSON_DESIGN_FILL__",
+        "task": "__LESSON_DESIGN_FILL__"
+      },
+      "pupilInstruction": "__LESSON_DESIGN_FILL__",
+      "taskStructure": "__LESSON_DESIGN_FILL__",
+      "modellingState": "__LESSON_DESIGN_FILL__",
+      "representationRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "misconceptionRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "photoRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "speakerNotes": {
+        "script": "__LESSON_DESIGN_FILL__",
+        "teacherInfo": "__LESSON_DESIGN_FILL__",
+        "lookFor": "__LESSON_DESIGN_FILL__"
+      },
+      "answer": {
+        "kind": "__LESSON_DESIGN_FILL__",
+        "content": "__LESSON_DESIGN_FILL__",
+        "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+        "delivery": "__LESSON_DESIGN_FILL__"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "__LESSON_DESIGN_FILL__",
+      "kind": "my-turn",
+      "conceptRef": "concept-002",
+      "unlocks": "__LESSON_DESIGN_FILL__",
+      "thinking": "__LESSON_DESIGN_FILL__",
+      "content": {
+        "example": "__LESSON_DESIGN_FILL__",
+        "modelledExemplar": "__LESSON_DESIGN_FILL__"
+      },
+      "pupilInstruction": "__LESSON_DESIGN_FILL__",
+      "taskStructure": "__LESSON_DESIGN_FILL__",
+      "modellingState": "__LESSON_DESIGN_FILL__",
+      "representationRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "successCriteriaRefs": [
+        "sc-002"
+      ],
+      "stickyKnowledgeRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "misconceptionRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "photoRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "speakerNotes": {
+        "script": "__LESSON_DESIGN_FILL__",
+        "teacherInfo": "__LESSON_DESIGN_FILL__",
+        "lookFor": "__LESSON_DESIGN_FILL__"
+      },
+      "answer": {
+        "kind": "__LESSON_DESIGN_FILL__",
+        "content": "__LESSON_DESIGN_FILL__",
+        "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+        "delivery": "__LESSON_DESIGN_FILL__"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-005",
+      "label": "__LESSON_DESIGN_FILL__",
+      "kind": "our-turn",
+      "conceptRef": "concept-002",
+      "unlocks": "__LESSON_DESIGN_FILL__",
+      "thinking": "__LESSON_DESIGN_FILL__",
+      "content": {
+        "example": "__LESSON_DESIGN_FILL__"
+      },
+      "pupilInstruction": "__LESSON_DESIGN_FILL__",
+      "taskStructure": "__LESSON_DESIGN_FILL__",
+      "modellingState": "__LESSON_DESIGN_FILL__",
+      "representationRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "successCriteriaRefs": [
+        "sc-002"
+      ],
+      "stickyKnowledgeRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "misconceptionRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "photoRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "speakerNotes": {
+        "script": "__LESSON_DESIGN_FILL__",
+        "teacherInfo": "__LESSON_DESIGN_FILL__",
+        "lookFor": "__LESSON_DESIGN_FILL__"
+      },
+      "answer": {
+        "kind": "__LESSON_DESIGN_FILL__",
+        "content": "__LESSON_DESIGN_FILL__",
+        "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+        "delivery": "__LESSON_DESIGN_FILL__"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+      "label": "__LESSON_DESIGN_FILL__",
+      "kind": "your-turn",
+      "conceptRef": "concept-002",
+      "unlocks": "__LESSON_DESIGN_FILL__",
+      "thinking": "__LESSON_DESIGN_FILL__",
+      "content": {
+        "activityArchitecture": "__LESSON_DESIGN_FILL__",
+        "task": "__LESSON_DESIGN_FILL__"
+      },
+      "pupilInstruction": "__LESSON_DESIGN_FILL__",
+      "taskStructure": "__LESSON_DESIGN_FILL__",
+      "modellingState": "__LESSON_DESIGN_FILL__",
+      "representationRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "successCriteriaRefs": [
+        "sc-002"
+      ],
+      "stickyKnowledgeRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "misconceptionRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "photoRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "speakerNotes": {
+        "script": "__LESSON_DESIGN_FILL__",
+        "teacherInfo": "__LESSON_DESIGN_FILL__",
+        "lookFor": "__LESSON_DESIGN_FILL__"
+      },
+      "answer": {
+        "kind": "__LESSON_DESIGN_FILL__",
+        "content": "__LESSON_DESIGN_FILL__",
+        "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+        "delivery": "__LESSON_DESIGN_FILL__"
+      }
+    }
+  ],
+  "ending": {
+    "included": true,
+    "kind": "Apply",
+    "reason": "__LESSON_DESIGN_FILL__",
+    "beat": {
+      "sourceUnitId": "lesson-section/apply/unit-001",
+      "label": "__LESSON_DESIGN_FILL__",
+      "kind": "apply",
+      "conceptRef": null,
+      "unlocks": "__LESSON_DESIGN_FILL__",
+      "thinking": "__LESSON_DESIGN_FILL__",
+      "content": {
+        "activity": "__LESSON_DESIGN_FILL__"
+      },
+      "pupilInstruction": "__LESSON_DESIGN_FILL__",
+      "taskStructure": "__LESSON_DESIGN_FILL__",
+      "modellingState": "__LESSON_DESIGN_FILL__",
+      "representationRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "successCriteriaRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "stickyKnowledgeRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "misconceptionRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "photoRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "speakerNotes": {
+        "script": "__LESSON_DESIGN_FILL__",
+        "teacherInfo": "__LESSON_DESIGN_FILL__",
+        "lookFor": "__LESSON_DESIGN_FILL__"
+      },
+      "answer": {
+        "kind": "__LESSON_DESIGN_FILL__",
+        "content": "__LESSON_DESIGN_FILL__",
+        "acceptanceCondition": "__LESSON_DESIGN_FILL__",
+        "delivery": "__LESSON_DESIGN_FILL__"
+      }
+    }
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": "__LESSON_DESIGN_FILL__",
+    "sheetShape": {
+      "kind": "question-set",
+      "reason": "__LESSON_DESIGN_FILL__"
+    },
+    "demand": "__LESSON_DESIGN_FILL__",
+    "successCriteriaRefs": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "stickyKnowledgeRefs": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "fitPriority": "__LESSON_DESIGN_FILL__",
+    "centralWriteOnVisualException": "__LESSON_DESIGN_FILL__",
+    "contentBlocks": [
+      "__LESSON_DESIGN_FILL__"
+    ],
+    "answerKeyMode": "__LESSON_DESIGN_FILL__",
+    "providedWorksheet": null
+  },
+  "resourceOpportunities": {
+    "stickIn": {
+      "decision": "__LESSON_DESIGN_FILL__",
+      "sourceUnitIds": "__LESSON_DESIGN_FILL__",
+      "reason": "__LESSON_DESIGN_FILL__"
+    },
+    "workingWall": {
+      "decision": "__LESSON_DESIGN_FILL__",
+      "sourceUnitIds": "__LESSON_DESIGN_FILL__",
+      "reason": "__LESSON_DESIGN_FILL__"
+    }
+  },
+  "vocabularyIntroductions": [
+    {
+      "vocabularyRefs": [
+        "__LESSON_DESIGN_FILL__"
+      ],
+      "after": "__LESSON_DESIGN_FILL__",
+      "script": "__LESSON_DESIGN_FILL__"
+    }
+  ],
+  "slideDesignNotes": [
+    "__LESSON_DESIGN_FILL__"
+  ],
+  "flagsForTeacher": [
+    "__LESSON_DESIGN_FILL__"
+  ]
+}

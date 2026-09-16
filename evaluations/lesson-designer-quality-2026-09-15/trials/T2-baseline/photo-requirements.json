@@ -1,0 +1,216 @@
+{
+  "schema_version": 2,
+  "lesson_name": "Y4 Science - How sound travels from a source to our ears",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A close, slightly raised view of a hand drum or tambourine being struck, with a scattering of grains of rice or salt sitting on the drum skin and visibly bouncing clear of it.",
+      "pedagogical_constraint": "The skin has to fill most of the frame so the class can see the grains lifting off it. A wide view of a whole drum kit or a player seen from a distance will not show the grains at all.",
+      "teaching_requirement": "Carries the first Teach: a vibrating object makes whatever is touching it move too. It is also the vocabulary card for sound source.",
+      "load_bearing_evidence": [
+        "the drum skin, stretched tight and filling most of the frame",
+        "grains sitting on the skin and lifted off it, so the movement is visible"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "drum-skin-with-rice.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A hand drum or tambourine viewed from slightly above, its skin filling most of the frame, with about twenty grains of white rice on the skin. Several grains are caught in mid air a centimetre or two above the surface, the rest still resting on it. A hand or a soft beater is just touching the skin at one edge.",
+        "must_avoid": [
+          "a full drum kit or a stage",
+          "the drum seen from so far away that individual grains cannot be made out",
+          "motion blur so heavy that the grains become streaks"
+        ],
+        "text_rule": "No letters, numbers, labels, arrows or brand names anywhere in the image.",
+        "composition": "Landscape, the drum skin filling roughly three quarters of the frame, plain even lighting from above, a plain uncluttered background."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "A hand holding a metal tuning fork by its stem, the two prongs just above the surface of clear water in a shallow glass bowl.",
+      "pedagogical_constraint": "The fork and the water surface both have to be in the same frame, because children are predicting what will happen when the one meets the other.",
+      "teaching_requirement": "Sets up the prediction beat: children decide whether the water will move before the teacher lowers the fork in.",
+      "load_bearing_evidence": [
+        "the tuning fork, clearly a metal two-pronged fork",
+        "the surface of the water, still and undisturbed, directly below the prongs"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "tuning-fork-above-water.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A hand holding a steel tuning fork vertically by its stem, prongs pointing down, about three centimetres above perfectly still clear water in a shallow clear glass bowl on a table. The water surface is flat and undisturbed.",
+        "must_avoid": [
+          "the fork already touching the water",
+          "any splash, ripple or spray, because that gives away the prediction",
+          "a musical score, an instrument or a laboratory setting behind it"
+        ],
+        "text_rule": "No letters, numbers, labels, arrows or brand names anywhere in the image.",
+        "composition": "Landscape, the fork and the bowl together filling the frame, side-on eye-level view, even soft lighting, plain pale background."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "A close-up of an acoustic guitar string being plucked, the string blurred where it is moving.",
+      "pedagogical_constraint": "The blur on the moving string is the whole point, because it is the only honest picture of a vibration. A still, sharp string shows nothing.",
+      "teaching_requirement": "The vocabulary card for vibration: a thing wobbling fast, in place, too fast to see properly.",
+      "load_bearing_evidence": [
+        "one or more strings clearly blurred by movement while the rest of the guitar is sharp",
+        "a finger or plectrum at the string, so the cause of the movement is visible"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "guitar-string-vibrating.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "An extreme close-up of the strings of an acoustic guitar over the sound hole, with a finger just leaving one string and that string blurred into a soft double outline from its movement. The other strings and the guitar body are sharp.",
+        "must_avoid": [
+          "a whole guitar seen from a distance",
+          "a stage, an audience or coloured lighting",
+          "every string sharp and still"
+        ],
+        "text_rule": "No letters, numbers, labels, arrows or brand names anywhere in the image.",
+        "composition": "Landscape, the strings running across the frame, shallow depth of field, warm natural light."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "A long metal railing fence running away from the camera beside a park path, the sort of fence a child could put an ear against.",
+      "pedagogical_constraint": "The fence has to read as long and continuous, because the question turns on the vibration travelling a distance through the metal.",
+      "teaching_requirement": "Gives the fence question something real to picture, so children are deciding about an object rather than a sentence.",
+      "load_bearing_evidence": [
+        "metal railings, clearly metal rather than wood",
+        "the fence running a long way into the distance"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "long-metal-railing-fence.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A long painted metal railing fence beside a path in a park, photographed from one end so the railings run away into the distance and clearly continue a long way. Daylight, ordinary weather.",
+        "must_avoid": [
+          "a wooden fence",
+          "a short section of fence or a gate",
+          "people or animals in the frame"
+        ],
+        "text_rule": "No letters, numbers, labels, arrows, signs or brand names anywhere in the image.",
+        "composition": "Landscape, the fence running from the near foreground into the far distance, plain daylight, a calm uncluttered background."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "A person wearing thick padded ear defenders, the sort worn in a workshop, seen from the side or three quarters on.",
+      "pedagogical_constraint": "The cups have to be visibly covering the ears completely, because the question is about what can and cannot get to the eardrum.",
+      "teaching_requirement": "Gives the ear defenders question something to look at, so children can see that the ear is sealed off rather than being told so.",
+      "load_bearing_evidence": [
+        "large padded cups completely covering both ears",
+        "the person's head and ear position clear enough to see the cup sits over the ear"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "person-wearing-ear-defenders.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "An adult in ordinary work clothes wearing thick padded over-ear defenders, photographed from three quarters on so one cup is fully visible covering the ear. Head and shoulders only.",
+        "must_avoid": [
+          "headphones or earbuds rather than ear defenders",
+          "a helmet or visor hiding the cups",
+          "machinery close enough to distract from the ears"
+        ],
+        "text_rule": "No letters, numbers, labels, arrows or brand names anywhere in the image.",
+        "composition": "Landscape, head and shoulders, plain workshop background thrown out of focus, even lighting."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-006",
+      "subject": "A child of about nine or ten sitting and playing an acoustic guitar, the whole guitar and the child's hands visible.",
+      "pedagogical_constraint": "The strings and the plucking hand both need to be visible, because the first step of the explanation is naming the part that vibrates.",
+      "teaching_requirement": "The stimulus for the main explanation task: a sound source the lesson has not taught on, that a child can look at and identify the vibrating part of.",
+      "load_bearing_evidence": [
+        "the guitar strings, visible and identifiable",
+        "the child's hand at the strings, so the source of the sound is obvious"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "child-playing-acoustic-guitar.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A primary-aged child sitting on a chair in a plain room, holding an acoustic guitar across their lap, one hand on the neck and the other plucking the strings over the sound hole. Ordinary everyday clothes, natural daylight.",
+        "must_avoid": [
+          "an electric guitar or an amplifier",
+          "a stage, a concert or coloured lighting",
+          "the strings hidden by an arm or by the angle"
+        ],
+        "text_rule": "No letters, numbers, labels, arrows or brand names anywhere in the image.",
+        "composition": "Landscape, the child and the whole guitar in frame, plain uncluttered background, soft natural light."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-007",
+      "subject": "An astronaut in a white spacesuit standing on the grey surface of the Moon, with black empty sky behind.",
+      "pedagogical_constraint": "The black airless sky and the bare grey ground both have to be in the frame, because the whole question rests on there being nothing there.",
+      "teaching_requirement": "Makes the final question concrete: an obviously airless place, so children reason about the missing material rather than about a word.",
+      "load_bearing_evidence": [
+        "a suited astronaut standing on grey dusty ground",
+        "a completely black sky with no clouds, haze or blue of any kind"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "astronaut-on-the-moon.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A single astronaut in a white spacesuit and gold-visored helmet standing on the flat grey dusty surface of the Moon, footprints around them, the sky behind completely black. Harsh single-source sunlight casting a sharp shadow.",
+        "must_avoid": [
+          "any blue sky, cloud or atmospheric haze",
+          "a rocket launch, a space station interior or an Earth-based scene",
+          "stars bright enough to fill the sky, which would read as decoration"
+        ],
+        "text_rule": "No letters, numbers, labels, arrows, flags or mission badges legible anywhere in the image.",
+        "composition": "Landscape, the astronaut standing in the lower half with the black sky filling the upper half, harsh directional light, wide open ground."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

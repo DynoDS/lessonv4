@@ -1,0 +1,181 @@
+{
+  "schema_version": 2,
+  "lesson_name": "Why the Vikings came to Britain",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A farm on a Norwegian fjord: steep mountains dropping almost to the water, with a narrow strip of flat green farmland and farm buildings beside the shore",
+      "pedagogical_constraint": "The mountain and the flat strip are both in frame, so how little flat land there is can be seen at a glance.",
+      "teaching_requirement": "See that good flat farmland in Viking Scandinavia was a thin strip between the mountain and the water, so a family could run out of it.",
+      "load_bearing_evidence": [
+        "steep mountainside coming close to the water",
+        "a narrow strip of flat farmland beside the water",
+        "farm buildings or worked fields on that strip",
+        "the water of a fjord"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/norwegian-fjord-farm-narrow-strip.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A working farm on a narrow flat shelf of green land between a steep mountainside and the still water of a fjord, in summer.",
+        "must_avoid": [
+          "wide flat plains",
+          "modern towns or roads",
+          "tourists",
+          "boats in the foreground"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "Landscape frame showing the mountain, the flat strip and the water together."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "Lindisfarne, also called Holy Island, off the Northumberland coast, seen from across the water, with the priory ruins on the low flat island",
+      "pedagogical_constraint": "Shows the island as low, small and open from the sea, with no wall or defence around it.",
+      "teaching_requirement": "See that the monastery raided in 793 sat on a small open island with nothing between it and the sea.",
+      "load_bearing_evidence": [
+        "the island seen from across the water",
+        "the priory buildings or ruins on it",
+        "low open ground with no defensive wall",
+        "the sea or the shoreline"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/lindisfarne-holy-island-priory-from-water.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A generated island would be a lie about Lindisfarne. The lesson names this place and this year, and the class is being asked what they can see about the real island.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "The carved Anglo-Saxon stone from Lindisfarne, often called the Domesday stone, showing a row of figures carrying raised axes and swords",
+      "pedagogical_constraint": "The row of armed figures is clear enough to read at slide size.",
+      "teaching_requirement": "Put a real carved image of a raid beside the word raid.",
+      "load_bearing_evidence": [
+        "a carved stone slab",
+        "a row of human figures",
+        "raised axes or swords in their hands"
+      ],
+      "use": "slide",
+      "essential": false,
+      "filename": "wikimedia/lindisfarne-domesday-stone-carving.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "omit",
+      "fallback_note": "A generated carving would be an invented artefact presented as a real one from Lindisfarne. The vocabulary card still works with the word alone.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "A Viking longship, either an excavated ship in a museum or a sailing replica, seen from the side so the shallow clinker-built hull is visible",
+      "pedagogical_constraint": "The whole hull is in frame from the side, so how shallow and flat-bottomed it is can be seen. No horned helmets and no fantasy dragon styling.",
+      "teaching_requirement": "See that a Viking ship was shallow enough to be rowed straight onto a beach, so no harbour was needed.",
+      "load_bearing_evidence": [
+        "the whole length of a Viking longship from the side",
+        "the shallow, flat-bottomed clinker-built hull",
+        "the overlapping planks of the hull",
+        "oar positions or a row of shields along the side"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/viking-longship-shallow-hull-side-view.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A Viking longship seen from the side on calm water or on a beach, with a shallow clinker-built hull of overlapping planks and a row of round shields along the gunwale.",
+        "must_avoid": [
+          "horned helmets",
+          "fantasy or film styling",
+          "a deep keeled sailing ship",
+          "storm or battle scenes"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "Landscape frame showing the whole ship from bow to stern, side on."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "A reconstructed Viking-age longhouse with a turf roof, standing in its own ground with fields or worked land around it",
+      "pedagogical_constraint": "The house is whole and settled in a landscape, so it reads as somewhere people lived rather than a museum object on a plinth.",
+      "teaching_requirement": "Show what settling looked like: a Viking home with land around it.",
+      "load_bearing_evidence": [
+        "a whole Viking-age longhouse",
+        "a turf or thatched roof",
+        "open worked ground or fields around it"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/viking-longhouse-turf-roof-reconstruction.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A long low Viking-age house with turf growing on its roof and timber walls, standing on open worked ground with fields behind it, in daylight.",
+        "must_avoid": [
+          "visitors or costumed re-enactors",
+          "signage",
+          "modern buildings",
+          "fire or ruin"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "Landscape frame showing the whole house and the ground around it."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-006",
+      "subject": "Wide flat arable farmland in the east of England, with ploughed or cropped fields running to a low horizon",
+      "pedagogical_constraint": "The land is visibly flat and open all the way to the horizon, with no hills, so it reads against the Norwegian fjord farm.",
+      "teaching_requirement": "See that the land Vikings settled on in eastern England was flat, wide and workable, which their own farmland was not.",
+      "load_bearing_evidence": [
+        "flat open farmland running to a low horizon",
+        "ploughed or cropped fields",
+        "no hills or mountains in the frame"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/eastern-england-flat-arable-farmland.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "Wide flat English arable farmland under an open sky, ploughed or under crop, running level to a low horizon.",
+        "must_avoid": [
+          "hills or mountains",
+          "modern machinery in the foreground",
+          "towns",
+          "people"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "Landscape frame, low horizon, the flatness of the land obvious."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

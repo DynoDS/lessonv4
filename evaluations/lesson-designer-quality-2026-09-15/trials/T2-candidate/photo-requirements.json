@@ -1,0 +1,142 @@
+{
+  "schema_version": 2,
+  "lesson_name": "How sound travels to our ears",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A set of classroom percussion instruments on a table: a hand drum, a triangle with its beater, and a tambourine.",
+      "pedagogical_constraint": "All three instruments are still and untouched, with nobody playing them.",
+      "teaching_requirement": "Recognise the instruments the class has already played, so the starter's questions land on a real drum skin and a real triangle.",
+      "load_bearing_evidence": [
+        "a hand drum with a visible skin",
+        "a triangle with its beater",
+        "a tambourine"
+      ],
+      "use": "slide",
+      "essential": false,
+      "filename": "unsplash/classroom-percussion-drum-triangle-tambourine.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "omit",
+      "fallback_note": null,
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "Grains of rice on a drum skin, jumping into the air as the drum is struck.",
+      "pedagogical_constraint": "The rice is caught off the skin, in the air, so the shaking is visible, and nothing covers the skin.",
+      "teaching_requirement": "See that a drum skin is vibrating, which the first teaching beat and the vibration card are both built on.",
+      "load_bearing_evidence": [
+        "a drum skin filling most of the frame",
+        "loose grains of rice on the skin",
+        "some grains lifted clear of the skin"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/rice-jumping-drum-skin.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "Grains of rice sitting on a taut drum skin with several grains bounced clear of the surface, caught in mid-air.",
+        "must_avoid": [
+          "hands or beaters covering the skin",
+          "a drum seen side on so the skin is hidden",
+          "anything else resting on the skin"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "Look down onto the drum skin so it fills the frame, with the rice clearly on and above it."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "A loudspeaker with its round cone clearly visible at the front.",
+      "pedagogical_constraint": "The cone faces the camera and nothing is held in front of it.",
+      "teaching_requirement": "Identify the part of the speaker that vibrates, before the teacher holds tissue paper in front of it.",
+      "load_bearing_evidence": [
+        "one loudspeaker",
+        "the speaker cone visible and facing forward"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/loudspeaker-cone-front.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A single loudspeaker, its round cone facing forward and uncovered.",
+        "must_avoid": [
+          "a grille hiding the cone",
+          "several speakers in one frame",
+          "a person holding it"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "One speaker, front on, filling most of a landscape frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "An astronaut on a spacewalk outside a spacecraft, floating in open space.",
+      "pedagogical_constraint": "The astronaut is outside the craft in open space, not inside a cabin.",
+      "teaching_requirement": "Picture two people close together with nothing between them, so the class can see that the gap really is empty.",
+      "load_bearing_evidence": [
+        "an astronaut in a full spacesuit and helmet",
+        "open space around them",
+        "no cabin or indoor setting"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/astronaut-spacewalk.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "An astronaut in a white suit and helmet floating outside a spacecraft, with black space behind.",
+        "must_avoid": [
+          "an indoor scene",
+          "a cartoon or toy astronaut",
+          "a planet surface underfoot"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "The astronaut fills the middle of a landscape frame with open space around them."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "The back door of an ordinary house, closed, seen from the garden.",
+      "pedagogical_constraint": "The door is shut and nobody is in the shot.",
+      "teaching_requirement": "Put the child in the garden, so the final case is somewhere they can picture rather than a sentence about nobody.",
+      "load_bearing_evidence": [
+        "a closed back door of a house",
+        "the garden side of it",
+        "no people in the frame"
+      ],
+      "use": "slide",
+      "essential": false,
+      "filename": "unsplash/house-back-door-from-garden.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "omit",
+      "fallback_note": null,
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

@@ -1,0 +1,823 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Content-based",
+    "yearGroup": 4,
+    "subject": "History",
+    "lo": "To explain why the Vikings came to Britain.",
+    "displayedLo": "To explain why the Vikings came to Britain",
+    "durationMinutes": 45,
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "Children explain the Vikings coming to Britain by what kind of people they imagine the Vikings were, rather than by what a Viking family needed and what Britain had. Left unreplaced, every reason a child gives comes back to liking to fight."
+  },
+  "teacherOrientation": "Teacher orientation: This lesson answers one question, why the Vikings came to Britain, and children finish it by writing two reasons of their own into a three-part frame. The three teaching slides build the answer in order: what Viking Scandinavia was short of, what Lindisfarne had that made it worth the journey, and why later Vikings stayed on English land instead of sailing home. The tricky move is that last one, telling a raid apart from settling, because children hear both of them as \"the Vikings attacked us\". It is taught on the third teaching slide and practised straight after on the card sort, so by the time they write, they have already sorted six examples.",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "Britain before the Vikings",
+    "kind": "starter",
+    "conceptRef": null,
+    "unlocks": "They have the Vikings placed after the Anglo-Saxons and a sea between Scandinavia and here, which is what makes the first Teach's question worth asking.",
+    "thinking": "Where do the Vikings sit against the people I already know were here?",
+    "content": {
+      "activity": "(1) Who was living in Britain when the Vikings first arrived?\n\n(2) Put these three in order, earliest first: Anglo-Saxons, Romans, Vikings.\n\n(3) The Vikings sailed from Scandinavia to Britain. What did they have to cross to get here?",
+      "connection": "Retrieves the two things the brief says children hold: the Anglo-Saxons here first, and where Scandinavia and Britain sit. Question 3 is the one today's first Teach builds on, because a sea crossing is a lot of trouble to go to.",
+      "format": "Three short written questions, answered individually, then checked together.",
+      "testQuestionPath": null
+    },
+    "pupilInstruction": "Answer all three.",
+    "taskStructure": null,
+    "modellingState": null,
+    "representationRefs": [],
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "misconceptionRefs": [],
+    "photoRefs": [],
+    "speakerNotes": {
+      "script": "Say to children: Three quick ones to start. Number one, think back. When the Vikings first turned up here, who was already living in Britain? Number two, I want these three in order, the earliest one first. Anglo-Saxons, Romans, Vikings. Careful with that one, it's not the order I've written them in. And number three. The Vikings came from Scandinavia, up here. We're down here. What did they have to get across?",
+      "teacherInfo": "Question 2 is the one to check properly. A Year 4 who can chant the three periods often cannot say which came first.",
+      "lookFor": "Look for: Vikings placed before the Anglo-Saxons in question 2."
+    },
+    "answer": {
+      "kind": "exact",
+      "content": "(1) The Anglo-Saxons. (2) Romans, Anglo-Saxons, Vikings. (3) The sea.",
+      "acceptanceCondition": null,
+      "delivery": "answer-slide"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "monastery",
+      "definition": "A monastery was a place where monks lived together and prayed.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-002"
+      }
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "raid",
+      "definition": "A raid is a fast attack on a place. You take what you want, and then you leave.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-003"
+      }
+    },
+    {
+      "id": "vocab-003",
+      "sourceUnitId": "lesson-section/vocabulary/unit-003",
+      "term": "settle",
+      "definition": "When people settle somewhere, they come there to live for good. They build houses, farm the land, and bring their families with them.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-005"
+      }
+    }
+  ],
+  "trimmedVocabulary": [],
+  "representations": [
+    {
+      "id": "rep-001",
+      "name": "Raiding years, then settlement",
+      "purpose": "Hold the seventy years of raiding apart from the year the Viking army stayed, so the shift from raiding to settling reads as a change over a lifetime rather than two dates in a row.",
+      "configurations": [
+        {
+          "id": "raids-then-settlement",
+          "description": "A plain date line running from before 793 to after 865, with 793 and 865 marked and the stretch between them shown as the raiding years. Not to scale beyond keeping the gap visibly long.",
+          "loadBearing": false,
+          "requiredFeatures": [
+            "793 and 865 both marked and labelled",
+            "the span between them visibly long and named as about seventy years",
+            "the Anglo-Saxons already in Britain shown before 793"
+          ]
+        }
+      ]
+    }
+  ],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "steps",
+      "drawLive": false,
+      "content": {
+        "steps": [
+          "Start by saying the Vikings came for more than one reason.",
+          "Write one reason that is about their home in Scandinavia. Use because.",
+          "Write one reason that is about what Britain had. Use because.",
+          "Finish by saying how raiding was different from settling."
+        ]
+      }
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "There was very little good farmland in Viking Scandinavia, so many families had no land of their own."
+    },
+    {
+      "id": "sk-002",
+      "text": "Monasteries like Lindisfarne kept silver and gold and had nobody guarding them, so they were easy to raid."
+    },
+    {
+      "id": "sk-003",
+      "text": "The Vikings did not only raid. Later ones came with their families and settled on English land."
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mc-001",
+      "belief": "The Vikings came to Britain because they were violent people who liked fighting.",
+      "correctiveFact": "They chose a rich place with nobody guarding it, and what they carried away was silver.",
+      "strategy": "Taught against once, on the Lindisfarne slide, where the class can see the choice was about what was inside rather than about a fight; retested once at the end on a claim a child in the class voices.",
+      "reason": "It is the most common misconception in primary history and it is the whole reason this objective is worth teaching: a class that holds it gives one answer to every why question about the past."
+    },
+    {
+      "id": "mc-002",
+      "belief": "The Vikings only raided. They came, took things, and went home again, every time.",
+      "correctiveFact": "After about seventy years of raiding, Viking families came to England to stay, farmed the land and built towns.",
+      "strategy": "Taught on the third Teach, then sorted straight away: six real things Vikings did, placed under raid or settle.",
+      "reason": "The teacher asked for it by name, and it is what separates the two halves of the answer."
+    }
+  ],
+  "concepts": [
+    {
+      "id": "concept-001",
+      "name": "Cause: a big movement of people has more than one reason, and the reasons run in two directions, what home was short of and what the new place had.",
+      "successCriteriaRefs": [
+        "sc-001"
+      ]
+    }
+  ],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "What was home like for a Viking family?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They can see a Viking family running out of land at home, which the Lindisfarne beat needs before asking what was worth sailing that far for.",
+      "thinking": "If there's no land left at home, what does a grown-up son do?",
+      "content": {
+        "headline": "This is a Viking farm in Norway.",
+        "explanation": "A family who farms needs flat land, good soil, and a summer long enough to grow food in.\n\nLook at this farm in Norway. The mountains come almost down to the water, and the flat land is a thin green strip beside the fjord.\n\nA farm like that could feed one family. When the sons grew up, there was no new land to give them.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-001"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "That family has sons. When they grow up, where do they put their own farms?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Before we can work out why the Vikings came here, we need to know what home was like for them. This is Norway, and a lot of them came from land like this. Now, think about a family who live by farming. What do they need? Flat land, to start with. Decent soil. And a summer long enough for the crops to actually grow before the cold comes back. Right, look at the picture. Where's the flat land? There. That thin green strip down by the water, with the mountain coming almost right down to it. That's the farm. That strip fed one family, and it fed them just about. So here's my question. That family has sons. The sons grow up, and they want farms of their own. Where do they go?",
+        "teacherInfo": "Good farmland here means three things, not one: flat, decent soil, long enough summer. The sort on the next slide turns on the summer, so say all three.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "Could this family stay?",
+      "kind": "do",
+      "conceptRef": null,
+      "unlocks": "They can say why a Viking family might have to leave, which the next beat needs when it asks what was worth crossing the sea for.",
+      "thinking": "Is there enough good land here for everyone in this family to farm?",
+      "content": {
+        "activity": "Four Viking farms sorted into two groups, then the reason for the hardest placement.",
+        "format": "Sort into two named groups, then one spoken reason.",
+        "task": "Not every Viking family was in the same trouble.\n\nRead each farm and put it in one of the two groups.\n\nThen pick the one you found hardest, and tell your partner why you put it there."
+      },
+      "pupilInstruction": "Sort all four, then talk about your hardest one.",
+      "taskStructure": {
+        "kind": "sort",
+        "groups": [
+          {
+            "id": "group-001",
+            "label": "This family had enough land"
+          },
+          {
+            "id": "group-002",
+            "label": "Someone in this family had to find land somewhere else"
+          }
+        ],
+        "items": [
+          {
+            "id": "item-001",
+            "label": "Inga's farm",
+            "detail": "Inga's family farmed the flat land beside a wide fjord, and there was still empty ground next to them.",
+            "photoRef": null
+          },
+          {
+            "id": "item-002",
+            "label": "Bjorn's farm",
+            "detail": "Bjorn's father had one farm to split between his five sons.",
+            "photoRef": null
+          },
+          {
+            "id": "item-003",
+            "label": "Gunnar's farm",
+            "detail": "Gunnar's farm was high up the mountainside. The summer there was too short for the grain to ripen.",
+            "photoRef": null
+          },
+          {
+            "id": "item-004",
+            "label": "Freya's farm",
+            "detail": "Freya's family had a small field, and Freya was their only child.",
+            "photoRef": null
+          }
+        ]
+      },
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Four Viking farms. For each one I want you to decide: could this family stay where they were, or was somebody in it going to have to go and find land somewhere else? Read them properly before you choose. Two of them are trickier than they look, and one of those has nothing to do with how big the field is.",
+        "teacherInfo": "Gunnar is the hard one: the land is there and the summer isn't, so it still fails the test. Freya is the other, because a small field is enough for one child.",
+        "lookFor": "Look for: Gunnar sorted as having enough because the farm is large; Freya moved because the field is small."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": null,
+        "structure": {
+          "kind": "sort",
+          "placements": [
+            {
+              "itemRef": "item-001",
+              "groupRef": "group-001"
+            },
+            {
+              "itemRef": "item-002",
+              "groupRef": "group-002"
+            },
+            {
+              "itemRef": "item-003",
+              "groupRef": "group-002"
+            },
+            {
+              "itemRef": "item-004",
+              "groupRef": "group-001"
+            }
+          ]
+        },
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "Why did the Vikings sail to Lindisfarne?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They know what Britain held that Scandinavia did not, which the next beat makes them use and the written explanation gives as one of its two reasons.",
+      "thinking": "What made this place worth sailing all that way for?",
+      "content": {
+        "headline": "This is Holy Island, where the monastery stood.",
+        "explanation": "In the year 793, Viking ships landed at Lindisfarne, a monastery on a small island off the coast of Britain.\n\nA Viking ship was shallow, so it could be rowed straight onto the beach. There was no harbour to stop it.\n\nLook at the island: no wall, no gate, no soldiers. Inside, the monks kept cups and crosses of silver and gold, because people had been giving gifts to that church for a hundred years.\n\nThey hadn't sailed all that way looking for a fight. They came for what was inside.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-002"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "Look at the island. What's protecting it?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [
+        "photo-002",
+        "photo-004"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Right, the important bit. In the year 793, ships came out of the sea and landed here, at a place called Lindisfarne. It's a tiny island just off the coast of Britain, and on it there was a monastery. Have a proper look at it. What's protecting it? No wall. No gate. Nobody standing guard. Nobody had ever needed to, because who comes at you out of the sea? Now, this is the kind of ship they came in. See how flat the bottom is? That means you don't need a harbour at all. You row it straight up onto the sand and you step out. And inside that monastery the monks had cups and crosses made of silver and gold, because people had been giving gifts to that church for a hundred years. So listen, because a lot of people get this wrong. They didn't sail all that way looking for a fight. They came for what was inside.",
+        "teacherInfo": "This is the one place the lesson takes on the idea that they came because they liked fighting. Say the last two sentences slowly; the end of the lesson tests whether they stuck.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "Where would they go next?",
+      "kind": "do",
+      "conceptRef": null,
+      "unlocks": "They can name what made a place worth raiding, rich and unguarded, which the final sort has to tell apart from a reason to stay.",
+      "thinking": "Which of these has treasure they could actually get away with?",
+      "content": {
+        "activity": "Every child picks one of three places and writes one reason.",
+        "format": "A written choice with one reason.",
+        "task": "In the years after 793, Viking crews chose where to raid next.\n\nWhich one do you think they chose? Write A, B or C, and write one reason."
+      },
+      "pupilInstruction": "Write your letter and your reason.",
+      "taskStructure": {
+        "kind": "option-bank",
+        "items": [
+          {
+            "id": "item-001",
+            "label": "A - A monastery on the coast, with silver crosses and no wall."
+          },
+          {
+            "id": "item-002",
+            "label": "B - A walled town with the king's soldiers inside."
+          },
+          {
+            "id": "item-003",
+            "label": "C - A farming village far up a river, with only sheep."
+          }
+        ]
+      },
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: You've got one summer and one ship. Three places you could go. Pick one, write the letter down, and write me one reason. And don't just go for the biggest pile of treasure. Think about what happens to you when you get there. Right, shall I tell you what they actually did? Jarrow, the year after. Iona, the year after that. Both of them monasteries.",
+        "teacherInfo": "B is the tempting wrong one, because a town is richer. A child who chooses B has the treasure half of the idea and not the unguarded half.",
+        "lookFor": "Look for: B chosen with the reason \"a town has more treasure\"."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "A. It has the silver and there is nobody guarding it. B has more in it but soldiers to get past, and C has nothing worth the journey.",
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-005",
+      "label": "The Vikings who never sailed home",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They know Viking raiding gave way to Viking families settling here, which the sort tests and the last part of the written frame needs.",
+      "thinking": "What did this land give them that home could not?",
+      "content": {
+        "headline": "The land in eastern England was flat, wide and warm enough to grow grain.",
+        "explanation": "For about seventy years, Viking ships came in the summer, took what they could carry, and sailed home again.\n\nThen in 865 a much bigger Viking army landed, and this one did not leave.\n\nLook at this land in the east of England, and think back to Gunnar's farm high up the mountainside with a summer too short for grain. Here the Vikings could plough, sow, and get a harvest in.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-003"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "The Vikings at Lindisfarne sailed home again. Why would these ones want to stay?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "raids-then-settlement",
+          "interaction": "view"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-003"
+      ],
+      "misconceptionRefs": [
+        "mc-002"
+      ],
+      "photoRefs": [
+        "photo-006"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: For about seventy years it carried on like that. Ships in the summer, take what you can carry, sail home before the winter. Look at the line. 793, all the way along to 865. That is longer than most of you have had grandparents. Then in 865 a much bigger army landed. And this one didn't leave. So why would these ones want to stay, when the Lindisfarne lot sailed home? Look at this land. This is the east of England. Flat. Wide. Warm enough to get a crop up before the cold comes. Remember Gunnar, high up the mountain, where the summer was too short for the grain to ripen? Look at the difference. These Vikings shared this land out between them, ploughed it, built houses on it and brought their families over. The town we call York was theirs. They called it Jorvik.",
+        "teacherInfo": "The seventy years is the part that gets lost. Raiding went on for a lifetime before anybody settled, so these are not the same people who landed at Lindisfarne.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+      "label": "Raid or settle?",
+      "kind": "do",
+      "conceptRef": null,
+      "unlocks": "Every child has placed six real Viking actions under raid or settle, so the last part of the frame is a move they have already made.",
+      "thinking": "Did these Vikings come to take something and leave, or come to live here?",
+      "content": {
+        "activity": "Six real Viking actions sorted into raid or settle, then the hardest one explained.",
+        "format": "Sort into two groups, then one spoken reason.",
+        "task": "Vikings did both of these things in Britain, but not at the same time.\n\nSort each card into one of the two groups.\n\nThen pick the one you found hardest, and tell your partner why you put it there."
+      },
+      "pupilInstruction": "Sort all six, then talk about your hardest one.",
+      "taskStructure": {
+        "kind": "sort",
+        "groups": [
+          {
+            "id": "group-001",
+            "label": "Raid"
+          },
+          {
+            "id": "group-002",
+            "label": "Settle"
+          }
+        ],
+        "items": [
+          {
+            "id": "item-001",
+            "label": "They came in the summer and were gone before the winter.",
+            "detail": null,
+            "photoRef": null
+          },
+          {
+            "id": "item-002",
+            "label": "They gave the villages Viking names: Grimsby, Whitby, Derby.",
+            "detail": null,
+            "photoRef": null
+          },
+          {
+            "id": "item-003",
+            "label": "They carried the silver cups back to their ships.",
+            "detail": null,
+            "photoRef": null
+          },
+          {
+            "id": "item-004",
+            "label": "They ploughed the fields and sowed a crop for the next year.",
+            "detail": null,
+            "photoRef": null
+          },
+          {
+            "id": "item-005",
+            "label": "They set up a mint in York and made coins there.",
+            "detail": null,
+            "photoRef": null
+          },
+          {
+            "id": "item-006",
+            "label": "They sailed home with a boatful of gold and never came back.",
+            "detail": null,
+            "photoRef": null
+          }
+        ]
+      },
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-003"
+      ],
+      "misconceptionRefs": [
+        "mc-002"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Six cards, and every one of these really happened. Sort them for me. Was this Vikings raiding, or Vikings settling? Have a proper look at the one about the coins before you decide, because that one catches people out. Right, before we move on, look at the card with the names on it. Derby. Whitby. Grimsby. Those are all Viking names for a village, and they are still there on the map today. So if anyone here has ever been to Grimsby, you have been to a Viking village, and nobody told you.",
+        "teacherInfo": "The mint is the trap: coins look like treasure, but you only make your own money somewhere you are staying.",
+        "lookFor": "Look for: the mint card placed under Raid."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": null,
+        "structure": {
+          "kind": "sort",
+          "placements": [
+            {
+              "itemRef": "item-001",
+              "groupRef": "group-001"
+            },
+            {
+              "itemRef": "item-002",
+              "groupRef": "group-002"
+            },
+            {
+              "itemRef": "item-003",
+              "groupRef": "group-001"
+            },
+            {
+              "itemRef": "item-004",
+              "groupRef": "group-002"
+            },
+            {
+              "itemRef": "item-005",
+              "groupRef": "group-002"
+            },
+            {
+              "itemRef": "item-006",
+              "groupRef": "group-001"
+            }
+          ]
+        },
+        "acceptanceCondition": null,
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-007",
+      "label": "Why did the Vikings come to Britain?",
+      "kind": "practise",
+      "conceptRef": "concept-001",
+      "unlocks": "They have a written answer holding two reasons of different kinds, which the last beat makes them weigh against a wrong explanation.",
+      "thinking": "Which two of the things I know today actually answer why they came?",
+      "content": {
+        "activity": "Each child writes the lesson's answer into a three-part frame.",
+        "format": "A three-part written explanation frame.",
+        "task": "Why did the Vikings come to Britain?\n\nWhy they left Scandinavia\n\nWhat Britain had that they wanted\n\nHow raiding and settling were different",
+        "launch": {
+          "established": "We know what Viking Scandinavia was short of, what Lindisfarne had, and why later Vikings stayed on English land.",
+          "goodLooksLike": "Not strong enough: The Vikings came to Britain because they wanted treasure.\n\nStronger: The Vikings came to Britain for more than one reason. They left Scandinavia because the land was mostly mountain, and a family with four sons couldn't give them all a farm.\n\nThe first one gives one reason and stops. The second one says there was more than one, then gives a reason with a because in it.",
+          "steps": [
+            "Read the two answers above and find the one that gives more than one reason.",
+            "Write your first sentence.",
+            "Write the Scandinavia reason, then the Britain reason.",
+            "Finish with the sentence about raiding and settling."
+          ]
+        }
+      },
+      "pupilInstruction": "Write your answer to today's question: why did the Vikings come to Britain? Fill in each part of the frame.",
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [
+        "sk-003"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Right. Everything we've found out today, and now you answer the question yourselves. Why did the Vikings come to Britain? Look at these two answers first. The top one says they wanted treasure. That's true, and it stops there. One reason. The one underneath says there was more than one reason, and then gives one with a because in it: they left Scandinavia because the land was mostly mountain, and a family with four sons couldn't give them all a farm. That's the one we're going for. Two reasons. One about their home, one about what Britain had. A because in each. And at the bottom, one sentence telling me how raiding was different from settling.",
+        "teacherInfo": "The two reasons are deliberately not on the board while they write. The example in the launch shows the shape on one of them; the second one has to come from them.",
+        "lookFor": "Look for: two reasons of different kinds; a because in each; raiding and settling told apart."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The Vikings came to Britain for more than one reason. They left Scandinavia because there was hardly any good flat land to farm there, and a family with lots of sons had none left to give them. Britain was worth the journey because monasteries like Lindisfarne were full of silver and gold, and nobody was guarding them. A raid was quick. They took what they could carry and sailed home. Settling was different. Those Vikings brought their families and stayed on the land they took.",
+        "acceptanceCondition": "Accept any two genuinely different reasons taught today, one about Scandinavia and one about Britain, each with a because, plus a sentence that has raiding leaving and settling staying.",
+        "delivery": "answer-slide"
+      }
+    }
+  ],
+  "ending": {
+    "included": true,
+    "kind": "Apply",
+    "reason": "The practice assembles the reasons; this turns the lesson's own question round and asks whether a different explanation, the one most of the class walked in with, survives them. It is the one retest of the idea the lesson was built against, and a child cannot pass it by repeating what they just wrote.",
+    "beat": {
+      "sourceUnitId": "lesson-section/apply/unit-001",
+      "label": "Is Daniel right?",
+      "kind": "apply",
+      "conceptRef": null,
+      "unlocks": null,
+      "thinking": "Does \"they liked fighting\" explain anything I found out today?",
+      "content": {
+        "activity": "Daniel says: \"The Vikings came to Britain because they liked fighting.\"\n\nIs Daniel right? Use two things you learned today to explain.\n\nIf you're stuck: what were the Vikings carrying back to their ships at Lindisfarne?"
+      },
+      "pupilInstruction": "Decide, then give me two reasons.",
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Last thing, and then we're done. Daniel here says the Vikings came to Britain because they liked fighting. Is he right? Don't answer straight away. Think about what we actually found out today, and use two bits of it. If you're stuck, ask yourself this: what were they carrying back to the ships at Lindisfarne? And what were the ones in 865 doing with a plough?",
+        "teacherInfo": "Watch for the over-correction, \"they were farmers, not fighters\". They did raid, and it was violent. What is wrong is that liking it was the reason.",
+        "lookFor": "Look for: a reason about land at home and a reason about what was in Britain, rather than a judgement about what the Vikings were like."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "No. They came because there wasn't enough good land at home, and because Britain had monasteries full of silver with nobody guarding them. Some of them stayed to farm, and you don't do that for a fight.",
+        "acceptanceCondition": "Accept any answer that rejects the claim using two taught reasons. Accept an answer given aloud.",
+        "delivery": "answer-slide"
+      }
+    }
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": {
+      "coreActionAndEvidence": "The child decides raid or settle on four Viking actions the lesson never showed, then writes the lesson's answer into the same three-part frame the class watched being set up. The written frame is the evidence for the objective; the four decisions evidence the distinction the teacher asked for.",
+      "amount": "Four quick decisions and one written explanation in three parts. The explanation is the substantial performance and takes most of the time.",
+      "variationAndBoundaryPlan": "All four statements are fresh: none appears on the board. Two turn on going home and two on staying, and none of them mentions treasure, so the child sorts on what the Vikings did next rather than on what they carried.",
+      "organisation": "The four decisions come first and warm the distinction; the frame follows underneath in the same column, so the child works straight down the page."
+    },
+    "sheetShape": {
+      "kind": "mixed",
+      "reason": "The sheet holds two kinds of block: a short set of decisions, then the frame the class watched being set up, which is the lesson's own shape and cannot be re-asked as numbered questions without changing what children practised."
+    },
+    "demand": "The decisions are quick and secure the distinction. The frame is the full objective: two reasons of different kinds, each with a because, and the difference between raiding and settling.",
+    "successCriteriaRefs": [
+      "sc-001"
+    ],
+    "stickyKnowledgeRefs": [
+      "sk-003"
+    ],
+    "fitPriority": {
+      "protected": [
+        "the three-part frame with real writing room in every section, because it is the lesson's evidence",
+        "all four raid-or-settle decisions, because they are the retest of the misconception the teacher asked for"
+      ],
+      "preAuthorisedRemoval": [
+        "the printed success-criteria panel, because the same four steps stay on the board while children work"
+      ]
+    },
+    "centralWriteOnVisualException": null,
+    "contentBlocks": [
+      {
+        "id": "ws-qg-001",
+        "kind": "question-group",
+        "groupPrompt": "Was this Vikings raiding, or Vikings settling? Ring your answer.",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "parts": [
+          {
+            "id": "ws-qg-001-part-01",
+            "pupilPrompt": "They spent the whole winter in England and did not go back.",
+            "responseForm": "choose-from-options",
+            "responseFormReason": null,
+            "response": "Ring raid or settle.",
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "settle",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-qg-001-part-02",
+            "pupilPrompt": "They took the gold cross out of the church and rowed away.",
+            "responseForm": "choose-from-options",
+            "responseFormReason": null,
+            "response": "Ring raid or settle.",
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "raid",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-qg-001-part-03",
+            "pupilPrompt": "They dug a field and planted barley in it.",
+            "responseForm": "choose-from-options",
+            "responseFormReason": null,
+            "response": "Ring raid or settle.",
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "settle",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-qg-001-part-04",
+            "pupilPrompt": "They landed at dawn, filled the ship, and were gone by dark.",
+            "responseForm": "choose-from-options",
+            "responseFormReason": null,
+            "response": "Ring raid or settle.",
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "raid",
+              "acceptanceCondition": null,
+              "delivery": "teacher-only"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ws-frame-001",
+        "kind": "frame",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [
+          "sk-003"
+        ],
+        "photoRefs": [],
+        "sections": [
+          {
+            "heading": "Why they left Scandinavia",
+            "whatGoesHere": "One reason about their home, with because in it.",
+            "noteSpace": "Two writing lines."
+          },
+          {
+            "heading": "What Britain had that they wanted",
+            "whatGoesHere": "One reason about Britain, with because in it.",
+            "noteSpace": "Two writing lines."
+          },
+          {
+            "heading": "How raiding and settling were different",
+            "whatGoesHere": "One sentence saying what each kind of Viking did.",
+            "noteSpace": "Two writing lines."
+          }
+        ],
+        "answer": {
+          "kind": "model",
+          "content": "Why they left Scandinavia: because there was hardly any good flat land to farm, and a family with lots of sons had none left to give them. What Britain had: because monasteries like Lindisfarne were full of silver and gold and nobody was guarding them. How they were different: raiding meant taking what you could carry and sailing home, and settling meant staying on the land and farming it.",
+          "acceptanceCondition": "Accept any two genuinely different taught reasons, one per heading, each with a because, and a last sentence that has raiding leaving and settling staying.",
+          "delivery": "teacher-only"
+        }
+      }
+    ],
+    "answerKeyMode": "required",
+    "providedWorksheet": null
+  },
+  "resourceOpportunities": {
+    "stickIn": {
+      "decision": "candidate",
+      "sourceUnitIds": [
+        "lesson-section/teaching-sequence/unit-002",
+        "lesson-section/teaching-sequence/unit-006"
+      ],
+      "reason": "Both are card sorts the class does with their hands. Printed strips let a child move and re-move a card while they argue about it, which is the whole point of the beat, instead of copying ten sentences into two columns before any thinking starts. The six-card sort matters most, because it is where raiding and settling are told apart."
+    },
+    "workingWall": {
+      "decision": "candidate",
+      "sourceUnitIds": [
+        "lesson-section/teaching-sequence/unit-005",
+        "lesson-section/teaching-sequence/unit-007"
+      ],
+      "reason": "The raid-and-settle distinction and the two kinds of reason are what the rest of the unit keeps coming back to, and both are still useful on a wall next week."
+    }
+  },
+  "vocabularyIntroductions": [
+    {
+      "vocabularyRefs": [
+        "vocab-001",
+        "vocab-002"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-002",
+      "script": "Say to children: Two words before the next bit, because you'll need both of them. A monastery. That's a place where monks lived together and prayed, and that's what you can see in the picture. Say it with me. Monastery. And the second one is raid. A raid is a fast attack on a place. You come, you take what you want, and then you go. Now look at this carving. Somebody who actually lived there cut that into stone, and you can still see the axes."
+    },
+    {
+      "vocabularyRefs": [
+        "vocab-003"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-004",
+      "script": "Say to children: One more word before we carry on, and it's the opposite of the last one. Settle. When people settle somewhere, they come there to live for good. They build houses, they farm the land, and they bring their families with them. Look at this one. That's a Viking house, rebuilt so we can see what they were like. Turf on the roof, fields round it. Somebody lived in that for years."
+    }
+  ],
+  "slideDesignNotes": [],
+  "flagsForTeacher": []
+}

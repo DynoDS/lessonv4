@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "structure": "Skill-based",
+  "yearGroup": 4,
+  "subject": "Maths",
+  "scope": "Complete lesson",
+  "vocabularyCount": 1,
+  "vocabularyIntroductionCount": 1,
+  "trimmedVocabularyCount": 0,
+  "representations": [
+    {
+      "configurations": [
+        { "id": "model", "loadBearing": true },
+        { "id": "vocabulary", "loadBearing": false },
+        { "id": "worksheet", "loadBearing": true }
+      ]
+    },
+    {
+      "configurations": [
+        { "id": "prepared", "loadBearing": true }
+      ]
+    }
+  ],
+  "successCriteriaCount": 1,
+  "stickyKnowledgeCount": 1,
+  "misconceptionCount": 2,
+  "concepts": [
+    { "successCriteriaIndexes": [1] }
+  ],
+  "teachingSequence": [
+    { "kind": "prepare", "conceptIndex": null },
+    { "kind": "my-turn", "conceptIndex": 1 },
+    { "kind": "our-turn", "conceptIndex": 1 },
+    { "kind": "your-turn", "conceptIndex": 1 },
+    { "kind": "practise", "conceptIndex": null }
+  ],
+  "endingIncluded": true,
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "sheetShape": "question-set"
+  },
+  "photoCount": 0
+}

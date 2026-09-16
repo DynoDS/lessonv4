@@ -1,0 +1,732 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Content-based",
+    "yearGroup": 4,
+    "subject": "Science",
+    "lo": "To explain how sound travels from a source to our ears.",
+    "displayedLo": "To explain how sound travels from a source to our ears",
+    "durationMinutes": 45,
+    "scope": "Complete lesson",
+    "deferredLearning": null,
+    "lesson2Direction": null,
+    "stickingPoint": "Children think the sound itself travels from the object straight to the ear, with nothing in between doing anything. The lesson has to replace that with a chain: the object vibrates, the air touching it vibrates, and each bit of air passes the vibration on to the next until it reaches the eardrum."
+  },
+  "teacherOrientation": "Teacher orientation: Children follow one vibration all the way from a drum skin to an eardrum, and finish by writing a four-part explanation of how a guitar's sound reaches someone across the room. You need a drum or tambourine with a few grains of rice on it, and a tuning fork with a shallow bowl of water; both are demonstrations you do at the front. The tricky move is the middle one: children usually think the sound itself flies across the room, so on 'A room full of air' you draw the row of air circles one at a time and keep saying that each bit only wobbles on the spot and passes it on. Everything after that leans on it, including the Moon question at the end.",
+  "starter": {
+    "sourceUnitId": "lesson-section/starter/unit-001",
+    "label": "Sounds and vibrating parts",
+    "kind": "starter",
+    "conceptRef": null,
+    "unlocks": "They can point at the exact part that vibrates on four different objects, which the first Teach needs so the drum skin is already the thing they are watching.",
+    "thinking": "Which bit of this object is actually moving?",
+    "content": {
+      "activity": "Name the part that is vibrating.\n\nYou bang a drum. Which part of the drum is vibrating?\nYou pluck a guitar string. Which part is vibrating?\nYou hold a ruler over the edge of a desk and twang it. Which part is vibrating?\nYou hum. Put two fingers on your throat. What can you feel vibrating?",
+      "connection": "Retrieves the prior learning the brief names: sounds are made when something vibrates. Today's lesson starts at that vibrating part and follows it all the way to the ear, so the class needs to be able to point at it first.",
+      "format": "four short recall questions, answered individually",
+      "testQuestionPath": null
+    },
+    "pupilInstruction": null,
+    "taskStructure": null,
+    "modellingState": null,
+    "representationRefs": [],
+    "successCriteriaRefs": [],
+    "stickyKnowledgeRefs": [],
+    "misconceptionRefs": [],
+    "photoRefs": [],
+    "speakerNotes": {
+      "script": "Say to children: Right, you already know this one. A sound is made when something vibrates. So today we're going to find the vibrating part. Four of them, in your books. Number one: you bang a drum. Which bit of the drum is actually wobbling? Careful here, because it isn't the wooden sides. Number two, a guitar string. Number three, a ruler: hold one end down on the desk and twang the bit sticking out. And number four, put two fingers on your throat and hum. Go on, do it now. What can you feel moving?",
+      "teacherInfo": "Question one catches the children who answer 'the drum': press for the skin, because naming the part rather than the object is what this starter is sharpening. Question four is worth doing physically, since a child who feels it in their own throat has the idea the whole lesson is built on.",
+      "lookFor": null
+    },
+    "answer": {
+      "kind": "exact",
+      "content": "The drum: the skin stretched across the top.\nThe guitar: the string.\nThe ruler: the part sticking out over the edge.\nYour hum: something inside your throat.",
+      "acceptanceCondition": "Accept 'the drum' for question one only after pressing for the skin. Naming the whole object rather than the vibrating part is the thing this starter exists to correct.",
+      "delivery": "answer-slide"
+    }
+  },
+  "vocabulary": [
+    {
+      "id": "vocab-001",
+      "sourceUnitId": "lesson-section/vocabulary/unit-001",
+      "term": "sound source",
+      "definition": "The sound source is the thing that's making the sound. It's the part that's vibrating.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-001"
+      }
+    },
+    {
+      "id": "vocab-002",
+      "sourceUnitId": "lesson-section/vocabulary/unit-002",
+      "term": "vibration",
+      "definition": "A vibration is a really fast wobble, backwards and forwards. The thing wobbles, but it stays where it is.",
+      "visual": {
+        "kind": "photo",
+        "photoRef": "photo-003"
+      }
+    },
+    {
+      "id": "vocab-003",
+      "sourceUnitId": "lesson-section/vocabulary/unit-003",
+      "term": "eardrum",
+      "definition": "Your eardrum is a thin piece of skin, pulled tight, a little way inside your ear. It's shaped like a tiny drum skin.",
+      "visual": {
+        "kind": "representation",
+        "representationRef": "rep-002",
+        "configuration": "ear-labelled"
+      }
+    }
+  ],
+  "trimmedVocabulary": [],
+  "representations": [
+    {
+      "id": "rep-001",
+      "name": "Sound travelling across a room",
+      "purpose": "Makes the invisible middle of the journey visible: the source, the separate bits of air between it and the listener, and the vibration being handed from one bit to the next while each bit stays where it is.",
+      "configurations": [
+        {
+          "id": "room-chain",
+          "description": "A side view of a room. The drum sits at the left, the listener's head at the right, and between them a single row of evenly spaced small circles standing for bits of air. Each circle carries a short double-headed arrow showing it wobbling on the spot, and a separate arrow runs from each circle to the next one along, left to right. The teacher builds it a circle at a time.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "the drum drawn at the left as the sound source",
+            "the listener's head and ear drawn at the right",
+            "a row of separate small circles between them standing for bits of air, not a single continuous band or a wavy line",
+            "a short double-headed arrow on each circle showing it moves back and forth and stays where it is",
+            "an arrow from each circle to the next one along, showing the vibration being passed on"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rep-002",
+      "name": "The ear, cut through",
+      "purpose": "Shows where the eardrum sits, so the class can see that the vibrating air travels down a tunnel and arrives at a skin stretched across the end of it.",
+      "configurations": [
+        {
+          "id": "ear-labelled",
+          "description": "A simple cut-through of one ear seen from the side: the outer ear, the canal running inward from it, and the eardrum drawn as a thin membrane stretched across the inner end of the canal, with an arrow for the vibrating air coming in along the canal. Two labels only. Complete and accurate, because inspecting it is the teaching.",
+          "loadBearing": true,
+          "requiredFeatures": [
+            "the outer ear shown from the side",
+            "the ear canal running inward from the outer ear",
+            "the eardrum drawn as a thin skin stretched right across the inner end of the canal",
+            "labels reading 'ear canal' and 'eardrum' and nothing else",
+            "an arrow showing the vibrating air travelling down the canal to the eardrum"
+          ]
+        }
+      ]
+    }
+  ],
+  "successCriteria": [
+    {
+      "id": "sc-001",
+      "type": "steps",
+      "drawLive": false,
+      "content": {
+        "steps": [
+          "Name the part that is vibrating.",
+          "Say what that vibrating part makes vibrate next.",
+          "Say how the vibration is passed on, bit by bit, until it gets to the person listening.",
+          "Say what the vibration does when it reaches their {{eardrum}}."
+        ]
+      }
+    }
+  ],
+  "stickyKnowledge": [
+    {
+      "id": "sk-001",
+      "text": "A vibrating object makes the air touching it vibrate too."
+    },
+    {
+      "id": "sk-002",
+      "text": "Each bit of air passes the vibration on to the next bit, so it travels right across the room."
+    },
+    {
+      "id": "sk-003",
+      "text": "When the vibrating air reaches your eardrum, your eardrum vibrates, and that is when you hear the sound."
+    }
+  ],
+  "misconceptions": [
+    {
+      "id": "mc-001",
+      "belief": "Sound just goes from the object straight to your ear. Nothing in between does anything.",
+      "correctiveFact": "A vibrating object sets the air touching it vibrating, and each bit of air passes the vibration on to the next until it reaches the ear.",
+      "strategy": "Exposed live on 'A room full of air' by the key question, before any answer is given, then replaced there by building the row of air circles one at a time. Met once more as the third option on the fence question, and retested once at the very end by taking the air away on the Moon.",
+      "reason": "This is the wrong rule the teacher's note names, and it is the one that blocks the objective, so the lesson is built on it rather than mentioning it."
+    },
+    {
+      "id": "mc-002",
+      "belief": "The air itself travels all the way from the object into your ear, like a puff of wind.",
+      "correctiveFact": "Each bit of air only wobbles on the spot. It is the vibration that is passed along, not the air.",
+      "strategy": "One clean touch. The vibration card says the thing wobbles but stays where it is, and the Teach script says the same again over the diagram, with 'we would feel a wind every time somebody spoke' held in the teacher note as the counter-example if a child raises it.",
+      "reason": "It is a real idea and it follows naturally from the corrected model, but giving it a teaching beat of its own would spend room the objective's own sticking point needs."
+    }
+  ],
+  "concepts": [
+    {
+      "id": "concept-001",
+      "name": "Sound travels because the vibration is passed on from one bit of material to the next, all the way to the ear",
+      "successCriteriaRefs": [
+        "sc-001"
+      ]
+    }
+  ],
+  "teachingSequence": [
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
+      "label": "What does the drum push on?",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They can say the vibrating drum skin makes the air right next to it vibrate, which the next beat tests on water.",
+      "thinking": "The rice moves because the skin pushes it, so what is the skin doing to the air I cannot see?",
+      "content": {
+        "headline": "Grains of rice on a drum skin",
+        "explanation": "You already know the drum skin vibrates when you hit it. Look at what the rice does: the skin throws it up, and it drops back down. The air is pressed right up against that skin as well, all over it. So every time the skin moves out, it shoves the air out of the way.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-001"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "The rice is bouncing because the skin keeps pushing it. What is that skin doing to the air?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Physical-demonstration support",
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-001"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Right. You already know this bit. When I hit the drum, the skin vibrates. That's our sound source, the thing that's making the sound. But watch, because I've put a few grains of rice on top of it. [tap] Look at them. Every time the skin jumps up it throws the rice up with it, and the rice drops back down. So the skin is pushing on whatever is sitting on it. Now, the important bit. There's something else sitting on that skin, all over it, and you can't see it. Air. The air in this room is pressed right up against the drum. So every single time that skin moves out, it shoves the air out of the way, and when it moves back, it pulls the air after it. The air right next to the drum starts wobbling too.",
+        "teacherInfo": "A shallow drum or a tambourine with a few grains of rice, salt or sugar on the skin. Tap it rather than thumping it, or the grains bounce off the edge. If nothing moves, the skin is not tight enough.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-002",
+      "label": "Will the water move?",
+      "kind": "do",
+      "conceptRef": "concept-001",
+      "unlocks": "They have seen the vibration pass into water as well as air, so the idea is about whatever touches the source, which the fence question needs.",
+      "thinking": "If the fork is vibrating, what will it do to the water that touches it?",
+      "content": {
+        "activity": "Children commit a prediction in writing before the teacher lowers a struck tuning fork into the water.",
+        "format": "tick one, plus one written reason",
+        "task": "This tuning fork has just been struck, so it is vibrating. Now I am going to lower it into the water.\n\nWhat will the water do?"
+      },
+      "pupilInstruction": "Tick one. Write one reason underneath.",
+      "taskStructure": {
+        "kind": "option-bank",
+        "items": [
+          {
+            "id": "item-001",
+            "label": "The water splashes and ripples."
+          },
+          {
+            "id": "item-002",
+            "label": "The water stays completely still."
+          }
+        ]
+      },
+      "modellingState": "Physical-demonstration support",
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-002"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Watch this. I'm going to hit this tuning fork. Listen: it's making a sound, so we know it's vibrating. It looks completely still, doesn't it, but it isn't. Now, before I put it anywhere near the water, you decide. Tick one: does the water splash, or does it stay still? And underneath, write me one reason. Don't call out. [pause] Pencils down. Watch. [lower the fork in] Every single time. The fork is vibrating, and it makes the water that's touching it vibrate too.",
+        "teacherInfo": "Strike the fork on the heel of your hand or a rubber bung, never on the edge of a desk, and keep the bowl of water away from the board and any sockets. With no tuning fork, a metal ruler twanged over the edge of the desk and then lowered into the water does the same job. Children who tick 'stays still' are usually reasoning that the fork looks still so it must be still, and that is worth naming out loud.",
+        "lookFor": "Look for: a reason that names the fork vibrating, not just that it will splash."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "The water splashes and ripples. The fork is vibrating, so it makes the water touching it vibrate too.",
+        "acceptanceCondition": "Accept a reason that names the fork vibrating. A ticked box with no reason, or 'because it's metal', has not used the idea.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-003",
+      "label": "A room full of air",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They can say the vibration is handed from one bit of air to the next rather than flying across, which the fence question and the guitar task both use.",
+      "thinking": "If that bit of air stays next to the drum, what actually gets across the room to Omar?",
+      "content": {
+        "headline": "A room full of air",
+        "explanation": "The air next to the drum is vibrating now. But look where Omar is: right over on the other side of the hall, and that little bit of air is still sitting by the drum. It doesn't pick itself up and fly over to him. It wobbles on the spot, and as it wobbles it bumps the bit of air beside it and sets that one going too.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-002"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "That bit of vibrating air is still next to the drum. So what gets all the way over to Omar?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Live-complete helper",
+      "representationRefs": [
+        {
+          "ref": "rep-001",
+          "configuration": "room-chain",
+          "interaction": "teacher-completes"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "misconceptionRefs": [
+        "mc-001",
+        "mc-002"
+      ],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: Right, this is the important bit of the whole lesson. We've said the air next to the drum is vibrating. Now look where Omar is. He's right over there, other side of the hall. And that little bit of air we've been talking about is still sitting next to the drum. It doesn't pick itself up and fly across to him. So how does he hear anything at all? Watch. Here's the drum. Here's Omar. And all this space in between them is full of air. I'm going to draw the air as little circles, just so we can see it. The skin pushes this first one. It wobbles, and as it wobbles, it bumps this one. That one bumps the next. And the next. And the next. Each circle only wobbles on the spot. Not one of them travels anywhere. But the wobble gets passed on, all the way along the line, until it reaches Omar. Think of a message going down a row of people. Nobody moves. The message still gets to the end.",
+        "teacherInfo": "This is the beat the lesson is built on, so build the row slowly and say 'passed on' every single time. If a child says the air travels across, ask what we would feel every time somebody spoke: a wind. That is the counter-example worth keeping.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+      "label": "What is passing it along the fence?",
+      "kind": "do",
+      "conceptRef": "concept-001",
+      "unlocks": "They have used the passing-on idea on metal as well as air, so it is about whatever sits in between, which the Moon question takes away.",
+      "thinking": "Why would Theo press his ear on the metal instead of just standing and listening?",
+      "content": {
+        "activity": "Children decide what is carrying the vibration when the air is not the route, and write one sentence of reasoning.",
+        "format": "tick one, plus one written reason",
+        "task": "Arjun taps one end of a long metal fence. Theo is far away at the other end, too far to hear it through the air.\n\nTheo puts his ear flat against the metal, and he hears the tapping clearly.\n\nWhat is passing the vibration along to Theo's ear?"
+      },
+      "pupilInstruction": "Tick one. Write one sentence saying how you know.",
+      "taskStructure": {
+        "kind": "option-bank",
+        "items": [
+          {
+            "id": "item-001",
+            "label": "Only the air."
+          },
+          {
+            "id": "item-002",
+            "label": "The metal fence."
+          },
+          {
+            "id": "item-003",
+            "label": "Nothing. The sound just goes."
+          }
+        ]
+      },
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [
+        "photo-004"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Pencils. New one, and this one's a proper think. Arjun is at one end of a long metal fence, the sort you get round a park, and he taps it. Theo is right down the other end, way too far away to hear it through the air. So Theo does this. He puts his ear flat on the metal. And he hears it, clear as anything. Three choices on the board. Tick one, and write me one sentence: how do you know? If you're stuck, ask yourself why Theo bothered to touch the fence at all.",
+        "teacherInfo": "'Only the air' is the tempting one, because air is all we have used so far, so press those children on why Theo touched the fence. A child who ticks 'nothing, the sound just goes' is still holding the idea this lesson exists to replace, so note who they are before the writing task.",
+        "lookFor": "Look for: a reason saying the metal passes it on, not just that metal is loud."
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "The metal fence. Each bit of the metal passes the vibration on to the next bit, just like the air does. That is why Theo puts his ear on the fence instead of standing and listening.",
+        "acceptanceCondition": "Accept the metal fence with a reason saying the metal carries or passes the vibration along. A ticked box with no reason has guessed.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-005",
+      "label": "The tiny drum inside your ear",
+      "kind": "teach",
+      "conceptRef": "concept-001",
+      "unlocks": "They can say what happens at the ear itself, which is the last line of the explanation the guitar task asks for.",
+      "thinking": "Why would a thin skin pulled tight be the right thing to have at the end of that tunnel?",
+      "content": {
+        "headline": "A tunnel, and a skin stretched across the end of it",
+        "explanation": "The vibrating air reaches Theo's ear and goes down the little tunnel inside it. At the far end of that tunnel there's a thin piece of skin, pulled tight like cling film. The vibrating air pushes on it, over and over, and it starts vibrating too. Your brain turns that into the sound you hear.",
+        "takeaway": {
+          "kind": "sticky",
+          "ref": "sk-003"
+        },
+        "teachingText": null,
+        "keyQuestions": [
+          "Your eardrum is a thin skin pulled tight, just like the drum skin. What do you think the vibrating air does to it?"
+        ]
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": "Prepared example",
+      "representationRefs": [
+        {
+          "ref": "rep-002",
+          "configuration": "ear-labelled",
+          "interaction": "view"
+        }
+      ],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-003"
+      ],
+      "misconceptionRefs": [],
+      "photoRefs": [],
+      "speakerNotes": {
+        "script": "Say to children: So the vibration has come all the way across the room. Here's what happens next. This is the inside of an ear, cut in half so we can see in. This bit here is the tunnel. It goes in from the side of your head, about as far as your little finger. And right at the end of it, see this? That's a thin piece of skin, pulled tight across the tunnel like cling film. That's your eardrum. Now, the vibrating air comes down the tunnel and pushes on it, over and over and over. What does a thin, tight skin do when something keeps pushing on it? It vibrates. Exactly what the drum skin did right at the start. Your eardrum starts vibrating, your brain gets the message, and that is the moment you hear the drum.",
+        "teacherInfo": "Point along the tunnel as you say it rather than naming the parts from the front: the distance from the outside of the head to the eardrum is the thing children are surprised by. Nothing beyond the canal and the eardrum belongs in this lesson.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "none",
+        "content": null,
+        "acceptanceCondition": null,
+        "delivery": "none"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-006",
+      "label": "Why are the machines quieter?",
+      "kind": "do",
+      "conceptRef": "concept-001",
+      "unlocks": "They have used the eardrum step on a chain that is blocked, which the Moon question then repeats for a chain that never starts.",
+      "thinking": "If nothing can get to my eardrum, can I still hear it?",
+      "content": {
+        "activity": "Children use the eardrum step on a case where the chain is blocked, finishing one sentence.",
+        "format": "one written sentence ending",
+        "task": "Kai works in a noisy workshop, so he puts on thick ear defenders.\n\nThe machines are banging away exactly as loudly as before, but now Kai can only just hear them.\n\nFinish this sentence: The ear defenders stop ..."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [],
+      "photoRefs": [
+        "photo-005"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: One quick one, and then you're writing. Kai works in a really noisy workshop, so he wears these: thick ear defenders, big padded cups right over his ears. Now, the machines don't get any quieter. They're banging away exactly as loud as they were before. But Kai can hardly hear them. Finish my sentence for me. The ear defenders stop... what? Think about what has to get to your eardrum before you hear anything at all.",
+        "teacherInfo": "The answer to watch for is 'the sound', which is not wrong but skips the whole lesson. Press that child on what sound is here, which is the vibrating air. That one swap is the lesson in a word.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "exact",
+        "content": "The ear defenders stop most of the vibrating air from reaching Kai's eardrums.",
+        "acceptanceCondition": "Accept 'the vibrating air', 'the vibrations' or 'the wobbling air' from getting to his eardrum. 'The sound' on its own is worth pressing on rather than marking wrong.",
+        "delivery": "teacher-only"
+      }
+    },
+    {
+      "sourceUnitId": "lesson-section/teaching-sequence/unit-007",
+      "label": "How does Arjun's guitar reach Omar?",
+      "kind": "practise",
+      "conceptRef": "concept-001",
+      "unlocks": "They have written the whole chain for a source the lesson never showed them, which the Moon question then takes the air away from.",
+      "thinking": "Where does the vibration go next, and what hands it on?",
+      "content": {
+        "activity": "Every child writes the full explanation of how the sound travels from the guitar to Omar's ear, one line for each step of the chain.",
+        "format": "written explanation, one line per step",
+        "task": "Arjun is playing his guitar. Omar is sitting on the other side of the room, and he can hear it.\n\nExplain how the sound gets from the guitar to Omar's ear.\n\nWrite one line for each of these:\nWhat vibrates first?\nWhat does it make vibrate?\nHow does it get across the room?\nWhat happens at Omar's ear?",
+        "launch": {
+          "established": "We've followed one vibration all the way from a drum skin, into the air next to it, across a whole room, and onto an eardrum.",
+          "goodLooksLike": "A weak explanation says: \"Arjun plays the guitar and the sound goes to Omar's ear.\" It never says how it got there.\n\nA strong one says: \"The guitar string vibrates. It makes the air touching it vibrate too. That bit of air passes the vibration on to the next bit, all the way across the room. When it gets to Omar's ear it makes his eardrum vibrate.\"\n\nThe difference is that the strong one never lets the sound jump. Every step hands it on to the next.",
+          "steps": [
+            "Name the part that is vibrating.",
+            "Say what that vibrating part makes vibrate next.",
+            "Say how the vibration is passed on, bit by bit, until it gets to the person listening.",
+            "Say what the vibration does when it reaches their eardrum."
+          ]
+        }
+      },
+      "pupilInstruction": "Write your explanation in your book, one line for each question.",
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [
+        "sc-001"
+      ],
+      "stickyKnowledgeRefs": [],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [
+        "photo-006"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Right. Everything we've done today, in one piece of writing. Here's Arjun playing his guitar, and Omar is over the other side of the room, and he can hear it. Your job is to explain how. Our sound source here is the guitar, so that's where you start. Four questions on the board, and I want one line for each of them. Don't rush the middle two, because that's where the real explaining happens. And remember the rule we've had all lesson: the sound never jumps. Every step hands it on to the next one.",
+        "teacherInfo": "The answer to watch for is 'the sound travels through the air', which sounds right and leaves out the passing on. Ask that child what the air itself actually does.",
+        "lookFor": "Look for: the string named as the vibrating part; the vibration handed on bit by bit; the eardrum vibrating at the end."
+      },
+      "answer": {
+        "kind": "model",
+        "content": "The guitar string vibrates when Arjun plucks it. It makes the air touching it vibrate too. That bit of air passes the vibration on to the next bit, and that one to the next, all the way across the room. When the vibrating air reaches Omar's ear it goes down his ear canal and makes his eardrum vibrate, and that is when he hears the guitar.",
+        "acceptanceCondition": "Accept any explanation that names the string as the vibrating part, gets the vibration into the air, has it passed on rather than flying across, and ends at the eardrum vibrating. 'The sound travels through the air' has skipped the passing on, which is the lesson's idea.",
+        "delivery": "answer-slide"
+      }
+    }
+  ],
+  "ending": {
+    "included": true,
+    "kind": "Apply",
+    "reason": "The lesson named an idea, and every case that taught it had air in it. Taking the air away asks whether children hold the idea or only the sentence, and it is the one retest of the wrong rule the whole lesson was built to replace.",
+    "beat": {
+      "sourceUnitId": "lesson-section/apply/unit-001",
+      "label": "Could you hear a drum on the Moon?",
+      "kind": "apply",
+      "conceptRef": "concept-001",
+      "unlocks": null,
+      "thinking": "If there is nothing in between to pass the vibration on, can it get anywhere at all?",
+      "content": {
+        "activity": "On the Moon there is no air at all. None.\n\nAn astronaut bangs a drum. Another astronaut is standing a few steps away, watching.\n\nDoes she hear it? Write yes or no, and then explain your answer using what you know about how sound travels."
+      },
+      "pupilInstruction": null,
+      "taskStructure": null,
+      "modellingState": null,
+      "representationRefs": [],
+      "successCriteriaRefs": [],
+      "stickyKnowledgeRefs": [
+        "sk-001"
+      ],
+      "misconceptionRefs": [
+        "mc-001"
+      ],
+      "photoRefs": [
+        "photo-007"
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Last thing, and this one tells me whether you've really got it. On the Moon there's no air. None at all. That's why astronauts wear those suits. Now, an astronaut bangs a drum, and her friend is standing a couple of steps away watching her do it. Does she hear it? Write yes or no, and then tell me why, using everything we've done today. If you're stuck, picture our line of little circles and ask yourself what's in between. [after the answers] So you could be the loudest drummer in the whole solar system up there, and not one person would ever know.",
+        "teacherInfo": "She would feel it faintly through the ground and her boots, and in real life the two would talk by radio. Both are worth saying if a child raises them, because both are the same idea: the vibration needs something to travel through.",
+        "lookFor": null
+      },
+      "answer": {
+        "kind": "model",
+        "content": "No. The drum skin still vibrates, but there is no air next to it, so there is nothing for it to make vibrate. Nothing in between can pass the vibration on to her, so she hears nothing at all.",
+        "acceptanceCondition": "Accept no with a reason naming the missing air, or that there is nothing in between to pass the vibration on. 'Because there's no sound in space' repeats the answer without giving the reason.",
+        "delivery": "answer-slide"
+      }
+    }
+  },
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "activityArchitecture": {
+      "coreActionAndEvidence": "The core action is tracing the chain of a vibration from a source to somebody's eardrum, on material the lesson did not use. The sheet asks for it three times: once built step by step on a doorbell heard upstairs, once on a case where the material in between is water rather than air, and once as a correction of a claim that sound needs nothing to travel through.",
+      "amount": "Three performances of the core action, one of them broken into its four steps. That is the whole sheet, because each one is a written explanation rather than a short answer.",
+      "variationAndBoundaryPlan": "The doorbell keeps air as the material and changes only the source and the room, so the four steps can be practised cleanly. The swimming pool changes the material to water, which is the boundary the lesson met only once, on metal. The claim to correct is the boundary at the other end, where there is no material at all, and it is the sheet's retest of the lesson's wrong rule.",
+      "organisation": "The doorbell stimulus sits at the top of the first column with its four prompts running down under it, one line each. The two longer questions follow. The four criteria steps go beside the work, because a child uses them to check an explanation they have already started."
+    },
+    "sheetShape": {
+      "kind": "mixed",
+      "reason": "The first block is a stimulus with the four prompts that read it, because the chain has to be walked in order. The two questions after it each stand on their own case, so they are ordinary questions rather than more prompts on the same stimulus."
+    },
+    "demand": "Expected demand is the lesson's own task on unseen material: trace the chain in four steps, then use it twice more where the material in between changes. The reading load is kept low so the thinking is in the explanation rather than in the scenario.",
+    "successCriteriaRefs": [
+      "sc-001"
+    ],
+    "stickyKnowledgeRefs": [],
+    "fitPriority": {
+      "protected": [
+        "the doorbell stimulus and all four of its prompts, with a full writing line each",
+        "the swimming pool question with room for a real explanation",
+        "the claim to correct, which is the sheet's retest of the lesson's wrong rule",
+        "the four criteria steps beside the work"
+      ],
+      "preAuthorisedRemoval": []
+    },
+    "centralWriteOnVisualException": null,
+    "contentBlocks": [
+      {
+        "id": "ws-stimulus-001",
+        "kind": "stimulus-set",
+        "stimulus": "A doorbell rings downstairs. Omar is upstairs in his bedroom, and he hears it.",
+        "relationship": "The four prompts follow one vibration in order, from the bell to Omar's eardrum, so the child builds the whole chain rather than describing the doorbell.",
+        "pupilAction": "Write one line for each step of the journey.",
+        "prompts": [
+          {
+            "id": "ws-stimulus-001-prompt-01",
+            "pupilPrompt": "What vibrates first?",
+            "response": "the name of the part that vibrates",
+            "responseForm": "short-answer",
+            "responseFormReason": null,
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "The bell itself, the part that gets struck.",
+              "acceptanceCondition": "Accept the bell, or the part of it that moves. 'The doorbell' is enough here.",
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-stimulus-001-prompt-02",
+            "pupilPrompt": "What does it make vibrate?",
+            "response": "a short answer naming what the bell is touching",
+            "responseForm": "short-answer",
+            "responseFormReason": null,
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "The air touching it.",
+              "acceptanceCondition": "Accept the air, or the air next to the bell.",
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-stimulus-001-prompt-03",
+            "pupilPrompt": "How does the vibration get all the way upstairs to Omar?",
+            "response": "an explanation of the vibration being passed on",
+            "responseForm": "written-explanation",
+            "responseFormReason": "This is the one step of the chain a child can skip while still sounding right, so only their own sentences show whether they have the passing on or just the word 'travels'.",
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "model",
+              "content": "Each bit of air passes the vibration on to the next bit, all the way up the stairs to Omar. The air itself does not travel there.",
+              "acceptanceCondition": "Accept any answer that has the vibration handed from one bit of air to the next. 'It travels through the air' has left out the thing being asked for.",
+              "delivery": "teacher-only"
+            }
+          },
+          {
+            "id": "ws-stimulus-001-prompt-04",
+            "pupilPrompt": "What happens at Omar's ear?",
+            "response": "a sentence naming the eardrum",
+            "responseForm": "complete-the-sentence",
+            "responseFormReason": null,
+            "support": "",
+            "visualRequirements": "",
+            "representationRefs": [],
+            "stickyKnowledgeRefs": [],
+            "photoRefs": [],
+            "answer": {
+              "kind": "exact",
+              "content": "The vibrating air goes down his ear canal and makes his eardrum vibrate, and that is when he hears the doorbell.",
+              "acceptanceCondition": "Accept any answer naming the eardrum vibrating.",
+              "delivery": "teacher-only"
+            }
+          }
+        ],
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": []
+      },
+      {
+        "id": "ws-q-001",
+        "kind": "question",
+        "pupilPrompt": "Arjun and Theo are in a swimming pool with their heads under the water. They can still hear each other shouting. What is passing the vibration along to their ears? Explain how you know.",
+        "response": "an explanation",
+        "responseForm": "written-explanation",
+        "responseFormReason": "The material in between has changed, so the only evidence that the child has the idea rather than the example is the reason they give for choosing the water.",
+        "support": "Think about what is touching them.",
+        "visualRequirements": "",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "answer": {
+          "kind": "model",
+          "content": "The water. Each bit of water passes the vibration on to the next bit, the same way the air does, until it reaches their ears.",
+          "acceptanceCondition": "Accept the water with a reason that has it passing the vibration on. A child who answers 'the air' has not noticed that their heads are under.",
+          "delivery": "teacher-only"
+        }
+      },
+      {
+        "id": "ws-q-002",
+        "kind": "question",
+        "pupilPrompt": "Kai says: \"Sound doesn't need anything to travel through. It just goes.\" Use what you learned today to put Kai right.",
+        "response": "an explanation",
+        "responseForm": "written-explanation",
+        "responseFormReason": "This is the sheet's retest of the idea the whole lesson replaced, and a child can tick or circle their way past it. Only their own words show whether they can say what is missing when there is nothing in between.",
+        "support": "",
+        "visualRequirements": "",
+        "representationRefs": [],
+        "stickyKnowledgeRefs": [],
+        "photoRefs": [],
+        "answer": {
+          "kind": "model",
+          "content": "Sound does need something to travel through. The vibration has to be passed on from one bit of air, water or metal to the next. With nothing in between, there is nothing to pass it on, so there is nothing to hear.",
+          "acceptanceCondition": "Accept any answer saying something must be there to pass the vibration on. Naming a material, or the Moon, is a strong answer; 'Kai is wrong' with no reason is not.",
+          "delivery": "teacher-only"
+        }
+      }
+    ],
+    "answerKeyMode": "required",
+    "providedWorksheet": null
+  },
+  "resourceOpportunities": {
+    "stickIn": {
+      "decision": "none",
+      "sourceUnitIds": [],
+      "reason": "Every response in this lesson is a tick, a single sentence or four short lines a child writes in their own book. Nothing asks them to write onto a figure they could not rule by hand, and both diagrams are looked at rather than written on."
+    },
+    "workingWall": {
+      "decision": "candidate",
+      "sourceUnitIds": [
+        "lesson-section/teaching-sequence/unit-001",
+        "lesson-section/teaching-sequence/unit-003",
+        "lesson-section/teaching-sequence/unit-005",
+        "lesson-section/teaching-sequence/unit-007"
+      ],
+      "reason": "The three sticky facts and the row of air circles are the reference the rest of the sound unit leans on, and the four explanation steps are what children will be asked for again in the next lessons."
+    }
+  },
+  "vocabularyIntroductions": [
+    {
+      "vocabularyRefs": [
+        "vocab-001",
+        "vocab-002"
+      ],
+      "after": "lesson-section/starter/unit-001",
+      "script": "Say to children: Two words before we start. The first one is sound source. The sound source is just the thing that's making the sound: the drum, the string, your throat. It's the part that's vibrating, so when I say source, picture that part. The second one is vibration. A vibration is a really fast wobble, backwards and forwards. Now here's the bit I want you to hang on to, because we're coming back to it: when something vibrates, it wobbles, but it stays where it is. The guitar string doesn't fly off across the room, does it. It just wobbles."
+    },
+    {
+      "vocabularyRefs": [
+        "vocab-003"
+      ],
+      "after": "lesson-section/teaching-sequence/unit-004",
+      "script": "Say to children: One more word, and then we're going to follow that vibration right inside your head. Eardrum. Your eardrum is a thin piece of skin, pulled tight, a little way inside your ear. Pulled tight, like what? Like a drum skin. That's exactly why it's called an eardrum. Hold on to that, because it's about to matter."
+    }
+  ],
+  "slideDesignNotes": [],
+  "flagsForTeacher": []
+}
