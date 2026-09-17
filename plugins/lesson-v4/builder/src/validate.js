@@ -26,6 +26,7 @@ const fs = require('fs');
 const path = require('path');
 const { TEMPLATES } = require('./templates');
 const { normalizeLocalPath } = require('./images/resolve');
+const { sixSevenNumbers, sixSevenMessage } = require('../../shared/text/no-six-seven');
 const {
   inspectDecorations,
   withoutDecorations,
@@ -248,6 +249,8 @@ function validateLesson(lesson, lessonDir) {
   }
 
   validateNoBuildDate(lesson, errors);
+  const sixSeven = sixSevenNumbers(withoutDecorations(lesson));
+  if (sixSeven.length) errors.push(sixSevenMessage(sixSeven, 'deck'));
 
   const photoContract = readPromisedPhotos(lessonDir);
   const promised = photoContract.promised;

@@ -258,6 +258,21 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     innerH -= headingH;
   }
 
+  // A short criteria list keeps the card height of a normal-length one.
+  //
+  // Rows share the panel's height, and the text grows to fill its card, so two
+  // steps in a panel built for four came out in cards twice as tall with text
+  // blown up to fill them: a Year 4 "find the tens either side" slide
+  // (17 September 2026) put two short criteria at poster size beside a number
+  // line, and the teacher called it overfilled. So a panel with fewer steps than
+  // a normal list uses the top of its height at the same card size, and the
+  // spare room stays empty below. Only criteria panels do this; a steps list
+  // that is the slide's main content still fills its zone.
+  const CRITERIA_PANEL_ROWS = 4;
+  if (zone.criteriaPanel && steps.length < CRITERIA_PANEL_ROWS) {
+    innerH = innerH * steps.length / CRITERIA_PANEL_ROWS;
+  }
+
   const rowH   = innerH / steps.length;
 
   const badgeMargin = Math.min(BADGE_MARGIN_MAX, rowH * 0.1);

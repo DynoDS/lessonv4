@@ -420,13 +420,14 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
   "speakerNotes": {
     "script": "Say to children: ...",
     "teacherInfo": null,
-    "lookFor": null
+    "lookFor": null,
+    "onTheBoard": "On the board: ..."
   },
   "answer": {
     "kind": "exact",
-    "content": "37",
+    "content": "38",
     "acceptanceCondition": null,
-    "delivery": "teacher-only"
+    "delivery": "answer-slide"
   }
 }
 ```
@@ -528,6 +529,8 @@ Each group `id` is local to the source unit and uses `group-###`. Each item `id`
 
 `speakerNotes.lookFor` is either `null` or one optional sentence beginning `Look for:`.
 
+`speakerNotes.onTheBoard` is required on a My Turn or Our Turn completed live on a representation (a My Turn with `modellingState: "Live-complete helper"`, or an Our Turn using a `teacher-completes` representation): one line beginning `On the board:` saying what to write or draw on it, in order. Every other unit leaves it `null`, and the scaffold emits it only on My Turn and Our Turn units (`lesson-designer.md` → Speaker Notes Voice).
+
 The structured `answer` is canonical. Intentional spoken modelling may use its exact content and intermediate results; keep them consistent. Do not duplicate an answer-key block in notes or leak an independent answer before the attempt.
 
 `answer.kind` is exactly one of:
@@ -551,7 +554,7 @@ Keep these delivery meanings exact:
 - `visible-in-unit` stores a completed prepared model that is visible as ordinary black teaching content in its source unit. It is not an answer reveal.
 - `none` carries no answer, model or standard.
 
-`answer-slide` is valid for `starter`, `your-turn`, `practise`, `use-learning`, `do-task`, `apply` and `reflect`. On any other source-unit kind, `answer-slide` is valid only when `answer.kind` is `model` or `standard`. An exact answer on a Do beat, Our Turn or another smaller check uses `teacher-only`.
+`answer-slide` is valid for `starter`, `your-turn`, `practise`, `use-learning`, `do-task`, `apply` and `reflect`. On any other source-unit kind, `answer-slide` is valid only when `answer.kind` is `model` or `standard`, or when the unit is a My Turn or Our Turn completed live on a representation, where it is required and its reveal slide shows that representation finished. An exact answer on a Do beat, Our Turn or another smaller check uses `teacher-only`.
 
 Use:
 
@@ -663,7 +666,7 @@ For a completed `Prepared example` that children are intentionally meant to see 
 
 `visible-in-unit` is valid only with `modellingState: "Prepared example"`. It is not an answer reveal and does not create a following answer slide. The resource designer renders the structured completed outcome as ordinary black teaching content inside that source unit's prepared model. Do not use the `||` answer marker, answer-green text, an answer-green outline or another answer-reveal treatment on `visible-in-unit` content.
 
-A My Turn never uses `answer-slide`. A My Turn whose answer is not pupil-visible from the start normally uses `teacher-only`; a prepared completed model uses `visible-in-unit`.
+A My Turn completed live on a representation uses `answer-slide`, so the finished representation follows on the next slide. Any other My Turn whose answer is not pupil-visible from the start uses `teacher-only`; a prepared completed model uses `visible-in-unit`.
 
 For every answer whose `kind` is not `none`, the slide-designer composes the structured answer into the source unit's question or task slide speaker notes. Use `Answer to question(s) on this slide:` for `kind: exact` and `Answer/model for this slide:` for `kind: model` or `kind: standard`. For My Turn include the exact question/example plus answer after the marker; for other cases include the answer/model/standard only. `teacher-only` creates notes only. `answer-slide` creates the same speaker-note entry and a separate visible answer slide. `visible-in-unit` creates the same speaker-note entry and shows the prepared model in ordinary black teaching text. Do not mechanically append punctuation to `answer.content`. The lesson-designer does not duplicate the answer/model/standard in `speakerNotes` or in another route-specific content field. `content.modelledExemplar` remains the separate teacher-facing writing exemplar for the existing Question-and-reference writing rule; it is not a second copy of the unit's answer.
 

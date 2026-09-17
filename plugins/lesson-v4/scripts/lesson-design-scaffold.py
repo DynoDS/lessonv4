@@ -282,12 +282,17 @@ def answer_scaffold() -> dict[str, Any]:
     }
 
 
-def notes_scaffold() -> dict[str, Any]:
-    return {
+def notes_scaffold(kind: str | None = None) -> dict[str, Any]:
+    notes = {
         "script": PLACEHOLDER,
         "teacherInfo": PLACEHOLDER,
         "lookFor": PLACEHOLDER,
     }
+    # A My Turn or Our Turn may be completed live on a representation, and then
+    # its notes say what to write on it; null when it is not.
+    if kind in {"my-turn", "our-turn"}:
+        notes["onTheBoard"] = PLACEHOLDER
+    return notes
 
 
 # Route-specific content envelopes. Each source-unit kind's content object is
@@ -403,7 +408,7 @@ def source_unit(
         "stickyKnowledgeRefs": [PLACEHOLDER],
         "misconceptionRefs": [PLACEHOLDER],
         "photoRefs": [PLACEHOLDER],
-        "speakerNotes": notes_scaffold(),
+        "speakerNotes": notes_scaffold(kind),
         "answer": answer_scaffold(),
     }
 

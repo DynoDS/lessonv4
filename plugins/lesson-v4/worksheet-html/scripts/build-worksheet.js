@@ -23,6 +23,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { safeFilenameComponent } = require("../../shared/text/filename");
 const { sanitizeHouseStyle } = require("../../shared/text/house-style");
+const { sixSevenNumbers, sixSevenMessage } = require("../../shared/text/no-six-seven");
 
 const { renderSheet } = require("../src/render");
 
@@ -74,6 +75,7 @@ function fail(signal, message, faultClass, location) {
 
 function readSpec(file) {
   let raw;
+  let spec;
   try {
     raw = fs.readFileSync(file, "utf8");
   } catch (e) {
@@ -84,10 +86,15 @@ function readSpec(file) {
     // wall and stick-in builds each sanitize their spec here, and this engine
     // was the one gap — em dashes authored into a worksheet reached print
     // while the same words on a slide were caught.
-    return sanitizeHouseStyle(JSON.parse(raw));
+    spec = sanitizeHouseStyle(JSON.parse(raw));
   } catch (e) {
     throw new WorksheetError("SPEC_INVALID", `${file} is not valid JSON: ${e.message}`);
   }
+  const sixSeven = sixSevenNumbers(spec);
+  if (sixSeven.length) {
+    throw new WorksheetError("NUMBER_CONTAINS_SIX_SEVEN", sixSevenMessage(sixSeven, "worksheet").replace(/^NUMBER_CONTAINS_SIX_SEVEN: /, ""));
+  }
+  return spec;
 }
 
 async function main() {

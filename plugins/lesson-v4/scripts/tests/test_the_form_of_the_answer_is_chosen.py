@@ -156,7 +156,7 @@ class TheRuleReachesEveryQuestionCarryingBlockTests(unittest.TestCase):
         }
         part = {
             "id": "ws-qg-001-part-01",
-            "pupilPrompt": "Round 6,734 to the nearest 10.",
+            "pupilPrompt": "Round 5,834 to the nearest 10.",
             "responseForm": "mark-on-a-visual",
             "responseFormReason": None,
             "response": "Mark the number on the printed line.",
@@ -165,7 +165,7 @@ class TheRuleReachesEveryQuestionCarryingBlockTests(unittest.TestCase):
             "representationRefs": [],
             "stickyKnowledgeRefs": [],
             "photoRefs": [],
-            "answer": fixtures.exact_answer("6,730", "teacher-only"),
+            "answer": fixtures.exact_answer("5,830", "teacher-only"),
         }
         second = copy.deepcopy(part)
         second["id"] = "ws-qg-001-part-02"

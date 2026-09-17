@@ -482,8 +482,8 @@ module.exports = {
     // `blank: true` is the question and stays empty; `caption` names the node
     // from OUTSIDE the box, so it can never be read as an answer already
     // written in. `blankChars` sizes the box for what goes in it.
-    text: "Partition 6,731.",
-    whole: { value: "6,731" },
+    text: "Partition 5,382.",
+    whole: { value: "5,382" },
     joiner: "+",
     parts: [
       { blank: true, caption: "Thousands" },

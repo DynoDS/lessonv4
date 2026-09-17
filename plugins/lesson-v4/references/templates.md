@@ -981,11 +981,11 @@ Words and labels work in any circle — the builder renders whatever string is s
 
 The builder draws empty circles connected by lines — a ready-to-fill diagram, not a finished answer. Children see the partition constructed during the model rather than reading a reveal. Use `?` (the unknown marker) only when the lesson genuinely has an unknown to be solved (a part-whole problem); use `""` for the modelling case.
 
-**Everything the worksheet's model could say, the slide's can too.** Any node may be an object instead of a string. `{ "value": "6,731" }` is a number handed over, `{ "label": "Pounds" }` a word, `{ "blank": true }` an empty circle sized for a four-digit answer (`blankChars` changes that), `{ "caption": "Thousands" }` a quiet name printed under the circle, outside it, and `{ "coins": ["£1", "20p"] }` real coins inside the circle. `joiner: "+"` prints the operator between parts. A model written with objects is drawn upright unless `orientation` says otherwise. It is the same model on the worksheet, the wall and the stick-in pack.
+**Everything the worksheet's model could say, the slide's can too.** Any node may be an object instead of a string. `{ "value": "5,382" }` is a number handed over, `{ "label": "Pounds" }` a word, `{ "blank": true }` an empty circle sized for a four-digit answer (`blankChars` changes that), `{ "caption": "Thousands" }` a quiet name printed under the circle, outside it, and `{ "coins": ["£1", "20p"] }` real coins inside the circle. `joiner: "+"` prints the operator between parts. A model written with objects is drawn upright unless `orientation` says otherwise. It is the same model on the worksheet, the wall and the stick-in pack.
 
 ```json
 { "type": "part-whole-model",
-  "whole": { "value": "6,731" },
+  "whole": { "value": "5,382" },
   "joiner": "+",
   "parts": [
     { "blank": true, "caption": "Thousands" },
@@ -1745,7 +1745,7 @@ Fields:
 
 So do not copy a number out of this catalogue. Build the slide, look at it, and adjust — `at` is a one-decimal nudge, and the arrow landing between two columns is the only way to find out it was wrong.
 
-**Key words carry colour with the ordinary inline markers** — there is no separate colouring field. `[[tens]]` is focus blue, `{{sum}}` answer green, `<<367>>` supplied orange, `**not**` plain bold stress. So "The [[tens]] column changes." colours *tens* in exactly the blue the rest of the deck uses for the word being decided on.
+**Key words carry colour with the ordinary inline markers** — there is no separate colouring field. `[[tens]]` is focus blue, `{{sum}}` answer green, `<<358>>` supplied orange, `**not**` plain bold stress. So "The [[tens]] column changes." colours *tens* in exactly the blue the rest of the deck uses for the word being decided on.
 
 **How to place one.** The callout's arrow tip lands on the edge of its own zone, so put the callout in the zone next to what it annotates and point it that way: a diagram on the left of a `split-h-70-30` and the callout on the right with `points: "left"`; a chart above and the callout below with `points: "up"`. A callout in a zone that does not touch the thing it points at draws an arrow into empty slide.
 

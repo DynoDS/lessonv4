@@ -16,6 +16,7 @@ const path = require("path");
 
 const style = require("./style.json");
 const { sanitizeHouseStyle } = require("../shared/text/house-style");
+const { sixSevenNumbers, sixSevenMessage } = require("../shared/text/no-six-seven");
 const { safeFilenameComponent } = require("../shared/text/filename");
 const { preRenderSvgs } = require("./src/svg-renderer");
 const { htmlToPdf } = require("../worksheet-html/src/chrome");
@@ -219,6 +220,8 @@ function assertFinalOptionalPictureContract(cards) {
 // pages, the same warnings, no PDF.
 async function build(specPath, outDir, options = {}) {
   const spec = sanitizeHouseStyle(JSON.parse(fs.readFileSync(specPath, "utf8")));
+  const sixSeven = sixSevenNumbers(spec);
+  if (sixSeven.length) throw new Error(sixSevenMessage(sixSeven, "working wall"));
   const layoutWarnings = [];
   const originalWarn = console.warn;
   console.warn = (...args) => {

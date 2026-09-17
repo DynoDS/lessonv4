@@ -325,6 +325,94 @@ def reject_unresolved_scaffold_placeholders(node: Any, path: str) -> None:
 LONG_DASHES = ("\u2014", "\u2013")
 
 
+SIX_SEVEN_SKIPPED_STRING_KEYS = re.compile(
+    r"(^id$|Id$|Ids$|Ref$|Refs$|path|Path|url|Url|^src$|^href$|sha|Sha|[Ff]ile|[Cc]olou?r|^fill$|[Ss]lug|^layout$|^template$|^kind$)"
+)
+SIX_SEVEN_SKIPPED_NUMBER_KEYS = re.compile(
+    r"^(fontSize|headingFontSize|weight|rotation|transparency|x|y|w|h|width|height|maxRows|blankChars|classSize|dpi|radius|lineW|pad|gap|minFont|maxFont|version|schemaVersion|ordinal|lon|lat|longitude|latitude)$"
+)
+SIX_SEVEN_TOKEN = re.compile(r"(?<![^\W\d_])(?<![\d_/\\.#-])(\d{1,3}(?:,\d{3})+|\d+)(?![\d_/\\]|\.\d|-\d|,\d{3})")
+
+
+def reject_six_seven_numbers(node: Any, path: str) -> None:
+    """No number a class reads may contain a 6 followed by a 7.
+
+    The "6-7" playground meme sets a class off whenever the two digits sit
+    together: 67, 670, 6,742 and 267 all do it (the teacher, 17 September
+    2026). The designer chooses numbers, so it is refused here, where
+    choosing another costs nothing, and every builder refuses it again.
+    Commas are ignored; decimals, identifiers, file names and a four-digit
+    year from 1000 to 2099 written without a comma are not checked, because
+    a real date is a fact the lesson cannot change. Nor is a number sitting in a
+    counting run with both neighbours (a hundred square's rows), which cannot
+    skip it. `shared/text/no-six-seven.js`
+    is the builders' copy of the same rule.
+    """
+    found: list[str] = []
+
+    def offends(token: str) -> bool:
+        digits = token.replace(",", "")
+        if "67" not in digits:
+            return False
+        if "," not in token and len(digits) == 4 and 1000 <= int(digits) <= 2099:
+            return False
+        return True
+
+    def counting_run(values: list[Any]) -> set[int]:
+        run: set[int] = set()
+
+        def add(item: Any) -> None:
+            if isinstance(item, int) and not isinstance(item, bool):
+                run.add(item)
+            elif isinstance(item, str) and re.fullmatch(r"\d{1,3}(,\d{3})+|\d+", item.strip()):
+                run.add(int(item.strip().replace(",", "")))
+
+        for item in values:
+            if isinstance(item, list):
+                for inner in item:
+                    add(inner)
+            else:
+                add(item)
+        return run
+
+    def in_run(number: int, run: set[int] | None) -> bool:
+        return bool(run) and (number - 1) in run and (number + 1) in run
+
+    def walk(value: Any, key: str | None, run: set[int] | None) -> None:
+        if isinstance(value, bool):
+            return
+        if isinstance(value, str):
+            if key and SIX_SEVEN_SKIPPED_STRING_KEYS.search(key):
+                return
+            for match in SIX_SEVEN_TOKEN.finditer(value):
+                token = match.group(1)
+                if offends(token) and not in_run(int(token.replace(",", "")), run) and token not in found:
+                    found.append(token)
+        elif isinstance(value, int):
+            if key and SIX_SEVEN_SKIPPED_NUMBER_KEYS.search(key):
+                return
+            if "67" in str(abs(value)) and not in_run(value, run) and str(value) not in found:
+                found.append(str(value))
+        elif isinstance(value, dict):
+            for item_key, item in value.items():
+                walk(item, item_key, None)
+        elif isinstance(value, list):
+            merged = (run or set()) | counting_run(value)
+            for item in value:
+                walk(item, key, merged)
+
+    walk(node, None, None)
+    expect(
+        not found,
+        f"{path} contains {', '.join(found)}: the class has a playground meme about "
+        "6 and 7, and any number with a 6 followed by a 7 sets it off, commas or not. "
+        "Choose a different number that does the same mathematical job (the same number "
+        "of digits, and the same case, such as exactly halfway or crossing a hundred), "
+        "and change it everywhere it appears: the question, the answer, the script and "
+        "any representation built from it.",
+    )
+
+
 def reject_long_dashes(node: Any, path: str) -> None:
     """The em and en dash are not in the teacher's voice anywhere.
 
@@ -928,7 +1016,7 @@ def validate_speaker_notes(raw: Any, path: str) -> None:
     notes = expect_dict(raw, path)
     expect_exact_keys(
         notes,
-        {"script", "teacherInfo", "lookFor"},
+        {"script", "teacherInfo", "lookFor", "onTheBoard"},
         {"script", "teacherInfo", "lookFor"},
         path,
     )
@@ -936,7 +1024,8 @@ def validate_speaker_notes(raw: Any, path: str) -> None:
         "Answer to question(s) on this slide:",
         "Answer/model for this slide:",
     )
-    for key in ("script", "teacherInfo", "lookFor"):
+    notes.setdefault("onTheBoard", None)
+    for key in ("script", "teacherInfo", "lookFor", "onTheBoard"):
         expect_nullable_string(notes[key], f"{path}.{key}")
         if isinstance(notes[key], str):
             expect(
@@ -947,6 +1036,10 @@ def validate_speaker_notes(raw: Any, path: str) -> None:
         prefix = "Say to children:"
         expect(notes["script"].startswith(prefix), f"{path}.script must begin with 'Say to children:'")
         expect(notes["script"][len(prefix):].strip(), f"{path}.script must contain words after 'Say to children:'")
+    if notes["onTheBoard"] is not None:
+        prefix = "On the board:"
+        expect(notes["onTheBoard"].startswith(prefix), f"{path}.onTheBoard must begin with 'On the board:'")
+        expect(notes["onTheBoard"][len(prefix):].strip(), f"{path}.onTheBoard must say what to write or draw after 'On the board:'")
     if notes["lookFor"] is not None:
         prefix = "Look for:"
         expect(notes["lookFor"].startswith(prefix), f"{path}.lookFor must begin with 'Look for:'")
@@ -1582,8 +1675,38 @@ def validate_source_unit(
             f"script asks nothing",
         )
 
+    # A model the teacher completes live on the board is shown finished on the
+    # slide after it, and its notes say what to write while completing it. A
+    # cover teacher met a Year 4 rounding deck (17 September 2026) whose every
+    # My Turn and Our Turn was a blank number line with nothing saying what to
+    # write on it and no finished line anywhere until the reasoning slide, and
+    # abandoned the deck for her own whiteboard. The teacher who knows the
+    # lesson skips the finished slide; the one who does not needs it.
+    completes_live = kind in {"my-turn", "our-turn"} and (
+        modelling == "Live-complete helper"
+        or (
+            kind == "our-turn"
+            and any(ref["interaction"] == "teacher-completes" for ref in representation_refs)
+        )
+    )
+    notes = unit["speakerNotes"]
+    if completes_live:
+        expect(
+            notes.get("onTheBoard") is not None,
+            f"{path}.speakerNotes.onTheBoard is required: this {kind} is completed live "
+            "on its representation, so the notes say, in order, what to write or draw "
+            "on it (`On the board: Write 40 and 50 on the ends. Write 45 under the "
+            "middle mark. Draw an arrow at 43.`), for a teacher who has not planned it",
+        )
+    else:
+        expect(
+            notes.get("onTheBoard") is None,
+            f"{path}.speakerNotes.onTheBoard is only for a My Turn or Our Turn the "
+            "teacher completes live on a representation; set it to null here",
+        )
+
     allowed_answer_deliveries = set(ANSWER_DELIVERIES)
-    if kind == "my-turn":
+    if kind == "my-turn" and not completes_live:
         allowed_answer_deliveries.discard("answer-slide")
     validate_answer(
         unit["answer"],
@@ -1594,9 +1717,18 @@ def validate_source_unit(
     answer_kind = unit["answer"]["kind"]
     answer_delivery = unit["answer"]["delivery"]
 
+    if completes_live and (answer_kind != "none" or kind == "our-turn"):
+        expect(
+            answer_kind != "none" and answer_delivery == "answer-slide",
+            f"{path}.answer.delivery must be answer-slide: this {kind} is completed live "
+            "on its representation, and the slide after it shows the finished "
+            "representation so a class (and a teacher who did not draw it) can see the result",
+        )
+
     if answer_delivery == "answer-slide":
         expect(
             kind in MAIN_ANSWER_SLIDE_KINDS
+            or completes_live
             or answer_kind in {"model", "standard"},
             f"{path}.answer.delivery answer-slide is allowed only for a starter, "
             "main independent work, or a model/standard reveal",
@@ -1618,10 +1750,11 @@ def validate_source_unit(
                 answer_delivery == "visible-in-unit",
                 f"{path}.answer.delivery must be visible-in-unit for Prepared example My Turn",
             )
-        else:
+        elif not completes_live:
             expect(
                 answer_delivery == "teacher-only",
-                f"{path}.answer.delivery must be teacher-only for non-Prepared My Turn",
+                f"{path}.answer.delivery must be teacher-only for a My Turn that is "
+                "neither a Prepared example nor completed live on a representation",
             )
 
     if answer_delivery == "visible-in-unit":
@@ -2466,6 +2599,7 @@ def validate_design(
 ) -> None:
     reject_unresolved_scaffold_placeholders(design, "lesson-design.json")
     reject_long_dashes(design, "lesson-design.json")
+    reject_six_seven_numbers(design, "lesson-design.json")
     reject_unresolved_scaffold_placeholders(photos, "photo-requirements.json")
 
     root = expect_dict(design, "lesson-design.json")

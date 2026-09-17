@@ -1463,9 +1463,9 @@ Smallest usable: **63mm wide x 40mm tall**. Spare height: never takes spare heig
 ```json
 {
   "helper": "part-whole",
-  "text": "Partition 6,731.",
+  "text": "Partition 5,382.",
   "whole": {
-    "value": "6,731"
+    "value": "5,382"
   },
   "joiner": "+",
   "parts": [

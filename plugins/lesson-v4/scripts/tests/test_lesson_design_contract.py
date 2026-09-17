@@ -108,6 +108,7 @@ def source_unit(
     script: str | None = "Say to children: Have a look at this. What do you notice?",
     teacher_info: str | None = None,
     look_for: str | None = None,
+    on_the_board: str | None = None,
     answer: dict | None = None,
 ):
     return {
@@ -129,6 +130,7 @@ def source_unit(
             "script": script,
             "teacherInfo": teacher_info,
             "lookFor": look_for,
+            "onTheBoard": on_the_board,
         },
         "answer": copy.deepcopy(answer if answer is not None else no_answer()),
     }
@@ -284,7 +286,8 @@ def valid_contract():
                 ],
                 success_criteria_refs=["sc-001"],
                 script="Say to children: Watch how I partition each number first.",
-                answer=exact_answer("37", "teacher-only"),
+                on_the_board="On the board: Write 20 and 3 in the parts under 23, then 10 and 4 under 14.",
+                answer=exact_answer("37", "answer-slide"),
             ),
             source_unit(
                 2,
@@ -302,14 +305,15 @@ def valid_contract():
                 sticky_refs=["sk-001"],
                 misconception_refs=["mc-001"],
                 script="Say to children: What should we partition first?",
-                answer=exact_answer("57", "teacher-only"),
+                on_the_board="On the board: Write 30 and 2 under 32, then 20 and 5 under 25.",
+                answer=exact_answer("57", "answer-slide"),
             ),
             source_unit(
                 3,
                 "your-turn",
                 {
                     "activityArchitecture": "Three fresh calculations using the same method.",
-                    "task": "41 + 26 =\n52 + 17 =\n63 + 25 =",
+                    "task": "41 + 23 =\n52 + 17 =\n63 + 25 =",
                 },
                 label="Your Turn",
                 concept_ref="concept-001",
@@ -320,7 +324,7 @@ def valid_contract():
                 pupil_instruction="Solve each calculation.",
                 script=None,
                 look_for="Look for: tens added to tens and ones added to ones.",
-                answer=exact_answer("67\n69\n88", "answer-slide"),
+                answer=exact_answer("64\n69\n88", "answer-slide"),
             ),
         ],
         "ending": {
@@ -670,7 +674,8 @@ def test_valid_skill_contract_gives_a_second_distinct_move_its_own_cycle():
         ],
         success_criteria_refs=["sc-001"],
         script="Say to children: which tens cross into a new hundred?",
-        answer=exact_answer("86", "teacher-only"),
+        on_the_board="On the board: Write 50 and 7 under 57, then 20 and 9 under 29.",
+        answer=exact_answer("86", "answer-slide"),
     )
     second_check = source_unit(
         5,
@@ -864,7 +869,7 @@ def test_visible_in_unit_is_for_teacher_presented_model_units_only():
     design, photos = valid_contract()
     your_turn = design["teachingSequence"][-1]
     your_turn["modellingState"] = "Prepared example"
-    your_turn["answer"] = exact_answer("67\n69\n88", "visible-in-unit")
+    your_turn["answer"] = exact_answer("64\n69\n88", "visible-in-unit")
     assert_invalid_contract(design, photos, "visible-in-unit is allowed only on teacher-presented model units")
 
 
@@ -992,11 +997,53 @@ def test_canonical_answer_marker_is_not_duplicated_in_speaker_notes():
     )
 
 
-def test_my_turn_cannot_request_following_answer_slide():
-    assert_invalid(
-        lambda design, photos: design["teachingSequence"][0]["answer"].__setitem__("delivery", "answer-slide"),
-        "is not allowed here",
-    )
+def test_my_turn_not_completed_live_cannot_request_following_answer_slide():
+    design, photos = valid_contract()
+    my_turn = design["teachingSequence"][0]
+    my_turn["modellingState"] = "Question and reference"
+    my_turn["representationRefs"] = [
+        {"ref": "rep-001", "configuration": "prepared", "interaction": "view"}
+    ]
+    my_turn["speakerNotes"]["onTheBoard"] = None
+    my_turn["answer"] = exact_answer("37", "answer-slide")
+    assert_invalid_contract(design, photos, "is not allowed here")
+
+
+def test_a_model_completed_live_is_shown_finished_on_the_next_slide():
+    # 17 September 2026: a cover teacher met blank number lines with nothing
+    # finished to show the class. A live My Turn or Our Turn now requires the
+    # reveal slide, and a teacher-only answer is refused.
+    for index in (0, 1):
+        design, photos = valid_contract()
+        design["teachingSequence"][index]["answer"]["delivery"] = "teacher-only"
+        assert_invalid_contract(design, photos, "answer.delivery must be answer-slide")
+
+
+def test_a_model_completed_live_says_what_to_write_on_the_board():
+    for index in (0, 1):
+        design, photos = valid_contract()
+        design["teachingSequence"][index]["speakerNotes"]["onTheBoard"] = None
+        assert_invalid_contract(design, photos, "speakerNotes.onTheBoard is required")
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["speakerNotes"]["onTheBoard"] = "Write 20 and 3."
+    assert_invalid_contract(design, photos, "must begin with 'On the board:'")
+
+
+def test_the_board_line_is_refused_where_nothing_is_completed_live():
+    design, photos = valid_contract()
+    your_turn = next(unit for unit in design["teachingSequence"] if unit["kind"] == "your-turn")
+    your_turn["speakerNotes"]["onTheBoard"] = "On the board: Write the answers."
+    assert_invalid_contract(design, photos, "onTheBoard is only for")
+
+
+def test_a_number_containing_six_then_seven_is_refused():
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["content"]["example"] = "57 + 10 ="
+    design["teachingSequence"][0]["answer"]["content"] = "67"
+    assert_invalid_contract(design, photos, "contains 67")
+    design, photos = valid_contract()
+    design["teachingSequence"][0]["content"]["example"] = "In 1567 there were 23 + 14 ="
+    module.validate_design(design, photos)
 
 
 def test_exact_do_answer_cannot_request_answer_slide():
@@ -1051,6 +1098,7 @@ def test_prepared_my_turn_requires_visible_in_unit_answer():
     my_turn["representationRefs"] = [
         {"ref": "rep-001", "configuration": "prepared", "interaction": "view"}
     ]
+    my_turn["speakerNotes"]["onTheBoard"] = None
     my_turn["answer"] = exact_answer("37", "teacher-only")
     assert_invalid_contract(
         design,

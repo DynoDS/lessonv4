@@ -846,10 +846,11 @@ def append_review_unit(
         else:
             lines.extend(["**Speaker script:**", str(script), ""])
     for label, key in (
+        ("On the board", "onTheBoard"),
         ("Teacher information", "teacherInfo"),
         ("Look for", "lookFor"),
     ):
-        if notes[key] is not None:
+        if notes.get(key) is not None:
             lines.extend([f"**{label}:**", notes[key], ""])
 
     answer = unit["answer"]

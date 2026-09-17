@@ -839,8 +839,8 @@ Render the upstream pedagogical decision faithfully.
    A Below sheet's climb is that exception, and it is the one most likely to be
    shuffled by mistake, because a rising run of answers is exactly what this
    rule tells you to break up. When the adaptation carries a `Climb:` line, the
-   run it names is ordered work: `34 -> 44`, then `67 + 10`, then `167 + 10`,
-   then `1,167 + 10` reaches a class-sized case by rising through it, and any
+   run it names is ordered work: `34 -> 44`, then `58 + 10`, then `158 + 10`,
+   then `1,158 + 10` reaches a class-sized case by rising through it, and any
    other order is a page of unrelated calculations. Its final item, and a Tier 3
    sheet's `Reaches towards:` item, are the point of the sheet rather than its
    tail: keep them last, and never trim them to fit. A line reading `Not

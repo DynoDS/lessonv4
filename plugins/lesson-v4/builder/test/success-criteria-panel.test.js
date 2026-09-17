@@ -159,3 +159,20 @@ test('a criteria panel is held to half the slide, except on the criteria slide i
   );
   assert.equal(slideCtx._criteriaSlide, false, 'the allowance ends with the criteria slide');
 });
+
+test('a short criteria list keeps the card height of a four-step list', () => {
+  const pptx = new PptxGenJS();
+  const ctx = { slideIndex: 0, imageDims: {}, cardLook: true };
+  const cardHeights = (steps) => {
+    const slide = fakeSlide();
+    drawScPanelContent(pptx, slide, PANEL, { criteria: { type: 'steps', steps } }, ctx);
+    return slide.shapes
+      .filter((shape) => shape.kind === 'roundRect' && shape.fill.color === 'FFFFFF')
+      .map((shape) => shape.h);
+  };
+  const two = cardHeights(['Change the ones digit to 0.', 'Add 10.']);
+  const four = cardHeights(['Change the ones digit to 0.', 'Add 10.', 'Mark halfway.', 'Round to the nearer ten.']);
+  assert.equal(two.length, 2);
+  assert.equal(four.length, 4);
+  assert.ok(Math.abs(two[0] - four[0]) < 1e-6, `two-step card ${two[0]} matches four-step card ${four[0]}`);
+});

@@ -793,7 +793,7 @@ Spec: `{ "type": "counter-group", "statement": "5,009 = 5,000 + 9", "joiner": "+
 
 Spec: `{ "type": "part-whole-model", "whole": "45", "parts": ["27", "18"] }`
 
-The **part-whole model**: a whole circle joined by lines to its part circles, beside them (`"orientation": "horizontal"`, the default) or above them (`"vertical"`). A node may be an object: `{ "value": "6,731" }`, `{ "blank": true }`, `{ "caption": "Thousands" }` under the circle, or `{ "coins": ["£1", "20p"] }`; `joiner: "+"` prints the operator between parts. Give a wall card every value, since an empty circle anchors nothing. The same drawing the slides and the sheet use. No default caption.
+The **part-whole model**: a whole circle joined by lines to its part circles, beside them (`"orientation": "horizontal"`, the default) or above them (`"vertical"`). A node may be an object: `{ "value": "5,382" }`, `{ "blank": true }`, `{ "caption": "Thousands" }` under the circle, or `{ "coins": ["£1", "20p"] }`; `joiner: "+"` prints the operator between parts. Give a wall card every value, since an empty circle anchors nothing. The same drawing the slides and the sheet use. No default caption.
 
 ### pyramid
 

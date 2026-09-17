@@ -136,7 +136,7 @@ test('the same marker inside a helper that reads it publishes clean', () => {
           headers: ['Question', 'Answer'],
           rows: [
             ['25 x 4 =', '||100'],
-            ['The [[deciding]] word', '<<367>> + ___'],
+            ['The [[deciding]] word', '<<358>> + ___'],
           ],
         },
       },
@@ -170,7 +170,7 @@ test('every marker form is recognised, and an unpaired one is left alone', () =>
   assert.deepEqual(markersIn('Slide **RIGHT** now'), ['**bold**']);
   assert.deepEqual(markersIn('Is the [[answer]] missing?'), ['[[focus blue]]']);
   assert.deepEqual(markersIn('(a) {{250}} 235'), ['{{answer green}}']);
-  assert.deepEqual(markersIn('<<367>> + ___'), ['<<supplied orange>>']);
+  assert.deepEqual(markersIn('<<358>> + ___'), ['<<supplied orange>>']);
 
   // `answer-text.js` deliberately leaves an unpaired marker as literal text so
   // a stray token never corrupts a run. That is documented behaviour, not a

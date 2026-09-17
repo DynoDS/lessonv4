@@ -23,6 +23,7 @@
 const fs = require("fs");
 const path = require("path");
 const { sanitizeHouseStyle } = require("../shared/text/house-style");
+const { sixSevenNumbers, sixSevenMessage } = require("../shared/text/no-six-seven");
 const { safeFilenameComponent } = require("../shared/text/filename");
 const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-rules");
 const { selectContextPictureSet } = require("../shared/context-picture-set");
@@ -289,6 +290,8 @@ function buildKits(cardSetItems, classSize) {
 
 async function build(specPath, outDir) {
   const spec = sanitizeHouseStyle(JSON.parse(fs.readFileSync(specPath, "utf8")));
+  const sixSeven = sixSevenNumbers(spec);
+  if (sixSeven.length) throw new Error(sixSevenMessage(sixSeven, "stick-in sheets"));
   const items = Array.isArray(spec.items) ? spec.items : [];
   const baseDir = path.dirname(specPath);
 

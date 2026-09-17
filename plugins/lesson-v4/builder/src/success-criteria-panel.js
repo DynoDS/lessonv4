@@ -92,6 +92,9 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       // designer actually has - a roomier panel, or fewer criteria on the slide
       // - instead of telling it to shorten words it is not allowed to touch.
       sourceAuthoredText: true,
+      // Tells the steps helper this list is a criteria panel, whose card
+      // height does not grow when the list is short (see steps.js).
+      criteriaPanel: true,
       // The panel's interior takes the card look in its compact form: white
       // cards on the green read well (the children prefer them), but only
       // with the tight padding that keeps the step text at full size.

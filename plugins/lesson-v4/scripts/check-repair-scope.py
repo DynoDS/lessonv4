@@ -286,6 +286,7 @@ TEACHER_KEYS = {
     "acceptanceCondition",
     "lookFor",
     "teacherInfo",
+    "onTheBoard",
 }
 
 # The authoring channel: what the build needs to know, as opposed to what it

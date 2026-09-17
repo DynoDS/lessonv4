@@ -249,7 +249,7 @@ test("the Year 4 number-square sheet that was refused over 6px builds clean", { 
           writing: ["tick", "tick", "tick"],
           rows: [
             [null, "24", null],
-            [null, "57", null],
+            [null, "58", null],
             [null, "70", null],
             [null, "89", null],
           ],
@@ -303,7 +303,7 @@ test("the Year 4 number-square sheet that was refused over 6px builds clean", { 
     },
     answerKey: {
       below: [
-        { question: 1, answer: "24: 14, 34. 57: 47, 67. 70: 60, 80. 89: 79, 99." },
+        { question: 1, answer: "24: 14, 34. 58: 48, 68. 70: 60, 80. 89: 79, 99." },
         { question: 2, answer: "ones digit" },
         { question: 3, answer: "62; 55" },
       ],

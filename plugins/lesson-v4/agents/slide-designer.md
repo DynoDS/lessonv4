@@ -375,7 +375,9 @@ The answer slide should:
 - answer everything the task asked for, including reasons where reasons were requested;
 - preserve the representation and evidence when the answer is best understood through them;
 - avoid turning into a new teaching slide unless the settled answer itself includes an explanation;
-- give a small slot to the reveal rather than shrinking it beside a needless repeated question.
+- give a small slot to the reveal rather than shrinking it beside a needless repeated question;
+- after a My Turn or Our Turn completed live, show that representation finished (the ends labelled, the mark placed, the answer in green) with the answer sentence: it is the model the teacher drew, for a class whose teacher did not draw it;
+- after independent work children did with a drawn tool, keep a blank copy of that tool with the answers (`slide-composition-playbook.md` §10).
 
 Do not add a generic "Answer" slide for open discussion work.
 
@@ -411,10 +413,11 @@ Copy the lesson-design's speaker notes faithfully into the slide spec using the 
 Maintain the order:
 
 1. `Teacher orientation:` on slide 1 only;
-2. `Say to children:` script;
-3. teacher information, when supplied;
-4. structured answer, model or standard, when `answer.kind` is not `none`;
-5. optional `Look for:` guidance, when supplied.
+2. `On the board:` line, when supplied, so a teacher sees what to write before the words;
+3. `Say to children:` script;
+4. teacher information, when supplied;
+5. structured answer, model or standard, when `answer.kind` is not `none`;
+6. optional `Look for:` guidance, when supplied.
 
 Do not add generic classroom routines. Do not rewrite the script into bullet points. Do not expose teacher-only answers in visible content.
 
