@@ -1672,9 +1672,15 @@ def validate_source_unit(
     # a question answered on whiteboards hands nothing out (`do-beats.md`,
     # Setting the task).
     if kind in {"do", "practise"} and unit["pupilInstruction"] is None:
+        # Both pupil-facing interactions count. The first lesson built after this
+        # rule shipped handed every child a printed chain strip to write the
+        # missing steps into, recorded it as `pupil-writes-on`, and set no task
+        # at all, because the rule only looked at `pupil-uses` (18 September
+        # 2026). A child writing on a thing is at least as much a task being set
+        # as a child using one.
         pupil_used = [
             ref for ref in representation_refs
-            if ref.get("interaction") == "pupil-uses"
+            if ref.get("interaction") in {"pupil-uses", "pupil-writes-on"}
         ]
         if pupil_used:
             expect(

@@ -283,6 +283,15 @@ def _beat(**overrides):
     return beat
 
 
+def test_a_beat_children_write_on_is_a_task_being_set_too():
+    """The first lesson built after the rule shipped handed every child a chain
+    strip to write the missing steps into, recorded it as `pupil-writes-on`, and
+    set no task, because the rule only looked at `pupil-uses`."""
+    beat = _beat()
+    beat["representationRefs"][0]["interaction"] = "pupil-writes-on"
+    assert opportunities.is_main_activity(beat)
+
+
 def test_a_main_activity_working_from_a_source_needs_that_source_printed():
     design = {"teachingSequence": [_beat()]}
     faults = opportunities.source_faults(design, {"items": []})

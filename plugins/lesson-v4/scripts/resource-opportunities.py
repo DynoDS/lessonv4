@@ -131,7 +131,8 @@ def is_main_activity(unit: dict) -> bool:
         return False
     refs = unit.get("representationRefs")
     if isinstance(refs, list) and any(
-        isinstance(ref, dict) and ref.get("interaction") == "pupil-uses" for ref in refs
+        isinstance(ref, dict) and ref.get("interaction") in {"pupil-uses", "pupil-writes-on"}
+        for ref in refs
     ):
         return True
     return isinstance(unit.get("taskStructure"), dict) and bool(unit["taskStructure"])
