@@ -387,6 +387,14 @@ def valid_contract():
 def set_route(design: dict, structure: str, sequence: list[dict]):
     design["lesson"]["structure"] = structure
     design["teachingSequence"] = sequence
+    # Share a plausible lesson out across whatever beats this route has, so a
+    # fixture stays inside the 30 to 50 minutes a lesson runs to however many
+    # beats the route under test happens to need.
+    starter_minutes = (design.get("starter") or {}).get("minutes") or 0
+    if sequence:
+        each = max(2, round((38 - starter_minutes) / len(sequence)))
+        for unit in sequence:
+            unit["minutes"] = each
     if structure != "Skill-based":
         design["concepts"] = []
     design["ending"] = {
@@ -2669,15 +2677,15 @@ def test_a_lesson_whose_beats_do_not_fit_the_slot_is_refused():
     taught in. The teacher met that on a finished Year 4 history deck."""
     def mutate(design, photos):
         for unit in design["teachingSequence"]:
-            unit["minutes"] = 12
-    assert_invalid(mutate, "the teaching part of the slot is 40")
+            unit["minutes"] = 16
+    assert_invalid(mutate, "over the 50 a lesson can run to")
 
 
 def test_the_refusal_names_the_longest_beats_to_cut():
     def mutate(design, photos):
         design["teachingSequence"][0]["minutes"] = 20
         for unit in design["teachingSequence"][1:]:
-            unit["minutes"] = 9
+            unit["minutes"] = 14
     try:
         design, photos = valid_contract()
         mutate(design, photos)

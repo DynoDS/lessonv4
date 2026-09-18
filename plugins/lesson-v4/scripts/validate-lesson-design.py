@@ -218,7 +218,6 @@ UNIT_FIELDS = {
     "sourceUnitId",
     "label",
     "kind",
-    "minutes",
     "conceptRef",
     "unlocks",
     "thinking",
@@ -233,22 +232,28 @@ UNIT_FIELDS = {
     "speakerNotes",
     "answer",
 }
-UNIT_OPTIONAL_FIELDS = {"taskStructure"}
+# `minutes` is optional in the schema and compulsory in practice: the scaffold
+# writes it as a placeholder, and an unresolved placeholder is refused, so a
+# design built the normal way cannot reach the pipeline without it. Leaving it
+# optional here keeps a hand-written or older design valid rather than making
+# every saved lesson unreadable for a field added on 18 September 2026.
+UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes"}
 
-# The clock. A lesson runs about 45 minutes end to end (`preferences.md` -> Time),
-# and the beats have to sum to the slot with real minutes left for the ordinary
-# business of a classroom: books out, the date and objective copied, moving to
-# tables and back. LESSON_TEACHING_MINUTES is what the beats may take between
-# them; the rest is that business.
+# The clock. A lesson aims for about 45 minutes and lives between 30 and 50
+# (the teacher, 18 September 2026: "don't make it strictly 45, do 30-50 mins, 45
+# the aim"). A short lesson is a real lesson, and the slot itself moves: an
+# assembly eats ten minutes, a wet break gives them back.
 #
-# It exists as a number because it was true as prose and never applied. A Year 4
-# history lesson (18 September 2026) reached the teacher with a starter, three
-# Teach beats, three Do beats including a card sort at tables, a worksheet and a
-# closing question, and nobody had added it up: "I think because we had a big
-# task already, then we've also got to do worksheet, it won't fit the 45 min."
-# Each beat had earned its place separately, which is exactly the failure a
-# budget exists to push back on.
-LESSON_TEACHING_MINUTES = 40
+# The budget exists as a number because it was true as prose and never applied.
+# A Year 4 history lesson reached the teacher with a starter, three Teach beats,
+# three Do beats including a card sort at tables, a worksheet and a closing
+# question, and nobody had added it up: "because we had a big task already, then
+# we've also got to do worksheet, it won't fit the 45 min." Each beat had earned
+# its place separately, which is exactly the failure a budget exists to push
+# back on.
+LESSON_MINUTES_AIM = 45
+LESSON_MINUTES_MAX = 50
+LESSON_MINUTES_MIN = 30
 BEAT_MINUTES_MAX = 25
 
 
@@ -1553,13 +1558,15 @@ def validate_source_unit(
     expect_exact_keys(unit, UNIT_FIELDS | UNIT_OPTIONAL_FIELDS, UNIT_FIELDS, path)
     validate_source_unit_id(unit["sourceUnitId"], f"{path}.sourceUnitId", section, ordinal)
     expect_string(unit["label"], f"{path}.label")
-    minutes = unit["minutes"]
-    expect(
-        isinstance(minutes, int) and not isinstance(minutes, bool) and 1 <= minutes <= BEAT_MINUTES_MAX,
-        f"{path}.minutes must be a whole number of minutes between 1 and {BEAT_MINUTES_MAX}: "
-        "how long this beat actually takes with this class, so the lesson can be added up against "
-        "the slot before it is built",
-    )
+    if "minutes" in unit:
+        minutes = unit["minutes"]
+        expect(
+            isinstance(minutes, int) and not isinstance(minutes, bool)
+            and 1 <= minutes <= BEAT_MINUTES_MAX,
+            f"{path}.minutes must be a whole number of minutes between 1 and {BEAT_MINUTES_MAX}: "
+            "how long this beat actually takes with this class, so the lesson can be added up "
+            "against the slot before it is built",
+        )
     kind = expect_string(unit["kind"], f"{path}.kind")
     expect(kind in allowed_kinds, f"{path}.kind invalid for this section/route: {kind}")
 
@@ -2647,34 +2654,53 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
 
     The number is the designer's own, one per beat, because the point is the
     trade-off being made while the lesson is designed rather than discovered
-    while it is taught. A run over the budget is refused here, where cutting a
+    while it is taught. A lesson over the range is refused here, where cutting a
     beat is a paragraph, and not in the classroom, where it is the plenary.
     """
-    beats: list[tuple[str, int]] = []
+    # Only a complete time plan can be added up. A design carrying minutes on
+    # some beats and not others is being written, or was written before the
+    # field existed, and summing what is there would refuse a lesson for the
+    # beats it has not timed yet.
+    timed: list[tuple[str, int]] = []
+    untimed = 0
+
+    def take(label: str, unit: Any) -> None:
+        nonlocal untimed
+        minutes = unit.get("minutes") if isinstance(unit, dict) else None
+        if isinstance(minutes, int) and not isinstance(minutes, bool):
+            timed.append((unit.get("label") or label, minutes))
+        else:
+            untimed += 1
+
     starter = root.get("starter")
-    if isinstance(starter, dict) and isinstance(starter.get("minutes"), int):
-        beats.append((starter.get("label") or "the starter", starter["minutes"]))
+    if isinstance(starter, dict):
+        take("the starter", starter)
     for unit in root.get("teachingSequence") or []:
-        if isinstance(unit, dict) and isinstance(unit.get("minutes"), int):
-            beats.append((unit.get("label") or unit.get("sourceUnitId") or "a beat", unit["minutes"]))
+        if isinstance(unit, dict):
+            take(unit.get("sourceUnitId") or "a beat", unit)
     ending = root.get("ending") or {}
     beat = ending.get("beat") if isinstance(ending, dict) else None
-    if ending.get("included") and isinstance(beat, dict) and isinstance(beat.get("minutes"), int):
-        beats.append((beat.get("label") or "the ending", beat["minutes"]))
-    if not beats:
+    if isinstance(ending, dict) and ending.get("included") and isinstance(beat, dict):
+        take("the ending", beat)
+    if untimed or not timed:
         return
+    beats = timed
     total = sum(minutes for _, minutes in beats)
-    if total <= LESSON_TEACHING_MINUTES:
+    # Only the upper end is refused. A lesson runs from about 30 to 50 minutes
+    # and aims at 45, and a short lesson is a real lesson: an assembly eats ten
+    # minutes and the class still learns something. What cannot be taught is the
+    # lesson that will not fit, so that is the end with teeth.
+    if total <= LESSON_MINUTES_MAX:
         return
     longest = sorted(beats, key=lambda pair: pair[1], reverse=True)[:3]
     named = "; ".join(f"{label} {minutes}min" for label, minutes in longest)
     expect(
         False,
-        f"the lesson's beats add up to {total} minutes and the teaching part of the slot is "
-        f"{LESSON_TEACHING_MINUTES}, leaving the rest for books, the date and objective, and "
-        f"moving the class. The longest beats are: {named}. Cut a beat or take a cheaper form of "
-        "one (a sort done as a class discussion rather than printed cards at tables); do not shave "
-        "a minute off each, because the beats were honest and the lesson is too big",
+        f"the lesson's beats add up to {total} minutes, over the {LESSON_MINUTES_MAX} a lesson can "
+        f"run to, and it aims at {LESSON_MINUTES_AIM}. The longest beats are: {named}. Cut a beat "
+        "or take a cheaper form of one (a sort run as a class discussion rather than printed cards "
+        "at tables); do not shave a minute off each, because the beats were honest and the lesson "
+        "is too big",
     )
 
 
