@@ -248,7 +248,7 @@ Opinionated templates for specific teaching moves. Each shape carries meaning â€
 
 For a content Teach unit the design's fields map straight across: `headline` is the `lead`, each line of `explanation` is an entry in `lines`, `takeaway` is the `sticky`, `keyQuestions` are the `question`, and `teachingText` is the `extract`. The other teaching beats map the same way: discovery's `teach-why` puts `accurateExplanation` in `lines` and `takeaway` in `sticky`, and when it names an explanation to correct, `compare-words` sets the wrong idea beside the right one; task-centred `teach-needed` puts `enablingInput` in `lead` and its `explanation` in `lines`.
 
-- `lead`: the line describing the whole slide, often the headline. `statement` is the same kind of line on `two-speakers`.
+- `lead`: the slide's first-read line, which on a Teach slide is the design's `headline`: the sentence the slide lands. Not a caption naming what the picture shows, which spends the largest line on what a child can already see. `statement` is the same kind of line on `two-speakers`.
 - `lines`: the explanation, one short statement per entry.
 - `question`: printed in question blue. The layouts with a column of cards also take a list of two, when the unit carries two key questions.
 - `sticky`: the line to remember. The builder adds the star and the purple, so write the sentence alone.

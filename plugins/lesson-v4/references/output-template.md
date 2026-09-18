@@ -358,7 +358,7 @@ Instead, the lesson-designer decides exact availability by putting the ID in eac
 
 This is a pedagogical availability decision. Downstream designers may choose where the referenced fact physically sits, but they must not add or remove a sticky-knowledge reference.
 
-A Teach slide lands its sentence once. `takeaway` is `null` when the headline is that sentence, which is the usual case. When the sentence is one of the lesson's sticky facts, the takeaway references it and the headline names what is on the board:
+A Teach slide lands its sentence once, at the top. `takeaway` is `null` and the `headline` carries that sentence, which is the usual case and stays the case when the sentence is one of the lesson's sticky facts; the unit's `stickyKnowledgeRefs` still records the fact. A `takeaway` referencing a sticky fact is for the beat that withholds its fact until children have reached it, where the headline names the move the class is making rather than the picture (`teaching-sequence-content-based.md`, Teach):
 
 ```json
 {
