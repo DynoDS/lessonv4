@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import unittest
@@ -12,25 +13,35 @@ SCRIPT = ROOT / "scripts" / "make-lesson-runtime.py"
 PLAYBOOK = ROOT / "skills" / "make-lesson" / "playbook-lite.md"
 AGENTS = ROOT / "agents"
 
-FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str]] = {
+# filename, then the Codex pair, then the Claude pair. Both are listed because
+# the two hosts are set separately and neither can be derived from the other.
+FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str, str, str]] = {
     "slide-designer": (
         "slide-designer-focused-repair.md",
         "sol",
         "medium",
+        "opus",
+        "xhigh",
     ),
     "worksheet-designer": (
         "worksheet-designer-focused-repair.md",
         "sol",
         "medium",
+        "sonnet",
+        "high",
     ),
     "working-wall-designer": (
         "working-wall-designer-focused-repair.md",
         "sol",
         "medium",
+        "opus",
+        "high",
     ),
     "stick-in-sheets-designer": (
         "stick-in-sheets-designer-focused-repair.md",
         "luna",
+        "xhigh",
+        "sonnet",
         "xhigh",
     ),
 }
@@ -518,7 +529,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # bytes the playbook has to say, because a card kit the main activity
         # depends on is gated and delivered here. The per-slice budget below
         # is unchanged and is the one a worker actually pays.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 74 * 1024)
+        # Raised from 74 KiB on 18 September 2026 for the landed-sentence gate
+        # in Track A: about 190 bytes, because a Teach beat whose one sentence
+        # never reached the board looks like a finished deck and is caught
+        # nowhere else.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 75 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.
@@ -553,7 +568,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             focused,
         )
 
-        for owner, (filename, _, _) in FOCUSED_REPAIR_ENTRYPOINTS.items():
+        for owner, (filename, *_) in FOCUSED_REPAIR_ENTRYPOINTS.items():
             with self.subTest(owner=owner):
                 expected_route = (
                     f"- `{owner}`: use "
@@ -642,8 +657,10 @@ class MakeLessonRuntimeTests(unittest.TestCase):
     ) -> None:
         for owner, (
             filename,
-            model,
-            effort,
+            codex_model,
+            codex_effort,
+            claude_model,
+            claude_effort,
         ) in FOCUSED_REPAIR_ENTRYPOINTS.items():
             with self.subTest(owner=owner):
                 compact_path = AGENTS / filename
@@ -662,14 +679,16 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                     f"name: {filename.removesuffix('.md')}",
                     compact_text,
                 )
-                self.assertIn(
-                    f"model: {model}",
-                    compact_text,
-                )
-                self.assertIn(
-                    f"effort: {effort}",
-                    compact_text,
-                )
+                for field, value in (
+                    ("model", claude_model),
+                    ("effort", claude_effort),
+                    ("codex_model", codex_model),
+                    ("codex_effort", codex_effort),
+                ):
+                    self.assertRegex(
+                        compact_text,
+                        re.compile(rf"^{field}: {value}\s*$", re.M),
+                    )
                 self.assertIn(
                     f"existing `{owner}` semantic owner",
                     compact_text,
@@ -696,7 +715,7 @@ class MakeLessonRuntimeTests(unittest.TestCase):
             "other-resources",
         ):
             output = self.run_slice(slice_name).stdout.decode("utf-8")
-            for owner, (filename, _, _) in FOCUSED_REPAIR_ENTRYPOINTS.items():
+            for owner, (filename, *_) in FOCUSED_REPAIR_ENTRYPOINTS.items():
                 with self.subTest(slice=slice_name, owner=owner):
                     self.assertNotIn(filename, output)
 

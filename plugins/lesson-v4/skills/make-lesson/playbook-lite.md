@@ -652,6 +652,10 @@ Require: HELPER_DELIVERY_OK
   --spec "[WORKING_DIR]/lesson.json"
 
 Require: DRAWLIVE_HANDOFF_OK
+
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-landed-sentence.py"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --spec "[WORKING_DIR]/lesson.json"
+
+Require: LANDED_SENTENCE_OK
 TERMINAL_STATE: COMPLETE
 ```
 
