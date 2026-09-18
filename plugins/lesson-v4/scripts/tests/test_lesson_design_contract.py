@@ -1271,6 +1271,45 @@ def test_valid_structured_sort_contract_passes():
     module.validate_design(design, photos)
 
 
+def _do_beat_using_a_representation(design, *, instruction):
+    """A Do beat that hands children a representation to work with: the shape
+    of the Year 4 history record beat that arrived with no words to the class."""
+    for unit in design["teachingSequence"]:
+        if unit["kind"] in {"do", "practise"}:
+            unit["representationRefs"] = [
+                {"ref": "rep-001", "configuration": "practice", "interaction": "pupil-uses"}
+            ]
+            unit["pupilInstruction"] = instruction
+            return unit
+    raise AssertionError("fixture has no do or practise beat")
+
+
+def test_do_beat_handing_children_a_representation_needs_its_task_set():
+    design, photos = valid_content_contract()
+    _do_beat_using_a_representation(design, instruction=None)
+    assert_invalid_contract(design, photos, "so it sets a task")
+
+
+def test_do_beat_with_its_task_set_passes():
+    design, photos = valid_content_contract()
+    _do_beat_using_a_representation(
+        design,
+        instruction="You and your partner have the road photograph and a table with three rows. Fill in all three parts together.",
+    )
+    module.validate_design(design, photos)
+
+
+def test_quick_do_beat_still_needs_no_instruction():
+    """The whiteboard beat hands nothing out, so setting it in three parts
+    would turn thirty seconds of thinking into two minutes of admin."""
+    design, photos = valid_content_contract()
+    for unit in design["teachingSequence"]:
+        if unit["kind"] in {"do", "practise"}:
+            unit["representationRefs"] = []
+            unit["pupilInstruction"] = None
+    module.validate_design(design, photos)
+
+
 def test_task_structure_requires_non_null_instruction():
     design, photos = valid_contract()
     starter = add_structured_sort(design)

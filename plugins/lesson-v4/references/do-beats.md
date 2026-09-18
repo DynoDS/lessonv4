@@ -24,6 +24,24 @@ Do not ban mini-whiteboards or devices and do not make books or cold calling the
 
 Each entry follows the same shape — what it is, register, best for, why it works, SEND access notes, source — so the agent can compare on like-for-like fields.
 
+## Setting the task
+
+A Do beat is set, not only asked. The heavy ones are a main activity in miniature: children move, something is handed out, they work with a partner, and they write something they keep. A beat like that goes wrong before the thinking starts, in the thirty seconds where nobody is sure what they have or what they are doing with it.
+
+A Year 4 history beat on 17 September 2026 gave every child a printed record to complete, a source to quote from and a partner to share it with, and wrote no words to the children at all. The card sort beside it was fully prepared: what the cards were, one set between two, at tables, once both accounts had been read. The difference was not the teaching. A sort has a field for its handling and a written task does not, so preparation was being decided by which beat happened to have a schema slot.
+
+**So when a Do beat sets children a task, `pupilInstruction` carries the words a teacher would actually say to start it, and says three things:** what each child or pair has in front of them, what they do with it, and the one thing to hold in mind while they work. `You and your partner have Patience's own words and a table with three rows. Fill in all three parts for her. Every answer needs the words from her account that show it.` A tired teacher, or a cover teacher who has never seen the lesson, can start the task from that line alone, which is the test to write to.
+
+It is a task being set when children are handed something (a printed piece, a source, a set of cards), when they work with a partner or a group, or when the work runs past a minute or two. The `successCriteriaRefs` for the steps the work is judged by belong on the same beat, because that is what the children check themselves against while they write.
+
+**The limit is the quick beat, and keeping it quick is the point.** A question answered on whiteboards and held up is not a task being set: the sentence on the board is the whole instruction, and adding who has what and what to remember turns thirty seconds of thinking into two minutes of admin. Ask which one this beat is before writing anything: children answering where they sit, or children being set to work.
+
+Two things stay where they already live, so nobody writes them twice. The teacher's own run of the beat, the bit taken live on the board and what to watch for, stays in `speakerNotes`. What to print, how many of it, and where children sit stays in the lesson's `teacherOrientation`, which is the one place a teacher reads before the lesson rather than during it.
+
+Write the line in the register `teacher-voice.md` §6 owns: spoken to the children, one instruction at a time, the question asked rather than the task described. `subject-maths.md` → How a maths sheet's questions are worded is the same discipline applied to a printed task, and is worth reading when the beat's wording is what children will work from alone.
+
+---
+
 ## How to pick
 
 1. Settle the intended thinking or checking purpose, using `preferences.md` → The Teach → Do → Teach → Do Rhythm, `Name what the chunk needs children to do with it`. That list is what a purpose is stated in; arriving here without one is how a beat ends up chosen by topic. Then write the beat's `thinking` line, the actual question a child's mind answers while working, and keep it beside you as you compare formats: a format that lets the child answer that question by reading the slide, or from what they knew walking in, is out, whatever section it came from; and read the line against the subject file's own doing-versus-thinking test, because reading a source, a map or a result is the doing the objective names and not yet the thought.

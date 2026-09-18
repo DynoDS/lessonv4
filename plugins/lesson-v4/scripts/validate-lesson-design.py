@@ -1631,6 +1631,27 @@ def validate_source_unit(
             unit["pupilInstruction"] is not None,
             f"{path}.pupilInstruction must be non-null when taskStructure is present",
         )
+    # A Do beat that hands children something to work with is a task being set,
+    # and a task nobody sets goes wrong in the thirty seconds before the
+    # thinking starts. A Year 4 history record beat gave every child a printed
+    # three-part record to complete and wrote no words to the children, while
+    # the card sort beside it was fully prepared, because a sort carries a
+    # taskStructure and a written task does not. The quick beat is untouched:
+    # a question answered on whiteboards hands nothing out (`do-beats.md`,
+    # Setting the task).
+    if kind in {"do", "practise"} and unit["pupilInstruction"] is None:
+        pupil_used = [
+            ref for ref in representation_refs
+            if ref.get("interaction") == "pupil-uses"
+        ]
+        if pupil_used:
+            expect(
+                False,
+                f"{path}.pupilInstruction must be non-null: this beat hands children "
+                f"{pupil_used[0]['ref']} to work with, so it sets a task, and the words that set "
+                "it say what each child or pair has, what they do with it, and the one thing to "
+                "hold in mind while they work (`do-beats.md`, Setting the task)",
+            )
     content = unit["content"]
     ordering_texts = (
         unit["pupilInstruction"],
