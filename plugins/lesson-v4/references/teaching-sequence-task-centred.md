@@ -97,10 +97,16 @@ Do the task:
   "content": {
     "activity": "the sustained independent work and the artefact it produces",
     "launch": {
-      "established": "one line naming what the lesson has established and the task now uses",
-      "goodLooksLike": "a good instance of the product beside a weak one, with the difference named; null when the success criteria already show it",
+      "established": "one line naming what the lesson has established and the task now uses; null when the strong instance already carries it",
+      "goodLooksLike": {
+        "strong": { "words": "the good instance as the child reads it", "show": null },
+        "weak": { "words": "the weak instance, wrong in the one way the task turns on", "show": null },
+        "difference": "the one line naming what makes the strong one strong"
+      },
       "steps": ["the steps in the order children take them"]
     },
+    "reasoningWords": ["the few connecting words this explanation needs, or null"],
+    "rehearsal": { "sayIt": "what each child says to their partner first", "partnerAsks": "the one question the partner asks back" },
     "planWithinTask": null,
     "checkpointQuestion": null,
     "runsBeyondToday": false,
@@ -109,7 +115,15 @@ Do the task:
 }
 ```
 
-`launch` is `null` only when children can begin from the question alone.
+`launch` is `null` only when children can begin from the question alone, and `goodLooksLike` is `null` when the success criteria already show what a good one looks like.
+
+**The instance is whatever the product actually is.** `words` carries it when children write; `show` names one of this beat's own `photoRefs` or `representationRefs` when they draw, build, sort or label, and both together are a written instance beside the thing it describes. A design-and-make launch shows the good sketch beside the vague one; only `show` lets it.
+
+**`difference` is one line a child can check their own work against.** The two cards already show the contrast, so this line names what the strong one *does* that the weak one only states, in the words the success criteria or the steps already use. `Each sentence says what caused the next one.` passes; `Every sentence picks up the thing before it.` does not, because a child cannot test their own writing against it.
+
+**The strong instance would meet this lesson's own success criteria.** Every `{{taught word}}` the beat's criteria name appears in it, and the validator refuses a model that leaves one out: a class shown a model that would fail the standard is being marked against something it was never shown.
+
+**When the task asks children to explain, justify or say why, open `explanation-tasks.md`.** It owns `reasoningWords` (the few connecting words this task needs, by year group, faded as the class gets surer), `rehearsal` (say it to a partner, be asked one question, then write the second version), and the missing-link question that replaces "add more detail". A lesson can teach every subject word it names and still get four true sentences in a row, because the words that supply knowledge are not the words that connect it.
 
 **A task with several stages stays one `do-task`, and `steps` is where the stages live.** Making a class agreement runs propose → combine → agree; a design-and-make runs sketch → build → test. Each stage is its own entry in `launch.steps`, in the order children work through them, and the slide designer gives a stage that needs the board its own slide. That is the intended route, not a workaround for a scaffold that only allows one task: the single `do-task` is what keeps the doing reading as the centrepiece instead of fragmenting into a run of short practice beats. Reach for a separate `plan-checkpoint` unit only when planning produces a distinct artefact before the doing begins. Use a separate `plan-checkpoint` source unit only when planning produces a genuinely distinct artefact/beat before the doing. When CURRENT's planning/checkpoint is deliberately folded into one continuous sustained task, keep the lesson as one `do-task` and put the exact planning commitment in `planWithinTask` plus the exact gate question in `checkpointQuestion`. Those two fields are both `null` or both non-null.
 

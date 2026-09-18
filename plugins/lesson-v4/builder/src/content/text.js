@@ -204,7 +204,12 @@ function drawText(pptx, slide, zone, data, ctx) {
     x: zone.x + PAD + indent, y: zone.y + PAD + topInset,
     w: zone.w - 2 * PAD - indent - pictureSlotW, h: zone.h - 2 * PAD - topInset,
     fontFace: FONT, fontSize: ceiling, bold: true,
-    color: displayColor, align: align, valign: 'middle',
+    // The zone normally centres its text, which is the teacher's standard.
+    // A zone that sets `valignTop` is one where two cards hold the same kind of
+    // thing at different lengths and the pair has to be read line against line:
+    // the launch's strong instance beside its weak one, where a centred short
+    // card floats half a card below the long one it is being compared with.
+    color: displayColor, align: align, valign: zone.valignTop ? 'top' : 'middle',
     margin: 0, fit: FIT,
     objectName: sizeGroupName(
       data,

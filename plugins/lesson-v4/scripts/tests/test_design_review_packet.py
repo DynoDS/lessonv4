@@ -2005,7 +2005,11 @@ def content_based_design() -> tuple[dict, dict]:
                 "task": "Write two things that changed.",
                 "launch": {
                     "established": "We can spot what stayed similar.",
-                    "goodLooksLike": "Strong: desks in rows. Weak: it was different.",
+                    "goodLooksLike": {
+                        "strong": {"words": "The desks were in rows.", "show": None},
+                        "weak": {"words": "It was different.", "show": None},
+                        "difference": "A good answer names what you can see.",
+                    },
                     "steps": ["Look at the photo.", "Write one change."],
                 },
             },
@@ -2107,11 +2111,12 @@ def test_the_view_opens_with_the_lesson_as_the_class_meets_it():
     # Teach: headline, explanation, key question, takeaway (sticky), sticky ref,
     #        script = 6
     # Do: task, pupil instruction, two option labels = 4
-    # Practise: task, established, goodLooksLike, two steps, two criteria steps,
-    #           answer (answer-slide) = 8
+    # Practise: task, established, the launch pair's strong words, weak words and
+    #           difference line, two steps, two criteria steps,
+    #           answer (answer-slide) = 10
     # Apply: activity, script = 2
     # Worksheet: prompt, support = 2
-    assert "26 child-facing strings for a Year 4 class." in section
+    assert "28 child-facing strings for a Year 4 class." in section
     for expected in (
         "### Last lesson",
         "Name one thing a historian uses.",
@@ -2393,7 +2398,7 @@ def test_authored_planning_register_is_quoted_without_rewriting_or_hiding_it():
     section = class_view_section(packet_module.build_review_view(design, photos))
     assert "> Retrieve a familiar occupation.\n> Explain the worker's task." in section
     assert "Private planning purpose" not in section
-    assert "26 child-facing strings for a Year 4 class." in section
+    assert "28 child-facing strings for a Year 4 class." in section
 
 
 def test_progression_calibration_covers_false_links_and_legitimate_convergence():

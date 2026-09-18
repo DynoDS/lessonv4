@@ -68,6 +68,14 @@ function drawBullets(pptx, slide, zone, data) {
   const innerH = Math.max(0.1, zone.h - 2 * PAD);
   const fontSize = chooseBulletFont(items, innerW, innerH);
 
+  // The block's own colour, the same optional `color` a `text` object takes,
+  // so a list inside a card the deck colours as a whole (the launch's weak
+  // instance, which is red throughout) is that colour rather than black inside
+  // a red card. Omitted, it is body black exactly as before.
+  const blockColor = typeof data.color === 'string' && data.color
+    ? data.color
+    : COLOURS.body;
+
   // Each item is run through the shared presentation formatter, the same way
   // text, steps, and table cells are — so a **stress**, a ||answer reveal, a
   // [[focus]] word, or an emphasis role inside a bullet renders as styled
@@ -84,8 +92,8 @@ function drawBullets(pptx, slide, zone, data) {
       : {};
     const text = itemText(it);
     const useDiscBullet = !EMOJI_PREFIX.test(text) && !ENUM_PREFIX.test(text);
-    const baseColor = baseColourForRole(COLOURS.body, source.colorRole);
-    const parsed = presentationRuns(text, true, COLOURS.body, source);
+    const baseColor = baseColourForRole(blockColor, source.colorRole);
+    const parsed = presentationRuns(text, true, blockColor, source);
     const itemRuns = Array.isArray(parsed)
       ? parsed.map(function (r) {
           return {
@@ -109,8 +117,8 @@ function drawBullets(pptx, slide, zone, data) {
       x: zone.x + PAD, y: zone.y + PAD,
       w: innerW, h: innerH,
       fontFace: FONT, fontSize: fontSize, bold: true,
-      color: COLOURS.body,
-      align: 'left', valign: 'middle', margin: 0,
+      color: blockColor,
+      align: 'left', valign: zone.valignTop ? 'top' : 'middle', margin: 0,
       lineSpacingMultiple: LINE_SPACING,
       fit: FIT
     }

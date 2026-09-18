@@ -271,7 +271,11 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         practise = next(u for u in design["teachingSequence"] if u["kind"] == "practise")
         practise["content"]["launch"] = {
             "established": "We've found what our agreement needs: joining in, passing, privacy, questions, help.",
-            "goodLooksLike": "\"Be respectful\" tells you nothing to do. \"Listen while someone else is speaking\" does.",
+            "goodLooksLike": {
+                "strong": {"words": "Listen while someone else is speaking.", "show": None},
+                "weak": {"words": "Be respectful.", "show": None},
+                "difference": "A good rule tells you what to do.",
+            },
             "steps": ["Write one rule.", "Combine your group's rules.", "Agree ours."],
         }
         self.validator.validate_design(design, photos)
@@ -283,11 +287,256 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         practise["content"]["launch"] = None
         self.validator.validate_design(design, photos)
 
+    def test_the_pair_is_three_separate_things_and_a_side_may_be_a_picture(self) -> None:
+        """One prose string for the whole pair is what let three decks each
+        invent their own two plain boxes, and what stopped a launch for a drawn
+        product showing anything but a sentence about it."""
+        design, photos = self.contract.valid_content_contract()
+        practise = next(u for u in design["teachingSequence"] if u["kind"] == "practise")
+
+        def launch(pair):
+            return {"established": None, "goodLooksLike": pair, "steps": ["Write it."]}
+
+        # The pair is an object, never the old prose string.
+        practise["content"]["launch"] = launch("Strong: ... Weak: ...")
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+        good = {
+            "strong": {"words": "Listen while someone else is speaking.", "show": None},
+            "weak": {"words": "Be respectful.", "show": None},
+            "difference": "A good rule tells you what to do.",
+        }
+        practise["content"]["launch"] = launch(dict(good))
+        self.validator.validate_design(design, photos)
+
+        # A side carries words, or a picture this beat already has, or both -
+        # but never neither.
+        empty = dict(good, strong={"words": None, "show": None})
+        practise["content"]["launch"] = launch(empty)
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+        shown = dict(good, strong={"words": None, "show": "photo-nobody-has"})
+        practise["content"]["launch"] = launch(shown)
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+        owned = practise["photoRefs"][0] if practise["photoRefs"] else None
+        if owned is not None:
+            practise["content"]["launch"] = launch(dict(good, strong={"words": None, "show": owned}))
+            self.validator.validate_design(design, photos)
+
+        # The difference is a line, not the paragraph that explains a contrast
+        # the two cards are already showing.
+        practise["content"]["launch"] = launch(dict(good, difference="word " * 60))
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+    def test_the_gathering_line_goes_when_the_instance_carries_it(self) -> None:
+        design, photos = self.contract.valid_content_contract()
+        practise = next(u for u in design["teachingSequence"] if u["kind"] == "practise")
+        practise["content"]["launch"] = {
+            "established": None,
+            "goodLooksLike": {
+                "strong": {"words": "Listen while someone else is speaking.", "show": None},
+                "weak": {"words": "Be respectful.", "show": None},
+                "difference": "A good rule tells you what to do.",
+            },
+            "steps": [],
+        }
+        self.validator.validate_design(design, photos)
+        # A launch with nothing in it at all is null, not an empty shell.
+        practise["content"]["launch"] = {
+            "established": None, "goodLooksLike": None, "steps": []
+        }
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+    def test_the_model_uses_the_taught_words_its_criteria_name(self) -> None:
+        """The tooth launch modelled an explanation that never said `plaque`
+        while the criteria it was marked against did. A class shown a model that
+        would fail the standard is being marked against something it was never
+        shown; and a taught word is learned when a child decides for themselves
+        that it is the word they need, which the model is where they see."""
+        validator = self.validator
+        criteria = {
+            "sc-001": {
+                "id": "sc-001",
+                "type": "steps",
+                "content": {
+                    "steps": [
+                        "Start with the sugar left on the tooth.",
+                        "Write what the germs in the {{plaque}} do with that sugar.",
+                        "Write what the {{acid}} does to the enamel.",
+                    ]
+                },
+            }
+        }
+
+        def unit(words):
+            return {
+                "content": {
+                    "launch": {
+                        "established": None,
+                        "goodLooksLike": {
+                            "strong": {"words": words, "show": None},
+                            "weak": {"words": "Jack eats toffees.", "show": None},
+                            "difference": "Each sentence says what caused the next one.",
+                        },
+                        "steps": [],
+                    }
+                },
+                "successCriteriaRefs": ["sc-001"],
+            }
+
+        shipped = (
+            "Jack sucks toffees all the way home, so sugar is left on his teeth. "
+            "The germs feed on that sugar and make acid. The acid eats the enamel away."
+        )
+        with self.assertRaises(validator.ContractError) as caught:
+            validator.validate_launch_uses_the_taught_words(unit(shipped), "t", criteria)
+        self.assertIn("plaque", str(caught.exception))
+
+        repaired = shipped.replace("The germs feed", "The germs in the plaque feed")
+        validator.validate_launch_uses_the_taught_words(unit(repaired), "t", criteria)
+
+        # The word counts however the sentence inflects it.
+        plural = shipped.replace("The germs feed", "Plaques of germs feed")
+        validator.validate_launch_uses_the_taught_words(unit(plural), "t", criteria)
+
+        # A good instance the class looks at rather than reads carries its words
+        # on the picture, so there is nothing here to match.
+        shown = unit(None)
+        shown["content"]["launch"]["goodLooksLike"]["strong"]["show"] = "photo-002"
+        validator.validate_launch_uses_the_taught_words(shown, "t", criteria)
+
+        # A beat with no criteria of its own is left alone.
+        loose = unit(shipped)
+        loose["successCriteriaRefs"] = []
+        validator.validate_launch_uses_the_taught_words(loose, "t", criteria)
+
+    def test_a_reasoning_task_carries_the_words_that_connect_it(self) -> None:
+        """A lesson's vocabulary supplies the knowledge and does not connect it.
+        A child holding decay, plaque and acid, and none of because, so or
+        causes, writes four true sentences in a row."""
+        design, photos = self.contract.valid_content_contract()
+        practise = next(u for u in design["teachingSequence"] if u["kind"] == "practise")
+
+        practise["content"]["reasoningWords"] = ["because", "so", "as a result"]
+        self.validator.validate_design(design, photos)
+
+        # Null is the answer for a task that is not a piece of reasoning.
+        practise["content"]["reasoningWords"] = None
+        self.validator.validate_design(design, photos)
+
+        # An empty list says nothing; null says it.
+        practise["content"]["reasoningWords"] = []
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+        # A bank the class picks over is the laminated-stems failure.
+        practise["content"]["reasoningWords"] = [
+            "because", "so", "therefore", "causes", "leads to", "as a result", "this means"
+        ]
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+        practise["content"]["reasoningWords"] = ["because", "Because"]
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+    def test_an_extended_explanation_is_said_before_it_is_written(self) -> None:
+        """Composition and transcription compete for the same attention, so the
+        explanation is built aloud first; and the partner's one question is what
+        makes the written version a second attempt rather than a first."""
+        design, photos = self.contract.valid_content_contract()
+        practise = next(u for u in design["teachingSequence"] if u["kind"] == "practise")
+
+        practise["content"]["rehearsal"] = {
+            "sayIt": "Tell your partner how Sam's tooth decayed. Start with the sugar.",
+            "partnerAsks": "What happens between the acid and the pain?",
+        }
+        self.validator.validate_design(design, photos)
+
+        practise["content"]["rehearsal"] = None
+        self.validator.validate_design(design, photos)
+
+        # Saying it without being asked anything is a first draft out loud, not
+        # a rehearsal, so both halves are required together.
+        practise["content"]["rehearsal"] = {"sayIt": "Tell your partner.", "partnerAsks": None}
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+        practise["content"]["rehearsal"] = {"sayIt": "Tell your partner."}
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+        # It is what one child says to another, not a second set of criteria.
+        practise["content"]["rehearsal"] = {
+            "sayIt": "word " * 60,
+            "partnerAsks": "Why does that matter?",
+        }
+        with self.assertRaises(self.validator.ContractError):
+            self.validator.validate_design(design, photos)
+
+    def test_both_big_task_beats_carry_the_two_fields(self) -> None:
+        fields = self.scaffold.CONTENT_ENVELOPE_FIELDS
+        for kind in ("practise", "do-task"):
+            self.assertIn("reasoningWords", fields[kind])
+            self.assertIn("rehearsal", fields[kind])
+        self.assertIn("reasoningWords", self.scaffold.CONTENT_LIST_FIELDS)
+
+    def test_the_explanation_reference_is_written_and_routed(self) -> None:
+        reference = flat(ROOT / "references" / "explanation-tasks.md")
+        # The distinction the whole file turns on, in the words a class hears.
+        self.assertIn(
+            "A fact tells us something; an explanation connects facts to show why or how",
+            reference,
+        )
+        # Year-by-year language, and the warning against reading it as a ladder
+        # of fancier conjunctions.
+        self.assertIn("as a result, causes, which means, therefore", reference)
+        self.assertIn("`Consequently` is not better than `so`", reference)
+        # The feedback move that replaces "add more detail".
+        self.assertIn("What happens between the acid being made and the tooth hurting?", reference)
+        # The launch question that is too easy, named so it is not asked.
+        self.assertIn('Do not ask "which is better?"', reference)
+        # Every subject reasons differently; the file says so rather than
+        # turning history into science.
+        self.assertIn("this file does not turn them all into science", reference)
+
+        for route in (CONTENT_BASED, ROOT / "references" / "teaching-sequence-task-centred.md"):
+            self.assertIn("open `explanation-tasks.md`", flat(route))
+        playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
+        self.assertIn("`rehearsal` takes its own short slide after the steps and before the task", playbook)
+        self.assertIn("`chip-bank` under the steps", playbook)
+
+    def test_the_difference_line_is_one_a_child_can_check(self) -> None:
+        preferences = flat(ROOT / "references" / "preferences.md")
+        self.assertIn("hold their own work against", preferences)
+        self.assertIn("Each sentence says what caused the next one.", preferences)
+        self.assertIn("Every sentence picks up the thing before it", preferences)
+        # The rule names where it stops, so it is not read as "make it short".
+        self.assertIn("never `the strong one is better`", preferences)
+        for route in (CONTENT_BASED, ROOT / "references" / "teaching-sequence-task-centred.md"):
+            self.assertIn("check their own work against", flat(route))
+            self.assertIn("would meet this lesson's own success criteria", flat(route))
+
     def test_the_launch_is_documented_and_rendered(self) -> None:
         self.assertIn("Its `launch` carries, as the child reads them", flat(CONTENT_BASED))
         playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
         self.assertIn("`launch` takes a slide of its own before the task slide", playbook)
-        self.assertIn("a task's `launch`: its `established` line, its `goodLooksLike` pair and each of its `steps`", flat(SLIDE_DESIGNER))
+        self.assertIn(
+            "a task's `launch`: its `established` line, each side's `words` and "
+            "the `difference` line of its `goodLooksLike`, and each of its `steps`",
+            flat(SLIDE_DESIGNER),
+        )
+        # The pair has a template, and the designer is told not to type the
+        # labels into the sentences the way three decks did.
+        self.assertIn("built from `strong-and-weak`", flat(SLIDE_DESIGNER))
+        self.assertIn('`template: "strong-and-weak"`', playbook)
+        self.assertIn("LAUNCH_PAIR_NEEDS_ITS_TEMPLATE", playbook)
         self.assertIn("the unit's `launch` carries what the lesson has established", flat(DESIGN_REVIEWER))
 
 

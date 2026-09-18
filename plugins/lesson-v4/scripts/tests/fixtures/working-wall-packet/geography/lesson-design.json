@@ -629,7 +629,9 @@
         "activity": "Write a three-part geographical description that combines biome knowledge, nested location and visible Amazon features.",
         "format": "Three-part description using maps and photographs.",
         "task": "What is a biome? Give two examples.\n\nWhere is the Amazon rainforest?\n\nWhat features can you see in the map and photographs?",
-        "launch": null
+        "launch": null,
+        "reasoningWords": null,
+        "rehearsal": null
       },
       "pupilInstruction": "Use the maps and photographs to write your Amazon description.",
       "taskStructure": null,

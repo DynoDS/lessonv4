@@ -310,7 +310,7 @@ CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
     "observe": ("activity", "focus", "evidenceProduced"),
     "teach": ("headline", "explanation", "takeaway", "teachingText", "keyQuestions"),
     "do": ("activity", "format", "task"),
-    "practise": ("activity", "format", "task", "launch"),
+    "practise": ("activity", "format", "task", "launch", "reasoningWords", "rehearsal"),
     "question": ("focus", "prerequisites", "discoveryFocus"),
     "explore": ("activity", "conditionsAndSafety", "evidenceProduced"),
     "make-sense": ("resultOrPattern", "prompt"),
@@ -346,6 +346,8 @@ CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
     "do-task": (
         "activity",
         "launch",
+        "reasoningWords",
+        "rehearsal",
         "planWithinTask",
         "checkpointQuestion",
         "runsBeyondToday",
@@ -361,6 +363,7 @@ CONTENT_LIST_FIELDS = {
     "sentenceStems",
     "teacherListensFor",
     "framesToName",
+    "reasoningWords",
 }
 
 

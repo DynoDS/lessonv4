@@ -30,6 +30,7 @@ const { drawSplitV8020 } = require('./split-v-80-20');
 const { drawSplitV9010 } = require('./split-v-90-10');
 const { drawTeachCompare } = require('./teach-compare');
 const { drawTeachCompareWithRow } = require('./teach-compare-with-row');
+const { drawStrongAndWeak } = require('./strong-and-weak');
 const { drawTeachSteps } = require('./teach-steps');
 const { drawTeachSequence } = require('./teach-sequence');
 const { drawTeachAnnotated } = require('./teach-annotated');
@@ -81,6 +82,7 @@ const TEMPLATES = {
   'split-v-90-10':         drawSplitV9010,
   'teach-compare':         drawTeachCompare,
   'teach-compare-with-row':drawTeachCompareWithRow,
+  'strong-and-weak':       drawStrongAndWeak,
   'teach-steps':           drawTeachSteps,
   'teach-sequence':        drawTeachSequence,
   'teach-annotated':       drawTeachAnnotated,

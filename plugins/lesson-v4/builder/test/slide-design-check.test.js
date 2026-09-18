@@ -1277,3 +1277,134 @@ test('a picture below its readable floor blocks promotion like any capacity faul
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// A launch pair assembled by hand.
+//
+// The pair is the one board that tells a class which of two things is better,
+// and `strong-and-weak` is what draws that: the tick, the cross, the red weak
+// card. Three Year 4 decks each invented their own two plain white boxes
+// instead, on a different side each time.
+function writeDesignWithLaunchPair(root) {
+  fs.writeFileSync(path.join(root, 'lesson-design.json'), JSON.stringify({
+    teachingSequence: [
+      {
+        sourceUnitId: 'lesson-section/teaching-sequence/unit-006',
+        kind: 'practise',
+        content: {
+          activity: 'Write the explanation',
+          launch: {
+            established: null,
+            goodLooksLike: {
+              strong: { words: 'A chained explanation.', show: null },
+              weak: { words: 'Four true facts.', show: null },
+              difference: 'Each sentence picks up the one before.'
+            },
+            steps: ['Read it.', 'Write it.']
+          }
+        }
+      }
+    ]
+  }, null, 2));
+}
+
+test('a launch pair built by hand is refused and named', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    writeDesignWithLaunchPair(root);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'What a good explanation does',
+          designUnitId: 'lesson-section/teaching-sequence/unit-006',
+          body: {
+            type: 'row',
+            items: [
+              { type: 'text', value: 'Strong: "A chained explanation."' },
+              { type: 'text', value: 'Weak: "Four true facts."' }
+            ]
+          }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.match(result.stdout, /"signal":"LAUNCH_PAIR_NEEDS_ITS_TEMPLATE"/);
+    assert.match(result.stdout, /strong-and-weak/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a launch pair on its own template passes', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    writeDesignWithLaunchPair(root);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'strong-and-weak',
+          title: 'What a good explanation does',
+          designUnitId: 'lesson-section/teaching-sequence/unit-006',
+          strongHeading: 'An explanation',
+          weakHeading: 'Not an explanation',
+          strong: { type: 'text', value: 'A chained explanation.' },
+          weak: { type: 'text', value: 'Four true facts.' },
+          difference: 'Each sentence picks up the one before.'
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.ok(!/LAUNCH_PAIR_NEEDS_ITS_TEMPLATE/.test(result.stdout));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a lesson whose launch carries no pair is left alone', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    fs.writeFileSync(path.join(root, 'lesson-design.json'), JSON.stringify({
+      teachingSequence: [
+        {
+          sourceUnitId: 'lesson-section/teaching-sequence/unit-006',
+          kind: 'practise',
+          content: {
+            activity: 'Write the explanation',
+            launch: {
+              established: 'We have the four steps.',
+              goodLooksLike: null,
+              steps: ['Read it.', 'Write it.']
+            }
+          }
+        }
+      ]
+    }, null, 2));
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [
+        {
+          template: 'body-full',
+          title: 'How to write it',
+          designUnitId: 'lesson-section/teaching-sequence/unit-006',
+          body: { type: 'text', value: 'Read it. Write it.' }
+        }
+      ]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.ok(!/LAUNCH_PAIR_NEEDS_ITS_TEMPLATE/.test(result.stdout));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

@@ -709,6 +709,62 @@ function teachUnits(jsonPath) {
   return units;
 }
 
+// Units whose launch sets a good instance beside a weak one, and the headings
+// the design gave each side. A launch pair is the one board that tells the class
+// which of two things is the better one, and it has a template that draws that:
+// the tick, the cross, the red weak card, the two cards at one text size.
+// Assembled by hand instead, the same pair came out of three Year 4 decks as two
+// plain white boxes with `Strong:` and `Weak:` typed inside the sentences, on a
+// different side each time.
+function launchPairUnits(jsonPath) {
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return null;
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+  } catch {
+    return null;
+  }
+  const units = new Set();
+  (Array.isArray(design.teachingSequence) ? design.teachingSequence : []).forEach((unit) => {
+    if (!unit || typeof unit !== 'object' || typeof unit.sourceUnitId !== 'string') return;
+    const launch = unit.content && typeof unit.content === 'object' ? unit.content.launch : null;
+    if (!launch || typeof launch !== 'object') return;
+    const pair = launch.goodLooksLike;
+    if (pair && typeof pair === 'object') units.add(unit.sourceUnitId);
+  });
+  return units;
+}
+
+function launchPairWarnings(lesson, jsonPath) {
+  const pairUnits = launchPairUnits(jsonPath);
+  if (!pairUnits || !pairUnits.size) return [];
+  const slides = Array.isArray(lesson.slides) ? lesson.slides : [];
+  const drawn = new Set();
+  slides.forEach((slideData) => {
+    if (!slideData || slideData.template !== 'strong-and-weak') return;
+    slideUnitIds(slideData).forEach((id) => drawn.add(id));
+  });
+  const warnings = [];
+  pairUnits.forEach((unit) => {
+    if (drawn.has(unit)) return;
+    const index = slides.findIndex((slideData) => slideUnitIds(slideData).includes(unit));
+    warnings.push({
+      slide: index >= 0 ? index + 1 : 1,
+      field: 'template',
+      signal: 'LAUNCH_PAIR_NEEDS_ITS_TEMPLATE',
+      message:
+        `${unit} launches its task with a good instance beside a weak one, and no slide ` +
+        'carrying that unit is built from "strong-and-weak". That template is what puts ' +
+        'the tick on one card and the cross and the red on the other, so a child knows ' +
+        'which is which before reading either. Give the pair its own slide before the task ' +
+        'slide: strongHeading, strong, weakHeading, weak, and difference as the one line ' +
+        'underneath (templates.md, strong-and-weak).'
+    });
+  });
+  return warnings;
+}
+
 // The slots on a teach-layout slide that carry teaching a class reads: an
 // explanation line, a question, the line to remember, a passage, steps. A
 // lead and a picture on their own are a caption under a photograph.
@@ -906,6 +962,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
   const slideCount = Array.isArray(lesson.slides) ? lesson.slides.length : 0;
   // Read against the slides as written, before teach layouts become ordinary slides.
   const teachLayout = teachLayoutWarnings(lesson, jsonPath);
+  const launchPair = launchPairWarnings(lesson, jsonPath);
   try {
     lesson = expandTeachLayouts(lesson);
   } catch (error) {
@@ -929,6 +986,7 @@ Fix that slide's layout slots, then run the check again.
   const optionalPictures = countOptionalPictures(lesson);
   const capacity = capacityWarnings(lesson);
   const presentation = teachLayout
+    .concat(launchPair)
     .concat(presentationWarnings(lesson))
     .concat(turnWarnings(lesson))
     .concat(consecutiveModellingWarnings(lesson))

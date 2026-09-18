@@ -764,8 +764,25 @@ def review_content(unit: dict) -> dict:
         residual["takeaway"] = without_class_view_strings(takeaway, ["text"])
     launch = content.get("launch")
     if isinstance(launch, dict):
-        residual["launch"] = without_class_view_strings(
-            launch, ["established", "goodLooksLike", "steps"]
+        residual_launch = without_class_view_strings(
+            launch, ["established", "steps"]
+        )
+        pair = launch.get("goodLooksLike")
+        if isinstance(pair, dict):
+            residual_pair = without_class_view_strings(pair, ["difference"])
+            for side in ("strong", "weak"):
+                instance = pair.get(side)
+                if isinstance(instance, dict):
+                    residual_pair[side] = without_class_view_strings(
+                        instance, ["words"]
+                    )
+            residual_launch["goodLooksLike"] = residual_pair
+        residual["launch"] = residual_launch
+    residual = without_class_view_strings(residual, ["reasoningWords"])
+    rehearsal = content.get("rehearsal")
+    if isinstance(rehearsal, dict):
+        residual["rehearsal"] = without_class_view_strings(
+            rehearsal, ["sayIt", "partnerAsks"]
         )
     return residual
 
@@ -971,8 +988,19 @@ def class_view_unit(
     launch = content.get("launch")
     if isinstance(launch, dict):
         class_view_strings(launch.get("established"), out)
-        class_view_strings(launch.get("goodLooksLike"), out)
+        pair = launch.get("goodLooksLike")
+        if isinstance(pair, dict):
+            for side in ("strong", "weak"):
+                instance = pair.get(side)
+                if isinstance(instance, dict):
+                    class_view_strings(instance.get("words"), out)
+            class_view_strings(pair.get("difference"), out)
         class_view_strings(launch.get("steps"), out)
+    class_view_strings(content.get("reasoningWords"), out)
+    rehearsal = content.get("rehearsal")
+    if isinstance(rehearsal, dict):
+        class_view_strings(rehearsal.get("sayIt"), out)
+        class_view_strings(rehearsal.get("partnerAsks"), out)
     class_view_strings(unit.get("pupilInstruction"), out)
     task = unit.get("taskStructure")
     if isinstance(task, dict):

@@ -260,6 +260,13 @@ BEAT_MINUTES_MAX = 25
 UNLOCKS_MAX_CHARS = 200
 THINKING_MAX_CHARS = 200
 
+# The launch's `difference` is the one line that names what makes the strong
+# instance strong. It is a line a class reads in a glance under two cards, not
+# the paragraph that replaced it on a Year 4 science board on 18 September 2026:
+# forty-six words explaining, in prose, a contrast the two cards above were
+# already showing. The cap is on this one field, not on the slide.
+LAUNCH_DIFFERENCE_MAX_CHARS = 140
+
 # Beats where the teacher acts and children watch or listen. `thinking` may be
 # null there. Everywhere else the thought the beat requires is written down
 # before the activity is chosen, so that a thought which is really "find the
@@ -1303,6 +1310,58 @@ def validate_vocabulary_is_used(
                 )
 
 
+def validate_launch_instance(raw: Any, path: str) -> dict[str, Any]:
+    """One side of the good-beside-weak pair.
+
+    A side is the instance itself, and the instance is whatever the product
+    actually is. `words` carries it when the product is written; `show` names a
+    picture, diagram or helper this beat already has when the product is drawn,
+    built, sorted or labelled. Both together are a written instance beside the
+    thing it describes. The field used to be one prose string for the whole
+    pair, so a launch for a labelled diagram could only print a sentence about
+    what a good label says.
+    """
+    instance = expect_dict(raw, path)
+    keys = {"words", "show"}
+    expect_exact_keys(instance, keys, keys, path)
+    expect_nullable_string(instance["words"], f"{path}.words")
+    expect_nullable_string(instance["show"], f"{path}.show")
+    expect(
+        instance["words"] is not None or instance["show"] is not None,
+        f"{path} must carry the instance: `words` when the product is written, "
+        "`show` naming one of this beat's own photoRefs or representationRefs "
+        "when it is drawn, built, sorted or labelled, or both",
+    )
+    return instance
+
+
+def validate_good_looks_like(raw: Any, path: str) -> None:
+    """A good instance of the product beside a weak one, and the one line that
+    names the difference.
+
+    These are three separate things and they are stored separately, because
+    every downstream reader lays out what it can see. While the whole pair was
+    one prose string, three Year 4 decks each invented their own arrangement of
+    two plain white boxes with `Strong:` and `Weak:` typed inside the sentences,
+    and in two of them the weak instance landed on a different side.
+    """
+    if raw is None:
+        return
+    pair = expect_dict(raw, path)
+    keys = {"strong", "weak", "difference"}
+    expect_exact_keys(pair, keys, keys, path)
+    validate_launch_instance(pair["strong"], f"{path}.strong")
+    validate_launch_instance(pair["weak"], f"{path}.weak")
+    difference = expect_string(pair["difference"], f"{path}.difference")
+    expect(
+        len(difference) <= LAUNCH_DIFFERENCE_MAX_CHARS,
+        f"{path}.difference must be at most {LAUNCH_DIFFERENCE_MAX_CHARS} "
+        "characters: the one line naming what makes the strong instance strong, "
+        "read in a glance under the two cards. A paragraph here is the board "
+        "explaining a contrast it is already showing",
+    )
+
+
 def validate_launch(raw: Any, path: str) -> None:
     """The launch of a substantial task: what the lesson has established, a
     good instance beside a weak one, and the steps. Null when children can
@@ -1312,11 +1371,38 @@ def validate_launch(raw: Any, path: str) -> None:
     launch = expect_dict(raw, path)
     keys = {"established", "goodLooksLike", "steps"}
     expect_exact_keys(launch, keys, keys, path)
-    expect_string(launch["established"], f"{path}.established")
-    expect_nullable_string(launch["goodLooksLike"], f"{path}.goodLooksLike")
+    # `established` is nullable. It was required, and on a launch whose strong
+    # instance is the chain itself the two say the same thing one above the
+    # other: a Year 4 science board listed sugar, germs, acid, enamel and the
+    # hole, then showed the strong instance saying exactly that in sentences.
+    # The instance is the better of the two, so the gathering line goes.
+    expect_nullable_string(launch["established"], f"{path}.established")
+    validate_good_looks_like(launch["goodLooksLike"], f"{path}.goodLooksLike")
     steps = expect_list(launch["steps"], f"{path}.steps")
     for index, step in enumerate(steps):
         expect_string(step, f"{path}.steps[{index}]")
+    expect(
+        launch["established"] is not None
+        or launch["goodLooksLike"] is not None
+        or steps,
+        f"{path} must carry at least one of `established`, `goodLooksLike` or "
+        "`steps`; a launch with none of them is null",
+    )
+
+
+def launch_show_refs(raw: Any) -> list[tuple[str, str]]:
+    """Every `show` a launch names, with the path that named it."""
+    if not isinstance(raw, dict):
+        return []
+    pair = raw.get("goodLooksLike")
+    if not isinstance(pair, dict):
+        return []
+    found: list[tuple[str, str]] = []
+    for side in ("strong", "weak"):
+        instance = pair.get(side)
+        if isinstance(instance, dict) and isinstance(instance.get("show"), str):
+            found.append((instance["show"], f"goodLooksLike.{side}.show"))
+    return found
 
 
 def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> None:
@@ -1400,10 +1486,19 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         strings(("activity", "task"))
         expect_nullable_string(content["format"], f"{path}.format")
     elif kind == "practise":
-        keys = {"activity", "format", "task", "launch"}
+        # Both fields are required and both are usually null. A task that is
+        # not a piece of reasoning writes null twice, the way every other
+        # envelope here writes null for what it does not need. Optional was
+        # tried and rejected: a field the designer never has to answer is a
+        # field nobody answers, and going straight from the launch to the
+        # writing with no talk in between is precisely what happened while
+        # nothing asked.
+        keys = {"activity", "format", "task", "launch"} | REASONING_FIELDS
         expect_exact_keys(content, keys, keys, path)
         strings(("activity", "format", "task"))
         validate_launch(content["launch"], f"{path}.launch")
+        validate_reasoning_words(content["reasoningWords"], f"{path}.reasoningWords")
+        validate_rehearsal(content["rehearsal"], f"{path}.rehearsal")
     elif kind == "question":
         keys = {"focus", "prerequisites", "discoveryFocus"}
         expect_exact_keys(content, keys, keys, path)
@@ -1493,10 +1588,12 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         expect_exact_keys(content, keys, keys, path)
         strings(("whatChildrenPlan", "checkpointQuestion"))
     elif kind == "do-task":
-        keys = {"activity", "launch", "planWithinTask", "checkpointQuestion", "runsBeyondToday", "todayEndsAt"}
+        keys = {"activity", "launch", "planWithinTask", "checkpointQuestion", "runsBeyondToday", "todayEndsAt"} | REASONING_FIELDS
         expect_exact_keys(content, keys, keys, path)
         strings(("activity",))
         validate_launch(content["launch"], f"{path}.launch")
+        validate_reasoning_words(content["reasoningWords"], f"{path}.reasoningWords")
+        validate_rehearsal(content["rehearsal"], f"{path}.rehearsal")
         expect_nullable_string(content["planWithinTask"], f"{path}.planWithinTask")
         expect_nullable_string(content["checkpointQuestion"], f"{path}.checkpointQuestion")
         expect(
@@ -1563,6 +1660,159 @@ def validate_visual(
         valid_configs = {item["id"] for item in rep_by_id[ref]["configurations"]}
         expect(config in valid_configs, f"{path}.configuration unknown for {ref}: {config}")
         expect(value is None and photo_ref is None, f"{path} kind representation may use only representationRef/configuration")
+
+
+REASONING_FIELDS = {"reasoningWords", "rehearsal"}
+REASONING_WORDS_MAX = 6
+REHEARSAL_MAX_CHARS = 200
+
+
+def validate_reasoning_words(raw: Any, path: str) -> None:
+    """The words that connect this task's knowledge, when the task is reasoning.
+
+    A lesson's `vocabulary` is its subject words - decay, plaque, acid; monarchy,
+    rebellion; numerator. Those supply the knowledge. They do not connect it, and
+    a child holding all three and none of `because`, `so`, `causes` or `leads to`
+    writes four true sentences in a row, which is the exact answer the tooth
+    lesson set out to beat. Null when the task is not a piece of reasoning.
+
+    Kept short on purpose. The evidence for sentence stems as an intervention is
+    much weaker than for dialogue, vocabulary and modelling, and a laminated set
+    that never changes teaches children to fill a gap rather than to decide what
+    relationship their ideas actually have. A handful chosen for this task, and
+    dropped once the class chooses for itself, is the form that survives that.
+    """
+    if raw is None:
+        return
+    words = expect_list(raw, path)
+    expect(bool(words), f"{path} must be null rather than an empty list")
+    expect(
+        len(words) <= REASONING_WORDS_MAX,
+        f"{path} must name at most {REASONING_WORDS_MAX} connecting words: the "
+        "few this task's explanation actually needs, chosen for the year group, "
+        "not a bank the class picks over",
+    )
+    seen: set[str] = set()
+    for index, word in enumerate(words):
+        value = expect_string(word, f"{path}[{index}]")
+        lowered = value.strip().lower()
+        expect(lowered not in seen, f"{path} repeats {value}")
+        seen.add(lowered)
+
+
+def validate_rehearsal(raw: Any, path: str) -> None:
+    """Say it, be asked one question, then write it.
+
+    The strongest single recommendation in the literacy evidence for a task of
+    this kind is that children articulate the explanation aloud before writing
+    it, because composition and transcription compete for the same attention and
+    talking lets a child build the idea before spelling and handwriting take
+    their share. `partnerAsks` is the second half and the part that does the
+    work: the partner's one question is what turns a first attempt into a second,
+    better one, so the written version is a re-explanation rather than a first
+    draft. Null when the task is not extended writing, or when independent first
+    formulation is the evidence the lesson wants.
+    """
+    if raw is None:
+        return
+    rehearsal = expect_dict(raw, path)
+    keys = {"sayIt", "partnerAsks"}
+    expect_exact_keys(rehearsal, keys, keys, path)
+    for key in ("sayIt", "partnerAsks"):
+        value = expect_string(rehearsal[key], f"{path}.{key}")
+        expect(
+            len(value) <= REHEARSAL_MAX_CHARS,
+            f"{path}.{key} must be at most {REHEARSAL_MAX_CHARS} characters; it "
+            "is what one child says to another, not a second set of criteria",
+        )
+
+
+TAUGHT_TERM_RE = re.compile(r"\{\{([^{}]+)\}\}")
+
+
+def criteria_taught_terms(content: Any) -> list[str]:
+    """Every `{{taught word}}` a success criterion marks, in order."""
+    found: list[str] = []
+
+    def walk(node: Any) -> None:
+        if isinstance(node, str):
+            found.extend(match.group(1).strip() for match in TAUGHT_TERM_RE.finditer(node))
+        elif isinstance(node, list):
+            for item in node:
+                walk(item)
+        elif isinstance(node, dict):
+            for value in node.values():
+                walk(value)
+
+    walk(content)
+    return [term for term in found if term]
+
+
+def term_is_used(term: str, text: str) -> bool:
+    """Whether the instance uses this taught word.
+
+    Lenient about the shape of the word - `plaque` covers `plaque`, `germs`
+    covers `germ` - because the launch writes a sentence, not a word list, and a
+    check that argued about inflections would send designers back over wording
+    that was already right.
+    """
+    stem = re.sub(r"(ies|es|s)$", "", term.strip().lower())
+    if len(stem) < 3:
+        stem = term.strip().lower()
+    return bool(stem) and stem in text.lower()
+
+
+def validate_launch_uses_the_taught_words(
+    unit: dict[str, Any],
+    path: str,
+    sc_by_id: dict[str, dict[str, Any]],
+) -> None:
+    """The good instance is a piece of work that would meet this lesson's own
+    standard, including the taught words that standard names.
+
+    The tooth-decay launch of 18 September 2026 showed a model explanation that
+    never said `plaque`, while the criteria a child was then marked against said
+    `write what the germs in the {{plaque}} do with that sugar`. A class is shown
+    what good looks like and then held to a standard the model itself would fail.
+
+    The evidence Daniel brought back the same day puts it the other way round and
+    more usefully: the test of whether a word has been taught is not whether a
+    child can define it, but whether they decide for themselves that it is the
+    word they need in order to explain. A model that leaves the word out is the
+    one place the lesson could have shown that decision being made and did not.
+    """
+    content = unit.get("content")
+    if not isinstance(content, dict):
+        return
+    launch = content.get("launch")
+    if not isinstance(launch, dict):
+        return
+    pair = launch.get("goodLooksLike")
+    if not isinstance(pair, dict):
+        return
+    strong = pair.get("strong")
+    if not isinstance(strong, dict) or not isinstance(strong.get("words"), str):
+        # A good instance the class looks at rather than reads - a diagram, a
+        # sketch, a sorted set - carries its words on the picture, not here.
+        return
+    words = strong["words"]
+    missing: list[str] = []
+    for ref in unit.get("successCriteriaRefs") or []:
+        criterion = sc_by_id.get(ref)
+        if criterion is None:
+            continue
+        for term in criteria_taught_terms(criterion.get("content")):
+            if not term_is_used(term, words) and term not in missing:
+                missing.append(term)
+    expect(
+        not missing,
+        f"{path}.content.launch.goodLooksLike.strong.words is the model of this "
+        f"task and does not use {', '.join(missing)}, which this beat's success "
+        "criteria name as taught words the work must use. Write the model as a "
+        "child meeting the criteria would write it, or take the word out of the "
+        "criteria; a class shown a model that would fail the standard is being "
+        "marked against something it was never shown",
+    )
 
 
 def validate_source_unit(
@@ -1678,6 +1928,20 @@ def validate_source_unit(
     sticky_refs = validate_ref_list(unit["stickyKnowledgeRefs"], f"{path}.stickyKnowledgeRefs", sticky_ids)
     validate_ref_list(unit["misconceptionRefs"], f"{path}.misconceptionRefs", misconception_ids)
     photo_refs = validate_ref_list(unit["photoRefs"], f"{path}.photoRefs", photo_ids)
+
+    # A launch that shows a picture, diagram or helper names one this beat
+    # already carries, so the slide designer resolves it the way it resolves
+    # every other picture on the beat and never invents one to fill the card.
+    unit_shows = {ref for ref in photo_refs}
+    unit_shows |= {ref["ref"] for ref in representation_refs}
+    for shown, where in launch_show_refs(unit["content"].get("launch")):
+        expect(
+            shown in unit_shows,
+            f"{path}.content.launch.{where} names {shown}, which is not one of "
+            f"this beat's photoRefs or representationRefs. The launch shows "
+            "something the beat already has; add it to the beat first",
+        )
+
     task_structure = validate_task_structure(
         unit.get("taskStructure"),
         f"{path}.taskStructure",
@@ -3028,6 +3292,7 @@ def validate_design(
             concept_ids=set(concept_by_id),
             photo_ids=initial_photo_ids,
         )
+        validate_launch_uses_the_taught_words(unit, path, sc_by_id)
         if structure == "Skill-based" and unit["kind"] in {"my-turn", "our-turn", "your-turn"}:
             concept_ref = unit["conceptRef"]
             expect(concept_ref is not None, f"{path}.conceptRef is required for {unit['kind']}")

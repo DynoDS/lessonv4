@@ -315,6 +315,41 @@ When the two headings are taught vocabulary rather than opposing categories — 
 
 The two cards occupy roughly the upper 60% of the body; the `supports` row occupies the lower 40%. The left card uses a blue border and the right card uses an orange border, matching `teach-compare` so children track which is which. A `categoryColor` on either content object overrides that side in the same way.
 
+#### `strong-and-weak`
+
+**Purpose:** the launch's good instance beside the weak one. Two cards side by side: a tick and a black edge on the good one, a cross and a red edge on the weak one, whose words print red throughout. One line along the bottom names the difference, and the gathering line, when the design still carries one, sits above.
+
+**Slots:** `title`, `headerStyle`, `strongHeading`, `weakHeading`, `strong`, `weak`, `difference`, `established`, plus the usual slide-level fields.
+
+- `strongHeading` / `weakHeading` — short child-facing labels for the two cards (`An explanation` / `Not an explanation`, `A good label` / `Not enough`). The mark and the colour already say which is the better one, so the heading says what the thing IS.
+- `strong` / `weak` — content objects, so a side is words (`text`, or a `stack` of them), a photograph, a diagram or any helper. Each card gets half the body's width, so a wide helper is refused by name: a five-box `process-chain` needs the full slide and a three-box one fits.
+- `difference` — the one line naming what makes the strong one strong. Optional, and short: the two cards are showing the contrast, and this names it.
+- `established` — the gathering line, when the design carries one. Omitted when the strong instance already says it.
+
+The builder owns the treatment. It draws both marks, colours the weak side red, strips emphasis marks from the weak side (vocabulary green inside a red card is the taught word looking like the one right thing on a card the class has just been told is the weak one), settles both instances on one text size, and hugs the cards to what they hold rather than stretching a one-line instance down the whole body.
+
+```json
+{ "template": "strong-and-weak",
+  "headerStyle": "title",
+  "title": "What a good explanation does",
+  "designUnitId": "lesson-section/teaching-sequence/unit-006",
+  "strongHeading": "An explanation",
+  "weakHeading": "Not an explanation",
+  "strong": { "type": "text", "align": "left",
+              "value": "Jack sucks toffees all the way home, so sugar is left on his teeth.
+The germs feed on that sugar and make acid.
+The acid eats the enamel away, so a hole starts.",
+              "emphasis": [{ "text": "enamel", "role": "vocabulary" }] },
+  "weak": { "type": "text", "align": "left",
+            "value": "Jack eats toffees.
+There are germs in his mouth.
+Germs make acid." },
+  "difference": "Every sentence picks up the thing before it.",
+  "speakerNotes": "Say to children: ..." }
+```
+
+**Use for:** the launch pair only. This is the one board where the class is told which of two things is better, which is why it is the one board that marks them. A contrast the child decides keeps its own templates: `compare-words` and `compare-pictures` set a wrong idea beside the truth in matching blue and orange cards, and `triangle-nonexample` draws its non-example unmarked on purpose. Marking either would answer the question the slide is asking.
+
 #### `teach-annotated`
 
 **Purpose:** Make a few free-standing observations around one central sentence or object. Up to four coloured callout cards sit in the four corners of the body, each carrying one short annotation, with the thing being discussed in the centre.
