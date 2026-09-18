@@ -512,6 +512,29 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         self.assertIn("`rehearsal` takes its own short slide after the steps and before the task", playbook)
         self.assertIn("`chip-bank` under the steps", playbook)
 
+    def test_the_case_comes_before_the_model(self) -> None:
+        """A child looking at a strong answer beside a weak one with no question
+        in mind is looking at writing. The tooth deck showed Jack's two answers,
+        then four steps, and only then introduced Sam - so the class met the
+        model of an answer before it met the thing it was answering."""
+        preferences = flat(ROOT / "references" / "preferences.md")
+        self.assertIn(
+            "when the task is about a particular case, that line is the case and the question, "
+            "not a recap of the teaching",
+            preferences,
+        )
+        # The task slide keeps the case too, because that is what stays up.
+        self.assertIn("the task slide keeps the case as well", preferences)
+        # The rule names where it does not apply, so it is not read as "always
+        # add a slide": the agreement launch has no case to set.
+        self.assertIn("only when the product is the class's own work", preferences)
+        for route in (CONTENT_BASED, ROOT / "references" / "teaching-sequence-task-centred.md"):
+            self.assertIn("`established` sets the case, not a recap", flat(route))
+        self.assertIn(
+            "the model means nothing to a child with no question in mind",
+            flat(ROOT / "references" / "slide-composition-playbook.md"),
+        )
+
     def test_the_difference_line_is_one_a_child_can_check(self) -> None:
         preferences = flat(ROOT / "references" / "preferences.md")
         self.assertIn("hold their own work against", preferences)

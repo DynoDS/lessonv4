@@ -172,6 +172,8 @@ Practise:
 
 **The instance is whatever the product actually is.** `words` carries it when children write; `show` names one of this beat's own `photoRefs` or `representationRefs` when they draw, build, sort or label, and both together are a written instance beside the thing it describes. Only `show` makes a launch for a labelled diagram show two diagrams rather than a sentence about what a good label says.
 
+**`established` sets the case, not a recap.** When the task is about a particular case, this line is who it is, what happened and what they are being asked - the question the class holds while they look at the model, on its own short slide before it. A recap of what the lesson established is right only when there is no case to set, and it is `null` when the strong instance already carries it.
+
 **`difference` is one line a child can check their own work against.** The two cards already show the contrast, so this line names what the strong one *does* that the weak one only states, in the words the success criteria or the steps already use. `Each sentence says what caused the next one.` passes; `Every sentence picks up the thing before it.` does not, because a child cannot test their own writing against it.
 
 **The strong instance would meet this lesson's own success criteria.** Every `{{taught word}}` the beat's criteria name appears in it, and the validator refuses a model that leaves one out: a class shown a model that would fail the standard is being marked against something it was never shown.
