@@ -218,6 +218,7 @@ UNIT_FIELDS = {
     "sourceUnitId",
     "label",
     "kind",
+    "minutes",
     "conceptRef",
     "unlocks",
     "thinking",
@@ -233,6 +234,23 @@ UNIT_FIELDS = {
     "answer",
 }
 UNIT_OPTIONAL_FIELDS = {"taskStructure"}
+
+# The clock. A lesson runs about 45 minutes end to end (`preferences.md` -> Time),
+# and the beats have to sum to the slot with real minutes left for the ordinary
+# business of a classroom: books out, the date and objective copied, moving to
+# tables and back. LESSON_TEACHING_MINUTES is what the beats may take between
+# them; the rest is that business.
+#
+# It exists as a number because it was true as prose and never applied. A Year 4
+# history lesson (18 September 2026) reached the teacher with a starter, three
+# Teach beats, three Do beats including a card sort at tables, a worksheet and a
+# closing question, and nobody had added it up: "I think because we had a big
+# task already, then we've also got to do worksheet, it won't fit the 45 min."
+# Each beat had earned its place separately, which is exactly the failure a
+# budget exists to push back on.
+LESSON_TEACHING_MINUTES = 40
+BEAT_MINUTES_MAX = 25
+
 
 UNLOCKS_MAX_CHARS = 200
 THINKING_MAX_CHARS = 200
@@ -1535,6 +1553,13 @@ def validate_source_unit(
     expect_exact_keys(unit, UNIT_FIELDS | UNIT_OPTIONAL_FIELDS, UNIT_FIELDS, path)
     validate_source_unit_id(unit["sourceUnitId"], f"{path}.sourceUnitId", section, ordinal)
     expect_string(unit["label"], f"{path}.label")
+    minutes = unit["minutes"]
+    expect(
+        isinstance(minutes, int) and not isinstance(minutes, bool) and 1 <= minutes <= BEAT_MINUTES_MAX,
+        f"{path}.minutes must be a whole number of minutes between 1 and {BEAT_MINUTES_MAX}: "
+        "how long this beat actually takes with this class, so the lesson can be added up against "
+        "the slot before it is built",
+    )
     kind = expect_string(unit["kind"], f"{path}.kind")
     expect(kind in allowed_kinds, f"{path}.kind invalid for this section/route: {kind}")
 
@@ -2612,6 +2637,47 @@ def validate_resource_opportunities(
             )
 
 
+def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
+    """The beats have to add up to a lesson that fits the hour it is taught in.
+
+    Each beat earns its place separately and nothing else pushes back, so an arc
+    can be excellent beat by beat and still not fit. The teacher met exactly that
+    on 18 September 2026, reading a finished Year 4 history deck: a card sort at
+    tables after an already-big record task, with the worksheet still to come.
+
+    The number is the designer's own, one per beat, because the point is the
+    trade-off being made while the lesson is designed rather than discovered
+    while it is taught. A run over the budget is refused here, where cutting a
+    beat is a paragraph, and not in the classroom, where it is the plenary.
+    """
+    beats: list[tuple[str, int]] = []
+    starter = root.get("starter")
+    if isinstance(starter, dict) and isinstance(starter.get("minutes"), int):
+        beats.append((starter.get("label") or "the starter", starter["minutes"]))
+    for unit in root.get("teachingSequence") or []:
+        if isinstance(unit, dict) and isinstance(unit.get("minutes"), int):
+            beats.append((unit.get("label") or unit.get("sourceUnitId") or "a beat", unit["minutes"]))
+    ending = root.get("ending") or {}
+    beat = ending.get("beat") if isinstance(ending, dict) else None
+    if ending.get("included") and isinstance(beat, dict) and isinstance(beat.get("minutes"), int):
+        beats.append((beat.get("label") or "the ending", beat["minutes"]))
+    if not beats:
+        return
+    total = sum(minutes for _, minutes in beats)
+    if total <= LESSON_TEACHING_MINUTES:
+        return
+    longest = sorted(beats, key=lambda pair: pair[1], reverse=True)[:3]
+    named = "; ".join(f"{label} {minutes}min" for label, minutes in longest)
+    expect(
+        False,
+        f"the lesson's beats add up to {total} minutes and the teaching part of the slot is "
+        f"{LESSON_TEACHING_MINUTES}, leaving the rest for books, the date and objective, and "
+        f"moving the class. The longest beats are: {named}. Cut a beat or take a cheaper form of "
+        "one (a sort done as a class discussion rather than printed cards at tables); do not shave "
+        "a minute off each, because the beats were honest and the lesson is too big",
+    )
+
+
 def validate_design(
     design: Any,
     photos: Any,
@@ -2925,6 +2991,7 @@ def validate_design(
 
     validate_route_sequence(structure, sequence, concept_items)
     validate_teach_says_it_once(sequence, sticky_by_id)
+    validate_lesson_fits_the_slot(root)
 
     if structure != "Skill-based":
         validate_idea_instances(root, sequence, concept_items)

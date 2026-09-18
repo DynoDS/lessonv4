@@ -105,6 +105,7 @@ def source_unit(
     misconception_refs: list | None = None,
     photo_refs: list | None = None,
     pupil_instruction: str | None = None,
+    minutes: int = 3,
     script: str | None = "Say to children: Have a look at this. What do you notice?",
     teacher_info: str | None = None,
     look_for: str | None = None,
@@ -115,6 +116,7 @@ def source_unit(
         "sourceUnitId": f"lesson-section/teaching-sequence/unit-{ordinal:03d}",
         "label": label or kind.replace("-", " ").title(),
         "kind": kind,
+        "minutes": minutes,
         "conceptRef": concept_ref,
         "unlocks": 'They can do the step this beat taught, which the next beat uses.',
         "thinking": "Which tens go together, and which ones?",
@@ -159,6 +161,7 @@ def valid_contract():
             "sourceUnitId": "lesson-section/starter/unit-001",
             "label": "Starter",
             "kind": "starter",
+            "minutes": 6,
             "conceptRef": None,
             "unlocks": None,
             "thinking": "What goes with this number to make 10?",
@@ -2641,3 +2644,50 @@ def test_picture_words_match_the_engine():
     out = subprocess.run(["node", "-e", script, json.dumps(words)], cwd=root, capture_output=True, text=True, check=True)
     engine = json.loads(out.stdout)
     assert engine == [module.picture_part(word) for word in words], dict(zip(words, engine))
+
+
+# --- the lesson has to fit the lesson --------------------------------------
+
+
+def test_every_beat_says_how_long_it_takes():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0].__setitem__("minutes", None),
+        "minutes must be a whole number of minutes",
+    )
+
+
+def test_a_beat_cannot_claim_the_whole_lesson():
+    assert_invalid(
+        lambda design, photos: design["teachingSequence"][0].__setitem__("minutes", 90),
+        "minutes must be a whole number of minutes",
+    )
+
+
+def test_a_lesson_whose_beats_do_not_fit_the_slot_is_refused():
+    """Each beat earns its place separately and nothing else pushes back, so an
+    arc can be excellent beat by beat and still not fit the 45 minutes it is
+    taught in. The teacher met that on a finished Year 4 history deck."""
+    def mutate(design, photos):
+        for unit in design["teachingSequence"]:
+            unit["minutes"] = 12
+    assert_invalid(mutate, "the teaching part of the slot is 40")
+
+
+def test_the_refusal_names_the_longest_beats_to_cut():
+    def mutate(design, photos):
+        design["teachingSequence"][0]["minutes"] = 20
+        for unit in design["teachingSequence"][1:]:
+            unit["minutes"] = 9
+    try:
+        design, photos = valid_contract()
+        mutate(design, photos)
+        module.validate_design(design, photos)
+    except module.ContractError as exc:
+        assert "20min" in str(exc), str(exc)
+    else:
+        raise AssertionError("contract unexpectedly validated")
+
+
+def test_a_lesson_inside_the_slot_passes():
+    design, photos = valid_contract()
+    module.validate_design(design, photos)

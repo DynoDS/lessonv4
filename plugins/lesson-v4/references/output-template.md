@@ -94,6 +94,8 @@ Instructional source-unit IDs are separate from display labels and never contain
 
 The section plus ordinal is the stable identity for the current authored structure. `label` carries the human-readable name and may be corrected without changing the ID.
 
+`minutes` is how long this beat really takes with a class. Every source unit carries one, and the validator adds them up: the beats may take 40 minutes between them, and the rest of the 45 is books out, the date and objective, and moving children to tables and back. A lesson over the budget is refused rather than trimmed a minute at a time, because the beats were honest and it is the lesson that is too big (`lesson-designer.md`, writing each beat's `minutes`).
+
 `sourceUnitId` stability means stability across label/text correction, **not** persistence across structural editing. Inserting, deleting or reordering an instructional source unit intentionally renumbers that section from the structural change onward. Treat that as an authoritative source change and let the existing source-snapshot/checkpoint invalidation rebuild affected work. Do not preserve stale ordinals across a purposeful redesign.
 
 ### Teacher orientation
@@ -405,6 +407,7 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
   "sourceUnitId": "lesson-section/teaching-sequence/unit-001",
   "label": "My Turn",
   "kind": "my-turn",
+  "minutes": 6,
   "conceptRef": "concept-001",
   "unlocks": "They can partition an amount into pounds and pence, which the adding step needs.",
   "thinking": "Which of these coins make up the pounds, and which are left as pence?",

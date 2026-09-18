@@ -392,6 +392,7 @@ def source_unit(
         "sourceUnitId": source_unit_id,
         "label": PLACEHOLDER,
         "kind": kind,
+        "minutes": PLACEHOLDER,
         "conceptRef": concept_ref,
         "unlocks": PLACEHOLDER,
         "thinking": PLACEHOLDER,
