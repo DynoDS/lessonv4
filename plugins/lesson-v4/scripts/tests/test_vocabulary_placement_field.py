@@ -65,19 +65,31 @@ def unit_id(design, index=0):
 # ── the timings a lesson has to be able to express ────────────────────────
 
 
-def test_every_word_after_the_starter_is_still_a_legal_plan():
-    # The old default is not banned, it is simply no longer automatic. A set of
-    # terms a lesson genuinely needs before it begins belongs here.
+def test_a_card_sits_in_front_of_the_beat_that_needs_the_word():
+    # The old default (everything after the starter) is not banned, it is just
+    # no longer free: it holds when the next beat is the one that needs those
+    # words, and here that beat is the Teach, so the card sits after the observe.
+    design, photos = valid_content_contract()
+    teach_anchor = unit_id(design, 0)
+    scheduled(design, (teach_anchor, word_ids(design)))
+    module.validate_design(design, photos)
+
+
+def test_a_card_shown_beats_before_the_word_is_needed_is_refused():
+    """The teacher, on a Year 4 science deck (18 September 2026): "the vocab
+    slide is used when they are about to meet, use or need that word for the
+    next slide." That deck introduced decay, plaque and acid together after the
+    starter; plaque and acid were needed next and decay was not needed for
+    another three beats, so the class met a definition and then did other work.
+    """
     design, photos = valid_content_contract()
     scheduled(design, (starter_id(design), word_ids(design)))
-    module.validate_design(design, photos)
-
-
-def test_a_word_may_be_introduced_before_the_teaching_that_needs_it():
-    design, photos = valid_content_contract()
-    words = word_ids(design)
-    scheduled(design, (starter_id(design), words))
-    module.validate_design(design, photos)
+    try:
+        module.validate_design(design, photos)
+    except module.ContractError as exc:
+        assert "first needed" in str(exc), str(exc)
+    else:
+        raise AssertionError("a card shown beats early unexpectedly validated")
 
 
 def test_two_groups_may_land_at_two_different_teaching_points():

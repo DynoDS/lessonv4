@@ -1276,6 +1276,31 @@ def validate_vocabulary_is_used(
                 "rather than only meet its definition. If nothing after the card needs the word, it is "
                 "not this lesson's vocabulary",
             )
+            # And it earns it *here*: a card is shown because the class is about
+            # to meet, use or need that word in the beat that follows it. A Year
+            # 4 science lesson (18 September 2026) introduced decay, plaque and
+            # acid together after the starter; plaque and acid were used in the
+            # next beat and decay was not needed for another four, so the class
+            # met a definition, did two beats of other work, and met the thing it
+            # named later. The teacher: "the vocab slide is used when they are
+            # about to meet, use or need that word for the next slide."
+            first_use = None
+            for offset, unit in enumerate(sequence[start:]):
+                if any(re.search(pattern, _unit_words(unit)) for pattern in _word_patterns(word)):
+                    first_use = (offset, unit)
+                    break
+            if first_use and first_use[0] > 0:
+                gap, unit = first_use
+                label = unit.get("label") or unit.get("sourceUnitId")
+                expect(
+                    False,
+                    f"vocabularyIntroductions[{index}]: `{word}` is introduced here and first needed "
+                    f"{gap} beat{'s' if gap != 1 else ''} later, at `{label}`. A card is shown because "
+                    "the class is about to meet, use or need that word in the beat straight after it, "
+                    "so move this word to its own introduction there. The alternative, where the word "
+                    "belongs earlier than the check can see, is that an earlier beat should be saying "
+                    "it and is not: then the repair is the beat's own words, not the card's place",
+                )
 
 
 def validate_launch(raw: Any, path: str) -> None:

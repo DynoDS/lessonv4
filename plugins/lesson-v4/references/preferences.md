@@ -354,6 +354,8 @@ Two things decide the moment. A term children need in order to follow an instruc
 
 Three boundaries. A word must not be introduced after its last meaningful use; that is not late teaching, it is no teaching. A definition must not hand over what an exploration exists to discover: if the task is for children to notice which things stayed the same, naming that noticing first is telling them the answer, so the word follows the exploration. **And a card must not answer the question the very next beat is about to ask.** That is the same fault one slide earlier and it is the one that reaches a class, because the card looks like a reference rather than an answer: a Year 4 teeth deck showed two teeth and asked what was different about their biting edges, then went straight to a card defining incisors as the front teeth with thin edges that cut, before anybody had answered. Read each introduction against the beat that follows it, not only against the beat that needs the word.
 
+**A card sits in front of the beat that needs the word.** The next beat uses it, because that is what a card is for: the class is about to meet, use or need the word now. The validator names the beat where a word is first needed when its card sits further back, so a set introduced together has to be a set the next beat genuinely needs.
+
 The Lesson Designer records this as `vocabularyIntroductions`, one entry per introduction, in the order they happen.
 
 The card is somewhere children glance back at, not somewhere the lesson teaches from, so keep it uncluttered and never inaccurate. When a necessary caveat or fuller explanation would make the card too long, that fuller teaching belongs on the Teach slide. Add a visual note where it makes the meaning clearer.
