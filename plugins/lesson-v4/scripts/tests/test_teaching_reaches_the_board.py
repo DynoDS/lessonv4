@@ -509,8 +509,7 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         for route in (CONTENT_BASED, ROOT / "references" / "teaching-sequence-task-centred.md"):
             self.assertIn("open `explanation-tasks.md`", flat(route))
         playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
-        self.assertIn("`rehearsal` takes its own short slide after the steps and before the task", playbook)
-        self.assertIn("`chip-bank` under the steps", playbook)
+        self.assertIn("`rehearsal` takes its own short slide between the pair and the task", playbook)
 
     def test_the_model_may_be_the_task_s_own_case_when_the_design_says_so(self) -> None:
         """The Viking defect was claiming the writing as each child's own after
@@ -544,6 +543,41 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         self.assertIn(
             "repaired with a parallel case or an honest supported label, never by removing the model",
             flat(DESIGN_REVIEWER),
+        )
+
+    def test_steps_are_stages_not_the_standard_said_again(self) -> None:
+        """The teacher deleted a whole steps slide from the tooth deck and the
+        lesson lost nothing: each of its four steps was already visible
+        somewhere that said it better."""
+        preferences = flat(ROOT / "references" / "preferences.md")
+        self.assertIn("`steps` are stages of work, not the standard said again", preferences)
+        self.assertIn(
+            "whether the class would lose anything it cannot already see if that step were deleted",
+            preferences,
+        )
+        # The rule names when steps DO earn the field, so it is not read as
+        # "steps are bad".
+        self.assertIn(
+            "stages earn the field when they really happen in an order and the later ones "
+            "are invisible until the earlier ones are done",
+            preferences,
+        )
+        for route in (CONTENT_BASED, ROOT / "references" / "teaching-sequence-task-centred.md"):
+            self.assertIn("not the standard said again", flat(route))
+
+    def test_the_rehearsal_slide_holds_three_things_and_the_routine_stays_spoken(self) -> None:
+        playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
+        # The words belong where they are used, not on a steps slide that may
+        # not exist.
+        self.assertIn(
+            "`reasoningWords` go on that same slide as a `chip-bank` underneath",
+            playbook,
+        )
+        self.assertIn("Three things on it and no more", playbook)
+        self.assertIn("The routine around them stays in the script", playbook)
+        self.assertIn(
+            "carrying three things and no more",
+            flat(SLIDE_DESIGNER),
         )
 
     def test_the_case_comes_before_the_model(self) -> None:
