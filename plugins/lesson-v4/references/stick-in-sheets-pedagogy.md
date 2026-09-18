@@ -50,6 +50,8 @@ These never produce a piece: vocabulary cards, success-criteria panels, the on-b
 
 On the same walk, ask the read-from test of every source unit whose `photoRefs` carry a picture the task reads detail off, and give the moment a `source-copy` when both its questions are yes. Ask the text question of every source unit whose teaching carries an account, an extract or a passage: when the task asks children to use its own words, the moment takes a `source-text`.
 
+**The size of the beat decides, not the wording.** A quick marking move is whiteboard work: children read the line off the board and write the phrase, and printing a class set for thirty seconds of thinking is paper nobody needed. What has to arrive fully resourced is the beat that is a main activity in miniature, where children need two things at once - something to work into and something to work from - and keep what they write. That beat is the one the check looks at: `resource-opportunities.py stick-in-kits` prints `STICK_IN_SOURCE_FAULT` when a Do beat hands children a representation to complete, asks them to use the source's own words, and no source is printed for them to work from. A quick beat that says `underline` is left alone.
+
 Walk the whole design before emitting anything, so the pack's pieces come out in lesson order and none is missed.
 
 ## Faithfulness

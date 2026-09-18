@@ -263,3 +263,57 @@ def test_designer_and_reviewer_own_the_decision():
     assert "### Resource opportunities" in template
     guide = (ROOT / "references" / "lesson-design-scaffold.md").read_text(encoding="utf-8")
     assert "resourceOpportunities" in guide
+
+
+# --- the main activity's source has to reach the child's hands -------------
+
+opportunities = load(COMMAND, "ro_resource_opportunities")
+
+
+def _beat(**overrides):
+    beat = {
+        "sourceUnitId": "lesson-section/teaching-sequence/unit-004",
+        "kind": "do",
+        "content": {"task": "Fill in all three parts. Use her own words to show how you know."},
+        "pupilInstruction": "Fill in the table with your partner.",
+        "representationRefs": [{"ref": "rep-001", "configuration": "record", "interaction": "pupil-uses"}],
+        "taskStructure": None,
+    }
+    beat.update(overrides)
+    return beat
+
+
+def test_a_main_activity_working_from_a_source_needs_that_source_printed():
+    design = {"teachingSequence": [_beat()]}
+    faults = opportunities.source_faults(design, {"items": []})
+    assert len(faults) == 1
+    assert "prints no source" in faults[0]
+
+
+def test_the_printed_source_settles_it():
+    design = {"teachingSequence": [_beat()]}
+    stick_in = {"items": [{"visual": "source-text", "spec": {"title": "Patience Kershaw, 1842", "text": "..."}}]}
+    assert opportunities.source_faults(design, stick_in) == []
+
+
+def test_a_quick_marking_beat_is_whiteboard_work_and_is_left_alone():
+    """The teacher's own line (18 September 2026): a quick underline-the-line is
+    whiteboard work, and printing a class set for thirty seconds of thinking is
+    paper nobody needed. What must arrive resourced is the beat needing two
+    things at once, something to work from and something to work into."""
+    quick = _beat(
+        content={"task": "Underline the line in the extract that shows she was frightened."},
+        representationRefs=[],
+        pupilInstruction=None,
+    )
+    assert opportunities.source_faults({"teachingSequence": [quick]}, {"items": []}) == []
+
+
+def test_a_main_activity_that_does_not_work_from_a_source_is_left_alone():
+    sort_beat = _beat(
+        content={"task": "Sort the cards."},
+        representationRefs=[],
+        taskStructure={"kind": "sort", "items": [], "groups": []},
+        pupilInstruction="Put each card under its heading.",
+    )
+    assert opportunities.source_faults({"teachingSequence": [sort_beat]}, {"items": []}) == []

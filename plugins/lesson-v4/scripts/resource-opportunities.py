@@ -77,6 +77,98 @@ def card_kit_units(design: dict) -> list[dict]:
     return [unit for unit in lesson_units(design) if validator.sort_handled_as_cards(unit)]
 
 
+# The words a task uses when the child has to take the source's own words into
+# their answer, or mark the source itself. A beat that asks this needs the
+# source in the child's hands: a child quoting from the board copies it wrongly
+# or slowly, and nobody can underline a line that is on the wall.
+QUOTING_PHRASES = (
+    "own words",
+    "words from",
+    "words that show",
+    "quote",
+    "copy the words",
+    "underline",
+    "circle the",
+    "highlight",
+)
+
+
+def pupil_words(unit: dict) -> str:
+    """Everything this beat puts in front of the class, lower-cased."""
+    parts: list[str] = []
+
+    def walk(value):
+        if isinstance(value, str):
+            parts.append(value)
+        elif isinstance(value, list):
+            for item in value:
+                walk(item)
+        elif isinstance(value, dict):
+            for item in value.values():
+                walk(item)
+
+    walk(unit.get("content"))
+    walk(unit.get("pupilInstruction"))
+    walk(unit.get("taskStructure"))
+    return " ".join(parts).lower()
+
+
+def works_from_a_source(unit: dict) -> bool:
+    words = pupil_words(unit)
+    return any(phrase in words for phrase in QUOTING_PHRASES)
+
+
+def is_main_activity(unit: dict) -> bool:
+    """A Do beat the size of a main activity: children are handed something to
+    work into, so it is not a question answered on whiteboards where they sit.
+
+    The distinction is the teacher's own (18 September 2026): a quick
+    underline-the-line is whiteboard work, and the beat that needs *both* an
+    extract to read and a table to fill is a main activity in miniature, which
+    is the one that has to arrive fully resourced.
+    """
+    if unit.get("kind") != "do":
+        return False
+    refs = unit.get("representationRefs")
+    if isinstance(refs, list) and any(
+        isinstance(ref, dict) and ref.get("interaction") == "pupil-uses" for ref in refs
+    ):
+        return True
+    return isinstance(unit.get("taskStructure"), dict) and bool(unit["taskStructure"])
+
+
+def source_faults(design: dict, stick_in: dict) -> list[str]:
+    """A main-activity Do beat that works from a source needs that source printed.
+
+    A Year 4 history record beat asked children to describe Patience Kershaw's
+    working conditions using her own words, with her account only on the board,
+    while the same lesson's worksheet printed a second account for exactly that
+    reason. The beat read as fully specified and the material it depended on was
+    on the wall, so nothing failed and the class copied a quotation across the
+    room. Only main-activity beats are checked: the quick marking beat the
+    teacher would run on whiteboards is left alone.
+    """
+    faults: list[str] = []
+    items = stick_in.get("items") if isinstance(stick_in, dict) else None
+    items = items if isinstance(items, list) else []
+    printed = any(
+        isinstance(item, dict) and item.get("visual") in {"source-text", "source-copy"}
+        for item in items
+    )
+    for unit in lesson_units(design):
+        if not is_main_activity(unit) or not works_from_a_source(unit):
+            continue
+        if printed:
+            continue
+        faults.append(
+            f"{unit.get('sourceUnitId')}: this beat hands children something to work into and asks "
+            "them to use the source's own words, and the stick-in spec prints no source for them to "
+            "work from. Give it a `source-text` (an account, a letter, an extract) or a `source-copy` "
+            "(a picture), normally one between two, or change the beat so the words are not needed"
+        )
+    return faults
+
+
 def kit_faults(design: dict, stick_in: dict) -> list[str]:
     """Every way the stick-in spec fails to print the kits the design chose.
 
@@ -231,9 +323,12 @@ def main(argv: list[str] | None = None) -> int:
         if stick_in is None:
             return 1
         faults = kit_faults(design, stick_in)
-        if faults:
-            for fault in faults:
-                print(f"STICK_IN_KIT_FAULT: {fault}")
+        for fault in faults:
+            print(f"STICK_IN_KIT_FAULT: {fault}")
+        sources = source_faults(design, stick_in)
+        for fault in sources:
+            print(f"STICK_IN_SOURCE_FAULT: {fault}")
+        if faults or sources:
             return 1
         count = len(card_kit_units(design))
         print(f"STICK_IN_KITS_OK: {count} card kit{'s' if count != 1 else ''} required, all present and faithful")
