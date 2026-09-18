@@ -433,6 +433,13 @@ async function preRenderSvgs(spec, specDir) {
 
   for (const card of cards) {
     if (card && card.visual) collectVisual(card.visual);
+    if (card && card.type === 'diagramSection' && Array.isArray(card.parts)) {
+      // Every part draws its own figure; a section exists to put two or
+      // three of them on one sheet.
+      for (const part of card.parts) {
+        if (part && part.visual) collectVisual(part.visual);
+      }
+    }
     if (card && card.type === 'equivalenceGrid' && Array.isArray(card.rows)) {
       for (const row of card.rows) {
         if (row && row.visual) collectVisual(row.visual);

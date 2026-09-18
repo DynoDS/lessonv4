@@ -225,6 +225,37 @@ def prior_context(lessons: list[dict], index: int) -> str:
     )
 
 
+def coming_context(lessons: list[dict], index: int) -> str:
+    """What the class meets next in this unit, so a resource can tell durable
+    from one-day support.
+
+    A working wall's whole question is forward-looking - is this worth keeping
+    visible once the lesson has finished - and until this existed nothing
+    downstream could answer it. The wall designer was asked whether a card
+    would still be useful in two weeks while being shown one lesson, so it
+    guessed, and two consecutive number-line lessons each printed their own
+    "find the scale" sheet.
+
+    Scoped to the rest of the current unit, and capped, because a resource
+    decides against the lessons it will actually be standing beside.
+    """
+    current = lessons[index - 1]
+    later = [l for l in lessons[index:] if l.get("unit") == current.get("unit")]
+    if not later:
+        return (
+            f'This is the last lesson of "{current.get("unit")}". Nothing later in the unit '
+            "comes back to it, so support built for it lasts one lesson unless the next unit "
+            "genuinely reuses it."
+        )
+    shown = later[:4]
+    lines = "\n".join(f"  - {l['lo']}" for l in shown)
+    more = f"\n  (and {len(later) - len(shown)} more in this unit)" if len(later) > len(shown) else ""
+    return (
+        f'Still to come in "{current.get("unit")}", in order:\n{lines}{more}\n\nUse this to tell '
+        "support the class will need again from support that belongs to today alone."
+    )
+
+
 def decide_next(folder: Path, meta: dict, lessons: list[dict]) -> dict:
     built = counter(folder / "built.json")
     filed = counter(folder / "filed.json")
@@ -237,7 +268,8 @@ def decide_next(folder: Path, meta: dict, lessons: list[dict]) -> dict:
         return {**base, "status": "skip", "reason": "buffer_full"}
     lesson = lessons[built]
     return {**base, "status": "build", "index": lesson["index"], "unit": lesson["unit"], "lo": lesson["lo"],
-            "info": lesson["info"], "prior_context": prior_context(lessons, lesson["index"])}
+            "info": lesson["info"], "prior_context": prior_context(lessons, lesson["index"]),
+            "coming_context": coming_context(lessons, lesson["index"])}
 
 
 def lesson_brief(decision: dict) -> str:
@@ -248,6 +280,7 @@ def lesson_brief(decision: dict) -> str:
         f"Learning objective: {decision['lo']}",
         decision.get("info", ""),
         f"What came before:\n{decision['prior_context']}" if decision.get("prior_context") else "",
+        f"What comes next:\n{decision['coming_context']}" if decision.get("coming_context") else "",
     ]
     return "\n\n".join(p for p in parts if p) + "\n"
 

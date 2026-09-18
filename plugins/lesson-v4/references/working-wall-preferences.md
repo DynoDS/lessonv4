@@ -9,9 +9,11 @@ Visual rendering (fonts, colours, panel borders) lives in `working-wall-html/sty
 
 ---
 
-## The load-bearing principle: cards must teach themselves
+## The load-bearing principle: a card is something the teacher can point at
 
-Every card should offer useful help without requiring the teacher to explain its layout or missing context. Imagine a child returning to the work, a less fluent reader and a child relying on visual structure: can each identify what the reference helps with and use its relevant information?
+The wall is not a reference a child looks up unprompted. It is shared memory: the teacher walks over a week later, points, and says "remember when". That is how children learn to use a wall at all, and it is the only thing the two cards this teacher has ever put up had in common. Write every card as the thing that gesture lands on, which means it is about a moment the class had together and it carries the actual numbers, the actual source, the actual finding, not a general description of the method.
+
+A card should also offer useful help without the teacher explaining its layout or missing context. Imagine a child returning to the work, a less fluent reader and a child relying on visual structure: can each identify what the reference helps with and use its relevant information? It does not have to reteach a lesson a child missed; aiming at that reader is what made cards general and lifeless.
 
 Provide enough context, an example or a visual for that job. A wall reminder need not reteach an entire missed lesson. Choose pictures under `working-wall-visual-language.md` → Choose visuals for the card's learning; text-led references are valid when clear and useful. Preserve a defining diagram or source rather than replacing the learning with labels or decoration.
 

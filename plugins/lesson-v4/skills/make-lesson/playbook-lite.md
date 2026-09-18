@@ -1085,12 +1085,17 @@ Launch Working Wall Designer on every run, the moment the Slide Designer's
 after preparing its packet:
 
 ```text
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare   --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --lesson "[WORKING_DIR]/lesson.json"   --photo-requirements "[applicable photo contract]"   --view-output "[WORKING_DIR]/working-wall-view.md"   --reference-output "[WORKING_DIR]/working-wall-reference.md"   --receipt-output "[WORKING_DIR]/working-wall-packet.receipt.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare   --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --lesson "[WORKING_DIR]/lesson.json"   --photo-requirements "[applicable photo contract]"   --plan-lesson "[WORKING_DIR]/plan-lesson.md"   --view-output "[WORKING_DIR]/working-wall-view.md"   --reference-output "[WORKING_DIR]/working-wall-reference.md"   --receipt-output "[WORKING_DIR]/working-wall-packet.receipt.json"
 ```
 
 Require `WORKING_WALL_PACKET_OK`. The view holds every string and figure a
 card can carry, byte for byte; the reference holds the rules and only the
-card contracts this lesson triggers. That is what replaced two complete
+card contracts this lesson triggers.
+
+Pass `--plan-lesson` on any run from a long-term plan: the wall is the one
+resource whose question looks forward, and that row names what the unit
+still has to come. Omit it otherwise; the view then tells the designer to be
+correspondingly cautious. That is what replaced two complete
 reference files and a hunt through the lesson. Name the two packet files as
 authoritative inputs beside `lesson-design.json`, `lesson.json` and the
 photo contract. If prepare fails after its one infrastructure retry, launch

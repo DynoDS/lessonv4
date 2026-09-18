@@ -26,6 +26,7 @@ const { renderSectionHeading, renderLabelledDiagram, renderMnemonicPoster, rende
 const { renderStickyKnowledge, renderVocabDefinition, renderWorkedExample, renderSentenceStem, renderMisconception } = require("./src/render-panels");
 const { renderReferenceTable, renderEquivalenceGrid, renderVocabChips } = require("./src/render-grids");
 const { renderPhotoMapOverview, renderHeroCallouts, renderCauseCards } = require("./src/render-overview");
+const { renderDiagramSection } = require("./src/render-section");
 const {
   prepareWorkingWallOptionalImages,
   wrapWorkingWallPage,
@@ -47,6 +48,7 @@ const RENDERERS = {
   photoMapOverview: renderPhotoMapOverview,
   heroCallouts: renderHeroCallouts,
   causeCards: renderCauseCards,
+  diagramSection: renderDiagramSection,
 };
 
 function naturalFilename(topic, ext) {

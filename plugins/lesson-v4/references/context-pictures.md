@@ -469,7 +469,19 @@ request before final validation:
 
 `concept` is the short search subject. `context` says what the nearby words
 mean. `avoid` names details that would tell the wrong story. `fallbackEmoji` is
-optional. A visual designer never invents an Educational SVG identity, slug or
+optional.
+
+**A suitable `fallbackEmoji` is a picture of the thing, or a gesture or object
+the child already uses with that meaning away from a screen.** A raised hand
+beside "you can pass" works, because a child puts a hand up. A fast-forward
+skip button beside the same words does not: it is a control off a video
+player, and a Year 4 child reading it has to know the interface before they
+can know the rule. That one reached a printed PSHE wall. The same test rules
+out an arrow standing in for an idea, a tick standing in for a value, and any
+symbol whose meaning comes from software rather than from life. When nothing
+passes it, leave `fallbackEmoji` out: a request with no emoji closes to
+text-only cleanly, and that is a better card than one carrying a symbol the
+child has to decode. A visual designer never invents an Educational SVG identity, slug or
 file path before searching the library. On every surface, the same visual designer that authors
 the request resolves it only after the core resource design is settled, then
 copies only the three publisher-returned fields.

@@ -90,6 +90,7 @@ CARD_FAMILY_ORDER = (
     "photoMapOverview",
     "heroCallouts",
     "causeCards",
+    "diagramSection",
     "referenceTable",
     "workedExample",
     "labelledDiagram",
@@ -133,7 +134,7 @@ DIAGRAM_READING_RE = re.compile(
 )
 
 PREFERENCE_SECTIONS_ALWAYS = (
-    "The load-bearing principle: cards must teach themselves",
+    "The load-bearing principle: a card is something the teacher can point at",
     "Match the lesson's visual supports",
     "Card titles — fixed wording",
     "Wording style — short, concrete, self-contained",
@@ -428,6 +429,10 @@ def offered_families(triggers: dict, families: list[str]) -> list[str]:
         "photoMapOverview": triggers["photoCount"] >= 1,
         "heroCallouts": triggers["photoCount"] >= 1,
         "causeCards": triggers["photoCount"] >= 1,
+        # Offered whenever the lesson draws anything. It is the only family
+        # that puts several drawn figures on one sheet, so a lesson whose
+        # pictures are diagrams must be able to see it.
+        "diagramSection": triggers["diagramReading"],
         "equivalenceGrid": triggers["equivalence"],
         "mnemonicPoster": triggers["mnemonic"],
         "sectionHeading": False,
@@ -458,6 +463,7 @@ def build_view(
     states: dict[str, str],
     working_dir: Path,
     lesson_absent_reason: str | None,
+    unit_context: str | None = None,
 ) -> str:
     meta = design.get("lesson") or {}
     lines = ["# Working Wall View", ""]
@@ -467,6 +473,29 @@ def build_view(
         "from, so a card can quote it exactly. Nothing here is a paraphrase, and "
         "nothing on a card should be either."
     )
+    lines.append("")
+
+    # The wall's own question is forward-looking, so the lessons around this
+    # one come first in the view. Without them the designer was deciding
+    # whether a card would still be wanted in two weeks while looking at a
+    # single lesson, and two consecutive number-line lessons each printed
+    # their own "find the scale" sheet.
+    lines.extend(["## Where this lesson sits", ""])
+    if unit_context:
+        lines.append(unit_context.strip())
+        lines.append("")
+        lines.append(
+            "Answer the point-at test against the lessons named above: name the one "
+            "where the teacher would stand at this card and say \"remember when\"."
+        )
+    else:
+        lines.append(
+            "This run has no plan, so the lessons either side are unknown. You cannot "
+            "name the later lesson the point-at test asks for, so put up only support "
+            "that is durable by its nature - a representation, a structure that repeats "
+            "at several scales, a disciplinary move the subject keeps using - and write "
+            "`cards: []` for anything that is this lesson's own technique."
+        )
     lines.append("")
     lines.extend(["## Lesson", ""])
     for key in ("structure", "subject", "yearGroup", "lo", "displayedLo", "durationMinutes", "scope"):
@@ -832,7 +861,13 @@ def prepare(args: argparse.Namespace) -> int:
     offered = offered_families(triggers, families)
     states = terminal_states(working_dir)
 
-    view = build_view(design, lesson, photos, states, working_dir, lesson_absent_reason)
+    unit_context = None
+    if getattr(args, "plan_lesson", None):
+        plan_lesson_path = Path(args.plan_lesson).resolve()
+        if plan_lesson_path.is_file():
+            unit_context = plan_lesson_path.read_text(encoding="utf-8").strip() or None
+
+    view = build_view(design, lesson, photos, states, working_dir, lesson_absent_reason, unit_context)
     reference, reference_paths = build_reference(
         plugin_root, families, offered, primitives, triggers["primitives"], triggers
     )
@@ -913,6 +948,45 @@ def published_photo_names(working_dir: Path) -> list[str]:
     )
 
 
+# ---------------------------------------------------------------------------
+# Two faults a rendered wall cannot show you and a reader stops noticing.
+
+NUMBER_RE = re.compile(r"-?\d[\d,]*(?:\.\d+)?")
+
+
+def round_trip_example(text: str) -> bool:
+    """Does this worked example finish on the number it started from?
+
+    `2,950 + 100 = 3,050; 3,050 - 100 = 2,950` reached a printed wall. It adds
+    a hundred and takes it straight back off, so the two operations cancel and
+    the card demonstrates nothing about finding either. The lesson had written
+    the clean single example; the card manufactured the return trip so that one
+    example could cover both halves of its title.
+
+    Scoped to items that actually work something out - two or more equals signs
+    and three or more numbers - so an ordinary sentence that happens to repeat
+    a number ("347 is closer to 350 than to 340") is left alone.
+    """
+    if text.count("=") < 2:
+        return False
+    numbers = NUMBER_RE.findall(text)
+    return len(numbers) >= 3 and numbers[0] == numbers[-1]
+
+
+def restates_title(title: str, heading: str) -> bool:
+    """Is a table's first column heading just the card's title again?
+
+    A card called "My explanation" whose first column is also "My explanation"
+    reads as a slip and spends the widest line on the sheet saying the title
+    twice. The singular of a plural title is not this fault: "Food groups" over
+    a "Food group" column is the right heading for that column.
+    """
+    def norm(value: str) -> str:
+        return re.sub(r"[^a-z0-9 ]", "", str(value or "").strip().lower())
+
+    return bool(norm(title)) and norm(title) == norm(heading)
+
+
 def check(args) -> int:
     plugin_root = Path(args.plugin_root).resolve()
     working_dir = Path(args.working_dir).resolve()
@@ -920,7 +994,19 @@ def check(args) -> int:
     wall = read_json(wall_path, "working-wall.json")
     cards = [card for card in (wall.get("cards") or []) if isinstance(card, dict)]
     if not cards:
-        raise PacketError(f"working-wall.json carries no cards: {wall_path}")
+        # No wall is a real answer, and the commonest right one. The designer's
+        # brief has always said so; this check used to refuse it, so in 45 built
+        # lessons the wall was never once declined and the teacher put up two of
+        # the 56 sheets it made. A refusal here does not improve a wall, it only
+        # forces a sheet nobody asked for. All that is required is the reason,
+        # which the run report prints.
+        if not str(wall.get("rationaleNote") or "").strip():
+            raise PacketError(
+                f"working-wall.json declines the wall without saying why: {wall_path}. "
+                "An empty wall is valid; it needs a rationaleNote the report can print."
+            )
+        print("WORKING_WALL_DESIGN_OK")
+        return 0
 
     # Picture availability elsewhere cannot determine a card's teaching needs.
     # Semantic completeness and visual necessity belong to the designer and
@@ -933,8 +1019,25 @@ def check(args) -> int:
     source_tables = [item for _, _, item in rendered_objects(lesson)
                      if item.get("type") == "table" and item.get("headers") and item.get("rows")]
     for card in cards:
+        title = card.get("title") or ""
+        for item in card.get("items") or []:
+            text = item.get("text") if isinstance(item, dict) else item
+            if round_trip_example(str(text or "")):
+                raise PacketError(
+                    f'Working-wall card "{title}" works an example that ends on the number it '
+                    f'started from: "{text}". It applies an operation and undoes it, so it shows '
+                    "the two cancelling rather than how to do either. Work one case through to a "
+                    "different answer, and give a second direction its own line from a different "
+                    "starting number."
+                )
         if card.get("type") != "referenceTable":
             continue
+        columns = card.get("columns") or []
+        if columns and restates_title(title, columns[0]):
+            raise PacketError(
+                f'Working-wall table "{title}" repeats its own title as its first column heading. '
+                "Name what that column holds instead, so the widest line on the sheet earns its space."
+            )
         matching = [table for table in source_tables if card.get("columns") == table["headers"]]
         if matching and not any(card.get("rows") == table["rows"] for table in matching):
             raise PacketError("Working-wall reference table changes the source rows; preserve the teaching reference.")
@@ -951,6 +1054,7 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--lesson-design", required=True)
     prep.add_argument("--lesson")
     prep.add_argument("--photo-requirements")
+    prep.add_argument("--plan-lesson", help="the plan row for this lesson, when the run came from a long-term plan; carries what comes next in the unit")
     prep.add_argument("--view-output", required=True)
     prep.add_argument("--reference-output", required=True)
     prep.add_argument("--receipt-output", required=True)

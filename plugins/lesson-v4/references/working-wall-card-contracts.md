@@ -6,7 +6,13 @@ The judgement about which card earns a place, and how a card is combined, orient
 
 ## The wall-worthy test
 
-A card earns its place only when it passes all of its family's criteria below, and every card of every family also passes two general tests. The self-contained test: a child who missed the lesson can use the card alone, without the teacher, the slides or the worksheet. The visual gate: the card carries something a child recognises by sight, a legitimate P1 diagram, a legitimate P1 photo, or a genuine card-level P2 picture on a family that supports one, with the single exception of a step-by-step success-criteria card.
+A card earns its place only when it passes all of its family's criteria below, and every card of every family also passes two general tests.
+
+**The point-at test.** Name the later lesson in this unit where the teacher would stand at this card and say "remember when". If you cannot name one, the card does not go up, however good it is: it belongs on the board for today and comes down with the lesson. This is the test that decides most runs, and for most lessons it fails, which is why `cards: []` is the commonest correct answer and passes every check. What survives it is not today's technique. In maths it is the representation or the one structure that repeats at several scales; in history it is the chronology, the disciplinary move and the evidence the enquiry keeps returning to.
+
+Why this replaced the older test, which asked whether a child who missed the lesson could use the card alone: that test aims at the wrong reader. A card written for a child who was not there has to explain itself from scratch, so it comes out general and lifeless, and across 45 built lessons the teacher put up two of the 56 sheets it produced. The two he kept were the two he could point at a week later. The card still has to be usable by the child standing in front of it, with enough context, an example or a picture to help without the teacher explaining its layout; it does not have to reteach a missed lesson.
+
+The visual gate: the card carries something a child recognises by sight, a legitimate P1 diagram, a legitimate P1 photo, or a genuine card-level P2 picture on a family that supports one, with the single exception of a step-by-step success-criteria card.
 
 The wall is finite. The normal output is one coherent overview of the lesson's main learning; a second teaching card is exceptional and must do a genuinely different, repeatedly consulted job that the first cannot absorb. Never more than two teaching cards. Wall furniture (a banner, section headings) is produced only on an explicit request from the teacher or the spawn prompt and counts as physical output.
 
@@ -23,7 +29,7 @@ Fields that every card shares, whatever its family.
 | `lessonSlug` | Slug used elsewhere in the pipeline; included for symmetry. |
 | `rationaleNote` | One or two sentences explaining why these cards earn a place. Never printed; included on the orchestrator's final report so the teacher sees the reasoning. |
 | `cards` | Array of 0–2 teaching cards. Empty when nothing is wall-worthy. One is the default; a second requires a distinct, durable job that cannot be combined without harming five-second readability. |
-| `cards[].type` | One of `photoMapOverview`, `heroCallouts`, `causeCards`, `referenceTable`, `workedExample`, `stickyKnowledge`, `sentenceStem`, `misconception`, `vocabDefinition`, `vocabChips`, `equivalenceGrid`, `mnemonicPoster`, `labelledDiagram`, `sectionHeading`, `banner`. |
+| `cards[].type` | One of `photoMapOverview`, `heroCallouts`, `causeCards`, `diagramSection`, `referenceTable`, `workedExample`, `stickyKnowledge`, `sentenceStem`, `misconception`, `vocabDefinition`, `vocabChips`, `equivalenceGrid`, `mnemonicPoster`, `labelledDiagram`, `sectionHeading`, `banner`. |
 | `cards[].page.size` | Always `A3`. Every wall card prints at this size; write it on every card. |
 | `cards[].page.orientation` | One of `landscape`, `portrait`. |
 | `cards[].title` | Title bar text — short, child-facing. **5 words or fewer, 30 characters or fewer.** Long titles eat the body's space. For `vocabDefinition`, the title IS the term being defined (e.g. "Acute angle", "Denominator"). |
@@ -69,6 +75,53 @@ If nothing earns a card, the file is still written with `cards: []`, the metadat
 | Field | Notes |
 |---|---|
 | `cards[].people` | Used by `causeCards`. Supply exactly three `{ "title", "photo", "action", "reason" }` objects. Use when the lesson compares three actors through the same causal chain: who → what they do → why. |
+
+
+### diagramSection
+
+One wall **section** rather than one lesson's sheet: two to four drawn parts side by side under a single section title, each with its own heading, its own figure and a line or two of the actual numbers underneath. The shape of a real maths working wall, where `NUMBER LINES` holds the line the class read and the line they found the midpoint on, and `ROUNDING` holds the marked line beside the three-step strategy.
+
+This is the only family that puts several **drawn** figures on one sheet. `photoMapOverview`, `heroCallouts` and `causeCards` each require photographs, so before this family existed a lesson whose pictures were drawings could only produce a panel of words with one figure beside it. If the learning is carried by diagrams, reach for this before a `workedExample`.
+
+**Wall-worthy criteria, all of which must pass:** Two to four drawn figures carry the learning, and each part shows a different case, step or scale of one idea rather than the same figure twice; the parts belong under one section title a child could point to from across the room; each part's words are the worked numbers or the finding themselves, not a description of the method to follow; you can name the later lesson in this unit where the teacher would point at this section and say "remember when".
+
+**Do not use it when:** only one figure carries the learning (that is `workedExample`, `stickyKnowledge` or `labelledDiagram`); the figures are photographs (`heroCallouts`, `photoMapOverview`, `causeCards` are shaped for those); or the parts have no honest shared section title, which means they are separate sheets and the wall has room for at most two.
+
+**Default orientation:** **Landscape**: sections sit side by side on the wall, and a wide figure like a number line reads across. Portrait stacks the parts instead.
+
+| Field | Notes |
+|---|---|
+| `cards[].title` | The section name, as it would be read across the room: `Number lines`, `Rounding`, `Place value`. Same 5-word, 30-character cap as every card title. |
+| `cards[].parts` | 2–4 part objects. Four parts lay out two-by-two; two or three sit in a row on landscape. |
+| `cards[].parts[].heading` | Required. What this part shows, in the lesson's own words: `Rounding to the nearest 10`, `Estimating and finding the midpoint`. It shrinks to fit its own column, so keep it to one line where you can. |
+| `cards[].parts[].visual` | The drawn figure, exactly as the board drew it: any primitive under "Visual primitives". At least one part must carry one, and a part that names a figure the builder cannot draw fails the build rather than printing its words alone. A part with no figure is for something like the three-step strategy beside the marked line. |
+| `cards[].parts[].notes` | Short lines under the figure: the worked numbers (`start 1,200   end 1,600`), or the finding (`The midpoint between 2,000 and 3,000 is 2,500.`). Not instructions. |
+| `cards[].parts[].steps` | Optional numbered method, when this part *is* the strategy: `["Find the neighbouring multiples.", "Find halfway.", "Choose the closest."]`. Each step numbers itself in the part's colour. |
+| `cards[].parts[].result` | Optional single answer line, printed on its own coloured strip so a child finds the result before the workings: `347 rounds to 350.` |
+
+The layout gives the figure the room and the words what is left: a part's text is held to a share of its height so a long note can never push the drawing down to a strip. That is the rule, so write notes that fit beside a picture rather than replacing it.
+
+**Complete example:**
+
+```json
+{
+  "type": "diagramSection",
+  "page": { "size": "A3", "orientation": "landscape" },
+  "title": "Rounding",
+  "parts": [
+    {
+      "heading": "Rounding to the nearest 10",
+      "visual": { "type": "numberLine", "start": 340, "end": 350, "interval": 5, "labels": "all", "answer": { "at": 347, "text": "347" } },
+      "notes": ["347 is closer to 350 than to 340."],
+      "result": "347 rounds to 350."
+    },
+    {
+      "heading": "Strategy",
+      "steps": ["Find the neighbouring multiples.", "Find halfway.", "Choose the closest."]
+    }
+  ]
+}
+```
 
 
 ### referenceTable
@@ -126,6 +179,8 @@ Example:
 ### workedExample
 
 **Wall-worthy criteria, all of which must pass:** Lesson teaches an explicit multi-step procedure children will repeat; Model is durable (still useful in 2 weeks); Worth glancing back at, not just doing once; Includes a finished worked example, not just steps
+
+**The worked example works one case through to an answer, and finishes somewhere other than where it started.** A card covering more than one operation shows one example of each, never one example and its undo. A "10 and 100 more or less" wall card carried `2,950 + 100 = 3,050; 3,050 - 100 = 2,950`: it adds a hundred and takes it straight back off, so a child reading it sees the two operations cancel and learns nothing about finding either. The lesson itself had written the clean version, `100 more than 2,950 is 3,050`, and the card manufactured the return trip to make one example cover both halves of its title. Copy the lesson's example. If the card genuinely needs both directions, give both directions their own worked line from different starting numbers, or let the title cover only the direction the example shows.
 
 **Default orientation:** **Landscape**: needs room for steps without cramping
 

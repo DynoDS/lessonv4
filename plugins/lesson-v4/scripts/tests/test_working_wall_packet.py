@@ -44,7 +44,7 @@ def load_module():
 packet = load_module()
 
 
-def run_prepare(working_dir: Path, *, lesson: Path | None, photos: Path | None) -> tuple[subprocess.CompletedProcess, Path, Path, Path]:
+def run_prepare(working_dir: Path, *, lesson: Path | None, photos: Path | None, plan_lesson: Path | None = None) -> tuple[subprocess.CompletedProcess, Path, Path, Path]:
     view = working_dir / "working-wall-view.md"
     reference = working_dir / "working-wall-reference.md"
     receipt = working_dir / "working-wall-packet.receipt.json"
@@ -61,6 +61,8 @@ def run_prepare(working_dir: Path, *, lesson: Path | None, photos: Path | None) 
         command += ["--lesson", str(lesson)]
     if photos is not None:
         command += ["--photo-requirements", str(photos)]
+    if plan_lesson is not None:
+        command += ["--plan-lesson", str(plan_lesson)]
     result = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
     return result, view, reference, receipt
 
@@ -250,7 +252,7 @@ def test_furniture_is_never_offered_by_evidence(geography: Path) -> None:
 def test_the_reference_carries_the_always_rules_and_points_at_the_full_files(geography: Path) -> None:
     _, _, reference, _ = run_prepare(geography, lesson=geography / "lesson.json", photos=geography / "photo-requirements.json")
     text = reference.read_text(encoding="utf-8")
-    for heading in ("## The wall-worthy test", "## The load-bearing principle: cards must teach themselves", "## Choose visuals for the card's learning", "## When to combine items on one card", "## Every card", "## Full files"):
+    for heading in ("## The wall-worthy test", "## The load-bearing principle: a card is something the teacher can point at", "## Choose visuals for the card's learning", "## When to combine items on one card", "## Every card", "## Full files"):
         assert heading in text, heading
     assert "(renderer's job)" not in text, "the renderer's own moves are facts about the builder, not designer decisions"
     assert "Open a full file only when you want a card family this packet did not offer" in text
@@ -436,10 +438,29 @@ def test_text_reference_is_not_rejected_due_to_unrelated_photo(tmp_path: Path) -
     assert result.returncode == 0, result.stdout + result.stderr
     assert result.stdout.strip() == "WORKING_WALL_DESIGN_OK"
 
-def test_empty_wall_is_still_rejected(tmp_path: Path) -> None:
+def test_declining_the_wall_passes_when_the_designer_says_why(tmp_path: Path) -> None:
+    """No wall is a real answer, and for most lessons it is the right one.
+
+    The brief has always told the designer that `cards: []` is valid; this
+    check used to reject it. With the contradiction in place the wall was
+    never once declined across 45 built lessons, 56 sheets were produced and
+    the teacher put up two of them.
+    """
+    wall = wall_with([])
+    wall["rationaleNote"] = (
+        "Nothing here is something to point at next week: the method is one "
+        "day's technique and the unit does not return to it."
+    )
+    result = run_check(tmp_path, wall)
+    assert result.returncode == 0
+    assert "WORKING_WALL_DESIGN_OK" in result.stdout
+
+
+def test_declining_the_wall_without_a_reason_is_rejected(tmp_path: Path) -> None:
+    """The reason is the one thing an empty wall owes: the run report prints it."""
     result = run_check(tmp_path, wall_with([]))
     assert result.returncode == 1
-    assert "carries no cards" in result.stdout
+    assert "without saying why" in result.stdout
 
 
 def test_the_same_wall_passes_when_the_lesson_had_no_picture_at_all(tmp_path: Path) -> None:
@@ -479,3 +500,96 @@ def test_the_playbook_and_the_role_carry_the_check(tmp_path: Path) -> None:
     # The rule that used to send every maths wall to text is gone.
     assert "most maths cards should have" not in role
     assert "Choose visuals for each card" in role
+
+
+# ---------------------------------------------------------------------------
+# Two faults from the 12 September review of every built wall, which Daniel
+# asked for on 18 September. Both are objective, so they are refused here
+# rather than left to a reader who stops noticing them.
+
+
+def test_a_worked_example_may_not_undo_itself(tmp_path: Path) -> None:
+    """`2,950 + 100 = 3,050; 3,050 - 100 = 2,950` reached a printed wall.
+
+    It adds a hundred and takes it straight back off, so the card shows the
+    two operations cancelling rather than how to do either. The lesson design
+    had written the clean single example; the card manufactured the return
+    trip so one example could cover both halves of its title.
+    """
+    card = words_only_card()
+    card["items"] = [
+        {"label": "Step 1", "text": "Find the hundreds column."},
+        {"label": "Worked example", "text": "2,950 + 100 = 3,050; 3,050 - 100 = 2,950"},
+    ]
+    result = run_check(tmp_path, wall_with([card]))
+    assert result.returncode == 1
+    assert "ends on the number it started from" in result.stdout
+
+
+def test_a_worked_example_that_goes_somewhere_passes(tmp_path: Path) -> None:
+    """The lesson's own wording, which is what the card should have carried."""
+    card = words_only_card()
+    card["items"] = [
+        {"label": "Step 1", "text": "Find the hundreds column."},
+        {"label": "Worked example", "text": "100 more than 2,950 is 3,050."},
+    ]
+    assert run_check(tmp_path, wall_with([card])).returncode == 0
+
+
+def test_a_table_may_not_repeat_its_title_as_its_first_column(tmp_path: Path) -> None:
+    card = {
+        "type": "referenceTable",
+        "title": "My explanation",
+        "page": {"size": "A3", "orientation": "landscape"},
+        "columns": ["My explanation", "What it shows"],
+        "rows": [["The water cooled down.", "A change of state"]],
+    }
+    result = run_check(tmp_path, wall_with([card]))
+    assert result.returncode == 1
+    assert "repeats its own title as its first column heading" in result.stdout
+
+
+def test_the_singular_of_a_plural_title_is_not_that_fault(tmp_path: Path) -> None:
+    """"Food groups" over a "Food group" column is the right heading."""
+    card = {
+        "type": "referenceTable",
+        "title": "Food groups",
+        "page": {"size": "A3", "orientation": "landscape"},
+        "columns": ["Food group", "Some useful nutrients"],
+        "rows": [["Dairy", "Calcium"]],
+    }
+    assert run_check(tmp_path, wall_with([card])).returncode == 0
+
+
+def prepared_view(tmp_path: Path, plan_lesson: Path | None = None) -> str:
+    working = maths_design(tmp_path)
+    result, view, _reference, _receipt = run_prepare(
+        working, lesson=None, photos=None, plan_lesson=plan_lesson
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    return view.read_text(encoding="utf-8")
+
+
+def test_the_view_leads_with_where_the_lesson_sits(tmp_path: Path) -> None:
+    """The point-at test asks about later lessons, so the view has to carry them.
+
+    Without this the designer judged durability from one lesson and guessed:
+    two consecutive number-line lessons each printed their own "find the
+    scale" sheet.
+    """
+    plan_lesson = tmp_path / "plan-lesson.md"
+    plan_lesson.write_text(
+        'Unit: Place value\n\nWhat comes next:\nStill to come in "Place value", in order:\n'
+        "  - Round to the nearest 10\n",
+        encoding="utf-8",
+    )
+    view = prepared_view(tmp_path, plan_lesson=plan_lesson)
+    assert "## Where this lesson sits" in view
+    assert "Round to the nearest 10" in view
+    assert view.index("## Where this lesson sits") < view.index("## Lesson")
+
+
+def test_without_a_plan_the_view_says_the_later_lessons_are_unknown(tmp_path: Path) -> None:
+    view = prepared_view(tmp_path)
+    assert "## Where this lesson sits" in view
+    assert "lessons either side are unknown" in view
