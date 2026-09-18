@@ -408,6 +408,13 @@ function drawContent(pptx, slide, zone, data, ctx) {
             x: drawn.x - pad, y: drawn.y - pad,
             w: drawn.w + 2 * pad, h: drawn.h + 2 * pad
           };
+          // In a row that mixes a picture with a filling text card, the card
+          // keeps the row's height so the two halves are one size; the drawing
+          // stays where the helper put it, centred in the taller card.
+          if (zone.matchCardHeight) {
+            rect.y = zone.y;
+            rect.h = zone.h;
+          }
           if (drawn.clamp) {
             // `cell` keeps the allocation the helper was given before its card
             // hugged the drawn content. A helper that judges whether it was

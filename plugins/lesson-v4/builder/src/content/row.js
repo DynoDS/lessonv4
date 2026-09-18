@@ -219,6 +219,23 @@ function drawRow(pptx, slide, zone, data, ctx) {
     ? fitGroupId(zone, 'row-text')
     : null;
 
+  // A picture beside a filling text card used to make a shorter card than its
+  // neighbour, because a picture's card hugs the picture while a filling text
+  // card takes the whole height. Tops matched and bottoms did not, and the two
+  // halves of a Teach slide read as two different sizes (18 September 2026).
+  // Where a row mixes the two, every card in it takes the row's height and the
+  // picture sits centred inside its own.
+  // A column of cards fills its zone, and so does a card asked to fill: both
+  // leave a picture beside them looking like a different size.
+  const fillsHeight = (item) =>
+    item && (
+      item.type === 'stack' ||
+      (item.type === 'text' && String(item.heightMode || '').toLowerCase() === 'fill')
+    );
+  const isPicture = (item) => item && (item.type === 'image' || item.type === 'label-diagram');
+  const matchCardHeight =
+    items.length > 1 && items.some(fillsHeight) && items.some(isPicture);
+
   items.forEach(function (item, i) {
     const subZone = {
       x: lefts[i],
@@ -230,6 +247,7 @@ function drawRow(pptx, slide, zone, data, ctx) {
       noCard: zone.noCard,
       compactCards: zone.compactCards,
       equalTextCardHeight: equaliseTextCards,
+      matchCardHeight,
       textFitGroup: rowTextFitGroup
     };
     if (clockBandH !== null && item && item.type === 'clock') {
