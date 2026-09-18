@@ -29,6 +29,7 @@ const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-ru
 const { selectContextPictureSet } = require("../shared/context-picture-set");
 const { renderPieceHtml, esc } = require("./src/render-piece-html");
 const { normaliseCardSet, renderKitPages, answersText } = require("./src/render-card-set");
+const { normaliseSourceText, renderSourceTextPages } = require("./src/render-source-text");
 
 const GREY = "#999999";
 
@@ -288,6 +289,41 @@ function buildKits(cardSetItems, classSize) {
   return { kits: laidOut, pageDivs, summaries, dropped };
 }
 
+// The text sources: each `source-text` item becomes its own run of pages, the
+// same copy repeated with cut guides, one each or one between two. It sits
+// beside the kits rather than in the per-child tiling above because nobody
+// writes on it: it is the thing a pair reads while they both write in their own
+// books, so it is not part of any child's glued-in set.
+function buildSourceTexts(sourceTextItems, classSize) {
+  const pageDivs = [];
+  const summaries = [];
+  const dropped = [];
+  for (const item of sourceTextItems) {
+    const source = normaliseSourceText(item, classSize);
+    if (typeof source === "string") {
+      console.warn(`[stick-in] text source "${item.label || "source-text"}": ${source} - this source is NOT in the pack.`);
+      dropped.push(item.label || "source-text");
+      continue;
+    }
+    const laid = renderSourceTextPages(source, {
+      printableWMm: PRINTABLE_W_MM,
+      printableHMm: PRINTABLE_H_MM,
+      pageHtml: pageDiv,
+    });
+    if (laid.error) {
+      console.warn(`[stick-in] text source "${source.label}": ${laid.error} - this source is NOT in the pack.`);
+      dropped.push(source.label);
+      continue;
+    }
+    pageDivs.push(...laid.pages);
+    summaries.push(
+      `${source.tag} ${source.label}: ${source.copies} cop${source.copies === 1 ? "y" : "ies"} ` +
+      `(${source.per === "child" ? "one each" : "one between two"}), ${laid.perPage} a page`
+    );
+  }
+  return { pageDivs, summaries, dropped };
+}
+
 async function build(specPath, outDir) {
   const spec = sanitizeHouseStyle(JSON.parse(fs.readFileSync(specPath, "utf8")));
   const sixSeven = sixSevenNumbers(spec);
@@ -302,12 +338,14 @@ async function build(specPath, outDir) {
 
   const classSize = Number.isFinite(spec.classSize) && spec.classSize > 0 ? spec.classSize : CLASS_SIZE;
   const cardSetItems = items.filter((item) => item && item.visual === "card-set");
-  const pieceItems = items.filter((item) => !(item && item.visual === "card-set"));
+  const sourceTextItems = items.filter((item) => item && item.visual === "source-text");
+  const pieceItems = items.filter((item) => item && item.visual !== "card-set" && item.visual !== "source-text");
   const { moments, dropped } = await renderMoments(pieceItems, baseDir);
   const kitsBuilt = buildKits(cardSetItems, classSize);
-  const allDropped = [...dropped, ...kitsBuilt.dropped];
+  const sourcesBuilt = buildSourceTexts(sourceTextItems, classSize);
+  const allDropped = [...dropped, ...kitsBuilt.dropped, ...sourcesBuilt.dropped];
 
-  if (moments.length === 0 && kitsBuilt.kits.length === 0) {
+  if (moments.length === 0 && kitsBuilt.kits.length === 0 && sourcesBuilt.pageDivs.length === 0) {
     console.error(
       `None of the ${items.length} moment${items.length === 1 ? "" : "s"} could be drawn, ` +
       `so no Stick-in Sheets file was written.`
@@ -326,7 +364,7 @@ async function build(specPath, outDir) {
     pages = laid.pages;
     totalSlips = laid.totalSlips;
   }
-  pageDivs = [...pageDivs, ...kitsBuilt.pageDivs];
+  pageDivs = [...pageDivs, ...sourcesBuilt.pageDivs, ...kitsBuilt.pageDivs];
   const html = wrapDocument(pageDivs);
   const lesson = spec.meta && spec.meta.lesson;
 
@@ -358,6 +396,10 @@ async function build(specPath, outDir) {
 
   if (moments.length > 0) {
     console.log(`Moments: ${moments.length} (${moments.map((m) => m.item.label || m.item.visual).join(", ")})`);
+  }
+
+  if (sourcesBuilt.summaries.length > 0) {
+    console.log(`Text sources: ${sourcesBuilt.summaries.length} (${sourcesBuilt.summaries.join("; ")})`);
   }
 
   const classSetLine = moments.length > 0
