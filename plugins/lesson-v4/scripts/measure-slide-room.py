@@ -41,6 +41,7 @@ card are all surface, and surface is room.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -279,6 +280,30 @@ def read_manifest(path: Path) -> list[tuple[int, Path]]:
     return sorted(entries)
 
 
+def composition_fingerprint(lesson_path: Path) -> str | None:
+    """A hash of everything about the deck except its optional drawings.
+
+    The drawings are what gets placed against this measurement, so they are left
+    out: adding them must not invalidate the page they were placed on. Anything
+    else moving - a line of text, a card, a picture, a template - moves the clear
+    space with it.
+    """
+    try:
+        lesson = json.loads(lesson_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    def stripped(node):
+        if isinstance(node, dict):
+            return {k: stripped(v) for k, v in node.items() if k != "decorations"}
+        if isinstance(node, list):
+            return [stripped(item) for item in node]
+        return node
+
+    payload = json.dumps(stripped(lesson), sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -288,6 +313,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--render-manifest", required=True)
     parser.add_argument("--output", required=True)
+    parser.add_argument(
+        "--lesson",
+        help=(
+            "the lesson.json these pages were rendered from. Stamps the measurement with the "
+            "composition it describes, so a later check can tell whether the deck has moved on"
+        ),
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -318,6 +350,16 @@ def main(argv: list[str] | None = None) -> int:
         "readableInches": READABLE_INCHES,
         "slides": slides,
     }
+    # Where the pages came from a lesson.json, stamp what its composition was.
+    # Clear space is a fact about one arrangement of one deck: change a banner's
+    # wording and the band beneath it moves, so a drawing placed against the old
+    # measurement ends up behind a card. That happened to a Year 4 history deck
+    # on 18 September 2026 and nothing noticed, because the measurement carries
+    # no record of what it measured.
+    if args.lesson:
+        fingerprint = composition_fingerprint(Path(args.lesson))
+        if fingerprint:
+            record["compositionSha256"] = fingerprint
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(

@@ -330,6 +330,7 @@ claims about the drawn page, and the drawn page is measured:
 ```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
   --render-manifest "[PREVIEW_DIR]/render-manifest.json" \
+  --lesson "[WORKING_DIR]/lesson.json" \
   --output "[WORKING_DIR]/slide-room.json"
 ```
 

@@ -129,7 +129,19 @@ function card(item, group, extra) {
   return Object.assign(item, { heightMode: 'fill', sizeGroup: group }, extra || {});
 }
 
-// A column of equal cards: equal slices, one text size, centred on its neighbour.
+// A column of equal cards: equal slices, one text size, filling the height of
+// whatever it stands beside.
+//
+// It used to take a ratio, and the picture layouts passed 0.9 or 0.85, so the
+// cards were inset a little and the two columns shared neither a top nor a
+// bottom. On a slide whose other half is a picture panel the difference reads
+// as a mistake rather than as an inset: 0.26 inches at the top and 0.33 at the
+// bottom on a Year 4 history Teach slide (18 September 2026), which the teacher
+// read straight off the board as "they're not lined up at all". The standard is
+// his own, from 13 September 2026: "align centre is our friend, we align centre
+// with elements too, we make sure things are spaced same width and height in
+// different elements too". A caller may still pass a ratio where the inset is
+// the point; none does today.
 function column(items, group, ratio) {
   const stack = {
     type: 'stack',
@@ -174,7 +186,7 @@ const LAYOUTS = {
     build: (s) => ({
       template: 'split-v-80-20', primarySide: 'bottom',
       secondary: toText(s.lead, 'lead'),
-      primary: { type: 'row', items: [s.pictures[0], column(s.columnItems, 'column', 0.9)] }
+      primary: { type: 'row', items: [s.pictures[0], column(s.columnItems, 'column')] }
     })
   },
   'picture-top-cards': {
@@ -211,7 +223,7 @@ const LAYOUTS = {
     build: (s) => ({
       template: 'split-v-80-20', primarySide: 'bottom',
       secondary: toText(s.question, 'question'),
-      primary: { type: 'row', items: [column(s.columnItems, 'column', 0.9), s.pictures[0]] }
+      primary: { type: 'row', items: [column(s.columnItems, 'column'), s.pictures[0]] }
     })
   },
   'compare-pictures': {
@@ -287,7 +299,7 @@ const LAYOUTS = {
     build: (s) => ({
       template: 'split-h-60-40', primarySide: 'left',
       primary: s.pictures[0],
-      secondary: column(s.columnItems, 'column', 0.85)
+      secondary: column(s.columnItems, 'column')
     })
   },
   'question-picture-answer': {

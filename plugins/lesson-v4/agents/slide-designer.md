@@ -1,8 +1,10 @@
 ---
 name: slide-designer
 description: Slide specification designer for UK primary lessons. Takes a completed Lesson Design from the lesson-designer and produces a structured slide specification (JSON) that references the photo filenames the lesson-designer already promised in photo-requirements.json. Makes no pedagogical decisions — those are already made upstream. Use after the lesson-designer has produced a Lesson Design and the pipeline needs lesson.json for its fixed slide builder.
-model: sol
-effort: medium
+model: opus
+effort: xhigh
+codex_model: sol
+codex_effort: medium
 color: "#9932CC"
 ---
 
@@ -621,6 +623,7 @@ actually clear on each page:
 ```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \
   --render-manifest "[PREVIEW_DIR]/render-manifest.json" \
+  --lesson "[WORKING_DIR]/lesson.json" \
   --output "[WORKING_DIR]/slide-room.json"
 ```
 

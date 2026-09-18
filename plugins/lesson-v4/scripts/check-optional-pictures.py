@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 import re
 import subprocess
@@ -359,11 +360,127 @@ def room_refusal(number: int, reason: str, measurement: dict) -> str | None:
     )
 
 
+SLIDE_W_INCHES = 13.333
+SLIDE_H_INCHES = 7.5
+# How much of a drawing has to fall in space nothing is using before it can be
+# said to be on the slide at all. Below this it is a sliver escaping from behind
+# a card, and a child cannot tell what it is.
+VISIBLE_FRACTION = 0.5
+
+
+def composition_fingerprint(lesson: object) -> str:
+    """The deck's composition, drawings excluded: the same hash
+    `measure-slide-room.py` stamps into its measurement."""
+    def stripped(node):
+        if isinstance(node, dict):
+            return {k: stripped(v) for k, v in node.items() if k != "decorations"}
+        if isinstance(node, list):
+            return [stripped(item) for item in node]
+        return node
+
+    payload = json.dumps(stripped(lesson), sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def slide_decorations(lesson: object) -> dict[int, list[dict]]:
+    slides = lesson.get("slides") if isinstance(lesson, dict) else None
+    slides = slides if isinstance(slides, list) else []
+    found: dict[int, list[dict]] = {}
+    for index, slide in enumerate(slides, start=1):
+        if not isinstance(slide, dict):
+            continue
+        entries = [d for d in (slide.get("decorations") or []) if isinstance(d, dict)]
+        if entries:
+            found[index] = entries
+    return found
+
+
+def visible_fraction(frame: dict, areas: list[dict]) -> float:
+    """How much of a drawing's box falls in measured clear space.
+
+    Sampled on a grid rather than solved as a rectangle union, because the
+    measured areas overlap each other and the answer only has to be good to a
+    few percent to tell a drawing from a sliver.
+    """
+    try:
+        x0 = float(frame["x"]) * SLIDE_W_INCHES
+        y0 = float(frame["y"]) * SLIDE_H_INCHES
+        w = float(frame["width"]) * SLIDE_W_INCHES
+        h = float(frame["height"]) * SLIDE_H_INCHES
+    except (KeyError, TypeError, ValueError):
+        return 1.0
+    if w <= 0 or h <= 0:
+        return 1.0
+    boxes = []
+    for area in areas:
+        if not isinstance(area, dict):
+            continue
+        try:
+            boxes.append((
+                float(area["xInches"]), float(area["yInches"]),
+                float(area["xInches"]) + float(area["widthInches"]),
+                float(area["yInches"]) + float(area["heightInches"]),
+            ))
+        except (KeyError, TypeError, ValueError):
+            continue
+    if not boxes:
+        return 0.0
+    steps = 12
+    inside = 0
+    for i in range(steps):
+        px = x0 + w * (i + 0.5) / steps
+        for j in range(steps):
+            py = y0 + h * (j + 0.5) / steps
+            if any(bx0 <= px <= bx1 and by0 <= py <= by1 for bx0, by0, bx1, by1 in boxes):
+                inside += 1
+    return inside / (steps * steps)
+
+
+def hidden_decorations(lesson: object, room: dict[int, dict]) -> list[str]:
+    """Drawings the page will swallow.
+
+    `layer: "low"` draws behind the slide's cards, which is the right look for a
+    drawing straddling a card's edge and the wrong one for a drawing that ends up
+    mostly underneath one. On a Year 4 history deck (18 September 2026) two low
+    drawings sat under the banner card with a sliver showing, and the teacher
+    read them off the board as "I don't even know what it is because it's
+    behind". The decorator had looked at its own render and passed them, so the
+    judgement is the thing that needs a measurement behind it.
+    """
+    failures: list[str] = []
+    for number, decorations in slide_decorations(lesson).items():
+        measurement = room.get(number)
+        if not isinstance(measurement, dict):
+            continue
+        areas = measurement.get("areas")
+        if not isinstance(areas, list) or not areas:
+            continue
+        for decoration in decorations:
+            if decoration.get("layer") != "low":
+                continue
+            frame = decoration.get("frame")
+            if not isinstance(frame, dict):
+                continue
+            seen = visible_fraction(frame, areas)
+            if seen >= VISIBLE_FRACTION:
+                continue
+            name = decoration.get("concept") or decoration.get("id") or "a drawing"
+            failures.append(
+                f"slide {number}: the `{name}` drawing is layered `low` with only "
+                f"{round(seen * 100)}% of it in space nothing is using, so the cards draw over the "
+                "rest and what is left is a sliver a child cannot name. Move it into the clear "
+                "space the page has, or set `layer` to `high` so it rests on the card instead of "
+                "behind it"
+            )
+    return failures
+
+
 def check(
     pass_path: Path,
     lesson_path: Path,
     library_root: Path | None,
     room: dict[int, dict] | None = None,
+    room_record: dict | None = None,
 ) -> tuple[list[str], dict[int, list[str]], dict[str, int]]:
     record = read_json(pass_path, "optional-picture-pass.json")
     lesson = read_json(lesson_path, "lesson.json")
@@ -380,6 +497,16 @@ def check(
 
     actual = deck_optional_pictures(lesson)
     failures: list[str] = []
+    if room:
+        stamped = room_record.get("compositionSha256") if isinstance(room_record, dict) else None
+        if isinstance(stamped, str) and stamped != composition_fingerprint(lesson):
+            failures.append(
+                "the deck has changed since its pages were measured, so every drawing was placed "
+                "against space that has moved. Re-render and re-measure the deck, then place the "
+                "drawings again: clear space is a fact about one arrangement, and a banner one line "
+                "taller moves the band beneath it onto the drawing"
+            )
+        failures.extend(hidden_decorations(lesson, room))
     reason_counts: dict[str, int] = {}
     seen: dict[int, dict] = {}
 
@@ -510,8 +637,11 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         room = read_room(Path(args.room)) if args.room else None
+        room_record = (
+            read_json(Path(args.room), "slide-room.json") if args.room else None
+        )
         failures, actual, reason_counts = check(
-            Path(args.pass_record), Path(args.lesson), library_root, room
+            Path(args.pass_record), Path(args.lesson), library_root, room, room_record
         )
     except PassError as exc:
         print(f"OPTIONAL_PICTURE_PASS_FAILED: {exc}", file=sys.stderr)

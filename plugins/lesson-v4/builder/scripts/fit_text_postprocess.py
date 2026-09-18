@@ -553,6 +553,29 @@ def measure_shape(shape, ceiling, floor_pt):
     }
 
 
+# Text aims for 20pt and may go as low as 18 when the words will not fit at 20
+# (`styles.js`, the projection floor). Both are legal, and nothing said which
+# had happened, so a Teach slide whose three cards all shrank to 18 read as a
+# deliberate size rather than as three cards with too many words in them. The
+# teacher read it straight off the board (18 September 2026): "they're all 18
+# font size when 20 is minimum unless it has to be lower. I don't think these
+# have to be lower." The repair for one of these is always the words, so the
+# run says which boxes gave way.
+TARGET_PT = 20
+
+
+def note_below_target(collected, slide_number, shape, final_pt):
+    try:
+        final = float(final_pt)
+    except (TypeError, ValueError):
+        return
+    if final >= TARGET_PT:
+        return
+    name = shape.name or "<unnamed>"
+    preview = " ".join(shape.text_frame.text.split())[:60]
+    collected.append((slide_number, name, round(final, 1), preview))
+
+
 def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
     prs = Presentation(path)
     grown = 0
@@ -560,6 +583,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
     unchanged = 0
     skipped = 0
     overloaded = []
+    below_target = []
     measurement_failures = []
 
     def record_change(tf, current, target):
@@ -629,6 +653,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             shared = min(result["best"] for _, result in measured)
             for shape, result in measured:
                 record_change(shape.text_frame, result["current"], shared)
+                note_below_target(below_target, slide_number, shape, shared)
                 if result["hit_floor"]:
                     full = shape.text_frame.text
                     preview = full.strip().replace("\n", " ")[:60]
@@ -652,6 +677,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
                     skipped += 1
                     continue
                 record_change(tf, result["current"], result["best"])
+                note_below_target(below_target, slide_number, shape, result["best"])
                 if result["hit_floor"]:
                     preview = tf.text.strip().replace("\n", " ")[:60]
                     overloaded.append((
@@ -677,9 +703,21 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             file=sys.stderr,
         )
 
+    for sn, shape_name, pt, preview in below_target:
+        print(
+            f"  BELOW_TARGET slide {sn} box {shape_name!r}: fitted at {pt}pt, under the 20pt "
+            f"target. Shorter words here read better than smaller ones. "
+            f"Text preview: \"{preview}{'...' if len(preview) == 60 else ''}\"",
+            file=sys.stderr,
+        )
+
     result = {
         "grown": grown,
         "shrunk": shrunk,
+        "belowTarget": [
+            {"slide": sn, "box": shape_name, "pt": pt, "preview": preview}
+            for sn, shape_name, pt, preview in below_target
+        ],
         "overloaded": [
             {"slide": sn, "box": shape_name, "preview": preview, "budget": budget}
             for sn, shape_name, preview, budget in overloaded

@@ -1,8 +1,10 @@
 ---
 name: slide-decorator
 description: Slide decorator for UK primary lesson PowerPoints. Takes a settled, checked lesson.json from the slide-designer, renders it, and runs the one whole-deck optional visual opportunity pass over the drawn pages - the P2 context pictures and P3 decorations the Educational SVG library supplies - resolving its own requests and confirming no drawing landed on a word. Never reopens composition. Use after slide-designer has promoted lesson.json and before the fixed slide build.
-model: luna
+model: sonnet
 effort: medium
+codex_model: luna
+codex_effort: medium
 color: "#BA55D3"
 ---
 
@@ -71,7 +73,7 @@ Inspect the overview sheets, opening an individual page only where the overview 
 **If `slide-room.json` is not there, measure the pages you have just rendered.** The file normally arrives from the Slide Designer, but a deck you can see is a deck that can be measured, and an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \n  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \n  --output "[WORKING_DIR]/slide-room.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \n  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \n  --lesson "[WORKING_DIR]/lesson.json" \n  --output "[WORKING_DIR]/slide-room.json"
 ```
 
 Only a run with no render route at all answers `full` or `competes` from the specification, and it says so in its report.

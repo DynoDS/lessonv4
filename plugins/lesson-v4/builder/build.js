@@ -613,6 +613,26 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
     console.log(`Wrote: ${outputPath}`);
   }
 
+  // Text that fitted, but under the 20pt the board aims for. Not a failure:
+  // 18 is a legal size and some boxes genuinely need it. It is said out loud
+  // because the repair is always the words, and a Teach slide whose cards all
+  // sat at 19 read as a chosen size rather than as cards with too much in them
+  // (18 September 2026).
+  const belowTarget = Array.isArray(autofit.result && autofit.result.belowTarget)
+    ? autofit.result.belowTarget
+    : [];
+  if (belowTarget.length) {
+    const slidesHit = [...new Set(belowTarget.map((b) => b.slide))].sort((a, b) => a - b);
+    console.log(
+      `
+SLIDE_TEXT_BELOW_TARGET: ${belowTarget.length} box(es) on slide(s) ` +
+        `${slidesHit.join(', ')} fitted under 20pt. Shorter words read better than smaller ones.`
+    );
+    belowTarget.forEach((b) => {
+      console.log(`  slide ${b.slide} at ${b.pt}pt: "${b.preview}"`);
+    });
+  }
+
   const warnings = getWarnings();
   if (warnings.length) {
     console.log(`\n${warnings.length} warning(s):`);
