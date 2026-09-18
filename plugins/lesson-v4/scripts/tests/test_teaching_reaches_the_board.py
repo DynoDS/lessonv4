@@ -545,6 +545,26 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
             flat(DESIGN_REVIEWER),
         )
 
+    def test_the_case_a_task_runs_on_is_supplied_orange(self) -> None:
+        """The teacher coloured Sam's situation orange himself. It is the same
+        job supplied orange already has - the information the question hands a
+        child to work from - at paragraph length instead of inside a sentence."""
+        profile = flat(ROOT / "references" / "teacher-slide-visual-profile.md")
+        self.assertIn(
+            "on a slide that sets a task from a case, that case is the supplied thing",
+            profile,
+        )
+        # It carries to every later slide showing the same case.
+        self.assertIn("Carry it to every later slide that shows the same case", profile)
+        # And it stops where the case is only being talked about.
+        self.assertIn(
+            "not for a case the class is only being told about in the teaching",
+            profile,
+        )
+        playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
+        self.assertIn("the case itself takes supplied orange", playbook)
+        self.assertIn("beside the case rather than beside the general line", playbook)
+
     def test_steps_are_stages_not_the_standard_said_again(self) -> None:
         """The teacher deleted a whole steps slide from the tooth deck and the
         lesson lost nothing: each of its four steps was already visible
