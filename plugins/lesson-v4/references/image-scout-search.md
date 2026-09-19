@@ -101,7 +101,7 @@ Write each query under the entry's owned work folder. Use the exact source, roun
 
 For one filename:
 
-1. Run only the next compiled schedule step.
+1. Run only the next compiled schedule step, skipping any marked `standby_only: true`.
 2. Read its summary.
 3. Discard candidates whose metadata clearly names another subject.
 4. Compare the remaining candidates together.
@@ -119,7 +119,7 @@ A non-zero call, `complete: false`, auth failure, rate limit, transport failure 
 
 Retry one clearly transient transport failure once, in a `retry-1` child directory inside that step's output directory, named `retry-1/<the same compiled summary filename>`. Never overwrite the first failed summary. Never retry authentication or rate limit as if it were a semantic search.
 
-If a compiled step stays unavailable after its one retry, walk on to the next step: the schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Record the outage; never restart or re-retry it.
+If a compiled step stays unavailable after its one retry, walk on to the next step, and here alone that includes a `standby_only` rung: a source never reached has answered nothing. The schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Record the outage; never restart or re-retry it.
 
 Only with no rung left does the contract decide. When `fallback_action` is `ai`, continue to generation and report its outcome. Otherwise report `real_source_unavailable`: no substitute is authorised, and a picture invented in place of an outage would be provenance the contract refused.
 

@@ -112,10 +112,17 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
         self.assertNotIn("web", [step["source"] for step in compiler.source_schedule(authentic)])
         # An AI fallback means a faithful generated picture teaches the same
         # thing, so a second real search before generation is a rung nobody
-        # needed: one search, then generation.
+        # needed: one search, then generation. The rung after it is the standby,
+        # which is not a second search. It is walked ONLY when the one above it
+        # was unreachable, so on a healthy run it is never touched and the cost
+        # argument above is untouched with it.
         self.assertEqual(
             [step["source"] for step in compiler.source_schedule(ordinary)],
-            ["wikimedia"],
+            ["wikimedia", "openverse"],
+        )
+        self.assertEqual(
+            [step.get("standby_only", False) for step in compiler.source_schedule(ordinary)],
+            [False, True],
         )
         self.assertEqual(compiler.source_schedule(direct), [])
 
@@ -222,14 +229,30 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             {"source": "web", "round": 1, "candidate_count": 3},
         ])
 
-    def test_essential_single_source_with_ai_fallback_stops_after_primary_round_one(self):
+    def test_essential_single_source_with_ai_fallback_searches_once_then_keeps_a_standby(self):
+        # One SEARCH, and a rung held in reserve behind it.
+        #
+        # This used to compile to a single rung, and on 19 September 2026 that
+        # cost a lesson both its photographs: Unsplash was unreachable on the
+        # call and on its authorised retry, so with nothing to fall to the run
+        # generated both. Nothing had been searched, so the contract's premise -
+        # that a real search failed - was never tested. The standby is not a
+        # second search: `standby_only` means the scout may walk it only after a
+        # transport outage that survived its retry.
         item = photo("essential-ai.jpg", profile="unsplash-only", fallback="ai", essential=True)
         self.assertEqual(
             compiler.source_schedule(item),
             [
                 {"source": "unsplash", "round": 1, "candidate_count": 3},
+                {"source": "openverse", "round": 1, "candidate_count": 3, "standby_only": True},
             ],
         )
+
+    def test_a_standby_is_never_the_source_that_just_failed(self):
+        # Falling back to the shelf that was just found shut buys nothing.
+        item = photo("openverse-profile.jpg", profile="wikimedia-only", fallback="ai", essential=True)
+        schedule = compiler.source_schedule(item)
+        self.assertNotEqual(schedule[-1]["source"], schedule[-2]["source"])
 
     def test_all_real_group_can_share_batch_with_unrelated_direct_ai(self):
         photos = [

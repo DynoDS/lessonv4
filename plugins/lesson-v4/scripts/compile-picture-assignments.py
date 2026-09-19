@@ -366,6 +366,38 @@ def source_schedule(photo: dict) -> list[dict]:
             steps.insert(0, ladder)
         else:
             steps.append(ladder)
+    else:
+        # A standby rung, walked only when every rung above it was UNREACHABLE.
+        #
+        # The paragraph above is right about a search that RAN and came back
+        # empty: the contract has already said a generated picture teaches the
+        # same thing, so paying for another search first buys nothing. It is
+        # wrong about a search that never happened. On 19 September 2026 both
+        # pictures in a Year 4 maths lesson were `ordinary-real` with an AI
+        # fallback, so each compiled to a single Unsplash rung; Unsplash was
+        # unreachable on the call and on its authorised retry (`[WinError 10013]`,
+        # a socket forbidden by the host), and both were generated. Nothing was
+        # ever searched, so "real photographs do not have this" was never
+        # established - and "library books" is a picture Unsplash has thousands
+        # of. On a host where that block is permanent, every ordinary-real
+        # picture in every lesson silently becomes AI for ever.
+        #
+        # `standby_only` is what keeps the cost argument intact: the scout may
+        # only walk this rung when an earlier one recorded a transport failure
+        # that survived its retry, which is the outage `step_stayed_unreachable`
+        # in validate-image-scout.py already knows how to recognise and accept.
+        # On a healthy run the rung above completes and this one is never
+        # touched, so it costs nothing at all.
+        standby = next(
+            (src for src in (sources[0], LADDER_SOURCE) if src != steps[-1]["source"]),
+            LADDER_SOURCE,
+        )
+        steps.append({
+            "source": standby,
+            "round": 1,
+            "candidate_count": count,
+            "standby_only": True,
+        })
 
     # The open web needs the scout's own search before this script can fetch
     # anything, so it is a model turn whichever way round it goes. It stays

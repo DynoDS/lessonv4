@@ -336,14 +336,25 @@ class LadderSchedule(unittest.TestCase):
                 # The designer's own profile still runs, behind it.
                 self.assertIn(profile.split("-")[0], [step["source"] for step in steps])
 
-    def test_an_ordinary_picture_with_an_ai_fallback_gets_no_extra_real_rung(self):
+    def test_an_ordinary_picture_with_an_ai_fallback_gets_no_extra_real_search(self):
         """The contract has already said a faithful generated picture teaches
-        the same thing, so a second real search before generation is a rung
-        nobody needed - one search, then generate."""
+        the same thing, so a second real SEARCH before generation is a rung
+        nobody needed: one search, then generate.
+
+        The rung behind it is a standby, not a search. It is walked only after
+        a transport outage that survived its retry, so on a healthy run nothing
+        touches it and the cost argument above is untouched. It exists because
+        a single-rung schedule had nothing to fall to when the one source was
+        unreachable, and a lesson generated both its photographs without ever
+        searching for either (19 September 2026)."""
         steps = compiler.source_schedule(self.photo(
             acquisition_mode="ordinary-real", source_profile="unsplash-only",
             fallback_action="ai"))
-        self.assertEqual([step["source"] for step in steps], ["unsplash"])
+        searched = [s["source"] for s in steps if not s.get("standby_only")]
+        self.assertEqual(searched, ["unsplash"])
+        standby = [s for s in steps if s.get("standby_only")]
+        self.assertEqual(len(standby), 1)
+        self.assertNotEqual(standby[0]["source"], "unsplash")
 
     def test_an_ordinary_picture_that_cannot_be_generated_still_gets_openverse(self):
         """With no AI substitute authorised, a real photograph is the only
@@ -427,3 +438,84 @@ class ControlledAiIsEarnedByStagingTests(unittest.TestCase):
             "coherent_visual_invariants": [],
         }
         self.assertEqual(compiler.source_schedule(photo), [])
+
+
+class StandbyRungIsWalkedOnlyAfterAnOutage(unittest.TestCase):
+    """The standby rung costs nothing on a healthy run, and exists on a blocked one.
+
+    Compiled behind a single-source `fallback_action: ai` entry after 19
+    September 2026, when a blocked socket made both of a lesson's photographs
+    generated without a single search having run. The whole value of the design
+    is that it is NOT a second search, so these two cases matter equally: owed
+    after a proven outage, and refused when nothing above it failed.
+    """
+
+    def summary(self, path: Path, *, complete: bool):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({
+            "query": "library books",
+            "source": "unsplash",
+            "round": 1,
+            "complete": complete,
+            "requested_count": 3,
+            "returned_candidate_count": 0,
+            "download_failure_count": 0,
+            "failure_kind": None if complete else "transport",
+            "error": None if complete else "could not reach Unsplash",
+            "results": [],
+        }), encoding="utf-8")
+
+    def schedule(self, root: Path):
+        primary = root / "unsplash-r1" / "_search-summary-unsplash-r1.json"
+        return [
+            {"source": "unsplash", "round": 1, "candidate_count": 3,
+             "summary_path": str(primary)},
+            {"source": "openverse", "round": 1, "candidate_count": 3, "standby_only": True,
+             "summary_path": str(root / "openverse-r1" / "_search-summary-openverse-r1.json")},
+        ]
+
+    def test_a_transport_outage_that_survived_its_retry_makes_the_standby_owed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            schedule = self.schedule(root)
+            primary = Path(schedule[0]["summary_path"])
+            self.summary(primary, complete=False)
+            self.summary(primary.parent / "retry-1" / primary.name, complete=False)
+            self.assertTrue(scout_validator.standby_is_owed(schedule, 1, "entry"))
+
+    def test_a_source_that_answered_leaves_the_standby_unowed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            schedule = self.schedule(root)
+            self.summary(Path(schedule[0]["summary_path"]), complete=True)
+            self.assertFalse(scout_validator.standby_is_owed(schedule, 1, "entry"))
+
+    def test_a_blip_that_cleared_on_retry_is_not_an_outage(self):
+        # One failed call is a blip, not a blocked host, and the retry is what
+        # tells them apart. A blip must not buy an extra search.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            schedule = self.schedule(root)
+            primary = Path(schedule[0]["summary_path"])
+            self.summary(primary, complete=False)
+            self.summary(primary.parent / "retry-1" / primary.name, complete=True)
+            self.assertFalse(scout_validator.standby_is_owed(schedule, 1, "entry"))
+
+    def test_an_unwalked_standby_leaves_no_trace_to_find(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            schedule = self.schedule(root)
+            self.summary(Path(schedule[0]["summary_path"]), complete=True)
+            self.assertFalse(scout_validator.step_was_attempted(schedule[1]))
+
+    def test_a_standby_that_was_searched_anyway_is_visible_as_attempted(self):
+        # The generated branch refuses this: searching a standby with nothing
+        # above it to justify the call is the extra inspection the single-rung
+        # design exists to avoid.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            schedule = self.schedule(root)
+            self.summary(Path(schedule[0]["summary_path"]), complete=True)
+            self.summary(Path(schedule[1]["summary_path"]), complete=True)
+            self.assertFalse(scout_validator.standby_is_owed(schedule, 1, "entry"))
+            self.assertTrue(scout_validator.step_was_attempted(schedule[1]))

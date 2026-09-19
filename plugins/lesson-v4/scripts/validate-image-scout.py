@@ -349,6 +349,33 @@ def step_stayed_unreachable(step: dict, label: str) -> bool:
     return retry["complete"] is not True
 
 
+def standby_is_owed(schedule: list, index: int, label: str) -> bool:
+    """Was this standby rung's turn actually reached?
+
+    A standby rung is compiled behind a single-source `fallback_action: ai`
+    entry and is NOT a second search. It exists for one case: every rung above
+    it was unreachable, so no real search ever ran and "real photographs do not
+    have this" was never established (Round to 10, 100 or 1,000, 19 September
+    2026, where a blocked socket turned both of a lesson's photographs into
+    generated ones without a single search being made).
+
+    So it is owed only when an earlier rung recorded a transport outage that
+    survived its retry, which is the same evidence `step_stayed_unreachable`
+    already accepts elsewhere. On a healthy run the rung above completes, this
+    returns False, and the scout must NOT have walked it: a standby that gets
+    searched anyway is the extra inspection the single-rung design exists to
+    avoid.
+    """
+    return any(
+        step_stayed_unreachable(prior, label)
+        for prior in schedule[:index]
+    )
+
+
+def step_was_attempted(step: dict) -> bool:
+    return any(candidate.exists() for candidate in step_summary_paths(step))
+
+
 def attempted_step_summary(step: dict, label: str, *, allow_outage: bool):
     """A compiled search step that the worker was entitled to move on from.
 
@@ -552,7 +579,19 @@ def validate_result(args) -> None:
             if not compiler.ai_authorised({"acquisition_mode": compiled["acquisition_mode"], "fallback_action": compiled["fallback_action"]}):
                 raise ValidationError(f"{label}: generated status is not AI-authorised")
             outage_allowed = compiled["fallback_action"] == "ai"
-            for step in compiled["search_schedule"]:
+            schedule = compiled["search_schedule"]
+            for index, step in enumerate(schedule):
+                if step.get("standby_only"):
+                    # Owed only after a proven outage above it; otherwise it must
+                    # not have been walked at all. See `standby_is_owed`.
+                    if not standby_is_owed(schedule, index, label):
+                        if step_was_attempted(step):
+                            raise ValidationError(
+                                f"{label}: standby step {index + 1} "
+                                f"({step['source']} r{step['round']}) was searched "
+                                f"without an outage above it to justify it"
+                            )
+                        continue
                 attempted_step_summary(step, label, allow_outage=outage_allowed)
             staged_path = Path(staged).resolve()
             if not inside(staged_path, work_root) or staged_path.is_symlink() or not staged_path.is_file():
@@ -631,7 +670,10 @@ def validate_result(args) -> None:
                 "real_requirement_unfulfillable",
             }
             if compiled["initial_route"] == "real" and reason in completed_real_reasons:
-                for step in compiled["search_schedule"]:
+                schedule = compiled["search_schedule"]
+                for index, step in enumerate(schedule):
+                    if step.get("standby_only") and not standby_is_owed(schedule, index, label):
+                        continue
                     completed_step_summary(step, label)
 
             # An authorised AI fallback exists so the lesson still gets its
