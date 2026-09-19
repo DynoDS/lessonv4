@@ -2719,3 +2719,19 @@ def test_a_beat_naming_no_misconception_needs_no_teacher_note():
         if not unit["misconceptionRefs"]:
             unit["speakerNotes"]["teacherInfo"] = None
     module.validate_design(design, photos)
+
+
+def test_a_skill_turn_says_which_turn_it_is():
+    # 19 September 2026: a Codex nearest-1,000 deck named its turns by the move
+    # alone and reached the teacher with no My Turn, Our Turn or Your Turn in it.
+    for kind, word in (("my-turn", "My Turn"), ("our-turn", "Our Turn"), ("your-turn", "Your Turn")):
+        design, photos = valid_contract()
+        unit = next(u for u in design["teachingSequence"] if u["kind"] == kind)
+        unit["label"] = "Which thousand is nearer?"
+        assert_invalid_contract(design, photos, f"must begin with '{word}'")
+
+    design, photos = valid_contract()
+    for unit in design["teachingSequence"]:
+        if unit["kind"] in {"my-turn", "our-turn", "your-turn"}:
+            unit["label"] = f"{unit['label']} - the move it makes"
+    module.validate_design(design, photos)

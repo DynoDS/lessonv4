@@ -2335,6 +2335,29 @@ def validate_route_sequence(
     kinds = [unit["kind"] for unit in sequence]
 
     if structure == "Skill-based":
+        # The class reads a deck by these three words, so a turn's label says
+        # which turn it is and the slide title inherits it. A Codex design named
+        # its turns by the move alone (`The thousands either side`, `Beyond
+        # halfway`), the slide titles kept those names faithfully, and the deck
+        # reached the teacher with no My Turn, Our Turn or Your Turn anywhere
+        # (19 September 2026). `preferences.md` → Slide Headings already says
+        # these labels are kept as-is in skill-based maths and English; nothing
+        # made sure they were there to keep.
+        turn_word = {"my-turn": "My Turn", "our-turn": "Our Turn", "your-turn": "Your Turn"}
+        for index, unit in enumerate(sequence):
+            word = turn_word.get(unit["kind"])
+            if word is None:
+                continue
+            label = unit.get("label") or ""  # a missing label is caught by the unit checks
+            if not label:
+                continue  # a missing label is the unit checks' own fault to report
+            expect(
+                label.lower().startswith(word.lower()),
+                f"teachingSequence[{index}].label must begin with '{word}' and then "
+                f"name the move ('{word} - Which thousand is nearer?'): children read a "
+                "skill lesson by these three words, and the slide title is this label",
+            )
+
         # A cycle is the unit of skill teaching: My Turn, an optional Our Turn,
         # then its own Your Turn, and it runs uninterrupted. The teacher: "The
         # your turns are good because they are a quick check of can we do this

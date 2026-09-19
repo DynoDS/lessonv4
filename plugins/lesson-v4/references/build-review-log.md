@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-19 A skill lesson's turns say which turn they are (4.2.242)
+
+Daniel, reading the rebuilt nearest-1,000 deck: "the titles. theres no My Turn Our Turn Your Turn". The Codex design had named its turns by the move alone (`The thousands either side`, `Beyond halfway`, `Round the whole set`), the Slide Designer kept those labels faithfully as titles, as it is told to, and the deck reached a teacher with none of the three words in it.
+
+**What was there.** `preferences.md` → Slide Headings says the three labels are kept as-is on skill-based maths and English slides, and in the same section says the design's label is the slide's title. Both are right and neither made sure the turn word was in the label to keep, so the faithful path produced a deck without it. Nothing checked.
+
+**The change.** The validator requires a Skill-based `my-turn`, `our-turn` or `your-turn` label to begin with `My Turn`, `Our Turn` or `Your Turn`; what follows is the move, and stays the designer's. The Slide Headings paragraph says the same in words and names the deck that lost them. Two contract tests: each kind refused when the word is missing, and a design carrying `My Turn - the move it makes` passing.
+
+**The deck.** Tuesday's Week 3 deck was rebuilt with the turn words restored (`My Turn - The thousands either side`), and its reveal slides moved from the run's `- answers` to the house `- check` form, which the same section has always specified.
+
+**Still open.** The `- check` form is guidance only; nothing checks a reveal slide's title. Not yet rerun on Codex.
+
 ## 2026-09-19 A live helper shows its unknowns, and the move is marked on the thing it acts on (4.2.241)
 
 Daniel, comparing the Codex nearest-1,000 deck with the nearest-100 deck built by hand: "what I liked about your versions was it was a little cycle of learning and practising before the main thing, and it was visual, like you had the numbers and what to change in orange ... this one was just find the 2 multiples either side, expecting teacher to model it correctly (and even know what to do). A cover would have spent ages on this bit." Then: "it felt like actual clear teaching."
