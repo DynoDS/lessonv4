@@ -89,7 +89,11 @@ test('the word on a lone card takes poster type', () => {
     'a lone word must not print at four-card size'
   );
   assert.equal(wordSize(one.texts, 'source'), 44);
-  assert.equal(wordSize(cardsFor(2).texts, 'continuity'), 38);
+  // A pair reaches the same poster size, because a pair has the room for it and
+  // 44 is now the one ceiling rather than the top row of a per-count table. The
+  // teacher raised a two-card slide to exactly this by hand: "there's nothing
+  // else on screen apart from the vocabulary" (19 September 2026).
+  assert.equal(wordSize(cardsFor(2).texts, 'continuity'), 44);
 });
 
 test('a pair hugs its contents and stays two readable cards', () => {
@@ -111,7 +115,11 @@ test('a full slate is exactly where it always was', () => {
     const { cards, texts } = cardsFor(count);
     assert.equal(cards.length, count);
     const share = (CONTENT_H - 0.15 * (count - 1)) / count;
-    assert.ok(Math.abs(cards[0].h - share) < 0.001, `${count} cards: ${cards[0].h}" vs ${share}"`);
+    // At or just under, not exactly on: the type is now grown to the largest
+    // size whose card fits the share, so a full card hugs its contents within a
+    // fraction of that share rather than being clipped to it.
+    assert.ok(cards[0].h <= share + 0.001, `${count} cards: ${cards[0].h}" vs ${share}"`);
+    assert.ok(cards[0].h > share - 0.1, `${count} cards left ${share - cards[0].h}" unused`);
     assert.ok(Math.abs(cards[0].y - CONTENT_Y) < 0.001, 'a full slate still starts at the top');
     assert.ok(wordSize(texts, 'source') <= 34);
   }
@@ -133,7 +141,12 @@ test('a card carrying a picture keeps room for the picture to be read', () => {
     slide,
     {
       title: 'Key vocabulary',
-      words: [{ word: 'century', definition: 'A century is a hundred years.', visual: { kind: 'built-in', value: '100' } }],
+      // `{ kind: 'built-in' }` has no `type`, so `resolveVocabVisual` returned
+      // null and this card never carried a picture at all. The test passed
+      // anyway because the old card reserved two fifths of its height for the
+      // word, which happened to clear 2.4in. A real visual, so the picture
+      // minimum is what is actually being tested.
+      words: [{ word: 'century', definition: 'A century is a hundred years.', visual: { type: 'text', value: '100' } }],
     },
     { slideIndex: 0 }
   );

@@ -1,6 +1,6 @@
 'use strict';
 
-const { FONT, COLOURS, FIT } = require('../styles');
+const { FONT, COLOURS, FIT, MIN_FONT_PT } = require('../styles');
 const { drawHeader } = require('../headers');
 const { drawVisual, resolveVocabVisual } = require('../content/vocab');
 const { estimateLines } = require('../content/text');
@@ -87,13 +87,37 @@ const FULL_SLATE      = 5;
 // like a rendering fault (5 September 2026). One word alone on the board IS
 // the poster, so it may take poster type; two share, and take a little less;
 // three or more keep exactly the ceiling they have today.
-const FONT_CEILINGS = {
-  1: { word: 44, defn: 30 },
-  2: { word: 38, defn: 27 },
-  default: { word: 34, defn: 24 },
-};
+// The type grows until the card fills the share of the band it has, and stops
+// there. It used to be read off a table keyed by how many cards were on the
+// slide (1: 44/30, 2: 38/27, default: 34/24). The table's instinct was right -
+// a lone word IS the poster and five words are not - but a table cannot see
+// how long the definitions are, and it capped a two-card slide at 38/27 in a
+// card with room to spare. The share does the same job honestly: five cards get
+// a fifth of the band each and come out small, one card gets the band and comes
+// out large, and nobody picks a number.
+//
+// WORD_FONT_MAX is the poster size: the biggest a vocabulary word ever prints,
+// however much room it has. It is a real limit, not a safety rail. Without it a
+// lone card grows until it fills the band, which is the six-inch green rectangle
+// holding one word that was fixed on 5 September 2026. 44 is the size the old
+// table already gave a lone card, and the size the teacher chose by hand for a
+// two-card slide, so one number now serves both and the share decides the rest.
+const WORD_FONT_MAX   = 44;
+const WORD_FONT_MIN   = 20;
+// The definition's size as a share of the word's. The old table held this at
+// 26/18, about 0.69, at every row. The definition is the sentence a child
+// actually reads and the word above it is one token, so the gap between them
+// was wider than the job warrants: on a two-card slide the word reached 44 while
+// its definition sat at 30 with the card nowhere near full. The teacher set 44
+// and 36 by hand, which is 0.82, and that is the proportion used here. The
+// definition never exceeds its word, because a meaning printed larger than the
+// term it defines reads as the wrong way round.
+const DEFN_OF_WORD    = 0.82;
+// The proportion the word is FITTED at, which is the one the old table used at
+// every row. Keeping the first pass modest is what stops a bigger definition
+// costing the word its size on a crowded slate.
+const DEFN_OF_WORD_TIGHT = 18 / 26;
 
-const WORD_H_RATIO    = 0.40;
 // Line height as a fraction of font size, matching `content/text.js`.
 const LINE_RATIO      = 1.32 / 72;
 // A word sits on one line and wants a little air under it before the
@@ -125,21 +149,51 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
   const shareH = (CONTENT_H - totalGap) / words.length;
 
   // How much taller each card is than it would be on a full slate of five.
-  const fullSlateH = (CONTENT_H - CARD_GAP * (FULL_SLATE - 1)) / FULL_SLATE;
-  const growth = fullSlateH > 0 ? Math.max(1, shareH / fullSlateH) : 1;
-  const ceilings = FONT_CEILINGS[words.length] || FONT_CEILINGS.default;
-  const fonts = {
-    word: Math.min(ceilings.word, Math.round(WORD_FONT * growth)),
-    defn: Math.min(ceilings.defn, Math.round(DEFN_FONT * growth)),
+  const fontsFor = function (wordPt, share) {
+    return { word: wordPt, defn: Math.min(wordPt, Math.max(MIN_FONT_PT, Math.round(wordPt * share))) };
   };
+
+  const visuals0 = words.map(function (item) { return resolveVocabVisual(item.visual, ctx); });
+  const stacked0 = visuals0.map(function (v) { return !!v && STACKED_VISUALS.has(v.type); });
+  // Grow the type until the tallest card reaches its share of the band, then
+  // stop. A stacked-picture card is measured the way the heights below measure
+  // it, so the size that fits is the size that will actually be drawn.
+  const allFit = function (candidate) {
+    return words.every(function (item, i) {
+      const need = stacked0[i]
+        ? stackedTextHeight(item, candidate) + LARGE_PICTURE_MIN_H
+        : naturalCardHeight(item, visuals0[i], candidate, visuals0[i] ? PANEL_MAX_W : 0);
+      return need <= shareH;
+    });
+  };
+
+  // The word first, then the definition into what is left.
+  //
+  // Sizing the pair together by one proportion makes them fight: raising the
+  // definition's share to what the teacher chose (0.82) took the word on a
+  // four-card slide from 34pt down to 28, because a taller definition leaves
+  // less room for everything. So the word is fitted first at the old, modest
+  // proportion, which decides how big the term can be on a slide of this many
+  // cards, and the definition is then grown on its own into whatever height is
+  // still going, up to DEFN_OF_WORD. A crowded slate keeps the word size it
+  // always had and a roomy one reaches 44 and 36, which is what he set by hand.
+  let fonts = fontsFor(WORD_FONT_MIN, DEFN_OF_WORD_TIGHT);
+  for (let pt = WORD_FONT_MAX; pt >= WORD_FONT_MIN; pt -= 1) {
+    const candidate = fontsFor(pt, DEFN_OF_WORD_TIGHT);
+    if (allFit(candidate)) { fonts = candidate; break; }
+  }
+  for (let share = DEFN_OF_WORD; share > DEFN_OF_WORD_TIGHT; share -= 0.02) {
+    const candidate = fontsFor(fonts.word, share);
+    if (candidate.defn > fonts.defn && allFit(candidate)) { fonts = candidate; break; }
+  }
 
   // A card is as tall as what it holds, and the stack sits in the middle of
   // the band. Stretching every card to fill the band is right when the cards
   // are nearly full and wrong when they are not: it is what put one word in a
   // six-inch green rectangle. Three or more cards are already over their equal
   // share, so they are clipped back to it and nothing about them moves.
-  const visuals = words.map(function (item) { return resolveVocabVisual(item.visual, ctx); });
-  const stacked = visuals.map(function (v) { return !!v && STACKED_VISUALS.has(v.type); });
+  const visuals = visuals0;
+  const stacked = stacked0;
   const heights = words.map(function (item, i) {
     if (stacked[i]) return stackedTextHeight(item, fonts) + LARGE_PICTURE_MIN_H;
     // Measured against the widest panel the picture could take, so a panel that
@@ -149,6 +203,39 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
     const compact = stacked.some(Boolean) && (!visuals[i] || visuals[i].type === 'text');
     return Math.min(shareH, naturalCardHeight(item, compact ? null : visuals[i], fonts, visuals[i] ? PANEL_MAX_W : 0));
   });
+  // Every card in a set is the height of the tallest, capped at its share.
+  //
+  // Sizing each card to its own words leaves the set ragged and the band short:
+  // one long definition sets the type for everybody, so the shorter cards come
+  // out under-filled and the stack has an inch of band left over. Matching them
+  // gives the set one edge, which is what makes it read as a set, and spends the
+  // leftover on the cards instead of leaving it under them. The share is still
+  // the ceiling, so a full slate fills the band and no further, and a lone card
+  // is the tallest of one, so it keeps hugging its own words and never stretches
+  // into the six-inch green rectangle this template was fixed for.
+  //
+  // Stacked-picture cards are left out: their heights are already negotiated
+  // against the picture minimum below, and matching them would undo it.
+  if (!stacked.some(Boolean)) {
+    const tallest = Math.min(shareH, Math.max.apply(null, heights));
+    for (let i = 0; i < heights.length; i += 1) heights[i] = tallest;
+  }
+
+  // A slate that nearly fills the band takes the last fraction rather than
+  // leaving it. Growing the type stops at the largest whole point that fits, so
+  // a full slate lands a few hundredths under its share and the stack would
+  // centre itself, drifting the top card down the page for no reason anybody
+  // asked for. Absorbing a gap this small keeps a full slate exactly where it
+  // has always been. The gap is only closed when it is smaller than the space
+  // between two cards: a bigger one means the cards genuinely do not fill the
+  // band, and stretching them then is what put one word in a six-inch green
+  // rectangle (5 September 2026).
+  const slack = (CONTENT_H - totalGap) - heights.reduce(function (a, b) { return a + b; }, 0);
+  if (slack > 0 && slack < CARD_GAP && !stacked.some(Boolean)) {
+    const share = slack / heights.length;
+    for (let i = 0; i < heights.length; i += 1) heights[i] += share;
+  }
+
   // Two stacked pictures each asking for their minimum can ask for more than
   // the slide has: the second card ran off the bottom. Their picture room is
   // cut back, all of them by the same share, until the stack fits; the words
@@ -191,8 +278,7 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
 }
 
 // The height this card's own contents ask for, measured the way the card
-// actually divides itself: the word gets WORD_H_RATIO of the text area and the
-// definition the rest, so whichever of the two is tighter sets the height.
+// actually divides itself: the word's own line, then the definition's lines.
 function naturalCardHeight(item, visual, fonts, visualW) {
   const panelW = visualW || VISUAL_W;
   const textW = visual
@@ -201,7 +287,18 @@ function naturalCardHeight(item, visual, fonts, visualW) {
   const wordNeeds = fonts.word * LINE_RATIO * WORD_LINE_SLACK;
   const defnNeeds =
     estimateLines(item.definition || '', fonts.defn, textW) * fonts.defn * LINE_RATIO;
-  const textH = Math.max(wordNeeds / WORD_H_RATIO, defnNeeds / (1 - WORD_H_RATIO));
+  // The card is its two parts stacked, and nothing else.
+  //
+  // It used to be `max(wordNeeds / 0.40, defnNeeds / 0.60)`: the word was given
+  // two fifths of the card whether it needed them or not, so one short word set
+  // the whole card's height and the type could never grow past about 40pt
+  // without the maths saying it overflowed. On a two-card slide that left the
+  // word at 38pt and the definition at 27pt in a 2.36in card with nothing else
+  // on the board, and the teacher raised them to 44 and 36 by hand: "there's
+  // nothing else on screen apart from the vocabulary. I might as well make them
+  // bigger to fill their size and the cards and the squares that they're in so
+  // that they're more readable on the board." (19 September 2026.)
+  const textH = wordNeeds + defnNeeds;
   const height = 2 * CARD_PAD + textH;
   return visual ? Math.max(height, MIN_CARD_H_WITH_VISUAL) : height;
 }
@@ -305,7 +402,10 @@ function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual, visualW) 
   const textY = card.y + CARD_PAD;
   const textH = card.h - 2 * CARD_PAD;
 
-  const wordH = textH * WORD_H_RATIO;
+  // The word takes the one line it needs and the definition takes the rest, the
+  // same division `naturalCardHeight` measured the card by. A fixed share here
+  // would hand the word height it cannot use and clip the definition.
+  const wordH = Math.min(textH, wordFont * LINE_RATIO * WORD_LINE_SLACK);
   const defnH = textH - wordH;
 
   slide.addText(item.word || '', {
