@@ -1,5 +1,68 @@
 # Build review log
 
+## 2026-09-19 Away from text is the whole test (4.2.263)
+
+Daniel: "i only see one on a slide max every single time." Then, on being shown
+the sizes and transparency: "it has nothing to do with transparency? its just
+choosing 1 per slide if that." Then: "i dont see 'would give answer away' is even
+applicable? theyre just decorations." Then: "same time I dont get how they cant
+fit. they can be resized right, they can be roated, they can be overlapping boxes
+instead of deadspace. as long as its away from text." And finally: "it only needs
+to be away from text."
+
+Every one of those was right, and each one corrected a wrong answer of mine. I
+first blamed 50% transparency, having counted a single deck which turned out to be
+the most decorated of the twenty.
+
+**What the twenty lessons actually say.** 222 slides went through the pass. 84
+took a drawing, and only 6 of those took two. 138 refused: 70 `would-mislead`,
+41 `full`, 17 `nothing-fits`, 10 `competes`. The decorator's own brief asks the
+opposite question - "how many of those clear places hold a relevant drawing? Not
+whether one does" - and says to stop when the relevant subjects run out, never
+when a count is reached.
+
+**Why they could not fit.** A gap had to be at least 0.8 inches in both
+directions to count as room, which rounds up to 0.83 on a 160x90 grid. Every
+slide refused as full held a strip about ten inches wide and 0.58 to 0.75 inches
+tall, on a slide that was 69% clear. Ten inches of empty board turned down for
+want of a fraction of an inch of height. The floor's own note had calibrated it
+against a padlock Daniel places by hand "at about 0.75 inches", so it was set
+above the drawing that justified it, and this is the second time it has been too
+high: 1.2 wrote off every gap between two lines of large text.
+
+The floor is now 0.6, an effective 0.58, which is roughly 2.6 inches on a
+classroom screen. All 23 of the refused slides that carry a measurement have
+measurable room at that floor. A clear rectangle is away from the ink by
+construction, and a drawing keeps its proportions and can be scaled, so a strip
+tall enough holds one however wide it is: that is the whole test, as he said.
+
+**The refusal that cost nothing.** `would-mislead` was in neither the evidenced
+set nor the room-checked set, so it was free, and it became half of every
+refusal. 59 of those 70 slides had a measured clear inch-square space. Not one
+recorded a word about what would be misled. It is also the hardest of the five to
+believe of what this pass places: the layer carries no teaching, removing any of
+it is always valid, and a faint pencil in a corner cannot pre-empt a task. The
+rainforest photo beside "which biome?" is a real case, so the answer stays and
+now carries `evidence` naming the task and what a drawing would give away. Where
+nothing could be given away the honest answer is `nothing-fits`, which names its
+searches and is what the new meaning-ranked search improves.
+
+**Honest about what this check is.** A search can be re-run; a sentence cannot be
+verified. This checks substance, not truth. What it ends is the free answer: a
+claim that has to be written beside the task it is about is one the teacher reads
+and can disagree with.
+
+**What it does not do.** It does not place more drawings by itself. It opens the
+room and closes the free exit; whether two or three then land on a text slide is
+the pass's judgement against a brief that already asks for it. No lesson has been
+built since, so the count per slide is still unproven - that is the test.
+
+**Evidence.** Two new tests pin the bias claim, one for a bare refusal and one
+for a few words pretending to be a reason, and the two existing tests that had
+asserted the free answer now carry the sentence they owe, with their original
+intent preserved. Python 1,973 pass, 1 fail, the one being the 273-byte size
+budget. Root node 46, builder 688, both 0 fail.
+
 ## 2026-09-19 The drift sweep could not see a rule that wrapped (4.2.262)
 
 Daniel asked whether there is a limit on how many library drawings a lesson uses.

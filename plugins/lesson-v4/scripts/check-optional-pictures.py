@@ -68,6 +68,23 @@ REASONS = {
 }
 # The reason that must be paid for with search evidence rather than asserted.
 EVIDENCED_REASONS = {"nothing-fits"}
+
+# `would-mislead` was the last answer that cost nothing, and it became half of
+# every refusal: 70 of 138 across 20 built lessons, 59 of those 70 on slides the
+# render had measured a clear inch-square space on. Not one of them recorded a
+# word about what would be misled.
+#
+# It is also the hardest of the five to believe of what this pass actually
+# places. The layer carries no teaching, removing any of it is always valid, and
+# a faint pencil in a bottom corner cannot bias, answer or pre-empt anything. The
+# reason was written for a picture that carries meaning, like a rainforest photo
+# beside "which biome is this?", and that case is real - so the answer stays
+# available and is made to say which task it would give away.
+#
+# Presence is all this can check: a sentence is not machine-verifiable the way a
+# search is. It still ends the free answer, because a bogus claim has to be
+# written down beside the task it is about, where Daniel reads it.
+BIAS_EVIDENCE_MINIMUM = 40
 # The two reasons that are claims about the drawn page, and are settled by it.
 ROOM_CHECKED_REASONS = {"full", "competes"}
 
@@ -232,6 +249,21 @@ def run_search(library_root: Path, queries: list[str]) -> list[str]:
             if isinstance(candidate, dict) and isinstance(candidate.get("libraryId"), str)
         ]
     return []
+
+
+def check_bias_claim(entry: dict, label: str, failures: list[str]) -> None:
+    """A claim that a drawing would mislead names the task it would give away."""
+    evidence = entry.get("evidence")
+    if not isinstance(evidence, str) or len(evidence.strip()) < BIAS_EVIDENCE_MINIMUM:
+        failures.append(
+            f"{label} is would-mislead with no evidence. Name the task on this "
+            "slide and what a drawing would give away, hint at or answer for a "
+            "child, in a sentence. This layer carries no teaching and any of it "
+            "can be removed, so a decoration that would bias a task is a real "
+            "thing to find and a specific one to describe. Where nothing on the "
+            "slide could be given away, the honest answer is nothing-fits, "
+            "which names the searches it ran"
+        )
 
 
 def check_evidence(
@@ -586,6 +618,8 @@ def check(
                         continue
             if reason in EVIDENCED_REASONS:
                 check_evidence(entry, label, library_root, failures)
+            if reason == "would-mislead":
+                check_bias_claim(entry, label, failures)
 
     missing = sorted(set(actual) - set(seen))
     if missing:

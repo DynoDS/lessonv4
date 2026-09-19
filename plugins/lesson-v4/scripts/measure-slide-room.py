@@ -57,14 +57,30 @@ GRID_H = 90
 SLIDE_W_INCHES = 13.333
 SLIDE_H_INCHES = 7.5
 
-# A drawing smaller than this is a smudge rather than a picture, so a gap this
-# size is not room. Calibrated against the drawings Daniel places by hand on a
-# text-heavy slide: a padlock resting across a card's left edge measures about
-# 0.75 inches on the board and reads clearly from the back of the room. The
-# earlier 1.2 was taken from a published example rather than from the smallest
-# drawing that actually works, and it wrote off every gap between two lines of
-# large text - which on a wall-of-text slide is where all the room is.
-READABLE_INCHES = 0.8
+# The smallest drawing that still reads from the back of the room, and so the
+# smallest gap that counts as somewhere to put one.
+#
+# This has now been too high twice. 1.2 came from a published example and wrote
+# off every gap between two lines of large text. 0.8 came from the padlock Daniel
+# places by hand across a card's edge, measured at "about 0.75 inches" - so the
+# floor was set above the very drawing that justified it, and rounding on a
+# 160x90 grid lifted it again to an effective 0.83.
+#
+# What that cost, measured across 20 built lessons: 41 slides declined as full
+# while 69% of each slide was clear, every one of them holding a strip about ten
+# inches wide and 0.58 to 0.75 inches tall. Ten inches of empty board turned down
+# for want of a fraction of an inch of height.
+#
+# Daniel, on being shown those numbers: "I dont get how they cant fit. they can
+# be resized right, they can be roated, they can be overlapping boxes instead of
+# deadspace... it only needs to be away from text."
+#
+# He is right, and a clear rectangle is away from text by construction: this
+# grid is built from the ink. A drawing keeps its proportions and can be scaled,
+# so a strip that is tall enough holds one however wide it is. 0.6 rounds to an
+# effective 0.58, which is about 2.6 inches on a classroom screen, and is below
+# the hand-placed padlock rather than above it.
+READABLE_INCHES = 0.6
 FLOOR_CELLS_W = max(1, round(READABLE_INCHES / (SLIDE_W_INCHES / GRID_W)))
 FLOOR_CELLS_H = max(1, round(READABLE_INCHES / (SLIDE_H_INCHES / GRID_H)))
 

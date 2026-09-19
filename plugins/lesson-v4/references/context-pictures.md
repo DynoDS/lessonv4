@@ -309,7 +309,7 @@ about **this slide**:
 | --- | --- |
 | `full` | On the rendered page, no part of this slide is clear enough to hold a drawing without covering something. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card, not fullness. A slide whose template has three zones is not full because it has three zones, and a slide packed with text is not full because its cards are packed - the white inside and between those cards is exactly where a drawing goes. |
 | `competes` | A picture would cover, shrink or crowd what a child has to read here. This is the answer for a slide whose only clear areas are too small or too broken up to hold a drawing; it is never the answer for a slide with a strong central visual and a clear corner. |
-| `would-mislead` | A drawing here would bias, answer or pre-empt the task. The rainforest photo beside "which biome?" is this. |
+| `would-mislead` | A drawing here would bias, answer or pre-empt the task, and `evidence` says which task and what it would give away. The rainforest photo beside "which biome?" is this. Hold it to what this layer actually places: a small faint drawing in a corner carries no teaching and can always be removed, so it gives nothing away unless the slide's task is the kind a picture can answer. Where nothing could be given away, the honest answer is `nothing-fits`, which names its searches. |
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |
 | `library-unavailable` | The library was not available to this run at all, as the resolver reported. |
 
@@ -367,6 +367,16 @@ real `libraryId` you looked at and turned down. The check re-runs your searches
 against the real library and confirms each rejected drawing exists, so a drawing
 you never saw cannot be one you rejected. Say nothing-fits about drawings you
 have actually looked at.
+
+**`would-mislead` names the task it protects.** It was the last answer costing
+nothing, and across twenty built lessons it became half of every refusal: 70 of
+138, and 59 of those 70 on slides the render had measured a clear inch-square
+space on, none of them recording a word about what would be misled. So it now
+carries `evidence`: a sentence naming this slide's task and what a drawing would
+give away, hint at or answer for a child. A search is machine-checkable and a
+sentence is not, so this is checked for substance rather than truth, which is
+enough: a claim that has to be written beside the task it is about is a claim the
+teacher can read and disagree with.
 
 **An emoji-only slide pays the same price.** Choosing an emoji is saying the
 library had nothing better, which is the same claim as `nothing-fits`, so a

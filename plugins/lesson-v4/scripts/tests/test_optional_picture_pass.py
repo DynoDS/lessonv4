@@ -168,10 +168,19 @@ class TheTwoBannedAnswersTests(CheckRunner):
         self.assertIn("reading as visual enough", result.stderr)
 
     def test_each_of_the_five_slide_level_reasons_is_accepted(self):
+        # `would-mislead` carries the sentence it now owes; the point of this
+        # test is that each reason is legal, not that any of them is free.
+        extra = {
+            "would-mislead": {
+                "evidence": "This slide asks the class which shape is the odd "
+                            "one out, so any shape drawing shows them an answer."
+            }
+        }
         for reason in ("full", "competes", "would-mislead", "library-unavailable"):
             with self.subTest(reason=reason):
                 record = {"schemaVersion": 1, "slides": [
-                    {"slide": 1, "decision": "none", "reason": reason},
+                    {"slide": 1, "decision": "none", "reason": reason,
+                     **extra.get(reason, {})},
                 ]}
                 result = self.run_check(record, deck(bare_slide()))
                 self.assertEqual(result.returncode, 0, result.stderr)
@@ -418,12 +427,37 @@ class TheDrawnPageSettlesFullAndCompetesTests(CheckRunner):
     def test_would_mislead_is_not_a_claim_about_room(self):
         """A drawing that answers the task is wrong however much space there is."""
         record = {"schemaVersion": 1, "slides": [
-            {"slide": 1, "decision": "none", "reason": "would-mislead"},
+            {"slide": 1, "decision": "none", "reason": "would-mislead",
+             "evidence": "The task asks which biome this is, and any rainforest "
+                         "drawing in the corner answers it before a child looks."},
         ]}
         result = self.run_check(
             record, deck(bare_slide()), room=[measured(1, 3)]
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_would_mislead_says_what_would_be_given_away(self):
+        """The last free answer. It was half of every refusal across 20 lessons,
+        59 of those on slides the render had measured a clear inch-square space
+        on, and not one of them said what would be misled."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide()), room=[measured(1, 3)]
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("would-mislead with no evidence", result.stdout + result.stderr)
+
+    def test_a_bias_claim_of_a_few_words_is_not_evidence(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead",
+             "evidence": "it would mislead"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide()), room=[measured(1, 3)]
+        )
+        self.assertEqual(result.returncode, 1)
 
     def test_without_a_measurement_the_two_reasons_stand_on_the_record(self):
         """A machine with no render route must not fail every declined slide."""
