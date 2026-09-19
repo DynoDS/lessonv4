@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-19 A slip carries the questions, not the teaching (4.2.247)
+
+Daniel, sent the Expected slips page: "I've had worksheets before that had the success criteria and I did chop it off. So I do think it's a kind of waste ... on a slip, I really don't think it's needed at all." And, looking at the same page: "Couldn't one and two be like next to each other? Like you see on question 3A, 3B, they like go horizontally."
+
+**The criteria panel.** The `steps` helper draws the green Success criteria panel, and its own purpose line says nothing in it is written on. On the sheet that is right, and Daniel kept it there, Below included. On a slip it was 45mm of a 100mm slip: thirty children sticking the method into their books instead of the questions, off paper that is already on the board and the working wall. `forSlip` now drops it, and only there.
+
+**Questions one and two.** The slip packs a run of short questions across a row, and these two were not eligible for two reasons. They were written as the instruction above a number line the slip drops, not as question items, so the packer did not recognise them; and at 33 characters they were over a flat 16-character limit. That limit was also the wrong shape: whether a question can share a row is a question about width, which the row maths below it already answers. So `shortQuestionText` now takes a numbered question whose whole content is one short line of words, written either way, and how short is derived from the printed width - what fits a cell at two across. A stem, a picture, a figure or a blank in the words still keeps its own line.
+
+**Evidence.** The nearest-1,000 pack, both levels books: Expected goes from 2 slips a page to 3, with (1) and (2) side by side and the criteria panel gone; Greater Depth stays at 2. Rendered and looked at, nothing clipped or cramped. The Expected sheet itself still prints its criteria panel - checked in the built HTML, one on the sheet and none on the slip. Worksheet engine 710 pass, 0 fail, with tests for the panel staying on the sheet, and for a pair of one-line questions packing while a pair too long to sit two across does not.
+
+**Still open.** Nothing else about how a helper adapts on a slip has changed: a slip is still the sheet's content with answer room and now the criteria panel taken out. Not yet run on Codex, and the nearest-1,000 pack has not been rebuilt.
+
 ## 2026-09-19 A slip closes the gaps the sheet leaves for writing (4.2.246)
 
 Daniel, sent a rendered slips page for the Year 4 Greater Depth sheet: "you can fit way more on that. I think you could probably fit that again on it. So you've got two ... if you gave me that just with two on them, that that would be fine."

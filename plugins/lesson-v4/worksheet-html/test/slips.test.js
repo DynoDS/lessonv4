@@ -21,6 +21,7 @@ const {
   slipContentOf,
   renderSlipsPage,
   rowsFor,
+  slipNodesFor,
   MAX_ROWS,
 } = require("../src/slips");
 const { renderSheet } = require("../src/render");
@@ -231,6 +232,44 @@ test("a slip closes the gaps the sheet leaves for writing", () => {
   assert.match(css, /\.slip-item \.h-stack-item--new-question \{ margin-top: 4mm !important; \}/);
   // A new question stays a step wider than a new part, so the order still reads.
   assert.match(css, /first-child \{ margin-top: 0 !important; \}/);
+});
+
+test("the success criteria panel stays on the sheet and never reaches a slip", () => {
+  // Daniel, 19 September 2026, having cut it off printed worksheets himself:
+  // "on a slip, I really don't think it's needed at all". It is 45mm of a
+  // 100mm slip, and nothing in it is written on.
+  const zone = {
+    stack: [
+      { helper: "questions", question: true, items: ["Round 2,748 to the nearest 100."] },
+      { helper: "steps", steps: ["Find the two hundreds either side.", "Choose the nearer."] },
+    ],
+  };
+  const content = slipContentOf({ zones: { a: zone } });
+  assert.doesNotMatch(JSON.stringify(content), /Find the two hundreds/);
+  assert.match(JSON.stringify(content), /Round 2,748/);
+  // The sheet itself is untouched: the panel is only dropped on the way to a slip.
+  assert.match(JSON.stringify(zone), /Find the two hundreds/);
+});
+
+test("one-line questions share a row however the sheet wrote them", () => {
+  // These two were written as the instruction above a number line the slip
+  // drops, not as question items, and at 33 characters they sat one per line
+  // beside half a slip of blank paper.
+  const q = (n, text) => ({
+    number: n,
+    question: true,
+    stack: [{ helper: "instruction", text }],
+  });
+  const [laid] = slipNodesFor(
+    [{ stack: [q(1, "Round 4,280 to the nearest 1,000."), q(2, "Round 6,500 to the nearest 1,000.")] }],
+    1
+  );
+  assert.equal(laid.stack.length, 1, "both questions on one row");
+  assert.equal(laid.stack[0].row.length, 2);
+  // Too long to sit two across is still a line of its own.
+  const long = "Round 4,280 to the nearest 1,000 and explain which digit told you.";
+  const [wide] = slipNodesFor([{ stack: [q(1, long), q(2, long)] }], 1);
+  assert.equal(wide.stack.length, 2, "one each, unpacked");
 });
 
 test("never more than four rows of slips, however short they are", () => {

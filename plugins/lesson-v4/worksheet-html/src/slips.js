@@ -224,6 +224,14 @@ function forSlip(node) {
   if (!node || typeof node !== "object") return node;
   if (node.onSlip === false) return null;
 
+  // The success criteria panel goes on the sheet and not on the slip. Nothing
+  // in it is written on, it repeats what is on the board and the working wall,
+  // and on a Year 4 rounding slip it was 45mm of a 100mm slip: every child
+  // sticking the method into their book instead of the questions. Daniel, 19
+  // September 2026, having cut it off printed worksheets himself: "on a slip, I
+  // really don't think it's needed at all". The sheet keeps it, Below included.
+  if (node.helper === "steps") return null;
+
   if (node.helper === "drawing-space") {
     if (!node.text) return null;
     const { helper, heightMm, frame, areas, text, ...rest } = node;
@@ -267,23 +275,40 @@ function slipContentOf(sheetSpec) {
 // with a picture, a stem, a blank in its words or a figure keeps its own line.
 // A run stops where a question group changes, so (1f) never shares a row with
 // (2).
-const SHORT_QUESTION_CHARS = 16;
 const BODY_CHAR_MM = 12 * 0.3528 * 0.5; // body type, the width the engine's line estimate assumes
 const NUMBER_ROOM_MM = 10; // the "(1a)" label and the gap after it, with a little to spare
 const MAX_ACROSS = 4;
 
-function shortQuestionText(node) {
+// How long a question's words may be and still share a row: what fits a cell at
+// two across. Beyond that the row maths below would refuse it anyway, so this
+// is the same judgement made once rather than a separate number to keep in
+// step. It replaced a flat 16 characters, which kept "Round 4,280 to the
+// nearest 1,000." on a line of its own beside half a slip of blank paper.
+function packableChars(widthMm) {
+  return Math.floor((widthMm / 2 - NUMBER_ROOM_MM - GAP_MM) / BODY_CHAR_MM);
+}
+
+// A numbered question whose whole content is one short line of words, whether
+// the sheet wrote that line as a question item or as the instruction above a
+// figure the slip has dropped. Anything with a picture, a stem, a blank in its
+// words or a figure still keeps its own line.
+function shortQuestionText(node, maxChars) {
   if (!node || typeof node !== "object" || node.number === undefined) return null;
   let inner = node;
   if (isStack(node)) {
     if (!Array.isArray(node.stack) || node.stack.length !== 1) return null;
     inner = node.stack[0];
   }
-  if (!inner || inner.helper !== "questions" || inner.text || inner.stem) return null;
-  if (!Array.isArray(inner.items) || inner.items.length !== 1) return null;
-  const item = inner.items[0];
-  const text = typeof item === "string" ? item : null;
-  if (text === null || /_{2,}/.test(text) || text.length > SHORT_QUESTION_CHARS) return null;
+  if (!inner || inner.stem) return null;
+  let text = null;
+  if (inner.helper === "questions" && !inner.text) {
+    if (!Array.isArray(inner.items) || inner.items.length !== 1) return null;
+    const item = inner.items[0];
+    text = typeof item === "string" ? item : null;
+  } else if (inner.helper === "instruction") {
+    text = typeof inner.text === "string" ? inner.text : null;
+  }
+  if (text === null || /_{2,}/.test(text) || text.length > maxChars) return null;
   return text;
 }
 
@@ -293,6 +318,7 @@ const COLUMN_FILLER = () => ({ helper: "instruction", text: " " });
 function packShortQuestions(content, widthMm) {
   if (!isStack(content) || !Array.isArray(content.stack)) return content;
 
+  const maxChars = packableChars(widthMm);
   const out = [];
   let run = [];
   const flush = () => {
@@ -312,7 +338,7 @@ function packShortQuestions(content, widthMm) {
   };
 
   for (const node of content.stack) {
-    const text = shortQuestionText(node);
+    const text = shortQuestionText(node, maxChars);
     const group = node && node.questionGroupId;
     if (text !== null && (!run.length || run[0].group === group)) {
       run.push({ node, text, group });
