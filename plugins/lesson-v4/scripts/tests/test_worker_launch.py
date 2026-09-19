@@ -75,7 +75,7 @@ class SpecTests(unittest.TestCase):
         for line in (
             "task_name: lesson_designer",
             "model: gpt-6-astra",
-            "reasoning_effort: medium",
+            "reasoning_effort: low",
             "fork_turns: none",
         ):
             with self.subTest(line=line):
@@ -89,8 +89,8 @@ class SpecTests(unittest.TestCase):
 
     def test_selected_normal_and_repair_roles_resolve_to_the_requested_matrix(self) -> None:
         expected = {
-            "lesson-designer": ("gpt-6-astra", "medium"),
-            "design-reviewer": ("gpt-6-astra", "high"),
+            "lesson-designer": ("gpt-6-astra", "low"),
+            "design-reviewer": ("gpt-6-astra", "low"),
             "design-reviewer-focused-repair": ("gpt-6-astra", "medium"),
             "adaptation-designer": ("gpt-6-astra", "low"),
             "slide-designer": ("gpt-5.6-sol", "medium"),
@@ -322,7 +322,7 @@ class AuditTests(unittest.TestCase):
                 {
                     "task_name": "lesson_designer",
                     "model": "gpt-6-astra",
-                    "reasoning_effort": "medium",
+                    "reasoning_effort": "low",
                     "fork_turns": "none",
                 },
                 {
@@ -379,7 +379,7 @@ class AuditTests(unittest.TestCase):
                 {
                     "task_name": "lesson_designer_redesign_2",
                     "model": "gpt-6-astra",
-                    "reasoning_effort": "medium",
+                    "reasoning_effort": "low",
                     "fork_turns": "none",
                 }
             ],
@@ -467,7 +467,7 @@ class SessionChoiceTests(unittest.TestCase):
                 {
                     "task_name": "lesson_designer",
                     "model": "gpt-6-astra",
-                    "reasoning_effort": "medium",
+                    "reasoning_effort": "low",
                     "fork_turns": "none",
                 }
             ],

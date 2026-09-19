@@ -195,7 +195,7 @@ class ActivationAndPreservationTests(unittest.TestCase):
 
     def test_completion_quality_lock_and_original_model_are_untouched(self):
         for needed in (
-            "model: opus\neffort: xhigh\ncodex_model: astra\ncodex_effort: medium",
+            "model: opus\neffort: xhigh\ncodex_model: astra\ncodex_effort: low",
             "## One Completion Pass, Then Done",
             "Then run `teacher-voice.md` → Final pre-flight check over the same strings",
             "By the end, children will [performance] because the lesson gives them",

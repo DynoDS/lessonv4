@@ -4,7 +4,7 @@ description: Independent semantic reviewer for UK primary lesson designs. Review
 model: opus
 effort: xhigh
 codex_model: astra
-codex_effort: high
+codex_effort: low
 color: "#7A1F2B"
 ---
 

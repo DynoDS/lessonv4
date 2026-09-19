@@ -1,5 +1,13 @@
 # Build review log
 
+## 2026-09-19 The lesson designer and the design reviewer run at low effort on Codex (4.2.239)
+
+Daniel asked for both to be moved down a rung, checking first that "light" was the name (it is not: the Codex CLI refuses `light` and lists none, minimal, low, medium, high, xhigh, max, so low is the lowest working rung and his own `config.toml` already sits there).
+
+**The change.** `agents/lesson-designer.md` `codex_effort` medium to low, `agents/design-reviewer.md` high to low. The Claude column (`model: opus`, `effort: xhigh`) is untouched, so the change only affects Codex runs. Four tests held the old values and were updated with it: the designer's quality lock in `test_lesson_designer_component_loading.py`, the reviewer line in `test_make_lesson_static_contract.py` (which matched `effort: high` on the codex field and now names it), and the role table and one audit fixture in `test_worker_launch.py`.
+
+**Said at the time.** These are the two roles that carry the lesson's thinking, and the reviewer is the only check before resources are built, so low effort is the setting most likely to bring back the thin-lesson faults 4.2.199 to 4.2.238 were written for. Daniel chose it knowing that; the next Codex lesson is where it shows. The Python suite is back to the same 7 failures as before the change.
+
 ## 2026-09-19 The first modelled case is tested, not guessed at from size (4.2.238)
 
 The 4.2.237 wording for choosing the first modelled example ("the one with the fewest new decisions in it") did not discriminate, and Daniel said so: 34 to the nearest 100 takes the same steps as 342, so a designer counting steps still lands on the smaller number, and the maths file's own `secure it small` rule actively points that way.

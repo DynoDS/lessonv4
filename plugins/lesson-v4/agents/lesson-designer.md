@@ -4,7 +4,7 @@ description: Lesson designer for UK primary schools. Makes all pedagogical decis
 model: opus
 effort: xhigh
 codex_model: astra
-codex_effort: medium
+codex_effort: low
 color: "#0A1E3F"
 ---
 
