@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-19 Two rules that were already written, and could not reach the slide (4.2.256)
+
+Walking Daniel through the nine open findings one at a time. Two of the nine turned out not to need a decision at all, because the rule already existed and something stopped it arriving.
+
+**Paragraph breaks: the rule is right, the designer was never sent to read it.** He said, with visible weariness, "I don't know how many times I've said paragraph breaks and line breaks when trying to fix things." He has said it, and it is written down at length in `preferences.md` (Written Voice, 14 September 2026): break at the real turns of meaning, prefer a paragraph break, two questions are always two moves. It is a good rule and nothing about it needed changing.
+
+The Slide Designer's own file listed two moments to open Written Voice: authoring narrow child-facing furniture, or reporting a wording fault. Placing a break in prose it is COPYING is neither. So a designer copying a three-sentence speech exactly, which is what it must do, never read the page that says where to break it. `preferences.md` itself names the third trigger, "place a paragraph break in settled prose", in its own routing paragraph; the agent file had dropped it, and the agent file is what routes. The trigger is restored, with the line that breaking is not rewriting. No new rule. This is worth remembering as a shape: a rule repeated by the teacher several times is more likely to be unrouted than unwritten.
+
+**The starter's little title.** `starterPrompt` fell back to `data.title`, so any starter slide carrying a title printed it as though it were a prompt: "Rounding to 1,000" at 28pt sitting directly above "Round to the nearest 1,000:" at 48pt, saying the same thing twice. It also cost the body a whole prompt row, because `starterHeaderHeight` reserves one whenever a prompt exists. He has been deleting these by hand for a while: "It keeps doing little titles for the starter. And I don't know why, because I don't want them in any lesson. Just the starter heading that's underlined is enough." A title is no longer a prompt; `heading` still is, so a designer's real retrieval question prints as before, and a starter with neither gets the row of height back for its content.
+
+**Evidence.** Builder 680 pass, 0 fail. Full design suite 1968 pass, same 9 pre-existing failures. Rebuilt slide 1 now lands within a tenth of an inch of his hand-edited copy at every element: Date y0.25, objective y1.00, Starter y1.84, the prompt band y2.60 against his y2.68, the question cards y4.21 against his y4.38, and no little title. Not run on Codex.
+
+**Decided in the same conversation, not yet built.** His rule, in his words, is "fill the box you're in" and "you don't want dead space, unless the dead space is the price of aligning a box with other boxes". Seven findings now have his answer and are waiting: vocabulary card type grows to fill its card rather than reading a per-count table; a card in a matched set fills its own box when one card holds far more text; a white strip holding one sentence hugs it; spare room is spent separating a situation from the task it sets, and a tight stack is fine when there is no spare room; a speech portrait is sized from what the person says, with a floor; a decoration grows into the space left over, which he points out is what the drawing library is for; and the blue-asks rule gains the case it was missing, a block that asks and THEN instructs, which is the reverse of the tells-then-asks case it already covers. He also confirmed the answer-slot arrow is a preference and never a rule (4.2.255).
+
 ## 2026-09-19 A blocked source keeps a standby rung, and two rules reach the place they had missed (4.2.255)
 
 Daniel asked which of the remaining findings I knew what to do with, and to do those. Three, plus his answer to the one open question.

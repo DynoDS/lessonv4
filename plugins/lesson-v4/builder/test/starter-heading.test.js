@@ -89,5 +89,19 @@ test('the body starts below the question when there is one', () => {
 
 test('a title-headed slide is untouched by any of this', () => {
   assert.equal(bodyZone('title', { title: 'Use made-up stories' }).y, 0.60);
-  assert.equal(starterPrompt({ title: 'Use made-up stories' }), 'Use made-up stories');
+});
+
+test('a title never becomes the starter prompt', () => {
+  // The prompt row is for something the designer deliberately put there, which
+  // is what `heading` says. A title falling through to it printed the slide's
+  // own title as a prompt directly above the body saying the same thing, and
+  // took a row of the body's height to do it: "Rounding to 1,000" at 28pt over
+  // "Round to the nearest 1,000:" at 48pt. The teacher deletes these by hand and
+  // wants none of them: the underlined "Starter" already says what the slide is.
+  assert.equal(starterPrompt({ title: 'Rounding to 1,000' }), '');
+  assert.equal(starterPrompt({ heading: 'What is 6,432 to the nearest 1,000?' }),
+    'What is 6,432 to the nearest 1,000?');
+  // A titled starter now keeps the height the phantom prompt was spending.
+  const titled = { headerStyle: 'starter', title: 'Rounding to 1,000' };
+  assert.equal(bodyZone('starter', titled).y, 0.25 + HEADER_STARTER_H);
 });

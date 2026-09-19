@@ -59,9 +59,27 @@ const HEADER_STARTER = {
 // from the lesson's opening slide altogether (flagged by Daniel, 2 September
 // 2026: "Starter heading must ALWAYS be there"). So the label stays put and the
 // question takes a full-width line of its own beneath it.
+// The starter's own prompt line, and the one thing it must not print.
+//
+// A starter slide already says what it is: "Starter", underlined, in the header.
+// The line under it is for something the designer deliberately puts there, a
+// retrieval question or a prompt, and `heading` is how they say so.
+//
+// It used to fall back to `title`, so any starter slide carrying a title printed
+// that title as if it were a prompt. On Round to 10, 100 or 1,000 that put
+// "Rounding to 1,000" at 28pt directly above "Round to the nearest 1,000:" at
+// 48pt, saying the same thing twice, and it also cost the body a whole prompt
+// row of height because `starterHeaderHeight` reserves one whenever a prompt
+// exists. The teacher deleted it by hand and said it is a standing annoyance:
+// "It keeps doing little titles for the starter. And I don't know why, because I
+// don't want them in any lesson. Just the starter heading that's underlined is
+// enough." (19 September 2026.)
+//
+// So a title never becomes a prompt. A real prompt still prints, and a starter
+// with neither gets its header row of height back for the content.
 function starterPrompt(data) {
   if (!data || typeof data !== 'object') return '';
-  const value = String(data.heading || data.title || '').trim();
+  const value = String(data.heading || '').trim();
   if (!value || /^starter$/i.test(value)) return '';
   return value;
 }

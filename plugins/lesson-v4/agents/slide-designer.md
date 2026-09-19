@@ -43,7 +43,7 @@ Read at startup:
 
 Read before the first affected decision:
 
-- `preferences.md` Written Voice only when you must author narrow child-facing furniture or report a wording fault. Do not use it to rewrite exact source-authored text. At the same trigger read the core sections of `teacher-voice.md`, so the furniture you author sounds like the teacher rather than a template.
+- `preferences.md` Written Voice when you must author narrow child-facing furniture, report a wording fault, OR place a paragraph or line break in prose you are copying. Do not use it to rewrite exact source-authored text. Breaking is not rewriting: a break separates words already there, in the order they are in, and every multi-sentence block a child reads gets judged for one. That third trigger was missing, so a designer copying a three-sentence speech exactly, as it should, never read the rule that says where to break it, and the teacher has had to add the breaks by hand repeatedly. At the same trigger read the core sections of `teacher-voice.md`, so the furniture you author sounds like the teacher rather than a template.
 - `preferences.md` Slide Headings before choosing any title. The source unit's label is the title unless it is an internal slot name (`Do 1`, `Teach 3`, `Apply`, `Practise`); the section says what to do then. A label that names the move (`Does it need a plug?`) is kept as written, because the titles read in order are how a teacher sees where the lesson is going.
 - `preferences.md` Question Labelling before assigning or rendering any question number.
 - `preferences.md` A Picture Beside a Word and Vocabulary before composing a vocabulary or semantic word-picture slide.
