@@ -1,5 +1,21 @@
 # Build review log
 
+## 2026-09-19 The Lesson Designer gets the repair door every other designer has (4.2.252)
+
+The last piece of the rounding-run diagnosis. When the design check refused a finished design and the designer's repair passes were spent, the only route back was a fresh full Lesson Designer: 146 KB of role and a 215 KB preferences file read before it writes a word, to move a vocabulary card one beat. The slide, worksheet, working wall and stick-in designers have all had a compact repair-only entry point for this; the Lesson Designer had none.
+
+**The door.** `agents/lesson-designer-focused-repair.md`, 5.6 KB against the owner's 146 KB, modelled on the design-reviewer's hand-back repair because it is the same shape of job: a finished artefact, named validator faults, and no licence to reopen the thinking. It repairs what the check names and leaves the route, beats, examples and picture jobs as they stand. It reads the full role once, and only when a fault cannot be answered without it.
+
+**The boundary that keeps it honest.** Some validator faults are lesson decisions wearing a field's clothes - a carded word no beat uses anywhere means either the words or the beats are wrong, and both are the designer's judgement. The door returns `NEEDS A FRESH DESIGN` naming the fault and what satisfying it would cost, and the orchestrator takes its existing fresh-attempt route. A reviewer's `REDESIGN REQUIRED` never comes here at all: that verdict says a purposeful decision must change, which is the full role's work, and it keeps the Phase 1.25 redesign route.
+
+**Routing.** Phase 1's hand-back now tries the door first and falls back to the fresh attempt on any terminal state but `REPAIRED`, or when the door's own validator run still fails. `worker-launch.py spec` resolves the new role from its frontmatter with no registry to update, printing `lesson_designer_focused_repair` at astra/medium.
+
+**What the guardrails caught.** The first draft named `REDESIGN REQUIRED` in the Phase 1 slice, which the runtime test refuses because the initial design slice is kept clear of later review work, and it pushed the playbook 628 bytes past its 75 KiB budget. Both are right: the boundary belongs in the agent file, where it now lives alone, and the routing paragraph earns its place at roughly the size of the text it replaced.
+
+**Evidence.** Full design suite 1962 pass, the same 9 pre-existing failures as baseline, none new. `worker-launch.py spec --role lesson-designer-focused-repair --host codex` returns `WORKER_LAUNCH_OK`.
+
+**Still open.** `slide-designer-focused-repair.md` is 8362 bytes against its own 8000-byte limit, a pre-existing failure untouched by this work. None of the three changes has been run on Codex.
+
 ## 2026-09-19 Every picture brief is judged on its own (4.2.251)
 
 Daniel, after 4.2.250: "Are there other agents that need this fix then?"

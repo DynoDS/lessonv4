@@ -205,7 +205,16 @@ the finished design.
 
 A designer that cannot reach `LESSON_DESIGN_OK` within its bounded repair
 passes returns `LESSON_DESIGN_CHECK_FAILED` with the validator's failure lines.
-Treat that, or a failed orchestrator success check, as one recoverable fault:
+Treat that, or a failed orchestrator success check, as one recoverable fault,
+and repair before redesigning: the fault is usually one field, and a fresh
+attempt reads the whole role before it writes a word. Launch one focused
+clean-context `lesson-designer` job from the compact repair role
+`[PLUGIN_ROOT]/agents/lesson-designer-focused-repair.md` (if that file is
+missing or unreadable, use `[PLUGIN_ROOT]/agents/lesson-designer.md`), carrying
+the canonical files, the exact validator failure lines, the validator command
+and the in-place editing rule.
+
+On `REPAIRED`, continue. Otherwise, or when its own validator run still fails,
 launch one fresh clean-context Lesson Designer attempt with the current saved
 files and the exact validator failures. If that attempt also fails the
 validator, nothing downstream can build from an invalid design: go to Phase 4,
