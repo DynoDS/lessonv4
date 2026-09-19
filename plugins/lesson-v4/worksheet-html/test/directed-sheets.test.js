@@ -28,7 +28,10 @@ const FIXTURE = path.join(
 function baseSpec() {
   const spec = JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
   // Every sheet a designer writes says books or sheet; the preflight refuses one that does not.
-  for (const sheet of Object.values(spec.sheets)) sheet.recording = "sheet";
+  for (const sheet of Object.values(spec.sheets)) {
+    sheet.recording = "sheet";
+    sheet.recordingReason = "Q1: the child writes on the printed page.";
+  }
   return spec;
 }
 

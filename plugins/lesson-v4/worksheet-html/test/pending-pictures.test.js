@@ -30,6 +30,7 @@ function setup() {
     sheets: {
       expected: {
         recording: "sheet",
+        recordingReason: "Q1: the child writes on the printed page.",
         layout: "full",
         orientation: "portrait",
         zones: {

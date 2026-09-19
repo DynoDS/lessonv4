@@ -30,6 +30,9 @@ const { REGISTRY } = require("../src/helpers");
 function sheet(recording, text = "Round 2,748 to the nearest 100.") {
   return {
     ...(recording === undefined ? {} : { recording }),
+    ...(recording === "sheet"
+      ? { recordingReason: "Q2: the child marks 2,748 on the printed line." }
+      : {}),
     layout: "full",
     orientation: "portrait",
     zones: {
@@ -65,6 +68,33 @@ test("a spec written before the choice existed still builds, unmarked", () => {
   const [built] = sheetsOf(worksheet);
   assert.equal(built.spec.recording, null);
   assert.doesNotMatch(renderSheet(built.spec), /<svg class="sheet-recording"/);
+});
+
+test("the gate makes a sheet mark name the question that needs the page", () => {
+  const bare = { layout: "full", orientation: "portrait", recording: "sheet", zones: {} };
+  const worksheet = { sheets: { expected: bare } };
+  assert.deepEqual(signals(worksheet, { required: true }), [
+    "expected:RECORDING_REASON_MISSING",
+  ]);
+  // Blank, or spaces, is no reason at all.
+  worksheet.sheets.expected = { ...bare, recordingReason: "   " };
+  assert.deepEqual(signals(worksheet, { required: true }), [
+    "expected:RECORDING_REASON_MISSING",
+  ]);
+  // A named question passes.
+  worksheet.sheets.expected = {
+    ...bare,
+    recordingReason: "Q4: the child labels the printed photograph.",
+  };
+  assert.deepEqual(signals(worksheet, { required: true }), []);
+});
+
+test("a books sheet is never asked for a reason, and the build asks nobody", () => {
+  const books = { layout: "full", orientation: "portrait", recording: "books", zones: {} };
+  assert.deepEqual(signals({ sheets: { expected: books } }, { required: true }), []);
+  // The build never withholds a worksheet over a missing sentence.
+  const bare = { layout: "full", orientation: "portrait", recording: "sheet", zones: {} };
+  assert.deepEqual(signals({ sheets: { expected: bare } }), []);
 });
 
 test("only books or sheet is a choice", () => {

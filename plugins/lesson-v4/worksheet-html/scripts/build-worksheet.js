@@ -178,6 +178,21 @@ async function main() {
     diagnostic("RECORDING_CHANGED", "content", { sheet: problem.sheet }, problem.message);
   }
 
+  // What each level costs in paper, said out loud. A worksheet where every
+  // level is "sheet" is a class set of copies per level, and it used to build
+  // in silence, so nobody reading the run could tell the choice from a default.
+  for (const [key, sheet] of Object.entries(worksheet.sheets || {})) {
+    if (!sheet || typeof sheet !== "object" || !sheet.recording) continue;
+    const reason =
+      typeof sheet.recordingReason === "string" ? sheet.recordingReason.trim() : "";
+    console.log(
+      sheet.recording === "books"
+        ? `RECORDING: ${sheetLabel(key)} - books, a copy between two, with question slips at the back.`
+        : `RECORDING: ${sheetLabel(key)} - sheet, a copy per child. ` +
+          (reason || "No reason given.")
+    );
+  }
+
   // Answers are a different audience. Validate complete coverage before pupil
   // pages are written, and keep the resulting teacher text out of `sheets`
   // entirely so it cannot be appended to a pupil print job.

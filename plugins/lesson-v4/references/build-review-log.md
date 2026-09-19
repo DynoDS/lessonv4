@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-19 A "sheet" mark says which question needs the page (4.2.243)
+
+Daniel, on the Year 4 nearest-1,000 worksheets: "I noticed its all write on sheet, but felt it could have bene wrote in books, right? ... can we find out if the agent did think about whether it was write on sheet or books by looking at its working files, and if it did make a decision, what was that decision?"
+
+**What the run actually did.** Both sheets carried `"recording": "sheet"`, so a value was set. Across all three worksheet-designer launches (the build, the focused repair, the rebuild) `books-or-sheet.md` was never opened - the file step 5 sends the designer to, holding the test and the age table. The reasoning is encrypted, so what it weighed cannot be read; what can be read is that the one action the step requires did not happen, and no reason for either mark was written anywhere in the run. Against the age table, Expected was a books sheet: six short roundings, one explanation, and two number lines of the kind a Year 4 child rules for themselves (ends given, one halfway tick, rough placement). That is a class set of copies.
+
+**Why nothing caught it.** `recordingProblems` only ever questioned `"books"`: a books sheet whose wording needs the page is refused, and `"sheet"` passed unexamined. So `"sheet"` was the free answer - always accepted, never justified, and identical on the page whether the test was run or skipped. The build was silent too: a worksheet where every level costs a copy per child printed with nothing said.
+
+**The change.** A sheet marked `"sheet"` now carries `"recordingReason"`: one line naming the question that needs the printed page and what the child does to it (`"Q4: the child labels the printed photograph"`). The preflight refuses a missing one as `RECORDING_REASON_MISSING`; the build never withholds over it and prints a `RECORDING:` line per level saying what that level costs in paper and why. Only `"sheet"` is asked for a line, because only `"sheet"` spends the paper, and looking for that question is the test itself. Step 5 of the worksheet designer and `books-or-sheet.md` say the same in words, with the boundary that finding no such question makes the sheet `"books"`, and the warning that reaching for `"books"` to dodge the line is the one way the field makes a worksheet worse.
+
+**Evidence.** The run's own `worksheet.json`, unchanged, now fails the preflight twice: the exact spec that shipped in silence. The corrected version (Expected `"books"` with its number lines `onSlip: false`, Greater Depth `"sheet"` because a digit goes into the printed box) passes and builds, reporting `RECORDING: Expected - books, a copy between two, with question slips at the back.` and `RECORDING: Greater Depth - sheet, a copy per child. Q2: the child writes a digit into the printed box in 2,_80.` Worksheet engine 706 pass, 0 fail, with two new tests: the gate fires on a bare `"sheet"` and on a blank line, passes on a named question, never asks a `"books"` sheet, and never fires during a build.
+
+**Still open.** The line is a sentence, not a proof: a designer can still name a question that did not really need the page, and nothing reads it back. It reaches the build output but not the run report, so Daniel sees the paper cost only if he looks at the log. The nearest-1,000 pack has not been rebuilt, and nothing has run on Codex yet.
+
 ## 2026-09-19 A skill lesson's turns say which turn they are (4.2.242)
 
 Daniel, reading the rebuilt nearest-1,000 deck: "the titles. theres no My Turn Our Turn Your Turn". The Codex design had named its turns by the move alone (`The thousands either side`, `Beyond halfway`, `Round the whole set`), the Slide Designer kept those labels faithfully as titles, as it is told to, and the deck reached a teacher with none of the three words in it.

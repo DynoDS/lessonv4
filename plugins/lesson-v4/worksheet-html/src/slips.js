@@ -130,6 +130,12 @@ function sheetOnlyWording(sheet) {
 // Every sheet's recording choice, checked. `required` is the designer's gate:
 // a sheet with no choice is refused there, while the build leaves an unmarked
 // sheet unmarked so a spec written before this field still builds.
+//
+// The two marks are not checked the same way, on purpose. `"books"` pays for
+// itself - it saves the copies, and its wording is tested below - while
+// `"sheet"` costs a copy per child and used to pass in silence, so at the gate
+// it states which question needs the page. That sentence is the only thing
+// asked for: never the mark, which reports the sheet the designer built.
 function recordingProblems(worksheet, { required = false } = {}) {
   const problems = [];
   for (const [key, sheet] of Object.entries((worksheet && worksheet.sheets) || {})) {
@@ -155,6 +161,24 @@ function recordingProblems(worksheet, { required = false } = {}) {
         message: `sheets.${key}.recording must be "books" or "sheet" (got ${JSON.stringify(value)}).`,
       });
       continue;
+    }
+    if (value === "sheet" && required) {
+      const reason =
+        typeof sheet.recordingReason === "string" ? sheet.recordingReason.trim() : "";
+      if (!reason) {
+        problems.push({
+          signal: "RECORDING_REASON_MISSING",
+          sheet: key,
+          message:
+            `sheets.${key} is marked "sheet", which is a copy per child. Add ` +
+            `"recordingReason": one line naming the question that needs the ` +
+            `printed page and what the child does to it, as in "Q4: the child ` +
+            `labels the printed photograph". If no question needs the page, ` +
+            `every question can be answered in a book and the sheet is ` +
+            `"books". Never change a question to reach either mark. See ` +
+            `references/books-or-sheet.md.`,
+        });
+      }
     }
     if (value === "books") {
       const found = sheetOnlyWording(sheet);

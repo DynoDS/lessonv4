@@ -23,6 +23,7 @@ const CHECK = path.join(__dirname, "..", "scripts", "check-worksheet.js");
 function sheet() {
   return {
     recording: "sheet",
+    recordingReason: "Q1: the child writes on the printed page.",
     layout: "full",
     orientation: "portrait",
     zones: {

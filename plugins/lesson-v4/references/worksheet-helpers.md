@@ -42,7 +42,8 @@ artefact and cannot drift apart.
     "adaptationPath": "/abs/path/adaptation.md"
   },
   "sheets": {
-    "below":        { "recording": "sheet", "layout": "auto", "zones": [ { }, { } ] },
+    "below":        { "recording": "sheet", "recordingReason": "Q1: the child completes the printed part-whole model.",
+                      "layout": "auto", "zones": [ { }, { } ] },
     "expected":     { "recording": "books", "layout": "auto", "zones": [ { }, { }, { } ] },
     "greaterDepth": { "recording": "books", "layout": "halves-side", "orientation": "landscape",
                       "zones": { "a": { }, "b": { } } }
@@ -138,6 +139,7 @@ seconds it takes to cut the pile into three.
 | `orientation` | `portrait` (default for a named layout) or `landscape`. Per sheet, though one lesson's sheets normally share one: see below. With `"auto"`, stating one constrains the choice to it; omitting it lets the engine try both. |
 | `zones` | required. With `"auto"`: an ARRAY of zone contents in reading order. With a named layout: an object with one entry per lettered zone. |
 | `recording` | required. `"books"` when every question can be answered in an exercise book from a shared copy, `"sheet"` when at least one needs the printed page. Prints a small book or pencil beside the level code, and a `"books"` sheet also gets a page of question slips at the back of the file. `books-or-sheet.md` has the test and the age guide. |
+| `recordingReason` | required on a `"sheet"` sheet, and on no other. One line naming the question that needs the printed page and what the child does to it (`"Q4: the child labels the printed photograph"`). Looking for that question is the test: with no such question the sheet is `"books"`. Never change a question to reach either mark. |
 
 Any figure inside a `"books"` sheet that the children will draw for themselves
 in their books carries `"onSlip": false`, so the question slips leave it off
@@ -364,6 +366,7 @@ reported rather than just the first.
 | `SLIPS_SKIPPED` | A `"books"` sheet got no slips (its questions are too long for a slip shorter than a page, or nothing is left once the answer room is taken out). The sheet itself is unchanged. Information, not a fault. |
 | `RECORDING_CHANGED` | A sheet's `recording` was unusable: marked `"books"` with wording that needs the printed page (printed as `"sheet"`, no slips), or not one of the two choices (printed unmarked). The build still delivers; the preflight is where this is fixed. |
 | `RECORDING_MISSING` / `RECORDING_INVALID` / `RECORDING_NEEDS_SHEET` | Preflight only. A sheet has no `recording`, a value other than `"books"` or `"sheet"`, or is marked `"books"` while its words ask for something only the printed page allows. Fix the field; never reword the question. |
+| `RECORDING_REASON_MISSING` | Preflight only. A sheet is marked `"sheet"` with no `recordingReason`. Name the question that needs the page, or mark the sheet `"books"`. The build never withholds over it, and prints a `RECORDING:` line per level saying what it costs in paper. |
 | `NO_SHEETS` | The JSON has none of `below`, `expected`, `greaterDepth`. |
 | `SPEC_INVALID` | The JSON is malformed, a sheet name is not one of the three, or answers were stored as `sheets.answers`. |
 

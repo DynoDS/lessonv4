@@ -32,6 +32,17 @@ Writing *about* something passes: the child reads the picture, number line, tabl
 or source from a shared copy and writes. Working *on* something fails: the child
 has to mark, label, circle, plot or fill in the printed thing itself.
 
+**Say which question needs the page.** A sheet marked `"sheet"` carries
+`"recordingReason"`: one line naming the question that needs the printed page and
+what the child does to it - `"Q4: the child labels the printed photograph"`,
+`"Q2: the child plots the reading on the printed grid"`. Only `"sheet"` is asked
+for it, because only `"sheet"` spends a copy per child, and a mark reached by
+skipping this test looks exactly like one that earned it. Looking for that
+question is the test; if you cannot find one, the sheet is `"books"`. The line is
+a report, not a defence: a sheet that genuinely needs the page is a good sheet,
+and marking `"books"` to avoid writing the line is the only way this field makes
+a worksheet worse.
+
 **The whole sheet is `"books"` only when every question passes.** One question
 that needs the page makes the sheet `"sheet"`. A half-and-half sheet saves no
 paper, because every child still needs a printed copy for the half that needs it,
@@ -81,6 +92,11 @@ drawing it. Leave unmarked any figure a child reads from: a photograph, a source
 a data table, a number line whose value they read off.
 
 ## What the build checks
+
+The preflight refuses a `"sheet"` mark with no `recordingReason` as
+`RECORDING_REASON_MISSING`. The build never withholds a worksheet over it; it
+prints a `RECORDING:` line per level saying what that level costs in paper and
+why, so a choice nobody made is visible in the run rather than silent.
 
 Wording that only makes sense with the printed page ("Circle...", "Mark it on the
 line", "in the boxes", "Fill in the table") marks a sheet `"sheet"` whatever it was
