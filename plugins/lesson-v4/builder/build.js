@@ -633,6 +633,27 @@ SLIDE_TEXT_BELOW_TARGET: ${belowTarget.length} box(es) on slide(s) ` +
     });
   }
 
+  // Text that fits, in a box far bigger than it needs. The complaint above asks
+  // whether the type is too small in the absolute; this one asks whether the box
+  // is mostly empty, which is the fault a teacher actually sees from the back of
+  // the room and the one the point-size check is blind to. See
+  // `note_underfilled` in fit_text_postprocess.py for why both exist.
+  const underfilled = Array.isArray(autofit.result && autofit.result.underfilled)
+    ? autofit.result.underfilled
+    : [];
+  if (underfilled.length) {
+    const slidesHit = [...new Set(underfilled.map((u) => u.slide))].sort((a, b) => a - b);
+    console.log(
+      `
+SLIDE_TEXT_UNDERFILLED: ${underfilled.length} box(es) on slide(s) ` +
+        `${slidesHit.join(', ')} hold text using less than half the box. Give the ` +
+        `content the room or give the room to the content.`
+    );
+    underfilled.forEach((u) => {
+      console.log(`  slide ${u.slide} at ${u.fillPct}% of ${u.boxH}in: "${u.preview}"`);
+    });
+  }
+
   const warnings = getWarnings();
   if (warnings.length) {
     console.log(`\n${warnings.length} warning(s):`);

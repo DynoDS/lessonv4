@@ -436,3 +436,78 @@ def test_budget_names_height_when_the_box_cannot_hold_one_line():
 def test_budget_says_nothing_rather_than_guessing_at_empty_text():
     box = _Box("   ", 3.0, 1.0)
     assert MODULE.text_budget(box, 18, box.text_frame.text) == ""
+
+
+# ─── the box is mostly empty ──────────────────────────────────────────────
+#
+# The point-size check and this one answer different questions, and the deck
+# that proved it needs both is Round to 10, 100 or 1,000 (19 September 2026):
+# 37 point-size complaints, every one about success criteria the teacher then
+# approved, and nothing at all about the six practice questions he rebuilt by
+# hand because each sat at 22pt in a 2.07in card. These tests hold that line:
+# the fault is measured as a share of the box, never as a number of points.
+
+
+def test_a_card_far_taller_than_its_one_line_is_reported(capsys):
+    with tempfile.TemporaryDirectory() as tmp:
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_box(slide, "Text 5", "2,451 to the nearest 10", 0.2, 0.7, 7.9, 2.07, size=22)
+        path = Path(tmp) / "deck.pptx"
+        prs.save(str(path))
+        MODULE.process(str(path))
+    out = capsys.readouterr()
+    assert "UNDERFILLED" in out.err
+    assert "Text 5" in out.err
+
+
+def test_a_card_its_text_nearly_fills_is_not_reported(capsys):
+    with tempfile.TemporaryDirectory() as tmp:
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        # The same question in a card sized to it: this is the repaired shape.
+        add_box(slide, "Text 5", "2,451 to the nearest 10", 0.2, 0.7, 7.9, 0.9, size=35)
+        path = Path(tmp) / "deck.pptx"
+        prs.save(str(path))
+        MODULE.process(str(path))
+    assert "UNDERFILLED" not in capsys.readouterr().err
+
+
+def test_a_question_number_is_not_judged_against_its_card(capsys):
+    # "(1)" is given the whole card's height so it centres beside the words. It
+    # can never fill that, and reporting it would name every card twice.
+    with tempfile.TemporaryDirectory() as tmp:
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_box(slide, "Text 4", "(1)", 0.4, 0.7, 0.6, 2.07, size=24)
+        path = Path(tmp) / "deck.pptx"
+        prs.save(str(path))
+        MODULE.process(str(path))
+    assert "UNDERFILLED" not in capsys.readouterr().err
+
+
+def test_a_fill_box_is_left_alone(capsys):
+    # `fill-text` asks for a zone-sized box on purpose, so the answer reveal
+    # lands in the middle of the slide rather than at the top of it.
+    with tempfile.TemporaryDirectory() as tmp:
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_box(slide, "GROWFIT__fill-text-1__44__fill-text", "No. It rounds to 4,000.",
+                0.2, 0.7, 6.7, 6.4, size=44)
+        path = Path(tmp) / "deck.pptx"
+        prs.save(str(path))
+        MODULE.process(str(path))
+    assert "UNDERFILLED" not in capsys.readouterr().err
+
+
+def test_small_furniture_is_not_worth_reporting(capsys):
+    # The same proportion of slack in a one-inch strip is not a slide with a
+    # hole in it, so the check keeps off anything under MIN_UNDERFILL_H.
+    with tempfile.TemporaryDirectory() as tmp:
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_box(slide, "Text 2", "Use the word bank", 0.2, 0.2, 4.0, 0.6, size=14)
+        path = Path(tmp) / "deck.pptx"
+        prs.save(str(path))
+        MODULE.process(str(path))
+    assert "UNDERFILLED" not in capsys.readouterr().err

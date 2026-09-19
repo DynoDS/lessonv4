@@ -296,19 +296,28 @@ def best_fit_size(paragraphs_info, width_emu, height_emu, font_file, max_pt, flo
     usable_w = max((width_emu - PAD_W) / WIDTH_SAFETY, 1)
     usable_h = max(height_emu - PAD_H, 1)
 
-    def fits(pt):
+    # The height the text really takes at `pt`, or None when a word is too wide
+    # to break. Separated from `fits` so the caller can also learn how much of
+    # the box the chosen size actually uses: a box the text fits inside easily
+    # and a box the text nearly fills are both "fits", and only one of them is
+    # a slide worth looking at.
+    def used_height(pt):
         base_line_h = _real_line_height_emu(font_file, pt)
         total_h = 0
         for lines, ls, spacing_pt in paragraphs_info:
             n = 0
             for runs in lines:
                 if widest_unbroken_word(runs, pt) > usable_w:
-                    return False
+                    return None
                 n += wrap_runs(runs, usable_w, pt)
             n = max(n, 1)
             para_h = base_line_h + (n - 1) * int(base_line_h * ls)
             total_h += int(para_h * LINE_HEIGHT_SAFETY) + points_to_emu(spacing_pt)
-        return total_h <= usable_h
+        return total_h
+
+    def fits(pt):
+        total_h = used_height(pt)
+        return total_h is not None and total_h <= usable_h
 
     lo, hi, best = int(floor_pt), int(max_pt), None
     while lo <= hi:
@@ -319,8 +328,10 @@ def best_fit_size(paragraphs_info, width_emu, height_emu, font_file, max_pt, flo
         else:
             hi = mid - 1
     if best is None:
-        return floor_pt, True
-    return best, False
+        return floor_pt, True, 1.0
+    taken = used_height(best)
+    fill = (taken / usable_h) if (taken and usable_h > 0) else 1.0
+    return best, False, fill
 
 
 def points_to_emu(pt):
@@ -538,7 +549,7 @@ def measure_shape(shape, ceiling, floor_pt):
         )
         for paragraph in tf.paragraphs
     ]
-    best, hit_floor = best_fit_size(
+    best, hit_floor, fill = best_fit_size(
         paragraphs_info,
         shape.width,
         shape.height,
@@ -550,6 +561,7 @@ def measure_shape(shape, ceiling, floor_pt):
         "best": best,
         "hit_floor": hit_floor,
         "current": int(round(max_size)),
+        "fill": fill,
     }
 
 
@@ -562,6 +574,64 @@ def measure_shape(shape, ceiling, floor_pt):
 # have to be lower." The repair for one of these is always the words, so the
 # run says which boxes gave way.
 TARGET_PT = 20
+
+
+# Text that fits easily inside a box far bigger than it needs.
+#
+# The other size check on this page asks "is this text under 20pt". That is the
+# wrong question on its own, and a whole deck proved it: on Round to 10, 100 or
+# 1,000 (19 September 2026) it produced 37 complaints, every one of them about
+# the five success criteria at 18pt, which the teacher then said "looked fine".
+# It said nothing at all about the eight things he DID change by hand, because
+# all of them were comfortably over 20pt: 22pt questions sitting in 2.07in cards,
+# 27pt cards in 1.49in boxes, a 27pt speech bubble in a 2.75in card. The check
+# fired six times on the one thing he approved and zero times on the eight he
+# rejected. A number on its own cannot see an empty box.
+#
+# So this asks the other question: how much of its box is the text actually
+# using. 22pt in a 2.07in card uses a fifth of it, which is a card that should
+# have been smaller or type that should have been bigger, and either way a slide
+# with a hole in it.
+#
+# Three exclusions, each because it is a box that is SUPPOSED to be loose:
+#   a short label   "(1)", "(a)" - a question number is given the card's full
+#                   height so it centres beside the words, and its own text will
+#                   never fill that. Judging it would report every card twice.
+#   a fill box      `fill-text` asks for a box the size of the zone on purpose,
+#                   so the answer reveal lands in the middle of the slide.
+#   a NOFIT box     a badge or marker whose size is set deliberately and which
+#                   this pass is not allowed to resize anyway.
+#
+# MIN_UNDERFILL_H keeps it off small furniture: half an inch of slack in a
+# six-inch card is the fault, the same proportion in a one-inch strip is not
+# worth a teacher's attention.
+UNDERFILL_RATIO = 0.45
+MIN_UNDERFILL_H = Emu(1.2 * 914400)
+LABEL_TEXT = re.compile(r"^[\(\[]?\s*[0-9a-zA-Z]{1,3}\s*[\)\].:]?$")
+
+
+def note_underfilled(collected, slide_number, shape, result):
+    try:
+        fill = float(result.get("fill"))
+    except (TypeError, ValueError):
+        return
+    if fill >= UNDERFILL_RATIO:
+        return
+    if shape.height is None or shape.height < MIN_UNDERFILL_H:
+        return
+    name = shape.name or "<unnamed>"
+    if "fill-text" in name or name.startswith("NOFIT"):
+        return
+    text = " ".join(shape.text_frame.text.split())
+    if not text or LABEL_TEXT.match(text):
+        return
+    collected.append((
+        slide_number,
+        name,
+        round(fill * 100),
+        round(Emu(shape.height).inches, 2),
+        text[:60],
+    ))
 
 
 def note_below_target(collected, slide_number, shape, final_pt):
@@ -584,6 +654,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
     skipped = 0
     overloaded = []
     below_target = []
+    underfilled = []
     measurement_failures = []
 
     def record_change(tf, current, target):
@@ -654,6 +725,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             for shape, result in measured:
                 record_change(shape.text_frame, result["current"], shared)
                 note_below_target(below_target, slide_number, shape, shared)
+                note_underfilled(underfilled, slide_number, shape, result)
                 if result["hit_floor"]:
                     full = shape.text_frame.text
                     preview = full.strip().replace("\n", " ")[:60]
@@ -678,6 +750,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
                     continue
                 record_change(tf, result["current"], result["best"])
                 note_below_target(below_target, slide_number, shape, result["best"])
+                note_underfilled(underfilled, slide_number, shape, result)
                 if result["hit_floor"]:
                     preview = tf.text.strip().replace("\n", " ")[:60]
                     overloaded.append((
@@ -711,9 +784,22 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             file=sys.stderr,
         )
 
+    for sn, shape_name, pct, box_h, preview in underfilled:
+        print(
+            f"  UNDERFILLED slide {sn} box {shape_name!r}: the text uses {pct}% of a "
+            f"{box_h}in box. Either the box is bigger than its content needs or the "
+            f"type should have grown into it. "
+            f"Text preview: \"{preview}{'...' if len(preview) == 60 else ''}\"",
+            file=sys.stderr,
+        )
+
     result = {
         "grown": grown,
         "shrunk": shrunk,
+        "underfilled": [
+            {"slide": sn, "box": shape_name, "fillPct": pct, "boxH": box_h, "preview": preview}
+            for sn, shape_name, pct, box_h, preview in underfilled
+        ],
         "belowTarget": [
             {"slide": sn, "box": shape_name, "pt": pt, "preview": preview}
             for sn, shape_name, pt, preview in below_target

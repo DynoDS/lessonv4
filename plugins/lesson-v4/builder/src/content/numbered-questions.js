@@ -64,17 +64,38 @@ const CARD_FILL     = 'F2F2F2';
 const CARD_LINE     = '0070C0';
 const CARD_LINE_W   = 1.5;
 const CARD_FONT_MIN = 14;     // question font floor, points (>= MIN_FONT_PT)
-const CARD_FONT_MAX = 40;     // question font ceiling, points. Set to the largest
-                              // ceiling anywhere in the deck (the lesson-cover LO),
-                              // so a three-question quick check reads from the back
-                              // of the room without a question ever coming out
-                              // bigger than a title.
-// A set that is nothing but answers is read from the back of the room for a few
-// seconds and then gone, so it takes a higher ceiling than a question a child
-// works from: a three-answer reveal at 40pt left most of the slide empty while
-// the teacher read the answers out (the teacher, 19 September 2026, "the only
-// thing on these answer slides are answers, they can be bigger right?").
-const ANSWER_FONT_MAX = 48;
+// The question and answer font ceilings, points. Neither number decides a size
+// on its own: the height loop below starts at the ceiling and steps DOWN only as
+// far as the stack needs to fit its zone, so a ceiling's only job is to not be
+// the thing that stops a short set growing. Both were doing exactly that.
+//
+// They were 40 and 48, and both were too low twice running. 48 was itself
+// introduced in 4.2.243 after the teacher asked "the only thing on these answer
+// slides are answers, they can be bigger right?". Six versions later he edited a
+// deck built WITH that fix (Round to 10, 100 or 1,000, 19 September 2026) and
+// raised a three-answer slide from its capped 48 to 72 and a three-question
+// starter from its capped 40 to 54. Both fitted easily. The cap, not the room,
+// was the only thing holding either down, so these are his two numbers.
+//
+// The reasoning behind a high ceiling is not new here. `content/question-cards.js`
+// has used 72 since it was written, with the note this file was missing: "the type
+// is the ONLY thing that makes the set fill its zone, since a card is never
+// stretched past what its question needs." Three helpers drew sets of question
+// cards and only that one had understood it.
+//
+// KEPT, and the reason it is kept: answers still outgrow questions. The original
+// split said a set that is nothing but answers is read from the back of the room
+// for a few seconds and then gone, while a question is worked from, and the
+// teacher's own hand agrees twice over - he chose 54 for the questions and 72 for
+// the answers in the same sitting, on the same board, having been given 40 and 48.
+// The gap is his, not an artefact of the old ceilings.
+//
+// SUPERSEDED: 40 was justified as "the largest ceiling anywhere in the deck, so a
+// question never comes out bigger than a title". He set both a question set and an
+// answer set far above the 28pt title, so a set is no longer held to the title's
+// size. A title labels a slide; a question set IS the slide.
+const CARD_FONT_MAX = 54;
+const ANSWER_FONT_MAX = 72;
 const LINE_H_RATIO  = 1.30;   // line height as a multiple of font size
 const LABEL_FONT_PT = 24;     // the question number's own size, points. The number
                               // is a marker a child matches against their book, not
@@ -633,4 +654,8 @@ function measureQuestionStack(questions, fontPt, maxW) {
   };
 }
 
-module.exports = { drawNumberedQuestions, measureQuestionStack };
+// CARD_FONT_MAX and ANSWER_FONT_MAX are exported for the tests, which assert
+// against the live ceilings rather than copying the numbers. A ceiling written
+// out in a test goes stale the moment it moves here, which is how the old 40
+// outlived the reason for it; the floor is already read this way.
+module.exports = { drawNumberedQuestions, measureQuestionStack, CARD_FONT_MAX, ANSWER_FONT_MAX };

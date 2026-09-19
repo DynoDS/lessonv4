@@ -11,12 +11,7 @@ const CARDS_W        = 12.89;
 const CARDS_H        = 6.50;
 const CARD_GAP       = 0.15;
 const CARD_PAD       = 0.20;
-const CARD_RADIUS    = 0.08;
-const CARD_FILL      = 'F2F2F2';
-const CARD_LINE      = '0070C0';
-const CARD_LINE_W    = 1.5;
 const CARD_FONT      = 22;
-const LABEL_W        = 0.60;
 const VIS_LABEL_W    = 0.50;
 const VIS_LABEL_H    = 0.40;
 const VIS_LABEL_FONT = 18;
@@ -59,6 +54,29 @@ function firstLabel(data) {
   return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
 }
 
+// One set of question cards, drawn by the one helper that knows how to size a
+// set (19 September 2026).
+//
+// This used to draw the cards itself: `cardH = (box.h - gaps) / questions.length`
+// with the type pinned at CARD_FONT and `fit` that only ever shrinks. Dividing
+// the zone by the number of questions makes the cards as tall as the zone allows
+// however little is in them, and pinning the font means the words never grow to
+// meet that height. Three short roundings in the 6.5in Your Turn zone therefore
+// came out as 2.067in cards holding one 22pt line - about a seventh of the card -
+// and six questions could not be asked on one slide at all, so the practice was
+// split across two and the success-criteria panel drawn twice. The teacher merged
+// them back by hand and set 33pt (Round to 10, 100 or 1,000, 19 September 2026).
+//
+// `numbered-questions` already answers this properly: it measures each question,
+// gives each card the height its own words need, and grows the type until the
+// stack fills the zone. It is what the Answers slide in that same deck used, three
+// slides later, to put all six questions on one slide at 33pt - the layout the
+// teacher rebuilt by hand. Three helpers drew "a set of question cards" and only
+// that one was right; the maths templates were using the worst of the three.
+//
+// What is NOT delegated: a set whose questions are content objects (clocks,
+// diagrams) still uses the local grid, because those need cell geometry rather
+// than text cards.
 function drawQuestionCards(pptx, slide, questions, box, ctx, startAt) {
   if (questions.length === 0) return;
 
@@ -68,43 +86,23 @@ function drawQuestionCards(pptx, slide, questions, box, ctx, startAt) {
   const startN = Number(startAt);
   startAt = Number.isFinite(startN) && startN >= 1 ? Math.floor(startN) : 1;
 
-  // Visual content objects (e.g. clocks) use a grid layout — tall vertical
+  // Visual content objects (e.g. clocks) use a grid layout - tall vertical
   // cards give each visual too little height to be readable.
   if (questions.some(isContentObject)) {
     return drawVisualGrid(pptx, slide, questions, box, ctx, startAt);
   }
 
-  const totalGap = CARD_GAP * (questions.length - 1);
-  const cardH    = (box.h - totalGap) / questions.length;
-
-  questions.forEach(function (q, i) {
-    const cardY = box.y + i * (cardH + CARD_GAP);
-    const label = '(' + (startAt + i) + ')';
-
-    slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-      x: box.x, y: cardY, w: box.w, h: cardH,
-      fill: { color: CARD_FILL },
-      line: { color: CARD_LINE, width: CARD_LINE_W },
-      rectRadius: CARD_RADIUS
-    });
-
-    slide.addText(label, {
-      x: box.x + CARD_PAD, y: cardY,
-      w: LABEL_W, h: cardH,
-      fontFace: FONT, fontSize: CARD_FONT, bold: true,
-      color: COLOURS.title, align: 'left', valign: 'middle',
-      margin: 0, fit: FIT
-    });
-
-    const text = normaliseCircles(stripLeadingLabel(String(q)));
-    slide.addText(splitAnswerRuns(text, true), {
-      x: box.x + CARD_PAD + LABEL_W, y: cardY,
-      w: box.w - 2 * CARD_PAD - LABEL_W, h: cardH,
-      fontFace: FONT, fontSize: CARD_FONT, bold: true,
-      color: COLOURS.body, align: 'left', valign: 'middle',
-      margin: 0, fit: FIT
-    });
-  });
+  // `normaliseCircles` stays here: it is this route's own tidy-up of the circle
+  // glyph the maths templates receive, and the shared helper has never seen it.
+  // Leading labels and "||" answer reveals are the shared helper's own work.
+  const { drawNumberedQuestions } = require('../content/numbered-questions');
+  drawNumberedQuestions(
+    pptx,
+    slide,
+    box,
+    { questions: questions.map(function (q) { return normaliseCircles(String(q)); }), startAt: startAt },
+    ctx
+  );
 }
 
 // Grid layout for visual content questions (clocks, diagrams, etc.).

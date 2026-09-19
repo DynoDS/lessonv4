@@ -15,7 +15,7 @@ const { drawChipBank } = require('../src/content/chip-bank');
 const { drawCallout } = require('../src/content/callout');
 const { drawRow } = require('../src/content/row');
 const { drawTable } = require('../src/content/table');
-const { drawNumberedQuestions, measureQuestionStack } = require('../src/content/numbered-questions');
+const { drawNumberedQuestions, measureQuestionStack, CARD_FONT_MAX } = require('../src/content/numbered-questions');
 const { chooseBulletFont } = require('../src/content/bullets');
 const { labelDiagramKey } = require('../src/content/label-diagram');
 const { circuitDiagramKey } = require('../src/content/circuit-diagram');
@@ -102,7 +102,12 @@ test('numbered question text uses one shared grow-fit group', () => {
   const bodies = texts.filter((entry) => /__question-text-/.test(entry.objectName || ''));
   assert.equal(bodies.length, 2);
   assert.equal(new Set(bodies.map((entry) => groupFromName(entry.objectName))).size, 1);
-  assert.ok(bodies.every((entry) => /__40__/.test(entry.objectName)));
+  // The ceiling travels in the name, and it is read from the helper rather than
+  // written out here, for the same reason the floor is on the line below: a
+  // number copied into a test goes stale the moment it moves, and the old 40
+  // outlived its own justification that way.
+  const ceiling = new RegExp(`__${CARD_FONT_MAX}__`);
+  assert.ok(bodies.every((entry) => ceiling.test(entry.objectName)));
   // The floor travels in the name, or the global fit pass shrinks a question
   // below what this helper will allow beside a table that stops higher. Read
   // from the shared floor rather than written out, because a helper's own floor
