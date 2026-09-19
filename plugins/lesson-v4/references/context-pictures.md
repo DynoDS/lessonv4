@@ -785,20 +785,20 @@ Do not spawn a separate Educational SVG resolver for any surface.
   `type: "vocab"` surface.
 - Worksheets keep CURRENT's P2 helper rules. P3 may sit only in the page-level
   collection and never enters a zone or pupil workspace.
-- Working-wall P2 may be a genuine visual anchor and may be the visual entry
-  ticket for an ordinary card. `working-wall-designer` resolves its own P2/P3
-  requests after the core card design is settled. For an ordinary P2 Educational SVG
-  failure, replace the request with a complete emoji `picture` when its
-  `fallbackEmoji` is suitable; use the original non-empty `alt` when present,
-  otherwise use the original `concept` as `alt`. When no suitable fallback
-  exists, remove the failed `picture`. If that leaves an ordinary card with no
-  other qualifying P1/P2 visual, remove the card unless it is the existing
-  step-by-step success-criteria exception. An unresolved semantic-vocabulary
-  P2 removes its `vocabDefinition` card. An unresolved P3 removes only that
-  decoration. Final `working-wall.json` contains no unresolved Educational SVG request.
-  P3 remains allowed only on `stickyKnowledge`, `workedExample`, `sentenceStem`,
-  `misconception`, `referenceTable`, `equivalenceGrid`, and never earns
-  wall-worthiness.
+- Working-wall P2 may be a genuine visual anchor for a card.
+  `working-wall-designer` resolves its own P2/P3 requests after the core card
+  design is settled. For an ordinary P2 Educational SVG failure, swap in a
+  complete emoji `picture` when its `fallbackEmoji` is suitable; use the original
+  non-empty `alt` when present, otherwise use the original `concept` as `alt`.
+  When no suitable fallback exists, drop the failed `picture`. The card then
+  stands as a text-led reference if it still reads as one, and is removed only
+  when the lost picture was its defining representation, which goes in the final
+  report so the gap gets built. An unresolved semantic-vocabulary P2 removes its
+  `vocabDefinition` card. An unresolved P3 removes only that decoration. Final
+  `working-wall.json` contains no unresolved Educational SVG request. P3 remains
+  allowed only on `stickyKnowledge`, `workedExample`, `sentenceStem`,
+  `misconception`, `referenceTable`, `equivalenceGrid`, and is never what earns a
+  card its place.
 - Stick-in pieces keep their current P2 identification cue and never use P3.
 
 P3 coordinates use the full physical surface. `x`/`y` are JSON numbers from

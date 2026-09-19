@@ -1,5 +1,52 @@
 # Build review log
 
+## 2026-09-19 The drift sweep could not see a rule that wrapped (4.2.262)
+
+Daniel asked whether there is a limit on how many library drawings a lesson uses.
+Answering it meant reading the surface limits in `context-pictures.md`, and the
+Working Wall bullet there still said a P2 "may be the visual entry ticket for an
+ordinary card", still removed a card left with no qualifying visual, and still
+said P3 "never earns wall-worthiness". Three assertions of the gate retired on
+6 September, in a file the sweep written this evening covers.
+
+**Why the sweep missed them.** It split each file on blank lines and matched the
+retired phrases against the raw block. These files are hard-wrapped, so the text
+on the page reads `may be the visual entry
+  ticket`, and `entry.?ticket` allows
+one character between the words, not a newline and two spaces. `never earns
+
+wall-worthiness` was split the same way. A tightened allow-list had been added
+first, on the theory that the loose word "replaced" was excusing the paragraph,
+and it changed nothing because the phrases were never matching at all.
+
+That is the third fault of one shape today: a check reading letters where it
+means to read a rule. The voice test failed over one added word, the exact-view
+test failed over a carriage return, and this one passed over a line wrap. The
+sweep now collapses whitespace before matching, which is the fix each of them
+needed.
+
+**Verified both ways.** With the leaky bullet restored the sweep fails and quotes
+it; with the bullet repaired it passes. A whole-package sweep, wrap-insensitive,
+finds no other surviving assertion of the gate outside the test's own comments.
+
+**What the bullet says now.** A Working Wall P2 may be a genuine visual anchor.
+On an unresolved ordinary P2 the emoji fallback and `alt` handling are unchanged,
+and when no fallback exists the picture is dropped; the card then stands as a
+text-led reference if it still reads as one, and is removed only when the lost
+picture was its defining representation, which goes in the final report. The
+`vocabDefinition` removal, the P3-removes-only-itself rule, the allowed families
+and the no-unresolved-requests guarantee are unchanged.
+
+**The answer to the question, for the record.** Educational SVG drawings have no
+count limit anywhere, deliberately: "there is no deck budget: a picture on one
+slide neither earns nor spends anything on another", and the reasoning is written
+beside it. The brake is measured room on the rendered page, and `full` and
+`competes` have to be paid for by the render rather than asserted. Photographs
+are the opposite: capped at 16 for the design and 24 for the run.
+
+**Evidence.** Root node suite 46 pass, builder 688 pass, Python 1,971 pass with
+the one size budget still red by 273 bytes.
+
 ## 2026-09-19 Nine red tests, five causes, two of them real (4.2.261)
 
 Daniel asked whether anything was broken, then asked for the nine long-standing

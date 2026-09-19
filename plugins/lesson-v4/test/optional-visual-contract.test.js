@@ -190,7 +190,11 @@ test("no wall instruction still asserts the retired visual gate", () => {
   // forbid an `entryTicket` field; asserting it as live is what fails here.
   const RETIRED =
     /visual gate|visual-entry|entry.?ticket|words-only|earns wall-worthiness|recognised visual that earns/i;
-  const RECORDS_THE_RETIREMENT = /replaced|retired|no longer|do not add fields/i;
+  // Phrases, not single words. "replaced" on its own let a live assertion of the
+  // gate through, because the same paragraph happened to say "replace the request
+  // with a complete emoji": an ordinary use of the word excused the rule sitting
+  // beside it, and the surviving line said a P2 "may be the visual entry ticket".
+  const RECORDS_THE_RETIREMENT = /replaced the older|were retired|do not add fields such as/i;
 
   for (const file of [
     "agents/working-wall-designer.md",
@@ -202,11 +206,17 @@ test("no wall instruction still asserts the retired visual gate", () => {
     "skills/make-lesson/playbook-lite.md",
     "scripts/working-wall-packet.py",
   ]) {
-    for (const paragraph of read(file).split(/\r?\n\s*\r?\n/)) {
+    for (const block of read(file).split(/\r?\n\s*\r?\n/)) {
+      // Collapsed to single spaces first, because these files are hard-wrapped
+      // and a rule does not stop being asserted when it lands across two lines.
+      // The first version of this sweep missed `may be the visual entry\n ticket
+      // for an ordinary card` for exactly that reason, which is the same fault
+      // as the voice test that failed over one extra word.
+      const paragraph = block.replace(/\s+/g, " ").trim();
       if (!RETIRED.test(paragraph)) continue;
       assert.ok(
         RECORDS_THE_RETIREMENT.test(paragraph),
-        `${file} still asserts the retired visual gate: ${paragraph.trim().slice(0, 160)}`
+        `${file} still asserts the retired visual gate: ${paragraph.slice(0, 200)}`
       );
     }
   }
