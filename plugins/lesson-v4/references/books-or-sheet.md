@@ -32,16 +32,26 @@ Writing *about* something passes: the child reads the picture, number line, tabl
 or source from a shared copy and writes. Working *on* something fails: the child
 has to mark, label, circle, plot or fill in the printed thing itself.
 
-**Say which question needs the page.** A sheet marked `"sheet"` carries
-`"recordingReason"`: one line naming the question that needs the printed page and
-what the child does to it - `"Q4: the child labels the printed photograph"`,
-`"Q2: the child plots the reading on the printed grid"`. Only `"sheet"` is asked
-for it, because only `"sheet"` spends a copy per child, and a mark reached by
-skipping this test looks exactly like one that earned it. Looking for that
-question is the test; if you cannot find one, the sheet is `"books"`. The line is
-a report, not a defence: a sheet that genuinely needs the page is a good sheet,
-and marking `"books"` to avoid writing the line is the only way this field makes
-a worksheet worse.
+**A blank is not the same as a page.** A digit box in `2,_80`, a gap in a short
+sentence, a missing number in a calculation: all of these are copied into a book
+in seconds, with the blank, and the question still asks the same thing. What
+makes a sheet `"sheet"` is a printed thing the child cannot reproduce - a
+photograph, a map, a grid, a scale where exact placement is the point - or a
+copying cost that would swallow the lesson. Daniel's ruling on the Year 4
+nearest-1,000 Greater Depth sheet, 19 September 2026: one digit box does not
+make a write-on sheet.
+
+**Say why, either way.** Every sheet carries `"recordingReason"`: one line saying
+why this whole sheet is better that way. For `"sheet"`, name the question that
+needs the page and what the child does to it - `"Q4: the child labels the printed
+photograph"`, `"Q2: the child plots the reading on the printed grid"`. For
+`"books"`, say what makes every question answerable from a shared copy - `"Every
+answer is a number, an explanation, or a line the children rule for themselves"`.
+Going to look for a question that needs the page is the test, and either mark can
+be reached without running it, so the line is what tells a decision from a
+default. It is a report, not a defence: a sheet that genuinely needs the page is
+a good sheet, and changing a question to reach either mark is the only way this
+field makes a worksheet worse.
 
 **The whole sheet is `"books"` only when every question passes.** One question
 that needs the page makes the sheet `"sheet"`. A half-and-half sheet saves no
@@ -93,7 +103,7 @@ a data table, a number line whose value they read off.
 
 ## What the build checks
 
-The preflight refuses a `"sheet"` mark with no `recordingReason` as
+The preflight refuses a sheet with no `recordingReason` as
 `RECORDING_REASON_MISSING`. The build never withholds a worksheet over it; it
 prints a `RECORDING:` line per level saying what that level costs in paper and
 why, so a choice nobody made is visible in the run rather than silent.

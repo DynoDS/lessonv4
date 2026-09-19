@@ -1,22 +1,6 @@
 # Build review log
 
-## 2026-09-19 Answers take the room, and maths decks are titled by the words the class reads (4.2.243)
-
-Three things Daniel found in the nearest-1,000 deck: answers split across two slides where they fit on one ("I changed the deck to be all answers on one slide to show you they fit"), a starter reveal sitting small in "the full width of deadspace", and the question of why a slide holding nothing but answers is set at question size. Plus his title preference for maths: "I'm happy with just My/Our/Your turn, Answers, Apply".
-
-**Why the answers were split.** Not a template limit. The six-question practice ran over two slides, and the Slide Designer's rule is to put a reveal immediately after its question slide, so two question slides gave two reveals. Six answers on one slide build clean, in two columns.
-
-**The change.**
-- `numbered-questions` sets a set whose every item is a reveal at a 48pt ceiling rather than the 40pt question ceiling, and holds the grow pass to the size the cards were measured at, because a card sized for one line and text grown a rung larger wraps out of its own box (seen at 60pt before the ceiling settled at 48).
-- A `text` block whose leading line is an answer reveal fills its card instead of hugging, so a two-line starter reveal reads at display size in a full card rather than a one-inch card in a full-width white box. An explicit `heightMode` still wins, and ordinary teaching text is untouched.
-- `slide-composition-playbook.md` §10: a task split over two slides puts its answers on one reveal where they fit, because answers pack where questions cannot; split only for long written answers.
-- `preferences.md` → Slide Headings: in maths the titles are the plain words (`My Turn`, `Our Turn`, `Your Turn`, `Answers`, `Apply`), because the slide's own question is already on the board under the title; a teaching slide takes the question it answers; every other subject keeps the warm move-naming titles. `check-slide-design.js` lets a bare `Apply` through in maths only.
-
-**Evidence.** Three new tests in `answer-slide-sizing.test.js` (answers set larger than the same questions, a reveal measuring as a fill, an explicit hug honoured); builder suite 669; Python suite unchanged at 7. Tuesday's Week 3 deck rebuilt: 33 slides, one reveal per task, plain titles, and the starter answers filling their card.
-
-**Still open.** Nothing checks that a reveal slide's title follows the house form, and the guidance for splitting a reveal is judgement.
-
-## 2026-09-19 Every sheet says why it is books or sheet (4.2.243)
+## 2026-09-19 Every sheet says why it is books or sheet (4.2.244)
 
 Daniel, on the Year 4 nearest-1,000 worksheets: "I noticed its all write on sheet, but felt it could have bene wrote in books, right? ... can we find out if the agent did think about whether it was write on sheet or books by looking at its working files, and if it did make a decision, what was that decision?"
 

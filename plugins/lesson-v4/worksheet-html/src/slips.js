@@ -131,11 +131,11 @@ function sheetOnlyWording(sheet) {
 // a sheet with no choice is refused there, while the build leaves an unmarked
 // sheet unmarked so a spec written before this field still builds.
 //
-// The two marks are not checked the same way, on purpose. `"books"` pays for
-// itself - it saves the copies, and its wording is tested below - while
-// `"sheet"` costs a copy per child and used to pass in silence, so at the gate
-// it states which question needs the page. That sentence is the only thing
-// asked for: never the mark, which reports the sheet the designer built.
+// Both marks also say why, in one line, at the gate. Either can be reached by
+// running the test on the whole sheet or by not thinking about it at all, and
+// the two look identical on the page; the line is what tells them apart, and
+// it is all that is asked for. Never the mark, which reports the sheet the
+// designer built.
 function recordingProblems(worksheet, { required = false } = {}) {
   const problems = [];
   for (const [key, sheet] of Object.entries((worksheet && worksheet.sheets) || {})) {
@@ -162,7 +162,7 @@ function recordingProblems(worksheet, { required = false } = {}) {
       });
       continue;
     }
-    if (value === "sheet" && required) {
+    if (required) {
       const reason =
         typeof sheet.recordingReason === "string" ? sheet.recordingReason.trim() : "";
       if (!reason) {
@@ -170,12 +170,13 @@ function recordingProblems(worksheet, { required = false } = {}) {
           signal: "RECORDING_REASON_MISSING",
           sheet: key,
           message:
-            `sheets.${key} is marked "sheet", which is a copy per child. Add ` +
-            `"recordingReason": one line naming the question that needs the ` +
-            `printed page and what the child does to it, as in "Q4: the child ` +
-            `labels the printed photograph". If no question needs the page, ` +
-            `every question can be answered in a book and the sheet is ` +
-            `"books". Never change a question to reach either mark. See ` +
+            `sheets.${key} is marked "${value}" with no "recordingReason". Add ` +
+            `one line saying why this whole sheet is better that way: for ` +
+            `"sheet", the question that needs the printed page and what the ` +
+            `child does to it ("Q4: the child labels the printed photograph"); ` +
+            `for "books", what makes every question answerable from a shared ` +
+            `copy. Going to look for a question that needs the page is the ` +
+            `test. Never change a question to reach either mark. See ` +
             `references/books-or-sheet.md.`,
         });
       }

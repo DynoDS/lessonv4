@@ -185,12 +185,11 @@ async function main() {
     if (!sheet || typeof sheet !== "object" || !sheet.recording) continue;
     const reason =
       typeof sheet.recordingReason === "string" ? sheet.recordingReason.trim() : "";
-    console.log(
+    const cost =
       sheet.recording === "books"
-        ? `RECORDING: ${sheetLabel(key)} - books, a copy between two, with question slips at the back.`
-        : `RECORDING: ${sheetLabel(key)} - sheet, a copy per child. ` +
-          (reason || "No reason given.")
-    );
+        ? "books, a copy between two, with question slips at the back."
+        : "sheet, a copy per child.";
+    console.log(`RECORDING: ${sheetLabel(key)} - ${cost} ${reason || "No reason given."}`);
   }
 
   // Answers are a different audience. Validate complete coverage before pupil

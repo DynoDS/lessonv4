@@ -30,9 +30,9 @@ const { REGISTRY } = require("../src/helpers");
 function sheet(recording, text = "Round 2,748 to the nearest 100.") {
   return {
     ...(recording === undefined ? {} : { recording }),
-    ...(recording === "sheet"
-      ? { recordingReason: "Q2: the child marks 2,748 on the printed line." }
-      : {}),
+    ...(recording === undefined
+      ? {}
+      : { recordingReason: "Checked question by question against the age guide." }),
     layout: "full",
     orientation: "portrait",
     zones: {
@@ -70,31 +70,48 @@ test("a spec written before the choice existed still builds, unmarked", () => {
   assert.doesNotMatch(renderSheet(built.spec), /<svg class="sheet-recording"/);
 });
 
-test("the gate makes a sheet mark name the question that needs the page", () => {
-  const bare = { layout: "full", orientation: "portrait", recording: "sheet", zones: {} };
-  const worksheet = { sheets: { expected: bare } };
-  assert.deepEqual(signals(worksheet, { required: true }), [
-    "expected:RECORDING_REASON_MISSING",
-  ]);
-  // Blank, or spaces, is no reason at all.
-  worksheet.sheets.expected = { ...bare, recordingReason: "   " };
-  assert.deepEqual(signals(worksheet, { required: true }), [
-    "expected:RECORDING_REASON_MISSING",
-  ]);
-  // A named question passes.
-  worksheet.sheets.expected = {
-    ...bare,
-    recordingReason: "Q4: the child labels the printed photograph.",
-  };
-  assert.deepEqual(signals(worksheet, { required: true }), []);
+test("the gate makes either mark say why, on the whole sheet", () => {
+  // Both marks are asked, because either can be reached without running the
+  // test and the two look identical on the page.
+  for (const recording of ["sheet", "books"]) {
+    const bare = { layout: "full", orientation: "portrait", recording, zones: {} };
+    assert.deepEqual(
+      signals({ sheets: { expected: bare } }, { required: true }),
+      ["expected:RECORDING_REASON_MISSING"],
+      recording
+    );
+    // Blank, or spaces, is no reason at all.
+    assert.deepEqual(
+      signals({ sheets: { expected: { ...bare, recordingReason: "   " } } }, { required: true }),
+      ["expected:RECORDING_REASON_MISSING"],
+      recording
+    );
+    assert.deepEqual(
+      signals(
+        { sheets: { expected: { ...bare, recordingReason: "Checked question by question." } } },
+        { required: true }
+      ),
+      [],
+      recording
+    );
+  }
 });
 
-test("a books sheet is never asked for a reason, and the build asks nobody", () => {
-  const books = { layout: "full", orientation: "portrait", recording: "books", zones: {} };
-  assert.deepEqual(signals({ sheets: { expected: books } }, { required: true }), []);
-  // The build never withholds a worksheet over a missing sentence.
+test("the build never withholds a worksheet over a missing reason", () => {
   const bare = { layout: "full", orientation: "portrait", recording: "sheet", zones: {} };
   assert.deepEqual(signals({ sheets: { expected: bare } }), []);
+});
+
+test("a digit box a child copies does not force a sheet mark", () => {
+  // Daniel's ruling, 19 September 2026: one blank in a short number sentence is
+  // copied into a book in seconds, so it never makes the sheet write-on.
+  for (const text of [
+    "Fill the box in 2,_80 with a digit so the number rounds to 3,000.",
+    "Write the missing number: 4,300 + ___ = 4,800.",
+  ]) {
+    const worksheet = { sheets: { expected: sheet("books", text) } };
+    assert.deepEqual(signals(worksheet), [], text);
+  }
 });
 
 test("only books or sheet is a choice", () => {

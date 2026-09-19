@@ -627,19 +627,21 @@ slips children stick in, so an honest `"books"` saves a class set of copies. Rea
 the call turns on the year group, and the same number line is `"books"` in Year 4
 and `"sheet"` in Year 2.
 
-A sheet you mark `"sheet"` also carries `"recordingReason"`: one line naming the
-question that needs the page and what the child does to it, as in `"Q4: the child
-labels the printed photograph"`. Find that question before you write the line;
-do not summarise the sheet. If there is no such question - the children read what
-is printed and write their answers, however much the sheet prints - then every
-question passes and the sheet is `"books"`. A number line a Year 4 child could
-rule for themselves is read from; a scale where exact placement is the point is
-worked on. The two marks are checked differently because they cost differently:
-`"books"` pays for itself and its wording is tested, while `"sheet"` is a copy per
-child, and a sheet that reached `"sheet"` because nobody ran the test reads
-exactly like one that earned it. Reaching for `"books"` to avoid writing the line
-is the one way this field could make a worksheet worse. The preflight refuses a
-missing line as `RECORDING_REASON_MISSING`.
+Every sheet also carries `"recordingReason"`: one line saying why this whole sheet
+is better that way. For `"sheet"`, name the question that needs the printed page
+and what the child does to it, as in `"Q4: the child labels the printed
+photograph"`. For `"books"`, say what makes every question answerable from a
+shared copy, as in `"Every answer is a number, an explanation, or a line the
+children rule for themselves"`. Go and look for a question that needs the page
+rather than summarising the sheet; finding none is what makes a sheet `"books"`,
+and either mark can be reached without thinking at all, which is why both say why.
+
+A blank does not make a page. A digit box in `2,_80`, or a gap in a short
+sentence, is copied into a book in seconds. What makes a `"sheet"` is a printed
+thing a child cannot reproduce - a photograph, a map, a grid, a scale where exact
+placement is the point - so a number line a Year 4 child could rule for
+themselves is read from, not worked on. The preflight refuses a missing line as
+`RECORDING_REASON_MISSING`.
 
 Decide each level on its own sheet, and treat the mark as a report on the sheet
 you built, never a target: the question, its form and its visual stay exactly as
