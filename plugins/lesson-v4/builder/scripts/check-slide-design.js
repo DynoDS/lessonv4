@@ -12,7 +12,12 @@ const { expandTeachLayouts, TeachLayoutError, LAYOUTS } = require('../src/teach-
 
 const BLOCKING_CAPACITY_SIGNALS = new Set([
   'FIXED_CAPTION_CAPACITY',
-  'SUCCESS_CRITERIA_CAPACITY',
+  // SUCCESS_CRITERIA_CAPACITY is deliberately NOT blocking. It counts criteria
+  // and characters, and the teacher's standing ruling is that "too much" is a
+  // judgement rather than a number (10 September 2026): a method with six real
+  // steps is a method with six real steps, and refusing the deck over the sixth
+  // would be the cap he removed. It reports, and the panel's own render-time
+  // warning names the step that cost the panel its readable size.
   // A picture children work from below its readable floor. Was a warning
   // only, and a warning shipped a two-inch classroom photograph under "look
   // closely" (4 September 2026); the repair is the designer's own (a taller

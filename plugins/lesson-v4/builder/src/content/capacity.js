@@ -54,11 +54,30 @@ function captionWarnings(slideData, slideNumber) {
   return out;
 }
 
+// Where a slide's criteria actually live: `criteria` on the *-sc templates, the
+// `content` of an `sc-panel` anywhere in a free layout, and the long-retired
+// `successCriteria` array. Reading only the last one is why this check has been
+// silent on every deck built this year, including a nearest-1,000 deck whose
+// panel settled at 18pt (19 September 2026).
+function criteriaStepsOf(slideData) {
+  if (!slideData || typeof slideData !== 'object') return null;
+  if (Array.isArray(slideData.successCriteria)) return slideData.successCriteria;
+  let found = null;
+  const take = (node) => {
+    if (found || !node || typeof node !== 'object') return;
+    if (node.type === 'steps' && Array.isArray(node.steps)) found = node.steps;
+  };
+  take(slideData.criteria);
+  eachContent(slideData, (content) => {
+    if (found) return;
+    if (content.type === 'sc-panel') take(content.content);
+  });
+  return found;
+}
+
 function successCriteriaWarnings(slideData, slideNumber) {
   const out = [];
-  const criteria = Array.isArray(slideData && slideData.successCriteria)
-    ? slideData.successCriteria
-    : null;
+  const criteria = criteriaStepsOf(slideData);
   if (!criteria) return out;
 
   const texts = criteria.map((c) =>

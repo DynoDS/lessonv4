@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-19 The criteria check was reading a field no deck has, and the panel now says when it shrank (4.2.245)
+
+The last thing on the Codex run report that belonged to this week's threads and was still open: "Success criteria on slides 10, 12, 18 and 20 fit at 18 pt, below the 20 pt target", recorded as an accepted minor issue with nothing naming the step responsible.
+
+**Why nothing caught it.** `successCriteriaWarnings` in `capacity.js` reads `slide.successCriteria`, an array no current deck carries: criteria live in `criteria` on the `*-sc` templates and in an `sc-panel`'s `content`. The check has therefore been silent on every deck built this year. Its cousin in the render had nothing to say either, because settling at 18pt is a legal fit (`TEXT_FONT_MIN`), just not a readable one from a table.
+
+**The change.** `criteriaStepsOf` reads the two shapes decks actually use, so the item-count and character checks work again; and `steps.js` warns, at render, when a criteria panel settles below its own `TEXT_FONT_TARGET` of 20pt, naming the longest step and saying the lever is the wording, because the panel's width is fixed by the template. `SUCCESS_CRITERIA_CAPACITY` is deliberately removed from the blocking set: it counts criteria and characters, and the teacher's ruling of 10 September is that "too much" is a judgement rather than a number, so a sixth real step reports rather than refusing a deck.
+
+**The deck.** Tuesday's criteria were the wordy ones the warning names (`Choose the nearer thousand; at halfway, choose the greater thousand.`). Reworded to the form the rest of the week uses (`Round to the nearer thousand. If it's halfway, round up.`, `Make the hundreds, tens and ones 0. That's the thousand below.`), the panel builds with no warning.
+
+**Evidence.** Two tests: a panel of four long steps warns and names the step; a capacity diagnostic for criteria reports without failing the check, while a caption diagnostic still fails it. Builder suite 671.
+
+**Not this, and not repaired.** The run's missing PowerPoint render route (no visual pass ran at all) and the helper gap for a named portrait with a speech bubble are their own problems, not this week's threads.
+
 ## 2026-09-19 The reveal warning means a reveal, and a 67 refusal names where the number lives (4.2.244)
 
 Read from the first Codex run on this week's changes (Year 4 Lesson 12, nearest 1,000). Two things it reported as accepted minor issues were faults in the checks rather than in the lesson.

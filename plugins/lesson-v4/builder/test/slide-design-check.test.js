@@ -424,7 +424,7 @@ test('a blocking capacity diagnostic cannot pass merely because the builder exit
         `const outputDir = process.argv[3];\n` +
         `const outputPath = path.join(outputDir, 'Scratch Check.pptx');\n` +
         `fs.writeFileSync(outputPath, 'scratch');\n` +
-        `console.log('BUILD_DIAGNOSTIC: {"signal":"SUCCESS_CRITERIA_CAPACITY","artifact":"slides","faultClass":"composition","location":{"slide":1,"path":"successCriteria"},"message":"too much"}');\n` +
+        `console.log('BUILD_DIAGNOSTIC: {"signal":"FIXED_CAPTION_CAPACITY","artifact":"slides","faultClass":"composition","location":{"slide":1,"path":"caption"},"message":"too much"}');\n` +
         `console.log('Wrote: ' + outputPath);\n`
     );
     const lessonPath = writeLesson(root, ordinaryLesson());
@@ -434,7 +434,7 @@ test('a blocking capacity diagnostic cannot pass merely because the builder exit
     assert.equal(result.ok, false);
     assert.equal(result.reason, 'SLIDE_DESIGN_CAPACITY');
     assert.doesNotMatch(result.stdout, /^Wrote:/m);
-    assert.match(result.stdout, /"signal":"SUCCESS_CRITERIA_CAPACITY"/);
+    assert.match(result.stdout, /"signal":"FIXED_CAPTION_CAPACITY"/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

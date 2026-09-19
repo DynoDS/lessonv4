@@ -97,3 +97,38 @@ ${output.slice(-1200)}`
     'the layout passed a criteria card that the final text check then refused'
   );
 });
+
+test('a criteria panel that settles below the readable target says which step did it', () => {
+  // 19 September 2026: a Codex run recorded four panels at 18pt as an accepted
+  // minor issue, with nothing naming the step that was too long.
+  const { drawScPanelContent } = require('../src/content/sc-panel');
+  const { getWarnings, clearWarnings } = require('../src/warnings');
+  const requireGlobal = require('../src/require-global');
+  const PptxGenJS = requireGlobal('pptxgenjs');
+
+  const slide = {
+    shapes: [], texts: [],
+    addShape(kind, options) { this.shapes.push({ kind, ...options }); },
+    addText(content, options) { this.texts.push({ content, ...options }); },
+    addImage() {}
+  };
+  const long = {
+    criteria: {
+      type: 'steps',
+      steps: [
+        'Change the hundreds, tens and ones digits to zero.',
+        'Add 1,000 to find the next thousand.',
+        'Mark halfway and your number on the line.',
+        'Choose the nearer thousand; at halfway, choose the greater thousand.'
+      ]
+    }
+  };
+
+  clearWarnings();
+  drawScPanelContent(new PptxGenJS(), slide, { x: 0, y: 0, w: 4.6, h: 6.5 }, long,
+    { slideIndex: 0, imageDims: {}, cardLook: true });
+  const warned = getWarnings().join(' ');
+  assert.match(warned, /success criteria set at \d+pt/);
+  assert.match(warned, /Choose the nearer thousand/);
+  clearWarnings();
+});

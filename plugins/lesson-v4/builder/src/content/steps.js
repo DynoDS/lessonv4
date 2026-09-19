@@ -6,6 +6,7 @@ const { drawSignal } = require('../signals');
 const { drawSuccessCriteriaHelper, helperKeyForStep } = require('../success-criteria-helpers');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { textWidthEm, RENDER_SAFETY } = require('../../../shared/text/comic-glyph-width');
+const { warn } = require('../warnings');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.15;
@@ -557,6 +558,25 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   // can manage.
   const stepOnlyFonts = perStepFont.filter((f, i) => !isReferenceStep(steps[i]));
   const sharedFont = Math.min(...(stepOnlyFonts.length ? stepOnlyFonts : perStepFont));
+
+  // A criteria panel is read from a table while children work, so it has a
+  // readable target of its own, above the deck-wide floor. Settling below it is
+  // not a layout fault to repair downstream: the panel is as wide as the
+  // template makes it, and the lever is the wording, which only the designer
+  // owns. A Codex run recorded four panels at 18pt as an accepted minor issue
+  // and nothing told it which step was doing it (19 September 2026).
+  if (zone.criteriaPanel && sharedFont < TEXT_FONT_TARGET && ctx && ctx.slideIndex !== undefined) {
+    const longest = steps
+      .filter((s) => !isReferenceStep(s))
+      .reduce((most, s) => (textOf(s).length > textOf(most).length ? s : most), steps[0]);
+    warn(
+      ctx.slideIndex,
+      `success criteria set at ${sharedFont}pt, below the ${TEXT_FONT_TARGET}pt a panel ` +
+      `is read at from a table. The longest step is "${textOf(longest)}". Shorten a step ` +
+      `without losing what it tells a stuck child to do, or split one step into two ` +
+      `shorter ones; the panel's width is fixed by the template.`
+    );
+  }
   const coherentFont = perStepFont.map(function (font, i) {
     return isReferenceStep(steps[i]) ? font : sharedFont;
   });
