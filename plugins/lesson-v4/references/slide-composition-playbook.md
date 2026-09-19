@@ -269,6 +269,8 @@ Preserve the representation when the answer is best understood through it. A com
 
 Where the question relied on photographs, a map, a graph, a source or a diagram, keep that evidence on the answer slide when children need it to understand or check the answer. The answer should not become three words floating away from the visual relationship the class just reasoned from.
 
+**A task split over two slides is still one task, so its answers go on one reveal when they fit.** A six-question set split three and three came back as two question slides and two answer slides, and the teacher merged the answers himself to show they fit (19 September 2026). Answers are read for a few seconds from the back of the room, so they pack where questions cannot: two columns of short answers on one slide read better than the same answers split, and the reveal is set larger because nothing else is on the slide. Split the reveal only when the answers genuinely cannot be read together, which is long written answers rather than a column of numbers.
+
 On answer-reveal slides, give a small slot to the answer, not to a repeated question. When the question has been on screen for several minutes, repeating it inside a thin banner can force both question and answer below readable size. Replace that small slot with the answer, or leave it empty when a larger zone already carries the complete reveal. Keep enough context for the slide to remain understandable; do not mechanically duplicate every word.
 
 Green is the answer signal. Use the supported reveal treatment such as `||` exactly where the helper or template contract requires it.

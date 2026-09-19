@@ -69,6 +69,12 @@ const CARD_FONT_MAX = 40;     // question font ceiling, points. Set to the large
                               // so a three-question quick check reads from the back
                               // of the room without a question ever coming out
                               // bigger than a title.
+// A set that is nothing but answers is read from the back of the room for a few
+// seconds and then gone, so it takes a higher ceiling than a question a child
+// works from: a three-answer reveal at 40pt left most of the slide empty while
+// the teacher read the answers out (the teacher, 19 September 2026, "the only
+// thing on these answer slides are answers, they can be bigger right?").
+const ANSWER_FONT_MAX = 48;
 const LINE_H_RATIO  = 1.30;   // line height as a multiple of font size
 const LABEL_FONT_PT = 24;     // the question number's own size, points. The number
                               // is a marker a child matches against their book, not
@@ -307,11 +313,16 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   const questionTextGroup = fitGroupId(zone, 'numbered-question-text');
 
   const fontFloor = Math.max(CARD_FONT_MIN, MIN_FONT_PT);
+  // Every item revealed means this set is the reveal, not the task.
+  const allRevealed = questions.length > 0 && questions.every(function (q) {
+    return /\|\||\{\{/.test(String(q.text || ''));
+  });
+  const ceilingPt = allRevealed ? ANSWER_FONT_MAX : CARD_FONT_MAX;
 
   // Grow the type until the stack fills the height it has. Bigger type makes each
   // card taller, and makes a long question wrap onto more lines, so the largest
   // font whose stack still fits is the one that uses the zone.
-  let fontPt = CARD_FONT_MAX;
+  let fontPt = ceilingPt;
   let stack;
   for (;;) {
     stack = measureHere(questions, fontPt, innerW, answerBoxes);
@@ -454,7 +465,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
         measure: measureHere,
         innerW: innerW,
         innerH: innerH,
-        ceilingPt: CARD_FONT_MAX,
+        ceilingPt: ceilingPt,
         currentPt: fontPt
       });
   if (wider) {
@@ -580,7 +591,10 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       // overload for the designer to recompose, never quietly shrunk past it.
       objectName: growFitObjectName(
         questionTextGroup,
-        CARD_FONT_MAX,
+        // An answers set is measured at the size it was laid out at, so the
+        // grow pass may not take it past that: a card sized for one line and
+        // text grown a rung larger wraps out of its own box.
+        allRevealed ? fontPt : ceilingPt,
         'question-text-' + (startAt + i),
         Math.max(CARD_FONT_MIN, MIN_FONT_PT)
       )

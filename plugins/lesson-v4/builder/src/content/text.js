@@ -100,7 +100,25 @@ function textPlacement(data) {
   return TEXT_PLACEMENTS.has(value) ? value : 'left';
 }
 
+// A block whose every line is an answer reveal is the whole point of its slide,
+// and hugging leaves it small in the top corner of a full-width white card with
+// the rest of the slide empty (the teacher, 19 September 2026: "the card isnt
+// great because its the full width of deadspace ... they can be bigger right?").
+// So a reveal fills its zone unless the designer said otherwise. A line that is
+// only partly an answer is ordinary teaching text and hugs as before.
+function wholeBlockIsAnAnswer(value) {
+  const lines = String(value || '').split('\n').map(function (line) { return line.trim(); })
+    .filter(function (line) { return line !== ''; });
+  if (!lines.length) return false;
+  // A leading reveal marker colours every paragraph after it, so the first line
+  // deciding is the same rule the colouring uses.
+  return /^(\|\||\{\{)/.test(lines[0]);
+}
+
 function textHeightMode(data) {
+  if (data.heightMode === undefined && wholeBlockIsAnAnswer(data.value || data.text)) {
+    return 'fill';
+  }
   const value = String(data.heightMode || 'hug').toLowerCase();
   if (!TEXT_HEIGHT_MODES.has(value)) {
     throw new Error(

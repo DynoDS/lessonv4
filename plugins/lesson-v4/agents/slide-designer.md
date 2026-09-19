@@ -379,7 +379,8 @@ The answer slide should:
 - avoid turning into a new teaching slide unless the settled answer itself includes an explanation;
 - give a small slot to the reveal rather than shrinking it beside a needless repeated question;
 - after a My Turn or Our Turn completed live, show that representation finished (the ends labelled, the mark placed, the answer in green) with the answer sentence: it is the model the teacher drew, for a class whose teacher did not draw it;
-- after independent work children did with a drawn tool, keep a blank copy of that tool with the answers (`slide-composition-playbook.md` §10).
+- after independent work children did with a drawn tool, keep a blank copy of that tool with the answers (`slide-composition-playbook.md` §10);
+- put one task's answers on one reveal slide where they fit, even when its questions needed two, and let them take the room: the build sets a set that is all answers larger than the same set of questions, and a reveal block fills its card rather than hugging the top of it.
 
 Do not add a generic "Answer" slide for open discussion work.
 

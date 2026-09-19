@@ -87,12 +87,20 @@ function presentationWarnings(lesson) {
     : [];
   const warnings = [];
 
+  // Maths is the exception the teacher asked for: its decks are titled by the
+  // plain words a class reads them by, `My Turn`, `Our Turn`, `Your Turn`,
+  // `Answers` and `Apply`, because the slide's own question is already on the
+  // board under the title (19 September 2026, `preferences.md` → Slide
+  // Headings). Elsewhere a bare `Apply` is still a stage label on a board.
+  const maths = /^maths$/i.test(String((lesson && lesson.subject) || '').trim());
+
   slides.forEach((slideData, index) => {
     if (!slideData || typeof slideData !== 'object') return;
     const title =
       typeof slideData.title === 'string'
         ? slideData.title.trim()
         : '';
+    if (maths && /^apply$/i.test(title)) return;
     if (!INTERNAL_STAGE_TITLE.test(title)) return;
     warnings.push({
       signal: 'INTERNAL_STAGE_TITLE',
