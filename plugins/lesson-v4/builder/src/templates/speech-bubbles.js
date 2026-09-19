@@ -26,7 +26,21 @@ const STATEMENT_GAP     = 0.15;   // gap below the statement before the speakers
 const SIDE_STATEMENT_RATIO = 0.44;  // share of the body width the side statement takes
 const SIDE_STATEMENT_GAP   = 0.30;  // gap between the statement column and the speakers
 const COL_GAP           = 0.45;   // gap between speaker columns
-const FIG_BLOCK_RATIO   = 0.46;   // figure + name height as a fraction of the speaker area
+// The figure + name block, as a share of the speaker area.
+//
+// This was a flat 0.46, so the picture took nearly half the column however much
+// or little the person said, and a long piece of reasoning was squeezed into
+// what was left. What she says is the teaching and her picture is the frame for
+// it: the teacher shrank a portrait to 72% and gave the room to the bubble above
+// it (19 September 2026), and `slide-speech-and-characters.md` had already said
+// "the portraits and bubbles can be smaller" when something else needs the room.
+// The code had never read that.
+//
+// The block now takes what the bubbles leave, between a floor and this old value
+// as its ceiling. The floor matters: a postage-stamp face stops a child picturing
+// a person, which is the only reason the portrait is there.
+const FIG_BLOCK_RATIO     = 0.46;  // the most the figure + name may take
+const FIG_BLOCK_MIN_RATIO = 0.30;  // and the least, so a face stays a face
 const NAME_H            = 0.45;   // name label height (inches)
 const BUBBLE_FIG_GAP    = 0.10;   // gap between the tail tip and the figure
 const TAIL_W            = 0.55;   // speech-bubble tail width (inches)
@@ -62,19 +76,37 @@ const CHAR_W_EM  = 0.58;
 const LINE_H_EM  = 1.3;
 const HUG_SAFETY = 1.15;
 
+const BREAK = String.fromCharCode(10);
+
 function estimateSpeechHeight(speech, innerW) {
   // Inline markers style runs without printing; count only what a child reads.
   const text = String(speech || '').replace(/\[\[|\]\]|\*\*|\|\|/g, '');
   const glyphW = (BUBBLE_FONT * CHAR_W_EM) / 72;
   const charsPerLine = Math.max(1, Math.floor(innerW / glyphW));
-  let lines = 1;
-  let len = 0;
-  for (const word of text.split(/\s+/).filter(Boolean)) {
-    const add = (len ? 1 : 0) + word.length;
-    if (len > 0 && len + add > charsPerLine) { lines += 1; len = word.length; }
-    else len += add;
+  // A break the author put in is a line the bubble has to hold.
+  //
+  // This used to split the whole speech on any whitespace and pack the words
+  // back together, so a hard break simply disappeared and three sentences
+  // written on three lines were measured as one flowing paragraph. The bubble
+  // then came out too short for text it had been told the shape of. It never
+  // showed while speech arrived as one block; it matters now, because the
+  // house rule is to break a multi-sentence block at its turns of meaning and
+  // the Slide Designer is finally routed to that rule.
+  let lines = 0;
+  const paragraphs = text.split(BREAK);
+  for (const paragraph of paragraphs) {
+    const words = paragraph.split(/\s+/).filter(Boolean);
+    if (!words.length) { lines += 1; continue; }   // a blank line is still a line
+    let used = 1;
+    let len = 0;
+    for (const word of words) {
+      const add = (len ? 1 : 0) + word.length;
+      if (len > 0 && len + add > charsPerLine) { used += 1; len = word.length; }
+      else len += add;
+    }
+    lines += used;
   }
-  return lines * ((BUBBLE_FONT * LINE_H_EM) / 72) * HUG_SAFETY;
+  return Math.max(1, lines) * ((BUBBLE_FONT * LINE_H_EM) / 72) * HUG_SAFETY;
 }
 
 // Bundled character art lives beside the coins in assets/. Each entry records
@@ -148,11 +180,32 @@ function drawSpeechBubbles(pptx, slide, data, ctx, count) {
 
   const speakers = Array.isArray(data.speakers) ? data.speakers : [];
 
+  // One figure line for the whole row, sized from the most any speaker says.
+  //
+  // The bubble already hugs its own claim and hands the spare back at the top,
+  // so the only thing that ever stopped a long speech getting the room it needed
+  // was this block's fixed share. It is now whatever the wordiest bubble leaves,
+  // held between its floor and its old value. Every column uses the same figure
+  // height so two speakers stand on one line rather than at different depths.
+  const tallestSpeech = speakers.slice(0, count).reduce(function (most, speaker) {
+    const needed = estimateSpeechHeight(
+      (speaker && speaker.speech) || '', colW - 2 * TEXT_PAD_X
+    ) + 2 * TEXT_PAD_Y;
+    return Math.max(most, Math.max(MIN_BUBBLE_H, needed));
+  }, 0);
+  const figBlockHeight = Math.max(
+    speakerAreaH * FIG_BLOCK_MIN_RATIO,
+    Math.min(
+      speakerAreaH * FIG_BLOCK_RATIO,
+      speakerAreaH - tallestSpeech - TAIL_H - BUBBLE_FIG_GAP
+    )
+  );
+
   for (let i = 0; i < count; i++) {
     const colX = speakerAreaX + i * (colW + COL_GAP);
     const speaker = speakers[i] || {};
 
-    const figBlockH = speakerAreaH * FIG_BLOCK_RATIO;
+    const figBlockH = figBlockHeight;
     const figBlockY = speakerAreaY + speakerAreaH - figBlockH;
     const bubbleY   = speakerAreaY;
     const bubbleH   = speakerAreaH - figBlockH - TAIL_H - BUBBLE_FIG_GAP;
@@ -269,7 +322,18 @@ function drawSpeechBubbles1(pptx, slide, data, ctx) {
 
   // Speaker column geometry, shared by both branches.
   function drawSpeaker(colX, colY, colW, colH) {
-    const figBlockH = colH * FIG_BLOCK_RATIO;
+    // The same rule as the multi-speaker path above: the picture takes what the
+    // bubble leaves, between its floor and its old fixed share. See
+    // FIG_BLOCK_RATIO for why. This branch is the one a single speaker uses,
+    // which is the Apply slide the teacher re-sized by hand.
+    const speechH = Math.max(
+      MIN_BUBBLE_H,
+      estimateSpeechHeight(speaker.speech || '', colW - 2 * TEXT_PAD_X) + 2 * TEXT_PAD_Y
+    );
+    const figBlockH = Math.max(
+      colH * FIG_BLOCK_MIN_RATIO,
+      Math.min(colH * FIG_BLOCK_RATIO, colH - speechH - TAIL_H - BUBBLE_FIG_GAP)
+    );
     const figBlockY = colY + colH - figBlockH;
     const bubbleH   = colH - figBlockH - TAIL_H - BUBBLE_FIG_GAP;
     const figCx     = colX + colW / 2;
