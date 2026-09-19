@@ -1,5 +1,15 @@
 # Build review log
 
+## 2026-09-19 The first modelled case is tested, not guessed at from size (4.2.238)
+
+The 4.2.237 wording for choosing the first modelled example ("the one with the fewest new decisions in it") did not discriminate, and Daniel said so: 34 to the nearest 100 takes the same steps as 342, so a designer counting steps still lands on the smaller number, and the maths file's own `secure it small` rule actively points that way.
+
+**The change.** The paragraph is now a test with three questions asked of the first number: does every digit the method names exist in it, does the tool it builds look like the ordinary case, and is the answer of the ordinary kind. Any `no` makes it a special case, taught later on its own with its oddity said out loud. `Secure the new idea on numbers small enough to see` now says small enough to see means readable, not smallest available, and points at the test.
+
+**Evidence.** Four blind single-decision runs (Claude Sonnet subagents, same brief, guidance file swapped). Old wording: one chose 43, the two-digit case this exists to prevent, one chose 340. New wording: 342 twice, each citing the three questions, and 3,462 twice for nearest 1,000, one naming 462 as the case that would fail the way 34 does. Transfer, on a lesson the guidance never mentions (partition a 4-digit number): both runs chose 3,542 and kept 4,097, 3,050 and 3,500 out of the first model, because a zero digit makes a part of the method vanish. That is the test applied rather than an answer copied, which was the risk in naming 342 in the text.
+
+**Still open.** Two runs per condition, on a different model from the production Codex one, and one decision rather than a whole design. Guidance only: nothing can check that a first example is the ordinary case.
+
 ## 2026-09-19 One modelled number per figure, and the first case is the simplest one (4.2.237)
 
 Daniel, after teaching the rebuilt Year 4 rounding lessons ("the children got it ... oh, that's so easy"), raised two small things about the nearest-100 deck. On the first My Turn, `Round 34` and `Round 50` sat above one number line: "I'd round 34 ... now to show them the second one I need to click the rubber, I need to rub all of the things that I've done out and then I need to do it again. It would be so much quicker if I just had an extra slide." And he questioned the order: after practising taking the tens and ones off three- and four-digit numbers, is a two-digit number really the easy first case, when 34 makes both digits 0 and the answer 0?
