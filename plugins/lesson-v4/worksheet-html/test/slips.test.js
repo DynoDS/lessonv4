@@ -272,6 +272,20 @@ test("one-line questions share a row however the sheet wrote them", () => {
   assert.equal(wide.stack.length, 2, "one each, unpacked");
 });
 
+test("slips sit at their own height, with the cut lines tight under them", () => {
+  // Every slip carried a 23mm dead band, which cost a second cut at each
+  // boundary: "wasted trimming motions and wasted dead space" (19 Sept 2026).
+  const tight = renderSlipsPage({ nodes: [], cols: 1, rows: 3, code: "E", title: "t", slipMm: 84.8 });
+  assert.match(tight, /grid-template-rows:repeat\(3,84\.80mm\)/);
+  assert.match(tight, /align-content:start/);
+  assert.match(tight, /class="cut cut--across" style="top:84\.80mm"/);
+  assert.match(tight, /class="cut cut--across" style="top:169\.60mm"/);
+  // Without a height the page still divides evenly, as older calls expect.
+  const even = renderSlipsPage({ nodes: [], cols: 1, rows: 3, code: "E", title: "t" });
+  assert.match(even, /grid-template-rows:repeat\(3,1fr\)/);
+  assert.match(even, /class="cut cut--across" style="top:99\.00mm"/);
+});
+
 test("never more than four rows of slips, however short they are", () => {
   assert.equal(rowsFor(10), MAX_ROWS);
   assert.equal(rowsFor(120), 2);

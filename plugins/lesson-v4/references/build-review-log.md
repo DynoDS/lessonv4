@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-19 The line goes above the words that introduce a run, and a slip stops at its own foot (4.2.248)
+
+Daniel, on the Expected slips page: "I would like a line in between those two and the next bit that says round to nearest a thousand because it looks like it kind of links with those." And: "under the question where it says explain, there's a big gap and then it's the line and then it's the new one. And all that is kind of dead space ... I trim under the explain, and then have to make another trim to the top of the next slip. So all that is just wasted trimming motions."
+
+**The line.** An introducer is joined tightly to what it introduces, which was right, but the break above it was only the ordinary item step and carried no rule. With (1) and (2) now sharing a row, "Round to the nearest 1,000." sat 4mm under them and read as a third thing on their line rather than the opening of (3a) to (3f). `gapAboveMm` now treats an introducer whose next item opens a question as opening that question: the step above it is the question step and the rule is drawn there. The tight join underneath still wins, so nothing opens up between an introducer and its own questions - getting that precedence the wrong way round first time added 20mm to a fixture sheet and the suite caught it. A section-label still marks itself and takes the step without a rule.
+
+**The dead space.** The slips page divided the sheet into equal rows, so a slip whose content stopped at 66mm still owned a 99mm cell and the cut line sat 23mm below the last word. That band is what made him cut twice at every boundary. `renderSlipsPage` now takes the slip's own height: the rows are that height, the page is `align-content: start`, and the cut lines sit at the slip's foot. What is left over is one strip at the bottom of the page instead of a band inside every slip. How many slips fit is settled before this and is unchanged.
+
+**Evidence.** The nearest-1,000 Expected slips: dead space per slip 23.2mm down to 7.0mm, which is the bottom margin the cut needs. Rendered and looked at: the rule now sits between the (1)/(2) row and the introducer, and the cut line sits under "Do you agree? Explain.". Worksheet engine 712 pass, 0 fail, with tests for the rule landing above the introducer and not again below it, an introducer with nothing to introduce staying unmarked, and the tight rows and cuts alongside the old even division for calls that pass no height.
+
+**Still open.** Expected is still 3 slips a page, not the four Daniel hoped for: a fourth needs about 10mm more off the slip and the only thing left of that size is question 4's picture of Freya, which is content rather than spacing. Not yet run on Codex, and the nearest-1,000 pack has not been rebuilt.
+
 ## 2026-09-19 A slip carries the questions, not the teaching (4.2.247)
 
 Daniel, sent the Expected slips page: "I've had worksheets before that had the success criteria and I did chop it off. So I do think it's a kind of waste ... on a slip, I really don't think it's needed at all." And, looking at the same page: "Couldn't one and two be like next to each other? Like you see on question 3A, 3B, they like go horizontally."

@@ -100,13 +100,25 @@ function opensQuestion(item) {
 // that introduced it, the section step above a new question or section, the
 // ordinary item gap otherwise. Measuring, checking and drawing all read it
 // here, so they cannot disagree about how tall a stack is.
+// An introducer belongs to the question it introduces, so the break goes above
+// it, not between it and its own questions. "Round to the nearest 1,000." above
+// (3a) to (3f) sat at the ordinary item step with no rule, so on a slip where
+// (1) and (2) share the row above it, it read as a line belonging to them
+// (Daniel, 19 September 2026).
+function startsQuestion(items, i) {
+  const item = items[i];
+  if (!item) return false;
+  if (item.helper === "section-label") return true;
+  if (opensQuestion(item)) return true;
+  return introduces(item) && opensQuestion(items[i + 1]);
+}
+
 function gapAboveMm(items, i) {
   if (i === 0) return 0;
+  // The tight join under an introducer still wins: the break moved above the
+  // introducer, it did not open up between it and its own questions.
   if (introduces(items[i - 1])) return TIGHT_GAP_MM;
-  const item = items[i];
-  if (opensQuestion(item) || (item && item.helper === "section-label")) {
-    return QUESTION_START_GAP_MM;
-  }
+  if (startsQuestion(items, i)) return QUESTION_START_GAP_MM;
   return GAP_MM;
 }
 
@@ -403,7 +415,11 @@ function makeCompose({
           const grows = growing[i];
           const gap = gapAboveMm(items, i);
           const space = gap ? ` style="margin-top:${gap}mm"` : "";
-          const divided = gap === QUESTION_START_GAP_MM && opensQuestion(item);
+          // A heading marks itself, so it takes the step without the rule.
+          const divided =
+            gap === QUESTION_START_GAP_MM &&
+            startsQuestion(items, i) &&
+            item.helper !== "section-label";
           return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
         })
         .join("");

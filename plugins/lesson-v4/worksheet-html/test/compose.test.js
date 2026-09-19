@@ -223,6 +223,22 @@ test("a new question starts further down than the next part of the same question
   assert.match(html, new RegExp(`margin-top:${Math.round(between)}mm`), "the page draws the gap it measured");
 });
 
+test("the line above a run of questions goes above the words that introduce it", () => {
+  // "Round to the nearest 1,000." above (3a) to (3f) sat at the ordinary step
+  // with no rule, so on a slip where (1) and (2) shared the row above it, it
+  // read as belonging to them (Daniel, 19 September 2026).
+  const q = (number) => ({ number, stack: [{ helper: "instruction", text: "Find A." }] });
+  const intro = { helper: "instruction", text: "Round to the nearest 1,000." };
+  const html = renderContent({ stack: [q(1), intro, q("2a"), q("2b")] }, 170);
+  const marks = (html.match(/h-stack-item--new-question/g) || []).length;
+  assert.equal(marks, 1, "above the introducer, and not again above (2a)");
+  // The introducer keeps its tight join to the questions it introduces.
+  assert.match(html, /margin-top:2mm/);
+  // An introducer with no question under it is still just an item.
+  const loose = renderContent({ stack: [q(1), intro, { helper: "instruction", text: "More." }] }, 170);
+  assert.ok(!loose.includes("h-stack-item--new-question"), "nothing to introduce, nothing to mark");
+});
+
 test("the rule between two questions sits inside the gap and adds no height", () => {
   const line = { helper: "number-line", start: 0, end: 10, interval: 1, boxes: [4] };
   const question = (number) => ({ number, stack: [{ helper: "instruction", text: "Find A." }, line] });

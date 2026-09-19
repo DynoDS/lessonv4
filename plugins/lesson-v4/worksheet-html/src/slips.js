@@ -504,7 +504,14 @@ function measureHtml(nodes, cols) {
 // A whole page of identical slips with dashed cut lines between them. Each
 // slip body is a checked zone, so the build's rendered-fit probe refuses a
 // slip whose words run past its bottom edge.
-function renderSlipsPage({ nodes, cols, rows, code, title }) {
+// `slipMm` is one slip's own height. Given it, the slips sit at that height from
+// the top of the page and the cut lines sit tight under them, so what is left
+// over is one strip at the foot instead of a dead band inside every slip. The
+// band cost a second cut at each boundary - Daniel, 19 September 2026: "I trim
+// under the explain, and then have to make another trim to the top of the next
+// slip. So all that is just wasted trimming motions and wasted dead space." It
+// does not change how many slips fit; that is settled before this is called.
+function renderSlipsPage({ nodes, cols, rows, code, title, slipMm }) {
   const inner = bodyHtml(nodes, cols);
   const cells = [];
   for (let i = 0; i < cols * rows; i += 1) {
@@ -513,16 +520,18 @@ function renderSlipsPage({ nodes, cols, rows, code, title }) {
         `<div class="slip-body" data-worksheet-zone="slip-${i + 1}">${inner}</div></div>`
     );
   }
+  const rowMm = slipMm || PAGE_H_MM / rows;
   const cuts = [];
   for (let r = 1; r < rows; r += 1) {
-    cuts.push(`<div class="cut cut--across" style="top:${((PAGE_H_MM / rows) * r).toFixed(2)}mm"></div>`);
+    cuts.push(`<div class="cut cut--across" style="top:${(rowMm * r).toFixed(2)}mm"></div>`);
   }
   for (let c = 1; c < cols; c += 1) {
     cuts.push(`<div class="cut cut--down" style="left:${((PAGE_W_MM / cols) * c).toFixed(2)}mm"></div>`);
   }
   return documentHtml(
     `${title || "Worksheet"} - slips`,
-    `<div class="slips" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">` +
+    `<div class="slips" style="grid-template-columns:repeat(${cols},1fr);` +
+      `grid-template-rows:repeat(${rows},${slipMm ? `${slipMm.toFixed(2)}mm` : "1fr"});align-content:start">` +
       `${cells.join("")}</div>${cuts.join("")}`
   );
 }
@@ -575,16 +584,17 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
       return { skipped: `its slip could not be measured (${String(error.message || error).split("\n")[0]})` };
     }
     // A hair of margin over the browser's measurement, as the sheets keep.
-    const rows = rowsFor(contentMm + (browser ? 1 : 0));
-    if (rows >= 1) plans.push({ cols, rows, laid });
+    const askedMm = contentMm + (browser ? 1 : 0);
+    const rows = rowsFor(askedMm);
+    if (rows >= 1) plans.push({ cols, rows, laid, slipMm: askedMm + PAD_TOP_MM + PAD_BOTTOM_MM });
   }
   plans.sort((a, b) => b.cols * b.rows - a.cols * a.rows || a.cols + a.rows - (b.cols + b.rows));
   if (!plans.length) return { skipped: "its questions are too long to fit a slip shorter than a page" };
 
-  const { cols, laid } = plans[0];
+  const { cols, laid, slipMm } = plans[0];
   let { rows } = plans[0];
   while (rows >= 1) {
-    const html = renderSlipsPage({ nodes: laid, cols, rows, code, title });
+    const html = renderSlipsPage({ nodes: laid, cols, rows, code, title, slipMm });
     if (!browser) return { html, cols, rows };
     const { pdf, fitProblems } = await htmlToPdf(html, { browser, inspectFit: true });
     if (!fitProblems.length) return { html, pdf, cols, rows };
