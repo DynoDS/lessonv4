@@ -27,10 +27,34 @@ nearby content. It remains visually connected to that content. A relevant robin
 beside a robin question is P2 even though the question could technically work
 without it.
 
-P3 is different. It may make a finished resource warmer or more visual, but it
-must still relate naturally to the lesson. A faint forest in the corner of a
-rainforest slide may be P3. A random star, squiggle, paint blob or unrelated
-object added merely because space exists is not.
+P3 is different, and it is decoration in the ordinary sense of the word. It makes
+a finished resource warmer and less bare, and it does not have to be about the
+lesson at all. A faint forest in the corner of a rainforest slide is P3, and so
+is a wave, a scatter of dots, a ribbon along an empty strip or a spiral in a
+corner that has nothing in it.
+
+This is a deliberate reversal. The rule used to require a P3 to relate naturally
+to the lesson and named "a random star, squiggle, paint blob" as the thing it was
+not, which left a wall-of-text maths slide with no P3 available to it: the
+relevant subjects on such a slide run out after about one pencil, and the brief's
+own instruction to keep going until they do then stopped at one every time.
+Across twenty built lessons that produced 82 P3 drawings in total, almost all of
+them one to a slide. The teacher's point, on being shown it: "p3 is decoration
+which I want too. not just 1 per slide, many!"
+
+What governs P3 is restraint rather than relevance:
+
+- It stays out of the reading path and never touches a word, a number, a figure
+  or a rule. That is the whole test of where it may go.
+- It must not be mistakable for content. A star beside a marked question reads as
+  a reward, a tick or a mark; a wavy line near a number line reads as part of the
+  maths; an arrow near a diagram reads as a label. Decoration that a child could
+  read as teaching is worse than a bare slide, because they will try to read it.
+- It stays quiet, and it is still the first thing moved, faded, replaced or
+  removed when anything competes.
+- Several small quiet marks in the spare places of a slide are the intent. A
+  slide so scattered that the decoration is the first thing seen has stopped
+  being decoration, and the repair is fewer and smaller, never back to one.
 
 Neither layer changes the lesson's teaching, becomes part of the answer, shrinks
 text, reduces writing space, crowds a diagram or delays a finished resource.
@@ -285,6 +309,22 @@ Writing a line per slide, as you go, is what makes the slide-by-slide rule a
 thing you do rather than a thing you claim: a single thought about the whole
 deck cannot be written in this shape, and the check reads the record before the
 deck is promoted.
+
+**A slide that took fewer drawings than it had places says so in `placesLeft`.**
+The render counts the separate clear places on each slide, up to six, and that
+count is in `slide-room.json` beside the one you read for question 1. Take one
+drawing where four places were measured and `placesLeft` gives the reason the
+other three stayed empty, in a sentence.
+
+This is not a demand for a picture in every place, and "the relevant subjects ran
+out" is the stopping rule you were given and a complete answer. What it ends is
+stopping without noticing: every other check here polices a slide that refused,
+so a slide that accepted once and left five places empty passed unexamined, and
+that is where the layer was actually being emptied. Across twenty built lessons
+the render measured 44 slides with three or more clear places and 41 of them took
+exactly one drawing; seven slides had all six places and took one each. Now that
+P3 is decoration rather than something that has to be about the lesson, a spare
+place on a wall-of-text slide usually has an answer.
 
 ```json
 {

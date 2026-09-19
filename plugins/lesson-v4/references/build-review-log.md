@@ -1,5 +1,62 @@
 # Build review log
 
+## 2026-09-19 P3 becomes decoration, and a slide accounts for the places it left (4.2.264)
+
+Daniel: "p2 are best, but p3 is also decoration... not just 1 per slide, many!"
+And, on being told a relevant picture needs the slide designer to leave it a
+place: "does it? slide designer designs first, then builds, then slide decorator
+comes in no? SVGs are thought of last, the important lesson is built first, where
+theres naturally space is where svgs go? right?"
+
+He is right and that claim of mine was wrong. The decorator runs after the deck
+is composed and rendered, and authors both P2 and P3 requests into the space that
+is already there. The slide designer's freedom to weigh a P2 while choosing a
+template is an extra, not a precondition. Nothing architectural was stopping any
+of this.
+
+**What was stopping it, in two parts.**
+
+First, P3 had to relate naturally to the lesson, and the rule named "a random
+star, squiggle, paint blob" as what it was not. On a wall-of-text maths slide the
+relevant subjects run out after about one pencil, so the brief's instruction to
+keep going until they run out stopped at one, honestly, every time. P3 is now
+decoration in the ordinary sense and does not have to be about the lesson. What
+governs it is restraint: out of the reading path, never mistakable for content (a
+star beside a marked question reads as a mark, a wavy line near a number line
+reads as part of the maths), quiet, first to be removed, and a slide so scattered
+that the decoration is the first thing seen is repaired by fewer and smaller,
+never back to one. The library has the stock: 951 stars, 845 line drawings, 350
+dots, 174 waves, 152 ribbons, 81 confetti, 48 sparkles, 37 spirals, 12 zigzags,
+11 bunting. An earlier search of mine reported zero squiggles and zero doodles;
+the pattern could not match a hyphen, and Daniel sent a screenshot of the
+squiggles it had missed.
+
+Second, nothing ever questioned a slide that accepted. Every check here polices a
+refusal, four ways. A slide that took one drawing and left five measured places
+empty was `used`, and `used` was checked only for carrying a picture at all and
+for the emoji route. Across twenty lessons the render measured 44 slides with
+three or more separate clear places, and 41 took exactly one drawing; seven
+slides had all six places and took one each. The count per slide was the one
+number in this system with no accounting anywhere. A `used` slide that took fewer
+than its measured places now says why in `placesLeft`. Running out of relevant
+subjects is a complete answer and is the brief's own stopping rule; what ends is
+stopping without noticing there were more places.
+
+**What this does not do.** It does not place a single drawing by itself. It opens
+the room, closes the free refusal, gives a bare slide something it is allowed to
+use, and makes stopping a decision somebody wrote down. Whether three drawings
+then land on a maths slide is the pass's judgement, and no lesson has been run.
+
+**Still open.** P2, the relevant picture beside the relevant words, is 4 of 86
+optional pictures across these lessons. That is not an architecture problem, as
+established above, so it belongs with the count behaviour rather than with a
+design change, and it is the thing to look at in the first rebuilt deck.
+
+**Evidence.** Three new tests: a slide taking one of four measured places fails,
+the same slide with its sentence passes, and a slide that filled its places owes
+nothing. Python 1,976 pass with the one 273-byte size budget still red. Root node
+46, builder 688, both 0 fail.
+
 ## 2026-09-19 Away from text is the whole test (4.2.263)
 
 Daniel: "i only see one on a slide max every single time." Then, on being shown

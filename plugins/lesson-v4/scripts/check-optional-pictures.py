@@ -251,6 +251,44 @@ def run_search(library_root: Path, queries: list[str]) -> list[str]:
     return []
 
 
+def check_places_left(
+    entry: dict,
+    label: str,
+    taken: int,
+    measurement: dict | None,
+    failures: list[str],
+) -> None:
+    """A slide that took fewer drawings than it had places says why.
+
+    Everything else here polices a slide that refused. A slide that accepted was
+    never questioned at all, and that is where the layer was actually being
+    emptied: across twenty built lessons the render measured 44 slides with three
+    or more separate clear places, and 41 of them took exactly one drawing. Seven
+    slides had all six places measured and took one each. The brief asks "how
+    many of those clear places hold a relevant drawing? Not whether one does",
+    and nothing anywhere compared the answer with the question.
+
+    This does not demand a picture in every place. "The relevant subjects ran
+    out" is the brief's own stopping rule and a complete answer. It demands only
+    that stopping is a decision somebody wrote down, in the same way refusing is.
+    """
+    if not isinstance(measurement, dict):
+        return
+    places = measurement.get("readableAreas")
+    if not isinstance(places, int) or places <= taken:
+        return
+    note = entry.get("placesLeft")
+    if isinstance(note, str) and note.strip():
+        return
+    failures.append(
+        f"{label} took {taken} drawing(s) where the render measured {places} "
+        f"separate clear places. Say in `placesLeft` why the other "
+        f"{places - taken} stayed empty. Running out of relevant subjects is a "
+        "complete answer and the brief's own stopping rule; what is not an "
+        "answer is stopping at one without noticing there were more places"
+    )
+
+
 def check_bias_claim(entry: dict, label: str, failures: list[str]) -> None:
     """A claim that a drawing would mislead names the task it would give away."""
     evidence = entry.get("evidence")
@@ -582,6 +620,8 @@ def check(
             # slide whose library search never happened.
             if all(kind == "emoji" for kind in carried):
                 check_evidence(entry, label, library_root, failures)
+            if room is not None:
+                check_places_left(entry, label, len(carried), room.get(number), failures)
         else:
             if carried:
                 failures.append(

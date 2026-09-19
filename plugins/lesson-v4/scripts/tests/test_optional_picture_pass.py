@@ -436,6 +436,40 @@ class TheDrawnPageSettlesFullAndCompetesTests(CheckRunner):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_a_slide_that_took_one_of_four_places_says_why(self):
+        """Where the layer was really being emptied. Everything else here polices
+        a refusal; a slide that accepted was never questioned, and across twenty
+        lessons 41 of the 44 slides measured with three or more clear places took
+        exactly one drawing."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg")), room=[measured(1, 4)]
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("separate clear places", result.stdout + result.stderr)
+
+    def test_running_out_of_subjects_is_a_complete_answer(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"],
+             "placesLeft": "The other three places are beside the number line, "
+                           "where any drawing would read as part of the maths."},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg")), room=[measured(1, 4)]
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_a_slide_that_filled_its_places_owes_nothing(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg")), room=[measured(1, 1)]
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_would_mislead_says_what_would_be_given_away(self):
         """The last free answer. It was half of every refusal across 20 lessons,
         59 of those on slides the render had measured a clear inch-square space
