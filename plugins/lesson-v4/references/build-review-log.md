@@ -1,5 +1,71 @@
 # Build review log
 
+## 2026-09-19 The drawing search ranks by meaning, not by the alphabet (4.2.259)
+
+Daniel asked where intelligent judgement could stand in for fragile code, and
+the picture search turned out to be the clearest case in the package.
+
+**What was actually happening.** `scoreLabel` compares the words of a request
+with the words of a file name, and that works when they share one: "listening
+during class discussion" put `person listening class` first, correctly. Asked
+for "a quiet image of cooperation alongside the class agreement", the way a
+decorator actually writes a request, 367 drawings scored exactly the same 18.
+`searchIds` then breaks that tie alphabetically, so the twelve candidates were
+the first twelve of the 367 from A, and nothing downstream could tell. The
+designer was offered `apologetic hands together`, `apprentice working alone`,
+`baker work`, `barista work`, `batch work` and `birthday cake work`. Sitting in
+the same tie, unseen: `working agreement`, for a lesson whose whole job is a
+class writing its own agreement. Asked for "cooperation" alone, the stemmer
+cuts the word to "coop" and `chicken coop` scores 42 against everything else's
+18, so a barrel maker's bench beat every drawing of people cooperating.
+
+**What changed.** The word scorer keeps the job it is good at, casting a wide
+cheap net over 135,000 names without opening a file, and the net is now 400
+names rather than twelve because gathering names costs nothing. A new
+`shared/educational-svg-rank.js` puts that net in order of what the request
+means, then the caller takes the top few. `--about` carries the requirement in
+the designer's own words, separate from the `--query` search terms.
+
+**Why it is batched.** One question over 400 names picked `apologetic hands
+together` and rated the pool 0.25 for holding anything suitable, because a wide
+net made alphabetically is still alphabetical and the model's own published
+jagged edges say accuracy falls as unrelated content grows. Four heats of a
+hundred and one final between their survivors picked `team reviewing document
+together`, with `working agreement` and `team agreeing way working` behind it,
+and rated the pool 0.8. Two of those three were outside the sixty names a human
+reader had read by hand first.
+
+**The second answer matters as much as the first.** A Noul on every round asks
+whether anything in the pool shows the thing at all. A request the library
+cannot answer now reaches the failure route as a decision rather than as the
+least-bad tile on the preview sheet.
+
+**What it does not fix, said plainly.** Recall is still lexical. The 400 are
+chosen by shared words, so a drawing whose name shares no word with any query
+never enters the pool and no ranking can reach it. The names are machine
+written, so nothing here knows what a drawing looks like: this stops the daft
+picks and orders the sensible names, and the designer's eyes on the preview
+sheet are still the decision. No lesson has been built end to end with it yet.
+
+**Failure is named, never silent.** No key, no network, a refused request, a
+reply in an unexpected shape: the shortlist still arrives in the order the words
+gave it, `ranking` says `words` rather than `meaning`, and `rankingNote` says
+why. A shortlist back in alphabetical order looks identical to a chosen one,
+which is the failure this whole change exists to end, so it is the one thing the
+output will not do quietly.
+
+**Cost and speed.** About 9,600 input tokens per picture across five small
+requests, which is roughly three hundredths of a penny. The search step goes
+from about 0.5s to about 1.5s. It is not faster; it halves what is downloaded
+and halves the preview sheet, and it finds the right drawing.
+
+**Evidence.** 11 new tests in `test/educational-svg-rank.test.js`, all passing
+with no network and no key, including the no-key fallback, the batching, and a
+lost final round. Root suite 44 pass, 1 fail: `working-wall authorities agree
+that P3 never earns wall-worthiness`, which was already red before this work and
+reads three working-wall documents this change does not touch. Two live runs
+against real requests from the RSE and PSHE agreement lesson.
+
 ## 2026-09-19 A split pair settles against what a container draws (4.2.258)
 
 Daniel, on being told three findings were blocked because a block cannot see what else is on the slide: "Wait, but it does it anyway. The box thing. I swear it aligns things anyway."

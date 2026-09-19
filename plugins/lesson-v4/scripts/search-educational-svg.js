@@ -29,24 +29,42 @@ const {
   resolveLibrary,
   searchIds,
 } = require("../shared/educational-svg-library");
+const { MAX_CANDIDATES, rankBySense } = require("../shared/educational-svg-rank");
+
+// How wide the words cast the net before meaning puts it in order.
+//
+// This is not a tuning knob, it is the whole point. The words score hundreds of
+// names identically and then hand over whichever ones the alphabet reached
+// first, so a narrow net is a narrow alphabet. Gathering names costs nothing at
+// all - no file is opened, the index is already in memory - so the net is as
+// wide as the ranking will take, and the ranking decides what the caller sees.
+const NET = MAX_CANDIDATES;
 
 function usage(message) {
   if (message) console.error(message);
   console.error(
     'Usage: node search-educational-svg.js --query "lit candle" [--query "candle flame"] ' +
+      '[--about "what the picture has to show"] ' +
       "[--style standard,cartoon,solid] [--limit 12] [--no-fetch]"
   );
   process.exit(2);
 }
 
 function parseArgs(argv) {
-  const options = { queries: [], styles: [], limit: 12, fetch: true };
+  const options = { queries: [], styles: [], limit: 12, fetch: true, about: null };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const value = argv[index + 1];
     if (arg === "--query") {
       if (!value) usage("--query needs text.");
       options.queries.push(value.trim());
+      index += 1;
+    } else if (arg === "--about") {
+      // What the picture has to show, in the designer's own words. The queries
+      // stay as they are: they are search terms, and this is the requirement
+      // they were an attempt at.
+      if (!value) usage("--about needs text.");
+      options.about = value.trim();
       index += 1;
     } else if (arg === "--style") {
       if (!value) usage("--style needs a value.");
@@ -95,7 +113,35 @@ async function main() {
   }
 
   const ids = knownIds({ root: library.root, mode: library.mode });
-  const ranked = searchIds(ids, options);
+
+  // Words cast the net, meaning puts it in order. With no `--about` there is
+  // nothing to rank against, so this is exactly the search it always was.
+  const byWords = searchIds(ids, { ...options, limit: options.about ? NET : options.limit });
+  let ranked = byWords.slice(0, options.limit);
+  const ordering = { ranking: "words", consideredByWords: byWords.length };
+
+  if (options.about) {
+    const sense = await rankBySense({
+      about: options.about,
+      candidates: byWords,
+      limit: options.limit,
+    });
+    if (sense.ranked) {
+      ranked = sense.ranked;
+      ordering.ranking = "meaning";
+      ordering.considered = sense.considered;
+      ordering.rounds = sense.rounds;
+      if (sense.note) ordering.rankingNote = sense.note;
+      ordering.chose = sense.chose;
+      ordering.rankConfidence = sense.confidence;
+      ordering.anythingFits = sense.anythingFits;
+      if (sense.usage) ordering.rankUsage = sense.usage;
+    } else {
+      // Named, never silent. A shortlist back in alphabetical order looks
+      // exactly like a shortlist that was chosen, so the reason travels with it.
+      ordering.rankingNote = `ranked by words, not meaning: ${sense.reason}`;
+    }
+  }
 
   const unavailable = [];
   let candidates = ranked.map((entry) => ({
@@ -122,6 +168,8 @@ async function main() {
   const payload = {
     available: true,
     queries: options.queries,
+    about: options.about,
+    ...ordering,
     styles: options.styles.length ? options.styles : [...STYLES],
     libraryRoot: library.root,
     librarySource: library.label,
@@ -131,6 +179,7 @@ async function main() {
   if (unavailable.length) payload.unavailable = unavailable;
 
   console.log(`EDUCATIONAL_SVG_SEARCH: ${JSON.stringify(payload)}`);
+  if (ordering.rankingNote) console.log(`EDUCATIONAL_SVG_RANKING: ${ordering.rankingNote}`);
   for (const entry of unavailable) {
     console.log(`EDUCATIONAL_SVG_NOT_FETCHED: ${entry.libraryId} - ${entry.reason}`);
   }

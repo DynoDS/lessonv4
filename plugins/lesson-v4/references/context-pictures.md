@@ -645,13 +645,41 @@ These rules apply only when the resolver above printed an
 `EDUCATIONAL_SVG_ROOT`. Search with one short concrete query and up to five
 useful alternatives:
 
-`node "[PLUGIN_ROOT]/scripts/search-educational-svg.js" --query "<concept>" --query "<useful-alternative>" --limit 12`
+`node "[PLUGIN_ROOT]/scripts/search-educational-svg.js" --query "<concept>" --query "<useful-alternative>" --about "<what this picture has to show, in your own words>" --limit 6`
+
+**Always pass `--about`, and pass the requirement rather than the search terms.**
+The queries are words to match against 135,000 file names; `--about` is what the
+picture actually has to show, and it is the only part of the command that can
+tell hundreds of equally-matching names apart. On a request for "a quiet image
+of cooperation alongside the class agreement", 367 drawings scored identically
+on words alone, so the shortlist was simply the first twelve of those 367 in
+alphabetical order: `apprentice working alone` arrived and `working agreement`
+did not. With the requirement passed, the whole pool is put in order of what it
+means and the shortlist is the top of that order, so a smaller `--limit` now
+shows you more rather than less.
 
 Add `--style standard`, `--style cartoon` or `--style solid` only when the
 surrounding set needs that style. The search reads the packaged index, so the
-ranking is the same on every machine, and the command then brings the drawings
-it names onto this one. Each candidate's `sourcePath` is a real file by the time
-you read it: hand those paths straight to the preview sheet below.
+word ranking is the same on every machine, and the command then brings the
+drawings it names onto this one. Each candidate's `sourcePath` is a real file by
+the time you read it: hand those paths straight to the preview sheet below.
+
+Two fields in the result are worth reading before you look at the sheet.
+
+`ranking` says which order you are holding. `meaning` means the pool was put in
+order of your `--about`. `words` means it was not, and `rankingNote` says why -
+usually that this machine has no key for the ranking service. A shortlist in
+alphabetical order looks exactly like a chosen one, so read the field rather
+than assuming: on `words`, expect the shortlist to be much weaker and be readier
+to take the failure route than to settle for a drawing that only half fits.
+
+`anythingFits` is the ranking's own answer to whether anything in the pool shows
+what you asked for, from 0 to 1. Low means it looked at several hundred drawings
+and found nothing, which is genuine information: a request the library cannot
+answer is better taken to the failure rule than filled with the least-bad tile
+on the sheet. It is a signal to weigh, not a gate. Your own eyes on the preview
+sheet remain the decision, and the rule above still holds without exception - a
+file name and a rank are not evidence that a drawing fits.
 
 A drawing that could not be brought over is left out of `candidates` and named
 on its own `EDUCATIONAL_SVG_NOT_FETCHED` line. Treat it as a drawing that is not
