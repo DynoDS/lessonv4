@@ -222,6 +222,17 @@ test("slips follow the sheet's reading order and keep its question numbers", () 
   assert.equal((html.match(/cut--down/g) || []).length, 2);
 });
 
+test("a slip closes the gaps the sheet leaves for writing", () => {
+  // The Year 4 Greater Depth slip missed fitting twice on a page by 0.9mm and
+  // threw away the bottom half of every sheet. On a slip those gaps are
+  // separation only: the answer room has already gone.
+  const css = renderSlipsPage({ nodes: [], cols: 1, rows: 1, code: "GD", title: "t" });
+  assert.match(css, /\.slip-item \.h-stack-item \{ margin-top: 2mm !important; \}/);
+  assert.match(css, /\.slip-item \.h-stack-item--new-question \{ margin-top: 4mm !important; \}/);
+  // A new question stays a step wider than a new part, so the order still reads.
+  assert.match(css, /first-child \{ margin-top: 0 !important; \}/);
+});
+
 test("never more than four rows of slips, however short they are", () => {
   assert.equal(rowsFor(10), MAX_ROWS);
   assert.equal(rowsFor(120), 2);

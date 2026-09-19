@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-19 A slip closes the gaps the sheet leaves for writing (4.2.246)
+
+Daniel, sent a rendered slips page for the Year 4 Greater Depth sheet: "you can fit way more on that. I think you could probably fit that again on it. So you've got two ... if you gave me that just with two on them, that that would be fine."
+
+**What he was looking at.** One slip in the top half of an A4 page and nothing in the bottom half. I had told him the questions were long enough to fill a page, which was wrong: the slip measured 149.4mm and two to a page needs 148.5mm, so it missed by 0.9mm and every printed page threw away its lower half. For six Greater Depth children that is six pages against six sheets, which is why the books mark looked like it saved nothing.
+
+**Why the room was there.** A slip is the sheet's questions with the answer room taken out, and until now it also kept the sheet's gaps between questions - the comment in `slips.js` said so in as many words. On a sheet part of that space is where the child writes. On a slip the writing room has already gone and the child answers underneath in their book, so the gap between two questions is doing separation only, and the rule line between questions already draws that.
+
+**The change.** On a slip, the gap between items comes down to `SPACE.tight` and the gap above a new question to `SPACE.item`, so a new question stays a step wider than a new part and the slip still reads as the same questions in the same order. The stack writes each gap as an inline style, so these carry `!important`; nothing about the sheets themselves changes. This was offered in the original books-or-sheet conversation on 16 September ("I can tighten that on slips if 2 a page feels like too few") and never taken up.
+
+**Evidence.** The nearest-1,000 pack, both levels marked books: Greater Depth goes from 1 slip a page to 2, Expected stays at 2. Rendered and looked at - two slips with the cut line between them, the Going Deeper label, both named children, the missing-digit box and both reasoning prompts, nothing clipped and nothing cramped. Worksheet engine 707 pass, 0 fail, plus a test pinning the three slip gap rules.
+
+**Still open.** Expected prints its whole Success criteria panel on every slip, about 45mm of a 100mm slip, on paper the child already has on the board. Daniel raised the general question - "we need to think about if it does go on a slip, how helpers kind of adapt" - and it is not answered: the slip still keeps every helper the sheet prints except answer room. He is happy with two a page, so this is his call rather than a fault. Not yet run on Codex.
+
 ## 2026-09-19 The criteria check was reading a field no deck has, and the panel now says when it shrank (4.2.245)
 
 The last thing on the Codex run report that belonged to this week's threads and was still open: "Success criteria on slides 10, 12, 18 and 20 fit at 18 pt, below the 20 pt target", recorded as an accepted minor issue with nothing naming the step responsible.

@@ -406,8 +406,21 @@ const SLIP_CSS = `
   .slip-item { flex: 0 0 auto; }
   /* A short question on the sheet keeps room under it for its answer blank.
      On a slip the blank has gone, so the last question in a list gives that
-     room back; the gaps between questions stay as the sheet has them. */
+     room back. */
   .slip-item .h-questions > .h-q:last-child { margin-bottom: 0; }
+  /* The gaps between questions come down too. On a sheet that space is partly
+     where the child writes; on a slip the writing room has already gone with
+     the answer blanks and the child answers underneath in their book, so what
+     is left is separation only, and the rule line still draws it. Kept in
+     proportion - a new question stays a step wider than a new part - because
+     the slip has to read as the same questions in the same order. The stack
+     writes each gap as an inline style, which is why these carry weight.
+     A Year 4 Greater Depth slip missed fitting twice on the page by 0.9mm and
+     threw away the bottom half of every sheet printed. */
+  .slip-item .h-stack-item { margin-top: ${SPACE.tight}mm !important; }
+  .slip-item .h-stack-item--new-question { margin-top: ${SPACE.item}mm !important; }
+  .slip-item .h-stack > .h-stack-item:first-child { margin-top: 0 !important; }
+  .slip-item .h-stack-item--new-question::before { top: -${SPACE.item / 2}mm; }
   .slip-item .h-questions--inline { display: flex; flex-wrap: wrap; column-gap: 12mm; }
   .slip-item .h-questions--inline > .h-q { margin-bottom: 0; }
   /* A row of packed short questions: each cell holds one line, so it does not
