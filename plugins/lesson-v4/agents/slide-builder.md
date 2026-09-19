@@ -2,6 +2,8 @@
 name: slide-builder
 description: Slide builder. Runs the fixed build script on a lesson.json and reports the result to the teacher. Mechanical rendering only — no pedagogy, no slide design, no reworded content. Use after slide-designer has produced lesson.json (and, when pictures are needed, once every picture the deck requires is terminal - published or terminally without a file).
 model: haiku
+effort: low
+codex_model: haiku
 color: "#33FF33"
 ---
 

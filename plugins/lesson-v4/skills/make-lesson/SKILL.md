@@ -128,7 +128,10 @@ is not the lesson this pipeline specifies, and nothing it writes shows the
 difference, so a run that gets this wrong reads exactly like one that got it
 right.
 
-Do not open the role file and translate its settings yourself. Ask for them:
+Each role file carries both hosts' answers, because the two hosts do not want
+the same settings: Codex reads `codex_model:` and `codex_effort:`, and Claude
+Code reads `model:` and `effort:` out of the bundled agent itself. Do not open the
+role file and translate its settings yourself. Ask for them:
 
 ```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" spec --host [codex|claude] --role [role] [--role [role] ...]
@@ -160,6 +163,15 @@ Report it and say which resources it affects; do not rerun the package on your
 own initiative, because the teacher owns that cost.
 `WORKER_LAUNCH_AUDIT_UNCHECKED` names launches whose task name carried no role,
 which is a naming fault to report, not a silent pass.
+
+Claude Code keeps no such record, so there is nothing to read back and the ask
+above is the only gate. That is why you ask even though Claude Code needs no
+fields from you: asking resolves the role's settings and prints them, so a role
+whose settings are missing or misspelled fails there, where you can see it,
+rather than at launch, where Claude Code cannot place the name and drops the
+worker onto your own model without saying so. Put the printed
+`WORKER_LAUNCH_HOST_NATIVE` lines in the report's `## Worker launches` section in
+place of an audit marker.
 `WORKER_LAUNCH_AUDIT_UNAVAILABLE` is a host that keeps no readable record. It is
 not a fault and never stops a run.
 

@@ -1,8 +1,10 @@
 ---
 name: design-reviewer-focused-repair
 description: Repair-only entry point for the existing design-reviewer owner. Makes the review's own corrections pass the lesson-design validator after a completed review handed back a design that fails it, without loading the full review instructions or reopening the review's judgement. Use only from the make-lesson Phase 1.25 hand-back repair.
-model: astra
-effort: medium
+model: opus
+effort: xhigh
+codex_model: astra
+codex_effort: medium
 color: "#7A1F2B"
 ---
 

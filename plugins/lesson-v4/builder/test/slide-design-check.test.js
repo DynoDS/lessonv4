@@ -1408,3 +1408,78 @@ test('a lesson whose launch carries no pair is left alone', () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+function twoModelsOneLine(title, questionCount) {
+  return {
+    template: 'maths-turn-sc',
+    title,
+    questions: Array.from({ length: questionCount }, (_, i) => ({ text: `Round ${340 + i * 8} to the nearest 100.` })),
+    questionVisual: { type: 'numberline', start: 300, end: 400, interval: 10, labels: [] },
+    criteria: { type: 'steps', steps: ['Mark halfway and your number.'] }
+  };
+}
+
+test('two modelled numbers over one figure the teacher writes on are refused', () => {
+  // 19 September 2026: modelling 34 and then 50 over one number line means
+  // rubbing the first model out in front of the class.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [twoModelsOneLine('My Turn: Which hundred is nearer?', 2)]
+    });
+
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(result.stdout, /"signal":"ONE_MODEL_PER_ANNOTATED_FIGURE"/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('one modelled number per figure passes, and so does a Your Turn with several', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const onePerSlide = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [twoModelsOneLine('My Turn: Which hundred is nearer?', 1)]
+    });
+    assert.doesNotMatch(
+      runSlideDesignCheck(onePerSlide, { buildPath: fakeBuilder }).stdout,
+      /ONE_MODEL_PER_ANNOTATED_FIGURE/
+    );
+
+    const yourTurn = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [twoModelsOneLine('Your Turn: Round these', 4)]
+    });
+    assert.doesNotMatch(
+      runSlideDesignCheck(yourTurn, { buildPath: fakeBuilder }).stdout,
+      /ONE_MODEL_PER_ANNOTATED_FIGURE/
+    );
+
+    const twoLines = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [{
+        ...twoModelsOneLine('My Turn: Two finished lines', 2),
+        questionVisual: {
+          type: 'numberline',
+          lines: [
+            { start: 300, end: 400, interval: 10, labels: [] },
+            { start: 600, end: 700, interval: 10, labels: [] }
+          ]
+        }
+      }]
+    });
+    assert.doesNotMatch(
+      runSlideDesignCheck(twoLines, { buildPath: fakeBuilder }).stdout,
+      /ONE_MODEL_PER_ANNOTATED_FIGURE/
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

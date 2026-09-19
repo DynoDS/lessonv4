@@ -1,8 +1,10 @@
 ---
 name: helper-builder
 description: Builds a new content helper for the lesson-resources engine from a plain-English description - a new kind of thing a lesson can draw (a diagram, chart, or labelled visual). Writes the picture once as a shared drawing, places it on every surface (the board, worksheets, the working wall and the stick-in pack) from that one drawing, lists it in every designer catalogue and the parity manifest, renders a test, and crops the visual tight so it fills its slot with no deadspace. Use when a lesson needs a visual the engine doesn't have yet, or when the teacher asks for a new helper. Spawned by make-lesson when a needed helper is missing, or run standalone.
-model: astra
-effort: medium
+model: opus
+effort: high
+codex_model: astra
+codex_effort: medium
 color: "#1E90FF"
 ---
 

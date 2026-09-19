@@ -43,11 +43,32 @@ from pathlib import Path
 
 AGENTS_DIR = Path(__file__).resolve().parents[1] / "agents"
 
-# A role file's `model:` shorthand is host-neutral; each host spells it its own
-# way. `haiku` is the odd one: it names a Claude model, and Codex has no
-# equivalent, so the remaining mechanical roles had no correct translation and
-# the orchestrator invented one every run. Luna at low effort is what those
-# roles actually need - run a fixed script, report what happened, decide nothing.
+# A role file declares its launch twice, once per host, because the two hosts do
+# not want the same answer and neither answer can be derived from the other. The
+# two model ranges do not line up rung for rung, and the efforts were tuned
+# separately: this package's Codex settings were lowered deliberately for speed,
+# while the Claude settings carry over from the lesson-resources package that ran
+# on Claude for a year. Folding them into one line would silently retune whichever
+# host lost.
+#
+# Which two fields hold which answer is not a free choice. Claude Code launches a
+# bundled agent by name and reads `model:` and `effort:` out of the role file
+# itself, so those two must hold the Claude answer, spelled Claude's way. Codex is
+# handed its settings by the orchestrator and never reads the file, so its answer
+# sits in `codex_model:` and `codex_effort:`, where nothing but this script looks.
+HOST_FIELDS = {
+    "claude": ("model", "effort"),
+    "codex": ("codex_model", "codex_effort"),
+}
+
+# Each host spells its own rungs. `haiku` in the Codex column is the odd one: it
+# names a Claude model, and Codex has no equivalent, so the mechanical roles had
+# no correct translation and the orchestrator invented one every run. Luna at low
+# effort is what those roles actually need - run a fixed script, report what
+# happened, decide nothing. Claude Code needs no translation, because the field it
+# reads already holds the name it uses; the table is still listed so an
+# unrecognised name fails here rather than at launch, where Claude Code would drop
+# quietly back to the controller's own model.
 HOST_MODELS = {
     "codex": {
         "astra": "gpt-6-astra",
@@ -55,6 +76,12 @@ HOST_MODELS = {
         "terra": "gpt-5.6-terra",
         "luna": "gpt-5.6-luna",
         "haiku": "gpt-5.6-luna",
+    },
+    "claude": {
+        "fable": "fable",
+        "opus": "opus",
+        "sonnet": "sonnet",
+        "haiku": "haiku",
     },
 }
 
@@ -66,6 +93,12 @@ HOST_EFFORTS = {
         "gpt-5.6-sol": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-terra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-luna": ("low", "medium", "high", "xhigh", "max"),
+    },
+    "claude": {
+        "fable": ("low", "medium", "high", "xhigh", "max"),
+        "opus": ("low", "medium", "high", "xhigh", "max"),
+        "sonnet": ("low", "medium", "high", "xhigh", "max"),
+        "haiku": ("low", "medium", "high", "xhigh", "max"),
     },
 }
 
@@ -93,8 +126,13 @@ def role_names() -> list[str]:
     return sorted(path.stem for path in AGENTS_DIR.glob("*.md"))
 
 
-def declared(role: str) -> tuple[str, str]:
-    """Return the model shorthand and effort a role file declares."""
+def declared(role: str, host: str) -> tuple[str, str]:
+    """Return the model shorthand and effort a role file declares for one host."""
+    fields = HOST_FIELDS.get(host)
+    if fields is None:
+        raise LaunchError(f"unsupported host: {host}")
+    model_field, effort_field = fields
+
     path = AGENTS_DIR / f"{role}.md"
     if not path.is_file():
         raise LaunchError(f"unknown role: {role}")
@@ -110,11 +148,13 @@ def declared(role: str) -> tuple[str, str]:
             f"role file {path.name} declares name: {name}, which does not match its filename"
         )
 
-    model = _field(frontmatter, "model")
+    model = _field(frontmatter, model_field)
     if not model:
-        raise LaunchError(f"role file {path.name} declares no model")
+        raise LaunchError(
+            f"role file {path.name} declares no {model_field}, so it cannot be launched on {host}"
+        )
 
-    return model, _field(frontmatter, "effort") or DEFAULT_EFFORT
+    return model, _field(frontmatter, effort_field) or DEFAULT_EFFORT
 
 
 def task_name_for(role: str) -> str:
@@ -123,7 +163,7 @@ def task_name_for(role: str) -> str:
 
 def resolve(role: str, host: str) -> dict[str, str]:
     """Return the literal launch fields for one role on one host."""
-    shorthand, effort = declared(role)
+    shorthand, effort = declared(role, host)
 
     models = HOST_MODELS.get(host)
     if models is None:
@@ -154,11 +194,19 @@ def resolve(role: str, host: str) -> dict[str, str]:
 
 def spec_command(args: argparse.Namespace) -> int:
     if args.host == "claude":
-        # Claude Code reads the bundled agent's own frontmatter, so there is
-        # nothing for the caller to pass and nothing it could get wrong.
+        # Claude Code reads the bundled agent's own `model:` and `effort:` when it
+        # launches the agent by name, so there is nothing for the caller to pass.
+        # Resolving anyway is the point of asking: a role whose fields are missing
+        # or misspelled fails here, loudly, instead of at launch, where Claude Code
+        # cannot place the name and drops back to the controller's own model
+        # without saying so - the exact silent failure this command exists to stop.
+        # The settings are printed so the teacher can see what is about to run.
         for role in args.role:
-            declared(role)
-            print(f"WORKER_LAUNCH_HOST_NATIVE: {role}")
+            fields = resolve(role, args.host)
+            print(
+                f"WORKER_LAUNCH_HOST_NATIVE: {role} "
+                f"model={fields['model']} effort={fields['reasoning_effort']}"
+            )
         print("Launch the bundled named agent; the host applies its declared model.")
         return 0
 

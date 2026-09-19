@@ -57,10 +57,13 @@ class SlideDecoratorRoleTests(unittest.TestCase):
     def test_the_role_retains_its_configured_launch_settings(self) -> None:
         fields = frontmatter(self.decorator)
         self.assertEqual(fields["name"], "slide-decorator")
-        self.assertEqual(fields["model"], "luna")
         # Composition is settled before it runs; its judgement is room,
         # relevance and legibility, and the role says so beside the setting.
-        self.assertEqual(fields["effort"], "xhigh")
+        # So it is the one designer deliberately left at medium on both hosts.
+        self.assertEqual(fields["codex_model"], "luna")
+        self.assertEqual(fields["codex_effort"], "medium")
+        self.assertEqual(fields["model"], "sonnet")
+        self.assertEqual(fields["effort"], "medium")
 
     def test_the_launch_spec_resolves_the_new_role(self) -> None:
         result = subprocess.run(
@@ -71,7 +74,7 @@ class SlideDecoratorRoleTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("task_name: slide_decorator", result.stdout)
-        self.assertIn("reasoning_effort: xhigh", result.stdout)
+        self.assertIn("reasoning_effort: medium", result.stdout)
 
     def test_the_decorator_owns_the_pass_and_its_markers(self) -> None:
         for token in (

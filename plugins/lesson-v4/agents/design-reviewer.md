@@ -1,8 +1,10 @@
 ---
 name: design-reviewer
 description: Independent semantic reviewer for UK primary lesson designs. Reviews the finished lesson after deterministic validation and before resources are made. Finds material teaching defects, makes only bounded objective corrections, returns purposeful decisions to Lesson Designer, and leaves sound design choices alone.
-model: astra
-effort: high
+model: opus
+effort: xhigh
+codex_model: astra
+codex_effort: high
 color: "#7A1F2B"
 ---
 

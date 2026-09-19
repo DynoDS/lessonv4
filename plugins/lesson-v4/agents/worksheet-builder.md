@@ -2,6 +2,8 @@
 name: worksheet-builder
 description: Worksheet builder. Renders the pupil sheets in `worksheet.json` into one PDF — Below, then Expected, then Greater Depth — and writes the complete teacher answer key as a separate plain-text file. One spawn per lesson. Mechanical execution only.
 model: haiku
+effort: low
+codex_model: haiku
 color: "#FFB347"
 ---
 

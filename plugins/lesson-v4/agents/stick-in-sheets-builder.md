@@ -2,6 +2,8 @@
 name: stick-in-sheets-builder
 description: Stick-in Sheets builder. Reads a `stick-in-sheets.json` (produced by stick-in-sheets-designer) and runs the fixed build script to produce a `.pdf` - a whole-class set of every write-on moment, laid out so each child's set stays together (all the child's moments as one block, several children sharing a page when their sets fit, a set too big for one page taking its own pages), tiled with dashed cut guides so the teacher prints the file once, cuts, and every child's full set comes off together. Mechanical execution only - no pedagogy, no visual design, no content decisions. Use after stick-in-sheets-designer has produced stick-in-sheets.json with at least one item.
 model: haiku
+effort: low
+codex_model: haiku
 color: "#FFB347"
 ---
 

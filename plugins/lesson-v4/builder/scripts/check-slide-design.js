@@ -293,6 +293,74 @@ function turnWarnings(lesson) {
 const MY_TURN_TITLE = /^my\s+turn\b/i;
 const ANSWER_TITLE = /\banswers?\b/i;
 
+// A figure the teacher writes on while modelling holds ONE modelled number.
+//
+// Two questions above one number line means the teacher models the first, then
+// rubs the whole thing out in front of the class to model the second. The
+// teacher asked for the second example to be its own slide instead: "it would
+// be so much quicker if I just had an extra slide" (19 September 2026). The
+// playbook has said since 4.2.108 that two examples each needing their own
+// annotated figure may not share one, and decks kept doing it (43 and 45 over
+// one line on 16 September, 34 and 50 on 17 September), because nothing
+// checked it.
+//
+// The limit is what the figure is for: a Your Turn where children draw their
+// own lines in books, and a reference figure nobody writes on, are untouched.
+// This is My Turn and Our Turn only, where the teacher completes the figure.
+const ANNOTATED_FIGURES = new Set([
+  'numberline',
+  'place-value-chart',
+  'bar-model',
+  'part-whole-model',
+  'blank-surface',
+  'label-diagram',
+]);
+const MODELLING_TITLE = /^(?:my|our)\s+turn\b/i;
+
+function annotatedFigureCount(node, seen) {
+  let total = 0;
+  const walk = (value) => {
+    if (Array.isArray(value)) { value.forEach(walk); return; }
+    if (!value || typeof value !== 'object') return;
+    if (typeof value.type === 'string' && ANNOTATED_FIGURES.has(value.type)) {
+      total += value.type === 'numberline' && Array.isArray(value.lines)
+        ? Math.max(1, value.lines.length)
+        : 1;
+      return;
+    }
+    Object.keys(value).forEach((key) => walk(value[key]));
+  };
+  walk(node, seen);
+  return total;
+}
+
+function sharedModelWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    if (!slideData || typeof slideData !== 'object') return;
+    const title = typeof slideData.title === 'string' ? slideData.title.trim() : '';
+    if (!MODELLING_TITLE.test(title)) return;
+    const questions = Array.isArray(slideData.questions) ? slideData.questions : [];
+    if (questions.length < 2) return;
+    const figures = annotatedFigureCount(slideData);
+    if (figures === 0 || figures >= questions.length) return;
+    warnings.push({
+      signal: 'ONE_MODEL_PER_ANNOTATED_FIGURE',
+      slide: index + 1,
+      field: 'questions',
+      message:
+        `"${title}" models ${questions.length} numbers over ${figures} figure` +
+        `${figures === 1 ? '' : 's'} the teacher writes on, so the first model has to be ` +
+        'rubbed out in front of the class before the second can start. Give each ' +
+        'modelled example its own slide, with the same title and the same source ' +
+        'unit, so the teacher clicks on to a clean figure. A figure children draw ' +
+        'for themselves, or one nobody writes on, is not this check\'s business.',
+    });
+  });
+  return warnings;
+}
+
 function consecutiveModellingWarnings(lesson) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const warnings = [];
@@ -990,6 +1058,7 @@ Fix that slide's layout slots, then run the check again.
     .concat(presentationWarnings(lesson))
     .concat(turnWarnings(lesson))
     .concat(consecutiveModellingWarnings(lesson))
+    .concat(sharedModelWarnings(lesson))
     .concat(mixedBlockWarnings(lesson))
     .concat(blueStatementWarnings(lesson))
     .concat(starterColourWarnings(lesson))

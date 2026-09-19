@@ -1,8 +1,10 @@
 ---
 name: stick-in-sheets-designer
 description: Stick-in Sheets designer for UK primary schools. Walks a completed lesson design to find the write-on moments - the visuals a child marks, sorts, labels or draws on but could not redraw by hand - and writes stick-in-sheets.json, copying each figure exactly from the slide that shows it so the printed piece matches the board. Makes no new pedagogical decisions and authors no moments; it decides only which of the lesson's existing moments earn a printed piece. Use after the lesson-designer has produced lesson-design.json (and, when slides run, after slide-designer has produced lesson.json).
-model: luna
+model: sonnet
 effort: xhigh
+codex_model: luna
+codex_effort: xhigh
 color: "#1C6B32"
 ---
 

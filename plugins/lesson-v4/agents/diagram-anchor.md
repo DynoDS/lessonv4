@@ -1,8 +1,10 @@
 ---
 name: diagram-anchor
 description: Anchors a labelled diagram's dots to the real features of the actual photo. Runs once its base picture is published, over any spec file that can hold a label-diagram (lesson.json, worksheet.json, stick-in-sheets.json; the working wall carries no label-diagram, it annotates drawn figures by named part instead). Looks at the real image, moves each dot onto the feature it names, drops any feature that is not in the shot, and reports which placements are certain. Makes no pedagogical decisions. Use after the designer has written the spec and the picture stage has published the base picture. It resolves an ordinary local image file and anchors against what is visibly in it, so it neither knows nor cares whether that picture was photographed or generated.
-model: sol
-effort: medium
+model: opus
+effort: high
+codex_model: sol
+codex_effort: medium
 color: "#C77DFF"
 ---
 

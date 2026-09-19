@@ -92,8 +92,12 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         )
 
     def test_model_and_reasoning_route_are_unchanged(self) -> None:
-        self.assertIn("model: sol", self.agent)
-        self.assertIn("effort: high", self.agent)
+        # Named in full per host: `model:` alone also matches `codex_model:`.
+        # The whole matrix lives in test_worker_launch.py; this holds one role.
+        self.assertIn("codex_model: sol", self.agent)
+        self.assertIn("codex_effort: medium", self.agent)
+        self.assertIn("\nmodel: opus", self.agent)
+        self.assertIn("\neffort: xhigh", self.agent)
 
     def test_preferences_allow_exact_copy_agents_to_route_written_voice_conditionally(self) -> None:
         self.assertIn(

@@ -43,8 +43,13 @@ class UnifiedPictureArchitectureTests(unittest.TestCase):
 
     def test_worker_instructions_keep_visual_review_and_unified_session(self):
         text = (ROOT / "agents" / "image-scout.md").read_text(encoding="utf-8")
-        self.assertIn("model: luna", text)
-        self.assertIn("effort: max", text)
+        # Both hosts, named in full: `model:` alone also matches `codex_model:`,
+        # which is how a setting could be renamed out from under this check. The
+        # whole matrix lives in test_worker_launch.py; this holds the one role.
+        self.assertIn("codex_model: luna", text)
+        self.assertIn("codex_effort: medium", text)
+        self.assertIn("\nmodel: sonnet", text)
+        self.assertIn("\neffort: high", text)
         self.assertIn("never write a canonical", text)
         self.assertIn("Open every selected original", text)
         self.assertIn("one compact result", text)

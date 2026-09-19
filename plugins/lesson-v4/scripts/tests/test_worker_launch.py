@@ -125,6 +125,164 @@ class SpecTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("WORKER_LAUNCH_HOST_NATIVE: slide-designer", result.stdout)
 
+    def test_claude_settings_are_resolved_and_shown_not_merely_assumed(self) -> None:
+        """Nothing hands Claude Code its settings, so nothing catches a typo.
+
+        Codex is given its model at launch and the audit reads back what it got.
+        Claude Code reads the role file itself, and when it cannot place the name
+        it drops back to the controller's own model in silence. Resolving here is
+        the only gate on that, so it has to do more than confirm the file exists.
+        """
+        result = run("spec", "--host", "claude", "--role", "lesson-designer")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(
+            "WORKER_LAUNCH_HOST_NATIVE: lesson-designer model=opus effort=xhigh",
+            result.stdout,
+        )
+
+    def test_every_role_the_package_ships_resolves_on_claude_too(self) -> None:
+        roles = sorted(path.stem for path in AGENTS.glob("*.md"))
+        self.assertTrue(roles)
+        args: list[str] = []
+        for role in roles:
+            args += ["--role", role]
+        result = run("spec", "--host", "claude", *args)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for role in roles:
+            with self.subTest(role=role):
+                self.assertIn(f"WORKER_LAUNCH_HOST_NATIVE: {role} model=", result.stdout)
+
+    def test_claude_roles_resolve_to_the_settings_carried_over_from_lesson_resources(
+        self,
+    ) -> None:
+        """The Claude column is the lesson-resources package's own answer.
+
+        That package ran this pipeline on Claude for a year, so its settings are
+        evidence rather than a guess, and they are pinned here for the reason the
+        Codex matrix above is pinned: an edit that quietly lowers the lesson
+        designer costs a lesson nobody can see the difference in.
+        """
+        expected = {
+            "lesson-designer": ("opus", "xhigh"),
+            "design-reviewer": ("opus", "xhigh"),
+            "slide-designer": ("opus", "xhigh"),
+            "working-wall-designer": ("opus", "high"),
+            "adaptation-designer": ("opus", "high"),
+            "diagram-anchor": ("opus", "high"),
+            "helper-builder": ("opus", "high"),
+            "image-scout": ("sonnet", "high"),
+            "question-extractor": ("sonnet", "high"),
+            "worksheet-designer": ("sonnet", "high"),
+            "stick-in-sheets-designer": ("sonnet", "xhigh"),
+            "slide-decorator": ("sonnet", "medium"),
+            "slide-builder": ("haiku", "low"),
+            "worksheet-builder": ("haiku", "low"),
+            "working-wall-builder": ("haiku", "low"),
+            "stick-in-sheets-builder": ("haiku", "low"),
+        }
+        for role, (model, effort) in expected.items():
+            with self.subTest(role=role):
+                result = run("spec", "--host", "claude", "--role", role)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(
+                    f"WORKER_LAUNCH_HOST_NATIVE: {role} model={model} effort={effort}",
+                    result.stdout,
+                )
+
+    def test_a_repair_worker_matches_the_role_it_repairs(self) -> None:
+        """A focused repair reopens one named fault in a finished piece of work.
+
+        It is the same judgement as the role that made it, on less of it, so it
+        needs the same model to make it. Sending the repair out weaker than the
+        author is how a run quietly loses the quality its own reviewer asked for.
+        """
+        repairs = sorted(path.stem for path in AGENTS.glob("*-focused-repair.md"))
+        self.assertTrue(repairs)
+        for repair in repairs:
+            author = repair[: -len("-focused-repair")]
+            with self.subTest(repair=repair):
+                self.assertTrue((AGENTS / f"{author}.md").is_file(), author)
+                made = run("spec", "--host", "claude", "--role", author)
+                fixed = run("spec", "--host", "claude", "--role", repair)
+                self.assertEqual(made.returncode, 0, made.stderr)
+                self.assertEqual(fixed.returncode, 0, fixed.stderr)
+                self.assertEqual(
+                    made.stdout.split("model=", 1)[1].strip(),
+                    fixed.stdout.split("model=", 1)[1].strip(),
+                )
+
+    def test_a_role_missing_one_host_fails_for_that_host_alone(self) -> None:
+        """The two columns are independent, and a half-filled role says so.
+
+        A role added with only Codex settings runs correctly on Codex and silently
+        wrong on Claude Code, which is invisible from either side unless asking
+        fails. So the miss is reported against the host that cannot launch it, and
+        the other host is left working.
+        """
+        half = AGENTS / "_test-half-filled-role.md"
+        half.write_text(
+            "\n".join(
+                [
+                    "---",
+                    "name: _test-half-filled-role",
+                    "description: Codex settings declared, Claude settings missing.",
+                    "codex_model: astra",
+                    "codex_effort: medium",
+                    "---",
+                    "",
+                    "Body.",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        try:
+            on_codex = run("spec", "--role", "_test-half-filled-role")
+            on_claude = run(
+                "spec", "--host", "claude", "--role", "_test-half-filled-role"
+            )
+        finally:
+            half.unlink()
+
+        self.assertEqual(on_codex.returncode, 0, on_codex.stderr)
+        self.assertIn("model: gpt-6-astra", on_codex.stdout)
+        self.assertEqual(on_claude.returncode, 2)
+        self.assertIn("declares no model", on_claude.stderr)
+        self.assertIn("claude", on_claude.stderr)
+
+    def test_an_unrecognised_claude_model_fails_rather_than_falling_back(self) -> None:
+        """Claude Code cannot place a name it does not know, and says nothing.
+
+        Every role in this package named a Codex model until now, so a run on
+        Claude Code would have put all twenty-one workers on the controller's own
+        model and finished looking exactly like a correct one.
+        """
+        stray = AGENTS / "_test-stray-model-role.md"
+        stray.write_text(
+            "\n".join(
+                [
+                    "---",
+                    "name: _test-stray-model-role",
+                    "description: A role naming a model Claude Code never heard of.",
+                    "model: astra",
+                    "effort: medium",
+                    "---",
+                    "",
+                    "Body.",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        try:
+            result = run("spec", "--host", "claude", "--role", "_test-stray-model-role")
+        finally:
+            stray.unlink()
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("astra", result.stderr)
+        self.assertIn("no claude equivalent", result.stderr)
+
 
 class AuditTests(unittest.TestCase):
     def setUp(self) -> None:
