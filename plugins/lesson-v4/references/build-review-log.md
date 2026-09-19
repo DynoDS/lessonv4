@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-19 A live helper shows its unknowns, and the move is marked on the thing it acts on (4.2.241)
+
+Daniel, comparing the Codex nearest-1,000 deck with the nearest-100 deck built by hand: "what I liked about your versions was it was a little cycle of learning and practising before the main thing, and it was visual, like you had the numbers and what to change in orange ... this one was just find the 2 multiples either side, expecting teacher to model it correctly (and even know what to do). A cover would have spent ages on this bit." Then: "it felt like actual clear teaching."
+
+**What the difference actually was.** Both decks taught the missing step in its own short cycle, and the Codex design's walk-through shows it reasoned that out rather than assuming the step (`Finding end values at this size is explicitly modelled rather than assumed`). The gap was in what the board carried: a line with nothing on it above `Find the two multiples of 1,000 either side of 3,462`, against a line whose two ends were `?` with the number marked between them, and a practice slide whose digits carried the orange mark on the part the method changes. He rejected the first repair I offered, which was to write down the number of marks on a line and the count of practice items: "those are really specific to this lesson."
+
+**The change.** Two paragraphs in `modelling-formats.md` → Live-complete helper, both subject-free, each with its limit. A live helper shows its unknowns using the helper's own form (a `?` label at a mark, an empty circle, a blank row, a `___`), because a bare helper is a surface waiting for someone who already knows the lesson; the limit is that it marks only what the model will fill, never the part children must work out. And where the move is a change to something visible, the part it acts on is marked inside the case itself with the same orange mark the criteria use, so the criterion and the example point at the same thing; the limits are that a judgement has nothing to mark, and the mark never goes on the answer. Checked first that the builder renders `<<...>>` inside a question and `?` labels on a line, so the guidance cannot produce a refused deck.
+
+**Evidence.** Three blind slide-spec runs (Claude Sonnet, same beat, guidance file swapped). Old: the number marked on the line, both ends left as unlabelled blanks. New: both ends carry `?`, the number is marked between them, nothing pre-answered. Transfer to another subject, on a Year 3 spelling beat the guidance never mentions (adding `-ing` to `smile`): the final `e` marked as the part that changes, the new ending shown as a marked blank rather than empty space, the finished word held back for the answer slide. Python suite unchanged at the same 7 failures.
+
+**Still open.** Single runs on a different model from Codex, and slide specs rather than whole lessons. Nothing about the size or shape of a prerequisite cycle is written down, deliberately.
+
 ## 2026-09-19 A named misconception reaches the teacher, and live examples get a figure each (4.2.240)
 
 The first Codex lesson design on the new plugin (Year 4, round to the nearest 1,000) came back with the day's changes working: a find-the-two-thousands cycle before any rounding, its criteria the first two steps of the main criteria word for word, `onTheBoard` on every live model with a finished answer slide after it, 3,462 modelled first and the round-to-zero case (240) held back as its own teaching point, and the hundreds-digit shortcut derived at the end from the lines the class had used. Daniel read it and found two faults.
@@ -2606,3 +2618,12 @@ Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-pa
 - The five-box process-chain cannot hold a Year 4 sentence of the length the lesson design itself wrote: 'The germs in the plaque feed on the sugar.' wraps to five lines at the 18pt floor and wants about 15in of a 13.3in slide. The slide designer shortened the box text and kept the full sentence in the script, then had to tell the wall and stick-in designers to copy the shortened wording so three surfaces would agree. Either the helper needs a wider box or the designers need a stated word budget per box.
 
 - Every picture in this lesson was specified acquisition_mode controlled-ai with source_profile none and fallback_action unsatisfied, so on a host with no image generation all five came back terminally unsatisfied and one worksheet question lost the evidence it was built on. A contract where no picture has any real-source rung leaves the run with nothing to degrade to.
+
+## 2026-09-19 - Year 4 Maths: round to the nearest 1,000
+
+*Built by lesson-v4 4.2.240.*
+
+
+- The helper catalogue lacks a single named portrait and speech bubble visual even though slide speech-bubble templates and worksheet speech-scene layouts can supply one; helper coverage reports a gap that rendered resources may still fill.
+
+- The PowerPoint render probe had no established Office route, leaving slide visual measurement unverified.
