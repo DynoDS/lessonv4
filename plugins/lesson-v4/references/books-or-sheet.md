@@ -93,13 +93,17 @@ the question to answer it, that is a reason for `"sheet"`.
 
 ## Figures the children draw for themselves: `"onSlip": false`
 
-A books sheet can still print a figure, and the slip keeps everything the sheet
-prints except answer room. When the children will draw a figure for themselves in
-their books (a Year 4 class ruling its own 0 to 100 number line), mark that figure
-`"onSlip": false`, so the slip leaves it off. Printed, it would double the slip's
-height and halve the paper saved, and the child would work on the slip instead of
-drawing it. Leave unmarked any figure a child reads from: a photograph, a source,
-a data table, a number line whose value they read off.
+A books sheet can still print a figure. The slip keeps what the sheet prints
+apart from three things it takes out for itself: the room for answers, the
+success criteria panel (the `steps` helper, because the child already has it on
+the board and the working wall), and anything marked `"onSlip": false`.
+
+When the children will draw a figure for themselves in their books (a Year 4
+class ruling its own 0 to 100 number line), mark that figure `"onSlip": false`,
+so the slip leaves it off. Printed, it would double the slip's height and halve
+the paper saved, and the child would work on the slip instead of drawing it.
+Leave unmarked any figure a child reads from: a photograph, a source, a data
+table, a number line whose value they read off.
 
 ## What the build checks
 
