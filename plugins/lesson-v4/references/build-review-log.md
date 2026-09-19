@@ -54,6 +54,16 @@ Python and JavaScript to LF would end this class, at the cost of a large one-off
 renormalising diff, so it wants a quiet moment and Daniel's say rather than a
 commit alongside other work.
 
+Done the same evening, once Daniel confirmed nothing was running, and it cost
+nothing it was feared to: git already stored LF for every text file, so
+`* text=auto eol=lf` changed only what gets written to disk. No stored content
+moved, which is why other branches see no difference and merge as before. 3,060
+files were rewritten in the working tree, `git status` stayed clean against the
+stored blobs, the gzip library index still decompresses to its 135,607 names, and
+no tracked text file has a carriage return left. Proved on a detached checkout of
+the same commit: `image-scout-search.md` arrives at 9,980 bytes rather than
+10,137, and the thirty checks that used to fail there pass.
+
 **What this does not fix.** No lesson has been run. The scaffold repair is the one
 change here that could alter a real run, and it can only widen what passes, never
 narrow it. The remaining nine failures reported earlier today are now one.
