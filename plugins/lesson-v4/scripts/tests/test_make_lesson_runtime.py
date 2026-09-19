@@ -674,7 +674,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 compact_text = compact_bytes.decode("utf-8")
 
                 self.assertLess(len(compact_bytes), len(full_bytes))
-                self.assertLess(len(compact_bytes), 8000)
+                # The repository's text, so the verdict does not change with the
+                # line endings a checkout wrote: git turns LF into CRLF here, and
+                # a budget read off the disk counts one byte per line of nothing.
+                repository_text = compact_text.replace("\r\n", "\n")
+                self.assertLess(len(repository_text.encode("utf-8")), 8000)
                 self.assertIn(
                     f"name: {filename.removesuffix('.md')}",
                     compact_text,

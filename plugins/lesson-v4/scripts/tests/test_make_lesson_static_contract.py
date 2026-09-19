@@ -787,7 +787,11 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         self.assertIn("a vocabulary card alone is a reference, not that teaching", preferences)
 
         reviewer = (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8")
-        self.assertIn("check child-facing and spoken text calls the class `children`, `you` or `we`", reviewer)
+        # The rule, not the sentence around it. Pinning the whole sentence made
+        # this red for a reviewer that carries the rule in full: someone wrote
+        # "Check that child-facing text..." and the one extra word failed a test
+        # about voice, which then reads as a missing rule rather than a reword.
+        self.assertIn("child-facing and spoken text calls the class `children`, `you` or `we`", reviewer)
         self.assertIn("no praise line", reviewer)
 
         designer = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")

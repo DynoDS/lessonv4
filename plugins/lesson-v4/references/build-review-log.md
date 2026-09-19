@@ -1,5 +1,69 @@
 # Build review log
 
+## 2026-09-19 Nine red tests, five causes, two of them real (4.2.261)
+
+Daniel asked whether anything was broken, then asked for the nine long-standing
+Python failures to be looked into. They were not one problem, and two of them
+were the system rather than the tests.
+
+**A new rule refused every scaffold.** The label rule added earlier today, after
+a Codex design reached the teacher with no My Turn, Our Turn or Your Turn
+anywhere, requires a skill lesson's turn labels to begin with those words. It
+skips a missing label, saying so in its own comment, but not the scaffold's
+`__LESSON_DESIGN_FILL__`, which is what every skeleton carries by design. So
+`validate_route_sequence` refused any scaffolded skill lesson for the one thing a
+skeleton cannot yet have. It now skips the placeholder, which the placeholder
+scan already reports on its own.
+
+**The validator was editing the design it validates.** `validate_speaker_notes`
+called `notes.setdefault("onTheBoard", None)` so its later checks could index the
+key directly, which wrote a null field into the caller's design. Nothing outside
+the validator relied on the insertion, and the design is what gets saved, so it
+now reads the value with a default instead. `test_the_check_does_not_touch_other_units`
+existed to catch exactly this and had been red since 14 September.
+
+**Five failures were one line-ending mismatch.** `read-reference.py` opens a
+reference with `newline=""` on purpose, so an agent gets the file's exact bytes.
+`test_lesson_designer_component_loading` read the same file in text mode, which
+turns CRLF into LF, then sliced it by offset and compared the slice against the
+reader's own output. With `core.autocrlf` true and no `.gitattributes` rule for
+markdown, git writes CRLF here, the offsets shifted, and five exact-view subtests
+failed against views that were correct. The test now opens the file exactly as
+the reader does.
+
+**One was a false alarm worth removing.** A voice test pinned a whole sentence of
+`design-reviewer.md`. The rule is present and correct; someone had written "Check
+that child-facing text..." and that one extra word failed a test about voice,
+which reads as a missing rule rather than a reword. It now pins the rule and not
+the sentence around it.
+
+**One is left, and it is a judgement, not a defect.** `slide-designer-focused-repair.md`
+is 8,273 bytes of text against a compact-entrypoint budget of 8,000. The file has
+no duplicated paragraph and the other five entrypoints are 4,899 to 7,725, so the
+budget is tight but respected elsewhere. Trimming a repair brief or raising the
+cap is a call about that brief's content and about context cost, so it is left
+red and named here. Its measurement was made machine-independent while passing:
+it read bytes off the disk, so it reported 8,362 on this checkout and would have
+reported 8,273 on a Linux one.
+
+**The line endings are the standing trap.** Three budgets and one exact-view
+comparison have now been fixed for the same reason in one day, and the working
+tree is genuinely mixed: files git last wrote carry CRLF, files a tool last wrote
+carry LF. `.gitattributes` covers `*.sh` only. A rule normalising markdown,
+Python and JavaScript to LF would end this class, at the cost of a large one-off
+renormalising diff, so it wants a quiet moment and Daniel's say rather than a
+commit alongside other work.
+
+**What this does not fix.** No lesson has been run. The scaffold repair is the one
+change here that could alter a real run, and it can only widen what passes, never
+narrow it. The remaining nine failures reported earlier today are now one.
+
+**Evidence.** Python suite 1,971 pass and 1 fail, down from 9 fail, the one
+remaining being the size budget above. Root node suite 46 pass, builder 688 pass,
+worksheets 710, working wall 141, stick-in sheets 70, all 0 fail. The 191 tests
+guarding the lesson-design validator and its scaffold pass, including the two
+that were red.
+
 ## 2026-09-19 The wall's visual gate finishes being retired (4.2.260)
 
 Daniel asked for the two red tests to be fixed. One of them was not a stale test.

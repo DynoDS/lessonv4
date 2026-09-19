@@ -1117,22 +1117,26 @@ def validate_speaker_notes(raw: Any, path: str) -> None:
         "Answer to question(s) on this slide:",
         "Answer/model for this slide:",
     )
-    notes.setdefault("onTheBoard", None)
+    # `onTheBoard` is optional, so it is read with a default rather than written
+    # into the design. A validator that fills a key in passing hands the caller
+    # back something it did not write, and the design is what gets saved.
     for key in ("script", "teacherInfo", "lookFor", "onTheBoard"):
-        expect_nullable_string(notes[key], f"{path}.{key}")
-        if isinstance(notes[key], str):
+        value = notes.get(key)
+        expect_nullable_string(value, f"{path}.{key}")
+        if isinstance(value, str):
             expect(
-                not any(marker in notes[key] for marker in forbidden_answer_markers),
+                not any(marker in value for marker in forbidden_answer_markers),
                 f"{path}.{key} must not duplicate the structured answer marker",
             )
     if notes["script"] is not None:
         prefix = "Say to children:"
         expect(notes["script"].startswith(prefix), f"{path}.script must begin with 'Say to children:'")
         expect(notes["script"][len(prefix):].strip(), f"{path}.script must contain words after 'Say to children:'")
-    if notes["onTheBoard"] is not None:
+    on_the_board = notes.get("onTheBoard")
+    if on_the_board is not None:
         prefix = "On the board:"
-        expect(notes["onTheBoard"].startswith(prefix), f"{path}.onTheBoard must begin with 'On the board:'")
-        expect(notes["onTheBoard"][len(prefix):].strip(), f"{path}.onTheBoard must say what to write or draw after 'On the board:'")
+        expect(on_the_board.startswith(prefix), f"{path}.onTheBoard must begin with 'On the board:'")
+        expect(on_the_board[len(prefix):].strip(), f"{path}.onTheBoard must say what to write or draw after 'On the board:'")
     if notes["lookFor"] is not None:
         prefix = "Look for:"
         expect(notes["lookFor"].startswith(prefix), f"{path}.lookFor must begin with 'Look for:'")
@@ -2431,6 +2435,12 @@ def validate_route_sequence(
             label = unit.get("label") or ""  # a missing label is caught by the unit checks
             if not label:
                 continue  # a missing label is the unit checks' own fault to report
+            if label == SCAFFOLD_PLACEHOLDER:
+                # A scaffold's labels are placeholders by design, and the
+                # placeholder scan reports an unfilled one. Reading this rule
+                # against a skeleton refuses every scaffold ever built for a
+                # skill lesson, for the one thing a skeleton cannot yet have.
+                continue
             expect(
                 label.lower().startswith(word.lower()),
                 f"teachingSequence[{index}].label must begin with '{word}' and then "

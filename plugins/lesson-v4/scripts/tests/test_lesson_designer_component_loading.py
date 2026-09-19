@@ -10,7 +10,15 @@ from pathlib import Path
 from reference_test_support import READER, ROOT, component_text
 
 CORE = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
-COMPONENTS = (ROOT / "references" / "lesson-designer-components.md").read_text(encoding="utf-8")
+# Read exactly as `read-reference.py` reads it, with `newline=""`, because this
+# file's sections are sliced by offset and compared against that reader's own
+# output. Reading it in text mode instead turns CRLF into LF, so on any Windows
+# checkout, where git writes CRLF, the offsets shift and every comparison fails
+# against a view that is in fact correct.
+with (ROOT / "references" / "lesson-designer-components.md").open(
+    "r", encoding="utf-8", newline=""
+) as handle:
+    COMPONENTS = handle.read()
 SECTIONS = (
     "Dialogic route", "Task-Centred route", "Representation configurations",
     "Generated worksheet", "Photograph acquisition",
