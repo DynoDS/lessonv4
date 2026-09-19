@@ -1,5 +1,43 @@
 # Build review log
 
+## 2026-09-20 A cloud run can sign in, so the repositories can stay private (4.2.265)
+
+Daniel, on having made a repository public for cloud runs: "Surely theres a way
+to keep the repo private, and lesson v4, and still have cloud runs work."
+
+There is, and most of it was already built. `github_auth_args` (4.2.189) and the
+drawings library both read `GITHUB_TOKEN`, and the drawings library already tries
+the API route that a private repository needs. The only missing piece was that
+the ChatGPT Work cloud task's own text never set one, and computer-setup.md told
+the teacher the plugin "must be in a public repository it can clone".
+
+**A trap caught before it fired.** Daniel made `DynoDS/educational-svg` private
+immediately before raising this, so no cloud lesson was harmed. But a cloud box
+has no token, so the next scheduled run would have built with no drawings and
+said so only in a note. Proved against the real library rather than argued:
+without a token both routes answer 404 (`raw.githubusercontent.com` and
+`api.github.com`), with one both answer 200 and the drawing arrives. Worth
+recording because the failure is quiet: the run does not stop, so a library
+turned private on any future day costs drawings until someone reads a note.
+
+The task template now exports `GITHUB_TOKEN` and clones through it, then resets
+the remote so the key never stays in `.git/config`. One key covers the clone,
+the drawings and the letterbox. The doc states the two honest costs, that the
+key sits in the saved task's text and that it expires, and says what the token
+needs (Contents: Read-only, those repositories only).
+
+Not done here: cloning the drawings library instead of fetching from it was
+considered and rejected. It is over 225,000 drawings and growing as Daniel adds
+to it, 650 MB packed, too heavy for a box that is rebuilt every run. (The
+shipped index named 135,607 of them on the day, so the index trails the library
+while an add is in progress, which is expected rather than a fault.)
+
+Riding along in this version, from another session working in the same checkout
+at the same time: a tightening of the Teach-split rule in
+`slide-designer-focused-repair.md`, which now points at the playbook rather than
+restating it. That change is not this entry's work and its reasoning belongs to
+whoever made it.
+
 ## 2026-09-19 P3 becomes decoration, and a slide accounts for the places it left (4.2.264)
 
 Daniel: "p2 are best, but p3 is also decoration... not just 1 per slide, many!"

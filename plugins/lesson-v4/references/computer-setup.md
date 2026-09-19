@@ -102,9 +102,12 @@ because a lesson needs separate AI workers and only those two can start them
 - **ChatGPT Work, Cloud.** Runs with the teacher's computer off. It can start
   workers at the plugin's own models, reach the internet, commit to GitHub
   through its own GitHub tools, and offer files for download. It has no
-  environment settings and no git sign-in, so the plugin must be in a public
-  repository it can clone, and the letterbox is posted with its GitHub tools
-  (the run does this itself when the delivery prints `LETTERBOX_ROUTE=connector`).
+  environment settings and no git sign-in, so anything private is reached with
+  a fine-grained token the task's own text carries: step 1 exports it as
+  `GITHUB_TOKEN`, and that one key signs in the clone, the drawings library and
+  the letterbox together. The letterbox is posted with its GitHub tools either
+  way (the run does this itself when the delivery prints
+  `LETTERBOX_ROUTE=connector`).
 - **The Codex app on the teacher's computer.** Runs only while the computer is
   on and the app open, and saves straight to the save folder. See below.
 - **Codex cloud tasks** (the Codex website, or `codex cloud exec`) cannot build a
@@ -118,8 +121,13 @@ this, changing only the lesson line:
 ```text
 Make one lesson with the Lesson v4 plugin, unattended.
 
-1. Run `git clone https://github.com/<owner>/<plugin repository>.git` and use
-   <that folder>/<plugin folder> as PLUGIN_ROOT_CANDIDATE.
+1. Run these three, then use <that folder>/<plugin folder> as
+   PLUGIN_ROOT_CANDIDATE:
+     export GITHUB_TOKEN=<token>
+     git clone https://x-access-token:$GITHUB_TOKEN@github.com/<owner>/<plugin repository>.git
+     git -C <that folder> remote set-url origin https://github.com/<owner>/<plugin repository>.git
+   Keep GITHUB_TOKEN set for the whole run: the drawings library and the
+   letterbox both read it. Never print it or write it into a file.
 2. Follow <plugin folder>/skills/make-lesson/SKILL.md exactly, as the make-lesson
    skill. Launch its named workers with your subagent tool, at the model and
    reasoning effort worker-launch.py prints for each role.
@@ -136,6 +144,23 @@ Lesson: <year, subject and objective>
 
 Once a manual run has put a lesson on the teacher's drive, the same message can
 be scheduled in Work.
+
+**The token.** A fine-grained personal access token on GitHub, listing only the
+repositories the run needs and nothing else on the account. For the plugin and
+the drawings library, Contents: Read-only is enough, and a read-only key cannot
+change anything anywhere. Add the letterbox only if the run will push to it
+rather than post through its GitHub tools, and that one needs Contents: Read and
+write, so keep it off the token when the connector route is being used.
+
+Two things to be straight with the teacher about: the key sits in the saved
+task's text, so anyone who can open their ChatGPT account can read those
+repositories; and a token has an expiry date, after which lessons stop until it
+is replaced. The alternative is public repositories.
+
+Without a token, a private drawings library is simply unreachable: every fetch
+comes back 404 on both the plain file address and the API, and the run builds
+each lesson with no drawings and a note saying so. Checked against the real
+private library on 20 September 2026: 404 without, 200 with.
 
 **In the Codex app** a task runs on the teacher's own computer and saves straight
 to the save folder like any lesson made there. Two things to tell the teacher:
@@ -250,3 +275,9 @@ Signing in is interactive, so the teacher does the last step themselves:
 
 The next run's check sees the sign-in. When the library is made public this
 section stops being needed, and the check stops raising it on its own.
+
+A cloud box cannot do any of this: nobody is there to follow a browser. It signs
+in with `GITHUB_TOKEN` instead, set as an environment variable where the host
+has them and carried in the task's own text where it does not. See "Scheduled
+lessons in ChatGPT Work or Codex" above. Without it the drawings are simply
+absent from every cloud lesson, with a note saying so and no other sign.
