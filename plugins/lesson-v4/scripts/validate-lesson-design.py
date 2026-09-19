@@ -2807,8 +2807,14 @@ def _photo_text_values(photo: dict[str, Any]):
                         yield f"generation_prompt.{key}[{index}]", item
 
 
-def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = False):
+def validate_photo_contract_v2(
+    photos: Any,
+    *,
+    initial_photo_namespace: bool = False,
+    faults: FaultLog | RaiseAtOnce | None = None,
+):
     """Validate the complete semantic picture contract, independently of routing."""
+    log = faults if faults is not None else RaiseAtOnce()
     root = expect_dict(photos, "photo-requirements.json")
     expect_exact_keys(root, {"schema_version", "lesson_name", "photos"},
                       {"schema_version", "lesson_name", "photos"},
@@ -2838,119 +2844,125 @@ def validate_photo_contract_v2(photos: Any, *, initial_photo_namespace: bool = F
                f"{path}.id has invalid format")
         expect(photo_id not in by_id, f"duplicate photo id: {photo_id}")
         by_id[photo_id] = photo
-        expect(_photo_nonempty(photo["subject"]), f"{path}.subject must be non-empty")
-        expect(isinstance(photo["pedagogical_constraint"], str), f"{path}.pedagogical_constraint must be a string")
-        for field, value in _photo_text_values(photo):
-            crop = _PHOTO_CROP_RE.search(value)
-            if crop:
-                raise ContractError(
-                    f"photo contract route error: {path}.{field} asks for the picture to be "
-                    f"cropped or cut up ({crop.group(0)!r}). Nothing downstream crops a "
-                    "delivered picture: the file arrives whole and every slide that names it "
-                    "shows all of it, so panels drawn for three teaching moments put all three "
-                    "on each of those slides - a later turn's questions on an earlier turn, its "
-                    "answers in front of the class before they have worked, and every panel a "
-                    "fraction of the size it would have had alone. Give each visual its own "
-                    "photo object with its own filename, describing only what that one moment "
-                    "shows. This costs the same number of images and each arrives at full size."
-                )
-            if _PHOTO_URL_RE.search(value):
-                raise ContractError(
-                    f"photo contract route error: {path}.{field} contains a web address. "
-                    "Finding the file is the Image Scout's job and it searches by subject, so a "
-                    "link here is a promise nothing downstream can keep. Say what the picture must "
-                    "show instead, naming the institution that holds it where you know it - "
-                    "\"the Ford End School classroom around 1900, held by Essex Record Office\" - "
-                    "and the scout's ladder (Unsplash, Wikimedia, Openverse, then that institution's "
-                    "own page) will reach it."
-                )
-        expect(_photo_nonempty(photo["teaching_requirement"]), f"{path}.teaching_requirement must be non-empty")
-        evidence = photo["load_bearing_evidence"]
-        expect(isinstance(evidence, list) and evidence and all(_photo_nonempty(v) for v in evidence),
-               f"{path}.load_bearing_evidence must be a non-empty list of non-empty strings")
-        expect(photo["use"] in PHOTO_USES, f"{path}.use must be one of {sorted(PHOTO_USES)}")
-        expect(type(photo["essential"]) is bool, f"{path}.essential must be boolean")
-        filename = photo["filename"]
-        expect(_photo_filename_safe(filename), f"{path}.filename is unsafe")
-        expect(filename not in by_filename, f"duplicate photo filename: {filename}")
-        by_filename[filename] = photo
-        acquisition = photo["acquisition_mode"]
-        source = photo["source_profile"]
-        fallback = photo["fallback_action"]
-        coherent_mode = photo["coherent_mode"]
-        expect(acquisition in PHOTO_ACQUISITION_MODES,
-               f"photo contract route error: {path}.acquisition_mode is invalid")
-        expect(source in PHOTO_SOURCE_PROFILES,
-               f"photo contract route error: {path}.source_profile is invalid")
-        expect(fallback in PHOTO_FALLBACK_ACTIONS,
-               f"photo contract route error: {path}.fallback_action is invalid")
-        expect(coherent_mode in PHOTO_COHERENT_MODES,
-               f"photo contract coherence error: {path}.coherent_mode is invalid")
-        note = photo["fallback_note"]
-        expect(note is None or isinstance(note, str), f"{path}.fallback_note must be null or a string")
-        prompt = photo["generation_prompt"]
-        prompt_required = (acquisition == "controlled-ai" or fallback == "ai")
-        if prompt_required:
-            expect(_photo_prompt_valid(prompt),
-                   f"photo contract route error: {path}.generation_prompt is incomplete")
-        else:
-            expect(prompt is None,
-                   f"photo contract route error: {path}.generation_prompt must be null when AI is not authorised")
-        group = photo["coherent_group"]
-        invariants = photo["coherent_visual_invariants"]
-        if group is None:
-            expect(coherent_mode == "none" and invariants == [],
-                   f"photo contract coherence error: {path} null group requires mode none and [] invariants")
-        else:
-            expect(_photo_nonempty(group), f"photo contract coherence error: {path}.coherent_group is invalid")
-            expect(isinstance(invariants, list) and invariants and all(_photo_nonempty(v) for v in invariants),
-                   f"photo contract coherence error: {path}.coherent_visual_invariants is invalid")
-            groups.setdefault(group, []).append(photo)
-
-        if acquisition == "authentic-real":
-            expect(source != "none", f"photo contract route error: {path} authentic-real requires a real source profile")
-            expect(fallback != "ai", f"photo contract route error: {path} authentic-real cannot fall back to AI")
-            expect(prompt is None, f"photo contract route error: {path} authentic-real requires a null generation prompt")
-            # authentic-real is the only route that can end a lesson with no
-            # picture and no authorised substitute, so the reason has to be
-            # written down rather than reached by default.
-            expect(_photo_nonempty(note),
-                   f"photo contract route error: {path} authentic-real requires a fallback_note saying why a "
-                   f"faithful generated photograph would misteach; use ordinary-real when it would not")
-        elif acquisition == "ordinary-real":
-            expect(source != "none", f"photo contract route error: {path} ordinary-real requires a real source profile")
-            if fallback == "ai":
-                expect(_photo_prompt_valid(prompt), f"photo contract route error: {path} ordinary-real AI fallback requires a complete generation prompt")
+        # Each brief is judged on its own. A designer writing a dozen pictures
+        # can get two or three independently wrong, and naming one at a time
+        # spends a repair pass per brief. The shape checks above stay outside
+        # this: `by_id` is returned and every later check reads it, so a photo
+        # whose id or keys are wrong still ends the pass where it happens.
+        with log.section():
+            expect(_photo_nonempty(photo["subject"]), f"{path}.subject must be non-empty")
+            expect(isinstance(photo["pedagogical_constraint"], str), f"{path}.pedagogical_constraint must be a string")
+            for field, value in _photo_text_values(photo):
+                crop = _PHOTO_CROP_RE.search(value)
+                if crop:
+                    raise ContractError(
+                        f"photo contract route error: {path}.{field} asks for the picture to be "
+                        f"cropped or cut up ({crop.group(0)!r}). Nothing downstream crops a "
+                        "delivered picture: the file arrives whole and every slide that names it "
+                        "shows all of it, so panels drawn for three teaching moments put all three "
+                        "on each of those slides - a later turn's questions on an earlier turn, its "
+                        "answers in front of the class before they have worked, and every panel a "
+                        "fraction of the size it would have had alone. Give each visual its own "
+                        "photo object with its own filename, describing only what that one moment "
+                        "shows. This costs the same number of images and each arrives at full size."
+                    )
+                if _PHOTO_URL_RE.search(value):
+                    raise ContractError(
+                        f"photo contract route error: {path}.{field} contains a web address. "
+                        "Finding the file is the Image Scout's job and it searches by subject, so a "
+                        "link here is a promise nothing downstream can keep. Say what the picture must "
+                        "show instead, naming the institution that holds it where you know it - "
+                        "\"the Ford End School classroom around 1900, held by Essex Record Office\" - "
+                        "and the scout's ladder (Unsplash, Wikimedia, Openverse, then that institution's "
+                        "own page) will reach it."
+                    )
+            expect(_photo_nonempty(photo["teaching_requirement"]), f"{path}.teaching_requirement must be non-empty")
+            evidence = photo["load_bearing_evidence"]
+            expect(isinstance(evidence, list) and evidence and all(_photo_nonempty(v) for v in evidence),
+                   f"{path}.load_bearing_evidence must be a non-empty list of non-empty strings")
+            expect(photo["use"] in PHOTO_USES, f"{path}.use must be one of {sorted(PHOTO_USES)}")
+            expect(type(photo["essential"]) is bool, f"{path}.essential must be boolean")
+            filename = photo["filename"]
+            expect(_photo_filename_safe(filename), f"{path}.filename is unsafe")
+            expect(filename not in by_filename, f"duplicate photo filename: {filename}")
+            by_filename[filename] = photo
+            acquisition = photo["acquisition_mode"]
+            source = photo["source_profile"]
+            fallback = photo["fallback_action"]
+            coherent_mode = photo["coherent_mode"]
+            expect(acquisition in PHOTO_ACQUISITION_MODES,
+                   f"photo contract route error: {path}.acquisition_mode is invalid")
+            expect(source in PHOTO_SOURCE_PROFILES,
+                   f"photo contract route error: {path}.source_profile is invalid")
+            expect(fallback in PHOTO_FALLBACK_ACTIONS,
+                   f"photo contract route error: {path}.fallback_action is invalid")
+            expect(coherent_mode in PHOTO_COHERENT_MODES,
+                   f"photo contract coherence error: {path}.coherent_mode is invalid")
+            note = photo["fallback_note"]
+            expect(note is None or isinstance(note, str), f"{path}.fallback_note must be null or a string")
+            prompt = photo["generation_prompt"]
+            prompt_required = (acquisition == "controlled-ai" or fallback == "ai")
+            if prompt_required:
+                expect(_photo_prompt_valid(prompt),
+                       f"photo contract route error: {path}.generation_prompt is incomplete")
             else:
-                expect(prompt is None, f"photo contract route error: {path} ordinary-real without AI fallback requires a null generation prompt")
-            # ordinary-real means authenticity is not load-bearing, so a
-            # faithful generated photograph does the same teaching job.
-            # Refusing that substitute is what leaves a picture undelivered.
-            expect(fallback != "unsatisfied",
-                   f"photo contract route error: {path} ordinary-real cannot use fallback_action unsatisfied; "
-                   f"use ai, or omit when the picture is not essential")
-            if photo["essential"] and fallback != "ai":
-                # An all-real set forbids the AI fallback this member needs, so
-                # the whole comparison can arrive empty. A matched generated set
-                # also gives the shared framing a comparison depends on.
-                expect(coherent_mode != "all-real",
-                       f"photo contract coherence error: {path} an essential ordinary-real member of an all-real set "
-                       f"has no way to be delivered; use all-generated with controlled-ai members, or authentic-real "
-                       f"members when real origin is the evidence")
-                raise ContractError(
-                    f"photo contract route error: {path} an essential ordinary-real picture requires fallback_action ai "
-                    f"with a complete generation_prompt; use authentic-real only when a generated photograph would misteach")
-        elif acquisition == "controlled-ai":
-            expect(source == "none", f"photo contract route error: {path} controlled-ai requires source_profile none")
-            expect(_photo_prompt_valid(prompt), f"photo contract route error: {path} controlled-ai requires a complete generation prompt")
-            expect(fallback != "ai", f"photo contract route error: {path} controlled-ai cannot use fallback_action ai")
+                expect(prompt is None,
+                       f"photo contract route error: {path}.generation_prompt must be null when AI is not authorised")
+            group = photo["coherent_group"]
+            invariants = photo["coherent_visual_invariants"]
+            if group is None:
+                expect(coherent_mode == "none" and invariants == [],
+                       f"photo contract coherence error: {path} null group requires mode none and [] invariants")
+            else:
+                expect(_photo_nonempty(group), f"photo contract coherence error: {path}.coherent_group is invalid")
+                expect(isinstance(invariants, list) and invariants and all(_photo_nonempty(v) for v in invariants),
+                       f"photo contract coherence error: {path}.coherent_visual_invariants is invalid")
+                groups.setdefault(group, []).append(photo)
 
-        semantic = {key: photo[key] for key in PHOTO_V2_FIELDS if key not in {"id", "filename"}}
-        semantic_key = json.dumps(semantic, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-        if semantic_key in semantic_seen:
-            old_id, old_filename = semantic_seen[semantic_key]
-            raise ContractError(f"duplicate exact photo contract: {old_id}/{old_filename} and {photo_id}/{filename}")
-        semantic_seen[semantic_key] = (photo_id, filename)
+            if acquisition == "authentic-real":
+                expect(source != "none", f"photo contract route error: {path} authentic-real requires a real source profile")
+                expect(fallback != "ai", f"photo contract route error: {path} authentic-real cannot fall back to AI")
+                expect(prompt is None, f"photo contract route error: {path} authentic-real requires a null generation prompt")
+                # authentic-real is the only route that can end a lesson with no
+                # picture and no authorised substitute, so the reason has to be
+                # written down rather than reached by default.
+                expect(_photo_nonempty(note),
+                       f"photo contract route error: {path} authentic-real requires a fallback_note saying why a "
+                       f"faithful generated photograph would misteach; use ordinary-real when it would not")
+            elif acquisition == "ordinary-real":
+                expect(source != "none", f"photo contract route error: {path} ordinary-real requires a real source profile")
+                if fallback == "ai":
+                    expect(_photo_prompt_valid(prompt), f"photo contract route error: {path} ordinary-real AI fallback requires a complete generation prompt")
+                else:
+                    expect(prompt is None, f"photo contract route error: {path} ordinary-real without AI fallback requires a null generation prompt")
+                # ordinary-real means authenticity is not load-bearing, so a
+                # faithful generated photograph does the same teaching job.
+                # Refusing that substitute is what leaves a picture undelivered.
+                expect(fallback != "unsatisfied",
+                       f"photo contract route error: {path} ordinary-real cannot use fallback_action unsatisfied; "
+                       f"use ai, or omit when the picture is not essential")
+                if photo["essential"] and fallback != "ai":
+                    # An all-real set forbids the AI fallback this member needs, so
+                    # the whole comparison can arrive empty. A matched generated set
+                    # also gives the shared framing a comparison depends on.
+                    expect(coherent_mode != "all-real",
+                           f"photo contract coherence error: {path} an essential ordinary-real member of an all-real set "
+                           f"has no way to be delivered; use all-generated with controlled-ai members, or authentic-real "
+                           f"members when real origin is the evidence")
+                    raise ContractError(
+                        f"photo contract route error: {path} an essential ordinary-real picture requires fallback_action ai "
+                        f"with a complete generation_prompt; use authentic-real only when a generated photograph would misteach")
+            elif acquisition == "controlled-ai":
+                expect(source == "none", f"photo contract route error: {path} controlled-ai requires source_profile none")
+                expect(_photo_prompt_valid(prompt), f"photo contract route error: {path} controlled-ai requires a complete generation prompt")
+                expect(fallback != "ai", f"photo contract route error: {path} controlled-ai cannot use fallback_action ai")
+
+            semantic = {key: photo[key] for key in PHOTO_V2_FIELDS if key not in {"id", "filename"}}
+            semantic_key = json.dumps(semantic, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            if semantic_key in semantic_seen:
+                old_id, old_filename = semantic_seen[semantic_key]
+                raise ContractError(f"duplicate exact photo contract: {old_id}/{old_filename} and {photo_id}/{filename}")
+            semantic_seen[semantic_key] = (photo_id, filename)
 
     for group, members in groups.items():
         modes = {member["coherent_mode"] for member in members}
@@ -3164,6 +3176,7 @@ def run_design_checks(
     photo_items, photo_by_id = validate_photo_contract_v2(
         photos,
         initial_photo_namespace=initial_photo_namespace,
+        faults=faults,
     )
 
     for prefix in ("photo-", "adaptation-photo-"):

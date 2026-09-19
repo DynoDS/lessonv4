@@ -1,5 +1,21 @@
 # Build review log
 
+## 2026-09-19 Every picture brief is judged on its own (4.2.251)
+
+Daniel, after 4.2.250: "Are there other agents that need this fix then?"
+
+**The survey.** Every other check an agent repairs against already reports its faults together: the slide check (4.2.214), the deck spec validator, the run report check, the working wall evidence check, helper coverage, the picture checks. The design check was the last one stopping at the first fault, and no other agent needs the repair.
+
+One check in the same run did. `validate_photo_contract_v2` judges each picture brief in a loop and raised on the first fault it met, so a designer writing a dozen briefs and getting three independently wrong - an empty subject here, a missing teaching requirement there, an essential ordinary-real picture with no AI route - was told about one, spent a pass, and met the next. It feeds the Lesson Designer's repair budget, which is the budget 4.2.250 was about.
+
+**The change.** Each brief's semantic checks run in a section, so every bad brief is named in the same report. The shape checks above them stay where they were: `by_id` is returned and every later check reads it, so a brief whose id, keys or filename are wrong still ends the pass where it happens.
+
+**Why continuing is safe here.** The group rules after the loop read the members a brief was added to. A brief that failed before it joined its group leaves that group smaller, which can only make `identical mode and invariants`, `all-real`, `all-generated` and `larger than four` more lenient, never falsely strict. A fault missed that way is reported on the next run, once the brief's own fault is repaired.
+
+**Evidence.** Two briefs broken independently now name both (`photos[0].subject` and `photos[1].teaching_requirement`); on the committed 4.2.250 code the same design reported only the first. A brief missing a key still stops at the shape. Full design suite 1962 pass, the same 9 pre-existing failures as baseline, none new.
+
+**Not done.** The focused repair door for the Lesson Designer. Not yet run on Codex.
+
 ## 2026-09-19 The design check reports every fault, not the first one (4.2.250)
 
 Daniel, on a Year 4 rounding run whose Lesson Designer came back `LESSON_DESIGN_CHECK_FAILED` over a single vocabulary card: "shouldnt it work anyway, and 2 couldnt it have edited itself?"
@@ -2767,3 +2783,12 @@ Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-pa
 - The helper catalogue lacks a single named portrait and speech bubble visual even though slide speech-bubble templates and worksheet speech-scene layouts can supply one; helper coverage reports a gap that rendered resources may still fill.
 
 - The PowerPoint render probe had no established Office route, leaving slide visual measurement unverified.
+
+## 2026-09-19 - Year 4 Maths: Round to 10, 100 or 1,000
+
+*Built by lesson-v4 4.2.249.*
+
+
+- The place-value-chart answer rows cannot apply reveal styling to answer digits; answer slides render those digits in black.
+
+- The slide success-criteria panel reduces five rounding steps to 18pt across six slides.

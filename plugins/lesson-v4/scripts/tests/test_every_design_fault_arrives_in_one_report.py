@@ -31,6 +31,7 @@ SPEC.loader.exec_module(contract)
 
 module = contract.module
 valid_content_contract = contract.valid_content_contract
+photo_requirement = contract.photo_requirement
 
 
 def scheduled_after_starter(design):
@@ -97,3 +98,42 @@ def test_a_broken_shape_still_stops_at_the_shape():
         raise AssertionError("a broken sequence unexpectedly validated")
 
     assert "teachingSequence" in report, report
+
+
+def test_two_bad_picture_briefs_are_both_named():
+    """A designer writing a dozen briefs can get several independently wrong.
+    Naming one at a time spends a repair pass per brief."""
+    design, photos = valid_content_contract()
+    photos["photos"] = [
+        photo_requirement("photo-001", "a forest road", "forest-road.jpg"),
+        photo_requirement("photo-002", "a logging lorry", "logging-lorry.jpg"),
+    ]
+    photos["photos"][0]["subject"] = ""
+    photos["photos"][1]["teaching_requirement"] = ""
+
+    try:
+        module.validate_design(design, photos)
+    except module.ContractError as exc:
+        report = str(exc)
+    else:
+        raise AssertionError("two bad briefs unexpectedly validated")
+
+    assert "photos[0].subject" in report, report
+    assert "photos[1].teaching_requirement" in report, report
+
+
+def test_a_brief_with_a_broken_shape_still_stops_the_pass():
+    """`by_id` is returned and every later check reads it, so a brief whose
+    keys are wrong cannot be carried past."""
+    design, photos = valid_content_contract()
+    photos["photos"] = [photo_requirement("photo-001", "a forest road", "forest-road.jpg")]
+    photos["photos"][0].pop("subject")
+
+    try:
+        module.validate_design(design, photos)
+    except module.ContractError as exc:
+        report = str(exc)
+    else:
+        raise AssertionError("a malformed brief unexpectedly validated")
+
+    assert "photos[0]" in report, report
