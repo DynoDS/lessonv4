@@ -34,6 +34,8 @@
 //              blank row for live completion.
 //     label      what the row IS ("3,462", "10 more"), in a column at the left
 //     highlight  which cell(s) changed, by column name or index
+//     answer     true prints this row's digits in answer green with no ring:
+//                the row is a result, not the number the question started from
 //     counters   { Th: 3, H: 4, ... } place-value counters above the digits
 //     counterLabels  true prints each counter's value on it
 //   title      a heading above a stacked chart (the wall's)
@@ -350,6 +352,7 @@ function normaliseRow(row, columns) {
     counters: populations(row.counters),
     counterLabels: row.counterLabels === true,
     digits: row.digits !== false,
+    answer: row.answer === true,
   };
 }
 
@@ -788,7 +791,20 @@ function describeStacked(chart, profile) {
           const picked = !isDot && row.picked.has(i);
           const text = isDot ? (hasDigits ? '.' : '') : str(row.cells[i]);
           cells.push({ role: text === '' ? 'write' : 'digit', column: c, x: cx, y: dy, w: colWs[i], h: digitH, fill: columnFills(profile, c)[1] });
-          if (text !== '') texts.push({ role: 'digit', text, x: cx + colWs[i] / 2, y: dy, h: digitH, pt: D, fill: picked ? pal.ring : pal.text, picked });
+          // Green says "this number is the result of working something out".
+          // A RINGED cell says something narrower - "this is the digit that
+          // changed" - and rings one cell in one picture, so it could never
+          // say "all twelve of these are the answer". An answer slide showing a
+          // completed chart printed its digits in plain black beside the
+          // original number, which is the one thing on the slide that is NOT an
+          // answer (the teacher, 19 September 2026: "I wish the answers on slide
+          // 5 and 7, in the table were green"). `answer: true` on a row colours
+          // its digits and adds no ring, so a reveal reads as a reveal and the
+          // ring keeps its own meaning. Correctness is not the test: in the same
+          // edit he greened a worked chain that was wrong, because green marks
+          // what the number IS, not whether it is right.
+          const revealed = !isDot && row.answer && text !== '';
+          if (text !== '') texts.push({ role: 'digit', text, x: cx + colWs[i] / 2, y: dy, h: digitH, pt: D, fill: (picked || revealed) ? pal.ring : pal.text, picked });
           if (picked) rings.push({ x: cx + ringInset, y: dy + ringInset, w: colWs[i] - 2 * ringInset, h: digitH - 2 * ringInset, sw: ringW, column: c });
           cx += colWs[i];
         });

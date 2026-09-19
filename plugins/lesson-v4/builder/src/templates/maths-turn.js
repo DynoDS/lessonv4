@@ -2,6 +2,7 @@
 
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, CARD } = require('../styles');
 const { drawHeader } = require('../headers');
+const { colourInlineLabels } = require('../question-labels');
 const { drawContent } = require('../content');
 const {
   baseColourForRole,
@@ -256,7 +257,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
       }
       const labelledSource = entry.source || {};
       const labelledColor = baseColourForRole(COLOURS.body, labelledSource.colorRole);
-      slide.addText(presentationRuns(parsed.text, true, labelledColor, labelledSource), {
+      slide.addText(colourInlineLabels(presentationRuns(parsed.text, true, labelledColor, labelledSource), COLOURS.questionLabel, labelledColor), {
         x: box.x + Q_PAD + LABEL_W + LABEL_GAP + ownPictureSlotW, y: rowY,
         w: box.w - 2 * Q_PAD - LABEL_W - LABEL_GAP - answerGutterW - ownPictureSlotW, h: rowH,
         fontFace: FONT, fontSize: questionFont, bold: true,
@@ -275,7 +276,7 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
       }
       const plainSource = entry.source || {};
       const plainColor = baseColourForRole(COLOURS.body, plainSource.colorRole);
-      slide.addText(presentationRuns(parsed.text, true, plainColor, plainSource), {
+      slide.addText(colourInlineLabels(presentationRuns(parsed.text, true, plainColor, plainSource), COLOURS.questionLabel, plainColor), {
         x: box.x + Q_PAD + ownPictureSlotW, y: rowY,
         w: box.w - 2 * Q_PAD - answerGutterW - ownPictureSlotW, h: rowH,
         fontFace: FONT, fontSize: questionFont, bold: true,

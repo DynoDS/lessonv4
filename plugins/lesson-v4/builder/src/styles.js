@@ -39,6 +39,32 @@ const SUBJECT_COLOURS = {
   Maths: 'D5E3F0'
 };
 
+// Ceilings, in points. Several sat below MIN_FONT_PT, which is incoherent: a
+// ceiling under the floor caps its text below the smallest size the deck says
+// may reach a classroom. The unread ones were raised to the floor on
+// 19 September 2026 so none can be wired up later as a quiet trap, and a test
+// holds them there.
+//
+// `instruction` is the exception, and it is left at 16 ON PURPOSE with its
+// evidence, because it is the one the builder actually reads. `headers.js` hands
+// it straight to the slide with no growth and no floor check, so every header
+// cue in every deck prints at this size, under the 18 the board holds to. Raising
+// it to 18 was tried and backed out the same day: the band is 5.06in and holds
+// about 37 characters at 18pt, and a survey of 2,250 header instructions across
+// 19 built lessons found 681 of them, close to a third, longer than that. Every
+// one would have turned into a TEXT_OVERLOAD, so a deck in three would carry a
+// fault about its header furniture. That is the cry-wolf failure this same day's
+// work was spent removing from the size check, and it would have buried the real
+// faults again.
+//
+// The floor cannot be lowered for one shape either: `shape_floor` in
+// fit_text_postprocess.py only ever RAISES a floor, deliberately.
+//
+// So this stays a known open fault, and the repair is upstream rather than here:
+// a header instruction is meant to be a short secondary cue ("Use the word bank"),
+// the teacher deleted this deck's as "pointless", and a third of them being too
+// long to read says the field is being used for something it is not for. Fix what
+// gets written into it, then this can come up to the floor and stay there.
 const SIZE_CEILINGS = {
   slideTitle:       28,
   instruction:      16,
@@ -53,15 +79,15 @@ const SIZE_CEILINGS = {
   stepBadge:        20,
   mathsQuestion:    28,
   question:         18,
-  scStep:           14,
-  scLabel:          13,
-  tableHeader:      14,
-  tableCell:        13,
-  caption:          12,
+  scStep:           18,
+  scLabel:          18,
+  tableHeader:      18,
+  tableCell:        18,
+  caption:          18,
   teachHeading:     18,
-  teachBody:        16,
+  teachBody:        18,
   numberBoxDigit:   28,
-  annotationLabel:  14
+  annotationLabel:  18
 };
 
 const FIT = 'shrink';

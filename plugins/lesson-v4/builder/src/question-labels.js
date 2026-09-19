@@ -142,6 +142,79 @@ function numberRowItems(data, where = 'row') {
   );
 }
 
+
+// A label the DESIGNER typed inside the question, printed in the label's colour.
+//
+// The engine already colours the labels it generates itself: a teacher-led set
+// of separate questions gets "(a)", "(b)", "(c)" in `COLOURS.questionLabel`.
+// But a designer may write one question whose text carries its own parts -
+// "Round 3,449 to the nearest:" followed by "(a) 10", "(b) 100" and "(c) 1,000"
+// on their own lines is ONE question
+// string, so there is nothing for the generator to label and the brackets print
+// as ordinary black words. The same deck then shows generated labels in purple
+// three slides earlier, so one convention appeared twice in two colours and the
+// teacher recoloured all of them by hand (19 September 2026).
+//
+// Only a label at the START OF A LINE is recoloured, and only where the run is
+// still the base colour: an answer reveal, an emphasis colour or a sticky word
+// has already been coloured for a reason, and a question that happens to
+// mention "(a)" mid-sentence is talking about a part, not labelling one.
+const NEWLINE = String.fromCharCode(10);
+
+// Does any line in this text begin with a bracketed label?
+function hasInlineLabel(text) {
+  return String(text).split(NEWLINE).some((line) => PREFIX.test(line));
+}
+
+function colourInlineLabels(runs, labelColor, baseColor, bold) {
+  if (!labelColor) return runs;
+  // Question text with no markers in it arrives as a plain string, which is
+  // most question text: only a string carrying an answer reveal or an emphasis
+  // range has already been split into runs. Promote it only when there is
+  // actually a label to colour, so ordinary text keeps travelling as a string.
+  if (typeof runs === 'string') {
+    if (!hasInlineLabel(runs)) return runs;
+    runs = [{ text: runs, options: { color: baseColor, bold: bold !== false } }];
+  }
+  if (!Array.isArray(runs)) return runs;
+  const out = [];
+  let atLineStart = true;
+  runs.forEach((run) => {
+    const text = String((run && run.text) || '');
+    const sameColour = !baseColor || !run.options || !run.options.color
+      || String(run.options.color).toLowerCase() === String(baseColor).toLowerCase();
+    if (!text) { out.push(run); return; }
+    if (!atLineStart || !sameColour) {
+      out.push(run);
+      atLineStart = text.endsWith(NEWLINE);
+      return;
+    }
+    // A run can hold several lines at once, so each line is judged on its own
+    // and the run is rebuilt from the pieces.
+    //
+    // The break is emitted as a run of its own and never left on the end of a
+    // line's text, which is the rule `presentation-text.js` states and the
+    // reason it states it: the deck library splits a run holding a newline
+    // leaves its last line waiting for the next run to break it, which put a
+    // Year 4 PSHE line on the wrong row on 8 September 2026. Colouring a label
+    // turns one run into several, so this route can hit it just as easily.
+    const lines = text.split(NEWLINE);
+    lines.forEach((line, i) => {
+      const lead = (i === 0 && !atLineStart) ? null : PREFIX.exec(line);
+      if (lead) {
+        out.push({ text: line.slice(0, lead[0].length), options: Object.assign({}, run.options, { color: labelColor }) });
+        const rest = line.slice(lead[0].length);
+        if (rest) out.push({ text: rest, options: run.options });
+      } else if (line) {
+        out.push({ text: line, options: run.options });
+      }
+      if (i < lines.length - 1) out.push({ text: NEWLINE, options: run.options });
+    });
+    atLineStart = text.endsWith(NEWLINE);
+  });
+  return out;
+}
+
 module.exports = {
   PREFIX,
   canonical,
@@ -149,4 +222,5 @@ module.exports = {
   labelsForRow,
   numberRowItems,
   validatePositiveInteger,
+  colourInlineLabels,
 };

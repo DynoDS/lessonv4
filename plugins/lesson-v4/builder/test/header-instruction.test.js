@@ -7,6 +7,15 @@ const {
   drawTitleHeader,
   drawStarterHeader
 } = require('../src/headers');
+const { HEADER_TITLE, HEADER_STARTER } = require('../src/layout');
+
+// "Compact" means the pill hugs its cue instead of running the width of the
+// band it sits in, so the bound is read off the band rather than written out.
+// It was a flat 2.7in, which silently encoded the old 16pt instruction size:
+// raising that to the deck's 18pt floor (19 September 2026) made the same
+// seventeen characters 2.74in wide and failed a test whose point had not
+// changed. A cue that hugs is comfortably under two thirds of its band.
+const HUGS = (band) => band * 0.66;
 
 function capture(drawer, data) {
   const shapes = [];
@@ -54,7 +63,7 @@ test('a short title-header cue gets a compact right-side pill', () => {
   );
 
   assert.ok(pill);
-  assert.ok(pill.w < 2.7);
+  assert.ok(pill.w < HUGS(HEADER_TITLE.instructionW), `pill ${pill.w}in`);
   assert.ok(instruction);
   assert.equal(instruction.align, 'right');
 });
@@ -78,7 +87,7 @@ test('a short starter-header cue also keeps the compact pill', () => {
   assert.ok(instruction);
   const pill = result.shapes.find(
     (shape) =>
-      shape.w < 2.7 &&
+      shape.w < HUGS(HEADER_STARTER.instructionW) &&
       shape.h < 1
   );
   assert.ok(pill);

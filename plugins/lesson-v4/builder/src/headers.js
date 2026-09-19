@@ -90,7 +90,20 @@ function drawTitleHeader(slide, data, ctx) {
 
 function drawStarterHeader(slide, data, ctx) {
   const dateText = 'Date';
-  const lo = data.lo || '';
+  // The objective the lesson already knows, when the slide did not repeat it.
+  //
+  // This printed only when the STARTER SLIDE carried its own `lo`, and a slide
+  // spec that left the field out simply had no objective on it: the Round to
+  // 10, 100 or 1,000 deck opened on "Date" and "Starter" with an empty slot
+  // where the objective goes, and the class never saw what they were learning.
+  // The teacher typed it in by hand (19 September 2026). `lesson.json` had it
+  // at the top the whole time - `build.js` was already reading it for the file's
+  // own properties - so the deck was throwing away something it held.
+  //
+  // A designer who writes `lo` on the slide still wins: a lesson whose starter
+  // deliberately names a narrower objective than the lesson's own keeps it.
+  // This is the floor, not an override.
+  const lo = data.lo || (ctx && ctx.lesson && ctx.lesson.lo) || '';
   // "Starter" is the opening slide's heading in every lesson, always. Anything
   // the designer wants said there - a retrieval question, a prompt - is a line
   // of its own underneath, so the class still sees which part of the lesson
