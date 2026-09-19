@@ -17,7 +17,7 @@
 // stemmer cuts the word back to "coop" and `chicken coop` outranks the lot.
 //
 // So the word scorer keeps the job it is good at: casting a wide, cheap net
-// over 135,000 names without opening a single file. This module puts that net
+// over 261,000 names without opening a single file. This module puts that net
 // in order of meaning, and answers the one question the scorer cannot ask at
 // all - whether anything in the net shows the thing - so "nothing here fits"
 // becomes an answer the caller can act on rather than the least-bad filename
@@ -109,19 +109,30 @@ function labelOf(libraryId) {
   return file.replace(/\.svg$/, "").replace(/-/g, " ");
 }
 
-// The same drawing exists in up to three styles under the same name, and the
+const STYLE_PREFERENCE = Object.freeze(["standard", "cartoon", "solid", "inkbrush", "blockprint"]);
+
+// The same drawing exists in up to five styles under the same name, and the
 // caller has already filtered to the styles it wants. Ranking the duplicates
-// would spend shortlist places on one drawing three times over, which is how
-// today's search offers a cartoon and a standard chicken coop in the same
-// twelve.
+// would spend shortlist places on one drawing five times over. When several
+// styles are available, keep the established standard/cartoon/solid choice
+// before the newly imported ink-brush and block-print variants.
 function uniqueByLabel(candidates) {
   const seen = new Map();
   for (const candidate of candidates || []) {
     if (!candidate || !candidate.libraryId) continue;
     const label = candidate.label || labelOf(candidate.libraryId);
-    if (!seen.has(label)) seen.set(label, { ...candidate, label });
+    const current = seen.get(label);
+    if (!current || styleRank(candidate) < styleRank(current)) {
+      seen.set(label, { ...candidate, label });
+    }
   }
   return [...seen.values()];
+}
+
+function styleRank(candidate) {
+  const style = candidate.style || candidate.libraryId.split("/", 1)[0];
+  const rank = STYLE_PREFERENCE.indexOf(style);
+  return rank === -1 ? STYLE_PREFERENCE.length : rank;
 }
 
 function questionsFor(labels) {
@@ -354,5 +365,6 @@ module.exports = {
   postJson,
   questionsFor,
   rankBySense,
+  styleRank,
   uniqueByLabel,
 };

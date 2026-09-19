@@ -88,7 +88,7 @@ BIAS_EVIDENCE_MINIMUM = 40
 # The two reasons that are claims about the drawn page, and are settled by it.
 ROOM_CHECKED_REASONS = {"full", "competes"}
 
-LIBRARY_ID_RE = re.compile(r"^(standard|cartoon|solid)/[^/]+/[^/]+\.svg$")
+LIBRARY_ID_RE = re.compile(r"^(standard|cartoon|solid|inkbrush|blockprint)/[a-z0-9]{1,2}/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$")
 
 
 class PassError(ValueError):
@@ -205,7 +205,7 @@ def library_ids(library_root: Path) -> set[str]:
 
     library = library_root / "library"
     if library.is_dir():
-        for style in ("standard", "cartoon", "solid"):
+        for style in ("standard", "cartoon", "solid", "inkbrush", "blockprint"):
             style_root = library / style
             if not style_root.is_dir():
                 continue

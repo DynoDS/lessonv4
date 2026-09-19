@@ -14,6 +14,7 @@ const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const {
   cacheRoot,
   hasDrawings,
+  LIBRARY_ID_RE,
   LOCAL_ROOT_VARIABLE,
   resolveLibrary,
 } = require("../shared/educational-svg-library");
@@ -58,7 +59,7 @@ function inspectLibrarySvg(candidateSvgPath, libraryRoot) {
   }
 
   const libraryId = path.relative(libraryReal, candidateReal).split(path.sep).join("/");
-  if (!/^(?:standard|cartoon|solid)\/[a-z0-9]{2}\/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/.test(libraryId)) {
+  if (!LIBRARY_ID_RE.test(libraryId)) {
     throw new Error(`Candidate has an invalid Educational SVG library path: ${libraryId}`);
   }
 

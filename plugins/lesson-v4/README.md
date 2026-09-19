@@ -78,13 +78,13 @@ The compatibility builder-agent files remain packaged for direct or legacy use.
 
 Every filename has at most two AI calls in its immutable ledger. The scout's own batch review is where crop, teaching meaning and set coherence are judged; after the deck is built, the Slide Designer looks at it once more to check each photograph reads in the room it was given.
 
-Optional P2 and P3 drawings come from the Educational SVG library: 135,607
+Optional P2 and P3 drawings come from the Educational SVG library: 261,740
 drawings living in their own repository, [DynoDS/educational-svg][svg-repo].
 That repository is fetched, never cloned. This package ships only the index of
 drawing names, which is all a search needs, and each chosen drawing is pulled on
 its own into `~/.educational-svg` and kept there. So installing this plugin
-downloads under a megabyte of library rather than 940 MB of it, and the cache
-outlives every reinstall.
+downloads only the few drawings a lesson chooses rather than about 1.8 GB of it,
+and the cache outlives every reinstall.
 
 `publish-educational-svg.js --resolve-root` reports where this run's drawings
 live: a full local copy when `LESSON_EDUCATIONAL_SVG_ROOT` names one, otherwise

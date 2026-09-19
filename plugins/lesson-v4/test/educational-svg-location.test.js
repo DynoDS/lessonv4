@@ -3,7 +3,7 @@
 // The drawings are a large shared asset set, and where they live has now failed
 // in two different ways worth keeping tests against.
 //
-// First they were copied into the package. That put 135,610 files into the
+// First they were copied into the package. That put 261,740 files into the
 // history of the repository people install from, and git history is for ever:
 // long after the files were deleted again, every install still downloaded about
 // 290 MB of them. So the package must carry the index and no drawings, and a
@@ -95,7 +95,7 @@ test("the index really lists the whole library", () => {
   assert.ok(ids.length > 100000, `expected the full library, got ${ids.length} drawings`);
   assert.equal(new Set(ids).size, ids.length, "the index must not repeat a drawing");
 
-  const shape = /^(?:standard|cartoon|solid)\/[a-z0-9]{2}\/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/;
+  const shape = /^(?:standard|cartoon|solid|inkbrush|blockprint)\/[a-z0-9]{1,2}\/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/;
   for (const id of ids) {
     // A path the publisher would refuse is worse in the index than absent from
     // it: it ranks, gets chosen, and fails at the one point where the picture

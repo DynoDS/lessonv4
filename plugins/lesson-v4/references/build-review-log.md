@@ -331,7 +331,7 @@ cuts the word to "coop" and `chicken coop` scores 42 against everything else's
 18, so a barrel maker's bench beat every drawing of people cooperating.
 
 **What changed.** The word scorer keeps the job it is good at, casting a wide
-cheap net over 135,000 names without opening a file, and the net is now 400
+cheap net over 261,000 names without opening a file, and the net is now 400
 names rather than twelve because gathering names costs nothing. A new
 `shared/educational-svg-rank.js` puts that net in order of what the request
 means, then the caller takes the top few. `--about` carries the requirement in

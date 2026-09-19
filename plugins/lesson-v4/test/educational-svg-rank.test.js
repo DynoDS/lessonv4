@@ -112,11 +112,13 @@ test("a missing key file is reported, not thrown", () => {
   assert.match(reason, /no file to read/);
 });
 
-test("one drawing in three styles takes one place, not three", () => {
+test("one drawing in five styles takes one place, preferring the established style", () => {
   const pool = [
-    ...candidates(["group-studying-together"], { style: "standard" }),
-    ...candidates(["group-studying-together"], { style: "cartoon" }),
+    ...candidates(["group-studying-together"], { style: "blockprint" }),
+    ...candidates(["group-studying-together"], { style: "inkbrush" }),
     ...candidates(["group-studying-together"], { style: "solid" }),
+    ...candidates(["group-studying-together"], { style: "cartoon" }),
+    ...candidates(["group-studying-together"], { style: "standard" }),
     ...candidates(["birthday-cake-work"]),
   ];
   const unique = rank.uniqueByLabel(pool);
@@ -124,6 +126,7 @@ test("one drawing in three styles takes one place, not three", () => {
     unique.map((entry) => entry.label),
     ["group studying together", "birthday cake work"]
   );
+  assert.equal(unique[0].style, "standard");
 });
 
 test("every drawing in the batch is an option the model can actually choose", () => {

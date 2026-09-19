@@ -45,7 +45,7 @@ function usage(message) {
   console.error(
     'Usage: node search-educational-svg.js --query "lit candle" [--query "candle flame"] ' +
       '[--about "what the picture has to show"] ' +
-      "[--style standard,cartoon,solid] [--limit 12] [--no-fetch]"
+      "[--style standard,cartoon,solid,inkbrush,blockprint] [--limit 12] [--no-fetch]"
   );
   process.exit(2);
 }
@@ -88,7 +88,7 @@ function parseArgs(argv) {
   if (!options.queries.length) usage("At least one --query is required.");
   if (options.queries.length > 6) usage("Use no more than six queries.");
   if (options.styles.some((style) => !STYLES.includes(style))) {
-    usage("--style must use standard, cartoon, or solid.");
+    usage("--style must use standard, cartoon, solid, inkbrush, or blockprint.");
   }
   if (options.limit < 1 || options.limit > 30) usage("--limit must be from 1 to 30.");
   return options;

@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const EDUCATIONAL_SVG_ID_RE = /^(?:standard|cartoon|solid)\/[a-z0-9]{2}\/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/;
+const EDUCATIONAL_SVG_ID_RE = /^(?:standard|cartoon|solid|inkbrush|blockprint)\/[a-z0-9]{1,2}\/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/;
 const SEMANTIC_KEYS = new Set([
   "type",
   "kind",

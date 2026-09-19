@@ -2,7 +2,7 @@
 
 // Where the drawing library is, what is in it, and how one drawing arrives.
 //
-// The library is 135,610 files and about 940 MB. It used to be copied into the
+// The library is 261,740 canonical files and about 1.8 GB. It used to be copied into the
 // plugin, which put every one of those files into the history of the repository
 // people install from, so every install downloaded the whole set for ever after
 // - including long after the files themselves had been deleted again. It was
@@ -26,8 +26,10 @@ const https = require("node:https");
 const tls = require("node:tls");
 const { execFileSync } = require("node:child_process");
 
-const STYLES = Object.freeze(["standard", "cartoon", "solid"]);
-const LIBRARY_ID_RE = /^(?:standard|cartoon|solid)\/[a-z0-9]{2}\/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/;
+const STYLES = Object.freeze(["standard", "cartoon", "solid", "inkbrush", "blockprint"]);
+const STYLE_PREFERENCE = Object.freeze(["standard", "cartoon", "solid", "inkbrush", "blockprint"]);
+const LIBRARY_ID_RE = /^(?:standard|cartoon|solid|inkbrush|blockprint)\/[a-z0-9]{1,2}\/[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/;
+const LEGACY_SOLID_ALIAS_RE = /^standard\/[a-z0-9]{1,2}\/solid-[a-z0-9]+(?:-[a-z0-9]+)*\.svg$/;
 
 const LOCAL_ROOT_VARIABLE = "LESSON_EDUCATIONAL_SVG_ROOT";
 const CACHE_VARIABLE = "LESSON_EDUCATIONAL_SVG_CACHE";
@@ -87,6 +89,30 @@ function offline(env) {
   return configured === "1" || configured === "true" || configured === "yes";
 }
 
+// Before the library had a canonical Solid folder, 1,461 Solid files were
+// copied into standard/ with a `solid-` filename prefix. Keep those paths
+// readable for old lesson records, but do not list them as extra drawings when
+// the canonical solid/<prefix>/<name>.svg exists with the same bytes. A few
+// genuine Original drawings also happen to begin with "solid-", so the byte
+// check is intentional rather than treating the prefix alone as an alias.
+function isLegacySolidAlias(libraryId, libraryRoot) {
+  if (!LEGACY_SOLID_ALIAS_RE.test(libraryId) || !libraryRoot) return false;
+  const parts = libraryId.split("/");
+  const filename = parts[2];
+  const slug = filename.slice(0, -4).replace(/^solid-/, "");
+  const prefix = slug.replace(/[^a-z0-9]/g, "").slice(0, 2);
+  const aliasPath = path.join(libraryRoot, ...parts);
+  const canonicalPath = path.join(libraryRoot, "solid", prefix, `${slug}.svg`);
+  try {
+    return (
+      fs.existsSync(canonicalPath) &&
+      fs.readFileSync(aliasPath).equals(fs.readFileSync(canonicalPath))
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
 // -------------------------------------------------------------------- index
 
 let indexCache = null;
@@ -131,7 +157,7 @@ function listLocal(root) {
       })) {
         if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".svg")) continue;
         const id = `${style}/${prefix.name}/${entry.name}`;
-        if (LIBRARY_ID_RE.test(id)) ids.push(id);
+        if (LIBRARY_ID_RE.test(id) && !isLegacySolidAlias(id, library)) ids.push(id);
       }
     }
   }
@@ -515,9 +541,13 @@ function searchIds(ids, { queries, styles = [], limit = 12 }) {
       matchedQuery: best.query,
     });
   }
-  candidates.sort(
-    (left, right) => right.score - left.score || left.libraryId.localeCompare(right.libraryId)
-  );
+  candidates.sort((left, right) => {
+    if (right.score !== left.score) return right.score - left.score;
+    const leftStyle = STYLE_PREFERENCE.indexOf(left.style);
+    const rightStyle = STYLE_PREFERENCE.indexOf(right.style);
+    if (leftStyle !== rightStyle) return leftStyle - rightStyle;
+    return left.libraryId.localeCompare(right.libraryId);
+  });
   return candidates.slice(0, limit);
 }
 
@@ -531,6 +561,7 @@ module.exports = {
   DEFAULT_REF,
   INDEX_PATH,
   LIBRARY_ID_RE,
+  STYLE_PREFERENCE,
   LOCAL_ROOT_VARIABLE,
   CACHE_VARIABLE,
   REPO_VARIABLE,
@@ -541,6 +572,7 @@ module.exports = {
   fetchDrawing,
   fetchDrawings,
   hasDrawings,
+  isLegacySolidAlias,
   indexPath,
   knownIds,
   listLocal,

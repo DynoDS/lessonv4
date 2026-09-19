@@ -698,7 +698,7 @@ useful alternatives:
 `node "[PLUGIN_ROOT]/scripts/search-educational-svg.js" --query "<concept>" --query "<useful-alternative>" --about "<what this picture has to show, in your own words>" --limit 6`
 
 **Always pass `--about`, and pass the requirement rather than the search terms.**
-The queries are words to match against 135,000 file names; `--about` is what the
+The queries are words to match against 261,000 file names; `--about` is what the
 picture actually has to show, and it is the only part of the command that can
 tell hundreds of equally-matching names apart. On a request for "a quiet image
 of cooperation alongside the class agreement", 367 drawings scored identically
@@ -708,7 +708,8 @@ did not. With the requirement passed, the whole pool is put in order of what it
 means and the shortlist is the top of that order, so a smaller `--limit` now
 shows you more rather than less.
 
-Add `--style standard`, `--style cartoon` or `--style solid` only when the
+Add `--style standard`, `--style cartoon`, `--style solid`, `--style inkbrush` or
+`--style blockprint` only when the
 surrounding set needs that style. The search reads the packaged index, so the
 word ranking is the same on every machine, and the command then brings the
 drawings it names onto this one. Each candidate's `sourcePath` is a real file by
