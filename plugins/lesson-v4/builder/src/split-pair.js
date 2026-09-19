@@ -1,6 +1,6 @@
 'use strict';
 
-const { measureContentExtent } = require('./content');
+const { measureContentExtent, measureCompositionExtent } = require('./content');
 
 // Whole-composition alignment for a side-by-side split pair.
 //
@@ -32,17 +32,50 @@ function alignSplitHPair(primaryZone, primaryData, secondaryZone, secondaryData,
     { zone: primaryZone, data: primaryData },
     { zone: secondaryZone, data: secondaryData }
   ];
+  // A container is measured for the sake of its PARTNER, not for its own sake.
+  //
+  // `measureContentExtent` declines a stack or a row on purpose, and the reason
+  // is a real one: a fill text beside a stack is meant to keep the whole zone
+  // precisely because its partner cannot be measured. But that reason is about
+  // the fill text, and the pass was using the same refusal to decide where the
+  // OTHER side sits, so a photograph beside a stack of three cards centred on
+  // the empty zone rather than on the cards. On the estimate slide the cards ran
+  // from 0.60in to 5.11in, centre 2.86, and the photo sat centred at 3.93,
+  // visibly low; the teacher moved it up by hand (19 September 2026).
+  //
+  // So each side keeps the narrow answer for its own behaviour, `measured`, and
+  // gains the broader one, `contentH`, only for settling the pair's height. A
+  // fill text still spans the pair, because `isFillText` is checked first and
+  // nothing here changed what a fill text does.
   sides.forEach((side) => {
-    const extent = measureContentExtent(side.zone, side.data, ctx);
-    side.h = extent ? Math.min(extent.h, side.zone.h) : side.zone.h;
-    side.measured = !!extent;
+    const own = measureContentExtent(side.zone, side.data, ctx);
+    const whole = own || measureCompositionExtent(side.zone, side.data, ctx);
+    side.h = whole ? Math.min(whole.h, side.zone.h) : side.zone.h;
+    side.measured = !!own;
+    side.settles = !!whole;
   });
-  const pairH = Math.max(sides[0].h, sides[1].h);
+  // Two heights, because the two jobs want different answers.
+  //
+  // A fill text spans the pair, and what it may span is unchanged: the NARROW
+  // measure only, so a fill text beside a container still keeps the whole zone,
+  // which is the behaviour that paragraph above protects.
+  //
+  // Centring a shorter member is the job the broad measure was needed for, and
+  // it is safe there because it only ever moves something that was already
+  // going to be drawn shorter than its zone.
+  const spanH = Math.max(
+    sides[0].measured ? sides[0].h : sides[0].zone.h,
+    sides[1].measured ? sides[1].h : sides[1].zone.h
+  );
+  const alignH = Math.max(
+    sides[0].settles ? sides[0].h : sides[0].zone.h,
+    sides[1].settles ? sides[1].h : sides[1].zone.h
+  );
   sides.forEach((side) => {
     if (isFillText(side.data)) {
-      side.zone.h = pairH;
-    } else if (side.measured && side.h < pairH - 0.05) {
-      side.zone.y += (pairH - side.h) / 2;
+      side.zone.h = spanH;
+    } else if (side.measured && side.h < alignH - 0.05) {
+      side.zone.y += (alignH - side.h) / 2;
     }
   });
 }
