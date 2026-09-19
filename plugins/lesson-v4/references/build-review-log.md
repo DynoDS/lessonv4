@@ -1,5 +1,23 @@
 # Build review log
 
+## 2026-09-19 The design check reports every fault, not the first one (4.2.250)
+
+Daniel, on a Year 4 rounding run whose Lesson Designer came back `LESSON_DESIGN_CHECK_FAILED` over a single vocabulary card: "shouldnt it work anyway, and 2 couldnt it have edited itself?"
+
+**What was happening.** `validate-lesson-design.py` raised on the first fault it met, so every run named exactly one thing. The Lesson Designer repairs what it is told and runs the check again, three times, so three runs bought three fixes. The vocabulary placement rule sits late in the order and cannot be reached until everything before it is clean, which is the moment the passes are spent: on this run it was reported and abandoned in the same breath, never once repaired. The orchestrator's only answer to `LESSON_DESIGN_CHECK_FAILED` is a fresh full Lesson Designer, so a card one beat out of place cost a whole relaunch.
+
+This is the fault the slide check had, diagnosed here three days earlier - `One slide check reports every fault, not the first layer` (4.2.214), whose own note says "the last layer could arrive after the slide designer's repair passes were spent". The design check never got the same repair.
+
+**The change.** The independent checks now each run inside a `faults.section()`: a fault is recorded and the pass carries on, and the run ends with every fault it reached, numbered, in one message. The sectioned checks are the route, the Teach-says-it-once rule, the lesson's fit in its slot, idea instances, the vocabulary schedule, the ending, the worksheet, resource opportunities, the slide notes and flags, and the photo-usage tail. A carded word is judged on its own, so a set with two badly placed words names both instead of sending the designer back for the same card twice.
+
+**What still stops the run.** Shape. A field missing or a list that is not a list ends the pass where it happens, because the checks after it read what it was checking and would throw a cascade that buries the fault worth having. Faults found before it are still reported with it. The Lesson Designer's repair instruction now says both halves: repair the whole numbered list before running again, and expect a shape fault's next run to reach further and report more.
+
+`validate_vocabulary_is_used` keeps its old behaviour when called on its own, so a caller running one check by itself still gets the first fault raised at once.
+
+**Evidence.** A design carrying three independent faults now reports all three in one run (vocabulary placement, `ending.kind`, `flagsForTeacher[0]`); before the change it reported only the first. Full design test suite: 1960 pass, with the same 9 pre-existing failures before and after the change and no new ones. New tests cover two independent faults arriving together, a sound design still passing, and a broken sequence still stopping at the shape.
+
+**Not done.** The focused repair door for the Lesson Designer, which every other designer already has, is the next piece. Not yet run on Codex.
+
 ## 2026-09-19 A packed row takes the width it needs (4.2.249)
 
 Daniel, on the Expected slips page: "question one and two have a sort of gap in between and 3B and 3C have a sort of gap and I think that could have been pushed slightly, making the sheet narrower and I feel like that would help just a just a touch". Asked whether he wanted more slips a page from it: "It won't give me more per page. I'm not saying that, but I'm just saying it might look better."

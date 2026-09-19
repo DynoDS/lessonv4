@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 import re
 import sys
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 TOP_LEVEL_FIELDS = {
     "schemaVersion",
@@ -301,6 +302,68 @@ PLACEHOLDER_REPORT_LIMIT = 10
 
 class ContractError(ValueError):
     pass
+
+
+class FaultLog:
+    """Every independent check runs, and every fault comes back together.
+
+    This check used to stop at the first thing it found. The Lesson Designer
+    repairs what it is told and runs the check again, three times, so three runs
+    bought three fixes - and a rule that sits late in the order could only be
+    reached once everything before it was already clean, which is exactly when
+    the passes were spent. A Year 4 rounding lesson (19 September 2026) met the
+    vocabulary placement rule that way: reported on the last look and abandoned
+    in the same breath, never once repaired. The slide check had the same fault
+    and the same repair (`One slide check reports every fault, not the first
+    layer`, 4.2.214).
+
+    Shape still stops the run. A sequence that is not a list leaves the checks
+    after it nothing to read, and a cascade thrown by checks reading a broken
+    shape buries the one fault worth having. So a fault that escapes a section
+    ends the pass, and everything found before it is still reported with it.
+    """
+
+    def __init__(self) -> None:
+        self.faults: list[str] = []
+
+    @contextmanager
+    def section(self) -> Iterator[None]:
+        """Run one independent check; record a fault instead of ending the pass."""
+        try:
+            yield
+        except ContractError as exc:
+            self.add(str(exc))
+
+    def add(self, fault: str) -> None:
+        if fault not in self.faults:
+            self.faults.append(fault)
+
+    def raise_if_any(self) -> None:
+        if not self.faults:
+            return
+        if len(self.faults) == 1:
+            raise ContractError(self.faults[0])
+        body = "\n".join(f"  {n}. {fault}" for n, fault in enumerate(self.faults, 1))
+        raise ContractError(
+            f"{len(self.faults)} faults, every one of them below. Repair them all, "
+            f"then run this check once more.\n{body}"
+        )
+
+
+class RaiseAtOnce:
+    """What a check uses when it is called on its own.
+
+    The design pass collects, because a designer repairing one fault at a time
+    runs out of passes. A test or a caller that runs one check by itself wants
+    the fault the moment it happens, and that is what this gives them.
+    """
+
+    @contextmanager
+    def section(self) -> Iterator[None]:
+        yield
+
+    def add(self, fault: str) -> None:
+        raise ContractError(fault)
 
 
 def collect_unresolved_scaffold_placeholders(
@@ -1255,14 +1318,23 @@ def _word_patterns(term: str) -> list[str]:
 
 
 def validate_vocabulary_is_used(
-    introductions: list[Any], vocab_items: list[dict[str, Any]], sequence: list[dict[str, Any]]
+    introductions: list[Any],
+    vocab_items: list[dict[str, Any]],
+    sequence: list[dict[str, Any]],
+    faults: FaultLog | RaiseAtOnce | None = None,
 ) -> None:
     """A vocabulary slide is there because the beats after it need the word.
     A Year 4 history lesson (14 September 2026) introduced `working conditions`
     on its own slide and then never said it again, on the board, in a question
     or in a script, so the class met a definition that nothing asked them to
     use. The designer's rule that every card has a landing was written down and
-    unchecked. The word, or a plain form of it, appears in a later beat."""
+    unchecked. The word, or a plain form of it, appears in a later beat.
+
+    Every word is judged on its own, so a card set with two badly placed words
+    names both. Judging them one at a time and stopping at the first sends the
+    designer back for the same card twice.
+    """
+    log = faults if faults is not None else RaiseAtOnce()
     order = {unit["sourceUnitId"]: index for index, unit in enumerate(sequence)}
     words = {item["id"]: item.get("term") for item in vocab_items}
     for index, raw in enumerate(introductions):
@@ -1270,44 +1342,52 @@ def validate_vocabulary_is_used(
             continue
         after = raw.get("after")
         start = order.get(after, -1) + 1
-        later = " ".join(_unit_words(unit) for unit in sequence[start:])
+        beats_after_the_card = sequence[start:]
         for ref in raw.get("vocabularyRefs") or []:
             word = words.get(ref)
             if not isinstance(word, str) or not word.strip():
                 continue
-            expect(
-                any(re.search(pattern, later) for pattern in _word_patterns(word)),
-                f"vocabularyIntroductions[{index}]: `{word}` is introduced and then never used. "
-                "A word earns its vocabulary slide because the beats after it need it: write it into "
-                "the next beat's board, its question or task, and its script, so children use the word "
-                "rather than only meet its definition. If nothing after the card needs the word, it is "
-                "not this lesson's vocabulary",
-            )
-            # And it earns it *here*: a card is shown because the class is about
-            # to meet, use or need that word in the beat that follows it. A Year
-            # 4 science lesson (18 September 2026) introduced decay, plaque and
-            # acid together after the starter; plaque and acid were used in the
-            # next beat and decay was not needed for another four, so the class
-            # met a definition, did two beats of other work, and met the thing it
-            # named later. The teacher: "the vocab slide is used when they are
-            # about to meet, use or need that word for the next slide."
-            first_use = None
-            for offset, unit in enumerate(sequence[start:]):
-                if any(re.search(pattern, _unit_words(unit)) for pattern in _word_patterns(word)):
-                    first_use = (offset, unit)
-                    break
-            if first_use and first_use[0] > 0:
-                gap, unit = first_use
-                label = unit.get("label") or unit.get("sourceUnitId")
-                expect(
-                    False,
-                    f"vocabularyIntroductions[{index}]: `{word}` is introduced here and first needed "
-                    f"{gap} beat{'s' if gap != 1 else ''} later, at `{label}`. A card is shown because "
-                    "the class is about to meet, use or need that word in the beat straight after it, "
-                    "so move this word to its own introduction there. The alternative, where the word "
-                    "belongs earlier than the check can see, is that an earlier beat should be saying "
-                    "it and is not: then the repair is the beat's own words, not the card's place",
-                )
+            with log.section():
+                validate_one_word_lands(word, index, beats_after_the_card)
+
+
+def validate_one_word_lands(word: str, index: int, beats_after_the_card: list[dict[str, Any]]) -> None:
+    """Where one carded word has to land: somewhere after the card, and in the
+    very next beat."""
+    later = " ".join(_unit_words(unit) for unit in beats_after_the_card)
+    expect(
+        any(re.search(pattern, later) for pattern in _word_patterns(word)),
+        f"vocabularyIntroductions[{index}]: `{word}` is introduced and then never used. "
+        "A word earns its vocabulary slide because the beats after it need it: write it into "
+        "the next beat's board, its question or task, and its script, so children use the word "
+        "rather than only meet its definition. If nothing after the card needs the word, it is "
+        "not this lesson's vocabulary",
+    )
+    # And it earns it *here*: a card is shown because the class is about to
+    # meet, use or need that word in the beat that follows it. A Year 4 science
+    # lesson (18 September 2026) introduced decay, plaque and acid together
+    # after the starter; plaque and acid were used in the next beat and decay
+    # was not needed for another four, so the class met a definition, did two
+    # beats of other work, and met the thing it named later. The teacher: "the
+    # vocab slide is used when they are about to meet, use or need that word
+    # for the next slide."
+    first_use = None
+    for offset, unit in enumerate(beats_after_the_card):
+        if any(re.search(pattern, _unit_words(unit)) for pattern in _word_patterns(word)):
+            first_use = (offset, unit)
+            break
+    if first_use and first_use[0] > 0:
+        gap, unit = first_use
+        label = unit.get("label") or unit.get("sourceUnitId")
+        expect(
+            False,
+            f"vocabularyIntroductions[{index}]: `{word}` is introduced here and first needed "
+            f"{gap} beat{'s' if gap != 1 else ''} later, at `{label}`. A card is shown because "
+            "the class is about to meet, use or need that word in the beat straight after it, "
+            "so move this word to its own introduction there. The alternative, where the word "
+            "belongs earlier than the check can see, is that an earlier beat should be saying "
+            "it and is not: then the repair is the beat's own words, not the card's place",
+        )
 
 
 def validate_launch_instance(raw: Any, path: str) -> dict[str, Any]:
@@ -3041,6 +3121,32 @@ def validate_design(
     *,
     initial_photo_namespace: bool = False,
 ) -> None:
+    """Run every check, then report every fault the pass could reach.
+
+    A fault inside a `faults.section()` is recorded and the pass carries on. A
+    fault outside one ends the pass, because what follows it reads what it was
+    checking - and it is still reported, alongside everything found before it.
+    """
+    faults = FaultLog()
+    try:
+        run_design_checks(
+            design,
+            photos,
+            initial_photo_namespace=initial_photo_namespace,
+            faults=faults,
+        )
+    except ContractError as exc:
+        faults.add(str(exc))
+    faults.raise_if_any()
+
+
+def run_design_checks(
+    design: Any,
+    photos: Any,
+    *,
+    initial_photo_namespace: bool = False,
+    faults: FaultLog,
+) -> None:
     reject_unresolved_scaffold_placeholders(design, "lesson-design.json")
     reject_long_dashes(design, "lesson-design.json")
     reject_six_seven_numbers(design, "lesson-design.json")
@@ -3347,12 +3453,16 @@ def validate_design(
         "a sequence where every beat unlocks nothing has no dependency in it",
     )
 
-    validate_route_sequence(structure, sequence, concept_items)
-    validate_teach_says_it_once(sequence, sticky_by_id)
-    validate_lesson_fits_the_slot(root)
+    with faults.section():
+        validate_route_sequence(structure, sequence, concept_items)
+    with faults.section():
+        validate_teach_says_it_once(sequence, sticky_by_id)
+    with faults.section():
+        validate_lesson_fits_the_slot(root)
 
     if structure != "Skill-based":
-        validate_idea_instances(root, sequence, concept_items)
+        with faults.section():
+            validate_idea_instances(root, sequence, concept_items)
 
     starter_unit_id = (root.get("starter") or {}).get("sourceUnitId")
     sequence_ids = {unit["sourceUnitId"] for unit in sequence}
@@ -3427,7 +3537,7 @@ def validate_design(
         # met eight slides before it is used has stopped being a glance reference
         # by the time anyone glances, so a lesson may introduce words at several
         # moments (`preferences.md` -> Vocabulary). Nothing here caps the count.
-        validate_vocabulary_is_used(introductions, vocab_items, sequence)
+        validate_vocabulary_is_used(introductions, vocab_items, sequence, faults)
 
     if has_legacy:
         placement = expect_dict(root["vocabularyPlacement"], "vocabularyPlacement")
@@ -3443,193 +3553,203 @@ def validate_design(
             f"vocabularyPlacement.after must name a teachingSequence sourceUnitId: {after}",
         )
 
-    ending = expect_dict(root["ending"], "ending")
-    expect_exact_keys(ending, {"included", "kind", "reason", "beat"}, {"included", "kind", "reason", "beat"}, "ending")
-    included = expect_bool(ending["included"], "ending.included")
-    expected_kind = "Reflect" if structure == "Dialogic" else "Apply"
-    expect(ending["kind"] == expected_kind, f"ending.kind must be {expected_kind} for {structure}")
-    expect_string(ending["reason"], "ending.reason")
-    if included:
-        validate_source_unit(
-            ending["beat"],
-            "ending.beat",
-            section="reflect" if structure == "Dialogic" else "apply",
-            ordinal=1,
-            allowed_kinds={"reflect"} if structure == "Dialogic" else {"apply"},
-            rep_by_id=rep_by_id,
-            sc_ids=set(sc_by_id),
-            sticky_ids=set(sticky_by_id),
-            misconception_ids=set(misconception_by_id),
-            concept_ids=set(concept_by_id),
-            photo_ids=initial_photo_ids,
-        )
-    else:
-        expect(ending["beat"] is None, "ending.beat must be null when ending.included is false")
-
-
-    worksheet = expect_dict(root["worksheet"], "worksheet")
-    worksheet_fields = {
-        "status", "resourceMode", "use", "activityArchitecture", "sheetShape",
-        "demand", "successCriteriaRefs", "stickyKnowledgeRefs", "fitPriority",
-        "centralWriteOnVisualException", "contentBlocks", "answerKeyMode", "providedWorksheet",
-    }
-    expect_exact_keys(worksheet, worksheet_fields, worksheet_fields, "worksheet")
-    status = expect_string(worksheet["status"], "worksheet.status")
-    mode = expect_string(worksheet["resourceMode"], "worksheet.resourceMode")
-    use = expect_string(worksheet["use"], "worksheet.use")
-    answer_key_mode = expect_string(worksheet["answerKeyMode"], "worksheet.answerKeyMode")
-    expect(status in WORKSHEET_STATUSES, f"worksheet.status invalid: {status}")
-    expect(mode in WORKSHEET_RESOURCE_MODES, f"worksheet.resourceMode invalid: {mode}")
-    expect(use in WORKSHEET_USES, f"worksheet.use invalid: {use}")
-    expect(answer_key_mode in {"required", "not-applicable"}, f"worksheet.answerKeyMode invalid: {answer_key_mode}")
-    validate_ref_list(worksheet["successCriteriaRefs"], "worksheet.successCriteriaRefs", set(sc_by_id))
-    validate_ref_list(worksheet["stickyKnowledgeRefs"], "worksheet.stickyKnowledgeRefs", set(sticky_by_id))
-
-    if status == "provided-by-teacher":
-        expect(mode == "per-child", "provided-by-teacher worksheet must use resourceMode per-child")
-        expect(worksheet["activityArchitecture"] is None, "provided-by-teacher worksheet must have activityArchitecture null")
-        expect(worksheet["sheetShape"] is None, "provided-by-teacher worksheet must have sheetShape null")
-        expect(worksheet["demand"] is None, "provided-by-teacher worksheet must have demand null")
-        expect(worksheet["fitPriority"] is None, "provided-by-teacher worksheet must have fitPriority null")
-        expect(worksheet["centralWriteOnVisualException"] is None,
-               "provided-by-teacher worksheet must have centralWriteOnVisualException null")
-        expect(worksheet["contentBlocks"] == [], "provided-by-teacher worksheet must have contentBlocks []")
-        expect(answer_key_mode == "not-applicable",
-               "provided-by-teacher worksheet must have answerKeyMode not-applicable")
-        provided = expect_dict(worksheet["providedWorksheet"], "worksheet.providedWorksheet")
-        fields = {"source", "skillMatch", "duplicateCheck", "notes"}
-        expect_exact_keys(provided, fields, fields, "worksheet.providedWorksheet")
-        expect_string(provided["source"], "worksheet.providedWorksheet.source")
-        expect_string(provided["skillMatch"], "worksheet.providedWorksheet.skillMatch")
-        expect_string(provided["duplicateCheck"], "worksheet.providedWorksheet.duplicateCheck")
-        expect_string(provided["notes"], "worksheet.providedWorksheet.notes", allow_empty=True)
-    else:
-        if mode == "shared-frame":
-            expect(use == "required-task-resource",
-                   "worksheet.resourceMode shared-frame requires use required-task-resource")
-            expect(worksheet["successCriteriaRefs"] == [],
-                   "shared-frame worksheet.successCriteriaRefs must be []")
-            expect(worksheet["stickyKnowledgeRefs"] == [],
-                   "shared-frame worksheet.stickyKnowledgeRefs must be []")
-        architecture = expect_dict(worksheet["activityArchitecture"], "worksheet.activityArchitecture")
-        fields = {"coreActionAndEvidence", "amount", "variationAndBoundaryPlan", "organisation"}
-        expect_exact_keys(architecture, fields, fields, "worksheet.activityArchitecture")
-        for key in fields:
-            expect_string(architecture[key], f"worksheet.activityArchitecture.{key}")
-        shape = expect_dict(worksheet["sheetShape"], "worksheet.sheetShape")
-        expect_exact_keys(shape, {"kind", "reason"}, {"kind", "reason"}, "worksheet.sheetShape")
-        shape_kind = expect_string(shape["kind"], "worksheet.sheetShape.kind")
-        expect(shape_kind in WORKSHEET_SHAPES, f"worksheet.sheetShape.kind invalid: {shape_kind}")
-        expect_string(shape["reason"], "worksheet.sheetShape.reason")
-        expect_string(worksheet["demand"], "worksheet.demand")
-        fit = expect_dict(worksheet["fitPriority"], "worksheet.fitPriority")
-        expect_exact_keys(fit, {"protected", "preAuthorisedRemoval"}, {"protected", "preAuthorisedRemoval"}, "worksheet.fitPriority")
-        for key in ("protected", "preAuthorisedRemoval"):
-            values = expect_list(fit[key], f"worksheet.fitPriority.{key}")
-            for i, value in enumerate(values):
-                expect_string(value, f"worksheet.fitPriority.{key}[{i}]")
-        exception = worksheet["centralWriteOnVisualException"]
-        if exception is not None:
-            exception = expect_dict(exception, "worksheet.centralWriteOnVisualException")
-            expect_exact_keys(exception, {"visual", "reason"}, {"visual", "reason"}, "worksheet.centralWriteOnVisualException")
-            expect_string(exception["visual"], "worksheet.centralWriteOnVisualException.visual")
-            expect_string(exception["reason"], "worksheet.centralWriteOnVisualException.reason")
-        expect(worksheet["providedWorksheet"] is None, "generated worksheet must have providedWorksheet null")
-        blocks = expect_list(worksheet["contentBlocks"], "worksheet.contentBlocks")
-        expect(bool(blocks), "generated worksheet must have at least one content block")
-        block_ids: set[str] = set()
-        has_answer = False
-        for index, raw_block in enumerate(blocks):
-            block_path = f"worksheet.contentBlocks[{index}]"
-            block_id = validate_worksheet_content_block(
-                raw_block,
-                block_path,
+    # `resourceOpportunities` below reads the ending, so both names are settled
+    # before the section rather than inside it: a bad ending is a fault to
+    # report, not a reason for the next check to throw on a missing name.
+    ending = root.get("ending") if isinstance(root.get("ending"), dict) else {}
+    included = bool(ending.get("included"))
+    with faults.section():
+        ending = expect_dict(root["ending"], "ending")
+        expect_exact_keys(ending, {"included", "kind", "reason", "beat"}, {"included", "kind", "reason", "beat"}, "ending")
+        included = expect_bool(ending["included"], "ending.included")
+        expected_kind = "Reflect" if structure == "Dialogic" else "Apply"
+        expect(ending["kind"] == expected_kind, f"ending.kind must be {expected_kind} for {structure}")
+        expect_string(ending["reason"], "ending.reason")
+        if included:
+            validate_source_unit(
+                ending["beat"],
+                "ending.beat",
+                section="reflect" if structure == "Dialogic" else "apply",
+                ordinal=1,
+                allowed_kinds={"reflect"} if structure == "Dialogic" else {"apply"},
                 rep_by_id=rep_by_id,
+                sc_ids=set(sc_by_id),
                 sticky_ids=set(sticky_by_id),
+                misconception_ids=set(misconception_by_id),
+                concept_ids=set(concept_by_id),
                 photo_ids=initial_photo_ids,
             )
-            expect(block_id not in block_ids, f"duplicate worksheet content block id: {block_id}")
-            block_ids.add(block_id)
-
-            def scan_answers(node: Any) -> None:
-                nonlocal has_answer
-                if isinstance(node, dict):
-                    if set(node) == {"kind", "content", "acceptanceCondition", "delivery"}:
-                        if node["kind"] != "none":
-                            has_answer = True
-                    for value in node.values():
-                        scan_answers(value)
-                elif isinstance(node, list):
-                    for value in node:
-                        scan_answers(value)
-            scan_answers(raw_block)
-
-        block_families = {
-            "question-set" if raw_block["kind"] in {"question", "question-group"} else raw_block["kind"]
-            for raw_block in blocks
-        }
-        if mode == "shared-frame":
-            expect(shape_kind == "frame", "shared-frame worksheet.sheetShape.kind must be frame")
-            expect(len(blocks) == 1, "shared-frame worksheet must contain exactly one top-level content block")
-            expect(blocks[0]["kind"] == "frame", "shared-frame worksheet content block must be kind frame")
-        elif shape_kind == "mixed":
-            expect(len(block_families) >= 2,
-                   "worksheet.sheetShape.kind mixed requires at least two content-block families; "
-                   f"every content block here is {sorted(block_families)[0] if block_families else 'absent'}, "
-                   "so set sheetShape.kind to that")
         else:
-            expect(
-                block_families == {shape_kind},
-                f"worksheet.sheetShape.kind {shape_kind} does not match contentBlocks families {sorted(block_families)}",
-            )
+            expect(ending["beat"] is None, "ending.beat must be null when ending.included is false")
 
-        if has_answer:
-            expect(answer_key_mode == "required",
-                   "worksheet.answerKeyMode must be required when any worksheet answer/model exists")
-        elif answer_key_mode == "required":
-            raise ContractError(
-                "worksheet.answerKeyMode is required but every worksheet answer kind is none"
-            )
 
-    if "resourceOpportunities" in root:
-        validate_resource_opportunities(
-            root["resourceOpportunities"],
-            [starter, *sequence, *([ending["beat"]] if included else [])],
-        )
+    with faults.section():
+        worksheet = expect_dict(root["worksheet"], "worksheet")
+        worksheet_fields = {
+            "status", "resourceMode", "use", "activityArchitecture", "sheetShape",
+            "demand", "successCriteriaRefs", "stickyKnowledgeRefs", "fitPriority",
+            "centralWriteOnVisualException", "contentBlocks", "answerKeyMode", "providedWorksheet",
+        }
+        expect_exact_keys(worksheet, worksheet_fields, worksheet_fields, "worksheet")
+        status = expect_string(worksheet["status"], "worksheet.status")
+        mode = expect_string(worksheet["resourceMode"], "worksheet.resourceMode")
+        use = expect_string(worksheet["use"], "worksheet.use")
+        answer_key_mode = expect_string(worksheet["answerKeyMode"], "worksheet.answerKeyMode")
+        expect(status in WORKSHEET_STATUSES, f"worksheet.status invalid: {status}")
+        expect(mode in WORKSHEET_RESOURCE_MODES, f"worksheet.resourceMode invalid: {mode}")
+        expect(use in WORKSHEET_USES, f"worksheet.use invalid: {use}")
+        expect(answer_key_mode in {"required", "not-applicable"}, f"worksheet.answerKeyMode invalid: {answer_key_mode}")
+        validate_ref_list(worksheet["successCriteriaRefs"], "worksheet.successCriteriaRefs", set(sc_by_id))
+        validate_ref_list(worksheet["stickyKnowledgeRefs"], "worksheet.stickyKnowledgeRefs", set(sticky_by_id))
 
-    slide_notes = expect_list(root["slideDesignNotes"], "slideDesignNotes")
-    for index, note in enumerate(slide_notes):
-        expect_string(note, f"slideDesignNotes[{index}]")
-    flags = expect_list(root["flagsForTeacher"], "flagsForTeacher")
-    for index, flag in enumerate(flags):
-        expect_string(flag, f"flagsForTeacher[{index}]")
-
-    used_photo_ids: set[str] = set()
-
-    def collect_photo_refs(node: Any) -> None:
-        if isinstance(node, dict):
-            if node.get("kind") == "photo" and isinstance(node.get("photoRef"), str):
-                used_photo_ids.add(node["photoRef"])
-            if isinstance(node.get("photoRefs"), list):
-                for value in node["photoRefs"]:
-                    if isinstance(value, str):
-                        used_photo_ids.add(value)
-            if node.get("kind") == "sticky" and isinstance(node.get("ref"), str):
-                pass
-            for value in node.values():
-                collect_photo_refs(value)
-        elif isinstance(node, list):
-            for value in node:
-                collect_photo_refs(value)
-
-    collect_photo_refs(root)
-    if initial_photo_namespace:
-        for photo_id in photo_by_id:
-            if photo_id.startswith("photo-"):
-                expect(
-                    photo_id in used_photo_ids,
-                    f"initial photo requirement is not referenced by lesson-design.json: {photo_id}",
+        if status == "provided-by-teacher":
+            expect(mode == "per-child", "provided-by-teacher worksheet must use resourceMode per-child")
+            expect(worksheet["activityArchitecture"] is None, "provided-by-teacher worksheet must have activityArchitecture null")
+            expect(worksheet["sheetShape"] is None, "provided-by-teacher worksheet must have sheetShape null")
+            expect(worksheet["demand"] is None, "provided-by-teacher worksheet must have demand null")
+            expect(worksheet["fitPriority"] is None, "provided-by-teacher worksheet must have fitPriority null")
+            expect(worksheet["centralWriteOnVisualException"] is None,
+                   "provided-by-teacher worksheet must have centralWriteOnVisualException null")
+            expect(worksheet["contentBlocks"] == [], "provided-by-teacher worksheet must have contentBlocks []")
+            expect(answer_key_mode == "not-applicable",
+                   "provided-by-teacher worksheet must have answerKeyMode not-applicable")
+            provided = expect_dict(worksheet["providedWorksheet"], "worksheet.providedWorksheet")
+            fields = {"source", "skillMatch", "duplicateCheck", "notes"}
+            expect_exact_keys(provided, fields, fields, "worksheet.providedWorksheet")
+            expect_string(provided["source"], "worksheet.providedWorksheet.source")
+            expect_string(provided["skillMatch"], "worksheet.providedWorksheet.skillMatch")
+            expect_string(provided["duplicateCheck"], "worksheet.providedWorksheet.duplicateCheck")
+            expect_string(provided["notes"], "worksheet.providedWorksheet.notes", allow_empty=True)
+        else:
+            if mode == "shared-frame":
+                expect(use == "required-task-resource",
+                       "worksheet.resourceMode shared-frame requires use required-task-resource")
+                expect(worksheet["successCriteriaRefs"] == [],
+                       "shared-frame worksheet.successCriteriaRefs must be []")
+                expect(worksheet["stickyKnowledgeRefs"] == [],
+                       "shared-frame worksheet.stickyKnowledgeRefs must be []")
+            architecture = expect_dict(worksheet["activityArchitecture"], "worksheet.activityArchitecture")
+            fields = {"coreActionAndEvidence", "amount", "variationAndBoundaryPlan", "organisation"}
+            expect_exact_keys(architecture, fields, fields, "worksheet.activityArchitecture")
+            for key in fields:
+                expect_string(architecture[key], f"worksheet.activityArchitecture.{key}")
+            shape = expect_dict(worksheet["sheetShape"], "worksheet.sheetShape")
+            expect_exact_keys(shape, {"kind", "reason"}, {"kind", "reason"}, "worksheet.sheetShape")
+            shape_kind = expect_string(shape["kind"], "worksheet.sheetShape.kind")
+            expect(shape_kind in WORKSHEET_SHAPES, f"worksheet.sheetShape.kind invalid: {shape_kind}")
+            expect_string(shape["reason"], "worksheet.sheetShape.reason")
+            expect_string(worksheet["demand"], "worksheet.demand")
+            fit = expect_dict(worksheet["fitPriority"], "worksheet.fitPriority")
+            expect_exact_keys(fit, {"protected", "preAuthorisedRemoval"}, {"protected", "preAuthorisedRemoval"}, "worksheet.fitPriority")
+            for key in ("protected", "preAuthorisedRemoval"):
+                values = expect_list(fit[key], f"worksheet.fitPriority.{key}")
+                for i, value in enumerate(values):
+                    expect_string(value, f"worksheet.fitPriority.{key}[{i}]")
+            exception = worksheet["centralWriteOnVisualException"]
+            if exception is not None:
+                exception = expect_dict(exception, "worksheet.centralWriteOnVisualException")
+                expect_exact_keys(exception, {"visual", "reason"}, {"visual", "reason"}, "worksheet.centralWriteOnVisualException")
+                expect_string(exception["visual"], "worksheet.centralWriteOnVisualException.visual")
+                expect_string(exception["reason"], "worksheet.centralWriteOnVisualException.reason")
+            expect(worksheet["providedWorksheet"] is None, "generated worksheet must have providedWorksheet null")
+            blocks = expect_list(worksheet["contentBlocks"], "worksheet.contentBlocks")
+            expect(bool(blocks), "generated worksheet must have at least one content block")
+            block_ids: set[str] = set()
+            has_answer = False
+            for index, raw_block in enumerate(blocks):
+                block_path = f"worksheet.contentBlocks[{index}]"
+                block_id = validate_worksheet_content_block(
+                    raw_block,
+                    block_path,
+                    rep_by_id=rep_by_id,
+                    sticky_ids=set(sticky_by_id),
+                    photo_ids=initial_photo_ids,
                 )
+                expect(block_id not in block_ids, f"duplicate worksheet content block id: {block_id}")
+                block_ids.add(block_id)
+
+                def scan_answers(node: Any) -> None:
+                    nonlocal has_answer
+                    if isinstance(node, dict):
+                        if set(node) == {"kind", "content", "acceptanceCondition", "delivery"}:
+                            if node["kind"] != "none":
+                                has_answer = True
+                        for value in node.values():
+                            scan_answers(value)
+                    elif isinstance(node, list):
+                        for value in node:
+                            scan_answers(value)
+                scan_answers(raw_block)
+
+            block_families = {
+                "question-set" if raw_block["kind"] in {"question", "question-group"} else raw_block["kind"]
+                for raw_block in blocks
+            }
+            if mode == "shared-frame":
+                expect(shape_kind == "frame", "shared-frame worksheet.sheetShape.kind must be frame")
+                expect(len(blocks) == 1, "shared-frame worksheet must contain exactly one top-level content block")
+                expect(blocks[0]["kind"] == "frame", "shared-frame worksheet content block must be kind frame")
+            elif shape_kind == "mixed":
+                expect(len(block_families) >= 2,
+                       "worksheet.sheetShape.kind mixed requires at least two content-block families; "
+                       f"every content block here is {sorted(block_families)[0] if block_families else 'absent'}, "
+                       "so set sheetShape.kind to that")
+            else:
+                expect(
+                    block_families == {shape_kind},
+                    f"worksheet.sheetShape.kind {shape_kind} does not match contentBlocks families {sorted(block_families)}",
+                )
+
+            if has_answer:
+                expect(answer_key_mode == "required",
+                       "worksheet.answerKeyMode must be required when any worksheet answer/model exists")
+            elif answer_key_mode == "required":
+                raise ContractError(
+                    "worksheet.answerKeyMode is required but every worksheet answer kind is none"
+                )
+
+    with faults.section():
+        if "resourceOpportunities" in root:
+            validate_resource_opportunities(
+                root["resourceOpportunities"],
+                [starter, *sequence, *([ending["beat"]] if included else [])],
+            )
+
+    with faults.section():
+        slide_notes = expect_list(root["slideDesignNotes"], "slideDesignNotes")
+        for index, note in enumerate(slide_notes):
+            expect_string(note, f"slideDesignNotes[{index}]")
+        flags = expect_list(root["flagsForTeacher"], "flagsForTeacher")
+        for index, flag in enumerate(flags):
+            expect_string(flag, f"flagsForTeacher[{index}]")
+
+        used_photo_ids: set[str] = set()
+
+        def collect_photo_refs(node: Any) -> None:
+            if isinstance(node, dict):
+                if node.get("kind") == "photo" and isinstance(node.get("photoRef"), str):
+                    used_photo_ids.add(node["photoRef"])
+                if isinstance(node.get("photoRefs"), list):
+                    for value in node["photoRefs"]:
+                        if isinstance(value, str):
+                            used_photo_ids.add(value)
+                if node.get("kind") == "sticky" and isinstance(node.get("ref"), str):
+                    pass
+                for value in node.values():
+                    collect_photo_refs(value)
+            elif isinstance(node, list):
+                for value in node:
+                    collect_photo_refs(value)
+
+        collect_photo_refs(root)
+    with faults.section():
+        if initial_photo_namespace:
+            for photo_id in photo_by_id:
+                if photo_id.startswith("photo-"):
+                    expect(
+                        photo_id in used_photo_ids,
+                        f"initial photo requirement is not referenced by lesson-design.json: {photo_id}",
+                    )
 
 
 def main(argv: list[str] | None = None) -> int:

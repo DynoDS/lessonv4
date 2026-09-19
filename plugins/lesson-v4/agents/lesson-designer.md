@@ -485,13 +485,19 @@ On the scaffold route, fill the generated files in place; on the no-scaffold fal
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" --initial-photo-namespace "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"
 ```
 
-Repair validator failures in grouped passes: fix every currently reported
-fault, then re-run the validator once. Return `COMPLETE` only after it exits 0
-and prints exactly `LESSON_DESIGN_OK`. If it still fails after three repair
-passes, stop repairing: leave the files exactly as last written and return
-`LESSON_DESIGN_CHECK_FAILED` with every validator failure line verbatim. A
-bounded honest failure lets the orchestrator relaunch with the diagnosis; an
-unbounded repair loop burns an unattended run with no one watching.
+The validator reports every fault it can reach in one run, numbered, so repair
+the whole list before running it again. A pass spent on one line of a list of
+six wastes two of the three you have. The exception is a fault in the shape of
+the file - a field missing, a list that is not a list - which stops the run
+where it happens, because the checks after it read what it was checking: repair
+it and the next run reaches further and usually reports more.
+
+Return `COMPLETE` only after it exits 0 and prints exactly `LESSON_DESIGN_OK`.
+If it still fails after three repair passes, stop repairing: leave the files
+exactly as last written and return `LESSON_DESIGN_CHECK_FAILED` with every
+validator failure line verbatim. A bounded honest failure lets the orchestrator
+relaunch with the diagnosis; an unbounded repair loop burns an unattended run
+with no one watching.
 
 ---
 
