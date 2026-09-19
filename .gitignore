@@ -8,3 +8,20 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Built lessons, test output and one-off scripts that collect in this checkout.
+# They are products of runs, not part of the plugin, and committing them would
+# put finished lessons into the plugin's history permanently.
+/lesson-output/
+/lesson-resources-output/
+/emw-output/
+/output/
+/outputs/
+/proof-runs/
+/working/
+/tmp/
+/_qa_math_ltp_numbered/
+/error.log
+/add_lesson_numbers.py
+/fix_lesson_number_column.py
+/inspect_docx.py
