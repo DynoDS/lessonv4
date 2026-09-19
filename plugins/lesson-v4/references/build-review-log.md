@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-19 A split pair settles against what a container draws (4.2.258)
+
+Daniel, on being told three findings were blocked because a block cannot see what else is on the slide: "Wait, but it does it anyway. The box thing. I swear it aligns things anyway."
+
+He was right and the claim was wrong. `split-pair.js` has measured both sides of a split and settled them before drawing since it was written, for the two faults he had been correcting by hand: a fill text towering over a half-height partner, and a shorter member pinned to the top beside a taller one. `stack.js` measures its own items. The capability was there; only my reading of it was not.
+
+**What was actually narrow.** `measureContentExtent` declines a stack or a row deliberately, and the comment says why: a fill text beside a stack is meant to keep the whole zone precisely BECAUSE its partner cannot be measured. That reason is about the fill text. The pass was using the same refusal to decide where the OTHER side sits, so a photograph beside a short stack centred itself on the empty zone rather than on the cards. Two heights now, one per job: `spanH` reads the narrow answer and decides what a fill text may span, so that behaviour is untouched and its test still passes; `alignH` reads the broad one and decides where a measured shorter member centres. A container is still never moved itself, because shifting a stack's zone would change how it lays its own items out.
+
+**What it does not fix, said plainly.** It does not move the estimate slide that prompted it. There the photograph was not misplaced: the three cards were bunched at the top of their column leaving their own bottom empty, so the photo only looked low beside them. That is the grouping finding and it is still open. A short partner beside a two-card stack does move, from y3.55 to y1.06, which is the general fault and is pinned by four new tests.
+
+**Worth remembering.** Twice in one sitting the answer to "the engine cannot do this" was that the engine already could and the rule or the machinery was simply not reaching the case: the paragraph-break rule was written and unrouted, and this alignment was built and too narrowly consulted. Check the repository before telling the teacher something is missing, particularly when he says he has seen it work.
+
+**Evidence.** Builder 688 pass, 0 fail. Version corrected from 4.2.257, which had shipped this change without a bump or an entry.
+
 ## 2026-09-19 Three of the seven, and why the other four are one job (4.2.257)
 
 Daniel settled all nine open findings in conversation and said to build the seven that were left. Three are built. The other four stopped for reasons worth recording, because two of them are the same shape as the paragraph-break fault.
