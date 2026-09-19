@@ -905,53 +905,20 @@ def prepare(args: argparse.Namespace) -> int:
     return 0
 
 
-# ─── check: the wall a designer produced actually carries pictures ──────────
+# ─── check: the design invariants a wall must not break ────────────────
 #
-# The wall's own rules have said "every card carries a visual" since the design
-# began, with one written exception for a step-by-step success-criteria card.
-# A Year 4 maths wall took that exception while the lesson held three published
-# photographs of the very counters the card's worked example described, and the
-# teacher got an A3 sheet of words. Wording alone could not stop it, because the
-# exception is legitimate on a lesson that genuinely has no picture. What tells
-# the two apart is whether a picture existed, so that is what this checks.
+# This once also refused a wall whose cards carried no picture while the lesson
+# held a published photograph, with card_carries_a_visual and published_photo_names
+# to serve it. All three were retired on 6 September 2026 along with the wall-wide
+# visual gate, for the reason check() states below: picture availability elsewhere
+# cannot decide a card-s teaching needs. Recover them from git if that is revisited.
 
 
-def card_carries_a_visual(card: dict) -> bool:
-    if not isinstance(card, dict):
-        return False
-    if isinstance(card.get("photo"), str) and card["photo"].strip():
-        return True
-    for key in ("visual", "picture", "map"):
-        if isinstance(card.get(key), dict) and card[key]:
-            return True
-    for key in ("tiles", "people"):
-        for item in card.get(key) or []:
-            if isinstance(item, dict) and (item.get("photo") or item.get("visual")):
-                return True
-    if isinstance(card.get("heroPhoto"), str) and card["heroPhoto"].strip():
-        return True
-    for row in card.get("rows") or []:
-        for cell in row if isinstance(row, list) else []:
-            if isinstance(cell, dict) and (cell.get("photo") or cell.get("visual")):
-                return True
-    for chip in card.get("chips") or []:
-        if isinstance(chip, dict) and chip.get("photo"):
-            return True
-    return False
 
-
-def published_photo_names(working_dir: Path) -> list[str]:
-    return sorted(
-        name
-        for name, state in terminal_states(working_dir).items()
-        if state == "published"
-    )
-
-
-# ---------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # Two faults a rendered wall cannot show you and a reader stops noticing.
 
-NUMBER_RE = re.compile(r"-?\d[\d,]*(?:\.\d+)?")
+NUMBER_RE = re.compile(r'-?\d[\d,]*(?:\.\d+)?')
 
 
 def round_trip_example(text: str) -> bool:
@@ -1059,7 +1026,7 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--reference-output", required=True)
     prep.add_argument("--receipt-output", required=True)
     prep.set_defaults(func=prepare)
-    chk = commands.add_parser("check", help="refuse a wall whose cards carry no picture")
+    chk = commands.add_parser("check", help="refuse a wall that breaks a design invariant")
     chk.add_argument("--plugin-root", required=True)
     chk.add_argument("--working-dir", required=True)
     chk.add_argument("--working-wall", required=True)

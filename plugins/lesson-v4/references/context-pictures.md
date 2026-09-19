@@ -190,8 +190,8 @@ Then, on every surface:
   genuinely fits, and otherwise the item closes text-only;
 - semantic vocabulary P2 and P3 are Educational SVG only, so author none and
   record the zero with that reason;
-- on the Working Wall, apply the card's visual-entry rule with the emoji route
-  as the only P2 available.
+- on the Working Wall, choose the card's visual under rule 2, with the emoji
+  route as the only P2 available.
 
 Do not run the search, preview or publish commands, do not read the rest of
 this reference's Educational SVG detail, and do not spend a retry on it. A
@@ -582,9 +582,9 @@ was sizing to a habit rather than to each slide.
 
 Semantic vocabulary Educational SVG is meaning-carrying P2. It requires meaningful `alt`
 and has no `fallbackEmoji`. On slides and worksheets it closes to text-only when
-unresolved. On the Working Wall it is part of the visual-entry contract: if it
-cannot be resolved, `working-wall-designer` removes that card before writing the
-final specification.
+unresolved. On the Working Wall a vocabulary card's visual is part of its own
+contract: if it cannot be resolved, `working-wall-designer` removes that card
+before writing the final specification.
 
 P3 lives only in a supported physical surface's `decorations` array. It uses the
 page-relative geometry and bounds in this reference, carries no alt meaning, and
@@ -733,8 +733,8 @@ the candidates, or publication fails, apply the surface's existing fallback:
   the `picture`;
 - remove a failed semantic vocabulary `visual` so the item closes text-only;
 - remove a failed P3 decoration;
-- on the Working Wall, reapply the card's visual-entry rule and remove the card
-  when that rule requires it.
+- on the Working Wall, reapply rule 2's visual choice, and remove the card only
+  where its own contract requires that visual, as a vocabulary card does.
 
 Do not leave an unresolved Educational SVG object in a final specification. Do
 not retry through another worker. Optional picture work never stops the

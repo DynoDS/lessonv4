@@ -88,7 +88,7 @@ Practical implications when writing items:
 |---|---|
 | Worked-example step | ≤ 60 characters — "Read the conjunction — what job does it do?" fits; longer steps need splitting. |
 | Worked-example modelled answer | ≤ 70 characters — full sentences with one main clause, one subordinate clause, and a strong noun. Drop adjectives the lesson used for flavour. |
-| Sticky-knowledge item | ≤ 62 characters on a card carrying a picture, which is nearly all of them. The 100-character figure this guide once gave is the no-picture width, and an ordinary card cannot reach it: the visual gate means a card without a picture does not go on the wall. |
+| Sticky-knowledge item | ≤ 62 characters on a card carrying a picture. A card with no picture has the full width, up to about 100 characters, and a text-led card may use it. |
 | Sentence-stem item | ≤ 80 characters including the blank. |
 | Misconception "Don't" / "Do" | ≤ 50 characters each side. |
 | Reference table cell | ≤ 30 characters — and check the longest single word fits (no narrow-column hyphens). |

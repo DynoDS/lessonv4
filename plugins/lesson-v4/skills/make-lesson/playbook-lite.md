@@ -1121,11 +1121,11 @@ report. It owns only `working-wall.json`. Its deterministic check is:
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
 ```
 
-Require exactly `WORKING_WALL_DESIGN_OK`. An exact reference table retained from
-the slides is itself a recognised visual reference. Otherwise it refuses a wall whose cards carry
-no picture while this lesson holds a published photograph or a drawn visual
-its slides used, because a card that is only words is slide content rather
-than wall furniture; a lesson with no picture at all still passes. Then
+Require exactly `WORKING_WALL_DESIGN_OK`. The check refuses an empty wall with no
+reason given, a worked example that ends on the number it started from, and a
+reference table that repeats its title as a heading or changes the slides' rows.
+It does not judge whether a card carries a picture: that belongs to the designer,
+so a text-led card passes. Then
 build the wall directly, only when `cards` is non-empty:
 
 ```text

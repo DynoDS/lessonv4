@@ -1,5 +1,75 @@
 # Build review log
 
+## 2026-09-19 The wall's visual gate finishes being retired (4.2.260)
+
+Daniel asked for the two red tests to be fixed. One of them was not a stale test.
+
+**What the red test was really showing.** On 6 September the wall's visual gate
+was retired: the rule that made a picture a child recognises by sight the entry
+ticket for every card. `working-wall-preferences.md` was rewritten so a concise
+text-led reference is valid, `working-wall-visual-language.md` followed, the
+designer's rules 2 and 3 were rewritten, the criteria stopped naming a gate, and
+the deterministic check dropped its picture test with a comment saying why:
+picture availability elsewhere cannot decide a card's teaching needs.
+
+The retired rule then survived in ten other places. The designer still said
+"P3 never counts as the recognised visual that earns a card wall space" and "a
+words-only card plus P3 is still words-only", and still sent itself back to "the
+visual gate, rule 2" from two lists and a table, when rule 2 no longer held one.
+`working-wall-card-contracts.md`, which the packet cuts for every single run,
+still stated the gate outright. `context-pictures.md` pointed three routes at a
+"visual-entry rule". `playbook-lite.md` told the orchestrator the check refuses a
+words-only wall, which it had stopped doing. `card_carries_a_visual` and
+`published_photo_names` sat in the packet script, defined and called by nothing.
+
+So for thirteen days the designer was reading one policy in its own file and the
+opposite in the packet cut for it, and the contract test that should have caught
+that was itself pinning the retired wording in place. That is why it went red on
+6 September and stayed red: it asserted the old policy rather than agreement
+about the current one.
+
+**What changed.** Every one of those ten sites now states the live rule: a card
+earns its place by the point-at test and by being a reference the child in front
+of it can use, with the visual chosen for the learning. What P3 still genuinely
+controls is kept and unchanged: allowed only on the named families, only after
+core content and layout are settled, forbidden on vocabulary, furniture and
+special families, a decoration is not teaching content, and a failed P3 removes
+only that decoration and never the card. A vocabulary card's visual is still part
+of its own contract, so an unresolved one still removes that card.
+`card-contracts.md` records the supersession the way it already records the
+older missed-the-lesson test it replaced.
+
+**The test now points the other way round.** It asserts that each owner states
+the rule it owns, and then sweeps every wall instruction for the retired wording,
+failing on any passage that asserts it without recording that it was replaced.
+Proved by planting "a card earns its place only when it carries a recognised
+visual" back into the preferences file: the sweep failed, named the file and
+quoted the sentence. That is the check that would have caught this in September.
+
+**The other red test, and a trap behind it.** A reference byte budget measured
+bytes on disk, so git's CRLF conversion added 157 bytes to
+`image-scout-search.md` and failed a 10,000 budget on every fresh Windows clone
+while passing on the machine that wrote the file. It now measures the repository
+text. Worth knowing: that file has 20 bytes of headroom, `working-wall-designer.md`
+had 53 before this change and has 66 after, and `playbook-lite.md` had about 50.
+Three budgets at 99.9% full mean almost any instruction edit fails a size
+assertion that says nothing about the edit, which is what happened three times
+while making this one. Raising them is a judgement about context cost, so they
+are left alone and named here instead.
+
+**What this does not change.** No wall has been built since. The behavioural
+question this settles on paper is whether a text-led card reaches a wall, and
+only a real lesson shows that. The narrow guard that was retired with the gate,
+refusing a words-only card when the lesson did hold a relevant published
+photograph, is not restored: `check` gives its reason for dropping it, and the
+two helpers are recoverable from git at this commit's parent if that is revisited.
+
+**Evidence.** Root node suite 46 pass, 0 fail, up from 44 pass 1 fail. Python
+suite 9 failures, down from 10, and every remaining one is unchanged from
+021a2495: the lesson-design scaffold, five component-loading sections, the
+focused-repair entrypoint models, the written-voice rules and the
+lesson-is-written check. Working-wall packet tests 34 pass, 0 fail.
+
 ## 2026-09-19 The drawing search ranks by meaning, not by the alphabet (4.2.259)
 
 Daniel asked where intelligent judgement could stand in for fragile code, and

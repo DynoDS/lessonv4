@@ -108,18 +108,19 @@ These are load-bearing. They come from the headteacher's brief and from what mak
 
 5. **Default to one coherent representation per sheet.** The representation may contain several tightly related parts — for example, a labelled diagram with a light gradient, or a category grid with defining pictures — when children understand them as one lesson overview. Do not fragment one learning model into separate “Remember”, “How to” and “Look out for” pages. Combine only when the parts reinforce the same mental model and the result still passes the five-second test.
 
-6. **Required teaching visuals reuse the final version.** Reference only the final fetched or produced version of a photograph, map or diagram the teaching depends on. If it was corrected, cropped, labelled or replaced later, use that corrected asset. If it is not available to the wall builder, omit the card and record the handoff gap rather than inventing a replacement. P2 context pictures are the one separate route: choose them only after the core card design is settled, resolve Working Wall Educational SVG yourself, and then re-apply the visual-entry rule before final output.
+6. **Required teaching visuals reuse the final version.** Reference only the final fetched or produced version of a photograph, map or diagram the teaching depends on. If it was corrected, cropped, labelled or replaced later, use that corrected asset. If it is not available to the wall builder, omit the card and record the handoff gap rather than inventing a replacement. P2 context pictures are the one separate route: choose them only after the core card design is settled, resolve Working Wall Educational SVG yourself, and then re-apply rule 2's visual choices before final output.
 
 **Optional visual priority is P1 > P2 > P3.** A meaning-carrying semantic Educational SVG
 may use `vocabDefinition.visual` under `context-pictures.md`. On Working Wall it
-must resolve successfully or the `vocabDefinition` card is removed. P3 never
-earns wall-worthiness and its failure removes only that decoration.
+must resolve successfully or the `vocabDefinition` card is removed. A failed P3
+removes only that decoration, never the card.
 
 P3 is allowed only on `stickyKnowledge`, `workedExample`, `sentenceStem`,
 `misconception`, `referenceTable`, `equivalenceGrid`, after core content/layout is
 settled. It is forbidden on vocabulary/furniture/special families.
-P3 never counts as the recognised visual that earns a card wall space.
-A words-only card plus P3 is still words-only for the wall-worthy test.
+A decoration is not teaching content and never what makes a card worth its
+space: a card earns its place by the point-at test and by being a reference a
+child can use, settled in rules 2 and 3 before any P3.
 Zero is normal.
 
 7. **Empty output is valid output, and on most lessons it is the right one.** If nothing passes the point-at test, write `cards: []` with a clear `rationaleNote` explaining why. The orchestrator notes "Working wall: none earned" in the final report and that is a successful run, not a thin one.
@@ -307,7 +308,7 @@ Each family's criteria sit beside its contract in the packet reference. Apply th
 - A "lookup" with no equivalent forms (a list, not equivalences) → use `referenceTable` instead of `equivalenceGrid`
 - A one-off acronym that isn't a procedure → no mnemonic poster
 - A mid-unit lesson with no wall-setup signal → no section heading cards and no banner (both are wall furniture, produced once at the start of a unit and left up)
-- A card with no honest visual that isn't a step-by-step success-criteria card → it stays on the slides, not the wall (the visual gate, rule 2)
+- A card whose defining representation cannot be carried over → no card, and flag the gap so the missing visual gets built (rule 2)
 - A lesson whose learning the unit does not come back to → no card at all: the point-at test is the first one to apply and the one that most lessons fail
 - Anything a child standing in front of it could not use without the teacher explaining its layout (rule 3)
 
@@ -414,4 +415,4 @@ Image-scout fetches photos for slides during the same pipeline run. The filename
 | Only 1 card earned for a lesson | Single-page PDF is fine - still produced. |
 | Fixed wall build unavailable (graceful degradation) | Designer still runs and writes working-wall.json; orchestrator notes the build could not run in the final report. |
 | Lesson is dialogic / discovery and has no procedure | No worked example card. Other card types are still assessed individually on their own criteria. |
-| Card content is genuinely text-only — no diagram, no fitting lesson photo, no honest emoji cue — and it isn't a success-criteria card | No card. The content stays on the slides; note it in `rationaleNote`. (The visual gate, rule 2.) |
+| Card content is genuinely text-only and no picture would add information | Still earned if it passes the point-at test and reads as a usable reference. Note the choice in `rationaleNote`. |

@@ -12,13 +12,15 @@ A card earns its place only when it passes all of its family's criteria below, a
 
 Why this replaced the older test, which asked whether a child who missed the lesson could use the card alone: that test aims at the wrong reader. A card written for a child who was not there has to explain itself from scratch, so it comes out general and lifeless, and across 45 built lessons the teacher put up two of the 56 sheets it produced. The two he kept were the two he could point at a week later. The card still has to be usable by the child standing in front of it, with enough context, an example or a picture to help without the teacher explaining its layout; it does not have to reteach a missed lesson.
 
-The visual gate: the card carries something a child recognises by sight, a legitimate P1 diagram, a legitimate P1 photo, or a genuine card-level P2 picture on a family that supports one, with the single exception of a step-by-step success-criteria card.
+**The visual a card carries.** Choose the visual the card's learning needs, following `working-wall-visual-language.md` → Choose visuals for the card's learning. Preserve a defining representation: the diagram, source or photograph a child recognises the learning by. A concise text-led reference is valid where it is clear and usable. An unrelated picture does not make a weak card useful, and a decoration is never what earns a card its place.
+
+Why this replaced the older visual gate, which required every card to carry something a child recognises by sight with one exception for a step-by-step success-criteria card: the gate decided cards on whether a picture existed rather than on whether the reference was useful, so it omitted clear text-led references the teacher wanted and waved through a weak card that happened to carry a picture. What earns a card its place is the point-at test above, and whether the child in front of it can use it.
 
 The wall is finite. The normal output is one coherent overview of the lesson's main learning; a second teaching card is exceptional and must do a genuinely different, repeatedly consulted job that the first cannot absorb. Never more than two teaching cards. Wall furniture (a banner, section headings) is produced only on an explicit request from the teacher or the spawn prompt and counts as physical output.
 
 ## Every card
 
-An exact reference table carried over from a rendered teaching table is also a visual reference: its row/column relationships do the lookup job. It need not gain an unrelated picture. This applies only when the headers and rows match the slide table; putting arbitrary prose in cells does not meet the visual gate.
+An exact reference table carried over from a rendered teaching table is also a visual reference: its row/column relationships do the lookup job. It need not gain an unrelated picture. This applies only when the headers and rows match the slide table; arbitrary prose in cells is not a carried-over reference.
 
 Fields that every card shares, whatever its family.
 

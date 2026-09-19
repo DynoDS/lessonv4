@@ -136,18 +136,39 @@ test("vocabulary allows semantic P2 and forbids P3", () => {
   assert.match(templates, /forbid.*P3|P3.*forbidden/s);
 });
 
-test("working-wall authorities agree that P3 never earns wall-worthiness", () => {
+test("the wall's authorities agree on what earns a card its place", () => {
+  // These four documents are one authority split across four files, and on
+  // 6 September 2026 they stopped agreeing. That commit retired the visual
+  // gate, which had made a recognised picture the entry ticket for every card:
+  // the load-bearing principle, the card criteria, the visual rules and the
+  // deterministic check were all rewritten so that a clear text-led reference
+  // is valid and a missing optional picture is not grounds to drop a card.
+  //
+  // The retired rule survived in about ten other places, including the packet
+  // file cut for every run, so the designer was told to apply a "visual gate,
+  // rule 2" that rule 2 no longer contained. This test used to pin the retired
+  // wording in place, which is why it went red that day and stayed red: it
+  // asserted the old policy rather than agreement about the current one.
+  const contracts = read("references/working-wall-card-contracts.md");
   const designer = read("agents/working-wall-designer.md");
-  const preferences = read("references/working-wall-preferences.md");
   const visualLanguage = read("references/working-wall-visual-language.md");
   const builder = read("agents/working-wall-builder.md");
-  for (const content of [designer, preferences, visualLanguage]) {
-    assert.match(content, /P3/);
-    assert.match(
-      content,
-      /(?:P3[\s\S]*(?:never count|never makes a card wall-worthy|cannot.*earn)|ignore every P3[\s\S]*Only P1 or genuine P2 counts)/i
-    );
-  }
+
+  // What earns a card its place, in the file the packet cuts for every run.
+  assert.match(contracts, /point-at test/i);
+  assert.match(contracts, /text-led reference is valid/i);
+
+  // P3's real constraints, in the agent that places it.
+  assert.match(designer, /P3 is allowed only on/);
+  assert.match(designer, /A failed P3\s+removes only that decoration, never the card/);
+  assert.match(
+    designer,
+    /A decoration is not teaching content and never what makes a card worth its\s+space/
+  );
+
+  // A decoration never stands in for the teaching, in the file that owns visuals.
+  assert.match(visualLanguage, /P3 decoration does not replace teaching content/);
+
   for (const type of [
     "stickyKnowledge",
     "workedExample",
@@ -160,6 +181,35 @@ test("working-wall authorities agree that P3 never earns wall-worthiness", () =>
   }
   assert.match(builder, /OPTIONAL_DECORATION_OMITTED/);
   assert.match(builder, /non-fatal|does not fail/i);
+});
+
+test("no wall instruction still asserts the retired visual gate", () => {
+  // Pointed the other way round from the test above, because the failure worth
+  // catching is a retired rule left running, not a current one left unsaid. A
+  // passage may still name the gate to record that it was replaced, or to
+  // forbid an `entryTicket` field; asserting it as live is what fails here.
+  const RETIRED =
+    /visual gate|visual-entry|entry.?ticket|words-only|earns wall-worthiness|recognised visual that earns/i;
+  const RECORDS_THE_RETIREMENT = /replaced|retired|no longer|do not add fields/i;
+
+  for (const file of [
+    "agents/working-wall-designer.md",
+    "agents/working-wall-builder.md",
+    "references/working-wall-card-contracts.md",
+    "references/working-wall-preferences.md",
+    "references/working-wall-visual-language.md",
+    "references/context-pictures.md",
+    "skills/make-lesson/playbook-lite.md",
+    "scripts/working-wall-packet.py",
+  ]) {
+    for (const paragraph of read(file).split(/\r?\n\s*\r?\n/)) {
+      if (!RETIRED.test(paragraph)) continue;
+      assert.ok(
+        RECORDS_THE_RETIREMENT.test(paragraph),
+        `${file} still asserts the retired visual gate: ${paragraph.trim().slice(0, 160)}`
+      );
+    }
+  }
 });
 
 test("the drawing-landed confirmation makes the smallest P3-only repair first", () => {
