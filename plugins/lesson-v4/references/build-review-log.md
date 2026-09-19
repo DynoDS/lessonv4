@@ -1,6 +1,6 @@
 # Build review log
 
-## 2026-09-19 One modelled number per figure, and the first case is the simplest one (4.2.222)
+## 2026-09-19 One modelled number per figure, and the first case is the simplest one (4.2.237)
 
 Daniel, after teaching the rebuilt Year 4 rounding lessons ("the children got it ... oh, that's so easy"), raised two small things about the nearest-100 deck. On the first My Turn, `Round 34` and `Round 50` sat above one number line: "I'd round 34 ... now to show them the second one I need to click the rubber, I need to rub all of the things that I've done out and then I need to do it again. It would be so much quicker if I just had an extra slide." And he questioned the order: after practising taking the tens and ones off three- and four-digit numbers, is a two-digit number really the easy first case, when 34 makes both digits 0 and the answer 0?
 
