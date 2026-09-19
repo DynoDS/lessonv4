@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-09-19 The reveal warning means a reveal, and a 67 refusal names where the number lives (4.2.244)
+
+Read from the first Codex run on this week's changes (Year 4 Lesson 12, nearest 1,000). Two things it reported as accepted minor issues were faults in the checks rather than in the lesson.
+
+**The answer-reveal warning cried wolf.** It fires on any title mentioning an answer, so `Can the answer be zero?` and `Does this answer work?`, both question slides, were warned for carrying no `||` marker, and the run recorded them as accepted. A warning a run learns to accept is a warning that will be accepted when it is right. It now fires only on a label that IS a reveal: one ending in `answer`/`answers`, or in the `- check` house form.
+
+**The 67 refusal fired where the number was printed, not where it was chosen.** A Greater Depth answer carried 6,780; the worksheet build refused it, the focused repair could not fix it because the question came from `adaptation.md`, and it took an adaptation-designer revision. The message now says to change the number where it was chosen (the lesson design, or the adaptation for a Below or Greater Depth question) and rebuild from there, because editing the spec alone leaves the source wrong.
+
+**What the same run says about this week's other changes.** The lesson designer and design reviewer both launched at `gpt-6-astra/low` as asked, and the review still returned REDESIGN REQUIRED once, for named children with no portrait contract. The worksheet's 67 was caught. The deck still carried paired models on one line and criteria at 18pt, both built before 4.2.237 and 4.2.243 respectively.
+
+**Also seen, not repaired here.** The run's own note that completed answer lines could not mark both values on one line is the same shape as the paired-model fault, and 4.2.237 removes the case by giving each modelled number its own line. Criteria fitting at 18pt on four slides is the criteria-wordiness thread, not a layout fault. And a plugin version was bumped while the run was live, so its cache (4.2.239) disappeared mid-review and a reference was read from 4.2.240; the run survived, and the lesson is not to publish a version while a Codex run is in flight.
+
+**Evidence.** A four-title fixture: the two question titles pass, `Answers` and `- check` still warn. Builder suite 670.
+
 ## 2026-09-19 Every sheet says why it is books or sheet (4.2.244)
 
 Daniel, on the Year 4 nearest-1,000 worksheets: "I noticed its all write on sheet, but felt it could have bene wrote in books, right? ... can we find out if the agent did think about whether it was write on sheet or books by looking at its working files, and if it did make a decision, what was that decision?"

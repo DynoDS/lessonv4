@@ -464,8 +464,14 @@ function validateLesson(lesson, lessonDir) {
     // lists. Starter slides name themselves in `heading` rather than `title`, so
     // both are read here, and checking only `title` is what let a green-less starter
     // answer slide through unnoticed.
+    // The label has to BE a reveal, not merely mention answers: `Can the answer
+    // be zero?` and `Does this answer work?` are question slides, and warning
+    // them taught a run to ignore the warning it should have read (a Codex
+    // nearest-1,000 run, 19 September 2026, carried both as accepted minor
+    // issues). A reveal ends with the house form: `- check`, or `Answers` in a
+    // maths deck, or a title ending in the word itself.
     const answerLabel = String(slide.title || slide.heading || '');
-    if (/answer/i.test(answerLabel)) {
+    if (/(?:^|[-–—:]\s*)answers?$/i.test(answerLabel.trim()) || /-\s*check$/i.test(answerLabel.trim())) {
       const strings = collectStrings(slide);
       // A sort-board reveals natively: its placed items print in answer green
       // with no marker (markers inside it are banned and would render

@@ -58,3 +58,21 @@ test('a designer who names a height mode still gets it', () => {
   const measured = measureText(ZONE, hugged, {});
   assert.ok(measured && measured.h < ZONE.h, 'an explicit hug is honoured on a reveal');
 });
+
+test('a question slide that mentions answers is not warned as a reveal', () => {
+  const { validateLesson } = require('../src/validate');
+  const slide = (title) => ({
+    template: 'body-full', title, designUnitId: 'u',
+    body: { type: 'text', value: 'Round 240 to the nearest 1,000.' }
+  });
+  const warnOf = (title) => {
+    const result = validateLesson({
+      lessonName: 'x', yearGroup: 'Year 4', subject: 'Maths', lo: 'x', slides: [slide(title)]
+    }, '.');
+    return (result.warnings || []).join(' ');
+  };
+  assert.doesNotMatch(warnOf('Can the answer be zero?'), /looks like an answer slide/);
+  assert.doesNotMatch(warnOf('Does this answer work?'), /looks like an answer slide/);
+  assert.match(warnOf('Answers'), /looks like an answer slide/);
+  assert.match(warnOf('Your Turn - Round the whole set - check'), /looks like an answer slide/);
+});

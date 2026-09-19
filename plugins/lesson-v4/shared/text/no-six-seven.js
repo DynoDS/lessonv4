@@ -86,7 +86,10 @@ function sixSevenMessage(hits, what) {
     `by a 7 sets it off, commas or not. Choose a different number that does the same ` +
     `mathematical job (the same number of digits, and the same case, such as exactly ` +
     `halfway or crossing a hundred), and change it everywhere it appears: the question, ` +
-    `every answer, the notes and any figure drawn from it.`
+    `every answer, the notes and any figure drawn from it. Change it where the number ` +
+    `was chosen - the lesson design, or the adaptation for a Below or Greater Depth ` +
+    `question - and rebuild from there; editing only this spec leaves the source wrong ` +
+    `and the next build brings it back.`
   );
 }
 
