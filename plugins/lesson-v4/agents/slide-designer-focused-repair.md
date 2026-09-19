@@ -80,7 +80,7 @@ check passed, and the comparison was gone. The failure prints what to do next.
 
 Change only the affected slide data and unavoidable consequences of that change. Leave unrelated slide objects semantically unchanged.
 
-When the repair splits a Teach unit across two slides, the split falls where the teaching turns, never at the page boundary: the scene set on one slide, the look and the landed sentence on the next, the picture on both halves when the words are about it, and the unit's script cut where the slides cut so each slide carries the words for what it shows (`slide-composition-playbook.md` → Space-pressure order, `A Teach beat splits where its teaching turns`). The check refuses a half that is only a picture and its lead line, and a half with empty notes while the design has a script; a repair that reaches either has cut in the wrong place, not run out of room.
+When the repair splits a Teach unit across two slides, the split falls where the teaching turns, never at the page boundary, and to the shape the rule sets out (`slide-composition-playbook.md` → `A Teach beat splits where its teaching turns`). A half the check refuses was cut in the wrong place, not short of room.
 
 Repair with the layout's own levers, not with side effects. When a reference panel or table is too small to read, the first move is re-shaping - a side panel in a row instead of a full-width band under the task, a tighter card, a different template - not growing its share of the stack, which squeezes the task the reference serves. And never repair through an undocumented accident of the renderer (a whitespace value that flips an allocation branch): a lever the contract does not name is a lever the next engine change silently removes.
 
