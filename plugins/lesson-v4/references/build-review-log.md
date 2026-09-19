@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-19 A named misconception reaches the teacher, and live examples get a figure each (4.2.240)
+
+The first Codex lesson design on the new plugin (Year 4, round to the nearest 1,000) came back with the day's changes working: a find-the-two-thousands cycle before any rounding, its criteria the first two steps of the main criteria word for word, `onTheBoard` on every live model with a finished answer slide after it, 3,462 modelled first and the round-to-zero case (240) held back as its own teaching point, and the hundreds-digit shortcut derived at the end from the lines the class had used. Daniel read it and found two faults.
+
+**Two examples on one live figure came back.** The `Which thousand is nearer?` My Turn modelled `3,462` and `3,500` together, the guided beat modelled `3,780` and `3,000` together, and the representation configuration said in words that two questions on one interval share a line. 4.2.237's `ONE_MODEL_PER_ANNOTATED_FIGURE` would refuse those boards at build, so the design and the build now disagreed and the run would have stalled in repair. The rule lived only on the slide side, where the Lesson Designer never reads it. `teaching-sequence-skill-based.md` now carries it in the paragraph about examples inside one unit: the unit stays one unit, its examples do not share a drawn helper, and the signal is named.
+
+**Every teacher line in the lesson was empty.** The design named three wrong rules in `misconceptions` and referenced them on four beats, and `speakerNotes.teacherInfo` was `null` everywhere, so a class meeting `8,500` or `499` had nothing on screen or in the notes about either. `Teacher info` was written as a "only when not obvious" permission, which reads as an invitation to leave it out. The validator now requires `teacherInfo` on any unit that names a misconception, and the Lesson Designer's own line says what it holds: the wrong answer's shape and the one move that answers it, not the misconception restated.
+
+**Also.** The teacher's own name left the scaffold's character pool: the design had the class judging "Daniel rounds 6,432 and gets 5,432".
+
+**Evidence.** Two contract tests (the refusal, and a beat with no misconception needing no note), the fixture updated, Python suite back to the same 7 failures as before the change. The pasted design would now be refused at validation rather than at slide build, which is the cheaper place. Not yet rerun on Codex.
+
 ## 2026-09-19 The lesson designer and the design reviewer run at low effort on Codex (4.2.239)
 
 Daniel asked for both to be moved down a rung, checking first that "light" was the name (it is not: the Codex CLI refuses `light` and lists none, minimal, low, medium, high, xhigh, max, so low is the lowest working rung and his own `config.toml` already sits there).

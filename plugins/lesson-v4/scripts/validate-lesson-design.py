@@ -1926,7 +1926,20 @@ def validate_source_unit(
 
     validate_ref_list(unit["successCriteriaRefs"], f"{path}.successCriteriaRefs", sc_ids)
     sticky_refs = validate_ref_list(unit["stickyKnowledgeRefs"], f"{path}.stickyKnowledgeRefs", sticky_ids)
-    validate_ref_list(unit["misconceptionRefs"], f"{path}.misconceptionRefs", misconception_ids)
+    unit_misconception_refs = validate_ref_list(
+        unit["misconceptionRefs"], f"{path}.misconceptionRefs", misconception_ids
+    )
+    # A misconception the design names has to reach the teacher where it shows.
+    # The design records what children get wrong, and nothing downstream turns
+    # that into a note, so a Year 4 nearest-1,000 design named three wrong rules
+    # and every teacher line in the lesson was empty (19 September 2026).
+    if unit_misconception_refs:
+        expect(
+            unit["speakerNotes"]["teacherInfo"] is not None,
+            f"{path}.speakerNotes.teacherInfo is required: this beat names a "
+            "misconception, so the teacher needs what the wrong answer looks like "
+            "here and the one move that answers it, at the moment it shows",
+        )
     photo_refs = validate_ref_list(unit["photoRefs"], f"{path}.photoRefs", photo_ids)
 
     # A launch that shows a picture, diagram or helper names one this beat

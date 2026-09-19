@@ -62,8 +62,11 @@ class ScaffoldError(ValueError):
 # names here, at random, is what makes them vary. The three class characters
 # (Mr Sear, Miss Brooker, Bailey) are the slide designer's and are not in the
 # pool.
+# The teacher's own name is out of the pool: a Year 4 design had the class
+# judging "Daniel rounds 6,432 and gets 5,432", which reads as their teacher
+# getting it wrong (19 September 2026).
 CHARACTER_NAME_POOL = (
-    "Amira", "Arjun", "Ava", "Ben", "Chloe", "Daniel", "Eli", "Ella",
+    "Amira", "Arjun", "Ava", "Ben", "Chloe", "Dylan", "Eli", "Ella",
     "Ethan", "Farah", "Freya", "George", "Grace", "Hana", "Harry", "Isla",
     "Jack", "Jamal", "Kai", "Layla", "Leo", "Lily", "Maya", "Mia",
     "Nadia", "Noah", "Oliver", "Omar", "Priya", "Rosie", "Sam", "Sofia",

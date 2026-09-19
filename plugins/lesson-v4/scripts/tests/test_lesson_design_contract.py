@@ -308,6 +308,7 @@ def valid_contract():
                 sticky_refs=["sk-001"],
                 misconception_refs=["mc-001"],
                 script="Say to children: What should we partition first?",
+                teacher_info="An answer of 512 means the ones were added to the tens: point at the two part circles.",
                 on_the_board="On the board: Write 30 and 2 under 32, then 20 and 5 under 25.",
                 answer=exact_answer("57", "answer-slide"),
             ),
@@ -2698,4 +2699,23 @@ def test_the_refusal_names_the_longest_beats_to_cut():
 
 def test_a_lesson_inside_the_slot_passes():
     design, photos = valid_contract()
+    module.validate_design(design, photos)
+
+
+def test_a_beat_naming_a_misconception_carries_its_teacher_note():
+    # 19 September 2026: a nearest-1,000 design named three wrong rules and
+    # reached the teacher with every teacher line empty.
+    design, photos = valid_contract()
+    our_turn = next(
+        unit for unit in design["teachingSequence"] if unit["misconceptionRefs"]
+    )
+    our_turn["speakerNotes"]["teacherInfo"] = None
+    assert_invalid_contract(design, photos, "teacherInfo is required")
+
+
+def test_a_beat_naming_no_misconception_needs_no_teacher_note():
+    design, photos = valid_contract()
+    for unit in design["teachingSequence"]:
+        if not unit["misconceptionRefs"]:
+            unit["speakerNotes"]["teacherInfo"] = None
     module.validate_design(design, photos)
