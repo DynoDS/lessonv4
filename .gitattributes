@@ -1,1 +1,40 @@
-*.sh text eol=lf
+# Line endings are part of how this repository behaves, not a local preference.
+#
+# `core.autocrlf` is true on the machine this is developed on, so checkout wrote
+# CRLF while git stored LF. That left a mixed working tree: a file git last wrote
+# carried CRLF, a file a tool last wrote carried LF, and the same check could
+# pass for one and fail for the other.
+#
+# Four of them broke on it in one day (19 September 2026). Three size budgets
+# counted bytes off the disk, so they charged a file one byte per line for
+# nothing and failed a 10,000-byte budget on a fresh clone while passing here.
+# An exact-view test sliced a reference by offset after reading it in text mode,
+# then compared the slice against the reader it was testing, which opens the same
+# file with `newline=""` on purpose; five subtests failed against views that were
+# correct. Each fault looked like the thing it was measuring rather than like a
+# line ending, and each was invisible on the machine that introduced it.
+#
+# So text is LF everywhere, on disk as well as in the repository, and what a
+# check reports no longer depends on who last wrote the file. Nothing stored
+# changes: git already held LF, so this only settles what gets written out.
+
+* text=auto eol=lf
+
+# Media and archives are never line-ending converted, whatever the content
+# detection decides about them. The library index is gzip; a single flipped byte
+# makes it unreadable rather than merely wrong.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.pptx binary
+*.docx binary
+*.xlsx binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.gz binary
+*.zip binary
