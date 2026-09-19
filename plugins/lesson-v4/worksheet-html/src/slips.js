@@ -328,10 +328,22 @@ function packShortQuestions(content, widthMm) {
     if (run.length < 2 || across < 2) {
       out.push(...run.map((r) => r.node));
     } else {
+      // Each column is as wide as the run's longest question needs, and what is
+      // left over goes in one empty column at the right, rather than being
+      // shared out so that six four-digit numbers sit a finger apart across the
+      // page. Stated parts are exact, so the columns still line up row to row -
+      // (3a) above (3e) - which is what makes a run readable at a glance.
+      const spareMm = widthMm - across * cellMm;
+      const trailing = spareMm > GAP_MM;
       for (let i = 0; i < run.length; i += across) {
         const cells = run.slice(i, i + across).map((r) => r.node);
         while (cells.length < across) cells.push(COLUMN_FILLER());
-        out.push({ row: cells, parts: cells.map(() => 1) });
+        const parts = cells.map(() => cellMm);
+        if (trailing) {
+          cells.push(COLUMN_FILLER());
+          parts.push(spareMm);
+        }
+        out.push({ row: cells, parts });
       }
     }
     run = [];

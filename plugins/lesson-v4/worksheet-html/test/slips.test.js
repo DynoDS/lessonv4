@@ -265,7 +265,10 @@ test("one-line questions share a row however the sheet wrote them", () => {
     1
   );
   assert.equal(laid.stack.length, 1, "both questions on one row");
-  assert.equal(laid.stack[0].row.length, 2);
+  assert.deepEqual(
+    laid.stack[0].row.filter((c) => c.number !== undefined).map((c) => c.number),
+    [1, 2]
+  );
   // Too long to sit two across is still a line of its own.
   const long = "Round 4,280 to the nearest 1,000 and explain which digit told you.";
   const [wide] = slipNodesFor([{ stack: [q(1, long), q(2, long)] }], 1);
@@ -369,7 +372,7 @@ function oneNumber(number, text, group) {
   };
 }
 
-test("a run of one-number questions is laid out across the slip, in even columns", () => {
+test("a run of one-number questions is laid out in even columns, only as wide as they need", () => {
   // Daniel, on the first built slips: "there was space to put them together ...
   // horizontally to fill the space which might get more on page".
   const content = {
@@ -384,11 +387,24 @@ test("a run of one-number questions is laid out across the slip, in even columns
   const packed = packShortQuestions(content, 87);
   assert.equal(packed.stack[0].helper, "instruction");
   const rows = packed.stack.filter((node) => node.row);
+  const numbered = (row) => row.row.filter((c) => c.number !== undefined).map((c) => c.number);
   assert.equal(rows.length, 2);
-  assert.deepEqual(rows[0].row.map((n) => n.number), ["1a", "1b", "1c"]);
-  // The short last row keeps its columns under the ones above.
-  assert.equal(rows[1].row.length, 3);
-  assert.deepEqual(rows[1].row.slice(0, 2).map((n) => n.number), ["1d", "1e"]);
+  assert.deepEqual(numbered(rows[0]), ["1a", "1b", "1c"]);
+  // The short last row keeps its columns under the ones above, and every row
+  // has the same shape, so their edges line up.
+  assert.deepEqual(numbered(rows[1]), ["1d", "1e"]);
+  assert.equal(rows[1].row.length, rows[0].row.length);
+  assert.deepEqual(rows[1].parts, rows[0].parts);
+  // A column is as wide as the run needs, and the leftover is one empty column
+  // at the right rather than space shared out between the numbers.
+  const parts = rows[0].parts;
+  const columns = parts.slice(0, -1);
+  assert.equal(parts.length, rows[0].row.length);
+  assert.ok(columns.every((p) => p === columns[0]), "one width for every column");
+  assert.ok(
+    columns.reduce((a, b) => a + b, 0) < 87,
+    "the numbers take the width they need, not the width of the slip"
+  );
   // A long question keeps its own line.
   assert.equal(packed.stack[packed.stack.length - 1].number, 2);
 });

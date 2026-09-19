@@ -1,5 +1,17 @@
 # Build review log
 
+## 2026-09-19 A packed row takes the width it needs (4.2.249)
+
+Daniel, on the Expected slips page: "question one and two have a sort of gap in between and 3B and 3C have a sort of gap and I think that could have been pushed slightly, making the sheet narrower and I feel like that would help just a just a touch". Asked whether he wanted more slips a page from it: "It won't give me more per page. I'm not saying that, but I'm just saying it might look better."
+
+**What it looked like.** A packed row split the slip's whole width into even columns, so six four-digit numbers sat a finger apart across 174mm with nothing between them. The even columns are right - stated parts are exact, so every row puts its edges in the same place and (3a) sits above (3e) - but the share was being taken from the whole width rather than from what the numbers need.
+
+**The change.** Each column is now as wide as the run's longest question needs, which the packer already worked out to decide how many fit across, and the leftover goes into one empty column at the right. Same columns, same alignment row to row, the run drawn where the eye can take it in. Slips a page is unchanged, as he said it would be.
+
+**Not done, and why.** Two across on this pack would have taken Expected from 3 slips a page to 6, measured. It is blocked by 8mm: the numbered question carrying Freya's speech bubble needs 95mm (the helper's 85mm minimum plus the 10mm question label column) and half an A4 with 9mm slip margins is 87mm. Dropping the slip margin to 5mm does unlock it, and was tried and reverted: 5mm from the paper edge is inside the unprintable margin of many school printers, so the question number would be cut off. Every safe variation lands within a few millimetres of 95, because 95 is the constraint. The honest ways through are a narrower speech bubble on a slip or no figure beside it, both of which are content rather than spacing, and his call.
+
+**Evidence.** Rendered and looked at: (3a) to (3d) now sit together with (3e) and (3f) squarely beneath (3a) and (3b), and (1) and (2) close up by about 15mm. Worksheet engine 712 pass, 0 fail; the packing test now checks one width for every column, the columns taking less than the slip's width, and every row the same shape.
+
 ## 2026-09-19 The line goes above the words that introduce a run, and a slip stops at its own foot (4.2.248)
 
 Daniel, on the Expected slips page: "I would like a line in between those two and the next bit that says round to nearest a thousand because it looks like it kind of links with those." And: "under the question where it says explain, there's a big gap and then it's the line and then it's the new one. And all that is kind of dead space ... I trim under the explain, and then have to make another trim to the top of the next slip. So all that is just wasted trimming motions."
