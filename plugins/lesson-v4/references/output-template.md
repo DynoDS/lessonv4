@@ -711,7 +711,7 @@ The starter is one source unit. Its `content.activity` is the exact question or 
 }
 ```
 
-When the starter uses a real bank question image, put its exact path in `testQuestionPath`. Otherwise use `null`.
+`testQuestionPath` is always `null`. The route that filled it - a starter built on a real past-paper question image - is parked while its question source is rebuilt, so there is nothing to put here and no path to invent. The field stays in the shape because the validator and the slide side still understand it, and the route will return to it.
 
 ### Teaching sequence
 

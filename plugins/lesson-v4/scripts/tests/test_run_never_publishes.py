@@ -12,7 +12,7 @@ to need. It is built, it waits in the run's own folder, and a person installs it
 That boundary is what these tests hold, across every file a run actually reads.
 
 The deliberate commands - `/install-helper`, `/edit-templates`,
-`/add-test-questions`, `/make-subject-file` - are outside this rule on purpose.
+`/make-subject-file` - are outside this rule on purpose.
 Each is invoked by the teacher, for the package, with the teacher present.
 """
 from __future__ import annotations

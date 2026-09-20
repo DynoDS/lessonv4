@@ -465,21 +465,21 @@ Reach for these when the slide's job is to *put words in a character's mouth*: s
 
 **Use for:** three ideas to discuss, a think-pair-share with Bailey adding a playful prompt, gathering prior knowledge from the class.
 
-### 2.8 Test-question starter, tall crop — `starter-question-tall`
+### 2.8 Tall-image starter — `starter-question-tall`
 
-**Purpose:** A starter built around one tall test-question image (a portrait crop from the question bank, `[PLUGIN_ROOT]/builder/assets/test-questions/`). The standard full-width starter header leaves only the body height (~4.7") below it, which shrinks a tall question past the point a child at the back can read it. This template stacks the date, LO, and heading down the left column and gives the question the slide's full height on the right, so a portrait crop renders at or above the size it appears on the real paper.
+**Purpose:** A starter built around one tall portrait image the children read from, such as a scanned question. The standard full-width starter header leaves only the body height (~4.7") below it, which shrinks a tall image past the point a child at the back can read it. This template stacks the date, LO, and heading down the left column and gives the image the slide's full height on the right, so a portrait crop renders at or above the size it appears on paper.
 
 **Shape:** Left column carries the starter furniture (Date placeholder, LO, the "Starter" heading and the slide's own prompt when it has one) plus an optional content zone below. Right side is one full-height zone for the question image.
 
 **Slots:**
 - `lo` — the learning objective text (the builder prepends "LO: ").
 - `title` — the starter's own prompt, drawn under the fixed "Starter" heading in the left column. The heading itself is always "Starter" and is not a slot (§1.4).
-- `question` — the content object for the right zone, normally `{ "type": "image", "imagePath": "test-questions/<file>.png" }`. Zone class A.
+- `question` — the content object for the right zone, normally `{ "type": "image", "imagePath": "<file>.png" }`. Zone class A.
 - `left` — optional content object under the heading. On the question slide a short `text` prompt that states the learning action without choosing a recording surface or routine response method (for example, "Answer the question.") or nothing; on the answer slide the answer in green via the `||` marker (e.g. `{ "type": "text", "text": "||350 millilitres" }`). Zone class E-narrow.
 
-There is no `headerStyle` on this template — it draws its own starter header in the left column. Use it only for slide 1 (and its answer twin): the shape exists to carry the lesson-opening furniture beside a tall question.
+There is no `headerStyle` on this template — it draws its own starter header in the left column. Use it only for slide 1 (and its answer twin): the shape exists to carry the lesson-opening furniture beside a tall image.
 
-**Wide crops don't need it.** A landscape question fits under the normal starter header on `body-full` (image as `body`, `headerStyle: "starter"`) — pick by the crop's shape: clearly wider than tall → `body-full`; taller than wide, or near-square → `starter-question-tall`.
+**Wide crops don't need it.** A landscape image fits under the normal starter header on `body-full` (image as `body`, `headerStyle: "starter"`) — pick by the crop's shape: clearly wider than tall → `body-full`; taller than wide, or near-square → `starter-question-tall`.
 
 ---
 

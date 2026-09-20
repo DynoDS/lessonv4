@@ -197,8 +197,7 @@ are settings on the website, so give the steps and let the teacher click:
 
 For the person who develops the plugin, on their own computer, and nobody else.
 It lets a run add to the plugin's build log and lets the developer commands
-(installing a helper, editing templates, adding test questions, writing a
-subject file) change the plugin. On any other computer a run that edits its own
+(installing a helper, editing templates, writing a subject file) change the plugin. On any other computer a run that edits its own
 plugin makes a private copy that the next update overwrites, so it stays off
 unless they ask for it by name. Turn it on with
 `lesson-settings.py developer on "<the plugin folder inside their git checkout>"`,

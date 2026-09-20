@@ -30,7 +30,6 @@ CLAUDE_TOKEN = "${" + "CLAUDE_PLUGIN_ROOT}"
 EXPECTED_CLAUDE_TOKEN_COUNTS = {
     "skills/make-lesson/SKILL.md": 1,
     "skills/make-subject-file/SKILL.md": 1,
-    "commands/add-test-questions.md": 1,
     "commands/edit-templates.md": 1,
     "commands/install-helper.md": 1,
 }

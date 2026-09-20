@@ -138,7 +138,7 @@ This package supports Claude Code and Codex. Installing it is covered in
 
 Normal lesson runs read packaged files from `PLUGIN_ROOT` and write lesson files only to `WORKING_DIR` and `OUTPUT_DIR`.
 
-Workflows that edit plugin source (installing a helper, editing templates, adding test questions, writing a subject file, and the build review log) run only in developer mode: the computer the plugin is developed on names its writable checkout once with `scripts/lesson-settings.py developer on <plugin folder>`, or a cloud box sets `LESSON_RESOURCES_SOURCE_ROOT`. The verified internal value is called `PLUGIN_SOURCE_ROOT`. Everywhere else a run never writes to the plugin.
+Workflows that edit plugin source (installing a helper, editing templates, writing a subject file, and the build review log) run only in developer mode: the computer the plugin is developed on names its writable checkout once with `scripts/lesson-settings.py developer on <plugin folder>`, or a cloud box sets `LESSON_RESOURCES_SOURCE_ROOT`. The verified internal value is called `PLUGIN_SOURCE_ROOT`. Everywhere else a run never writes to the plugin.
 
 Repository-root `.codex/agents/` files are not required for package location or normal worker launches.
 

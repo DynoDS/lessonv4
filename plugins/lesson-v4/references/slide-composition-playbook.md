@@ -335,7 +335,7 @@ Do not copy the whole spoken script onto the board. Re-form the settled visible 
 
 ### Starter
 
-The starter is slide 1. It carries the Date and shortened displayed LO in the starter header. The full objective remains in teacher orientation and other planning surfaces. Teacher orientation appears at the start of slide 1 notes only. A definite starter answer follows immediately when the structured answer requests an answer slide. A test-question image remains large enough to read at projection distance.
+The starter is slide 1. It carries the Date and shortened displayed LO in the starter header. The full objective remains in teacher orientation and other planning surfaces. Teacher orientation appears at the start of slide 1 notes only. A definite starter answer follows immediately when the structured answer requests an answer slide.
 
 ### Vocabulary
 

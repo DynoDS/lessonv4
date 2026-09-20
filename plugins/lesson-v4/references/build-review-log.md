@@ -1,5 +1,60 @@
 # Build review log
 
+## 2026-09-20 The shipped test-question bank is removed, not retired (4.2.266)
+
+Daniel: "I removed the test question bank assets... when i finally merge lessonv4
+back to lesson resources, it wont have these assets to draw upon. So, I need you
+to find every instruction/code etc that was to do with finding these test
+questions... Remove it as if lesson v4 never had the feature at all. But don't
+remove it and forget about it."
+
+The bank was 1,992 past-paper PNGs inside the package
+(`builder/assets/test-questions/`) with every instruction pointing at that
+folder. It repeated the mistake the drawings library was moved out of the plugin
+to avoid: assets committed inside the package sit in its history for ever and
+every install carries them. The replacement is a separate repository searched the
+way the drawings are, by a packaged index of file names, fetching only what a
+lesson chooses.
+
+**What came out.** The assets, `references/test-question-bank.md`, the
+`/add-test-questions` command, the `question-extractor` agent and
+`scripts/question_crop.py` with its tests. The bank paragraph in
+`preferences.md` -> Starters, the starter instruction and the conditional read in
+`lesson-designer.md`. Two dangling mentions that would have pointed an agent at a
+capability it no longer has: the Starters contents line, and the example of when
+longer starter wording is justified.
+
+**What stayed, deliberately.** `starter-question-tall` (generalised in its
+wording from "test question" to "tall image", same shape, same reason),
+`testQuestionPath` with its validator rule, and `preferences.md` -> Practising a
+Test Question, which is about a teacher handing over a real question from an
+upcoming assessment and never depended on the bank. `testQuestionPath` is now
+documented as always `null` with the reason, because a field with no instruction
+beside it is a field an agent invents a value for.
+
+**Why removal and replacement were split.** The removal was fully decided: those
+instructions are wrong whatever the new bank looks like. The replacement is not,
+because the file names, the answer files and the answer pictures are still being
+produced. Writing instructions against a repository that does not exist means
+guessing paths and rewriting them when the real thing lands.
+
+**Parked, not deleted.** `parked/test-question-bank/` at the repository root
+holds the five removed files and a note carrying the teaching rules that were
+inside them - the retrieval target leads and the bank is searched for it,
+falling back to a written starter is the correct call rather than a failure, a
+file name gets you close but only the image confirms the question, year labels
+guide difficulty rather than gate it. Those are the teacher's decisions, not
+scaffolding, and they apply to the new source unchanged. The note also records
+the three decisions made for the new route before it was built: names that state
+the skill in a teacher's words rather than transcribe the question, an answer
+file beside each question carrying a `sure` / `unsure` flag, and the green answer
+drawn once into a second picture rather than positioned at lesson time, so a
+misplaced answer is visible to a person before it is visible to a class.
+
+**Cost, stated plainly.** No lesson can use a real test-question starter until
+the new source is wired in. That gap was unavoidable once the assets went; this
+only starts it sooner.
+
 ## 2026-09-20 A cloud run can sign in, so the repositories can stay private (4.2.265)
 
 Daniel, on having made a repository public for cloud runs: "Surely theres a way

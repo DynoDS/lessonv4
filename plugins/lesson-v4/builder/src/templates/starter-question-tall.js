@@ -4,12 +4,12 @@ const { FONT, COLOURS, SIZE_CEILINGS, FIT } = require('../styles');
 const { SLIDE_H, SLIDE_W, MARGIN_X, starterPrompt } = require('../layout');
 const { drawContent } = require('../content');
 
-// A starter built around one tall test-question image (a portrait crop from a
-// real paper). The usual full-width starter header would leave the image only
-// the body height below it, shrinking a tall question past readability — so
-// this template stacks the date / LO / heading down the LEFT column and gives
-// the question the slide's FULL height on the right. Wide question crops
-// don't need this: they fit under the normal starter header on `body-full`.
+// A starter built around one tall portrait image the children read from, such
+// as a scanned question. The usual full-width starter header would leave the
+// image only the body height below it, shrinking it past readability — so this
+// template stacks the date / LO / heading down the LEFT column and gives the
+// image the slide's FULL height on the right. Wide crops don't need this: they
+// fit under the normal starter header on `body-full`.
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const LEFT_X    = MARGIN_X;          // left column of header text

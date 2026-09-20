@@ -189,8 +189,6 @@ When you genuinely cannot serve the objective in the time and materials, that is
 
 `preferences.md` → Starters owns the starter (what it retrieves, its form, why predictions and framing belong elsewhere); read it before deciding. Populate `starter.content.activity`, `connection`, `format`, structured `answer`.
 
-**Real test question can be whole starter.** When bank question matches retrieval target, difficulty, authentic response form, may be whole starter. Paperwork: read `test-question-bank.md`, browse `[PLUGIN_ROOT]/builder/assets/test-questions/`, judge fit, work answer, record `testQuestionPath`, populate structured answer.
-
 **Real-world hook (maths):** `subject-maths.md` → Real-world hooks owns whether a lesson or a new concept opens with a real fact and image; it is judgement, not fixture.
 
 When using real facts, must stand up. Curriculum-stable fact safe from knowledge. Volatile fact (current population, "latest", precise recent date, quantity lesson leans maths on) - prefer robustly rounded claim staying true ("about 8 billion" not precise unchecked) or mark for teacher verify. Prefer rounded honest number over precise invented. Light touch: load-bearing volatile figure needs care, not every number.
@@ -574,7 +572,6 @@ A direction to read a section means consult its guidance at that decision, not f
 - Read only the triggered section of `lesson-designer-components.md` at the decision points named above: Dialogic route, Task-Centred route, Representation configurations, Generated worksheet or Photograph acquisition. Use the existing exact-section reader and batch sections needed together. Do not open this component file in full or load it at startup.
 - Read `modelling-formats.md` when choosing `modellingState`.
 - Read `reasoning-prompts.md` when Apply or worksheet reasoning is being designed.
-- Read `test-question-bank.md` only when starter retrieval matches a bank skill.
 - Once structure is chosen, read exactly one matching `teaching-sequence-*.md` file.
 - Read `stick-in-sheets-pedagogy.md` → The write-on moments only when recording `resourceOpportunities.stickIn` and a moment is not clear-cut.
 - After decisions are settled, read `lesson-design-scaffold.md` on the normal scaffold route.
