@@ -1,8 +1,30 @@
 # Parked: the shipped test-question bank
 
-Removed from the plugin on 20 September 2026, in 4.2.266. Nothing here is
-abandoned. It is parked because its question source is being rebuilt, and the
-teaching thinking in it is worth more than the code it was attached to.
+Removed from the plugin on 20 September 2026 in 4.2.266, and replaced the same
+day in 4.2.267 by a route that fetches from `DynoDS/maths-test-question-bank`.
+
+**The route is live again, so nothing here is guidance.** The teaching rules
+below were carried into `references/test-question-bank.md`, which is the file to
+read and the file to change. What is kept here is the history: the files as they
+were when the bank lived inside the plugin, and the reasoning that produced the
+replacement.
+
+## What changed in the replacement
+
+- **The bank is outside the plugin**, searched by a shipped index of names and
+  fetched one question at a time, exactly as the drawing library is.
+- **It is maths only, and that is enforced rather than asked for.**
+  `search-test-questions.js` refuses any other subject at the boundary, so a
+  history lesson cannot be handed a maths question by a name that happened to
+  match on words.
+- **Answers come with the question.** The bank carries the exam board's own
+  answer beside every question, so the designer no longer works one out from the
+  picture. The rule below about working the answer out while the image is in
+  front of you is the one piece that did not carry over.
+- **The cropping tools stayed parked.** `/add-test-questions`, the
+  `question-extractor` agent and `question_crop.py` built the old in-plugin
+  bank. The new bank is built in its own repository, so they are history rather
+  than tools waiting to be reconnected.
 
 ## Why it was removed
 

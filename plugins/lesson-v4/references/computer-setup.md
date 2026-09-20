@@ -259,10 +259,11 @@ line `UNSPLASH_ACCESS_KEY=<the key>`, then read the file back to confirm it
 saved. Never repeat the key in chat or put it in a lesson file. A new key allows
 50 searches an hour, which is plenty for a lesson or two at a time.
 
-## Signing in to GitHub (the drawings library)
+## Signing in to GitHub (the drawings library and the maths question bank)
 
-The optional drawings come from a library on GitHub. While that library is
-private, the computer has to be signed in to a GitHub account that can see it.
+The optional drawings, and the real test questions a maths starter can be built
+on, each come from their own private repository on GitHub. The computer has to
+be signed in to a GitHub account that can see them. One sign-in covers both.
 Signing in is interactive, so the teacher does the last step themselves:
 
 1. If `gh --version` fails, install the GitHub app for the terminal first:
@@ -279,4 +280,5 @@ A cloud box cannot do any of this: nobody is there to follow a browser. It signs
 in with `GITHUB_TOKEN` instead, set as an environment variable where the host
 has them and carried in the task's own text where it does not. See "Scheduled
 lessons in ChatGPT Work or Codex" above. Without it the drawings are simply
-absent from every cloud lesson, with a note saying so and no other sign.
+absent from every cloud lesson, with a note saying so and no other sign, and a
+maths starter falls back to written questions rather than a real paper one.

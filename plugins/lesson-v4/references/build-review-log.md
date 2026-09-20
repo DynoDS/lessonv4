@@ -1,5 +1,61 @@
 # Build review log
 
+## 2026-09-20 The test-question starter returns, from its own repository (4.2.267)
+
+Removed in 4.2.266 and back the same day, because the source it needed now
+exists. `DynoDS/maths-test-question-bank` holds 1,915 real maths reasoning
+questions, each with the exam board's own mark-scheme answer beside it. The
+plugin ships a 34 KB index of question names and fetches one question at a time,
+which is the drawing library's shape rather than the bundled folder's.
+
+**The transport was shared, not copied.** The drawings library already solved
+the hard part: a token from the environment or `gh auth token`, the HTTPS_PROXY
+tunnel a cloud box needs, and the plain-address-then-API order that keeps a
+public library off GitHub's 60-an-hour allowance while a private one still
+arrives. That moved into `shared/github-file-fetch.js` and both libraries use
+it, so a future fix to the proxy or private-repository route reaches both. The
+drawings module lost 150 lines and behaves identically; the full suite proves it.
+
+**Maths only is a mechanism, not a sentence.** `search-test-questions.js`
+requires `--subject maths` and refuses anything else at the boundary, naming the
+subject it turned away and telling the caller to design the starter as usual.
+The bank holds nothing for history, science, geography, RE or PSHE, and a name
+that matched on words alone would look exactly like an answer to the request.
+A rule in prose would have been read by an agent that had already decided.
+
+**A question never arrives without its answer.** `fetchQuestion` deletes the
+picture it just fetched when no answer came with it, and the index builder
+leaves out any question with no answer file beside it. Both exist because the
+failure they prevent is a starter slide with a question on it and nothing to
+reveal, which is only discovered in front of a class.
+
+**Names matching is not the same as questions arriving.** With no sign-in, no
+network, or fetching switched off, the shortlist still fills with names. That
+reads exactly like a list of choices, so when nothing was fetched the search
+says `TEST_QUESTION_UNAVAILABLE` and "do not choose a question you have not
+seen" rather than printing six names and stopping.
+
+**Answers are the board's, not the designer's.** The old route had the designer
+work the answer out from the picture, which was a fresh chance to be wrong in
+every lesson. The bank carries the official answer, so the designer records what
+it is given. The `note:` line beside it carries the mark scheme's alternatives
+and method, which is for a teacher standing at the board and never for a slide.
+
+**Year labels still guide rather than gate.** A thin year group answers nothing,
+so the search widens to the years either side on its own and prints
+`TEST_QUESTION_WIDENED`. Silent widening would have hidden the one fact a
+teacher needs when judging whether a question suits the class.
+
+Restored with it: the Starters rule in `preferences.md`, the starter route in
+`lesson-designer.md` under a maths condition and a conditional read, and
+`testQuestionPath` in `output-template.md`, which 4.2.266 had documented as
+permanently `null`. `parked/test-question-bank/` is now marked as history rather
+than guidance, and records which of its rules did not carry over and why.
+
+Ten new tests cover the subject refusal, what arrives with a question, the
+widening, the unavailable path, and that the shipped index never names a
+question the bank cannot answer.
+
 ## 2026-09-20 The shipped test-question bank is removed, not retired (4.2.266)
 
 Daniel: "I removed the test question bank assets... when i finally merge lessonv4
