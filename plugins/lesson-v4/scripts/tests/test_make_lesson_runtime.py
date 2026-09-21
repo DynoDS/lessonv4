@@ -542,7 +542,14 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # already existed four hundred lines away, keyed to a designer signal
         # this path never emits; the rule had to move next to the reconcile it
         # is an exception to.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 76 * 1024)
+        # Raised from 76 KiB later the same day, 21 September 2026, for the
+        # flagged-deck decoration route: about 240 bytes. Second raise in one
+        # day, which is worth saying out loud. Both are rules the teacher asked
+        # for after a deck reached him broken, and both had to sit at the
+        # decision they govern rather than in a reference. The file is now the
+        # thing to consolidate: a third raise should be a consolidation pass
+        # instead, and the per-slice budget below is the one that still says no.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 77 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

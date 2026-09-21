@@ -220,3 +220,48 @@ def test_the_playbook_no_longer_reads_as_permission_to_skip_measuring():
         encoding="utf-8"
     )
     assert "It is not a licence to skip the measurement" in playbook
+
+
+class AFlaggedDeckStillGetsItsDrawingsTests(unittest.TestCase):
+    """One fault blanking two slides used to empty the layer on all eighteen.
+
+    The playbook skipped the decorator whenever the slide check failed, so a
+    Year 4 PSHE deck whose two task slides could not be laid out shipped its
+    other sixteen with no drawing on any of them (21 September 2026). That is
+    one fault charged twice, and it reads against the rule that a deck the
+    repair round did not clear still ships with its slides flagged.
+
+    A flagged deck IS settled: nothing further will change it. So the pass runs
+    over it, the flagged slides answer for themselves, and every slide that drew
+    is judged as it would be on a clean deck.
+    """
+
+    def test_the_playbook_runs_the_decorator_on_a_flagged_deck(self) -> None:
+        playbook = PLAYBOOK.read_text(encoding="utf-8")
+        self.assertIn("run the Slide\nDecorator over that flagged deck", playbook)
+        self.assertIn("--flagged-slides", playbook)
+        self.assertIn("`slide-flagged`", playbook)
+
+    def test_the_playbook_no_longer_skips_the_pass_for_a_failed_check(self) -> None:
+        playbook = PLAYBOOK.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "skip the Slide Decorator with\n`SLIDE_DECORATION_OMITTED: slide check did not pass`",
+            playbook,
+        )
+
+    def test_the_decorator_knows_the_flagged_deck_is_the_exception(self) -> None:
+        decorator = DECORATOR.read_text(encoding="utf-8")
+        self.assertIn("Unless the orchestrator launched you on a flagged deck", decorator)
+        self.assertIn("--deliver-flagged", decorator)
+        self.assertIn("FLAGGED_SLIDES:", decorator)
+
+    def test_the_decorator_still_stops_on_a_deck_nobody_settled(self) -> None:
+        """The discrimination case. A deck still being repaired is not a flagged
+        deck, and decorating one places drawings against space about to move."""
+        decorator = DECORATOR.read_text(encoding="utf-8")
+        self.assertIn("return `SLIDE_DECORATION_FAILED`", decorator)
+        self.assertIn("the composition was not settled", decorator)
+
+    def test_a_flagged_slide_takes_no_drawing(self) -> None:
+        decorator = DECORATOR.read_text(encoding="utf-8")
+        self.assertIn("which takes no drawing", decorator)

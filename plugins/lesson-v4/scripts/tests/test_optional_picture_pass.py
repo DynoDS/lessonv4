@@ -52,6 +52,7 @@ class CheckRunner(unittest.TestCase):
         resolver: str = "unavailable",
         room: list[dict] | None = None,
         held: list[str] | None = None,
+        flagged: str | None = None,
     ):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -71,6 +72,8 @@ class CheckRunner(unittest.TestCase):
                     encoding="utf-8",
                 )
                 argv += ["--room", str(room_path)]
+            if flagged is not None:
+                argv += ["--flagged-slides", flagged]
             if library:
                 # A library root is a place drawings are kept, and it is empty
                 # here on purpose. What the evidence check reads is the index
@@ -805,3 +808,81 @@ class TheDeckThatFailedTests(CheckRunner):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ABlankFlaggedSlideSaysSoTests(CheckRunner):
+    """A deck that ships flagged used to lose its drawings on every slide.
+
+    The playbook skipped the Slide Decorator whenever the slide check failed, so
+    a Year 4 PSHE deck whose two task slides could not be laid out delivered its
+    other sixteen with no drawing on any of them (21 September 2026). That is one
+    fault charged twice, against the rule that a flagged deck still ships.
+
+    The decorator can now run on the flagged deck, and the slides that could not
+    be drawn answer for themselves. The reason is settled by the build's
+    SLIDES_FLAGGED line rather than by the pass, because a reason nobody can
+    check is the free answer this file exists to remove.
+    """
+
+    def test_a_flagged_slide_is_recorded_as_flagged(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+            {"slide": 2, "decision": "none", "reason": "slide-flagged"},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg"), bare_slide()), flagged="2"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("1 slide-flagged", result.stdout)
+
+    def test_a_slide_that_laid_out_cannot_claim_it(self):
+        """The discrimination case, and the reason this is checked at all: it
+        would otherwise be a free answer for any slide somebody did not fancy."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "slide-flagged"},
+            {"slide": 2, "decision": "none", "reason": "slide-flagged"},
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide(), bare_slide()), flagged="2"
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("the build laid it out", result.stderr)
+
+    def test_the_reason_needs_the_build_to_have_named_a_flagged_slide(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "slide-flagged"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("named no flagged slides", result.stderr)
+
+    def test_a_flagged_slide_declined_some_other_way_fails(self):
+        """A blank page has no measurable room, so `full` there is a claim about
+        space that was never drawn."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), flagged="1")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("ships blank", result.stderr)
+
+    def test_a_drawing_is_never_placed_on_a_flagged_slide(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg")), flagged="1"
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("put a drawing on it", result.stderr)
+
+    def test_a_deck_with_nothing_flagged_is_unchanged(self):
+        """The control. Naming no flagged slides must not alter a normal deck."""
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+            {"slide": 2, "decision": "none", "reason": "full"},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg"), bare_slide()), flagged=""
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)

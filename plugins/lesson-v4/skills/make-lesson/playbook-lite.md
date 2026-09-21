@@ -1334,9 +1334,12 @@ friction file, whatever its result.
 
 **A deck the round did not clear still ships**, its slides flagged for the
 teacher (Daniel, 16 September 2026: "flag the slides and deliver it"). Hand `lesson.json` on as it stands: start any wall
-or stick-in track waiting for it, skip the Slide Decorator with
-`SLIDE_DECORATION_OMITTED: slide check did not pass`, and build as Track A
-says. Exclude the deck only when the build cannot write one.
+or stick-in track waiting for it, build as Track A says, then run the Slide
+Decorator over that flagged deck, passing the build's `SLIDES_FLAGGED:` numbers
+as `--flagged-slides`. Those slides answer `slide-flagged` and take no drawing;
+every slide that drew is decorated as usual, because one fault blanking two
+slides should not also empty the layer on the sixteen beside them. Exclude the
+deck only when the build cannot write one.
 
 A repair that declares a real cross-resource impact has changed something
 another resource mirrors. Rebuild both affected resources and recheck that

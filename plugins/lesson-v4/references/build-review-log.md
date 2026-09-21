@@ -3900,3 +3900,35 @@ after being withheld whole that morning. No essential photograph was lost, so
   minor issue** ("slide 15 contains an underfilled advice box", 23% of a 2.09in
   box). Third run in a row that this check has been right and nobody has owned
   it.
+
+- **Repaired in 4.2.273. A flagged deck no longer loses its drawings as well as
+  its two slides.** The playbook skipped the Slide Decorator whenever the slide
+  check failed, so the PSHE rebuild delivered sixteen slides that laid out
+  perfectly with no drawing on any of them, because two did not. One fault
+  charged twice, and against 4.2.166.
+  *The scoping note in the entry above was right that this is not a one-line
+  change, and wrong that it needed a new decorator. A deck the repair round did
+  not clear IS settled: nothing further will change it, so the pass can run over
+  it. `build.js --deliver-flagged` already builds that deck and already prints
+  `SLIDES_FLAGGED:` naming every slide it could not lay out, which is the
+  machine-readable list the check needed and the reason this cost three files
+  rather than a rewrite.*
+  *`check-optional-pictures.py` gains the reason `slide-flagged` and
+  `--flagged-slides`, and holds it to the build both ways: the reason is refused
+  on a slide the build laid out, refused entirely when no list was passed, and a
+  slide on the list must carry it and no drawing. Without that list it would be
+  the free answer this file exists to remove. The playbook now runs the
+  decorator over the flagged deck instead of skipping it, and the decorator's
+  own "a settled deck passes, otherwise stop" rule gains the flagged-deck
+  exception while keeping its refusal for a deck still being repaired, where
+  drawings would be placed against space about to move.*
+  *Eleven tests: six on the check including the discrimination case that a slide
+  which drew cannot claim the reason, and five on the guidance including the
+  refusal that must survive. Verified end to end on the real flagged deck, whose
+  18-slide record now reports `OPTIONAL_PICTURE_DECLINED: 16 full, 2
+  slide-flagged` with the list and refuses both entries without it.*
+  *The whole-file playbook budget went 76 to 77 KiB, about 240 bytes, the second
+  raise in one day. Both were rules Daniel asked for after a deck reached him
+  broken and both had to sit at the decision they govern. Recorded in the test
+  that a third raise should be a consolidation pass instead; the per-slice
+  budget, which is the one a worker actually pays, still passes untouched.*

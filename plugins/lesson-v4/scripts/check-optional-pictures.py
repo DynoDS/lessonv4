@@ -92,6 +92,7 @@ REASONS = {
     "nothing-fits": "the library was searched for this slide and nothing suitable came back",
     "drawings-unreachable": "the library listed drawings for this slide and none of them could be opened",
     "library-unavailable": "the drawing library is not on this machine",
+    "slide-flagged": "this slide could not be laid out, so it ships blank and flagged for the teacher",
 }
 # The reasons that must be paid for with search evidence rather than asserted.
 # `would-mislead` joined them on 21 September 2026: see the note below and the
@@ -739,6 +740,7 @@ def check(
     library_root: Path | None,
     room: dict[int, dict] | None = None,
     room_record: dict | None = None,
+    flagged: set[int] | None = None,
 ) -> tuple[list[str], dict[int, list[str]], dict[str, int]]:
     record = read_json(pass_path, "optional-picture-pass.json")
     lesson = read_json(lesson_path, "lesson.json")
@@ -847,10 +849,53 @@ def check(
             if reason == "drawings-unreachable":
                 check_unreachable(entry, label, library_root, failures)
                 continue
+            if reason == "slide-flagged":
+                # Settled by the build, not by the pass. `--deliver-flagged`
+                # prints SLIDES_FLAGGED naming every slide it could not lay out,
+                # so this reason is true of exactly those slides and of no
+                # others. Without the list nobody can tell, and an unverifiable
+                # reason is the free answer this file exists to remove.
+                if flagged is None:
+                    failures.append(
+                        f"slide {number} is recorded as slide-flagged, but this "
+                        "run named no flagged slides. That reason is settled by "
+                        "the build's SLIDES_FLAGGED line; pass it with "
+                        "--flagged-slides or use a reason about this slide"
+                    )
+                elif number not in flagged:
+                    failures.append(
+                        f"slide {number} is recorded as slide-flagged, but the "
+                        "build laid it out. A slide that renders is a slide "
+                        "with room, and it answers with one of the reasons "
+                        "about its own space or subject"
+                    )
+                continue
             if reason in EVIDENCED_REASONS:
                 check_evidence(entry, label, library_root, failures, reason)
             if reason == "would-mislead":
                 check_bias_claim(entry, label, failures)
+
+    # The other direction. A slide the build could not lay out ships blank with
+    # a note on it, so a drawing placed there lands on a page the teacher has
+    # already been told to check, and the pass must say that is what happened
+    # rather than claim the slide was full or that nothing fitted.
+    for number in sorted(flagged or ()):
+        entry = seen.get(number)
+        if entry is None:
+            continue
+        if entry.get("decision") == "used":
+            failures.append(
+                f"slide {number} could not be laid out and ships blank, but the "
+                "pass put a drawing on it. Record it as slide-flagged and leave "
+                "it alone"
+            )
+        elif entry.get("reason") != "slide-flagged":
+            failures.append(
+                f"slide {number} could not be laid out and ships blank, but the "
+                f"pass declined it as {entry.get('reason')!r}. A blank flagged "
+                "slide is slide-flagged, which says why there is nothing here "
+                "instead of describing space that was never drawn"
+            )
 
     missing = sorted(set(actual) - set(seen))
     if missing:
@@ -886,7 +931,32 @@ def main(argv: list[str] | None = None) -> int:
              "taken on the record's word. Omit only when the run produced no "
              "render evidence to measure.",
     )
+    parser.add_argument(
+        "--flagged-slides",
+        help="the slide numbers the build could not lay out, as the "
+             "`SLIDES_FLAGGED:` line of a `--deliver-flagged` build names them "
+             "(comma separated). Those slides ship blank with a note, so they "
+             "answer `slide-flagged` and carry no drawing. Without this, that "
+             "reason is refused, because nothing else can tell a blank slide "
+             "from a slide somebody declined.",
+    )
     args = parser.parse_args(argv)
+
+    flagged: set[int] | None = None
+    if args.flagged_slides is not None:
+        flagged = set()
+        for part in args.flagged_slides.replace(" ", "").split(","):
+            if not part:
+                continue
+            try:
+                flagged.add(int(part))
+            except ValueError:
+                print(
+                    "OPTIONAL_PICTURE_PASS_FAILED: --flagged-slides takes slide "
+                    f"numbers separated by commas, not {part!r}",
+                    file=sys.stderr,
+                )
+                return 1
 
     if args.library_root:
         library_root = Path(args.library_root)
@@ -906,7 +976,8 @@ def main(argv: list[str] | None = None) -> int:
             read_json(Path(args.room), "slide-room.json") if args.room else None
         )
         failures, actual, reason_counts = check(
-            Path(args.pass_record), Path(args.lesson), library_root, room, room_record
+            Path(args.pass_record), Path(args.lesson), library_root, room,
+            room_record, flagged,
         )
     except PassError as exc:
         print(f"OPTIONAL_PICTURE_PASS_FAILED: {exc}", file=sys.stderr)

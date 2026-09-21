@@ -52,6 +52,8 @@ node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
 
 The command performs the real specification check and a real scratch build in a unique private directory, and prints `SLIDE_DESIGN_PREVIEW_DIR:` and `SLIDE_DESIGN_PREVIEW:` before `SLIDE_DESIGN_CHECK_OK: [N] slides`. Leave that directory where it is when you finish: it sits inside the run's working directory, which is kept, so deleting it tidies nothing, and the deletion is refused outright by some approval policies - which cost a friction line and a note in the teacher's report on every run for no gain. A settled deck passes; if it does not, the composition was not settled and the fault is not yours: return `SLIDE_DECORATION_FAILED` with every `BUILD_DIAGNOSTIC:` line verbatim and stop.
 
+**Unless the orchestrator launched you on a flagged deck.** A deck whose repair round did not clear still ships, its bad slides flagged for the teacher, and then it is settled: nothing further will change it. The orchestrator says so by giving you `FLAGGED_SLIDES:` with the numbers the build could not lay out. Run the pass over it as normal, with two differences: build the preview with `--deliver-flagged` so the deck renders at all, and answer each flagged slide `slide-flagged`, which takes no drawing. Those slides ship blank with a note on them, so a drawing there lands on a page the teacher has already been told to check. Every other slide is judged exactly as it would be on a clean deck, because a fault that blanked two slides is not a reason to leave the other sixteen bare (21 September 2026: a Year 4 PSHE deck delivered sixteen good slides with no drawing on any of them).
+
 Then render the preview pages exactly as the designer did:
 
 ```bash
@@ -110,7 +112,7 @@ Then check the pass record against the deck and the measurement:
   --library-root "[EDUCATIONAL_SVG_ROOT]"
 ```
 
-Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when no measurement exists. A failure names the slide and what is wrong with its line: a slide declined as full or competing that the render says has clear space is the common one, and the repair is to use that space, not to reword the record.
+Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when no measurement exists. On a flagged deck add `--flagged-slides "[FLAGGED_SLIDES]"`: without it the check refuses `slide-flagged`, because nothing else can tell a slide that would not draw from a slide somebody declined. A failure names the slide and what is wrong with its line: a slide declined as full or competing that the render says has clear space is the common one, and the repair is to use that space, not to reword the record.
 
 Render the new preview and look at every slide carrying a drawing. Judge one thing: did anything land on something a child reads.
 
