@@ -1,5 +1,46 @@
 # Build review log
 
+## 2026-09-21 The maths test-question starter comes out again, and stays out (4.2.268)
+
+Daniel: "find anything to do with maths test questions being used as starters...
+i dont want anything to do with it. its not ready. its not a feature needed
+right now."
+
+4.2.267 had rebuilt the route against `DynoDS/maths-test-question-bank` the day
+after 4.2.266 removed the bundled version. This removes it from the plugin a
+second time, on the teacher's judgement that the capability is not ready and is
+not wanted in a lesson run now.
+
+**What came out.** `shared/test-question-bank.js`,
+`scripts/search-test-questions.js`, `scripts/build-test-question-index.js`,
+`scripts/tests/test_test_question_bank.py`, the shipped index
+`test-questions/index.txt.gz`, and `references/test-question-bank.md`. With them
+the three instructions that would have sent an agent looking: the starter route
+and the conditional read in `lesson-designer.md`, and the bank paragraphs in
+`preferences.md` -> Starters. The Starters contents line and the
+longer-starter-wording example go back to their pre-bank wording, because a
+dangling mention points an agent at a capability it no longer has.
+
+**What stayed, and why it is not a leftover.** `shared/github-file-fetch.js`
+stays. It is the drawings library's own transport, lifted out of
+`educational-svg-library.js` in 4.2.267 and still the only copy: removing it
+would break every optional drawing. Its header no longer describes a second
+library that is not there. `starter-question-tall` stays, generalised to "tall
+image" since 4.2.266 and useful to any portrait crop. `preferences.md` ->
+Practising a Test Question stays: that is a teacher handing over a real question
+from an upcoming assessment, and it never depended on the bank.
+
+**`testQuestionPath` stays in the shape, documented as always `null`**, exactly
+as 4.2.266 left it. The field, its validator rule and the scaffold entry are
+inert with no instruction pointing at them, and pulling them would touch the
+lesson-design contract, its validator and three test files for no gain. A field
+with no instruction beside it is a field an agent invents a value for, so
+`output-template.md` says plainly that it is always `null` and why.
+
+**Parked, again.** `parked/test-question-bank/` keeps the old in-plugin files
+and the teaching rules, and now records that the fetching route was built and
+removed, and the commit that holds it. Nothing in that folder is guidance.
+
 ## 2026-09-20 The test-question starter returns, from its own repository (4.2.267)
 
 Removed in 4.2.266 and back the same day, because the source it needed now

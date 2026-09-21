@@ -189,8 +189,6 @@ When you genuinely cannot serve the objective in the time and materials, that is
 
 `preferences.md` → Starters owns the starter (what it retrieves, its form, why predictions and framing belong elsewhere); read it before deciding. Populate `starter.content.activity`, `connection`, `format`, structured `answer`.
 
-**Maths only: a real test question can be the whole starter.** A separate bank holds real past-paper maths questions with the exam board's own answers. When one matches the retrieval target, its difficulty and an authentic response form, it may be the whole starter. Read `test-question-bank.md`, search, look at the pictures, take the one you chose, record `testQuestionPath` and populate the structured answer from the answer the bank gives you. Nothing in the bank fits, or the skill needs several quick reps: write the starter as usual. Other subjects have no bank and the search refuses them, so design their starters as usual.
-
 **Real-world hook (maths):** `subject-maths.md` → Real-world hooks owns whether a lesson or a new concept opens with a real fact and image; it is judgement, not fixture.
 
 When using real facts, must stand up. Curriculum-stable fact safe from knowledge. Volatile fact (current population, "latest", precise recent date, quantity lesson leans maths on) - prefer robustly rounded claim staying true ("about 8 billion" not precise unchecked) or mark for teacher verify. Prefer rounded honest number over precise invented. Light touch: load-bearing volatile figure needs care, not every number.
@@ -572,7 +570,6 @@ A direction to read a section means consult its guidance at that decision, not f
 - Read `do-beats.md` core guidance and only the needed registers when a beat needs a short processing form, in any structure. Read its `Operations to think with (optional)` section when the operation of a beat the lesson relies on is unclear or you want wider options for it.
 - Read `task-contrasts.md` → The contrasts once, when choosing the main task or a Do beat the lesson will rely on as evidence of an important understanding. It calibrates step 4 of `Settle the classroom experience before collecting content` across subjects: what a task actually requires a child to know, and where the simpler task is right. It is not a menu.
 - Read only the triggered section of `lesson-designer-components.md` at the decision points named above: Dialogic route, Task-Centred route, Representation configurations, Generated worksheet or Photograph acquisition. Use the existing exact-section reader and batch sections needed together. Do not open this component file in full or load it at startup.
-- Read `test-question-bank.md` only when the lesson is maths and the starter's retrieval target might be met by a real paper question.
 - Read `modelling-formats.md` when choosing `modellingState`.
 - Read `reasoning-prompts.md` when Apply or worksheet reasoning is being designed.
 - Once structure is chosen, read exactly one matching `teaching-sequence-*.md` file.

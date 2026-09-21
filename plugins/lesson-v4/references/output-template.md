@@ -711,7 +711,7 @@ The starter is one source unit. Its `content.activity` is the exact question or 
 }
 ```
 
-`testQuestionPath` carries the path of a real past-paper question the starter is built on, relative to the lesson folder, exactly as the take step printed it. It is `null` in every other case, which includes every lesson that is not maths: the bank is maths only. See `test-question-bank.md`.
+`testQuestionPath` is always `null`. The route that filled it - a starter built on a real past-paper question image - is parked while its question source is rebuilt, so there is nothing to put here and no path to invent. The field stays in the shape because the validator and the slide side still understand it, and the route will return to it.
 
 ### Teaching sequence
 

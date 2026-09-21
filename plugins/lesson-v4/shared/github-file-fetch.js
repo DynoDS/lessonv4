@@ -2,13 +2,11 @@
 
 // Bringing one file out of a GitHub repository the plugin does not clone.
 //
-// Two libraries need this and they need it identically: the drawing library
-// (261,740 files) and the maths test-question bank (1,915 questions). Both live
-// in their own repository, both are searched by an index of names the plugin
-// ships, and both fetch only the handful of files a lesson actually chooses.
-// The transport was written once for the drawings and is shared from here, so a
-// fix to the proxy route or the private-repository route reaches both rather
-// than one.
+// The drawing library needs this: 261,740 files in their own repository,
+// searched by an index of names the plugin ships, fetching only the handful a
+// lesson actually chooses. The transport was written for the drawings and lives
+// here rather than inside them, so a second library of the same shape can use
+// it without the route being copied and the two copies drifting apart.
 //
 // The two addresses are tried in order for a reason. The plain file address is
 // not counted against GitHub's API allowance, which is 60 requests an hour for

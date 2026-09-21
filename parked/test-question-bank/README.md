@@ -1,15 +1,32 @@
-# Parked: the shipped test-question bank
+# Parked: the test-question starter
 
-Removed from the plugin on 20 September 2026 in 4.2.266, and replaced the same
-day in 4.2.267 by a route that fetches from `DynoDS/maths-test-question-bank`.
+**Nothing in this folder is guidance. The plugin has no test-question
+capability, and no agent is told to look for one.**
 
-**The route is live again, so nothing here is guidance.** The teaching rules
-below were carried into `references/test-question-bank.md`, which is the file to
-read and the file to change. What is kept here is the history: the files as they
-were when the bank lived inside the plugin, and the reasoning that produced the
-replacement.
+Three dates:
 
-## What changed in the replacement
+- **20 September 2026, 4.2.266** - the bank of past-paper PNGs shipped inside
+  the package was removed, and these files came here.
+- **20 September 2026, 4.2.267** - a replacement was built the same evening: a
+  separate repository, `DynoDS/maths-test-question-bank`, searched by a packaged
+  index of names and fetched one question at a time.
+- **21 September 2026, 4.2.268** - the teacher removed the replacement too. It
+  is not ready and it is not a feature that is wanted in a lesson run now.
+
+The replacement's code is not copied here. It is whole in the repository's
+history at commit `337f73b5`, which is the thing to look at if it is ever picked
+up again: `shared/test-question-bank.js`, `scripts/search-test-questions.js`,
+`scripts/build-test-question-index.js`, the reference
+`references/test-question-bank.md`, its ten tests, and the 34 KB shipped index.
+
+What is kept in this folder is the older in-plugin version of the tools, and
+below them the teaching rules and design decisions, which are the teacher's and
+are worth reading before anything is built a third time.
+
+## What the replacement did differently
+
+Written while the 4.2.267 route was live. Past tense now, but each point
+was a deliberate answer to something the bundled version got wrong.
 
 - **The bank is outside the plugin**, searched by a shipped index of names and
   fetched one question at a time, exactly as the drawing library is.
@@ -23,8 +40,8 @@ replacement.
   front of you is the one piece that did not carry over.
 - **The cropping tools stayed parked.** `/add-test-questions`, the
   `question-extractor` agent and `question_crop.py` built the old in-plugin
-  bank. The new bank is built in its own repository, so they are history rather
-  than tools waiting to be reconnected.
+  bank. A bank kept in its own repository is built there, so these are history
+  rather than tools waiting to be reconnected.
 
 ## Why it was removed
 
@@ -55,8 +72,8 @@ repositories later.
 
 ## What stayed in the plugin, and why
 
-Three things were deliberately left standing, because the new route will need
-them and rebuilding them from nothing would be waste:
+Three things are deliberately left standing. None of them offers a
+test-question capability on its own, and each earns its place without one:
 
 - **`starter-question-tall`**, the slide template that gives a portrait image
   the slide's full height beside the lesson-opening furniture. Its wording was
@@ -64,9 +81,10 @@ them and rebuilding them from nothing would be waste:
   it exists because a tall question crop shrinks past readability under the
   normal starter header.
 - **`testQuestionPath`** on the starter source unit, and the validator rule that
-  a starter carrying one must have an exact answer-slide answer. The field is
-  documented as always `null` while the route is parked, so nothing invents a
-  path for it.
+  a starter carrying one must have an exact answer-slide answer. `output-template.md`
+  documents it as always `null` and says why, because a field with no instruction
+  beside it is a field an agent invents a value for. It is inert: with no
+  reference and no search script, nothing can produce a path to put in it.
 - **Practising a Test Question** in `preferences.md`. That section is about a
   teacher handing over a real question from an upcoming assessment, and the rule
   that a held item stays out of teaching while a fresh parallel is built. It
@@ -74,10 +92,10 @@ them and rebuilding them from nothing would be waste:
 
 ## The teaching rules worth carrying back
 
-These are decisions the teacher made, not scaffolding. They apply to the new
-question source exactly as they applied to the old one, so they belong in
-whatever reference replaces `test-question-bank.md` rather than being worked
-out again.
+These are decisions the teacher made, not scaffolding. They would apply to any
+future question source exactly as they applied to this one, so they belong in
+whatever reference is written next rather than being worked out again. They are
+recorded, not in force: nothing reads this file during a lesson run.
 
 **The retrieval target leads, and the bank is searched for it.** Name what the
 starter is bringing back (the prior lesson's skill, or the prerequisite today's
@@ -113,9 +131,11 @@ Judge by what a question asks, not by which folder it sits in.
 **It has to be readable from the back of the room**, like everything else that
 goes on the board.
 
-## What the new route changes
+## What the 4.2.267 route changed
 
-Decided with the teacher on 20 September 2026, before the repository existed:
+Decided with the teacher on 20 September 2026, and built that evening before
+being removed the next day. Kept because these were real decisions about how a
+question source should be shaped, not details of the code:
 
 - **File names carry the question.** The search reads a name list and never
   opens an image, exactly as the drawings search does, so a name that does not
