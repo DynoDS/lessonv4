@@ -3998,3 +3998,26 @@ detects too much), and Daniel's standing instruction on that fault is not to add
 another prose rule but to reach for effort or a second pass. Recorded, not
 acted on. Nine tests pin the four changed paragraphs, including both
 discrimination cases; 2027 Python tests pass.
+
+- **Repaired in 4.2.275. The voice sweep proved coverage and never a judgement.**
+  Daniel asked how the reviewer could see whether every child-facing string is in
+  his voice. Most of it already existed: the view prints all 66 strings as prose
+  in lesson order, the reviewer is told to walk them through teacher-voice.md as
+  the child then as the teacher, `## Voice sweep` is a required heading, the count
+  is checked against the view, and the instruction even names this fault
+  ("Clipped lines (`No shops, no switches.`) fail the same read... a label is not
+  something a teacher can say"). Visibility was not the gap. The four unreadable
+  strings were in the view twice each and the whole sweep was `Read 66
+  child-facing strings as a Year 4 child; repaired 0.`; the review then described
+  them accurately as "four short plan items" and approved them. The script's own
+  comment already said the count "do not prove the sweep happened or that its
+  judgements were sound".
+  *Same fault as the optional-picture pass before it wrote a record, so the same
+  repair: the sweep now writes `Closest to a repair:` and the three strings it
+  came nearest to repairing and let stand, quoted as the view prints them, each
+  with its reason. The quotes are checked against the view so they cannot be
+  invented. Three is a ranking of the lesson's own strings, not an accusation, and
+  the reviewer is told to answer it even when the lesson reads well. No new "try
+  harder" rule was added: the standing instruction on this failure is that more
+  words are not the lever. Validated against the real PSHE review, which is now
+  refused; five tests, 2032 pass.*

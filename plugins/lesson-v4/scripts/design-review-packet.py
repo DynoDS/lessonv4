@@ -1268,6 +1268,7 @@ def require_voice_sweep(
     *,
     expected_count: int,
     expected_year: int,
+    view_path: Path | None = None,
 ) -> tuple[int, int, int]:
     """The review must say how many child-facing strings it read, and the number
     must be the one the view printed. This checks reported coverage only;
@@ -1315,7 +1316,100 @@ def require_voice_sweep(
             f"design-review.md {VOICE_SWEEP_HEADING} repaired {repaired} strings, "
             f"which cannot exceed the {read_count} strings read"
         )
+    require_closest_calls(lines, cursor + 1, read_count, view_path)
     return read_count, year, repaired
+
+
+# How many strings the sweep has to show its working on. Three is enough to be
+# evidence and small enough that a good lesson can always answer it: this is a
+# ranking of the lesson's own strings, not an accusation against any of them.
+CLOSEST_CALLS_HEADING = "Closest to a repair:"
+CLOSEST_CALLS_WANTED = 3
+CLOSEST_CALL_RE = re.compile(r'^>\s*"(.+)"\s*[-—]\s*(\S.*)$')
+
+
+def require_closest_calls(
+    lines: list[str], cursor: int, read_count: int, view_path: Path | None
+) -> None:
+    """Make the sweep show its working on named strings, not a tally.
+
+    `Read 66 child-facing strings as a Year 4 child; repaired 0.` is what a
+    sweep that happened and a sweep that did not both produce, which is the
+    exact fault the optional-picture pass had before it wrote a record. On 21
+    September 2026 a Year 4 PSHE review printed that line, and the four strings
+    the teacher could not read - `Food: rush through the morning without eating
+    until late afternoon.` and its three siblings - were in the view twice each.
+    The review even described them accurately, as "four short plan items", and
+    passed them.
+
+    So the sweep now names the strings it came closest to repairing and let
+    stand, quoted from the view, with the reason each stands. The quotes are
+    checked against the view, so they cannot be invented, and the reason is
+    where Daniel can see the judgement that was actually made.
+    """
+    wanted = min(CLOSEST_CALLS_WANTED, read_count)
+    if wanted <= 0:
+        return
+    while cursor < len(lines) and not lines[cursor].strip():
+        cursor += 1
+    heading = lines[cursor].strip() if cursor < len(lines) else ""
+    if heading != CLOSEST_CALLS_HEADING:
+        raise PacketError(
+            f"design-review.md {VOICE_SWEEP_HEADING} must then carry a "
+            f"`{CLOSEST_CALLS_HEADING}` line and {wanted} quoted string(s) from the "
+            "review view, each with the reason it stands, in the form "
+            '`> "the exact string" - why it stands`. A count of strings read is '
+            "what a sweep that happened and a sweep that did not both produce; "
+            "naming the calls you found hardest is what shows one happened"
+        )
+    cursor += 1
+    calls: list[tuple[str, str]] = []
+    while cursor < len(lines):
+        stripped = lines[cursor].strip()
+        if not stripped:
+            break
+        match = CLOSEST_CALL_RE.match(stripped)
+        if not match:
+            raise PacketError(
+                f"design-review.md {VOICE_SWEEP_HEADING} has a line under "
+                f"`{CLOSEST_CALLS_HEADING}` that is not "
+                f'`> "the exact string" - why it stands`: {stripped!r}'
+            )
+        calls.append((match.group(1).strip(), match.group(2).strip()))
+        cursor += 1
+    if len(calls) != wanted:
+        raise PacketError(
+            f"design-review.md {VOICE_SWEEP_HEADING} names {len(calls)} closest "
+            f"call(s) under `{CLOSEST_CALLS_HEADING}`; this lesson needs {wanted}"
+        )
+    seen: set[str] = set()
+    for quoted, reason in calls:
+        key = " ".join(quoted.split()).casefold()
+        if key in seen:
+            raise PacketError(
+                f"design-review.md {VOICE_SWEEP_HEADING} names {quoted!r} twice; "
+                "each closest call is a different string"
+            )
+        seen.add(key)
+        if len(reason.split()) < 4:
+            raise PacketError(
+                f"design-review.md {VOICE_SWEEP_HEADING} gives no reason {quoted!r} "
+                "stands. Say what a child gets from it as written"
+            )
+    if view_path is None:
+        return
+    # The check that stops this becoming another unfalsifiable line. A quoted
+    # string has to be one the view actually printed, so a sweep cannot answer
+    # with words it made up about a lesson it did not read.
+    view = " ".join(view_path.read_text(encoding="utf-8").split()).casefold()
+    for quoted, _reason in calls:
+        if " ".join(quoted.split()).casefold() not in view:
+            raise PacketError(
+                f"design-review.md {VOICE_SWEEP_HEADING} quotes {quoted!r} as a "
+                "closest call, but the review view does not print that string. "
+                "Quote the string exactly as the `As the class meets it` section "
+                "prints it"
+            )
 
 
 def require_review_judgements(review_path: Path, review_result: str) -> dict[str, str]:
@@ -2763,6 +2857,7 @@ def verify(args: argparse.Namespace) -> int:
         review_path,
         expected_count=class_view_count,
         expected_year=design_year,
+        view_path=view_path,
     )
 
     judgements = require_review_judgements(review_path, review_result)

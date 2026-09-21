@@ -225,10 +225,34 @@ def voice_sweep_line(
                 break
     if read_count is not None:
         count = read_count
-    return (
+    line = (
         f"Read {count} child-facing strings as a Year {year} child; "
         f"repaired {repaired}."
     )
+    calls = closest_calls(view, min(3, count))
+    if calls:
+        line += "\nClosest to a repair:\n" + "\n".join(calls)
+    return line
+
+
+def closest_calls(view: Path, wanted: int) -> list[str]:
+    """Quote real strings out of the prepared view, as a review must.
+
+    The sweep has to name the calls it found hardest, and the packet checks the
+    quotes against the view, so a fixture cannot invent them either.
+    """
+    if wanted <= 0 or not view.exists():
+        return []
+    quoted: list[str] = []
+    for line in view.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("> ") and len(stripped) > 4:
+            text = " ".join(stripped[2:].split())
+            if text and text not in quoted:
+                quoted.append(text)
+        if len(quoted) == wanted:
+            break
+    return [f'> "{text}" - a child can act on this as written.' for text in quoted]
 
 
 def write_review(
@@ -2408,3 +2432,96 @@ def test_progression_calibration_covers_false_links_and_legitimate_convergence()
     assert cases["cumulative-scale-learning"]["expectedResult"] == "APPROVED"
     assert cases["parallel-cases-converge-without-forced-chain"]["expectedResult"] == "APPROVED"
     assert "A link carries learning" in PREFERENCES.read_text(encoding="utf-8")
+
+
+# `Read 66 child-facing strings as a Year 4 child; repaired 0.` is what a sweep
+# that happened and a sweep that did not both produce. A Year 4 PSHE review
+# printed exactly that on 21 September 2026 and approved four task strings the
+# teacher could not read (`Food: rush through the morning without eating until
+# late afternoon.`), which the view had printed twice each. The review even
+# described them accurately, as "four short plan items". Coverage was never the
+# gap; the sweep left no evidence of a judgement, so it now names the calls it
+# found hardest and the packet checks the quotes against the view.
+
+def test_verify_rejects_a_sweep_that_only_counts():
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        prepare_result, preflight, reference = prepare(working_dir)
+        assert prepare_result.returncode == 0
+
+        counted_only = voice_sweep_line(working_dir).split("\nClosest")[0]
+        review = write_review(working_dir, "APPROVED", voice_sweep=counted_only)
+        result, _ = verify(working_dir, preflight, reference, review)
+
+        assert result.returncode == 1
+        assert "Closest to a repair:" in result.stderr
+        assert "both produce" in result.stderr
+
+
+def test_verify_rejects_a_quote_the_view_never_printed():
+    """The check that stops this becoming another unfalsifiable line."""
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        prepare_result, preflight, reference = prepare(working_dir)
+        assert prepare_result.returncode == 0
+
+        sweep = voice_sweep_line(working_dir).split("\nClosest")[0]
+        sweep += (
+            "\nClosest to a repair:\n"
+            '> "A string no lesson ever wrote." - it reads clearly enough.\n'
+            '> "Another invention." - a child can act on this as written.\n'
+            '> "A third one." - a child can act on this as written.'
+        )
+        review = write_review(working_dir, "APPROVED", voice_sweep=sweep)
+        result, _ = verify(working_dir, preflight, reference, review)
+
+        assert result.returncode == 1
+        assert "does not print that string" in result.stderr
+
+
+def test_verify_rejects_a_closest_call_with_no_reason():
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        prepare_result, preflight, reference = prepare(working_dir)
+        assert prepare_result.returncode == 0
+
+        real = closest_calls(working_dir / "design-review-view.md", 3)
+        quoted = real[0].split('" - ')[0] + '" - fine.'
+        sweep = voice_sweep_line(working_dir).split("\nClosest")[0]
+        sweep += "\nClosest to a repair:\n" + "\n".join([quoted] + real[1:])
+        review = write_review(working_dir, "APPROVED", voice_sweep=sweep)
+        result, _ = verify(working_dir, preflight, reference, review)
+
+        assert result.returncode == 1
+        assert "gives no reason" in result.stderr
+
+
+def test_verify_rejects_the_same_string_named_twice():
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        prepare_result, preflight, reference = prepare(working_dir)
+        assert prepare_result.returncode == 0
+
+        real = closest_calls(working_dir / "design-review-view.md", 3)
+        sweep = voice_sweep_line(working_dir).split("\nClosest")[0]
+        sweep += "\nClosest to a repair:\n" + "\n".join([real[0], real[0], real[2]])
+        review = write_review(working_dir, "APPROVED", voice_sweep=sweep)
+        result, _ = verify(working_dir, preflight, reference, review)
+
+        assert result.returncode == 1
+        assert "twice" in result.stderr
+
+
+def test_the_reviewer_is_told_to_name_its_hardest_calls():
+    reviewer = " ".join(
+        (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8").split()
+    )
+    assert "Closest to a repair:" in reviewer
+    assert "quoted exactly as the view prints it" in reviewer
+    # The discrimination case: a good lesson still answers, because it is a
+    # ranking of its own strings and not an accusation against any of them.
+    assert "Write them even when the lesson reads well" in reviewer
