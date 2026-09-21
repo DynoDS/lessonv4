@@ -791,6 +791,15 @@ left to run for it, and any specification still naming it loses its whole build.
 Each track reconciles its own specification against these receipts before
 building.
 
+**The essential ones first, before any track reconciles.** Read
+`photo-requirements.json` and list every terminal filename whose requirement
+says `essential: true`; `finalize-picture-assignment.py` prints
+`PICTURE_ESSENTIAL_LOST:` naming them. A non-empty list is the content-gap
+picture wave, not a re-point, and it is taken now: an essential photograph that
+never arrived is a hole in the teaching, and each track's reconcile below will
+otherwise close it silently by pointing the reference at a surviving picture.
+A deck shipped twelve of sixteen slides bare that way on 21 September 2026.
+
 ---
 
 **Track A trigger:**
@@ -804,6 +813,11 @@ Reconcile first: for any picture filename `lesson.json` names whose terminal
 receipt reads `unsatisfied` or `omitted`, run one focused Slide Designer repair
 before the build, telling it the filename is terminally unavailable and that
 re-pointing that one reference is the repair, not a scope breach.
+
+This is for pictures the lesson can lose. An `essential: true` filename went to
+the wave above instead: re-pointing one changes what the slide teaches rather
+than repairing a reference, and a photograph demoted to supporting context
+reads as finished to every check downstream.
 
 If the lesson uses a labelled diagram over a photo, launch Diagram Anchor
 against the final published image and update only anchor coordinates.
@@ -1227,7 +1241,8 @@ the worse outcome. The signal is the trigger, not the cause: a helper that
 cannot draw a load-bearing visual takes the wave, and so does a load-bearing
 picture the design promised that came back terminally `unsatisfied` - an
 authorised photograph that never arrived is the same hole as a visual nobody
-requested.
+requested. That second route waits for no designer signal; the terminal-receipt
+check above is its trigger.
 
 Run one focused Lesson Designer revision over the three canonical design files.
 Its brief is to find another sound route to the same learning, not the smallest

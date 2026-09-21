@@ -233,6 +233,7 @@ def assignment_command(args) -> int:
         "entries": [],
         "errors": [],
     }
+    lost_essential: list[str] = []
     for row in rows:
         filename = row["filename"]; entry = compiled[filename]; canonical = (working / PurePosixPath(filename)).resolve()
         if not inside(canonical, working): raise FinalizeError(f"canonical path escapes working directory: {filename}")
@@ -260,6 +261,11 @@ def assignment_command(args) -> int:
                         "terminalState": old.get("terminalState"),
                     }
                 )
+                # A second pass over a receipt written earlier says the same
+                # thing the first did. Silence on a re-run would be the signal
+                # going quiet exactly when somebody is looking again.
+                if old.get("terminalState") in {"unsatisfied", "omitted"} and entry.get("essential"):
+                    lost_essential.append(filename)
                 continue
             if matches_current and old.get("terminalState") == "picture_publish_failed":
                 pass
@@ -294,6 +300,23 @@ def assignment_command(args) -> int:
         if source_path is not None and terminal_state == "published" and low_resolution:
             entry_summary["lowResolution"] = low_resolution
         summary["entries"].append(entry_summary)
+        if terminal_state in {"unsatisfied", "omitted"} and entry.get("essential"):
+            lost_essential.append(filename)
+    # Said here because here is where it becomes true, and the rule that acts on
+    # it is a hundred files away. An essential picture that never arrives is a
+    # hole in the teaching, not a reference to re-point: each track's reconcile
+    # is written to re-point a dead filename and will do it quietly, so on 21
+    # September 2026 five essential photographs became three surviving ones
+    # marked "supporting context" and twelve of sixteen slides went to the
+    # teacher bare. Nothing in that run was wrong except that nobody was told.
+    if lost_essential:
+        summary["lostEssential"] = lost_essential
+        print(
+            "PICTURE_ESSENTIAL_LOST: " + ", ".join(lost_essential) + " - the "
+            "design marked these essential and they are terminal. This is the "
+            "content-gap picture wave, not a reconcile: revise the design and "
+            "re-review it before any track re-points these references."
+        )
     atomic_json(Path(args.summary_output).resolve(), summary)
     print(json.dumps(summary, indent=2))
     return 0 if summary["ok"] else 1

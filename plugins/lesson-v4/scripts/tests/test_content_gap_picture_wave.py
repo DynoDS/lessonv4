@@ -154,3 +154,46 @@ class ContentGapPictureWaveTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TheEssentialCheckSitsAtTheDecisionPointTests(unittest.TestCase):
+    """The wave already covered this case and the run still never reached it.
+
+    On 21 September 2026 five essential photographs came back terminal. Track A's
+    reconcile says to re-point a dead filename and did, onto surviving pictures
+    marked supporting context; the deck built clean and twelve of sixteen slides
+    went to the teacher bare. The rule that would have stopped it lived four
+    hundred lines away under a heading about a designer signal this path never
+    emits. A rule is only read where the decision is made, so the exception now
+    sits beside the reconcile it is an exception to, and ahead of every track.
+    """
+
+    def test_the_essential_check_runs_before_any_track_reconciles(self) -> None:
+        playbook = flat(PLAYBOOK)
+        self.assertIn("The essential ones first, before any track reconciles", playbook)
+        self.assertIn("`essential: true`", playbook)
+        self.assertIn("PICTURE_ESSENTIAL_LOST:", playbook)
+
+    def test_the_check_precedes_the_reconcile_it_guards(self) -> None:
+        """Order is the whole repair: after the reconcile it would be advice
+        about a decision already taken."""
+        playbook = flat(PLAYBOOK)
+        check = playbook.index("The essential ones first, before any track reconciles")
+        reconcile = playbook.index("Reconcile first: for any picture filename")
+        self.assertLess(check, reconcile)
+
+    def test_the_reconcile_names_its_exception(self) -> None:
+        playbook = flat(PLAYBOOK)
+        reconcile = playbook.index("Reconcile first: for any picture filename")
+        after = playbook[reconcile:reconcile + 900]
+        self.assertIn("This is for pictures the lesson can lose", after)
+        self.assertIn("went to", after)
+
+    def test_the_finalizer_announces_the_loss_where_it_happens(self) -> None:
+        """Guidance that depends on somebody remembering to look is the shape
+        that failed here, so the state says so itself."""
+        source = (ROOT / "scripts" / "finalize-picture-assignment.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("PICTURE_ESSENTIAL_LOST:", source)
+        self.assertIn("content-gap picture wave", source)

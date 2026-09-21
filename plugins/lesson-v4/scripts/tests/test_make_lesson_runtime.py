@@ -533,7 +533,16 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # in Track A: about 190 bytes, because a Teach beat whose one sentence
         # never reached the board looks like a finished deck and is caught
         # nowhere else.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 75 * 1024)
+        # Raised from 75 KiB on 21 September 2026 for the essential-picture
+        # check ahead of the track reconciles: about 970 bytes, and the same
+        # justification as the line above. Five essential photographs came back
+        # terminal, Track A's reconcile re-pointed all five onto surviving
+        # pictures exactly as written, every downstream check passed, and the
+        # teacher got twelve of sixteen slides bare. The wave that covers this
+        # already existed four hundred lines away, keyed to a designer signal
+        # this path never emits; the rule had to move next to the reconcile it
+        # is an exception to.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 76 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

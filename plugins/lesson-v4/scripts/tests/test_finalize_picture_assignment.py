@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
 import shutil
 import tempfile
@@ -87,7 +88,10 @@ class FinalizePictureAssignmentTests(unittest.TestCase):
             self.assertTrue(a.name.endswith(".json"))
 
 
-class FinalizerLifecycleTests(unittest.TestCase):
+class FinalizerFixture(unittest.TestCase):
+    """The shared build-an-assignment-and-run-it rig. Holds no tests of its own,
+    so a suite that needs the rig inherits the helpers and not sixteen reruns."""
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
@@ -102,12 +106,15 @@ class FinalizerLifecycleTests(unittest.TestCase):
         item["id"] = photo_id
         return item
 
-    def make_assignment(self, names=("unsplash/a.jpg",), repair=None):
+    def make_assignment(self, names=("unsplash/a.jpg",), repair=None, essential=()):
         photos = [self.make_photo(name, f"photo-{index:03d}") for index, name in enumerate(names, 1)]
         req = self.working / "photo-requirements.json"
         req.write_text(json.dumps({"schema_version": 2, "lesson_name": "lesson", "photos": photos}) + "\n", encoding="utf-8")
         batch = self.root / "batch"; batch.mkdir(exist_ok=True)
         entries = [{"filename": name, "ai_ledger_path": None} for name in names]
+        for entry in entries:
+            if entry["filename"] in essential:
+                entry["essential"] = True
         assignment = {"schema_version": 2, "kind": "image", "batch_id": "p1", "requirements": {"path": str(req.resolve()), "sha256": hashlib.sha256(req.read_bytes()).hexdigest()}, "work_root": str(batch.resolve()), "entries": entries}
         if repair is not None: assignment["repair"] = repair
         path = self.root / ("repair-assignment.json" if repair else "assignment.json")
@@ -144,6 +151,8 @@ class FinalizerLifecycleTests(unittest.TestCase):
             with mock.patch.object(finalizer, "publish_one", side_effect=publisher):
                 return finalizer.assignment_command(args), args, summary_path
 
+
+class FinalizerLifecycleTests(FinalizerFixture):
     def test_finalizer_summary_matches_controller_command_contract(self):
         req, assignment, path, photos = self.make_assignment()
         rows = [{"filename": photos[0]["filename"], "status": "omitted", "selection": None, "staging_path": None, "reason": "authorised_alternative"}]
@@ -360,3 +369,73 @@ class FinalizerLifecycleTests(unittest.TestCase):
         args = SimpleNamespace(requirements=str(req), terminal_receipts_dir=str(receipt_dir), working_dir=str(self.working), output=str(self.root / "provenance.json"), summary_output=str(self.root / "summary.json"))
         with self.assertRaisesRegex(finalizer.FinalizeError, "canonical hash evidence is stale"):
             finalizer.provenance_command(args)
+
+
+class EssentialPictureLossIsAnnouncedTests(FinalizerFixture):
+    """A picture the design called essential cannot go missing quietly.
+
+    On 21 September 2026 five essential photographs came back terminally
+    unsatisfied. Track A's reconcile is written to re-point a dead filename and
+    did exactly that, onto surviving pictures marked as supporting context. Every
+    check downstream passed and twelve of sixteen slides reached the teacher
+    bare. The wave that covers this case already existed, keyed to a designer
+    signal that path never emits, so the state had to announce itself where it
+    becomes true rather than wait to be looked for.
+    """
+
+    def unsatisfied_row(self, filename):
+        return {"filename": filename, "status": "unsatisfied", "selection": None,
+                "staging_path": None, "reason": "imagegen_output_unavailable"}
+
+    def test_a_lost_essential_picture_names_itself_and_the_wave(self):
+        req, assignment, path, photos = self.make_assignment(
+            names=("unsplash/a.jpg",), essential=("unsplash/a.jpg",)
+        )
+        rows = [self.unsatisfied_row(photos[0]["filename"])]
+        with mock.patch("sys.stdout", new=io.StringIO()) as out:
+            code, _, _ = self.run_assignment(assignment, path, rows)
+        printed = out.getvalue()
+        self.assertEqual(code, 0)
+        self.assertIn("PICTURE_ESSENTIAL_LOST:", printed)
+        self.assertIn("unsplash/a.jpg", printed)
+        self.assertIn("content-gap picture wave", printed)
+
+    def test_a_lost_picture_the_lesson_can_spare_says_nothing(self):
+        """The discrimination case. Only `essential` earns the wave; every other
+        terminal filename is the reconcile's own job and always has been."""
+        req, assignment, path, photos = self.make_assignment(names=("unsplash/a.jpg",))
+        rows = [self.unsatisfied_row(photos[0]["filename"])]
+        with mock.patch("sys.stdout", new=io.StringIO()) as out:
+            code, _, _ = self.run_assignment(assignment, path, rows)
+        self.assertEqual(code, 0)
+        self.assertNotIn("PICTURE_ESSENTIAL_LOST", out.getvalue())
+
+    def test_an_essential_picture_that_arrived_says_nothing(self):
+        req, assignment, path, photos = self.make_assignment(
+            names=("unsplash/a.jpg",), essential=("unsplash/a.jpg",)
+        )
+        rows = [{"filename": photos[0]["filename"], "status": "sourced",
+                 "selection": self.source_row(photos[0]["filename"]),
+                 "staging_path": None, "reason": None}]
+        with mock.patch("sys.stdout", new=io.StringIO()) as out:
+            code, _, _ = self.run_assignment(
+                assignment, path, rows, publisher=self.publish_copy([])
+            )
+        self.assertEqual(code, 0)
+        self.assertNotIn("PICTURE_ESSENTIAL_LOST", out.getvalue())
+
+    def test_the_loss_is_repeated_on_a_second_pass(self):
+        """A re-run reads the receipt written earlier and says the same thing.
+        Going quiet the second time would hide it exactly when somebody looks
+        again, which is when a run is usually being rescued."""
+        req, assignment, path, photos = self.make_assignment(
+            names=("unsplash/a.jpg",), essential=("unsplash/a.jpg",)
+        )
+        rows = [self.unsatisfied_row(photos[0]["filename"])]
+        self.run_assignment(assignment, path, rows)
+        with mock.patch("sys.stdout", new=io.StringIO()) as out:
+            code, _, _ = self.run_assignment(
+                assignment, path, rows, summary_name="summary-2.json"
+            )
+        self.assertEqual(code, 0)
+        self.assertIn("PICTURE_ESSENTIAL_LOST:", out.getvalue())

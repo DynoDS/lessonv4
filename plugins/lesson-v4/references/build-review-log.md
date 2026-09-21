@@ -3737,3 +3737,51 @@ as 4.2.269; the rest are recorded and not acted on.*
   they all end.*
   *Note for whoever acts on it: a `GITHUB_TOKEN` does not help. The refusal is at
   the socket, before any request is made, so signing in changes nothing.*
+
+- **The image generator was the same network block, not a fault of its own.**
+  Tested in Codex on 21 September 2026 after `network_access = true` was added:
+  asked to generate a picture and save it, it wrote the file. The five entries
+  that failed as `imagegen_output_unavailable` did so because the returned image
+  could not be brought down, which is the same refusal that stopped Unsplash and
+  the drawings. The ledgers show one attempt each, not two, so nothing was
+  exhausted. `image-scout-generation.md` handled it correctly and needs no
+  change. Closed.
+
+- **Repaired in 4.2.270. The rule that would have saved the PSHE deck already
+  existed, four hundred lines from the decision it governs.** The content-gap
+  picture wave covers this case in terms: "a load-bearing picture the design
+  promised that came back terminally `unsatisfied` - an authorised photograph
+  that never arrived is the same hole as a visual nobody requested", and it ends
+  by re-running Phase 1.25, because "a revision that removes a source, rewrites
+  the model beat and re-points the Do beats is a new lesson, and the one this
+  pipeline delivered without a second review was the one the teacher refused to
+  teach". Nothing on this run's path ever reached it. Track A's own reconcile
+  says, with no exception in it, that for a terminal filename "re-pointing that
+  one reference is the repair, not a scope breach", and that is the rule sitting
+  at the decision point. The run followed it, five times, and the wave's trigger
+  is written as a designer signal (`SLIDE_CONTENT_GAP`) that the re-point path
+  never emits.
+  *All five lost photographs carried `essential: true` in
+  `photo-requirements.json`, and the assignment entries carry the same flag, so
+  the discriminator was machine-readable and present at the moment of the
+  decision. Three changes. `finalize-picture-assignment.py` now prints
+  `PICTURE_ESSENTIAL_LOST:` naming every essential filename it terminalizes as
+  `unsatisfied` or `omitted`, on first pass and on any later pass over the same
+  receipt, because the state should announce itself where it becomes true rather
+  than wait to be looked for. The playbook gains the check at the top of the
+  terminal-receipt section, ahead of every track, and the Track A reconcile now
+  names the exception beside itself. The wave's own paragraph says its second
+  route waits for no designer signal. Four tests on the signal including the
+  discrimination case (a lost picture the lesson can spare says nothing) and a
+  published essential one; four on the playbook including the ordering, because
+  the check after the reconcile would be advice about a decision already taken.*
+  *The whole-file playbook budget went 75 to 76 KiB for about 970 bytes, with
+  the reason recorded beside the four previous raises. The file was 48 bytes
+  under the old cap, so the first draft of this repair was cut by roughly half
+  before raising it; the incident narrative lives here instead.*
+  *This also closes the working-wall finding above, and by the same upstream
+  repair rather than a second one. The wall was withheld whole because five
+  defining photographs were unsatisfied; once an essential loss revises the
+  design and re-reviews it, the wall designer is working from a design that does
+  not lean on pictures that never came. A wall that drops a card over a
+  non-essential picture is still correct and is left alone.*
