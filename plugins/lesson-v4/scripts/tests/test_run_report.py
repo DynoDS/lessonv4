@@ -681,6 +681,62 @@ class TestDrawingLibraryStateReachesTheRecord(RunReportCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
+class TestWhyTheBareSlidesAreBareReachesTheRecord(RunReportCase):
+    """The library line says there was a library. This says what was done with it.
+
+    On 21 September 2026 a PSHE deck declined all sixteen of its slides, nine as
+    would-mislead and seven as nothing-fits, and the report said only that the
+    pass "found no educational SVG that could be added without misleading
+    pupils" - one reason, given for a deck that had used two, on a run whose own
+    friction log recorded a blocked network. The check had printed the counts and
+    nothing carried them, so a deck that declined two slides and a deck that
+    declined every slide reached the teacher in the same shape.
+    """
+
+    def declined(self, *decisions: str) -> None:
+        self.write_json(
+            self.working / "optional-picture-pass.json",
+            {
+                "schemaVersion": 1,
+                "slides": [
+                    {"slide": number, "decision": decision}
+                    for number, decision in enumerate(decisions, start=1)
+                ],
+            },
+        )
+
+    def test_a_deck_that_declined_a_slide_owes_the_counts(self):
+        self.declined("used", "none")
+        report = self.write_report()
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("OPTIONAL_PICTURE_DECLINED", result.stdout)
+
+    def test_the_counts_on_the_record_satisfy_it(self):
+        self.declined("used", "none")
+        report = self.write_report(overrides={
+            "picture": "OPTIONAL_PICTURE_DECLINED: 1 would-mislead",
+        })
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_deck_that_declined_nothing_owes_no_counts(self):
+        """The discrimination case: every slide took a drawing, so there is no
+        refusal to account for and the check prints no such line."""
+        self.declined("used", "used")
+        report = self.write_report()
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_run_with_no_pass_record_owes_no_counts(self):
+        """A decorator that never finished is already covered elsewhere, by
+        `SLIDE_DECORATION_OMITTED:`. Nothing here asks for a line about a pass
+        that left no record to count."""
+        report = self.write_report()
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
 class TestFrictionRecordIsTraceable(RunReportCase):
     """The run's obstacles, blocks and repairs, collected so they can be worked on.
 

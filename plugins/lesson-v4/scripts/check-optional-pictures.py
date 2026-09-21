@@ -40,6 +40,32 @@ here, named. On a machine that cannot render there is no measurement and both
 reasons stand on the designer's word, which is the one case where they should,
 because nobody could look.
 
+That left one answer still costing nothing, and on 21 September 2026 a PSHE deck
+declined all sixteen of its slides: nine as `would-mislead` and seven as
+`nothing-fits`. The nine were one deck-level thought ("this lesson asks children
+to reason, so a picture would give it away") written out nine times, one slide at
+a time, which is the exact failure this file exists to stop wearing the one
+costume it could still wear. The same day's maths deck used its one decline the
+same way, on a slide the builder had measured as four-fifths empty.
+
+So `would-mislead` is now paid for like `nothing-fits`: name the searches, and
+name the drawing whose meaning would give the task away. The rainforest photo
+beside "which biome is this?" can always do that - you find the rainforest, and
+placing it answers the question. What cannot do it is a claim about a picture
+nobody went looking for. Every reason now costs a measurement or a search, and
+there is no free answer left to move to.
+
+The seven `nothing-fits` were a different fault with the same result. The drawing
+library is fetched a file at a time, and that run could reach none of them: the
+search told it so, on its own line, per drawing. It wrote those drawings into
+`rejected` anyway - a porridge drawing "turned down" on the porridge slide - and
+this check passed them, because it only asked whether the identifier exists in
+the shipped index, which it did. The index is a catalogue; holding the file is
+what "I looked at it" means. So a rejected drawing must now be one this machine
+actually held, and the case in between - the library listed drawings for this
+slide and none of them could be opened - has its own answer, `drawings-
+unreachable`, instead of borrowing one that claims a look nobody got.
+
 Nothing here demands a picture on any slide. A full slide stays bare and says so.
 What it removes is the ability to answer for the whole deck at once, silently.
 """
@@ -64,10 +90,13 @@ REASONS = {
     "competes": "a picture here would cover, shrink or crowd what a child must read",
     "would-mislead": "a drawing here would bias, answer or pre-empt the task",
     "nothing-fits": "the library was searched for this slide and nothing suitable came back",
+    "drawings-unreachable": "the library listed drawings for this slide and none of them could be opened",
     "library-unavailable": "the drawing library is not on this machine",
 }
-# The reason that must be paid for with search evidence rather than asserted.
-EVIDENCED_REASONS = {"nothing-fits"}
+# The reasons that must be paid for with search evidence rather than asserted.
+# `would-mislead` joined them on 21 September 2026: see the note below and the
+# module docstring. Both are claims about drawings, so both have to produce one.
+EVIDENCED_REASONS = {"nothing-fits", "would-mislead"}
 
 # `would-mislead` was the last answer that cost nothing, and it became half of
 # every refusal: 70 of 138 across 20 built lessons, 59 of those 70 on slides the
@@ -81,9 +110,17 @@ EVIDENCED_REASONS = {"nothing-fits"}
 # beside "which biome is this?", and that case is real - so the answer stays
 # available and is made to say which task it would give away.
 #
-# Presence is all this can check: a sentence is not machine-verifiable the way a
-# search is. It still ends the free answer, because a bogus claim has to be
-# written down beside the task it is about, where Daniel reads it.
+# Requiring the sentence was not enough. A sentence is easy to write, so a PSHE
+# deck wrote nine of them and declined every slide it had left. What the sentence
+# cannot do is produce the drawing it is afraid of, so the claim now carries the
+# same search evidence `nothing-fits` does: the drawing whose meaning would give
+# the task away, named, from a search that ran. The genuine case can always pay
+# it - the rainforest is right there in the library, and placing it answers
+# "which biome is this?" - and the deck-level thought cannot pay it at all,
+# because it was never about a particular drawing.
+#
+# The sentence stays as well. It is what makes a bogus claim legible beside the
+# task it is about, where Daniel reads it.
 BIAS_EVIDENCE_MINIMUM = 40
 # The two reasons that are claims about the drawn page, and are settled by it.
 ROOM_CHECKED_REASONS = {"full", "competes"}
@@ -219,6 +256,38 @@ def library_ids(library_root: Path) -> set[str]:
     return ids
 
 
+def held_ids(library_root: Path) -> set[str] | None:
+    """Every drawing this machine actually held, or None when that is unknowable.
+
+    The library is fetched one drawing at a time into ``library/`` under the
+    resolved root, and a full local copy has the same shape, so a file sitting
+    there is this machine having had the bytes in hand. That is what separates a
+    drawing somebody looked at and turned down from a drawing they only ever saw
+    the name of in the index.
+
+    Returns None when there is no ``library/`` directory at all. A real run
+    always has one - the resolver makes it before it reports a root, and a local
+    copy is only accepted when it already holds drawings - so None means nobody
+    can tell, and a record that cannot be checked stands on its own word, the
+    same way `full` and `competes` do on a machine that cannot render.
+    """
+    library = library_root / "library"
+    if not library.is_dir():
+        return None
+    held: set[str] = set()
+    for style in ("standard", "cartoon", "solid", "inkbrush", "blockprint"):
+        style_root = library / style
+        if not style_root.is_dir():
+            continue
+        for prefix in style_root.iterdir():
+            if not prefix.is_dir():
+                continue
+            for entry in prefix.iterdir():
+                if entry.is_file() and entry.suffix.lower() == ".svg":
+                    held.add(f"{style}/{prefix.name}/{entry.name}")
+    return held
+
+
 def run_search(library_root: Path, queries: list[str]) -> list[str]:
     """Ask the real library what those searches return. Empty list when it cannot run."""
     if not SEARCH_SCRIPT.is_file():
@@ -309,12 +378,36 @@ def check_evidence(
     label: str,
     library_root: Path | None,
     failures: list[str],
+    reason: str = "nothing-fits",
 ) -> None:
-    """A claim that the library had nothing is paid for, not asserted."""
+    """A claim about the drawings is paid for, not asserted.
+
+    Two verdicts owe this. `nothing-fits` says the library held nothing suitable
+    for this slide; `would-mislead` says it held something whose meaning would
+    give the slide's task away. Both are claims about drawings, and neither can
+    be made without producing one.
+    """
+    if reason == "would-mislead" and library_root is None:
+        # With no library, no drawing could have been placed on any slide in the
+        # deck, so there is no search for this claim to name. The sentence it
+        # already owes still stands. `full` and `competes` stay available here on
+        # the same footing: they are claims about the slide's own space rather
+        # than about a drawing.
+        return
+
     searched = entry.get("searched")
     try:
         queries = string_list(searched, f"{label}.searched")
     except PassError as exc:
+        if reason == "would-mislead":
+            failures.append(
+                f"{exc} - a would-mislead verdict names the searches it ran and "
+                "the drawing it is afraid of. A picture that would answer this "
+                "slide's task can be found and named, the way a rainforest can "
+                "beside 'which biome is this?'; a claim no search was ever made "
+                "for is a thought about the deck wearing one slide's clothes"
+            )
+            return
         failures.append(
             f"{exc} - a nothing-fits verdict names the searches it ran, because "
             "that is what separates a library with nothing in it from a library "
@@ -339,6 +432,14 @@ def check_evidence(
     known = library_ids(library_root)
     returned = run_search(library_root, queries)
     if not returned:
+        if reason == "would-mislead":
+            # Nothing came back for those terms, so there is no drawing here
+            # whose meaning could give anything away. That is the other verdict.
+            failures.append(
+                f"{label} is would-mislead, but its searches returned no drawing "
+                "at all, so there was nothing here to mislead with. A slide the "
+                "library had nothing for is `nothing-fits`"
+            )
         # The library genuinely returned nothing for those terms. The verdict
         # stands on its own and there is nothing to have rejected.
         return
@@ -347,6 +448,14 @@ def check_evidence(
     try:
         ids = string_list(rejected, f"{label}.rejected")
     except PassError:
+        if reason == "would-mislead":
+            failures.append(
+                f"{label} is would-mislead, and those searches returned "
+                f"{len(returned)} drawing(s). Name in `rejected` the one whose "
+                "meaning would give this slide's task away. The claim is about a "
+                "picture, so it has to be about a particular picture"
+            )
+            return
         failures.append(
             f"{label} is nothing-fits, but those searches returned "
             f"{len(returned)} drawing(s). Name in `rejected` at least one you "
@@ -354,6 +463,10 @@ def check_evidence(
             "you have actually seen"
         )
         return
+
+    # What this machine actually held. None when there is no `library/` at all,
+    # which a real run never has, and then a rejection stands on its own word.
+    held = held_ids(library_root)
 
     for library_id in ids:
         if not LIBRARY_ID_RE.match(library_id):
@@ -367,6 +480,81 @@ def check_evidence(
                 f"{label}.rejected names {library_id!r}, which is not in the "
                 "library. A drawing you did not see cannot be one you rejected"
             )
+            continue
+        if held is not None and library_id not in held:
+            # The index is a catalogue of what exists; holding the file is what
+            # looking at it means. The search says so per drawing when a fetch
+            # fails, and a run that was told it could not open a drawing wrote
+            # that drawing down as one it had turned down.
+            failures.append(
+                f"{label}.rejected names {library_id!r}, which the index lists "
+                "but this machine never held, so nobody can have looked at it. "
+                "If its file could not be fetched, that is "
+                "`drawings-unreachable`, not a drawing you turned down"
+            )
+
+
+def check_unreachable(
+    entry: dict,
+    label: str,
+    library_root: Path | None,
+    failures: list[str],
+) -> None:
+    """The case in between: the library answered, and none of it could be opened.
+
+    The drawings are fetched one file at a time, so a blocked network leaves a
+    run that can rank candidates and open none of them. Before this verdict
+    existed, such a run had to borrow one of the other two: `library-unavailable`
+    was false, because the library answered, and `nothing-fits` claimed a look
+    nobody got. A PSHE deck took the second and wrote seven drawings it had been
+    told it could not fetch into `rejected`, a porridge drawing among them, on
+    the porridge slide.
+
+    It is paid for like the others. Name the searches; they must return drawings,
+    or the honest verdict is `nothing-fits`; and none of what they returned may
+    be a drawing this machine held, because any one of those was a drawing that
+    could have been looked at.
+    """
+    if library_root is None:
+        failures.append(
+            f"{label} is drawings-unreachable, but no drawing library was "
+            "available to this run at all, so nothing was listed for this slide "
+            "to be unable to open. That is `library-unavailable`"
+        )
+        return
+
+    searched = entry.get("searched")
+    try:
+        queries = string_list(searched, f"{label}.searched")
+    except PassError as exc:
+        failures.append(
+            f"{exc} - a drawings-unreachable verdict names the searches it ran, "
+            "because the claim is that those searches listed drawings and none "
+            "of them would open"
+        )
+        return
+
+    returned = run_search(library_root, queries)
+    if not returned:
+        failures.append(
+            f"{label} is drawings-unreachable, but its searches returned no "
+            "drawing at all, so there was nothing to fail to open. A slide the "
+            "library had nothing for is `nothing-fits`"
+        )
+        return
+
+    held = held_ids(library_root)
+    if held is None:
+        return
+    reachable = sorted(library_id for library_id in returned if library_id in held)
+    if reachable:
+        failures.append(
+            f"{label} is drawings-unreachable, but this machine held "
+            f"{len(reachable)} of the drawings those searches returned, starting "
+            f"with {reachable[0]!r}. A drawing already here opens without a "
+            "network, so it was available to look at and this slide owes the "
+            "verdict that follows from looking"
+        )
 
 
 def read_room(path: Path) -> dict[int, dict]:
@@ -656,8 +844,11 @@ def check(
                     if refusal:
                         failures.append(refusal)
                         continue
+            if reason == "drawings-unreachable":
+                check_unreachable(entry, label, library_root, failures)
+                continue
             if reason in EVIDENCED_REASONS:
-                check_evidence(entry, label, library_root, failures)
+                check_evidence(entry, label, library_root, failures, reason)
             if reason == "would-mislead":
                 check_bias_claim(entry, label, failures)
 

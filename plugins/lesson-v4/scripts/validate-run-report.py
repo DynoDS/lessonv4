@@ -720,6 +720,45 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
             "was there and another when it was not, and nothing else on the "
             "record tells them apart."
         )
+    # ── Why the slides that got no drawing got none ───────────────────────
+    #
+    # `OPTIONAL_PICTURE_LIBRARY:` above says whether there was a library. This
+    # says what the pass did with it, one count per reason, and it is the line
+    # that would have made the 21 September PSHE deck legible on sight: nine
+    # slides refused as would-mislead and seven as nothing-fits, sixteen out of
+    # sixteen. The check printed it and nothing carried it, so the report said
+    # only that the pass "found no educational SVG that could be added without
+    # misleading pupils" - one reason, given for a deck that had used two, on a
+    # run whose own friction log recorded a blocked network. A deck that
+    # declined every slide and a deck that declined two are the same shape on
+    # the record without it.
+    # Asked of the pass's own record rather than of the report's other lines,
+    # so a report cannot be owed nothing by leaving something out.
+    pass_record = read_json(
+        working / "optional-picture-pass.json", "optional-picture-pass.json", []
+    )
+    pass_slides = (
+        pass_record.get("slides") if isinstance(pass_record, dict) else None
+    )
+    declined_any = isinstance(pass_slides, list) and any(
+        isinstance(entry, dict) and entry.get("decision") == "none"
+        for entry in pass_slides
+    )
+    picture_results = sections.get("## Picture results", "")
+    if (
+        deck_ran
+        and not decoration_omitted
+        and declined_any
+        and "OPTIONAL_PICTURE_DECLINED:" not in picture_results
+    ):
+        failures.append(
+            "picture results: slides in this deck carry no optional picture, so "
+            "the section must carry the `OPTIONAL_PICTURE_DECLINED:` line from "
+            "`check-optional-pictures.py`, verbatim. It counts each reason the "
+            "pass gave, and it is what separates a deck that declined two slides "
+            "from a deck that declined all sixteen."
+        )
+
     # ── What the early adaptation picture wave cost ───────────────────────
     #
     # The wave sources adaptation pictures beside the Worksheet Designer, so a

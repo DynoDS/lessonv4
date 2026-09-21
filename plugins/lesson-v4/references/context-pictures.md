@@ -342,15 +342,16 @@ place on a wall-of-text slide usually has an answer.
 `decision` is `used` or `none`. On `used`, `pictures` lists the kinds you placed
 there, and the check reads the deck to confirm they are really on that slide.
 
-On `none`, `reason` is one of exactly five, and every one of them is a claim
+On `none`, `reason` is one of exactly six, and every one of them is a claim
 about **this slide**:
 
 | Reason | What you are saying |
 | --- | --- |
 | `full` | On the rendered page, no part of this slide is clear enough to hold a drawing without covering something. Fullness is what the content *needs*, not what its boxes currently span: a card stretched over space its words are not using, or a zone allocated more height than its content asked for, is room wearing a card, not fullness. A slide whose template has three zones is not full because it has three zones, and a slide packed with text is not full because its cards are packed - the white inside and between those cards is exactly where a drawing goes. |
 | `competes` | A picture would cover, shrink or crowd what a child has to read here. This is the answer for a slide whose only clear areas are too small or too broken up to hold a drawing; it is never the answer for a slide with a strong central visual and a clear corner. |
-| `would-mislead` | A drawing here would bias, answer or pre-empt the task, and `evidence` says which task and what it would give away. The rainforest photo beside "which biome?" is this. Hold it to what this layer actually places: a small faint drawing in a corner carries no teaching and can always be removed, so it gives nothing away unless the slide's task is the kind a picture can answer. Where nothing could be given away, the honest answer is `nothing-fits`, which names its searches. |
+| `would-mislead` | A drawing here would bias, answer or pre-empt the task. It names three things: `evidence` says which task and what would be given away, `searched` names the searches you ran, and `rejected` names the drawing whose meaning would do it. The rainforest beside "which biome?" is this, and it can pay all three, because the rainforest is in the library and placing it answers the question. Hold it to what this layer actually places: a small faint drawing in a corner carries no teaching and can always be removed, so it gives nothing away unless the slide's task is the kind a picture can answer. Where nothing could be given away, the honest answer is `nothing-fits`. |
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |
+| `drawings-unreachable` | Your searches listed drawings for this slide and not one of them would open. `searched` names the searches; the drawings they returned are ones you were shown the names of and never saw. This is a fetch that failed, not a judgement you made. |
 | `library-unavailable` | The library was not available to this run at all, as the resolver reported. |
 
 **There is no code for a deck-level answer, and that is deliberate.** "The deck
@@ -408,15 +409,32 @@ against the real library and confirms each rejected drawing exists, so a drawing
 you never saw cannot be one you rejected. Say nothing-fits about drawings you
 have actually looked at.
 
-**`would-mislead` names the task it protects.** It was the last answer costing
-nothing, and across twenty built lessons it became half of every refusal: 70 of
-138, and 59 of those 70 on slides the render had measured a clear inch-square
-space on, none of them recording a word about what would be misled. So it now
-carries `evidence`: a sentence naming this slide's task and what a drawing would
-give away, hint at or answer for a child. A search is machine-checkable and a
-sentence is not, so this is checked for substance rather than truth, which is
-enough: a claim that has to be written beside the task it is about is a claim the
-teacher can read and disagree with.
+**A rejection means you held the drawing, not that you read its name.** The
+library is fetched one file at a time, and the search prints a line per drawing
+it could not bring down. The check knows which drawings this machine ever held,
+so a `rejected` drawing that only ever existed in the index is refused. This is
+not a technicality: a PSHE deck turned down a porridge drawing on its porridge
+slide, a water jug on its hydration slide and a sleeping figure on its sleep
+slide, all seven of them drawings a blocked network had just told it that it
+could not open. Every one of those slides went out bare.
+
+**`would-mislead` names the task it protects, and the drawing it fears.** It was
+the last answer costing nothing, and across twenty built lessons it became half
+of every refusal: 70 of 138, and 59 of those 70 on slides the render had measured
+a clear inch-square space on, none of them recording a word about what would be
+misled. So it carries `evidence`: a sentence naming this slide's task and what a
+drawing would give away, hint at or answer for a child.
+
+The sentence was not enough. On 21 September 2026 a deck wrote nine of them and
+declined every slide it had left, each sentence a variation on "this lesson asks
+children to reason, so a picture would give it away" - one thought about the deck,
+written out nine times, one slide at a time. So the claim now pays the same search
+evidence `nothing-fits` does: `searched`, and in `rejected` the drawing whose
+meaning would do the damage. The genuine case pays it without effort, because the
+rainforest is in the library and placing it answers "which biome is this?". A
+thought about the whole deck cannot pay it at all, because it was never about a
+particular drawing. Every reason now costs either a measurement or a search, and
+there is no free answer left to move to.
 
 **An emoji-only slide pays the same price.** Choosing an emoji is saying the
 library had nothing better, which is the same claim as `nothing-fits`, so a
@@ -433,6 +451,18 @@ too: it cannot be true of one slide and false of the deck around it. This is why
 the resolver runs as the first act of the pass rather than at the first slide
 that wants a drawing - the answer it gives decides which vocabulary the whole
 pass is entitled to.
+
+**`drawings-unreachable` is the case in between those two, and it is real.** The
+library answers from an index this package ships, and the drawings themselves are
+fetched one at a time, so a blocked network leaves a run that can rank candidates
+for a slide and open none of them. `library-unavailable` is false there, because
+the library answered. `nothing-fits` is worse than false, because it claims a
+look nobody got. Use `drawings-unreachable`, name the searches, and the record
+then says plainly that this slide has no drawing because the files would not
+come down. That is a fact about the afternoon, not a judgement about the slide,
+and it is the one the teacher needs to see: a deck that came back bare because
+the network was blocked can be built again tomorrow, and a deck that came back
+bare because the library had nothing cannot.
 
 The check prints `OPTIONAL_PICTURE_LIBRARY:` on every run, saying whether it
 verified your evidence against a real library or had none to verify against, and

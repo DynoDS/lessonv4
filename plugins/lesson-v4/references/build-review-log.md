@@ -3533,3 +3533,207 @@ Evidence: `output/codex-completion-2026-09-05/STATUS.md`, delivery index, per-pa
 - **The question a child answers was coloured, and the instruction beside it was not.** On the Apply slide the teacher split "Is she correct? Explain your answer." onto two lines and set the first, "Is Isla correct?", in the deck's question blue, leaving "Explain your answer." black. The same instinct as the purple question labels: the thing being asked is marked, the thing telling you what to do with it is not. `teacher-slide-visual-profile.md` owns semantic colour and should be read before acting, because a colour rule invented beside an existing colour rule is how a deck ends up with two. Recorded separately from the sentence-per-line finding, which only covers the line break.
 
 - **The character's portrait was bigger than the words it speaks.** On the Apply slide Isla's picture was 1.952 x 2.609in beneath a speech bubble card of 5.577 x 3.071in. The teacher scaled the portrait to 1.403 x 1.875in, the same shape at 72%, moved it down, and spent the room on the bubble, which grew to 5.577 x 4.124in. So the speech bubble took its space back from the face: what she says is the teaching and her picture is the frame for it, and the engine had them close to the other way round. A portrait accompanying a speech bubble should be sized against the words, not given a fixed share of the column.
+
+## 2026-09-21 - Year 4 Maths: count backwards through zero to include negative numbers
+
+*Built by lesson-v4 4.2.268.*
+
+
+- The design review runtime slice omitted the required --plugin-root and --working-dir flags from the verify command; the helper rejected the documented invocation until both verified paths were supplied.
+
+## 2026-09-21 - Year 4 PSHE: How can I keep my energy up throughout the day?
+
+*Built by lesson-v4 4.2.268.*
+
+
+- When picture searches were blocked, the image-generation fallback returned payloads without a savable local path, leaving five of eight required photographs terminally unsatisfied.
+
+- The slide repair scope checker treats removed active image paths as child-facing content, requiring unavailable originals to remain as inert sourceImagePath provenance during a valid re-pointing repair.
+
+### Investigation, 21 September 2026: both of the day's runs read together
+
+*Daniel asked what the two runs had in common and which faults were worth
+repairing. The findings below are the investigation's own. The first two shipped
+as 4.2.269; the rest are recorded and not acted on.*
+
+- **Repaired in 4.2.269. The last refusal that cost nothing became nine refusals
+  in one deck.** The optional-picture pass has five reasons. `full` and
+  `competes` were settled against the measured page in an earlier repair, and
+  `nothing-fits` against real searches, which left `would-mislead` as the only
+  answer a pass could give for free: a sentence of at least forty characters
+  naming a task. The PSHE deck declined all sixteen of its slides, nine of them
+  that way, and every one of the nine sentences is a variation on "this lesson
+  asks children to reason, so a picture would give it away". That is one thought
+  about the deck, written out nine times, one slide at a time, which is precisely
+  the failure this check exists to stop. The same day's maths deck used the
+  reason once, on slide 3, and the builder's own `SLIDE_TEXT_UNDERFILLED` line
+  measured one of that slide's boxes at 20% of 4.07in, so the single decline in
+  the good deck is wrong too, for a reason already printed in the same run.
+  *The repair makes `would-mislead` pay what `nothing-fits` pays: name the
+  searches, and name in `rejected` the drawing whose meaning would give the task
+  away. The genuine case pays it without effort, because the rainforest is in the
+  library and placing it answers "which biome is this?". A thought about the deck
+  cannot pay it at all, because it was never about a particular drawing. Every
+  reason now costs a measurement or a search and there is no free answer left to
+  move to, which is the general form of a hole this file has now closed three
+  times in the same place. Verified against both real records: the PSHE pass
+  fails on all sixteen slides, the maths pass fails on its one decline and leaves
+  its eighteen good slides untouched.*
+
+- **Repaired in 4.2.269. A blocked network was written down as a judgement about
+  the slides.** The drawings are fetched one file at a time and the run's friction
+  log records `Educational SVG candidate fetching blocked by network EACCES`.
+  `search-educational-svg.js` handles that correctly: an unfetchable candidate is
+  moved out of `candidates` into `unavailable` and printed as
+  `EDUCATIONAL_SVG_NOT_FETCHED`, one line per drawing. The pass then wrote those
+  identifiers into `rejected` as drawings it had looked at and turned down, a
+  porridge drawing on the porridge slide, a water jug on the hydration slide, a
+  sleeping figure on the sleep slide, and the check passed them, because it only
+  asked whether the identifier exists in the shipped index, which it did. The
+  index is a catalogue; holding the file is what looking at it means.
+  *Two changes. A `rejected` drawing must be one this machine actually held, read
+  off the `library/` folder the drawings are fetched into. And the case in
+  between now has its own answer, `drawings-unreachable`: the library listed
+  drawings for this slide and none of them would open. `library-unavailable` was
+  false there because the library answered, and `nothing-fits` was worse than
+  false because it claimed a look nobody got. It degrades the way the room checks
+  do: with no `library/` folder at all, which a real run never has, a rejection
+  stands on its own word. The report now also carries `OPTIONAL_PICTURE_DECLINED:`
+  whenever the pass declined anything, because those counts existed on this run
+  and died in a terminal.*
+
+- **The whole point of the PSHE deck went missing and the review that demanded it
+  never reopened.** The design reviewer blocked the lesson with "all six
+  scenario/task beats lack visual context despite naming real activities". The
+  designer answered by promising eight photographs. Five never arrived, and the
+  five that failed were porridge, a glass of water, an everyday walk, a bed ready
+  for sleep and a class reading, the four roles the lesson teaches. The three
+  that survived were outdoor games, a game controller and coach seats. The deck
+  kept every incidental picture and lost every picture of the thing being taught:
+  twelve of its sixteen slides carry nothing at all, and the three photographs
+  are shared between the other four. The fault the reviewer rejected the lesson
+  for is in the delivered deck, stamped APPROVED, because the review runs before
+  the picture stage and nothing asks afterwards whether its accepted requirement
+  survived. Not repaired: the right shape is probably a re-ask rather than a new
+  rule, and it wants deciding rather than guessing at.
+
+- **The working wall was withheld entirely because photographs were missing.**
+  `working-wall-designer` recorded "five of eight defining photographs were
+  unsatisfied, preventing a faithful four-role overview" and wrote `cards: []`.
+  Empty output is valid output and usually right, but this was not a judgement
+  that nothing was wall-worthy; it was a resource withheld over a missing input,
+  which is the thing 4.2.166 settled in the other direction for decks. A wall of
+  words about food, water, movement and sleep would still have been usable. Not
+  repaired: it is the same decision as the finding above and belongs with it.
+
+- **The image generator returned pictures that could not be saved.**
+  `imagegen_output_unavailable` on all four entries, both allowed calls spent and
+  burned. `image-scout-generation.md` says to save "the returned local file or
+  returned media payload" and never says how to save a payload that arrives
+  without a path, so the fallback that exists to cover a blocked search was
+  itself blocked by a host detail. Not repaired: it needs the host's actual
+  return shape in front of it, not a guess.
+
+- **`SLIDE_TEXT_UNDERFILLED` fires and nobody owns acting on it.** It is console
+  output from `build.js` and nothing blocks on it. On the maths deck it correctly
+  caught the exact complaint of 19 September, a minus three at 20% of a 4.07in
+  box, and the run report recast it as "two deliberately spacious teaching
+  elements" under accepted minor issues. The check that was built for this
+  complaint now fires and is explained away in prose. Not repaired: recorded so
+  the next sizing pass starts from a check that already works rather than
+  building another.
+
+- **Eight minutes at the front of the run, for the third time.** PSHE waited
+  7m 19s between the lesson designer returning and being serviced, maths 6m 27s,
+  and the 19 September run 6m 30s. Three for three, and roughly a fifth of the
+  maths run's wall clock. The 19 September entry called it "spent doing nothing",
+  which this investigation cannot confirm: the orchestrator runs the design
+  validator and builds the review packet in that gap, so it may be serial work on
+  the critical path rather than idleness. Worth measuring before it is treated as
+  waste.
+
+- **Not worth fixing, checked and dismissed.** PyMuPDF absent twice with pypdf
+  succeeding both times. The Desktop copy of this log failing once on the PSHE
+  run, with the checkout copy catching the entry. `POWERPOINT_PDF_FAILED: A
+  specified logon session does not exist` in the PSHE decorator, because
+  `convert_office` already falls through to LibreOffice and the maths run used
+  that fallback successfully an hour earlier on the same machine. The design
+  review packet's two missing flags, corrected inside the same step. Mojibake in
+  the captured build stdout, which is the log capture's encoding and not the
+  deck. The maths plan heading against its objective, already handled and flagged
+  to the teacher.
+
+- **What actually blocked the network, and it was not the teacher's line.** The
+  errors are permission refusals, not connectivity failures: `WinError 10013` is
+  a socket forbidden by the host's access permissions, and the drawing fetch
+  failed `EACCES`. Codex on Windows runs its workers in a sandbox that, as this
+  log already records for the Python work, executes as the restricted
+  `CodexSandboxOffline` user. Confirmed by timestamps: the newest drawing in the
+  1,652-file cache before this investigation was 19 September 20:48, so nothing
+  came down during the 11:26 to 12:13 run, and the same two porridge drawings
+  the pass claimed to have rejected fetched in under a second from outside that
+  sandbox on the same machine at 12:57 the same day. The same `WinError 10013`
+  appears in the 19 September entry above, so this is a standing condition of
+  sandboxed runs on this computer rather than one bad afternoon.
+
+- **The drawing search ranks the whole catalogue and then tries to download the
+  winners, so a blocked run comes away with nothing while 1,652 drawings sit on
+  the machine.** `knownIds` reads the shipped index in fetch mode and only reads
+  the folder in `local` mode, so ranking never restricts itself to what is in
+  hand. `resolveLibrary` already states the opposite intent for the library as a
+  whole ("a warm cache is a working library on its own, so a run with no network
+  still uses every drawing this machine has already fetched"), and that intent
+  stops at the resolver: the search that follows it does not honour it. Measured
+  on this run's own eight searches: 4 of the 96 ranked candidates were already
+  on the machine. That is small, but it is not zero, and the distribution is the
+  point. Slide 4, the breakfast slide, had three suitable drawings already on
+  disk and took none, because the twelve it ranked were the twelve best in the
+  catalogue rather than the best three it could actually open. A fallback that
+  re-ranks within the cache when a fetch fails would have put a drawing on that
+  slide with no network at all. Not repaired; recorded with its measurement.
+
+- **The start-of-run check cannot see this failure, and the warm cache is why.**
+  `drawingsAccess` in `check-setup.js` returns `available` on its second line if
+  `hasDrawings(cacheRoot)` is true, before any network probe runs. This machine
+  holds 1,652 drawings, so that line has been short-circuiting the probe on every
+  run, and the check has been reporting drawings available without once asking
+  whether they could be reached. That is why no `SETUP_NOTE` warned about either
+  blocked afternoon.
+  *The short-circuit is reasoned, and its reasoning is what has expired. The
+  comment says a sandbox with no network "cannot tell a private library from an
+  unreachable one, and the workers that fetch drawings run with the network, so
+  that case says nothing rather than warning the teacher on every run about
+  something that works". The workers did not have the network on 19 or 21
+  September. The assumption the silence rests on has now been disproven twice,
+  by the two runs this entry is about. A probe that runs even with a warm cache,
+  and a note that distinguishes "the library is private" from "this session
+  cannot reach it", would have put one line in front of the teacher before either
+  deck was built. Not repaired; recorded with the measurement above.*
+  *Reproduction, for whoever takes it on: the block is only observable from
+  inside Codex's sandbox, because a shell outside it fetches in under a second.
+  `LESSON_EDUCATIONAL_SVG_CACHE=<empty dir> node scripts/search-educational-svg.js
+  --query sun --limit 1` forces a real fetch past any cache and prints
+  `EDUCATIONAL_SVG_NOT_FETCHED` with the transport error when it is refused.
+  Verified to fetch cleanly outside the sandbox on 21 September.*
+
+- **Cause found, 21 September 2026: Codex's sandbox has no network permission on
+  this computer, and the setting that grants it is absent from the config.** Run
+  inside Codex against a forced-empty cache, the drawing search answered
+  `EDUCATIONAL_SVG_UNAVAILABLE ... could not be reached (file address: HTTP 0;
+  API: connect EACCES 20.26.156.210:443)`. The address resolved and the port is
+  443, so this is not DNS and not the far end refusing: `EACCES` on connect is
+  the local sandbox denying the socket, which is the same refusal Unsplash
+  reported as `WinError 10013` on 19 and 21 September. One cause, both picture
+  routes, three runs.
+  *Codex's own help text names the setting: "In `workspace-write`, network access
+  still depends on your Codex configuration (for example `[sandbox_workspace_write]
+  network_access = true`)." `C:\Users\Daniel\.codex\config.toml` has no
+  `[sandbox_workspace_write]` section at all, so network access sits at its
+  default of off and every sandboxed command that reaches for the network is
+  refused at the socket. The config carries `[windows] sandbox = "elevated"`,
+  which is a separate axis and does not grant the network. Not changed: it
+  loosens a sandbox on the teacher's machine and is his decision. Recorded here
+  because three runs have now been diagnosed from the inside and this is where
+  they all end.*
+  *Note for whoever acts on it: a `GITHUB_TOKEN` does not help. The refusal is at
+  the socket, before any request is made, so signing in changes nothing.*

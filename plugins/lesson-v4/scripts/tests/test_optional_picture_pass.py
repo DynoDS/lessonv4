@@ -51,6 +51,7 @@ class CheckRunner(unittest.TestCase):
         library: bool = False,
         resolver: str = "unavailable",
         room: list[dict] | None = None,
+        held: list[str] | None = None,
     ):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -80,6 +81,22 @@ class CheckRunner(unittest.TestCase):
                 # else - the same shape of fault as the resolver's.
                 library_root = root / "library-root"
                 library_root.mkdir()
+                # `held` is what this machine actually had in its hands. The
+                # drawings arrive one file at a time, so the index knowing a
+                # name and this machine holding that drawing are different
+                # facts, and the gap between them is where a blocked network
+                # got written down as a drawing somebody looked at and turned
+                # down. `held=None` leaves no `library/` at all, which is the
+                # one state a real run never reaches and where a rejection
+                # therefore stands on its own word.
+                if held is not None:
+                    (library_root / "library").mkdir()
+                    for library_id in held:
+                        target = library_root / "library" / Path(library_id)
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        target.write_text(
+                            '<svg viewBox="0 0 1 1"></svg>', encoding="utf-8"
+                        )
                 argv += ["--library-root", str(library_root)]
             # With no --library-root the check now asks the resolver, so the
             # tests pin the resolver's answer through its own environment
@@ -583,6 +600,207 @@ class ContractTests(unittest.TestCase):
         self.assertIn("Overlap by itself is never the fault", decorator)
         self.assertIn("Judge legibility rather than taste", decorator)
         self.assertIn("earlier optional-picture stage", playbook)
+
+
+SUN = "cartoon/su/sun.svg"
+BIAS = (
+    "This slide asks the class which shape is the odd one out, so any shape "
+    "drawing shows them an answer."
+)
+
+
+class ABiasClaimIsAboutAParticularDrawingTests(CheckRunner):
+    """`would-mislead` was the last answer that cost nothing, and it moved there.
+
+    On 21 September 2026 a PSHE deck declined all sixteen of its slides, nine of
+    them as `would-mislead`, each sentence a variation on "this lesson asks
+    children to reason, so a picture would give it away". That is one thought
+    about the deck written out nine times, one slide at a time, which is the
+    exact failure this file exists to stop. The sentence could not catch it
+    because a sentence is easy to write. A drawing is not: the claim is that
+    some picture's meaning would answer this slide's task, so it now names that
+    picture, out of a search that ran.
+    """
+
+    def test_a_bias_claim_with_no_search_behind_it_fails(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead",
+             "evidence": BIAS},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[SUN])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("names the searches it ran", result.stderr)
+        self.assertIn("wearing one slide's clothes", result.stderr)
+
+    def test_a_bias_claim_that_names_its_drawing_is_accepted(self):
+        # The genuine case, and it pays without effort: the rainforest beside
+        # "which biome is this?" is in the library, and placing it answers the
+        # question. Nothing here makes a real bias claim harder to make.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead",
+             "evidence": BIAS, "searched": ["sun"], "rejected": [SUN]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[SUN])
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_a_bias_claim_still_owes_its_sentence(self):
+        # The search is added to the sentence, not swapped for it. The sentence
+        # is what makes a bogus claim legible beside the task it is about.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead",
+             "searched": ["sun"], "rejected": [SUN]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[SUN])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("would-mislead with no evidence", result.stderr)
+
+    def test_a_bias_claim_whose_search_found_nothing_is_the_other_verdict(self):
+        # If the library holds no drawing for this slide, there is nothing here
+        # whose meaning could give anything away. That is `nothing-fits`.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead",
+             "evidence": BIAS,
+             "searched": ["qqqqzzzzxxxx"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("nothing here to mislead with", result.stderr)
+
+    def test_a_bias_claim_needs_no_search_when_there_is_no_library(self):
+        # Preserved deliberately. With no library no drawing could have been
+        # placed on any slide, so there is no search for the claim to name, and
+        # `full` and `competes` stay available on the same footing. This is the
+        # behaviour the five-reasons test has always pinned; the repair must not
+        # quietly take it away.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "would-mislead",
+             "evidence": BIAS},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class ARejectionMeansYouHeldTheDrawingTests(CheckRunner):
+    """The index is a catalogue. Holding the file is what looking at it means.
+
+    The drawings are fetched one at a time, and the search prints a line per
+    drawing it could not bring down. A PSHE deck wrote seven of those into
+    `rejected` - a porridge drawing "turned down" on the porridge slide - and
+    the check passed them, because it only asked whether the identifier was in
+    the shipped index, which it was.
+    """
+
+    def test_a_rejection_this_machine_never_held_fails(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["sun"], "rejected": [SUN]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("never held", result.stderr)
+        self.assertIn("drawings-unreachable", result.stderr)
+
+    def test_a_rejection_this_machine_held_is_accepted(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["sun"], "rejected": [SUN]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[SUN])
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_with_no_library_folder_at_all_a_rejection_stands_on_its_word(self):
+        # A real run always has one: the resolver makes it before it reports a
+        # root, and a local copy is only accepted when it already holds
+        # drawings. No folder means nobody can tell, and a record that cannot be
+        # checked is not a record that is wrong - the same rule `full` and
+        # `competes` get on a machine that cannot render.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["sun"], "rejected": [SUN]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class TheCaseInBetweenTests(CheckRunner):
+    """The library answered and none of it would open.
+
+    `library-unavailable` is false there, because the library answered.
+    `nothing-fits` is worse than false, because it claims a look nobody got.
+    """
+
+    def test_drawings_unreachable_is_accepted_when_nothing_could_be_opened(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "drawings-unreachable",
+             "searched": ["sun"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("1 drawings-unreachable", result.stdout)
+
+    def test_drawings_unreachable_needs_its_searches(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "drawings-unreachable"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("names the searches it ran", result.stderr)
+
+    def test_drawings_unreachable_fails_when_the_machine_held_one(self):
+        # A drawing already here opens with no network, so it was there to look
+        # at, and this slide owes the verdict that follows from looking.
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "drawings-unreachable",
+             "searched": ["sun"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[SUN])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("held", result.stderr)
+
+    def test_drawings_unreachable_whose_search_found_nothing_is_nothing_fits(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "drawings-unreachable",
+             "searched": ["qqqqzzzzxxxx"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("nothing to fail to open", result.stderr)
+
+    def test_drawings_unreachable_with_no_library_is_library_unavailable(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "drawings-unreachable",
+             "searched": ["sun"]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("`library-unavailable`", result.stderr)
+
+
+class TheDeckThatFailedTests(CheckRunner):
+    """The 21 September 2026 PSHE deck, in miniature, in both of its shapes."""
+
+    def test_the_deck_level_thought_written_out_per_slide_is_caught(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": number, "decision": "none", "reason": "would-mislead",
+             "evidence": "The task asks children to reason from the situation, "
+                         "so an added picture could pre-empt the answer."}
+            for number in (1, 2, 3)
+        ]}
+        result = self.run_check(
+            record, deck(bare_slide(), bare_slide(), bare_slide()),
+            library=True, held=[SUN],
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stderr.count("names the searches it ran"), 3)
+
+    def test_a_blocked_network_cannot_be_written_as_a_judgement(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "nothing-fits",
+             "searched": ["sun"], "rejected": [SUN]},
+        ]}
+        result = self.run_check(record, deck(bare_slide()), library=True, held=[])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("nobody can have looked at it", result.stderr)
 
 
 if __name__ == "__main__":
