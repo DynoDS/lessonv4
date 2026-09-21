@@ -361,9 +361,25 @@ function drawContent(pptx, slide, zone, data, ctx) {
     return drawFallback(slide, zone, stringifyFallback(data), ctx);
   }
   if (zone.class && !classes.includes(zone.class)) {
+    // Say where it sits and what the zone will take. A container draws its
+    // children into its own box but passes its zone class down, because the
+    // class is a fact about how wide the slide is there and a panel cannot make
+    // a narrow strip wide. So a table nested in a success-criteria panel in a
+    // sidebar is refused for the sidebar's width, and a message naming only
+    // "table" and "E-narrow" sends the designer looking at the wrong object. A
+    // Year 4 PSHE deck spent three repair passes elsewhere and shipped both of
+    // its task slides blank (21 September 2026).
+    const inside = ctx._containerType
+      ? ` It is the content of a "${ctx._containerType}" here, which draws it ` +
+        `inside its own box but cannot widen the zone it sits in.`
+      : '';
+    const takes = classes.length
+      ? ` "${type}" fits zone class ${classes.join(', ')}.`
+      : '';
     throw new Error(
       `CONTENT_ZONE_INCOMPATIBLE: registry does not allow content type "${type}" in zone class ${zone.class}. ` +
-        `Nothing was removed or replaced.`
+        `Nothing was removed or replaced.${inside}${takes} ` +
+        `Move it to a zone it fits, or give this zone content that fits it.`
     );
   }
   const fn = HELPERS[type];
@@ -448,10 +464,16 @@ function drawContent(pptx, slide, zone, data, ctx) {
   // categoryColor deliberately turns the whole container into one category.
   const hadBarrier = !!ctx._cardBarrier;
   if (!TRANSPARENT.has(type) || (hasCard && categoryLine)) ctx._cardBarrier = true;
+  // The type a refused child is sitting inside. A zone refusal names a content
+  // type and a zone class, and on a slide whose sidebar holds a panel holding a
+  // table, neither of those is the thing the designer has to go and look at.
+  const hadContainer = ctx._containerType;
+  ctx._containerType = type;
   try {
     return fn(pptx, slide, inner, data, ctx);
   } finally {
     ctx._cardBarrier = hadBarrier;
+    ctx._containerType = hadContainer;
   }
 }
 

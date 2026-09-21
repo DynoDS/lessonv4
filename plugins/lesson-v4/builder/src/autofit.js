@@ -206,9 +206,18 @@ function runAutofit(pptxPath, options = {}) {
   if (overloaded.length) {
     return {
       status: 'TEXT_OVERLOAD',
+      // "The text has to give" was the whole message, and the slide designer is
+      // not allowed to rewrite the lesson's words: a scenario, a question and a
+      // criterion all come from upstream and are protected. So the one move the
+      // message named was the one move its reader may not make, and the room
+      // stayed the size it was. A Year 4 PSHE deck shipped a 115-character
+      // scenario in a 69-character banner (21 September 2026). Name the moves
+      // that are the designer's own first.
       message:
         `${overloaded.length} text box(es) are still too heavy at the readable ` +
-        `floor. The text has to give, not the size.`,
+        `floor. Give the words more room: a wider or taller zone, a template ` +
+        `whose band is built for a sentence this long, or the beat split across ` +
+        `two slides. Only whoever owns the wording may shorten it.`,
       overloaded,
       output,
       result,

@@ -3825,3 +3825,78 @@ as 4.2.269; the rest are recorded and not acted on.*
   reaching a re-point at all; what is released here is the string naming the
   file, on the pictures a lesson was always allowed to lose. Four tests,
   including the two discrimination cases.*
+
+## 2026-09-21 - Year 4 PSHE: How can I keep my energy up throughout the day?
+
+*Built by lesson-v4 4.2.271.*
+
+
+- Slide focused repair cleared the named repeated-layout and emphasis faults, but the subsequent full check exposed incompatible table placement in E-narrow zones on slides 16–17 and text overload on slide 13; the delivery path produced a flagged deck.
+
+## 2026-09-21 - Year 4 PSHE rebuild, after the network was restored
+
+*Built by lesson-v4 4.2.271. `output\working\year-4-pshe-how-can-i-keep-my-energy-up-throughout-the-day`.*
+
+The picture repairs held: `PICTURE_STAGE: attempting 5 pictures`, all five
+published from Unsplash, `PICTURE_PROVENANCE_OK`, and the working wall came back
+after being withheld whole that morning. No essential photograph was lost, so
+4.2.270's check had nothing to fire on. What blocked this deck was composition.
+
+- **Repaired in 4.2.272. A refusal named neither the object to look at nor a move
+  that would fix it.** Slides 16 and 17, the lesson's two task slides, shipped
+  blank on `CONTENT_ZONE_INCOMPATIBLE: registry does not allow content type
+  "table" in zone class E-narrow`. Both carried a two-column "The change / The
+  reason" criteria table inside an `sc-panel` in the sidebar. The engine is
+  right and the registry is right: `table` is `['A','B','C','E-wide']` and a
+  sidebar is E-narrow. The trap is that `sc-panel` IS allowed in E-narrow, and a
+  container draws its children inside its own box while passing its zone class
+  down, so the panel is legal and its content is not. The message named "table"
+  and "E-narrow", neither of which is the object the designer has to open, and
+  the designer spent all three self-repair passes plus its one focused repair on
+  other faults.
+  *`drawContent` now carries `ctx._containerType` through the recursive descent,
+  beside the existing `_cardBarrier`, so the refusal reads "It is the content of
+  a `sc-panel` here, which draws it inside its own box but cannot widen the zone
+  it sits in. `table` fits zone class A, B, C, E-wide." Verified against the real
+  deck. Two tests, including the discrimination case that a top-level refusal
+  carries no container sentence.*
+  *Two documentation faults fixed with it, both of which invited this. The
+  compatibility table's prose said `label-diagram` "is the only figure that
+  refuses E-narrow", which reads as a general claim and is false of `table`; it
+  now says figure, and says to read the column. And `sc-panel`'s own `content`
+  field doc offered "a table" as an example of what to put there while saying
+  only that it takes "the zone's class" - true, and not operative. It now names
+  the consequence: in a sidebar the panel takes steps, text or a list, and a
+  table is refused.*
+
+- **Repaired in 4.2.272. The overload message named the one move its reader may
+  not make.** Slide 13 held a 115-character scenario in a banner that fits about
+  69 at the readable floor, and `TEXT_OVERLOAD` said "The text has to give, not
+  the size." The slide designer may not rewrite the lesson's words: a scenario,
+  a question and a criterion are all upstream and protected. So the message
+  pointed at the wording, the designer could not touch the wording, and the room
+  stayed the size it was.
+  *It now names the moves that are the designer's own - a wider or taller zone, a
+  template whose band is built for a sentence this long, or the beat split across
+  two slides - and says only whoever owns the wording may shorten it. One test.*
+
+- **Not repaired: a flagged deck loses its drawings as well as its two slides.**
+  `SLIDE_DECORATION_OMITTED: slide check did not pass` is the playbook's rule for
+  a deck that ships flagged, so sixteen slides that laid out perfectly got no
+  drawing because two did not. That reads against 4.2.166 ("flag the slides and
+  deliver it"), and the optional layer carries no teaching, so the case for
+  running it anyway is real. It is not a small change: the Slide Decorator's own
+  contract is that an unsettled deck is not its problem, the pass must answer for
+  every slide, and the two blank slides would render as pages of clear space that
+  the room measurement would invite drawings onto. It needs a reason code for a
+  slide that could not be laid out and a decorator allowed to run on a flagged
+  deck. Scoped and left for a deliberate change rather than bolted on.
+
+- **Eight minutes at the front, for the fourth consecutive run.** 7m 45s between
+  the lesson designer returning and being serviced. Still unmeasured; see the
+  note under the 21 September investigation above.
+
+- **`SLIDE_TEXT_UNDERFILLED` fired again and was again recorded as an accepted
+  minor issue** ("slide 15 contains an underfilled advice box", 23% of a 2.09in
+  box). Third run in a row that this check has been right and nobody has owned
+  it.

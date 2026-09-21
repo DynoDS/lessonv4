@@ -228,3 +228,21 @@ test('a clean pass returns an empty diagnostics array', () => {
 
   assert.deepEqual(autofitDiagnostics(result), []);
 });
+
+test('overload names moves the slide designer is allowed to make', () => {
+  // The message was "The text has to give, not the size." The slide designer
+  // may not rewrite the lesson's words - a scenario, a question and a criterion
+  // are all upstream and protected - so the only move it named was the one move
+  // its reader may not make. A Year 4 PSHE deck shipped a 115-character
+  // scenario in a 69-character banner (21 September 2026).
+  const script = fakeScript(
+    'print(\'AUTOFIT_RESULT: {"overloaded": [{"slide": 13, "box": "Text 2", "preview": "..."}], ' +
+      '"measurementFailures": [], "fontMode": "exact"}\')\n'
+  );
+
+  const result = runAutofit('deck.pptx', { script });
+  assert.equal(result.status, 'TEXT_OVERLOAD');
+  assert.match(result.message, /more room/);
+  assert.match(result.message, /split across/);
+  assert.match(result.message, /Only whoever owns the wording may shorten it/);
+});

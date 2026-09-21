@@ -159,3 +159,70 @@ test('an ordinary slide raises no capacity warnings', () => {
 
   assert.deepEqual(capacityWarnings(lesson), []);
 });
+
+// A refusal has to be findable. "registry does not allow content type table in
+// zone class E-narrow" names neither the object the designer has to go and look
+// at nor a move that would fix it. A Year 4 PSHE deck put a two-column criteria
+// table inside a success-criteria panel in a sidebar, on both of its task
+// slides, spent three repair passes on other faults and shipped both slides
+// blank (21 September 2026).
+
+test('a refused nested type names the container it sits in', () => {
+  const { drawContent } = require('../src/content');
+  const lesson = {
+    slides: [
+      {
+        template: 'teach',
+        content: {
+          type: 'sc-panel',
+          content: { type: 'table', headers: ['The change', 'The reason'], rows: [['a', 'b']] },
+        },
+      },
+    ],
+  };
+
+  const result = preflightLayouts({
+    PptxGenJS,
+    lesson,
+    contextForSlide: ctxFor,
+    drawSlide: (pptx, slide, data, ctx) =>
+      drawContent(
+        pptx,
+        slide,
+        { x: 0, y: 0, w: 2, h: 2, class: 'E-narrow' },
+        data.content,
+        ctx
+      ),
+  });
+
+  assert.equal(result.errors.length, 1);
+  assert.equal(result.errors[0].signal, 'CONTENT_ZONE_INCOMPATIBLE');
+  assert.match(result.errors[0].message, /content of a "sc-panel"/);
+  assert.match(result.errors[0].message, /cannot widen the zone/);
+});
+
+test('a refusal says which zones the type does fit', () => {
+  const { drawContent } = require('../src/content');
+  const lesson = {
+    slides: [{ template: 'teach', content: { type: 'table', headers: ['a'], rows: [['b']] } }],
+  };
+
+  const result = preflightLayouts({
+    PptxGenJS,
+    lesson,
+    contextForSlide: ctxFor,
+    drawSlide: (pptx, slide, data, ctx) =>
+      drawContent(
+        pptx,
+        slide,
+        { x: 0, y: 0, w: 2, h: 2, class: 'E-narrow' },
+        data.content,
+        ctx
+      ),
+  });
+
+  assert.equal(result.errors.length, 1);
+  assert.match(result.errors[0].message, /fits zone class A, B, C, E-wide/);
+  // The discrimination case: with no container, no container sentence.
+  assert.doesNotMatch(result.errors[0].message, /content of a/);
+});
