@@ -319,3 +319,59 @@ class SplitAcrossCardsTests(RepairScopeCase):
         after = {"slides": [{"template": "body-full", "body": {"type": "number-sentence", "items": [4000, 200, 50, 9]}}]}
         result = self.run_check(before, after)
         self.assertEqual(result.returncode, 1, result.stdout)
+
+
+class APictureFileIsNotAWordTests(RepairScopeCase):
+    """A filename is where a picture lives, not something anybody reads.
+
+    Only `imageHref` was released, so a deck whose field is `imagePath` had
+    every re-point read as lost content. On 21 September 2026 five photographs
+    came back terminally unavailable, the authorised repair re-pointed them, and
+    this check answered that `unsplash/bed-ready-for-sleep.jpg` was "1 thing
+    children read or work from" now missing. The repair got past it by keeping
+    all five dead filenames in the file as inert `sourceImagePath` provenance,
+    so the delivered lesson carried paths to pictures that do not exist.
+
+    What the check is for survives: the picture object is counted, so taking a
+    picture away is still caught, and since 4.2.270 an essential photograph
+    never reaches a re-point at all.
+    """
+
+    def slide(self, image: str = "unsplash/bed.jpg", asks: str = "What should change?") -> dict:
+        return {
+            "slides": [
+                {
+                    "template": "split-h-50-50",
+                    "title": "The weather changes",
+                    "primary": {"type": "image", "imagePath": image, "fit": "contain"},
+                    "secondary": {
+                        "type": "stack",
+                        "items": [{"type": "text", "value": asks}],
+                    },
+                }
+            ]
+        }
+
+    def test_re_pointing_a_dead_filename_is_allowed(self):
+        result = self.run_check(self.slide(), self.slide(image="unsplash/coach.jpg"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_taking_the_picture_away_is_still_caught(self):
+        """The discrimination case. Releasing the string must not release the
+        picture: a slide that loses its image has lost something."""
+        after = self.slide()
+        del after["slides"][0]["primary"]
+        result = self.run_check(self.slide(), after)
+        self.assertEqual(result.returncode, 1)
+
+    def test_what_a_child_reads_is_untouched_by_this(self):
+        result = self.run_check(self.slide(), self.slide(asks="What should change about drinks?"))
+        self.assertEqual(result.returncode, 1)
+
+    def test_the_provenance_field_is_released_too(self):
+        """`sourceImagePath` only ever existed to get past this check. It is
+        released with `imagePath` so nothing has to carry a dead path again."""
+        before = self.slide()
+        before["slides"][0]["primary"]["sourceImagePath"] = "unsplash/bed.jpg"
+        result = self.run_check(before, self.slide(image="unsplash/coach.jpg"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

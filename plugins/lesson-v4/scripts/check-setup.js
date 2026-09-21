@@ -163,15 +163,27 @@ function hasUnsplashKey(env = process.env) {
   }
 }
 
-// 'available', 'unavailable' or 'unchecked'. A sandbox with the network shut
-// off cannot tell a private library from an unreachable one, and the workers
-// that fetch drawings run with the network, so that case says nothing rather
-// than warning the teacher on every run about something that works.
+// 'available', 'unavailable', 'unreachable' or 'unchecked'.
+//
+// This used to answer 'available' the moment the machine held any cached
+// drawing, on the reasoning that a sandbox with no network "cannot tell a
+// private library from an unreachable one, and the workers that fetch drawings
+// run with the network". The workers did not have the network on 19 or 21
+// September 2026: Codex sandboxes the commands it runs and grants no network
+// unless the config says so, and every fetch was refused at the socket. This
+// machine holds 1,652 drawings, so the short-circuit fired on both blocked
+// days and the check reported all clear without once asking. Three lesson runs
+// lost their pictures behind that silence.
+//
+// So the probe now runs, and a refusal at the transport is its own answer. It
+// is a different fact from a private library, which answers with an HTTP status
+// rather than failing to connect, and the two get different notes. A full local
+// copy still short-circuits, because a library already on disk in its entirety
+// needs no network to be true.
 async function drawingsAccess(env = process.env) {
   const library = require('../shared/educational-svg-library');
   if (String(env[library.LOCAL_ROOT_VARIABLE] || '').trim()) return 'available';
-  if (library.hasDrawings(library.cacheRoot(env))) return 'available';
-  if (String(env.GITHUB_TOKEN || env.GH_TOKEN || '').trim()) return 'available';
+  const signedIn = Boolean(String(env.GITHUB_TOKEN || env.GH_TOKEN || '').trim());
   const repo = String(env[library.REPO_VARIABLE] || '').trim() || library.DEFAULT_REPO;
   return new Promise((resolve) => {
     const request = https.get(
@@ -183,17 +195,23 @@ async function drawingsAccess(env = process.env) {
         // Private and not signed in reads as not found. A signed-in GitHub CLI
         // still gets in, and asking it is only worth the time when it matters.
         if (response.statusCode === 404 || response.statusCode === 401 || response.statusCode === 403) {
+          if (signedIn) return resolve('available');
           const gh = spawnSync('gh', ['auth', 'status'], { encoding: 'utf8', windowsHide: true, timeout: 5000 });
           return resolve(!gh.error && gh.status === 0 ? 'available' : 'unavailable');
         }
         resolve('unchecked');
       }
     );
+    // A slow link is not a blocked one, and a note on every run of a bad
+    // hotel wifi is the noise this check cannot afford. Silence stays the
+    // answer for a probe that simply ran out of time.
     request.on('timeout', () => {
       request.destroy();
       resolve('unchecked');
     });
-    request.on('error', () => resolve('unchecked'));
+    // Refused before any reply: no route, no permission, no DNS. This is the
+    // one the warm cache was hiding.
+    request.on('error', () => resolve('unreachable'));
   });
 }
 
@@ -296,6 +314,23 @@ async function inspect(options = {}) {
     notes.push(
       "Optional drawings are unavailable because this computer isn't signed in to GitHub. Say 'sign me in " +
         "to GitHub' and I'll help."
+    );
+  }
+  if (drawings === 'unreachable') {
+    // Said before the lesson is built, because afterwards it is indistinguishable
+    // from a library that had nothing suitable, and that is how three runs lost
+    // their pictures without anybody being told. Photographs come down the same
+    // way, so this note is about the whole picture layer and not only drawings.
+    const library = require('../shared/educational-svg-library');
+    const warm = library.hasDrawings(library.cacheRoot(env));
+    notes.push(
+      "This session can't reach the internet, so new pictures won't download: not the drawings library and " +
+        'not photographs either. ' +
+        (warm
+          ? 'Drawings already on this computer will still be used, so slides may come out part covered.'
+          : 'Slides will come out with no pictures on them.') +
+        " Your broadband is probably fine: it's usually the sandbox Codex runs commands in. Say 'why can't " +
+        "you reach the internet' and I'll check the setting."
     );
   }
 
@@ -479,6 +514,7 @@ module.exports = {
   findPowerPoint,
   findLibreOffice,
   hasUnsplashKey,
+  drawingsAccess,
   recentlyFailed,
   inspect,
   report,

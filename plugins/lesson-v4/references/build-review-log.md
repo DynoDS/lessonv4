@@ -3785,3 +3785,43 @@ as 4.2.269; the rest are recorded and not acted on.*
   design and re-reviews it, the wall designer is working from a design that does
   not lean on pictures that never came. A wall that drops a card over a
   non-essential picture is still correct and is left alone.*
+
+- **Repaired in 4.2.271. The start-of-run check answered "drawings fine" without
+  asking, because the machine had old ones.** `drawingsAccess` returned
+  `available` on its second line whenever `hasDrawings(cacheRoot)` was true, and
+  this computer holds 1,652 drawings, so the probe below it never ran on either
+  blocked day. Its reasoning is recorded in the comment and is what expired: a
+  blocked sandbox "cannot tell a private library from an unreachable one, and
+  the workers that fetch drawings run with the network". The workers had no
+  network on 19 or 21 September.
+  *The probe now runs whatever the cache holds, and the two states it could
+  supposedly not tell apart are told apart by where they fail. A private library
+  answers with an HTTP status, so 401/403/404 keeps its existing GitHub sign-in
+  route. A blocked session never gets a reply at all, so a transport error is a
+  new answer, `unreachable`, with a note naming what it costs and saying the
+  broadband is probably fine and the sandbox probably is not. A timeout stays
+  `unchecked` and silent: a slow link is not a blocked one, and a note on every
+  run of a bad hotel wifi is noise this check cannot afford. A full local copy
+  still short-circuits without probing, because a complete library on disk needs
+  no network to be true. The note covers photographs too, since they come down
+  the same way and failed the same way. Six tests in
+  `builder/test/check-setup.test.js`, including the exact regression: a warm
+  cache plus a refused socket now reads `unreachable`.*
+
+- **Repaired in 4.2.271. A picture's filename was being counted as a word a
+  child reads.** `PRESENTATION_KEYS` in `check-repair-scope.py` released
+  `imageHref` and nothing else, so on a deck whose field is `imagePath` every
+  re-point read as lost content. Reproduced exactly: swapping one filename for
+  another answers `REPAIR_SCOPE_FAILED ... 1 thing(s) children read or work
+  from are not: unsplash/bed-ready-for-sleep.jpg`. That is why the 21 September
+  repair kept five dead filenames in `lesson.json` as inert `sourceImagePath`
+  provenance, and why the delivered lesson carries paths to pictures that do not
+  exist.
+  *`imagePath` and `sourceImagePath` are released. The cover the check exists
+  for is intact and was verified rather than assumed, against a realistic slide:
+  re-pointing a filename passes, deleting the picture object still fails, and
+  changing a word a child reads still fails. The release is also safer than it
+  would have been a version ago, because 4.2.270 stops an essential photograph
+  reaching a re-point at all; what is released here is the string naming the
+  file, on the pictures a lesson was always allowed to lose. Four tests,
+  including the two discrimination cases.*

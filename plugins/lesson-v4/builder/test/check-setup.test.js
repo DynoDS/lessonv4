@@ -133,3 +133,110 @@ test('PowerPoint is looked for only on Windows, and a Windows record of it count
   const onlyFolders = setup.findPowerPoint('win32', absent);
   assert.ok(onlyFolders === null || /POWERPNT\.EXE$/i.test(onlyFolders));
 });
+
+// A blocked network used to be invisible here. `drawingsAccess` answered
+// 'available' the moment the machine held any cached drawing, so on a computer
+// with 1,652 of them it never once asked whether the library could be reached.
+// Codex sandboxes the commands it runs and grants no network unless its config
+// says so; on 19 and 21 September 2026 every fetch was refused at the socket,
+// this check reported all clear on both days, and three lesson runs lost their
+// pictures. The probe now runs, and a refusal before any reply is its own
+// answer, told apart from a private library that answers with a status code.
+
+function withStubbedProbe(behaviour, run) {
+  const https = require('node:https');
+  const real = https.get;
+  https.get = (url, options, onResponse) => {
+    const request = {
+      handlers: {},
+      on(event, handler) {
+        this.handlers[event] = handler;
+        return this;
+      },
+      destroy() {},
+    };
+    setImmediate(() => behaviour(request, onResponse));
+    return request;
+  };
+  return run().finally(() => {
+    https.get = real;
+  });
+}
+
+function reply(statusCode) {
+  return (request, onResponse) => onResponse({ statusCode, resume() {} });
+}
+
+function warmCache() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'setup-drawings-'));
+  const held = path.join(root, 'library', 'standard', 'su');
+  fs.mkdirSync(held, { recursive: true });
+  fs.writeFileSync(path.join(held, 'sun.svg'), '<svg viewBox="0 0 1 1"></svg>');
+  return root;
+}
+
+test('a network refused before any reply reads as unreachable', async () => {
+  const env = { LESSON_EDUCATIONAL_SVG_CACHE: fs.mkdtempSync(path.join(os.tmpdir(), 'cold-')) };
+  const answer = await withStubbedProbe(
+    (request) => request.handlers.error(Object.assign(new Error('connect EACCES'), { code: 'EACCES' })),
+    () => setup.drawingsAccess(env)
+  );
+  assert.equal(answer, 'unreachable');
+});
+
+test('drawings already on the machine no longer hide a blocked network', async () => {
+  // The regression. This is the exact state of the teacher's computer on both
+  // blocked days: a full cache, and nothing able to reach the library.
+  const env = { LESSON_EDUCATIONAL_SVG_CACHE: warmCache() };
+  const answer = await withStubbedProbe(
+    (request) => request.handlers.error(Object.assign(new Error('connect EACCES'), { code: 'EACCES' })),
+    () => setup.drawingsAccess(env)
+  );
+  assert.equal(answer, 'unreachable');
+});
+
+test('a slow link is not a blocked one and says nothing', async () => {
+  // A note on every run of a bad hotel wifi is the noise this check cannot
+  // afford, so a probe that merely ran out of time stays silent.
+  const env = { LESSON_EDUCATIONAL_SVG_CACHE: warmCache() };
+  const answer = await withStubbedProbe(
+    (request) => request.handlers.timeout(),
+    () => setup.drawingsAccess(env)
+  );
+  assert.equal(answer, 'unchecked');
+});
+
+test('a library that answers is available, warm cache or cold', async () => {
+  for (const cache of [warmCache(), fs.mkdtempSync(path.join(os.tmpdir(), 'cold-'))]) {
+    const answer = await withStubbedProbe(reply(200), () =>
+      setup.drawingsAccess({ LESSON_EDUCATIONAL_SVG_CACHE: cache })
+    );
+    assert.equal(answer, 'available');
+  }
+});
+
+test('a private library with a token is available, and is not a blocked network', async () => {
+  // The distinction the old comment said could not be made. A private library
+  // answers with a status code; a blocked session never gets a reply at all.
+  const answer = await withStubbedProbe(reply(404), () =>
+    setup.drawingsAccess({
+      LESSON_EDUCATIONAL_SVG_CACHE: warmCache(),
+      GITHUB_TOKEN: 'a-token',
+    })
+  );
+  assert.equal(answer, 'available');
+});
+
+test('a full local copy needs no network and is never probed', async () => {
+  const root = warmCache();
+  let probed = false;
+  const answer = await withStubbedProbe(
+    (request) => {
+      probed = true;
+      request.handlers.error(new Error('should not be reached'));
+    },
+    () => setup.drawingsAccess({ LESSON_EDUCATIONAL_SVG_ROOT: root })
+  );
+  assert.equal(answer, 'available');
+  assert.equal(probed, false);
+});

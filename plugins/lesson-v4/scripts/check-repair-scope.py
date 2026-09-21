@@ -115,6 +115,19 @@ PRESENTATION_KEYS = {
     "widthMm",
     "blankWidthMm",
     "imageHref",
+    # Where a picture's file sits, which is not a word anybody reads. Only
+    # `imageHref` was released, so a deck whose fields are `imagePath` had every
+    # re-point read as a lost word: told on 21 September 2026 that
+    # `unsplash/bed-ready-for-sleep.jpg` was "1 thing children read or work from"
+    # now missing, the repair kept five dead filenames in the file as inert
+    # `sourceImagePath` provenance purely to get past this check, and the lesson
+    # shipped carrying paths to pictures that do not exist. The picture a slide
+    # carries is still covered: the census counts the picture object itself, so
+    # taking one away is caught here as it always was, and an essential
+    # photograph no longer reaches a re-point at all (4.2.270). What is released
+    # is the string naming the file.
+    "imagePath",
+    "sourceImagePath",
     "startAt",
     "number",
     "showNumbers",
