@@ -111,7 +111,7 @@ When different phases act on different visible objects, place the phase beside i
 
 Use `required-material`, `response-demand`, `reasoning-demand`, `problem-state`, `safety-warning` and `vocabulary` only when the exact words genuinely have that role. Presentation roles never author new wording.
 
-A short bank of selectable or matchable labels is material, not prose. When the lesson design supplies `taskStructure.kind: "option-bank"`, render its labels as discrete options rather than joining them back into the instruction.
+A short bank of selectable or matchable labels is material, not prose. When the lesson design supplies `taskStructure.kind: "option-bank"`, render its labels as discrete options rather than joining them back into the instruction. "Material, not prose" is about keeping each item separate, never about its length: where each item is a situation children respond to, its label is a whole sentence and is rendered whole, on its own card. Copy it exactly, as with every other word the design wrote.
 
 ---
 

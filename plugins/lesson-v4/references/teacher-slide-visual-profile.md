@@ -38,7 +38,7 @@ Protected source wording may still carry visual syntax. When one source-authored
 
 For a dense task, identify its **survival phrase**: the shortest existing phrase that preserves the central action if a child catches only one part during a glance. Never invent or paraphrase the survival phrase — it must be a substring of the source string. When emphasis genuinely improves entry into the task, mark that exact phrase with the `core-action` presentation role; it renders bold in the line's own colour, never blue, because blue belongs to questions (Semantic colour below). The other semantic roles (`required-material`, `response-demand`, `reasoning-demand`, `problem-state`, `vocabulary`) are used only when the exact source wording carries that role.
 
-A short bank of selectable or matchable labels is material, not prose. A `taskStructure.kind: "option-bank"` is rendered as discrete items; its labels are never rejoined into comma-separated prose inside the instruction.
+A short bank of selectable or matchable labels is material, not prose. A `taskStructure.kind: "option-bank"` is rendered as discrete items; its labels are never rejoined into comma-separated prose inside the instruction. That is about separateness, not length: an item that is a situation children respond to carries a whole sentence, and it is rendered whole rather than shortened to fit a card.
 
 ## Main task prominence and the header cue
 

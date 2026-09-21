@@ -3932,3 +3932,69 @@ after being withheld whole that morning. No essential photograph was lost, so
   broken and both had to sit at the decision they govern. Recorded in the test
   that a third raise should be a consolidation pass instead; the per-slice
   budget, which is the one a worker actually pays, still passes untouched.*
+
+### The PSHE task slides, read cold (21 September 2026, shipped as 4.2.274)
+
+Daniel read the remade slides 16 and 17 with no context and rejected the
+wording: "I don't know who the class is... It's just weird, short, punchy
+things... Why does it sound like a robot telling me all this? Fix this class's
+day, what do you mean?" He accepted the rewrite ("much better wording. I can
+read that and go 'I know whats happening and so will kids'") and asked why it
+came out the other way. Files: `output\working\year-4-pshe-...`, hand-built
+versions under `output\REMADE v3 - in sentences.pptx`.
+
+**The fragments were the shape of the container, not a voice choice.** The task
+is four parts of one class's day, each to be improved with a reason. The design
+recorded it as `taskStructure.kind: "option-bank"` with four items whose labels
+read `Food: rush through the morning without eating until late afternoon.`
+`taskStructure` exists for "parts that must remain separate on the board" and
+offers three kinds - option-bank, sort, evidence-classification - and all three
+are *selection* structures. A set of situations children respond to one by one
+has no kind of its own, so the nearest was taken. The contract then taught the
+wording: `Each label is the exact child-facing option text`, with the worked
+example `cell`, `wire`, `lamp`, `switch`. Four parts of a day became four
+labels, and a label is a fragment by design.
+  *Checked before repairing: `validate-lesson-design.py` puts no length or shape
+  constraint on `label` (item keys are exactly `{id, label}`, 2 to 12 items). So
+  the schema always permitted sentences and a fourth kind was not needed; what
+  failed was the contract's own teaching. Repaired there: a label is as long as
+  the child needs it, the single-word bank is named as the short end of the
+  range rather than the norm, and the case where children respond to every item
+  is given its two consequences (name the case, write each item as a sentence
+  that could be read aloud). The `cell/wire/lamp/switch` example stays and is
+  pinned by a test, because widening the label must not turn a genuine bank of
+  choices into prose.*
+
+**`a class` is the group's version of `someone`.** The Placeholder-names rule
+covers "every person you invent" and its tells are all individuals: `a visitor
+asks`, `someone wonders`, `a friend says`. A class is not a person, so it never
+applied: the design says `a class` ten times across its beats, and children were
+asked to advise somebody who was never introduced. Extended to an invented
+group, with the person rule's own limit carried over (a scenario that exists
+only to carry numbers or a sentence needs no name, and a real class belongs to
+the source route).
+
+**Two downstream owners could have undone the repair.** `slide-composition-
+playbook.md` and `teacher-slide-visual-profile.md` both say "a short bank of
+selectable or matchable labels is material, not prose", which a Slide Designer
+meeting a sentence-long label could read as licence to shorten it to a tag.
+Both now say that rule is about separateness and not length. Their existing
+obligation, never rejoining labels into the instruction, is unchanged and
+pinned.
+
+**What would still fail, checked.** Longer labels mean more TEXT_OVERLOAD, so
+the Slide Designer has to use more slides rather than smaller type. Both halves
+of that are already in place: `output-template.md` already says the Slide
+Designer chooses "the number of physical slides", and 4.2.272's overload message
+already names "the beat split across two slides" as a move it may make. Measured
+on the hand-built versions: two cards of whole sentences plus criteria fits with
+no warnings; four cards of whole sentences overflows nine boxes; two cards plus
+a worked example overflows too. So the split into two task slides was right all
+along - what was wrong was the labels and the nameless class, not the split.
+
+**Not changed, deliberately.** The design reviewer approved this lesson. Its
+known blind spot is thinness (the Tudor entry: its User-fit calibration only
+detects too much), and Daniel's standing instruction on that fault is not to add
+another prose rule but to reach for effort or a second pass. Recorded, not
+acted on. Nine tests pin the four changed paragraphs, including both
+discrimination cases; 2027 Python tests pass.

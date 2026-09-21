@@ -148,3 +148,84 @@ class VoiceGuidanceStaysInTheAlwaysReadPathTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+OUTPUT_TEMPLATE = ROOT / "references" / "output-template.md"
+COMPOSITION = ROOT / "references" / "slide-composition-playbook.md"
+VISUAL_PROFILE = ROOT / "references" / "teacher-slide-visual-profile.md"
+
+
+class AnInventedGroupIsNamedTooTests(unittest.TestCase):
+    """`a class` is the group's version of `someone`.
+
+    The placeholder-names rule covers "every person you invent" and its tells
+    are all individuals: `a visitor asks`, `someone wonders`, `a friend says`.
+    A class is not a person, so a Year 4 PSHE lesson said `a class` ten times
+    across its beats and asked children to advise somebody who was never
+    introduced (21 September 2026). The teacher, reading the task slides cold:
+    "I don't know who the class is."
+    """
+
+    def test_an_invented_group_gets_a_name(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("A group you invent is named too", designer)
+        self.assertIn("the group's version of", designer)
+
+    def test_the_name_is_used_every_time_as_for_a_person(self) -> None:
+        designer = flat(DESIGNER)
+        self.assertIn("use that name every time the lesson speaks about it", designer)
+
+    def test_a_scenario_carrying_only_numbers_still_needs_no_name(self) -> None:
+        """The discrimination case, and it is the person rule's own limit: a
+        class that exists to hold a number is not a character."""
+        designer = flat(DESIGNER)
+        self.assertIn("a class has 24 pencils", designer)
+        self.assertIn("needs no name", designer)
+
+
+class AnOptionBankLabelIsAsLongAsItNeedsTests(unittest.TestCase):
+    """The four parts of a day arrived as four telegrams.
+
+    `taskStructure` has three kinds and all three are selection structures, so
+    a task of "four situations, respond to each" has no kind of its own and the
+    designer reached for the nearest. The schema permits any string as a
+    `label`, but the contract called it "option text" and its worked example is
+    `cell`, `wire`, `lamp`, `switch`. So the parts of a day became
+    `Food: rush through the morning without eating until late afternoon.` and
+    the teacher read the board and asked why it sounded like a robot.
+    """
+
+    def test_a_label_may_carry_a_whole_situation(self) -> None:
+        contract = flat(OUTPUT_TEMPLATE)
+        self.assertIn("A label is as long as the child needs it to be", contract)
+        self.assertIn("carries that situation in whole sentences", contract)
+
+    def test_the_single_word_bank_is_still_correct(self) -> None:
+        """The discrimination case. Widening the label must not turn a genuine
+        bank of choices into sentences: those four words are whole labels."""
+        contract = flat(OUTPUT_TEMPLATE)
+        self.assertIn("are whole labels because each item is one word children choose between", contract)
+
+    def test_responding_to_every_item_names_who_it_is_about(self) -> None:
+        contract = flat(OUTPUT_TEMPLATE)
+        self.assertIn("respond to every item rather than choosing between them", contract)
+        self.assertIn("Say who the situation is about, by name", contract)
+
+    def test_the_read_aloud_test_is_given(self) -> None:
+        contract = flat(OUTPUT_TEMPLATE)
+        self.assertIn("could be read aloud to the class is the test", contract)
+
+    def test_downstream_reads_material_not_prose_as_separateness(self) -> None:
+        """Both downstream owners said "material, not prose", which a slide
+        designer could read as licence to shorten a sentence to a tag."""
+        for path in (COMPOSITION, VISUAL_PROFILE):
+            with self.subTest(path=path.name):
+                text = flat(path)
+                self.assertIn("separat", text)
+                self.assertIn("never about its length", text) if path is COMPOSITION \
+                    else self.assertIn("not length", text)
+
+    def test_the_no_rejoining_rule_survives(self) -> None:
+        """The obligation these paragraphs already carried, unchanged."""
+        self.assertIn("rather than joining them back into the instruction", flat(COMPOSITION))
+        self.assertIn("never rejoined into comma-separated prose", flat(VISUAL_PROFILE))

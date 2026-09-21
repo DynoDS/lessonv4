@@ -463,7 +463,11 @@ For a discrete option bank, use this exact shape:
 }
 ```
 
-Each item `id` is local to the source unit and uses `item-###`. `items` contains 2 to 12 entries. Each `label` is the exact child-facing option text. Preserve item order. Do not repeat these labels in `pupilInstruction`; the instruction names what to do with the bank. An option bank uses the ordinary `answer.content` route and never supplies `answer.structure`.
+Each item `id` is local to the source unit and uses `item-###`. `items` contains 2 to 12 entries. Each `label` is the exact child-facing text for that item. Preserve item order. Do not repeat these labels in `pupilInstruction`; the instruction names what to do with the bank. An option bank uses the ordinary `answer.content` route and never supplies `answer.structure`.
+
+**A label is as long as the child needs it to be, and the example above is the short end of the range.** `cell`, `wire`, `lamp`, `switch` are whole labels because each item is one word children choose between. When each item is a *situation* children respond to, the label carries that situation in whole sentences, because it is the only place the situation can live: the structure holds no other field, and the Slide Designer copies it exactly and may not expand it. A Year 4 PSHE lesson put four parts of a day here as `Food: rush through the morning without eating until late afternoon.` and the class met four telegrams instead of four things a class does (21 September 2026). Written for the child, that item reads `They rush out of the house in the morning, and they eat nothing until late in the afternoon.`
+
+Two things follow when children respond to every item rather than choosing between them. Say who the situation is about, by name, on the first item that introduces them, because `a class` and `a child` cannot be pictured (`Lesson Designer` → Placeholder names). And write each item as a sentence about what they do, not a heading with a colon: a label ending in a full stop that could be read aloud to the class is the test.
 
 For a sort, use this exact shape:
 
