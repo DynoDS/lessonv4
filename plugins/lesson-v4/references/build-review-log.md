@@ -4106,3 +4106,12 @@ discrimination cases; 2027 Python tests pass.
 - The design reviewer reads for it and may repair it as wording: to what they will notice, or off the board entirely when the label already names the thing.
 - Validated on the science deck: the two pointing lines came off slides 4 and 11 and stayed in the scripts, and slide 6's question went back to asking the thing. `SLIDE_DESIGN_CHECK_OK`, 17 slides. Python 2033 pass.
 - Still open, raised and not yet settled with him: `That doesn't mean` opened the fourth part on three of four science boards and four of five history boards, which is the same-shape fault one level up from sentences.
+
+## 2026-09-22 - The refusal is written as you would say it, not from one frame (4.2.279)
+
+*Daniel, on the rebuilt decks: "we want variety and sometimes its not relevant just stating the misconception".*
+
+- The formula was taught, not invented by the run. The fourth-part paragraph in `teaching-sequence-content-based.md` gave three worked examples and every one opened `That doesn't mean`, under the sentence `Every subject has the same shape.` A designer reading that produces the frame four boards in a row.
+- The paragraph now says the wrong reading recurs while the sentence that refuses it does not, and shows three genuinely different moves: the plain refusal, the truth said straight against the wrong version (`The stomach is this one bag, up here, not your whole tummy.`), and the misleading word taken head on (`Small doesn't mean shorter.`), plus the case where the class settles it in the Do and the board carries the question instead. No quota, and no instruction to vary for its own sake.
+- `teacher-voice.md` §11 carries the same point for how a correction sounds, tied to the §3 sentence-rhythm fault it is a larger version of, so the route's pointer to it is honest.
+- Both decks rebuilt: history now opens its four refusals four different ways and keeps one plain `That doesn't mean`; science slide 6 states the truth against the wrong version. `SLIDE_DESIGN_CHECK_OK` 17 slides each. Python 2033 pass.

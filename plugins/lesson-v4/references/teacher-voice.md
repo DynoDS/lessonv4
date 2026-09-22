@@ -702,6 +702,8 @@ Good:
 
 Use it because there is a misconception to catch, not as a decorative recurring label.
 
+The same holds for the correction itself. A lesson whose every correction opens `That doesn't mean` has found one sentence and reused it, which is the sentence-rhythm fault in section 3 one level up. Say it as you would say it to this class and let the wrong idea decide the shape: the plain refusal (`That doesn't mean every Victorian child worked.`), the truth said straight against the wrong version (`The stomach is this one bag, up here, not your whole tummy.`), or the misleading word taken head on (`Small doesn't mean shorter.`).
+
 A useful pattern:
 1. name or correct the mistaken idea;
 2. give one short accurate explanation.
