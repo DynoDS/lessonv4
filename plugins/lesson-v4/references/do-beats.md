@@ -8,7 +8,7 @@ This document is a selective activity catalogue. `preferences.md` → The Teach 
 
 So pick each beat on both axes, and think about the shape across the lesson rather than beat by beat. The three bands, and what each is for:
 
-- **Surface** (recall a fact, name a thing, match given items to given items, label from memory). Cheap, fast, and the right choice when you genuinely need to know the class caught something before you build on it. This is the band that quietly fills a lesson, because these beats are the easiest to write.
+- **Surface** (recall a fact, name a thing, match given items to given items, label from memory). Cheap, fast, and the right choice when you genuinely need to know the class caught something before you build on it, on items the Teach did not show: matching the slide's own words back to it is finding them, not knowing them (`preferences.md` → `A quick check is a fresh case, not the last slide again`). This is the band that quietly fills a lesson, because these beats are the easiest to write.
 - **Work with** (apply the idea to a fresh instance, sort where the criterion has to be found, correct an error, choose between two positions and say why, rank and justify). The child holds the idea and does something to it.
 - **Reason with** (explain a cause, compare two things on a criterion they select, judge a claim that is true-but-misleading, transfer the idea to a situation the lesson never showed them, generate a new example and defend it).
 
@@ -528,8 +528,8 @@ Children separate what a source, photograph, result or set of data actually show
 **SEND access:** the observation half is available to every child and gives everyone something written before the harder half.
 
 ### 10.8 Which Claim Does This Support?
-Children choose which of two or three claims the evidence in front of them supports, and say what rules the others out. *"Plant A grew 8 cm more than Plant B. Which of these three does that support?"* Wrong options map to the ways evidence is usually over-read.
-**Best for:** the moment children start treating one piece of evidence as proof of everything.
+Children choose which of two or three claims the evidence in front of them supports, and say what rules the others out. *"Plant A grew 8 cm more than Plant B. Which of these three does that support?"* The evidence is something children read for themselves: when the Teach has just said what a source shows, the right claim is that sentence again and choosing it is finding, not weighing. Each wrong option is one a child this age might really believe (`Plant A had more sunlight`, a cause the result cannot show), never the `every` and `nothing` extremes a child rejects on sight.
+**Best for:** results, readings and records children interpret for themselves. In primary history, `Match the evidence to the claim` in `subject-history.md` does the same work with cards children can hold, and a claim about what one document proves is rarely the right thought for Years 3 and 4.
 **SEND access:** the choice is the response; the reason is one line and can be spoken.
 
 ### 10.9 Connect It Back

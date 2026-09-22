@@ -150,10 +150,12 @@ drops its role costs both at once.
 On Codex the host keeps its own record of what it launched. Read it back:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex --working-dir "[WORKING_DIR]"
 ```
 
-Run it twice: once when the approved design is settled, because a design made at
+The working directory picks this run's own record when another lesson is being
+built at the same time; without it the newest record wins, and on 22 September
+2026 a history report printed a maths lesson's timings. Run it twice: once when the approved design is settled, because a design made at
 the wrong setting is cheapest to redo before anything is built on it, and once
 before the run report. Put the final marker line in the report's
 `## Worker launches` section.

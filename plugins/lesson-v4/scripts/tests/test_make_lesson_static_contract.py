@@ -634,7 +634,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
 
     def test_exactly_one_teaching_sequence_reference_is_selected(self):
         text = self._designer_text()
-        self.assertIn("read exactly one matching `teaching-sequence-*.md` file.", text)
+        self.assertIn("read exactly one matching `teaching-sequence-*.md` file, with `--file` and every page.", text)
         self.assertIn("Read one teaching-sequence file per lesson, not all five.", text)
 
     def test_scaffold_guide_remains_part_of_the_normal_route(self):

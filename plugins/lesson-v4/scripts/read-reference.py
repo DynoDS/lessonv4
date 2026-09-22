@@ -36,6 +36,16 @@ STRUCTURES = (
 )
 STRUCTURES_HEADING = "9. Lesson Structures — When Each Is Evidence-Based"
 
+# A page is what one tool call may print and still arrive whole. Codex caps
+# each command's output at about 10,000 tokens and removes the MIDDLE of
+# anything longer, marking the gap `…N tokens truncated…`, while the head and
+# the tail still arrive, so a success line printed last looks like success.
+# On 22 September 2026 a Year 4 history designer read its own role file whole
+# and lost 26,616 of its 36,408 tokens on every pass, and two preferences
+# sections it needed never reached any pass. 24,000 characters is about 7,000
+# tokens of this guidance, which leaves room for the markdown's punctuation.
+PAGE_CHARS = 24_000
+
 
 def headings(text: str) -> list[Heading]:
     """Find ATX headings outside fenced code; end at the next peer or ancestor."""
@@ -100,6 +110,63 @@ def read_source(root: Path, name: str) -> str:
         raise ReferenceError(f"cannot read {name}: {exc}") from exc
 
 
+def read_role(root: Path, name: str) -> str:
+    """A role file from `agents/`, read whole so it can be paged."""
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", name):
+        raise ReferenceError(f"use a role name such as lesson-designer, not a path: {name}")
+    folder = (root / "agents").resolve()
+    path = folder / f"{name}.md"
+    if path.resolve().parent != folder:
+        raise ReferenceError(f"role escapes its directory: {name}")
+    try:
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            return handle.read()
+    except (OSError, UnicodeError) as exc:
+        raise ReferenceError(f"cannot read role {name}: {exc}") from exc
+
+
+def read_working_file(path: Path) -> str:
+    """A run's own Markdown file (the review view), read whole so it can be paged."""
+    if path.suffix.lower() != ".md":
+        raise ReferenceError(f"--file reads a Markdown file: {path}")
+    try:
+        with path.open("r", encoding="utf-8", newline="") as handle:
+            return handle.read()
+    except (OSError, UnicodeError) as exc:
+        raise ReferenceError(f"cannot read {path}: {exc}") from exc
+
+
+def pages(text: str, limit: int = PAGE_CHARS) -> list[str]:
+    """Split at paragraph breaks, then line breaks, so no page exceeds `limit`.
+
+    A rule is a paragraph here, and a page that ends mid-paragraph hands the
+    reader half a rule, so the cut goes between paragraphs whenever one fits.
+    Joining the pages gives back the text exactly.
+    """
+    if len(text) <= limit:
+        return [text]
+    result: list[str] = []
+    current = ""
+    for block in re.split(r"(?<=\n\n)", text):
+        pieces = [block]
+        if len(block) > limit:
+            pieces = re.split(r"(?<=\n)", block)
+        for piece in pieces:
+            while len(piece) > limit:
+                if current:
+                    result.append(current)
+                    current = ""
+                result.append(piece[:limit])
+                piece = piece[limit:]
+            if current and len(current) + len(piece) > limit:
+                result.append(current)
+                current = ""
+            current += piece
+    if current:
+        result.append(current)
+    return result
+
+
 def merge_intervals(parts: list[tuple[int, int]]) -> list[tuple[int, int]]:
     merged: list[tuple[int, int]] = []
     for start, end in sorted(set(parts)):
@@ -161,11 +228,19 @@ def main(argv: list[str] | None = None) -> int:
     # The menu is read at the same moment as the start-of-lesson sections, and
     # the instructions say to batch a moment's reads, so it joins a --select.
     parser.add_argument("--structure-menu", action="store_true")
+    # A role file and a run's review view are read whole, so they are the reads
+    # most likely to outgrow one page; both go through the same pager.
+    parser.add_argument("--role", metavar="ROLE")
+    parser.add_argument("--file", type=Path, metavar="PATH")
+    parser.add_argument("--page", type=int, default=1, metavar="N")
     args = parser.parse_args(argv)
-    if args.index and (args.select or args.structure_menu):
-        parser.error("--index is read on its own: run it without --select or --structure-menu")
-    if not (args.index or args.select or args.structure_menu):
-        parser.error("one of --select, --index or --structure-menu is required")
+    whole = [flag for flag, value in (("--index", args.index), ("--role", args.role), ("--file", args.file)) if value]
+    if len(whole) > 1 or (whole and (args.select or args.structure_menu)):
+        parser.error(f"{whole[0]} is read on its own: run it without --select, --structure-menu or another whole-file flag")
+    if not (whole or args.select or args.structure_menu):
+        parser.error("one of --select, --index, --role, --file or --structure-menu is required")
+    if args.page < 1:
+        parser.error("--page counts from 1")
     # Configure before reading so even missing Unicode headings report safely.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -176,14 +251,36 @@ def main(argv: list[str] | None = None) -> int:
             source = read_source(args.plugin_root, args.index)
             output = "\n".join(" > ".join(h.path) for h in headings(source))
             size = 0
+        elif args.role:
+            output = read_role(args.plugin_root, args.role)
+            size = len(output.encode("utf-8"))
+        elif args.file:
+            output = read_working_file(args.file)
+            size = len(output.encode("utf-8"))
         else:
             output, size = selected_text(args.plugin_root, args.select) if args.select else ("", 0)
             if args.structure_menu:
                 menu, menu_size = structure_menu(read_source(args.plugin_root, "evidence-synthesis.md"))
                 output = f"{output}\n<!-- structure menu: evidence-synthesis.md -->\n{menu}" if output else menu
                 size += menu_size
-        print(output, end="" if output.endswith("\n") else "\n")
-        print(f"REFERENCE_READ_OK: {size} source bytes" if not args.index else "REFERENCE_INDEX_OK")
+        split = pages(output)
+        if args.page > len(split):
+            raise ReferenceError(f"--page {args.page} does not exist: this read has {len(split)} page(s)")
+        text = split[args.page - 1]
+        if len(split) > 1:
+            print(f"<!-- page {args.page} of {len(split)} -->")
+        print(text, end="" if text.endswith("\n") else "\n")
+        if args.page < len(split):
+            # No success line until the last page: a reader who stops here has
+            # read part of the guidance, and the success line is what the
+            # instructions tell it to require.
+            print(
+                f"REFERENCE_READ_PARTIAL: page {args.page} of {len(split)}. Run the same command "
+                f"with --page {args.page + 1} and read every page before relying on this reading."
+            )
+            return 0
+        done = f", page {args.page} of {len(split)}" if len(split) > 1 else ""
+        print(f"REFERENCE_INDEX_OK{done}" if args.index else f"REFERENCE_READ_OK: {size} source bytes{done}")
         return 0
     except ReferenceError as exc:
         print(f"REFERENCE_READ_ERROR: {exc}", file=sys.stderr)

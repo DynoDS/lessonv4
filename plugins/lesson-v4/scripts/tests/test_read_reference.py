@@ -220,5 +220,109 @@ class ReferenceReaderTests(unittest.TestCase):
         self.assertIn("REFERENCE_READ_ERROR", result.stderr.decode("utf-8"))
         self.assertNotIn("UnicodeEncodeError", result.stderr.decode("utf-8"))
 
+
+class PagingTests(unittest.TestCase):
+    """A read longer than one page arrives in pages, because the Codex host
+    cuts the middle out of any longer output and the success line printed last
+    still arrives. Nothing here grades the guidance being read."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        (self.root / "references").mkdir()
+        (self.root / "agents").mkdir()
+
+    def run_main(self, *args):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            rc = reader.main(["--plugin-root", str(self.root), *args])
+        return rc, out.getvalue(), err.getvalue()
+
+    def long_text(self, paragraphs=40, width=1500):
+        return "# Role\n\n" + "".join(f"Rule {n}. " + ("word " * (width // 5)) + "\n\n" for n in range(paragraphs))
+
+    def test_pages_join_back_exactly_and_respect_the_limit(self):
+        text = self.long_text()
+        split = reader.pages(text, limit=5000)
+        self.assertGreater(len(split), 1)
+        self.assertEqual("".join(split), text)
+        self.assertTrue(all(len(page) <= 5000 for page in split))
+
+    def test_a_page_breaks_between_paragraphs_when_one_fits(self):
+        split = reader.pages(self.long_text(paragraphs=10, width=1500), limit=5000)
+        for page in split[:-1]:
+            self.assertTrue(page.endswith("\n\n"), page[-40:])
+
+    def test_an_oversized_paragraph_still_splits_under_the_limit(self):
+        text = "x" * 12_000
+        split = reader.pages(text, limit=5000)
+        self.assertEqual("".join(split), text)
+        self.assertTrue(all(len(page) <= 5000 for page in split))
+
+    def test_a_short_read_is_one_page_and_unchanged(self):
+        (self.root / "references" / "sample.md").write_text("## A\nkeep\n", encoding="utf-8")
+        rc, out, _ = self.run_main("--select", "sample.md::A")
+        self.assertEqual(rc, 0)
+        self.assertNotIn("page 1 of", out)
+        self.assertTrue(out.rstrip().endswith("source bytes"))
+
+    def test_only_the_last_page_reports_success(self):
+        (self.root / "agents" / "lesson-designer.md").write_text(self.long_text(), encoding="utf-8")
+        total = len(reader.pages(self.long_text()))
+        self.assertGreater(total, 1)
+        seen = ""
+        for page in range(1, total + 1):
+            rc, out, _ = self.run_main("--role", "lesson-designer", "--page", str(page))
+            self.assertEqual(rc, 0)
+            self.assertIn(f"<!-- page {page} of {total} -->", out)
+            if page < total:
+                self.assertNotIn("REFERENCE_READ_OK", out)
+                self.assertIn(f"--page {page + 1}", out)
+            else:
+                self.assertIn(f"REFERENCE_READ_OK", out)
+                self.assertIn(f"page {total} of {total}", out.splitlines()[-1])
+            self.assertLessEqual(len(out), reader.PAGE_CHARS + 400)
+            seen += out
+        for n in range(40):
+            self.assertIn(f"Rule {n}.", seen)
+
+    def test_a_page_past_the_end_is_an_error(self):
+        (self.root / "agents" / "lesson-designer.md").write_text("# Role\nshort\n", encoding="utf-8")
+        rc, out, err = self.run_main("--role", "lesson-designer", "--page", "2")
+        self.assertEqual(rc, 2)
+        self.assertEqual(out, "")
+        self.assertIn("1 page", err)
+
+    def test_role_names_a_role_not_a_path(self):
+        for bad in ("../references/x", "agents/lesson-designer", "Lesson-Designer.md"):
+            with self.assertRaises(reader.ReferenceError):
+                reader.read_role(self.root, bad)
+
+    def test_file_reads_a_markdown_file_by_path(self):
+        view = self.root / "design-review-view.md"
+        view.write_text("# View\nthe class view\n", encoding="utf-8")
+        rc, out, _ = self.run_main("--file", str(view))
+        self.assertEqual(rc, 0)
+        self.assertIn("the class view", out)
+        with self.assertRaises(reader.ReferenceError):
+            reader.read_working_file(self.root / "lesson-design.json")
+
+    def test_whole_file_reads_stand_alone(self):
+        for args in (["--role", "x", "--select", "a.md::A"], ["--role", "x", "--index", "a.md"], ["--file", "v.md", "--structure-menu"]):
+            with self.assertRaises(SystemExit):
+                with contextlib.redirect_stderr(io.StringIO()):
+                    reader.main(["--plugin-root", str(self.root), *args])
+
+    def test_every_real_role_file_pages_under_the_limit(self):
+        # The live role files are the reads this exists for.
+        agents = SCRIPT.parents[1] / "agents"
+        for role in sorted(agents.glob("*.md")):
+            text = role.read_text(encoding="utf-8")
+            split = reader.pages(text)
+            self.assertEqual("".join(split), text, role.name)
+            self.assertTrue(all(len(page) <= reader.PAGE_CHARS for page in split), role.name)
+
+
 if __name__ == "__main__":
     unittest.main()

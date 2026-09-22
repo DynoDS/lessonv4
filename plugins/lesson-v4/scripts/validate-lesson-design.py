@@ -1289,6 +1289,62 @@ def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: di
                 )
 
 
+_EXPLAINS = re.compile(r"explain|explanation|compar|paragraph|justif", re.IGNORECASE)
+
+
+def _shows_the_class_a_model(unit: dict[str, Any]) -> bool:
+    """Whether this beat puts a good finished instance in front of the class:
+    a modelled turn, a model answer revealed to them, or a launch's pair."""
+    if unit.get("kind") in {"my-turn", "our-turn"}:
+        return True
+    answer = unit.get("answer") or {}
+    if answer.get("kind") in {"model", "standard"} and answer.get("delivery") in {"answer-slide", "visible-in-unit"}:
+        return True
+    launch = (unit.get("content") or {}).get("launch")
+    return isinstance(launch, dict) and launch.get("goodLooksLike") is not None
+
+
+def validate_explanation_task_is_modelled(structure: str, sequence: list[dict[str, Any]]) -> None:
+    """A written explanation or comparison is shown before it is asked for.
+
+    On 22 September 2026 a Year 4 history lesson ended on `Explain how these
+    examples show change and continuity` with `launch: null`: the only earlier
+    explanation was a Do whose model answer stayed in the teacher's notes, so no
+    child had seen what a good explanation of it looked like, and the teacher
+    who taught it said so ("You haven't given the tools to explain"). The
+    exemption the launch rule allowed, `a form they have made before`, was the
+    door, because nothing could check it. A skill lesson is left alone: its My
+    Turn and Our Turn model the move every time.
+    """
+    if structure == "Skill-based":
+        return
+    for index, unit in enumerate(sequence):
+        if unit.get("kind") != "practise":
+            continue
+        content = unit.get("content") or {}
+        explains = bool(content.get("reasoningWords")) or bool(_EXPLAINS.search(content.get("format") or ""))
+        if not explains:
+            continue
+        # Its own answer slide comes after the writing, so only its launch counts.
+        launch = content.get("launch")
+        if isinstance(launch, dict) and launch.get("goodLooksLike") is not None:
+            continue
+        if any(_shows_the_class_a_model(earlier) for earlier in sequence[:index]):
+            continue
+        expect(
+            False,
+            f"teachingSequence[{index}].content.launch: this Practise asks each child to write an "
+            "explanation or comparison, and nothing earlier in the lesson has shown the class a good "
+            "one: the launch has no good instance beside a weak one, and no earlier beat reveals its "
+            "model answer. A child meeting the form for the first time in the task has to invent how "
+            "the explanation goes and use the new learning at once, and the teacher has nothing on the "
+            "board to point at. Give `launch.goodLooksLike` a strong instance beside a weak one on a "
+            "parallel case (the lesson's own taught case works), or reveal the model answer of an "
+            "earlier explanation Do to the class (`answer.delivery: answer-slide`) so they have seen a "
+            "good one before they write their own",
+        )
+
+
 def _unit_words(unit: dict[str, Any]) -> str:
     """Everything a beat puts in front of the class or says to it, lower-cased."""
     parts: list[str] = []
@@ -3487,6 +3543,8 @@ def run_design_checks(
         validate_route_sequence(structure, sequence, concept_items)
     with faults.section():
         validate_teach_says_it_once(sequence, sticky_by_id)
+    with faults.section():
+        validate_explanation_task_is_modelled(structure, sequence)
     with faults.section():
         validate_lesson_fits_the_slot(root)
 

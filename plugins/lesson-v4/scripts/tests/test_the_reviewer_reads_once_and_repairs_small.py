@@ -194,9 +194,17 @@ class TheCardSendsTheReviewerOnlyToItsOwnReading(unittest.TestCase):
     def run_card_command(self, reference: str, heading: str) -> str:
         section = reference[reference.index(heading):]
         command = re.search(r"```bash\n(.+?)\n```", section, re.S).group(1)
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, encoding="utf-8")
-        self.assertEqual(result.returncode, 0, result.stderr)
-        return result.stdout
+        # A read longer than a page arrives in pages, as the reviewer reads it:
+        # every page in turn until the last one reports success.
+        pages = []
+        for page in range(1, 20):
+            paged = command if page == 1 else f"{command} --page {page}"
+            result = subprocess.run(paged, shell=True, capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(result.returncode, 0, result.stderr)
+            pages.append(result.stdout)
+            if "REFERENCE_READ_PARTIAL" not in result.stdout:
+                break
+        return "".join(pages)
 
     def maths_card(self, tmp: str) -> str:
         working_dir = Path(tmp)

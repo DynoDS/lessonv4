@@ -347,6 +347,18 @@ def read_reference_command(plugin_root: Path, requests: list[str]) -> str:
     return " ".join(parts)
 
 
+def read_file_command(plugin_root: Path, path: Path) -> str:
+    """A whole reference read through the pager, never with cat: on Codex a
+    command's output past about 10,000 tokens loses its middle, and the subject
+    and route files are each longer than that."""
+    return " ".join([
+        f'"{sys.executable}"',
+        f'"{(plugin_root / "scripts" / "read-reference.py").resolve()}"',
+        f'--file "{path}"',
+        "--page 1",
+    ])
+
+
 class PacketError(ValueError):
     """A deterministic Design Review packet failure."""
 
@@ -622,7 +634,10 @@ def build_review_reference(
         selectors = subject_selectors(subject_path)
         if selectors is None:
             subject_instruction = (
-                f"- Subject reference: `{subject_path}` - read the complete file."
+                f"- Subject reference: `{subject_path}` - read the complete file, "
+                "every page:\n\n```bash\n"
+                + read_file_command(plugin_root, subject_path)
+                + "\n```"
             )
         else:
             skipped = ", ".join(
@@ -665,7 +680,11 @@ def build_review_reference(
         "This card is the whole reading assignment: the sections below marked "
         "always, and the conditional sections whose trigger you can see in the "
         "lesson. A reading note inside a reference addressed to another agent, "
-        "or to someone authoring a lesson from scratch, does not widen it.\n\n"
+        "or to someone authoring a lesson from scratch, does not widen it. "
+        "A reading command that prints `REFERENCE_READ_PARTIAL` has more pages: "
+        "run it again with the `--page` it names until the last page prints "
+        "`REFERENCE_READ_OK`, because the host cuts the middle out of any "
+        "longer output and the pages are how all of it arrives.\n\n"
         "## Always read\n\n"
         f"{always_read}\n\n"
         "```bash\n"
@@ -673,7 +692,10 @@ def build_review_reference(
         "```\n\n"
         "## Required semantic references\n\n"
         f"- Teaching-route reference: `{teaching_sequence_path}` - read from "
-        "the file start to, but not including, `## Output Format Block`.\n"
+        "the file start to, but not including, `## Output Format Block`, "
+        "page by page:\n\n```bash\n"
+        f"{read_file_command(plugin_root, teaching_sequence_path)}\n"
+        "```\n\n"
         f"{subject_instruction}\n\n"
         "## Route checks\n\n"
         f"The review checks for a {lesson['structure']} lesson:\n\n"
@@ -1251,6 +1273,227 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
     return lines, count
 
 
+TEACH_KINDS = {"teach", "teach-why", "teach-needed"}
+
+# Words that open a sentence with a capital because they open it, and names a
+# Year 4 child is not being asked to learn.
+NOT_A_NAME = {
+    "I", "A", "An", "The", "Teacher", "OK", "Yes", "No",
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays", "Sundays",
+    "January", "February", "March", "April", "May", "June", "July", "August",
+    "September", "October", "November", "December", "English", "Year",
+}
+NAME_RUN = re.compile(
+    r"\b(?:[A-Z][A-Za-z’'-]*|[A-Z]{2,})(?:\s+(?:[A-Z][A-Za-z’'-]*|[A-Z]{2,}|I{1,3}|IV|VI{0,3}|of|the|and|&))*"
+)
+CONNECTORS = {"of", "the", "and", "&"}
+# A sentence's first word is capitalised for being first. When it is one of
+# these it is not part of a name, and the rest of the run is (`Every Tudor
+# child`, `Did the Mines Act`); any other first word of a longer run is kept,
+# because `English Heritage` and `John Pounds` open sentences too.
+SENTENCE_OPENERS = {
+    "A", "An", "The", "This", "That", "These", "Those", "Every", "Each", "Some", "Many",
+    "Most", "All", "Both", "No", "Not", "One", "Two", "Three", "Our", "Your", "Their",
+    "His", "Her", "Its", "My", "We", "You", "They", "He", "She", "It", "There", "Here",
+    "What", "Which", "Who", "Why", "How", "When", "Where", "Did", "Does", "Do", "Is",
+    "Are", "Was", "Were", "Can", "Could", "Would", "Should", "Will", "If", "So", "But",
+    "And", "Or", "Then", "Now", "Today", "Use", "Choose", "Sort", "Name", "Add", "Find",
+    "Explain", "Look", "Write", "Read", "Say", "Tell", "Put", "Match", "Draw", "Label",
+    "Describe", "Compare", "Think", "Talk", "Decide", "Check", "Show", "Give", "Make",
+    "Remember", "Imagine", "Before", "After", "During", "In", "On", "At", "For", "From",
+    "With", "By", "About", "Later", "Centuries", "Children", "People", "Families",
+    "Only", "Sometimes", "Order", "Locate", "Everyone", "Something", "Pass",
+}
+SOURCE_LABEL = re.compile(r"modern summary|reconstruct\w*|adapted from|\bsummary\b", re.IGNORECASE)
+
+
+def board_names_in(text: str) -> list[str]:
+    """Capitalised runs that are names, not sentence openings.
+
+    A sentence's first word is capitalised for being first, so it is dropped
+    and the rest of its run is kept (`Every Tudor child` gives `Tudor`).
+    """
+    found: list[str] = []
+    # A sentence ends at . ! ? or : (also just inside a closing quotation
+    # mark), at a semicolon between labelled parts, or at a line break.
+    # A table cell (` | `) and a quotation opening mid-line start afresh too.
+    for sentence in re.split(r"(?<=[.!?:;])\s+|(?<=[.!?:][\"'”’)\]])\s+|\s+\|\s+|\s+(?=[\"“‘])|\n+", text):
+        # A lettered or numbered line, a bullet or a quotation mark in front
+        # still leaves the first word first.
+        sentence = re.sub(r"^\(?[a-z0-9]{1,2}\)\s*", "", sentence.strip())
+        sentence = re.sub(r"^[^A-Za-z]+", "", sentence)
+        if not sentence:
+            continue
+        for match in NAME_RUN.finditer(sentence):
+            words = match.group(0).split()
+            while words and words[-1] in CONNECTORS:
+                words = words[:-1]
+            if match.start() == 0 and words:
+                first = re.sub(r"['’]s$", "", words[0])
+                acronym = len(first) > 1 and first.isupper()
+                if first in SENTENCE_OPENERS or (len(words) == 1 and not acronym):
+                    words = words[1:]
+            while words and words[0] in CONNECTORS:
+                words = words[1:]
+            while words and words[-1] in CONNECTORS:
+                words = words[:-1]
+            if not words:
+                continue
+            name = re.sub(r"['’]s$", "", " ".join(words))
+            capitals = [re.sub(r"['’]s$", "", word) for word in words if word not in CONNECTORS]
+            # Days and months, diagram letters (`A and B`) and Roman numerals are
+            # not names a child has to be told about.
+            if len(name) < 2 or all(
+                word in NOT_A_NAME or len(word) == 1 or re.fullmatch(r"[IVXLCDM]+", word)
+                for word in capitals
+            ):
+                continue
+            found.append(name)
+    return found
+
+
+def lesson_units(design: dict) -> list[dict]:
+    units = [design["starter"]] if design.get("starter") else []
+    units.extend(design.get("teachingSequence") or [])
+    ending = design.get("ending") or {}
+    if ending.get("included") and ending.get("beat"):
+        units.append(ending["beat"])
+    return units
+
+
+def build_board_names(design: dict) -> list[str]:
+    """Every name the class reads on the board, where it first appears, and
+    whether anything earlier in the lesson said it.
+
+    Written for the curse the reviewer cannot see from inside: an adult reads
+    `Order from Elizabeth I's government` and knows who and what, and a Year 4
+    class on 22 September 2026 knew neither, nor the Thames, nor English
+    Heritage, and nothing on the board said. A list of the names turns "read
+    it as a child" into something a reader who is not a child can do.
+    """
+    criteria = {row["id"]: row for row in design.get("successCriteria") or []}
+    sticky = {row["id"]: row["text"] for row in design.get("stickyKnowledge") or []}
+    said_before = ""
+    first_seen: dict[str, tuple[str, bool]] = {}
+    labels: list[tuple[str, str]] = []
+    for unit in lesson_units(design):
+        strings = class_view_unit(unit, criteria=criteria, sticky=sticky)
+        board = [text for text in strings if not text.startswith("Teacher says:")]
+        for text in board:
+            for name in board_names_in(text):
+                if name not in first_seen:
+                    first_seen[name] = (unit["label"], name in said_before)
+            for label in SOURCE_LABEL.findall(text):
+                labels.append((unit["label"], label))
+        said_before += " " + " ".join(strings)
+    lines = [
+        "## Names on the board",
+        "",
+        (
+            "Every name of a person, place, organisation or thing the class reads "
+            "on the board, with the beat where it first appears. A child of this "
+            "year group knows none of them unless this lesson, or an earlier lesson "
+            "the brief names, taught it. For each, find where the class is told who "
+            "or what it is in words they can hold; a name nothing explains is a "
+            "finding, repaired by a clause where it first appears or by taking it "
+            "off the board."
+        ),
+        "",
+    ]
+    if not first_seen:
+        lines.append("- None.")
+    for name, (label, earlier) in first_seen.items():
+        note = "said earlier in the lesson" if earlier else "not said earlier in the lesson"
+        lines.append(f"- {name}: first on the board in `{label}`; {note}.")
+    if labels:
+        lines.extend(["", "Words on the board about where a source came from, which a child reads as one more thing to ask about:", ""])
+        for label, words in labels:
+            lines.append(f"- `{words}` in `{label}`")
+    lines.append("")
+    return lines
+
+
+def _answer_words(text: str) -> list[str]:
+    words = [word.strip("'") for word in re.findall(r"[a-z0-9']+", text.lower())]
+    stems = []
+    for word in words:
+        if not word or len(word) < 3 or word in {"the", "and", "that", "this", "with", "was", "were", "they", "their", "for", "not", "but", "can", "could", "had", "has", "have", "its", "into", "from", "what", "who", "how", "why"}:
+            continue
+        for suffix in ("ies", "es", "s"):
+            if word.endswith(suffix) and len(word) > 4:
+                word = word[: -len(suffix)]
+                break
+        stems.append(word)
+    return stems
+
+
+def build_do_beside_teach(design: dict) -> list[str]:
+    """Each Do with the Teach it follows and the answer it expects, side by side.
+
+    The class view prints them in order, but the expected answer of a quick
+    check is usually teacher-only and lives far down the view, so the
+    restatement (`Steam could drive roundabouts, so children had a new kind of
+    ride to enjoy`, every word of it said on the slide before) is never seen
+    beside what the class was just told.
+    """
+    sequence = design.get("teachingSequence") or []
+    lines = [
+        "## Each Do beside the teaching before it",
+        "",
+        (
+            "For each Do, what the class was shown and told just before, the answer "
+            "the design expects, and how many of that answer's words the Teach "
+            "already said. Ask of each: could a child give this answer by "
+            "remembering the last slide, without using the idea on anything new? "
+            "A quick check is a fresh case (`preferences.md` → `A quick check is a "
+            "fresh case, not the last slide again`); the count is where to look, "
+            "not the verdict."
+        ),
+        "",
+    ]
+    shown = 0
+    for index, unit in enumerate(sequence):
+        if unit.get("kind") != "do" or index == 0:
+            continue
+        teach = sequence[index - 1]
+        if teach.get("kind") not in TEACH_KINDS:
+            continue
+        answer = (unit.get("answer") or {}).get("content") or ""
+        content = teach.get("content") or {}
+        teach_text = " ".join(
+            str(value)
+            for value in (
+                content.get("headline"), content.get("explanation"), content.get("teachingText"),
+                " ".join(content.get("keyQuestions") or []),
+                (teach.get("speakerNotes") or {}).get("script"),
+                (teach.get("answer") or {}).get("content"),
+            )
+            if value
+        )
+        answer_words = _answer_words(answer)
+        taught = set(_answer_words(teach_text))
+        repeated = sum(1 for word in answer_words if word in taught)
+        asked = unit.get("pupilInstruction") or (unit.get("content") or {}).get("task") or ""
+        asked = " ".join(asked.split())
+        lines.append(f"### {unit['label']} (after `{teach['label']}`)")
+        lines.append(f"- Asked: {asked}")
+        options = [row.get("label", "") for row in ((unit.get("taskStructure") or {}).get("items") or [])]
+        if options and (unit.get("taskStructure") or {}).get("kind") == "option-bank":
+            lines.append("- Options: " + " | ".join(options))
+        lines.append(f"- Expected answer: {answer or '(none written)'}")
+        if answer_words:
+            lines.append(
+                f"- Words of the expected answer the Teach's board or script already said: "
+                f"{repeated} of {len(answer_words)}"
+            )
+        lines.append("")
+        shown += 1
+    if not shown:
+        lines.extend(["- No Do follows a Teach directly.", ""])
+    return lines
+
+
 def read_class_view_count(view_path: Path) -> tuple[int, int]:
     """The count and year the review view printed at the head of its class view."""
     for line in view_path.read_text(encoding="utf-8").splitlines():
@@ -1757,6 +2000,9 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
             unit,
             concepts=concepts,
         )
+
+    lines.extend(build_board_names(design))
+    lines.extend(build_do_beside_teach(design))
 
     ending = design["ending"]
     lines.extend(

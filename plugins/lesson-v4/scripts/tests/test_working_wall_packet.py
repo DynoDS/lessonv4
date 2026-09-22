@@ -336,7 +336,10 @@ def test_the_role_reads_the_packet_and_falls_back_only_when_it_is_absent() -> No
     assert "| `clock` |" not in text
     assert "Success criteria steps in particular must be verbatim" in text
     assert "leave unread until the lesson-design's anchor" in text
-    assert len(text.encode("utf-8")) < 50 * 1024, "the role is judgement now; contracts live in the packet"
+    # Raised from 50 KiB for the paged-reading note under the title: on Codex a
+    # read of this file loses its middle, and the note is what tells the worker
+    # to read it in pages (22 September 2026).
+    assert len(text.encode("utf-8")) < 51 * 1024, "the role is judgement now; contracts live in the packet"
 
 
 def test_the_contracts_file_is_the_one_owner_of_the_moved_material() -> None:

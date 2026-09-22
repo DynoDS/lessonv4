@@ -17,8 +17,8 @@ and compares each worker against its role file, so "did they really run on the
 right model?" has an answer that is not the orchestrator's own word.
 
     python3 worker-launch.py spec --role slide-designer [--host codex]
-    python3 worker-launch.py audit [--host codex] [--session PATH]
-    python3 worker-launch.py timeline [--host codex] [--session PATH]
+    python3 worker-launch.py audit [--host codex] [--session PATH] [--working-dir PATH]
+    python3 worker-launch.py timeline [--host codex] [--session PATH] [--working-dir PATH]
 
 ``timeline`` removes the guessing about where a run's time went. The host's
 record timestamps every launch, every worker's final answer and every command
@@ -286,6 +286,88 @@ def newest_session() -> Path | None:
     return rollouts[0]
 
 
+def working_dir_pattern(working_dir: Path) -> re.Pattern[str]:
+    """The run's own folder as a record writes it, whichever slashes it used.
+
+    A shell command in a record is JSON, so a Windows path arrives with its
+    backslashes doubled; the last two parts of the folder, joined by any run of
+    slashes, find it however it was written.
+    """
+    parts = [part for part in Path(working_dir).parts if part not in ("\\", "/")][-2:]
+    return re.compile(r"[\\/]+".join(re.escape(part) for part in parts), re.IGNORECASE)
+
+
+def launching_sessions(limit: int = AUDIT_SCAN_LIMIT) -> list[Path]:
+    """Recent records that launched workers, newest first."""
+    sessions = codex_home() / "sessions"
+    if not sessions.is_dir():
+        return []
+    rollouts = sorted(
+        sessions.rglob("rollout-*.jsonl"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    return [path for path in rollouts[:limit] if records_launches(path)]
+
+
+def session_for_run(working_dir: Path | None) -> tuple[Path | None, list[Path]]:
+    """This run's launching record, and any other lesson run live beside it.
+
+    Newest-with-launches is right when one lesson is built at a time. On
+    22 September 2026 three lessons were built in one sitting, and the history
+    lesson's report printed the maths lesson's timeline and launch audit, so a
+    two-minute designer was recorded for a lesson whose designer took eleven.
+    With the working folder given, the record that mentions it is chosen; the
+    others that also launched workers are returned so the caller can say so.
+    """
+    candidates = launching_sessions()
+    if working_dir is not None:
+        pattern = working_dir_pattern(working_dir)
+        for path in candidates:
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            if pattern.search(text):
+                return path, [other for other in candidates if other != path]
+    chosen = candidates[0] if candidates else newest_session()
+    return chosen, [other for other in candidates if other != chosen]
+
+
+ROLLOUT_STARTED = re.compile(r"rollout-(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})")
+
+
+def live_span(path: Path) -> tuple[datetime, datetime] | None:
+    """When a record was live: its name carries its start, its file its end."""
+    try:
+        end = datetime.fromtimestamp(path.stat().st_mtime)
+    except OSError:
+        return None
+    match = ROLLOUT_STARTED.search(path.name)
+    if match:
+        start = datetime.strptime(match.group(1), "%Y-%m-%dT%H-%M-%S")
+    else:
+        start = datetime.fromtimestamp(path.stat().st_ctime)
+    return start, end
+
+
+def overlapping(chosen: Path, others: list[Path]) -> list[Path]:
+    """Other launching records written while this one was live."""
+    span_chosen = live_span(chosen)
+    if span_chosen is None:
+        return []
+    start, end = span_chosen
+    found = []
+    for other in others:
+        span_other = live_span(other)
+        if span_other is None:
+            continue
+        other_start, other_end = span_other
+        if other_start <= end and other_end >= start:
+            found.append(other)
+    return found
+
+
 def spawn_calls(session: Path) -> list[dict]:
     """Every spawn_agent call the host recorded, first occurrence per name."""
     found: dict[str, dict] = {}
@@ -472,11 +554,34 @@ def print_timeline(session: Path) -> None:
     )
 
 
+def choose_session(args: argparse.Namespace) -> Path | None:
+    """The record to read: `--session` if named, else this run's own."""
+    if args.session:
+        return Path(args.session)
+    working_dir = Path(args.working_dir) if args.working_dir else None
+    chosen, others = session_for_run(working_dir)
+    if chosen is None:
+        return None
+    live = overlapping(chosen, others)
+    if live:
+        names = ", ".join(path.name for path in live)
+        matched = working_dir is not None and working_dir_pattern(working_dir).search(
+            chosen.read_text(encoding="utf-8", errors="replace")
+        )
+        if not matched:
+            print(
+                f"WORKER_RUN_NOTE: another lesson run launched workers at the same time ({names}); "
+                "without --working-dir these lines may be that run's. Pass the run's working "
+                "directory so the record is this run's own."
+            )
+    return chosen
+
+
 def timeline_command(args: argparse.Namespace) -> int:
     if args.host != "codex":
         print(f"WORKER_TIMELINE_UNAVAILABLE: {args.host} keeps no readable launch record")
         return 0
-    session = Path(args.session) if args.session else newest_session()
+    session = choose_session(args)
     if session is None or not session.is_file():
         print(
             "WORKER_TIMELINE_UNAVAILABLE: no host launch record found under "
@@ -495,7 +600,7 @@ def audit_command(args: argparse.Namespace) -> int:
         )
         return 0
 
-    session = Path(args.session) if args.session else newest_session()
+    session = choose_session(args)
     if session is None or not session.is_file():
         print(
             "WORKER_LAUNCH_AUDIT_UNAVAILABLE: no host launch record found under "
@@ -581,11 +686,13 @@ def main(argv: list[str] | None = None) -> int:
     audit = sub.add_parser("audit", help="check the host's own launch record")
     audit.add_argument("--host", default="codex")
     audit.add_argument("--session", default=None)
+    audit.add_argument("--working-dir", default=None)
     audit.set_defaults(func=audit_command)
 
     timeline = sub.add_parser("timeline", help="print where a run's time went")
     timeline.add_argument("--host", default="codex")
     timeline.add_argument("--session", default=None)
+    timeline.add_argument("--working-dir", default=None)
     timeline.set_defaults(func=timeline_command)
 
     args = parser.parse_args(argv)

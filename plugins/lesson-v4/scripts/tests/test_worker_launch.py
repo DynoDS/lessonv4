@@ -481,6 +481,63 @@ class SessionChoiceTests(unittest.TestCase):
         self.assertIn("WORKER_LAUNCH_AUDIT_OK: 1 named workers", result.stdout)
         self.assertIn(orchestrator.name, result.stdout)
 
+    def two_live_runs(self) -> tuple[Path, Path]:
+        """Two lessons built in one sitting, as on 22 September 2026: the maths
+        run's record is the newer, and the history run's is the one wanted."""
+        import os
+        from datetime import datetime
+
+        launch = [{"task_name": "lesson_designer", "model": "gpt-6-astra", "reasoning_effort": "low", "fork_turns": "none"}]
+        history = write_session(self.sessions / "rollout-2026-09-22T11-59-31-history.jsonl", launch)
+        with history.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"cmd": "python validate.py C:\\Users\\T\\lessons\\working\\year-4-history-lesson-5\\lesson-design.json"}) + "\n")
+        maths = write_session(self.sessions / "rollout-2026-09-22T12-07-56-maths.jsonl", launch)
+        with maths.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"cmd": "python validate.py C:/Users/T/lessons/working/year-4-maths-lesson-17/lesson-design.json"}) + "\n")
+        for path, finished in ((history, "2026-09-22T14:19:53"), (maths, "2026-09-22T14:30:00")):
+            stamp = datetime.fromisoformat(finished).timestamp()
+            os.utime(path, (stamp, stamp))
+        return history, maths
+
+    def run_with(self, *args: str) -> subprocess.CompletedProcess:
+        import os
+
+        environment = dict(os.environ, CODEX_HOME=str(self.home))
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), *args],
+            capture_output=True,
+            text=True,
+            env=environment,
+        )
+
+    def test_the_working_dir_picks_this_runs_record_over_a_newer_one(self) -> None:
+        history, maths = self.two_live_runs()
+        for command in ("audit", "timeline"):
+            with self.subTest(command=command):
+                result = self.run_with(command, "--working-dir", "C:/Users/T/lessons/working/year-4-history-lesson-5")
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn(history.name, result.stdout)
+                self.assertNotIn(maths.name, result.stdout)
+                self.assertNotIn("WORKER_RUN_NOTE", result.stdout)
+
+    def test_without_the_working_dir_a_concurrent_run_is_named_not_hidden(self) -> None:
+        # Discrimination: the old choice still stands without the folder, but a
+        # report can no longer present another lesson's numbers as its own
+        # without saying so.
+        history, maths = self.two_live_runs()
+        result = self.run_with("audit")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("WORKER_RUN_NOTE", result.stdout)
+        self.assertIn(history.name, result.stdout)
+
+    def test_a_single_run_needs_no_note(self) -> None:
+        history, maths = self.two_live_runs()
+        maths.unlink()
+        result = self.run_with("audit")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("WORKER_RUN_NOTE", result.stdout)
+        self.assertIn(history.name, result.stdout)
+
     def test_a_run_that_truly_launched_nothing_still_says_so(self) -> None:
         """Discrimination: the search must not invent a record. With no launch
         anywhere, the audit reports what it always did."""

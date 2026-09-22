@@ -473,6 +473,99 @@ function slidePictures(slideData) {
   return found;
 }
 
+// The same sentence printed twice on ONE slide.
+//
+// `slide-success-criteria.md` already says a sticky fact that is the slide's
+// key sentence is rendered once, and on 22 September 2026 a Year 4 history
+// deck printed `Steam engines brought new fairground rides in Victorian
+// times.` as a card and again as the star line beneath it, on the slide whose
+// question was how a steam engine changed a fair: the repair that added the
+// star line to satisfy the landed-sentence check left the card where it was.
+// The teacher's note on it was one word: "Twice." Nothing in the words of
+// either copy is wrong, so only the slide as a whole shows the fault. Keys
+// that never reach the board, and the emphasis spans inside a line, are not
+// read, and a line under five words (a caption, a heading) is left alone.
+const UNRENDERED_TEXT_KEYS = new Set([
+  ...UNRENDERED_SLIDE_KEYS,
+  'emphasis', 'imagePath', 'layout', 'fit', 'variant', 'type', 'headerStyle',
+  'id', 'kind', 'role', 'align', 'alt', 'description', 'context', 'avoid',
+  'concept', 'prompt', 'educationalSvgId', 'educationalSvgSlug', 'frame', 'layer'
+]);
+
+// Each line with where it sits. The same label on every card of a set, or the
+// same note under each of three number lines, is a parallel layout and not a
+// repeat: those copies sit at one path that differs only in which card or
+// figure holds them. Two copies in two different places (a card and the star
+// line), or twice in one list, are the fault.
+function slideLines(slideData) {
+  const found = [];
+  const walk = (node, route) => {
+    if (typeof node === 'string') {
+      found.push({ text: node, route });
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach((child, index) => walk(child, route.concat(index)));
+      return;
+    }
+    if (!node || typeof node !== 'object') return;
+    Object.entries(node).forEach(([key, child]) => {
+      if (UNRENDERED_TEXT_KEYS.has(key)) return;
+      walk(child, route.concat(key));
+    });
+  };
+  walk(slideData, []);
+  return found;
+}
+
+function isParallelCopy(first, second) {
+  if (first.length !== second.length) return false;
+  if (typeof first[first.length - 1] === 'number') return false;
+  return first.every((part, index) =>
+    typeof part === 'number' ? typeof second[index] === 'number' : part === second[index]);
+}
+
+function sameLineWords(text) {
+  return text
+    .toLowerCase()
+    .replace(/\[\[|\]\]|<<|>>|✨/g, ' ')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function repeatedLineWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    if (!slideData || typeof slideData !== 'object') return;
+    const seen = new Map();
+    slideLines(slideData).forEach(({ text, route }) => {
+      const words = sameLineWords(text);
+      if (words.split(' ').length < 5) return;
+      const entry = seen.get(words) || { text, routes: [] };
+      entry.routes.push(route);
+      seen.set(words, entry);
+    });
+    seen.forEach(({ text, routes }) => {
+      const times = routes.length;
+      if (times < 2) return;
+      if (routes.every((route) => isParallelCopy(routes[0], route))) return;
+      warnings.push({
+        signal: 'SAME_LINE_TWICE_ON_ONE_SLIDE',
+        slide: index + 1,
+        field: 'text',
+        message:
+          `"${text.trim()}" is printed ${times} times on this slide. A class that reads one ` +
+          'sentence twice reads it as a mistake, not as emphasis, and the second copy ' +
+          'takes the room the slide needed for the reason or the thing to look at. ' +
+          'Keep it once, in the place it does its job (the star line when it is the ' +
+          'sticky fact), and give the other slot to a sentence of the explanation.'
+      });
+    });
+  });
+  return warnings;
+}
+
 function pictureWarnings(lesson) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const warnings = [];
@@ -1108,7 +1201,8 @@ Fix that slide's layout slots, then run the check again.
     .concat(blueStatementWarnings(lesson))
     .concat(starterColourWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
-    .concat(pictureWarnings(lesson));
+    .concat(pictureWarnings(lesson))
+    .concat(repeatedLineWarnings(lesson));
 
   // What the spec alone shows is reported WITH what the build shows, never
   // instead of it.
@@ -1462,6 +1556,7 @@ module.exports = {
   main,
   parseBuildDiagnostics,
   pathIsInside,
+  repeatedLineWarnings,
   runSlideDesignCheck,
   stripScratchWroteLine,
 };

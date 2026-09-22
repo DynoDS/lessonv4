@@ -151,9 +151,12 @@ class GivingInstructionsIsNotLaunchingTests(unittest.TestCase):
         self.assertIn("why they are doing it now, what they are making, what a good one looks like and how the work will run", philosophy)
         self.assertIn("Those are beats on the board, not framing prose", philosophy)
         self.assertIn("never the launch crammed on to the instruction", philosophy)
-        # The boundary: a short beat, or a familiar product, needs none of it.
+        # The boundary: a short beat, or a product this lesson has already
+        # shown a good one of, needs none of it. "Made before" in some earlier
+        # lesson was the door a Year 4 explanation task walked through with no
+        # model ever shown (22 September 2026), and nothing could check it.
         self.assertIn(
-            "A short beat children can start from its question alone, and a task whose product they have made before, need none of this",
+            "A short beat children can start from its question alone, and a task whose product this lesson has already shown them a good one of, need none of this",
             philosophy,
         )
         # The older framing-in-notes line survives, scoped to spoken orientation.
@@ -279,13 +282,21 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
             "steps": ["Write one rule.", "Combine your group's rules.", "Agree ours."],
         }
         self.validator.validate_design(design, photos)
-        practise["content"]["launch"]["goodLooksLike"] = None
-        self.validator.validate_design(design, photos)
+        # An explanation task whose launch shows no good one, or that has no
+        # launch, is refused while nothing earlier showed the class a good one,
+        # and allowed once an earlier Do reveals its model.
+        do = next(u for u in design["teachingSequence"] if u["kind"] == "do")
+        for launch in ({**practise["content"]["launch"], "goodLooksLike": None}, None):
+            practise["content"]["launch"] = launch
+            do["answer"]["delivery"] = "teacher-only"
+            with self.assertRaises(self.validator.ContractError) as refused:
+                self.validator.validate_design(design, photos)
+            self.assertIn("nothing earlier in the lesson has shown the class a good one", str(refused.exception))
+            do["answer"]["delivery"] = "answer-slide"
+            self.validator.validate_design(design, photos)
         practise["content"]["launch"] = {"established": "x", "steps": []}
         with self.assertRaises(self.validator.ContractError):
             self.validator.validate_design(design, photos)
-        practise["content"]["launch"] = None
-        self.validator.validate_design(design, photos)
 
     def test_the_pair_is_three_separate_things_and_a_side_may_be_a_picture(self) -> None:
         """One prose string for the whole pair is what let three decks each

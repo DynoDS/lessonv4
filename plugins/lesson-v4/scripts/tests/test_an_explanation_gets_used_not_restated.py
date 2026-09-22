@@ -108,11 +108,15 @@ class PreferencesOwnsTheSelectorTests(unittest.TestCase):
         self.assertIn("what it cannot tell us yet", self.rhythm)
         self.assertIn("needs connecting", self.rhythm)
 
-    def test_a_deliberate_recap_is_still_allowed(self) -> None:
-        """Discrimination: the rule must not fire on a lesson that chose a short
-        recap because securing the wording is what the moment needed."""
-        self.assertIn("a short recap is the right beat when securing the wording", self.rhythm)
-        self.assertIn("What is ruled out is reaching for it by default", self.rhythm)
+    def test_a_quick_check_on_a_fresh_case_is_still_allowed(self) -> None:
+        """Discrimination: the rule must not fire on a quick check that uses
+        the idea on something the Teach did not show (the teacher's ruling,
+        14 September 2026). What it refuses is the sentence just said, picked
+        back, whatever the beat is called (22 September 2026)."""
+        self.assertIn("**A quick check is a fresh case, not the last slide again.**", self.rhythm)
+        self.assertIn("a new card to sort", self.rhythm)
+        self.assertIn("calling the beat a check does not change what the child does", self.rhythm)
+        self.assertNotIn("and the design says which", self.rhythm)
 
     def test_the_thinking_is_named_before_the_format_not_instead_of_it(self) -> None:
         self.assertIn("These name the thinking, not the format", self.rhythm)
@@ -187,11 +191,15 @@ class TheRuleReachesEveryAgentThatCouldBreakItTests(unittest.TestCase):
         self.assertIn("what a child had to work out that the Teach did not already say", text)
         self.assertIn("`" + RULE + "`", text)
 
-    def test_the_reviewer_preserves_a_deliberate_restatement(self) -> None:
-        """Securing exact wording is sometimes the intended check. The rule
-        must not fire on a design that says so."""
+    def test_the_reviewer_no_longer_waves_a_restatement_through_as_a_check(self) -> None:
+        """The design calling a restatement a check used to preserve it, and a
+        reviewer used that on 22 September 2026 to pass a steam option bank it
+        had noticed could be passed by rejecting a silly option. A term's exact
+        wording used on a fresh case is the one exception."""
         text = flat(DESIGN_REVIEWER)
-        self.assertIn("Preserve a restatement that is genuinely the intended check", text)
+        self.assertIn("A restatement is never preserved as a check", text)
+        self.assertIn("the check is the term used on a fresh case, not the sentence said back", text)
+        self.assertNotIn("the design saying so makes it right", text)
 
     def test_the_routing_card_opens_the_rhythm_for_a_restating_do(self) -> None:
         routes = dict(packet.PREFERENCE_REVIEW_ROUTES)

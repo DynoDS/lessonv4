@@ -50,13 +50,22 @@ def flat(path: Path) -> str:
 
 
 def read_section(selector: str) -> str:
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "read-reference.py"), "--select", selector],
-        capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT),
-    )
-    assert result.returncode == 0, result.stderr
-    assert "REFERENCE_READ_OK" in result.stdout, result.stdout
-    return " ".join(result.stdout.split())
+    # A long section arrives in pages, the way a designer on Codex reads it:
+    # every page in turn until the last one reports success.
+    pages: list[str] = []
+    for page in range(1, 20):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "read-reference.py"), "--select", selector,
+             "--page", str(page)],
+            capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT),
+        )
+        assert result.returncode == 0, result.stderr
+        pages.append(result.stdout)
+        if "REFERENCE_READ_OK" in result.stdout:
+            break
+        assert "REFERENCE_READ_PARTIAL" in result.stdout, result.stdout
+    assert "REFERENCE_READ_OK" in pages[-1], pages[-1]
+    return " ".join("".join(pages).split())
 
 
 class WhatChildrenCanUseTests(unittest.TestCase):
