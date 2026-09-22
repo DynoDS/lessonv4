@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "set": "existing-10",
+  "cases": [
+    {
+      "id": "voice-001",
+      "expected": "REPAIR",
+      "rationale": "The broad claim and consequence are useful, but the wording reads like a compressed planning summary and does not make the body-energy link plainly enough."
+    },
+    {
+      "id": "voice-002",
+      "expected": "REPAIR",
+      "rationale": "Several causal claims are stacked into a list and semicolon, making the spoken explanation feel compressed rather than easy to follow."
+    },
+    {
+      "id": "voice-003",
+      "expected": "KEEP",
+      "rationale": "A concrete everyday scene with natural rhythm; it gives the child something specific to picture before the lesson explains the consequence."
+    },
+    {
+      "id": "voice-004",
+      "expected": "KEEP",
+      "rationale": "Direct explanation with familiar verbs and a clear reason that corrects the idea that sitting means the body stops working."
+    },
+    {
+      "id": "voice-005",
+      "expected": "REPAIR",
+      "rationale": "Formal evaluation language makes the spoken note sound like planning prose rather than something a teacher would say to the class."
+    },
+    {
+      "id": "voice-006",
+      "expected": "KEEP",
+      "rationale": "Natural spoken wording uses a concrete observation to separate immediate tiredness from the value of activity."
+    },
+    {
+      "id": "voice-007",
+      "expected": "REPAIR",
+      "rationale": "The abstract words ‘detail’ and ‘suggest’ leave the child to infer what to inspect and what kind of answer is wanted."
+    },
+    {
+      "id": "voice-008",
+      "expected": "KEEP",
+      "rationale": "It names the visible evidence and asks the child to connect it to the day in plain language."
+    },
+    {
+      "id": "voice-009",
+      "expected": "REPAIR",
+      "rationale": "Formal planning language obscures the actual action and the body effect the child must explain."
+    },
+    {
+      "id": "voice-010",
+      "expected": "KEEP",
+      "rationale": "Short, direct criterion that names the action and the body connection plainly."
+    }
+  ]
+}

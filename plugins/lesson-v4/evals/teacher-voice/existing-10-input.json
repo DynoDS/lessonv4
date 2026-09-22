@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "set": "existing-10",
+  "description": "Frozen original ten-case Teacher Voice baseline input. Do not add calibration cases here.",
+  "cases": [
+    {
+      "id": "voice-001",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "teach_explanation",
+      "wording": "A habit of regular meals helps us through the day. Leaving a long gap without food can leave us hungry and tired."
+    },
+    {
+      "id": "voice-002",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "teach_explanation",
+      "wording": "We lose water in sweat, wee and our breath. Drinking helps us stay hydrated; when we're dehydrated, concentrating can be harder."
+    },
+    {
+      "id": "voice-003",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "scenario",
+      "wording": "They rush out of the house in the morning, and they eat nothing until late in the afternoon."
+    },
+    {
+      "id": "voice-004",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "teach_explanation",
+      "wording": "Our bodies still use energy when we're sitting down. We need energy to think, breathe and keep our bodies working."
+    },
+    {
+      "id": "voice-005",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "speaker_note",
+      "wording": "Select the option that best addresses the unmet need, then justify your selection."
+    },
+    {
+      "id": "voice-006",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "speaker_note",
+      "wording": "Look at what happened after the game. They're tired now, aren't they? That doesn't mean playing was bad for them."
+    },
+    {
+      "id": "voice-007",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "question",
+      "wording": "What does this detail suggest about their daily routine?"
+    },
+    {
+      "id": "voice-008",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "question",
+      "wording": "What can you see that tells you what their day was like?"
+    },
+    {
+      "id": "voice-009",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "success_criteria",
+      "wording": "Give a reason that demonstrates how the change supports the body's needs."
+    },
+    {
+      "id": "voice-010",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "success_criteria",
+      "wording": "Explain how your change helps the body."
+    }
+  ]
+}

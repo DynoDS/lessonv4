@@ -1,5 +1,42 @@
 # Build review log
 
+## 2026-09-22 The voice guide gets a test bench, and keeps its wording (4.2.276)
+
+A run of experiments asked whether the Design Reviewer's Teacher Voice sweep
+could be made to catch a handful of strings the teacher had judged as misses.
+Four candidates were tried: an added Teach-explanation rule, a clarification to
+`teacher-voice.md` section 3, visible surface markers on each string, and
+deterministic routing of each string to the guide section that governs it. Each
+was run repeatedly against recorded human judgements.
+
+**None was adopted.** Production Teacher Voice behaviour, the Design Reviewer,
+the voice guide, the review packet, model settings and lesson-generation
+runtime are all unchanged by this commit. The added rule raised calibration
+catch rate but only by repairing more of everything; the section 3
+clarification left the disputed strings exactly where they were across nine
+runs; surface markers halved decision instability but only by handing the
+reviewer a label production does not supply; internal routing moved agreement
+not at all and introduced three repairs production does not make.
+
+**What ships is the bench.** `evals/teacher-voice/` now carries the frozen
+ten-case baseline, the real-world calibration set with its human gold, the
+deterministic scorer, an empty held-out structure, and
+`class_view_fixture.py`, which builds a fixture by calling `build_class_view`
+in `scripts/design-review-packet.py` and parsing what it prints. Tests hold the
+builder to the packet.
+
+**The expensive lesson, written down so it is not relearned.** Three rounds of
+results were misleading because the fixtures were assembled by reading fields
+out of `lesson.json` rather than from the packet. That fixture split one
+authored string in two where production keeps it whole, promoted beat labels
+into judged strings where production prints them as headings, handed the model
+a `surface_type` production never supplies, and labelled a sticky fact as a
+Teach explanation, which is why a Teach-explanation rule was never going to
+move it. The README states all three rules; the tests enforce them.
+
+Nothing here changes what a lesson run produces. The next proposed voice change
+can be measured before it ships, instead of being judged on one deck.
+
 ## 2026-09-21 The maths test-question starter comes out again, and stays out (4.2.268)
 
 Daniel: "find anything to do with maths test questions being used as starters...

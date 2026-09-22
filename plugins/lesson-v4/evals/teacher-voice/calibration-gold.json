@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "set": "real-world-calibration",
+  "cases": [
+    {
+      "id": "cal-pshe-teach-001",
+      "expected": "REPAIR",
+      "rationale": "The broad claim and consequence are useful, but the wording reads like a compressed planning summary and does not make the body-energy link plainly enough."
+    },
+    {
+      "id": "cal-pshe-teach-002",
+      "expected": "REPAIR",
+      "rationale": "Several causal claims are stacked into a list and semicolon, making the spoken explanation feel compressed rather than easy to follow."
+    },
+    {
+      "id": "cal-pshe-teach-003",
+      "expected": "KEEP",
+      "rationale": "A concrete everyday scene with natural rhythm; it gives the child something specific to picture before the lesson explains the consequence."
+    },
+    {
+      "id": "cal-pshe-teach-004",
+      "expected": "KEEP",
+      "rationale": "Direct explanation with familiar verbs and a clear reason that corrects the idea that sitting means the body stops working."
+    },
+    {
+      "id": "cal-history-teach-001",
+      "expected": "KEEP",
+      "rationale": "The length earns its place: present-day contrast, Victorian dates, family economics and visible photograph details form one teachable route."
+    },
+    {
+      "id": "cal-history-teach-002",
+      "expected": "KEEP",
+      "rationale": "Concrete historical vocabulary is introduced through a person and an action, with specific detail that makes the working condition visible."
+    },
+    {
+      "id": "cal-history-note-001",
+      "expected": "REPAIR",
+      "rationale": "As a note fragment it is an abrupt classroom-management cue rather than a comfortable, purposeful spoken line."
+    },
+    {
+      "id": "cal-history-note-002",
+      "expected": "REPAIR",
+      "rationale": "The pronoun has no clear noun to refer back to, so the teacher has to repair the sentence while speaking."
+    },
+    {
+      "id": "cal-pshe-note-001",
+      "expected": "KEEP",
+      "rationale": "It sounds like a teacher speaking, protects pupils from personal disclosure and gives a clear route into the made-up situations."
+    },
+    {
+      "id": "cal-pshe-note-002",
+      "expected": "KEEP",
+      "rationale": "It sets up the concrete class situation, asks one decision and tells the teacher when pupils should explain their reason."
+    },
+    {
+      "id": "cal-history-criteria-001",
+      "expected": "REPAIR",
+      "rationale": "The child is left to infer what ‘each one’ means and which words count as evidence; the success step needs the action and its object."
+    },
+    {
+      "id": "cal-history-criteria-002",
+      "expected": "KEEP",
+      "rationale": "Short but runnable: it names the actual feature the child must find in the historical account."
+    },
+    {
+      "id": "cal-history-criteria-003",
+      "expected": "KEEP",
+      "rationale": "It names the concrete aspect of the evidence to find and preserves the subject distinction between difficulty and danger."
+    },
+    {
+      "id": "cal-history-sticky-001",
+      "expected": "REPAIR",
+      "rationale": "‘No law kept children in school’ is compressed and makes the law sound like an active keeper; the historical point needs a clearer child-facing sentence."
+    },
+    {
+      "id": "cal-history-sticky-002",
+      "expected": "KEEP",
+      "rationale": "A clear, memorable fact with a concrete age and duration; every part earns its place in the historical takeaway."
+    },
+    {
+      "id": "cal-pshe-sticky-001",
+      "expected": "KEEP",
+      "rationale": "The contrast between an immediate effect and a longer-term effect is explicit and easy to retrieve."
+    },
+    {
+      "id": "cal-pshe-question-001",
+      "expected": "KEEP",
+      "rationale": "Directly asks for the reason the task is designed to evidence, using words a child can act on."
+    },
+    {
+      "id": "cal-history-question-001",
+      "expected": "REPAIR",
+      "rationale": "‘Visible detail’ and ‘suggest’ are planning language; the child needs the thing to look at and the claim to make in plain words."
+    },
+    {
+      "id": "cal-history-question-002",
+      "expected": "KEEP",
+      "rationale": "A concrete, human question tied to the times already given; it invites thought without hiding the subject in abstract nouns."
+    },
+    {
+      "id": "cal-history-model-001",
+      "expected": "REPAIR",
+      "rationale": "It describes how the resource is assembled rather than showing the child how the evidence supports each part of the answer."
+    },
+    {
+      "id": "cal-history-model-002",
+      "expected": "KEEP",
+      "rationale": "It answers all three parts in attainable language and attaches precise historical quotations to the claims."
+    },
+    {
+      "id": "cal-pshe-model-001",
+      "expected": "KEEP",
+      "rationale": "A concise model answer that states the decision and names the taught body work that justifies it."
+    },
+    {
+      "id": "existing-001",
+      "expected": "KEEP",
+      "rationale": "Direct, natural explanation that names the visible cause and uses a normal contraction."
+    },
+    {
+      "id": "existing-002",
+      "expected": "REPAIR",
+      "rationale": "Formal, passive and abstract wording turns a simple explanation into document language."
+    },
+    {
+      "id": "existing-003",
+      "expected": "KEEP",
+      "rationale": "Short question that names the mathematical decision plainly."
+    },
+    {
+      "id": "existing-004",
+      "expected": "REPAIR",
+      "rationale": "Teacher-talk padding belongs in spoken notes; the printed question can ask the decision directly."
+    },
+    {
+      "id": "existing-005",
+      "expected": "KEEP",
+      "rationale": "The light narrative opening earns its place and leads into a concrete geographical idea."
+    },
+    {
+      "id": "existing-006",
+      "expected": "KEEP",
+      "rationale": "Plain definition with the subject term the lesson needs."
+    },
+    {
+      "id": "existing-007",
+      "expected": "REPAIR",
+      "rationale": "The repeated sentence opening creates a mechanical rhythm; the linked climate explanation can be made more natural."
+    },
+    {
+      "id": "existing-008",
+      "expected": "KEEP",
+      "rationale": "A brief, content-led light line with a clear turn that a teacher could say naturally."
+    },
+    {
+      "id": "existing-009",
+      "expected": "KEEP",
+      "rationale": "A complete condition that tells the child the next action in the method."
+    },
+    {
+      "id": "existing-010",
+      "expected": "REPAIR",
+      "rationale": "Compressed slogan-like fragments make the child unpack both the condition and the action."
+    }
+  ]
+}

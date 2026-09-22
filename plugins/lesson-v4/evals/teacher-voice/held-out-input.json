@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "set": "held-out",
+  "purpose": "Fresh lesson strings for later human labelling. Build these with class_view_fixture.py so they match the strings and boundaries the production review view prints, and keep them out of evaluator design and tuning until the labels are recorded separately.",
+  "cases": []
+}

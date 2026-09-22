@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "set": "real-world-calibration",
+  "description": "Real wording from the recent Year 4 PSHE and Victorian History lesson investigations.",
+  "cases": [
+    {
+      "id": "cal-pshe-teach-001",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "teach_explanation",
+      "wording": "A habit of regular meals helps us through the day. Leaving a long gap without food can leave us hungry and tired."
+    },
+    {
+      "id": "cal-pshe-teach-002",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "teach_explanation",
+      "wording": "We lose water in sweat, wee and our breath. Drinking helps us stay hydrated; when we're dehydrated, concentrating can be harder."
+    },
+    {
+      "id": "cal-pshe-teach-003",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "teach_explanation",
+      "wording": "They rush out of the house in the morning, and they eat nothing until late in the afternoon."
+    },
+    {
+      "id": "cal-pshe-teach-004",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "teach_explanation",
+      "wording": "Our bodies still use energy when we're sitting down. We need energy to think, breathe and keep our bodies working."
+    },
+    {
+      "id": "cal-history-teach-001",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "teach_explanation",
+      "wording": "Today, every child in Britain has to be at school, and nobody pays you to come.\n\nQueen Victoria was on the throne from 1837 to 1901. For most of that time, no law said a child had to be in school. Poor families needed every penny, and a child's wage was part of it.\n\nLook at their boots and their clothes. Nobody here is on the way to school."
+    },
+    {
+      "id": "cal-history-teach-002",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "teach_explanation",
+      "wording": "We know Victorian children went out to work because their families needed the money. Thousands of them went underground, into the coal mines.\n\nA hurrier pushed and pulled wagons full of coal, called corves, along the tunnels. Patience Kershaw pushed hers with her head, over and over, until the hair wore away.\n\nPatience was seventeen when she spoke to the inspectors in 1842. Children as young as eight were hurrying coal in the same pits."
+    },
+    {
+      "id": "cal-history-note-001",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "speaker_note",
+      "wording": "Right, everybody's pencil."
+    },
+    {
+      "id": "cal-history-note-002",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "speaker_note",
+      "wording": "He wrote down hers."
+    },
+    {
+      "id": "cal-pshe-note-001",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "speaker_note",
+      "wording": "Say to children: Think back to our PSHE agreement. Someone doesn't want to answer a personal question. They say pass. How can they still join in? Today we'll use made-up situations. You don't need to tell the class about your food, sleep or health."
+    },
+    {
+      "id": "cal-pshe-note-002",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "speaker_note",
+      "wording": "Say to children: The class will be sitting for much of this morning. Decide whether that changes their need for food. Should they skip their morning snack because they aren't running around? Explain your reason before you hear someone else's."
+    },
+    {
+      "id": "cal-history-criteria-001",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "success_criteria",
+      "wording": "Copy the words from the source that show each one."
+    },
+    {
+      "id": "cal-history-criteria-002",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "success_criteria",
+      "wording": "Find how long they worked."
+    },
+    {
+      "id": "cal-history-criteria-003",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "success_criteria",
+      "wording": "Find how hard or dangerous the work was."
+    },
+    {
+      "id": "cal-history-sticky-001",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "sticky_knowledge",
+      "wording": "For most of Victorian times, no law kept children in school."
+    },
+    {
+      "id": "cal-history-sticky-002",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "sticky_knowledge",
+      "wording": "Many Victorian children were already at work before they were eight, and their days were twelve hours or longer."
+    },
+    {
+      "id": "cal-pshe-sticky-001",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "sticky_knowledge",
+      "wording": "Activity uses energy now, but being active regularly helps our bodies become fitter."
+    },
+    {
+      "id": "cal-pshe-question-001",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "question",
+      "wording": "Explain how your change helps the body."
+    },
+    {
+      "id": "cal-history-question-001",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "question",
+      "wording": "What does one visible detail suggest about this class?"
+    },
+    {
+      "id": "cal-history-question-002",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "question",
+      "wording": "She went down at five in the morning and came out at five at night. What was left of her day?"
+    },
+    {
+      "id": "cal-history-model-001",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "model_answer",
+      "wording": "Every part has her own words attached to it."
+    },
+    {
+      "id": "cal-history-model-002",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "model_answer",
+      "wording": "How long she worked: five o'clock in the morning until five in the evening. \"I go at five o'clock in the morning and come out at five in the evening.\"\n\nHow hard or dangerous it was: she pushed heavy coal wagons a mile and more, with her head. \"I hurry the corves a mile and more under ground and back.\" \"The bald place upon my head is made by thrusting the corves.\"\n\nHow she was treated: she was beaten when she was too slow. \"Sometimes they beat me, if I am not quick enough.\""
+    },
+    {
+      "id": "cal-pshe-model-001",
+      "year_group": 4,
+      "subject": "PSHE",
+      "surface_type": "model_answer",
+      "wording": "No. Their bodies still use energy for thinking and breathing, even while they sit."
+    },
+    {
+      "id": "existing-001",
+      "year_group": 4,
+      "subject": "Science",
+      "surface_type": "teach_explanation",
+      "wording": "The bulb won't light because there's a gap in the circuit."
+    },
+    {
+      "id": "existing-002",
+      "year_group": 4,
+      "subject": "Science",
+      "surface_type": "teach_explanation",
+      "wording": "The bulb will not illuminate because the electrical current is unable to pass through the incomplete circuit."
+    },
+    {
+      "id": "existing-003",
+      "year_group": 4,
+      "subject": "Maths",
+      "surface_type": "question",
+      "wording": "Which fractions are equivalent?"
+    },
+    {
+      "id": "existing-004",
+      "year_group": 4,
+      "subject": "Maths",
+      "surface_type": "question",
+      "wording": "Have a look at the fractions below and see if you can work out which ones are equivalent."
+    },
+    {
+      "id": "existing-005",
+      "year_group": 4,
+      "subject": "Geography",
+      "surface_type": "teach_explanation",
+      "wording": "Every river has a journey. It starts high up and gradually makes its way towards the sea."
+    },
+    {
+      "id": "existing-006",
+      "year_group": 4,
+      "subject": "Geography",
+      "surface_type": "teach_explanation",
+      "wording": "The place where a river begins is called its source."
+    },
+    {
+      "id": "existing-007",
+      "year_group": 4,
+      "subject": "Geography",
+      "surface_type": "teach_explanation",
+      "wording": "Rainforests are home to lots of plants and animals. They also take in carbon dioxide from the air. They also help control the Earth's climate."
+    },
+    {
+      "id": "existing-008",
+      "year_group": 4,
+      "subject": "History",
+      "surface_type": "teach_explanation",
+      "wording": "The Romans didn't travel all the way to Britain for the weather!"
+    },
+    {
+      "id": "existing-009",
+      "year_group": 4,
+      "subject": "Maths",
+      "surface_type": "success_criteria",
+      "wording": "If they are the same, compare the hundreds."
+    },
+    {
+      "id": "existing-010",
+      "year_group": 4,
+      "subject": "Maths",
+      "surface_type": "success_criteria",
+      "wording": "Same? Move one place right. Different? Choose < or >."
+    }
+  ]
+}
