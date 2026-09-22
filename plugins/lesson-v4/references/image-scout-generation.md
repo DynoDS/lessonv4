@@ -56,6 +56,8 @@ Classify each output:
 - `provider_misdirection`: an unrelated subject, not a bad attempt at the right subject;
 - `rejected`: wrong concept, several structural faults, or a fundamental miss.
 
+A call that returns no image has nothing to classify. Interrupt the attempt instead: that consumes it and leaves the recovery call. `rejected` is a verdict on a picture and authorises no further call, so reaching for it when nothing arrived ends the picture rather than recording what happened to it.
+
 Complete every first-pass ledger result before a correction call.
 
 ## Second call

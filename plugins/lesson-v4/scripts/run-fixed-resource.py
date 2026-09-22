@@ -184,13 +184,21 @@ def command_for(args) -> list[str]:
             "--deliver-flagged",
         ]
     if args.kind == "worksheets":
-        return [
+        # A pack is not lost because one of its sheets will not fit. The deck's
+        # --deliver-flagged above is the same idea, and this is the sheets'
+        # version of it: the run passes --omit-unfittable only after a sheet has
+        # had its own repair round and still does not fit, so an ordinary build
+        # refuses exactly as it always has.
+        command = [
             "node",
             str(plugin_root / "worksheet-html" / "scripts" / "build-worksheet.js"),
             str(working / "worksheet.json"),
             str(output),
             f"{args.lesson_name} - Worksheets",
         ]
+        if args.omit_unfittable:
+            command.append("--omit-unfittable")
+        return command
     if args.kind == "wall":
         return [
             "node",
@@ -248,6 +256,24 @@ def slides_flagged(stdout: str) -> dict:
                 raise FixedResourceError("SLIDES_FLAGGED line is not an object")
             return payload
     return {}
+
+
+def sheets_omitted(stdout: str) -> list[dict]:
+    """The sheets a delivered pack does not contain, from the build's own
+    `SHEET_OMITTED:` lines. No line means the pack is whole.
+
+    The run report needs two things about an omitted sheet and this is where
+    both come from: which tier the class is not getting, and the measurement
+    that refused it, so the teacher flag says how far off the page it was
+    rather than only that it failed."""
+    omitted = []
+    for line in stdout.splitlines():
+        if not line.startswith("SHEET_OMITTED: "):
+            continue
+        body = line[len("SHEET_OMITTED: "):].strip()
+        label, _, measurement = body.partition(" - ")
+        omitted.append({"sheet": label.strip(), "measurement": measurement.strip() or body})
+    return omitted
 
 
 def marker_paths(stdout: str, marker: str) -> list[Path]:
@@ -419,6 +445,9 @@ def run(args) -> int:
         summary["flaggedSlides"] = flags.get("slides", [])
         summary["flaggedFaults"] = flags.get("faults", [])
 
+    if args.kind == "worksheets":
+        summary["omittedSheets"] = sheets_omitted(completed.stdout)
+
     summary["degraded"] = degraded
     summary["outputs"] = [
         {"path": str(path), "sha256": sha256_file(path)} for path in paths
@@ -428,6 +457,13 @@ def run(args) -> int:
     if summary.get("flaggedSlides"):
         numbers = ", ".join(str(n) for n in summary["flaggedSlides"])
         print(f"FIXED_RESOURCE_FLAGGED {args.kind}: {numbers}")
+        return 0
+    # A short pack is a delivered pack, and it is flagged for exactly the same
+    # reason a flagged deck is: the teacher is getting something usable and has
+    # to be told what is not in it.
+    if summary.get("omittedSheets"):
+        names = ", ".join(sheet["sheet"] for sheet in summary["omittedSheets"])
+        print(f"FIXED_RESOURCE_FLAGGED {args.kind}: {names}")
         return 0
     marker = "FIXED_RESOURCE_DEGRADED" if degraded else "FIXED_RESOURCE_OK"
     print(f"{marker} {args.kind}")
@@ -461,6 +497,15 @@ def parser() -> argparse.ArgumentParser:
     root.add_argument("--subject")
     root.add_argument("--day")
     root.add_argument("--file", action="append", default=[])
+    root.add_argument(
+        "--omit-unfittable",
+        action="store_true",
+        help=(
+            "worksheets only: deliver the sheets that fit when one sheet cannot "
+            "be made to fit, naming each omitted sheet and its measurement. Used "
+            "only after that sheet's own repair round has failed."
+        ),
+    )
     root.add_argument("--letterbox", default="")
     root.add_argument("--plan", default="")
     root.add_argument("--plan-index", type=int)

@@ -422,6 +422,37 @@ def cmd_complete(args) -> dict:
             f"attempt {args.attempt} is already {record['state']} — history is immutable"
         )
     staging_path = args.staging_path or None
+
+    # A rejection is a verdict on a picture, so there has to be a picture.
+    #
+    # `rejected` is the only outcome that authorises no further call, and the
+    # ledger used to accept it for an attempt that produced nothing at all.
+    # Year 4 Science (22 September 2026) lost its only anatomical diagram that
+    # way: ImageGen returned `imagegen_output_unavailable`, the scout reached
+    # for the nearest-sounding outcome, and the ledger recorded a rejection of
+    # an image with `"staging_path": null`. A checked replacement then had
+    # nowhere legal to go.
+    #
+    # A call that returned nothing has not been judged, it has failed, and the
+    # route for that already exists: `interrupt-open` consumes the attempt and
+    # leaves the recovery call the run needs.
+    #
+    # Only `rejected` is gated. The other three outcomes are equally judgements
+    # of an output, but each of them leaves a door open, so getting one wrong
+    # costs a call rather than the picture. A hard gate on all four would refuse
+    # more live runs than it would save.
+    if (
+        args.outcome == "rejected"
+        and record["state"] == "open"
+        and not staging_path
+    ):
+        raise LedgerError(
+            f"attempt {args.attempt} produced no image, so it cannot be rejected: "
+            "every outcome classifies an output. Record the generated file first, "
+            "or, when the call returned nothing, use `interrupt-open` - that "
+            "consumes this attempt and leaves the recovery call available."
+        )
+
     if record["state"] == "generated_unreviewed":
         recorded_path = record["staging_path"]
         if args.staging_path and os.path.abspath(args.staging_path) != recorded_path:

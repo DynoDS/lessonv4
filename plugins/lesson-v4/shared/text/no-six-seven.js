@@ -15,12 +15,20 @@
 // file name or colour, and a four-digit year from 1000 to 2099 written without
 // a comma, because a real date (1567, 1967) is a fact the lesson cannot change.
 //
+// Nor a position inside a picture. A label-diagram anchor is a percentage
+// across and down the image, written as a pair (anchor: [35, 67]), which is
+// the same kind of value as the x and y the list already skips: it is measured
+// off the picture rather than chosen, and no child ever reads it. The science
+// run of 22 September 2026 had a large-intestine label refused for sitting 67
+// per cent across the digestive diagram, and the anchor had to be moved off the
+// part it names before the worksheet would build.
+//
 // Nor a number sitting in a counting run with both its neighbours (a hundred
 // square's rows, a list of every number from 60 to 70): the run cannot skip
 // one, and a number square on every classroom wall has never been the trigger.
 
 const SKIPPED_STRING_KEYS = /(^id$|Id$|Ids$|Ref$|Refs$|path|Path|url|Url|^src$|^href$|sha|Sha|[Ff]ile|[Cc]olou?r|^fill$|[Ss]lug|^layout$|^template$|^kind$)/;
-const SKIPPED_NUMBER_KEYS = /^(fontSize|headingFontSize|weight|rotation|transparency|x|y|w|h|width|height|maxRows|blankChars|classSize|dpi|radius|lineW|pad|gap|minFont|maxFont|version|schemaVersion|lon|lat|longitude|latitude)$/;
+const SKIPPED_NUMBER_KEYS = /^(fontSize|headingFontSize|weight|rotation|transparency|x|y|w|h|width|height|anchor|label_at|maxRows|blankChars|classSize|dpi|radius|lineW|pad|gap|minFont|maxFont|version|schemaVersion|lon|lat|longitude|latitude)$/;
 const NUMBER_TOKEN = /(?<![\p{L}\p{N}_/\\.#-])(\d{1,3}(?:,\d{3})+|\d+)(?![\p{N}_/\\]|\.\d|-\d|,\d{3})/gu;
 
 function offends(digits, writtenWithComma) {

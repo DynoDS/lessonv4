@@ -26,3 +26,29 @@ test('a counting run keeps the number it cannot skip', () => {
   assert.deepEqual(sixSevenNumbers({ labels: [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70] }), []);
   assert.deepEqual(sixSevenNumbers({ labels: [60, 67, 70] }), ['67']);
 });
+
+test('a position inside a picture is not a number the class reads', () => {
+  // A label-diagram anchor is a percentage across and down the image, and the
+  // part it names does not move because of a playground meme.
+  assert.deepEqual(
+    sixSevenNumbers({ callouts: [{ anchor: [35, 67], label: 'large intestine' }] }),
+    []
+  );
+  assert.deepEqual(
+    sixSevenNumbers({ callouts: [{ anchor: [35, 68], label_at: [67, 12], label: 'stomach' }] }),
+    []
+  );
+});
+
+test('skipping anchors does not skip the numbers that matter', () => {
+  // The guard on the part above: the same 67 in anything a child reads is
+  // still caught, including alongside an anchor on the same sheet.
+  assert.deepEqual(
+    sixSevenNumbers({
+      callouts: [{ anchor: [35, 67], label: 'large intestine' }],
+      question: 'Round 67 to the nearest ten.',
+    }),
+    ['67']
+  );
+  assert.deepEqual(sixSevenNumbers({ anchorNote: 'Start at 67 on the number line.' }), ['67']);
+});

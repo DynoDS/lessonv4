@@ -83,7 +83,16 @@ function stackLayout(zone, data, ctx) {
   return items.map(function (item, i) {
     const subZone = zoneFor(item, cursorY, heights[i]);
     cursorY += heights[i] + GAP;
-    return { item, zone: subZone };
+    // contentH and the weights travel with the zone so that a child refusing
+    // for want of height can be told the weight that would give it, rather
+    // than only the inches it is short.
+    return {
+      item,
+      zone: subZone,
+      weight: weights[i],
+      otherWeight: totalWeight - weights[i],
+      contentH
+    };
   });
 }
 
@@ -100,6 +109,10 @@ function stackLayout(zone, data, ctx) {
 // nothing can be measured, so a stack the measurer knows nothing about lays out
 // exactly as it always did.
 const REFLOW_FLOOR = 0.12;
+
+// The hair of extra height asked for when advising a weight, so the result
+// clears its floor instead of landing on it. See weightThatWouldFit below.
+const FIT_MARGIN = 0.02;
 
 function canUseMoreHeight(item) {
   if (!item || typeof item !== 'object') return false;
@@ -179,6 +192,30 @@ function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
   });
 }
 
+// The weight this item would need to reach the height it is asking for.
+//
+// An item's share is contentH * weight / totalWeight, so for a wanted height H
+// the weight that lands it is H * (the other weights) / (contentH - H). Null
+// when no weight reaches it: a single-item stack, where weight divides nothing,
+// or a stack not tall enough even given whole.
+function weightThatWouldFit(entry, neededH) {
+  if (!entry || !Number.isFinite(neededH) || neededH <= 0) return null;
+  const { weight, otherWeight, contentH } = entry;
+  if (!Number.isFinite(weight) || !Number.isFinite(otherWeight) || !Number.isFinite(contentH)) {
+    return null;
+  }
+  if (otherWeight <= 0) return null;
+  if (contentH <= neededH) return null;
+  const wanted = (neededH * otherWeight) / (contentH - neededH);
+  // Rounded up, never to nearest. Advice that lands exactly on a floor is
+  // advice that fails: the first two slides this was tried on came back with
+  // "0.38in per row, below the 0.38in one line needs", refused by the last
+  // digit. A weight is a free number, so it costs nothing to clear the floor
+  // rather than touch it.
+  const safe = Math.ceil(wanted * 100) / 100;
+  return safe > weight ? safe : null;
+}
+
 function drawStack(pptx, slide, zone, data, ctx) {
   const layout = stackLayout(zone, data, ctx);
   if (layout.length === 0) return;
@@ -186,13 +223,39 @@ function drawStack(pptx, slide, zone, data, ctx) {
   const { drawContent } = require('./index');
 
   layout.forEach(function (entry) {
-    drawContent(
-      pptx,
-      slide,
-      entry.zone,
-      entry.item,
-      ctx
-    );
+    try {
+      drawContent(
+        pptx,
+        slide,
+        entry.zone,
+        entry.item,
+        ctx
+      );
+    } catch (err) {
+      // A child that refused for want of height knows the inches; only the
+      // stack knows what the owner would have to type to get them. Said here
+      // because this is the only place both are in scope, and appended rather
+      // than replacing anything, so the child's own account survives whole.
+      // The child asks in its own box; the stack answers in its share. The
+      // shortfall is the one number that means the same thing in both.
+      const shortfall = err && Number.isFinite(err.neededZoneHeight) && Number.isFinite(err.zoneHeight)
+        ? err.neededZoneHeight - err.zoneHeight
+        : null;
+      const needed = shortfall > 0 ? entry.zone.h + shortfall + FIT_MARGIN : null;
+      const wanted = weightThatWouldFit(entry, needed);
+      if (wanted) {
+        err.message +=
+          ' In this stack that is a weight of ' + wanted.toFixed(2) +
+          ' on this item (it has ' + entry.weight +
+          '); the other items keep theirs.';
+      } else if (Number.isFinite(needed) && entry.contentH <= needed) {
+        err.message +=
+          ' No weight reaches it here: the whole stack is only ' +
+          entry.contentH.toFixed(2) + 'in, so this item needs a roomier zone or' +
+          ' a slide of its own.';
+      }
+      throw err;
+    }
   });
 
   drawGroupAccent(

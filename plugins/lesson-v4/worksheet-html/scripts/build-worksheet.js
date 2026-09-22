@@ -73,6 +73,19 @@ function fail(signal, message, faultClass, location) {
   process.exitCode = 1;
 }
 
+// A sheet leaves with its answers. The key is validated against the pupil
+// sheets present, so a tier taken out for page fit whose answers stayed behind
+// refuses the build on the next line with a spec fault that is not true.
+function withoutSheet(worksheet, key) {
+  const sheets = { ...worksheet.sheets };
+  delete sheets[key];
+  const answerKey = { ...(worksheet.answerKey || {}) };
+  delete answerKey[key];
+  return worksheet.answerKey
+    ? { ...worksheet, sheets, answerKey }
+    : { ...worksheet, sheets };
+}
+
 function readSpec(file) {
   let raw;
   let spec;
@@ -98,7 +111,12 @@ function readSpec(file) {
 }
 
 async function main() {
-  const [, , specPath, outArg, baseArg] = process.argv;
+  // The flag is filtered out before the positional arguments are read, so a
+  // hand build that passes only a spec, an output folder and a basename works
+  // exactly as it always has.
+  const args = process.argv.slice(2);
+  const omitUnfittable = args.includes("--omit-unfittable");
+  const [specPath, outArg, baseArg] = args.filter((a) => a !== "--omit-unfittable");
 
   if (!specPath) {
     fail("SPEC_MISSING", "Usage: build-worksheet.js <worksheet.json> [OUTPUT_DIR] [BASENAME]");
@@ -142,21 +160,51 @@ async function main() {
   // anything measures or numbers the sheet. Said out loud per sheet: the
   // shape was the engine's choice, and the designer reading the log is
   // entitled to know which one it made.
-  try {
-    const resolvedAuto = resolveAutoLayouts(worksheet);
-    worksheet = resolvedAuto.worksheet;
-    for (const choice of resolvedAuto.choices) {
-      console.log(
-        `AUTO_LAYOUT: ${choice.label} drawn in "${choice.layout}" ` +
-          `(${choice.orientation}), ${choice.fillPct}% full.`
-      );
-    }
-  } catch (e) {
-    if (e instanceof WorksheetError) {
+  //
+  // One sheet that will not fit must not lose the pack. Maths 15 (22 September
+  // 2026) delivered no worksheets at all: the Expected sheet was repaired until
+  // it fit, the untouched Greater Depth sheet then failed here on its own, and
+  // all three sheets and the answer key went with it. The teacher's standing
+  // rule for the deck is the rule this needed (16 September 2026, "flag the
+  // slides and deliver it"): one bad slide never withholds a deck, and one bad
+  // sheet should never withhold a pack.
+  //
+  // Only the orchestrator's last-resort delivery path passes the flag, and only
+  // a sheet the page cannot hold comes out. Every other refusal still stops the
+  // build: a malformed zone, or a sheet that would quietly drop a line the
+  // child needed, is the "looks finished" failure this engine exists to refuse,
+  // and omitting such a sheet would hide the fault instead of saying it. The
+  // last sheet standing is never omitted, because a pack with nothing in it is
+  // not a partial delivery.
+  //
+  // One sheet comes out per pass, because the shapes are chosen per sheet and
+  // the next sheet's refusal is only visible once this one is gone.
+  const omitted = [];
+  for (;;) {
+    try {
+      const resolvedAuto = resolveAutoLayouts(worksheet);
+      worksheet = resolvedAuto.worksheet;
+      for (const choice of resolvedAuto.choices) {
+        console.log(
+          `AUTO_LAYOUT: ${choice.label} drawn in "${choice.layout}" ` +
+            `(${choice.orientation}), ${choice.fillPct}% full.`
+        );
+      }
+      break;
+    } catch (e) {
+      if (!(e instanceof WorksheetError)) throw e;
+      const key = e.location && e.location.sheet;
+      const others = Object.keys(worksheet.sheets || {}).filter((k) => k !== key);
+      if (omitUnfittable && e.signal === "SHEET_DOES_NOT_FIT" && key && others.length) {
+        worksheet = withoutSheet(worksheet, key);
+        omitted.push(key);
+        console.log(`SHEET_OMITTED: ${e.message}`);
+        diagnostic("SHEET_OMITTED", "composition", e.location, e.message);
+        continue;
+      }
       fail(e.signal, e.message, "composition", e.location || {});
       return;
     }
-    throw e;
   }
 
   // Books or sheet. The designer's preflight refuses a missing or mistaken
@@ -190,6 +238,43 @@ async function main() {
         ? "books, a copy between two, with question slips at the back."
         : "sheet, a copy per child.";
     console.log(`RECORDING: ${sheetLabel(key)} - ${cost} ${reason || "No reason given."}`);
+  }
+
+  // A sheet with an explicit layout does not fail above, because nothing chose
+  // its shape; it fails the fit check below instead. Same rule, same flag: only
+  // a sheet whose ONLY fault is that the page cannot hold it comes out, and
+  // never the last one standing.
+  if (omitUnfittable) {
+    const onlyTooTight = checkWorksheet(worksheet).filter(
+      (sheet) =>
+        sheet.tooTight.length &&
+        !sheet.badZones.length &&
+        !sheet.wordBanks.length &&
+        !sheet.unprinted.length &&
+        !sheet.emptySets.length &&
+        !sheet.pupilWording.length &&
+        !sheet.labelIntent.length
+    );
+    for (const sheet of onlyTooTight) {
+      const others = Object.keys(worksheet.sheets || {}).filter((k) => k !== sheet.key);
+      if (!others.length) break;
+      worksheet = withoutSheet(worksheet, sheet.key);
+      omitted.push(sheet.key);
+      for (const problem of sheet.tooTight) {
+        console.log(`SHEET_OMITTED: ${sheet.label} - ${problem}`);
+        diagnostic("SHEET_OMITTED", "composition", { sheet: sheet.key, page: sheet.page }, problem);
+      }
+    }
+  }
+
+  // Said once, in the form the run report needs: what the teacher is getting,
+  // what they are not, and that the key covers only what they are getting.
+  if (omitted.length) {
+    console.log(
+      `SHEET_OMITTED_SUMMARY: delivered ${Object.keys(worksheet.sheets || {}).join(", ")}; ` +
+        `omitted ${omitted.join(", ")} because the page cannot hold it. The answer ` +
+        `key covers the delivered sheets only.`
+    );
   }
 
   // Answers are a different audience. Validate complete coverage before pupil

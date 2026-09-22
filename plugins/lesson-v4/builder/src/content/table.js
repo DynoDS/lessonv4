@@ -49,13 +49,26 @@ function drawTable(pptx, slide, zone, data) {
 
   if (rowH < ROW_MIN_H) {
     const needed = requiredZoneHeight(rows.length);
-    throw new Error(
+    const refusal = new Error(
       `TABLE_ZONE_TOO_SHORT: ${rows.length} row(s) plus the header leave ` +
         `${rowH.toFixed(2)}in per row in a ${zone.h.toFixed(2)}in zone, below the ` +
         `${ROW_MIN_H.toFixed(2)}in one line of cell text needs at the readable ` +
         `floor. Give the table a zone at least ${needed.toFixed(2)}in tall, or ` +
         `carry fewer rows; nothing was shrunk further or cut.`
     );
+    // The height this zone would have to be, carried as a number so a stack
+    // above can work out the weight that reaches it. Saying "at least 1.50in"
+    // to an owner who sets weights and not inches leaves the arithmetic to be
+    // guessed one repair pass at a time: Year 4 Maths Lesson 16 (22 September
+    // 2026) spent all three on six such tables and never found that raising
+    // the table's weight from 1 to 1.5 cleared every one of them.
+    refusal.neededZoneHeight = needed;
+    // The box this helper actually got, which is not the share its parent
+    // handed out: a card's chrome sits between the two. A parent working out
+    // how much more to allot has to add the shortfall to its own share, not
+    // substitute the helper's number for it.
+    refusal.zoneHeight = zone.h;
+    throw refusal;
   }
   // One hierarchy across the table: short headings must not grow independently
   // while the longer evidence they describe shrinks to the floor.

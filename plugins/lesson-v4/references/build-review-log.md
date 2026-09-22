@@ -4115,3 +4115,201 @@ discrimination cases; 2027 Python tests pass.
 - The paragraph now says the wrong reading recurs while the sentence that refuses it does not, and shows three genuinely different moves: the plain refusal, the truth said straight against the wrong version (`The stomach is this one bag, up here, not your whole tummy.`), and the misleading word taken head on (`Small doesn't mean shorter.`), plus the case where the class settles it in the Do and the board carries the question instead. No quota, and no instruction to vary for its own sake.
 - `teacher-voice.md` §11 carries the same point for how a correction sounds, tied to the §3 sentence-rhythm fault it is a larger version of, so the route's pointer to it is honest.
 - Both decks rebuilt: history now opens its four refusals four different ways and keeps one plain `That doesn't mean`; science slide 6 states the truth against the wrong version. `SLIDE_DESIGN_CHECK_OK` 17 slides each. Python 2033 pass.
+
+## 2026-09-22 - Year 4 Maths: Roman numerals to L
+
+*Built by lesson-v4 4.2.276.*
+
+
+- The slide table renderer needs a configurable first-column width and a guaranteed 1.50in table band for a five-column Roman-numeral reference table used alongside questions, working room and full success criteria.
+
+- The working-wall renderer could not fit the same exact five-column reference table on A3 at the readable floor because it lacks wider first-column support.
+
+## 2026-09-22 - Year 4 Maths: Roman numerals to C
+
+*Built by lesson-v4 4.2.276.*
+
+
+- Slide templates could not initially combine a full-width 11-column Roman numeral reference, a four-step success-criteria panel and usable question space at the 18pt minimum; a focused composition repair was required for slides 8–11.
+
+## 2026-09-22 - Year 4 History: explain how children's leisure time changed
+
+*Built by lesson-v4 4.2.276.*
+
+
+- The compact slide and worksheet repair scope gates reject authorised semantic cross-resource updates even when all resource validators pass, forcing a full designer rerun.
+
+- Picture provenance treats terminal receipts for pictures retired by an approved content-gap redesign as extra evidence and provides no dedicated retired-receipt route.
+
+## 2026-09-22 - A pack is not lost for one sheet, and a picture's anchor is not a number (4.2.280)
+
+*Parts A and B of `plans/2026-09-22-six-run-mechanical-repairs.md`, from the six
+Week 4 runs on 4.2.276. The plan's remaining parts are not done.*
+
+- **Part A. A diagram anchor coordinate is not a number the class reads.** The
+  science run's large-intestine label sat 67 per cent across the digestive
+  diagram and `NUMBER_CONTAINS_SIX_SEVEN` refused the sheet, so the anchor was
+  moved off the part it names. The rule already skipped this kind of value under
+  `x`, `y`, `w` and `h`; it did not skip the same value written as the pair the
+  label-diagram helper actually stores (`anchor`, `label_at`), because an array
+  walk carries the parent key down. Both keys added to `SKIPPED_NUMBER_KEYS`
+  with the reason in the comment. Proved on the real science spec: it now passes
+  with the anchor back at its true 67. Two tests, the second pinning that a 67
+  in a question on the same sheet is still refused.
+
+- **Part B. One sheet that will not fit must not lose the pack.** Maths 15
+  delivered no worksheets at all: Expected was repaired to fit, the untouched
+  Greater Depth sheet then failed on its own, and `There is no second round for
+  the same fault` ended the branch, taking both sheets and the answer key. The
+  teacher's own rule for the deck (16 September 2026, "flag the slides and
+  deliver it") had never been extended to sheets.
+  *`build-worksheet.js` takes `--omit-unfittable`: a sheet the page cannot hold
+  comes out, with its measurement on a `SHEET_OMITTED:` line, and the pack and
+  key build without it. The sheet leaves with its answers, or the key refuses
+  against a tier nobody has. Two limits, both tested: the last sheet standing is
+  never omitted, and any fault that is not page fit still refuses the whole
+  build, because a sheet that quietly drops a line the child needed is the
+  "looks finished" failure the engine exists to refuse. `run-fixed-resource.py`
+  passes the flag through and reports `FIXED_RESOURCE_FLAGGED worksheets:` with
+  the omitted tiers in its summary, mirroring the flagged deck. Phase 3.5 also
+  now says that a fault found where the round did not touch is a new fault, not
+  a second round at the same one - the reading that cost Maths 15 its pack.*
+
+- **Found while proving it, and not repaired.** Maths 15's Expected sheet prints
+  six questions and its answer key answers four (`ANSWER_KEY_INCOMPLETE:
+  answerKey.expected is missing question (5)`). The run never saw this because
+  it died on the Greater Depth fit first. That lesson needs its worksheet
+  rebuilt by its owner, not by the flag.
+
+- **The playbook is at its ceiling.** These edits fit under the 77 KiB budget
+  with nine bytes to spare, after the additions were cut back twice. The
+  standing note in `test_make_lesson_runtime.py` is now due: the next change
+  here is a consolidation pass, not a raise.
+
+- 2033 Python tests and 1750 node tests pass.
+
+## 2026-09-22 - A refusal points at the lever that works (4.2.281)
+
+*Part C of `plans/2026-09-22-six-run-mechanical-repairs.md`. The plan's own
+diagnosis for this part was wrong and the investigation replaced it; the plan
+now carries the corrected version.*
+
+- **What the part was written as, and why that was dropped.** "The designer does
+  not reach for a composition change during its three passes." It already is
+  told to: `slide-designer.md` says to go up a level rather than adjust the
+  composition again, and names this failure exactly ("Three passes spent
+  trimming one crowded layout is how a deck reaches `EXHAUSTED 3/3` with the
+  fault the first check named still standing"). Writing that rule again would
+  have added nothing. The real question was why a designer holding it still
+  trimmed, and the answer was in the refusals it was reading.
+
+- **The criteria refusal said the step fitted, and refused it.** Maths 17's four
+  slides read "The card holds about 95 characters at 18pt (1 line of about 95);
+  this one is 40 characters, which wrap to 1 line." The refusal was right and
+  the sentence was not: the card was 0.31in tall where one line at 18pt needs
+  0.35in, so it held no line at all, and `budgetSentence` floored its line count
+  at one and described a card that did not exist. Instrumented on the real file
+  to confirm rather than infer: `linesThatFit=0, reportedLines=1` on all four.
+  *The zero-line case now says height instead of inventing a line: "it holds no
+  line at all and no wording will fit it. This is room, not words: each card
+  here is about 0.04in short." The comment above it already recorded the same
+  class of bug being fixed once in the width dimension; this was it surviving in
+  height. `overload-message-is-true.test.js` holds the general invariant - a
+  refusal quoting a budget must show the overflow it refuses.*
+
+- **The table refusal was true in a unit the designer does not write.** "Give
+  the table a zone at least 1.50in tall" is correct, and a slide spec sets
+  weights, not inches. The conversion needs the stack's total height, which the
+  refusal never carried, so each of Maths 16's three passes was a guess and the
+  measurement moved a hundredth of an inch at a time.
+  *`table.js` now carries the height it needs and the box it got; `stack.js`,
+  the only place that also knows the weights, appends the weight that would hold
+  it. Rounded up, never to nearest: the first version landed exactly on the
+  floor and two slides came back refused by the last digit.
+  `weight-advice-works.test.js` pins that the advised weight clears the refusal
+  that offered it, and that none is offered where none could reach.*
+
+- **Recorded because it was claimed and then disproved.** Midway through, a
+  weight change appeared to fix all six of Maths 16's slides with no template
+  change. It did not: it cleared the table fault and uncovered a criteria fault
+  beneath it, because that half-slide carried a 1.50in table and a four-card
+  criteria panel at once. The focused repair's template change was right for
+  that lesson. What was wrong was that one refusal lied and the other spoke in
+  inches.
+
+- **Left undone and named.** A criteria panel gets the truthful message but no
+  weight, because the refusal happens at the card while the stack's child is the
+  panel, so the shortfall needs multiplying by the card count on the way up.
+
+- 2033 Python tests and 1753 node tests pass.
+
+## 2026-09-22 - Part D diagnosed, and deliberately not applied
+
+*No version bump: nothing shipped. Recorded because the diagnosis is worth more
+than the change, and because the plan's proposed fix would have done damage.*
+
+- **The plan said to loosen `check-repair-scope.py` with a manifest of
+  authorised changes. It needs no change.** In History 5 every party behaved
+  correctly: the compact repair roles are presentation-only and said so, both
+  returned NOT FIXED and routed to the full owner, and the scope check refused
+  what it exists to refuse. Its opening comment records what that strictness
+  cost to learn - a repair that returned a comparison slide with the comparison
+  gone - and a manifest is the shape most likely to lose it again.
+
+- **The fault is the routing above them.** Phase 3.5 says "Use the compact
+  focused-repair role for the named owner when present, otherwise its full
+  creation role", unconditionally, so a cross-resource update carrying an
+  approved redesign's new wording goes to a role forbidden to write it and the
+  round is spent learning what was knowable before it started. Two rounds lost
+  in that run, one of them its longest step at 44 minutes. The pipeline already
+  routes picture content gaps away from the compact repairer, and
+  `lesson-designer-focused-repair.md` already carries the matching boundary in
+  its description; the rule simply does not exist for this case.
+
+- **The one-sentence change is written and not applied, because there is
+  nowhere to put it.** `playbook-lite.md` stands at 78,839 of 78,848 bytes and
+  the slide compact role at 7,927 of 8,000. The clause is about 65 bytes over
+  what it replaces. Putting it in the four agent descriptions instead was tried
+  and reverted: it duplicates one decision four times and broke the slide role's
+  own cap.
+
+- **So the consolidation pass this file's own note has been deferring is now
+  blocking work.** It should be its own job, with its diff read rule by rule,
+  because the standing warning here is that "no teaching change" consolidations
+  have quietly removed guidance before.
+
+## 2026-09-22 - A call that returned nothing has not been judged (4.2.282)
+
+*Part E1 of `plans/2026-09-22-six-run-mechanical-repairs.md`. E2 is diagnosed in
+the plan and deliberately not applied.*
+
+- **What the science run's ledger actually recorded**, which settles it:
+  `{"event": "completed", "attempt": 1, "outcome": "rejected", "staging_path":
+  null, "fault": "imagegen_output_unavailable"}`. ImageGen returned no image,
+  and the attempt was closed as a verdict on one. `rejected` is the single
+  outcome that authorises no further call, so the door shut on the lesson's only
+  anatomical diagram; a replacement was then generated by hand, checked by the
+  image scout against every anatomical requirement, and had nowhere legal to go.
+
+- **The second door was there all along.** `interrupt-open` consumes the attempt
+  and `next_legal_reservation` returns `('recovery',)` for an interrupted one.
+  `image-scout-generation.md` even lists "an interrupted reserved call with one
+  call left" among the legal second calls. What the scout had no way to know is
+  that a call returning nothing belongs there: every one of the four outcomes is
+  introduced by "Classify each output", and none of them fits when there is no
+  output, so it reached for the nearest-sounding one.
+
+- **Gated where it is enforced.** `cmd_complete` now refuses `rejected` for an
+  attempt that is still open with no staging path, and names `interrupt-open` in
+  the refusal. Only `rejected` is gated: the other three outcomes each leave a
+  door open, so getting one wrong costs a call rather than the picture, and a
+  hard gate on all four would refuse more live runs than it would save. The
+  reference now carries the same routing in one sentence, so the scout does not
+  have to learn it from a refusal.
+
+- **Validated by replaying the real sequence**, prompt and fault string as the
+  run wrote them: refused, then `interrupt-open` leaves `('recovery',)`
+  available. Two tests added - the failure itself, and the boundary that a
+  rejection of a genuinely generated image still closes the door. One existing
+  fixture rejected an image it had never generated; it now records one first,
+  which is what a fundamental miss is. 2035 Python tests pass.

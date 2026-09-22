@@ -1332,6 +1332,11 @@ repair's confirmation, and a repair whose rebuild still fails has not worked.
 There is no second round for the same fault. Record the round in the run's
 friction file, whatever its result.
 
+A fault the round uncovered where it did not touch is a different fault and
+gets its own round. Maths 15 (22 September 2026) repaired Expected until it fit,
+the untouched Greater Depth sheet then failed for the first time, and reading
+that as a second round cost the class its whole pack.
+
 **A deck the round did not clear still ships**, its slides flagged for the
 teacher (Daniel, 16 September 2026: "flag the slides and deliver it"). Hand `lesson.json` on as it stands: start any wall
 or stick-in track waiting for it, build as Track A says, then run the Slide
@@ -1340,6 +1345,15 @@ as `--flagged-slides`. Those slides answer `slide-flagged` and take no drawing;
 every slide that drew is decorated as usual, because one fault blanking two
 slides should not also empty the layer on the sixteen beside them. Exclude the
 deck only when the build cannot write one.
+
+**A pack the round did not clear still ships too**, for the same reason. When a
+sheet still returns `SHEET_DOES_NOT_FIT` after its own round, rerun the
+worksheet build with `--omit-unfittable`: the sheets that fit are built, the key
+covers those sheets, and each omitted sheet is named on a `SHEET_OMITTED:` line
+with the measurement that refused it. Carry that into the report as a teacher
+flag naming the missing tier, and list the pack as delivered. The flag rescues a
+too-small page and nothing else: any other fault still refuses the build, and
+the last sheet standing is never omitted.
 
 A repair that declares a real cross-resource impact has changed something
 another resource mirrors. Rebuild both affected resources and recheck that

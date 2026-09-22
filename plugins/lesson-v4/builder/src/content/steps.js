@@ -174,10 +174,28 @@ function budgetSentence(widthIn, heightIn, text) {
   const charsPerLine = perChar > 0
     ? Math.max(1, Math.floor(usableWidth(widthIn) / perChar))
     : 1;
-  const lines = Math.max(
-    1,
-    Math.floor(usableHeight(heightIn) / ((TEXT_FONT_MIN / 72) * 1.28))
-  );
+  const oneLine = (TEXT_FONT_MIN / 72) * 1.28;
+  const lines = Math.floor(usableHeight(heightIn) / oneLine);
+
+  // A card with no room for a single line is the case this sentence could not
+  // say. The count used to be floored at one, so the refusal described a card
+  // holding ninety-five characters on a line that was not there, and then
+  // refused forty characters for not fitting in it. Every number in it pointed
+  // at the wording, which is the one thing that cannot help: no wording fits a
+  // card with no line. Year 4 Maths Lesson 17 (22 September 2026) spent all
+  // three Slide Designer repair passes on four such cards and gave up with the
+  // first fault still standing.
+  //
+  // Height is the fault, so the sentence says height, and says it against the
+  // same floor the refusal used.
+  if (lines < 1) {
+    const needs = oneLine + FIT_PAD_H;
+    return `The card is ${heightIn.toFixed(2)}in tall and one line at ` +
+      `${TEXT_FONT_MIN}pt needs ${needs.toFixed(2)}in, so it holds no line at ` +
+      `all and no wording will fit it. This is room, not words: each card here ` +
+      `is about ${(needs - heightIn).toFixed(2)}in short.`;
+  }
+
   const budget = charsPerLine * lines;
   const takes = wrappedLineCount(text, usableWidth(widthIn), TEXT_FONT_MIN);
   const wraps = Number.isFinite(takes)
