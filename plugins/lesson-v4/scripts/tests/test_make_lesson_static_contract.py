@@ -545,14 +545,18 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         # it are still named.
         self.assertIn("Plan when each word is introduced", text)
         self.assertIn("`vocabularyIntroductions`", text)
+        # The reasons live once, in preferences.md -> Vocabulary (streamline
+        # trial, 22 September 2026), and the designer is sent there.
+        self.assertIn("Governed by `preferences.md` → Vocabulary", text)
+        preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
         # A term needed to follow an instruction goes in first.
-        self.assertIn("goes in before that instruction", text)
+        self.assertIn("goes in before that instruction", preferences)
         # A term the material can show goes in after the noticing.
-        self.assertIn("goes in after that noticing", text)
-        self.assertIn("Discovery still introduces formal vocabulary after the exploration", text)
+        self.assertIn("goes in after that noticing", preferences)
+        self.assertIn("Discovery still introduces formal vocabulary after the exploration", preferences)
         # Grouping is a decision, not a quota, in both directions.
-        self.assertIn("Group words that are needed together", text)
-        self.assertIn("a word introduced after the last moment it was any use", text)
+        self.assertIn("Group words when they are needed together", preferences)
+        self.assertIn("A word must not be introduced after the last moment it was any use", preferences)
 
     def _designer_text(self):
         return (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")

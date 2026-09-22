@@ -31,7 +31,7 @@ If a named field has no matching correction, the review did not cause that failu
 
 ## Rewrite inside the limit
 
-The validator holds mechanical limits a meaning-first rewrite crosses without feeling wrong: a word cap on `lookFor`, the `Say to children:` opening a script keeps, the shape a definition stays inside. Rewrite the correction to the same meaning within the limit the failure line states.
+The validator holds mechanical limits a meaning-first rewrite crosses without feeling wrong: a word cap on `lookFor`, the `Say to children:` opening a script keeps. Rewrite the correction to the same meaning within the limit the failure line states.
 
 The rewritten words still reach a class verbatim, so they must still sound like the teacher. Put the new string through `[PLUGIN_ROOT]/references/teacher-voice.md` → `17. Final pre-flight check` before you save it, and open the numbered section for that kind of string only if it still sounds off. Keep the thinking demand, the answer protection and the subject vocabulary the correction had. A shorter string that has lost the reason it was corrected has swapped one fault for another.
 

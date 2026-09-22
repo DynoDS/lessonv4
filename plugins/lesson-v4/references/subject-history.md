@@ -188,7 +188,7 @@ The general rule holds: the words that earn a card are the ones children reason 
 
 Named people, places and events are content the lesson teaches and children need, but they belong in the teaching rather than on cards, because knowing them makes a child knowledgeable about one period rather than a stronger historical thinker. In the teaching means explained where each first appears on the board, in a clause a child can hold (`Queen Elizabeth I, who ruled England in Tudor times`, `the River Thames, which runs through London`), unless an earlier lesson the brief names taught it. A name nothing explains is a word the class cannot use, and the limit on vocabulary cards is no reason to leave it unexplained.
 
-The finding worth carrying is that these words cannot be taught as a definition. Children have studied a whole empire topic and been unable to say what the word means. A word like this needs meeting in three different contexts across the year before a child can reason with it, so where the lesson uses one, it is used and applied rather than defined and displayed.
+The finding worth carrying is that a definition alone does not teach these words. Children have studied a whole empire topic and been unable to say what the word means. A word like this needs meeting in three different contexts across the year before a child can reason with it, so where the lesson needs one, it gets its card just before it is needed like any other word, and then it is used and applied, never only defined and displayed.
 
 ---
 

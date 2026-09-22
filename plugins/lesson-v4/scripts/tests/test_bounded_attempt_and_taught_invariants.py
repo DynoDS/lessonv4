@@ -68,15 +68,23 @@ class StepsTeachTheInvariantTests(unittest.TestCase):
 
 class TheObjectivesOwnTermIsTaughtTests(unittest.TestCase):
     def test_the_vocabulary_rule_exists_with_its_exception(self):
-        designer = flat(DESIGNER)
+        # The rule lives in preferences.md -> Vocabulary, the one home of the
+        # vocabulary decisions (streamline trial, 22 September 2026); the
+        # designer's own section sends it there and names the rule.
+        preferences = flat(ROOT / "references" / "preferences.md")
         self.assertIn(
             "A technical term the approved objective itself names is "
             "learning-critical by definition:",
-            designer,
+            preferences,
         )
-        self.assertIn("never left living only in planning metadata", designer)
+        self.assertIn("never left living only in planning metadata", preferences)
         self.assertIn(
-            "a term the teacher's own sequence explicitly defers", designer
+            "a term the teacher's own sequence explicitly defers", preferences
+        )
+        self.assertIn(
+            "how a term the approved objective names is always taught (a card, or one explicit "
+            "taught line, unless the teacher's sequence defers it)",
+            flat(DESIGNER),
         )
 
 

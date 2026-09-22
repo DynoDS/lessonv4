@@ -1154,7 +1154,14 @@ def unit_label(design: dict, source_unit_id: str) -> str:
 
 
 def vocabulary_schedule(design: dict) -> list[tuple[str, list[dict]]]:
-    """Every planned vocabulary introduction, in order, as (anchor, words).
+    """Every planned vocabulary introduction, in order, as (anchor, words)."""
+    return [(anchor, group) for anchor, group, _script in vocabulary_introductions(design)]
+
+
+def vocabulary_introductions(design: dict) -> list[tuple[str, list[dict], str]]:
+    """Every planned vocabulary introduction, in order, as (anchor, words,
+    script). The script is what the teacher says while that slide is up; a
+    saved design carrying only `vocabularyPlacement` has none.
 
     One reading of the schedule, used by BOTH the placement summary and the
     class view, because those two disagreeing is how a reviewer approved a
@@ -1174,18 +1181,19 @@ def vocabulary_schedule(design: dict) -> list[tuple[str, list[dict]]]:
 
     introductions = design.get("vocabularyIntroductions")
     if isinstance(introductions, list) and introductions:
-        schedule: list[tuple[str, list[dict]]] = []
+        schedule: list[tuple[str, list[dict], str]] = []
         for entry in introductions:
             if not isinstance(entry, dict):
                 continue
             group = [words[ref] for ref in entry.get("vocabularyRefs") or [] if ref in words]
+            script = entry.get("script") if isinstance(entry.get("script"), str) else ""
             if group:
-                schedule.append((entry.get("after") or starter_id, group))
+                schedule.append((entry.get("after") or starter_id, group, script))
         return schedule
 
     placement = design.get("vocabularyPlacement")
     anchor = placement["after"] if isinstance(placement, dict) and placement.get("after") else starter_id
-    return [(anchor, list(words.values()))]
+    return [(anchor, list(words.values()), "")]
 
 
 def vocabulary_placement_line(design: dict) -> str:
@@ -1215,11 +1223,16 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
     # anchor names no unit in this lesson would otherwise vanish from the
     # reading entirely, so anything unplaced trails the last unit and is
     # visible.
+    # The slide's script is printed with its words, the way every other beat's
+    # is, because the teacher stands in front of a vocabulary slide and says
+    # it: a review that never heard those words could not sweep their voice.
     scheduled: dict[str, list[list[str]]] = {}
-    for anchor, group in vocabulary_schedule(design):
-        scheduled.setdefault(anchor, []).append(
-            [f"{row['term']}: {row['definition']}" for row in group]
-        )
+    for anchor, group, script in vocabulary_introductions(design):
+        lines = [f"{row['term']}: {row['definition']}" for row in group]
+        if script.strip():
+            spoken = re.sub(r"^\s*Say to children:\s*", "", script, count=1)
+            lines.append(f"Teacher says: {spoken}")
+        scheduled.setdefault(anchor, []).append(lines)
 
     def vocabulary_after(source_unit_id: str) -> None:
         for group in scheduled.pop(source_unit_id, []):

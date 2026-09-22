@@ -17,6 +17,7 @@ been rebuilt by hand:
 from __future__ import annotations
 
 import importlib.util
+import re
 import unittest
 from pathlib import Path
 
@@ -71,9 +72,117 @@ class ACardedWordIsUsed(unittest.TestCase):
         sequence = [unit("u0", "start"), unit("u1", "Which number is greater? Are they equal?")]
         validator.validate_vocabulary_is_used([{"vocabularyRefs": ["vocab-002", "vocab-003"], "after": "u0"}], VOCAB, sequence)
 
-    def test_a_word_used_in_the_script_counts(self) -> None:
+    def test_a_word_said_only_in_the_next_script_is_refused(self) -> None:
+        # The teacher, 22 September 2026: "it should be on the board, not just
+        # the script." A word the class only hears has not reached the board.
         sequence = [unit("u0", "start"), unit("u1", "Why keep working?", "Say to children: their working conditions were hard.")]
-        validator.validate_vocabulary_is_used([{"vocabularyRefs": ["vocab-001"], "after": "u0"}], VOCAB, sequence)
+        with self.assertRaises(validator.ContractError) as refused:
+            validator.validate_vocabulary_is_used([{"vocabularyRefs": ["vocab-001"], "after": "u0"}], VOCAB, sequence)
+        self.assertIn("is in the teacher's script for", str(refused.exception))
+        self.assertIn("but not on its board", str(refused.exception))
+
+    def test_a_word_on_the_criteria_the_next_beat_shows_is_on_its_board(self) -> None:
+        # Criteria and sticky facts are on the slide by reference, as surely as
+        # the beat's own content; a word there has reached the board.
+        next_beat = unit("u1", "Why keep working?", "Say to children: their working conditions were hard.")
+        next_beat["successCriteriaRefs"] = ["sc-001"]
+        criteria = {"sc-001": {"id": "sc-001", "content": {"steps": ["Name one of their {{working conditions}}."]}}}
+        validator.validate_vocabulary_is_used(
+            [{"vocabularyRefs": ["vocab-001"], "after": "u0"}], VOCAB, [unit("u0", "start"), next_beat], sc_by_id=criteria
+        )
+        next_beat["successCriteriaRefs"] = []
+        next_beat["stickyKnowledgeRefs"] = ["sk-001"]
+        sticky = {"sk-001": {"id": "sk-001", "text": "Tudor working conditions were hard."}}
+        validator.validate_vocabulary_is_used(
+            [{"vocabularyRefs": ["vocab-001"], "after": "u0"}], VOCAB, [unit("u0", "start"), next_beat], sticky_by_id=sticky
+        )
+
+    def test_a_caption_the_next_beats_picture_prints_is_on_its_board(self) -> None:
+        # A number-line lesson's My Turn printed `Each interval is worth 10.` on
+        # its picture; the word was on the board, and refusing it would send a
+        # sound lesson back. A feature that only describes the picture prints no
+        # word: `every integer labelled, with correct negative signs` is not
+        # the word `negative` on the board.
+        vocab = [{"id": "vocab-001", "term": "interval"}, {"id": "vocab-002", "term": "negative"}]
+        next_beat = unit("u1", "Label the blanks.", "Say to children: each interval is ten, and minus three is negative.")
+        next_beat["representationRefs"] = [{"ref": "rep-001", "configuration": "model"}]
+        reps = {"rep-001": {"id": "rep-001", "configurations": [{"id": "model", "requiredFeatures": [
+            "Visible caption: Each interval is worth 10.",
+            "every integer labelled, with correct negative signs",
+        ]}]}}
+        validator.validate_vocabulary_is_used(
+            [{"vocabularyRefs": ["vocab-001"], "after": "u0"}], vocab, [unit("u0", "start"), next_beat], rep_by_id=reps
+        )
+        with self.assertRaises(validator.ContractError) as refused:
+            validator.validate_vocabulary_is_used(
+                [{"vocabularyRefs": ["vocab-002"], "after": "u0"}], vocab, [unit("u0", "start"), next_beat], rep_by_id=reps
+            )
+        self.assertIn("`negative` is in the teacher's script", str(refused.exception))
+
+    def test_the_board_may_say_the_word_in_its_natural_form(self) -> None:
+        # The card says `continuity`; a board asking about continuities, or
+        # what changed, has the word on it.
+        vocab = [{"id": "vocab-001", "term": "continuity"}, {"id": "vocab-002", "term": "change"},
+                 {"id": "vocab-003", "term": "round"}]
+        for ref, board in (("vocab-001", "What are the continuities?"), ("vocab-002", "What changed?"),
+                           ("vocab-003", "Rounding to the nearest ten.")):
+            with self.subTest(board=board):
+                validator.validate_vocabulary_is_used(
+                    [{"vocabularyRefs": [ref], "after": "u0"}], vocab, [unit("u0", "start"), unit("u1", board)]
+                )
+        # And a different word that merely begins the same way is not it.
+        with self.assertRaises(validator.ContractError):
+            validator.validate_vocabulary_is_used(
+                [{"vocabularyRefs": ["vocab-003"], "after": "u0"}], vocab,
+                [unit("u0", "start"), unit("u1", "Walk to the roundabout.")],
+            )
+
+    def test_word_forms_are_heard_and_different_words_are_not(self) -> None:
+        heard = (("valley", "Rivers carve valleys."), ("array", "Make two arrays."), ("key", "Use the keys."),
+                 ("decay", "It decays."), ("monastery", "The monasteries."), ("exchange", "We exchanged ten ones."))
+        for term, text in heard:
+            with self.subTest(term=term):
+                self.assertTrue(any(re.search(p, text.lower()) for p in validator._word_patterns(term)))
+        for term, text in (("rule", "Use a ruler."), ("count", "Move the counters."), ("time", "Start the timer.")):
+            with self.subTest(term=term):
+                self.assertFalse(any(re.search(p, text.lower()) for p in validator._word_patterns(term)))
+
+    def test_a_picture_prints_the_words_its_features_give(self) -> None:
+        # The phrasings real designs use, and the two that only describe.
+        printed = (("labels reading 'ear canal' and 'eardrum' and nothing else", "eardrum"),
+                   ("the eardrum labelled", "eardrum"),
+                   ("four aligned columns labelled Thousands, Hundreds, Tens and Ones", "hundreds"),
+                   ("the Equator drawn and labelled across the middle of the map", "equator"),
+                   ("with a shared label reading: Same load", "same load"),
+                   ("one part is a blank circle captioned thousands", "thousands"),
+                   ("halfway written under the middle tick of every line", "halfway"))
+        for feature, word in printed:
+            with self.subTest(feature=feature):
+                self.assertIn(word, validator._printed_words(feature))
+        for feature, word in (("every integer labelled, with correct negative signs", "negative"),
+                              ("No caption: children work out what each interval is worth themselves", "interval"),
+                              ("Six ticks at equal physical intervals; all labels printed exactly as supplied", "interval")):
+            with self.subTest(feature=feature):
+                self.assertNotIn(word, validator._printed_words(feature))
+
+    def test_every_check_reads_the_same_slide(self) -> None:
+        # A word on the next beat's criteria panel is on that beat, so the
+        # designer is not told it is first needed a beat later.
+        next_beat = unit("u1", "Why keep working?", "Say to children: think about it.")
+        next_beat["successCriteriaRefs"] = ["sc-001"]
+        criteria = {"sc-001": {"id": "sc-001", "content": {"steps": ["Name one of their {{working conditions}}."]}}}
+        validator.validate_vocabulary_is_used(
+            [{"vocabularyRefs": ["vocab-001"], "after": "u0"}], VOCAB,
+            [unit("u0", "start"), next_beat, unit("u2", "Their working conditions were hard.")], sc_by_id=criteria,
+        )
+
+    def test_a_word_first_used_later_still_names_that_beat(self) -> None:
+        # Unchanged by the board rule: a word the next beat does not use at all
+        # is still reported against the beat where it is first needed.
+        sequence = [unit("u0", "start"), unit("u1", "Why keep working?"), unit("u2", "Their working conditions were hard.")]
+        with self.assertRaises(validator.ContractError) as refused:
+            validator.validate_vocabulary_is_used([{"vocabularyRefs": ["vocab-001"], "after": "u0"}], VOCAB, sequence)
+        self.assertIn("first needed 1 beat later", str(refused.exception))
 
 
 class AQuestionSaysWhatItMeans(unittest.TestCase):

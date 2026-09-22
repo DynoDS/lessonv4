@@ -182,7 +182,7 @@ Ask, one question at a time: what it's called (becomes the `type` string and `dr
 
 ### Step 2 — Build and wire it per the reference
 
-Follow `references/helper-authoring.md`: mirror the closest sibling helper, write the renderer(s) for the engine(s) it serves, apply the no-deadspace principle to any figure, and wire it into every place each engine's checklist names (dispatcher, catalogue, and — where they apply — the pre-render step, row equaliser, and vocabulary-card gate on the slide side; the question helper, dispatcher and catalogue on the worksheet side).
+Follow `references/helper-authoring.md`: mirror the closest sibling helper, write the renderer(s) for the engine(s) it serves, apply the no-deadspace principle to any figure, and wire it into every place each engine's checklist names (dispatcher, catalogue, and — where they apply — the pre-render step and row equaliser on the slide side; the question helper, dispatcher and catalogue on the worksheet side).
 
 ### Step 3 — Tune it visually → Phase 1
 

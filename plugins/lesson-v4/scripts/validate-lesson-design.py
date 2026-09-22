@@ -1345,8 +1345,9 @@ def validate_explanation_task_is_modelled(structure: str, sequence: list[dict[st
         )
 
 
-def _unit_words(unit: dict[str, Any]) -> str:
-    """Everything a beat puts in front of the class or says to it, lower-cased."""
+def _unit_board_words(unit: dict[str, Any]) -> str:
+    """Everything a beat puts in front of the class, lower-cased: its content,
+    instruction and task, without the teacher's script."""
     parts: list[str] = []
 
     def walk(value: Any) -> None:
@@ -1362,8 +1363,14 @@ def _unit_words(unit: dict[str, Any]) -> str:
     walk(unit.get("content"))
     walk(unit.get("pupilInstruction"))
     walk(unit.get("taskStructure"))
-    walk((unit.get("speakerNotes") or {}).get("script"))
     return " ".join(parts).lower()
+
+
+def _unit_words(unit: dict[str, Any]) -> str:
+    """Everything a beat puts in front of the class or says to it, lower-cased."""
+    script = (unit.get("speakerNotes") or {}).get("script")
+    spoken = script.lower() if isinstance(script, str) else ""
+    return f"{_unit_board_words(unit)} {spoken}".strip()
 
 
 def _word_patterns(term: str) -> list[str]:
@@ -1379,9 +1386,25 @@ def _word_patterns(term: str) -> list[str]:
         # not the term.
         part = re.sub(r"\s+(?:to|than|of)$", "", part)
         stem = part[:-1] if part.endswith("s") else part
-        words = [re.escape(w) for w in stem.split()]
-        patterns.append(r"\b" + r"[\s-]+".join(words) + r"(?:s|es|ies)?\b")
+        if not stem.split():
+            continue
+        *first, last = stem.split()
+        words = [re.escape(w) for w in first] + [_word_forms(last)]
+        patterns.append(r"\b" + r"[\s-]+".join(words) + r"\b")
     return patterns
+
+
+def _word_forms(word: str) -> str:
+    """The plain forms a sentence uses a word in: `continuity` as
+    `continuities`, `valley` as `valleys`, `change` as `changed` or
+    `changing`, `round` as `rounding`. A board says the natural form, and a
+    check that heard only the card's own spelling would refuse a word that is
+    plainly there. No `-er` form: `rule` is not `ruler`, nor `count` `counter`."""
+    if len(word) > 2 and word.endswith("y") and word[-2] not in "aeiou":
+        return f"(?:{re.escape(word)}(?:ing)?|{re.escape(word[:-1])}(?:ies|ied))"
+    if word.endswith("e"):
+        return f"(?:{re.escape(word)}(?:s|d)?|{re.escape(word[:-1])}ing)"
+    return f"{re.escape(word)}(?:s|es|ed|ing)?"
 
 
 def validate_vocabulary_is_used(
@@ -1389,6 +1412,9 @@ def validate_vocabulary_is_used(
     vocab_items: list[dict[str, Any]],
     sequence: list[dict[str, Any]],
     faults: FaultLog | RaiseAtOnce | None = None,
+    sc_by_id: dict[str, dict[str, Any]] | None = None,
+    sticky_by_id: dict[str, dict[str, Any]] | None = None,
+    rep_by_id: dict[str, dict[str, Any]] | None = None,
 ) -> None:
     """A vocabulary slide is there because the beats after it need the word.
     A Year 4 history lesson (14 September 2026) introduced `working conditions`
@@ -1415,13 +1441,92 @@ def validate_vocabulary_is_used(
             if not isinstance(word, str) or not word.strip():
                 continue
             with log.section():
-                validate_one_word_lands(word, index, beats_after_the_card)
+                validate_one_word_lands(
+                    word, index, beats_after_the_card, sc_by_id or {}, sticky_by_id or {}, rep_by_id or {}
+                )
 
 
-def validate_one_word_lands(word: str, index: int, beats_after_the_card: list[dict[str, Any]]) -> None:
+# The words a picture prints, read out of its required features the ways
+# designers write them: `Visible caption: Each interval is worth 10.`,
+# `labels reading 'ear canal' and 'eardrum'`, `columns labelled Thousands,
+# Hundreds, Tens and Ones`, `a blank circle captioned thousands`, `the
+# eardrum labelled`, `halfway written under the middle tick`. A feature that
+# describes the picture without giving its words prints none of them:
+# `every integer labelled, with correct negative signs` shows minus signs,
+# not the word `negative`, and `No caption: children work it out` prints
+# nothing at all.
+PRINT_MARKER = re.compile(r"\b(?:captions?|captioned|labels?|labell?ed|headings?|titles?|written|printed)\b", re.IGNORECASE)
+PRINT_NEGATED = re.compile(
+    r"\b(?:no|without)\s+(?:captions?|labels?|headings?|titles?)\b|\bnot\s+(?:labell?ed|captioned|written|printed)\b|\bunlabell?ed\b",
+    re.IGNORECASE,
+)
+PRINTED_QUOTED = re.compile(r"['‘\"“]([^'’\"”]+)['’\"”]")
+PRINTED_AFTER_COLON = re.compile(
+    r"\b(?:captions?|captioned|labels?|labell?ed|headings?|titles?|reading|reads|saying|says)\b[^:.;]{0,20}:\s*([^.;]+)",
+    re.IGNORECASE,
+)
+PRINTED_AFTER = re.compile(
+    r"\b(?:labell?ed|captioned|reading|reads|saying|says)\s+([^.;:,]+(?:,\s*[^.;:,]+){0,5})",
+    re.IGNORECASE,
+)
+PRINTED_BEFORE = re.compile(r"((?:[^\s,.;:]+\s+){1,3})(?:labell?ed|written|printed)\b", re.IGNORECASE)
+
+
+def _printed_words(feature: str) -> str:
+    """The words a picture's required feature says it prints, lower-cased,
+    or nothing when the feature only describes the picture."""
+    if not PRINT_MARKER.search(feature) or PRINT_NEGATED.search(feature):
+        return ""
+    found = [m.group(1) for m in PRINTED_QUOTED.finditer(feature)]
+    found += [m.group(1) for m in PRINTED_AFTER_COLON.finditer(feature)]
+    found += [" ".join(m.group(1).split()[:8]) for m in PRINTED_AFTER.finditer(feature)]
+    found += [m.group(1) for m in PRINTED_BEFORE.finditer(feature)]
+    return " ".join(found).lower()
+
+
+def _shown_beside(
+    unit: dict[str, Any],
+    sc_by_id: dict[str, dict[str, Any]],
+    sticky_by_id: dict[str, dict[str, Any]],
+    rep_by_id: dict[str, dict[str, Any]] | None = None,
+) -> str:
+    """What a beat puts on its slide by reference, lower-cased: the criteria
+    and sticky facts it names, and the words its pictures print
+    (`_printed_words`); a feature that only describes what the picture shows
+    is not a word on the board."""
+    shown = [_unit_board_words({"content": (sc_by_id.get(ref) or {}).get("content")})
+             for ref in unit.get("successCriteriaRefs") or []]
+    shown += [_unit_board_words({"content": (sticky_by_id.get(ref) or {}).get("text")})
+              for ref in unit.get("stickyKnowledgeRefs") or []]
+    for ref in unit.get("representationRefs") or []:
+        if not isinstance(ref, dict):
+            continue
+        rep = (rep_by_id or {}).get(ref.get("ref")) or {}
+        for config in rep.get("configurations") or []:
+            if isinstance(config, dict) and config.get("id") == ref.get("configuration"):
+                shown += [_printed_words(feature) for feature in config.get("requiredFeatures") or []
+                          if isinstance(feature, str)]
+    return " ".join(shown)
+
+
+def validate_one_word_lands(
+    word: str,
+    index: int,
+    beats_after_the_card: list[dict[str, Any]],
+    sc_by_id: dict[str, dict[str, Any]] | None = None,
+    sticky_by_id: dict[str, dict[str, Any]] | None = None,
+    rep_by_id: dict[str, dict[str, Any]] | None = None,
+) -> None:
     """Where one carded word has to land: somewhere after the card, and in the
-    very next beat."""
-    later = " ".join(_unit_words(unit) for unit in beats_after_the_card)
+    very next beat. Every question reads the same slide: a beat's own words,
+    what it shows by reference and what its pictures print, and its script."""
+    shown = {id(unit): _shown_beside(unit, sc_by_id or {}, sticky_by_id or {}, rep_by_id or {})
+             for unit in beats_after_the_card}
+
+    def everything(unit: dict[str, Any]) -> str:
+        return f"{_unit_words(unit)} {shown[id(unit)]}"
+
+    later = " ".join(everything(unit) for unit in beats_after_the_card)
     expect(
         any(re.search(pattern, later) for pattern in _word_patterns(word)),
         f"vocabularyIntroductions[{index}]: `{word}` is introduced and then never used. "
@@ -1440,7 +1545,7 @@ def validate_one_word_lands(word: str, index: int, beats_after_the_card: list[di
     # for the next slide."
     first_use = None
     for offset, unit in enumerate(beats_after_the_card):
-        if any(re.search(pattern, _unit_words(unit)) for pattern in _word_patterns(word)):
+        if any(re.search(pattern, everything(unit)) for pattern in _word_patterns(word)):
             first_use = (offset, unit)
             break
     if first_use and first_use[0] > 0:
@@ -1454,6 +1559,21 @@ def validate_one_word_lands(word: str, index: int, beats_after_the_card: list[di
             "so move this word to its own introduction there. The alternative, where the word "
             "belongs earlier than the check can see, is that an earlier beat should be saying "
             "it and is not: then the repair is the beat's own words, not the card's place",
+        )
+    # And it reaches the board there, not only the teacher's script. The
+    # teacher, 22 September 2026: "it should be on the board, not just the
+    # script." A word the class only hears is one nobody asked them to read,
+    # say or use.
+    if first_use and first_use[0] == 0:
+        unit = first_use[1]
+        label = unit.get("label") or unit.get("sourceUnitId")
+        board = f"{_unit_board_words(unit)} {shown[id(unit)]}"
+        expect(
+            any(re.search(pattern, board) for pattern in _word_patterns(word)),
+            f"vocabularyIntroductions[{index}]: `{word}` is in the teacher's script for `{label}`, "
+            "the beat straight after its card, but not on its board. A word the class only hears "
+            "has not reached the board: write it into what that beat shows the class (its board, "
+            "its question or its task) as well as its script",
         )
 
 
@@ -3625,7 +3745,9 @@ def run_design_checks(
         # met eight slides before it is used has stopped being a glance reference
         # by the time anyone glances, so a lesson may introduce words at several
         # moments (`preferences.md` -> Vocabulary). Nothing here caps the count.
-        validate_vocabulary_is_used(introductions, vocab_items, sequence, faults)
+        validate_vocabulary_is_used(
+            introductions, vocab_items, sequence, faults, sc_by_id=sc_by_id, sticky_by_id=sticky_by_id, rep_by_id=rep_by_id,
+        )
 
     if has_legacy:
         placement = expect_dict(root["vocabularyPlacement"], "vocabularyPlacement")

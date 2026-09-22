@@ -118,7 +118,7 @@ Example lesson outputs are not included in this snapshot; a representative regre
 
 ## The lesson-designer in one paragraph
 
-Takes year group + learning objective (plus any extra context the teacher provides). Decides the cognitive demand, picks a lesson structure (Skill-based / Content-based / Discovery / Dialogic / Task-Centred), designs the starter so it connects backwards to prior or prerequisite knowledge, selects 3–5 vocabulary words by activity test, identifies 1–3 sticky facts and places them contextually, sequences the teaching as either MT/OT/YT (skills) or Teach→Do→Teach→Do (content), handles 2–3 canonical misconceptions, decides whether an Apply slide is earned. It settles a compact decisions record first, then serialises the authoritative `lesson-design.json` contract plus `photo-requirements.json` for downstream resource designers.
+Takes year group + learning objective (plus any extra context the teacher provides). Decides the cognitive demand, picks a lesson structure (Skill-based / Content-based / Discovery / Dialogic / Task-Centred), designs the starter so it connects backwards to prior or prerequisite knowledge, selects up to five vocabulary words by activity test, identifies 1–3 sticky facts and places them contextually, sequences the teaching as either MT/OT/YT (skills) or Teach→Do→Teach→Do (content), handles 2–3 canonical misconceptions, decides whether an Apply slide is earned. It settles a compact decisions record first, then serialises the authoritative `lesson-design.json` contract plus `photo-requirements.json` for downstream resource designers.
 
 ## Design principles (shared across all agents)
 

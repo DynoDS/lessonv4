@@ -380,7 +380,7 @@ Germs make acid." },
 
 #### `key-vocabulary`
 
-**Purpose:** Vocabulary reveal. 2–5 words on light-green cards, each with an optional compact visual. Card heights and font sizes scale with the word count.
+**Purpose:** Vocabulary reveal. One to five words on light-green cards, each with the compact picture the design chose for it. Card heights and font sizes scale with the word count.
 
 **Slots:** `title` (defaults to "Key Vocabulary"), `instruction`, `words` (array of `{ word, definition, visual? }`).
 
@@ -401,7 +401,7 @@ Examples:
 - `{ "word": "equilateral", "definition": "...", "visual": { "type": "triangle", "kind": "equilateral" } }`
 - `{ "word": "trapezium", "definition": "...", "visual": { "type": "geoboard", "cols": 4, "rows": 2, "shape": [[0,0],[4,0],[3,2],[1,2]] } }`
 - `{ "word": "regular polygon", "definition": "...", "visual": { "type": "polygon", "shapes": [ { "name": "hexagon" } ] } }`
-- `{ "word": "convert", "definition": "..." }` — no visual needed, cell stays empty
+- A word the design gives no `visual` (the rare word nothing can honestly show) leaves its picture cell empty.
 
 ### 2.5 Success Criteria (standalone)
 
@@ -744,8 +744,8 @@ A step is normally a string. A success-criteria step that names a visible notati
 ### `vocab`
 ```json
 { "type": "vocab", "words": [
-  { "word": "evaporation", "definition": "water turning into vapour" },
-  { "word": "condensation", "definition": "vapour turning back into water" }
+  { "word": "evaporation", "definition": "Evaporation is when liquid water slowly turns into a gas called water vapour, like a puddle drying up." },
+  { "word": "condensation", "definition": "Condensation is when water vapour cools down and turns back into liquid water, like drops on a cold window." }
 ] }
 ```
 

@@ -163,7 +163,9 @@ class VocabularyArrivesWhenItIsNeeded(unittest.TestCase):
         preferences = flat(PREFERENCES)
         self.assertIn("a card must not answer the question the very next beat is about to ask", preferences)
         self.assertIn("Read each introduction against the beat that follows it", preferences)
-        self.assertIn("read each introduction against the beat that follows it", flat(DESIGNER).lower())
+        # The designer keeps no second copy (one home, 22 September 2026); it
+        # is sent back to the section before it writes the introductions.
+        self.assertIn("return to it before writing `vocabularyIntroductions`", flat(DESIGNER))
 
 
 class TheDesignsLabelIsTheTitle(unittest.TestCase):

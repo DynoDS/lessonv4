@@ -385,7 +385,7 @@ the initial-design command is:
 
 Require exactly `LESSON_DESIGN_OK`. Run it once at the end rather than after each correction, and skip it entirely when you corrected nothing.
 
-Any failure it names is your edit. The validator holds mechanical limits you are not asked to carry in your head - a `lookFor` capped at 25 words, a `script` that has to keep its `Say to children:` opening, a definition that has to stay inside its shape - and a repair written for meaning will cross one without feeling wrong. Rewrite your own wording to the same meaning inside the limit and run the check again.
+Any failure it names is your edit. The validator holds mechanical limits you are not asked to carry in your head - a `lookFor` capped at 25 words, a `script` that has to keep its `Say to children:` opening - and a repair written for meaning will cross one without feeling wrong. Rewrite your own wording to the same meaning inside the limit and run the check again.
 
 **A correction that will not validate is not a bounded correction.** Restore the wording you found, then decide the defect again with that in view: leave it alone if it was acceptable variation, or return `REDESIGN REQUIRED` if it genuinely blocks the learning. Never hand back a design that fails this check. The orchestrator can only answer a failed check by sending the whole design back for repair, which delays every resource in the lesson so that one sentence can be shortened, and shortening it here costs you a minute.
 
