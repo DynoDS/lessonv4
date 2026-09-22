@@ -22,6 +22,26 @@ BASELINE_GOLD = ROOT / "existing-10-gold.json"
 HELD_OUT = ROOT / "held-out-input.json"
 
 
+class ClassViewFixtureScoringTests(unittest.TestCase):
+    def test_a_fixture_without_surface_labels_scores_overall_only(self) -> None:
+        # A fixture built by class_view_fixture.py carries `beat` and no
+        # surface_type, because production hands the reviewer no surface label.
+        # It must still score; per-surface accuracy stays n/a for it.
+        inputs = [
+            {"id": "h-1", "year_group": 4, "subject": "History", "beat": "Teach one",
+             "wording": "He was a member of Parliament. Some owners opposed it. Parliament made changes."},
+            {"id": "h-2", "year_group": 4, "subject": "History", "beat": "Teach one",
+             "wording": "He wasn't a king, so he had to persuade Parliament."},
+        ]
+        gold = [
+            {"id": "h-1", "expected": "REPAIR", "rationale": "three flat facts in one shape"},
+            {"id": "h-2", "expected": "KEEP", "rationale": "a reason said plainly"},
+        ]
+        report = score(inputs, gold, {"h-1": "REPAIR", "h-2": "KEEP"})
+        self.assertEqual(report["overall_accuracy"], 1.0)
+        self.assertIsNone(report["teach_explanation_accuracy"])
+
+
 class TeacherVoiceFixtureTests(unittest.TestCase):
     def test_calibration_has_all_requested_cases_and_surfaces(self) -> None:
         inputs = load_input_cases(INPUT)

@@ -264,7 +264,7 @@ A text slot is a string, or an object with `value` plus `emphasis` for inline ta
 | `lead-picture-lines` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | The big idea across the top, one picture below it, the explanation beside the picture. Cards in total: 1 to 4. |
 | `picture-top-cards` | `pictures`, `lines` 2 to 3 | A wide picture across the top, two or three equal cards in a row underneath. |
 | `two-pictures-captions` | `pictures` 2, `captions` 2, `sticky` optional, `lead` optional | Two pictures compared, each line directly under its own picture, one idea joining them along the bottom. |
-| `question-lines-picture` | `question`, `pictures`, `lines` 1 to 3, `sticky` optional | The question in a band across the top, then the explanation beside the picture that answers it. Cards in total: 1 to 4. |
+| `question-lines-picture` | `question`, `pictures`, `lines` 1 to 3, `sticky` optional | The question in a band across the top, then the explanation beside the picture that answers it. For a unit whose sentence is kept for the end, or the later half of a split; a unit's first slide with a `headline` uses a `lead` layout. Cards in total: 1 to 4. |
 | `compare-pictures` | `sides` 2, `headingRole` optional | Two things, or a wrong idea and the truth, in two matching cards, each with its own picture and line. |
 | `picture-statement-question` | `pictures`, `lead`, `question` | Half the slide is the picture; the other half is one big statement with a smaller question under it. |
 | `picture-three-cards` | `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | A two by two grid of equal squares: the picture in one, one idea in each of the other three. Cards in total: 3. |

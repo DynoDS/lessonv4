@@ -23,7 +23,11 @@ judgements, instead of being argued from one lesson that happened to read badly.
 
 The input and gold files share case IDs. Gold is never read from an input
 case, and the scorer rejects input files that contain `expected`, `rationale`,
-or prediction fields.
+or prediction fields. `surface_type` is optional on an input case: the hand-built
+calibration sets carry it so the report can break accuracy down by surface, and a
+fixture built from a real lesson does not, because production hands the reviewer no
+surface label. A case without it counts in the overall, catch and preservation
+figures and in no per-surface figure.
 
 ## Building a fixture from a real lesson
 
@@ -54,6 +58,15 @@ wrong produced three rounds of misleading results in September 2026:
   names and no "this is a Teach explanation" marker; the reviewer works out
   what it is reading. A fixture that adds one is testing a system that does not
   exist. `test_class_view_fixture.py` enforces this.
+
+## Producing predictions
+
+`sweep-runner.md` is the prompt that turns an input file into a predictions file.
+Give it to a fresh agent with the input file path and an output path; it reads the
+production voice-sweep instructions and the Teacher Voice guide, decides KEEP or
+REPAIR for every case, and writes `{"predictions": [...]}`. It never sees a gold
+file. Run it three times per candidate and score each run; the spread between runs
+is part of the result.
 
 ## Scoring
 
@@ -133,3 +146,17 @@ costing preservation or stability, so none was adopted.
 
 The harness is what survived, and it is the point: the next proposed voice
 change can be measured here first.
+
+22 September 2026, first measured candidate through `sweep-runner.md`: a
+calibrated Teach-explanation pair added to guide section 16 (a route that walks
+beside three flat facts). Three runs each, calibration set only.
+
+| | Overall | Catch | Preservation |
+| --- | --- | --- | --- |
+| Baseline (guide unchanged) | 81.2 / 81.2 / 78.1 | 58.3 / 66.7 / 58.3 | 95.0 / 90.0 / 90.0 |
+| Candidate (pair added) | 81.2 / 75.0 / 78.1 | 58.3 / 50.0 / 58.3 | 95.0 / 90.0 / 90.0 |
+
+No gain on catch, one run lower; the pair was not adopted. The same six runs
+missed the same speaker-note cases every time (speaker-note accuracy 25 to 50%),
+which is where the next candidate should aim. `held-out-input.json` now carries
+the 112 strings of the Week 4 History and Science lessons for labelling.

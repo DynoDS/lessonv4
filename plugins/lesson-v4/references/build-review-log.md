@@ -4058,3 +4058,41 @@ discrimination cases; 2027 Python tests pass.
   harder" rule was added: the standing instruction on this failure is that more
   words are not the lever. Validated against the real PSHE review, which is now
   refused; five tests, 2032 pass.*
+
+## 2026-09-22 - Year 4 Maths: Compare and order negative numbers
+
+*Built by lesson-v4 4.2.276.*
+
+
+- Design review postflight reported zero closest calls even though design-review.md contained three quoted closest-call entries; canonical lesson validation still passed.
+
+- Worksheet preflight could not fit the protected Expected page, and after the permitted in-place Expected layout repair, the untouched Greater Depth sheet independently failed both portrait width and landscape height constraints.
+
+## 2026-09-22 - Year 4 Science: name parts of the digestive system
+
+*Built by lesson-v4 4.2.276.*
+
+
+- A valid host-generated replacement image could not be adopted after the image scout had terminalised its first AI attempt because the immutable ledger exposed no legal second reservation route.
+
+- Worksheet NUMBER_CONTAINS_SIX_SEVEN rejects legitimate diagram anchor coordinates such as [35,67], forcing a non-semantic anchor adjustment.
+
+- Adaptation could specify a five-box process-chain wider than the printable portrait area; the worksheet preflight found the fit failure only after design, requiring the adaptation owner to reduce the chain to four stages.
+
+## 2026-09-22 - Year 4 History: explain why Lord Shaftesbury was significant
+
+*Built by lesson-v4 4.2.276.*
+
+
+- The slide template set could not initially place a tall essential historical portrait at the three-inch readable floor while carrying a lead and sticky sentence; focused repair used lead-picture-lines successfully.
+
+- The image-scout role requires an ATTEMPT_REQUEST_FILE, but the picture-stage runtime prompt template did not name or create one; the orchestrator supplied a minimal task request after launch.
+
+## 2026-09-22 - Teach shape, strip placement, and a voice harness that scores real lessons (4.2.277)
+
+*From the Week 4 History (Shaftesbury) and Science (digestive system) runs on 4.2.276, both approved with every Teach board's because and "it wasn't" in the script only.*
+
+- Part A, the route in the teacher's order: `explanation` is now the takeaway, the because or so, the example the class looks at (often only the picture, carried by the key question), and what it does not mean; owned in `teaching-sequence-content-based.md`, pointed at from `preferences.md`, the Lesson Designer and the Design Reviewer, whose Teach-board read now looks first for a `because`, `so`, `That doesn't mean` or `It wasn't` in the script with no counterpart on the board. Three tests pinned the old wording and were moved to the new; 46 route tests pass.
+- Part B, the strip and the title card: the "lands its sentence once" validator now reads sticky facts reached through `stickyKnowledgeRefs`, not only through `takeaway` (both Week 4 designs are refused on exactly their real duplicate); the playbook and `templates.md` say a unit with a `headline` leads with it and the question band is for a sentence kept for the end or the later half of a split; `check-slide-design.js` refuses a Teach card that repeats the slide title (`TEACH_LINE_REPEATS_TITLE`) and no longer counts one as teaching for the split check. 48 layout tests pass.
+- Part C, the harness: `score.py` accepts a fixture without `surface_type` (a real-lesson fixture never has one, and the scorer refused every such file); `sweep-runner.md` produces a predictions file from the production sweep instructions; `held-out-input.json` carries the 112 Week 4 strings for the teacher to label. 21 harness tests pass.
+- Part D, measured and not adopted: a calibrated Teach-explanation pair in the voice guide scored no better than baseline over three runs each (catch 58/67/58 vs 58/50/58, preservation unchanged); reverted, figures in the harness README. Full Python suite 2033 pass.

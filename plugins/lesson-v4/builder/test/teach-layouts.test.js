@@ -298,6 +298,35 @@ test('a half of a split Teach beat that is only a picture and a lead line is ref
   assert.match(result.stdout, /"slide":1/);
 });
 
+test('a Teach card that repeats the slide title is refused', (t) => {
+  // 22 September 2026: a repair moved history slide 4 to lead-picture-lines and
+  // filled its one line with the title, and the split check counted it as teaching.
+  const dir = tmpDir(t, 'teach-layouts-title-repeat-');
+  const specPath = writeLesson(dir, [
+    teachSlide('lead-picture-lines', { designUnitId: 'lesson-section/teaching-sequence/unit-001',
+      title: 'Could Parliament shorten the working day?',
+      lines: ['Could Parliament shorten the working day?'] }),
+    teachSlide('four-cards', { designUnitId: 'lesson-section/teaching-sequence/unit-001' })
+  ]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.equal(result.ok, false);
+  assert.match(result.stdout, /TEACH_LINE_REPEATS_TITLE/);
+  assert.match(result.stdout, /"slide":1/);
+});
+
+test('a Teach line that shares words with the title but says more is allowed', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-title-near-');
+  const specPath = writeLesson(dir, [
+    teachSlide('lead-picture-lines', { designUnitId: 'lesson-section/teaching-sequence/unit-001',
+      title: 'Could Parliament shorten the working day?',
+      lines: ['Parliament could shorten the working day, but only by passing a law and checking it.'] })
+  ]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.doesNotMatch(result.stdout || '', /TEACH_LINE_REPEATS_TITLE/);
+});
+
 test('a Teach beat on one slide may be a picture with one statement', (t) => {
   // Discrimination: the big-fact slide is a shape in the catalogue; the fault
   // is a split that leaves one half with nothing to teach from.

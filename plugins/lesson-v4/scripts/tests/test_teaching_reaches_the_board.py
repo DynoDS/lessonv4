@@ -214,7 +214,7 @@ class TheContentTeachUnitHasAPlaceForTheExplanationTests(unittest.TestCase):
         # repairing a slide that said one thing three ways, and three decks
         # then shipped with every Teach explanation empty; writing it is the
         # default again (12 September 2026).
-        self.assertIn('"explanation": "the route to the landed sentence, in whole sentences the teacher could say', text)
+        self.assertIn('"explanation": "the route the teacher walks after the takeaway, in whole sentences the teacher could say', text)
         self.assertIn("`explanation` is the teaching, as the child reads it", text)
         self.assertIn("So the default is to write it", text)
         self.assertIn("left what pass means in the script", text)

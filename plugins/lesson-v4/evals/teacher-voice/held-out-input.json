@@ -2,5 +2,790 @@
   "version": 1,
   "set": "held-out",
   "purpose": "Fresh lesson strings for later human labelling. Build these with class_view_fixture.py so they match the strings and boundaries the production review view prints, and keep them out of evaluator design and tuning until the labels are recorded separately.",
-  "cases": []
+  "cases": [
+    {
+      "id": "held-hist-001",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Victorian children's work",
+      "wording": "1. Name a job a Victorian child did.\n2. Describe one difficult working condition in that job.\n3. Why did many poorer families need their children's earnings?"
+    },
+    {
+      "id": "held-hist-002",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Victorian children's work",
+      "wording": "1. For example, working in a coal mine.\n2. Mine work could involve darkness, long hours and danger.\n3. Families needed the money for food and other necessities."
+    },
+    {
+      "id": "held-hist-003",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Victorian children's work",
+      "wording": "Teacher says: Last lesson you looked at children's working conditions. Think of one actual job, not just the word work. What did that child have to do? Now think about the family. Working could be dangerous and tiring, but losing the money could mean less food. Keep both things in mind today: protecting children was important, and changing their lives took more than telling them to stop working."
+    },
+    {
+      "id": "held-hist-004",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Vocabulary",
+      "wording": "Parliament: Parliament debates proposed laws and decides whether to pass them."
+    },
+    {
+      "id": "held-hist-005",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Vocabulary",
+      "wording": "law: A law is a rule that people in a country must follow."
+    },
+    {
+      "id": "held-hist-006",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could Parliament shorten the working day?",
+      "wording": "Lord Shaftesbury campaigned with others to protect children through laws."
+    },
+    {
+      "id": "held-hist-007",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could Parliament shorten the working day?",
+      "wording": "He was a member of Parliament, known then as Lord Ashley. Some owners opposed shorter hours because they feared losing money. Parliament made changes in stages."
+    },
+    {
+      "id": "held-hist-008",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could Parliament shorten the working day?",
+      "wording": "Modern summary of the Factory Acts:\n1833: Children under nine were barred from most textile factories. Children could not work at night, and four inspectors could check the rules.\n1847: A new law brought a ten-hour limit for women and young people aged 13 to 17 in textile factories.\n1850: Another law fixed the times of day when these workers could work, making it harder for owners to get round the rules."
+    },
+    {
+      "id": "held-hist-009",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could Parliament shorten the working day?",
+      "wording": "Why would a law need someone to check it?"
+    },
+    {
+      "id": "held-hist-010",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could Parliament shorten the working day?",
+      "wording": "Lord Shaftesbury campaigned with others to protect children through laws."
+    },
+    {
+      "id": "held-hist-011",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could Parliament shorten the working day?",
+      "wording": "Teacher says: This is the man we call Lord Shaftesbury. He wasn't a king who could order everybody to obey him. He worked in Parliament, and he joined other people asking for changes. His campaign for a ten-hour day didn't win straight away. Some factory owners thought shorter hours would cost them money. Look at the dates. The 1833 Act protected children in particular textile factories, the factories making cloth. It wasn't the ten-hour law. Four inspectors were appointed to check whether owners followed it. Later came the ten-hour law, and then fixed times for the working day. These were steps over many years. Now, why would a law need someone to check it?"
+    },
+    {
+      "id": "held-hist-012",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Had the law solved the problem?",
+      "wording": "Factory inspector's report, 1836 (adapted):\nBoys at Taylor, Ibbotson & Co. said they worked from Friday morning until Saturday afternoon, with breaks for meals and one extra hour at midnight. The inspector checked their accounts and said he would punish the firm."
+    },
+    {
+      "id": "held-hist-013",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Had the law solved the problem?",
+      "wording": "Choose the claim this report supports."
+    },
+    {
+      "id": "held-hist-014",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Had the law solved the problem?",
+      "wording": "A. Every factory obeyed the law."
+    },
+    {
+      "id": "held-hist-015",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Had the law solved the problem?",
+      "wording": "B. Some children still worked at night, and an inspector challenged the firm."
+    },
+    {
+      "id": "held-hist-016",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Had the law solved the problem?",
+      "wording": "C. The law had changed nothing anywhere."
+    },
+    {
+      "id": "held-hist-017",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Had the law solved the problem?",
+      "wording": "Teacher says: This report was written three years after the Act. The inspector spoke to the boys and checked their accounts. Decide which claim the report supports. Look carefully at what it tells us about this firm. Then ask whether it could possibly tell us what happened in every other factory as well."
+    },
+    {
+      "id": "held-hist-018",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Which children did the Mines Act protect?",
+      "wording": "The 1842 Mines Act banned underground work for women, girls and boys under ten."
+    },
+    {
+      "id": "held-hist-019",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Which children did the Mines Act protect?",
+      "wording": "Reports described children working below ground. Shaftesbury helped bring the problem before Parliament and supported the new law. Boys aged ten and over could still work underground."
+    },
+    {
+      "id": "held-hist-020",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Which children did the Mines Act protect?",
+      "wording": "Did the Act remove every child from the mines?"
+    },
+    {
+      "id": "held-hist-021",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Which children did the Mines Act protect?",
+      "wording": "Teacher says: Last lesson's mine work gives us another problem to think about. These reports told Parliament about children below ground. Shaftesbury supported changing the law. Read who the new rule protected: all women and girls, and boys under ten. That's a real change for those groups. But now look at the other line. A boy aged twelve was still allowed to work underground. The law didn't make every mine safe or remove every child. We need to say exactly who it reached when we explain why the change mattered."
+    },
+    {
+      "id": "held-hist-022",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "The 1842 rule banned underground work for women, girls and boys under ten."
+    },
+    {
+      "id": "held-hist-023",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "Sort the examples using the 1842 rule."
+    },
+    {
+      "id": "held-hist-024",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "Banned from underground work"
+    },
+    {
+      "id": "held-hist-025",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "Still allowed underground"
+    },
+    {
+      "id": "held-hist-026",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "A twelve-year-old boy"
+    },
+    {
+      "id": "held-hist-027",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "A nine-year-old boy"
+    },
+    {
+      "id": "held-hist-028",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "A twelve-year-old girl"
+    },
+    {
+      "id": "held-hist-029",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Who had to stop working underground?",
+      "wording": "Teacher says: Read the whole rule, not only the number ten. Decide where each example belongs before comparing your answers."
+    },
+    {
+      "id": "held-hist-030",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Vocabulary",
+      "wording": "ragged schools: Ragged schools gave free lessons to children whose families had very little money."
+    },
+    {
+      "id": "held-hist-031",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why were free schools needed too?",
+      "wording": "Ragged schools gave poorer children a chance to learn without paying school fees."
+    },
+    {
+      "id": "held-hist-032",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why were free schools needed too?",
+      "wording": "A shorter working day didn't give a family money for school. Volunteer teachers ran free lessons, and Shaftesbury became president of the Ragged School Union in 1844. He helped support schools that others ran."
+    },
+    {
+      "id": "held-hist-033",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why were free schools needed too?",
+      "wording": "What could a free school offer that a shorter working day couldn't?"
+    },
+    {
+      "id": "held-hist-034",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why were free schools needed too?",
+      "wording": "Ragged schools gave poorer children a chance to learn without paying school fees."
+    },
+    {
+      "id": "held-hist-035",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why were free schools needed too?",
+      "wording": "Teacher says: We've talked about taking children out of some work and shortening other work. But what could they do with that time? A family might still have no money for school fees. That's where free lessons mattered. Look at this ragged school. Volunteers gave their time to teach. Shaftesbury became president of the group that supported these schools. He helped, but he wasn't the teacher in every classroom and he didn't invent every school. More time and a place to learn were different things; children could need both."
+    },
+    {
+      "id": "held-hist-036",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "What did each change make possible?",
+      "wording": "A family could not afford school fees. Their child stopped working underground after the Mines Act.\n\nDid the Mines Act alone give the child a place to learn? Explain what ragged schools could add."
+    },
+    {
+      "id": "held-hist-037",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "What did each change make possible?",
+      "wording": "Teacher says: Keep the two changes separate in your head. One was a rule about work below ground. The other offered something the family couldn't pay for. Settle your answer, then tell your partner what the free school added."
+    },
+    {
+      "id": "held-hist-038",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Vocabulary",
+      "wording": "historically significant: We call someone historically significant when we judge that what they did mattered in history."
+    },
+    {
+      "id": "held-hist-039",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why did people choose to remember Shaftesbury?",
+      "wording": "People paid for a memorial to Shaftesbury because they wanted his work to be remembered."
+    },
+    {
+      "id": "held-hist-040",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why did people choose to remember Shaftesbury?",
+      "wording": "Shaftesbury died in 1885. The memorial opened in London in 1893, after his death. We judge someone historically significant by what changed, who it reached and why people remembered it later."
+    },
+    {
+      "id": "held-hist-041",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why did people choose to remember Shaftesbury?",
+      "wording": "What does building this memorial tell us about the people who paid for it?"
+    },
+    {
+      "id": "held-hist-042",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Why did people choose to remember Shaftesbury?",
+      "wording": "Teacher says: This is a memorial, something people made to remember him. He had died eight years before it opened. The people who paid for it were making a choice: they wanted his work remembered in a public place. That helps us explain why he was historically significant. We can ask what changed, who the changes reached, and whether people still thought the work mattered later. The fountain doesn't prove every child was safe. The work and the later choice to remember it are two different pieces of evidence."
+    },
+    {
+      "id": "held-hist-043",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could someone who helped fewer children matter too?",
+      "wording": "John Pounds taught more than forty children without charging fees in his Portsmouth workshop. He died in 1839. Other people took inspiration from his teaching, and a church in Portsmouth carries his name.\nModern summary from John Pounds Memorial Church.\n\nWhy might Portsmouth choose to remember John Pounds? Use what changed, who it reached and how he was remembered."
+    },
+    {
+      "id": "held-hist-044",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could someone who helped fewer children matter too?",
+      "wording": "Explain <<what changed>> for children."
+    },
+    {
+      "id": "held-hist-045",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could someone who helped fewer children matter too?",
+      "wording": "Say <<which children>> the change reached."
+    },
+    {
+      "id": "held-hist-046",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could someone who helped fewer children matter too?",
+      "wording": "Explain how people chose to remember his work later."
+    },
+    {
+      "id": "held-hist-047",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could someone who helped fewer children matter too?",
+      "wording": "Support your explanation with evidence."
+    },
+    {
+      "id": "held-hist-048",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Could someone who helped fewer children matter too?",
+      "wording": "Teacher says: Shaftesbury wasn't the only person who mattered. Here's a shoemaker who taught local children. Use the same questions we used for Shaftesbury. What could children do because the lessons were free? Who benefited? And what shows that people chose to remember John Pounds afterwards? You don't have to claim he reached as many people as a national law. Settle your own reason before talking with your partner."
+    },
+    {
+      "id": "held-hist-049",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "Why was Lord Shaftesbury historically significant?\n\nWork: Shaftesbury supported the 1842 Mines Act. It banned underground work for women, girls and boys under ten; older boys could still work underground.\n\nLearning: Shaftesbury supported ragged schools, where volunteer teachers gave poorer children free lessons.\n\nNew evidence: In 1944, long after his death, the charity supporting ragged schools changed its name from the Ragged School Union to the Shaftesbury Society.\nModern summary from the charity's history."
+    },
+    {
+      "id": "held-hist-050",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "John Pounds mattered to poorer children in Portsmouth because his free lessons let them learn without paying fees. He taught more than forty children and inspired others. The church carrying his name shows that people wanted his work remembered."
+    },
+    {
+      "id": "held-hist-051",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "John Pounds was important because he was kind and famous."
+    },
+    {
+      "id": "held-hist-052",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "The strong answer says what free lessons let children do and how people remembered his work."
+    },
+    {
+      "id": "held-hist-053",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "Explain how <<work and learning>> changed for children."
+    },
+    {
+      "id": "held-hist-054",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "Explain what the <<1944 name change>> tells us."
+    },
+    {
+      "id": "held-hist-055",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "Shaftesbury was significant because he helped change children's work and learning. He campaigned with others for factory rules and supported the Mines Act, so younger boys and girls were protected from underground work. He also supported ragged schools, where poorer children could learn without fees. The charity taking his name in 1944 shows that people still wanted his work remembered. He didn't end all child labour himself: older boys could still work underground, and some owners broke the rules."
+    },
+    {
+      "id": "held-hist-056",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Explain why Shaftesbury mattered",
+      "wording": "Teacher says: Look at the two answers about John Pounds. The strong one explains what free lessons let children do and how people remembered his work. Find those links. Now write your own explanation about Shaftesbury. The evidence includes his work on mines and schools. There's also something new: the charity that supported ragged schools changed its name long after he died. Think about what that choice tells us."
+    },
+    {
+      "id": "held-hist-057",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Worksheet",
+      "wording": "Evidence to use:\n• Shaftesbury campaigned with others for factory rules and inspectors. Some owners still broke the rules.\n• The 1842 Mines Act banned underground work for women, girls and boys under ten. Boys aged ten and over could still work underground.\n• Shaftesbury supported ragged schools, which offered free lessons to poorer children.\n\nNew evidence: In 1944, long after his death, the charity supporting ragged schools changed its name from the Ragged School Union to the Shaftesbury Society.\nModern summary from the charity's history."
+    },
+    {
+      "id": "held-hist-058",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Worksheet",
+      "wording": "Use the evidence to answer."
+    },
+    {
+      "id": "held-hist-059",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Worksheet",
+      "wording": "A museum label says: “Shaftesbury stopped every child working, all by himself.”\nRewrite the label so it agrees with the evidence."
+    },
+    {
+      "id": "held-hist-060",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Worksheet",
+      "wording": "Why was Lord Shaftesbury historically significant?\nUse an example about work, an example about learning and the 1944 name change."
+    },
+    {
+      "id": "held-hist-061",
+      "year_group": 4,
+      "subject": "History",
+      "beat": "Worksheet",
+      "wording": "Use the evidence above and check your answer against the success criteria on the board."
+    },
+    {
+      "id": "held-sci-001",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Food and our bodies",
+      "wording": "Why do our bodies need food?\n\nWhat do teeth do to food?"
+    },
+    {
+      "id": "held-sci-002",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Food and our bodies",
+      "wording": "Food helps us get energy, grow and stay healthy.\nTeeth break food into smaller pieces."
+    },
+    {
+      "id": "held-sci-003",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Food and our bodies",
+      "wording": "Teacher says: Think about what your body does all day, even when you're sitting still. Why do our bodies need food? Now think about the bite before you swallow it. What do teeth do to food?"
+    },
+    {
+      "id": "held-sci-004",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Vocabulary",
+      "wording": "digestive system: The digestive system is the group of body parts that breaks down food and takes useful substances from it."
+    },
+    {
+      "id": "held-sci-005",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Vocabulary",
+      "wording": "oesophagus: The oesophagus is the tube that carries swallowed food to the stomach."
+    },
+    {
+      "id": "held-sci-006",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "From the mouth to the stomach",
+      "wording": "Food enters the digestive system through the mouth."
+    },
+    {
+      "id": "held-sci-007",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "From the mouth to the stomach",
+      "wording": "Teeth break food into smaller pieces. Saliva wets it, and the oesophagus pushes swallowed food towards the stomach."
+    },
+    {
+      "id": "held-sci-008",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "From the mouth to the stomach",
+      "wording": "Which part connects the mouth to the stomach?"
+    },
+    {
+      "id": "held-sci-009",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "From the mouth to the stomach",
+      "wording": "Teacher says: You remembered that teeth break food into smaller pieces. That happens in your mouth, so digestion has already started before you swallow. The wet liquid in your mouth is saliva. It helps make the food easier to swallow. Look at the long tube below the mouth. That's the oesophagus. Follow it down: it joins the mouth to the stomach. Food doesn't drop into an empty space inside you. The tube pushes it along. These connected parts belong to the digestive system."
+    },
+    {
+      "id": "held-sci-010",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the first two parts",
+      "wording": "Name the parts marked A and B."
+    },
+    {
+      "id": "held-sci-011",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the first two parts",
+      "wording": "Teacher says: Look at where each line ends. Name the parts marked A and B. Think of the opening where food enters and the tube that carries it after swallowing."
+    },
+    {
+      "id": "held-sci-012",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "What happens in the stomach?",
+      "wording": "The stomach churns food and mixes it with digestive juices, including acid."
+    },
+    {
+      "id": "held-sci-013",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "What happens in the stomach?",
+      "wording": "The oesophagus ends in this stretchy bag. Food stays here for a while before moving into the intestine."
+    },
+    {
+      "id": "held-sci-014",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "What happens in the stomach?",
+      "wording": "Where does the oesophagus open?"
+    },
+    {
+      "id": "held-sci-015",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "What happens in the stomach?",
+      "wording": "The stomach churns food and mixes it with digestive juices, including acid."
+    },
+    {
+      "id": "held-sci-016",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "What happens in the stomach?",
+      "wording": "Teacher says: Follow the oesophagus to its end. It opens into this bag-shaped part: the stomach. People sometimes call the whole front of their body their tummy, but the stomach is this one organ. Its muscular walls squeeze and mix the food. Digestive juices, including acid, help break the food down. It doesn't finish its journey here. There's another opening where the partly digested food moves on."
+    },
+    {
+      "id": "held-sci-017",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Fill the gap in the journey",
+      "wording": "mouth → oesophagus → ___\n\nName the missing part."
+    },
+    {
+      "id": "held-sci-018",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Fill the gap in the journey",
+      "wording": "Teacher says: Follow the journey in your mind. Food enters the mouth and travels through the oesophagus. Name the missing part."
+    },
+    {
+      "id": "held-sci-019",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Vocabulary",
+      "wording": "small intestine / large intestine: The small intestine is the narrow, coiled tube where useful nutrients from digested food pass into the blood. The large intestine is the wider tube that absorbs water from the waste left over."
+    },
+    {
+      "id": "held-sci-020",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "The two intestines",
+      "wording": "Food moves through the small intestine before the large intestine."
+    },
+    {
+      "id": "held-sci-021",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "The two intestines",
+      "wording": "The narrow coils take useful nutrients into the blood. The wider tube absorbs water from what is left."
+    },
+    {
+      "id": "held-sci-022",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "The two intestines",
+      "wording": "Which tube is coiled inside the other?"
+    },
+    {
+      "id": "held-sci-023",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "The two intestines",
+      "wording": "Food moves through the small intestine before the large intestine."
+    },
+    {
+      "id": "held-sci-024",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "The two intestines",
+      "wording": "Teacher says: The stomach opens into the small intestine. Look at how this narrow tube coils up inside the body. Useful nutrients from digested food pass through its wall into the blood. Nutrients are useful substances your body needs. Now follow the route into the wider tube around the outside. That's the large intestine. It absorbs water from the waste that's left. Small and large describe the width of these tubes; the small intestine is actually longer. 'Small' is doing a rather misleading job in that name! What matters on this picture is the narrow coils inside and the wider tube around them."
+    },
+    {
+      "id": "held-sci-025",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Follow the next part",
+      "wording": "Name C and D, then show which one food reaches first."
+    },
+    {
+      "id": "held-sci-026",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Follow the next part",
+      "wording": "Teacher says: Name C and D, then show which one food reaches first. Follow from the stomach, rather than deciding from the size of the space each tube fills."
+    },
+    {
+      "id": "held-sci-027",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Where does the waste go?",
+      "wording": "Waste is stored in the rectum and leaves the body through the anus."
+    },
+    {
+      "id": "held-sci-028",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Where does the waste go?",
+      "wording": "The rectum is at the end of the large intestine. The anus is the opening out of the body."
+    },
+    {
+      "id": "held-sci-029",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Where does the waste go?",
+      "wording": "Which label points to the opening?"
+    },
+    {
+      "id": "held-sci-030",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Where does the waste go?",
+      "wording": "Teacher says: We've followed the food all the way to the large intestine. The waste doesn't stay there for ever. At the end is the rectum, where waste is stored until you go to the toilet. Then it leaves through an opening called the anus. These are the proper names for two different parts: the rectum stores the waste; the anus is the opening. This diagram shows the usual route through the body."
+    },
+    {
+      "id": "held-sci-031",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Finish the route",
+      "wording": "large intestine → ___ → ___\n\nAdd the two missing names."
+    },
+    {
+      "id": "held-sci-032",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Finish the route",
+      "wording": "Teacher says: We've reached the end of the large intestine. Add the two missing names. One is where waste waits; the other is the opening it leaves through."
+    },
+    {
+      "id": "held-sci-033",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "Name each part marked E to K.\n\nWhat happens to food in the stomach?"
+    },
+    {
+      "id": "held-sci-034",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "Use the word bank to help you name the marked parts."
+    },
+    {
+      "id": "held-sci-035",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "rectum"
+    },
+    {
+      "id": "held-sci-036",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "mouth"
+    },
+    {
+      "id": "held-sci-037",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "large intestine"
+    },
+    {
+      "id": "held-sci-038",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "oesophagus"
+    },
+    {
+      "id": "held-sci-039",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "anus"
+    },
+    {
+      "id": "held-sci-040",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "lungs"
+    },
+    {
+      "id": "held-sci-041",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "stomach"
+    },
+    {
+      "id": "held-sci-042",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "small intestine"
+    },
+    {
+      "id": "held-sci-043",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "E: stomach\nF: mouth\nG: large intestine\nH: anus\nI: oesophagus\nJ: rectum\nK: small intestine\nThe stomach churns food and mixes it with digestive juices, including acid."
+    },
+    {
+      "id": "held-sci-044",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Name the parts",
+      "wording": "Teacher says: Name each part marked E to K. The word bank can help with spelling, but you'll need to decide where each name belongs. One word isn't needed. Look closely at where each line ends. Then answer the question about what happens to food in the stomach."
+    },
+    {
+      "id": "held-sci-045",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Trace a shorter journey",
+      "wording": "Food has just left the stomach. Name the parts it passes through before it leaves the body."
+    },
+    {
+      "id": "held-sci-046",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Trace a shorter journey",
+      "wording": "small intestine → large intestine → rectum → anus"
+    },
+    {
+      "id": "held-sci-047",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Trace a shorter journey",
+      "wording": "Teacher says: Food has just left the stomach. Name the parts it passes through before it leaves the body. Begin where the prompt puts you, and stop at the opening out of the body."
+    },
+    {
+      "id": "held-sci-048",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Worksheet",
+      "wording": "Label the parts of the digestive system. Use the word bank to help you."
+    },
+    {
+      "id": "held-sci-049",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Worksheet",
+      "wording": "Word bank: rectum • stomach • anus • small intestine • lungs • mouth • large intestine • oesophagus"
+    },
+    {
+      "id": "held-sci-050",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Worksheet",
+      "wording": "Food has just left the stomach. Put the remaining parts in the order it passes through them."
+    },
+    {
+      "id": "held-sci-051",
+      "year_group": 4,
+      "subject": "Science",
+      "beat": "Worksheet",
+      "wording": "What happens to food in the stomach?"
+    }
+  ]
 }

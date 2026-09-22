@@ -55,7 +55,7 @@ class TheTeachBoardTeaches(unittest.TestCase):
         self.assertIn("`explanation` is the teaching, as the child reads it", route)
         # What it carries, in the child's terms: the route, not the destination
         # (14 September 2026).
-        self.assertIn("the route from what the class already has to the sentence the slide lands", route)
+        self.assertIn("the route from the takeaway to the point where the class can use it", route)
 
     def test_the_two_faults_are_held_apart(self) -> None:
         """Or the repair for one becomes the other."""

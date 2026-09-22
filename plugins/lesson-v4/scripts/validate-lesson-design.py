@@ -1267,6 +1267,13 @@ def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: di
                 sticky = sticky_by_id.get(takeaway.get("ref")) or {}
                 if isinstance(sticky.get("text"), str):
                     lines.append(("takeaway (sticky fact)", sticky["text"]))
+        takeaway_ref = takeaway.get("ref") if isinstance(takeaway, dict) else None
+        for ref in unit.get("stickyKnowledgeRefs") or []:
+            if ref == takeaway_ref:
+                continue
+            sticky = sticky_by_id.get(ref) or {}
+            if isinstance(sticky.get("text"), str):
+                lines.append(("sticky fact (stickyKnowledgeRefs)", sticky["text"]))
         if isinstance(content.get("explanation"), str):
             for sentence in _sentences(content["explanation"]):
                 lines.append(("explanation", sentence))

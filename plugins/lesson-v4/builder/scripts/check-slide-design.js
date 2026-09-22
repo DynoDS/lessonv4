@@ -852,10 +852,21 @@ function launchPairWarnings(lesson, jsonPath) {
 const TEACHING_SLOTS = ['lines', 'question', 'sticky', 'extract', 'steps', 'captions',
   'sides', 'answers', 'speakers', 'columns', 'statement'];
 
+function wordsOf(text) {
+  if (typeof text !== 'string') return '';
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
 function carriesTeaching(slideData) {
   return TEACHING_SLOTS.some((slot) => {
     const value = slideData[slot];
-    if (Array.isArray(value)) return value.length > 0;
+    if (Array.isArray(value)) {
+      const titleWords = wordsOf(slideData.title);
+      return value.some((item) => {
+        const text = item && typeof item === 'object' ? item.value : item;
+        return typeof text !== 'string' || !titleWords || wordsOf(text) !== titleWords;
+      });
+    }
     return value !== undefined && value !== null && value !== '';
   });
 }
@@ -914,6 +925,27 @@ function teachLayoutWarnings(lesson, jsonPath) {
             'are empty. A teacher stands in front of every slide of a Teach beat, so when the beat ' +
             'spans more than one slide the script is cut where the slides cut and each slide carries ' +
             'the words for what it shows. Move the sentences that teach this slide into its speakerNotes.'
+        });
+      }
+      if (slideData.template === 'teach-layout') {
+        const titleWords = wordsOf(slideData.title);
+        ['lead', 'lines', 'question'].forEach((slot) => {
+          const items = Array.isArray(slideData[slot]) ? slideData[slot] : [slideData[slot]];
+          items.forEach((item, position) => {
+            const text = item && typeof item === 'object' ? item.value : item;
+            if (typeof text !== 'string' || !titleWords || wordsOf(text) !== titleWords) return;
+            warnings.push({
+              slide: index + 1,
+              field: Array.isArray(slideData[slot]) ? `${slot}[${position}]` : slot,
+              signal: 'TEACH_LINE_REPEATS_TITLE',
+              message:
+                `this card says the slide's own title again ("${text}"). A title is a heading, not teaching, ` +
+                'and a layout that needs a line is not filled by repeating it: on 22 September 2026 a repair moved ' +
+                'a portrait slide to lead-picture-lines and put the title in the line, so the class read the question ' +
+                'twice and no teaching. Put a sentence of the unit\'s explanation here, or choose a layout that ' +
+                'does not need this slot.'
+            });
+          });
         });
       }
       if (slideData.template === 'teach-layout' && slidesByUnit.get(unit).length > 1 &&

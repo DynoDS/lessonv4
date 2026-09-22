@@ -102,7 +102,10 @@ class TheCalibrationIsAtBothOwners(unittest.TestCase):
 
     def test_the_content_route_writes_the_explanation_as_the_route(self) -> None:
         text = flat(CONTENT_ROUTE)
-        self.assertIn("the route from what the class already has to the sentence the slide lands", text)
+        self.assertIn("the route from the takeaway to the point where the class can use it", text)
+        self.assertIn("The shape this teacher teaches in, more often than not, is four parts in this order", text)
+        for owner in (PREFERENCES, LESSON_DESIGNER, DESIGN_REVIEWER):
+            self.assertIn("the takeaway, the because or so, the example the class looks at, and what it does not mean", flat(owner))
         self.assertIn("never `No shops, no switches`", text)
         self.assertIn("A Teach has a thought in it, and `thinking` names it.", text)
         # The teacher-who-does-not-know test survives from 12 September.

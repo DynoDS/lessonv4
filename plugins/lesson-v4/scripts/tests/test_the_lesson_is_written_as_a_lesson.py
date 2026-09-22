@@ -247,6 +247,21 @@ def test_an_explanation_sentence_that_repeats_the_sticky_fact_is_refused():
     assert_invalid_contract(design, photos, "lands its sentence once")
 
 
+def test_a_referenced_sticky_fact_that_repeats_the_headline_is_refused_without_a_takeaway():
+    # Week 4 history (22 September 2026): the headline and the sticky fact were
+    # one sentence, the unit had takeaway null, and the slide showed it twice.
+    design, photos = valid_content_contract()
+    teach = first_teach(design)
+    sticky = design["stickyKnowledge"][0]
+    sticky["text"] = "Lord Shaftesbury campaigned with others to protect children through laws."
+    teach["content"]["headline"] = "Lord Shaftesbury campaigned with others to protect children through laws."
+    teach["content"]["explanation"] = "He wasn't a king who could order everyone to obey him, so he had to persuade Parliament to pass laws."
+    teach["content"]["takeaway"] = None
+    if sticky["id"] not in teach["stickyKnowledgeRefs"]:
+        teach["stickyKnowledgeRefs"] = list(teach["stickyKnowledgeRefs"]) + [sticky["id"]]
+    assert_invalid_contract(design, photos, "lands its sentence once")
+
+
 def test_a_headline_that_names_the_thing_beside_a_sticky_fact_is_allowed():
     # Naming the thing on the board and landing the fact are two jobs.
     design, photos = valid_content_contract()

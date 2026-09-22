@@ -28,7 +28,8 @@ SURFACE_LABELS = OrderedDict(
     )
 )
 
-INPUT_FIELDS = frozenset({"id", "year_group", "subject", "surface_type", "wording"})
+INPUT_FIELDS = frozenset({"id", "year_group", "subject", "wording"})
+OPTIONAL_INPUT_FIELDS = frozenset({"surface_type", "beat"})
 GOLD_FIELDS = frozenset({"id", "expected", "rationale"})
 FORBIDDEN_INPUT_FIELDS = frozenset(
     {"expected", "rationale", "decision", "prediction", "label"}
@@ -90,7 +91,7 @@ def load_input_cases(path: str | Path) -> list[dict[str, Any]]:
             )
         if not isinstance(case["wording"], str) or not case["wording"].strip():
             raise EvaluationDataError(f"{path} case {case['id']} needs non-empty wording")
-        if case["surface_type"] not in SURFACE_LABELS:
+        if "surface_type" in case and case["surface_type"] not in SURFACE_LABELS:
             allowed = ", ".join(SURFACE_LABELS)
             raise EvaluationDataError(
                 f"{path} case {case['id']} has unknown surface_type {case['surface_type']!r}; "
@@ -221,9 +222,11 @@ def score(
         else:
             keep_total += 1
             keep_correct += int(is_correct)
-        surface_metrics = by_surface[case["surface_type"]]
-        surface_metrics["total"] += 1
-        surface_metrics["correct"] += int(is_correct)
+        surface = case.get("surface_type")
+        if surface in by_surface:
+            surface_metrics = by_surface[surface]
+            surface_metrics["total"] += 1
+            surface_metrics["correct"] += int(is_correct)
 
     for surface_metrics in by_surface.values():
         surface_metrics["accuracy"] = _ratio(
