@@ -224,7 +224,7 @@
       "materialDifference": "Children can choose correctly from an obvious picture or wording cue while still holding the misconception the lesson claims to assess.",
       "expectedResult": "REDESIGN REQUIRED",
       "expectedOwner": "Lesson Designer",
-      "forbiddenFinding": "Do not reject a deliberately brief recall check when recall is the stated evidence claim."
+      "forbiddenFinding": "Do not reject a brief recall check whose answer is off the board when recall is the evidence it claims; a check that repeats the sentence just said is not that."
     },
     {
       "id": "success-criteria-list-facts-not-performance",
@@ -480,7 +480,7 @@
       "expectedResult": "REDESIGN REQUIRED",
       "expectedOwner": "Lesson Designer",
       "protectedBehaviour": "Attempt the main task holding a plausible misunderstanding; when it passes untouched, name the bypass (pleasant/unpleasant wording), the learning left untested (that the trade was the point), and the smallest repair (a case with the connection missing, or a changed condition).",
-      "forbiddenFinding": "Do not reject the sort because it is a sort; the same six cards under `Which two would a Tudor family have minded losing most?` would be a sound task, and the sort is fine as a named two-minute orientation before the question that matters."
+      "forbiddenFinding": "Do not reject the sort because it is a sort; the same six cards under `Which two would a Tudor family have minded losing most?` would be a sound task."
     },
     {
       "id": "exclusive-key-marks-a-defensible-placement-wrong",
@@ -495,8 +495,8 @@
       "materialDifference": "Straight after a Teach that named the four tooth types on a diagram, a Do beat asks children to label the same four teeth on a fresh outline. The design says the beat secures the names before the next chunk uses them.",
       "expectedResult": "APPROVED",
       "expectedOwner": "Design Reviewer",
-      "protectedBehaviour": "A quick check may establish only that the class caught a new distinction when the design says so; judge what the beat claims, not whether a misunderstanding could pass a beat that never claimed to test one.",
-      "forbiddenFinding": "Do not demand reasoning, a because sentence or fresh cases from a beat whose stated job is securing the names; do not call a supplied diagram answer leakage."
+      "protectedBehaviour": "A quick check may establish only that the class caught a new distinction, on a case the Teach did not show (here a fresh outline); judge what the beat claims, not whether a misunderstanding could pass a beat that never claimed to test one.",
+      "forbiddenFinding": "Do not demand reasoning or a because sentence from a beat whose stated job is securing the names on a fresh outline; do not call a supplied diagram answer leakage."
     },
     {
       "id": "purposeful-repetition-and-a-visible-reference-are-not-shallow",

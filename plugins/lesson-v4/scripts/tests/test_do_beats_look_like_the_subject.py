@@ -45,7 +45,13 @@ class AQuickMatchUsesFreshCases(unittest.TestCase):
         text = flat(REF / "preferences.md")
         self.assertIn("**A quick match, sort or label is a real Do beat when the things on the cards are new.**", text)
         self.assertIn("gets one card that belongs nowhere", text)
-        self.assertIn("labelling the taught thing is right, and the design says so", text)
+        # Quick-checks decision 3 (23 September 2026): a label check straight
+        # after the Teach is on a new picture; the same picture only where no
+        # other exists, or in a later lesson, when it is retrieval. "The design
+        # says so" was the excuse and went.
+        self.assertNotIn("labelling the taught thing is right, and the design says so", text)
+        self.assertIn("the label check straight after the Teach is on a new picture of the same thing", text)
+        self.assertIn("in a later lesson the same picture is fine, because by then it is retrieval", text)
 
     def test_the_reviewer_reads_for_a_match_over_the_slides_own_words(self) -> None:
         self.assertIn("whose cards are the slide's own words", flat(ROOT / "agents" / "design-reviewer.md"))

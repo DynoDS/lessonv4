@@ -63,7 +63,7 @@ A science Do beat makes children use the scientific relationship, not describe w
 - **Sort by the property.** Materials, animals or changes sorted by the taught property, including one the class has not handled.
 - **Complete the mechanism.** Fill the missing step: the sun heats the puddle, the water ___, the vapour rises (10.2).
 - **Label a new diagram.** The same parts on a different plant, tooth or circuit from the one taught, so the label is recognised rather than remembered.
-- **Which result supports it?** Choose the result that is evidence for the claim, and say what rules the others out (10.8).
+- **Which result supports it?** Choose the result that is evidence for the claim, and say what rules the others out (10.8: results children read for themselves, with wrong options a child could believe).
 - **Keep it fair.** From four cards describing the test, children circle the one thing that must stay the same and write what would go wrong if it changed.
 - **Model or real?** On a diagram the lesson used (the Earth and Sun with arrows, particles as dots), children tick what is really there and cross what is drawn only to help us understand.
 - **Prove Sam wrong.** `Sam says all metals are attracted to magnets.` Find the case that breaks it (8.8).

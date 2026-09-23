@@ -14,7 +14,7 @@ None of these is a recipe. A lesson is never asked to match an example's names, 
 
 **Stronger, same purpose.** `A shoemaker promised to teach Will how to make shoes. Will got meals and a bed, but all he ever did was sweep the floor. Will's family were still unhappy. What was Will going to miss out on when he grew up?` Requires: the taught link between being trained now and earning a living later, which the everyday reading (`he was fed, so it was fine`) gets wrong. Naming the missing training is not the thinking, because the case says it outright; the consequence is. The answer can be short, one completed `because`, and a changed condition checks the same understanding from the other side: a family who could already feed him might still have wanted the training, which does not make food and a bed worthless.
 
-**Where the simpler task is right.** As a two-minute orientation straight after the deal is taught, the good/bad sort settles the vocabulary of the deal before the question that matters. It is fine there, named as a check, and it is not the lesson's evidence.
+**Where the simpler task is right.** Straight after the lesson teaches that a Tudor child's work gave the family something it needed, a quick match of jobs the slide did not show (`carried water`, `minded the pigs`) to what each gave the family is the right check: it needs that idea and nothing more. The good/bad sort of the deal just taught is not the lesson's evidence, and a lesson that leans on it has taught less than it looks.
 
 ### Science: a prediction that the relationship decides
 
@@ -34,7 +34,7 @@ None of these is a recipe. A lesson is never asked to match an example's names, 
 
 **Stronger, same purpose.** A new, unlabelled map with a river, a hill area and three marked sites. `Which site would you have chosen to build a village, and what on the map made you choose it?` Requires: the taught relationship applied to a map the lesson never showed, and the reason stated in the map's own features. Supplying the new map is the task, not a giveaway.
 
-**Where the simpler task is right.** Reading labels off a map is right when reading a map is what is being taught, and a quick label-reading check after a new map skill is an honest recall beat, named as one.
+**Where the simpler task is right.** Reading labels off a map is right when reading a map is what is being taught, and a quick label-reading check after a new map skill, on a map the lesson has not shown, is an honest check.
 
 ### Maths: practice that repeats, and support that decides
 

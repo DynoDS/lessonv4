@@ -12,9 +12,9 @@ So pick each beat on both axes, and think about the shape across the lesson rath
 - **Work with** (apply the idea to a fresh instance, sort where the criterion has to be found, correct an error, choose between two positions and say why, rank and justify). The child holds the idea and does something to it.
 - **Reason with** (explain a cause, compare two things on a criterion they select, judge a claim that is true-but-misleading, transfer the idea to a situation the lesson never showed them, generate a new example and defend it).
 
-**Choose whether a placement needs an explanation.** Add a short justification when the reason behind a placement is part of the intended learning or when it will distinguish understanding from guessing. Accurate classification may itself be the intended check; do not turn every quick sort into a written explanation. Consider evidence already gathered in this beat and the lesson.
+**Choose whether a placement needs an explanation.** Add a short justification when the reason behind a placement is part of the intended learning or when it will distinguish understanding from guessing. Accurate classification may itself be the intended check (`preferences.md` → `A quick check is a fresh case, not the last slide again`: the cards are cases the Teach did not show); do not turn every quick sort into a written explanation. Consider evidence already gathered in this beat and the lesson.
 
-**The shape across the lesson matters more than any single beat.** Follow `preferences.md` → The Teach → Do → Teach → Do Rhythm for the whole-lesson judgement, including main practice. These bands describe choices, not a compulsory sequence. A short response can establish new knowledge; select meaningful use or reasoning where the objective supports it rather than making the last Do harder by position alone.
+**The shape across the lesson matters more than any single beat.** Follow `preferences.md` → The Teach → Do → Teach → Do Rhythm for the whole-lesson judgement, including main practice. These bands describe choices, not a compulsory sequence. A short response can establish new knowledge (`preferences.md` → `A quick check is a fresh case, not the last slide again`: a fact, name or definition may be recalled with the answer off the board; an idea needs a fresh case); select meaningful use or reasoning where the objective supports it rather than making the last Do harder by position alone.
 
 **Success evidence depends on the task.** Do not require roughly 80% success through every Do beat or lesson type. For a defined repeatable skill, roughly 80% at release is a planning expectation. A diagnostic question may deliberately reveal widespread misunderstanding, and many incorrect answers can be useful evidence. The live teacher responds to the actual class.
 
@@ -86,7 +86,8 @@ Use free recall deliberately when children have enough secure knowledge and open
 
 ### 1.2 Two Things
 *"Write two things you now know about X."* The cap forces selection — children must decide what is worth remembering, which is itself a metacognitive move (Agarwal, retrievalpractice.org strategies library).
-**Best for:** consolidating a single Teach chunk fast. Lower stakes than Brain Dump.
+**Best for:** choosing what mattered across several chunks, once the teaching is off the board. Lower stakes than Brain Dump.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to summarise (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** the cap of two protects pupils who freeze at "everything you know."
 
 ### 1.3 Whole-class oral rehearsal
@@ -159,7 +160,8 @@ Teach and rehearse a small set of moves: agreeing/disagreeing politely, building
 
 ### 2.8 30-Second Expert
 One child gets 30 seconds to teach the partner what they just learnt; then swap. The "protégé effect" — teaching forces structuring of one's own knowledge (cf. Lemov, *TLAC 3.0*, **Habits of Attention**).
-**Best for:** after a content-rich Teach slide; works as the bridge into written response.
+**Best for:** retelling several chunks with the teaching off the board, later in the lesson or the unit; works as the bridge into written response.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to summarise (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** the listener role is itself an access route — listening with the goal of swapping is comprehensible practice.
 
 ---
@@ -171,7 +173,8 @@ One child gets 30 seconds to teach the partner what they just learnt; then swap.
 
 ### 3.1 One-Sentence Summary
 *"In one sentence, capture what we just learnt."* The constraint is the work — picking the load-bearing idea (Edutopia retrieval-practice strategies). Use sparingly. Do not stack four of these in one lesson.
-**Best for:** end of a Teach chunk where there is a single core idea.
+**Best for:** the end of a run of chunks or a lesson, choosing the one idea that mattered most with the teaching off the board.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to summarise (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** offer a sentence stem ("The most important thing about X is…") for pupils who need the runway.
 
 ### 3.2 Stop and Jot
@@ -182,6 +185,7 @@ One child gets 30 seconds to teach the partner what they just learnt; then swap.
 ### 3.3 Tweet-Length / Six-Word Summary
 *"Summarise what we just learnt in six words. No more."* The cap forces ruthless selection of what matters (Edutopia, *15 Quick Retrieval Practices*).
 **Best for:** abstract or wordy chunks where pupils need to identify the core.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to summarise (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** the smallness of six words is the access — no SEND child is being asked to write a paragraph.
 
 ### 3.4 Caption This
@@ -190,7 +194,7 @@ A photo, painting, diagram, or artefact is on the board. Pupils write a caption 
 **SEND access:** image gives pupils the content to write about; no recall demand piled on the writing demand.
 
 ### 3.5 Annotate the Image / Label the Diagram
-A simple unlabelled diagram is provided; pupils add labels, arrows, and short notes from memory (geography.org.uk diagram-from-memory tradition; *Diagrams from Memory* — common in science). The drawing carries the structure; the writing fills it in.
+A simple unlabelled diagram is provided, of a thing the Teach did not label (a different flower, a new stretch of river), a blank copy of the taught one where no other picture of the thing exists (the world map), or the taught one in a later lesson, when it is retrieval; pupils add labels, arrows, and short notes from memory (geography.org.uk diagram-from-memory tradition; *Diagrams from Memory* — common in science). The drawing carries the structure; the writing fills it in.
 **Best for:** science (parts of a flower, life cycles), geography (river, coast), history (parts of a castle).
 **SEND access:** writing is constrained to single words at fixed locations — radically lower demand than open prose.
 
@@ -214,12 +218,13 @@ A short open question deliberately designed to expose a likely misconception, no
 **Mechanism:** Use drawing, diagrams, sketches or concept maps when they make children process spatial, structural or sequential learning (Caviglioli, *Dual Coding with Teachers*; Paivio's dual-coding theory; Willingham, *Why Don't Students Like School*, on memory hooks). Drawing does not automatically improve memory and is not automatically accessible: it may reduce a writing barrier for some children while adding fine-motor, drawing or spatial demands for others. State those real demands rather than a broad SEND label.
 
 ### 4.1 Quick Sketch
-Pupils draw what was just described. *"Sketch the water cycle as I described it. 90 seconds. Stick figures fine."* (Caviglioli.) The sketch reveals whether the mental model is right.
+Pupils sketch from memory something taught earlier, with what the sketch must show named. *"Sketch the water cycle from memory: the sea, a cloud, the rain and the arrows between them. 90 seconds. Stick figures fine."* (Caviglioli.) The sketch reveals whether the mental model is right.
 **Best for:** any chunk with a spatial or sequential structure.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to sketch from memory, with what the sketch must contain named (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** bypasses writing entirely; reveals thinking through a different channel.
 
 ### 4.2 Labelled Diagram from Memory
-Given a partially-blank diagram, pupils fill in labels (common in science; geography.org.uk). Combines visual recall with low-load writing.
+Given a partially-blank diagram of a thing the Teach did not label, a blank copy of the taught one where no other picture of it exists, or the taught one in a later lesson, pupils fill in labels (common in science; geography.org.uk). Combines visual recall with low-load writing.
 **Best for:** anatomy, geography features, machine parts, anything diagrammatic.
 **SEND access:** the diagram does the structural work; pupil supplies only the words.
 
@@ -230,7 +235,8 @@ Three to five small frames — pupils draw the sequence of events (story, scient
 
 ### 4.4 Sketchnote
 A small box in which pupils combine icons, arrows, and a few words to capture the chunk (Caviglioli, *Dual Coding with Teachers*).
-**Best for:** end-of-chunk consolidation when content is conceptual.
+**Best for:** consolidating several conceptual chunks from memory, once the teaching is off the board.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to sketch from memory, with what the sketch must contain named (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** every child can produce something; no quality threshold for entry.
 
 ### 4.5 Fishbone (Cause and Effect)
@@ -292,7 +298,8 @@ Statement on the board; pupils choose *A / S / N* and justify in one line (mathe
 ### 5.6 Two Truths and a Lie
 Teacher (or peer) gives three statements; pupils identify the false one.
 **Best for:** recall consolidation that feels like a game.
-**SEND access:** familiar party-game framing lowers anxiety; concrete decision, not open prose.
+**The limit:** as True or False (5.3), fine but can be cheap: it earns its place only when the lie is one a child in the class could genuinely believe, never the slide's own sentence twisted, and the reason is written. Prefer a sort, a match or an odd one out when those force the same decision.
+**SEND access:** familiar party-game framing lowers anxiety; the decision is the entry and the written reason the stretch.
 
 ### 5.7 Concept Attainment
 Teacher shows examples and non-examples one at a time; pupils try to work out the rule that separates them (Bruner concept-attainment model). Lasts 2–3 minutes if tight.
@@ -431,7 +438,8 @@ A short paragraph or diagram with a deliberate error; pupils find it and fix it 
 
 ### 8.7 Headline the Lesson
 *"In one headline, sum up the most important thing we've learnt so far."* (Edutopia tweet-length tradition; Agarwal *headline test*.) Forces ruthless selection plus a touch of voice.
-**Best for:** end of a major Teach chunk; bridge into the lesson's main Practise.
+**Best for:** the end of a run of chunks, with the teaching off the board; bridge into the lesson's main Practise.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to summarise (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** offer a stem: "How a Roman… / Why a Viking…"
 
 ### 8.8 Prove Sam Wrong
@@ -464,6 +472,7 @@ A confidence rating reports how secure children feel. It may support reflection,
 ### 9.4 Three-Two-One
 *Three things I learned, two things I wonder, one thing I want to remember.* (Common formative-assessment formats; Sheridan Center.) Compresses recall + curiosity + selection into 90 seconds.
 **Best for:** end-of-lesson consolidation; mid-lesson if you want a wider sweep.
+**The limit:** not straight after the Teach it gives back, and only where children have been taught to summarise (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** chunked across three small commits, not one large one.
 
 ### 9.5 Why Did I Get That Wrong?
@@ -499,7 +508,7 @@ Children complete a stem that forces the mechanism into the open. *"A shadow for
 **SEND access:** the stem carries the sentence structure, so the child supplies only the idea; a spoken version to a partner is a legitimate response.
 
 ### 10.2 Explain One Link
-Where the Teach produced a chain or a diagram with arrows, each child explains a single named link rather than the whole thing. *"Explain the arrow from heavy rain to the river rising."* Different children can be given different links.
+Where the Teach produced a chain or a diagram with arrows, each child explains a single named link rather than the whole thing. *"Explain the arrow from heavy rain to the river rising."* Different children can be given different links. The link is one the Teach did not explain; explaining the arrow the teacher has just talked through is saying it back.
 **Best for:** causal chains, processes and cycles where the whole thing is too much to explain at once.
 **SEND access:** one link is a bounded ask; the diagram supplies everything except the sentence.
 
@@ -514,13 +523,13 @@ Children say what follows when one condition of the explanation is altered and e
 **SEND access:** the single change keeps the reasoning short; offer the pair of possible answers to choose between when the open form is too open.
 
 ### 10.5 Words to Diagram
-Children turn the spoken explanation into a drawing, arrows, a labelled sketch or a completed part-drawn figure. *"Draw the light leaving the torch and show where it cannot reach."* Name what the diagram has to contain, or the task drifts into decoration.
+Children turn the spoken explanation into a drawing, arrows, a labelled sketch or a completed part-drawn figure. *"Draw the light leaving the torch and show where it cannot reach."* Name what the diagram has to contain, or the task drifts into decoration. The explanation is one the class has not already been shown drawn; drawing the diagram just shown is copying it.
 **Best for:** explanations with a spatial, directional or sequential shape.
 **SEND access:** a part-drawn frame to add to removes the drawing demand while keeping the thinking; state that demand honestly rather than assuming drawing is easier.
 
 ### 10.6 Diagram to Words
-The reverse, and often the harder half. Children say or write in one sentence what a diagram, arrow or model shows. *"In one sentence, what is this diagram telling us about how the water gets back to the sky?"*
-**Best for:** after a modelled diagram, and as the check that a picture children copied actually means something to them.
+The reverse, and often the harder half. Children say or write in one sentence what a diagram, arrow or model shows. *"In one sentence, what is this drawing of a puddle drying telling us?"*
+**Best for:** a diagram the class has not had explained (the same process drawn differently, a new cycle), and, in a later lesson, as the check that a picture children copied actually means something to them. One sentence about the diagram the teacher has just talked through is a restatement, not this.
 **SEND access:** offer the sentence stem; one sentence is the whole task.
 
 ### 10.7 What Can We Tell?

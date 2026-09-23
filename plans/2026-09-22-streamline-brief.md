@@ -1,5 +1,8 @@
 # Streamlining lesson-v4 without losing anything
 
+**Superseded by `streamline-plan.md`, which every chat reads first.** This is
+the original brief, kept as the record of how the work began.
+
 A brief for a fresh session, written at the end of the 22 September 2026 session
 that repaired the Year 4 leisure deck (4.2.283). Read it whole before doing
 anything, then read the two skills it names.

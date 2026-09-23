@@ -20,6 +20,10 @@ ROOT = Path(__file__).resolve().parents[2]
 HEADING = re.compile(r"^(#{1,6}) ")
 RUNTIME = [path for folder in ("agents", "references", "skills", "commands")
            for path in (ROOT / folder).rglob("*.md") if path.name != "build-review-log.md"]
+# The programs the reviewer and designer are handed text by (the review packet's
+# notes and triggers among them). A retired phrase must not come back there
+# either. The tests are left out: they name retired phrases to bar them.
+PROGRAMS = sorted((ROOT / "scripts").glob("*.py"))
 
 
 def flat(text: str) -> str:
@@ -111,7 +115,7 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                     # own file too, which for a retired code phrase is the
                     # program it left.
                     own = ROOT / pin["file"]
-                    files = sorted(set(RUNTIME) | {own}) if pin.get("everywhere") else [own]
+                    files = sorted(set(RUNTIME) | set(PROGRAMS) | {own}) if pin.get("everywhere") else [own]
                     for path in files:
                         with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
                             self.assertNotIn(pin["text"], flat(path.read_text(encoding="utf-8")))

@@ -256,7 +256,7 @@ ALWAYS_READ_REVIEW_SECTIONS = (
     # The two probes in the thinking checks (can weak understanding still
     # pass; can good understanding be marked wrong) need a calibration across
     # subjects, or a reviewer passes by rejecting every sort and praising
-    # every explanation. Six short contrasts, each with the case where the
+    # every explanation. Seven short contrasts, each with the case where the
     # simpler task is right.
     (
         "task-contrasts.md",
@@ -1443,59 +1443,184 @@ def _answer_words(text: str) -> list[str]:
     return stems
 
 
+# The beats where children use what was taught, and the beats that show or
+# tell them something first. An enabling input with its own pupil instruction,
+# a combined stimulus and talk, and an Our Turn are both: the class uses what
+# it met, and what it met is on the board for whatever comes next.
+BESIDE_PUPIL_KINDS = {
+    "do", "practise", "use-learning", "our-turn", "your-turn", "talk",
+    "stimulus-talk", "do-task", "plan-checkpoint",
+}
+BESIDE_SHOWN_KINDS = TEACH_KINDS | {
+    "my-turn", "grounding-input", "stimulus", "make-sense", "observe", "prepare",
+}
+
+
+def _beside_teaching_text(unit: dict, sticky: dict[str, str], *, own_answer: bool = True) -> str:
+    """Everything the class was shown or told on a beat, including a Teach's
+    takeaway, which is the line a Do is most likely to say back, and the
+    result a discovery lesson made visible."""
+    content = unit.get("content") or {}
+    takeaway = content.get("takeaway")
+    if isinstance(takeaway, dict):
+        takeaway = takeaway.get("text") or sticky.get(takeaway.get("ref") or "", "")
+    parts = [
+        content.get(key)
+        for key in (
+            "headline", "explanation", "teachingText", "accurateExplanation",
+            "enablingInput", "modelledOn", "example", "modelledExemplar", "input",
+            "resultOrPattern", "prompt", "question", "materialOnSlide", "activity",
+        )
+    ]
+    parts += [takeaway, " ".join(content.get("keyQuestions") or [])]
+    parts.append((unit.get("speakerNotes") or {}).get("script"))
+    if own_answer:
+        parts.append((unit.get("answer") or {}).get("content"))
+    return " ".join(str(part) for part in parts if part)
+
+
+def _beside_expected_answer(unit: dict) -> str:
+    """The expected answer in whatever shape the design stored it: prose, a
+    structured sort or evidence classification (once printed as `(none
+    written)`), or what the teacher listens for in a talk."""
+    answer = unit.get("answer") or {}
+    if answer.get("content"):
+        return " ".join(str(answer["content"]).split())
+    structure = answer.get("structure")
+    task = unit.get("taskStructure") or {}
+    if isinstance(structure, dict) and structure.get("kind") == "sort":
+        items = {row["id"]: row.get("label", "") for row in task.get("items") or []}
+        groups = {row["id"]: row.get("label", "") for row in task.get("groups") or []}
+        return "; ".join(
+            f"{items.get(p.get('itemRef'), p.get('itemRef'))} under {groups.get(p.get('groupRef'), p.get('groupRef'))}"
+            for p in structure.get("placements") or []
+        )
+    if isinstance(structure, dict) and structure.get("kind") == "evidence-classification":
+        return "; ".join(
+            ", ".join(str(value.get("value")) for value in result.get("values") or [])
+            for result in structure.get("results") or []
+        )
+    listens = (unit.get("content") or {}).get("teacherListensFor") or []
+    return "; ".join(str(line) for line in listens if line)
+
+
+def _beside_pairs(sequence: list[dict]) -> list[tuple[list[dict], dict]]:
+    """Each pupil beat with everything the class met since the last one, in
+    every route. Walking back from a pupil beat collects the beats that showed
+    or told the class something and stops at the previous pupil beat, with two
+    exceptions: a Your Turn looks back through its cycle's Our Turn to the My
+    Turn, because the Our Turn's revealed answer is what it could copy; and an
+    enabling input with its own instruction, or a combined stimulus and talk,
+    is what the next beat saw, so the walk takes it and stops. Such a beat is
+    also paired with itself, never counted against its own answer."""
+    pairs = []
+    for index, unit in enumerate(sequence):
+        kind = unit.get("kind")
+        self_paired = kind == "teach-needed" and unit.get("pupilInstruction")
+        if self_paired:
+            pairs.append(([], unit))
+            continue
+        if kind not in BESIDE_PUPIL_KINDS:
+            continue
+        shown: list[dict] = []
+        for earlier in reversed(sequence[:index]):
+            earlier_kind = earlier.get("kind")
+            if earlier_kind == "our-turn" and kind == "your-turn":
+                shown.append(earlier)
+                continue
+            if earlier_kind == "my-turn" and kind == "your-turn":
+                shown.append(earlier)
+                break
+            # One exploration can show two findings: every Use the learning
+            # is read against the result made visible, not only the first.
+            if kind == "use-learning" and earlier_kind in {"use-learning", "teach-why"}:
+                if earlier_kind == "teach-why":
+                    shown.append(earlier)
+                continue
+            if earlier_kind in {"teach-needed", "stimulus-talk"}:
+                shown.append(earlier)
+                if earlier.get("pupilInstruction") or earlier_kind == "stimulus-talk":
+                    break
+                continue
+            if earlier_kind in BESIDE_PUPIL_KINDS or earlier_kind == "explore":
+                break
+            if earlier_kind in BESIDE_SHOWN_KINDS:
+                shown.append(earlier)
+        if kind == "stimulus-talk":
+            # The activity is its own stimulus: what the class reads on it
+            # counts, beside any grounding input before it.
+            shown.insert(0, {**unit, "answer": None})
+        if shown:
+            pairs.append((list(reversed(shown)), unit))
+    return pairs
+
+
 def build_do_beside_teach(design: dict) -> list[str]:
-    """Each Do with the Teach it follows and the answer it expects, side by side.
+    """Each pupil beat with the teaching it follows and the answer it expects.
 
     The class view prints them in order, but the expected answer of a quick
     check is usually teacher-only and lives far down the view, so the
     restatement (`Steam could drive roundabouts, so children had a new kind of
     ride to enjoy`, every word of it said on the slide before) is never seen
-    beside what the class was just told.
+    beside what the class was just told. Until 4.2.286 this read only a
+    content lesson's Do straight after a Teach, printed a structured sort's
+    answer as `(none written)` and ignored the Teach's takeaway, so the same
+    restatement as a sort, or as a Your Turn re-sorting the shapes just
+    placed, passed unseen.
     """
     sequence = design.get("teachingSequence") or []
+    sticky = {row.get("id"): row.get("text", "") for row in design.get("stickyKnowledge") or []}
     lines = [
         "## Each Do beside the teaching before it",
         "",
         (
-            "For each Do, what the class was shown and told just before, the answer "
-            "the design expects, and how many of that answer's words the Teach "
-            "already said. Ask of each: could a child give this answer by "
-            "remembering the last slide, without using the idea on anything new? "
-            "A quick check is a fresh case (`preferences.md` → `A quick check is a "
-            "fresh case, not the last slide again`); the count is where to look, "
-            "not the verdict."
+            "For each beat where children use what was just taught, in every "
+            "route, what the class was shown and told just before, the answer "
+            "the design expects, and how many of that answer's words the "
+            "teaching already said. Ask of each: could a child give this answer "
+            "by remembering the last slide, without using the idea on anything "
+            "new? A quick check is a fresh case (`preferences.md` → `A quick "
+            "check is a fresh case, not the last slide again`); the count is "
+            "where to look, not the verdict."
         ),
         "",
     ]
-    shown = 0
-    for index, unit in enumerate(sequence):
-        if unit.get("kind") != "do" or index == 0:
-            continue
-        teach = sequence[index - 1]
-        if teach.get("kind") not in TEACH_KINDS:
-            continue
-        answer = (unit.get("answer") or {}).get("content") or ""
-        content = teach.get("content") or {}
-        teach_text = " ".join(
-            str(value)
-            for value in (
-                content.get("headline"), content.get("explanation"), content.get("teachingText"),
-                " ".join(content.get("keyQuestions") or []),
-                (teach.get("speakerNotes") or {}).get("script"),
-                (teach.get("answer") or {}).get("content"),
-            )
-            if value
-        )
+    count = 0
+    for shown, pupil in _beside_pairs(sequence):
+        answer = _beside_expected_answer(pupil)
         answer_words = _answer_words(answer)
-        taught = set(_answer_words(teach_text))
+        if shown:
+            taught_text = " ".join(_beside_teaching_text(unit, sticky) for unit in shown)
+        else:
+            taught_text = _beside_teaching_text(pupil, sticky, own_answer=False)
+        taught = set(_answer_words(taught_text))
         repeated = sum(1 for word in answer_words if word in taught)
-        asked = unit.get("pupilInstruction") or (unit.get("content") or {}).get("task") or ""
-        asked = " ".join(asked.split())
-        lines.append(f"### {unit['label']} (after `{teach['label']}`)")
+        content = pupil.get("content") or {}
+        asked = (
+            pupil.get("pupilInstruction")
+            or content.get("task")
+            or content.get("discussionQuestion")
+            or content.get("question")
+            or content.get("example")
+            or content.get("activity")
+            or ""
+        )
+        asked = " ".join(str(asked).split())
+        before = [unit for unit in shown
+                  if not (unit.get("label") == pupil.get("label") and unit.get("kind") == pupil.get("kind"))]
+        if not before:
+            lines.append(f"### {pupil['label']} (its own pupil instruction)")
+        else:
+            names = ", ".join(f"`{unit['label']}`" for unit in before)
+            lines.append(f"### {pupil['label']} (after {names})")
         lines.append(f"- Asked: {asked}")
-        options = [row.get("label", "") for row in ((unit.get("taskStructure") or {}).get("items") or [])]
-        if options and (unit.get("taskStructure") or {}).get("kind") == "option-bank":
-            lines.append("- Options: " + " | ".join(options))
+        structure = pupil.get("taskStructure") or {}
+        items = [row.get("label", "") for row in structure.get("items") or [] if row.get("label")]
+        if items and structure.get("kind") == "option-bank":
+            lines.append("- Options: " + " | ".join(items))
+        elif items and structure.get("kind") == "sort":
+            groups = [row.get("label", "") for row in structure.get("groups") or []]
+            lines.append("- Cards: " + " | ".join(items) + "; groups: " + " | ".join(groups))
         lines.append(f"- Expected answer: {answer or '(none written)'}")
         if answer_words:
             lines.append(
@@ -1503,9 +1628,9 @@ def build_do_beside_teach(design: dict) -> list[str]:
                 f"{repeated} of {len(answer_words)}"
             )
         lines.append("")
-        shown += 1
-    if not shown:
-        lines.extend(["- No Do follows a Teach directly.", ""])
+        count += 1
+    if not count:
+        lines.extend(["- No beat where children use the teaching follows a teaching beat.", ""])
     return lines
 
 

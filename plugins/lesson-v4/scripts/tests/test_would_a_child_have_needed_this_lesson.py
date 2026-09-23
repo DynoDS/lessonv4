@@ -70,7 +70,10 @@ class TheFourthTestIsStatedTests(unittest.TestCase):
         text = flat(DESIGN_REVIEWER)
         self.assertIn("could have said it before the lesson", text)
         self.assertIn("is answered by reading", text)
-        self.assertIn("a reviewer approved both", text)
+        # The two cases stay as plain examples; that a reviewer approved them
+        # is the incident, kept in the build log (quick-checks decision 10).
+        self.assertIn("is answered from the picture by a child who knows no history", text)
+        self.assertNotIn("a reviewer approved both", text)
 
     def test_the_catalogue_and_the_contract_carry_the_walking_in_clause(self) -> None:
         self.assertIn("or from what they knew walking in", flat(REF / "do-beats.md"))
