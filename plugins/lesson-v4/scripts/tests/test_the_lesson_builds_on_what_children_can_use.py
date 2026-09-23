@@ -79,7 +79,10 @@ class WhatChildrenCanUseTests(unittest.TestCase):
         self.assertIn("**New evidence is allowed:**", text)
         self.assertIn("this is not an instruction to tell them the answer before every investigation", text)
         self.assertIn("**A new explanatory mechanism is not:**", text)
-        self.assertIn("a law, a guild rule, an economic arrangement or a scientific process the lesson never taught", text)
+        # 4.2.287 (the teacher's assumed-knowledge decision 9): the one home
+        # carries history's invented wage and "often unverified".
+        self.assertIn("a law, a guild rule, an economic arrangement (an invented wage) or a scientific process the lesson never taught", text)
+        self.assertIn("and often unverified as well", text)
 
     def test_no_new_contract_field_was_added_for_it(self):
         spec = importlib.util.spec_from_file_location("vld_boundary", ROOT / "scripts" / "validate-lesson-design.py")

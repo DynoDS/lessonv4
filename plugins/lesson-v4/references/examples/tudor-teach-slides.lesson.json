@@ -21,7 +21,7 @@
         {
           "type": "image",
           "imagePath": "unsplash/tudor-farm-reconstruction.jpg",
-          "caption": "Tudor England 1485 to 1603, reconstructed",
+          "caption": "Tudor England 1485 to 1603",
           "fit": "contain",
           "essential": true
         }
@@ -32,7 +32,7 @@
           "orange": true
         }
       ],
-      "speakerNotes": "Say to children: Think about your home. What does it need every single day? Food. A fire to cook on and keep warm. Somewhere to sleep. Now we're going back to Tudor England, between 1485 and 1603. That's after the Romans and long before the Victorians. Look at this farm. No shop on the corner. No switch on the wall, no electricity at all. So everything a home needed had to come from somewhere, and somebody had to go and get it.\n\nTeacher information: The picture is a modern reconstruction, not a photograph of a real Tudor child; the caption says so."
+      "speakerNotes": "Say to children: Think about your home. What does it need every single day? Food. A fire to cook on and keep warm. Somewhere to sleep. Now we're going back to Tudor England, between 1485 and 1603. That's after the Romans and long before the Victorians. Look at this farm. No shop on the corner. No switch on the wall, no electricity at all. So everything a home needed had to come from somewhere, and somebody had to go and get it.\n\nTeacher information: The picture is a modern reconstruction, not a photograph of a real Tudor child."
     },
     {
       "template": "teach-layout",
@@ -50,7 +50,6 @@
         {
           "type": "image",
           "imagePath": "unsplash/tudor-farm-reconstruction.jpg",
-          "caption": "Tudor England 1485 to 1603, reconstructed",
           "fit": "contain",
           "essential": true
         }
@@ -85,7 +84,7 @@
         {
           "type": "image",
           "imagePath": "unsplash/tudor-workshop-reconstruction.jpg",
-          "caption": "A leather workshop, reconstructed",
+          "caption": "A leather workshop",
           "fit": "contain",
           "essential": true
         }
@@ -152,7 +151,6 @@
         {
           "type": "image",
           "imagePath": "unsplash/tudor-workshop-reconstruction.jpg",
-          "caption": "A leather workshop, reconstructed",
           "fit": "contain",
           "essential": true
         }

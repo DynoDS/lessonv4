@@ -184,6 +184,43 @@ means for the change.
   a ..."). The reviewer's list is repaired as suggested, and the reviewer reads
   every lesson for it. His Teach then Do decision 3 reply below states the
   test both topics share.
+- 7, third round (asked after the change check found the caption rule and a
+  Teach slide's script disagreeing): "We're over complicating it. I don't think
+  there should be any words. Just show the picture. The teacher can say it if
+  they need to. Doesn't need to be in the speaker notes. Doesn't need to be on
+  the board." Settled: a picture (an artist's drawing of how something might
+  have looked, a photograph of a place today) carries no words about where it
+  came from, on the board or in the notes. Written sources keep their honest
+  labels in children's words, a made-up child is still labelled as made up,
+  and a caption children use (which picture is which, a place's name, a
+  source's date and maker) is untouched.
+- 7, fourth round (the same evening): "It could use a caption if it's helpful.
+  Like maybe it's a painting from Van Gogh and it says Starry Night by Van
+  Gogh. That could be helpful if he thinks. But it doesn't always have to be.
+  This is a reconstructed picture of a historical setting." Settled: a caption
+  that names the picture (a famous painting's title and painter) may help and
+  is never required; what stays off is words about how a picture was made
+  ("This is a reconstructed picture of a historical setting").
+- 7, fifth round (asked whether the board should say a picture is a modern
+  drawing when the lesson asks what it tells us, and whether to take
+  ", reconstructed" off his Tudor example slides): "I disagree. I don't think
+  children need to know that that particular picture isn't from the time. If
+  it asks, what does this picture tell us about Tudor farm work? In fact, while
+  I was reading it, I was thinking, you know what could be in the actual
+  caption? The question, what does this picture tell us about Tudor farm work?
+  Which leaves space elsewhere. Children don't need to know it isn't from that
+  time. Well, they do, but the board doesn't need to say it. And the teacher
+  can say it." Settled: no exception; the board never says how a picture was
+  made, even when the lesson asks what it tells us, and the teacher says it.
+  His Tudor example slides lose ", reconstructed" and the second caption on a
+  returning picture. His idea of the question in the caption changes how
+  questions look on a slide, so it was put to him rather than done.
+- The caption idea, his answer: "Don't overcomplicate it. I know I said pictures
+  could go under captions, but don't take that as every time there's a picture
+  and a question, it should go under it like a caption. We're not changing how
+  questions look in every deck at all. It was just a suggestion. Just a small
+  suggestion that could happen sometimes if it's needed." Settled: one
+  sentence of option in the slide rules, for the odd slide short of room.
 - His test, given in his Teach then Do decision 3 reply (recorded in full in
   that ledger): read any slide on its own and understand what it is doing and
   why, or go back one or two slides and see why. Nothing arrives feeling

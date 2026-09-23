@@ -240,7 +240,35 @@ class TheBoardLooksAsCarefulAsItReads(unittest.TestCase):
 
     def test_a_caption_earns_its_line_once(self) -> None:
         self.assertIn("**A caption costs the picture its height, so it earns its line once.**", flat(ROOT / "references" / "slide-composition-playbook.md"))
-        self.assertIn("Say it once: a set of reconstruction pictures", flat(ROOT / "references" / "subject-history.md"))
+        # 4.2.287 (the teacher's ruling on decision 7, 23 September 2026:
+        # "Just show the picture. The teacher can say it if they need to."):
+        # no words about where a picture came from, on the board or in the notes.
+        history = flat(ROOT / "references" / "subject-history.md")
+        self.assertIn("**A picture is just shown.**", history)
+        self.assertIn("has no caption about how it was made (`This is a reconstructed picture of a historical setting`), and the notes need not say it either", history)
+        # His fourth-round words: a caption that names the picture may help.
+        self.assertIn("A caption that names the picture may help and is never required", history)
+        self.assertNotIn("named as reconstructions", history)
+        playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
+        self.assertIn("has no caption saying how it was made", playbook)
+        self.assertIn("A caption that names the picture may help and is never required (`The Starry Night by Van Gogh`).", playbook)
+        self.assertIn("which of two pictures is which", playbook)
+        self.assertIn("even when the lesson asks what the picture tells us", playbook)
+
+    def test_the_calibration_slides_show_the_pictures_as_the_teacher_ruled(self) -> None:
+        # The Teach run the slide designer opens first and trusts over prose:
+        # no caption says how a picture was made, and a picture met again is
+        # not captioned again (the teacher's rulings of 14 and 23 September 2026).
+        import json
+        example = json.loads((ROOT / "references" / "examples" / "tudor-teach-slides.lesson.json").read_text(encoding="utf-8"))
+        seen = set()
+        for slide in example["slides"]:
+            for picture in slide.get("pictures", []):
+                caption = picture.get("caption") or ""
+                self.assertNotIn("reconstruct", caption.lower())
+                if picture["imagePath"] in seen:
+                    self.assertEqual(caption, "", picture["imagePath"])
+                seen.add(picture["imagePath"])
 
 
 if __name__ == "__main__":

@@ -545,7 +545,7 @@ Children choose which of two or three claims the evidence in front of them suppo
 ### 10.9 Connect It Back
 Children name the link between the new idea and something the lesson or the unit already established. *"What does today's answer change about what we said last week?"* *"We learnt what a denominator is. Which part of this model is it?"*
 **Best for:** the seam where a new idea has to join an existing one rather than sit beside it.
-**SEND access:** the older idea is the familiar half, so the child is reasoning from something secure.
+**SEND access:** the older idea is the familiar half once it has been brought back, so the child is reasoning from something they have just met again.
 
 ### 10.10 Which Explanation Is Better?
 Two explanations of the same thing, one sound and one plausible but weaker, and children choose and justify. *"Sam says the shadow is bigger because the object got bigger. Priya says it is bigger because it moved closer to the light. Who is right, and how do you know?"* Both must be about the same case and differ only on the taught point, or a child can win the argument for the wrong one (`evidence-synthesis.md` §5).

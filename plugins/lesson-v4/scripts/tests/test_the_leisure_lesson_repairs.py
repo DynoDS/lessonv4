@@ -158,14 +158,23 @@ class TheRulesThatPushedTowardTheFaultsNowSayTheOpposite(unittest.TestCase):
         self.assertNotIn("The idea the lesson is built to land", history)
 
     def test_a_source_that_costs_more_explaining_than_it_teaches_is_replaced(self) -> None:
+        # The test moved to where every subject reads it (4.2.287, the
+        # teacher's decision 5 on assumed knowledge); history points to it.
+        preferences = flat(REF / "preferences.md")
+        self.assertIn("When the first list is the longer, choose a clearer source or tell the knowledge plainly", preferences)
+        self.assertIn("a teacher who is new to the topic would have to explain", preferences)
         history = flat(REF / "subject-history.md")
-        self.assertIn("When the first list is the longer, choose a clearer source or tell the knowledge plainly", history)
+        self.assertIn("by the test in `preferences.md` → Source and Scenario Integrity, `A real source needs an accessible route`", history)
         designer = flat(ROOT / "agents" / "lesson-designer.md")
         self.assertIn("A source, story or clip the plan names is part of its activity, not its coverage", designer)
+        self.assertIn("(`preferences.md` → Source and Scenario Integrity, `A real source needs an accessible route`)", designer)
 
     def test_names_and_source_labels_are_in_words_a_child_has(self) -> None:
         history = flat(REF / "subject-history.md")
+        # 4.2.287: written sources keep their honest label; a picture is just
+        # shown (the teacher's ruling on decision 7, 23 September 2026).
         self.assertIn("Identify sources honestly, in words the class already has", history)
+        self.assertIn("**A picture is just shown.**", history)
         self.assertIn("In the teaching means explained where each first appears on the board", history)
 
     def test_the_reviewer_can_take_a_detour_out_instead_of_promoting_it(self) -> None:
