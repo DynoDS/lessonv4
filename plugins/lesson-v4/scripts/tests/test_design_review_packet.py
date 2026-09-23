@@ -2374,7 +2374,7 @@ def _routing() -> dict[str, str]:
 RHYTHM = "The Teach → Do → Teach → Do Rhythm"
 
 
-def test_the_rhythm_section_opens_on_a_countable_condition():
+def test_the_rhythm_section_is_read_every_review():
     """A trigger the reviewer can only meet by already having the judgement
     never fires.
 
@@ -2383,27 +2383,20 @@ def test_the_rhythm_section_opens_on_a_countable_condition():
     have found the fault in order to be sent to the section that would help it
     find the fault. A Year 4 History lesson went through review twice and came
     back both times with punctuation corrections and `Redesign required: None`.
-    Counting Teach beats is something the review view answers on its face.
+    A countable trigger (three or more Teach beats) was added beside it; since
+    4.2.285 the teacher's decision reads the section every review, so no
+    trigger has to fire, and the count survives as what to do once it is open.
     """
-    trigger = _routing()[RHYTHM]
-    assert "three or more Teach beats" in trigger
-    # And it says what to do once open, so the count is not merely a nudge.
-    assert "say in your own words the move each Teach taught" in trigger
-
-
-def test_the_self_diagnosed_route_is_kept_beside_the_countable_one():
-    """Both ways in, because they catch different reviewers.
-
-    The self-diagnosed clause still catches a reviewer that notices the
-    mismatch on its own, and removing it would undo an earlier repair. What it
-    cannot do is guarantee the section ever opens, which is the count's job.
-    """
-    trigger = _routing()[RHYTHM]
-    assert (
-        "when a Do beat practises a different idea from the one its own Teach "
-        "just taught" in trigger
-    )
-    assert "three or more Teach beats" in trigger
+    assert RHYTHM not in _routing()
+    spec = importlib.util.spec_from_file_location("design_review_packet_always", PACKET)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    always = {heading: " ".join(note.split())
+              for _name, heading, note in module.ALWAYS_READ_REVIEW_SECTIONS}
+    note = always[RHYTHM]
+    assert "three or more Teach beats" in note
+    assert "say in your own words the move each Teach taught" in note
+    assert "a question to the room" in note
 
 
 def test_the_overload_section_opens_on_an_unused_taught_idea():

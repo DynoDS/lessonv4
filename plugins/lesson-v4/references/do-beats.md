@@ -98,8 +98,8 @@ Choose a deliberate oral rehearsal only when saying the exact word, definition, 
 
 
 ### 1.5 Last Lesson / Last Week / Last Term
-Three quick recall questions structured by time-distance (Boxer, *Teaching Secondary Science*; CogSciSci). Bakes spacing into the Do beat itself.
-**Best for:** lesson 2+ in a sequence; opening Do beat after Teach 1.
+Three quick recall questions structured by time-distance (Boxer, *Teaching Secondary Science*; CogSciSci). Bakes spacing into the starter itself.
+**Best for:** the starter of lesson 2+ in a sequence.
 **SEND access:** the predictability of the structure is the access — pupils know what kind of pull is coming.
 
 ### 1.6 Retrieval Roulette
@@ -479,6 +479,7 @@ Pupils show thumbs up / sideways / down to *I get it / I'm fuzzy / I'm lost* (va
 **The limit:** the user finds it "a bit better" than Stand If and still a weak Do beat. A thumb reports how a child feels, and a child who has misunderstood can feel sure, so it never stands in for a beat where every child uses the idea; it is not a Do beat at all, only a quick read the teacher may add beside one.
 
 ### 9.7 Think-Aloud Reverse
+**Teacher-owned response routine:** do not select this unless the teacher explicitly requests it.
 The teacher has modelled thinking aloud during the Teach; in the Do, a pupil thinks aloud through the same kind of problem while the class watches (EEF *Metacognition* guidance — explicit modelling becomes pupil rehearsal). 60–90 seconds.
 **Best for:** science reasoning, historical inference, RE arguments.
 **SEND access:** the modelling has already been done; pupil only echoes the structure with new content.

@@ -127,7 +127,7 @@ class TheGuidanceMatchesTheCheckTests(unittest.TestCase):
         )
         # Both named gates, so prose and code cannot silently drift.
         self.assertIn(
-            "`validate-lesson-design.py` refuses two My Turn units in a row",
+            "`validate-lesson-design.py` refuses any two My Turn units in a row",
             route,
         )
         self.assertIn(

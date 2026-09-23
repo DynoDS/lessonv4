@@ -91,13 +91,22 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
         self.assertIn("the form has to make every child commit", rhythm)
 
     def test_lesson_designer_and_task_centred_route_carry_it(self) -> None:
-        self.assertIn("Questioning is not doing: the Do half", flat(LESSON_DESIGNER))
+        # The designer's clipped copy folded into the one home in 4.2.285; the
+        # designer names the rule where it points there.
+        designer = flat(LESSON_DESIGNER)
+        self.assertIn("questioning is not doing", designer)
+        self.assertIn("The Do half is a `do` unit or a `pupilInstruction`.", designer)
         task = flat(TASK_CENTRED)
         self.assertNotIn("a quick judgement, a sort, a one-line decision on a fictional case", task)
         self.assertIn("is every child using that idea", task)
 
     def test_content_based_do_and_the_catalogue_point_at_it(self) -> None:
-        self.assertIn("a question to the room is a key question, not this beat", flat(CONTENT_BASED))
+        self.assertIn(
+            "a question to the room is a key question, not this beat, unless it is chosen "
+            "so the answer needs the idea and every child commits, with how they commit "
+            "written into the task",
+            flat(CONTENT_BASED),
+        )
         self.assertIn("A question put to the room is not one unless it is chosen", flat(DO_BEATS))
 
     def test_reviewer_checks_each_do_beat_is_a_use(self) -> None:
@@ -138,9 +147,12 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
         self.assertIn("It requires every child to use the chunk they have just been taught", do_beats)
         self.assertIn("The shape across the lesson matters more than any single beat", do_beats)
         self.assertIn("A fact may suit recall or a sort", do_beats)
+        # The designer's copies folded into the one home in 4.2.285.
         designer = flat(LESSON_DESIGNER)
-        self.assertIn("Every Do beat: every child uses the chunk and leaves something the teacher can see", designer)
-        self.assertIn("Demand climbs across lesson", designer)
+        self.assertIn("variety and demand across the lesson", designer)
+        rhythm = section(PREFERENCES, "The Teach → Do → Teach → Do Rhythm")
+        self.assertIn("It gives every child something concrete to do with the chunk and leaves something the teacher can see", rhythm)
+        self.assertIn("Climb the demand across the lesson, without forcing a staircase", rhythm)
         self.assertIn("Then match the form to what was just taught", flat(CONTENT_BASED))
 
 
@@ -671,8 +683,12 @@ class ReviewerRoutingReachesSlidePhilosophyTests(unittest.TestCase):
         routes = dict(packet.PREFERENCE_REVIEW_ROUTES)
         trigger = routes["Slide Philosophy"]
         self.assertIn("lives only in its script", trigger)
-        self.assertIn("question to the room", trigger)
         self.assertIn("instructions only", trigger)
+        self.assertNotIn("question to the room", trigger)
+        # A question to the room is the rhythm's rule, read every review since
+        # 4.2.285, rather than one clause in this section.
+        always = {heading: note for _name, heading, note in packet.ALWAYS_READ_REVIEW_SECTIONS}
+        self.assertIn("a question to the room", " ".join(always["The Teach → Do → Teach → Do Rhythm"].split()))
 
     def test_every_routed_heading_exists_in_preferences(self) -> None:
         packet = load("design_review_packet_board_headings", "design-review-packet.py")

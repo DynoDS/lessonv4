@@ -400,7 +400,7 @@
     },
     {
      "file": "references/preferences.md",
-     "text": "- **Written Voice (House Style)** — what every word a child or parent reads must achieve: understanding, density, register roles and house style. Pairs with `teacher-voice.md`, which owns how the voice sounds. Every agent that authors that wording, at startup, as the paragraph above sets out; the Design Reviewer by its routing card. - **What a Lesson Is For** - durable learning named before the task, every stage there because the next needs it, and a final task that draws together what was built rather than checking who listened. Everyone who designs or reviews a lesson, every run. - **Classroom Norms** — the lesson-time default, routine teacher autonomy, purposeful partner talk, and the LO's on-slide form. - **The Teach → Do → Teach → Do Rhythm** — the load-bearing lesson shape, the pairing test that each Do uses the idea its own Teach taught, naming what a chunk needs children to do with it before choosing any activity, and the variety rules across Do beats. - **Cognitive Load Triage on Scaffolds** — what stays blank and what gets pre-filled on any scaffold, on slides and sheets alike. - **How Much Fits in One Lesson** — when an LO is honestly two lessons, where to split, and when a lesson is carrying too many new ideas. - **Starters** — retrieval-first openers: what each subject retrieves, the forms a starter can take, the on-slide rules. - **Question Labelling** — bracketed labels only for starter and main independent work, plus lettered multi-question Maths Our Turn work; letters marking unknowns on figures run on through a deck and restart on each sheet. - **Vocabulary** — choosing up to five cards or genuine vocabulary units, definitions written for children, one coherent visual per card or unit. - **A Picture Beside a Word** — the test any meaning-carrying picture must pass before it sits beside a word. - **Sticky Knowledge** — up to 3 must-carry facts or rules and when each appears; none is required when no separate fact or rule earns the role. - **Success Criteria** — a live reference, form follows the task, and the draw-live marking for wall-worthy references. - **The Apply Slide** — earned through the lesson, never automatic; the full decision lives with the lesson-designer. - **Practising a Test Question** — fresh questions at the test's exact demand and form; the real item stays out of the lesson. - **Reasoning Is Every Child's Entitlement** — genuine reasoning shapes for the whole class, not just the quick finishers. - **Slide Philosophy** — the glance test, live teaching and visible meaning, takeaways, and the speaker-notes voice. - **Slide Headings (Child-Facing Labels)** — warm child-facing titles, My/Our/Your Turn, performative demonstration titles. - **Worksheets** — normally optional independent practice, the required task-resource exception, one page per child, the two kinds of sheet, and the subject-shaped working surface the teacher approved (`worksheet-visual-profile.md` carries that standard in full). - **Pride Lessons (Quality Anchor)** — three anchors for what \"right\" feels like: two lessons the user taught, and the Teach slides he chose on 14 September 2026, written out.",
+     "text": "- **Written Voice (House Style)** — what every word a child or parent reads must achieve: understanding, density, register roles and house style. Pairs with `teacher-voice.md`, which owns how the voice sounds. Every agent that authors that wording, at startup, as the paragraph above sets out; the Design Reviewer by its routing card. - **What a Lesson Is For** - durable learning named before the task, every stage there because the next needs it, and a final task that draws together what was built rather than checking who listened. Everyone who designs or reviews a lesson, every run. - **Classroom Norms** — the lesson-time default, routine teacher autonomy, purposeful partner talk, and the LO's on-slide form. - **The Teach → Do → Teach → Do Rhythm** — the load-bearing lesson shape and how every route keeps it: one idea per Teach, used by every child before the next, counted in ideas rather than slides; a practical lesson's shape; the pairing test that each Do uses the idea its own Teach taught; orientation, setting the scene, and every beat earning its place; naming what a chunk needs children to do with it before choosing any activity; quick checks, matches and sorts; letting the class build a set; the variety and demand rules across Do beats; how each beat changes the state of the lesson; and what the work can claim. - **Cognitive Load Triage on Scaffolds** — what stays blank and what gets pre-filled on any scaffold, on slides and sheets alike. - **How Much Fits in One Lesson** — when an LO is honestly two lessons, where to split, and when a lesson is carrying too many new ideas. - **Starters** — retrieval-first openers: what each subject retrieves, the forms a starter can take, the on-slide rules. - **Question Labelling** — bracketed labels only for starter and main independent work, plus lettered multi-question Maths Our Turn work; letters marking unknowns on figures run on through a deck and restart on each sheet. - **Vocabulary** — choosing up to five cards or genuine vocabulary units, definitions written for children, one coherent visual per card or unit. - **A Picture Beside a Word** — the test any meaning-carrying picture must pass before it sits beside a word. - **Sticky Knowledge** — up to 3 must-carry facts or rules and when each appears; none is required when no separate fact or rule earns the role. - **Success Criteria** — a live reference, form follows the task, and the draw-live marking for wall-worthy references. - **The Apply Slide** — earned through the lesson, never automatic; the full decision lives with the lesson-designer. - **Practising a Test Question** — fresh questions at the test's exact demand and form; the real item stays out of the lesson. - **Reasoning Is Every Child's Entitlement** — genuine reasoning shapes for the whole class, not just the quick finishers. - **Slide Philosophy** — the glance test, live teaching and visible meaning, takeaways, and the speaker-notes voice. - **Slide Headings (Child-Facing Labels)** — warm child-facing titles, My/Our/Your Turn, performative demonstration titles. - **Worksheets** — normally optional independent practice, the required task-resource exception, one page per child, the two kinds of sheet, and the subject-shaped working surface the teacher approved (`worksheet-visual-profile.md` carries that standard in full). - **Pride Lessons (Quality Anchor)** — three anchors for what \"right\" feels like: two lessons the user taught, and the Teach slides he chose on 14 September 2026, written out.",
      "section": {
       "heading": "## Contents — each agent reads its own sections",
       "occurrence": 0,
@@ -2731,7 +2731,7 @@
      "file": "references/teaching-sequence-skill-based.md",
      "text": "Vocabulary is already free in the same way, since `vocabularyIntroductions` names the unit each word follows.",
      "section": {
-      "heading": "## Output Format Block",
+      "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
       "intro": false
      }
@@ -2740,7 +2740,7 @@
      "file": "references/teaching-sequence-skill-based.md",
      "text": "if it thinks seperate key vocab do it",
      "section": {
-      "heading": "## Output Format Block",
+      "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
       "intro": false
      }
@@ -2749,7 +2749,7 @@
      "file": "references/teaching-sequence-skill-based.md",
      "text": "**What else the sequence may hold.** The cycles carry the method; the lesson around them is this design's to shape. The teacher's words: \"i dont want to limit it to starter, answers, key vocab, mtotyt cycles. If it thinks teach in a place do it, if it thinks seperate key vocab do it. if it thinks apply now, or problem solving now do it\". Three further source-unit kinds are available in this route, `prepare`, `teach` and `practise`, each placed where this lesson earns it rather than at a fixed point, and each used as many times as the lesson needs or not at all. Vocabulary is already free in the same way, since `vocabularyIntroductions` names the unit each word follows.",
      "section": {
-      "heading": "## Output Format Block",
+      "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
       "intro": false
      },
@@ -2980,7 +2980,7 @@
      "file": "references/teaching-sequence-skill-based.md",
      "text": "The one thing fixed is the cycle itself: between a My Turn and its Your Turn nothing intervenes, because a class modelled to and then taken somewhere else arrives at its check having lost the thread.",
      "section": {
-      "heading": "## Output Format Block",
+      "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
       "intro": false
      }
@@ -2996,7 +2996,7 @@
      "file": "references/teaching-sequence-skill-based.md",
      "text": "what the word `digit` names",
      "section": {
-      "heading": "## Output Format Block",
+      "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
       "intro": false
      }
@@ -6035,7 +6035,7 @@
      "file": "references/teaching-sequence-skill-based.md",
      "text": "and a vocabulary slide is one of them: a method's words come before its My Turn, so the teacher models with them.",
      "section": {
-      "heading": "## Output Format Block",
+      "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
       "intro": false
      }

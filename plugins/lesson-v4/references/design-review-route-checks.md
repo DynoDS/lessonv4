@@ -18,7 +18,7 @@ For Dialogic lessons, check that pupils receive knowledge before judgement, the 
 
 ## Discovery
 
-For Discovery lessons, check that exploration is safe, bounded and dependable, pupils have the needed prerequisites, the result becomes visible, and explicit explanation follows.
+For Discovery lessons, check that exploration is safe, bounded and dependable, pupils have the needed prerequisites, the result becomes visible, and explicit explanation follows each finding, with children using one finding before the next is taught.
 
 ## Task-Centred
 

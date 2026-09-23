@@ -40,6 +40,10 @@ The board carries it, not only the script. `takeaway` is the one line children k
 
 Give children an opportunity to explain, apply, compare or test the secured idea. Choose the form and amount from the objective. The practice must not depend on discovering another untaught idea. Its `thinking` line, like the Explore's, names what the pattern lets a child predict or explain (`if we moved the torch closer, where would the shadow fall, and why?`), not the looking or the recording; a line a child could answer before the exploration has made the exploration decoration. When the lesson names an idea in `concepts` (a relationship children will use beyond today's apparatus), Use the learning meets it on evidence the exploration did not use, and both beats carry the concept's `conceptRef`.
 
+### When the lesson discovers two things
+
+A discovery lesson may discover more than one thing, and the rhythm holds inside it: each finding is taught and then used before the next is taught (`preferences.md` → The Teach → Do → Teach → Do Rhythm). There are two shapes, and the design chooses. When one exploration reveals both, make both visible, then teach why for the first and have children use it, then teach why for the second and use that. When the second finding builds on the first, run a second exploration once the first has been taught and used: explore, make the result visible, teach why, use the learning. Either way, each `Teach why` carries one idea.
+
 ### Finish purposefully
 
 End with the conclusion, explanation, application or evidence that best completes the investigation. A separate exit ticket is optional and appears only when it adds useful evidence.
@@ -50,7 +54,7 @@ A pattern investigation or method comparison may precede direct teaching of a pr
 
 ## Output Format Block
 
-When writing `lesson-design.json`, append these source-unit kinds to `teachingSequence` in the lesson's final order. The common source-unit fields live in `output-template.md`.
+When writing `lesson-design.json`, append these source-unit kinds to `teachingSequence` in the lesson's final order: `question`, `explore`, `make-sense`, `teach-why`, `use-learning`, then for each further finding either `teach-why`, `use-learning` (the same exploration showed it) or `explore`, `make-sense`, `teach-why`, `use-learning` (a second exploration), then `finish`. The common source-unit fields live in `output-template.md`.
 
 Question:
 

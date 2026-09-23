@@ -176,10 +176,20 @@ class RhythmHasAnOwnerOnEveryRouteTests(unittest.TestCase):
         decision_point = text.index("**At the decision point:**")
         self.assertIn("`The Teach → Do → Teach → Do Rhythm`", text[start:decision_point])
 
-    def test_lesson_designer_says_how_the_rhythm_lands_in_a_task_centred_lesson(self) -> None:
-        text = flat(LESSON_DESIGNER)
-        self.assertIn("one enabling idea per `teach-needed` unit", text)
-        self.assertIn("only the last may be used by the plan or the task itself", text)
+    def test_the_rhythm_home_says_how_it_lands_in_a_task_centred_lesson(self) -> None:
+        # The designer's own copy folded into the one home in 4.2.285, and the
+        # designer is sent there to read it whole.
+        text = flat(PREFERENCES)
+        self.assertIn(
+            "each enabling idea is its own `teach-needed` unit, used through its "
+            "`pupilInstruction` before the next is taught",
+            text,
+        )
+        self.assertIn("only the last may be used by the planning or the task itself", text)
+        self.assertIn(
+            "`preferences.md` → The Teach → Do → Teach → Do Rhythm is the rhythm: read it whole",
+            flat(LESSON_DESIGNER),
+        )
 
     def test_task_centred_file_carries_the_rule_beside_the_unit_it_governs(self) -> None:
         text = flat(TASK_CENTRED)
@@ -193,11 +203,11 @@ class RhythmHasAnOwnerOnEveryRouteTests(unittest.TestCase):
         self.assertIn("The rhythm holds in every structure", text)
         self.assertIn("Discovery and Task-Centred are not exempt", text)
 
-    def test_reviewer_trigger_for_the_rhythm_is_route_neutral(self) -> None:
-        routes = dict(packet.PREFERENCE_REVIEW_ROUTES)
-        trigger = routes["The Teach → Do → Teach → Do Rhythm"]
-        self.assertNotIn("Content-based", trigger)
-        self.assertIn("in any route", trigger)
+    def test_the_reviewer_reads_the_rhythm_in_every_route(self) -> None:
+        always = {heading: note for _name, heading, note in packet.ALWAYS_READ_REVIEW_SECTIONS}
+        self.assertIn("The Teach → Do → Teach → Do Rhythm", always)
+        self.assertNotIn("The Teach → Do → Teach → Do Rhythm", dict(packet.PREFERENCE_REVIEW_ROUTES))
+        self.assertNotIn("Content-based", always["The Teach → Do → Teach → Do Rhythm"])
 
 
 class EachBeatChangesTheStateOfTheLessonTests(unittest.TestCase):
@@ -226,7 +236,15 @@ class EachBeatChangesTheStateOfTheLessonTests(unittest.TestCase):
             text,
         )
         self.assertIn("a beat carrying a second job that has no beat of its own", text)
-        self.assertIn("a run of slides that are all the teacher talking", text)
+        # The teacher's decision of 23 September 2026: the run is counted in
+        # ideas, not slides.
+        self.assertNotIn("a run of slides that are all the teacher talking", text)
+        self.assertIn(
+            "a run of teacher beats that teaches a second new idea before children "
+            "have done anything with the first",
+            text,
+        )
+        self.assertIn("(two teacher slides carrying one idea are not that run)", text)
 
     def test_the_move_test_is_a_challenge_with_a_stated_boundary(self) -> None:
         """Vocabulary, a routine, a safeguarding note or setup may sit beside

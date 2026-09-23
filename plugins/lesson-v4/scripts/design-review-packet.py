@@ -98,32 +98,12 @@ PREFERENCE_REVIEW_ROUTES = (
         "Read when timing, routine teacher autonomy, partner talk or the "
         "visible learning objective is in doubt.",
     ),
-    # A trigger has to be something the reviewer can see in the view before it
-    # has made the judgement, or it never fires. "Read when a Do practises a
-    # different idea from the one its own Teach taught" asks the reviewer to
-    # have already found the fault in order to be sent to the section that
-    # would help it find the fault, and a Year 4 History lesson was approved
-    # twice with nothing but punctuation corrections. Counting Teach beats and
-    # reading the last task are things the view answers on its face.
-    (
-        "The Teach → Do → Teach → Do Rhythm",
-        "Read when two teacher-presented beats run with no pupil action "
-        "between them, in any route, when a Do beat practises a different "
-        "idea from the one its own Teach just taught, when a beat carries a "
-        "second job that has no beat of its own, when a Do beat's expected "
-        "answer is a summary, headline, recap or restatement of the "
-        "explanation its own Teach just gave, or whenever the sequence has "
-        "three or more Teach beats - with three, say in your own words the "
-        "move each Teach taught and what its own Do makes children do, and "
-        "check each pair before reading on.",
-    ),
     (
         "Slide Philosophy",
         "Read its Lesson Designer parts when a unit's child-facing content "
         "states a rule or fact whose meaning, reason or example lives only "
-        "in its script, when a Do beat is a question to the room rather "
-        "than every child using the idea, or when a substantial task "
-        "arrives with instructions only.",
+        "in its script, or when a substantial task arrives with "
+        "instructions only.",
     ),
     (
         "Cognitive Load Triage on Scaffolds",
@@ -245,6 +225,28 @@ ALWAYS_READ_REVIEW_SECTIONS = (
         "preferences.md",
         "What a Lesson Is For",
         "The learning-contract checks cite it throughout; read it before them.",
+    ),
+    # The rhythm was a conditional read, and two of its triggers (a Do on a
+    # different idea from its own Teach, a beat with a second job) could only
+    # be met by a reviewer that had already found the fault. A Year 4 History
+    # lesson was approved twice with nothing but punctuation corrections. The
+    # teacher's decision of 23 September 2026 made it an every-review read,
+    # which also covers a question to the room, once routed to Slide
+    # Philosophy, where only one clause on it lived.
+    (
+        "preferences.md",
+        "The Teach → Do → Teach → Do Rhythm",
+        "Read every review, before the thinking, practice and evidence "
+        "checks: one idea per Teach used by every child before the next, "
+        "counted in ideas rather than slides; a question to the room against "
+        "every child using the idea; the pairing test; a beat that carries a "
+        "second job; a Do whose expected "
+        "answer is a summary, headline, recap or restatement of the "
+        "explanation its own Teach just gave; orientation and every beat "
+        "earning its place; quick checks; and each beat changing the state of "
+        "the lesson. When the sequence has three or more Teach "
+        "beats, say in your own words the move each Teach taught and what its "
+        "own Do makes children do, and check each pair before reading on.",
     ),
     (
         "teacher-voice.md",

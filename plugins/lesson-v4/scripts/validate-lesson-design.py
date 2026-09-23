@@ -2594,6 +2594,37 @@ def validate_idea_instances(
         )
 
 
+# A discovery lesson may discover more than one thing (the teacher's decision,
+# 23 September 2026): one exploration can reveal two findings, each taught and
+# used in turn, or a second exploration can build on the first. Either way each
+# finding is taught why and then used before the next is taught, which is the
+# Teach then Do rhythm inside this route.
+DISCOVERY_FIRST_FINDING = ["question", "explore", "make-sense", "teach-why", "use-learning"]
+DISCOVERY_FINDING_FROM_THE_SAME_EXPLORATION = ["teach-why", "use-learning"]
+DISCOVERY_FINDING_FROM_A_NEW_EXPLORATION = ["explore", "make-sense", "teach-why", "use-learning"]
+DISCOVERY_SHAPE = (
+    "question, explore, make-sense, teach-why, use-learning, then for each further "
+    "finding either teach-why, use-learning (the same exploration showed it) or "
+    "explore, make-sense, teach-why, use-learning (a second exploration), then finish"
+)
+
+
+def discovery_shape_is_valid(kinds: list[str]) -> bool:
+    first = len(DISCOVERY_FIRST_FINDING)
+    if kinds[:first] != DISCOVERY_FIRST_FINDING or len(kinds) <= first or kinds[-1] != "finish":
+        return False
+    rest = kinds[first:-1]
+    index = 0
+    while index < len(rest):
+        if rest[index:index + 2] == DISCOVERY_FINDING_FROM_THE_SAME_EXPLORATION:
+            index += 2
+        elif rest[index:index + 4] == DISCOVERY_FINDING_FROM_A_NEW_EXPLORATION:
+            index += 4
+        else:
+            return False
+    return True
+
+
 def validate_route_sequence(
     structure: str,
     sequence: list[dict[str, Any]],
@@ -2805,8 +2836,7 @@ def validate_route_sequence(
         return
 
     if structure == "Discovery":
-        expected = ["question", "explore", "make-sense", "teach-why", "use-learning", "finish"]
-        expect(kinds == expected, f"Discovery sequence must be exactly: {', '.join(expected)}")
+        expect(discovery_shape_is_valid(kinds), f"Discovery sequence must be: {DISCOVERY_SHAPE}")
         return
 
     if structure == "Dialogic":

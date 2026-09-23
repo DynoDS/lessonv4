@@ -123,7 +123,7 @@ Takes year group + learning objective (plus any extra context the teacher provid
 ## Design principles (shared across all agents)
 
 1. **Pedagogy is the load-bearing decision.** Every later decision follows from it.
-2. **Teach → Do → Teach → Do.** Children process information before the next piece arrives. Never two teach beats back-to-back.
+2. **Teach → Do → Teach → Do.** Children process information before the next piece arrives. Never a second new idea taught before children have used the first.
 3. **Slides carry what children do, see, or reference.** Everything else is in speaker notes.
 4. **The teacher's voice is the lesson.** Slides support the teacher; they don't replace the teacher.
 5. **Apply slides are earned, not automatic.**

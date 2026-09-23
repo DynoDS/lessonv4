@@ -149,11 +149,15 @@ class ConceptualLoadIsASecondKindOfOverloadTests(unittest.TestCase):
 
 class TheRuleReachesEveryAgentThatCouldBreakItTests(unittest.TestCase):
     def test_the_designer_carries_the_pairing_test_beside_questioning_is_not_doing(self) -> None:
+        # The designer's worked copy folded into the one home in 4.2.285; its
+        # pointer names both rules together and keeps the read-back.
         text = flat(LESSON_DESIGNER)
-        self.assertIn("A use of the wrong idea is not the beat either", text)
-        self.assertIn("`" + RULE + "`", text)
         self.assertIn(
-            "Heading, explanation and following Do name one move between them",
+            "questioning is not doing, and the Do uses the idea its own Teach just taught",
+            text,
+        )
+        self.assertIn(
+            "heading, explanation and following Do name one move between them",
             text,
         )
 
@@ -189,14 +193,13 @@ class TheRuleReachesEveryAgentThatCouldBreakItTests(unittest.TestCase):
         self.assertLess(substance, form)
         self.assertIn("`" + RULE + "`", text)
 
-    def test_the_reviewers_routing_card_opens_the_rhythm_for_a_mismatched_pair(self) -> None:
-        routes = dict(packet.PREFERENCE_REVIEW_ROUTES)
-        trigger = routes["The Teach → Do → Teach → Do Rhythm"]
-        self.assertIn("in any route", trigger)
-        self.assertIn(
-            "when a Do beat practises a different idea from the one its own Teach just taught",
-            trigger,
-        )
+    def test_the_reviewer_reads_the_rhythm_for_a_mismatched_pair_every_review(self) -> None:
+        # Since 4.2.285 the section is read every review rather than on a
+        # trigger the reviewer could only meet after finding the fault.
+        always = {heading: note for _name, heading, note in packet.ALWAYS_READ_REVIEW_SECTIONS}
+        note = " ".join(always["The Teach → Do → Teach → Do Rhythm"].split())
+        self.assertIn("the pairing test", note)
+        self.assertNotIn("The Teach → Do → Teach → Do Rhythm", dict(packet.PREFERENCE_REVIEW_ROUTES))
 
 
 if __name__ == "__main__":

@@ -201,22 +201,17 @@ class TheRuleReachesEveryAgentThatCouldBreakItTests(unittest.TestCase):
         self.assertIn("the check is the term used on a fresh case, not the sentence said back", text)
         self.assertNotIn("the design saying so makes it right", text)
 
-    def test_the_routing_card_opens_the_rhythm_for_a_restating_do(self) -> None:
-        routes = dict(packet.PREFERENCE_REVIEW_ROUTES)
-        trigger = routes[RHYTHM]
+    def test_the_reviewer_reads_the_rhythm_for_a_restating_do_every_review(self) -> None:
+        """Since 4.2.285 the rhythm is read every review, so no trigger has to
+        fire first; its always-read note still names the restating Do."""
+        always = {heading: note for _name, heading, note in packet.ALWAYS_READ_REVIEW_SECTIONS}
+        self.assertNotIn(RHYTHM, dict(packet.PREFERENCE_REVIEW_ROUTES))
+        note = " ".join(always[RHYTHM].split())
         self.assertIn(
-            "when a Do beat's expected answer is a summary, headline, recap or "
+            "a Do whose expected answer is a summary, headline, recap or "
             "restatement of the explanation its own Teach just gave",
-            trigger,
+            note,
         )
-
-    def test_the_trigger_is_visible_before_the_judgement_is_made(self) -> None:
-        """The file's own warning: a trigger the reviewer can only apply after
-        finding the fault never fires. The expected answer is on the face of
-        the view, so this one does."""
-        routes = dict(packet.PREFERENCE_REVIEW_ROUTES)
-        trigger = routes[RHYTHM]
-        self.assertIn("expected answer", trigger)
 
 
 class ProblemFirstIsNarrowedNotBannedTests(unittest.TestCase):

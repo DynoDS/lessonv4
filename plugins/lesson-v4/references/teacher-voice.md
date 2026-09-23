@@ -739,15 +739,7 @@ Voice is not only the wording on the slide.
 
 Sometimes the most authentic resource is one where **the slide gets out of the way and lets pupils do something**.
 
-For a practical lesson:
-- use short challenges;
-- give only the teaching needed before the next action;
-- let pupils notice patterns;
-- pause for brief teaching;
-- send them back to the task.
-
-Example structure:
-> Challenge → brief teaching → try it → quick check → improve it → record it.
+The shape of a practical lesson, and when it may open on the challenge itself, is in `preferences.md` → The Teach → Do → Teach → Do Rhythm, `A practical lesson keeps the teaching short and lets the doing lead`. What it sounds like:
 
 Good practical slide:
 > **Can you make the bulb light?**
@@ -755,9 +747,6 @@ Good practical slide:
 Good follow-up:
 > **You've made it work. Now break it.**  
 > *Not literally!*
-
-Avoid turning an activity-led lesson into:
-> explanation → explanation → explanation → worksheet.
 
 ---
 

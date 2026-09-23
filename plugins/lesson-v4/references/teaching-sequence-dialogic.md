@@ -23,8 +23,8 @@ A Stimulus can also be an *activity* — a ranking, a sort, a four-corners vote 
 - Snowball (pairs → fours → whole class)
 - Four corners (children physically position themselves on agree / strongly agree / disagree / strongly disagree and defend)
 - Ranking or sorting that forces a position (rank these influences from most to least; sort statements into "always / sometimes / never")
-- Role-play or hot-seating ("you're [character] — what would you say?")
-- Short structured debate
+- Role-play or hot-seating ("you're [character] — what would you say?"), only when every child first writes what their character would say, or picks a side, before anyone performs
+- Short structured debate, only when every child first picks a side and writes one reason
 
 Let each Talk take the time its thinking deserves. Three to five minutes is a useful estimate, not a fixed limit. Do not let a small discussion accidentally take over the lesson or cut a rich discussion short merely to satisfy a timer. Specify the format and the discussion question on the slide. Speaker notes may include a small number of optional lesson-specific follow-up questions when they help the teacher deepen this actual discussion, especially where the topic may be unfamiliar. Use support such as "What might change your mind?" or "What evidence supports that?" Do not turn the notes into a compulsory script or prescribe who to call on, how to bounce answers or another discussion-management routine.
 
@@ -66,7 +66,7 @@ When children need a small factual or vocabulary grounding input before the firs
 }
 ```
 
-Do not use this for substantial factual teaching; CURRENT's Content-based routing rule still applies.
+Do not use this for substantial factual teaching; that still needs Content-based teaching.
 
 Stimulus:
 

@@ -813,7 +813,49 @@ def test_discovery_route_requires_canonical_progression():
     design["teachingSequence"][2], design["teachingSequence"][3] = design["teachingSequence"][3], design["teachingSequence"][2]
     for index, unit in enumerate(design["teachingSequence"], 1):
         unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
-    assert_invalid_contract(design, photos, "Discovery sequence must be exactly")
+    assert_invalid_contract(design, photos, "Discovery sequence must be:")
+
+
+def _discovery_with(extra_kinds_and_content):
+    """The friction lesson with further findings before its finish."""
+    design, photos = valid_discovery_contract()
+    first = design["teachingSequence"][:5]
+    finish = design["teachingSequence"][5]
+    units = [dict(unit) for unit in first]
+    for kind, content in extra_kinds_and_content:
+        units.append(source_unit(len(units) + 1, kind, content))
+    units.append(dict(finish))
+    for index, unit in enumerate(units, 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    design["teachingSequence"] = units
+    return design, photos
+
+
+SECOND_TEACH_WHY = ("teach-why", {"takeaway": {"kind": "text", "text": "A smoother surface lets it slide further."}, "accurateExplanation": "Less grip means less friction, so the block keeps moving for longer.", "unsupportedExplanationToCorrect": None})
+SECOND_USE = ("use-learning", {"activity": "Choose which of two new shoes would slip more on ice and explain why."})
+SECOND_EXPLORE = ("explore", {"activity": "Release the block down the ramp at two heights on the smoothest surface.", "conditionsAndSafety": "Keep the surface the same.", "evidenceProduced": "Distances at each height."})
+SECOND_MAKE_SENSE = ("make-sense", {"resultOrPattern": "The higher release travels further.", "prompt": "What changed when the ramp was higher?"})
+
+
+def test_discovery_route_accepts_a_second_finding_from_the_same_exploration():
+    """The teacher's decision of 23 September 2026: one exploration may reveal
+    two things, each taught why and used before the next is taught."""
+    design, photos = _discovery_with([SECOND_TEACH_WHY, SECOND_USE])
+    module.validate_design(design, photos)
+
+
+def test_discovery_route_accepts_a_second_exploration_that_builds_on_the_first():
+    design, photos = _discovery_with([SECOND_EXPLORE, SECOND_MAKE_SENSE, SECOND_TEACH_WHY, SECOND_USE])
+    module.validate_design(design, photos)
+
+
+def test_discovery_route_refuses_two_findings_taught_before_either_is_used():
+    design, photos = _discovery_with([SECOND_TEACH_WHY, SECOND_USE])
+    units = design["teachingSequence"]
+    units[4], units[5] = units[5], units[4]
+    for index, unit in enumerate(units, 1):
+        unit["sourceUnitId"] = f"lesson-section/teaching-sequence/unit-{index:03d}"
+    assert_invalid_contract(design, photos, "Discovery sequence must be:")
 
 
 def test_dialogic_route_requires_discussion_cycle_before_synthesis():
