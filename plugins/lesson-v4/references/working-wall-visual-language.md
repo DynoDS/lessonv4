@@ -141,7 +141,7 @@ When a drawn primitive isn't the right fit, the card still carries a visual - ju
 - **The defining diagram has no primitive yet.** When the picture children recognise the category by can't be drawn (the angle's opening, the parallel arrows), a text-only card has dropped the actual content - so flag it in your final report so the primitive gets built, and in the meantime reach for a genuine card-level P2 `picture` where that card family supports one, or a fitting photo the lesson already fetched, rather than shipping bare words. If neither is available, omit the ordinary card. Never approximate with the wrong primitive.
 - **The card works as a concise text-led reference.** Apply the card-level judgement above.
 
-When none of these gives an honest visual and the card does not qualify for the success-criteria exception, it stays on the slides rather than going up as text. Note that choice in `rationaleNote`, and note any primitive you wished for in your final report - that's how the next renderer build knows what to add next.
+When none of these gives an honest visual and the card does not pass the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), it stays on the slides rather than going up as text. Note that choice in `rationaleNote`, and note any primitive you wished for in your final report - that's how the next renderer build knows what to add next.
 
 ### Reach for primitive variants when the lesson is teaching the diagram itself
 
@@ -234,7 +234,7 @@ These show up most often when the lesson is content-rich and the temptation is t
 |---|---|
 | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. |
 | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. |
-| All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides. The one exception is a step-by-step success-criteria card. |
+| All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do. |
 | A procedure on a sticky-knowledge panel | The blue panel says "fact". A procedure on it reads as a fact, not a method. Children stop trusting the colour grammar across the unit. |
 | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. |
 | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |

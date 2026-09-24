@@ -1245,7 +1245,9 @@ def build_scaffold(
                 "reason": PLACEHOLDER,
             },
             "demand": PLACEHOLDER,
-            "successCriteriaRefs": [PLACEHOLDER],
+            # Success criteria stay on the board and never go on a worksheet
+            # (the teacher, 23 September 2026), so there is nothing to decide.
+            "successCriteriaRefs": [],
             "stickyKnowledgeRefs": [PLACEHOLDER],
             "fitPriority": PLACEHOLDER,
             "centralWriteOnVisualException": (

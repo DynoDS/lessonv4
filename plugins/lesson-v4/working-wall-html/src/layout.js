@@ -157,10 +157,10 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
     }
     const remedies = [];
     if (panelOver) {
-      remedies.push("Splitting the items in order over a second card keeps every word and is a layout change (a wall takes two teaching cards); otherwise remove an item or shorten the longest");
+      remedies.push("Splitting the items in order over a second card keeps every word and is a layout change (a wall takes two teaching cards); otherwise remove an item or shorten the longest, never a success-criteria step, which is copied word for word");
     }
     if (reword) {
-      remedies.push("an item over its own budget fits only reworded, which is the wall designer's decision, not a focused repair's");
+      remedies.push("an item over its own budget fits only reworded, which is the wall designer's decision, not a focused repair's; a success-criteria step is never reworded, so its card makes room instead (the picture off unless the steps need it, or the list over two cards)");
     }
     return `${where}: ${problems.join(" ")}${remedies.length ? ` ${remedies.join("; ")}.` : ""}`;
   };
@@ -275,12 +275,12 @@ function fitReferenceTableSize(columns, rows, columnWidthsDxa, defaultPt, minPt,
       if (!isFinite(linesInCell(cell.text, colInches[cell.colIdx], cell.atPt))) {
         const budget = budgetFor(cell.colIdx, cell.atPt);
         const name = columns[cell.colIdx] ? `"${columns[cell.colIdx]}"` : `${cell.colIdx + 1}`;
-        return `${where}: the cell in ${cell.at}, column ${name}, is ${String(cell.text || "").length} characters and that column holds ${budget} in ${maxLinesPerCell} lines at ${cell.atPt}pt. Cut it to ${budget} characters or fewer: "${String(cell.text || "").slice(0, 60)}${String(cell.text || "").length > 60 ? "…" : ""}".`;
+        return `${where}: the cell in ${cell.at}, column ${name}, is ${String(cell.text || "").length} characters and that column holds ${budget} in ${maxLinesPerCell} lines at ${cell.atPt}pt. Cut it to ${budget} characters or fewer, unless the table is the lesson's success criteria, which are copied word for word (the card makes room instead): "${String(cell.text || "").slice(0, 60)}${String(cell.text || "").length > 60 ? "…" : ""}".`;
       }
     }
     const measured = fitAt(pt);
     const budgets = columns.map((c, i) => `${c || i + 1}: ${budgetFor(i, pt)}`).join(", ");
-    return `${where}: ${rows.length} rows need ${measured.height != null ? measured.height.toFixed(1) : "more"}in and ${availHeight.toFixed(1)}in is available at ${pt}pt. Remove a row, or shorten cells to their column budgets (${budgets}).`;
+    return `${where}: ${rows.length} rows need ${measured.height != null ? measured.height.toFixed(1) : "more"}in and ${availHeight.toFixed(1)}in is available at ${pt}pt. Remove a row, or shorten cells to their column budgets (${budgets}); a success-criteria table keeps every row and word, so its card makes room instead, or the table goes over two cards.`;
   };
 
   for (let pt = defaultPt; pt >= minPt; pt -= 4) {

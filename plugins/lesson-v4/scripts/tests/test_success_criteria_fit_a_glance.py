@@ -51,14 +51,17 @@ def test_the_old_wordy_example_is_still_brought_to_the_reviewers_attention():
     assert any('explanation the teaching already gave' in cue for cue in cues)
     assert not any('short' in cue for cue in cues)
 
-def test_question_fragment_conditions_are_brought_to_review():
+def test_a_question_step_is_asked_about_not_faulted():
+    # The teacher, 23 September 2026: "Same? Move right" is a fine step,
+    # "short and snappy and it makes sense".
     design, photos = contract.valid_contract()
     sc = design['successCriteria'][0]
     sc['content']['steps'] = ['Compare the thousands digits first.', 'Same? Move one place right.',
                              {'text': 'Different? Choose < or >.'}]
     cues = packet.criteria_review_cues(sc)
-    assert any('step 2: question-fragment' in cue for cue in cues)
-    assert any('step 3: question-fragment' in cue for cue in cues)
+    assert any('step 2: a question step' in cue and 'If so it stands' in cue for cue in cues)
+    assert any('step 3: a question step' in cue for cue in cues)
+    assert not any('If... sentence' in cue for cue in cues)
     assert not any('step 1' in cue for cue in cues)
 
 @pytest.mark.parametrize('steps', [[], [''], [None], ['Read the number.', 7]])
@@ -122,13 +125,69 @@ def test_a_second_sentence_inside_a_step_is_brought_to_review():
     sc = {'content': {'steps': ['Look at the equator. Above means the Northern Hemisphere.',
                                 'If they are the same, compare the hundreds, then tens, then ones.']}}
     cues = packet.criteria_review_cues(sc)
-    assert any('step 1: more than one sentence' in cue for cue in cues)
+    # The equator example explains a word, so the cue asks about explanation.
+    assert any('step 1: more than one sentence' in cue and 'explain it (then it goes)' in cue for cue in cues)
+    assert any('is it a second step' in cue for cue in cues)
     assert not any('step 2' in cue for cue in cues)
+
+def test_a_panel_that_fits_is_not_flagged_to_check_before_teaching():
+    # The capacity numbers are a cue to look, not a fault (the teacher, 10 and
+    # 23 September 2026), so they never join the slides listed as needing a
+    # check before teaching. Read from the list itself, not its comment.
+    import re
+    build = (ROOT / 'builder/build.js').read_text(encoding='utf-8')
+    listed = re.search(r'const FLAGGING_SIGNALS = new Set\(\[(.*?)\]\);', build, re.S)
+    assert listed, 'the list of flagging signals has moved'
+    entries = re.findall(r"^\s*'([A-Z_]+)',", listed.group(1), re.M)
+    assert 'FIXED_CAPTION_CAPACITY' in entries
+    assert 'SUCCESS_CRITERIA_CAPACITY' not in entries
+    # Nor anywhere else in the build's code: put on the same line as another
+    # entry, or added to the list after it is made, it would flag a fitting
+    # panel just the same.
+    code = re.sub(r'//[^\n]*', '', build)
+    assert 'SUCCESS_CRITERIA_CAPACITY' not in code
+
+def _block(text: str, start: str, end: str) -> str:
+    at = text.index(start)
+    return ' '.join(text[at:text.index(end, at)].split())
+
+def test_the_sheet_list_refusal_is_held_whole():
+    # Decision 8 is success criteria only; a method's steps a child works
+    # through go with their question. A clause on any line of the message
+    # would change that, so the whole message is held.
+    text = (ROOT / 'worksheet-html/src/helpers/text.js').read_text(encoding='utf-8')
+    assert _block(text, 'throw new Error(\n    `INSTRUCTION_IS_A_LIST', ');\n}') == ' '.join('''
+        throw new Error(
+        `INSTRUCTION_IS_A_LIST: this instruction carries ${lines.length} lines, ` +
+        "so it is a list and will print as a paragraph of grey text. If they " +
+        'are the lesson\\'s success criteria, leave them off: they stay on the ' +
+        'board and are never printed on a worksheet. Otherwise, if they are steps a child ' +
+        'works through to reach the answer, they are part of its question: put ' +
+        'them with it, one to a line, or in maths use "method-frame". ' +
+        'If they are questions, use "questions" or "written-answers", ' +
+        "which number them and give the child somewhere to answer. An " +
+        `instruction is one direction, in at most ${INSTRUCTION_MAX_LINES} lines.`
+    '''.split())
+
+def test_the_18_to_19pt_warning_asks_for_nothing_and_is_held_whole():
+    # He chose to widen a panel only as far as 18pt needs (23 September
+    # 2026), so the warning names no layout to move to and no words to cut.
+    text = (ROOT / 'builder/src/content/steps.js').read_text(encoding='utf-8')
+    assert _block(text, '`success criteria set at ${sharedFont}pt', ');') == ' '.join('''
+        `success criteria set at ${sharedFont}pt: within the 18pt floor, below the ` +
+        `${TEXT_FONT_TARGET}pt a panel reads best at from a table. The longest step is ` +
+        `"${textOf(longest)}". Nothing need change: the words are the lesson ` +
+        `designer's and stay as they are, and a list that does not fit is refused ` +
+        `with a roomier shape named.`
+    '''.split())
 
 def test_guidance_names_both_misses_so_clear_steps_are_not_lengthened():
     voice = (ROOT / 'references/teacher-voice.md').read_text(encoding='utf-8')
     assert 'A step that is already clear is finished' in voice
-    assert 'A step that needs a second sentence is usually two steps' in voice
+    # Decision 9 (23 September 2026): a second sentence is not a fault in
+    # itself, but one that is a second step or only names the result still is.
+    assert 'A second sentence is not a fault in itself' in voice
+    assert 'a step that needs one is usually two steps' in voice
 
 def test_a_step_leaning_on_the_lessons_own_vocabulary_is_brought_to_review():
     # 14 September 2026: full sentences, no fragments, and still unreadable,

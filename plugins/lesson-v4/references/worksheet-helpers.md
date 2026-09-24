@@ -149,8 +149,8 @@ seconds it takes to cut the pile into three.
 Any figure inside a `"books"` sheet that the children will draw for themselves
 in their books carries `"onSlip": false`, so the question slips leave it off
 (see `books-or-sheet.md`). It changes nothing on the sheet itself. A slip drops
-the room for answers and the `steps` success-criteria panel on its own, so
-neither needs marking.
+the room for answers on its own, so that needs no marking. Success criteria are
+never on a sheet or a slip: the engine refuses the `steps` panel on a sheet.
 
 **One lesson's sheets normally share an orientation.** The teacher prints the
 file once and cuts it into piles, so a portrait Below on top of a landscape

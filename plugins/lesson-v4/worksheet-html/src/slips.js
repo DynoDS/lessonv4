@@ -229,7 +229,8 @@ function forSlip(node) {
   // and on a Year 4 rounding slip it was 45mm of a 100mm slip: every child
   // sticking the method into their book instead of the questions. Daniel, 19
   // September 2026, having cut it off printed worksheets himself: "on a slip, I
-  // really don't think it's needed at all". The sheet keeps it, Below included.
+  // really don't think it's needed at all". Since 23 September 2026 the sheet
+  // refuses it too (render.js, CRITERIA_NOT_ON_SHEETS); this stays for older specs.
   if (node.helper === "steps") return null;
 
   if (node.helper === "drawing-space") {

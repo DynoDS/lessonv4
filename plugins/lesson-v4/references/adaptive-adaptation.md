@@ -147,7 +147,7 @@ When a distinct resource is needed:
 
 Use `reasoning-prompts.md` for reusable cognitive shapes and the matching subject file for authentic disciplinary depth. The two sources work together: the catalogue supplies a possible thinking structure, while the subject and objective determine whether that structure is genuinely deep here.
 
-When the common task is open, Greater Depth may remain the same central task with richer input, sharper success criteria, a more demanding reference or a higher standard for the outcome. Do not bolt on extra work merely because a capable pupil may finish.
+When the common task is open, Greater Depth may remain the same central task with richer input, sharper success criteria (written into the task, never printed on the sheet as a criteria panel), a more demanding reference or a higher standard for the outcome. Do not bolt on extra work merely because a capable pupil may finish.
 
 ---
 

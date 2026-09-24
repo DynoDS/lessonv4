@@ -21,9 +21,16 @@ HEADING = re.compile(r"^(#{1,6}) ")
 RUNTIME = [path for folder in ("agents", "references", "skills", "commands")
            for path in (ROOT / folder).rglob("*.md") if path.name != "build-review-log.md"]
 # The programs the reviewer and designer are handed text by (the review packet's
-# notes and triggers among them). A retired phrase must not come back there
-# either. The tests are left out: they name retired phrases to bar them.
-PROGRAMS = sorted((ROOT / "scripts").glob("*.py"))
+# notes and triggers among them, and the builders' refusal messages the slide,
+# worksheet and wall designers are told to follow). A retired phrase must not
+# come back there either. The tests are left out: they name retired phrases to
+# bar them.
+PROGRAMS = sorted((ROOT / "scripts").glob("*.py")) + sorted(
+    path
+    for folder in ("builder", "worksheet-html", "working-wall-html", "stick-in-sheets-html", "shared")
+    for path in (ROOT / folder).rglob("*.js")
+    if "node_modules" not in path.parts and "test" not in path.parts and "out" not in path.parts
+)
 
 
 def flat(text: str) -> str:

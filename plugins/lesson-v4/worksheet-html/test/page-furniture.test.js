@@ -195,6 +195,38 @@ test("a steps panel costs more than the same words as prose, and honestly", () =
   assert.ok(panelMm > 45 && panelMm < 70, `a six-step panel measures ${panelMm.toFixed(1)}mm`);
 });
 
+test("a sheet carrying a success-criteria panel is refused", () => {
+  // The teacher, 23 September 2026: "I don't want any success criteria on
+  // worksheets." The panel is kept for the board's colour marks, not for paper.
+  const { renderSheet } = require("../src/render");
+  const sheet = {
+    layout: "stack",
+    zones: { a: { stack: [
+      { helper: "questions", question: true, items: ["Round 2,748 to the nearest 100."] },
+      STEPS,
+    ] } },
+  };
+  assert.throws(() => renderSheet(sheet), /CRITERIA_NOT_ON_SHEETS/);
+
+  // Inside a row it is still found, at the build and in the designer's own
+  // preflight, which must never call a sheet clean that the build refuses.
+  const inRow = {
+    layout: "stack",
+    zones: { a: { stack: [
+      { helper: "questions", question: true, items: ["Round 2,748 to the nearest 100."] },
+      { row: [{ helper: "instruction", text: "Use the chart." }, STEPS] },
+    ] } },
+  };
+  assert.throws(() => renderSheet(inRow), /CRITERIA_NOT_ON_SHEETS/);
+  const { checkWorksheet } = require("../src/worksheet");
+  const report = checkWorksheet({
+    meta: { lesson: "T", lo: "L", yearGroup: 4 },
+    sheets: { expected: inRow },
+  });
+  assert.equal(report.length, 1);
+  assert.match(report[0].badZones.join(" "), /CRITERIA_NOT_ON_SHEETS/);
+});
+
 test("an instruction carrying a list is refused and told where the list belongs", () => {
   // The producing fault behind the grey paragraph. Every multi-line instruction
   // in the saved specs was either criteria or questions wearing this helper's
@@ -205,7 +237,9 @@ test("an instruction carrying a list is refused and told where the list belongs"
   };
   assert.throws(() => renderHelper(asList, 174), /INSTRUCTION_IS_A_LIST/);
   assert.throws(() => measure(asList, 174), /INSTRUCTION_IS_A_LIST/);
-  assert.throws(() => renderHelper(asList, 174), /"steps" helper/);
+  // Criteria and a method's steps stay on the board (4.2.288), so the
+  // refusal no longer sends them to the steps panel.
+  assert.throws(() => renderHelper(asList, 174), /never printed on a worksheet/);
   assert.throws(() => renderHelper(asList, 174), /written-answers/);
 
   // A direction genuinely in two parts is one direction and is left alone.

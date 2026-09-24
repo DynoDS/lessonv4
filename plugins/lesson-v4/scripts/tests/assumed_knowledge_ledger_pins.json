@@ -4376,11 +4376,11 @@
   },
   {
    "id": "AK-F30",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; then \"just-taught\" left in 4.2.288 (success-criteria decision 16): only a method secure from earlier lessons is named without saying how",
    "present": [
     {
      "file": "references/teaching-sequence-skill-based.md",
-     "text": "**Name a familiar or just-taught action only when children genuinely know how to carry it out.** A short label may remind children of a secure sub-procedure without re-teaching it. Do not hide the lesson's new or difficult thinking inside an unexplained label",
+     "text": "**Name a familiar action only when children genuinely know how to carry it out from earlier lessons.** A short label may remind children of a secure sub-procedure without re-teaching it. Do not hide the lesson's new or difficult thinking inside an unexplained label",
      "section": {
       "heading": "## Writing the Success Criteria",
       "occurrence": 0,
@@ -4740,11 +4740,11 @@
   },
   {
    "id": "AK-G07",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; then its paragraph re-pinned in 4.2.288, where the criteria sentence gained a pointer to the Success Criteria section (success-criteria decision 10)",
    "present": [
     {
      "file": "references/preferences.md",
-     "text": "**Simple must still be intelligible.** Success criteria are short runnable actions. Questions keep the context needed to answer them and references remain beside the work they support. Read a prompt with its answer covered: can children tell what kind of response is wanted? Clarify an unexplained blank or teacher shorthand without supplying the answer.",
+     "text": "**Simple must still be intelligible.** Success criteria are short runnable actions (Success Criteria above). Questions keep the context needed to answer them and references remain beside the work they support. Read a prompt with its answer covered: can children tell what kind of response is wanted? Clarify an unexplained blank or teacher shorthand without supplying the answer.",
      "section": {
       "heading": "### Lesson Designer content boundaries",
       "occurrence": 0,
@@ -5916,11 +5916,11 @@
   },
   {
    "id": "AK-J14",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; then rule 13 turned round in 4.2.288 (success-criteria decision 8, \"I don't want any success criteria on worksheets\"): the sheet that must stand on its own no longer reprints the criteria",
    "present": [
     {
      "file": "agents/worksheet-designer.md",
-     "text": "Omit a duplicated panel when the surrounding lesson context already supplies the reference adequately. Include the exact concise criteria when the sheet must stand independently or access depends on that reference",
+     "text": "**Never print success criteria on a worksheet.** They stay on the board, where children consult them while they work, and the teacher does not want them on any sheet or slip.",
      "section": {
       "heading": "## Rules that never change",
       "occurrence": 0,

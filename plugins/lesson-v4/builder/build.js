@@ -89,7 +89,8 @@ const FLAGGING_SIGNALS = new Set([
   'SLIDE_MARKER_LITERAL',
   'PICTURE_BELOW_READABLE_FLOOR',
   'FIXED_CAPTION_CAPACITY',
-  'SUCCESS_CRITERIA_CAPACITY',
+  // SUCCESS_CRITERIA_CAPACITY is a cue to look, not a fault (the teacher's
+  // rulings of 10 and 23 September 2026), so a panel that fits is not listed.
 ]);
 
 function diagnostic(signal, faultClass, location, message) {
@@ -615,7 +616,8 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
 
   // Text that fitted, but under the 20pt the board aims for. Not a failure:
   // 18 is a legal size and some boxes genuinely need it. It is said out loud
-  // because the repair is always the words, and a Teach slide whose cards all
+  // because the repair is the words (except in a criteria panel, whose words
+  // stay and which 18pt already suits), and a Teach slide whose cards all
   // sat at 19 read as a chosen size rather than as cards with too much in them
   // (18 September 2026).
   const belowTarget = Array.isArray(autofit.result && autofit.result.belowTarget)
@@ -626,7 +628,8 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
     console.log(
       `
 SLIDE_TEXT_BELOW_TARGET: ${belowTarget.length} box(es) on slide(s) ` +
-        `${slidesHit.join(', ')} fitted under 20pt. Shorter words read better than smaller ones.`
+        `${slidesHit.join(', ')} fitted under 20pt. Shorter words read better than smaller ones, ` +
+        `except in a criteria panel, whose words stay and whose lever is a roomier composition.`
     );
     belowTarget.forEach((b) => {
       console.log(`  slide ${b.slide} at ${b.pt}pt: "${b.preview}"`);

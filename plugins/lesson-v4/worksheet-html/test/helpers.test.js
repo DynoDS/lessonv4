@@ -400,7 +400,9 @@ test("every helper has a place in the catalogue the designer reads", () => {
   // to end - and it would otherwise only surface when someone happened to
   // regenerate the file.
   const { FAMILIES } = require("../scripts/build-catalogue");
-  const placed = FAMILIES.flatMap(([, list]) => list);
+  const { NOT_ON_SHEETS } = require("../src/render");
+  // A helper the engine never lets onto a sheet is left out on purpose.
+  const placed = [...FAMILIES.flatMap(([, list]) => list), ...NOT_ON_SHEETS];
 
   const homeless = helperNames().filter((n) => !placed.includes(n));
   assert.deepEqual(

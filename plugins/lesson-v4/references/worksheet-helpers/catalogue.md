@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 91 helpers, what each is for, and a working example of each.
+The 90 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -47,7 +47,6 @@ emailed. Never write `imageHref` yourself.
 - `questions` - One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.
 - `written-answers` - A question answered in the child's own words, with ruled lines under it.
 - `source-text` - A passage, account or extract the child reads and works from.
-- `steps` - Success criteria or the steps of the taught method, in the same green panel the class worked from on the board.
 
 **Tables**
 
@@ -242,25 +241,6 @@ Smallest usable: **70mm wide x 20mm tall**. Spare height: never takes spare heig
     "Attendance is poor this week. Many of the older boys are away at the harvest."
   ],
   "attribution": "Log book, October 1885"
-}
-```
-
-#### `steps`
-
-Success criteria or the steps of the taught method, in the same green panel the class worked from on the board. Nothing in it is written on.
-
-Smallest usable: **58mm wide x 41mm tall**. Spare height: never takes spare height.
-
-```json
-{
-  "helper": "steps",
-  "title": "Use these steps to help you.",
-  "steps": [
-    "Read the question: 10s or 100s?",
-    "Find the 10s or 100s each side.",
-    "Draw a number line. Mark your number.",
-    "Find halfway. Before it or after it?"
-  ]
 }
 ```
 

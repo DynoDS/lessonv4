@@ -1,0 +1,29 @@
+# Brief: independent check of the success-criteria change (4.2.288)
+
+You are checking someone else's work. The teacher who owns this lesson plugin, Daniel, set one condition above all others: "A shorter file that loses a rule is a failure however clean it reads." Past tidy-ups reworded rules, reported nothing had changed, and dropped things. Find anything this change lost, softened, widened, contradicted or got wrong before he reads it. You did not write it, which is why you are asked.
+
+## What changed, and where to look
+
+- The plugin: `C:\Users\Daniel\Projects\lessonv4\plugins\lesson-v4`. The change is uncommitted on commit `79426973` (4.2.287). **The old text is HEAD**: `git diff HEAD -- plugins/lesson-v4` from `C:\Users\Daniel\Projects\lessonv4` shows the whole change, and `git show HEAD:<path>` any old file. The repository root holds about 50 MB of untracked built lessons; ignore them.
+- The rule list: `plans/2026-09-23-success-criteria-ledger.md` (392 rows, each rule's own words in «guillemets»). Daniel's decisions: its `Decisions taken (23 September 2026)` section, his words, and `Read back, and settled` below it, which is the standard where he said more than "agree". `Decisions for Daniel` holds what each proposed.
+- The change plan: `plans/2026-09-23-success-criteria-change-plan.md`. The mapping: `plans/2026-09-23-success-criteria-mapping.md`. The pins: `scripts/tests/success_criteria_ledger_pins.json`, checked by `test_success_criteria_ledger_is_kept.py` through `ledger_pin_checks.py`. The change also moved eleven rows of the earlier topics' pins (`vocabulary_`, `teach_then_do_`, `quick_checks_`, `assumed_knowledge_ledger_pins.json`).
+- The scripts that made the change: `plans/streamline-tools/sc-change/` (`s1` to `s15`, and `build_sc_mapping.py`).
+- The depth expected, and the shape of your report: `plans/streamline-tools/assumed-knowledge-change-check.md`, the check of the previous change.
+
+## What to check
+
+1. **Row by row, every changed row** (the mapping lists them), old words beside new: a lost condition or exception, a strength that dropped, a rule widened or narrowed, a pointer that drops what its copy carried. Quote both.
+2. **Each of the sixteen decisions** applied as settled in the read-back, no more and no less. Look hardest at: decision 6 (criteria are what a stuck child uses; sentence stems count) against every place that still says criteria are "what good work shows" or a "standard"; decision 8 (no criteria on any worksheet) in the wording, the validator, the worksheet engine's refusal, the catalogue, slips, Below and Greater Depth sheets, and anything that still tells a designer to print them; decision 9 (his rounding rewrite changed at his word; a second sentence not a fault in itself); decision 15 (a short question is a fine step) against every place that still calls it a slogan or a fragment; decisions 3, 4, 12 and 13 against every place that still offers fewer criteria, a criteria slide for overflow, a shortened wall step or a table turned into lines. Report anything added that no decision asked for, and anything a decision asked for that is missing.
+3. **What must not have moved**: his approved rewrites in the voice guide other than the rounding one (which he changed); the nutrient-table rule; recognition as the one case where a labelled set is the criteria; building live and `drawLive`; the half-slide limit; the colour marks' syntax; history's significance questions.
+4. **The code.** The validator's new worksheet refusal and launch message; `design-review-packet.py`'s two cues; the builder's panel and steps messages and the capacity warning; the worksheet engine's `CRITERIA_NOT_ON_SHEETS`, `NOT_ON_SHEETS` in the catalogue, `check-render.js` and the tests. Build review views and worksheets from saved designs where you can, and run the suites: from the plugin folder `python -X utf8 -m pytest scripts/tests -q -p no:cacheprovider`, and `node --test` in `worksheet-html`, `builder` (`node --test "test/*.test.js"`) and `working-wall-html`.
+5. **Collateral and contradictions** anywhere in the plugin that now disagree with the new wording (search the whole plugin, programs included).
+6. **The pins**, attacked on a scratch copy of the WHOLE plugin folder (copy everything except `node_modules`, with the ledgers beside it; a copy missing a folder fails for that reason alone, so run the pin tests once on the untouched copy first and confirm they pass). Delete, soften, move and re-add rules this change touched, and bring back the retired wordings ("the picture wins, then the taught word", "fewer criteria on this slide", "give the same criteria as lines", "Five short steps is a useful default", "just-taught", "goes under the steps as a note", "Write a condition as a sentence, not a slogan", "Include the exact concise criteria when the sheet must stand independently") in new places. Report each attempt: caught by the pin test, by another test, or by nothing.
+7. **Honesty.** The 4.2.288 build-log entry (end of `references/build-review-log.md`): true to the files? Any new em dash or en dash in plugin prose written by this change?
+
+## Limits
+
+Change nothing in the repository, and never run a script from the repository that writes files (run the mapping builder only on your scratch copy, and check its paths before you do). A different sound wording is not a finding. Put scratch copies only in `plans/streamline-tools/scratch/scchg/`, and never clear or reuse any other folder there.
+
+## Your report
+
+Write it to `plans/streamline-tools/success-criteria-change-check.md`, in the shape of the previous check: what you did, numbered findings most serious first with quoted old and new text, one line per thing checked and found sound, and a closing list of what you would fix before release. Reply with a summary of no more than fifteen lines.

@@ -94,9 +94,9 @@ the question to answer it, that is a reason for `"sheet"`.
 ## Figures the children draw for themselves: `"onSlip": false`
 
 A books sheet can still print a figure. The slip keeps what the sheet prints
-apart from three things it takes out for itself: the room for answers, the
-success criteria panel (the `steps` helper, because the child already has it on
-the board and the working wall), and anything marked `"onSlip": false`.
+apart from two things it takes out for itself: the room for answers, and
+anything marked `"onSlip": false`. Success criteria are on neither: they stay on
+the board.
 
 When the children will draw a figure for themselves in their books (a Year 4
 class ruling its own 0 to 100 number line), mark that figure `"onSlip": false`,

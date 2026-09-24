@@ -2095,9 +2095,11 @@ def class_view_section(view: str) -> str:
     return view[start:end]
 
 
-def test_reused_worksheet_criteria_are_resolved_beside_the_new_task():
+def test_the_boards_criteria_are_named_beside_the_sheet_they_are_used_for():
     """Expose a semantic mismatch to the reviewer, without pretending the
     packet builder can decide whether the support is pedagogically suitable.
+    Criteria are never printed on a sheet (23 September 2026), so the sheet
+    is headed with the board's criteria a child has in view while doing it.
     """
     design, photos = content_based_design()
     design["successCriteria"] = [{
@@ -2107,7 +2109,11 @@ def test_reused_worksheet_criteria_are_resolved_beside_the_new_task():
             "rows": [["Sources", "A detail from the toys and the account"]],
         },
     }]
-    design["worksheet"]["successCriteriaRefs"] = ["sc-001"]
+    for unit in design["teachingSequence"]:
+        unit["successCriteriaRefs"] = []
+    practise = next(u for u in design["teachingSequence"] if u["kind"] == "practise")
+    practise["successCriteriaRefs"] = ["sc-001"]
+    design["worksheet"]["successCriteriaRefs"] = []
     design["worksheet"]["contentBlocks"] = [{
         "id": "ws-stimulus-001", "kind": "stimulus-set",
         "stimulus": "Account A describes school. Account B describes songs.",
@@ -2115,11 +2121,35 @@ def test_reused_worksheet_criteria_are_resolved_beside_the_new_task():
         "prompts": [],
     }]
     section = class_view_section(packet_module.build_review_view(design, photos))
+    assert "A detail from the toys and the account" in section.split("### Worksheet", 1)[0]
     worksheet_view = section.split("### Worksheet", 1)[1]
-    assert "A detail from the toys and the account" in worksheet_view
+    assert worksheet_view.startswith(
+        f" (done beside the success criteria shown above at {practise['label']})"
+    )
+    assert "A detail from the toys and the account" not in worksheet_view
     assert "Account A describes school. Account B describes songs." in worksheet_view
     assert "Compare learning and play using both accounts." in worksheet_view
     assert "sc-001" not in worksheet_view
+
+
+def test_the_sheet_heading_names_each_list_and_tells_repeated_labels_apart():
+    design, photos = content_based_design()
+    units = design["teachingSequence"]
+    for unit in units:
+        unit["successCriteriaRefs"] = []
+    first, second = units[0], units[-1]
+    first["label"] = second["label"] = "Your Turn"
+    first["successCriteriaRefs"] = [design["successCriteria"][0]["id"]]
+    design["successCriteria"].append(dict(design["successCriteria"][0], id="sc-extra"))
+    second["successCriteriaRefs"] = ["sc-extra"]
+    heading = packet_module.worksheet_heading(design)
+    assert heading == (
+        "Worksheet (done beside the success criteria shown above at the first Your Turn "
+        "and at the second Your Turn)"
+    )
+    for unit in units:
+        unit["successCriteriaRefs"] = []
+    assert packet_module.worksheet_heading(design) == "Worksheet"
 
 
 def test_the_view_opens_with_the_lesson_as_the_class_meets_it():

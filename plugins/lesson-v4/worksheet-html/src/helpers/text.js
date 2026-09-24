@@ -23,7 +23,8 @@ const { formatQuestionLabel } = require("../labels");
 // both of which already have a home:
 //
 //   "Use these steps to help you. / Read the question: 10s or 100s? / Find the
-//    10s each side. / ..."        the lesson's method, which is `steps`
+//    10s each side. / ..."        the lesson's success criteria, which stay on
+//                                  the board (23 September 2026)
 //   "Choose an example ... / What does it mean to you? Explain why. / What does
 //    your meaning share with Hana's?"   three questions, which is a question
 //                                       helper with somewhere to answer
@@ -50,9 +51,11 @@ function checkInstruction(spec) {
   throw new Error(
     `INSTRUCTION_IS_A_LIST: this instruction carries ${lines.length} lines, ` +
       "so it is a list and will print as a paragraph of grey text. If they " +
-      'are the lesson\'s success criteria or the steps of its method, use the ' +
-      '"steps" helper, which draws the panel the class worked from on the ' +
-      'board. If they are questions, use "questions" or "written-answers", ' +
+      'are the lesson\'s success criteria, leave them off: they stay on the ' +
+      'board and are never printed on a worksheet. Otherwise, if they are steps a child ' +
+      'works through to reach the answer, they are part of its question: put ' +
+      'them with it, one to a line, or in maths use "method-frame". ' +
+      'If they are questions, use "questions" or "written-answers", ' +
       "which number them and give the child somewhere to answer. An " +
       `instruction is one direction, in at most ${INSTRUCTION_MAX_LINES} lines.`
   );

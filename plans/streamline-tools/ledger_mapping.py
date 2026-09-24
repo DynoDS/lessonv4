@@ -79,8 +79,15 @@ RUNTIME = [q for folder in ("agents", "references", "skills", "commands")
            for q in (ROOT / folder).rglob("*.md") if q.name != "build-review-log.md"]
 
 
+PROGRAMS = sorted((ROOT / "scripts").glob("*.py")) + sorted(
+    q for folder in ("builder", "worksheet-html", "working-wall-html", "stick-in-sheets-html", "shared")
+    for q in (ROOT / folder).rglob("*.js")
+    if "node_modules" not in q.parts and "test" not in q.parts and "out" not in q.parts
+)
+
+
 def absent_everywhere(phrase: str) -> bool:
-    return all(norm(phrase) not in norm(q.read_text(encoding="utf-8")) for q in RUNTIME)
+    return all(norm(phrase) not in norm(q.read_text(encoding="utf-8")) for q in RUNTIME + PROGRAMS)
 
 
 REVIEW_LINE = "## Output Format Block"

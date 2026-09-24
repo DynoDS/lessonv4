@@ -267,10 +267,9 @@ How-to steps:
   "drawLive": false,
   "content": {
     "steps": [
-      "Read the question.",
-      "Choose the correct operation.",
-      "Work it out.",
-      "Check the answer."
+      "Compare the thousands digits first.",
+      "If they are the same, compare the hundreds.",
+      "Put < or > between the numbers, with the open side facing the greater number."
     ]
   }
 }
@@ -319,7 +318,7 @@ Labelled reference:
 }
 ```
 
-`drawLive: true` marks a criteria worth building live and keeping beyond today: a labelled set a later lesson assumes, or a method children run across a sequence of lessons (`preferences.md` → Success Criteria). The slide carries the flipchart cue for it and the working wall reproduces it. It does not prescribe where the teacher writes.
+`drawLive: true` marks a criteria worth building live and keeping beyond today: a labelled set a later lesson assumes, or a method children run across a sequence of lessons (`preferences.md` → Success Criteria). The slide carries the flipchart cue for it and it is offered to the working wall, which puts up the exact same steps or reference if it takes them. It does not prescribe where the teacher writes.
 
 For a Skill-based concept, define the concept once:
 
@@ -838,7 +837,7 @@ A `shared-frame` must be `generated`, must use `required-task-resource`, must us
 - `child-generated`
 - `mixed`
 
-`successCriteriaRefs` names the exact success-criteria objects printed on the generated Expected sheet.
+`successCriteriaRefs` is always `[]`: success criteria are never printed on a worksheet, and the validator refuses any.
 
 `stickyKnowledgeRefs` names the exact sticky facts deliberately available on that sheet. Downstream designers do not add or remove them.
 

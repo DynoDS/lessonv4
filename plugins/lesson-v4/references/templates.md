@@ -407,7 +407,7 @@ Examples:
 
 #### `success-criteria`
 
-**Purpose:** Full-slide success-criteria reference. The entire body below the title is a criteria zone. Use when the criteria needs space — a large table, a detailed step list, a classification chart.
+**Purpose:** Full-slide success-criteria reference. The entire body below the title is a criteria zone. Use it only for criteria being taught, compared or built with the class (a classification chart built live, the vertebrates table), never for criteria that did not fit beside the work.
 
 **Slots:** `title` (defaults to "Success Criteria"), `criteria` (a content object: `steps`, `table`, `bullets`, `vocab`, or `image`).
 
@@ -539,7 +539,7 @@ Zone names: `primary` (the larger) and `secondary` (the smaller). Each takes a c
 | `side-big-v` | 50/25/25 vertical (`primarySide` picks top/bottom) | `primary`, `secondary1`, `secondary2` | A / B / B |
 | `sandwich-v` | Thin top strip + tall middle + thin bottom strip | `top`, `middle`, `bottom` | F / A / F |
 
-**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and success-criteria steps. The bottom strip is sized for ~5 step rows at intended typography. Centre is class A so it accepts large visual tools.
+**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and a short fourth piece in the bottom strip, which holds no criteria list at 18pt: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`). Centre is class A so it accepts large visual tools.
 
 ### 3.3 Grid layouts
 
@@ -732,14 +732,14 @@ Green answer text is not an ordinary emphasis option. Do not set text `color` to
 
 ### `steps`
 ```json
-{ "type": "steps", "steps": ["Read the question.", "Underline the key information.", "Solve."] }
+{ "type": "steps", "steps": ["Change the ones digit to 0.", "Add 10.", "Mark halfway and your number.", "Round to the nearer ten. If it is halfway, round up."] }
 ```
 
 A step is normally a string. A success-criteria step that names a visible notation mark may use `{ "text": "...", "helper": "<catalogue-key>" }` so the engine draws a **Success Criteria Helper** beside the unchanged wording. Existing JSON using `figure` remains valid, but new lessons use `helper`. The shared catalogue, size support (`full-size`, `SC-inline`, or `both`), and strict boundary live in `slide-success-criteria.md`; do not invent keys or use this object form for decorative pictures.
 
 **Optional `heading`** — a short label rendered directly above the first step, hugging the list rather than floating above it. Use it to title a step list inside a free-template zone — e.g. `"heading": "✓ Success Criteria"` over a criteria panel — so the label reads as part of the list. `headingColor` (hex, e.g. `"0070C0"`) and `headingFontSize` are optional. Prefer this over a `stack` of `[ text-label, steps ]`: a two-item stack splits the zone into equal halves and centres each, which strands a one-line label in the middle of its half, far from the steps it names.
 
-**Minimum useful size:** ~0.4–0.5″ per row at intended typography (each row carries a numbered badge plus 18pt bold text). 5 steps needs ~2.0–2.5″ of zone height. The bottom strip of `centre-big-v` (~1.66″) cannot hold 5 steps at full size — for SC of 4+ steps, use a template with a dedicated SC panel (`maths-turn-sc`).
+**Minimum useful size:** ~0.4–0.5″ per row at intended typography (each row carries a numbered badge plus 18pt bold text). Five one-line steps need about 3.25″ inside a criteria panel. The bottom strip of `centre-big-v` (~1.66″) holds no criteria list at 18pt: use a template with a dedicated SC panel (`maths-turn-sc`).
 
 ### `vocab`
 ```json
@@ -1751,7 +1751,7 @@ Use it when the criteria has to go somewhere those templates' panel can't reach:
 
 **`label` field (optional):** the panel heading, default `"✓ Success Criteria"`.
 
-**`content` field:** any content object — `steps`, a labelled `row` or `stack` of diagrams, a `table`. It renders inside the box beneath the label, taking the zone's class, and that class is checked against the content's own row in the compatibility table. The panel draws its content inside its own box but cannot widen the zone it sits in, so in a narrow sidebar (E-narrow) the panel takes `steps`, `text` or a list and a `table` is refused: a two-column "The change / The reason" criteria table in a sidebar blanked both task slides of a Year 4 PSHE deck on 21 September 2026. Check the nested type's own row before nesting it, and put a criteria table in a wide zone or give the same criteria as lines. The same object may instead be placed under the key `criteria`: that is the key the `*-sc` templates and the `success-criteria` template use for the identical thing, and both keys fill the panel here, so either reads correctly. Put the criteria under one of them — a panel that carries neither renders an empty green box, and the build now warns when that happens. When the content is procedural `steps`, the steps use the same compact white cards and green number badges as the fixed `*-sc` templates; the route to the panel does not change the criteria's visual identity.
+**`content` field:** any content object — `steps`, a labelled `row` or `stack` of diagrams, a `table`. It renders inside the box beneath the label, taking the zone's class, and that class is checked against the content's own row in the compatibility table. The panel draws its content inside its own box but cannot widen the zone it sits in, so in a narrow sidebar (E-narrow) the panel takes `steps`, `text` or a list and a `table` is refused: a two-column "The change / The reason" criteria table in a sidebar blanked both task slides of a Year 4 PSHE deck on 21 September 2026. Check the nested type's own row before nesting it, and put a criteria table in a wide zone; a table stays a table and is never turned into lines. The same object may instead be placed under the key `criteria`: that is the key the `*-sc` templates and the `success-criteria` template use for the identical thing, and both keys fill the panel here, so either reads correctly. Put the criteria under one of them — a panel that carries neither renders an empty green box, and the build now warns when that happens. When the content is procedural `steps`, the steps use the same compact white cards and green number badges as the fixed `*-sc` templates; the route to the panel does not change the criteria's visual identity.
 
 Do **not** wrap criteria in `sc-panel` when it already sits in a `maths-*-sc` template's `criteria` slot — that slot draws the green box itself, so wrapping would double it. `sc-panel` is for criteria placed *outside* those panels.
 
@@ -3021,7 +3021,7 @@ If the slide-designer assigns a content type to an incompatible zone, the builde
 
 Nothing is published while either is outstanding, so a slide that would have shipped blank is found before a file exists rather than after.
 
-**Two capacity checks preserve every word and item.** `FIXED_CAPTION_CAPACITY` and `SUCCESS_CRITERIA_CAPACITY` never shorten, remove or rewrite content. The ordinary builder reports them as warnings. The Slide Designer's final `check-slide-design.js` gate treats them as blocking composition diagnostics because a candidate may not be promoted while either fixed surface is below its readable capacity. `PICTURE_BELOW_READABLE_FLOOR` blocks at the same gate: a picture children work from that was allocated less than its tier's floor (`slide-visual-sizing.md` → The readable floors) is a composition fault the designer repairs with a taller zone, a split, or `essential: false` for a picture that is only context. The Slide Designer must change layout, allocate more space or split faithfully. It must not edit source-authored wording or remove referenced criteria.
+**Two capacity checks preserve every word and item.** `FIXED_CAPTION_CAPACITY` and `SUCCESS_CRITERIA_CAPACITY` never shorten, remove or rewrite content. The ordinary builder reports them as warnings. The Slide Designer's final `check-slide-design.js` gate treats `FIXED_CAPTION_CAPACITY` as a blocking composition diagnostic, because a candidate may not be promoted while a fixed caption band is below its readable capacity; `SUCCESS_CRITERIA_CAPACITY` only reports, because a method with six real steps is a method with six real steps and "too much" is a judgement, not a number. `PICTURE_BELOW_READABLE_FLOOR` blocks at the same gate: a picture children work from that was allocated less than its tier's floor (`slide-visual-sizing.md` → The readable floors) is a composition fault the designer repairs with a taller zone, a split, or `essential: false` for a picture that is only context. The Slide Designer must change layout, allocate more space or split faithfully. It must not edit source-authored wording or remove referenced criteria.
 
 ---
 

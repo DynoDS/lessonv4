@@ -19,8 +19,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import sys
 import unittest
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ledger_pin_checks import PROGRAMS  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PINS = Path(__file__).resolve().with_name("vocabulary_ledger_pins.json")
@@ -127,7 +131,12 @@ class EveryLedgerRowIsStillInItsHome(unittest.TestCase):
     def test_every_retired_phrase_stays_gone(self) -> None:
         for row in self.pins:
             for pin in row["absent"]:
-                files = RUNTIME if pin.get("everywhere") else [ROOT / pin["file"]]
+                # "Everywhere" is the instructions and the programs whose messages
+                # the designers follow, as for every later topic. A retired story
+                # may stay in a program's comment, which only a maintainer reads.
+                story = row["outcome"].startswith("story")
+                reach = RUNTIME + ([] if story else PROGRAMS)
+                files = reach if pin.get("everywhere") else [ROOT / pin["file"]]
                 for path in files:
                     with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
                         self.assertNotIn(pin["text"], flat(path.read_text(encoding="utf-8")))

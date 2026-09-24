@@ -1222,6 +1222,34 @@ def vocabulary_placement_line(design: dict) -> str:
     return "; ".join(parts)
 
 
+def worksheet_heading(design: dict) -> str:
+    """The worksheet's heading in the class view. Criteria are never printed
+    on a sheet (the teacher, 23 September 2026), so a child doing it uses the
+    board's; the heading names, for each list the lesson shows, the last beat
+    that showed it, so the reviewer checks they fit the sheet's own task, not
+    only the board task they served. A label the lesson uses more than once is
+    told apart by its place ("the second Your Turn")."""
+    units = design.get("teachingSequence") or []
+    labels = [unit.get("label") or "" for unit in units]
+    last_shown: dict[str, int] = {}
+    for index, unit in enumerate(units):
+        for ref in unit.get("successCriteriaRefs") or []:
+            if isinstance(ref, str):
+                last_shown[ref] = index
+    if not last_shown:
+        return "Worksheet"
+    places = []
+    for index in sorted(set(last_shown.values())):
+        label = labels[index]
+        if labels.count(label) > 1:
+            nth = labels[: index + 1].count(label)
+            words = ["first", "second", "third", "fourth", "fifth"]
+            place = words[nth - 1] if nth <= len(words) else f"number {nth}"
+            label = f"the {place} {label}"
+        places.append(label)
+    return f"Worksheet (done beside the success criteria shown above at {' and at '.join(places)})"
+
+
 def build_class_view(design: dict) -> tuple[list[str], int]:
     """The lesson as the class meets it: plain text, lesson order, no field names.
 
@@ -1275,7 +1303,7 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
     if worksheet.get("status") == "generated":
         strings = class_view_worksheet(worksheet, criteria=criteria, sticky=sticky)
         if strings:
-            blocks.append(("Worksheet", strings))
+            blocks.append((worksheet_heading(design), strings))
 
     count = sum(len(strings) for _, strings in blocks)
     year = design["lesson"]["yearGroup"]
@@ -1966,8 +1994,10 @@ def criteria_review_cues(row: dict, vocabulary_terms: list[str] | None = None) -
         cues.append(f"{len(rows)} rows: check lookup load and readable placement")
     # A length cue on its own only ever pushed review towards shorter steps,
     # and the September 2026 lists the user rewrote were short and vague. Long
-    # steps still get a reread for explanation the teaching already gave; a
-    # question-fragment condition gets one for shorthand the child must unpack.
+    # steps still get a reread for explanation the teaching already gave. A
+    # second sentence and a question step are asked about, not faulted: the
+    # teacher's decisions of 23 September 2026 keep a condition that is part of
+    # the step and a question that tells the child what to do next.
     for index, step in enumerate(steps, 1):
         text = step if isinstance(step, str) else str((step or {}).get("text", ""))
         words = len(text.split())
@@ -1978,13 +2008,16 @@ def criteria_review_cues(row: dict, vocabulary_terms: list[str] | None = None) -
             )
         if SECOND_SENTENCE.search(text.strip()):
             cues.append(
-                f"step {index}: more than one sentence; is it two steps, or "
-                "carrying explanation the teaching already gave?"
+                f"step {index}: more than one sentence; does the second only "
+                "name what the step produced, restate it or explain it (then it "
+                "goes), is it a second step, or is it a condition that is part of the "
+                "step or a stem the child writes into (then it stays)?"
             )
         if FRAGMENT_CONDITION.match(text.strip()):
             cues.append(
-                f"step {index}: question-fragment condition; would an If... "
-                "sentence save the child unpacking it?"
+                f"step {index}: a question step; does it tell the child what to "
+                "do next or what to look for? If so it stands, as `Same? Move "
+                "right.` does"
             )
         # 14 September 2026: `Decide which two landmarks the number lies
         # between.` read as a clear sentence and passed, because the lesson had

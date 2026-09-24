@@ -42,9 +42,11 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       `SC_PANEL_TOO_LARGE: the success criteria panel takes ${Math.round(share * 100)}% ` +
       `of the slide, and the teacher never wants criteria over half a slide beside ` +
       `the work. Give it a zone of at most half the slide (a 50-50 split, or the ` +
-      `smaller side of a wider one). If the criteria then do not fit at 18pt, use ` +
-      `a composition that shows fewer criteria on this slide, or put them on their ` +
-      `own \`success-criteria\` slide. Nothing was drawn smaller or cut.`
+      `smaller side of a wider one). If the criteria then do not fit at 18pt, give ` +
+      `the panel the roomiest shape half the slide allows (the full height of one ` +
+      `side) and arrange the work beside it. Never show fewer criteria, and a ` +
+      `\`success-criteria\` slide is only for criteria being taught, compared or built. ` +
+      `Nothing was drawn smaller or cut.`
     );
   }
 
@@ -89,7 +91,7 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       // Every criteria panel in the deck comes through here, so this is the one
       // place that knows the text inside it is the lesson designer's wording.
       // A helper that refuses this zone can then name the lever the slide
-      // designer actually has - a roomier panel, or fewer criteria on the slide
+      // designer actually has - a roomier panel, never fewer criteria
       // - instead of telling it to shorten words it is not allowed to touch.
       sourceAuthoredText: true,
       // Tells the steps helper this list is a criteria panel, whose card

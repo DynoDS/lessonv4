@@ -129,6 +129,138 @@ test("the last sheet standing is never omitted", () => {
   assert.deepEqual(files, []);
 });
 
+test("a criteria panel is refused before the fit, and never costs the pack a sheet", () => {
+  // Success criteria stay on the board (the teacher, 23 September 2026). A
+  // panel on a sheet that cannot fit was priced as content, so the last-resort
+  // build dropped the whole sheet for it; the panel is now refused first.
+  const spec = specWithOneUnfittable();
+  spec.sheets.greaterDepth.zones.push({
+    helper: "steps",
+    items: ["Compare the thousands.", "Same? Move right."],
+  });
+
+  const { stdout, files } = buildWith(spec, ["--omit-unfittable"]);
+  assert.match(stdout, /Greater Depth - zones\[1\]: CRITERIA_NOT_ON_SHEETS/);
+  assert.doesNotMatch(stdout, /SHEET_OMITTED/);
+  assert.deepEqual(files, []);
+});
+
+test("the preflight names a panel on an auto sheet and measures the page without it", () => {
+  const CHECK = path.join(__dirname, "..", "scripts", "check-worksheet.js");
+  const spec = specWithOneUnfittable();
+  spec.sheets.greaterDepth = {
+    layout: "auto",
+    zones: [
+      { question: true, helper: "questions", items: ["Write a number between −5 and −1."] },
+      { helper: "steps", items: ["Compare the thousands.", "Same? Move right."] },
+    ],
+  };
+  for (const sheet of Object.values(spec.sheets)) {
+    sheet.recording = "sheet";
+    sheet.recordingReason = "Q1: the child writes on the printed page.";
+  }
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "worksheet-panel-"));
+  const specPath = path.join(dir, "worksheet.json");
+  fs.writeFileSync(specPath, JSON.stringify(spec));
+  let stdout;
+  try {
+    stdout = execFileSync(process.execPath, [CHECK, specPath], { encoding: "utf8" });
+  } catch (e) {
+    stdout = String(e.stdout || e.message);
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+  assert.match(stdout, /Greater Depth - zones\[1\]: CRITERIA_NOT_ON_SHEETS.*measured without it/);
+  assert.match(stdout, /AUTO_LAYOUT: Greater Depth/);
+  assert.doesNotMatch(stdout, /SHEET_DOES_NOT_FIT: Greater Depth/);
+  assert.doesNotMatch(stdout, /WORKSHEET_PREFLIGHT_OK/);
+});
+
+function preflight(spec) {
+  const CHECK = path.join(__dirname, "..", "scripts", "check-worksheet.js");
+  for (const sheet of Object.values(spec.sheets)) {
+    sheet.recording = "sheet";
+    sheet.recordingReason = "Q1: the child writes on the printed page.";
+  }
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "worksheet-panel-"));
+  const specPath = path.join(dir, "worksheet.json");
+  fs.writeFileSync(specPath, JSON.stringify(spec));
+  let stdout;
+  try {
+    stdout = execFileSync(process.execPath, [CHECK, specPath], { encoding: "utf8" });
+  } catch (e) {
+    stdout = String(e.stdout || e.message);
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+  return stdout;
+}
+
+// Eight steps a panel, two panels in a row of their own under seventeen
+// questions: the page holds the questions only once both panels are off, as
+// lesson 15's Greater Depth sheet did with its two panels side by side.
+const panel = () => ({
+  helper: "steps",
+  title: "Use these steps to help you.",
+  steps: Array.from({ length: 8 }, (_, i) => `Step ${i + 1}: compare the digits in the next column along carefully.`),
+});
+const sheetThatFitsOnlyWithoutItsPanels = () => ({
+  layout: "auto",
+  zones: [
+    {
+      stack: [
+        {
+          question: true,
+          helper: "questions",
+          items: Array.from({ length: 17 }, (_, i) => `Write a number between -${i + 5} and -${i + 1}.`),
+        },
+        { row: [panel(), panel()] },
+      ],
+    },
+  ],
+});
+
+test("the preflight measures a sheet without its panels, and leaves no empty row behind", () => {
+  const spec = specWithOneUnfittable();
+  spec.sheets.greaterDepth = sheetThatFitsOnlyWithoutItsPanels();
+  const stdout = preflight(spec);
+  assert.match(stdout, /Greater Depth - zones\[0\]\.stack\[1\]\.row\[0\]: CRITERIA_NOT_ON_SHEETS/);
+  assert.match(stdout, /Greater Depth - zones\[0\]\.stack\[1\]\.row\[1\]: CRITERIA_NOT_ON_SHEETS/);
+  assert.match(stdout, /AUTO_LAYOUT: Greater Depth/);
+  assert.doesNotMatch(stdout, /SHEET_DOES_NOT_FIT/);
+  assert.doesNotMatch(stdout, /NaN/);
+});
+
+test("a named sheet's panel is named even when another sheet cannot be laid out", () => {
+  // Lesson 15: its Expected sheet (a named layout) carried two panels, and its
+  // Greater Depth sheet could not be laid out, so the Expected panels were named
+  // nowhere and the last-resort build refused the pack over them after dropping
+  // Greater Depth.
+  const spec = specWithOneUnfittable();
+  spec.sheets.expected.zones.a = {
+    stack: [spec.sheets.expected.zones.a, panel()],
+  };
+  const stdout = preflight(JSON.parse(JSON.stringify(spec)));
+  assert.match(stdout, /Expected - zones\.a\.stack\[1\]: CRITERIA_NOT_ON_SHEETS/);
+
+  const built = buildWith(spec, ["--omit-unfittable"]);
+  assert.match(built.stdout, /Expected - zones\.a\.stack\[1\]: CRITERIA_NOT_ON_SHEETS/);
+  assert.doesNotMatch(built.stdout, /SHEET_OMITTED/);
+  assert.deepEqual(built.files, []);
+});
+
+test("a panel held in a slot of its own is named once and said to be still measured", () => {
+  const spec = specWithOneUnfittable();
+  spec.sheets.greaterDepth = {
+    layout: "full",
+    orientation: "portrait",
+    zones: { a: { stack: [panel(), panel()] } },
+  };
+  const stdout = preflight(spec);
+  const named = stdout.match(/CRITERIA_NOT_ON_SHEETS/g) || [];
+  assert.equal(named.length, 2);
+  assert.match(stdout, /Greater Depth - zones\.a\.stack\[0\]: CRITERIA_NOT_ON_SHEETS.*one held on its own in a slot is still measured/);
+  assert.doesNotMatch(stdout, /Infinity|NaN/);
+});
+
 test("a fault that is not about page fit still refuses everything", () => {
   // The guard that matters most. Omitting is allowed to rescue a pack from a
   // page that is too small; it may never rescue one from a sheet that would

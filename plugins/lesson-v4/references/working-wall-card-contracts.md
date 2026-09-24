@@ -16,7 +16,7 @@ Why this replaced the older test, which asked whether a child who missed the les
 
 Why this replaced the older visual gate, which required every card to carry something a child recognises by sight with one exception for a step-by-step success-criteria card: the gate decided cards on whether a picture existed rather than on whether the reference was useful, so it omitted clear text-led references the teacher wanted and waved through a weak card that happened to carry a picture. What earns a card its place is the point-at test above, and whether the child in front of it can use it.
 
-The wall is finite. The normal output is one coherent overview of the lesson's main learning; a second teaching card is exceptional and must do a genuinely different, repeatedly consulted job that the first cannot absorb. Never more than two teaching cards. Wall furniture (a banner, section headings) is produced only on an explicit request from the teacher or the spawn prompt and counts as physical output.
+The wall is finite. The normal output is one coherent overview of the lesson's main learning; a second teaching card is exceptional and must do a genuinely different, repeatedly consulted job that the first cannot absorb; the exception is a list or table too long for one card, carried in order over two cards of the same title, which is one job split for room (the wall build already offers it, and for success criteria it is how the card makes room, since their words never change). Never more than two teaching cards. Wall furniture (a banner, section headings) is produced only on an explicit request from the teacher or the spawn prompt and counts as physical output.
 
 ## Every card
 
@@ -98,7 +98,7 @@ This is the only family that puts several **drawn** figures on one sheet. `photo
 | `cards[].parts[].heading` | Required. What this part shows, in the lesson's own words: `Rounding to the nearest 10`, `Estimating and finding the midpoint`. It shrinks to fit its own column, so keep it to one line where you can. |
 | `cards[].parts[].visual` | The drawn figure, exactly as the board drew it: any primitive under "Visual primitives". At least one part must carry one, and a part that names a figure the builder cannot draw fails the build rather than printing its words alone. A part with no figure is for something like the three-step strategy beside the marked line. |
 | `cards[].parts[].notes` | Short lines under the figure: the worked numbers (`start 1,200   end 1,600`), or the finding (`The midpoint between 2,000 and 3,000 is 2,500.`). Not instructions. |
-| `cards[].parts[].steps` | Optional numbered method, when this part *is* the strategy: `["Find the neighbouring multiples.", "Find halfway.", "Choose the closest."]`. Each step numbers itself in the part's colour. |
+| `cards[].parts[].steps` | Optional numbered method, when this part *is* the strategy: `["Change the ones digit to 0.", "Add 10.", "Mark halfway and your number.", "Round to the nearer ten. If it is halfway, round up."]`. When the steps are the lesson's success criteria they are copied word for word, the same number of steps and the same colour marks, as on a worked-example card. Each step numbers itself in the part's colour. |
 | `cards[].parts[].result` | Optional single answer line, printed on its own coloured strip so a child finds the result before the workings: `347 rounds to 350.` |
 
 The layout gives the figure the room and the words what is left: a part's text is held to a share of its height so a long note can never push the drawing down to a strip. That is the rule, so write notes that fit beside a picture rather than replacing it.
@@ -119,7 +119,7 @@ The layout gives the figure the room and the words what is left: a part's text i
     },
     {
       "heading": "Strategy",
-      "steps": ["Find the neighbouring multiples.", "Find halfway.", "Choose the closest."]
+      "steps": ["Change the ones digit to 0.", "Add 10.", "Mark halfway and your number.", "Round to the nearer ten. If it is halfway, round up."]
     }
   ]
 }

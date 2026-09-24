@@ -16,6 +16,8 @@ const {
   answerKeyOf,
   checkWorksheet,
   resolveAutoLayouts,
+  sheetCriteriaPanels,
+  withoutSheetCriteriaPanels,
   sheetsOf,
   WorksheetError,
 } = require("../src/worksheet");
@@ -345,6 +347,25 @@ function main() {
       return;
     }
 
+    // Every criteria panel, on every sheet, is named before any shape is
+    // chosen, and each page is then measured without the panels that can come
+    // off: priced as content, a panel would ask for a real question to be cut
+    // to make room for it, and a sheet laid out by the engine that fails would
+    // stop this check before a named sheet's panel was ever mentioned.
+    const panelsFound = sheetCriteriaPanels(worksheet);
+    const withoutTheirPanels = withoutSheetCriteriaPanels(worksheet);
+    const stillOn = new Set(sheetCriteriaPanels(withoutTheirPanels).map((found) => found.sheet));
+    for (const found of panelsFound) {
+      fail(
+        "ZONE_SPEC_INVALID",
+        `${found.label} - ${found.where}: CRITERIA_NOT_ON_SHEETS, a success-criteria (steps) panel. Success criteria stay on the board and are never printed on a worksheet; take the panel off the sheet. ` +
+          (stillOn.has(found.sheet)
+            ? "Any page measured below is measured without the panels that can come off; one held on its own in a slot is still measured."
+            : "Any page measured below is measured without it.")
+      );
+    }
+    worksheet = withoutTheirPanels;
+
     // A sheet that said `"layout": "auto"` gets its shape here, the same way
     // and at the same point the build gives it one, so this gate checks the
     // exact page the build will draw.
@@ -386,6 +407,8 @@ function main() {
     if (refused.length) {
       for (const sheet of refused) {
         for (const problem of sheet.badZones) {
+          // Every panel was named above, before any shape was chosen.
+          if (panelsFound.length && /CRITERIA_NOT_ON_SHEETS/.test(problem)) continue;
           fail("ZONE_SPEC_INVALID", `${sheet.label} - ${problem}`);
         }
         for (const problem of sheet.tooTight) {

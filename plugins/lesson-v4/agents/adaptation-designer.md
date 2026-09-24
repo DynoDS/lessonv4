@@ -264,6 +264,8 @@ Greater Depth may deepen through:
 - a more sophisticated constraint or success criterion;
 - a less familiar application when the unfamiliarity genuinely increases the relevant thinking.
 
+A criterion in this section, sharper or kept as support, is written into the task or the standard it asks for, never printed on the sheet as a success-criteria panel: success criteria stay on the board and never go on a worksheet (`preferences.md` → Success Criteria).
+
 A new context or representation is one possible depth move, not automatic depth. The Greater Depth resource may use a different surface representation from Expected when that choice serves genuine subject thinking.
 
 Fresh same-objective practice may be included when it improves case coverage, but harder numbers, extra quantity or a changed surface representation do not by themselves create Greater Depth.

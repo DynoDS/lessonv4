@@ -4,8 +4,9 @@
 // success-criteria panel that is carrying a lot.
 //
 // WARNINGS ONLY, and deliberately so. Both of these are about how much a slide
-// is being asked to hold, and the answer to "too much" is a teaching decision:
-// cut a criterion, split the beat, shorten the wording. None of those is the
+// is being asked to hold, and the answer to "too much" is a design decision: a
+// roomier layout, or the lesson designer's own wording, and never a criterion
+// cut (the teacher's decision of 23 September 2026). None of those is the
 // builder's to make, so nothing here returns replacement text, trims a string
 // or drops an item. It reports what it measured and leaves the content exactly
 // as the designer wrote it.
@@ -91,8 +92,9 @@ function successCriteriaWarnings(slideData, slideNumber) {
       slide: slideNumber,
       field: 'successCriteria',
       message:
-        `${criteria.length} criteria, past the ${SC_MANY_ITEMS} the panel holds ` +
-        `at a readable size. Nothing was removed.`,
+        `${criteria.length} criteria on one panel: check the panel reads at the ` +
+        `back of the room beside the work (${SC_MANY_ITEMS} is a cue to look, not a ` +
+        `limit). Nothing was removed.`,
     });
   } else if (total > SC_LONG_TOTAL_CHARS) {
     out.push({
@@ -100,9 +102,9 @@ function successCriteriaWarnings(slideData, slideNumber) {
       slide: slideNumber,
       field: 'successCriteria',
       message:
-        `success criteria total ${total} characters, past the ` +
-        `${SC_LONG_TOTAL_CHARS} the panel holds at a readable size. Nothing ` +
-        `was shortened.`,
+        `success criteria total ${total} characters: check the panel reads at ` +
+        `the back of the room beside the work (${SC_LONG_TOTAL_CHARS} is a cue to ` +
+        `look, not a limit). Nothing was shortened.`,
     });
   }
 

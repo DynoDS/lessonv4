@@ -5,7 +5,7 @@ The lesson designer marks a criteria `drawLive: true` when it is worth building
 live with the class and keeping up: a labelled set a later lesson assumes, or a
 method children run across a sequence of lessons. The builder already draws the
 flipchart in the corner of the green panel whenever a slide's criteria carries
-`flipchart: true`, and the working wall already reproduces a flagged reference.
+`flipchart: true`, and the working wall is offered a flagged reference.
 The one link with nothing watching it is the middle: the slide designer reading
 the design's decision and setting the slide's flag.
 

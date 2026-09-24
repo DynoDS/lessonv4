@@ -156,7 +156,7 @@ whole task into the width that is left and strands an empty band under it.
 
 **What sends something to the back is what a child could do without it, not what
 kind of thing it is.** Ask whether a child who never read it could still produce
-an answer. Success criteria, a reminder of a method they have already used, a
+an answer. A reminder of a method they have already used, a
 prompt to check their work: yes, and those improve or check an answer that
 already exists, so they come after. A definition of the word the question turns
 on, a sentence starter the answer is written into, a word bank the answer is
@@ -909,28 +909,18 @@ Render the upstream pedagogical decision faithfully.
     should not be on the page. Render the line with the `instruction` helper
     (rule 3).
 
-13. **Include success criteria only when the upstream worksheet decision
-    requires them.** Omit a duplicated panel when the surrounding lesson
-    context already supplies the reference adequately. Include the exact
-    concise criteria when the sheet must stand independently or access depends
-    on that reference, colour marks (`((...))`, `{{...}}`, `<<...>>`) included,
-    so each step is coloured as it was on the board. Do not invent criteria and do not remove required
-    criteria for layout convenience. A one-line job statement for a reference
+13. **Never print success criteria on a worksheet.** They stay on the
+    board, where children consult them while they work, and the teacher does
+    not want them on any sheet or slip. `worksheet.successCriteriaRefs` is
+    always empty, and nothing on the page reprints them, as a panel or as a
+    list. A one-line job statement for a reference
     under rule 12 is not a criteria panel.
 
-14. **Criteria and taught method steps are drawn with `steps`, never written as
-    an `instruction`.** `steps` prints the pale green panel the class worked
-    from on the board - green tick heading, numbered badges, one white card per
-    criterion - so a child who followed those steps on the board recognises the
-    same object on their paper and can find step 4 at a glance. Written as an
-    instruction they print as a grey paragraph, which is what a Year 4 rounding
-    sheet shipped: seven lines at the foot of the page, indistinguishable from
-    `Use the place value chart to help you.` The engine now refuses an
-    instruction of three lines or more for exactly this reason. Price the panel
-    honestly when you place it: six criteria stand about 55mm, against the 40mm
-    the same words cost as prose, so a full sheet may have to carry fewer
-    criteria, put the panel beside something in a row, or leave it to the board.
-    Fewer criteria on the paper is a real answer - the board has all of them.
+14. **Nor as a list in an `instruction`.** The engine refuses the `steps`
+    panel on a sheet, and an instruction of three lines or more too, because a
+    list written as an instruction prints as a grey paragraph, which is what a
+    Year 4 rounding sheet shipped: seven lines at the foot of the page,
+    indistinguishable from `Use the place value chart to help you.`
 
 ---
 
@@ -942,8 +932,8 @@ Before the mechanical gate, read each sheet once as the pupil using it:
   sourcing and answer information absent.
 - Confirm every word bank has its own `Word bank` label and distinct choices,
   and that one question's words are in ONE bank.
-- Confirm any criteria or taught method steps are a `steps` panel, not an
-  instruction carrying a list.
+- Confirm no success criteria are printed, as a panel or as an instruction
+  carrying a list.
 - Confirm every tick, match, name, circle, write, draw, label or annotate action
   has one obvious usable printed target.
 - Confirm no space on the sheet is plain working room. Children have their books,
@@ -954,8 +944,7 @@ Before the mechanical gate, read each sheet once as the pupil using it:
 - Confirm multipart labels describe one connected pupil job. A separate
   decision or answer route begins a new question even when the stimulus is
   shared.
-- Confirm every required visual, support and success criterion from upstream is
-  present.
+- Confirm every required visual and support from upstream is present.
 
 Return an upstream failure through `WORKSHEET_CONTENT_GAP`. Fix only physical
 realisation faults you own.

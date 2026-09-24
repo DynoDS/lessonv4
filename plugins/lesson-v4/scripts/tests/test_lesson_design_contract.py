@@ -349,7 +349,9 @@ def valid_contract():
             },
             "sheetShape": {"kind": "question-set", "reason": "Repeated calculations are the target practice."},
             "demand": "Accurate use of the taught partition method.",
-            "successCriteriaRefs": ["sc-001"],
+            # Success criteria stay on the board and are never printed on a
+            # worksheet (the teacher's decision of 23 September 2026).
+            "successCriteriaRefs": [],
             "stickyKnowledgeRefs": [],
             "fitPriority": {"protected": ["all six calculations"], "preAuthorisedRemoval": []},
             "centralWriteOnVisualException": None,
@@ -2666,6 +2668,15 @@ def test_an_our_turn_script_must_ask_the_class_something():
         raise AssertionError("no our-turn unit in the valid contract")
 
     assert_invalid(mutate, "must ask the class at least one question")
+
+
+def test_a_worksheet_never_carries_success_criteria():
+    # The teacher, 23 September 2026: "I don't want any success criteria on
+    # worksheets." They stay on the board, where children consult them.
+    design, photos = valid_contract()
+    module.validate_design(design, photos)
+    design["worksheet"]["successCriteriaRefs"] = [design["successCriteria"][0]["id"]]
+    assert_invalid_contract(design, photos, "worksheet.successCriteriaRefs must be []")
 
 
 def test_success_criteria_colour_marks_are_checked():

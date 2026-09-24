@@ -29,13 +29,14 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const { helperNames, REGISTRY } = require("../src/helpers");
+const { NOT_ON_SHEETS } = require("../src/render");
 const purposes = require("../src/helpers/purposes");
 const examples = require("../test/helper-examples");
 
 // The families the source files already group helpers into, so the designer
 // reads them in the order it would think of them rather than alphabetically.
 const FAMILIES = [
-  ["Text and questions", ["section-label", "instruction", "questions", "written-answers", "source-text", "steps"]],
+  ["Text and questions", ["section-label", "instruction", "questions", "written-answers", "source-text"]],
   ["Tables", ["data-table", "recording-table"]],
   [
     "Charts and diagrams",
@@ -161,7 +162,11 @@ function entry(name) {
 
 function main() {
   const names = helperNames();
-  const placed = new Set(FAMILIES.flatMap(([, list]) => list));
+  // Helpers the engine keeps but never lets onto a sheet, so the designer is
+  // not offered them: the success-criteria panel stays on the board (the
+  // teacher, 23 September 2026).
+  const notOnSheets = NOT_ON_SHEETS;
+  const placed = new Set([...FAMILIES.flatMap(([, list]) => list), ...notOnSheets]);
 
   // A helper added to the code and not to a family here would be documented
   // nowhere, which is the exact failure this file exists to end. So it is a
@@ -181,7 +186,7 @@ function main() {
     "",
     "# What you can put in a zone",
     "",
-    `The ${names.length} helpers, what each is for, and a working example of each.`,
+    `The ${names.length - notOnSheets.size} helpers, what each is for, and a working example of each.`,
     "",
     "**How Worksheet Designer reads this catalogue.** Read the Index just below -",
     "one line per helper - and pick the two to five that could carry what your",
@@ -241,7 +246,7 @@ function main() {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, out.join("\n"));
   console.log(`Wrote ${file}`);
-  console.log(`${names.length} helpers in ${FAMILIES.length} families.`);
+  console.log(`${names.length - notOnSheets.size} helpers in ${FAMILIES.length} families.`);
 }
 
 // Required by the test suite so a helper with no family fails at `npm test`

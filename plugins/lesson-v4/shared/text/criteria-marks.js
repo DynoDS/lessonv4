@@ -5,7 +5,8 @@
 // A criterion printed all in bold black makes a child read every word with the
 // same weight, so the part that tells them where to look is lost in the
 // sentence. The teacher's scheme (15 September 2026) gives three kinds of word
-// their own colour, in this order of priority when one word could be two:
+// their own colour. A taught word is green every time, even when it also names
+// a coloured part of the picture (his decision of 23 September 2026):
 //
 //   ((thousands))  names a part of the picture on the slide, and takes that
 //                  part's own colour, so the words and the drawing line up.
@@ -16,8 +17,8 @@
 //                  the part to look at or decide, in orange.
 //
 // Everything else stays black. The marks travel inside the criterion's own
-// words, so a verbatim copy onto the worksheet or the working wall carries the
-// colour with it and the three surfaces cannot drift apart. `**x**` (bold in
+// words, so a verbatim copy onto the working wall carries the colour with it
+// and the surfaces cannot drift apart (criteria no longer go on a worksheet). `**x**` (bold in
 // the line's colour) is read here too, because the slide engine already
 // honours it in the same strings.
 

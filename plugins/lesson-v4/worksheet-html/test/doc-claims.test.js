@@ -271,7 +271,9 @@ test("the page and zone numbers the designer docs quote (worksheet-designer.md, 
 test("the generated catalogue and compositions documents match the engine (worksheet-helpers.md)", () => {
   const refDir = path.join(__dirname, "..", "..", "references");
   const catalogue = fs.readFileSync(path.join(refDir, "worksheet-helpers", "catalogue.md"), "utf8");
-  const names = helperNames();
+  // A helper the engine never lets onto a sheet is not offered to the designer.
+  const { NOT_ON_SHEETS } = require("../src/render");
+  const names = helperNames().filter((n) => !NOT_ON_SHEETS.has(n));
   for (const name of names) {
     assert.ok(
       catalogue.includes("#### `" + name + "`"),

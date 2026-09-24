@@ -463,7 +463,10 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         self.assert_tokens(
             self.templates,
             "never shorten, remove or rewrite content",
-            "final `check-slide-design.js` gate treats them as blocking composition diagnostics",
+            "final `check-slide-design.js` gate treats `FIXED_CAPTION_CAPACITY` as a blocking composition diagnostic",
+            # The gate does not block on the criteria count (the teacher's
+            # 10 September ruling); the guide said it did until 4.2.288.
+            "`SUCCESS_CRITERIA_CAPACITY` only reports",
             "change layout, allocate more space or split faithfully",
         )
 

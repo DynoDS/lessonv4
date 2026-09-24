@@ -161,8 +161,10 @@ class ReadingOrderTests(unittest.TestCase):
                 self.assertIn(
                     "a child who never read it could still produce an answer", text
                 )
-                # Both sides of it, so neither drifts into a blanket rule.
-                self.assertIn("Success criteria", text)
+                # Both sides of it, so neither drifts into a blanket rule. (Success
+                # criteria were the first example of the "after" side until
+                # 4.2.288, when they left worksheets altogether.)
+                self.assertIn("reminder of a method they have already used", text)
                 self.assertIn("sentence starter the answer is written into", text)
                 self.assertIn("word bank the answer is chosen from", text)
 

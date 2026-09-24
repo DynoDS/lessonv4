@@ -25,7 +25,7 @@
 // file, expected always present - carries over untouched.
 
 const { plainCriteria } = require("../../shared/text/criteria-marks");
-const { checkFit } = require("./render");
+const { checkFit, criteriaPanelsOn, NOT_ON_SHEETS } = require("./render");
 const { renderContent, requiredSets } = require("./helpers");
 const { canonicalQuestionLabel, formatQuestionLabel } = require("./labels");
 
@@ -541,6 +541,72 @@ function resolveAutoSheet(sheet, meta) {
       verdict: best.verdict,
     },
   };
+}
+
+// Criteria panels on every sheet, found before any shape is chosen. Left in,
+// a panel is priced as content: the fit report asks for a real question to be
+// cut to make room for it, and a last-resort build can drop a sheet, or refuse
+// the pack, over a panel that is refused anyway (success criteria stay on the
+// board; the teacher, 23 September 2026). Named layouts too: their sheets are
+// checked only after every auto sheet has a shape, which another sheet's
+// failure can stop (lesson 15's Expected sheet was never told of its two).
+function sheetCriteriaPanels(worksheet) {
+  const found = [];
+  const sheets = (worksheet && worksheet.sheets) || {};
+  for (const [key, sheet] of Object.entries(sheets)) {
+    if (!sheet || typeof sheet !== "object") continue;
+    for (const where of criteriaPanelsOn(sheet)) {
+      found.push({
+        sheet: key,
+        label: SHEET_LABELS[key] || key,
+        where: where.replace(/^sheet\./, ""),
+      });
+    }
+  }
+  return found;
+}
+
+// A panel in a list (a stack, a row, an auto sheet's zones) comes off. A row or
+// stack the panels leave empty goes with them; one that was empty already stays.
+function withoutPanels(node) {
+  if (Array.isArray(node)) {
+    const out = [];
+    for (const item of node) {
+      if (item && NOT_ON_SHEETS.has(item.helper)) continue;
+      const cleaned = withoutPanels(item);
+      if (isEmptyGroup(cleaned) && !isEmptyGroup(item)) continue;
+      out.push(cleaned);
+    }
+    return out;
+  }
+  if (!node || typeof node !== "object") return node;
+  const out = {};
+  for (const [key, value] of Object.entries(node)) {
+    // A slot whose whole content was panels (a named zone that is only a
+    // stack of them) keeps them: taken off, it would leave an empty zone the
+    // room report cannot measure.
+    const cleaned = withoutPanels(value);
+    out[key] = isEmptyGroup(cleaned) && !isEmptyGroup(value) ? value : cleaned;
+  }
+  return out;
+}
+
+function isEmptyGroup(item) {
+  return Boolean(item) && typeof item === "object" && !item.helper &&
+    ["row", "stack"].some((key) => Array.isArray(item[key]) && item[key].length === 0);
+}
+
+// The same worksheet with the panels that can come off removed, so the
+// preflight measures each sheet as it will be once the designer has taken them
+// off. A panel held on its own in a slot (a repeat's stack, one side of a pair,
+// a named zone that is only panels) stays, and is measured.
+function withoutSheetCriteriaPanels(worksheet) {
+  if (!sheetCriteriaPanels(worksheet).length) return worksheet;
+  const sheets = {};
+  for (const [key, sheet] of Object.entries(worksheet.sheets)) {
+    sheets[key] = sheet && typeof sheet === "object" ? withoutPanels(sheet) : sheet;
+  }
+  return { ...worksheet, sheets };
 }
 
 // Every auto sheet in a worksheet resolved at once, with the choices reported
@@ -1334,6 +1400,16 @@ function checkWorksheet(worksheet) {
 // back into the two facts that locate it: which sheet, and which zone.
 function problemsWith(sheet) {
   const badZones = [];
+  // Refused here as well as at the build, so the preflight never calls a
+  // sheet clean that the build will turn back: success criteria stay on the
+  // board (the teacher, 23 September 2026).
+  for (const where of criteriaPanelsOn(sheet.spec)) {
+    badZones.push(
+      `${where.replace(/^sheet\./, "")}: CRITERIA_NOT_ON_SHEETS, a success-criteria ` +
+        "(steps) panel. Success criteria stay on the board and are never printed on " +
+        "a worksheet; take the panel off the sheet."
+    );
+  }
   for (const [id, content] of Object.entries(sheet.spec.zones)) {
     try {
       checkFit({ ...sheet.spec, zones: { [id]: content } });
@@ -1399,6 +1475,8 @@ module.exports = {
   numbered,
   resolveAutoSheet,
   resolveAutoLayouts,
+  sheetCriteriaPanels,
+  withoutSheetCriteriaPanels,
   // Exported so `suggest` can prepare content exactly as a build does. It used
   // to measure raw zones, which quietly made it a DIFFERENT question from the
   // one the build answers: writing lines were measured at the youngest year's

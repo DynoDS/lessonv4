@@ -616,7 +616,39 @@ function measureFill(spec) {
 // refuses, through the same shortfall check as always. Every estimate in this
 // engine is a guess at how a browser draws; this is the one place the
 // browser's own answer is allowed to overrule the guess.
+// Success criteria stay on the board. The teacher does not want them on any
+// worksheet (23 September 2026: "I don't want any success criteria on
+// worksheets."), so a sheet carrying the criteria (steps) panel is refused
+// before anything is measured. The helper itself stays: the board and the wall
+// colour criteria marks through the same code, and its own tests hold that.
+const NOT_ON_SHEETS = new Set(["steps"]);
+
+function criteriaPanelsOn(spec) {
+  const found = [];
+  const walk = (node, where) => {
+    if (Array.isArray(node)) {
+      node.forEach((n, i) => walk(n, `${where}[${i}]`));
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+    if (NOT_ON_SHEETS.has(node.helper)) found.push(where);
+    for (const [key, value] of Object.entries(node)) {
+      if (value && typeof value === "object") walk(value, `${where}.${key}`);
+    }
+  };
+  walk(spec, "sheet");
+  return found;
+}
+
 function renderSheet(spec, opts = {}) {
+  const panels = criteriaPanelsOn(spec);
+  if (panels.length) {
+    throw new Error(
+      `CRITERIA_NOT_ON_SHEETS: ${panels.join(", ")} is a success-criteria (steps) ` +
+        "panel. Success criteria stay on the board and are never printed on a " +
+        "worksheet; take the panel off the sheet."
+    );
+  }
   const problems = checkFit(spec);
   if (problems.length) {
     throw new Error(`SHEET_DOES_NOT_FIT:\n  ${problems.join("\n  ")}`);
@@ -796,6 +828,8 @@ function drawnZoneHeights(spec) {
 }
 
 module.exports = {
+  NOT_ON_SHEETS,
+  criteriaPanelsOn,
   renderSheet,
   checkFit,
   getLayout,

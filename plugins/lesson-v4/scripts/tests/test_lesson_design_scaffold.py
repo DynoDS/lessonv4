@@ -150,6 +150,16 @@ def skill_request() -> dict:
     return request
 
 
+def test_a_generated_worksheet_is_scaffolded_without_success_criteria():
+    # The teacher, 23 September 2026: "I don't want any success criteria on
+    # worksheets." The template never asks for them, so there is nothing to
+    # fill in that the validator would then refuse.
+    for request in (base_request(), skill_request()):
+        design, _ = scaffold.build_scaffold(request)
+        assert design["worksheet"]["status"] == "generated"
+        assert design["worksheet"]["successCriteriaRefs"] == []
+
+
 def test_content_scaffold_assigns_mechanical_ids_and_envelopes():
     design, photos = scaffold.build_scaffold(
         base_request()

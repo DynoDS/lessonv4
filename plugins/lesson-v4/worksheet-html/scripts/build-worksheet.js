@@ -38,6 +38,7 @@ const {
   answerKeyOf,
   renderAnswerKey,
   resolveAutoLayouts,
+  sheetCriteriaPanels,
   WorksheetError,
   SHEET_LABELS,
 } = require("../src/worksheet");
@@ -179,6 +180,25 @@ async function main() {
   //
   // One sheet comes out per pass, because the shapes are chosen per sheet and
   // the next sheet's refusal is only visible once this one is gone.
+  //
+  // A criteria panel on any sheet is refused before any shape is chosen, so a
+  // sheet is never omitted for the room a refused panel took, and the pack is
+  // never refused over a panel only after a sheet has been dropped (success
+  // criteria stay on the board; the teacher, 23 September 2026). A panel still
+  // on a sheet at the last resort refuses the pack: the flag rescues a page too
+  // small and nothing else.
+  const panels = sheetCriteriaPanels(worksheet);
+  if (panels.length) {
+    for (const found of panels) {
+      fail(
+        "ZONE_SPEC_INVALID",
+        `${found.label} - ${found.where}: CRITERIA_NOT_ON_SHEETS, a success-criteria (steps) panel. Success criteria stay on the board and are never printed on a worksheet; take the panel off the sheet.`,
+        "composition",
+        { sheet: found.sheet, zone: zoneNameIn(found.where) }
+      );
+    }
+    return;
+  }
   const omitted = [];
   for (;;) {
     try {
@@ -592,7 +612,7 @@ function withRecording(worksheet, key, recording) {
 // The zone a problem line names, for the machine-readable location. The human
 // message keeps the whole sentence either way.
 function zoneNameIn(problem) {
-  const m = /zone "([^"]+)"/.exec(String(problem));
+  const m = /zone "([^"]+)"/.exec(String(problem)) || /\bzones\.([a-z])\b/.exec(String(problem));
   return m ? m[1] : undefined;
 }
 

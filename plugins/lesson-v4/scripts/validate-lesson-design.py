@@ -2076,9 +2076,9 @@ def validate_launch_uses_the_taught_words(
         f"{path}.content.launch.goodLooksLike.strong.words is the model of this "
         f"task and does not use {', '.join(missing)}, which this beat's success "
         "criteria name as taught words the work must use. Write the model as a "
-        "child meeting the criteria would write it, or take the word out of the "
-        "criteria; a class shown a model that would fail the standard is being "
-        "marked against something it was never shown",
+        "child meeting the criteria would write it, using the word; a taught "
+        "word stays in the criteria, and a class shown a model that would fail "
+        "the standard is being marked against something it was never shown",
     )
 
 
@@ -3840,6 +3840,11 @@ def run_design_checks(
         expect(use in WORKSHEET_USES, f"worksheet.use invalid: {use}")
         expect(answer_key_mode in {"required", "not-applicable"}, f"worksheet.answerKeyMode invalid: {answer_key_mode}")
         validate_ref_list(worksheet["successCriteriaRefs"], "worksheet.successCriteriaRefs", set(sc_by_id))
+        # The teacher, 23 September 2026: "I don't want any success criteria on
+        # worksheets." They stay on the board, where children consult them.
+        expect(worksheet["successCriteriaRefs"] == [],
+               "worksheet.successCriteriaRefs must be []: success criteria stay on the "
+               "board and are never printed on a worksheet")
         validate_ref_list(worksheet["stickyKnowledgeRefs"], "worksheet.stickyKnowledgeRefs", set(sticky_by_id))
 
         if status == "provided-by-teacher":

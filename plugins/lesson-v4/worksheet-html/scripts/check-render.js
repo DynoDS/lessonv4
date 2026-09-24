@@ -22,7 +22,7 @@ const path = require("node:path");
 
 const puppeteer = require("puppeteer-core");
 const { findChrome } = require("../src/chrome");
-const { renderSheet, checkFit } = require("../src/render");
+const { renderSheet, checkFit, NOT_ON_SHEETS } = require("../src/render");
 const { helperNames } = require("../src/helpers");
 const EXAMPLES = require("../test/helper-examples");
 
@@ -84,6 +84,8 @@ async function main() {
   let checked = 0;
 
   for (const name of helperNames()) {
+    // Never on a sheet, so its height on a sheet is never needed.
+    if (NOT_ON_SHEETS.has(name)) continue;
     if (!EXAMPLES[name]) {
       skipped.push(`${name} (no example content)`);
       continue;

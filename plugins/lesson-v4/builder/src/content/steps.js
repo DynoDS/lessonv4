@@ -232,7 +232,7 @@ function overloadMessage(steps, index, budget, sourceAuthored) {
   // and the cheaper-looking repair is the one that breaks the lesson.
   const roomier =
     `Give the panel more room instead: a wider or taller \`sc-panel\` ` +
-    `composition up to half the slide, or fewer criteria on this slide. See ` +
+    `composition up to half the slide, never fewer criteria. See ` +
     `\`slide-success-criteria.md\`.`;
 
   if (reference) {
@@ -579,20 +579,23 @@ function drawSteps(pptx, slide, zone, data, ctx) {
 
   // A criteria panel is read from a table while children work, so it has a
   // readable target of its own, above the deck-wide floor. Settling below it is
-  // not a layout fault to repair downstream: the panel is as wide as the
-  // template makes it, and the lever is the wording, which only the designer
-  // owns. A Codex run recorded four panels at 18pt as an accepted minor issue
-  // and nothing told it which step was doing it (19 September 2026).
+  // not a fault in itself: 18pt is his floor, and he chose to widen a panel only
+  // as far as 18pt needs. The words are the lesson designer's and stay (the
+  // teacher's decisions of 23 September 2026), and a list that does not fit is
+  // refused with a roomier shape named, so this message asks for nothing. A
+  // Codex run recorded four panels at 18pt as an accepted minor issue and
+  // nothing told it which step was doing it (19 September 2026).
   if (zone.criteriaPanel && sharedFont < TEXT_FONT_TARGET && ctx && ctx.slideIndex !== undefined) {
     const longest = steps
       .filter((s) => !isReferenceStep(s))
       .reduce((most, s) => (textOf(s).length > textOf(most).length ? s : most), steps[0]);
     warn(
       ctx.slideIndex,
-      `success criteria set at ${sharedFont}pt, below the ${TEXT_FONT_TARGET}pt a panel ` +
-      `is read at from a table. The longest step is "${textOf(longest)}". Shorten a step ` +
-      `without losing what it tells a stuck child to do, or split one step into two ` +
-      `shorter ones; the panel's width is fixed by the template.`
+      `success criteria set at ${sharedFont}pt: within the 18pt floor, below the ` +
+      `${TEXT_FONT_TARGET}pt a panel reads best at from a table. The longest step is ` +
+      `"${textOf(longest)}". Nothing need change: the words are the lesson ` +
+      `designer's and stay as they are, and a list that does not fit is refused ` +
+      `with a roomier shape named.`
     );
   }
   const coherentFont = perStepFont.map(function (font, i) {

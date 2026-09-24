@@ -86,14 +86,14 @@ Practical implications when writing items:
 
 | Card type | Length budget per item (rough guide) |
 |---|---|
-| Worked-example step | ≤ 60 characters — "Read the conjunction — what job does it do?" fits; longer steps need splitting. |
+| Worked-example step | ≤ 60 characters beside a picture — "Read the conjunction — what job does it do?" fits; a longer step you write needs splitting, but a success-criteria step is copied word for word and the card makes room instead (no picture unless the steps need it, or the list over two cards). |
 | Worked-example modelled answer | ≤ 70 characters — full sentences with one main clause, one subordinate clause, and a strong noun. Drop adjectives the lesson used for flavour. |
 | Sticky-knowledge item | ≤ 62 characters on a card carrying a picture. A card with no picture has the full width, up to about 100 characters, and a text-led card may use it. |
 | Sentence-stem item | ≤ 80 characters including the blank. |
 | Misconception "Don't" / "Do" | ≤ 50 characters each side. |
 | Reference table cell | ≤ 30 characters — and check the longest single word fits (no narrow-column hyphens). |
 
-The builder's autofit may shrink the body, but the readable floor is a hard release gate. If autofit reaches the floor and a warning fires, the build has failed: shorten faithful display text, simplify the layout, or remove the card, then rebuild and verify before delivery. Never ship an overflow warning for correction on a later run.
+The builder's autofit may shrink the body, but the readable floor is a hard release gate. If autofit reaches the floor and a warning fires, the build has failed: shorten faithful display text (never a success-criteria step, which is copied word for word), simplify the layout, or remove the card, then rebuild and verify before delivery. Never ship an overflow warning for correction on a later run.
 
 **5. Prose a child reads may be condensed for the wall; a contract a child checks against may not.** What has to stay word for word is what a child compares board against wall: success criteria steps, reference-table columns, a misconception's "Don't"/"Do" pair. Free-standing prose nobody is matching word for word — a modelled sentence, a sticky-knowledge fact — may be tightened to fit the card, keeping the meaning and every protection it carries. A vocabulary definition keeps the lesson's own wording; only when it genuinely cannot fit may it be shortened, and then it stays a whole sentence a teacher would say, never a clipped phrase. A safety line is prose, not a contract: "Tell a trusted adult if you're worried about yourself or someone else." (70 characters, over budget) says the same thing as "Tell a trusted adult if you're worried about anyone." (51, fits), and the shorter one is on the wall where a child can use it. Condense first, before dropping anything.
 
@@ -138,7 +138,7 @@ When the lesson uses a reference table to support children, the wall reproduces 
 
 - **Same columns as the lesson.** If the slides/worksheets show three columns (e.g. *Conjunction / What it tells you / Example*), the wall card has those three columns. Don't drop the example column — the example is what makes the table teach itself.
 - **Header row is bold and contrasting.** The builder handles styling; the designer just provides headers and rows.
-- **Row count: keep it manageable.** A wall card with more than 6 rows starts to crowd; if the lesson's table is longer, split into two cards or pick the highest-leverage rows and note the cut in `rationaleNote`.
+- **Row count: keep it manageable.** A wall card with more than 6 rows starts to crowd; if the lesson's table is longer, split into two cards or pick the highest-leverage rows and note the cut in `rationaleNote`. A success-criteria table only splits: every row and word goes up, as the class used it.
 - **Title is the noun children look up**, not the word "reference". "Conjunctions", "Suffixes", "Operations" — never "Reference table" or "Lookup".
 
 ---
