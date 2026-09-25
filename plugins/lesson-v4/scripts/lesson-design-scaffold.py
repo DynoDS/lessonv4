@@ -1347,6 +1347,9 @@ def build_scaffold(
                 "type": PLACEHOLDER,
                 "drawLive": PLACEHOLDER,
                 "content": PLACEHOLDER,
+                # True only for a list the lesson check refuses as too long
+                # and the designer cannot tighten (output-template.md).
+                "tooLongForPanels": False,
             }
             for index
             in range(

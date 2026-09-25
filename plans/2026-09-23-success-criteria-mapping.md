@@ -8,7 +8,7 @@ retired phrase is listed as gone. Built and checked by
 `streamline-tools/sc-change/build_sc_mapping.py`. The same list is pinned by
 `scripts/tests/success_criteria_ledger_pins.json`.
 
-312 rows unchanged in place; 80 rows changed, moved, folded or retired; 9 decisions added new words.
+312 rows unchanged in place; 80 rows changed, moved, folded or retired; 10 decisions added new words.
 
 ## SC-A02
 
@@ -287,7 +287,7 @@ retired phrase is listed as gone. Built and checked by
 
 **What happened:** decision 13: the slide designer makes the whole list fit and does not report it back as unfittable.
 - Now in `references/slide-success-criteria.md`: «When a composition does not hold the whole list, try a roomier one (the full height of one side, the question and the working space arranged around the panel); the criteria are not reported back as unfittable, and never reshaped or cut to fit.»
-- Now in `references/slide-success-criteria.md`: «Steps carry an 18pt minimum through both initial layout and the final text-fitting pass. That floor is a backstop, not a claim that every slide at 18pt is good: inspect the rendered task, reference and writing space together at projection size. A word-count review cue is not permission to shrink text or bypass a failed build. When a composition does not hold the whole list, try a roomier one (the full height of one side, the question and the working space arranged around the panel); the criteria are not reported back as unfittable, and never reshaped or cut to fit. What holds a list today: the practice templates' panel takes about 14 lines at 18pt, about 26 characters a line; when it refuses, use the half-width split (`split-h-50-50`) with the criteria in an `sc-panel` down one whole side, about 14 lines at about 39 characters. Never put a method's steps in a 30% column (`split-h-70-30`, `body-sidebar`), a thirds column, the bottom bands and strips (`split-v-60-40`, `split-v-70-30`, `quad-v`, `centre-big-v`), or a panel sharing its column with other items. A criteria table goes in the practice panel or the half side, never the 40% side.»
+- Now in `references/slide-success-criteria.md`: «Steps carry an 18pt minimum through both initial layout and the final text-fitting pass. That floor is a backstop, not a claim that every slide at 18pt is good: inspect the rendered task, reference and writing space together at projection size. A word-count review cue is not permission to shrink text or bypass a failed build. When a composition does not hold the whole list, try a roomier one (the full height of one side, the question and the working space arranged around the panel); the criteria are not reported back as unfittable, and never reshaped or cut to fit. What holds a list today: the practice templates' panel widens itself, only as far as the whole list needs to read at 18pt and never past half the slide: 4.60in (about 26 characters a line), then 5.50in (about 33), then 6.35in (about 39), each about 14 lines tall. The question and working side take what is left, so there is nothing to choose, and a list that fits 4.60in keeps it. When even the widest refuses, or a slide needs a free layout, use the half-width split (`split-h-50-50`) with the criteria in an `sc-panel` down one whole side: about 39 characters a line like the widest practice panel, and 0.15in taller, so it holds a little more. A list that neither the practice panel nor the half-width split can hold is caught by the lesson check before any slides are made, and the lesson designer tightens it. One it could not tighten is marked too long in the design (`tooLongForPanels`): place it as any long list, and the builder draws it at the largest size that fits, down to 16pt, the one exception to the 18pt minimum (a sticky line beside it stays at 18pt), on a finished slide it flags for the teacher to check (`CRITERIA_BELOW_READABLE_FLOOR`, the design's to answer for, so leave it). A list that still fits nowhere (a sticky line or a helper beside a step can take the last of the room; the rarest case is a marked list no panel holds even at 16pt) is delivered flagged for the teacher to check, never cut to fit. Never put a method's steps in a 30% column (`split-h-70-30`, `body-sidebar`), a thirds column, the bottom bands and strips (`split-v-60-40`, `split-v-70-30`, `quad-v`, `centre-big-v`), or a panel sharing its column with other items. A criteria table goes in the practice panel or the half side, never the 40% side.»
 
 ## SC-K07
 
@@ -300,7 +300,7 @@ retired phrase is listed as gone. Built and checked by
 
 **What happened:** the long-list investigation's measurement: five one-line steps need about 3.25 inches inside a panel.
 - Now in `references/templates.md`: «Five one-line steps need about 3.25″ inside a criteria panel.»
-- Now in `references/templates.md`: «**Minimum useful size:** ~0.4–0.5″ per row at intended typography (each row carries a numbered badge plus 18pt bold text). Five one-line steps need about 3.25″ inside a criteria panel. The bottom strip of `centre-big-v` (~1.66″) holds no criteria list at 18pt: use a template with a dedicated SC panel (`maths-turn-sc`).»
+- Now in `references/templates.md`: «**Minimum useful size:** ~0.4–0.5″ per row at intended typography (each row carries a numbered badge plus 18pt bold text). Five one-line steps need about 3.25″ inside a criteria panel. The bottom strip of `centre-big-v` (~1.66″) holds one one-line criteria step at 18pt and never two: use a template with a dedicated SC panel (`maths-turn-sc`).»
 - Gone from `references/templates.md`: «cannot hold 5 steps at full size»
 - Gone from `references/templates.md`: «5 steps needs ~2.0–2.5″ of zone height»
 
@@ -315,9 +315,9 @@ retired phrase is listed as gone. Built and checked by
 
 ## SC-K38
 
-**What happened:** the long-list investigation's measurement: the bottom strip holds no criteria list at 18pt.
-- Now in `references/templates.md`: «and a short fourth piece in the bottom strip, which holds no criteria list at 18pt: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`).»
-- Now in `references/templates.md`: «**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and a short fourth piece in the bottom strip, which holds no criteria list at 18pt: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`). Centre is class A so it accepts large visual tools.»
+**What happened:** the long-list investigation's measurement, corrected by the fit release (4.2.289): the bottom strip holds one criteria step of at most two lines at 18pt and never two steps.
+- Now in `references/templates.md`: «and a short fourth piece in the bottom strip, which holds one criteria step of at most two lines at 18pt and never two steps: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`).»
+- Now in `references/templates.md`: «**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and a short fourth piece in the bottom strip, which holds one criteria step of at most two lines at 18pt and never two steps: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`). Centre is class A so it accepts large visual tools.»
 - Gone from `references/templates.md`: «and success-criteria steps. The bottom strip»
 - Gone from `references/templates.md`: «The bottom strip is sized for ~5 step rows»
 
@@ -638,7 +638,7 @@ retired phrase is listed as gone. Built and checked by
 - Now in `builder/src/content/steps.js`: «`"${textOf(longest)}". Nothing need change: the words are the lesson ` +»
 - Now in `builder/src/content/steps.js`: «`designer's and stay as they are, and a list that does not fit is refused ` +»
 - Now in `builder/src/content/steps.js`: «`with a roomier shape named.`»
-- Now in `references/slide-success-criteria.md`: «What holds a list today: the practice templates' panel takes about 14 lines at 18pt, about 26 characters a line;»
+- Now in `references/slide-success-criteria.md`: «What holds a list today: the practice templates' panel widens itself, only as far as the whole list needs to read at 18pt and never past half the slide:»
 
 ## SC-DEC-08
 
@@ -666,6 +666,11 @@ retired phrase is listed as gone. Built and checked by
 
 **What happened:** decision 13: the investigation into fitting a very large list is separate and waits for his word; the slide designer makes it fit meanwhile.
 - Now in `references/slide-success-criteria.md`: «the criteria are not reported back as unfittable, and never reshaped or cut to fit»
+
+## SC-FIT-289-TPL
+
+**What happened:** the fit release (4.2.289), as he agreed on 23 September 2026: the practice panel widens itself only as far as 18pt needs, never past half the slide, with nothing to set; pinned whole in the maths-turn-sc section.
+- Now in `references/templates.md`: «**The panel widens itself for a long list.** Across the `*-sc` family the success-criteria panel is 4.60″ wide, and it widens to 5.50″ or 6.35″ only when the whole list needs the room to read at 18pt, never past half the slide; the question, reference, cards and working space beside it give up what it takes. There is nothing to set, and a list that fits 4.60″ keeps it (`slide-success-criteria.md` says how much each width holds). On `maths-turn-sc`, when the panel has widened and the `questionVisual` cannot be drawn in its half of the side beside the working space, the builder puts it above the working space instead.»
 
 ## Unchanged in place
 

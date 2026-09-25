@@ -1,0 +1,24 @@
+# Handover: finishing the long-criteria fit release (4.2.289)
+
+The agent building this release was stopped when the computer restarted (about 21:35 on 24 September). You take over. Nothing is committed; the work so far is in the plugin's working tree (uncommitted on `baabb1b3`, 4.2.288), its scripts in `plans/streamline-tools/fit-change/` (latest: `c5b_where_the_mark_is_met.py`, `c7_place_new_tests.py`, `c8_version_and_log.py`, all written 21:28 to 21:34), its evidence in `plans/streamline-tools/scratch/fitb/`, and its report in `plans/streamline-tools/fit-release-report.md` (last written 20:28, so it does not yet describe the last two rounds).
+
+## Read, in order
+
+1. `plans/streamline-tools/fit-release-brief.md`: what was asked.
+2. `plans/2026-09-23-long-criteria-fit-investigation.md`: what the teacher agreed, including the new section at its end, "After the release's checks (24 September, evening)".
+3. The four checks: `fit-release-check.md`, `fit-release-second-check.md`, `fit-release-third-check.md`, `fit-release-fourth-check.md` (all in `plans/streamline-tools/`).
+4. `plans/streamline-tools/fit-release-report.md`, then the working tree (`git diff HEAD -- plugins/lesson-v4` and the untracked files under `plugins/lesson-v4`).
+
+## The last two instructions, which the stopped agent was working on
+
+**A. Replace the text-matched flag with a plain marker** (answering the fourth check's findings 1 to 5). When the lesson designer truly cannot tighten a list no panel holds, it marks that list in the design (one explicit field on that success-criteria item, false or absent by default; the tree calls it `tooLongForPanels`), and writes its reason in a flag, as for any other departure, in plain English and naming the list by its words. The check reads only the marker: too long and unmarked is refused (tighten first, cost stated truly); marked and too long passes; marked but fitting draws a note, never a refusal. No flag text is matched. The review page's line prints beside a marked list (tested) and asks whether the list could be tightened to fit, without saying the designer skipped tightening. A marked list's refusal must not send the slide designer round its repair passes (prefer the builder or the slide check knowing the list is marked over new words in `slide-designer.md`). This looks largely built (`builder/src/marked-criteria.js`, the validator's `tooLongForPanels`); verify it is complete, correct and tested.
+
+**B. His ruling on the last resort, not yet built.** He does not want a blank "check this slide" page: "i hardly want things broken so then the agents just go oh well let's just report it and most of the time I get a finished product with no finished product at all it should still try to fix it try to repair it". Asked whether a list the lesson designer marked too long should instead be drawn a little smaller (down to 16 point) on a finished, flagged slide, he said "agree." So a marked list is drawn in its widest panel at the largest size that fits, down to 16 point, and the slide is flagged for him to check, never left blank. The 18 point floor stands for everything else, unmarked lists included. The lesson check passes a marked list only if it fits at 16 point in some named shape (the practice panel at its widths, or the half-width side), and otherwise refuses it with the cost stated, so the designer tightens it at least that far; only a list no named shape holds even at 16 point may still fall back to a flagged page, named as the rarest case. State the true cost wherever the old one was written (the refusal, the lesson designer's guidance, `output-template.md`, the review line, the report, the log, test names), and keep every earlier finding closed.
+
+## Then
+
+Update the change scripts, the report (all rounds, true to the tree) and the 4.2.289 build-log entry; move any pin with its reason and rebuild with `python -X utf8 plans/streamline-tools/sc-change/build_sc_mapping.py` until `MAPPING_OK`; rerun every suite (`bash plans/streamline-tools/run-all-suites.sh fit-final` from the repository root) and the saved-design comparison (`python -X utf8 plans/streamline-tools/validate-saved-designs.py plugins/lesson-v4/scripts/validate-lesson-design.py plans/streamline-tools/fit-final-designs.json`, compared with `sc-after6-designs.json`) and the saved-slide comparison the report describes.
+
+## Limits
+
+Edit only `plugins/lesson-v4` and your own files under `plans/streamline-tools/fit-change/` and `plans/streamline-tools/scratch/fitb/`. Commit nothing. No em or en dashes in anything you write. Windows with Git Bash: Bash takes Unix paths (/c/Users/...), the file tools take Windows paths; files are UTF-8, many with Windows line endings (keep them); run Python with `python -X utf8`; write scripts to files rather than heredocs with quote marks.

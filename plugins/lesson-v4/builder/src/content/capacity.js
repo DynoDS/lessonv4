@@ -86,9 +86,14 @@ function successCriteriaWarnings(slideData, slideNumber) {
   );
   const total = texts.reduce((n, t) => n + t.length, 0);
 
+  // Both are a cue to look, never a fault (the teacher's decisions of 10 and
+  // 23 September 2026: "never fewer criteria", and the slide designer makes
+  // the list fit rather than reporting it back), so each says it is one: the
+  // slide check prints it as a note and the build reports it as one.
   if (criteria.length > SC_MANY_ITEMS) {
     out.push({
       signal: 'SUCCESS_CRITERIA_CAPACITY',
+      cue: true,
       slide: slideNumber,
       field: 'successCriteria',
       message:
@@ -99,6 +104,7 @@ function successCriteriaWarnings(slideData, slideNumber) {
   } else if (total > SC_LONG_TOTAL_CHARS) {
     out.push({
       signal: 'SUCCESS_CRITERIA_CAPACITY',
+      cue: true,
       slide: slideNumber,
       field: 'successCriteria',
       message:
@@ -126,6 +132,7 @@ function capacityWarnings(lesson) {
 
 module.exports = {
   capacityWarnings,
+  criteriaStepsOf,
   CAPTION_LONG_CHARS,
   SC_MANY_ITEMS,
   SC_LONG_TOTAL_CHARS,

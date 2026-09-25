@@ -13,7 +13,9 @@
 // on, whichever route drew them.
 
 const { FONT, FIT } = require('./styles');
-const { warn } = require('./warnings');
+const { warn, withoutRecording } = require('./warnings');
+const { isMarkedList, markedListHeldAt18, markedListFloor } = require('./marked-criteria');
+const requireGlobal = require('./require-global');
 const { drawSignalTopRight } = require('./signals');
 const { SLIDE_W, SLIDE_H } = require('./layout');
 
@@ -97,6 +99,9 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       // Tells the steps helper this list is a criteria panel, whose card
       // height does not grow when the list is short (see steps.js).
       criteriaPanel: true,
+      // A practice template's panel at the widest it goes, so a refusal names
+      // the one shape that can hold more (see steps.js).
+      widestPracticePanel: !!zone.widestPracticePanel,
       // The panel's interior takes the card look in its compact form: white
       // cards on the green read well (the children prefer them), but only
       // with the tight padding that keeps the step text at full size.
@@ -112,6 +117,27 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
     const hadBarrier = !!ctx._cardBarrier;
     ctx._cardBarrier = content.type !== 'steps';
     try {
+      // A list the lesson designer marked too long for every criteria panel
+      // (`tooLongForPanels`) is drawn smaller rather than not at all: at the
+      // largest floor from 18pt down to 16pt at which it fits, found by drawing
+      // it onto a slide nobody sees, and the build flags the slide for the
+      // teacher (his ruling of 24 September 2026). Only where this panel is as
+      // roomy as its route makes it: a practice template tries its wider widths
+      // at 18pt first (maths-turn-sc.js), so its panel goes smaller only at its
+      // widest. Every other list keeps the 18pt floor, and so does a marked
+      // list that the practice panel at its widest or the half-width split
+      // holds at 18pt: its mark is stale (left behind after the list was
+      // tightened), and drawing it smaller, or telling the teacher it is too
+      // long for every panel, would both be untrue.
+      if (content.type === 'steps' && isMarkedList(content.steps, ctx.markedCriteria) &&
+          (!zone.practicePanel || zone.widestPracticePanel) &&
+          !markedListHeldAt18(content.steps, ctx)) {
+        const PptxGenJS = requireGlobal('pptxgenjs');
+        contentZone.floorPt = markedListFloor((floorPt) => {
+          const dry = new PptxGenJS();
+          withoutRecording(() => drawContent(dry, dry.addSlide(), Object.assign({}, contentZone, { floorPt }), content, ctx));
+        });
+      }
       drawContent(pptx, slide, contentZone, content, ctx);
     } finally {
       ctx._cardBarrier = hadBarrier;

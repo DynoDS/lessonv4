@@ -7,7 +7,7 @@ const { FONT, COLOURS, SIZE_CEILINGS, FIT } = require('../styles');
 const { resolveFit } = require('../images/fit');
 const { drawMissingImage } = require('../images/placeholder');
 const { resolveForEmbed } = require('../images/resolve');
-const { warn } = require('../warnings');
+const { warn, recording } = require('../warnings');
 const { checkZoneFill } = require('./_zone-fill');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
@@ -370,6 +370,7 @@ function checkPictureCellSize(zone, data, ctx) {
     ' A picture that is only supporting context belongs here at this size ' +
     'and should say so with `essential: false`.';
   warn(ctx.slideIndex, message);
+  if (!recording()) return;
   floorFindings.push({
     signal: 'PICTURE_BELOW_READABLE_FLOOR',
     slide: ctx.slideIndex + 1,
@@ -418,7 +419,7 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
     // that it still needs sourcing.
     if (imageData.essential === false) return;
     const slideNumber = ctx && Number.isInteger(ctx.slideIndex) ? ctx.slideIndex + 1 : undefined;
-    missingPictures.set(JSON.stringify([slideNumber, raw]), {
+    if (recording()) missingPictures.set(JSON.stringify([slideNumber, raw]), {
       slide: slideNumber,
       part: raw,
       message: `slide ${slideNumber === undefined ? '?' : slideNumber}: required image "${raw}" could not be drawn; only a placeholder was rendered.`,

@@ -92,6 +92,8 @@ function nearestSlot(pictureRatio, currentRatio) {
   return best || null;
 }
 
+const { recording } = require('../warnings');
+
 const findings = [];
 
 function clearZoneFill() {
@@ -119,6 +121,8 @@ function suggestion(drawn, zone) {
 
 function checkZoneFill(ctx, zone, drawn, label) {
   if (!ctx || typeof ctx.slideIndex !== 'number') return;
+  // A drawing nobody will see (a template trying a width) records nothing.
+  if (!recording()) return;
   if (!zone || !drawn) return;
   const zoneArea = zone.w * zone.h;
   const drawnArea = drawn.w * drawn.h;

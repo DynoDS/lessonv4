@@ -446,10 +446,26 @@ def grow_fit_directive(name):
     return match.group("group"), int(match.group("ceiling"))
 
 
+# A success-criteria list the lesson designer marked too long for every panel
+# is drawn smaller rather than not at all, down to this, on a slide flagged for
+# the teacher (his ruling of 24 September 2026: 20pt the smallest his whole
+# class read, 16pt "really close to that limit"). The builder names that list's
+# lines `marked-`; every other box keeps the projection floor, which its own
+# explicit floor can only raise.
+MARKED_LIST_FLOOR_PT = 16
+
+
 def shape_floor(name, default):
-    """An explicit projected-reading floor survives the global fitting pass."""
-    match = re.match(r"^GROWFIT__[^_]+__\d+__MIN([1-9]\d{0,2})__", name or "")
-    return max(default, int(match.group(1))) if match else default
+    """An explicit projected-reading floor survives the global fitting pass.
+    Only a marked list's step line may carry one under the default (a sticky
+    line beside it keeps 18pt), and never under MARKED_LIST_FLOOR_PT."""
+    match = re.match(r"^GROWFIT__[^_]+__\d+__MIN([1-9]\d{0,2})__(.*)$", name or "")
+    if not match:
+        return default
+    explicit = int(match.group(1))
+    if explicit < default and match.group(2).startswith("marked-step-text-"):
+        return max(explicit, MARKED_LIST_FLOOR_PT)
+    return max(default, explicit)
 
 
 def text_budget(shape, floor_pt, text):

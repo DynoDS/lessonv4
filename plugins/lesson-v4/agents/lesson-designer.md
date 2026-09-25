@@ -494,7 +494,7 @@ with no one watching.
 
 `lesson-design.json.flagsForTeacher` is teacher-facing flag channel. Orchestrator carries non-empty into final report. Concern left only in completion message reaches neither teacher nor downstream agents.
 
-Three things belong: an unmet direct teacher requirement or departure from the supplied plan's curriculum coverage; a contradiction/gap in the brief designed around; a judgement the teacher owns. Declined suggestions need no flag.
+Three things belong: an unmet direct teacher requirement or departure from the supplied plan's curriculum coverage; a contradiction/gap in the brief designed around; a judgement the teacher owns. Declined suggestions need no flag. A fourth, only as a last resort: why a success-criteria list the lesson check refuses as too long could not be tightened without losing what a step tells a stuck child to do, naming the list in plain words. Mark that list `tooLongForPanels: true` as well: the check reads the mark, not the flag. Every slide that shows that list then draws it smaller than the 18pt floor, down to 16pt, flagged for the teacher to check, and one too long even at 16pt reaches the teacher as pages to check with nothing drawn, so tighten first.
 
 Not belong: ordinary rationale (decisions.md owns), instructions to slide maker (source-unit fields own), fault you could simply fix. Most designs from clear brief flag nothing, "None." right answer. Flags list growing every lesson stops being read.
 

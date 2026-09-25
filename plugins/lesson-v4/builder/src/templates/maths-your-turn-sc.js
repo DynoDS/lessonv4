@@ -3,7 +3,7 @@
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
 const { drawQuestionCards, firstLabel } = require('./maths-your-turn');
-const { drawScPanel } = require('./maths-turn-sc');
+const { drawScPanel, scPanelWidth, panelWidening } = require('./maths-turn-sc');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const CARDS_X = 0.22;
@@ -15,6 +15,10 @@ const VISUAL_RATIO = 0.56;      // share of the left area the visual takes when 
 // ─── END COORDINATES ──────────────────────────────────────────
 
 function drawMathsYourTurnSc(pptx, slide, data, ctx) {
+  // The cards give up what the success-criteria panel takes (maths-turn-sc).
+  const panelW = scPanelWidth(data, ctx);
+  const cardsW = CARDS_W - panelWidening(panelW);
+
   const titleOverride = data.title || 'Your Turn';
   drawHeader(slide, {
     headerStyle: 'title',
@@ -33,20 +37,20 @@ function drawMathsYourTurnSc(pptx, slide, data, ctx) {
   if (data.questionVisual) {
     const visualH = questions.length ? (CARDS_H - VISUAL_GAP) * VISUAL_RATIO : CARDS_H;
     drawContent(pptx, slide, {
-      x: CARDS_X, y: CARDS_Y, w: CARDS_W, h: visualH, class: 'C'
+      x: CARDS_X, y: CARDS_Y, w: cardsW, h: visualH, class: 'C'
     }, data.questionVisual, ctx);
     if (questions.length) {
       drawQuestionCards(pptx, slide, questions, {
-        x: CARDS_X, y: CARDS_Y + visualH + VISUAL_GAP, w: CARDS_W, h: CARDS_H - visualH - VISUAL_GAP
+        x: CARDS_X, y: CARDS_Y + visualH + VISUAL_GAP, w: cardsW, h: CARDS_H - visualH - VISUAL_GAP
       }, ctx, firstLabel(data));
     }
   } else {
     drawQuestionCards(pptx, slide, questions, {
-      x: CARDS_X, y: CARDS_Y, w: CARDS_W, h: CARDS_H
+      x: CARDS_X, y: CARDS_Y, w: cardsW, h: CARDS_H
     }, ctx, firstLabel(data));
   }
 
-  drawScPanel(pptx, slide, data, ctx);
+  drawScPanel(pptx, slide, data, ctx, panelW);
 }
 
 module.exports = { drawMathsYourTurnSc };

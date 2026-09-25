@@ -2172,7 +2172,8 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         for row in design.get("vocabulary") or []
         if str(row.get("term") or "").strip()
     ]
-    for row in design["successCriteria"]:
+    mark_lines = criteria_mark_lines(design)
+    for index, row in enumerate(design["successCriteria"]):
         lines.append(
             f"- `{row['id']}` {row['type']} "
             f"(drawLive: {str(row['drawLive']).lower()}): "
@@ -2180,6 +2181,8 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         )
         for cue in criteria_review_cues(row, vocabulary_terms):
             lines.append(f"  - Review cue (not a failure): {cue}.")
+        for line in mark_lines.get(index, []):
+            lines.append(f"  - {line}")
     lines.append("")
 
     lines.extend(["## Sticky knowledge", ""])
@@ -2355,6 +2358,59 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _load_design_validator():
+    import importlib.util
+
+    name = "lesson_v4_validate_lesson_design"
+    if name in sys.modules:
+        return sys.modules[name]
+    path = Path(__file__).resolve().parent / "validate-lesson-design.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def criteria_mark_lines(design: dict) -> dict[int, list[str]]:
+    """What the review page says beside a criteria list the lesson designer
+    has marked too long for every criteria panel, keyed by the list's position.
+    A marked list too long even at 16pt passes the lesson check with a note,
+    because the deck is always made; here the reviewer is asked to send it
+    back to the lesson designer, naming the tightening (the teacher's ruling of
+    24 September 2026: the fix is the designer's, the reviewer names it)."""
+    status = _load_design_validator().criteria_fit_status(design.get("successCriteria"))
+    lines: dict[int, list[str]] = {}
+    for entry in status["marked"]:
+        lines.setdefault(entry["index"], []).append(
+            "Lesson check (read this one): no criteria panel a slide is built with holds this "
+            "list at 18pt, and the lesson designer has marked it too long for them after trying "
+            "to tighten it, so every slide that shows it will draw the list smaller than the "
+            "18pt floor, down to 16pt, and be flagged for the teacher to check before teaching. "
+            "Could the list be tightened until it fits at 18pt, with every step still telling a "
+            "stuck child what to do? If so, return `REDESIGN REQUIRED` and name the tightening: "
+            "the words are the lesson designer's to change."
+        )
+    for entry in status["beyond_smaller"]:
+        lines.setdefault(entry["index"], []).append(
+            "Lesson check (read this one): no criteria panel a slide is built with holds this "
+            "list even at 16pt, the least a list marked too long is drawn at, so every slide that "
+            "shows it will reach the teacher as a page to check before teaching, with its "
+            "question, working space and criteria not drawn. Return `REDESIGN REQUIRED` and name "
+            "the tightening that brings it to 16pt at least, and to 18pt if it can, with every "
+            "step still telling a stuck child what to do: the words are the lesson designer's to "
+            "change."
+        )
+    for entry in status["stale"]:
+        lines.setdefault(entry["index"], []).append(
+            "Lesson check: this list is marked too long for the criteria panels, but the check "
+            "does not find it too long; say so in your review, so the mark and the flag that "
+            "explains it come out and the teacher is not told something untrue."
+        )
+    return lines
 
 
 def canonical_paths(

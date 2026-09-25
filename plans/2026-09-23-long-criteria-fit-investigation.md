@@ -259,3 +259,7 @@ Put to Daniel as three decisions, with suggestions: go ahead with the three meas
 His answer: "agree on everything".
 
 Plan: the three messages are fixed inside the success-criteria release (4.2.288), after its first check; the measuring fixes, the widening box and the lesson check's length catch are the next release, built and checked the same way once 4.2.288 is committed.
+
+### After the release's checks (24 September, evening)
+
+The release's third check found that a list the lesson designer could not tighten turned every slide showing it into a blank "check this slide" page. He was told, and said of fixes in general: "i hardly want things broken so then the agents just go oh well let's just report it and most of the time I get a finished product with no finished product at all it should still try to fix it try to repair it". Offered, as the last resort for such a list, drawing it a little smaller (down to 16 point) on a finished, flagged slide instead of a blank page, with his class test (20 point the smallest everyone could read; 16 "really close to that limit") stated, he answered: "agree." The 18 point floor stands for everything else.

@@ -4,7 +4,7 @@ const { FONT, FIT } = require('../styles');
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
 const { drawQuestions } = require('./maths-turn');
-const { drawScPanel } = require('./maths-turn-sc');
+const { drawScPanel, scPanelWidth, panelWidening } = require('./maths-turn-sc');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 // Layout: question strip + large reference panel + SC panel.
@@ -45,6 +45,11 @@ const REF_LABEL_COLOR = '21618C';
 // ─── END COORDINATES ──────────────────────────────────────────
 
 function drawWritingTurnRefSc(pptx, slide, data, ctx) {
+  // The question strip and reference give up what the success-criteria panel
+  // takes (maths-turn-sc).
+  const panelW   = scPanelWidth(data, ctx);
+  const widening = panelWidening(panelW);
+
   const titleOverride = data.title || 'My Turn';
   drawHeader(slide, {
     headerStyle: 'title',
@@ -54,20 +59,20 @@ function drawWritingTurnRefSc(pptx, slide, data, ctx) {
   }, ctx);
 
   const questions = Array.isArray(data.questions) ? data.questions : [];
-  drawQuestions(slide, questions, { x: Q_X, y: Q_Y, w: Q_W, h: Q_H }, pptx, ctx, {
+  drawQuestions(slide, questions, { x: Q_X, y: Q_Y, w: Q_W - widening, h: Q_H }, pptx, ctx, {
     questionNumbering: data.questionNumbering
   });
 
-  drawReferencePanel(pptx, slide, data, ctx);
+  drawReferencePanel(pptx, slide, data, ctx, REF_W - widening);
 
-  drawScPanel(pptx, slide, data, ctx);
+  drawScPanel(pptx, slide, data, ctx, panelW);
 }
 
-function drawReferencePanel(pptx, slide, data, ctx) {
+function drawReferencePanel(pptx, slide, data, ctx, refW = REF_W) {
   const hasLabel = !!data.referenceLabel;
 
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-    x: REF_X, y: REF_Y, w: REF_W, h: REF_H,
+    x: REF_X, y: REF_Y, w: refW, h: REF_H,
     fill: { color: REF_BG },
     line: { color: REF_LINE, width: REF_LINE_W },
     rectRadius: REF_RADIUS
@@ -76,7 +81,7 @@ function drawReferencePanel(pptx, slide, data, ctx) {
   if (hasLabel) {
     slide.addText(data.referenceLabel, {
       x: REF_X + REF_PAD, y: REF_Y + REF_PAD,
-      w: REF_W - 2 * REF_PAD, h: REF_LABEL_H,
+      w: refW - 2 * REF_PAD, h: REF_LABEL_H,
       fontFace: FONT, fontSize: REF_LABEL_FONT, bold: true,
       color: REF_LABEL_COLOR, align: 'left', valign: 'middle',
       margin: 0, fit: FIT
@@ -88,7 +93,7 @@ function drawReferencePanel(pptx, slide, data, ctx) {
     const contentZone = {
       x: REF_X + REF_PAD,
       y: REF_Y + REF_PAD + labelOffset,
-      w: REF_W - 2 * REF_PAD,
+      w: refW - 2 * REF_PAD,
       h: REF_H - 2 * REF_PAD - labelOffset,
       class: 'B',
       noCard: true // the reference panel is this zone's surface

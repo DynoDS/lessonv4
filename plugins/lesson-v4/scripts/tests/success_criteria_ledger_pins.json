@@ -5382,7 +5382,7 @@
     },
     {
      "file": "references/slide-success-criteria.md",
-     "text": "Steps carry an 18pt minimum through both initial layout and the final text-fitting pass. That floor is a backstop, not a claim that every slide at 18pt is good: inspect the rendered task, reference and writing space together at projection size. A word-count review cue is not permission to shrink text or bypass a failed build. When a composition does not hold the whole list, try a roomier one (the full height of one side, the question and the working space arranged around the panel); the criteria are not reported back as unfittable, and never reshaped or cut to fit. What holds a list today: the practice templates' panel takes about 14 lines at 18pt, about 26 characters a line; when it refuses, use the half-width split (`split-h-50-50`) with the criteria in an `sc-panel` down one whole side, about 14 lines at about 39 characters. Never put a method's steps in a 30% column (`split-h-70-30`, `body-sidebar`), a thirds column, the bottom bands and strips (`split-v-60-40`, `split-v-70-30`, `quad-v`, `centre-big-v`), or a panel sharing its column with other items. A criteria table goes in the practice panel or the half side, never the 40% side.",
+     "text": "Steps carry an 18pt minimum through both initial layout and the final text-fitting pass. That floor is a backstop, not a claim that every slide at 18pt is good: inspect the rendered task, reference and writing space together at projection size. A word-count review cue is not permission to shrink text or bypass a failed build. When a composition does not hold the whole list, try a roomier one (the full height of one side, the question and the working space arranged around the panel); the criteria are not reported back as unfittable, and never reshaped or cut to fit. What holds a list today: the practice templates' panel widens itself, only as far as the whole list needs to read at 18pt and never past half the slide: 4.60in (about 26 characters a line), then 5.50in (about 33), then 6.35in (about 39), each about 14 lines tall. The question and working side take what is left, so there is nothing to choose, and a list that fits 4.60in keeps it. When even the widest refuses, or a slide needs a free layout, use the half-width split (`split-h-50-50`) with the criteria in an `sc-panel` down one whole side: about 39 characters a line like the widest practice panel, and 0.15in taller, so it holds a little more. A list that neither the practice panel nor the half-width split can hold is caught by the lesson check before any slides are made, and the lesson designer tightens it. One it could not tighten is marked too long in the design (`tooLongForPanels`): place it as any long list, and the builder draws it at the largest size that fits, down to 16pt, the one exception to the 18pt minimum (a sticky line beside it stays at 18pt), on a finished slide it flags for the teacher to check (`CRITERIA_BELOW_READABLE_FLOOR`, the design's to answer for, so leave it). A list that still fits nowhere (a sticky line or a helper beside a step can take the last of the room; the rarest case is a marked list no panel holds even at 16pt) is delivered flagged for the teacher to check, never cut to fit. Never put a method's steps in a 30% column (`split-h-70-30`, `body-sidebar`), a thirds column, the bottom bands and strips (`split-v-60-40`, `split-v-70-30`, `quad-v`, `centre-big-v`), or a panel sharing its column with other items. A criteria table goes in the practice panel or the half side, never the 40% side.",
      "section": {
       "heading": "## Fit the complete reference, not a step-count quota",
       "occurrence": 0,
@@ -5545,7 +5545,7 @@
     },
     {
      "file": "references/templates.md",
-     "text": "**Minimum useful size:** ~0.4–0.5″ per row at intended typography (each row carries a numbered badge plus 18pt bold text). Five one-line steps need about 3.25″ inside a criteria panel. The bottom strip of `centre-big-v` (~1.66″) holds no criteria list at 18pt: use a template with a dedicated SC panel (`maths-turn-sc`).",
+     "text": "**Minimum useful size:** ~0.4–0.5″ per row at intended typography (each row carries a numbered badge plus 18pt bold text). Five one-line steps need about 3.25″ inside a criteria panel. The bottom strip of `centre-big-v` (~1.66″) holds one one-line criteria step at 18pt and never two: use a template with a dedicated SC panel (`maths-turn-sc`).",
      "section": {
       "heading": "### `steps`",
       "occurrence": 0,
@@ -6100,11 +6100,11 @@
   },
   {
    "id": "SC-K38",
-   "outcome": "the long-list investigation's measurement: the bottom strip holds no criteria list at 18pt",
+   "outcome": "the long-list investigation's measurement, corrected by the fit release (4.2.289): the bottom strip holds one criteria step of at most two lines at 18pt and never two steps",
    "present": [
     {
      "file": "references/templates.md",
-     "text": "and a short fourth piece in the bottom strip, which holds no criteria list at 18pt: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`).",
+     "text": "and a short fourth piece in the bottom strip, which holds one criteria step of at most two lines at 18pt and never two steps: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`).",
      "section": {
       "heading": "### 3.2 Three- and four-zone layouts",
       "occurrence": 0,
@@ -6113,7 +6113,7 @@
     },
     {
      "file": "references/templates.md",
-     "text": "**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and a short fourth piece in the bottom strip, which holds no criteria list at 18pt: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`). Centre is class A so it accepts large visual tools.",
+     "text": "**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and a short fourth piece in the bottom strip, which holds one criteria step of at most two lines at 18pt and never two steps: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`). Centre is class A so it accepts large visual tools.",
      "section": {
       "heading": "### 3.2 Three- and four-zone layouts",
       "occurrence": 0,
@@ -9283,7 +9283,7 @@
     },
     {
      "file": "references/slide-success-criteria.md",
-     "text": "What holds a list today: the practice templates' panel takes about 14 lines at 18pt, about 26 characters a line;",
+     "text": "What holds a list today: the practice templates' panel widens itself, only as far as the whole list needs to read at 18pt and never past half the slide:",
      "section": {
       "heading": "## Fit the complete reference, not a step-count quota",
       "occurrence": 0,
@@ -9384,6 +9384,23 @@
       "occurrence": 0,
       "intro": false
      }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "SC-FIT-289-TPL",
+   "outcome": "the fit release (4.2.289), as he agreed on 23 September 2026: the practice panel widens itself only as far as 18pt needs, never past half the slide, with nothing to set; pinned whole in the maths-turn-sc section",
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "**The panel widens itself for a long list.** Across the `*-sc` family the success-criteria panel is 4.60″ wide, and it widens to 5.50″ or 6.35″ only when the whole list needs the room to read at 18pt, never past half the slide; the question, reference, cards and working space beside it give up what it takes. There is nothing to set, and a list that fits 4.60″ keeps it (`slide-success-criteria.md` says how much each width holds). On `maths-turn-sc`, when the panel has widened and the `questionVisual` cannot be drawn in its half of the side beside the working space, the builder puts it above the working space instead.",
+     "section": {
+      "heading": "#### `maths-turn-sc`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
     }
    ],
    "absent": []

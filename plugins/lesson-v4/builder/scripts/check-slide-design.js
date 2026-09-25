@@ -1190,7 +1190,17 @@ Fix that slide's layout slots, then run the check again.
     };
   }
   const optionalPictures = countOptionalPictures(lesson);
-  const capacity = capacityWarnings(lesson);
+  // Only a capacity warning that is not a cue refuses a candidate. The
+  // criteria cue (six steps, or 320 characters) is a cue to look, never a
+  // fault, by the teacher's decisions of 10 and 23 September 2026, and it used
+  // to refuse here although BLOCKING_CAPACITY_SIGNALS left it out: every long
+  // list in his style cost the slide designer its repair passes. It is printed
+  // as a note beside the result instead, pass or fail.
+  const capacityAll = capacityWarnings(lesson);
+  const capacity = capacityAll.filter((warning) => !warning.cue);
+  const cueNotes = capacityAll
+    .filter((warning) => warning.cue)
+    .map((warning) => `  note: slide ${warning.slide} ${warning.field}: ${warning.signal}: ${warning.message}`);
   const presentation = teachLayout
     .concat(launchPair)
     .concat(presentationWarnings(lesson))
@@ -1480,6 +1490,11 @@ Fix that slide's layout slots, then run the check again.
   }
 
   outcome = withEarly(outcome);
+  if (outcome && cueNotes.length) {
+    outcome.stderr =
+      `\n${cueNotes.length} slide-design note(s), a cue to look and never a fault:\n` +
+      `${cueNotes.join('\n')}\n${outcome.stderr || ''}`;
+  }
   if (outcome) outcome.optionalPictures = optionalPictures;
 
   return outcome;

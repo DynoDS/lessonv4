@@ -514,6 +514,13 @@ def copy_packet_plugin_root(
             plugin_root / "references" / source.name,
         )
 
+    # The validator measures a criteria list with the builder's letter widths.
+    (plugin_root / "shared" / "text").mkdir(parents=True)
+    shutil.copy2(
+        ROOT / "shared" / "text" / "comic-glyph-width.js",
+        plugin_root / "shared" / "text" / "comic-glyph-width.js",
+    )
+
     return plugin_root
 
 

@@ -4,7 +4,7 @@ const { FONT, FIT } = require('../styles');
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
 const { drawQuestions, drawWorkingSpace } = require('./maths-turn');
-const { drawScPanel } = require('./maths-turn-sc');
+const { drawScPanel, scPanelWidth, panelWidening } = require('./maths-turn-sc');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 // Body region is the same width as `maths-turn-sc` (Q + WORK on the
@@ -35,10 +35,14 @@ const WORK_H          = 2.70;
 const VISUAL_GAP      = 0.18;
 const REF_H_EXPANDED  = WORK_Y + WORK_H - REF_Y; // fills space when working area is hidden
 // SC zone is identical to `maths-turn-sc` and is delegated to that
-// module's drawScPanel — keeps the two templates aligned automatically.
+// module's drawScPanel, which keeps the two templates aligned automatically,
+// its width included: the left side gives up what the panel takes.
 // ─── END COORDINATES ──────────────────────────────────────────
 
 function drawMathsTurnRefSc(pptx, slide, data, ctx) {
+  const panelW   = scPanelWidth(data, ctx);
+  const widening = panelWidening(panelW);
+
   const titleOverride = data.title || 'My Turn';
   drawHeader(slide, {
     headerStyle: 'title',
@@ -48,7 +52,7 @@ function drawMathsTurnRefSc(pptx, slide, data, ctx) {
   }, ctx);
 
   const questions = Array.isArray(data.questions) ? data.questions : [];
-  drawQuestions(slide, questions, { x: Q_X, y: Q_Y, w: Q_W, h: Q_H }, pptx, ctx, {
+  drawQuestions(slide, questions, { x: Q_X, y: Q_Y, w: Q_W - widening, h: Q_H }, pptx, ctx, {
     questionNumbering: data.questionNumbering
   });
 
@@ -56,34 +60,35 @@ function drawMathsTurnRefSc(pptx, slide, data, ctx) {
   // the reference panel expanded over the whole lower body first, so a
   // questionVisual in that legitimate configuration was silently dropped.
   const refH = data.hideWorkingSpace && !data.questionVisual ? REF_H_EXPANDED : REF_H;
-  drawReferencePanel(pptx, slide, data, ctx, refH);
+  drawReferencePanel(pptx, slide, data, ctx, refH, REF_W - widening);
 
+  const workW = WORK_W - widening;
   if (data.hideWorkingSpace && data.questionVisual) {
     drawContent(
       pptx,
       slide,
-      { x: WORK_X, y: WORK_Y, w: WORK_W, h: WORK_H, class: 'A' },
+      { x: WORK_X, y: WORK_Y, w: workW, h: WORK_H, class: 'A' },
       data.questionVisual,
       ctx
     );
   } else if (!data.hideWorkingSpace) {
     if (data.questionVisual) {
-      const visW = (WORK_W - VISUAL_GAP) / 2;
+      const visW = (workW - VISUAL_GAP) / 2;
       drawContent(pptx, slide, { x: WORK_X, y: WORK_Y, w: visW, h: WORK_H, class: 'C' }, data.questionVisual, ctx);
-      drawWorkingSpace(pptx, slide, { x: WORK_X + visW + VISUAL_GAP, y: WORK_Y, w: WORK_W - visW - VISUAL_GAP, h: WORK_H });
+      drawWorkingSpace(pptx, slide, { x: WORK_X + visW + VISUAL_GAP, y: WORK_Y, w: workW - visW - VISUAL_GAP, h: WORK_H });
     } else {
-      drawWorkingSpace(pptx, slide, { x: WORK_X, y: WORK_Y, w: WORK_W, h: WORK_H });
+      drawWorkingSpace(pptx, slide, { x: WORK_X, y: WORK_Y, w: workW, h: WORK_H });
     }
   }
 
-  drawScPanel(pptx, slide, data, ctx);
+  drawScPanel(pptx, slide, data, ctx, panelW);
 }
 
-function drawReferencePanel(pptx, slide, data, ctx, refH = REF_H) {
+function drawReferencePanel(pptx, slide, data, ctx, refH = REF_H, refW = REF_W) {
   const hasLabel = !!data.referenceLabel;
 
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-    x: REF_X, y: REF_Y, w: REF_W, h: refH,
+    x: REF_X, y: REF_Y, w: refW, h: refH,
     fill: { color: REF_BG },
     line: { color: REF_LINE, width: REF_LINE_W },
     rectRadius: REF_RADIUS
@@ -92,7 +97,7 @@ function drawReferencePanel(pptx, slide, data, ctx, refH = REF_H) {
   if (hasLabel) {
     slide.addText(data.referenceLabel, {
       x: REF_X + REF_PAD, y: REF_Y + REF_PAD,
-      w: REF_W - 2 * REF_PAD, h: REF_LABEL_H,
+      w: refW - 2 * REF_PAD, h: REF_LABEL_H,
       fontFace: FONT, fontSize: REF_LABEL_FONT, bold: true,
       color: REF_LABEL_COLOR, align: 'left', valign: 'middle',
       margin: 0, fit: FIT
@@ -104,7 +109,7 @@ function drawReferencePanel(pptx, slide, data, ctx, refH = REF_H) {
     const contentZone = {
       x: REF_X + REF_PAD,
       y: REF_Y + REF_PAD + labelOffset,
-      w: REF_W - 2 * REF_PAD,
+      w: refW - 2 * REF_PAD,
       h: refH - 2 * REF_PAD - labelOffset,
       class: 'B',
       noCard: true // the reference panel is this zone's surface

@@ -7,6 +7,7 @@ const { drawSuccessCriteriaHelper, helperKeyForStep } = require('../success-crit
 const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { textWidthEm, RENDER_SAFETY } = require('../../../shared/text/comic-glyph-width');
 const { warn } = require('../warnings');
+const { recordCriteriaBelowFloor } = require('../marked-criteria');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.15;
@@ -30,6 +31,12 @@ const BADGE_FONT_MIN   = 8;
 const TEXT_FONT_TARGET = 20;
 const TEXT_FONT_MIN    = 18;
 const TEXT_FONT_MAX    = 36;
+// The floor is the zone's to lower, and only one zone does: a success-criteria
+// panel holding a list the lesson designer marked too long for every panel,
+// which is drawn at the largest size that fits there, down to 16pt, on a slide
+// flagged for the teacher (success-criteria-panel.js, marked-criteria.js).
+// Every other list keeps TEXT_FONT_MIN, and every function below that takes a
+// floor defaults to it.
 const DIVIDER_H        = 0.01;
 const DIVIDER_COLOUR   = '888888';
 const SC_HELPER_SLOT_W = 0.68;
@@ -118,18 +125,34 @@ const FIT_PAD_H = 0.03;
 const usableWidth = (widthIn) => Math.max(0.1, widthIn - FIT_PAD_W);
 const usableHeight = (heightIn) => Math.max(0.1, heightIn - FIT_PAD_H);
 
+// How far a card given exactly the height its lines need may miss it by in the
+// arithmetic and still hold them at the floor: a millionth of an inch, far
+// below anything the board can show.
+const FLOOR_ROUNDING = 1e-6;
+
 // The largest size at which this text genuinely fits its card, or null when
 // even the readable floor will not hold it.
 //
 // Counting DOWN from the maximum is what makes this "largest readable fit"
 // rather than "whatever the row height implies": the first size that fits is
 // the biggest one that does.
-function largestStepFont(text, widthIn, heightIn) {
-  for (let pt = TEXT_FONT_MAX; pt >= TEXT_FONT_MIN; pt -= 1) {
+function largestStepFont(text, widthIn, heightIn, floorPt = TEXT_FONT_MIN) {
+  for (let pt = TEXT_FONT_MAX; pt >= floorPt; pt -= 1) {
     const lines = wrappedLineCount(text, usableWidth(widthIn), pt);
     const neededHeight = lines * (pt / 72) * 1.28;
 
     if (neededHeight <= usableHeight(heightIn)) return pt;
+  }
+
+  // A card given exactly the height its lines need at the floor holds them.
+  // The taller card below is sized to exactly that, and taking the sum that
+  // sized it apart again can come back a millionth of an inch short, which
+  // refused a list with room to spare and then described a 26-character step
+  // as over its 25-character line. Only a refusal gives way here: a card that
+  // fits above the floor keeps the size it has always had.
+  const floorLines = wrappedLineCount(text, usableWidth(widthIn), floorPt);
+  if (floorLines * (floorPt / 72) * 1.28 <= usableHeight(heightIn) + FLOOR_ROUNDING) {
+    return floorPt;
   }
 
   return null;
@@ -161,7 +184,7 @@ function isReferenceStep(step) {
 // likely to be refused as it is to pass. The card's width and height are known
 // at the moment it refuses, so the budget is known too, and saying it turns a
 // retry into arithmetic.
-function budgetSentence(widthIn, heightIn, text) {
+function budgetSentence(widthIn, heightIn, text, floorPt = TEXT_FONT_MIN) {
   // Counted from the words the card shows and measured as the lines are, so the
   // budget and the refusal cannot disagree: a letter-count budget once said a
   // criterion was inside it while the real words took a line more than the
@@ -170,11 +193,11 @@ function budgetSentence(widthIn, heightIn, text) {
   const shown = (Array.isArray(runs) ? runs.map((run) => run.text).join('') : String(runs))
     .replace(/\s+/g, ' ')
     .trim();
-  const perChar = shown.length ? lineWidthIn(shown, TEXT_FONT_MIN) / shown.length : 0;
+  const perChar = shown.length ? lineWidthIn(shown, floorPt) / shown.length : 0;
   const charsPerLine = perChar > 0
     ? Math.max(1, Math.floor(usableWidth(widthIn) / perChar))
     : 1;
-  const oneLine = (TEXT_FONT_MIN / 72) * 1.28;
+  const oneLine = (floorPt / 72) * 1.28;
   const lines = Math.floor(usableHeight(heightIn) / oneLine);
 
   // A card with no room for a single line is the case this sentence could not
@@ -191,18 +214,18 @@ function budgetSentence(widthIn, heightIn, text) {
   if (lines < 1) {
     const needs = oneLine + FIT_PAD_H;
     return `The card is ${heightIn.toFixed(2)}in tall and one line at ` +
-      `${TEXT_FONT_MIN}pt needs ${needs.toFixed(2)}in, so it holds no line at ` +
+      `${floorPt}pt needs ${needs.toFixed(2)}in, so it holds no line at ` +
       `all and no wording will fit it. This is room, not words: each card here ` +
       `is about ${(needs - heightIn).toFixed(2)}in short.`;
   }
 
   const budget = charsPerLine * lines;
-  const takes = wrappedLineCount(text, usableWidth(widthIn), TEXT_FONT_MIN);
+  const takes = wrappedLineCount(text, usableWidth(widthIn), floorPt);
   const wraps = Number.isFinite(takes)
     ? `, which wrap to ${takes} line${takes === 1 ? '' : 's'}`
     : ', and one word is wider than the card';
 
-  return `The card holds about ${budget} characters at ${TEXT_FONT_MIN}pt ` +
+  return `The card holds about ${budget} characters at ${floorPt}pt ` +
     `(${lines} line${lines === 1 ? '' : 's'} of about ${charsPerLine}); this ` +
     `one is ${shown.length} characters${wraps}.`;
 }
@@ -216,8 +239,13 @@ function budgetSentence(widthIn, heightIn, text) {
 // a too-long reference is a sticky fact from the lesson design that nobody
 // downstream may reword. Saying which one refused is what points the repair at
 // the person who can actually make it.
-function overloadMessage(steps, index, budget, sourceAuthored) {
+function overloadMessage(steps, index, budget, sourceAuthored, widestPracticePanel, floorPt = TEXT_FONT_MIN) {
   const reference = isReferenceStep(steps[index]);
+  // A list marked too long is refused only below the least it may be drawn
+  // at, which is not the readable minimum every other list keeps.
+  const floor = floorPt < TEXT_FONT_MIN
+    ? `the ${floorPt}pt a list marked too long may be drawn at`
+    : `the ${TEXT_FONT_MIN}pt readable minimum`;
   const stepNumber = steps
     .slice(0, index + 1)
     .filter((s) => !isReferenceStep(s)).length;
@@ -230,14 +258,23 @@ function overloadMessage(steps, index, budget, sourceAuthored) {
   // rather than compact it - so telling it here to shorten the step sets the
   // engine against its own guidance at the one moment the guidance is needed,
   // and the cheaper-looking repair is the one that breaks the lesson.
-  const roomier =
-    `Give the panel more room instead: a wider or taller \`sc-panel\` ` +
-    `composition up to half the slide, never fewer criteria. See ` +
-    `\`slide-success-criteria.md\`.`;
+  //
+  // A practice template's panel refused at its widest has only one taller
+  // shape left within half the slide, so it is named rather than "a wider or
+  // taller composition", which there is not.
+  const roomier = widestPracticePanel
+    ? `The practice panel is already as wide as it goes. Give the list more ` +
+      `room instead: the half-width split (\`split-h-50-50\`) with the criteria ` +
+      `in an \`sc-panel\` down one whole side is a little taller and can hold ` +
+      `what this panel cannot, never fewer criteria. See ` +
+      `\`slide-success-criteria.md\`.`
+    : `Give the panel more room instead: a wider or taller \`sc-panel\` ` +
+      `composition up to half the slide, never fewer criteria. See ` +
+      `\`slide-success-criteria.md\`.`;
 
   if (reference) {
     return `STEP_TEXT_OVERLOAD: the sticky-knowledge reference line does not ` +
-      `fit its card at the ${TEXT_FONT_MIN}pt readable minimum.${room} Its ` +
+      `fit its card at ${floor}.${room} Its ` +
       `wording is source-authored and is not yours to shorten: carry the fact ` +
       `in its own on-slide treatment, or give the zone more room. Nothing was ` +
       `shrunk further or cut.`;
@@ -245,12 +282,67 @@ function overloadMessage(steps, index, budget, sourceAuthored) {
 
   return sourceAuthored
     ? `STEP_TEXT_OVERLOAD: criterion ${stepNumber} does not fit its card at ` +
-        `the ${TEXT_FONT_MIN}pt readable minimum.${room} Its wording is the ` +
+        `${floor}.${room} Its wording is the ` +
         `lesson designer's and is not yours to shorten or merge. ${roomier} ` +
         `Nothing was shrunk further or cut.`
-    : `STEP_TEXT_OVERLOAD: step ${stepNumber} does not fit its card at the ` +
-        `${TEXT_FONT_MIN}pt readable minimum.${room} Shorten the step to that, ` +
+    : `STEP_TEXT_OVERLOAD: step ${stepNumber} does not fit its card at ` +
+        `${floor}.${room} Shorten the step to that, ` +
         `or give the zone more room; nothing was shrunk further or cut.`;
+}
+
+// The card geometry a list gets from its height: each row's share, the number
+// badge, one card width for the related set, and the width left for the words.
+// A function of the height because the short-list rule in drawSteps sizes a
+// list twice when it gives way.
+function cardRows(steps, zone, innerX, innerW, height) {
+  const rowH   = height / steps.length;
+
+  const badgeMargin = Math.min(BADGE_MARGIN_MAX, rowH * 0.1);
+  const badgeW      = Math.min(BADGE_W, rowH - badgeMargin * 2);
+  const badgeFont   = Math.max(
+    BADGE_FONT_MIN,
+    Math.min(BADGE_FONT_MAX, Math.floor(badgeW * 72 * 0.55))
+  );
+
+  // ONE card width for the whole related set, from the longest step.
+  //
+  // Every card used to take the full zone width, so three short steps sat in
+  // three boxes far wider than their words and read as a mostly-empty panel.
+  // The set is sized to what its longest member actually needs, capped at the
+  // room available, and centred in the zone when it needs less: cards that
+  // belong together stay the same width as each other, which is what makes them
+  // read as one list.
+  const longest = steps.reduce(
+    (m, s) => Math.max(m, normaliseStep(s).text.length),
+    0
+  );
+  const gutterW = badgeW + BADGE_GAP;
+  // At the largest size we would ever use, the width the longest step wants on
+  // a single line, plus the badge column and padding.
+  const wantedW = longest * (TEXT_FONT_MAX * 0.52 / 72) + gutterW;
+  const cardW = Math.min(innerW, Math.max(innerW * 0.5, wantedW));
+  const cardX = innerX + (innerW - cardW) / 2;
+
+  // Each step at the largest size that genuinely fits ITS card.
+  //
+  // Related cards should still read as one set. Start from the largest size
+  // every sibling can hold, but do not force exact equality when a step's own
+  // larger fit changes its wrapping and still fits cleanly. That keeps siblings
+  // consistent where a larger size would add no useful layout difference while
+  // still allowing the wrapping-aware larger fit the content genuinely earns.
+  const stepTextW = cardW - gutterW - 2 * (zone.itemCards ? (zone.compactCards ? CARD_COMPACT : CARD).pad : 0);
+  const rowGapForFit = zone.itemCards
+    ? Math.min((zone.compactCards ? CARD_COMPACT : CARD).itemGap, rowH * 0.18)
+    : 0;
+
+  return { rowH, badgeW, badgeFont, cardW, cardX, stepTextW, rowGapForFit };
+}
+
+// The height a step or a sticky line needs at the floor, its card's gap
+// included: the least room it can be given without being refused.
+function floorNeed(text, rows, floorPt = TEXT_FONT_MIN) {
+  return wrappedLineCount(text, usableWidth(Math.max(0.3, rows.stepTextW)), floorPt)
+    * (floorPt / 72) * 1.28 + FIT_PAD_H + rows.rowGapForFit;
 }
 
 function drawSteps(pptx, slide, zone, data, ctx) {
@@ -261,6 +353,14 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   let   innerY = zone.y + PAD;
   const innerW = zone.w - PAD_LEFT - PAD;
   let   innerH = zone.h - 2 * PAD;
+  // The readable floor, unless this is a criteria panel holding a list marked
+  // too long, whose panel has lowered it (see the constants above). Only the
+  // marked list's own steps take the lowered floor: a sticky line beside them
+  // keeps the readable one in every measure and every refusal, because the
+  // teacher kept 18pt for everything else.
+  const floorPt = Number.isFinite(zone.floorPt) ? zone.floorPt : TEXT_FONT_MIN;
+  const drawnSmaller = floorPt < TEXT_FONT_MIN;
+  const floorFor = (s) => (isReferenceStep(s) ? TEXT_FONT_MIN : floorPt);
 
   // Optional heading sits directly above the first step so a label like
   // "✓ Success Criteria" reads as part of the list, not a caption floating
@@ -287,51 +387,34 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   // a normal list uses the top of its height at the same card size, and the
   // spare room stays empty below. Only criteria panels do this; a steps list
   // that is the slide's main content still fills its zone.
+  //
+  // The rule gives way when the list needs the height. A short list that its
+  // share of four rows cannot hold at the 18pt floor takes the height its lines
+  // need there, and no more, up to the whole panel: a single long criterion
+  // (the saved RE step, 76 characters) was refused with three quarters of the
+  // panel empty below it. The gap between cards and the number badge grow with
+  // the row, so in a shallow band a list given what it needed at its small share
+  // needs a little more at the new height: it is measured again at the height it
+  // is given until the need settles, which takes a few passes because both stop
+  // growing (a one-step `Round to the nearer ten.` in the bottom 40% band was
+  // refused about 0.01in short after one). The rounding allowance on top keeps
+  // the checks below, which add the same heights up in a different order, from
+  // refusing it by a hair.
   const CRITERIA_PANEL_ROWS = 4;
+  const textOf = (s) => normaliseStep(s).text;
+  const panelH = innerH;
   if (zone.criteriaPanel && steps.length < CRITERIA_PANEL_ROWS) {
     innerH = innerH * steps.length / CRITERIA_PANEL_ROWS;
+    for (let pass = 0; pass < 8 && innerH < panelH; pass += 1) {
+      const shortRows = cardRows(steps, zone, innerX, innerW, innerH);
+      const floorTotal = steps.reduce((total, s) => total + floorNeed(textOf(s), shortRows, floorFor(s)), 0);
+      if (floorTotal <= innerH + 1e-9) break;
+      innerH = Math.min(panelH, floorTotal + FLOOR_ROUNDING);
+    }
   }
 
-  const rowH   = innerH / steps.length;
-
-  const badgeMargin = Math.min(BADGE_MARGIN_MAX, rowH * 0.1);
-  const badgeW      = Math.min(BADGE_W, rowH - badgeMargin * 2);
-  const badgeFont   = Math.max(
-    BADGE_FONT_MIN,
-    Math.min(BADGE_FONT_MAX, Math.floor(badgeW * 72 * 0.55))
-  );
-
-  // ONE card width for the whole related set, from the longest step.
-  //
-  // Every card used to take the full zone width, so three short steps sat in
-  // three boxes far wider than their words and read as a mostly-empty panel.
-  // The set is sized to what its longest member actually needs, capped at the
-  // room available, and centred in the zone when it needs less: cards that
-  // belong together stay the same width as each other, which is what makes them
-  // read as one list.
-  const textOf = (s) => normaliseStep(s).text;
-  const longest = steps.reduce(
-    (m, s) => Math.max(m, textOf(s).length),
-    0
-  );
-  const gutterW = badgeW + BADGE_GAP;
-  // At the largest size we would ever use, the width the longest step wants on
-  // a single line, plus the badge column and padding.
-  const wantedW = longest * (TEXT_FONT_MAX * 0.52 / 72) + gutterW;
-  const cardW = Math.min(innerW, Math.max(innerW * 0.5, wantedW));
-  const cardX = innerX + (innerW - cardW) / 2;
-
-  // Each step at the largest size that genuinely fits ITS card.
-  //
-  // Related cards should still read as one set. Start from the largest size
-  // every sibling can hold, but do not force exact equality when a step's own
-  // larger fit changes its wrapping and still fits cleanly. That keeps siblings
-  // consistent where a larger size would add no useful layout difference while
-  // still allowing the wrapping-aware larger fit the content genuinely earns.
-  const stepTextW = cardW - gutterW - 2 * (zone.itemCards ? (zone.compactCards ? CARD_COMPACT : CARD).pad : 0);
-  const rowGapForFit = zone.itemCards
-    ? Math.min((zone.compactCards ? CARD_COMPACT : CARD).itemGap, rowH * 0.18)
-    : 0;
+  const rows = cardRows(steps, zone, innerX, innerW, innerH);
+  const { rowH, badgeW, badgeFont, cardW, cardX, stepTextW, rowGapForFit } = rows;
 
   // The height each item genuinely needs at the readable floor.
   //
@@ -358,6 +441,11 @@ function drawSteps(pptx, slide, zone, data, ctx) {
           * (TEXT_FONT_MIN / 72) * 1.28 + FIT_PAD_H
       : 0
   );
+
+  // What each criterion needs at the readable floor, its gap included. A
+  // criterion that wraps takes a taller card below when the panel has the
+  // room, so these, added up, are what the criteria need together.
+  const stepFloorNeed = steps.map((s) => (isReferenceStep(s) ? 0 : floorNeed(textOf(s), rows, floorPt)));
 
   // Equal rows stay exactly equal whenever equal rows work, so every panel that
   // fits today keeps the layout it already has. Only when an item cannot hold
@@ -389,18 +477,14 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     // floor exactly as far as the criteria need, and no further - it keeps any
     // room the criteria are not using, and it never drops below the floor,
     // where the panel is refused instead of shipping a line nobody can read.
-    // The criteria hold matching heights, so what they need together is the
-    // tallest one's need times their count, not the sum of their separate
-    // needs. Summing understates it: five criteria of which three wrap to two
-    // lines want five two-line rows, and handing them the sum divides it back
-    // into an average that leaves every wrapping one short by exactly the room
-    // the one-line ones were not using.
+    // What the criteria need together, at the least, is each one's own height
+    // at the readable floor, added up, because a criterion that wraps takes a
+    // taller card below when the panel has the room. Measuring every one at
+    // the 20pt target, and as tall as the tallest, overstated it and refused
+    // panels with a sticky line that had room for everything at 18 or 19pt
+    // (the saved rounding and partition lists).
     const stepCountForNeed = steps.filter((s) => !isReferenceStep(s)).length;
-    const tallestStepNeed = steps.reduce(
-      (tallest, s, i) => (isReferenceStep(s) ? tallest : Math.max(tallest, textNeed[i])),
-      0
-    );
-    const stepNeedTotal = stepCountForNeed * (tallestStepNeed + rowGapForFit);
+    const stepNeedTotal = stepFloorNeed.reduce((total, need) => total + need, 0);
 
     // Size the criteria against a panel where the reference is held to its
     // floor, then hand the reference everything the criteria did not use.
@@ -424,7 +508,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
       const font = largestStepFont(
         textOf(s),
         Math.max(0.3, stepTextW),
-        Math.max(0.1, stepShareAtRefFloor - rowGapForFit)
+        Math.max(0.1, stepShareAtRefFloor - rowGapForFit),
+        floorPt
       );
 
       return font === null ? smallest : Math.min(smallest, font);
@@ -457,7 +542,9 @@ function drawSteps(pptx, slide, zone, data, ctx) {
           steps,
           steps.findIndex(isReferenceStep),
           undefined,
-          zone.sourceAuthoredText
+          zone.sourceAuthoredText,
+          zone.widestPracticePanel,
+          TEXT_FONT_MIN
         )
       );
     }
@@ -490,7 +577,9 @@ function drawSteps(pptx, slide, zone, data, ctx) {
           steps,
           textNeed.indexOf(Math.max(...textNeed)),
           undefined,
-          zone.sourceAuthoredText
+          zone.sourceAuthoredText,
+          zone.widestPracticePanel,
+          floorFor(steps[textNeed.indexOf(Math.max(...textNeed))])
         )
       );
     }
@@ -512,12 +601,6 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   // more are made taller, by exactly what they need, and every other step keeps
   // one shared height out of what is left. Refusing stays for a panel whose
   // steps genuinely need more height together than it has.
-  const stepFloorNeed = steps.map((s) =>
-    isReferenceStep(s)
-      ? 0
-      : wrappedLineCount(textOf(s), usableWidth(Math.max(0.3, stepTextW)), TEXT_FONT_MIN)
-          * (TEXT_FONT_MIN / 72) * 1.28 + FIT_PAD_H + rowGapForFit
-  );
   const stepIndexes = steps.map((s, i) => i).filter((i) => !isReferenceStep(steps[i]));
   const stepRoom = innerH - steps.reduce(
     (total, s, i) => (isReferenceStep(s) ? total + rowHeights[i] : total),
@@ -550,7 +633,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const fitHeights = rowHeights.map((h) => h - rowGapForFit);
 
   const perStepFont = steps.map((s, i) =>
-    largestStepFont(textOf(s), Math.max(0.3, stepTextW), Math.max(0.1, fitHeights[i]))
+    largestStepFont(textOf(s), Math.max(0.3, stepTextW), Math.max(0.1, fitHeights[i]), floorFor(s))
   );
 
   const overloadedAt = perStepFont.indexOf(null);
@@ -562,9 +645,12 @@ function drawSteps(pptx, slide, zone, data, ctx) {
         budgetSentence(
           Math.max(0.3, stepTextW),
           Math.max(0.1, fitHeights[overloadedAt]),
-          textOf(steps[overloadedAt])
+          textOf(steps[overloadedAt]),
+          floorFor(steps[overloadedAt])
         ),
-        zone.sourceAuthoredText
+        zone.sourceAuthoredText,
+        zone.widestPracticePanel,
+        floorFor(steps[overloadedAt])
       )
     );
   }
@@ -584,8 +670,11 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   // teacher's decisions of 23 September 2026), and a list that does not fit is
   // refused with a roomier shape named, so this message asks for nothing. A
   // Codex run recorded four panels at 18pt as an accepted minor issue and
-  // nothing told it which step was doing it (19 September 2026).
-  if (zone.criteriaPanel && sharedFont < TEXT_FONT_TARGET && ctx && ctx.slideIndex !== undefined) {
+  // nothing told it which step was doing it (19 September 2026). A list set
+  // under the floor is not "within" it: that is a list marked too long, and it
+  // is recorded as a finding once it is drawn (below).
+  if (zone.criteriaPanel && sharedFont < TEXT_FONT_TARGET && sharedFont >= TEXT_FONT_MIN &&
+      ctx && ctx.slideIndex !== undefined) {
     const longest = steps
       .filter((s) => !isReferenceStep(s))
       .reduce((most, s) => (textOf(s).length > textOf(most).length ? s : most), steps[0]);
@@ -609,7 +698,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     const fits = largestStepFont(
       textOf(steps[i]),
       Math.max(0.3, availableW),
-      Math.max(0.1, fitHeights[i])
+      Math.max(0.1, fitHeights[i]),
+      floorPt
     );
 
     if (fits === null) {
@@ -620,9 +710,12 @@ function drawSteps(pptx, slide, zone, data, ctx) {
           budgetSentence(
             Math.max(0.3, availableW),
             Math.max(0.1, fitHeights[i]),
-            textOf(steps[i])
+            textOf(steps[i]),
+            floorPt
           ),
-          zone.sourceAuthoredText
+          zone.sourceAuthoredText,
+          zone.widestPracticePanel,
+          floorPt
         )
       );
     }
@@ -641,6 +734,21 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const P         = zone.compactCards ? CARD_COMPACT : CARD;
   const rowGap    = itemCards ? Math.min(P.itemGap, rowH * 0.18) : 0;
   const cardPad   = itemCards ? P.pad : 0;
+
+  // The final text fit holds each line to the floor its name carries, so a
+  // list drawn under the readable floor names its steps as a marked list's,
+  // the only lines that fit may take below 18pt (fit_text_postprocess.py). The
+  // fit gives every line of one group the smallest size any of them needs, so
+  // a sticky line beside them takes a group of its own and keeps 18pt.
+  const lineName = (label, i) => {
+    if (!drawnSmaller) {
+      return growFitObjectName(stepTextGroup, TEXT_FONT_MAX, label + i, label === 'step-text-' ? TEXT_FONT_MIN : undefined);
+    }
+    return label === 'step-text-'
+      ? growFitObjectName(stepTextGroup, TEXT_FONT_MAX, 'marked-' + label + i, floorPt)
+      : growFitObjectName(fitGroupId(zone, 'step-reference'), TEXT_FONT_MAX, label + i);
+  };
+  let smallestDrawn = Infinity;
 
   let stepNum = 0;
   steps.forEach(function (rawStep, i) {
@@ -693,7 +801,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
         fontFace: FONT, fontSize: textFont, bold: true,
         color: COLOURS.sticky,
         align: 'left', valign: 'middle', margin: 0, fit: FIT,
-        objectName: growFitObjectName(stepTextGroup, TEXT_FONT_MAX, 'step-reference-' + i)
+        objectName: lineName('step-reference-', i)
       });
       return;
     }
@@ -737,15 +845,22 @@ function drawSteps(pptx, slide, zone, data, ctx) {
       }
     }
 
+    smallestDrawn = Math.min(smallestDrawn, textFont);
     slide.addText(splitAnswerRuns(step.text, true), {
       x: textX, y: rowY,
       w: textW, h: cardH,
       fontFace: FONT, fontSize: textFont, bold: true,
       color: COLOURS.body,
       align: 'left', valign: 'middle', margin: 0, fit: FIT,
-      objectName: growFitObjectName(stepTextGroup, TEXT_FONT_MAX, 'step-text-' + i, TEXT_FONT_MIN)
+      objectName: lineName('step-text-', i)
     });
   });
+
+  // A list the lesson designer marked too long, drawn under the readable
+  // floor: finished, and named for the teacher to check before teaching.
+  if (drawnSmaller && smallestDrawn < TEXT_FONT_MIN) {
+    recordCriteriaBelowFloor(ctx, smallestDrawn, steps.map(textOf).filter((t) => !/^\s*✨/.test(t)));
+  }
 }
 
-module.exports = { drawSteps };
+module.exports = { drawSteps, TEXT_FONT_MIN };

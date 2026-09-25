@@ -1,8 +1,10 @@
 'use strict';
 
 const warnings = [];
+let quiet = 0;
 
 function warn(slideIndex, message) {
+  if (quiet) return;
   const tag = `slide ${slideIndex + 1}`;
   const full = `[warn] ${tag}: ${message}`;
   warnings.push(full);
@@ -13,6 +15,7 @@ function warn(slideIndex, message) {
 // failed). Lands in the same warning summary so the closing "No warnings" line
 // stays honest.
 function note(message) {
+  if (quiet) return;
   const full = `[warn] ${message}`;
   warnings.push(full);
   console.warn(full);
@@ -33,4 +36,26 @@ function restoreWarnings(saved) {
   for (const w of saved) warnings.push(w);
 }
 
-module.exports = { warn, note, getWarnings, clearWarnings, restoreWarnings };
+// Run a measurement that draws onto a slide nobody will see, recording nothing
+// it raises: no warning, printed or kept, and none of the findings the build
+// reports as blocking (the picture floor, a figure underfilling its zone, a
+// missing picture), whose stores ask `recording()` before they keep one.
+//
+// A template that tries its success-criteria panel at a few widths, or tries a
+// picture beside its working space, draws them each time, and every try would
+// raise the same things as the real drawing. The real drawing raises them once,
+// when it happens; the tries raise nothing.
+function withoutRecording(fn) {
+  quiet += 1;
+  try {
+    return fn();
+  } finally {
+    quiet -= 1;
+  }
+}
+
+function recording() {
+  return quiet === 0;
+}
+
+module.exports = { warn, note, getWarnings, clearWarnings, restoreWarnings, withoutRecording, recording };

@@ -60,6 +60,14 @@ const { preRenderCircuitDiagrams } = require('./src/content/circuit-diagram');
 const { preRenderParachuteForces } = require('./src/content/parachute-forces');
 const { preRenderCircuitSymbolBanks } = require('./src/content/circuit-symbol-bank');
 const { preRenderSuccessCriteriaHelpers } = require('./src/success-criteria-helpers');
+const {
+  markedCriteriaLists,
+  showsMarkedList,
+  markedListRoom,
+  criteriaBelowFloorFindings,
+  clearCriteriaBelowFloor,
+  MARKED_TOO_LONG_MESSAGE,
+} = require('./src/marked-criteria');
 
 function usage() {
   console.error('Usage: node build.js <lesson.json> [output-dir]');
@@ -89,6 +97,9 @@ const FLAGGING_SIGNALS = new Set([
   'SLIDE_MARKER_LITERAL',
   'PICTURE_BELOW_READABLE_FLOOR',
   'FIXED_CAPTION_CAPACITY',
+  // A list the lesson designer marked too long, drawn under 18pt: a finished
+  // slide, which the teacher checks before teaching (marked-criteria.js).
+  'CRITERIA_BELOW_READABLE_FLOOR',
   // SUCCESS_CRITERIA_CAPACITY is a cue to look, not a fault (the teacher's
   // rulings of 10 and 23 September 2026), so a panel that fits is not listed.
 ]);
@@ -294,7 +305,11 @@ async function main() {
   // Shared drawings (shared/visuals/) are laid out at their zone's real size,
   // so the preflight asks for each one and they are made before the real pass.
   const sharedFigures = createSharedFigureStore();
-  const contextForSlide = (i) => ({ sharedFigures, slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, geographicalDescriptionFrameImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, circuitDiagramImages, parachuteForcesImages, circuitSymbolBankImages, successCriteriaHelperImages });
+  // The lists the lesson design beside this file marks too long for every
+  // criteria panel, which a criteria panel draws smaller, down to 16pt, rather
+  // than not at all (marked-criteria.js).
+  const markedCriteria = markedCriteriaLists(jsonPath);
+  const contextForSlide = (i) => ({ sharedFigures, markedCriteria, slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, geographicalDescriptionFrameImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, circuitDiagramImages, parachuteForcesImages, circuitSymbolBankImages, successCriteriaHelperImages });
 
   // Draw everything once into a presentation nobody will open. A slide that
   // cannot be drawn is found here, before a file exists, rather than after the
@@ -323,15 +338,26 @@ async function main() {
     console.error(
       `\n${preflight.errors.length} layout problem(s):`
     );
+    // A list the lesson designer marked too long is drawn smaller, down to
+    // 16pt, so one still refused is the slide designer's to move while the
+    // practice panel at its widest or the half-width split holds it at 16pt.
+    // Only when neither does is it the design's, not a composition fault: no
+    // layout holds it, so the slide designer leaves it (marked-criteria.js).
     for (const error of preflight.errors) {
+      const designs = error.signal === 'STEP_TEXT_OVERLOAD' &&
+        showsMarkedList(coreSlides[error.slide - 1], markedCriteria) &&
+        !markedListRoom(coreSlides[error.slide - 1], contextForSlide(error.slide - 1));
+      if (designs) error.message = MARKED_TOO_LONG_MESSAGE;
       console.error(`  ✗ slide ${error.slide}: ${error.signal}: ${error.message}`);
       diagnostic(
         error.signal,
-        error.signal === 'CONTENT_ZONE_INCOMPATIBLE'
-          ? 'compatibility'
-          : error.signal === 'LAYOUT_PREFLIGHT_FAILED'
-            ? 'technical'
-            : 'composition',
+        designs
+          ? 'content'
+          : error.signal === 'CONTENT_ZONE_INCOMPATIBLE'
+            ? 'compatibility'
+            : error.signal === 'LAYOUT_PREFLIGHT_FAILED'
+              ? 'technical'
+              : 'composition',
         { slide: error.slide },
         error.message
       );
@@ -352,14 +378,15 @@ async function main() {
     : await prepareSlideDecorationPlans(slides, lessonDir);
 
   // How much a slide is being asked to hold. Warnings only: what to cut is a
-  // teaching decision, so nothing here shortens or removes anything.
+  // teaching decision, so nothing here shortens or removes anything. A cue
+  // (the criteria count) is a note, never a composition fault to repair.
   for (const warning of capacityWarnings(coreLesson)) {
     note(
       `slide ${warning.slide} ${warning.field}: ${warning.message}`
     );
     diagnostic(
       warning.signal,
-      'composition',
+      warning.cue ? 'note' : 'composition',
       { slide: warning.slide, path: warning.field },
       warning.message
     );
@@ -370,6 +397,7 @@ async function main() {
   clearZoneFill();
   clearPictureFloor();
   clearMissingPictures();
+  clearCriteriaBelowFloor();
 
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
@@ -439,6 +467,14 @@ async function main() {
       { slide: finding.slide, path: finding.field },
       finding.message
     );
+  }
+
+  // A list the lesson designer marked too long, drawn smaller than 18pt. The
+  // slide is finished and flagged for the teacher, and it is the design's to
+  // answer for, so the slide designer's own check passes it and leaves it.
+  for (const finding of criteriaBelowFloorFindings()) {
+    console.error(`  ! slide ${finding.slide}: ${finding.message}`);
+    diagnostic(finding.signal, 'content', { slide: finding.slide }, finding.message);
   }
 
   const sanitizedName = safeFilenameComponent(lessonName, 'Untitled Lesson');

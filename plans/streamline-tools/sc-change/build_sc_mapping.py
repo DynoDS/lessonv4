@@ -95,7 +95,8 @@ WHY = {
     "SC-F17": "decision 6 in the task-centred contract line: what a stuck child uses, written once as the criteria",
     "SC-B01": "decision 6 in the content route (the change check's 2a): what a stuck child can use, not the features of a successful performance",
     "SC-K12": "the long-list investigation's measurement: five one-line steps need about 3.25 inches inside a panel",
-    "SC-K38": "the long-list investigation's measurement: the bottom strip holds no criteria list at 18pt",
+    # 4.2.289: the settling short-list rule lets one step draw in the strip, so the sentence says what it holds.
+    "SC-K38": "the long-list investigation's measurement, corrected by the fit release (4.2.289): the bottom strip holds one criteria step of at most two lines at 18pt and never two steps",
     "SC-N22": "decision 8: the kept story no longer shows the steps on the sheet as the answer",
     "SC-P04": "decision 8 reaching Greater Depth, as P01",
 }
@@ -226,7 +227,8 @@ ADDED = [
       ("builder/src/content/steps.js", "`\"${textOf(longest)}\". Nothing need change: the words are the lesson ` +"),
       ("builder/src/content/steps.js", "`designer's and stay as they are, and a list that does not fit is refused ` +"),
       ("builder/src/content/steps.js", "`with a roomier shape named.`"),
-      (SSC, "What holds a list today: the practice templates' panel takes about 14 lines at 18pt, about 26 characters a line;")]),
+      # 4.2.289, the fit release: the practice panel now widens itself, so the sentence says so and the pin follows its new words.
+      (SSC, "What holds a list today: the practice templates' panel widens itself, only as far as the whole list needs to read at 18pt and never past half the slide:")]),
     ("SC-DEC-08", "decision 8, in his words: success criteria stay on the board and never go on a worksheet; the home says so, the validator refuses a sheet's criteria, the worksheet engine refuses the panel, and a test holds it",
      [(PREF, "**They stay on the board, and never go on a worksheet.**"),
       ("worksheet-html/src/render.js", "`CRITERIA_NOT_ON_SHEETS: ${panels.join(\", \")} is a success-criteria (steps) ` +"),
@@ -242,6 +244,9 @@ ADDED = [
       ("scripts/tests/test_success_criteria_fit_a_glance.py", "def test_a_question_step_is_asked_about_not_faulted():")]),
     ("SC-DEC-13", "decision 13: the investigation into fitting a very large list is separate and waits for his word; the slide designer makes it fit meanwhile",
      [(SSC, "the criteria are not reported back as unfittable, and never reshaped or cut to fit")]),
+    # 4.2.289: the template guide's new paragraph, held whole and in its section (the second fit check's finding 1).
+    ("SC-FIT-289-TPL", "the fit release (4.2.289), as he agreed on 23 September 2026: the practice panel widens itself only as far as 18pt needs, never past half the slide, with nothing to set; pinned whole in the maths-turn-sc section",
+     [(TPL, "**The panel widens itself for a long list.** Across the `*-sc` family the success-criteria panel is 4.60″ wide, and it widens to 5.50″ or 6.35″ only when the whole list needs the room to read at 18pt, never past half the slide; the question, reference, cards and working space beside it give up what it takes. There is nothing to set, and a list that fits 4.60″ keeps it (`slide-success-criteria.md` says how much each width holds). On `maths-turn-sc`, when the panel has widened and the `questionVisual` cannot be drawn in its half of the side beside the working space, the builder puts it above the working space instead.")]),
 ]
 
 HOMES = [
@@ -327,7 +332,7 @@ NEW = {
     "SC-F17": [("references/teaching-sequence-task-centred.md", "Write what a stuck child uses once, as success criteria, and attach it through `successCriteriaRefs`.")],
     "SC-B01": [("references/teaching-sequence-content-based.md", "When children need one, show what a child who gets stuck can use (the decisions to make, the steps, or sentence stems) and keep it visible during Practise.")],
     "SC-K12": [(TPL, "Five one-line steps need about 3.25″ inside a criteria panel.")],
-    "SC-K38": [(TPL, "and a short fourth piece in the bottom strip, which holds no criteria list at 18pt: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`).")],
+    "SC-K38": [(TPL, "and a short fourth piece in the bottom strip, which holds one criteria step of at most two lines at 18pt and never two steps: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`).")],
     "SC-N22": [(PREF, "the same page with the columns the other way round gives the task its full run.")],
     "SC-P04": [("references/adaptive-adaptation.md", "sharper success criteria (written into the task, never printed on the sheet as a criteria panel)")],
 }

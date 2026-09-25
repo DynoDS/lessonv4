@@ -320,6 +320,8 @@ Labelled reference:
 
 `drawLive: true` marks a criteria worth building live and keeping beyond today: a labelled set a later lesson assumes, or a method children run across a sequence of lessons (`preferences.md` → Success Criteria). The slide carries the flipchart cue for it and it is offered to the working wall, which puts up the exact same steps or reference if it takes them. It does not prescribe where the teacher writes.
 
+`tooLongForPanels` is false (or left out) unless the lesson check refuses a steps list as too long for every criteria panel and you have tightened it and still cannot fit it without losing what a step tells a stuck child to do. Only then set it `true` on that list, and say why in `flagsForTeacher`. The check reads the mark and lets the list through, and every slide that shows it then draws it smaller than the 18pt floor, down to 16pt, flagged for the teacher to check before teaching, so it is never a way round tightening. A marked list too long even at 16pt still passes, with a note, because the deck is always made, but every slide that shows it reaches the teacher as a page to check with nothing drawn: tighten it at least that far.
+
 For a Skill-based concept, define the concept once:
 
 ```json
@@ -1132,7 +1134,8 @@ Put a concise string here only for:
 - a contradiction or gap in the brief that the designer had to route around;
 - a subject/reference clash that cannot be silently settled;
 - a prior-lesson continuity limitation such as the authoritative earlier file being unavailable;
-- a genuine teacher-owned judgement between more than one sound option.
+- a genuine teacher-owned judgement between more than one sound option;
+- as a last resort, why a success-criteria list you marked `tooLongForPanels` could not be tightened, naming the list in plain words by its words.
 
 Do not put ordinary design rationale here; `design-decisions.md` owns the decisions and their concise reasons.
 
