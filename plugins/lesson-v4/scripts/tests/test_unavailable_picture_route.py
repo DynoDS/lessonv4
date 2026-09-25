@@ -111,7 +111,18 @@ class UnavailablePictureRouteTests(unittest.TestCase):
         text = flat(WORKSHEET_BUILDER)
         self.assertIn("whether it already has a terminal picture receipt", text)
         self.assertIn("the picture route is a dead end", text)
-        self.assertIn("the worksheet-designer re-authors that one reference", text)
+        # Settled item f of the worksheets topic (4.2.290), his 2 September
+        # review: re-point a dead reference at a published picture, never
+        # replace it with words; if none can carry it, the sheet goes back to
+        # its author, and a Below or Greater Depth sheet costs no other sheet.
+        self.assertIn(
+            "the worksheet-designer re-points that one reference at a published "
+            "picture, or returns that sheet to its author (a Below or Greater Depth "
+            "sheet to the adaptation designer, and the build makes the others; the "
+            "Expected sheet to the lesson designer)",
+            text,
+        )
+        self.assertNotIn("re-authors that one reference", text)
 
     def test_the_builder_reports_every_missing_picture_not_only_the_first(self):
         """A sheet naming three unsourced photographs used to hear about them
@@ -136,6 +147,17 @@ class UnavailablePictureRouteTests(unittest.TestCase):
         text = flat(WORKSHEET_REPAIR)
         self.assertIn("Keep the learning that reference was serving", text)
         self.assertIn("change nothing else", text)
+        # Settled item f (4.2.290): only a published picture, never words;
+        # otherwise it is left for the lesson designer.
+        self.assertIn("Re-point that single reference at a picture this run has already published.", text)
+        self.assertIn("leave it unrepaired and return `WORKSHEET_CONTENT_GAP` for it", text)
+        # The first check's repair round: a Below or Greater Depth sheet goes
+        # back to the adaptation designer and never costs the other sheets;
+        # his answer of 25 September: the Expected sheet stands in meanwhile;
+        # the second check: the sheet is taken out whole, not left in place.
+        self.assertIn("On a Below or Greater Depth sheet, take that sheet and its answer-key section out whole, and add its `returned` entry", text)
+        self.assertIn("until the redesign goes in, the build prints the Expected sheet in its place and flags it", text)
+        self.assertNotIn("carries its own demand in words", text)
         # And the original prohibition must still stand for every other case.
         self.assertIn(
             "Do not change a required representation or photograph into a "

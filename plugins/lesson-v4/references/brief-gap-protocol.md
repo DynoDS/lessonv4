@@ -41,6 +41,10 @@ The Slide Designer's narrow presentation-furniture exception remains valid. When
 
 For Slide Designer, this section overrides any generic instruction below that says to place a load-bearing gap only in `notes` and continue to a final specification.
 
+## Worksheet Designer route
+
+The continue-and-note route this protocol describes (The principle above, and How to apply below) does not govern a worksheet a child could not use as printed, or one that contradicts the objective. The worksheet designer omits that sheet and returns it to its owner (a `WORKSHEET_CONTENT_GAP` note and its `returned` entry; its rules 9 and 11), and the other sheets continue. A doubt that leaves the sheet usable and true to the objective is still a `notes` entry, as below.
+
 ## Why this exists
 
 Every downstream specialist sits between a pedagogical brief (what the lesson means) and a structural artefact (a slide, a worksheet, a wall card, a photograph). Sometimes the two appear to contradict:
@@ -67,7 +71,7 @@ The cost of flagging instead is one extra `notes` line in the output. The orches
 2. **Render the closest faithful version that respects your artefact's rules.** This usually means rendering what the artefact *can* do, not what the brief asked for. Examples:
    - *Slide-designer:* the brief and its Modelling resource state ask for a prepared example, live-complete helper, question/reference support or physical-demonstration support that the first template choice cannot carry. Check the catalogue for another compatible template or faithful composition before declaring a gap. For a Live-complete helper, preserve the exact blank or partly blank starting state; for Question and reference, show the exact question and useful references with no generic working box; for Prepared example, preserve the completed example. The teacher chooses how and where to model. Do not recast one resource state as another merely because its first template was inconvenient.
    - *Slide-designer:* the brief names a diagram or visual no content object or photo can draw — a built-up river cross-section, a labelled apparatus diagram, a custom map. Render the real photograph the lesson already provides for that subject (the source stream, the aerial meander), and where the slide's job is to hold a reference children label in their own books, render the renderable reference it has — the contrasting photos, the success-criteria checklist, the sentence frame. Put the absent diagram in `notes`. A sentence describing a picture is not the picture: dropped into a child-facing slot it reads as noise from the back of the room, and on a labelling slide it leaves nothing to label. The teacher (or the next iteration, once a diagram primitive exists) picks the description up from `notes`.
-   - *Worksheet-designer:* the brief specifies a question shape no helper supports. Your own rule 9 carries the ladder: compose from existing helpers, then keep the question's words and change how it is asked rather than whether, and flag in `notes` only a question that cannot be asked honestly at all. Never bend a helper into a shape it does not draw.
+   - *Worksheet-designer:* the brief specifies a question shape no helper supports. Your own rule 9 carries the ladder: compose from existing helpers, never write a replacement question, and return a question no helper can carry faithfully through `WORKSHEET_CONTENT_GAP`, omitting that sheet while the others continue. Never bend a helper into a shape it does not draw.
    - *Image-scout:* the brief names a photo subject too specific to source. Pick the closest reasonable photograph.
    - *Working-wall-designer:* follow `working-wall-visual-language.md` → Choose visuals for the card's learning. Preserve defining diagrams and evidence; an optional picture's absence does not disqualify useful text-led support. Report a gap when the necessary learning cannot be represented.
 

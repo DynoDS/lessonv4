@@ -30,8 +30,9 @@ with the content: a four-column table needs more width than a two-column one. Th
 engine refuses a zone smaller than this rather than squashing what goes in it, so
 a refusal is a layout to change and never a helper to force.
 
-If a lesson needs something no helper here can express, say so in `notes` rather
-than bending the nearest one to fit. That is how the next helper gets built.
+If a lesson needs something no helper here can express, return it as a gap (the
+worksheet designer's rule 11) rather than bending the nearest one to fit. That is
+how the next helper gets built.
 
 The one place a shown example differs from the tested one: a photograph is
 written as `imagePath`, a filename. The build reads that file and carries the

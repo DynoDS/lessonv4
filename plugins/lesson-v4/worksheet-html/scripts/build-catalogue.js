@@ -214,8 +214,9 @@ function main() {
     "engine refuses a zone smaller than this rather than squashing what goes in it, so",
     "a refusal is a layout to change and never a helper to force.",
     "",
-    "If a lesson needs something no helper here can express, say so in `notes` rather",
-    "than bending the nearest one to fit. That is how the next helper gets built.",
+    "If a lesson needs something no helper here can express, return it as a gap (the",
+    "worksheet designer's rule 11) rather than bending the nearest one to fit. That is",
+    "how the next helper gets built.",
     "",
     "The one place a shown example differs from the tested one: a photograph is",
     "written as `imagePath`, a filename. The build reads that file and carries the",
@@ -243,6 +244,20 @@ function main() {
   const file = path.join(
     __dirname, "..", "..", "references", "worksheet-helpers", "catalogue.md"
   );
+  // `--check` writes nothing: it says whether the file on disk is what this
+  // script writes today, so a stale reference cannot come back unseen (the
+  // compositions reference quoted zone heights six millimetres short for two
+  // weeks before 4.2.290 regenerated it).
+  if (process.argv.includes("--check")) {
+    const current = fs.existsSync(file) ? fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n") : "";
+    if (current === out.join("\n")) {
+      console.log(`GENERATED_MATCHES: ${path.basename(file)}`);
+    } else {
+      console.log(`GENERATED_STALE: ${path.basename(file)} is not what this script writes today. Regenerate it.`);
+      process.exitCode = 1;
+    }
+    return;
+  }
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, out.join("\n"));
   console.log(`Wrote ${file}`);

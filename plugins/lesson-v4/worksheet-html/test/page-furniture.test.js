@@ -237,8 +237,9 @@ test("an instruction carrying a list is refused and told where the list belongs"
   };
   assert.throws(() => renderHelper(asList, 174), /INSTRUCTION_IS_A_LIST/);
   assert.throws(() => measure(asList, 174), /INSTRUCTION_IS_A_LIST/);
-  // Criteria and a method's steps stay on the board (4.2.288), so the
-  // refusal no longer sends them to the steps panel.
+  // Criteria stay on the board (4.2.288), and a list of a method's steps
+  // printed just as a reminder is left off too (4.2.290), so the refusal no
+  // longer sends either to the steps panel.
   assert.throws(() => renderHelper(asList, 174), /never printed on a worksheet/);
   assert.throws(() => renderHelper(asList, 174), /written-answers/);
 

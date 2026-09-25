@@ -96,8 +96,9 @@ starting value and its related results on the same row. Put the invariant
 starting value in the anchor column and the transformations in parallel
 columns. The table is right because the relationship stays visible, not
 because it packs in more answers. Keep separate questions when each item needs
-its own method or working, and keep the chart on the Below sheet when removing
-it would remove access rather than fade a scaffold.
+its own method or working, and the Below sheet keeps the chart when its
+adaptation keeps it, because removing it there would remove access rather than
+fade a scaffold.
 
 ## Comparing and ordering
 

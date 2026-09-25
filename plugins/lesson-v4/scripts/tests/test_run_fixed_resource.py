@@ -459,6 +459,33 @@ print('STATUS=COPIED')
                 ])
                 self.assertEqual(args.year, 4)
 
+    def test_a_tier_the_expected_sheet_stands_in_for_is_flagged(self) -> None:
+        # Daniel, 25 September 2026 ("yes"): a Below or Greater Depth sheet sent
+        # back to be redesigned that still cannot be made gets the Expected
+        # sheet in its place, flagged so he knows which tier and why.
+        self.js_writer(
+            "worksheet-html/scripts/build-worksheet.js",
+            """const fs=require('fs'); const p=require('path');
+const out=process.argv[3];
+const pdf=p.join(out, 'Lesson - Worksheets.pdf');
+const answer=p.join(out, 'Lesson - Answers.txt');
+fs.writeFileSync(pdf, 'pdf');
+fs.writeFileSync(answer, 'answers');
+console.log('Built answers: ' + answer);
+console.log('Built: ' + pdf);
+console.log('SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the Below sheet could not be used as printed (a picture it needs will never arrive: adaptation-photo-002).');
+""",
+        )
+        completed = self.run_script("worksheets", "--lesson-name", "Lesson")
+        summary = json.loads(
+            (self.root / "summary.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(summary["ok"])
+        self.assertEqual([s["sheet"] for s in summary["standInSheets"]], ["Below"])
+        self.assertIn("adaptation-photo-002", summary["standInSheets"][0]["why"])
+        self.assertEqual(summary["omittedSheets"], [])
+        self.assertIn("FIXED_RESOURCE_FLAGGED worksheets: Below", completed.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

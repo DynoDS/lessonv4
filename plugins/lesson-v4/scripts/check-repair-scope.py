@@ -126,6 +126,12 @@ PRESENTATION_KEYS = {
     # taking one away is caught here as it always was, and an essential
     # photograph no longer reaches a re-point at all (4.2.270). What is released
     # is the string naming the file.
+    # The record of a sheet sent back to its author (the worksheets topic,
+    # 4.2.290). It is never printed, so it is not something a child reads.
+    # The sheet it records is taken out whole, which `without_sheets_sent_back`
+    # below releases and nothing else does, and a record already there may
+    # not be taken away.
+    "returned",
     "imagePath",
     "sourceImagePath",
     "startAt",
@@ -701,6 +707,42 @@ CHANGED_WORK = (
 )
 
 
+# A Below or Greater Depth sheet sent back to its author (the worksheets topic,
+# 4.2.290) leaves the spec whole, with its answer-key section, and is recorded
+# in `returned`: that is a return, not a lost question. Only a tier the "after"
+# spec both records and no longer holds is released, so taking a sheet out
+# without recording it is caught as it always was.
+SENT_BACK_TIERS = ("below", "greaterDepth")
+
+
+def returned_tiers(spec: object) -> set:
+    entries = spec.get("returned") if isinstance(spec, dict) else None
+    if not isinstance(entries, list):
+        return set()
+    return {e.get("sheet") for e in entries if isinstance(e, dict) and isinstance(e.get("sheet"), str)}
+
+
+def returns_taken_away(before: object, after: object) -> list[str]:
+    gone = sorted(returned_tiers(before) - returned_tiers(after))
+    return [f"the record of the {tier} sheet sent back" for tier in gone]
+
+
+def without_sheets_sent_back(before: object, after: object) -> object:
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return before
+    before_sheets = before.get("sheets") if isinstance(before.get("sheets"), dict) else {}
+    after_sheets = after.get("sheets") if isinstance(after.get("sheets"), dict) else {}
+    recorded = returned_tiers(after)
+    gone = [t for t in SENT_BACK_TIERS if t in recorded and t in before_sheets and t not in after_sheets]
+    if not gone:
+        return before
+    trimmed = dict(before)
+    trimmed["sheets"] = {k: v for k, v in before_sheets.items() if k not in gone}
+    if isinstance(before.get("answerKey"), dict):
+        trimmed["answerKey"] = {k: v for k, v in before["answerKey"].items() if k not in gone}
+    return trimmed
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Prove a repair preserved what children work from."
@@ -709,8 +751,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--after", required=True, help="The specification the repair produced")
     args = parser.parse_args(argv)
 
-    before = Census(read_spec(Path(args.before), "--before"))
-    after = Census(read_spec(Path(args.after), "--after"))
+    before_spec = read_spec(Path(args.before), "--before")
+    after_spec = read_spec(Path(args.after), "--after")
+    taken_away = returns_taken_away(before_spec, after_spec)
+    if taken_away:
+        report(
+            f"REPAIR_SCOPE_FAILED: {len(taken_away)} record(s) of a sheet sent back "
+            "did not survive the repair:",
+            taken_away,
+            "A sheet sent back stays sent back until its redesign goes in. Taking "
+            "its record away leaves that tier with no sheet and nothing to say so.",
+        )
+        return 1
+    before = Census(without_sheets_sent_back(before_spec, after_spec))
+    after = Census(after_spec)
 
     rejoin_split_sequences(before, after)
 

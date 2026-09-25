@@ -3,10 +3,21 @@
 Every changed row names the decision that changed it (`WHY`) and the words
 that now carry it (`NEW`, taken from the change scripts); rows whose words left
 their file are mapped by hand (`HAND`). `ledger_mapping.build` checks every
-phrase against the files and pins each changed row's whole paragraph."""
+phrase against the files and pins each changed row's whole paragraph.
+
+Frozen after 4.2.289. From the worksheets release (4.2.290) on, a later release
+that moves a success-criteria pin edits the pin file in place with its own repin
+script (4.2.290's is `ws-change/w9_repin_other_topics.py`), as every earlier
+topic's pins are moved. Rerunning this builder would quietly undo those moves, so
+it refuses to run unless `--i-know-it-is-frozen` is passed, for a rebuild that
+first carries every later repin into it."""
 import re
 import sys
 from pathlib import Path
+
+if "--i-know-it-is-frozen" not in sys.argv:
+    sys.exit("build_sc_mapping.py is frozen after 4.2.289: later releases move its pins "
+             "in place (see the docstring). Rerunning it would undo them.")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ledger_mapping import REPO, ROOT, build, norm, text_of  # noqa: E402

@@ -12,7 +12,8 @@ Not from what the page looks like. Every question arrives carrying a
 `responseForm` - the action the lesson designer or adaptation designer chose
 when they wrote it - and that names the family of helpers that draws it. Your
 job is to realise the named form, not to re-pick it; a form you believe is wrong
-is a `notes` entry, exactly like a question you believe is wrong.
+goes back through `WORKSHEET_CONTENT_GAP`, like a question a child could not
+answer as printed (the worksheet designer's rules 1 and 11).
 
 | `responseForm` | Reach for |
 |---|---|
@@ -35,9 +36,10 @@ the form needs more than one helper: a `correct-the-example` is the wrong workin
 and the place to repair it, and a `choose-from-options` that also asks why is the
 options and the explanation space.
 
-**A form with no helper behind it is a gap, not a licence to substitute.** Say so
-in `notes` with the form and the sheet, and build the nearest honest thing only
-where it is genuinely the same action. Silently answering a
+**A form with no helper behind it is a gap, not a licence to substitute.** Build
+the nearest honest thing only where it is genuinely the same action; otherwise
+return it through `WORKSHEET_CONTENT_GAP`, naming the form and the sheet.
+Silently answering a
 `label-the-visual` with a lettered picture and a list underneath is the fault
 that shipped on a Year 4 teeth sheet.
 
@@ -120,7 +122,7 @@ settle on a different surface for a variant when constructing the structure is
 itself the learning, or when a recording barrier is what stands in a child's way,
 and that decision arrives already made. Render what it asked for. Within one
 frame, on the expected sheet a field is its bare name and nothing else. The below sheet
-hangs a `hint` and a `wordBank` on the fields that need one, and both are drawn
+hangs a `hint` and a `wordBank` on the fields its adaptation names, and both are drawn
 so they cannot be mistaken for the child's own writing: a starter set apart by
 weight and its own line, a bank in the colour this sheet already uses for
 material handed to the child. That is as much of the job as the help itself,
@@ -436,21 +438,20 @@ Every question already exists upstream, in `lesson-design.json` or
 `adaptation.md`. Copy the text exactly. Do not paraphrase it, renumber it,
 re-pitch a number or tidy a prompt on the way past.
 
-If something upstream looks wrong, say so in `notes`. Do not fix it silently:
+Something a child could not act on, or a sheet that contradicts the objective,
+goes back through `WORKSHEET_CONTENT_GAP`, and a doubt the teacher should hear
+goes in `notes` (the worksheet designer's rule 11). Do not fix it silently:
 the sheet then disagrees with the board, and nobody finds out until a child does.
 
 ---
 
 ## When nothing fits
 
-The worksheet-designer's rule 9 owns this decision; the short of it is **change
-how a question is asked, never whether**. Compose from existing helpers first
-(the catalogue is bigger than its names suggest), then keep the question's
-words and ask it plainer, and only a question that cannot be asked honestly at
-all goes in `notes` as a named gap. Never bend the nearest helper into a shape
-it does not draw: a page that looks finished and is wrong is the failure this
+The worksheet-designer's rule 9 owns this decision: compose from existing
+helpers first (the catalogue is bigger than its names suggest), never write a
+replacement question, and return a question no helper can carry faithfully
+through `WORKSHEET_CONTENT_GAP`. Never bend the nearest helper into a shape it
+does not draw: a page that looks finished and is wrong is the failure this
 engine exists to refuse.
 
-Flagged gaps are how helpers get built. The newest arrived because seven
-published worksheets went in front of this engine, none could be built, and
-every flag named the same missing thing. All seven build now.
+A returned gap is how the next helper gets built.

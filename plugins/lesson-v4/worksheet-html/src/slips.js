@@ -20,8 +20,8 @@
 //
 // Whether a sheet is books or sheet is the worksheet designer's call, made
 // against `references/books-or-sheet.md`. This file owns only what can be
-// checked or computed: wording that plainly needs the page, and how many slips
-// fit on a page.
+// checked or computed: wording that may need the page (a prompt to look
+// again), and how many slips fit on a page.
 
 const { cssVariables, SPACE } = require("./tokens");
 const { PX_PER_MM } = require("./page");
@@ -52,12 +52,18 @@ function recordingIcon(recording) {
 
 // ─── wording that needs the page ─────────────────────────────────────────
 //
-// A slip carries the sheet's words verbatim, and some words only make sense
-// with the printed page in front of the child: "Circle the...", "Mark it on the
-// line", "Fill in the table". A sheet whose questions say those things is not a
-// books sheet whatever it was marked, because a child with a slip and a book
-// has nothing to circle. The designer is told at preflight; the build treats
-// the sheet as "sheet" rather than print slips that ask the impossible.
+// A slip carries the sheet's words verbatim, and some words look as if they
+// only make sense with the printed page in front of the child: "Circle the...",
+// "Mark it on the line", "Fill in the table". They are a prompt to look again,
+// not a verdict. The teacher ruled on 19 September 2026 that one digit box does
+// not make a write-on sheet, so words about a box or a gap are judged by what
+// the sheet holds: a box in the question's own sentence (`4,_50`), or on a
+// sheet whose only helpers are sentences and number sentences, is
+// copied into a book in seconds and never flagged. The rest are a prompt at
+// preflight, answered by a field on the sheet (`"recordingLookedAgain": true`,
+// the designer saying a book still does), never by matching the reason's
+// words; the build treats the sheet as "sheet" only when nobody answered,
+// rather than print slips that ask a child to circle what they do not have.
 //
 // Deliberately narrow. "Use the number lines to help you" stays allowed: in a
 // book the child draws their own. What is caught is an action on something
@@ -114,17 +120,89 @@ function pupilStrings(node, out = []) {
   return out;
 }
 
-// The first piece of wording on a sheet that needs the printed page, as
-// `{ phrase, text }`, or null.
-function sheetOnlyWording(sheet) {
+// Every piece of wording on a sheet that looks as if it needs the printed page,
+// as `{ phrase, text }`, one per string (its first match), in reading order.
+function sheetOnlyWordings(sheet) {
   const content = sheet && (sheet.pages || sheet.zones);
+  const found = [];
   for (const text of pupilStrings(content)) {
     for (const pattern of SHEET_ONLY_WORDING) {
       const m = pattern.exec(text);
-      if (m) return { phrase: m[0], text: text.replace(/\s+/g, " ").trim() };
+      if (m) {
+        found.push({ phrase: m[0], text: text.replace(/\s+/g, " ").trim() });
+        break;
+      }
     }
   }
-  return null;
+  return found;
+}
+
+// The first of them, or null.
+function sheetOnlyWording(sheet) {
+  return sheetOnlyWordings(sheet)[0] || null;
+}
+
+// Words about a box or a gap, and the helpers whose boxes are only the blanks
+// of a sentence or a number sentence. A phrase from the first list is not
+// flagged when its own sentence carries the blank (`_`), or when every helper
+// on the sheet is one of the second: then the box is one a child copies into a
+// book in seconds (the teacher's 19 September 2026 ruling). A box in a printed
+// figure - a part-whole model, a grid, a table - is still flagged, and so is a
+// sentence that names the figure it means ("Fill in the table").
+const BLANK_WORDING = [/\bin (?:the|this|each) (?:box|boxes|gaps?|spaces?)\b/i, /\bfill in\b/i];
+const FIGURE_WORDS = /\b(?:table|grid|chart|diagram|model|number line|map|picture|photo\w*|graph|clock|ruler|scale)\b/i;
+const SENTENCE_HELPERS = new Set(["questions", "written-answers", "instruction", "number-sentence", "section-label"]);
+
+function helpersOn(node, found = new Set()) {
+  if (Array.isArray(node)) {
+    for (const item of node) helpersOn(item, found);
+    return found;
+  }
+  if (!node || typeof node !== "object") return found;
+  if (typeof node.helper === "string") found.add(node.helper);
+  for (const value of Object.values(node)) helpersOn(value, found);
+  return found;
+}
+
+function isSentenceBlank(found, onlySentences) {
+  if (!BLANK_WORDING.some((pattern) => pattern.test(found.phrase))) return false;
+  if (FIGURE_WORDS.test(found.text)) return false;
+  return /_/.test(found.text) || onlySentences;
+}
+
+// A books sheet whose words look as if they need the printed page, as a prompt
+// to look again (`RECORDING_LOOK_AGAIN`), never a refusal. It is quiet when the
+// sheet says it was looked at again (`"recordingLookedAgain": true`).
+// `includeAnswered` also returns the answered ones, marked `answered: true`,
+// for a census of saved sheets.
+function recordingAdvisories(worksheet, { includeAnswered = false } = {}) {
+  const advisories = [];
+  for (const [key, sheet] of Object.entries((worksheet && worksheet.sheets) || {})) {
+    if (!sheet || typeof sheet !== "object" || sheet.recording !== "books") continue;
+    const content = sheet.pages || sheet.zones;
+    const onlySentences = [...helpersOn(content)].every((helper) => SENTENCE_HELPERS.has(helper));
+    const found = sheetOnlyWordings(sheet).filter((f) => !isSentenceBlank(f, onlySentences));
+    if (!found.length) continue;
+    const answered = sheet.recordingLookedAgain === true;
+    if (answered && !includeAnswered) continue;
+    const phrases = [...new Set(found.map((f) => f.phrase.toLowerCase()))];
+    const quoted = found.map((f) => `"${f.phrase}" in "${f.text}"`).join("; ");
+    advisories.push({
+      signal: "RECORDING_LOOK_AGAIN",
+      sheet: key,
+      answered,
+      phrases,
+      found: quoted,
+      message:
+        `sheets.${key} is marked "books", and ${quoted} look as if they need ` +
+        `the printed page. Look at that question against ` +
+        `references/books-or-sheet.md: a printed thing the child cannot reproduce ` +
+        `makes the sheet "sheet"; if a book still does, set ` +
+        `"recordingLookedAgain": true on the sheet, which quiets this. Never ` +
+        `reword the question.`,
+    });
+  }
+  return advisories;
 }
 
 // Every sheet's recording choice, checked. `required` is the designer's gate:
@@ -162,6 +240,13 @@ function recordingProblems(worksheet, { required = false } = {}) {
       });
       continue;
     }
+    if (sheet.recordingLookedAgain !== undefined && typeof sheet.recordingLookedAgain !== "boolean") {
+      problems.push({
+        signal: "RECORDING_INVALID",
+        sheet: key,
+        message: `sheets.${key}.recordingLookedAgain must be true or false (got ${JSON.stringify(sheet.recordingLookedAgain)}).`,
+      });
+    }
     if (required) {
       const reason =
         typeof sheet.recordingReason === "string" ? sheet.recordingReason.trim() : "";
@@ -178,20 +263,6 @@ function recordingProblems(worksheet, { required = false } = {}) {
             `copy. Going to look for a question that needs the page is the ` +
             `test. Never change a question to reach either mark. See ` +
             `references/books-or-sheet.md.`,
-        });
-      }
-    }
-    if (value === "books") {
-      const found = sheetOnlyWording(sheet);
-      if (found) {
-        problems.push({
-          signal: "RECORDING_NEEDS_SHEET",
-          sheet: key,
-          phrase: found.phrase,
-          message:
-            `sheets.${key} is marked "books", but "${found.text}" asks for ` +
-            `"${found.phrase}", which a child can only do on the printed page. ` +
-            `Mark the sheet "sheet".`,
         });
       }
     }
@@ -620,7 +691,9 @@ module.exports = {
   RECORDING_CHOICES,
   recordingIcon,
   recordingProblems,
+  recordingAdvisories,
   sheetOnlyWording,
+  sheetOnlyWordings,
   forSlip,
   slipContentOf,
   slipNodesFor,

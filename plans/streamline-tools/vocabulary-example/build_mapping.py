@@ -6,6 +6,15 @@ the words that now carry it, and the decision that changed it; a retired
 phrase is pinned as absent. Every phrase is checked against the files before
 anything is written, so the mapping cannot claim a home that does not exist.
 """
+
+# Frozen: later releases (4.2.288 onward) moved this topic's pins in place with
+# their own repin scripts (sc-change/s11 and r16, ws-change/w9). Rerunning this
+# builder would quietly undo them; carry every later repin into it first.
+import sys as _sys
+if "--i-know-it-is-frozen" not in _sys.argv:
+    _sys.exit("frozen: later releases moved this topic's pins in place; "
+              "rerunning would undo them (see the comment at the top).")
+
 import json
 import re
 from pathlib import Path

@@ -44,7 +44,14 @@ const {
 } = require("../src/worksheet");
 const { resolveImages } = require("../src/images");
 const { prepareWorksheetDecorations } = require("../src/decorations");
-const { recordingProblems, buildSlips } = require("../src/slips");
+const { recordingProblems, recordingAdvisories, buildSlips } = require("../src/slips");
+const {
+  STAND_IN_TIERS,
+  describeReturn,
+  returnedProblems,
+  withExpectedIn,
+  withExpectedStandingIn,
+} = require("../src/returned");
 
 // The same fault, twice: once for a person and once for a machine.
 //
@@ -137,7 +144,103 @@ async function main() {
   // Paths are resolved against the SPEC's folder, because that is where the
   // pipeline saves what image-scout fetched.
   const specDir = path.dirname(path.resolve(specPath));
-  const optionalVisuals = prepareWorksheetDecorations(readSpec(specPath), specDir);
+
+  // A sheet sent back to its author (the worksheets topic, 4.2.290). A Below or
+  // Greater Depth sheet goes back to the adaptation designer to be redesigned,
+  // and it never costs the other sheets or the answer key: if it still cannot
+  // be made, those children get the Expected sheet in its place, flagged so
+  // the teacher knows (his "yes", 25 September 2026). A returned sheet is out
+  // of `sheets` (the designer never wrote it, or the focused repair took it out
+  // whole), and while the spec records the return that tier holds the Expected
+  // sheet and its key section the Expected answers. A sheet in `sheets` is
+  // always built: one beside its own record is its redesign, and the record
+  // is said to be left on. The class's own sheet is never built around
+  // (`returned` naming a present Expected sheet is refused, and so is a return
+  // with no Expected sheet to print in its place).
+  const spec = readSpec(specPath);
+  const returnedFaults = returnedProblems(spec);
+  const back = withExpectedStandingIn(spec);
+  for (const entry of back.noExpected) {
+    returnedFaults.push(
+      `returned sends the ${sheetLabel(entry.sheet)} sheet back, and there is no ` +
+        `Expected sheet to print in its place: the Expected sheet goes back to the ` +
+        `lesson designer and is rebuilt before the worksheets build.`
+    );
+  }
+  if (returnedFaults.length) {
+    for (const message of returnedFaults) fail("RETURNED_INVALID", message, "content", {});
+    return;
+  }
+  for (const entry of back.leftOver) {
+    const label = sheetLabel(entry.sheet);
+    console.log(
+      `RETURN_RECORD_LEFT: ${label} - the spec holds a ${label} sheet and a "returned" ` +
+        `entry for it: the sheet is built, as its redesign. Take the entry and its ` +
+        `WORKSHEET_CONTENT_GAP note off.`
+    );
+  }
+  // Each tier the Expected sheet stands in for, with the line its key section
+  // carries and why, named once the pack is built (below).
+  const standIns = new Map(
+    back.stoodIn.map((entry) => [
+      entry.sheet,
+      {
+        keyLine:
+          entry.problem === "picture"
+            ? "whose picture never arrived"
+            : "which could not be used as printed",
+        why: `the ${sheetLabel(entry.sheet)} sheet could not be used as printed (${describeReturn(entry)})`,
+      },
+    ])
+  );
+  const keyLines = () => Object.fromEntries([...standIns].map(([key, s]) => [key, s.keyLine]));
+  // A tier the Expected sheet stood in for, omitted because the page cannot
+  // hold the Expected sheet either, is named for its own reason, never with
+  // the Expected sheet's measurement as if it were the tier's own.
+  const omission = (key, problem) => {
+    const standIn = standIns.get(key);
+    if (!standIn) return problem;
+    const label = sheetLabel(key);
+    const text = String(problem);
+    const detail = text.startsWith(`${label} - `) ? text.slice(label.length + 3) : text;
+    return (
+      `${label} - ${standIn.why}, and the Expected sheet cannot stand in for it: ` +
+      `the page cannot hold the Expected sheet either (${detail})`
+    );
+  };
+
+  // The last resort (`--omit-unfittable`, passed only once a sheet's own repair
+  // round is over). His answer (25 September 2026) was for a Below or Greater
+  // Depth sheet sent back that still cannot be fixed: the Expected sheet in its
+  // place, flagged. The lead passed it on for any such sheet the build cannot
+  // make, for any reason: a page too small,
+  // a picture it cannot have, a panel, an answer key that does not match it, or
+  // any other fault the checks below refuse. So each such sheet is first put
+  // through every check the build makes before drawing, on its own, and when
+  // it would be refused while the Expected sheet passes them all, the Expected
+  // sheet stands in for that tier. Nothing stands in for the Expected sheet: one
+  // the page cannot hold is omitted below, as before, and then nothing stands
+  // in for another tier, since a copy of it would not fit either; one with any
+  // other fault still refuses the pack.
+  let packSpec = back.worksheet;
+  if (omitUnfittable && packSpec.sheets && packSpec.sheets.expected && !sheetFaults(packSpec, "expected", specDir).length) {
+    for (const key of STAND_IN_TIERS) {
+      if (!packSpec.sheets[key] || standIns.has(key)) continue;
+      const faults = sheetFaults(packSpec, key, specDir);
+      if (!faults.length) continue;
+      const label = sheetLabel(key);
+      const pageOnly = faults.every((fault) => fault.fit);
+      const first = faults[0].text + (faults.length > 1 ? ` (and ${faults.length - 1} more)` : "");
+      packSpec = withExpectedIn(packSpec, key);
+      standIns.set(key, {
+        keyLine: pageOnly ? "which the page could not hold" : "which could not be built",
+        why: pageOnly
+          ? `the page cannot hold the ${label} sheet (${first})`
+          : `the ${label} sheet cannot be built (${first})`,
+      });
+    }
+  }
+  const optionalVisuals = prepareWorksheetDecorations(packSpec, specDir);
   for (const warning of optionalVisuals.warnings) {
     console.warn(`[decoration] ${warning}`);
   }
@@ -176,7 +279,10 @@ async function main() {
   // child needed, is the "looks finished" failure this engine exists to refuse,
   // and omitting such a sheet would hide the fault instead of saying it. The
   // last sheet standing is never omitted, because a pack with nothing in it is
-  // not a partial delivery.
+  // not a partial delivery. A Below or Greater Depth sheet the build cannot make
+  // already has the Expected sheet in its place (above) whenever the Expected
+  // sheet passes every check, so what still comes out here is an Expected sheet
+  // the page cannot hold, and then any copy of it.
   //
   // One sheet comes out per pass, because the shapes are chosen per sheet and
   // the next sheet's refusal is only visible once this one is gone.
@@ -216,10 +322,11 @@ async function main() {
       const key = e.location && e.location.sheet;
       const others = Object.keys(worksheet.sheets || {}).filter((k) => k !== key);
       if (omitUnfittable && e.signal === "SHEET_DOES_NOT_FIT" && key && others.length) {
+        const message = omission(key, e.message);
         worksheet = withoutSheet(worksheet, key);
         omitted.push(key);
-        console.log(`SHEET_OMITTED: ${e.message}`);
-        diagnostic("SHEET_OMITTED", "composition", e.location, e.message);
+        console.log(`SHEET_OMITTED: ${message}`);
+        diagnostic("SHEET_OMITTED", "composition", e.location, message);
         continue;
       }
       fail(e.signal, e.message, "composition", e.location || {});
@@ -227,23 +334,37 @@ async function main() {
     }
   }
 
-  // Books or sheet. The designer's preflight refuses a missing or mistaken
-  // choice; here, where refusing would cost the class its worksheets, a
-  // mistaken one is corrected and said out loud instead. A sheet marked books
-  // whose words need the printed page ("Circle...", "on the line") is printed
-  // as a sheet, because slips would ask children to circle something they do
-  // not have.
+  // Books or sheet. The designer's preflight refuses a missing or unusable
+  // choice; here, where refusing would cost the class its worksheets, an
+  // unusable one is printed unmarked and said out loud instead. A sheet marked
+  // books whose words look as if they need the printed page ("Circle...", "on
+  // the line") was asked at preflight to look again; one that says it was
+  // (`"recordingLookedAgain": true`) keeps "books", and one nobody answered is
+  // printed as a sheet, because its slips might ask children to circle
+  // something they do not have. Words about a box in the question's own
+  // sentence are never flagged (one digit box does not make a write-on sheet,
+  // the teacher's 19 September ruling).
   for (const problem of recordingProblems(worksheet)) {
     const label = sheetLabel(problem.sheet);
-    const corrected = problem.signal === "RECORDING_NEEDS_SHEET" ? "sheet" : undefined;
-    worksheet = withRecording(worksheet, problem.sheet, corrected);
+    worksheet = withRecording(worksheet, problem.sheet, undefined);
     console.log(
       `RECORDING_CHANGED: ${label} - ${problem.message} ` +
-        (corrected
-          ? 'Printed with the "sheet" mark and no question slips.'
-          : "Printed with no mark and no question slips.")
+        "Printed with no mark and no question slips."
     );
     diagnostic("RECORDING_CHANGED", "content", { sheet: problem.sheet }, problem.message);
+  }
+  for (const advisory of recordingAdvisories(worksheet)) {
+    const label = sheetLabel(advisory.sheet);
+    const message =
+      `sheets.${advisory.sheet} is marked "books", and ${advisory.found} look as if ` +
+      `they need the printed page, and the sheet does not say it was looked at ` +
+      `again ("recordingLookedAgain": true).`;
+    worksheet = withRecording(worksheet, advisory.sheet, "sheet");
+    console.log(
+      `RECORDING_CHANGED: ${label} - ${message} ` +
+        'Printed with the "sheet" mark and no question slips.'
+    );
+    diagnostic("RECORDING_CHANGED", "content", { sheet: advisory.sheet }, message);
   }
 
   // What each level costs in paper, said out loud. A worksheet where every
@@ -281,8 +402,9 @@ async function main() {
       worksheet = withoutSheet(worksheet, sheet.key);
       omitted.push(sheet.key);
       for (const problem of sheet.tooTight) {
-        console.log(`SHEET_OMITTED: ${sheet.label} - ${problem}`);
-        diagnostic("SHEET_OMITTED", "composition", { sheet: sheet.key, page: sheet.page }, problem);
+        const message = omission(sheet.key, `${sheet.label} - ${problem}`);
+        console.log(`SHEET_OMITTED: ${message}`);
+        diagnostic("SHEET_OMITTED", "composition", { sheet: sheet.key, page: sheet.page }, message);
       }
     }
   }
@@ -292,8 +414,11 @@ async function main() {
   if (omitted.length) {
     console.log(
       `SHEET_OMITTED_SUMMARY: delivered ${Object.keys(worksheet.sheets || {}).join(", ")}; ` +
-        `omitted ${omitted.join(", ")} because the page cannot hold it. The answer ` +
-        `key covers the delivered sheets only.`
+        `omitted ${omitted.join(", ")} because the page cannot hold it` +
+        (omitted.some((key) => standIns.has(key))
+          ? " (for a tier the Expected sheet stood in for, the Expected sheet)"
+          : "") +
+        `. The answer key covers the delivered sheets only.`
     );
   }
 
@@ -357,7 +482,7 @@ async function main() {
     return;
   }
 
-  const sheets = sheetsOf(worksheet);
+  let sheets = sheetsOf(worksheet);
   // The pipeline names the file a teacher opens ("Fractions - Worksheets"),
   // because that convention belongs to the pipeline and not to the engine. Left
   // unnamed, the spec's own name is used, so running this by hand still works.
@@ -371,27 +496,28 @@ async function main() {
   // "Topic - Worksheets.pdf" and "Topic - Answers.txt".
   const answerBase = base.replace(/\s*-\s*Worksheets$/i, "") || base;
   const answersPath = path.join(outDir, `${answerBase} - Answers.txt`);
-  fs.writeFileSync(answersPath, renderAnswerKey(worksheet, answerKey), "utf8");
+  fs.writeFileSync(answersPath, renderAnswerKey(worksheet, answerKey, { stoodIn: keyLines() }), "utf8");
   console.log(`Built answers: ${answersPath}`);
 
   // Every sheet's HTML is written before any PDF is attempted, so a machine
   // that cannot print still ends this run holding the whole worksheet.
-  const rendered = [];
-  for (const sheet of sheets) {
-    const html = renderSheet(sheet.spec);
-    // A level is one page and one file, except for the approved two-page
-    // exception, where page 2 must not overwrite page 1.
-    const suffix = sheet.pageCount > 1 ? `-${sheet.key}-p${sheet.page}` : `-${sheet.key}`;
-    const htmlPath = path.join(outDir, `${base}${suffix}.html`);
-    fs.writeFileSync(htmlPath, html);
-    rendered.push({ sheet, html, htmlPath });
-  }
+  const draw = (list) =>
+    list.map((sheet) => {
+      const html = renderSheet(sheet.spec);
+      // A level is one page and one file, except for the approved two-page
+      // exception, where page 2 must not overwrite page 1.
+      const suffix = sheet.pageCount > 1 ? `-${sheet.key}-p${sheet.page}` : `-${sheet.key}`;
+      const htmlPath = path.join(outDir, `${base}${suffix}.html`);
+      fs.writeFileSync(htmlPath, html);
+      return { sheet, html, htmlPath };
+    });
+  let rendered = draw(sheets);
 
   // The levels marked books get a page of question slips each, printed after
   // every sheet so the file still reads Below, Expected, Greater Depth first.
   // One level on the approved two-page exception has a write-on visual at its
   // heart and is never a books sheet, so it gets none.
-  const slipSheets = sheets.filter((s) => s.spec.recording === "books" && s.pageCount === 1);
+  let slipSheets = sheets.filter((s) => s.spec.recording === "books" && s.pageCount === 1);
   const slipsPathFor = (sheet) => path.join(outDir, `${base}-slips-${sheet.key}.html`);
   const reportSlips = (sheet, result) => {
     if (result.skipped) {
@@ -448,6 +574,7 @@ async function main() {
     const browser = await launchBrowser();
     try {
 
+    const settleAll = async () => {
     for (const r of rendered) {
       // The browser's verdict, and what was done about it, come back from one
       // place: the zones that ran a hair short are grown by exactly what the
@@ -467,6 +594,35 @@ async function main() {
       for (const problem of settled.fitProblems) {
         clipped.push({ sheet: r.sheet, problem });
       }
+    }
+    };
+    await settleAll();
+
+    // The last resort in the browser: a Below or Greater Depth sheet it finds
+    // clipped, when the Expected sheet printed clean, cannot be made either, so
+    // the Expected sheet stands in for it. Those pages are drawn again, the
+    // key is written again, and every sheet is measured again.
+    const clippedKeys = [...new Set(clipped.map((c) => c.sheet.key))];
+    if (
+      omitUnfittable &&
+      clippedKeys.length &&
+      worksheet.sheets.expected &&
+      clippedKeys.every((key) => STAND_IN_TIERS.includes(key) && !standIns.has(key))
+    ) {
+      for (const key of clippedKeys) {
+        const details = clipped.filter((c) => c.sheet.key === key).map((c) => clipDetail(c.problem));
+        worksheet = withExpectedIn(worksheet, key);
+        standIns.set(key, {
+          keyLine: "which the page could not hold",
+          why: `the page cannot hold the ${sheetLabel(key)} sheet (${details.join(" ")})`,
+        });
+      }
+      fs.writeFileSync(answersPath, renderAnswerKey(worksheet, answerKeyOf(worksheet), { stoodIn: keyLines() }), "utf8");
+      sheets = sheetsOf(worksheet);
+      rendered = draw(sheets);
+      slipSheets = sheets.filter((s) => s.spec.recording === "books" && s.pageCount === 1);
+      for (const list of [pdfs, clipped, reshaped, corrected]) list.length = 0;
+      await settleAll();
     }
 
     // Slips only once every sheet has printed clean: a refused sheet refuses
@@ -530,26 +686,22 @@ async function main() {
     // the designer decides what changes.
     if (clipped.length) {
       for (const { sheet, problem } of clipped) {
-        const detail =
-          problem.kind === "zone-overflow"
-            ? `rendered content overflows the zone (content ${problem.scrollHeight}px ` +
-              `tall in ${problem.clientHeight}px, ${problem.scrollWidth}px wide in ` +
-              `${problem.clientWidth}px)`
-            : problem.kind === "child-outside-zone"
-              ? "rendered content reaches outside the zone and is cut by its edge"
-              : problem.kind === "child-spills-over-neighbour"
-                ? `the box "${problem.box}" is drawing over what comes after it ` +
-                  `(content ${problem.scrollHeight}px tall in a ${problem.clientHeight}px box, ` +
-                  `${problem.scrollWidth}px wide in ${problem.clientWidth}px), so two ` +
-                  `blocks print on top of each other`
-                : "a box inside the zone is cutting off its own content";
+        const detail = clipDetail(problem);
+        // A tier the Expected sheet stood in for is named as that: the page
+        // clipped is the Expected sheet's, and the tier's own reason is said.
+        const standIn = standIns.get(sheet.key);
+        const whose = standIn ? ` (the Expected sheet, standing in because ${standIn.why})` : "";
         fail(
           "SHEET_DOES_NOT_FIT",
-          `${sheet.label} page ${sheet.page} zone "${problem.zone}" - ${detail}.`,
+          `${sheet.label} page ${sheet.page} zone "${problem.zone}"${whose} - ${detail}.`,
           "composition",
           { sheet: sheet.key, page: sheet.page, zone: problem.zone }
         );
       }
+      // A refused pack leaves no answer key behind. It was written before the
+      // pages were drawn, and on its own it would be delivered as if the pack
+      // were, naming a stand-in the class never got.
+      fs.rmSync(answersPath, { force: true });
       return;
     }
 
@@ -557,6 +709,18 @@ async function main() {
     fs.writeFileSync(combined, await mergePdfs(pdfs));
     console.log(`Built: ${combined}`);
     fitVerified = true;
+  }
+
+  // Each tier the Expected sheet stands in for, named once the pack is built:
+  // a flag for the teacher's report, never a fault for a repair round, so it
+  // carries no BUILD_DIAGNOSTIC.
+  for (const [key, standIn] of standIns) {
+    if (!worksheet.sheets[key]) continue;
+    const label = sheetLabel(key);
+    console.log(
+      `SHEET_STANDS_IN: ${label} - the Expected sheet stands in for ${label}, and the ` +
+        `${label} section of the answer key is the Expected answers: ${standIn.why}.`
+    );
   }
 
   console.log(
@@ -590,6 +754,66 @@ async function main() {
         .join("\n")
     );
   }
+}
+
+// Every fault the build would refuse one sheet for, checked on its own and in
+// the order the build checks them: its pictures, a criteria panel, its shape,
+// its answer-key section, and what the page prints. `fit` marks a page too
+// small; the browser's own measure comes later, when the pages are drawn.
+function sheetFaults(worksheet, key, specDir) {
+  const label = sheetLabel(key);
+  const plain = (message) => {
+    const text = String(message);
+    return text.startsWith(`${label} - `) ? text.slice(label.length + 3) : text;
+  };
+  const one = { ...worksheet, sheets: { [key]: worksheet.sheets[key] } };
+  if (worksheet.answerKey) {
+    one.answerKey = worksheet.answerKey[key] === undefined ? {} : { [key]: worksheet.answerKey[key] };
+  }
+  try {
+    const problems = [];
+    let single = resolveImages(prepareWorksheetDecorations(one, specDir).worksheet, specDir, problems);
+    const pictures = unresolvedImages(single, problems);
+    if (pictures.length) return pictures.map((item) => ({ fit: false, text: `${item.signal}: ${item.message}` }));
+    const panels = sheetCriteriaPanels(single);
+    if (panels.length) return panels.map((found) => ({ fit: false, text: `CRITERIA_NOT_ON_SHEETS: ${found.where}` }));
+    single = resolveAutoLayouts(single).worksheet;
+    answerKeyOf(single);
+    const faults = [];
+    for (const sheet of checkWorksheet(single)) {
+      for (const problem of sheet.tooTight) faults.push({ fit: true, text: plain(problem) });
+      for (const problem of [
+        ...sheet.badZones,
+        ...sheet.wordBanks,
+        ...sheet.unprinted,
+        ...sheet.emptySets,
+        ...sheet.pupilWording,
+        ...sheet.labelIntent,
+      ]) {
+        faults.push({ fit: false, text: plain(problem) });
+      }
+    }
+    return faults;
+  } catch (e) {
+    if (!(e instanceof WorksheetError)) throw e;
+    return [{ fit: e.signal === "SHEET_DOES_NOT_FIT", text: `${e.signal}: ${plain(e.message)}` }];
+  }
+}
+
+// What the browser found wrong with a drawn page, in words.
+function clipDetail(problem) {
+  return problem.kind === "zone-overflow"
+    ? `rendered content overflows the zone (content ${problem.scrollHeight}px ` +
+        `tall in ${problem.clientHeight}px, ${problem.scrollWidth}px wide in ` +
+        `${problem.clientWidth}px)`
+    : problem.kind === "child-outside-zone"
+      ? "rendered content reaches outside the zone and is cut by its edge"
+      : problem.kind === "child-spills-over-neighbour"
+        ? `the box "${problem.box}" is drawing over what comes after it ` +
+          `(content ${problem.scrollHeight}px tall in a ${problem.clientHeight}px box, ` +
+          `${problem.scrollWidth}px wide in ${problem.clientWidth}px), so two ` +
+          `blocks print on top of each other`
+        : "a box inside the zone is cutting off its own content";
 }
 
 function sheetLabel(key) {

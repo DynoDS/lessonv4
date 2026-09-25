@@ -23,11 +23,14 @@ const EXAMPLES = require("./helper-examples");
 // and the documents get re-measured rather than trusted.
 //
 // The claims pinned, and where they are quoted:
-//   - a picture beside a word is cheap (a photo word bank costs a sliver, not
-//     a page)                     agents/lesson-designer.md   "A small picture beside a word is cheap"
-//                                 agents/adaptation-designer.md  "a picture-and-word bank are cheap"
+//   - a picture beside a word is cheap: eight pictures in a word bank cost
+//     under 30mm over bare words, and still leave room for four written
+//     answers on the page
 //   - six cheap numbered items (coin strips, part-whole money) are an ordinary
-//     page; eight are not         the same two documents ("six of those on a page is ordinary")
+//     page; eight are not
+//     (These two were quoted by the lesson designer and the adaptation
+//     designer, whose test titles still name them; neither file quotes the
+//     sentences any more, and the tests keep measuring the page.)
 //   - the numbered photograph-and-list unit is about 148mm across
 //                                 references/worksheet-helpers/science.md
 //   - about a third of the helpers carry a `text` stem

@@ -6700,7 +6700,7 @@
   },
   {
    "id": "SC-N01",
-   "outcome": "decision 8, in his words: never on a worksheet; `worksheet.successCriteriaRefs` always empty",
+   "outcome": "decision 8, in his words: never on a worksheet; `worksheet.successCriteriaRefs` always empty; then the worksheets topic's decision 10 (4.2.290), his \"yes\", as the lead read it (\"never a list of steps printed just as a reminder\", the lead's wording, which he called \"fine\"): a list of a method's steps is never printed just as a reminder, a one-line reminder of a method is support, and a fill-in frame the child writes into, and steps a task needs worked through, print with their question (it says nothing about where else the steps are shown)",
    "present": [
     {
      "file": "agents/worksheet-designer.md",
@@ -6713,7 +6713,7 @@
     },
     {
      "file": "agents/worksheet-designer.md",
-     "text": "13. **Never print success criteria on a worksheet.** They stay on the board, where children consult them while they work, and the teacher does not want them on any sheet or slip. `worksheet.successCriteriaRefs` is always empty, and nothing on the page reprints them, as a panel or as a list. A one-line job statement for a reference under rule 12 is not a criteria panel.",
+     "text": "13. **Never print success criteria on a worksheet.** They stay on the board, where children consult them while they work, and the teacher does not want them on any sheet or slip. `worksheet.successCriteriaRefs` is always empty, and nothing on the page reprints them, as a panel or as a list. Nor is a list of a method's steps printed just as a reminder for the child to consult (`preferences.md` → The printed page; a one-line reminder of a method is support); a fill-in frame the child writes into, and steps a task needs worked through, print with their question. A one-line job statement for a reference under rule 12 is not a criteria panel.",
      "section": {
       "heading": "## Rules that never change",
       "occurrence": 0,
@@ -6795,11 +6795,11 @@
   },
   {
    "id": "SC-N04",
-   "outcome": "decision 8: the preflight confirms no criteria are printed",
+   "outcome": "decision 8: the preflight confirms no criteria are printed; then the worksheets topic's decision 10 (4.2.290), his \"yes\", as the lead read it (\"never a list of steps printed just as a reminder\", the lead's wording, which he called \"fine\"): a list of a method's steps is never printed just as a reminder, a one-line reminder of a method is support, and a fill-in frame the child writes into, and steps a task needs worked through, print with their question (it says nothing about where else the steps are shown)",
    "present": [
     {
      "file": "agents/worksheet-designer.md",
-     "text": "- Confirm no success criteria are printed, as a panel or as an instruction carrying a list.",
+     "text": "- Confirm no success criteria are printed, as a panel or as an instruction carrying a list, or a list of a method's steps printed just as a reminder.",
      "section": {
       "heading": "## Final preflight",
       "occurrence": 0,
@@ -6817,7 +6817,7 @@
     },
     {
      "file": "agents/worksheet-designer.md",
-     "text": "- Confirm `Pupil prompt` contains only child-facing wording, with planning, sourcing and answer information absent. - Confirm every word bank has its own `Word bank` label and distinct choices, and that one question's words are in ONE bank. - Confirm no success criteria are printed, as a panel or as an instruction carrying a list. - Confirm every tick, match, name, circle, write, draw, label or annotate action has one obvious usable printed target. - Confirm no space on the sheet is plain working room. Children have their books, which are bigger, always open and not being printed, so jotting space belongs there. Room earns a place on paper only when the working has to sit with something printed - annotating a supplied diagram, drawing on a given number line, a design the sheet collects in - and then it is a bordered box. - Confirm multipart labels describe one connected pupil job. A separate decision or answer route begins a new question even when the stimulus is shared. - Confirm every required visual and support from upstream is present.",
+     "text": "- Confirm `Pupil prompt` contains only child-facing wording, with planning, sourcing and answer information absent. - Confirm every word bank has its own `Word bank` label and distinct choices, and that one question's words are in ONE bank. - Confirm no success criteria are printed, as a panel or as an instruction carrying a list, or a list of a method's steps printed just as a reminder. - Confirm every tick, match, name, circle, write, draw, label or annotate action has one obvious usable printed target. - Confirm no space on the sheet is plain working room. Children have their books, which are bigger, always open and not being printed, so jotting space belongs there. Room earns a place on paper only when the working has to sit with something printed - annotating a supplied diagram, drawing on a given number line, a design the sheet collects in - and then it is a bordered box. - Confirm multipart labels describe one connected pupil job. A separate decision or answer route begins a new question even when the stimulus is shared. - Confirm every required visual and support from upstream is present.",
      "section": {
       "heading": "## Final preflight",
       "occurrence": 0,
@@ -6830,11 +6830,11 @@
   },
   {
    "id": "SC-N05",
-   "outcome": "decision 8: criteria no longer an example of support on a sheet",
+   "outcome": "decision 8: criteria no longer an example of support on a sheet; then the worksheets topic's decision 10 (4.2.290), his \"yes\", as the lead read it (\"never a list of steps printed just as a reminder\", the lead's wording, which he called \"fine\"): a list of a method's steps is never printed just as a reminder, a one-line reminder of a method is support, and a fill-in frame the child writes into, and steps a task needs worked through, print with their question (it says nothing about where else the steps are shown); its example is now a one-line reminder",
    "present": [
     {
      "file": "agents/worksheet-designer.md",
-     "text": "an answer. A reminder of a method they have already used, a prompt to check their work: yes,",
+     "text": "an answer. A one-line reminder of a method they have already used, a prompt to check their work: yes,",
      "section": {
       "heading": "# Worksheet Designer",
       "occurrence": 0,
@@ -6843,7 +6843,7 @@
     },
     {
      "file": "agents/worksheet-designer.md",
-     "text": "**What sends something to the back is what a child could do without it, not what kind of thing it is.** Ask whether a child who never read it could still produce an answer. A reminder of a method they have already used, a prompt to check their work: yes, and those improve or check an answer that already exists, so they come after. A definition of the word the question turns on, a sentence starter the answer is written into, a word bank the answer is chosen from, a step list worked *through*: no, and without it there is no answer, so it is part of the question and sits with it, above the writing space rather than under it.",
+     "text": "**What sends something to the back is what a child could do without it, not what kind of thing it is.** Ask whether a child who never read it could still produce an answer. A one-line reminder of a method they have already used, a prompt to check their work: yes, and those improve or check an answer that already exists, so they come after. A definition of the word the question turns on, a sentence starter the answer is written into, a word bank the answer is chosen from, a step list worked *through*: no, and without it there is no answer, so it is part of the question and sits with it, above the writing space rather than under it.",
      "section": {
       "heading": "# Worksheet Designer",
       "occurrence": 0,
@@ -6882,7 +6882,7 @@
   },
   {
    "id": "SC-N07",
-   "outcome": "decision 8: criteria no longer among a sheet's support",
+   "outcome": "decision 8: criteria no longer among a sheet's support; then the worksheets topic's decision 10 (4.2.290), his \"yes\", as the lead read it (\"never a list of steps printed just as a reminder\", the lead's wording, which he called \"fine\"): a list of a method's steps is never printed just as a reminder, a one-line reminder of a method is support, and a fill-in frame the child writes into, and steps a task needs worked through, print with their question (it says nothing about where else the steps are shown); and its settled item h, the worksheet designer's sentence-start case moved here as a plain example; then the worksheets topic's decision 10 (4.2.290), his \"yes\", as the lead read it (\"never a list of steps printed just as a reminder\", the lead's wording, which he called \"fine\"): a list of a method's steps is never printed just as a reminder, a one-line reminder of a method is support, and a fill-in frame the child writes into, and steps a task needs worked through, print with their question (it says nothing about where else the steps are shown); the reminder that comes after is one line",
    "present": [
     {
      "file": "references/preferences.md",
@@ -6895,7 +6895,7 @@
     },
     {
      "file": "references/preferences.md",
-     "text": "A reminder of a method they have already used and a prompt to check their work pass that test,",
+     "text": "A one-line reminder of a method they have already used and a prompt to check their work pass that test,",
      "section": {
       "heading": "### The printed page",
       "occurrence": 0,
@@ -6904,7 +6904,7 @@
     },
     {
      "file": "references/preferences.md",
-     "text": "A step list a child must work *through* in order before they can answer anything is not support at all: it is part of the task, and goes above the questions in their own column like anything else they read from. And a step list is only the clearest case: what sends something to the back is what a child could do without it, not what kind of thing it is. Ask whether a child who never read it could still produce an answer. A reminder of a method they have already used and a prompt to check their work pass that test, because they improve or check an answer that already exists, and those are what \"after\" was written for. A definition of the word a question turns on, a sentence starter the answer is written into and a word bank the answer is chosen from all fail it, so each of those is part of its question and sits with it, above the writing space rather than under it.",
+     "text": "A step list a child must work *through* in order before they can answer anything is not support at all: it is part of the task, and goes above the questions in their own column like anything else they read from. A list of a method's steps is never printed just as a reminder for the child to consult; a fill-in frame the child writes into (`method-frame` in maths) is a question, and steps a task needs worked through belong to their question. And a step list is only the clearest case: what sends something to the back is what a child could do without it, not what kind of thing it is. Ask whether a child who never read it could still produce an answer. A one-line reminder of a method they have already used and a prompt to check their work pass that test, because they improve or check an answer that already exists, and those are what \"after\" was written for. A definition of the word a question turns on, a sentence starter the answer is written into and a word bank the answer is chosen from all fail it, so each of those is part of its question and sits with it, above the writing space rather than under it. Filed as a reminder instead, one prints where a child cannot use it: `Optional sentence start: \"You can...\"` under the line the sentence was to be written on.",
      "section": {
       "heading": "### The printed page",
       "occurrence": 0,
@@ -7064,7 +7064,7 @@
   },
   {
    "id": "SC-N14",
-   "outcome": "retired from the designer's catalogue by decision 8: the engine keeps the panel but never lets it onto a sheet",
+   "outcome": "retired from the designer's catalogue by decision 8: the engine keeps the panel but never lets it onto a sheet; then the worksheets topic's decision 10 (4.2.290) brought \"a method's steps\" back to a sheet's rules, bounded to steps printed only to consult, which are left off; both barred wordings stay barred everywhere, and nothing says where the steps are shown",
    "present": [
     {
      "file": "worksheet-html/src/render.js",
@@ -7132,7 +7132,7 @@
   },
   {
    "id": "SC-N17",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until 4.2.290; then the worksheets topic's settled item a (4.2.290), his 23 September ruling \"worksheets are not homework, worksheets are delivered in class all the time\": a sheet leans on what the board or the working wall shows while children work",
    "present": [
     {
      "file": "references/preferences.md",
@@ -7145,7 +7145,7 @@
     },
     {
      "file": "references/preferences.md",
-     "text": "A separate worksheet need not duplicate a reference that remains accessible, but a resource intended for use on its own cannot assume an unseen board.",
+     "text": "A worksheet need not duplicate a reference the board or the working wall shows while children work: every sheet is done in class.",
      "section": {
       "heading": "## Support, Checking and Release",
       "occurrence": 0,
@@ -7157,11 +7157,11 @@
   },
   {
    "id": "SC-N18",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until 4.2.290; then the worksheets topic's settled item a (4.2.290), his 23 September ruling \"worksheets are not homework, worksheets are delivered in class all the time\": a sheet leans on what the board or the working wall shows while children work",
    "present": [
     {
      "file": "agents/worksheet-designer.md",
-     "text": "**Drop a printed reference the child already has in front of them.** A reference is a thing to consult - a filled example chart, a classification diagram, an anchor image - and it is the one printed element whose removal costs a child nothing when the same thing is on the board or the working wall throughout the lesson.",
+     "text": "**Drop a printed reference the child already has in front of them.** A reference is a thing to consult - a filled example chart, a classification diagram, an anchor image - and it is the one printed element whose removal costs a child nothing when the same thing is on the board or the working wall while they work on the sheet.",
      "section": {
       "heading": "### 4. Trust the refusal",
       "occurrence": 0,
@@ -9125,7 +9125,7 @@
   },
   {
    "id": "SC-DEC-08-ENGINE",
-   "outcome": "decision 8 in his words, in the worksheet engine (the second check's findings 1 and 2): the list refusal leaves success criteria off and sends a method's steps a child works through to their question; a panel on an auto sheet is refused before a shape is chosen, never priced as content or a reason to omit a sheet; the template never asks for sheet criteria",
+   "outcome": "decision 8 in his words, in the worksheet engine (the second check's findings 1 and 2): the list refusal leaves success criteria off and sends a method's steps a child works through to their question; a panel on an auto sheet is refused before a shape is chosen, never priced as content or a reason to omit a sheet; the template never asks for sheet criteria; then the worksheets topic's decision 10 (4.2.290), his \"yes\", as the lead read it (\"never a list of steps printed just as a reminder\", the lead's wording, which he called \"fine\"): a list of a method's steps is never printed just as a reminder, a one-line reminder of a method is support, and a fill-in frame the child writes into, and steps a task needs worked through, print with their question (it says nothing about where else the steps are shown); the one pinned line of the list refusal it split is now two",
    "present": [
     {
      "file": "worksheet-html/src/helpers/text.js",
@@ -9134,7 +9134,12 @@
     },
     {
      "file": "worksheet-html/src/helpers/text.js",
-     "text": "'board and are never printed on a worksheet. Otherwise, if they are steps a child ' +",
+     "text": "'board and are never printed on a worksheet. A list of a method\\'s steps printed ' +",
+     "section": null
+    },
+    {
+     "file": "worksheet-html/src/helpers/text.js",
+     "text": "'just as a reminder is left off too. Otherwise, if they are steps a child ' +",
      "section": null
     },
     {

@@ -1,6 +1,15 @@
 """The Teach then Do mapping and pins (4.2.285). Every changed ledger row is
 mapped by hand to the words that now carry it; `ledger_mapping.build` checks
 each phrase against the files before anything is written."""
+
+# Frozen: later releases (4.2.288 onward) moved this topic's pins in place with
+# their own repin scripts (sc-change/s11 and r16, ws-change/w9). Rerunning this
+# builder would quietly undo them; carry every later repin into it first.
+import sys as _sys
+if "--i-know-it-is-frozen" not in _sys.argv:
+    _sys.exit("frozen: later releases moved this topic's pins in place; "
+              "rerunning would undo them (see the comment at the top).")
+
 import sys
 from pathlib import Path
 

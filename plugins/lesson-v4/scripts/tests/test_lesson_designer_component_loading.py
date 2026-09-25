@@ -139,9 +139,20 @@ class ActivationAndPreservationTests(unittest.TestCase):
         for needed in (
             "activityArchitecture", "fitPriority", "preAuthorisedRemoval: []",
             "a paragraph in a writing lesson", "the sheet carries photographs",
-            "Two pages only when the central task needs a substantial write-on visual",
+            # Settled item h of the worksheets topic (4.2.290): the component
+            # points at the printed page for the two-page condition and keeps
+            # its one extra and the limit; the condition is held at its home.
+            "the two-page exception and its limits are `preferences.md` → The printed page's",
+            "state the eligibility and protect the visual",
+            "A second page is never for overflow, prose or extra questions",
         ):
             self.assertIn(needed, view)
+        preferences = " ".join((ROOT / "references" / "preferences.md").read_text(encoding="utf-8").split())
+        self.assertIn(
+            "A per-child sheet may use exactly two printable pages only when the central learning task "
+            "requires a substantial write-on visual",
+            preferences,
+        )
 
     def test_supplied_worksheet_does_not_remove_coverage_or_adaptation(self):
         self.assertIn("their sheet is the Expected sheet", CORE)

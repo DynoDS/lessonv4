@@ -22,7 +22,13 @@ const {
   WorksheetError,
 } = require("../src/worksheet");
 const { tightnessOf, describeTightness } = require("../src/tightness");
-const { recordingProblems } = require("../src/slips");
+const { recordingProblems, recordingAdvisories } = require("../src/slips");
+const {
+  LABELS,
+  describeReturn,
+  returnedEntry,
+  returnedProblems,
+} = require("../src/returned");
 
 function fail(signal, message) {
   console.log(`${signal}: ${message}`);
@@ -92,13 +98,103 @@ function pendingApprovedPictures(worksheet, specDir, photoReqPath) {
 }
 
 // The sheets adaptation.md directs must be in the spec, or their omission must
-// point at a photograph request that genuinely is not in the photo contract.
-// Without this, a designer that omitted the Below sheet because its adaptation
-// pictures "had not arrived" passed preflight, promotion then found no sheet
-// referencing those pictures and sourced none, and the sheet became
-// unrecoverable - the check said OK at the exact moment the loss was still
+// be a gap that can stand. Without this, a designer that omitted the Below sheet
+// because its adaptation pictures "had not arrived" passed preflight, promotion
+// then found no sheet referencing those pictures and sourced none, and the sheet
+// became unrecoverable - the check said OK at the exact moment the loss was still
 // repairable.
-function checkDirectedSheets(worksheet, adaptationPath, photoReqPath) {
+//
+// A return is read from the spec's `returned` record (`src/returned.js`),
+// never from the words of its note: which kind of problem sent a sheet back
+// decides what this gate may check, and a note describing a teaching problem on
+// a picture-led sheet mentions the photograph. (A word list here refused exactly
+// those, and the designer's own return line for a picture that would never
+// come; the first check of the worksheets release, 4.2.290, found both.)
+//
+// What stands, each going back to its owner through its note:
+//   - a teaching problem: anything a child could not get past as printed (the
+//     teacher's ruling on the worksheets list, 24 September 2026: such a sheet
+//     goes back to be redesigned while the others are made), or a sheet that
+//     contradicts the objective (rule 11; the lead's reading of that ruling,
+//     which the teacher called fine);
+//   - a picture problem whose named refs will never arrive: absent from the
+//     photo contract, or every one's terminal receipt beside the spec reads
+//     `unsatisfied` or `omitted`; and any picture problem under a picture stage
+//     that was `unavailable`, when no approved picture will ever be published.
+// What is refused is the shape this gate was built for, the 30 August loss: a
+// sheet sent back while pictures it needs are approved and still coming. A
+// picture problem over such a picture, or naming no ref while pictures may
+// still come; and, whatever kind the entry names, a sheet whose own pictures
+// (the adaptation's Photo refs for that tier, a field of exact ids) are
+// approved and not yet published, since a sheet returned now is never promoted
+// and its pictures are never sourced. That sheet can be built, so the refusal
+// says how. An entry for a tier the adaptation does not direct is refused too:
+// there is no sheet to send back, and the build would print a pile nobody
+// asked for.
+const NEVER_ARRIVES = new Set(["unsatisfied", "omitted"]);
+// The picture stage's terminal states (`photo-contract.py`): a picture with one
+// has arrived or never will.
+const TERMINAL = new Set(["published", "unsatisfied", "omitted"]);
+
+// The photo ids one tier's items name in the adaptation's `- Photo refs:` field
+// (the adaptation designer's own format), under that tier's `## Below` or
+// `## Greater Depth` heading.
+function tierPhotoRefs(adaptation, label) {
+  const refs = new Set();
+  let inTier = false;
+  for (const line of adaptation.split(/\r?\n/)) {
+    const heading = /^##\s+(.+?)\s*$/.exec(line);
+    if (heading) {
+      inTier = heading[1] === label;
+      continue;
+    }
+    const field = inTier && /^\s*-\s*Photo refs:\s*(.*)$/i.exec(line);
+    if (field) {
+      for (const id of field[1].match(/\b(?:adaptation-)?photo-\d+\b/g) || []) refs.add(id);
+    }
+  }
+  return [...refs];
+}
+
+// filename -> terminalState, from the receipts the picture stage writes beside
+// the working folder's specs (the same reading working-wall-packet.py does).
+function terminalStates(specDir) {
+  const states = new Map();
+  const folder = path.join(specDir, "orchestration-receipts", "picture-terminal");
+  let names = [];
+  try {
+    names = fs.readdirSync(folder).filter((name) => name.endsWith(".json")).sort();
+  } catch {
+    return states;
+  }
+  for (const name of names) {
+    try {
+      const receipt = JSON.parse(fs.readFileSync(path.join(folder, name), "utf8"));
+      if (typeof receipt.filename === "string" && typeof receipt.terminalState === "string") {
+        states.set(receipt.filename.replace(/\\/g, "/"), receipt.terminalState);
+      }
+    } catch {
+      // An unreadable receipt proves nothing, so it lets nothing stand.
+    }
+  }
+  return states;
+}
+
+function stateOf(states, filename) {
+  if (typeof filename !== "string") return null;
+  const asked = filename.replace(/\\/g, "/");
+  if (states.has(asked)) return states.get(asked);
+  const base = path.posix.basename(asked);
+  for (const [name, state] of states) {
+    if (path.posix.basename(name) === base) return state;
+  }
+  return null;
+}
+
+function checkDirectedSheets(worksheet, adaptationPath, photoReqPath, options = {}) {
+  const pictureStage = typeof options.pictureStage === "string" ? options.pictureStage : "";
+  const stageUnavailable = /\bunavailable\b/i.test(pictureStage);
+  const states = options.specDir ? terminalStates(options.specDir) : new Map();
   let adaptation;
   try {
     adaptation = fs.readFileSync(path.resolve(adaptationPath), "utf8");
@@ -108,14 +204,19 @@ function checkDirectedSheets(worksheet, adaptationPath, photoReqPath) {
   }
 
   let contractIds = null;
+  const filenameOf = new Map();
   if (photoReqPath) {
     try {
       const contract = JSON.parse(fs.readFileSync(path.resolve(photoReqPath), "utf8"));
+      const photos = Array.isArray(contract.photos) ? contract.photos : [];
       contractIds = new Set(
-        (Array.isArray(contract.photos) ? contract.photos : [])
+        photos
           .map((p) => p && p.id)
           .filter((id) => typeof id === "string")
       );
+      for (const photo of photos) {
+        if (photo && typeof photo.id === "string") filenameOf.set(photo.id, photo.filename);
+      }
     } catch (error) {
       fail("PHOTO_REQUIREMENTS_UNREADABLE", `--photo-requirements ${photoReqPath}: ${error.message}`);
       return;
@@ -130,55 +231,130 @@ function checkDirectedSheets(worksheet, adaptationPath, photoReqPath) {
   const notes = (Array.isArray(worksheet.notes) ? worksheet.notes : []).map(String);
 
   for (const directive of directives) {
-    if (!adaptation.includes(directive.phrase)) continue;
-    if (sheets[directive.sheetKey]) continue;
+    if (adaptation.includes(directive.phrase) || !returnedEntry(worksheet, directive.sheetKey)) continue;
+    fail(
+      "RETURNED_INVALID",
+      `"returned" sends the ${directive.label} sheet back, but the adaptation does not ` +
+        `direct a separate ${directive.label} sheet (it uses the Expected sheet ` +
+        `unchanged), so there is no sheet to send back. Take the entry and its ` +
+        `WORKSHEET_CONTENT_GAP note off.`
+    );
+  }
 
+  for (const directive of directives) {
+    if (!adaptation.includes(directive.phrase)) continue;
+    const entry = returnedEntry(worksheet, directive.sheetKey);
+    if (sheets[directive.sheetKey] && !entry) continue;
+    const label = directive.label;
+
+    if (!entry) {
+      fail(
+        "SHEET_DIRECTED_MISSING",
+        `adaptation.md says "${directive.phrase}" but the spec has no ` +
+          `sheets.${directive.sheetKey}, and no "returned" entry says why. A sheet ` +
+          `sent back to its owner carries a WORKSHEET_CONTENT_GAP note and a ` +
+          `"returned" entry: { "sheet": "${directive.sheetKey}", "problem": ` +
+          `"teaching" } for a problem a child could not get past as printed, or ` +
+          `"problem": "picture" with its "refs" for a picture that will never arrive.`
+      );
+      continue;
+    }
+    // The note is what the run and the teacher read to know why it went back.
     const gapNote = notes.find((note) =>
       /WORKSHEET_CONTENT_GAP/i.test(note) &&
-      note.toLowerCase().includes(directive.label.toLowerCase())
+      note.toLowerCase().includes(label.toLowerCase())
     );
     if (!gapNote) {
       fail(
         "SHEET_DIRECTED_MISSING",
-        `adaptation.md says "${directive.phrase}" but the spec has no ` +
-          `sheets.${directive.sheetKey} and no WORKSHEET_CONTENT_GAP note naming it.`
+        `the ${label} sheet is returned, but no WORKSHEET_CONTENT_GAP note names ` +
+          `it, so nobody downstream can read why it went back. Add the note beside ` +
+          `its "returned" entry.`
       );
       continue;
     }
 
-    if (contractIds) {
-      const namedIds = gapNote.match(/(?:adaptation-photo|photo)-\d+/g) || [];
-      const allPresent =
-        namedIds.length > 0 && namedIds.every((id) => contractIds.has(id));
-      if (allPresent) {
+    if (entry.problem === "teaching") {
+      const own = tierPhotoRefs(adaptation, label);
+      const pending =
+        stageUnavailable || !contractIds
+          ? []
+          : own.filter((id) => contractIds.has(id) && !TERMINAL.has(stateOf(states, filenameOf.get(id))));
+      if (pending.length) {
         fail(
           "CONTENT_GAP_UNFOUNDED",
-          `the ${directive.label} sheet was omitted over ${namedIds.join(", ")}, ` +
-            `but every one of those refs IS in the photo contract. An approved ` +
-            `request whose picture has not been published yet is the normal state ` +
-            `at design time - adaptation pictures are sourced only after ` +
-            `worksheet.json names them - so design the sheet to the promised ` +
-            `filenames instead of omitting it.`
+          `the ${label} sheet is returned while its own pictures (${pending.join(", ")}, ` +
+            `its Photo refs in the adaptation) are approved and not yet published. ` +
+            `That is the 30 August loss, whatever kind the entry names: a sheet ` +
+            `returned now is never promoted, so its pictures are never sourced. Design ` +
+            `it to their promised filenames. Anything on it a child could not get past ` +
+            `once they arrive goes in its WORKSHEET_CONTENT_GAP note on the built ` +
+            `sheet, which the run treats as a content gap.`
         );
-      } else if (namedIds.length === 0) {
-        fail(
-          "CONTENT_GAP_UNFOUNDED",
-          `the ${directive.label} sheet was omitted with a content-gap note that ` +
-            `names no photo ref, so the claim cannot be checked against the ` +
-            `contract. Name the missing ref, or design the sheet.`
-        );
-      } else {
+        continue;
+      }
+      if (own.length && !contractIds && !stageUnavailable) {
         console.warn(
-          `[directed-sheets] ${directive.label} sheet omitted over a ref genuinely ` +
-            `absent from the photo contract - the gap stands and goes back to its owner.`
+          `[directed-sheets] ${label} sheet returned for its teaching; its own ` +
+            `pictures (${own.join(", ")}) were not checked, because no ` +
+            `--photo-requirements was supplied.`
         );
       }
-    } else {
       console.warn(
-        `[directed-sheets] ${directive.label} sheet omitted with a content-gap note; ` +
-          `no --photo-requirements supplied, so the claim was not verified.`
+        `[directed-sheets] ${label} sheet returned for ${describeReturn(entry)} - ` +
+          `the gap stands and goes back to its owner.`
       );
+      continue;
     }
+
+    const refs = Array.isArray(entry.refs) ? entry.refs : [];
+    if (stageUnavailable) {
+      console.warn(
+        `[directed-sheets] ${label} sheet returned over a picture the picture ` +
+          `stage will never publish (it was unavailable) - the gap stands and goes ` +
+          `back to its owner.`
+      );
+      continue;
+    }
+    if (!contractIds) {
+      console.warn(
+        `[directed-sheets] ${label} sheet returned over a picture; no ` +
+          `--photo-requirements supplied, so whether it is still coming was not checked.`
+      );
+      continue;
+    }
+    if (!refs.length) {
+      fail(
+        "CONTENT_GAP_UNFOUNDED",
+        `the ${label} sheet is returned over a picture, but its "returned" entry ` +
+          `names no refs, so whether the picture is still coming cannot be checked. ` +
+          `Put the refs the sheet names in "refs". A required visual the brief never ` +
+          `requested at all has no ref: that is the brief's own gap, so return it as ` +
+          `"problem": "teaching".`
+      );
+      continue;
+    }
+    const coming = refs.filter(
+      (id) => contractIds.has(id) && !NEVER_ARRIVES.has(stateOf(states, filenameOf.get(id)))
+    );
+    if (coming.length) {
+      fail(
+        "CONTENT_GAP_UNFOUNDED",
+        `the ${label} sheet is returned over ${coming.join(", ")}, which the photo ` +
+          `contract approves and no terminal receipt says will never arrive. A ` +
+          `picture not published yet is the normal state at design time - ` +
+          `adaptation pictures are sourced only after worksheet.json names them - so ` +
+          `this sheet can be built: design it to the promised filenames. Anything ` +
+          `else a child could not get past goes in its WORKSHEET_CONTENT_GAP note on ` +
+          `the built sheet, which the run treats as a content gap.`
+      );
+      continue;
+    }
+    console.warn(
+      `[directed-sheets] ${label} sheet returned over ${refs.join(", ")}, which will ` +
+        `never arrive (absent from the photo contract, or terminal) - the gap stands ` +
+        `and goes back to its owner.`
+    );
   }
 }
 
@@ -222,6 +398,19 @@ function standInForPending(node, pendingPaths) {
 // pack. So the gap note is required (it carries the reasoning) and it is still
 // a failure, which is what routes it back to the owner who can settle it.
 function checkExpectedSheet(worksheet) {
+  // Sent back on purpose (decision 5 of the worksheets topic, 4.2.290): the
+  // advice below about a page that does not fit is not what this sheet needs.
+  const back = returnedEntry(worksheet, "expected");
+  if (back && !(worksheet.sheets && worksheet.sheets.expected)) {
+    fail(
+      "EXPECTED_SHEET_MISSING",
+      `the Expected sheet is returned to the lesson designer (${describeReturn(back)}). ` +
+        `The class's own sheet is never built around, so this fails on purpose: that ` +
+        `is what sends it back. Report the return and stop; the sheet is rebuilt ` +
+        `once the lesson designer has repaired it.`
+    );
+    return;
+  }
   const designPath = worksheet && worksheet.meta && worksheet.meta.lessonDesignPath;
   if (!designPath) return;
 
@@ -267,13 +456,15 @@ function main() {
   let fileArg = null;
   let adaptationArg = null;
   let photoReqArg = null;
+  let pictureStageArg = null;
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === "--adaptation") { adaptationArg = argv[++i]; continue; }
     if (argv[i] === "--photo-requirements") { photoReqArg = argv[++i]; continue; }
+    if (argv[i] === "--picture-stage") { pictureStageArg = argv[++i]; continue; }
     if (!fileArg) fileArg = argv[i];
   }
   if (!fileArg) {
-    fail("SPEC_MISSING", "Usage: check-worksheet.js <worksheet.json> [--adaptation adaptation.md] [--photo-requirements contract.json]");
+    fail("SPEC_MISSING", "Usage: check-worksheet.js <worksheet.json> [--adaptation adaptation.md] [--photo-requirements contract.json] [--picture-stage \"PICTURE_STAGE: ...\"]");
     return;
   }
 
@@ -286,12 +477,37 @@ function main() {
     return;
   }
 
+  // The record of sheets sent back is checked before anything reads it.
+  const returnedFaults = returnedProblems(worksheet);
+  for (const message of returnedFaults) fail("RETURNED_INVALID", message);
+  if (returnedFaults.length) return;
+
   checkExpectedSheet(worksheet);
   if (process.exitCode === 1) return;
 
   if (adaptationArg) {
-    checkDirectedSheets(worksheet, adaptationArg, photoReqArg);
+    checkDirectedSheets(worksheet, adaptationArg, photoReqArg, {
+      pictureStage: pictureStageArg,
+      specDir: path.dirname(file),
+    });
     if (process.exitCode === 1) return;
+  }
+
+  // A sheet sent back is out of `sheets`, and a sheet in `sheets` is always
+  // checked and built. One beside its own "returned" entry is a redesign with
+  // the record left on (the second check of the worksheets release, 4.2.290,
+  // found a redesigned sheet hidden that way), so it is measured like any
+  // other and the record must come off.
+  for (const tier of ["below", "greaterDepth"]) {
+    const entry = returnedEntry(worksheet, tier);
+    if (!entry || !(worksheet.sheets && worksheet.sheets[tier])) continue;
+    fail(
+      "RETURNED_INVALID",
+      `the spec holds the ${LABELS[tier]} sheet and a "returned" entry for it ` +
+        `(${describeReturn(entry)}). A sheet sent back is taken out of "sheets"; ` +
+        `if this is its redesign, take the entry and its WORKSHEET_CONTENT_GAP note ` +
+        `off. The sheet is checked below either way.`
+    );
   }
 
   // Books or sheet, on every sheet. Reported alongside everything below rather
@@ -299,6 +515,13 @@ function main() {
   // should hear about the page's other faults in the same run.
   for (const problem of recordingProblems(worksheet, { required: true })) {
     fail(problem.signal, problem.message);
+  }
+  // Words that look as if they need the printed page are a prompt to look
+  // again, never a refusal; words about a box in the question's own sentence
+  // are not flagged at all (the teacher's 19 September 2026 ruling: one digit
+  // box does not make a write-on sheet).
+  for (const advisory of recordingAdvisories(worksheet)) {
+    console.warn(`[recording] ${advisory.signal}: ${advisory.message}`);
   }
 
   try {
@@ -319,13 +542,21 @@ function main() {
       photoReqArg
     );
     const pendingPaths = new Set(pending.map((entry) => entry.imagePath));
+    const stageUnavailable = /\bunavailable\b/i.test(pictureStageArg || "");
     if (pendingPaths.size) {
       for (const entry of pending) {
         console.warn(
-          `[pending-picture] "${entry.imagePath}" is an approved request that has ` +
-            `not been published yet. That is the normal state at design time, ` +
-            `because promotion reads this spec to decide which pictures to source. ` +
-            `The build waits for the real file.`
+          stageUnavailable
+            ? `[pending-picture] "${entry.imagePath}" is an approved request, but ` +
+                `the picture stage was unavailable, so it will never be published. ` +
+                `Re-point the question at a picture this run has published or a ` +
+                `drawing the engine makes, never at words; if neither can carry it, ` +
+                `return the sheet to its owner with its WORKSHEET_CONTENT_GAP note and ` +
+                `its "returned" entry (the worksheet designer's step 1).`
+            : `[pending-picture] "${entry.imagePath}" is an approved request that has ` +
+                `not been published yet. That is the normal state at design time, ` +
+                `because promotion reads this spec to decide which pictures to source. ` +
+                `The build waits for the real file.`
         );
       }
     }

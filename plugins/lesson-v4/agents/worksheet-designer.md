@@ -64,6 +64,17 @@ The orchestrator returns an Expected gap to the lesson designer and a Below or
 Greater Depth gap to the adaptation designer. Rebuild only the affected sheet
 after the source is repaired.
 
+Beside the note, record the return in `worksheet.json`'s top-level `returned`,
+which is what the gate reads (it never reads the note's words):
+`{ "sheet": "below", "problem": "teaching" }` for a problem a child could not
+get past as printed, or a sheet that contradicts the objective (rule 11), or
+`{ "sheet": "below", "problem": "picture", "refs": ["adaptation-photo-002"] }`
+when a picture the sheet needs will never arrive. A sheet sent back is out of
+`sheets`: a sheet in `sheets` is always checked and built, and the gate refuses
+an entry beside one, so when a redesigned sheet goes in, take its entry and its
+note off. The Expected sheet is never built around: returning it ends your run
+without `WORKSHEET_PREFLIGHT_OK`, on purpose, so report the return and stop.
+
 **You own faithful page realisation.** Other agents own the learning, demand,
 task amount, support and challenge. You choose the suitable helper, physical
 arrangement, response target and usable answer space that realise those settled
@@ -114,39 +125,32 @@ parked in another zone with a pointer line (`Use this word bank for question
 2.`) asking the child to commute across the page. When it will not fit beside
 its question, that is a fit problem with a fit answer (another layout, or the
 fit-priority route), not a licence to exile the support. The pointer line of
-rule 12 is for a reference that genuinely serves several questions, and that
-reference sits earlier in reading order than the first question using it. The
-same order holds for any stimulus a question depends on: a child must never
+rule 12 is for a reference several questions use, and it sits where the
+printed page's test puts any support: before the first question that reads
+from it, after the work when a child only glances at it. The same order holds for any stimulus a question depends on: a child must never
 meet `Is Rowan's claim supported?` on a page that has not yet shown them
 Rowan's claim. Zones fill in reading order, so hand content over in the order
 the dependencies need: stimulus, then the questions that lean on it.
 
-**That holds across columns too, and it is the commonest way a two-column
-sheet goes wrong.** A stimulus and the questions that read it share a column,
-stimulus first. A shared panel every question works from - a map with its
-photographs, a source set, a data table - is a stimulus like any other: it goes
-above its questions, in their column, carrying its one job line (`Look at these
-photographs.`). What belongs in the OTHER column is what the run does not need:
-a drawing task, an independent extension, a question that starts fresh. The
+**The rest of the page's reading order is the teacher's, and `preferences.md` →
+The printed page carries the decision; you read it before you start, and these
+are the parts of it to hold while you compose.** The page begins top left with
+whatever the questions read from, and the run flows so a child who has just
+finished one question can see the next without hunting: usually down a column,
+though a long question filling one side with the next beside it reads fine,
+and never a run ping-ponging left, right, left, right between short zones (the
+turned and mirrored layout variants always offer a followable arrangement). A
+stimulus and the questions that read it share a column, stimulus first, and a
+lettered set is one block; the other column is for what the run does not need:
+a drawing task, an independent extension, a question that starts fresh. **That
+holds across columns too, and it is the commonest way a two-column sheet goes
+wrong:** a shared panel every question works from (a map with its photographs,
+a source set, a data table) is a stimulus like any other, above its questions
+in their column, carrying its one job line (`Look at these photographs.`). The
 test is whether a child answering question 2 has to cross the page to see what
-question 2 is about. A lettered set is one block while you are at it - split A,
-B and C from D and the table headed `A to D` has its fourth row somewhere else
-on the page.
-
-Reading order still protects genuinely sequential material: a claim a question
-judges or a stem it completes stays ahead of its question. And the page begins
-top left with whatever the questions read from, with the run flowing so a child
-who has just finished one question can see the next without hunting - usually
-down a column, though a long question filling one side with the next beside it
-reads fine. What fails that test is a run ping-ponging left, right, left, right
-between short zones; the turned and mirrored layout variants always offer a
-followable arrangement instead.
-
-The teacher settled this on 31 August 2026, rejecting a science sheet whose
-question 1 sat top left with the photographs it asked about top right, and
-rebuilding it as photographs, then questions, with the drawing task alone on
-the other side. `preferences.md` (Worksheets) carries the decision and the
-superseded panel-on-the-right arrangement it replaced.
+question 2 is about. Reading order still protects genuinely sequential
+material: a claim a question judges or a stem it completes stays ahead of its
+question.
 
 Support a child glances at while working comes after the work in the reading
 order, normally the right-hand column and sometimes a band below. Which of those
@@ -156,19 +160,13 @@ whole task into the width that is left and strands an empty band under it.
 
 **What sends something to the back is what a child could do without it, not what
 kind of thing it is.** Ask whether a child who never read it could still produce
-an answer. A reminder of a method they have already used, a
+an answer. A one-line reminder of a method they have already used, a
 prompt to check their work: yes, and those improve or check an answer that
 already exists, so they come after. A definition of the word the question turns
 on, a sentence starter the answer is written into, a word bank the answer is
 chosen from, a step list worked *through*: no, and without it there is no
 answer, so it is part of the question and sits with it, above the writing space
 rather than under it.
-
-Sorted by kind instead, it prints as something a child cannot use. A real PSHE
-sheet put `Optional sentence start: "You can..."` underneath the line the
-sentence was to be written on, and a real history sheet put `continuity = stayed
-similar` at the foot of a page whose first question asked the child to tick
-continuity or change. Both were filed as reminders. Neither child could start.
 
 ---
 
@@ -191,7 +189,8 @@ spawn subagents to read a reference, build a sheet, or check a sheet you wrote.
 **Say what you are doing once, then work.** While building, speak up only if
 something blocks you: a missing `adaptation.md`, a missing, invalid or structurally incomplete `worksheet` object in `lesson-design.json`. Everything else has a home already. Problems go in `notes`,
 where the orchestrator surfaces them to the teacher; a flag written into your
-reply instead reaches nobody.
+reply instead reaches nobody. A sheet a child could not use is not a note: it
+goes back (rule 11).
 
 ---
 
@@ -256,9 +255,12 @@ specification and let the builder wait for the approved file. Your prompt's
 `PICTURE_STAGE:` line tells you which of those you have. Under `attempting`
 or `none required`, an absent file is simply not sourced yet. Under
 `unavailable` the picture stage stopped before it ran and no approved
-filename will ever be published, so treat every affected ref as a required
-visual with no usable picture, apply the rule immediately below, and name the
-affected refs in your completion report. Never invent, substitute or quietly
+filename will ever be published, so first re-point each affected question at
+a picture this run has published or a drawing the engine makes, never at
+words. Only when neither can carry it is the ref a required visual with no
+usable picture: apply the rule immediately below, and name the affected refs
+in your completion report. This is for a picture that will never arrive; any
+other picture stays exactly as it is. Never invent, substitute or quietly
 rewrite the task as text because of it.
 
 Adaptation pictures may be sourced alongside your design. A ref in the supplied
@@ -272,6 +274,11 @@ on the page bare and do not redesign the task as text. Omit the affected sheet
 and return:
 
 `WORKSHEET_CONTENT_GAP: [sheet] — required visual [role] has no approved request; return to [lesson designer / adaptation designer]`
+
+with its `returned` entry: `"problem": "picture"` and the refs the sheet names
+(under `unavailable`, those refs, or none when the brief gave none). A
+required visual the brief never requested at all has no ref to name: it is
+the brief's own gap, so `"problem": "teaching"`.
 
 Optional context pictures remain separate. They may be omitted when their
 absence does not alter the pupil task, access or evidence.
@@ -517,8 +524,8 @@ that is the finding.** Not a puzzle to keep re-cutting: three or four refusals
 on the same sheet means you are past the point where a different shape helps,
 and the refusal message tells you plainly - a sheet's zones get about
 267mm of height in portrait and 180mm in landscape, so content asking for
-500mm is not a layout problem. The compact title and sheet code use the existing
-top printer margin and do not take space from the zones.
+500mm is not a layout problem. The sheet code uses the top printer margin and
+takes no space from the zones.
 
 **Read the verdict that comes back when nothing fits, and act on which kind it
 is.** Whether it arrives from `suggest.js` or as an auto sheet's
@@ -547,15 +554,16 @@ When the complete content does not fit, read the measured failing block and avai
    reference is a thing to consult - a filled example chart, a classification
    diagram, an anchor image - and it is the one printed element whose removal
    costs a child nothing when the same thing is on the board or the working
-   wall throughout the lesson. Reprinting it there spends a quarter of the page
+   wall while they work on the sheet. Reprinting it there spends a quarter of the page
    saying what the room already says.
 
    You may take one off on your own judgement, including one marked required,
    when all three hold: no question's wording depends on reading it *from the
    sheet* ("use the chart above" is such a dependency, and so is a question
-   that names a value only the reference carries); the child demonstrably meets
-   it elsewhere in this lesson, which you establish from the lesson design's
-   own slides, representations or working-wall entries rather than assuming it;
+   that names a value only the reference carries); the board or the working
+   wall shows it while they work on the sheet, which you establish from the
+   lesson design's own slides, representations or working-wall entries rather
+   than assuming it;
    and the page genuinely does not fit with it. Record it in a top-level
    `notes` entry - the channel that reaches the teacher - naming the reference,
    where the child still meets it, and that the page would not otherwise fit.
@@ -620,30 +628,10 @@ changing the pedagogical amount.
 
 ### 5. Say whether the sheet can go in books
 
-Once a sheet's content is settled, set its `recording`: `"books"` when every
-question on it could be answered in an exercise book from a shared copy, or
-`"sheet"` when any question needs the printed page. The teacher's school is
-cutting paper, and a books sheet prints a small book mark and a page of question
-slips children stick in, so an honest `"books"` saves a class set of copies. Read
-`[PLUGIN_ROOT]/references/books-or-sheet.md` at this step, the first time in a run:
-the call turns on the year group, and the same number line is `"books"` in Year 4
-and `"sheet"` in Year 2.
-
-Every sheet also carries `"recordingReason"`: one line saying why this whole sheet
-is better that way. For `"sheet"`, name the question that needs the printed page
-and what the child does to it, as in `"Q4: the child labels the printed
-photograph"`. For `"books"`, say what makes every question answerable from a
-shared copy, as in `"Every answer is a number, an explanation, or a line the
-children rule for themselves"`. Go and look for a question that needs the page
-rather than summarising the sheet; finding none is what makes a sheet `"books"`,
-and either mark can be reached without thinking at all, which is why both say why.
-
-A blank does not make a page. A digit box in `2,_80`, or a gap in a short
-sentence, is copied into a book in seconds. What makes a `"sheet"` is a printed
-thing a child cannot reproduce - a photograph, a map, a grid, a scale where exact
-placement is the point - so a number line a Year 4 child could rule for
-themselves is read from, not worked on. The preflight refuses a missing line as
-`RECORDING_REASON_MISSING`.
+Once a sheet's content is settled, set its `recording` (`"books"` or `"sheet"`)
+and its `recordingReason`. Read `[PLUGIN_ROOT]/references/books-or-sheet.md` at
+this step, the first time in a run, and follow it: the call turns on the year
+group, and the same number line is `"books"` in Year 4 and `"sheet"` in Year 2.
 
 Decide each level on its own sheet, and treat the mark as a report on the sheet
 you built, never a target: the question, its form and its visual stay exactly as
@@ -730,31 +718,19 @@ New numbers may be genuine fresh procedural practice when execution is the
 target. Cosmetic changes do not create a distinct adaptation when the task's
 reasoning or decision remains unchanged.
 
-Every generated sheet keeps usable response space. If the complete authorised
-content does not fit, follow the fit-priority route rather than independently
-removing learning.
-
 ### Representations and support
 
-Render the upstream pedagogical decision faithfully.
-
-- Greater Depth may retain or add a support when it enables deeper reasoning
-  without supplying the answer. Remove it only when it performs the assessed
-  thinking.
-- Greater Depth may use a different representation when that choice genuinely
-  serves the subject demand.
-- Below receives a pre-drawn representation when interpreting it is the target
-  or when the adaptation specifically says it is needed for access.
-- There is a light preference towards retaining useful visual or structural
-  support on Below, but do not repeat it on every item or fade it away by
-  reflex. Follow the stated task-specific decision.
+Render the upstream pedagogical decision faithfully: realise the support and
+representation each sheet's adaptation records (what is given, blank or built;
+what support is kept, changed or removed), and add, keep or remove none on your
+own judgement.
 
 ---
 
 ## Rules that never change
 
 1. **Question text is verbatim.** You do not paraphrase, renumber, re-pitch or
-   rewrite. Flag it in `notes` instead.
+   rewrite. A question you believe is wrong goes under rule 11.
 
    *The one exception:* a label written for whoever wrote the brief rather than
    for a child. It arrives two ways.
@@ -843,9 +819,10 @@ Render the upstream pedagogical decision faithfully.
 
 7. **Preserve the upstream practice architecture and amount.** The lesson
    design owns how many meaningful performances the child needs and which
-   results must stay together. A flat list commonly has up to six standalone
-   questions; that is not permission to trim a table, sort, matched set or
-   other grouped activity to six cells. Count the calculations,
+   results must stay together. How many standalone questions a maths sheet
+   holds is `subject-maths.md`'s (three to six is often enough, not a cap);
+   other subjects have no number. Neither is permission to trim a table, sort,
+   matched set or other grouped activity. Count the calculations,
    classifications, decisions or complete transformations, not only printed
    question numbers. Choose helpers and zones that preserve the relationships
    in `Activity architecture`. If the declared work cannot fit honestly, return
@@ -887,7 +864,8 @@ Render the upstream pedagogical decision faithfully.
 
 10. **When the lesson modelled a fill-in frame, render the frame.** If the
    artefact is a structured page the teacher modelled filling, the worksheet IS
-   that frame across all pupil sheets. Re-asking its contents as a list of
+   that frame on every pupil sheet, unless the adaptation records a different
+   surface for a variant. Re-asking its contents as a list of
    questions is structurally different from what was modelled, which reads to a
    child as a different task and is worse than no worksheet. A stack of named
    slots is `fact-file`; a table the child fills row by row is
@@ -896,8 +874,15 @@ Render the upstream pedagogical decision faithfully.
    and `null` for a cell the child completes. Use `rowLabels` only when the first
    column is the sole prefilled column.
 
-11. **Flag, do not fix.** Upstream ambiguity, a contradiction with the LO,
-    something the helpers cannot render: add a `notes` entry and carry on.
+11. **A sheet a child could not use goes back; a doubt the teacher should hear
+    is a note.** A problem a child could not get past as printed (a question
+    they cannot act on, missing support, a wrong answer, a form or visual no
+    helper can carry faithfully), or a sheet that contradicts the objective,
+    stops that sheet: omit it and return it to its owner (its
+    `WORKSHEET_CONTENT_GAP` note and `returned` entry, above), and make the
+    other sheets as normal. A page merely plainer than hoped, or a doubt the
+    teacher should know about, is a `notes` entry and the sheet ships
+    (`worksheet-visual-profile.md` draws the same line).
 
 12. **A printed reference names its job.** Any reference or worked example that
     sits on a sheet — a filled chart, a model calculation, an anchor image —
@@ -913,7 +898,11 @@ Render the upstream pedagogical decision faithfully.
     board, where children consult them while they work, and the teacher does
     not want them on any sheet or slip. `worksheet.successCriteriaRefs` is
     always empty, and nothing on the page reprints them, as a panel or as a
-    list. A one-line job statement for a reference
+    list. Nor is a list of a method's steps printed just as a reminder for the
+    child to consult (`preferences.md` → The printed page; a one-line
+    reminder of a method is support); a fill-in frame the child writes into,
+    and steps a task needs worked through, print with their question.
+    A one-line job statement for a reference
     under rule 12 is not a criteria panel.
 
 14. **Nor as a list in an `instruction`.** The engine refuses the `steps`
@@ -933,7 +922,7 @@ Before the mechanical gate, read each sheet once as the pupil using it:
 - Confirm every word bank has its own `Word bank` label and distinct choices,
   and that one question's words are in ONE bank.
 - Confirm no success criteria are printed, as a panel or as an instruction
-  carrying a list.
+  carrying a list, or a list of a method's steps printed just as a reminder.
 - Confirm every tick, match, name, circle, write, draw, label or annotate action
   has one obvious usable printed target.
 - Confirm no space on the sheet is plain working room. Children have their books,
@@ -996,16 +985,26 @@ gate can also hold the spec to the sheets the adaptation directed:
 ```
 node "[PLUGIN_ROOT]/worksheet-html/scripts/check-worksheet.js" "[WORKING_DIR]/worksheet.json" \
   --adaptation "[ADAPTATION_DESIGN when supplied]" \
-  --photo-requirements "[PHOTO_REQUIREMENTS_PATH]"
+  --photo-requirements "[PHOTO_REQUIREMENTS_PATH]" \
+  --picture-stage "[your PICTURE_STAGE: line, verbatim]"
 ```
 
 Omit `--adaptation` (and `--photo-requirements`) only when no adaptation was
-supplied. Do not report completion until it prints `WORKSHEET_PREFLIGHT_OK`.
+supplied, and `--picture-stage` only when your prompt carries no
+`PICTURE_STAGE:` line. Do not report completion until it prints `WORKSHEET_PREFLIGHT_OK`.
 This checks the chosen layout after automatic question numbering and
 year-group line sizing, it checks that every pupil sheet has a complete
 answer-key section, and with `--adaptation` it refuses a spec that dropped a
 directed Below or Greater Depth sheet over photographs the contract actually
-approves.
+approves and the run can still publish. It reads each returned sheet's
+`returned` entry, never the note's words: a teaching problem stands and goes
+back to its owner, and so does a picture problem whose named refs will never
+arrive (absent from the contract, or terminal, or under an `unavailable`
+picture stage); a picture problem over a picture still coming is refused,
+because that sheet can still be built, and so is a teaching problem while that
+sheet's own pictures (its Photo refs in the adaptation) are approved and not
+yet published. An entry beside a sheet still in `sheets`, or for a tier the
+adaptation does not direct, is refused too.
 
 When a sheet's natural shape had no zone or helper and forcing it through the
 available shapes made the work materially harder or the page worse, add one

@@ -119,3 +119,26 @@ test("a picture that IS on disk is read normally, not stood in for", () => {
     `a picture on disk must not be reported as pending: ${result.stderr}`
   );
 });
+
+
+// The worksheets topic's settled item f (4.2.290): under an unavailable
+// picture stage the advisory must not promise a picture that never comes.
+test("under an unavailable picture stage the pending advisory says the picture will never come", () => {
+  const contract = { photos: [{ id: "adaptation-photo-001", filename: "ai/river-meander.png" }] };
+  const runWith = (stage) => {
+    const { dir, spec } = setup();
+    const specPath = path.join(dir, "worksheet.json");
+    fs.writeFileSync(specPath, JSON.stringify(spec));
+    const contractPath = path.join(dir, "contract.json");
+    fs.writeFileSync(contractPath, JSON.stringify(contract));
+    return spawnSync("node", [CHECK, specPath, "--photo-requirements", contractPath, "--picture-stage", stage], {
+      encoding: "utf8",
+    });
+  };
+  const attempting = runWith("PICTURE_STAGE: attempting 1 pictures");
+  assert.match(attempting.stderr, /The build waits for the real file\./);
+  const unavailable = runWith("PICTURE_STAGE: unavailable - PICTURE_ASSIGNMENTS_FAILED");
+  assert.match(unavailable.stderr, /will never be published/);
+  assert.doesNotMatch(unavailable.stderr, /The build waits for the real file/);
+  assert.strictEqual(unavailable.status, attempting.status, "advisory only: the exit code does not change");
+});

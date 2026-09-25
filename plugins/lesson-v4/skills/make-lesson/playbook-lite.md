@@ -1061,7 +1061,7 @@ or `none required`, or a promotion that reported zero, nothing is coming.
 **Terminal includes `unsatisfied` and `omitted`, and those never arrive.**
 Reconcile before building: for each such filename `worksheet.json` names, run
 one focused Worksheet Designer repair, telling it the filename is terminally
-unavailable and that re-authoring that one question against what exists is the
+unavailable and that re-pointing that one reference at what exists is the
 repair, not a scope breach. The sheets are one document, so one unreconciled
 reference loses all three and the answer key.
 
@@ -1564,8 +1564,7 @@ later conversation, follow `Choosing where lessons are saved` in
   only enough to resolve Phase-0 routing.
 - A teacher worksheet is the Expected/base sheet; generate only genuinely
   needed adaptations around it.
-- A generated worksheet is expected unless the teacher supplied one; an
-  unexplained `not-needed` decision is a design fault.
+- A generated worksheet is expected unless the teacher supplied one.
 - Ambiguous or incomplete Lesson Designer output is not silently repaired by
   the host.
 

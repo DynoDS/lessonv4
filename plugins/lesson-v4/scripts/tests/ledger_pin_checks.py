@@ -61,9 +61,17 @@ def section_by_heading(path: Path, heading: str, occurrence: int, intro: bool = 
     return flat("\n".join(lines[start:end]))
 
 
-def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_rows: int):
+LEDGER_FOLDERS = ("agents", "references", "skills", "commands", "scripts", "builder")
+
+
+def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_rows: int,
+                      folders: tuple[str, ...] = LEDGER_FOLDERS):
+    # `folders` are the plugin folders a row's Where column may name. The
+    # worksheets topic lists rows that live in the sheet engine
+    # (`worksheet-html/`), so its test passes that folder too; every earlier
+    # topic keeps the list its pins were built with.
     ledger_row = re.compile(
-        rf"^\| ({prefix}-[A-Z]\d{{2}}) \|.*`(?:agents|references|skills|commands|scripts|builder)/",
+        rf"^\| ({prefix}-[A-Z]\d{{2}}) \|.*`(?:{'|'.join(folders)})/",
         re.MULTILINE,
     )
 
@@ -125,7 +133,11 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                     files = sorted(set(RUNTIME) | set(PROGRAMS) | {own}) if pin.get("everywhere") else [own]
                     for path in files:
                         with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
-                            self.assertNotIn(pin["text"], flat(path.read_text(encoding="utf-8")))
+                            body = flat(path.read_text(encoding="utf-8"))
+                            if pin.get("anyCase"):
+                                self.assertNotIn(pin["text"].lower(), body.lower())
+                            else:
+                                self.assertNotIn(pin["text"], body)
 
         def test_route_rules_stay_above_the_reviewers_line(self) -> None:
             # The reviewer reads each route file only down to `## Output Format
@@ -164,8 +176,9 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                 lines = (ROOT / home["file"]).read_text(encoding="utf-8").splitlines()
                 start = lines.index(home["heading"])
                 level = len(home["heading"].split(" ")[0])
-                end = next(i for i in range(start + 1, len(lines))
-                           if HEADING.match(lines[i]) and len(HEADING.match(lines[i]).group(1)) <= level)
+                end = next((i for i in range(start + 1, len(lines))
+                            if HEADING.match(lines[i]) and len(HEADING.match(lines[i]).group(1)) <= level),
+                           len(lines))
                 body = "\n".join(lines[start + 1:end]).split("\n\n")
                 paragraphs = [flat(x) for x in body if flat(x) and flat(x) != "---"]
                 with self.subTest(home=home["file"], heading=home["heading"]):

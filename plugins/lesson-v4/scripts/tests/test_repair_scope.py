@@ -218,6 +218,62 @@ class EveryRepairerRunsItTests(unittest.TestCase):
         self.assertIn("Repair scope: REPAIR_SCOPE_OK", playbook)
 
 
+class ASheetSentBackTests(RepairScopeCase):
+    """The worksheets topic (4.2.290): a Below or Greater Depth picture that
+    will never arrive sends that sheet back to the adaptation designer, and it
+    must never cost the other sheets or the answer key. The focused repair
+    takes the sheet out whole, with its answer-key section, and records the
+    return; the build prints the Expected sheet in its place until the
+    redesign goes in. The record is not something a child reads."""
+
+    BEFORE = {
+        "sheets": {
+            "below": {"zones": [{"stack": [{"helper": "card-row", "cards": [{"imagePath": "never.png"}]}, {"helper": "questions", "question": True, "items": ["What does the photograph show?"]}]}]},
+            "expected": {"zones": [{"stack": [{"helper": "written-answers", "question": True, "items": [{"text": "Explain why.", "lines": 3}]}]}]},
+        },
+        "answerKey": {"below": [{"question": 1, "answer": "A fan."}], "expected": [{"question": 1, "answer": "Because."}]},
+    }
+    RECORD = [{"sheet": "below", "problem": "picture", "refs": ["adaptation-photo-002"]}]
+    NOTE = ["WORKSHEET_CONTENT_GAP: Below - adaptation-photo-002 will never arrive; return to adaptation designer."]
+
+    def sent_back(self):
+        after = json.loads(json.dumps(self.BEFORE))
+        del after["sheets"]["below"]
+        del after["answerKey"]["below"]
+        after["returned"] = self.RECORD
+        after["notes"] = self.NOTE
+        return after
+
+    def test_sending_a_sheet_back_whole_and_recording_it_is_a_repair(self):
+        result = self.run_check(self.BEFORE, self.sent_back())
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("REPAIR_SCOPE_OK", result.stdout)
+
+    def test_taking_a_sheet_out_without_recording_it_is_still_caught(self):
+        after = json.loads(json.dumps(self.BEFORE))
+        del after["sheets"]["below"]
+        del after["answerKey"]["below"]
+        result = self.run_check(self.BEFORE, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("REPAIR_SCOPE_FAILED", result.stdout)
+
+    def test_a_record_does_not_release_a_sheet_still_in_the_spec(self):
+        after = json.loads(json.dumps(self.BEFORE))
+        after["sheets"]["below"]["zones"][0]["stack"][1]["items"] = []
+        after["returned"] = self.RECORD
+        result = self.run_check(self.BEFORE, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("REPAIR_SCOPE_FAILED", result.stdout)
+
+    def test_a_record_already_there_cannot_be_taken_away(self):
+        before = self.sent_back()
+        after = json.loads(json.dumps(before))
+        del after["returned"]
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("record(s) of a sheet sent back", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
 

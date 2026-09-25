@@ -35,11 +35,11 @@ function sizesFor(layout, orientation) {
   // against 90mm and then handed 84 - so its last column came out too narrow
   // for a child to write in, on a page that looked finished. A document that
   // states sizes a helper is then refused at would do the same thing again.
-  // The page a sheet's ZONES actually get, which is the printable area less the
-  // band the learning objective sits in. Quoting the paper instead would
-  // overstate every height in this document by six millimetres, which is the
-  // same class of fault the comment above describes: a size stated here that a
-  // helper is then refused at.
+  // The page a sheet's ZONES actually get, read from the renderer's own
+  // `contentArea`, so any band taken off the page there is taken off here too.
+  // Today none is: nothing is titled, and the sheet code sits in the printer
+  // margin. A size stated here that a helper is then refused at is the same
+  // class of fault the comment above describes.
   const area = contentArea({ orientation, lo: "an objective" });
 
   return zonesOf(layout).map((z) => {
@@ -145,8 +145,8 @@ function main() {
     "## What the numbers mean",
     "",
     `Every sheet is A4 with a ${DEFAULT_MARGIN_MM}mm margin. The gutter between`,
-    `zones (${GUTTER_MM}mm) and the band the learning objective and sheet code sit in`,
-    "are already taken off. So these are the millimetres a helper actually gets, and",
+    `zones (${GUTTER_MM}mm) is already taken off, and the sheet code sits in the top`,
+    "margin, taking no room from the zones. So these are the millimetres a helper actually gets, and",
     "they can be read straight against the **smallest usable** size in the helper",
     "catalogue.",
     "",
@@ -206,6 +206,20 @@ function main() {
   for (const layout of all) out.push(entry(layout));
 
   const file = path.join(__dirname, "..", "..", "references", "worksheet-compositions.md");
+  // `--check` writes nothing: it says whether the file on disk is what this
+  // script writes today, so a stale reference cannot come back unseen (the
+  // compositions reference quoted zone heights six millimetres short for two
+  // weeks before 4.2.290 regenerated it).
+  if (process.argv.includes("--check")) {
+    const current = fs.existsSync(file) ? fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n") : "";
+    if (current === out.join("\n")) {
+      console.log(`GENERATED_MATCHES: ${path.basename(file)}`);
+    } else {
+      console.log(`GENERATED_STALE: ${path.basename(file)} is not what this script writes today. Regenerate it.`);
+      process.exitCode = 1;
+    }
+    return;
+  }
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, out.join("\n"));
   console.log(`Wrote ${file}`);

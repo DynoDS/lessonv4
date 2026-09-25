@@ -6,7 +6,7 @@ this sheet in their exercise books, from a shared copy or the board.
 
 ## Why the choice exists
 
-The teacher's school asked staff to use less paper (16 September 2026). A sheet
+The teacher's school asked staff to use less paper. A sheet
 the class can do in books needs a copy between two, or none, instead of one per
 child. So every sheet says `"books"` or `"sheet"`, prints a small book or pencil
 beside its level code, and a books sheet gets a page of question slips at the
@@ -112,9 +112,20 @@ The preflight refuses a sheet with no `recordingReason` as
 prints a `RECORDING:` line per level saying what that level costs in paper and
 why, so a choice nobody made is visible in the run rather than silent.
 
-Wording that only makes sense with the printed page ("Circle...", "Mark it on the
-line", "in the boxes", "Fill in the table") marks a sheet `"sheet"` whatever it was
-set to. The preflight refuses the contradiction as `RECORDING_NEEDS_SHEET` so it is
-fixed while the choice is still yours; fix it by marking the sheet `"sheet"`, never
-by rewording the question, which is verbatim. Wording like "Use the number lines to
-help you" is fine: in a book the child draws their own.
+Wording on a `"books"` sheet that looks as if it needs the printed page ("Circle...",
+"Mark it on the line", "Fill in the table") is a prompt to look again, not a
+verdict: the preflight prints `RECORDING_LOOK_AGAIN`, naming the words and the
+question. Words about a box or a gap are judged by what the sheet holds: a box
+in the question's own sentence (`4,_50`), or on a sheet whose only helpers are
+sentences and number sentences (questions, written answers, instructions,
+number sentences, section labels), is the blank above and is never flagged; a
+box on a sheet that also holds a figure (a part-whole model, a grid, a table, a
+number line) is a prompt to look again.
+Look at a flagged question against the test above. A printed thing the child
+cannot reproduce makes the sheet `"sheet"`; when a book still does, set
+`"recordingLookedAgain": true` on the sheet, which quiets the prompt, and say why
+in `recordingReason`. Never reword the question, which is verbatim. Wording like
+"Use the number lines to help you" is fine: in a book the child draws their own.
+The build prints a flagged `"books"` sheet that does not say it was looked at
+again as `"sheet"`, with `RECORDING_CHANGED`, so a books sheet nobody looked at
+never prints slips asking a child to circle something they do not have.

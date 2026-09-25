@@ -52,7 +52,8 @@ function checkInstruction(spec) {
     `INSTRUCTION_IS_A_LIST: this instruction carries ${lines.length} lines, ` +
       "so it is a list and will print as a paragraph of grey text. If they " +
       'are the lesson\'s success criteria, leave them off: they stay on the ' +
-      'board and are never printed on a worksheet. Otherwise, if they are steps a child ' +
+      'board and are never printed on a worksheet. A list of a method\'s steps printed ' +
+      'just as a reminder is left off too. Otherwise, if they are steps a child ' +
       'works through to reach the answer, they are part of its question: put ' +
       'them with it, one to a line, or in maths use "method-frame". ' +
       'If they are questions, use "questions" or "written-answers", ' +

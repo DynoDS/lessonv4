@@ -154,14 +154,18 @@ def _block(text: str, start: str, end: str) -> str:
 def test_the_sheet_list_refusal_is_held_whole():
     # Decision 8 is success criteria only; a method's steps a child works
     # through go with their question. A clause on any line of the message
-    # would change that, so the whole message is held.
+    # would change that, so the whole message is held. The worksheets
+    # topic's decision 10 (4.2.290) added one sentence: a list of a method's
+    # steps printed just as a reminder is left off too, without saying where
+    # the steps are shown.
     text = (ROOT / 'worksheet-html/src/helpers/text.js').read_text(encoding='utf-8')
     assert _block(text, 'throw new Error(\n    `INSTRUCTION_IS_A_LIST', ');\n}') == ' '.join('''
         throw new Error(
         `INSTRUCTION_IS_A_LIST: this instruction carries ${lines.length} lines, ` +
         "so it is a list and will print as a paragraph of grey text. If they " +
         'are the lesson\\'s success criteria, leave them off: they stay on the ' +
-        'board and are never printed on a worksheet. Otherwise, if they are steps a child ' +
+        'board and are never printed on a worksheet. A list of a method\\'s steps printed ' +
+        'just as a reminder is left off too. Otherwise, if they are steps a child ' +
         'works through to reach the answer, they are part of its question: put ' +
         'them with it, one to a line, or in maths use "method-frame". ' +
         'If they are questions, use "questions" or "written-answers", ' +

@@ -6662,11 +6662,11 @@
   },
   {
    "id": "QC-S42",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until 4.2.290; then the worksheets topic's decision 2 (4.2.290), his words \"I wouldn't want the same exact questions on both\": reuse for consolidation keeps the task's shape, with the sheet's own questions",
    "present": [
     {
      "file": "references/preferences.md",
-     "text": "Reusing a task for consolidation is legitimate when that is its stated purpose, rather than claiming it demonstrates unseen transfer.",
+     "text": "Reusing a task's shape for consolidation, with the sheet's own questions, is legitimate when that is its stated purpose, rather than claiming it demonstrates unseen transfer.",
      "section": {
       "heading": "### What the sheet is for",
       "occurrence": 0,

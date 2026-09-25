@@ -65,7 +65,7 @@ artefact and cannot drift apart.
 | `meta` field | |
 |---|---|
 | `name` | required. Names the output file. |
-| `lesson` | required. Prints on every sheet. |
+| `lesson` | required. Names the lesson in the file and heads the answer key; never printed on a pupil page. |
 | `yearGroup` | required. 1 to 6. |
 | `subject` | required. Chooses which subject helper file to read. |
 | `lessonDesignPath` | required. Absolute path to `lesson-design.json`. |
@@ -75,13 +75,13 @@ A sheet does not carry the learning objective, and there is no field for one.
 The class has the objective on the board and writes it in their books, so
 printing it again bought a line of the child's page on every sheet and nothing
 else. Do not reintroduce it as a zone, a title or a note: the room belongs to
-the work. (Dropped 8 September 2026, after two packs shipped with it clipped to
-"To ex" and "To id" by the combined-PDF merge.)
+the work.
 
 | Top-level field | |
 |---|---|
 | `answerKey` | required, complete, for every pupil sheet present. Never `sheets.answers`, which is refused. The build writes it to the separate teacher `- Answers.txt` file. |
 | `notes` | optional, top level only. A note written inside a sheet is dropped without a word; only top-level notes reach the builder's `Note:` lines and the teacher. |
+| `returned` | optional, top level only. One entry per sheet sent back to its author, beside its `WORKSHEET_CONTENT_GAP` note: `{ "sheet": "below", "problem": "teaching" }` for a problem a child could not get past as printed, or `"problem": "picture"` with `"refs"` for a picture it needs that will never arrive. The preflight reads this, never the note's words. `"teaching"` covers a sheet that contradicts the objective too (rule 11), and is refused while that sheet's own pictures are approved and not yet published. A returned Below or Greater Depth sheet is out of `sheets` and goes back to the adaptation designer; until its redesign goes in, and the entry comes off, the build prints the Expected sheet in its place, with the Expected answers as its key section. A sheet in `sheets` is always checked and built: the preflight refuses an entry beside one, or for a tier the adaptation does not direct. The Expected sheet is never built around. |
 
 **An answer key's labels are the labels the sheet prints.** Both come from one
 canonical bracketed system, so a teacher marking `(1a)` is looking at the same
@@ -145,6 +145,7 @@ seconds it takes to cut the pile into three.
 | `zones` | required. With `"auto"`: an ARRAY of zone contents in reading order. With a named layout: an object with one entry per lettered zone. |
 | `recording` | required. `"books"` when every question can be answered in an exercise book from a shared copy, `"sheet"` when at least one needs the printed page. Prints a small book or pencil beside the level code, and a `"books"` sheet also gets a page of question slips at the back of the file. `books-or-sheet.md` has the test and the age guide. |
 | `recordingReason` | required, on every sheet. One line saying why this whole sheet is better that way: for `"sheet"`, the question that needs the printed page and what the child does to it (`"Q4: the child labels the printed photograph"`); for `"books"`, what makes every question answerable from a shared copy. Going to look for a question that needs the page is the test, and finding none is what makes a sheet `"books"`. A blank a child copies (a digit box, a gap in a short sentence) is not a printed thing they cannot reproduce. Never change a question to reach either mark. |
+| `recordingLookedAgain` | optional, `true` or `false`. `true` on a `"books"` sheet says you looked again at the words the preflight flagged (`RECORDING_LOOK_AGAIN`) and a book still does; without it the build prints that sheet as `"sheet"`. |
 
 Any figure inside a `"books"` sheet that the children will draw for themselves
 in their books carries `"onSlip": false`, so the question slips leave it off
@@ -316,11 +317,10 @@ whole. Where a Part's body is a helper holding several items, wrap it in a
 `stack` first — otherwise the ID would sit on a set that takes a run of numbers
 rather than one.
 
-This exists because a real sheet came out numbered 1, 2, 6. The designer had
-faithfully kept the adaptation's own numbers after three questions could not be
-built, and on paper a child has no idea questions 3 to 5 ever existed: the gap is
-not information, it is a sheet that looks like a mistake. Numbers written by hand
-also came out in whatever weight the thing around them happened to be.
+Numbers kept by hand leave a gap wherever a question could not be built, and to
+a child the gap is not information: it is a sheet that looks like a mistake.
+Numbers written by hand also come out in whatever weight the thing around them
+happens to be.
 
 Reach for `stack` and `row` when one QUESTION is several things: a diagram, a
 prompt and somewhere to write is one numbered item, and no arrangement of zones
@@ -371,8 +371,12 @@ reported rather than just the first.
 | `NOT_FOR_THE_CHILD` | Pupil wording names the page's machinery rather than the work (`answer line`, `writing lines`, `sentence stem`, `prefilled`, `placeholder`). Say what the child does and let the helper supply the room to do it. |
 | `SLIPS: ...` | A `"books"` sheet's question slips were added at the back of the PDF, with how many fit a page. |
 | `SLIPS_SKIPPED` | A `"books"` sheet got no slips (its questions are too long for a slip shorter than a page, or nothing is left once the answer room is taken out). The sheet itself is unchanged. Information, not a fault. |
-| `RECORDING_CHANGED` | A sheet's `recording` was unusable: marked `"books"` with wording that needs the printed page (printed as `"sheet"`, no slips), or not one of the two choices (printed unmarked). The build still delivers; the preflight is where this is fixed. |
-| `RECORDING_MISSING` / `RECORDING_INVALID` / `RECORDING_NEEDS_SHEET` | Preflight only. A sheet has no `recording`, a value other than `"books"` or `"sheet"`, or is marked `"books"` while its words ask for something only the printed page allows. Fix the field; never reword the question. |
+| `RECORDING_CHANGED` | A sheet's `recording` was unusable: marked `"books"` with wording that looks as if it needs the printed page and no `"recordingLookedAgain": true` (printed as `"sheet"`, no slips), or not one of the two choices (printed unmarked). The build still delivers; the preflight is where this is fixed. |
+| `RECORDING_MISSING` / `RECORDING_INVALID` | Preflight only. A sheet has no `recording`, or a value other than `"books"` or `"sheet"`. Fix the field; never reword the question. |
+| `RECORDING_LOOK_AGAIN` | Preflight only, and a prompt to look again rather than a refusal. A `"books"` sheet's words look as if they need the printed page (`circle`, `tick`, `in the box`...). A box in the question's own sentence, or on a sheet whose only helpers are sentences and number sentences, is never flagged. Look at that question against `books-or-sheet.md`: a printed thing the child cannot reproduce makes the sheet `"sheet"`, and when a book still does, `"recordingLookedAgain": true` on the sheet quiets this. Never reword the question. |
+| `SHEET_STANDS_IN` | A Below or Greater Depth tier its `returned` entry sends back holds the Expected sheet, with the Expected answers as its key section, until its redesign goes in; so does one the last-resort build (`--omit-unfittable`) cannot make, for any fault, while the Expected sheet passes every check. An Expected sheet the page cannot hold is still omitted, one the browser finds clipped refuses the whole pack (as before), and then nothing stands in. A flag for the teacher's report, never a fault for a repair round. |
+| `RETURN_RECORD_LEFT` | A Below or Greater Depth sheet was built beside its own `returned` entry, as its redesign; the entry and its note come off. |
+| `RETURNED_INVALID` | The `returned` record is malformed, names the Expected sheet while it is still in the spec, sits beside a sheet still in `sheets` or names a tier the adaptation does not direct (at the preflight), or sends a sheet back with no Expected sheet to print in its place (at the build): the class's own sheet goes back to the lesson designer and is rebuilt before the worksheets build. |
 | `RECORDING_REASON_MISSING` | Preflight only. A sheet has a `recording` mark and no `recordingReason`. Say in one line why the whole sheet is better that way. The build never withholds over it, and prints a `RECORDING:` line per level saying what it costs in paper and why. |
 | `NO_SHEETS` | The JSON has none of `below`, `expected`, `greaterDepth`. |
 | `SPEC_INVALID` | The JSON is malformed, a sheet name is not one of the three, or answers were stored as `sheets.answers`. |
@@ -392,10 +396,8 @@ than a page that was refused.
 ## When nothing in the catalogue fits
 
 The worksheet-designer's rule 9 owns this decision: compose from existing
-helpers first, then change how the question is asked and never whether, and
-only a question that cannot be asked honestly at all goes in `notes` as a
-named gap. Never bend the nearest helper into a shape it does not draw.
+helpers first, never write a replacement question, and return a question no
+helper can carry faithfully through `WORKSHEET_CONTENT_GAP`. Never bend the
+nearest helper into a shape it does not draw.
 
-Flagged gaps are how the next helper gets built, and how the newest were:
-seven published worksheets went in front of this engine, none could be built,
-and every flag named the same missing thing. Every one of them builds now.
+A returned gap is how the next helper gets built.

@@ -14,7 +14,9 @@ import json
 import re
 from pathlib import Path
 
-REPO = Path(r"C:\Users\Daniel\Projects\lessonv4")
+# The copy this file sits in (the main checkout or a side branch's worktree),
+# never a fixed path, so a worktree can never write into the main checkout.
+REPO = Path(__file__).resolve().parents[2]
 ROOT = REPO / "plugins" / "lesson-v4"
 HEADING = re.compile(r"^(#{1,6}) ")
 Q = re.compile(r"«(.+?)»")

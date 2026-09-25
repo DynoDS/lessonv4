@@ -188,7 +188,12 @@ def command_for(args) -> list[str]:
         # --deliver-flagged above is the same idea, and this is the sheets'
         # version of it: the run passes --omit-unfittable only after a sheet has
         # had its own repair round and still does not fit, so an ordinary build
-        # refuses exactly as it always has.
+        # refuses exactly as it always has. A Below or Greater Depth sheet the
+        # build cannot make then gets the Expected sheet in its place, flagged:
+        # Daniel's "yes" (25 September 2026) was for a sheet sent back that
+        # still cannot be fixed, and the lead passed it on for any sheet the
+        # build cannot make. An Expected sheet the page cannot hold is omitted
+        # as before.
         command = [
             "node",
             str(plugin_root / "worksheet-html" / "scripts" / "build-worksheet.js"),
@@ -274,6 +279,24 @@ def sheets_omitted(stdout: str) -> list[dict]:
         label, _, measurement = body.partition(" - ")
         omitted.append({"sheet": label.strip(), "measurement": measurement.strip() or body})
     return omitted
+
+
+def sheets_stood_in(stdout: str) -> list[dict]:
+    """The tiers the Expected sheet stands in for, from the build's own
+    `SHEET_STANDS_IN:` lines, each with the reason the build gave: the sheet
+    could not be used as printed, or the last resort could not make it. Those
+    children get the Expected sheet: Daniel's "yes" (25 September 2026) was
+    for a sheet sent back that still cannot be fixed, and the lead passed it
+    on for any sheet the build cannot make. The teacher flag needs both
+    halves: which tier, and why."""
+    stood_in = []
+    for line in stdout.splitlines():
+        if not line.startswith("SHEET_STANDS_IN: "):
+            continue
+        body = line[len("SHEET_STANDS_IN: "):].strip()
+        label, _, why = body.partition(" - ")
+        stood_in.append({"sheet": label.strip(), "why": why.strip() or body})
+    return stood_in
 
 
 def marker_paths(stdout: str, marker: str) -> list[Path]:
@@ -447,6 +470,7 @@ def run(args) -> int:
 
     if args.kind == "worksheets":
         summary["omittedSheets"] = sheets_omitted(completed.stdout)
+        summary["standInSheets"] = sheets_stood_in(completed.stdout)
 
     summary["degraded"] = degraded
     summary["outputs"] = [
@@ -460,10 +484,15 @@ def run(args) -> int:
         return 0
     # A short pack is a delivered pack, and it is flagged for exactly the same
     # reason a flagged deck is: the teacher is getting something usable and has
-    # to be told what is not in it.
-    if summary.get("omittedSheets"):
-        names = ", ".join(sheet["sheet"] for sheet in summary["omittedSheets"])
-        print(f"FIXED_RESOURCE_FLAGGED {args.kind}: {names}")
+    # to be told what is not in it. A tier the Expected sheet stands in for is
+    # flagged the same way.
+    flagged_sheets = [
+        sheet["sheet"]
+        for group in ("omittedSheets", "standInSheets")
+        for sheet in summary.get(group, [])
+    ]
+    if flagged_sheets:
+        print(f"FIXED_RESOURCE_FLAGGED {args.kind}: {', '.join(flagged_sheets)}")
         return 0
     marker = "FIXED_RESOURCE_DEGRADED" if degraded else "FIXED_RESOURCE_OK"
     print(f"{marker} {args.kind}")
@@ -501,9 +530,12 @@ def parser() -> argparse.ArgumentParser:
         "--omit-unfittable",
         action="store_true",
         help=(
-            "worksheets only: deliver the sheets that fit when one sheet cannot "
-            "be made to fit, naming each omitted sheet and its measurement. Used "
-            "only after that sheet's own repair round has failed."
+            "worksheets only: the last resort, used only after a sheet's own "
+            "repair round has failed. A Below or Greater Depth sheet the build "
+            "cannot make, for any fault, gets the Expected sheet in its place (a "
+            "SHEET_STANDS_IN line) when the Expected sheet passes every check; an "
+            "Expected sheet the page cannot hold is omitted, named with its "
+            "measurement."
         ),
     )
     root.add_argument("--letterbox", default="")

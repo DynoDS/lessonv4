@@ -931,7 +931,11 @@ function answerKeyOf(worksheet) {
   return normalised;
 }
 
-function renderAnswerKey(worksheet, answerKey = answerKeyOf(worksheet)) {
+// `stoodIn` maps each tier the Expected sheet stands in for to why, in words
+// the teacher reads under the heading (the sheet could not be used as printed,
+// its picture never arrived, the page could not hold it, or it could not be
+// built): its section is the Expected answers, and says so.
+function renderAnswerKey(worksheet, answerKey = answerKeyOf(worksheet), { stoodIn = {} } = {}) {
   const meta = worksheet.meta || {};
   const present = PUPIL_SHEET_ORDER.filter(
     (name) => worksheet.sheets && worksheet.sheets[name]
@@ -949,6 +953,12 @@ function renderAnswerKey(worksheet, answerKey = answerKeyOf(worksheet)) {
       ? `${SHEET_LABELS[name]} (${SHEET_CODES[name]})`
       : SHEET_LABELS[name];
     lines.push(heading.toUpperCase());
+    if (stoodIn[name]) {
+      lines.push(
+        `The Expected sheet stands in here for the ${SHEET_LABELS[name]} sheet, ${stoodIn[name]}. ` +
+          "These are the Expected answers."
+      );
+    }
     for (const entry of answerKey[name]) {
       lines.push(`${formatQuestionLabel(entry.question)} ${entry.answer}`);
     }

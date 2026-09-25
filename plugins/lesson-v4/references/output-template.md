@@ -845,7 +845,7 @@ A `shared-frame` must be `generated`, must use `required-task-resource`, must us
 
 `fitPriority.protected` lists content or relationships that must survive fitting.
 
-`fitPriority.preAuthorisedRemoval` lists only lower-priority items the lesson-designer explicitly authorises the worksheet-designer to remove first. Use `[]` when nothing may be removed. A misconception's retest, or the sheet's one use of a sticky fact, is never listed here on the ground that another section "asks a version of the same question"; the designer's own rule on that is in its worksheet section.
+`fitPriority.preAuthorisedRemoval` lists only lower-priority items the lesson-designer explicitly authorises the worksheet-designer to remove first. Use `[]` only when nothing may be removed and the priced set already fits. A misconception's retest, or the sheet's one use of a sticky fact, is never listed here on the ground that another section "asks a version of the same question"; the designer's own rule on that is in its worksheet section.
 
 When the two-page central-write-on-visual exception is earned:
 

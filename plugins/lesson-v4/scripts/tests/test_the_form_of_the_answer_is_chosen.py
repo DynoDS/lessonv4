@@ -304,9 +304,16 @@ class TheGuidanceCarriesTheJudgementTests(unittest.TestCase):
         )
 
     def test_the_designer_is_shown_the_count_that_caused_it(self):
+        # The worksheets topic (4.2.290) moved the dated count to the build
+        # log (stories leave, reasons stay): the designer keeps the reason and
+        # the teeth sheet as a plain example, and the log keeps the count.
         components = flat(COMPONENTS)
-        self.assertIn("Eleven sheets built between 5 and 12 September 2026", components)
+        self.assertIn("This exists because the choice was being made by default and nobody could see it.", components)
+        self.assertIn("While `response` was free text", components)
         self.assertIn("name the layers of teeth", components)
+        self.assertNotIn("Eleven sheets built between", components)
+        log = flat(COMPONENTS.parent / "build-review-log.md")
+        self.assertIn("Eleven worksheet specs built between 5 and 12 September were read by what they actually draw.", log)
 
     def test_the_designer_is_given_the_boundary_in_both_directions(self):
         components = flat(COMPONENTS)
