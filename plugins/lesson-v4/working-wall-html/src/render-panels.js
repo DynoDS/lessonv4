@@ -25,7 +25,7 @@ const {
   badgeInches,
 } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
-const { esc, mm, hash, imgTag, visualTag, titleBarHtml, panelHtml, panelWithVisualHtml, twoUpPanelsHtml } = require("./shared");
+const { esc, markedHtml, mm, hash, imgTag, visualTag, titleBarHtml, panelHtml, panelWithVisualHtml, twoUpPanelsHtml } = require("./shared");
 const { criteriaSegments, plainCriteria } = require("../../shared/text/criteria-marks");
 
 // A step's marked parts in the colour the board gave them.
@@ -63,14 +63,15 @@ function titleBarOpts() {
   return { lineHeight: TITLE_BAR_LINE_HEIGHT };
 }
 
-// One centred bold line per body item. Use padding rather than margins so
-// consecutive line spacing does not collapse.
+// One centred bold line per body item, drawn with the board's colour marks (a
+// taught word green). Use padding rather than margins so consecutive line
+// spacing does not collapse.
 function bodyLineHtml(text, pt, style) {
   const padMm = mm(200 / 1440);
   return (
     `<div style="box-sizing:border-box;padding:${padMm}mm 0;text-align:center;` +
     `font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;` +
-    `font-size:${pt}pt;color:${hash(style.colours.body)};">${esc(text)}</div>`
+    `font-size:${pt}pt;color:${hash(style.colours.body)};">${markedHtml(text)}</div>`
   );
 }
 
@@ -91,10 +92,12 @@ function optionalCardEmojiVisual(card) {
   };
 }
 
-// ─── Sticky knowledge: blue panel, big bold body ────────────────────────
+// ─── Sticky knowledge: purple panel, big bold body ──────────────────────
 
 function renderStickyKnowledge(card, style, specDir, ctx = {}) {
-  const items = card.items || [];
+  const shown = card.items || [];
+  // The fits measure the words a child reads, never a colour mark.
+  const items = shown.map((item) => ({ ...item, text: plainCriteria(item.text) }));
   const fillColour = style.colours.stickyPanelFill;
   const borderColour = style.colours.stickyPanelLine;
 
@@ -138,7 +141,7 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
     { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction) }
   );
 
-  const panelChildrenHtml = items.map((item) => bodyLineHtml(item.text, bodyPt, style)).join("");
+  const panelChildrenHtml = shown.map((item) => bodyLineHtml(item.text, bodyPt, style)).join("");
 
   if (card.visual) {
     const v = pickVisual(card.visual, ctx);
@@ -210,7 +213,7 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
   // this one was the odd one out, and the cost was a Year 4 maths wall
   // shipping without the card defining `exchange`, the word two of its own
   // method steps hang on.
-  const items = definition ? [{ text: definition }] : [{ text: "" }];
+  const items = definition ? [{ text: plainCriteria(definition) }] : [{ text: "" }];
 
   const bodyFitsAtFloor = (reserve) =>
     linearBodyFitsAtFloor(
@@ -250,7 +253,9 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
   return titleBarEl + panelHtml(panelChildrenHtml, fillColour, borderColour, style, card.page.size, card.page.orientation);
 }
 
-// ─── Worked example: green panel + green numbered badges ────────────────
+// ─── Worked example: purple panel + green numbered badges ───────────────
+// The panel is the worked-example purple, the board's sticky purple; the step
+// badges stay the green of the success-criteria steps they copy.
 // A badge column (fixed width, aligned to the top of the whole row) beside the
 // step text. A wrapped step keeps its number beside its first line. A missing
 // badge buffer (sharp unavailable) falls
@@ -287,7 +292,7 @@ function modelExampleParagraphHtml(label, text, bodyPt, labelPt, accentColour, s
     `<div style="box-sizing:border-box;padding:${beforeMm}mm 0 ${afterMm}mm 0;text-align:left;">` +
     labelHtml +
     `<span style="font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;` +
-    `font-size:${bodyPt}pt;color:${hash(style.colours.body)};">${esc(text)}</span>` +
+    `font-size:${bodyPt}pt;color:${hash(style.colours.body)};">${markedHtml(text)}</span>` +
     `</div>`
   );
 }
@@ -413,11 +418,11 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
   return titleBarEl + panelHtml(panelChildrenHtml, fillColour, borderColour, style, card.page.size, card.page.orientation);
 }
 
-// ─── Sentence stem: green panel, bullet stems with ___ blanks ───────────
-// Mirrors helpers.js#stemParagraph: bullet + text, both bold, the bullet
-// itself in the panel accent colour. Filled lines (the modelled completion)
-// sit directly beneath in accent colour, no bullet, indented to match the
-// bullet text above.
+// ─── Sentence stem: neutral panel, bullet stems with ___ blanks ─────────
+// Mirrors helpers.js#stemParagraph: bullet + text, both bold. Filled lines
+// (the modelled completion, a worked example of the stem) sit directly
+// beneath in the worked-example purple, no bullet, indented to match the
+// bullet text above. A taught word marked `{{word}}` is green in either.
 
 function stemParagraphHtml(text, bodyPt, style) {
   const indentMm = mm(360 / 1440);
@@ -426,7 +431,7 @@ function stemParagraphHtml(text, bodyPt, style) {
     `<div style="box-sizing:border-box;padding:${padMm}mm 0;padding-left:${indentMm}mm;text-align:left;` +
     `font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;font-size:${bodyPt}pt;">` +
     `<span style="color:${hash(style.colours.sentenceStemBullet)};">&bull;&nbsp;&nbsp;&nbsp;</span>` +
-    `<span style="color:${hash(style.colours.body)};">${esc(text)}</span>` +
+    `<span style="color:${hash(style.colours.body)};">${markedHtml(text)}</span>` +
     `</div>`
   );
 }
@@ -437,7 +442,7 @@ function filledParagraphHtml(text, bodyPt, accentColour, style) {
   return (
     `<div style="box-sizing:border-box;padding:0 0 ${afterMm}mm 0;padding-left:${indentMm}mm;text-align:left;` +
     `font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;font-size:${bodyPt}pt;` +
-    `color:${hash(accentColour)};">${esc(text)}</div>`
+    `color:${hash(accentColour)};">${markedHtml(text)}</div>`
   );
 }
 
@@ -460,7 +465,7 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
   // size its steps need in order to print a bigger diagram.
   const bodyFitsAtFloor = (reserve) =>
     linearBodyFitsAtFloor(
-      items.length > 0 ? items : [{ text: "" }],
+      items.length > 0 ? items.map((item) => ({ ...item, text: plainCriteria(item.text) })) : [{ text: "" }],
       minBodyPt(card, style),
       card.page.size,
       card.page.orientation,
@@ -474,11 +479,12 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
 
   // Autofit treats each filled line as an extra body line so the pair sizes
-  // down together rather than overflowing the panel.
+  // down together rather than overflowing the panel. It measures the words a
+  // child reads, never the colour marks.
   const fitItems = [];
   for (const item of items) {
-    fitItems.push({ text: item.text });
-    if (item.filled) fitItems.push({ text: item.filled });
+    fitItems.push({ text: plainCriteria(item.text) });
+    if (item.filled) fitItems.push({ text: plainCriteria(item.filled) });
   }
   const bodyPt = fitLinearBodySize(
     fitItems.length > 0 ? fitItems : [{ text: "" }],
@@ -550,7 +556,7 @@ function renderMisconception(card, style, specDir, ctx = {}) {
   // A3-only builder: use the fixed A3 value below.
   const titleAreaInches = titleBarHeightInches(titlePt);
 
-  const fitItems = items.length > 0 ? items : [{ text: "" }];
+  const fitItems = items.length > 0 ? items.map((item) => ({ ...item, text: plainCriteria(item.text) })) : [{ text: "" }];
   const bodyPt = fitLinearBodySize(
     fitItems,
     defaultBodyPt(card, style),

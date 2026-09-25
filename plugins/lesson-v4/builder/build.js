@@ -26,6 +26,7 @@ const { verifyGeometry } = require('./src/verify-geometry');
 const { sanitizeHouseStyle } = require('../shared/text/house-style');
 const { expandTeachLayouts, TeachLayoutError } = require('./src/teach-layouts');
 const { withoutDecorations } = require("../shared/decorations");
+const { withoutFigureMarks } = require('./src/figure-marks');
 const {
   emptyDecorationPlan,
   hasDecorationPlans,
@@ -224,7 +225,9 @@ async function main() {
     process.exit(1);
   }
   const lesson = sanitizeHouseStyle(raw);
-  const coreLesson = withoutDecorations(lesson);
+  // A taught word's braces come off every figure before anything is drawn
+  // or pre-rendered (src/figure-marks.js).
+  const coreLesson = withoutFigureMarks(withoutDecorations(lesson));
   const lessonDir = path.dirname(jsonPath);
 
   // An intentionally unfinished checkpoint file is not a lesson, so this comes

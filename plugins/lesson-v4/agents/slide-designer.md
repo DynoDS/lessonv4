@@ -237,7 +237,7 @@ A source unit's `answer` object is the sole authority for answer treatment.
 
 - `delivery: teacher-only` → compose the structured answer into the question or task slide speaker notes and do not duplicate it in visible content.
 - `delivery: answer-slide` → compose the structured answer into the question or task slide speaker notes and create the normal separate answer/reveal slide according to the template contract.
-- `delivery: visible-in-unit` → compose the structured answer into the source unit's speaker notes and render the prepared model as ordinary black teaching content. Do not use answer-green styling.
+- `delivery: visible-in-unit` → compose the structured answer into the source unit's speaker notes and render the prepared model as a worked example, in purple (`colorRole: "worked-purple"` on its text lines). Do not use answer-green styling.
 - `delivery: none` → create no answer treatment.
 
 Do not reconstruct an answer from the question when a structured answer exists. Do not invent a model because an open task looks empty without one.

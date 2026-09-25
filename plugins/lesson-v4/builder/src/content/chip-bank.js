@@ -44,7 +44,21 @@ const VARIANTS = {
   green:  { fill: COLOURS.vocabBg,  line: COLOURS.green,  text: COLOURS.body  }
 };
 const DEFAULT_VARIANT = 'blue';
+// A chip wrapped whole in `{{ }}` is one of this lesson's taught words. It
+// prints in vocabulary green, as a taught word does everywhere a child reads
+// it, and the braces never print. A word bank of taught words printed black
+// was one of the exceptions the teacher had corrected (24 September 2026:
+// "green is vocabulary or an answer").
+const TAUGHT_CHIP = /^\{\{([\s\S]+)\}\}$/;
 // ─── END CONSTANTS ────────────────────────────────────────────
+
+function chipOf(raw) {
+  const text = String(raw == null ? '' : raw);
+  const match = TAUGHT_CHIP.exec(text.trim());
+  return match
+    ? { label: match[1].trim(), taught: true }
+    : { label: text, taught: false };
+}
 
 // Estimate the rendered width of a chip at a given font size: text width by the
 // character-width estimate, plus the two-sided inner padding.
@@ -54,20 +68,21 @@ function chipWidth(label, fontPt) {
 }
 
 // Greedily pack chips into rows no wider than maxW. Returns an array of rows,
-// each row an array of { label, w }.
+// each row an array of { label, w, taught }.
 function packRows(chips, fontPt, maxW) {
   const rows = [];
   let row = [];
   let rowW = 0;
-  chips.forEach(function (label) {
+  chips.forEach(function (chip) {
+    const label = chip.label;
     const w = Math.min(chipWidth(label, fontPt), maxW); // a single over-long chip caps at the zone width
     const add = row.length === 0 ? w : w + CHIP_GAP_X;
     if (row.length > 0 && rowW + add > maxW) {
       rows.push(row);
-      row = [{ label: label, w: w }];
+      row = [{ label: label, w: w, taught: chip.taught }];
       rowW = w;
     } else {
-      row.push({ label: label, w: w });
+      row.push({ label: label, w: w, taught: chip.taught });
       rowW += add;
     }
   });
@@ -77,8 +92,8 @@ function packRows(chips, fontPt, maxW) {
 
 function drawChipBank(pptx, slide, zone, data) {
   const chips = (Array.isArray(data.chips) ? data.chips : [])
-    .map(function (c) { return String(c == null ? '' : c); })
-    .filter(function (c) { return c !== ''; });
+    .map(chipOf)
+    .filter(function (c) { return c.label !== ''; });
   if (chips.length === 0) return;
 
   const variant = VARIANTS[data.variant] || VARIANTS[DEFAULT_VARIANT];
@@ -179,7 +194,8 @@ function drawChipBank(pptx, slide, zone, data) {
       slide.addText(c.label, {
         x: chipX, y: rowY, w: c.w, h: chipH,
         fontFace: FONT, fontSize: chipFont, bold: true,
-        color: variant.text, align: 'center', valign: 'middle', margin: 0, fit: FIT,
+        color: c.taught ? COLOURS.green : variant.text,
+        align: 'center', valign: 'middle', margin: 0, fit: FIT,
         objectName: growFitObjectName(chipTextGroup, CHIP_FONT_MAX, 'chip-' + c.label)
       });
       chipX += c.w + CHIP_GAP_X;

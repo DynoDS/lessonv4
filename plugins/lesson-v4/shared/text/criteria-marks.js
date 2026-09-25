@@ -89,9 +89,36 @@ function criteriaMarkProblems(text) {
   return problems;
 }
 
+// A figure's words, without a taught word's braces. A figure's words are drawn
+// into its picture by a shared drawing, which prints them as written, so every
+// surface takes the braces off before it hands a figure over: inside a picture
+// the word prints plain (the colours release's third check, 25 September
+// 2026). Every string anywhere in the spec is read; a spec with no mark comes
+// back as the same object, and one with a mark as a copy.
+const TAUGHT_MARK = /\{\{([\s\S]+?)\}\}/g;
+
+function carriesTaughtMark(value) {
+  if (typeof value === 'string') return value.includes('{{');
+  if (Array.isArray(value)) return value.some(carriesTaughtMark);
+  if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+    return Object.values(value).some(carriesTaughtMark);
+  }
+  return false;
+}
+
+function withoutTaughtMarks(value) {
+  if (!carriesTaughtMark(value)) return value;
+  if (typeof value === 'string') return value.replace(TAUGHT_MARK, '$1');
+  if (Array.isArray(value)) return value.map(withoutTaughtMarks);
+  const out = {};
+  for (const [key, inner] of Object.entries(value)) out[key] = withoutTaughtMarks(inner);
+  return out;
+}
+
 module.exports = {
   DECIDE_ORANGE,
   TAUGHT_GREEN,
+  withoutTaughtMarks,
   criteriaMarkProblems,
   criteriaSegments,
   pictureColour,

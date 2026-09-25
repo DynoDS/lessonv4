@@ -1,0 +1,2748 @@
+{
+ "ledgers": {
+  "PF": "plans/2026-09-23-preferences-rest-ledger.md",
+  "SA": "plans/2026-09-23-starters-sticky-apply-ledger.md"
+ },
+ "snapshot": "4.2.289 2db3ceba, with the colours release (topic 7's 7C) on the side branch streamline/7c-colours",
+ "changedRows": [
+  "PF-B41",
+  "PF-B56",
+  "PF-B61",
+  "PF-J13",
+  "PF-R02",
+  "PF-R03",
+  "PF-R04",
+  "PF-R05",
+  "PF-R15",
+  "PF-R16",
+  "PF-R18",
+  "PF-R19",
+  "PF-R24",
+  "PF-R25",
+  "PF-R26",
+  "PF-R27",
+  "PF-R28",
+  "PF-R30",
+  "PF-R32",
+  "PF-R34",
+  "PF-R35",
+  "PF-R36",
+  "PF-R40",
+  "PF-R53",
+  "PF-R72",
+  "PF-R89",
+  "PF-R90",
+  "PF-R91",
+  "PF-R95",
+  "PF-R97",
+  "PF-Y64",
+  "PF-Y68",
+  "PF-Y70",
+  "PF-Y74",
+  "PF-Y76",
+  "PF-Y77",
+  "SA-D21",
+  "SA-I14",
+  "SA-I15",
+  "SA-I16"
+ ],
+ "homes": [
+  {
+   "file": "references/teacher-slide-visual-profile.md",
+   "heading": "## Semantic colour",
+   "paragraphs": [
+    "The deck's core colour grammar is asking versus telling.",
+    "- **House blue is the colour of the child's job: a question they answer, or a short task.** When the board asks the class something they answer - `Which fan needed electricity?`, `How did children use these two classrooms?` - those words are blue, and a child scanning a busy board finds their question at once. A short task is the same job said as an instruction, the thing the child does - `Explain your answer.`, `Write one reason.`, `Explain why.`, `Round 346 to the nearest 10.` - and it is blue too, as a whole line, marked `colorRole: \"task-blue\"`. A job that also names what to use is still the job, and blue: `Explain your answer using the photograph.` and `Describe each tooth using the pictures.` (the teacher's answer, 25 September 2026). Blue also organises slide titles, short option labels, category names and other secondary organising labels; the templates apply that themselves and it is not a decision to make per line. - Black carries everything else the board says: teacher explanation, supporting prose, statements, takeaways, success-criteria body text, reminder body text, and a longer instruction about how to go about the task. `Use the shaded map.`, `Use the number line to help you.` and `Look at the shaded areas and the Equator.` are all black: each only tells a child how to go about the job, and sets no job of its own. The limit is what keeps blue meaning something: advice follows the job the blue has already named, and painting it blue too spends the very contrast that was lifting the question and the task - a whole board arriving blue tells a child nothing. Which a line is, the job or advice on how to do it, is your judgement, and no count of words decides it: the test is the line's main ask. `Round 346 to the nearest 10.` is the job; `Explain your answer using the photograph.` asks for the job and names what to use, so it is the job too; `Use the two photographs.` only says what to use, so it is advice. The check reads the role, not the words: it refuses any other blue line that asks nothing (`BLUE_WITHOUT_A_QUESTION`), and a `task-blue` line the spec shows is not a short task, one carrying the reveal mark `||`, a sticky fact, the lesson's answer, a statement or task before its question, or two sentences that are not questions (`TASK_BLUE_NOT_A_SHORT_TASK`). The role never makes a slide's turn by itself. - **The starter is the one place a question is normally black.** A starter is questions all the way down, so blue there marks nothing a child cannot already see, and a screenful of solid blue is harder to read than a screenful of black. Leave a single starter question black. Where a starter carries several, alternate them black, blue, black, blue: on that slide the colour has a different job, separating one numbered question from the next, exactly as `peer-blue` and `peer-purple` do for peer prompts. The starter answers slide keeps its answer green. - The treatment is deck-wide: every child-facing question and short task outside the starter carries it, not a favoured few. The carrying fields are `color` or `focus-blue` for a whole line and `[[ ]]` for a span inside a line; a short task carries `task-blue`, the only way a line that asks nothing may be blue. - The boundary is the sentence, not the block. A block that first tells and then asks splits at that boundary: the telling stays black, the asking goes blue, and a paragraph break sits between them so a child sees where the explanation stops and their job starts. `A kettle and a lamp are both appliances.` is black; `What is electricity doing in each one?` follows on its own line in blue. Never colour a whole mixed block blue for the question buried inside it - that hides the question instead of lifting it. **The order does not matter.** A block that ASKS and then instructs splits at the same boundary the other way round: the question goes blue, and what follows it takes its own colour, blue for the child's short task and black for advice on how to go about it. `Is Isla correct?` is blue and `Explain your answer.` beneath it is blue too, because it is the job (one `task-blue` line may hold both); `Use the two photographs.` beneath a question stays black. The teacher coloured such a question by hand when an Apply slide printed it black: \"even if I put paragraph breaks between them, they're still all black text. So I thought, why not make the question blue?\" A block that asks twice is two questions and both are blue; the test is what the sentence DOES, never where it sits. - `peer-blue` and `peer-purple` exist only for a compact set of two or more equal-status peer prompts where alternating colour helps children keep the prompts visually separate. Start with house blue and run the set `peer-blue`, `peer-purple`, `peer-blue`, `peer-purple`. The pattern separates equal-status prompts; it must never imply correctness, answer status, sequence, difficulty or category meaning, so a sequence whose order matters and categories whose colours already carry meaning never take it. - `task-action` marks an existing action verb or short action phrase such as `Build`, `Test`, `Record`, `Compare` or `Explain` when exposing those verbs makes a multi-phase task easier to scan. It and `core-action` render bold in the line's own colour, so a verb is never blue on its own: a short task is blue as a whole line, and an instruction about how to go about it stays black however many verbs it exposes. A task sentence with `Choose`, `Draw`, `Label` and `add arrows` each in question blue reads as four alternating chunks, and leaves the question on the same slide nothing to lift it. Several `task-action` spans may appear in one instruction. Do not mark every verb in ordinary prose. Use size, position and spacing before colour when prominence alone is the job. - Sticky-knowledge purple is the third member of the grammar, and the builder applies it for you: the `✨` at the head of a sticky line makes that sentence purple, so a child reads at a glance that this is the one to keep. Leave it alone. An `emphasis` span stretched across the whole statement repaints it, which is how a deck ends up with its one sticky fact in red and no purple anywhere; mark a span inside a sticky line only when that span really is a taught term of its own. The check refuses a whole-line emphasis on a sticky line by name. - A worked example is purple, the same colour as a sticky fact. A prepared example or a `visible-in-unit` model written into the teaching gives its worked lines `colorRole: \"worked-purple\"`, on any slide, a teach layout's lines included; a question card, a list item and a step take the role too. The `method-frame` draws its panel and title purple for you, and the sheet's method frame matches it when it shows worked numbers; an empty one, the child's to fill in every box, keeps its ink edge and blue heading. A place-value chart's worked rows take `worked: true`, and every digit in them is purple, the ringed one and its ring included. On the wall the worked-example card is purple beside the sticky fact, and a section part marked `worked: true` shows its result on purple. Purple does not reach a figure with no purple of its own (a number line, a bar model, a tally, a table's cells), a worksheet's first worked row, or the good card of a strong-and-weak pair: those keep their own colours. A worked example is purple even when the lesson is about to show it is wrong, the teacher's word: \"purple is fine\". It is never answer green. - **Supplied orange is the information the question hands a child to work from, and on a slide that sets a task from a case, that case is the supplied thing.** Its existing job is a value inside a question (`<<358>>`); the same job at paragraph length is Sam sipping squash all afternoon with a hole in his back tooth. The teacher coloured it that way himself on 18 September 2026 and it is right: the board then has three plain jobs a child reads at a glance - black for what is generally true, orange for what happened to this person, and the line naming what they have to do. Carry it to every later slide that shows the same case, so the words keep one colour wherever a child meets them (Repeated-reference identity, below). It is not for a case the class is only being told about in the teaching; it marks the one the task runs on. - `problem-state` red is reserved for source wording that names a genuine failed or wrong state. - `safety-warning` red is reserved for an exact source-authored safety warning. Safety and failure are different semantic roles even though both use the problem-red palette. Neither is a way of making a sentence look important: a sticky-knowledge line is not a warning because it is about safety, it is the thing to remember, and it reads purple like every other one. - Vocabulary green marks this lesson's taught terms wherever a child reads them: in task text, teaching sentences, sticky knowledge, success criteria and captions alike, every occurrence, so the word looks the same on slide 12 as it did on its vocabulary card and a child recognises it as the word they were taught. Mark each occurrence with the `vocabulary` emphasis role. Success criteria arrive with the taught word already marked as `{{word}}` in the lesson designer's own wording (`preferences.md` → Success Criteria), and that mark is what colours it there. The terms are the lesson's vocabulary cards (and a prior lesson's term the design says children already hold), not every subject noun on the slide: `biome` and `climate` are green on a lesson that taught them; `country` is not. Answer reveals keep their own green, so a taught term inside a revealed answer is not marked twice. Answer green belongs only to answers being revealed or marked - and on an answer slide it belongs on the answer words themselves. A green outline around black words is a frame, not an answer treatment.",
+    "**One line of a Teach slide's explanation may be orange, and only one.** A wall of black teaching is hard to take in however well it is written, and the teacher asked for a way to break it that is not only layout (12 September 2026). Orange is free here: its existing text job, `<<supplied-orange>>`, tints a value the question hands a child to work from, which belongs to a slide that asks something, and a Teach slide is not asking. So where the explanation runs to more than one line and one of them carries the weight, give that line `color` orange, which on a teach layout is `\"orange\": true` on that line. The test is which line you would say louder.",
+    "Three bounds, and they matter more than the permission. **One line per slide**, or the colour stops separating anything and the slide is a wall in two shades instead of one. **Not on every Teach slide**: a deck where the same middle line goes orange every time has a tic rather than a voice, and the honest answer on many slides is that layout has already done it, which is what a lesson's own recomposed slides showed when the first line was lifted to full width and needed nothing else. And it **never touches the sticky line**, which is purple because it is the one to keep, nor a question, which is blue, **nor a line carrying a taught vocabulary term**. A PSHE slide put a whole explanation line in orange around the green word `Oxygen` and the term stopped reading as the word children were taught and started reading as one more colour in a scheme (12 September 2026). Vocabulary green marks every occurrence of a taught term wherever a child reads it, so the term wins and the line loses: choose a different line for the orange, and if every line carries a term, leave them all black and let layout do it.",
+    "Outside that one case, prominence on a black explanatory line is still size, position and spacing rather than colour.",
+    "Question numbers and letters use the shared purple question-label colour on every slide. Keep the question body's semantic colour independent of its label."
+   ]
+  }
+ ],
+ "rows": [
+  {
+   "id": "PF-R02",
+   "outcome": "folded into the visual profile's Semantic colour, which owns the grammar (the change plan's homes table); preferences keeps his words and a pointer that names every part; decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black)",
+   "ledgerFile": "references/preferences.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/preferences.md",
+     "text": "**Blue asks or sets a short task, and a worked example is purple.** In the teacher's words: \"I want blue means question or like a short task as in like explain why or something like that.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "a longer instruction about how to go about it stays black",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "the starter's questions, which stay black or alternate",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- **House blue is the colour of the child's job: a question they answer, or a short task.**",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- Black carries everything else the board says: teacher explanation, supporting prose, statements, takeaways, success-criteria body text, reminder body text, and a longer instruction about how to go about the task.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "the question goes blue, and what follows it takes its own colour, blue for the child's short task and black for advice on how to go about it.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- **The starter is the one place a question is normally black.**",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "**Blue asks or sets a short task, and a worked example is purple.** In the teacher's words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer.\" So a question or a short task, the child's job, is blue (`Explain your answer.`, `Write one reason.`), and a longer instruction about how to go about it stays black (`Use the shaded map.`). A job that names what to use is still the job, and blue: asked whether `Explain your answer using the photograph.` is blue, he said \"y\" (25 September 2026). A worked example is purple, the same colour as a sticky fact: \"worked example purple too\". `teacher-slide-visual-profile.md` → Semantic colour owns the whole grammar, and the slide designer reads it in full: blue's other jobs (titles and short labels), how a short task is marked, the starter's questions, which stay black or alternate, the split at the boundary between telling and asking, the peer colours and their limits, action verbs, how a worked example is marked, supplied orange, the one orange line, red, and what the check refuses.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/preferences.md",
+     "text": "**Blue asks; everything else tells.**",
+     "everywhere": true
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "and the instructions children act on",
+     "everywhere": true
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "question blue, instruction black",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R03",
+   "outcome": "folded into the visual profile's Semantic colour, which owns the grammar (the change plan's homes table); preferences keeps his words and a pointer that names every part; the peer line gains the one condition it lacked (\"answer status\")",
+   "ledgerFile": "references/preferences.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "it must never imply correctness, answer status, sequence, difficulty or category meaning, so a sequence whose order matters and categories whose colours already carry meaning never take it.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "the peer colours and their limits",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "**Blue asks or sets a short task, and a worked example is purple.** In the teacher's words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer.\" So a question or a short task, the child's job, is blue (`Explain your answer.`, `Write one reason.`), and a longer instruction about how to go about it stays black (`Use the shaded map.`). A job that names what to use is still the job, and blue: asked whether `Explain your answer using the photograph.` is blue, he said \"y\" (25 September 2026). A worked example is purple, the same colour as a sticky fact: \"worked example purple too\". `teacher-slide-visual-profile.md` → Semantic colour owns the whole grammar, and the slide designer reads it in full: blue's other jobs (titles and short labels), how a short task is marked, the starter's questions, which stay black or alternate, the split at the boundary between telling and asking, the peer colours and their limits, action verbs, how a worked example is marked, supplied orange, the one orange line, red, and what the check refuses.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/preferences.md",
+     "text": "A compact set of two or more equal-status peer prompts may alternate house blue and house purple",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R04",
+   "outcome": "out of date since 4.2.109 (decision 14 (settled item 14, \"yes\": out-of-date text corrected to match his rulings or the program)) and against decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black): its first sentence retired, its second moved into the profile's action-verb line",
+   "ledgerFile": "references/preferences.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "so a verb is never blue on its own: a short task is blue as a whole line, and an instruction about how to go about it stays black however many verbs it exposes.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Use size, position and spacing before colour when prominence alone is the job.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/preferences.md",
+     "text": "Existing task-action verbs may use house blue",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R15",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black), with his answer of 25 September 2026 (\"y\": `Explain your answer using the photograph.` is blue, so a job that names what to use is still the job, and only a line that says how to go about it stays black)",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- **House blue is the colour of the child's job: a question they answer, or a short task.**",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "A job that also names what to use is still the job, and blue: `Explain your answer using the photograph.` and `Describe each tooth using the pictures.` (the teacher's answer, 25 September 2026).",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "`Explain your answer.`, `Write one reason.`, `Explain why.`, `Round 346 to the nearest 10.` - and it is blue too, as a whole line, marked `colorRole: \"task-blue\"`.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "House blue is the colour of a question to children, and of nothing else on the slide.",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R16",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black); the date and \"a task is black either way\" went, the reason stayed; the story is in the build log; its black examples are saved lines that only say how to go about the job, by his answer of 25 September 2026 (\"y\": `Explain your answer using the photograph.` is blue, so a job that names what to use is still the job, and only a line that says how to go about it stays black)",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- Black carries everything else the board says: teacher explanation, supporting prose, statements, takeaways, success-criteria body text, reminder body text, and a longer instruction about how to go about the task.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "The limit is what keeps blue meaning something:",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Which a line is, the job or advice on how to do it, is your judgement, and no count of words decides it:",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "`Use the shaded map.`, `Use the number line to help you.` and `Look at the shaded areas and the Equator.` are all black: each only tells a child how to go about the job, and sets no job of its own.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "the test is the line's main ask.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "The check reads the role, not the words:",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "a task is black either way",
+     "everywhere": true
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Point to the details in the photograph that support your comparison",
+     "everywhere": true
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "runs to five words or fewer",
+     "everywhere": true
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "(flagged by the user, 3 September 2026)",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R19",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black); his words kept without the date",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "the question goes blue, and what follows it takes its own colour, blue for the child's short task and black for advice on how to go about it.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "`Is Isla correct?` is blue and `Explain your answer.` beneath it is blue too, because it is the job (one `task-blue` line may hold both);",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "\"even if I put paragraph breaks between them, they're still all black text. So I thought, why not make the question blue?\"",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "`Is Isla correct?` is blue and `Explain your answer.` is black beneath it.",
+     "everywhere": true
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "the question goes blue, the instruction that follows it stays black",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R18",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (the deck-wide treatment covers the short task too, as the playbook's line does)",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- The treatment is deck-wide: every child-facing question and short task outside the starter carries it, not a favoured few.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "every child-facing question outside the starter carries it",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R05",
+   "outcome": "changed by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\"): a prepared, finished example is a worked example, so purple; the rest of the paragraph kept",
+   "ledgerFile": "references/preferences.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/preferences.md",
+     "text": "**Green has a fixed teaching role.** Green pupil-facing text is reserved for answers being revealed or marked, vocabulary emphasis, vocabulary slides and success-criteria treatment.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "Prepared examples and `visible-in-unit` models are worked examples, finished before the class sees them, so they are purple, the same colour as a sticky fact, never answer green.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "Do not colour ordinary teaching explanations green for emphasis.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "**Green has a fixed teaching role.** Green pupil-facing text is reserved for answers being revealed or marked, vocabulary emphasis, vocabulary slides and success-criteria treatment. A term this lesson teaches is vocabulary green every time a child reads it, on every slide, not only on its card: the colour is what tells a child that the word in the question is the word they were taught. That covers the lesson's own vocabulary words, not every subject noun; `teacher-slide-visual-profile.md` → Semantic colour carries the detail. Prepared examples and `visible-in-unit` models are worked examples, finished before the class sees them, so they are purple, the same colour as a sticky fact, never answer green. Do not colour ordinary teaching explanations green for emphasis.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/preferences.md",
+     "text": "are teaching content and stay black",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R34",
+   "outcome": "changed by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\")",
+   "ledgerFile": "references/output-template.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/output-template.md",
+     "text": "- `visible-in-unit` stores a completed prepared model that is visible in its source unit as a worked example, in the worked-example purple. It is not an answer reveal.",
+     "section": {
+      "heading": "### Source-unit contract",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/output-template.md",
+     "text": "- `teacher-only` stores the answer, model or standard for speaker-note use and creates no visible answer slide. - `answer-slide` stores the answer, model or standard for speaker-note use and also authorises a separate visible answer/reveal slide. - `visible-in-unit` stores a completed prepared model that is visible in its source unit as a worked example, in the worked-example purple. It is not an answer reveal. - `none` carries no answer, model or standard.",
+     "section": {
+      "heading": "### Source-unit contract",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/output-template.md",
+     "text": "ordinary black teaching content",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R35",
+   "outcome": "changed by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\"); its limits (not an answer reveal, no answer treatment) kept",
+   "ledgerFile": "references/output-template.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/output-template.md",
+     "text": "The resource designer renders the structured completed outcome as a worked example, in the worked-example purple, inside that source unit's prepared model.",
+     "section": {
+      "heading": "### Source-unit contract",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/output-template.md",
+     "text": "answer-green text, an answer-green outline or another answer-reveal treatment on `visible-in-unit` content.",
+     "section": {
+      "heading": "### Source-unit contract",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/output-template.md",
+     "text": "`visible-in-unit` is valid only with `modellingState: \"Prepared example\"`. It is not an answer reveal and does not create a following answer slide. The resource designer renders the structured completed outcome as a worked example, in the worked-example purple, inside that source unit's prepared model. Do not use the `||` answer marker, answer-green text, an answer-green outline or another answer-reveal treatment on `visible-in-unit` content.",
+     "section": {
+      "heading": "### Source-unit contract",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "PF-R36",
+   "outcome": "changed by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\")",
+   "ledgerFile": "agents/slide-designer.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "agents/slide-designer.md",
+     "text": "render the prepared model as a worked example, in purple (`colorRole: \"worked-purple\"` on its text lines). Do not use answer-green styling.",
+     "section": {
+      "heading": "### 5. Use answers from the structured answer object only",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "agents/slide-designer.md",
+     "text": "- `delivery: teacher-only` → compose the structured answer into the question or task slide speaker notes and do not duplicate it in visible content. - `delivery: answer-slide` → compose the structured answer into the question or task slide speaker notes and create the normal separate answer/reveal slide according to the template contract. - `delivery: visible-in-unit` → compose the structured answer into the source unit's speaker notes and render the prepared model as a worked example, in purple (`colorRole: \"worked-purple\"` on its text lines). Do not use answer-green styling. - `delivery: none` → create no answer treatment.",
+     "section": {
+      "heading": "### 5. Use answers from the structured answer object only",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "agents/slide-designer.md",
+     "text": "ordinary black teaching content",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R40",
+   "outcome": "changed by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\"); the green limits kept",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "Prepared examples and `visible-in-unit` models are worked examples: give their lines `colorRole: \"worked-purple\"`.",
+     "section": {
+      "heading": "### `text`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "Use answer green only on an answer/reveal slide.",
+     "section": {
+      "heading": "### `text`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "Green answer text is not an ordinary emphasis option. Do not set text `color` to `00B050` and do not use `||`, `{{green}}` or `{{answer-green}}` on a teaching slide. Prepared examples and `visible-in-unit` models are worked examples: give their lines `colorRole: \"worked-purple\"`. Use answer green only on an answer/reveal slide. Vocabulary and success criteria keep their established green treatments.",
+     "section": {
+      "heading": "### `text`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "remain body black",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R53",
+   "outcome": "changed by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\")",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "Prepared teaching models are worked examples: give the card `colorRole: \"worked-purple\"`.",
+     "section": {
+      "heading": "### `question-cards`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "Answer reveals work exactly as they do in a list: `\"6 × 7 = ||42\"` prints the answer in green, so a question slide and its answer slide can use the same helper. The inline colour markers (`**bold**`, `[[blue]]`, `{{green}}`, `<<orange>>`) all work inside a card too, but `{{green}}` is reserved for an answer/reveal slide. Prepared teaching models are worked examples: give the card `colorRole: \"worked-purple\"`.",
+     "section": {
+      "heading": "### `question-cards`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "Prepared teaching models stay black.",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-B41",
+   "outcome": "its reason corrected to decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black): a verb is never blue on its own, because blue is the child's job as a whole line",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "it renders bold in the line's own colour, never blue on its own, because blue belongs to the child's job as a whole line, a question or a short task (Semantic colour below).",
+     "section": {
+      "heading": "## Visible task structure",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "For a dense task, identify its **survival phrase**: the shortest existing phrase that preserves the central action if a child catches only one part during a glance. Never invent or paraphrase the survival phrase — it must be a substring of the source string. When emphasis genuinely improves entry into the task, mark that exact phrase with the `core-action` presentation role; it renders bold in the line's own colour, never blue on its own, because blue belongs to the child's job as a whole line, a question or a short task (Semantic colour below). The other semantic roles (`required-material`, `response-demand`, `reasoning-demand`, `problem-state`, `vocabulary`) are used only when the exact source wording carries that role.",
+     "section": {
+      "heading": "## Visible task structure",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "because blue belongs to questions",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-B61",
+   "outcome": "its reason corrected to decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black)",
+   "ledgerFile": "references/slide-composition-playbook.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "so exposing a verb never turns an instruction blue; blue stays with the child's job as a whole line, the question or the short task.",
+     "section": {
+      "heading": "### Make task phases visible before full reading",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "For a dense task, identify the existing **survival phrase**: the shortest source-authored phrase that preserves the central action if the child catches only one part during a glance. Give that phrase the `core-action` presentation role when emphasis improves entry into the task. Both action roles render bold in the line's own colour, so exposing a verb never turns an instruction blue; blue stays with the child's job as a whole line, the question or the short task.",
+     "section": {
+      "heading": "### Make task phases visible before full reading",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "blue stays the question's",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R24",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (the final pass checks short tasks too)",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- check the colour of questions and short tasks, task-action emphasis, peer colour and safety/problem colour against their semantic roles;",
+     "section": {
+      "heading": "## Final teacher pass",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- read each slide from a distance, not from a screen; - check that the principal pupil task is in the body at task-reading size rather than dependent on the small header cue; - check the card boundaries and whether important content remains unnecessarily small beside unused background space; - check that real task phases are visibly separated and, where they govern different objects, physically attached to those objects; - check whether shorter groups are deliberately aligned against their taller peers rather than automatically pinned to the top; - check the smallest load-bearing visual in every row and stack; - check that active pupil-working surfaces receive more space than non-load-bearing setup or decorative references; - check the colour of questions and short tasks, task-action emphasis, peer colour and safety/problem colour against their semantic roles; - check that parallel groups have one visible discriminator when their distinction matters; - check repeated-reference identity; - leave the optional P2/P3 layer alone: the Slide Decorator runs that pass after this one, over the same rendered pages, and it is the decorator that reads `[WORKING_DIR]/optional-picture-pass.json` beside its own render to check the earlier optional P2/P3 pass against what is actually on the page. The record is the pass's own account of every slide, so a slide declined as `full` or `competes` that renders with obvious room to spare, or a slide declined as `would-mislead` whose task no drawing could give away, is a line that does not match its page. Until this record existed the pass left no trace and this check could not really be made; - repair only faults the Slide Designer owns, on the candidate file, and rerun the complete check with a fresh preview; - when a clear owned fault survives the shared repair budget, fail the check with the named diagnostics instead of promoting a deck the teacher will have to fight.",
+     "section": {
+      "heading": "## Final teacher pass",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "check focal-question colour",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R25",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black), blue and the worked example's purple",
+   "ledgerFile": "references/slide-composition-playbook.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "a question children answer, or a short task (the child's job, `task-blue`), carries house blue; everything else the board says stays black, including an instruction about how to go about the task;",
+     "section": {
+      "heading": "### Colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "Prepared examples and visible-in-unit models are worked examples, in purple (`worked-purple`).",
+     "section": {
+      "heading": "### Colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "Use the semantic roles in `teacher-slide-visual-profile.md` and the exact supported fields in `templates.md`. The core grammar is asking versus telling: a question children answer, or a short task (the child's job, `task-blue`), carries house blue; everything else the board says stays black, including an instruction about how to go about the task; a block that does both splits at the boundary, telling black, question blue, with a paragraph break between them. Prepared examples and visible-in-unit models are worked examples, in purple (`worked-purple`). Answer green remains an answer signal, on the answer words themselves. Vocabulary and success criteria keep their established green roles. A category container takes its colour on the border through the documented `categoryColor` field, so the grouping reads as a border language rather than a painted panel. Ordinary question lists and success-criteria steps stay out of that palette. Use size, position and spacing, not colour, when a black explanatory line only needs prominence.",
+     "section": {
+      "heading": "### Colour",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "everything else the board says stays black, including the instructions children act on",
+     "everywhere": true
+    },
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "Prepared examples and visible-in-unit models stay black",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R26",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black)",
+   "ledgerFile": "references/slide-composition-playbook.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "Every child-facing question and short task outside the starter carries the blue;",
+     "section": {
+      "heading": "### Colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "A colour treatment is a deck-wide decision, not a per-slide flourish. Colour teaches a child what kind of thing they are looking at only if the same kind gets the same treatment on every slide: a deck where the question is house blue on slide 9 and body black on slide 8 has spent the colour and lost the meaning, and reads as assembled by different hands. Every child-facing question and short task outside the starter carries the blue; the same holds for any emphasis role - a deck that underlines `required-material` in one task underlines it in all of them. Half-applied roles are worse than unapplied ones.",
+     "section": {
+      "heading": "### Colour",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/slide-composition-playbook.md",
+     "text": "Every child-facing question outside the starter carries the blue",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R27",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black)",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "- `focus-blue` - a question children answer, in house blue; an instruction stays black unless it is the child's short task, which takes `task-blue`",
+     "section": {
+      "heading": "## 4. Content object catalogue",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `task-blue` - a short task, the child's job itself (`Explain your answer.`, `Write one reason.`, `Round 346 to the nearest 10.`), in house blue,",
+     "section": {
+      "heading": "## 4. Content object catalogue",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `default` - existing base colour; - `focus-blue` - a question children answer, in house blue; an instruction stays black unless it is the child's short task, which takes `task-blue` (the asking-versus-telling grammar in `teacher-slide-visual-profile.md` → Semantic colour); - `task-blue` - a short task, the child's job itself (`Explain your answer.`, `Write one reason.`, `Round 346 to the nearest 10.`), in house blue, alone or after its question on the same line, and a job that also names what to use (`Explain your answer using the photograph.`), taking its blue from the role alone (a `color` beside it is refused); advice that only says how to go about the task (`Use the shaded map.`, `Use the two photographs.`) never takes it, nor does a statement, an answer or a sticky fact, and one line holds one task; - `peer-blue` - house blue for one item in a compact equal-status peer set; - `peer-purple` - house purple for one item in a compact equal-status peer set; - `worked-purple` - a worked example the class sees finished (a prepared example, a `visible-in-unit` model), in the sticky fact's purple, never answer green; a place-value chart row takes `worked: true` instead, and any other drawn figure keeps its own colours.",
+     "section": {
+      "heading": "## 4. Content object catalogue",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "an instruction they act on stays black",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R28",
+   "outcome": "out of date since 4.2.109 (decision 14 (settled item 14, \"yes\": out-of-date text corrected to match his rulings or the program)), corrected to decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black)",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "every child-facing question carries it, and a short task carries it through `colorRole: \"task-blue\"`, never a hex, so the check can see it is one;",
+     "section": {
+      "heading": "### `text`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "such as the blue question or orange supplied material.",
+     "section": {
+      "heading": "### `text`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. The blue is asking-versus-telling (the playbook's Colour section): every child-facing question carries it, and a short task carries it through `colorRole: \"task-blue\"`, never a hex, so the check can see it is one; an instruction about how to go about the task, explanation and statements stay black, and a block that does both splits at the boundary - colour only the asking sentence (via a separate block or a `[[ ]]` span), never the whole mixed block.",
+     "section": {
+      "heading": "### `text`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "every child-facing question and instruction carries it",
+     "everywhere": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "such as the blue question/instruction",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R30",
+   "outcome": "the fold of PF-R03 (folded into the visual profile's Semantic colour, which owns the grammar (the change plan's homes table); preferences keeps his words and a pointer that names every part)",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "it must never imply correctness, answer status, sequence, difficulty or category meaning, so a sequence whose order matters and categories whose colours already carry meaning never take it.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "it must never imply correctness, sequence, difficulty or category meaning.",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R32",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (a short task is blue as a whole line); PF-R04's second sentence joins it; the PSHE case stays as a plain undated example (the build log holds it)",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "so a verb is never blue on its own: a short task is blue as a whole line, and an instruction about how to go about it stays black however many verbs it exposes.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "A task sentence with `Choose`, `Draw`, `Label` and `add arrows` each in question blue reads as four alternating chunks, and leaves the question on the same slide nothing to lift it.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "so an instruction stays black however many verbs it exposes",
+     "everywhere": true
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "a Year 4 PSHE deck once had",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R89",
+   "outcome": "reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him) (sticky fact and worked example purple, taught words green, titles blue)",
+   "ledgerFile": "references/working-wall-visual-language.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 3,
+   "present": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "each colour means what it means on the board, so a child reads one colour language across the room:",
+     "section": {
+      "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "Card type drives colour, in the board's meanings: worked example and sticky knowledge purple, vocabulary green, misconception red beside green, sentence stem neutral with its modelled line purple, and a blue title bar or header on every other card.",
+     "section": {
+      "heading": "### 6. Colour-coded categories (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "The sticky card says \"fact\": one sentence to keep, where a method has numbered steps.",
+     "section": {
+      "heading": "## Anti-patterns — what breaks the visual language",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "The body sits on a bold-bordered, strong-coloured panel. Each card type has its own panel identity, and each colour means what it means on the board, so a child reads one colour language across the room: purple for a fact to keep and for a worked example (the board's sticky and worked-example purple), green for taught words and for the right answer beside a red wrong one, blue for titles and headers, and a neutral panel for a sentence stem or a reference table, where a taught word inside stays green. This is how children learn what each card is for without anyone telling them.",
+     "section": {
+      "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "Card type drives colour, in the board's meanings: worked example and sticky knowledge purple, vocabulary green, misconception red beside green, sentence stem neutral with its modelled line purple, and a blue title bar or header on every other card. Within reference tables, future renderer work will likely add per-row colouring for equivalence-style content (FDP rows, fraction mats). For now, the renderer applies one identity per card.",
+     "section": {
+      "heading": "### 6. Colour-coded categories (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do. | | A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
+     "section": {
+      "heading": "## Anti-patterns — what breaks the visual language",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "Card type drives colour: worked example green, sticky blue",
+     "everywhere": true
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "The blue panel says \"fact\".",
+     "everywhere": true
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "the green cards are how-to-do-it cards",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R90",
+   "outcome": "reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him) with decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\") (the modelled line is a worked example of the stem)",
+   "ledgerFile": "references/working-wall-visual-language.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "modelled version directly beneath in purple, a worked example of the stem.",
+     "section": {
+      "heading": "## How the card types serve the visual language",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "a supported child copies the purple; an independent child uses the black.",
+     "section": {
+      "heading": "## How the card types serve the visual language",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "Wrong on the left in red, right on the right in green. The colour split is the teaching.",
+     "section": {
+      "heading": "## How the card types serve the visual language",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "| Card type | Visual identity it's chasing | |---|---| | **Worked example** | The lesson's success-criteria slide, made big and pinned up. Steps as numbered badges down the left, worked example sentence at the bottom. When a `visual` is attached, the diagram sits to the right and the steps to the left, so children read step-then-shape just like on the slide. | | **Labelled diagram** | The anatomy poster — the diagram children read in class, made the whole card, with its parts called out and named in answer-green. The Twinkl \"parts of a …\" reference. The picture teaches by recognition, so a title bar sits above and an optional one-line caption below, and the labels do the rest. Pairs with a worked-example \"how to\" card when the lesson also drills a method (see \"The anatomy poster\" above). | | **Sticky knowledge** | A \"Remember\" poster — one sentence, big, with optional anchor image. Lives somewhere between the FDP poster's body and a single mnemonic page. Photograph or visual anchor on one side when it adds meaning; nothing if it doesn't. | | **Sentence stem** | A \"How to talk about it\" prompt — typically a stem with a blank, or a small menu of stems. No image. The stem itself is the visual — the underline-blank where children's eye lands. When the lesson models the completion, the stem is paired on the card: gappy version on top in black, modelled version directly beneath in purple, a worked example of the stem. The colour split between the two lines is the teaching — a supported child copies the purple; an independent child uses the black. Matches the Twinkl two-card swap (supported → independent) on a single card. | | **Misconception** | The \"Don't/Do\" twin-panel poster. Wrong on the left in red, right on the right in green. The colour split is the teaching. | | **Reference table** | A look-up grid — the same shape children saw on the slides and worksheets, made glanceable. Header bar bold and contrasting; rows light. For a *word* lookup (conjunctions, units) the table is the visual and needs no extra image. For a *classification* lookup (types of line / angle / triangle / shape) a row can carry its defining diagram in a picture column — a cell becomes `{ \"visual\": { … } }` instead of text, and the row pairs the category name with its picture (plus only words the picture can't show), the Twinkl \"Types of …\" poster. This is how the wall stops being a wall of words on the lessons that most need pictures. | | **Vocab definition** | A subject-vocabulary card, identifiable by its green title bar, the green every taught word is on the board. The term in the bar, the child-language definition in the panel, the drawn example to the right. Children learn \"green cards = vocabulary\" through repetition across the unit. | | **Vocab chips** | The lightweight half of the vocabulary identity, sharing the green title bar. A grid of 4–12 short word chips on one A3 landscape page - each chip a green-outlined box on white with the word bold-green in the centre, optionally paired with a small image cue. Reads as the Twinkl \"Vocabulary Cards\" sheet - many related words, one printable page, scanned at a glance. Lives under the same `Vocabulary` zoner as `vocabDefinition` and is designed to coexist with it: definition cards carry the lesson's central terms in depth; chip cards carry the breadth of supporting vocab around them. | | **Equivalence grid** | The Twinkl FDP poster pattern — coloured-row equivalence chart. Each row is a saturated full-width strip in its own colour, drawn primitive on the left, equivalent forms on the right. Children find what they want by hue first, value second. | | **Mnemonic poster** | The Twinkl RUCSAC pattern — a multi-page poster. Page 1 is the summary row of all letters. Pages 2..N+1 are per-letter, each with a giant coloured letter centred and a single phrase below. Wall-dominating; reach for it only when the lesson genuinely teaches a named mnemonic children will use across the unit. | | **Section heading** | A wall *zoner*, not a teaching card. One bordered box across the top of an A3 landscape page - saturated outline, the heading word(s) centred inside it in the renderer's loudest type, the rest of the page left white, no body, no visual. Lives at the boundary between zones (above the vocabulary cards, above the stem cards). The colour of the outline tells the child which zone they're standing in front of, so adjacent headings cycle through the rainbow palette rather than repeating a hue. | | **Banner** | The display title strip pinned across the very top of the wall - Twinkl's `English Working Wall` printed across three A3 landscape pages, one massive word per page. Each page carries a wide saturated rainbow-palette band across the printable width, the word centred on it in huge bold white type with a white margin around the band; adjacent pages cycle the palette so the strip reads as a colour-coded title. Banners label *the wall itself* (what unit or subject it's for) where section headings label *zones inside it*. |",
+     "section": {
+      "heading": "## How the card types serve the visual language",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "a supported child copies the green",
+     "everywhere": true
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "modelled version directly beneath in the green panel accent",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R91",
+   "outcome": "reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him) (the vocabulary cards leave teal for the board's green)",
+   "ledgerFile": "references/working-wall-visual-language.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "Children learn \"green cards = vocabulary\" through repetition across the unit.",
+     "section": {
+      "heading": "## How the card types serve the visual language",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "| Card type | Visual identity it's chasing | |---|---| | **Worked example** | The lesson's success-criteria slide, made big and pinned up. Steps as numbered badges down the left, worked example sentence at the bottom. When a `visual` is attached, the diagram sits to the right and the steps to the left, so children read step-then-shape just like on the slide. | | **Labelled diagram** | The anatomy poster — the diagram children read in class, made the whole card, with its parts called out and named in answer-green. The Twinkl \"parts of a …\" reference. The picture teaches by recognition, so a title bar sits above and an optional one-line caption below, and the labels do the rest. Pairs with a worked-example \"how to\" card when the lesson also drills a method (see \"The anatomy poster\" above). | | **Sticky knowledge** | A \"Remember\" poster — one sentence, big, with optional anchor image. Lives somewhere between the FDP poster's body and a single mnemonic page. Photograph or visual anchor on one side when it adds meaning; nothing if it doesn't. | | **Sentence stem** | A \"How to talk about it\" prompt — typically a stem with a blank, or a small menu of stems. No image. The stem itself is the visual — the underline-blank where children's eye lands. When the lesson models the completion, the stem is paired on the card: gappy version on top in black, modelled version directly beneath in purple, a worked example of the stem. The colour split between the two lines is the teaching — a supported child copies the purple; an independent child uses the black. Matches the Twinkl two-card swap (supported → independent) on a single card. | | **Misconception** | The \"Don't/Do\" twin-panel poster. Wrong on the left in red, right on the right in green. The colour split is the teaching. | | **Reference table** | A look-up grid — the same shape children saw on the slides and worksheets, made glanceable. Header bar bold and contrasting; rows light. For a *word* lookup (conjunctions, units) the table is the visual and needs no extra image. For a *classification* lookup (types of line / angle / triangle / shape) a row can carry its defining diagram in a picture column — a cell becomes `{ \"visual\": { … } }` instead of text, and the row pairs the category name with its picture (plus only words the picture can't show), the Twinkl \"Types of …\" poster. This is how the wall stops being a wall of words on the lessons that most need pictures. | | **Vocab definition** | A subject-vocabulary card, identifiable by its green title bar, the green every taught word is on the board. The term in the bar, the child-language definition in the panel, the drawn example to the right. Children learn \"green cards = vocabulary\" through repetition across the unit. | | **Vocab chips** | The lightweight half of the vocabulary identity, sharing the green title bar. A grid of 4–12 short word chips on one A3 landscape page - each chip a green-outlined box on white with the word bold-green in the centre, optionally paired with a small image cue. Reads as the Twinkl \"Vocabulary Cards\" sheet - many related words, one printable page, scanned at a glance. Lives under the same `Vocabulary` zoner as `vocabDefinition` and is designed to coexist with it: definition cards carry the lesson's central terms in depth; chip cards carry the breadth of supporting vocab around them. | | **Equivalence grid** | The Twinkl FDP poster pattern — coloured-row equivalence chart. Each row is a saturated full-width strip in its own colour, drawn primitive on the left, equivalent forms on the right. Children find what they want by hue first, value second. | | **Mnemonic poster** | The Twinkl RUCSAC pattern — a multi-page poster. Page 1 is the summary row of all letters. Pages 2..N+1 are per-letter, each with a giant coloured letter centred and a single phrase below. Wall-dominating; reach for it only when the lesson genuinely teaches a named mnemonic children will use across the unit. | | **Section heading** | A wall *zoner*, not a teaching card. One bordered box across the top of an A3 landscape page - saturated outline, the heading word(s) centred inside it in the renderer's loudest type, the rest of the page left white, no body, no visual. Lives at the boundary between zones (above the vocabulary cards, above the stem cards). The colour of the outline tells the child which zone they're standing in front of, so adjacent headings cycle through the rainbow palette rather than repeating a hue. | | **Banner** | The display title strip pinned across the very top of the wall - Twinkl's `English Working Wall` printed across three A3 landscape pages, one massive word per page. Each page carries a wide saturated rainbow-palette band across the printable width, the word centred on it in huge bold white type with a white margin around the band; adjacent pages cycle the palette so the strip reads as a colour-coded title. Banners label *the wall itself* (what unit or subject it's for) where section headings label *zones inside it*. |",
+     "section": {
+      "heading": "## How the card types serve the visual language",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "Children learn \"teal cards = vocabulary\"",
+     "everywhere": true
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "identifiable by its teal title bar",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-R95",
+   "outcome": "out of date (decision 14 (settled item 14, \"yes\": out-of-date text corrected to match his rulings or the program)): the ring has been green since 13 September 2026",
+   "ledgerFile": "references/worksheet-helpers/maths.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/worksheet-helpers/maths.md",
+     "text": "highlighted (the one digit that changed, ringed in green, the same ring the board draws).",
+     "section": {
+      "heading": "## Place value",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/worksheet-helpers/maths.md",
+     "text": "**The chart's rows are what make it a teaching picture rather than a grid.** Left alone it is one empty row, and setting instances to 3 gives three empty copies for \"write each of these numbers into a chart\". Give it a rows list instead and each row can be filled (a number handed to the child), empty (a number they write), labelled (what the row IS - \"3,462\", \"10 more\"), and highlighted (the one digit that changed, ringed in green, the same ring the board draws).",
+     "section": {
+      "heading": "## Place value",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/worksheet-helpers/maths.md",
+     "text": "ringed in the question blue",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R97",
+   "outcome": "out of date (decision 14 (settled item 14, \"yes\": out-of-date text corrected to match his rulings or the program)): the summary now matches the catalogue's own `tally-chart` entry",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "reveals that frequency as an answer, on an answer slide; a My Turn models its frequencies in plain black (see `tally-chart`).",
+     "section": {
+      "heading": "### 1.2 Content objects (helpers)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "| Type | What it is | |---|---| | `text` | A block of prose or a single sentence | | `bullets` | A bulleted list | | `steps` | A numbered step list | | `vocab` | Word + definition pairs | | `image` | Photograph or diagram (with optional caption) | | `map` | A real map of a real place, drawn from a map image this package ships, with the lesson's own places, regions and rivers marked on top of it | | `table` | Header row + body rows | | `mult-grid` | A multiplication-facts grid (the SATs \"missing numbers in this multiplication grid\" shape): `×` corner, headers across and down, product cells. Big numbers, blank cells, green `||` answers. Use for a times-tables grid, not the generic `table` | | `matching` | A \"draw a line to match\" layout: two columns of boxes joined by connector lines. One example line on the question, every line green on the answer slide. Use for any match-these-to-those starter or task | | `numberline` | Number line with ticks, question arrow, answer dot, jumps along the spaces and a highlighted interval | | `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters (set `counterLabels: true` on a row for the value on each counter; enlarge the chart if labels cannot fit), and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart | | `fraction-wall` | Stacked rows of equal-width fraction pieces | | `part-whole-model` | One whole circle (left) branching to 2 or 3 part circles (right), with text labels in each. Nodes may also be blank circles to write in, carry a quiet caption underneath, real coins, and a `+` between parts | | `base-ten-blocks` | Dienes blocks in Th / H / T / O columns: thousand cubes, hundred flats, ten rods and unit cubes. Use when the blocks themselves are the representation | | `counter-group` | Place-value counters on their own, grouped by value with an operator between groups, under the claim they are evidence for (\"5,009 = 5,000 + 9\"). Use when two claims sit side by side and a whole chart each would not fit | | `triangle-square` | The \"two triangles add up to the square\" part-whole puzzle in SATs-paper notation: two stacked triangles (left) with arrows pointing into a square (right). Leave one shape blank for the unknown. Use when the lesson recreates this exact paper question type — not the circle-and-line `part-whole-model` | | `coordinate-grid` | A numbered first-quadrant grid with plotted, lettered points; optionally joins the points into a closed shape. Use for reading/plotting coordinates and \"what shape do these coordinates make?\" | | `polygon` | One or more named 2D shapes side by side (square, rectangle, triangle, isosceles/scalene triangle, kite, hexagon…), drawn from true geometry. Use for naming shapes and counting right angles / parallel sides; also draws lines of symmetry — the full set for an answer slide, or a single candidate line to TEST (pass/fail + fold preview) for a teaching slide | | `translation-grid` | A numbered grid showing one marker translated from a start (orange) to an end (blue) position, with a dashed arrow between. Use for \"how far has the shape moved?\" translation work | | `translation-shape` | A numbered coordinate grid showing a WHOLE shape and, with `showImage: true`, its translated image (the same shape slid by the translation) in lighter dashed blue, with a dashed arrow between matching vertices. Use for \"translate this shape\" — the signature translation picture. Leave `showImage` off for the task (original only, child plots the image); set it on for the worked answer. Distinct from `translation-grid` (single markers, not a whole shape) | | `shaded-fraction` | A shape (bar / grid / circle, or a stack of bars) split into equal parts with some shaded green. Use for \"shade one quarter\" and \"what fraction is shaded?\"; set `shaded: 0` for a blank shape children shade in | | `dial-scale` | An analogue round scale (kitchen/weighing dial): 0 at the top, a full turn = `max`, numbered ticks and a needle on `value`. Use for reading a measuring dial | | `line-graph` | A line graph with numbered, titled axes and plotted points joined in order. Use for reading a value off a graph or an interval between two values | | `tally-chart` | A tally chart: a group-label column, a tally column whose counts are drawn as bundles of five (four verticals struck through by a fifth diagonal) and remainder strokes, and an optional Total column. Pass `tally` as a NUMBER per row — the marks are drawn for you. Set `blank: true` for empty tally boxes (sized to the expected marks) children fill in as they collect data. A `total` with the green `||` marker (`\"||12\"`) reveals that frequency as an answer, on an answer slide; a My Turn models its frequencies in plain black (see `tally-chart`). Use for reading or making a tally chart in statistics — the marks, not raw numbers, are the point | | `pictogram` | A pictogram: each row is a category label followed by a series of house-blue symbols, with a key below stating how many units one symbol stands for. A left half-circle stands for HALF the key value (`per` 10, value 45 → four-and-a-half circles). Pass `categories`, `values` and `key: { per, label }`. Use for reading or making a pictogram in statistics — the half-symbol = half-the-key is the Year 4 teaching point | | `bar-chart` | A bar chart with labelled axes and a numbered y-axis scale: the canonical statistics visual. Pass `categories` and `values`; set `y_interval` explicitly so the scale steps in non-unit jumps (it never defaults to 1, because reading a non-unit scale is the Year 4 teaching point). Optional `title`, `y_max`, `y_label`, `x_label`. Use for reading or making a bar chart in data-handling, where the scale you read against (not the bar) is the question | | `label-diagram` | A photo or drawing with a labelled-part overlay: each callout is a dot on the part joined by a leader line to its name. Pass `imagePath` and `callouts` (each `{ anchor:[x%,y%], label, given?, label_at? }`); `given:true` prints the label (the completed/answer diagram), omitting it draws a blank write-on line (the question form). Use for labelling the specific parts of a real diagram (parts of a plant, features of a river, angles on a shape): the leader line is what lets a child map each name to its part, which a corner-callout slide cannot do | | `bar-model` | A general bar model. `shape: \"part-whole\"` is one long rectangle (the whole) divided into 2+ labelled parts; `shape: \"comparison\"` is two stacked bars of different lengths with the shorter bar's shortfall shown as a labelled difference gap. Segment lengths go proportional to part/bar `value`s when given, even otherwise. Any region whose label is empty or ends in `?` becomes a white answer box. Use for money (change, totals), comparison (\"how much more?\") and multi-step reasoning — the White Rose bar children meet from Year 4. Distinct from `part-whole-model` (circles) and `triangle-square` (SATs puzzle) | | `method-frame` | A taught mental strategy printed as a fill-in method: an ordered list of labelled lines (the strategy's own words - \"First, add:\", \"Then, adjust:\") inside a purple \"method\" panel (a worked example's colour), each line a stem in which `___` or `□` becomes a write-in box available for live completion during modelling. Caller sets how many blanks each line carries, so the same frame is shown fully worked, with one blank, or all blank - fade it across a set. The board twin of the worksheet's `method-frame`; for a SINGLE-LINE equation frame use a worksheet `inequality-with-boxes` instead | | `blank-surface` | A DRAW-YOUR-OWN working surface the child constructs on, not a pre-drawn fill-in. `surface: \"number-line\"` is a single faint baseline with a tall empty band above for the child's own jumps (no ticks, no numbers; optional `start`/`end` labels at the ends); `surface: \"bar\"` is one empty rectangle outline to partition (`bars: 2` for a comparison pair). Use when deciding WHERE the jump goes or HOW to partition is the skill. The slide's blank surface shows the class the surface they will draw their own version of. Distinct from `numberline`/`bar-model` (which draw the finished picture with blanks) | | `comparison-slot` | The empty ring a child writes `<`, `>` or `=` into, for the gap between two things being compared. Sized from the room it is given, so it stays in proportion to the charts, bars or numerals either side instead of being pinned to a point size that stops matching them the moment anything beside it changes. Optional `answer` prints the symbol inside the same ring for a reveal. Use this rather than typing a `○` into a text item: a typed circle is text, so it takes a text card and a fixed size, and lines up with nothing | | `numbered-questions` | Stacked question cards with auto blue `(1) (2) (3)` labels, for Apply / independent work | | `question-cards` | The same question set laid out as separate white cards instead of a list: one card per question, a blue number badge on each card's corner, each card at a degree or two of tilt. The cards pack across the zone and the type grows until the set fills the space. A second way to present a question set, not a replacement; see the entry in §4 for which of the two a set belongs in | | `pyramid` | Ranking pyramid: rows of cells stacked from a single cell at the top to wider rows beneath. Used in dialogic lessons for ranking activities (e.g. influences from most to least important) | | `clock` | Analogue clock face, with or without hands. Use for time-telling lessons — My Turn slides show a preset time; Your Turn slides leave the face blank for children to draw on | | `number-network` | Circles joined by lines where every connected pair must add to a fixed target; blank circles show a faint `?` for the child to fill. Use for \"each line adds to 100, find the missing numbers\" addition-network reasoning | | `area-grid` | A squared grid with one or more labelled rectangular patches drawn on it, every square countable. Use for \"each square = 1m², find the area of each patch\" area-by-counting work — the multi-patch case a single `shaded-fraction` bar can't show | | `reflection-grid` | A dot grid with a mirror line and a shape on one side; set `showReflection` to add the reflected shape in green on the answer slide. The mirror runs vertical, horizontal, or on either 45° **diagonal** (`diagonal-up`/`diagonal-down`). Use for \"reflect this shape in the mirror line\" symmetry work, where the unnumbered dots and equal-distance reflection are the point | | `grid-map` | A schematic river-town map on a **numbered four-figure grid** — eastings along the bottom, northings up the side, the numbers sitting ON the grid lines at the corners (read along the bottom, then up the side). A blue river winds through with a meander, features sit inside their squares, and an optional ring marks one square's bottom-left corner. Use for \"read the human/physical features and four-figure grid references off the map\" geography/maths work; the `highlightSquare` ring models reading a reference on the Teach slide | | `geographical-description-frame` | A blank three-part writing frame headed Biome, Location, and Features from evidence. It prompts for a biome meaning and example, a continent and more than one country, and two features linked to map or photograph evidence | | `rainforest-layers` | A cross section of a tropical rainforest — four stacked bands, top to bottom: emergent (a few very tall widely spaced trees), canopy (an unbroken roof of overlapping treetops), understorey (thin trunks and large leaves), forest floor (dark ground, leaf litter and roots). The **band tint is the light gradient**, brightest at the top and near dark at the floor, so the diagram teaches the light idea just by looking right. Toggle `labels`, `heights` and `light` (sun, arrows thinning band by band, \"about 2 rays in every 100\"); `notes` prints a short phrase under a layer's name, which is where what a layer is *like* belongs rather than in a text panel beside the picture; `highlight` takes a pair of layer names and dims the other two, so the same diagram carries a whole lesson slide by slide; `blank` gives the write-on form. Use for any \"describe the layers of a rainforest\" geography work | | `parachute-forces` | A front-view fair-test schematic of two billowed-sheet model parachutes. It fixes canopy widths at exactly 3:1, derives equal Euclidean suspension-cord lengths, keeps the loads identical, and distinguishes the air-resistance arrows qualitatively while gravity arrows remain equal. Use after practical evidence is pooled to explain why canopy size changes falling time | | `balanced-pattern-plate` | A neutral broad proportional food-group plate: larger fruit-and-vegetable and starchy-carbohydrate areas, smaller protein and dairy-or-alternative areas, and a very small oils-and-spreads area. The five proportions are the fixed thing the picture teaches and no field changes them; everything you set is words. Each group takes its own label and up to four short examples, and the drawing measures them, so a longer label wraps, shrinks, and moves out to a labelled card beside the plate rather than being clipped. `mode: \"practice\"` keeps the identical sectors and turns whichever groups you name into pupil-decision spaces. Water sits beside it; foods high in fat, salt or sugar have a separate \"less often / small amounts\" cue. Never use calorie, weight-loss, moral, or bad-food labels. | | `geoboard` | A grid of evenly spaced pegs (dotty paper) with zero, one, or many straight-line shapes drawn on by their vertices. A general workspace: blank dotty paper to draw on, a single shape to name, a square turned 45° on diagonal pegs (\"it's not a diamond\"), or several shapes to sort. Not limited to four sides — triangles, pentagons, irregular and open paths all work. Use for shape, area, perimeter, symmetry and \"how many shapes can you make?\" investigations. Unnumbered (unlike `coordinate-grid`); a free drawing surface, not a reflection task (unlike `reflection-grid`) | | `measuring-jug` | A jug with a vertical graduated scale: 0 at the bottom up to `max`, numbered ticks, and an optional coloured liquid level. Use for \"read the level\" / \"mark 250ml\" capacity work — the vertical scale the round `dial-scale` can't represent | | `turn-diagram` | An \"angle as a turn\" picture: two black rays from a vertex (the start ray points up) with a red curved arrow showing the rotation. Set `quarters` (1/2/3/4) and `direction` (clockwise/anticlockwise); optional `countMarks` numbers the quarter steps along the arc. Use for identifying or matching turns — the White Rose \"match the turns to the labels\" shape. This is the turn *measure* between two rays, not the distance along a line | | `angle` | A *static* angle: two black arms from a vertex with a blue arc marking the opening, or a blue right-angle square at 90°. No rotation arrow — this is the angle that exists *after* a turn, for children to classify as acute / obtuse / right. Set `degrees` (1–179, never shown — only sets how open it's drawn) and optional `rotation` so a set isn't all the same way up. The classify-the-angle companion to `turn-diagram` | | `triangle` | A triangle to classify **by its sides** — a filled blue polygon with tick-mark dashes showing equal sides (same number of dashes = equal). Set `kind` (`scalene`/`isosceles`/`equilateral`/`right`) and the dashes and right-angle square are chosen to match; optional `rotation`, `angleArcs`, custom `sides`/`ticks`. The classify-the-triangle primitive | | `triangle-nonexample` | A shape that is *not* a triangle, for the concept-attainment sort (`shape`: `open`/`curved`/`quad`). Use alongside `triangle` to ask \"which are triangles and which aren't?\" | | `line-pair` | A pair of straight black lines arranged to show one relationship — parallel, perpendicular, or neither — for children to judge and mark. Set `relationship` and `form` (the arrangement: horizontal/vertical/diagonal parallel; cross/L/T/detached perpendicular; converging/slant non-examples), optional `notation` (`arrows` for chevron parallel marks, `right-angle` for the blue square, default `none` bare lines), and `rotation` so a set isn't all the same way up. The identify-parallel-and-perpendicular primitive | | `circuit-diagram` | A large standard-symbol series circuit with one path and no branches. Set cells or a battery, lamps, buzzers, switch state and whether the path is complete or has a deliberate gap. Use for reading, comparing and reasoning about primary circuit diagrams, not as a realistic equipment picture. Standard circuit symbols are Year 6 work (`subject-science.md`); a Year 4 lesson shows a labelled photograph of a real circuit instead (`label-diagram` on the photograph). | | `circuit-symbol-bank` | A stable row of individually identifiable standard circuit symbols with labels. Use when children need the component-symbol reference itself: cell, lamp, wire, open switch and closed switch remain separate visual items rather than being extracted from one complete circuit | | `chip-bank` | A set of short labels drawn as distinct rounded pills (chips) that wrap across the zone and centre — a word bank, a property-label set, an option set, sorting categories. Set `chips` (the labels), an optional `title`, and a colour `variant` (`blue`/`yellow`/`green`). Use whenever the slide shows a *bank to pick from*; reads as a bank of options where a middot-joined string reads as one flat line of fake bullets | | `venn` | A Venn sorting diagram: two overlapping labelled circles inside a rectangular box (the \"universe\"), with shapes placed in four regions — left circle only, right circle only, the overlap (fits BOTH), or outside both circles but inside the box (fits NEITHER). Set `label1`/`label2` (the circle criteria). Omit `shapes` for a BLANK labelled frame the teacher/children place into live (faint \"both\"/\"neither\" hints show the regions); pass `shapes` to show named tokens already sorted. Use for sort-by-two-criteria work — the overlap and the outside region are the point | | `carroll` | A Carroll sorting diagram: a 2×2 grid with a paired row criterion down the side (is / is NOT) and a paired column criterion across the top (is / is NOT), so every shape lands in one of four cells. Set `rowLabel`/`rowNotLabel` and `colLabel`/`colNotLabel`. Omit `shapes` for a BLANK labelled grid; pass `shapes` (each `{ cell, label }`, cell = topLeft/topRight/bottomLeft/bottomRight) to show tokens already sorted. The grid companion to `venn` — every cell means its row label AND its column label together | | `money` | UK coins and notes drawn from plugin-shipped assets - a pile, a row, or two groups split by a `|` sentinel | | `stack` | A container placing its items one above another inside a zone | | `row` | A container placing its items side by side inside a zone | | `diamond-nine` | The ranking diamond: nine cells in the 1-2-3-2-1 shape, most important at the top | | `continuum-line` | An agree/disagree (or any two-pole) line with marks a class positions ideas along | | `timeline` | A history timeline: named era bands sitting on a bold line, with dated ticks hanging beneath. Every position is a fraction the designer chooses, worked out from the real dates; every surface draws the same figure from the same fields | | `fishbone` | A cause-and-effect fishbone: a spine to the effect, angled ribs carrying causes | | `ruler` | A ruler with centimetre (or millimetre) marks, an optional arrow at a point and an optional bar to measure. On the slide it is a picture of a scale; on paper it prints at true size | | `process-chain` | Boxes joined by arrows: a food chain, a life cycle, the order of events. An empty box is one the child fills | | `classification-key` | A branching yes/no identification key down to named answers | | `concept-map` | A radial concept map: a centre idea with spokes to connected ideas | | `callout` | A small coloured box holding one short line of text, with an arrow leaving any side of it to point at the thing the line is about — the chart above it, the number line beside it, a part of a photograph. Set `points` (up/down/left/right) and `at` (how far along that edge the arrow tip lands). Key words in the line carry colour with the ordinary inline markers. Use whenever a slide needs to point at its own content and say one thing about it, instead of leaving that sentence to a text panel or the speaker notes | | `sc-panel` | Wraps a success criteria in its green \"✓ Success Criteria\" box, so the criteria reads as the standard wherever it sits — use when the success criteria has to go somewhere the `maths-*-sc` panel can't reach (a wide visual reference in a full-width strip, a free-template zone). Inside a `*-sc` template's own criteria slot the box is already drawn, so there pass the bare criteria, not this. Carries an optional `flipchart: true` for a draw-live criteria — same corner flipchart drawing as the `*-sc` panels; set it on the `sc-panel` object itself here with `criteriaRef` naming the displayed source criterion |",
+     "section": {
+      "heading": "### 1.2 Content objects (helpers)",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "for the modelled rows on a My Turn and the whole column on an answer slide",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-Y64",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (and decision 14 (settled item 14, \"yes\": out-of-date text corrected to match his rulings or the program): \"and of nothing else\" overstated the rule)",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "(a verb is never blue on its own: the whole line is blue only when it is a question or a short task);",
+     "section": {
+      "heading": "## 4. Content object catalogue",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `core-action` - bold, in the line's own colour, for the survival phrase (a verb is never blue on its own: the whole line is blue only when it is a question or a short task); - `task-action` - bold, in the line's own colour, for an existing action verb or short action phrase inside a multi-phase task; - `required-material` - bold single underline; - `response-demand` - bold single underline; - `reasoning-demand` - bold single underline; - `problem-state` - bold problem red for a failed/wrong state; - `safety-warning` - bold problem red for exact source-authored safety wording; - `vocabulary` - bold vocabulary green.",
+     "section": {
+      "heading": "## 4. Content object catalogue",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "house blue stays the colour of a question and of nothing else",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-Y68",
+   "outcome": "corrected: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (a table's deciding word in bold, not blue, and bold names where it shows nothing); its second quote follows decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\")",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 2,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "The common use is `**bold**` on the deciding word of a branch/lookup table",
+     "section": {
+      "heading": "### `table`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "The first column is bold throughout, so a deciding word there takes no mark: bold shows nothing in it. `[[ ]]` is question blue, and a deciding word is not a question.",
+     "section": {
+      "heading": "### `table`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "A completed prepared example or `visible-in-unit` model is a worked example, but a cell takes no colour role, so in a table it stays the table's black.",
+     "section": {
+      "heading": "### `table`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "**Inline emphasis in cells.** Body cells accept the inline markers (`**bold**`, `[[focus-blue]]`, `{{answer-green}}`, `<<supplied-orange>>`) and `\\n` line breaks — see the slide-designer's answer-format guidance for each. The common use is `**bold**` on the deciding word of a branch/lookup table (the word that changes row to row), so a child's eye lands on it rather than reading every word at equal weight. The first column is bold throughout, so a deciding word there takes no mark: bold shows nothing in it. `[[ ]]` is question blue, and a deciding word is not a question. `<<x>>` tints a supplied/given value orange — a figure the question hands the child to work from, as distinct from the answer (`||`/`{{ }}`, green). Green answer markers are allowed only on answer/reveal slides. A completed prepared example or `visible-in-unit` model is a worked example, but a cell takes no colour role, so in a table it stays the table's black.",
+     "section": {
+      "heading": "### `table`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "The common use is `[[ ]]` on the deciding word",
+     "everywhere": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "model uses ordinary black text",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "PF-Y70",
+   "outcome": "corrected: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (a worked example the lesson shows is wrong is not printed as an answer) and his later answer on it, \"purple is fine\": a worked row is `worked: true`, purple",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "A worked chain is a worked example, not an answer, and a worked example is purple, a mistaken one included: mark its rows `worked: true` (below) and never `answer`, because green tells a child the number is right.",
+     "section": {
+      "heading": "### `place-value-chart`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `worked`: `true` marks the row as part of a worked example the class watches, finished or about to be shown wrong, and prints its digits in the worked-example purple, the sticky fact's colour.",
+     "section": {
+      "heading": "### `place-value-chart`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `label` — a short caption in a column at the left of the row, naming what the row is. Three rows of digits with nothing saying how they relate is a picture a child cannot read; \"3,462\", \"10 more\", \"100 more\" makes it one. - `highlight` — which cell(s) of that row to pick out, named by their column (`[\"T\"]`, or several: `[\"H\", \"T\"]`). A position works too (`[2]`), but the column name is what a designer means. The cell keeps its column colour and gains a thick green ring with the digit in green, so \"which column changed\" reads from the back of the room while the column coding still holds. - `answer`: `true` marks the row as a RESULT, and prints its digits in answer green with no ring. Use it on a reveal: the completed rows of a rounding chart on an Answers slide, where the original number stays black above them because it is the one row that is not an answer. Leave it off while the row is blank for live completion; a blank cell is not a revealed answer and nothing is coloured. It is not the same as `highlight`, and the two mean different things: a ring says \"this is the digit that CHANGED\" and belongs on one cell, while `answer` says \"this whole row is what we worked out\". A worked chain is a worked example, not an answer, and a worked example is purple, a mistaken one included: mark its rows `worked: true` (below) and never `answer`, because green tells a child the number is right. - `worked`: `true` marks the row as part of a worked example the class watches, finished or about to be shown wrong, and prints its digits in the worked-example purple, the sticky fact's colour. A row is `answer` or `worked`, never both. Every digit on a worked row is purple, the ringed one included, and so is its ring: nothing on a worked row is green, so a wrong digit is never printed as right. - `counters` — optional populations keyed by column, for example `{ \"Th\": 3, \"H\": 4, \"T\": 6, \"O\": 2 }`. The helper draws that many equal place-value counters inside each named column and keeps the written `cells` as a separate digit row underneath. A zero counter population is empty but a `\"0\"` in `cells` remains visibly written, so the placeholder stays aligned. Omit `counters` to fade to the original compact digit-only chart.",
+     "section": {
+      "heading": "### `place-value-chart`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "Correctness is not the test.",
+     "everywhere": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "still prints green, because green marks what the number IS",
+     "everywhere": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "green marks what the number IS",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-Y74",
+   "outcome": "kept, and decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) corrected beside it: a taught word in a bank is written `{{word}}` and prints green (the chip-bank code)",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 1,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "`yellow` — the warm word-bank look (pale yellow fill, orange outline, black text), matching the White Rose word banks. Use for a vocabulary / word bank.",
+     "section": {
+      "heading": "### `chip-bank`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "**A taught word in a bank is green, in any variant.**",
+     "section": {
+      "heading": "### `chip-bank`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "\"chips\": [\"{{square}}\", \"{{rectangle}}\", \"{{rhombus}}\", \"{{parallelogram}}\", \"{{trapezium}}\"] }",
+     "section": {
+      "heading": "### `chip-bank`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "**`variant` field (optional, default `blue`):** the colour identity, picked from the house palette so a bank reads as part of the set. - `blue` — neutral default (sticky-blue fill, blue outline + text). Use for a property-label set or a general option set. - `yellow` — the warm word-bank look (pale yellow fill, orange outline, black text), matching the White Rose word banks. Use for a vocabulary / word bank.",
+     "section": {
+      "heading": "### `chip-bank`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "**A taught word in a bank is green, in any variant.** Write a chip that is one of this lesson's taught words as `{{square}}`: it prints in vocabulary green, as a taught word does everywhere a child reads it, and the braces never print. Other chips keep the variant's own text colour. - `green` — the scaffold/support identity (the same green children meet on every scaffold), for a bank offered as help.",
+     "section": {
+      "heading": "### `chip-bank`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "A titled word bank of the lesson's taught words in the warm variant (the White Rose word-bank look), each marked so it prints green: ```json { \"type\": \"chip-bank\", \"title\": \"Word bank\", \"variant\": \"yellow\", \"chips\": [\"{{square}}\", \"{{rectangle}}\", \"{{rhombus}}\", \"{{parallelogram}}\", \"{{trapezium}}\"] } ```",
+     "section": {
+      "heading": "### `chip-bank`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "PF-Y76",
+   "outcome": "corrected: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (a callout's colours are the board's; green is not a callout colour)",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "`\"black\"` (default) an observation about what happened or what is true, black like every statement on the board;",
+     "section": {
+      "heading": "### `callout`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "Green is not a callout colour: a green edge round black words is a frame, not an answer,",
+     "section": {
+      "heading": "### `callout`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "Fields: - `text` — the one line. Keep it short: a callout is a sentence a child reads in a glance while looking at something else, not a paragraph. - `points` — which way the arrow goes: `\"up\"`, `\"down\"`, `\"left\"`, `\"right\"`, or `\"none\"` for a plain note box with no arrow. (`\"top\"`/`\"bottom\"` are accepted as the same thing as up/down.) Default `\"up\"`. **Always state it** — the arrow's direction is the whole content of the pointing, and the default is only right for the commonest case, a note sitting under the thing it describes. - `at` — how far along the pointed-at edge the arrow tip lands, `0` to `1` (default `0.5`, the middle). This is what lets the arrow reach the tens column rather than the middle of the chart. For `left`/`right` it runs top-to-bottom instead. - `reach` — inches the tip is carried *past* the edge of the callout's own zone, `0` to `1.6` (default `0`). See \"how to place one\" below; a callout that needs a big reach usually wants a different split instead. - `placement` - used only when `points` is `\"none\"`. Choose `\"left\"`, `\"center\"` or `\"right\"` to anchor the plain box inside its zone. The unchanged default is `\"right\"`. - `variant` — the box's colour, and what it says about the line, in the board's own colour meanings: `\"black\"` (default) an observation about what happened or what is true, black like every statement on the board; `\"blue\"` a question the class answers, whose words go in `[[ ]]` so they print blue like every other question; `\"orange\"` information the question supplies; `\"purple\"` the objective. Green is not a callout colour: a green edge round black words is a frame, not an answer, so an answer inside a callout carries its own green marker on its words.",
+     "section": {
+      "heading": "### `callout`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "`\"green\"` (default) an observation",
+     "everywhere": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "`\"blue\"` the thing being decided on",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-Y77",
+   "outcome": "corrected: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (a word inside a statement stays black; the ledger's own example; a callout's line is bold throughout, so bold picks out nothing there)",
+   "ledgerFile": "references/templates.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/templates.md",
+     "text": "So \"The tens column changes.\" stays black, because a statement is black on every slide and `[[ ]]` is kept for a question; and a callout's line is bold throughout, so no word in it is picked out by `**bold**`.",
+     "section": {
+      "heading": "### `callout`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "\"text\": \"The tens column changes.\",",
+     "section": {
+      "heading": "### `callout`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "**Key words carry colour with the ordinary inline markers** — there is no separate colouring field. `[[ ]]` is question blue, `{{sum}}` answer green, `<<358>>` supplied orange, `**not**` plain bold stress. So \"The tens column changes.\" stays black, because a statement is black on every slide and `[[ ]]` is kept for a question; and a callout's line is bold throughout, so no word in it is picked out by `**bold**`.",
+     "section": {
+      "heading": "### `callout`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "```json { \"type\": \"callout\", \"text\": \"The tens column changes.\", \"points\": \"up\", \"at\": 0.55 } ```",
+     "section": {
+      "heading": "### `callout`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/templates.md",
+     "text": "The [[tens]] column changes.",
+     "everywhere": true
+    },
+    {
+     "file": "references/templates.md",
+     "text": "`[[tens]]` is focus blue",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-J13",
+   "outcome": "out of date (decision 14 (settled item 14, \"yes\": out-of-date text corrected to match his rulings or the program)): a one-line pointer to Question Labelling; the lone-(1) history is in the build log",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "The profile calibrates how numbering is *seen*, not which lessons get numbered work: numbering follows the Question Labelling rules in `preferences.md`, and this profile adds no numbering rule of its own.",
+     "section": {
+      "heading": "## Question numbering boundary",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "The profile calibrates how numbering is *seen*, not which lessons get numbered work: numbering follows the Question Labelling rules in `preferences.md`, and this profile adds no numbering rule of its own. Where a template letters a set (a teacher-led Maths Our Turn of two or more discrete questions, the first opening the sequence), that is the renderer's Question Labelling behaviour, not a rule the profile owns.",
+     "section": {
+      "heading": "## Question numbering boundary",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "A lone (1) on the circuit calibration was not identified as an intentional teacher correction.",
+     "everywhere": true
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "does not establish that a single main-independent question should lose its normal numbering",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-R72",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) makes its blue task line right (a leftover `Explain.` is a short task), and it now names the role that makes it blue, without which the check refuses it",
+   "ledgerFile": "references/slide-speech-and-characters.md",
+   "quotesStillWordForWord": 2,
+   "quotes": 3,
+   "present": [
+    {
+     "file": "references/slide-speech-and-characters.md",
+     "text": "a separate task line outside the bubble, in question blue as the child's short task (`colorRole: \"task-blue\"`).",
+     "section": {
+      "heading": "## The bubble holds only the spoken words",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/slide-speech-and-characters.md",
+     "text": "- The quoted claim - and nothing else - goes in the bubble. A bubble is the character speaking, so it holds only words the character would actually say, in their own voice. `Dev says:` inside Dev's own bubble makes him narrate himself in the third person, and a task instruction in his mouth makes him set his own test. - The attribution (`Dev says:`) is already carried by the named portrait under the bubble. It is never printed. - The judging question (`Is Dev right? Explain.`) is the pupils' task, not Dev's speech. It becomes the slide's open title (`Is Dev right?`) and, where wording remains (`Explain.` / `Explain how you know.`), a separate task line outside the bubble, in question blue as the child's short task (`colorRole: \"task-blue\"`).",
+     "section": {
+      "heading": "## The bubble holds only the spoken words",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/slide-speech-and-characters.md",
+     "text": "a separate task line in question blue outside the bubble.",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "PF-B56",
+   "outcome": "reworded: decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black) (a short task takes its blue beside the question's); pinned whole, since the second check added \"while every instruction stays black\" to it and nothing failed",
+   "ledgerFile": "references/teacher-slide-visual-profile.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "A statement followed by the question or instruction it sets up splits there, and a question or a short task takes its blue per Semantic colour",
+     "section": {
+      "heading": "## Paragraph rhythm",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "The telling-to-asking boundary is always a break. A statement followed by the question or instruction it sets up splits there, and a question or a short task takes its blue per Semantic colour - the same boundary drives both the break and the colour, so a child sees at a glance where the explanation stops and their job starts.",
+     "section": {
+      "heading": "## Paragraph rhythm",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "and a question takes its blue per Semantic colour",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "SA-D21",
+   "outcome": "folded into the visual profile's Semantic colour, which owns the grammar (the change plan's homes table); preferences keeps his words and a pointer that names every part; the profile's starter line carries it (the starters list's copy of PF-R02's exception); decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black)",
+   "ledgerFile": "references/preferences.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- **The starter is the one place a question is normally black.**",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Where a starter carries several, alternate them black, blue, black, blue:",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "the starter's questions, which stay black or alternate",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/preferences.md",
+     "text": "**Blue asks or sets a short task, and a worked example is purple.** In the teacher's words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer.\" So a question or a short task, the child's job, is blue (`Explain your answer.`, `Write one reason.`), and a longer instruction about how to go about it stays black (`Use the shaded map.`). A job that names what to use is still the job, and blue: asked whether `Explain your answer using the photograph.` is blue, he said \"y\" (25 September 2026). A worked example is purple, the same colour as a sticky fact: \"worked example purple too\". `teacher-slide-visual-profile.md` → Semantic colour owns the whole grammar, and the slide designer reads it in full: blue's other jobs (titles and short labels), how a short task is marked, the starter's questions, which stay black or alternate, the split at the boundary between telling and asking, the peer colours and their limits, action verbs, how a worked example is marked, supplied orange, the one orange line, red, and what the check refuses.",
+     "section": {
+      "heading": "### Slide Designer presentation rules",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/preferences.md",
+     "text": "Starter questions are the exception and stay black, alternating black, blue, black, blue when there are several of them.",
+     "everywhere": false
+    }
+   ]
+  },
+  {
+   "id": "SA-I14",
+   "outcome": "reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him) with decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\"): the worked-example card is purple and shares it with the sticky fact, so the card's shape says method or fact",
+   "ledgerFile": "references/working-wall-visual-language.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "If the lesson teaches a procedure, that is a `workedExample` card; it goes on a purple panel with its steps numbered down the left.",
+     "section": {
+      "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "numbered steps ending in a worked example say method, one sentence says fact, and a procedure on a sticky card reads as a fact, not a method.",
+     "section": {
+      "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "**Your job:** don't fight the type system. If the lesson teaches a procedure, that is a `workedExample` card; it goes on a purple panel with its steps numbered down the left. Don't try to use a `stickyKnowledge` card to carry a procedure because the wording feels easier. The two share purple, so children read the type from the card's shape: numbered steps ending in a worked example say method, one sentence says fact, and a procedure on a sticky card reads as a fact, not a method.",
+     "section": {
+      "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "it goes on a green panel, with the green identity",
+     "everywhere": true
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "a procedure on a blue panel reads as a fact",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "SA-I15",
+   "outcome": "reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him): the sticky card says \"fact\" by its shape",
+   "ledgerFile": "references/working-wall-visual-language.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "| A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. |",
+     "section": {
+      "heading": "## Anti-patterns — what breaks the visual language",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do. | | A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
+     "section": {
+      "heading": "## Anti-patterns — what breaks the visual language",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "Children stop trusting the colour grammar across the unit.",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "SA-I16",
+   "outcome": "reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him)",
+   "ledgerFile": "references/working-wall-visual-language.md",
+   "quotesStillWordForWord": 0,
+   "quotes": 1,
+   "present": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "purple for a fact to keep and for a worked example (the board's sticky and worked-example purple), green for taught words and for the right answer beside a red wrong one, blue for titles and headers,",
+     "section": {
+      "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "The body sits on a bold-bordered, strong-coloured panel. Each card type has its own panel identity, and each colour means what it means on the board, so a child reads one colour language across the room: purple for a fact to keep and for a worked example (the board's sticky and worked-example purple), green for taught words and for the right answer beside a red wrong one, blue for titles and headers, and a neutral panel for a sentence stem or a reference table, where a taught word inside stays green. This is how children learn what each card is for without anyone telling them.",
+     "section": {
+      "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": [
+    {
+     "file": "references/working-wall-visual-language.md",
+     "text": "green for worked examples, blue for sticky knowledge, red/green pair for misconceptions",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "COL-ADD-01",
+   "outcome": "added by decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black): a short task is marked by the designer with `colorRole: \"task-blue\"`, drawn in house blue; the check refuses every other blue line that asks nothing, and a task-blue line the spec shows is not a short task (the reveal mark, a sticky fact by its sparkle or the design's words, the design's answer, a statement or task before a question, two sentences that are not questions); the role never makes a slide's turn, and the turn's verb list gains the saved decks' openers",
+   "present": [
+    {
+     "file": "builder/src/presentation-text.js",
+     "text": "'task-blue',",
+     "section": null
+    },
+    {
+     "file": "builder/src/presentation-text.js",
+     "text": "if (role === 'task-blue') return COLOURS.title;",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "if (nodeIsBlue(node) && node.colorRole !== 'task-blue' && typeof whole === 'string') {",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "signal: 'TASK_BLUE_NOT_A_SHORT_TASK',",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "if (TASK_BLUE_REVEAL.test(whole)) {",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "if (whole.trim().startsWith('✨') || facts.sticky.has(plainLine(whole))) {",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "if (facts.answers.has(plainLine(whole))) {",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "return `it holds ${tasks.length} sentences that are not questions, and a short task is one`;",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "if (tasks.length === 1 && sentences[sentences.length - 1].endsWith('?')) {",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": ".concat(taskBlueWarnings(lesson, jsonPath))",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "const ownColour = [node.color, node.colour].find((c) => typeof c === 'string' && c.trim());",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "else if (node.colorRole === 'task-blue' && taskBlueAsks(node)) found = true;",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "'pick', 'place(?! value)', 'plan', 'plot', 'point', 'prove', 'put', 'read',",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "'nothing. Blue is for a question children answer, and for the ' +",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "'label. Colour does not make a line a task: a statement or an instruction ' +",
+     "section": null
+    },
+    {
+     "file": "references/templates.md",
+     "text": "one line holds one task;",
+     "section": {
+      "heading": "## 4. Content object catalogue",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-02",
+   "outcome": "added by decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black): the header's small cue stays black, because it is advice on how to go about the task",
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "The cue is drawn black. It tells a child how to go about the task, and advice stays black; the job it helps with is in the body, in blue.",
+     "section": {
+      "heading": "## Main task prominence and the header cue",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-03",
+   "outcome": "added by decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black): the callout's default is black and green is not one of its colours",
+   "present": [
+    {
+     "file": "builder/src/content/callout.js",
+     "text": "black: { fill: 'F2F2F2', line: COLOURS.body },",
+     "section": null
+    },
+    {
+     "file": "builder/src/content/callout.js",
+     "text": "const DEFAULT_VARIANT = 'black';",
+     "section": null
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-04",
+   "outcome": "added by decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black): a chip written `{{word}}` prints in vocabulary green without its braces",
+   "present": [
+    {
+     "file": "builder/src/content/chip-bank.js",
+     "text": "const TAUGHT_CHIP = /^\\{\\{([\\s\\S]+)\\}\\}$/;",
+     "section": null
+    },
+    {
+     "file": "builder/src/content/chip-bank.js",
+     "text": "color: c.taught ? COLOURS.green : variant.text,",
+     "section": null
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-05",
+   "outcome": "added by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\"): a worked line takes `worked-purple`; the method frame is purple on the board and on the sheet; the profile and the catalogue say so",
+   "present": [
+    {
+     "file": "builder/src/styles.js",
+     "text": "worked: '7030A0',",
+     "section": null
+    },
+    {
+     "file": "builder/src/presentation-text.js",
+     "text": "'worked-purple'",
+     "section": null
+    },
+    {
+     "file": "builder/src/presentation-text.js",
+     "text": "if (role === 'worked-purple') return COLOURS.worked;",
+     "section": null
+    },
+    {
+     "file": "builder/src/content/method-frame.js",
+     "text": "const PANEL_LINE = COLOURS.worked;",
+     "section": null
+    },
+    {
+     "file": "builder/src/content/method-frame.js",
+     "text": "const TITLE_COLOUR = COLOURS.worked;",
+     "section": null
+    },
+    {
+     "file": "worksheet-html/src/tokens.js",
+     "text": "worked: \"#7030A0\",",
+     "section": null
+    },
+    {
+     "file": "worksheet-html/src/helpers/methods.js",
+     "text": ".h-mframe-framed.h-mframe-worked { border-color: var(--colour-worked); }",
+     "section": null
+    },
+    {
+     "file": "worksheet-html/src/helpers/methods.js",
+     "text": ".h-mframe-worked .h-mframe-title { color: var(--colour-worked); }",
+     "section": null
+    },
+    {
+     "file": "worksheet-html/src/helpers/methods.js",
+     "text": "return !segs.some((s) => s.box) && segs.some((s) => /\\d/.test(s.text));",
+     "section": null
+    },
+    {
+     "file": "builder/src/content/steps.js",
+     "text": "splitAnswerRuns(step.text, true, step.worked ? COLOURS.worked : undefined)",
+     "section": null
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "hex: take the `color` off and keep `colorRole: \"task-blue\"`.",
+     "section": null
+    },
+    {
+     "file": "stick-in-sheets-html/build.js",
+     "text": "const captionText = withoutTaughtMarks(moments.length === 1",
+     "section": null
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "and the sheet's method frame matches it when it shows worked numbers; an empty one, the child's to fill in every box, keeps its ink edge and blue heading.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/worksheet-helpers/maths.md",
+     "text": "A frame that shows worked numbers, one line or more worked right through, is a worked example and takes the worked-example purple on its edge and heading, as on the board; a frame the child fills in every line keeps its ink edge and blue heading.",
+     "section": {
+      "heading": "## `method-frame`: the taught strategy in words",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "An ordered list of labelled lines inside a purple \"method\" panel, the worked-example colour (the same purple as a sticky fact):",
+     "section": {
+      "heading": "### `method-frame`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `title` — optional purple heading above the lines",
+     "section": {
+      "heading": "### `method-frame`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `frame` — draw the purple panel behind the lines.",
+     "section": {
+      "heading": "### `method-frame`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/templates.md",
+     "text": "- `worked-purple` - a worked example the class sees finished (a prepared example, a `visible-in-unit` model), in the sticky fact's purple, never answer green; a place-value chart row takes `worked: true` instead, and any other drawn figure keeps its own colours.",
+     "section": {
+      "heading": "## 4. Content object catalogue",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- A worked example is purple, the same colour as a sticky fact.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Purple does not reach a figure with no purple of its own (a number line, a bar model, a tally, a table's cells), a worksheet's first worked row, or the good card of a strong-and-weak pair: those keep their own colours.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "builder/src/teach-layouts.js",
+     "text": ".filter((k) => !(k === 'colorRole' && value.colorRole === 'worked-purple'));",
+     "section": null
+    },
+    {
+     "file": "builder/src/teach-layouts.js",
+     "text": "else if (slot.worked) out.colorRole = 'worked-purple';",
+     "section": null
+    },
+    {
+     "file": "builder/src/teach-layouts.js",
+     "text": "return { text: words, colorRole: 'worked-purple' };",
+     "section": null
+    },
+    {
+     "file": "builder/src/teach-layouts.js",
+     "text": "if (item.worked && role === 'extract') {",
+     "section": null
+    },
+    {
+     "file": "references/templates.md",
+     "text": "The lines of a worked example, a prepared model the class sees finished, take `\"colorRole\": \"worked-purple\"` and print purple;",
+     "section": {
+      "heading": "#### `teach-layout`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "builder/src/content/steps.js",
+     "text": "worked: step.colorRole === 'worked-purple'",
+     "section": null
+    },
+    {
+     "file": "builder/src/content/steps.js",
+     "text": "color: step.worked ? COLOURS.worked : COLOURS.body,",
+     "section": null
+    },
+    {
+     "file": "builder/src/content/steps.js",
+     "text": "const badgeColour = step.worked ? COLOURS.worked : COLOURS.green;",
+     "section": null
+    },
+    {
+     "file": "builder/src/validate.js",
+     "text": "if (step.colorRole === 'worked-purple') return;",
+     "section": null
+    },
+    {
+     "file": "references/templates.md",
+     "text": "A step of a worked example set out as steps is `{ \"text\": \"...\", \"colorRole\": \"worked-purple\" }`: its words and its number print purple, the worked example's colour, and the build refuses any other role on a step.",
+     "section": {
+      "heading": "### `steps`",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-06",
+   "outcome": "added by decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him): the wall's palette in the board's meanings (every value the mapping decided), its parts in the board's category colours, a part's answer green, and the board's colour marks drawn on the wall",
+   "present": [
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"stickyTitleBarFill\": \"7030A0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"stickyPanelFill\": \"EDE3F5\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"stickyPanelLine\": \"7030A0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"stickyLabel\": \"7030A0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"workedExampleTitleBarFill\": \"7030A0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"workedExamplePanelFill\": \"EDE3F5\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"workedExamplePanelLine\": \"7030A0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"workedExampleLabel\": \"7030A0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"sentenceStemTitleBarFill\": \"0070C0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"sentenceStemPanelFill\": \"F4F6FA\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"sentenceStemPanelLine\": \"7F7F7F\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"sentenceStemLabel\": \"7030A0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"sentenceStemBullet\": \"000000\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"misconceptionTitleBarFill\": \"0070C0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"referenceTableHeaderFill\": \"0070C0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"vocabDefinitionTitleBarFill\": \"00B050\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"vocabDefinitionPanelFill\": \"D5F5E3\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"vocabDefinitionPanelLine\": \"00B050\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"equivalenceGridTitleBarFill\": \"0070C0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"mnemonicTitleBarFill\": \"0070C0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/style.json",
+     "text": "\"labelledDiagramTitleBarFill\": \"0070C0\",",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-section.js",
+     "text": "{ strip: \"0070C0\", fill: \"EEF5FB\", accent: \"0070C0\" },",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-section.js",
+     "text": "{ strip: \"E46C0A\", fill: \"FEF4EB\", accent: \"E46C0A\" },",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-section.js",
+     "text": "{ strip: \"7030A0\", fill: \"F4EEF9\", accent: \"7030A0\" },",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-section.js",
+     "text": "const RESULT_GREEN = \"00B050\";",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-section.js",
+     "text": "const RESULT_WORKED = \"7030A0\";",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-section.js",
+     "text": "background:${hash(item.worked ? RESULT_WORKED : RESULT_GREEN)};",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/shared.js",
+     "text": ".replace(TAUGHT_MARK, \"$1\")",
+     "section": null
+    },
+    {
+     "file": "references/working-wall-card-contracts.md",
+     "text": "| `cards[].parts[].worked` | `true` when the part shows a worked example rather than the answer, a mistaken one always (`Sam wrote 340.`): its result strip is the worked-example purple, as on the board. Without it the strip is answer green, which tells a child the result is right. |",
+     "section": {
+      "heading": "### diagramSection",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "working-wall-html/src/shared.js",
+     "text": "function markedHtml(text) {",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-overview.js",
+     "text": "overviewTextHtml(group.title, 34, style, { color: idx === 0 ? \"0070C0\" : \"E46C0A\" }) +",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/render-display.js",
+     "text": "style.colours.labelledDiagramTitleBarFill",
+     "section": null
+    },
+    {
+     "file": "references/working-wall-card-contracts.md",
+     "text": "**Colour marks carry over.** Words copied from the board keep its colour marks, and the renderer draws them in the board's colours: a taught word written `{{word}}` is green in a worked example's steps and lines, a sticky fact, a vocabulary definition, a misconception's two sides, a sentence stem, a reference-table cell and a section's notes and steps, as it is on the board, and `((part))` and `<<decide>>` keep theirs. On a title, a heading, a coloured strip or inside a figure (a labelled diagram's labels, a Venn's items) the word prints plain, and a taught word's braces never print on any card or in any figure. Every other colour on the wall is the renderer's, in the board's meanings.",
+     "section": {
+      "heading": "## Every card",
+      "occurrence": 0,
+      "intro": false
+     },
+     "paragraph": true
+    },
+    {
+     "file": "references/working-wall-preferences.md",
+     "text": "the fully-modelled version directly beneath in purple, the worked-example colour, so the contrast is doing the teaching.",
+     "section": {
+      "heading": "## Sentence stem formatting",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/working-wall-preferences.md",
+     "text": "Each chip is the word in bold green in a green-outlined box, the green every taught word is on the board,",
+     "section": {
+      "heading": "## Vocab chip cards — wording and selection",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-07",
+   "outcome": "the old rule cleared from two code comments by decision 11 (his words: \"I want blue means question or like a short task as in like explain why or something like that. And yeah, green is vocabulary or an answer. So we'd have to fix those.\"), with the change plan's question 1 (\"yes\": a longer instruction about how to go about it stays black): `[[x]]` is a question, not a table's deciding word; a wrong chain is not marked an answer, with his 19 September hand edit kept on record",
+   "present": [
+    {
+     "file": "builder/src/answer-text.js",
+     "text": "// [[x]] bold + focus blue: the part of a line that asks, a question",
+     "section": null
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "// ring keeps its own meaning. In the same edit he greened a worked chain",
+     "section": null
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "// that was wrong; his later answer changed that: green is a taught word",
+     "section": null
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-08",
+   "outcome": "added by decision 11, worked examples (\"Worked examples can be something different. Maybe purple.\"; then \"worked example purple too\") and his answer on a mistaken worked example (\"purple is fine\"): a place-value chart row takes `worked: true`, its digits purple on every surface the shared chart draws",
+   "present": [
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "worked: '#7030A0', // the worked-example purple, the sticky fact's colour",
+     "section": null
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "worked: row.worked === true,",
+     "section": null
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "const worked = !isDot && row.worked && !row.answer && text !== '';",
+     "section": null
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "fill: worked ? pal.worked : (picked || revealed) ? pal.ring : pal.text, picked });",
+     "section": null
+    },
+    {
+     "file": "references/templates.md",
+     "text": "Every digit on a worked row is purple, the ringed one included, and so is its ring: nothing on a worked row is green, so a wrong digit is never printed as right.",
+     "section": {
+      "heading": "### `place-value-chart`",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "const ringStroke = row.worked && !row.answer ? pal.worked : pal.ring;",
+     "section": null
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "stroke=\"${r.stroke || L.pal.ring}\"",
+     "section": null
+    },
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "A worked example is purple even when the lesson is about to show it is wrong, the teacher's word: \"purple is fine\".",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-09",
+   "outcome": "the build log's own claims about what the check refuses and where braces print, pinned because the third check put one back without a test failing (its D14)",
+   "present": [
+    {
+     "file": "references/build-review-log.md",
+     "text": "It refuses every other blue line that asks nothing, as 4.2.289 did (`BLUE_WITHOUT_A_QUESTION`, its message rewritten), and refuses a `task-blue` line the spec shows is not a short task (`TASK_BLUE_NOT_A_SHORT_TASK`):",
+     "section": {
+      "heading": "## 2026-09-25 - Blue is a question or a short task, green a taught word or an answer, and a worked example is purple on the board, the sheet and the wall (4.2.292)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/build-review-log.md",
+     "text": "A taught word's braces never print on any card or from any figure: a title, a coloured strip and a figure's own words (a labelled diagram's labels, a Venn's items) print the word plain.",
+     "section": {
+      "heading": "## 2026-09-25 - Blue is a question or a short task, green a taught word or an answer, and a worked example is purple on the board, the sheet and the wall (4.2.292)",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "references/build-review-log.md",
+     "text": "a caption the board sets as text under a figure keeps its mark and its green.",
+     "section": {
+      "heading": "## 2026-09-25 - Blue is a question or a short task, green a taught word or an answer, and a worked example is purple on the board, the sheet and the wall (4.2.292)",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-ADD-10",
+   "outcome": "added by the third check (item 2, built the lead's chosen way): a taught word's braces never print from a figure; one shared helper takes them off wherever each surface hands a figure to a shared drawing, and a caption the board sets as text keeps its green",
+   "present": [
+    {
+     "file": "shared/text/criteria-marks.js",
+     "text": "function withoutTaughtMarks(value) {",
+     "section": null
+    },
+    {
+     "file": "builder/src/figure-marks.js",
+     "text": "const plain = withoutTaughtMarks(node);",
+     "section": null
+    },
+    {
+     "file": "builder/src/figure-marks.js",
+     "text": "return Object.assign({}, plain, { label: node.label });",
+     "section": null
+    },
+    {
+     "file": "builder/build.js",
+     "text": "const coreLesson = withoutFigureMarks(withoutDecorations(lesson));",
+     "section": null
+    },
+    {
+     "file": "worksheet-html/src/helpers/index.js",
+     "text": "REGISTRY[name] = withLegibilityFloor(FIGURE_HELPERS.has(name) ? withPlainFigureWords(helper) : helper);",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/svg-renderer.js",
+     "text": "const visual = withoutTaughtMarks(marked);",
+     "section": null
+    },
+    {
+     "file": "working-wall-html/src/visuals.js",
+     "text": "const visual = withoutTaughtMarks(marked);",
+     "section": null
+    },
+    {
+     "file": "stick-in-sheets-html/src/render-piece-html.js",
+     "text": "const item = withoutTaughtMarks(marked);",
+     "section": null
+    },
+    {
+     "file": "references/working-wall-card-contracts.md",
+     "text": "On a title, a heading, a coloured strip or inside a figure (a labelled diagram's labels, a Venn's items) the word prints plain, and a taught word's braces never print on any card or in any figure.",
+     "section": {
+      "heading": "## Every card",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "COL-RETIRED-CODE",
+   "outcome": "retired by decisions 11 and 22 from the programs, and one wall line no ledger row held",
+   "present": [],
+   "absent": [
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "The task stays BLACK: do not reach for house blue",
+     "everywhere": true
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "instruction they act on is black, so drop the blue here",
+     "everywhere": true
+    },
+    {
+     "file": "worksheet-html/src/tokens.js",
+     "text": "four meanings instead of five",
+     "everywhere": true
+    },
+    {
+     "file": "worksheet-html/src/helpers/methods.js",
+     "text": "a fifth colour the system does not have",
+     "everywhere": true
+    },
+    {
+     "file": "worksheet-html/src/helpers/frames.js",
+     "text": "four colour meanings",
+     "everywhere": true
+    },
+    {
+     "file": "builder/scripts/check-slide-design.js",
+     "text": "node.colorRole === 'focus-blue' || node.colorRole === 'task-blue') found = true",
+     "everywhere": true
+    },
+    {
+     "file": "shared/visuals/place-value-chart-svg.js",
+     "text": "fill: (picked || revealed) ? pal.ring : worked ? pal.worked : pal.text",
+     "everywhere": true
+    },
+    {
+     "file": "builder/src/answer-text.js",
+     "text": "a branch/reference table's deciding word",
+     "everywhere": true
+    },
+    {
+     "file": "builder/src/content/callout.js",
+     "text": "const DEFAULT_VARIANT = 'green';",
+     "everywhere": true
+    },
+    {
+     "file": "builder/src/content/method-frame.js",
+     "text": "const PANEL_LINE = '00B050';",
+     "everywhere": true
+    },
+    {
+     "file": "references/working-wall-preferences.md",
+     "text": "Each chip is the word in bold teal in a teal-outlined box",
+     "everywhere": true
+    }
+   ]
+  },
+  {
+   "id": "HOME-COL-PROFILE-01",
+   "outcome": "a paragraph of references/teacher-slide-visual-profile.md ## Semantic colour, pinned whole",
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "The deck's core colour grammar is asking versus telling.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "HOME-COL-PROFILE-02",
+   "outcome": "a paragraph of references/teacher-slide-visual-profile.md ## Semantic colour, pinned whole",
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- **House blue is the colour of the child's job: a question they answer, or a short task.** When the board asks the class something they answer - `Which fan needed electricity?`, `How did children use these two classrooms?` - those words are blue, and a child scanning a busy board finds their question at once. A short task is the same job said as an instruction, the thing the child does - `Explain your answer.`, `Write one reason.`, `Explain why.`, `Round 346 to the nearest 10.` - and it is blue too, as a whole line, marked `colorRole: \"task-blue\"`. A job that also names what to use is still the job, and blue: `Explain your answer using the photograph.` and `Describe each tooth using the pictures.` (the teacher's answer, 25 September 2026). Blue also organises slide titles, short option labels, category names and other secondary organising labels; the templates apply that themselves and it is not a decision to make per line. - Black carries everything else the board says: teacher explanation, supporting prose, statements, takeaways, success-criteria body text, reminder body text, and a longer instruction about how to go about the task. `Use the shaded map.`, `Use the number line to help you.` and `Look at the shaded areas and the Equator.` are all black: each only tells a child how to go about the job, and sets no job of its own. The limit is what keeps blue meaning something: advice follows the job the blue has already named, and painting it blue too spends the very contrast that was lifting the question and the task - a whole board arriving blue tells a child nothing. Which a line is, the job or advice on how to do it, is your judgement, and no count of words decides it: the test is the line's main ask. `Round 346 to the nearest 10.` is the job; `Explain your answer using the photograph.` asks for the job and names what to use, so it is the job too; `Use the two photographs.` only says what to use, so it is advice. The check reads the role, not the words: it refuses any other blue line that asks nothing (`BLUE_WITHOUT_A_QUESTION`), and a `task-blue` line the spec shows is not a short task, one carrying the reveal mark `||`, a sticky fact, the lesson's answer, a statement or task before its question, or two sentences that are not questions (`TASK_BLUE_NOT_A_SHORT_TASK`). The role never makes a slide's turn by itself. - **The starter is the one place a question is normally black.** A starter is questions all the way down, so blue there marks nothing a child cannot already see, and a screenful of solid blue is harder to read than a screenful of black. Leave a single starter question black. Where a starter carries several, alternate them black, blue, black, blue: on that slide the colour has a different job, separating one numbered question from the next, exactly as `peer-blue` and `peer-purple` do for peer prompts. The starter answers slide keeps its answer green. - The treatment is deck-wide: every child-facing question and short task outside the starter carries it, not a favoured few. The carrying fields are `color` or `focus-blue` for a whole line and `[[ ]]` for a span inside a line; a short task carries `task-blue`, the only way a line that asks nothing may be blue. - The boundary is the sentence, not the block. A block that first tells and then asks splits at that boundary: the telling stays black, the asking goes blue, and a paragraph break sits between them so a child sees where the explanation stops and their job starts. `A kettle and a lamp are both appliances.` is black; `What is electricity doing in each one?` follows on its own line in blue. Never colour a whole mixed block blue for the question buried inside it - that hides the question instead of lifting it. **The order does not matter.** A block that ASKS and then instructs splits at the same boundary the other way round: the question goes blue, and what follows it takes its own colour, blue for the child's short task and black for advice on how to go about it. `Is Isla correct?` is blue and `Explain your answer.` beneath it is blue too, because it is the job (one `task-blue` line may hold both); `Use the two photographs.` beneath a question stays black. The teacher coloured such a question by hand when an Apply slide printed it black: \"even if I put paragraph breaks between them, they're still all black text. So I thought, why not make the question blue?\" A block that asks twice is two questions and both are blue; the test is what the sentence DOES, never where it sits. - `peer-blue` and `peer-purple` exist only for a compact set of two or more equal-status peer prompts where alternating colour helps children keep the prompts visually separate. Start with house blue and run the set `peer-blue`, `peer-purple`, `peer-blue`, `peer-purple`. The pattern separates equal-status prompts; it must never imply correctness, answer status, sequence, difficulty or category meaning, so a sequence whose order matters and categories whose colours already carry meaning never take it. - `task-action` marks an existing action verb or short action phrase such as `Build`, `Test`, `Record`, `Compare` or `Explain` when exposing those verbs makes a multi-phase task easier to scan. It and `core-action` render bold in the line's own colour, so a verb is never blue on its own: a short task is blue as a whole line, and an instruction about how to go about it stays black however many verbs it exposes. A task sentence with `Choose`, `Draw`, `Label` and `add arrows` each in question blue reads as four alternating chunks, and leaves the question on the same slide nothing to lift it. Several `task-action` spans may appear in one instruction. Do not mark every verb in ordinary prose. Use size, position and spacing before colour when prominence alone is the job. - Sticky-knowledge purple is the third member of the grammar, and the builder applies it for you: the `✨` at the head of a sticky line makes that sentence purple, so a child reads at a glance that this is the one to keep. Leave it alone. An `emphasis` span stretched across the whole statement repaints it, which is how a deck ends up with its one sticky fact in red and no purple anywhere; mark a span inside a sticky line only when that span really is a taught term of its own. The check refuses a whole-line emphasis on a sticky line by name. - A worked example is purple, the same colour as a sticky fact. A prepared example or a `visible-in-unit` model written into the teaching gives its worked lines `colorRole: \"worked-purple\"`, on any slide, a teach layout's lines included; a question card, a list item and a step take the role too. The `method-frame` draws its panel and title purple for you, and the sheet's method frame matches it when it shows worked numbers; an empty one, the child's to fill in every box, keeps its ink edge and blue heading. A place-value chart's worked rows take `worked: true`, and every digit in them is purple, the ringed one and its ring included. On the wall the worked-example card is purple beside the sticky fact, and a section part marked `worked: true` shows its result on purple. Purple does not reach a figure with no purple of its own (a number line, a bar model, a tally, a table's cells), a worksheet's first worked row, or the good card of a strong-and-weak pair: those keep their own colours. A worked example is purple even when the lesson is about to show it is wrong, the teacher's word: \"purple is fine\". It is never answer green. - **Supplied orange is the information the question hands a child to work from, and on a slide that sets a task from a case, that case is the supplied thing.** Its existing job is a value inside a question (`<<358>>`); the same job at paragraph length is Sam sipping squash all afternoon with a hole in his back tooth. The teacher coloured it that way himself on 18 September 2026 and it is right: the board then has three plain jobs a child reads at a glance - black for what is generally true, orange for what happened to this person, and the line naming what they have to do. Carry it to every later slide that shows the same case, so the words keep one colour wherever a child meets them (Repeated-reference identity, below). It is not for a case the class is only being told about in the teaching; it marks the one the task runs on. - `problem-state` red is reserved for source wording that names a genuine failed or wrong state. - `safety-warning` red is reserved for an exact source-authored safety warning. Safety and failure are different semantic roles even though both use the problem-red palette. Neither is a way of making a sentence look important: a sticky-knowledge line is not a warning because it is about safety, it is the thing to remember, and it reads purple like every other one. - Vocabulary green marks this lesson's taught terms wherever a child reads them: in task text, teaching sentences, sticky knowledge, success criteria and captions alike, every occurrence, so the word looks the same on slide 12 as it did on its vocabulary card and a child recognises it as the word they were taught. Mark each occurrence with the `vocabulary` emphasis role. Success criteria arrive with the taught word already marked as `{{word}}` in the lesson designer's own wording (`preferences.md` → Success Criteria), and that mark is what colours it there. The terms are the lesson's vocabulary cards (and a prior lesson's term the design says children already hold), not every subject noun on the slide: `biome` and `climate` are green on a lesson that taught them; `country` is not. Answer reveals keep their own green, so a taught term inside a revealed answer is not marked twice. Answer green belongs only to answers being revealed or marked - and on an answer slide it belongs on the answer words themselves. A green outline around black words is a frame, not an answer treatment.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "HOME-COL-PROFILE-03",
+   "outcome": "a paragraph of references/teacher-slide-visual-profile.md ## Semantic colour, pinned whole",
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "**One line of a Teach slide's explanation may be orange, and only one.** A wall of black teaching is hard to take in however well it is written, and the teacher asked for a way to break it that is not only layout (12 September 2026). Orange is free here: its existing text job, `<<supplied-orange>>`, tints a value the question hands a child to work from, which belongs to a slide that asks something, and a Teach slide is not asking. So where the explanation runs to more than one line and one of them carries the weight, give that line `color` orange, which on a teach layout is `\"orange\": true` on that line. The test is which line you would say louder.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "HOME-COL-PROFILE-04",
+   "outcome": "a paragraph of references/teacher-slide-visual-profile.md ## Semantic colour, pinned whole",
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Three bounds, and they matter more than the permission. **One line per slide**, or the colour stops separating anything and the slide is a wall in two shades instead of one. **Not on every Teach slide**: a deck where the same middle line goes orange every time has a tic rather than a voice, and the honest answer on many slides is that layout has already done it, which is what a lesson's own recomposed slides showed when the first line was lifted to full width and needed nothing else. And it **never touches the sticky line**, which is purple because it is the one to keep, nor a question, which is blue, **nor a line carrying a taught vocabulary term**. A PSHE slide put a whole explanation line in orange around the green word `Oxygen` and the term stopped reading as the word children were taught and started reading as one more colour in a scheme (12 September 2026). Vocabulary green marks every occurrence of a taught term wherever a child reads it, so the term wins and the line loses: choose a different line for the orange, and if every line carries a term, leave them all black and let layout do it.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "HOME-COL-PROFILE-05",
+   "outcome": "a paragraph of references/teacher-slide-visual-profile.md ## Semantic colour, pinned whole",
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Outside that one case, prominence on a black explanatory line is still size, position and spacing rather than colour.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  },
+  {
+   "id": "HOME-COL-PROFILE-06",
+   "outcome": "a paragraph of references/teacher-slide-visual-profile.md ## Semantic colour, pinned whole",
+   "present": [
+    {
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "Question numbers and letters use the shared purple question-label colour on every slide. Keep the question body's semantic colour independent of its label.",
+     "section": {
+      "heading": "## Semantic colour",
+      "occurrence": 0,
+      "intro": false
+     }
+    }
+   ],
+   "absent": []
+  }
+ ]
+}

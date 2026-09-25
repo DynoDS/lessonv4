@@ -16,13 +16,35 @@ const {
   WIDE_ASPECT,
 } = require("./layout");
 
+const { criteriaSegments } = require("../../shared/text/criteria-marks");
+
 const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
+
+// A taught word is written `{{word}}` on the board, and words copied onto the
+// wall keep the mark. Its braces never print, whatever card the words land
+// on: where a card draws its words with their marks (markedHtml, below) the
+// word is green, and everywhere else (a title, a strip, a caption) it is
+// plain. Stripping them here, where every card's words pass, is what keeps
+// a card that has not been taught about marks from printing them.
+const TAUGHT_MARK = /\{\{([\s\S]+?)\}\}/g;
 
 function esc(s) {
   return String(s == null ? "" : s)
+    .replace(TAUGHT_MARK, "$1")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+// Words carrying the board's colour marks, drawn in the colour the board gave
+// them: `{{taught word}}` green, `((picture part))` that part's colour,
+// `<<the part to decide>>` orange. The wall uses the board's colour meanings
+// (the teacher's rule of 24 September 2026), so a taught word copied onto a
+// sentence stem, a table cell or a section's note is green here as well.
+function markedHtml(text) {
+  return criteriaSegments(text)
+    .map((segment) => (segment.colour ? `<span style="color:${segment.colour};">${esc(segment.text)}</span>` : esc(segment.text)))
+    .join("");
 }
 
 function escAttr(value) {
@@ -304,6 +326,7 @@ body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
 
 module.exports = {
   esc,
+  markedHtml,
   mm,
   hash,
   pngDataUri,

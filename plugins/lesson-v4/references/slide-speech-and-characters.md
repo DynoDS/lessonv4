@@ -42,7 +42,7 @@ A source task line often arrives fused: `Dev says: 'A laptop belongs in the main
 
 - The quoted claim - and nothing else - goes in the bubble. A bubble is the character speaking, so it holds only words the character would actually say, in their own voice. `Dev says:` inside Dev's own bubble makes him narrate himself in the third person, and a task instruction in his mouth makes him set his own test.
 - The attribution (`Dev says:`) is already carried by the named portrait under the bubble. It is never printed.
-- The judging question (`Is Dev right? Explain.`) is the pupils' task, not Dev's speech. It becomes the slide's open title (`Is Dev right?`) and, where wording remains (`Explain.` / `Explain how you know.`), a separate task line in question blue outside the bubble.
+- The judging question (`Is Dev right? Explain.`) is the pupils' task, not Dev's speech. It becomes the slide's open title (`Is Dev right?`) and, where wording remains (`Explain.` / `Explain how you know.`), a separate task line outside the bubble, in question blue as the child's short task (`colorRole: "task-blue"`).
 
 This decomposition is a sanctioned mechanical transformation, like automatic question labels: each piece keeps its exact wording, and only where it sits changes.
 

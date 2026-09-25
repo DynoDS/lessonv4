@@ -6,8 +6,10 @@ const { splitAnswerRuns } = require('./answer-text');
 const COLOR_ROLES = new Set([
   'default',
   'focus-blue',
+  'task-blue',
   'peer-blue',
-  'peer-purple'
+  'peer-purple',
+  'worked-purple'
 ]);
 
 const EMPHASIS_ROLES = new Set([
@@ -137,8 +139,14 @@ function baseColourForRole(baseColor, role) {
   const base = baseColor || COLOURS.body;
   if (role == null || role === '' || role === 'default') return base;
   if (role === 'focus-blue') return COLOURS.title;
+  // The child's short task, the job in a few words: blue, as a question is
+  // (the teacher's rule of 24 September 2026).
+  if (role === 'task-blue') return COLOURS.title;
   if (role === 'peer-blue') return COLOURS.title;
   if (role === 'peer-purple') return COLOURS.lo;
+  // A worked example the class sees finished (a prepared example, a
+  // `visible-in-unit` model): the sticky fact's purple.
+  if (role === 'worked-purple') return COLOURS.worked;
   throw new Error(
     `PRESENTATION_TEXT_INVALID: unknown colorRole ${JSON.stringify(role)}`
   );
@@ -151,10 +159,11 @@ function emphasisOptions(role, baseColor, bold) {
   };
 
   if (role === 'core-action' || role === 'task-action') {
-    // Bold, in the line's own colour. House blue is the colour of a question
-    // to children and of nothing else on the board (teacher-slide-visual-profile
-    // -> Semantic colour), so an action verb painted blue reads as a question
-    // and spends the contrast that was lifting the real one. A Year 4 PSHE deck
+    // Bold, in the line's own colour. House blue is the colour of the child's
+    // job as a whole line, a question or a short task (teacher-slide-visual-
+    // profile -> Semantic colour), never of a verb on its own, so an action verb
+    // painted blue inside an instruction spends the contrast that was lifting
+    // the job. A Year 4 PSHE deck
     // went out with "Choose", "Draw", "Label" and "add arrows" all in question
     // blue, one task sentence in four alternating chunks (8 September 2026).
     // Weight alone is what exposes the survival phrase; the colour stays with

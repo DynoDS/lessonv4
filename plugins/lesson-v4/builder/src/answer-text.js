@@ -22,8 +22,9 @@ const { pictureColour } = require('../../shared/text/criteria-marks');
 //           answer are two things, and a welded join reads as a typo.
 //   **x**   bold, in the base colour
 //           (a word to stress without recolouring — e.g. a direction: "Slide **RIGHT**")
-//   [[x]]   bold + focus blue — the one word a reader must decide on
-//           (a branch/reference table's deciding word — e.g. "Is the [[answer]] missing?")
+//   [[x]]   bold + focus blue: the part of a line that asks, a question
+//           (e.g. "Is the [[answer]] missing?"); a table's deciding word is not a
+//           question and takes no blue
 //   {{x}}   bold + answer green — an item lifted in green where it sits: a
 //           correct option in a "circle all that appear" reveal (e.g.
 //           "(a) {{250}} 235 {{125}} 400 215"), or a key vocabulary term

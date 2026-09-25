@@ -15,6 +15,11 @@ const COLOURS = {
   vocabBg:     'D5F5E3',
   stickyBg:    'DEEAF1',
   sticky:      '7030A0',   // sticky-knowledge words, the LO's purple
+  // A worked example is the same purple as a sticky fact (the teacher's choice,
+  // 24 September 2026): a worked line, the method frame's panel and title, and
+  // the frame's pale ground.
+  worked:      '7030A0',
+  workedBg:    'EDE3F5',
   scPanelBg:   'D5F5E3',
   scPanelLine: '00B050',
   teachLeft:   '0070C0',

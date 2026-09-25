@@ -48,14 +48,18 @@ const SC_HELPER_GAP    = 0.10;
 // be { text, helper }; the legacy `figure` field remains accepted. Keeping the
 // normal string form avoids making every
 // criterion carry object boilerplate just because a small catalogue exists.
+// A step of a worked example is { text, colorRole: 'worked-purple' }: its
+// words and its number print purple, the worked example's colour (the
+// teacher's rule of 24 September 2026). validate.js refuses any other role.
 function normaliseStep(step) {
   if (step && typeof step === 'object' && !Array.isArray(step)) {
     return {
       text: step.text == null ? '' : String(step.text),
-      helper: helperKeyForStep(step)
+      helper: helperKeyForStep(step),
+      worked: step.colorRole === 'worked-purple'
     };
   }
-  return { text: String(step == null ? '' : step), helper: '' };
+  return { text: String(step == null ? '' : step), helper: '', worked: false };
 }
 
 // How many lines a piece of text takes at a given size in a given width, if it
@@ -807,10 +811,11 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     }
 
     stepNum += 1;
+    const badgeColour = step.worked ? COLOURS.worked : COLOURS.green;
     slide.addShape(pptx.shapes.OVAL, {
       x: rowX, y: badgeY, w: badgeW, h: badgeW,
-      fill: { color: COLOURS.green },
-      line: { color: COLOURS.green, width: 1 }
+      fill: { color: badgeColour },
+      line: { color: badgeColour, width: 1 }
     });
     slide.addText(String(stepNum), {
       x: rowX, y: badgeY, w: badgeW, h: badgeW,
@@ -846,11 +851,13 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     }
 
     smallestDrawn = Math.min(smallestDrawn, textFont);
-    slide.addText(splitAnswerRuns(step.text, true), {
+    // A worked step's runs start from the worked purple, so a taught word or a
+    // bold word in it does not turn the rest of the step black (the fourth check).
+    slide.addText(splitAnswerRuns(step.text, true, step.worked ? COLOURS.worked : undefined), {
       x: textX, y: rowY,
       w: textW, h: cardH,
       fontFace: FONT, fontSize: textFont, bold: true,
-      color: COLOURS.body,
+      color: step.worked ? COLOURS.worked : COLOURS.body,
       align: 'left', valign: 'middle', margin: 0, fit: FIT,
       objectName: lineName('step-text-', i)
     });

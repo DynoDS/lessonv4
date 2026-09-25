@@ -31,6 +31,7 @@ const BADGE_PX  = 240;          // step badge resolution
 // draw from, so a wall line-pair / angle is identical to the one on the board.
 // These produce a TIGHT SVG plus its true aspect; the wall stores that aspect
 // and places the image by it (no square padding), matching the other engines.
+const { withoutTaughtMarks } = require('../../shared/text/criteria-marks');
 const linePairShared = require('../../shared/visuals/line-pair-svg');
 const numberLineShared = require('../../shared/visuals/number-line-svg');
 const shadedFractionShared = require('../../shared/visuals/shaded-fraction-svg');
@@ -417,9 +418,12 @@ async function preRenderSvgs(spec, specDir) {
   // stored under the base key plus the callout suffix.
   const annotated = {};
 
-  const collectVisual = (visual) => {
-    if (!visual) return;
-    if (visual._educationalSvgBuffer) return;
+  const collectVisual = (marked) => {
+    if (!marked) return;
+    if (marked._educationalSvgBuffer) return;
+    // A figure's words print plain, never a taught word's braces; the card
+    // lookup (visuals.js pickVisual) keys the same plain spec.
+    const visual = withoutTaughtMarks(marked);
     visualsDeclared += 1;
     if (!PRIMITIVES[visual.type]) {
       throw new Error(`[working-wall] visual type "${visual.type}" is not a supported primitive. Supported: ${Object.keys(PRIMITIVES).join(', ')}.`);

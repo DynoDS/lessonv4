@@ -21,7 +21,8 @@ const {
   defaultBodyPt,
   minBodyPt,
 } = require("./visuals");
-const { esc, mm, hash, imgTag, titleBarHtml, panelHtml } = require("./shared");
+const { esc, markedHtml, mm, hash, imgTag, titleBarHtml, panelHtml } = require("./shared");
+const { plainCriteria } = require("../../shared/text/criteria-marks");
 
 const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
 const WALL_TABLE_IMAGE_HEIGHT_CAP_IN = 1.6;
@@ -70,7 +71,7 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
     })
   );
   const textRows = card.rows.map((row) =>
-    row.map((cell) => (cell && typeof cell === "object") ? "" : cell)
+    row.map((cell) => (cell && typeof cell === "object") ? "" : plainCriteria(cell))
   );
 
   const titlePt = fitTitleSize(card.title || "", card.page.size === "A3" ? style.sizes.a3TitlePt : style.sizes.a4TitlePt, card.page.size, card.page.orientation, style);
@@ -180,7 +181,7 @@ function referenceTableHtml(columns, rows, headerPt, bodyPt, columnWidths, style
         innerHtml = imgTag(cell.image, mm(wIn), mm(hIn), "margin:0 auto;");
       } else {
         const textColour = cellIdx === 0 ? style.colours.referenceTableHeaderFill : style.colours.body;
-        innerHtml = `<div style="font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;font-size:${bodyPt}pt;line-height:${REFERENCE_TABLE_LINE_HEIGHT};color:${hash(textColour)};">${esc(cell)}</div>`;
+        innerHtml = `<div style="font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;font-size:${bodyPt}pt;line-height:${REFERENCE_TABLE_LINE_HEIGHT};color:${hash(textColour)};">${markedHtml(cell)}</div>`;
       }
       return `<td style="box-sizing:border-box;border:${borderCss};padding:${cellPadMm}mm;background:${hash(fillColour)};text-align:center;vertical-align:middle;">${innerHtml}</td>`;
     }).join("");
@@ -266,8 +267,8 @@ function renderEquivalenceGrid(card, style, specDir, ctx = {}) {
   return titleBarEl + `<div style="width:100%;">${rowsHtml}</div>`;
 }
 
-// ─── Vocab chips: 2-column grid of white pills, teal 3pt outline ────────
-// Chip autofit loop (40pt down to 24pt floor, 0.6 ratio), word bold teal
+// ─── Vocab chips: 2-column grid of white pills, green 3pt outline ───────
+// Chip autofit loop (40pt down to 24pt floor, 0.6 ratio), word bold green
 // centred, photo chips put the word left and a square image right.
 
 function renderVocabChips(card, style, specDir, ctx = {}) {

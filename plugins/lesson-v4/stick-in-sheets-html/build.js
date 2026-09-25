@@ -28,6 +28,7 @@ const { safeFilenameComponent } = require("../shared/text/filename");
 const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-rules");
 const { selectContextPictureSet } = require("../shared/context-picture-set");
 const { renderPieceHtml, esc } = require("./src/render-piece-html");
+const { withoutTaughtMarks } = require("../shared/text/criteria-marks");
 const { normaliseCardSet, renderKitPages, answersText } = require("./src/render-card-set");
 const { normaliseSourceText, renderSourceTextPages } = require("./src/render-source-text");
 
@@ -182,9 +183,11 @@ function buildHtml(moments, classSize) {
   }
 
   const handles = moments.map((m) => m.handle).filter(Boolean);
-  const captionText = moments.length === 1
+  // A piece's label or handle may carry a taught word's mark; the caption and
+  // the handle print the word plain, never its braces (the fourth check).
+  const captionText = withoutTaughtMarks(moments.length === 1
     ? `✂ ${moments[0].handle ? `${moments[0].handle} ` : ""}${moments[0].item.label || moments[0].item.visual} (cut along the dashed lines and stick in).`
-    : `✂ Cut along the dashed lines and stick in. Every child gets one of each labelled piece${handles.length ? `: ${handles.join(", ")}` : ""}.`;
+    : `✂ Cut along the dashed lines and stick in. Every child gets one of each labelled piece${handles.length ? `: ${handles.join(", ")}` : ""}.`);
 
   const pageDivs = pages.map((rows) => {
     const shelfDivs = rows.map((row, r) => {
@@ -200,7 +203,7 @@ function buildHtml(moments, classSize) {
           pictureHtml = `<span style="font-family:'Segoe UI Emoji','Apple Color Emoji',sans-serif">${esc(m.picture.value)}</span>`;
         }
         const handleHtml = m.handle
-          ? `<div style="display:flex;align-items:center;justify-content:center;gap:1mm;font-weight:bold;font-size:12pt;height:${HANDLE_BAND_MM}mm;line-height:1">${pictureHtml}<span>${esc(m.handle)}</span></div>`
+          ? `<div style="display:flex;align-items:center;justify-content:center;gap:1mm;font-weight:bold;font-size:12pt;height:${HANDLE_BAND_MM}mm;line-height:1">${pictureHtml}<span>${esc(withoutTaughtMarks(m.handle))}</span></div>`
           : "";
         return `<div style="width:${cell.wMm}mm;padding:${PAD_Y_MM}mm ${PAD_X_MM}mm;box-sizing:border-box;` +
           `display:flex;flex-direction:column;justify-content:center;` +
@@ -225,7 +228,7 @@ function buildHtml(moments, classSize) {
 // One landscape page: the grey caption the teacher reads while cutting, then
 // the body the caller laid out.
 function pageDiv(caption, body) {
-  return `<div class="page"><div class="caption">${esc(caption)}</div>${body}</div>`;
+  return `<div class="page"><div class="caption">${esc(withoutTaughtMarks(caption))}</div>${body}</div>`;
 }
 
 function wrapDocument(pageDivs) {
