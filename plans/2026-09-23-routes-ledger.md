@@ -1050,3 +1050,7 @@ From a search of every string in the test files. A fold that touches these moves
 - The evidence file's redundancy line says "the teacher carries the narration" (O31), older than your ruling that the board carries the teaching because notes mostly go unread. Listed, not raised: the Slide Philosophy owns the board.
 - 3.4 Caption This has no fresh-case limit (J15), unlike the other quick formats; for the quick-check fold.
 - The check that a set task has its instruction covers `do` and `practise` only (Q18); the says-once check covers a content Teach only (Q14).
+
+## After the subject-files release (4.2.291, 25 September 2026)
+
+- **RT-L20**: the reasoning prompts' "Until a subject-English file exists, keep the detailed reading, writing and grammar guidance below active." is removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely"; the bullet keeps "English may compare effects, justify structural choices or reason from textual evidence." and the English guidance below it is simply live. The adaptation guidance's "Detailed English progression belongs in a future subject-English file.", the same hedge in no ledger, went too (SJ-A59).

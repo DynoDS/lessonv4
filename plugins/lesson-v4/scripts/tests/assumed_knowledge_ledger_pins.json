@@ -2250,11 +2250,11 @@
   },
   {
    "id": "AK-B37",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the subject-files release (topic 8, release 1); then the subject-files topic's settled item 10: the dates beside his examples go, every word of the examples stays (the log holds each date)",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "The Teach boards of the Tudor lesson the user chose on 14 September 2026 (`preferences.md` → Pride Lessons, `What a Teach slide holds`) are the same order inside one beat: what the class already has, the new thing, the look at the picture, the sentence that lands.",
+     "text": "The Teach boards of the Tudor lesson the user chose (`preferences.md` → Pride Lessons, `What a Teach slide holds`) are the same order inside one beat: what the class already has, the new thing, the look at the picture, the sentence that lands.",
      "section": {
       "heading": "## What the lesson feels like to the child",
       "occurrence": 0,
@@ -2453,19 +2453,16 @@
   },
   {
    "id": "AK-C03",
-   "outcome": "unchanged in place",
-   "present": [
+   "outcome": "retired: removed with its file in the subject-files release (topic 8, release 1), his decisions 1 and 3 of 24 September, \"forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future.\" and \"is this a new skill called make subject file skill or something? just remove it completely.\"; unchanged in place until then",
+   "present": [],
+   "absent": [
     {
      "file": "skills/make-subject-file/SKILL.md",
      "text": "because a designer reading the general rule will let a proper noun through",
-     "section": {
-      "heading": "## Stage 6: Draft the file",
-      "occurrence": 0,
-      "intro": false
-     }
+     "everywhere": false,
+     "fileRemoved": true
     }
-   ],
-   "absent": []
+   ]
   },
   {
    "id": "AK-C04",

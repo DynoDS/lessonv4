@@ -600,7 +600,7 @@
    "heading": "## How a maths sheet's questions are worded",
    "paragraphs": [
     "Read by the lesson-designer when it writes the Expected sheet and by the adaptation-designer when it writes Below and Greater Depth.",
-    "The standard is the Classroom Secrets reasoning and problem-solving sheets the user holds up as the way a maths question should read (16 September 2026). Their questions are short, concrete and the same few shapes week after week, so a child reading alone spends one read on the sentence and the rest of their thinking on the maths. Generated Greater Depth sheets had drifted the other way, and children struggled with questions whose maths was sound: `Explain why the whole number just before your smallest number and the whole number just after your largest number do not round to 3,000.` The maths can be as hard as the objective allows; the sentence carrying it stays easy.",
+    "The standard is the Classroom Secrets reasoning and problem-solving sheets the user holds up as the way a maths question should read. Their questions are short, concrete and the same few shapes week after week, so a child reading alone spends one read on the sentence and the rest of their thinking on the maths. Generated Greater Depth sheets had drifted the other way, and children struggled with questions whose maths was sound: `Explain why the whole number just before your smallest number and the whole number just after your largest number do not round to 3,000.` The maths can be as hard as the objective allows; the sentence carrying it stays easy.",
     "**A reasoning or problem-solving question is built from three parts.**",
     "- **A named child, doing something ordinary, with the actual numbers.** One or two short sentences: `Aria has £20. She wants to buy a ball that costs half of her money.` or `Kenneth is thinking of a number.` Use an everyday situation only where the maths genuinely lives in it (money, measures, sharing out, time); a claim about bare numbers needs only the child. Use plain first names: the lesson-designer takes them from the run's `CHARACTER_NAMES`, and the adaptation-designer picks its own, different from the lesson's characters and from the names in this section. - **Anything to be judged is said by that child, in their own words.** `Hans says: \"The number shown is 4,197.\"` A statement printed with nobody saying it (`2,748 rounds to 2,800 because the ones digit is 8. Is this right?`) reads as a fact from the sheet, and the child first has to work out that they are allowed to disagree with it. Clues and conditions go in the same place, one short sentence each: `My number is odd. It is less than 30. It is a multiple of 3.` - **One closing ask from a small set children already recognise:** `Is she correct? Explain your answer.`, `Who is correct? Explain your answer.`, `Do you agree? Explain why.`, `Explain how you know.`, `Find as many ways as you can.`, `What could his number be? Find all the possibilities.`, or the plain question the problem asks (`How much change will she get?`). Reusing these across questions and sheets is the point, because a child who knows the ending reads it at a glance; the caution against standardising question stems in `teacher-voice.md` §6 does not apply to them. `Prove it.` stays off the list (`teacher-voice.md` §15).",
     "**Four habits keep the sentence easy, whatever the maths.**",
@@ -4295,11 +4295,11 @@
   },
   {
    "id": "WS-G09",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the subject-files release (topic 8, release 1), settled item 10 on the subject-files list: the date beside his example goes, every word of it stays",
    "present": [
     {
      "file": "references/subject-maths.md",
-     "text": "The standard is the Classroom Secrets reasoning and problem-solving sheets the user holds up as the way a maths question should read (16 September 2026). Their questions are short, concrete and the same few shapes week after week, so a child reading alone spends one read on the sentence and the rest of their thinking on the maths.",
+     "text": "The standard is the Classroom Secrets reasoning and problem-solving sheets the user holds up as the way a maths question should read. Their questions are short, concrete and the same few shapes week after week, so a child reading alone spends one read on the sentence and the rest of their thinking on the maths.",
      "section": {
       "heading": "## How a maths sheet's questions are worded",
       "occurrence": 0,
@@ -14886,16 +14886,17 @@
   },
   {
    "id": "HOME-WS-MATHS-WORDING-02",
-   "outcome": "a paragraph of references/subject-maths.md ## How a maths sheet's questions are worded, pinned whole",
+   "outcome": "a paragraph of references/subject-maths.md ## How a maths sheet's questions are worded, pinned whole; then the subject-files release (topic 8, release 1), settled item 10 on the subject-files list: the date beside his example goes, every word of it stays",
    "present": [
     {
      "file": "references/subject-maths.md",
-     "text": "The standard is the Classroom Secrets reasoning and problem-solving sheets the user holds up as the way a maths question should read (16 September 2026). Their questions are short, concrete and the same few shapes week after week, so a child reading alone spends one read on the sentence and the rest of their thinking on the maths. Generated Greater Depth sheets had drifted the other way, and children struggled with questions whose maths was sound: `Explain why the whole number just before your smallest number and the whole number just after your largest number do not round to 3,000.` The maths can be as hard as the objective allows; the sentence carrying it stays easy.",
+     "text": "The standard is the Classroom Secrets reasoning and problem-solving sheets the user holds up as the way a maths question should read. Their questions are short, concrete and the same few shapes week after week, so a child reading alone spends one read on the sentence and the rest of their thinking on the maths. Generated Greater Depth sheets had drifted the other way, and children struggled with questions whose maths was sound: `Explain why the whole number just before your smallest number and the whole number just after your largest number do not round to 3,000.` The maths can be as hard as the objective allows; the sentence carrying it stays easy.",
      "section": {
       "heading": "## How a maths sheet's questions are worded",
       "occurrence": 0,
       "intro": false
-     }
+     },
+     "paragraph": true
     }
    ],
    "absent": []

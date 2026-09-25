@@ -708,7 +708,7 @@
   },
   {
    "id": "TD-A13",
-   "outcome": "stale description removed (decision 7)",
+   "outcome": "stale description removed (decision 7); then the subject-files topic's settled item 12: the designer's subject-file reading line gains what history's and geography's word-for-word start notes carried (read before the structure is chosen because the routing is part of that choice; come back beside the teaching-sequence file; what each file is for), and the two notes go",
    "present": [
     {
      "file": "agents/lesson-designer.md",
@@ -721,7 +721,7 @@
     },
     {
      "file": "agents/lesson-designer.md",
-     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page. List the directory and match the subject. Do not guess a filename.",
+     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page, before the structure is chosen: in history and geography its routing is part of that choice. List the directory and match the subject. Do not guess a filename. Come back to it alongside the teaching-sequence file once the structure is set: the structure file tells you what shape the lesson takes, and the subject file what the thinking inside it should be.",
      "section": {
       "heading": "## Reference Files - precedence and decision-point loading",
       "occurrence": 0,
@@ -740,19 +740,16 @@
   },
   {
    "id": "TD-A14",
-   "outcome": "unchanged in place",
-   "present": [
+   "outcome": "retired: removed with its file in the subject-files release (topic 8, release 1), his decisions 1 and 3 of 24 September, \"forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future.\" and \"is this a new skill called make subject file skill or something? just remove it completely.\"; unchanged in place until then",
+   "present": [],
+   "absent": [
     {
      "file": "skills/make-subject-file/SKILL.md",
      "text": "The plugin's general layer already answers *how do I run a good lesson*: the Teach to Do rhythm,",
-     "section": {
-      "heading": "## What this file is for, and why that keeps it short",
-      "occurrence": 0,
-      "intro": false
-     }
+     "everywhere": false,
+     "fileRemoved": true
     }
-   ],
-   "absent": []
+   ]
   },
   {
    "id": "TD-B01",
@@ -6259,11 +6256,11 @@
   },
   {
    "id": "TD-K09",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the subject-files release (topic 8, release 1); then the subject-files topic's settled item 10: the dates beside his examples go, every word of the examples stays (the log holds each date)",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "The shape that produces this, in the order a child meets it, is the user's own sketch of a Victorian schooling lesson (4 September 2026), kept here as the calibration:",
+     "text": "The shape that produces this, in the order a child meets it, is the user's own sketch of a Victorian schooling lesson, kept here as the calibration:",
      "section": {
       "heading": "## What the lesson feels like to the child",
       "occurrence": 0,

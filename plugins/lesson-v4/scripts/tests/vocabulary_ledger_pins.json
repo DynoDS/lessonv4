@@ -4522,19 +4522,16 @@
   },
   {
    "id": "VOC-M15",
-   "outcome": "unchanged in place",
-   "present": [
+   "outcome": "retired: removed with its file in the subject-files release (topic 8, release 1), his decisions 1 and 3 of 24 September, \"forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future.\" and \"is this a new skill called make subject file skill or something? just remove it completely.\"; unchanged in place until then",
+   "present": [],
+   "absent": [
     {
      "file": "skills/make-subject-file/SKILL.md",
      "text": "The words that earn a vocabulary card are the ones children think *with*, not the ones today's topic contains. The general rule already says that; what this adds is which words those are in this subject, because a designer reading the general rule will let a proper noun through. Then name the exception, because there is always one.",
-     "section": {
-      "heading": "## Stage 6: Draft the file",
-      "occurrence": 0,
-      "intro": false
-     }
+     "everywhere": false,
+     "fileRemoved": true
     }
-   ],
-   "absent": []
+   ]
   },
   {
    "id": "VOC-N01",

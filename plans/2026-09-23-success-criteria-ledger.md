@@ -1333,3 +1333,8 @@ govern.
   work rewrote `design-review-packet.py`, `preferences.md` and
   `lesson-designer.md` at 17:39 on 23 September. Every quote was re-checked
   afterwards and all are found word for word.
+
+## After the subject-files release (topic 8, release 1, 25 September 2026)
+
+- **SC-C15** (the writing guide) and **SC-C16** (the skill) are retired in `success_criteria_ledger_pins.json`: his decisions 1 and 3 on the subject-files list (24 September): the make-subject-file skill and its writing guide are removed completely ("just remove it completely"). Each pin now holds its file staying gone.
+- **SC-G02** is retired: his decision 6 on that list ("those balanced diet things sound like things I wouldnt want in the pshe subject files", then "maybe the subject file could say to look for guidance from eatwell guide thing") took the per-meal quota rule out of the PSHE file, whose food section is now one line pointing to the NHS Eatwell Guide. The general rule, a count in a criterion is never invented (SC-G01), stays where every lesson reads it.

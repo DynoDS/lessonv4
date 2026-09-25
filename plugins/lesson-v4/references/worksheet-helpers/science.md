@@ -11,6 +11,9 @@ science.**
 `circuit-diagram` draws one series circuit or a row of them in the standard
 schematic symbols. Each circuit carries its own state, so one helper covers the
 whole electricity unit: a working circuit, a broken one, a switch open.
+Standard circuit symbols are Year 6 work (`subject-science.md`); a Year 4 lesson
+shows a labelled photograph of a real circuit instead (`label-diagram` on the
+photograph).
 
 Draw a ROW of them when the question is comparative ("which of these will
 light?"). One on its own when the question is about that circuit.

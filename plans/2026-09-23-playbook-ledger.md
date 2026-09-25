@@ -1085,3 +1085,8 @@ That is room for Part D many times over. No rule is in it: every sentence is a p
 - **"Wait for `lesson.json` only when their prompts require it"** (PB-K08) is out of date against the three places that always start the wall and stick-in designers once `lesson.json` passes (settled item a).
 - **A pack short its Expected sheet** (PB-Q10, X22): the report can close `COMPLETE` while most of the class has no sheet; settled item f makes the record partial.
 - **The review step and the report step both run the launch audit without the host** (PB-I15, S08, X23), so on Claude Code they read Codex's record by default; settled item a names both, as the skill's own command does.
+
+## After the subject-files release (4.2.291, 25 September 2026)
+
+- **PB-V20**: the setup guide's developer-mode line no longer lists writing a subject file among the commands that change the plugin; it reads "(installing a helper, editing templates)". The skill is removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely" (the subject-files ledger's SJ-C55; the package read-me lost the same clause).
+- **PB-B21**: the skill's test-run line went with the make-subject-file skill (`skills/make-subject-file/SKILL.md`), removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely" (SJ-C48).

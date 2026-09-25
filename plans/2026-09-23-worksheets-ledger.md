@@ -1362,3 +1362,10 @@ they govern.
   the components file's criteria paragraph, the adaptive reference's
   Greater Depth sentence and the review page's worksheet heading. Every quote was
   rechecked against the working tree afterwards and all are found word for word.
+
+### After the subject-files release (4.2.291, 25 September 2026)
+
+- **WS-G09** and its home paragraph: the subject-files list's settled item 10 took
+  the date "(16 September 2026)" off the maths file's Classroom Secrets paragraph,
+  every other word kept. At the merge, `sj-change/sj_09_follow_at_merge.py` moved
+  the pin and the home to the undated words; the rule is unchanged.

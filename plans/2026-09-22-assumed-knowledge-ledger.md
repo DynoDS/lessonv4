@@ -1087,3 +1087,8 @@ finding held and went in. Where it went in differently from how it was put:
   experience and inviting it became decision 11; I01's "unnecessarily" is
   recorded as possibly qualifying the assuming too; and the previous-lesson gap
   is recorded as worth checking, not as a proven fault.
+
+## After the subject-files release (topic 8, release 1, 25 September 2026)
+
+- **AK-C03** is retired in `assumed_knowledge_ledger_pins.json`: its words lived in the skill, removed by his decisions 1 and 3 on the subject-files list (24 September): the make-subject-file skill and its writing guide are removed completely ("just remove it completely"). The pin now holds the file staying gone. The same words were the vocabulary list's VOC-M15.
+- **AK-B37** moved with the history file's words: "the user chose on 14 September 2026" is now "the user chose" (that list's settled item 10: the dates beside his examples go; the log holds the date).

@@ -130,7 +130,14 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                     # own file too, which for a retired code phrase is the
                     # program it left.
                     own = ROOT / pin["file"]
+                    if pin.get("fileRemoved"):
+                        # The teacher removed the phrase's whole file: the
+                        # phrase stays gone while the file does, and the file
+                        # coming back fails here.
+                        with self.subTest(row=row["id"], file=pin["file"], removed=True):
+                            self.assertFalse(own.exists(), "a file the teacher removed is back")
                     files = sorted(set(RUNTIME) | set(PROGRAMS) | {own}) if pin.get("everywhere") else [own]
+                    files = [path for path in files if path.exists() or not pin.get("fileRemoved")]
                     for path in files:
                         with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
                             body = flat(path.read_text(encoding="utf-8"))
