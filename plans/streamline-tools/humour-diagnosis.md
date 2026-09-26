@@ -446,6 +446,22 @@ test. The sensitive-issue limits (never the issue itself, never at a child). No
 fixed field for a light line. A line that would give away an answer stays off
 that slide.
 
+## His answer (26 September 2026)
+
+Put to him in plain words: since 12 September a light line was found in 14 of 27 lessons and
+only 1 of those 14 reached a slide; in maths, PSHE and hard history the answer is nearly always
+none; the three causes (every rule met while writing sends chatty lines to the notes; the look
+comes at the end when every board is full; the guide's framing reads as keep maths straight);
+and five changes: at the moment each board is written, name a light line as the one chatty line
+that often belongs on the slide, with his two slides as the examples (cause 1); look while each
+beat's material is chosen, not at the end (cause 2); "keep it straight" means the steps of a
+calculation, not a subject, with one maths example of a number or measure doing something odd
+(cause 3); the line rides inside something already on the board, like his "Not literally!" in
+a task line, so it needs no extra room (cause 4); the reviewer asks whether a line in the
+script would do more on the slide (cause 5). Kept exactly: never a quota, none is fine when
+nothing fits, never at a child or about the serious issue itself. He answered "do those humour
+fixes". Release 6 builds all five, after releases 3 and 5 settle the text it reaches.
+
 ## Scratch
 
 All read-only, in `streamline-tools/scratch/humour/`: `inventory.py` (every
