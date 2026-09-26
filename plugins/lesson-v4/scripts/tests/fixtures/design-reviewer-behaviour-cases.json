@@ -529,6 +529,30 @@
       "expectedOwner": "Design Reviewer",
       "protectedBehaviour": "A model on a parallel case shows what good looks like and leaves the decision on the task's own cases to each child.",
       "forbiddenFinding": "Do not treat any model answer in a launch as leakage because it shares the task's shape or sentence frame."
+    },
+    {
+      "id": "teach-example-written-as-an-instruction-to-look-is-rewritten",
+      "materialDifference": "A Year 4 science Teach board on the layers of a tooth gives `Look at the diagram.` as its example and names nothing the class will find when they get there.",
+      "expectedResult": "APPROVED AFTER BOUNDED CORRECTION",
+      "expectedOwner": "Design Reviewer",
+      "protectedBehaviour": "An example written as an instruction to look is the example missing; the reviewer rewrites it itself as what children will notice (`Notice the enamel is the hardest layer.`), or takes the line off the board when the picture's own label already names the thing and the key question does the pointing.",
+      "forbiddenFinding": "Do not send a line of words back to the Lesson Designer; make the wording fix yourself. A board that honestly lacks a part, with nothing in the script supplying it, is not this finding."
+    },
+    {
+      "id": "do-that-says-its-teach-back-goes-back-named",
+      "materialDifference": "Straight after a Teach slide saying steam engines let the fair run bigger rides, a Do asks `What did steam engines make possible?` and expects the slide's sentence back.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "protectedBehaviour": "A Do whose expected answer says its Teach back changes what children have to think once repaired, so it goes back to the Lesson Designer with the fix named, keeping the chunk: here, ask what the fair would lose without its steam engine.",
+      "forbiddenFinding": "Do not make the change yourself; name it. Do not return a quick check on a case the Teach did not show, or a term used on a fresh case when the term's exact wording is the learning."
+    },
+    {
+      "id": "photograph-of-a-drawn-tool-goes-back-named",
+      "materialDifference": "A Year 4 rounding lesson asks for a photograph of a number line from 300 to 400 on its Teach slide, a tool the engine draws.",
+      "expectedResult": "REDESIGN REQUIRED",
+      "expectedOwner": "Lesson Designer",
+      "protectedBehaviour": "A photograph of a tool the engine draws goes back to the Lesson Designer, naming the helper that should draw it; adding or removing a photograph is never the reviewer's.",
+      "forbiddenFinding": "Do not make the change yourself; name it. Do not return a photograph of a real-world referent (a real measuring jug, real coins, a real shelf label) or a picture the helper check's rescue route produced."
     }
   ]
 }

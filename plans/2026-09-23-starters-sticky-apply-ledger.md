@@ -1028,3 +1028,7 @@ words. G10 and H03 are kept word for word; H05's first two sentences and G12 mov
 The same lines are rows of the later topics' lists, which their releases read against
 the mapping: routes RT-C27, E12, E13, E40, E41, E42, E44, J06, P12, P13, P19; reviewer
 RV-H12, H14, J48, K02, S05, S25, T11; playbook PB-S14; voice VG-M33.
+
+## After the design reviewer release (topic 8, release 2, 26 September 2026)
+
+- **SA-M08**'s pin holds the reviewer's section 3 list whole; it followed two sentences the design reviewer release (topic 8, release 2), on the design reviewer's list, whose mapping (`2026-09-26-design-reviewer-mapping.md`) names each row it changed changed there: a restating Do now goes back to the Lesson Designer (its decision 2 (a picture swap or a rewritten Do beat goes to the lesson designer, with the reviewer naming the fix); RV-J34), and "now" left the `unlocks` line (RV-J18). The test-question line this list changed is untouched.

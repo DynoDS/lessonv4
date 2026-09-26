@@ -1338,3 +1338,7 @@ govern.
 
 - **SC-C15** (the writing guide) and **SC-C16** (the skill) are retired in `success_criteria_ledger_pins.json`: his decisions 1 and 3 on the subject-files list (24 September): the make-subject-file skill and its writing guide are removed completely ("just remove it completely"). Each pin now holds its file staying gone.
 - **SC-G02** is retired: his decision 6 on that list ("those balanced diet things sound like things I wouldnt want in the pshe subject files", then "maybe the subject file could say to look for guidance from eatwell guide thing") took the per-meal quota rule out of the PSHE file, whose food section is now one line pointing to the NHS Eatwell Guide. The general rule, a count in a criterion is never invented (SC-G01), stays where every lesson reads it.
+
+## After the design reviewer release (topic 8, release 2, 26 September 2026)
+
+- **SC-Q01** (the reviewer's section 3 list, pinned whole) moved with the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`: the same two sentences as the quick-checks list's QC-C08 (the restating Do goes back to the lesson designer, his decision 2 there (24 September 2026, "1. y"): small wording fixes are the reviewer's, and a picture swap or a rewritten Do beat goes to the lesson designer with the reviewer naming the fix; "now" left the `unlocks` line). No success-criteria wording changed.

@@ -3067,3 +3067,11 @@ its new words, and is pinned in the starters pin file; 7B's pin file takes these
 from there, as it takes the colour rows from `COLOURS_ROWS`. How Much Fits in One
 Lesson is already a home in the starters pin file (`HOME-SA-PREF-FIT`), so 7B need not
 pin it again. V13 and V14 name no slot title and were not changed.
+
+## After the design reviewer release (topic 8, release 2, 26 September 2026)
+
+- These rows quote reviewer lines changed by the design reviewer release (topic 8, release 2), on the design reviewer's list, whose mapping (`2026-09-26-design-reviewer-mapping.md`) names each row it changed. None is pinned; each row's own words still describe the rule, and the change is as the reviewer's row says.
+- **Decision 2:** PF-S25 (RV-M14, a photograph of a tool the engine draws) now goes back to the Lesson Designer with the fix named; PF-G28 lost "now" from "The design now states this" (RV-J18, its settled item 5). PF-Q25 (RV-C10, a Teach example written as an instruction to look) is unchanged: by his answer of 26 September it stays the reviewer's own wording fix.
+- **Decision 7:** PF-O20 (Slide Philosophy's trigger, RV-S16), PF-S11 (the visual-need trigger, RV-S22) and PF-N14 (Source and Scenario Integrity's trigger, RV-S30) each gained a sentence naming the case it now opens for; their earlier words are unchanged.
+- **Settled item 4:** PF-O21 (RV-I07): the visible explanation is judged first, on its own, and the spoken one separately.
+- **Settled items 10 and 11:** PF-W23 (RV-K09) is cut by its settled item 10 (one copy of each rule); PF-B30 (RV-D06), PF-C21 (RV-G21), PF-E17 (RV-F09), PF-E19 (RV-G05), PF-S18 (RV-M06), PF-W28 (RV-C08), PF-X44 (RV-C06) and PF-Y04 (RV-C13) lost their dated stories by its settled item 11 (a dated story leaves for the build log, where it was copied first; the reason stays); PF-E18 (RV-G09) reads "the actual child in this class", the lead's reading of his words on this list (24 September, "I actually don't know why it says nine-year-old"), not his wording.

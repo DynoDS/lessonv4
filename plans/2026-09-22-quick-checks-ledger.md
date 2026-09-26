@@ -956,3 +956,7 @@ was verified and taken, except:
   unquoted; it is how maths practice is ordered, not a check.
 - **Words to Diagram (its item 9, marked unsure)**: taken into decision 6 as
   the least certain of three, so Daniel can leave it out.
+
+## After the design reviewer release (topic 8, release 2, 26 September 2026)
+
+- **QC-C08, QC-E11 and QC-P01** (the reviewer's section 3 list, pinned whole) and **QC-D08** moved with the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`. A Do that says its Teach back now reads "The repair keeps the chunk and is the Lesson Designer's, because it changes what children have to think: return it naming the fix, which asks for the because, ...", the list of repairs and both pointers unchanged (his decision 2 there (24 September 2026, "1. y"): small wording fixes are the reviewer's, and a picture swap or a rewritten Do beat goes to the lesson designer with the reviewer naming the fix; RV-J34); and "The design now states this in each unit's `unlocks`" lost "now" (its settled item 5, out-of-date text; RV-J18).
