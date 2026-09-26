@@ -13,7 +13,7 @@ Read this first, then `plans/streamline-plan.md` (the method, his rules, "What t
 
 ### 1. Voice guide (topic 8, release 5): nearly done
 - Worktree `C:\Users\Daniel\Projects\lessonv4-voice`, branch `streamline/8-voice`, from `91687471`. Report `plans/streamline-tools/vg-release-report.md` there; full check `vg-release-check.md` there.
-- Built, fully checked, first repairs done. Last item: his answer "yes thats fine" (repeating a phrase for rhythm is fine in speaker notes; the warning stays for the written slide), recorded in that worktree's voice ledger. It was sent to the builder just before the stop: see whether the guide's notes part now says so (search the guide for "rhythm"). If not, build it as a script in `vg-change/`.
+- Built, fully checked, every repair done, and his last answer ("yes thats fine": a phrase repeated for rhythm is fine in speaker notes, the warning stays for the written slide) built by `vg_00` and the guide's section 2 and 3 changes. Every suite passes on the branch (Python 2,325), 60 of 60 undo attacks caught, replay exact; a trial merge onto `8af6f8a9` passes (Python 2,382). `vg_09` restores his answer in the voice ledger if a conflict resolution drops it.
 - Then: a small look at the repairs (a fresh agent, smaller model), then join main (see "Joining a side branch"), numbered **4.2.296**, merge follow script `plans/streamline-tools/vg-change/vg_09_follow_at_merge.py` (take main's side in conflicts, then run it).
 
 ### 2. Playbook 10A: started, stopped part way
