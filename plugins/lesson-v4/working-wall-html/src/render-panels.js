@@ -12,17 +12,25 @@ const {
   TITLE_BAR_LINE_HEIGHT,
   tryReadPhoto,
   photoAspect,
+  stackedCaptionInches,
+  panelPage,
 } = require("./layout");
 const {
   panelFractionFor,
+  panelFractionThatFits,
   wideVisualReserveInches,
+  stackedFigureInches,
   pickVisual,
   defaultVisualLabel,
+  cardLabel,
   stackedBodyOpts,
   defaultBodyPt,
   minBodyPt,
   panelLabelPt,
   badgeInches,
+  accentLabelPtFor,
+  isStepLabel,
+  PHOTO_AT_A_THIRD,
 } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
 const { esc, markedHtml, mm, hash, imgTag, visualTag, titleBarHtml, panelHtml, panelWithVisualHtml, twoUpPanelsHtml } = require("./shared");
@@ -35,7 +43,8 @@ function criteriaHtml(text) {
     .join("");
 }
 
-const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
+// Arrows come from "Wall Arrows" (shared.js says why).
+const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
 
 // Local title-fit wrapper used by this renderer family.
 function titlePtFor(card, style) {
@@ -56,8 +65,9 @@ function titlePtFor(card, style) {
 //
 // render-grids solved this for reference tables long ago and this is the same
 // two moves: pin the line-height in the CSS so the bar's height is decided here
-// rather than by the font, then reserve exactly that.
-const BADGE_COLUMN_INCHES = 0.2;
+// rather than by the font, then reserve exactly that. A worked example's badge
+// rows used to reserve a flat 0.2in more; the page model now measures each row
+// at its badge's own height (layout.js, What the page draws).
 
 function titleBarOpts() {
   return { lineHeight: TITLE_BAR_LINE_HEIGHT };
@@ -109,13 +119,56 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
   const imagePath = optionalCardImagePath(card);
   const emojiVisual = optionalCardEmojiVisual(card);
   const hasVisual = !!(card.visual || imagePath || emojiVisual);
-  const panelFraction = panelFractionFor(card, ctx, hasVisual && !card.visual);
+  const pictureBeside = hasVisual && !card.visual;
+  // How many lines a fact may take at the floor size: the card's usual two,
+  // unless its photo has narrowed to about a third (visuals.js).
+  let factLines = null;
+  const bodyOpts = (fraction) => ({
+    ...stackedBodyOpts(card, fraction, style),
+    ...(factLines ? { floorLinesPerItem: factLines, longItemsAtFloor: PHOTO_AT_A_THIRD.factsOnThreeLines } : {}),
+  });
+  const fitsAt = (fraction, extra) =>
+    linearBodyFitsAtFloor(
+      items.length > 0 ? items : [{ text: "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride: dims.width * fraction - 0.6, titleAreaInches: titleBarHeightInches(titlePt), ...stackedBodyOpts(card, fraction, style), ...extra }
+    );
+  const fitsBeside = (fraction) => fitsAt(fraction, bodyOpts(fraction));
+  let panelFraction = panelFractionThatFits(panelFractionFor(card, ctx, pictureBeside), fitsBeside);
+  let photoOff = false;
+  if (pictureBeside && !fitsBeside(panelFraction)) {
+    panelFraction = PHOTO_AT_A_THIRD.share;
+    factLines = PHOTO_AT_A_THIRD.floorLines;
+    // His rule allows one fact on three lines beside the photo, and the next
+    // goes on a second card: the wall designer's move, where the wall has room.
+    // A card that still holds more than one here is never lost for it. The
+    // build cannot write a shorter sentence, so it takes his order's last move
+    // for this card alone, the photo off, every sentence kept whole on the full
+    // width, and says so (the fourth check, 26 September 2026).
+    const onlyTheCount = !fitsBeside(panelFraction) && fitsAt(panelFraction, { floorLinesPerItem: factLines });
+    if (onlyTheCount && fitsAt(1, {})) {
+      photoOff = true;
+      panelFraction = 1;
+      factLines = null;
+      console.log(
+        `[working-wall] ${cardLabel(card)}: more than one fact needs three lines beside the photo, and a card holds ` +
+          "one fact that long, so this card is built with its photo off and every sentence whole. To keep the photo, " +
+          "the wall designer moves the next long fact to a second card where the wall has room, or gives it a shorter " +
+          "whole sentence."
+      );
+    }
+  }
   const widthOverride = dims.width * panelFraction - 0.6;
   // A3-only builder: use the fixed A3 value below.
   // The figure is offered the generous share and handed back whatever the
   // panel cannot give up: this probe re-runs the body's own fit at its floor
   // size for a candidate reserve, so no card can be pushed under the text
   // size its steps need in order to print a bigger diagram.
+  // A figure stacked under the panel carries its caption beneath it too.
+  const caption = stackedCaptionInches(card.visual ? defaultVisualLabel(card.visual) : null, card.page.orientation, style);
   const bodyFitsAtFloor = (reserve) =>
     linearBodyFitsAtFloor(
       items.length > 0 ? items : [{ text: "" }],
@@ -123,10 +176,10 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + (reserve > 0 ? stackedFigureInches(card, ctx, style, reserve) + caption : 0), ...bodyOpts(panelFraction) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = titleBarHeightInches(titlePt) + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + (wideVisualReserve > 0 ? stackedFigureInches(card, ctx, style, wideVisualReserve) + caption : 0);
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -138,7 +191,7 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
     card.page.size,
     card.page.orientation,
     style,
-    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction) }
+    { widthOverride, titleAreaInches, ...bodyOpts(panelFraction) }
   );
 
   const panelChildrenHtml = shown.map((item) => bodyLineHtml(item.text, bodyPt, style)).join("");
@@ -152,7 +205,7 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
     );
   }
 
-  if (emojiVisual) {
+  if (emojiVisual && !photoOff) {
     return (
       titleBarEl +
       panelWithVisualHtml(
@@ -169,7 +222,7 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
     );
   }
 
-  if (imagePath) {
+  if (imagePath && !photoOff) {
     const photoBuf = tryReadPhoto(specDir, imagePath);
     if (photoBuf) {
 // No aspect is passed for this photo path, so panelWithVisualHtml uses its
@@ -198,7 +251,15 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
 
   const dims = printableInches(card.page.size, card.page.orientation, style);
   const hasVisual = !!card.visual;
-  const panelFraction = panelFractionFor(card, ctx, hasVisual && !card.visual);
+  const panelFraction = panelFractionThatFits(panelFractionFor(card, ctx, hasVisual && !card.visual), (fraction) =>
+    linearBodyFitsAtFloor(
+      [{ text: definition ? plainCriteria(definition) : "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride: dims.width * fraction - 0.6, titleAreaInches: titleBarHeightInches(titlePt), ...stackedBodyOpts(card, fraction, style) }
+    ));
   const widthOverride = dims.width * panelFraction - 0.6;
   // The figure is offered the generous share and handed back whatever the
   // panel cannot give up: this probe re-runs the body's own fit at its floor
@@ -215,6 +276,8 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
   // method steps hang on.
   const items = definition ? [{ text: plainCriteria(definition) }] : [{ text: "" }];
 
+  // A figure stacked under the panel carries its caption beneath it too.
+  const caption = stackedCaptionInches(card.visual ? defaultVisualLabel(card.visual) : null, card.page.orientation, style);
   const bodyFitsAtFloor = (reserve) =>
     linearBodyFitsAtFloor(
       items.length > 0 ? items : [{ text: "" }],
@@ -222,10 +285,10 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + (reserve > 0 ? stackedFigureInches(card, ctx, style, reserve) + caption : 0), ...stackedBodyOpts(card, panelFraction, style) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = titleBarHeightInches(titlePt) + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + (wideVisualReserve > 0 ? stackedFigureInches(card, ctx, style, wideVisualReserve) + caption : 0);
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -236,7 +299,7 @@ function renderVocabDefinition(card, style, specDir, ctx = {}) {
     card.page.size,
     card.page.orientation,
     style,
-    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction) }
+    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction, style) }
   );
 
   const panelChildrenHtml = bodyLineHtml(definition, bodyPt, style);
@@ -301,7 +364,11 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
   const items = card.items || [];
   // Steps copied from the board keep their colour marks; the fit reads only
   // the words a child sees.
-  const fitItems = items.map((item) => (typeof item.text === "string" ? { ...item, text: plainCriteria(item.text) } : item));
+  const fitItems = items.map((item) => ({
+    ...item,
+    text: typeof item.text === "string" ? plainCriteria(item.text) : item.text,
+    kind: isStepLabel(item.label) ? "step" : "trailing",
+  }));
   const fillColour = style.colours.workedExamplePanelFill;
   const borderColour = style.colours.workedExamplePanelLine;
   const labelColour = style.colours.workedExampleLabel;
@@ -314,13 +381,23 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
   const imagePath = optionalCardImagePath(card);
   const emojiVisual = optionalCardEmojiVisual(card);
   const hasSideVisual = Boolean(imagePath || emojiVisual);
-  const panelFraction = panelFractionFor(card, ctx, hasSideVisual);
+  const panelFraction = panelFractionThatFits(panelFractionFor(card, ctx, hasSideVisual), (fraction) =>
+    linearBodyFitsAtFloor(
+      fitItems.length > 0 ? fitItems : [{ text: "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride: dims.width * fraction - 0.6, titleAreaInches: titleBarHeightInches(titlePt), ...stackedBodyOpts(card, fraction, style) }
+    ));
   const widthOverride = dims.width * panelFraction - 0.6;
   // A3-only builder: use the fixed A3 value below.
   // The figure is offered the generous share and handed back whatever the
   // panel cannot give up: this probe re-runs the body's own fit at its floor
   // size for a candidate reserve, so no card can be pushed under the text
   // size its steps need in order to print a bigger diagram.
+  // A figure stacked under the panel carries its caption beneath it too.
+  const caption = stackedCaptionInches(card.visual ? defaultVisualLabel(card.visual) : null, card.page.orientation, style);
   const bodyFitsAtFloor = (reserve) =>
     linearBodyFitsAtFloor(
       fitItems.length > 0 ? fitItems : [{ text: "" }],
@@ -328,10 +405,10 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + BADGE_COLUMN_INCHES + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + (reserve > 0 ? stackedFigureInches(card, ctx, style, reserve) + caption : 0), ...stackedBodyOpts(card, panelFraction, style) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = titleBarHeightInches(titlePt) + BADGE_COLUMN_INCHES + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + (wideVisualReserve > 0 ? stackedFigureInches(card, ctx, style, wideVisualReserve) + caption : 0);
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -343,9 +420,9 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
     card.page.size,
     card.page.orientation,
     style,
-    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction) }
+    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction, style) }
   );
-  const accentLabelPt = Math.max(28, Math.round(bodyPt * 0.7));
+  const accentLabelPt = accentLabelPtFor(bodyPt);
   const fittedBadgeInches = badgeInches(bodyPt);
 
   // Numeric steps get a green badge row; non-numeric labels (like "Worked
@@ -355,9 +432,7 @@ function renderWorkedExample(card, style, specDir, ctx = {}) {
   const trailingItemsHtml = [];
   let stepIdx = 0;
   for (const item of items) {
-    const label = (item.label || "").toLowerCase();
-    const isStep = label.startsWith("step") || /^\d+\b/.test(label);
-    if (isStep) {
+    if (isStepLabel(item.label)) {
       stepIdx += 1;
       const badge = ctx.svgImages ? ctx.svgImages[badgeKey(stepIdx)] : null;
       stepRowsHtml.push(stepBadgeRowHtml(badge, item.text, bodyPt, fittedBadgeInches, style, stepIdx));
@@ -456,24 +531,37 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
   const titleBarEl = titleBarHtml(titleText, style.colours.sentenceStemTitleBarFill, style, titlePt, card.page.size, card.page.orientation, titleBarOpts());
 
   const dims = printableInches(card.page.size, card.page.orientation, style);
-  const panelFraction = panelFractionFor(card, ctx, false);
+  const stemLines = items.flatMap((item) => (item.filled
+    ? [{ text: plainCriteria(item.text), kind: "stem" }, { text: plainCriteria(item.filled), kind: "filled" }]
+    : [{ text: plainCriteria(item.text), kind: "stem" }]));
+  const panelFraction = panelFractionThatFits(panelFractionFor(card, ctx, false), (fraction) =>
+    linearBodyFitsAtFloor(
+      stemLines.length > 0 ? stemLines : [{ text: "" }],
+      minBodyPt(card, style),
+      card.page.size,
+      card.page.orientation,
+      style,
+      { widthOverride: dims.width * fraction - 0.6, titleAreaInches: titleBarHeightInches(titlePt), ...stackedBodyOpts(card, fraction, style) }
+    ));
   const widthOverride = dims.width * panelFraction - 0.6;
   // A3-only builder: use the fixed A3 value below.
   // The figure is offered the generous share and handed back whatever the
   // panel cannot give up: this probe re-runs the body's own fit at its floor
   // size for a candidate reserve, so no card can be pushed under the text
   // size its steps need in order to print a bigger diagram.
+  // A figure stacked under the panel carries its caption beneath it too.
+  const caption = stackedCaptionInches(card.visual ? card.visual.label || null : null, card.page.orientation, style);
   const bodyFitsAtFloor = (reserve) =>
     linearBodyFitsAtFloor(
-      items.length > 0 ? items.map((item) => ({ ...item, text: plainCriteria(item.text) })) : [{ text: "" }],
+      stemLines.length > 0 ? stemLines : [{ text: "" }],
       minBodyPt(card, style),
       card.page.size,
       card.page.orientation,
       style,
-      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + reserve, ...stackedBodyOpts(card, panelFraction) }
+      { widthOverride, titleAreaInches: titleBarHeightInches(titlePt) + (reserve > 0 ? stackedFigureInches(card, ctx, style, reserve) + caption : 0), ...stackedBodyOpts(card, panelFraction, style) }
     );
   const wideVisualReserve = wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor);
-  const titleAreaInches = titleBarHeightInches(titlePt) + wideVisualReserve;
+  const titleAreaInches = titleBarHeightInches(titlePt) + (wideVisualReserve > 0 ? stackedFigureInches(card, ctx, style, wideVisualReserve) + caption : 0);
   // The draw uses the number the reserve was made with; the 0.25in is the
   // gap `wideVisualReserveInches` adds above the figure.
   const maxVisualHeightIn = wideVisualReserve > 0 ? wideVisualReserve - 0.25 : undefined;
@@ -481,19 +569,14 @@ function renderSentenceStem(card, style, specDir, ctx = {}) {
   // Autofit treats each filled line as an extra body line so the pair sizes
   // down together rather than overflowing the panel. It measures the words a
   // child reads, never the colour marks.
-  const fitItems = [];
-  for (const item of items) {
-    fitItems.push({ text: plainCriteria(item.text) });
-    if (item.filled) fitItems.push({ text: plainCriteria(item.filled) });
-  }
   const bodyPt = fitLinearBodySize(
-    fitItems.length > 0 ? fitItems : [{ text: "" }],
+    stemLines.length > 0 ? stemLines : [{ text: "" }],
     defaultBodyPt(card, style),
     minBodyPt(card, style),
     card.page.size,
     card.page.orientation,
     style,
-    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction) }
+    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction, style) }
   );
   const accent = style.colours.sentenceStemLabel || style.colours.sentenceStemTitleBarFill;
 
@@ -553,21 +636,40 @@ function renderMisconception(card, style, specDir, ctx = {}) {
   // the visual, unlike the other panel renderers.
   const panelFraction = 0.5;
   const widthOverride = dims.width * panelFraction - 0.6;
-  // A3-only builder: use the fixed A3 value below.
-  const titleAreaInches = titleBarHeightInches(titlePt);
+  // The picture under the pair is settled first, because it takes the pair's
+  // height: the pair used to be planned as if it had the whole body.
+  const beneath = pictureBeneathPair(card, style, specDir, ctx, dims);
+  const titleAreaInches = titleBarHeightInches(titlePt) + beneath.heightIn;
+  const dontDoLabelPt = labelPt * 0.85;
 
-  const fitItems = items.length > 0 ? items.map((item) => ({ ...item, text: plainCriteria(item.text) })) : [{ text: "" }];
+  // Planned as drawn (layout.js, What the page draws): each of the two cells
+  // (shared.js `twoUpPanelsHtml`) holds its label line and its one sentence,
+  // side by side, so the pair is as tall as the taller cell.
+  const pairItems = [dontItem, doItem].map((item) => ({
+    label: item ? item.label : undefined,
+    text: item ? plainCriteria(item.text) : "",
+  }));
   const bodyPt = fitLinearBodySize(
-    fitItems,
+    pairItems,
     defaultBodyPt(card, style),
     minBodyPt(card, style),
     card.page.size,
     card.page.orientation,
     style,
-    { widthOverride, titleAreaInches, ...stackedBodyOpts(card, panelFraction) }
+    {
+      widthOverride,
+      titleAreaInches,
+      ...stackedBodyOpts(card, panelFraction, style),
+      page: panelPage(card.page.orientation, style, panelFraction, {
+        outerIn: (dims.width - 360 / 1440) / 2,
+        paddingDxa: 320,
+        pair: true,
+        headPt: dontDoLabelPt,
+        headPadDxa: 240,
+      }),
+    }
   );
 
-  const dontDoLabelPt = labelPt * 0.85;
   const wrongPanelHtml =
     panelLabelParagraphHtml("✗ Don't", dontDoLabelPt, style.colours.misconceptionWrongLabel, style) +
     bodyLineHtml(dontItem ? dontItem.text : "", bodyPt, style);
@@ -587,12 +689,17 @@ function renderMisconception(card, style, specDir, ctx = {}) {
     card.page.orientation
   );
 
-  let html = titleBarEl + pairHtml;
+  if (beneath.notice) console.log(beneath.notice);
+  return titleBarEl + pairHtml + beneath.html;
+}
 
-  // A misconception card may carry a `visual` (a diagram the Don't/Do advice
-  // refers to), a straight `photo`, or a card-level P2 `picture`. Any of them
-  // sits centred beneath the pair, never displacing a panel - the pair is the
-  // card's spine. P1 photo/diagram still wins over a P2 emoji.
+// A misconception card may carry a `visual` (a diagram the Don't/Do advice
+// refers to), a straight `photo`, or a card-level P2 `picture`. Any of them
+// sits centred beneath the pair, never displacing a panel - the pair is the
+// card's spine. P1 photo/diagram still wins over a P2 emoji. Returns the HTML,
+// the height it takes under the pair, and the notice when a photo is omitted.
+function pictureBeneathPair(card, style, specDir, ctx, dims) {
+  const none = { html: "", heightIn: 0, notice: null };
   const imagePath = optionalCardImagePath(card);
   const emojiVisual = optionalCardEmojiVisual(card);
   const photoBuf = imagePath ? tryReadPhoto(specDir, imagePath) : null;
@@ -620,21 +727,25 @@ function renderMisconception(card, style, specDir, ctx = {}) {
       const maxWIn = dims.width * 0.62;
       if (wIn > maxWIn) { wIn = maxWIn; hIn = wIn / aspect; }
       if (wIn < MIN_READABLE_IN) {
-        console.log(
-          `[working-wall] "${card.title || card.type}": photo omitted - only ${wIn.toFixed(1)}in of room is left under the Don't/Do pair, ` +
-          `below the ${MIN_READABLE_IN}in a card needs to be read from across a room. Shorten the Don't/Do text to make room for it.`
-        );
-        return html;
+        return {
+          ...none,
+          notice:
+            `[working-wall] "${card.title || card.type}": photo omitted - only ${wIn.toFixed(1)}in of room is left under the Don't/Do pair, ` +
+            `below the ${MIN_READABLE_IN}in a card needs to be read from across a room. Shorten the Don't/Do text to make room for it.`,
+        };
       }
       widthIn = wIn;
       heightIn = hIn;
     }
 
     const topMm = mm(200 / 1440);
-    html += `<div style="text-align:center;padding:${topMm}mm 0 0 0;">${visualTag(v, mm(widthIn), mm(heightIn), "margin:0 auto;")}</div>`;
+    return {
+      html: `<div style="text-align:center;padding:${topMm}mm 0 0 0;">${visualTag(v, mm(widthIn), mm(heightIn), "margin:0 auto;")}</div>`,
+      heightIn: (topMm + mm(heightIn)) / 25.4,
+      notice: null,
+    };
   }
-
-  return html;
+  return none;
 }
 
 module.exports = { renderStickyKnowledge, renderVocabDefinition, renderWorkedExample, renderSentenceStem, renderMisconception };

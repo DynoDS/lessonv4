@@ -153,7 +153,15 @@ async function itemOfLengthBuilds(dir, length, withPicture) {
 test("the per-item character budgets the designer documents are the real ones", async () => {
   const dir = wallDir("wall-budget-");
   assert.equal(await itemOfLengthBuilds(dir, 62, true), true, "a 62-character item on a picture card should build");
-  assert.equal(await itemOfLengthBuilds(dir, 63, true), false, "63 characters should be one over the picture-card budget");
+  // His order (26 September 2026): the picture gives up a little width before
+  // anything else moves, so a card a few characters over keeps its picture.
+  assert.equal(await itemOfLengthBuilds(dir, 72, true), true, "a 72-character item should build with the picture a little smaller");
+  // His second answer (26 September 2026, "yys"): a sticky fact too long for
+  // that keeps its photo too, narrowed to about a third of the card, and runs
+  // to three lines at the floor size.
+  assert.equal(await itemOfLengthBuilds(dir, 73, true), true, "a 73-character fact should build beside its photo narrowed to a third");
+  assert.equal(await itemOfLengthBuilds(dir, 106, true), true, "a 106-character fact should build beside its photo narrowed to a third");
+  assert.equal(await itemOfLengthBuilds(dir, 109, true), false, "109 characters should be over even beside a photo narrowed to a third");
   assert.equal(await itemOfLengthBuilds(dir, 106, false), true, "a 106-character item on a full-width card should build");
   assert.equal(await itemOfLengthBuilds(dir, 107, false), false, "107 characters should be one over the full-width budget");
   for (const doc of [
@@ -163,6 +171,67 @@ test("the per-item character budgets the designer documents are the real ones", 
     const text = read(doc);
     assert.ok(text.includes("62 characters"), `${path.basename(doc)} no longer quotes the 62-character budget`);
     assert.ok(text.includes("106 characters"), `${path.basename(doc)} no longer quotes the 106-character budget`);
+  }
+  assert.ok(
+    read(path.join(refDir, "working-wall-preferences.md")).includes("about 72 characters once the build has shrunk the picture a little"),
+    "working-wall-preferences.md no longer quotes the budget once the picture gives way"
+  );
+  assert.ok(
+    read(path.join(refDir, "working-wall-preferences.md")).includes("about 106 characters once the photo has narrowed to about a third of the card"),
+    "working-wall-preferences.md no longer quotes a sticky fact's budget beside a photo narrowed to a third"
+  );
+});
+
+test("a card keeps its picture's full share when its words fit, and the picture gives way only a little", () => {
+  const { panelFractionThatFits, PICTURE_GIVES_WAY } = require("../src/visuals");
+  assert.deepEqual(PICTURE_GIVES_WAY, [0.65, 0.7]);
+  assert.equal(panelFractionThatFits(0.6, () => true), 0.6, "words that fit leave the picture its full share");
+  assert.equal(panelFractionThatFits(0.6, (f) => f >= 0.65), 0.65, "the smallest step that fits is taken");
+  assert.equal(panelFractionThatFits(0.6, (f) => f >= 0.7), 0.7);
+  assert.equal(
+    panelFractionThatFits(0.6, () => false),
+    0.7,
+    "a card that fits at no share is refused at the widest share tried, so its message names the budget it really has"
+  );
+  assert.equal(panelFractionThatFits(1.0, () => false), 1.0, "a card with no side picture is left alone");
+  assert.equal(panelFractionThatFits(0.32, () => false), 0.32, "a picture made dominant is left alone");
+});
+
+async function cardBuilds(dir, card) {
+  const { build } = require("../build.js");
+  const specPath = path.join(dir, "working-wall.json");
+  fs.writeFileSync(specPath, JSON.stringify({ topic: "Give way", cards: [card] }));
+  const warn = console.warn;
+  const log = console.log;
+  console.warn = () => {};
+  console.log = () => {};
+  try {
+    await build(specPath, dir);
+    return true;
+  } catch (err) {
+    return false;
+  } finally {
+    console.warn = warn;
+    console.log = log;
+  }
+}
+
+// The definition and the sentence-stem cards let a drawing give way as the
+// sticky and worked-example cards do. Beside a drawing an item holds about 124
+// characters at the full share (four lines at the floor), and about 144 at the
+// widest share tried.
+test("a definition or a sentence stem beside a drawing keeps it by letting it give way a little", async () => {
+  const dir = wallDir("wall-give-way-");
+  const drawing = { type: "line-pair", relationship: "perpendicular", form: "L", notation: "right-angle" };
+  const page = { size: "A3", orientation: "landscape" };
+  const words = (length) => "x ".repeat(120).slice(0, length).trim();
+  const cards = {
+    definition: (length) => ({ type: "vocabDefinition", page, title: "Perpendicular", definition: words(length), visual: drawing }),
+    "sentence stem": (length) => ({ type: "sentenceStem", page, title: "How to explain it", items: [{ text: words(length) }], visual: drawing }),
+  };
+  for (const [name, card] of Object.entries(cards)) {
+    assert.equal(await cardBuilds(dir, card(130)), true, `a 130-character ${name} should build with its drawing a little smaller`);
+    assert.equal(await cardBuilds(dir, card(146)), false, `a 146-character ${name} is past what the drawing giving way allows`);
   }
 });
 
@@ -194,12 +263,24 @@ test("an over-long body item is refused by name, item and overage", async () => 
     () => build(specPath, dir),
     (err) => {
       const message = String(err && err.message);
-      // Which card, which item, how long it is, and what to cut it to. Without
-      // all four the single permitted repair is aimed at nothing, which is how
-      // two runs in a row shipped with no wall at all.
+      // Which card, which item, how long it is, and the budget it has to come
+      // under. Without all four the single permitted repair is aimed at
+      // nothing, which is how two runs in a row shipped with no wall at all.
       assert.match(message, /workedExample "Improve a lunch"/, "the refusal must name the card");
       assert.match(message, /item 2 is 82 characters/, "the refusal must name the item and its length");
-      assert.match(message, /Cut it to 62 characters or fewer/, "the refusal must name the target");
+      // The budget at the widest share the picture gave way to, not the 62 of
+      // the full share: a designer shortening aims at what the card holds.
+      assert.match(message, /72 is the most that fits/, "the refusal must name the budget");
+      // Room before words, and a whole sentence when words must change
+      // (release 7A: the wall keeps the lesson's sentences whole).
+      assert.match(
+        message,
+        /needs room before its words change: any picture beside it has already narrowed \(a sticky fact's photo to about a third of the card\), so next carry a list over a second card; only if it still will not fit is it shortened/,
+        "the refusal must lead with making room"
+      );
+      assert.match(message, /to a whole sentence with the same meaning and never a clipped phrase/, "a shortened item stays a whole sentence");
+      assert.match(message, /the picture comes off last of all/, "the picture comes off only as the last move");
+      assert.doesNotMatch(message, /Cut it to/, "the refusal no longer tells the designer to cut first");
       return true;
     }
   );

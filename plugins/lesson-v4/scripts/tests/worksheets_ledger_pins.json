@@ -1595,13 +1595,13 @@
   },
   {
    "id": "WS-B07",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until 4.2.293; then release 7A (4.2.293): the fold (SA-H08): phrasing consistency moved to preferences.md -> Sticky Knowledge in full prose, naming the worksheet as before and now the working wall (SA decision 7)",
    "present": [
     {
-     "file": "agents/lesson-designer.md",
-     "text": "Cross-slide repetition - phrase on Teach matches Practise reference later, worksheet, Apply.",
+     "file": "references/preferences.md",
+     "text": "The repetition is across slides: the phrase on the Teach matches the later Practise reference, the worksheet, the Apply and the working wall,",
      "section": {
-      "heading": "### Sticky Knowledge",
+      "heading": "## Sticky Knowledge",
       "occurrence": 0,
       "intro": false
      }

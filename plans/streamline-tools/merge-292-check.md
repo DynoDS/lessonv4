@@ -16,7 +16,7 @@ Checked 26 September 2026 on main's working tree. Base `2db3ceba`; main side HEA
   - **COL-ADD-09**: its three build-log pins named the entry's heading without "(4.2.292)".
   - **PF-R97**: it pins `templates.md`'s whole content-object table, and the subject-files release added a sentence to the `circuit-diagram` row (symbols are Year 6; Year 4 shows a labelled photograph).
 - `build_colours_mapping.py`, rerun on a scratch copy of the merged tree, changes exactly those two things in the pin file, plus line 229 of `plans/2026-09-25-colours-mapping.md` (the same table quote). The pin test then passes, 14 of 14.
-- While this check ran, main's pin file was fixed (00:08). It is now identical to the scratch rebuild, and the colours and success-criteria pin tests pass (29 passed). **Still stale: line 229 of the mapping file.** Rerunning `build_colours_mapping.py` now would change only that line.
+- While this check ran, the lead's `k18_follow_at_merge.py` fixed main's pin file (00:08). It is now identical to the scratch rebuild, and the colours and success-criteria pin tests pass (29 passed). **Still stale: line 229 of the mapping file.** Rerunning `build_colours_mapping.py` now would change only that line. See section 5.
 - The check that its rows are the ledgers' own now runs instead of skipping, and passes. No colours row is among the rows the subject-files release recorded in the ledgers.
 - `k8_repin_other_topics.py` is not needed. The success-criteria pin file merged cleanly and its test passes. A rerun would stop at its first row (SC-J11's old words are already gone) and write nothing.
 - The other seven ledger pin tests (assumed knowledge, quick checks, subject files, success criteria, teach then do, vocabulary, worksheets) passed throughout.
@@ -40,3 +40,14 @@ None found.
 - Side-branch words: one, "Built on a side branch beside 7A and 7B." It is past tense and reads as history. It is loose rather than wrong, since 7A and 7B are not built yet. "the rest-of-preferences list has none yet" is still true. There is no wording about merging.
 - Its "Every suite passes" is the side branch's run. The lead's run on the merged tree is the one that confirms it.
 - The "Not done" line names four pictures in `plans/streamline-tools/colours-renders/`. They are on disk, but `.gitignore` now keeps them out of git, so a push will not carry them.
+
+## 5. The lead's `k18_follow_at_merge.py`
+
+- **The move is right.** It retitles the three COL-ADD-09 section pins with "(4.2.292)" and replaces PF-R97's table pin with the merged table. Before replacing, it asserts that the merged table is the old one with exactly the subject-files sentence inserted.
+- Its output is identical, byte for byte, to what the release's own builder writes from the merged tree. The builder also rechecks every row it maps: every kept phrase found, every retired phrase gone everywhere. On the merged tree it reports `MAPPING_OK`.
+- It edits only the pin file, so the mapping's line 229 still quotes the old table (section 2).
+- It is safe but cannot run twice. A second run finds no old heading, stops on its own check and writes nothing.
+- **No other pin passes by luck.** For every pin in all eight pin files, I compared where it is found on its own side and on the merged tree: how many times, in which paragraph, and in which section.
+  - Colours pins: only PF-R97 sits in a paragraph the other side changed. The rest of the moves are sections that grew elsewhere (the circuit sentence in templates.md, the Classroom Secrets paragraph in maths.md, the log heading), and a pin checked by section passes regardless.
+  - The two pin files the colours side never ran (worksheets, subject files): SJ-DEC-08-CIRCUIT sits in the table that colours changed in another row (tally chart), and it still pins its own row's sentence. SJ-A40, WS-J15 and WS-L50 sit in sections colours changed elsewhere; their own paragraphs are untouched.
+  - The older pin files (assumed knowledge, quick checks, success criteria, teach then do, vocabulary): every pin whose paragraph colours changed is word for word one the colours side already ran on its branch.

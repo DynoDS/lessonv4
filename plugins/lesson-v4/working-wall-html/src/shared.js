@@ -18,7 +18,19 @@ const {
 
 const { criteriaSegments } = require("../../shared/text/criteria-marks");
 
-const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
+// Comic Sans MS has no arrows, and the next font in the stack, Segoe Print,
+// draws a line 1.78 times its type where Comic Sans draws 1.4, so a line
+// holding an arrow printed about 28% taller than the wall planned it: the
+// saved rounding wall's worked example 38px taller, and in the third check's
+// arrow sweep 45 of 178 cards past their panel (release 7A, 26 September
+// 2026). Arrows now come from "Wall Arrows" (PAGE_CSS): Segoe Print's own
+// arrows alone, drawn 40% larger so the shaft is as heavy as the digits beside
+// it (11px at 60pt, against the digits' 11 to 13; Arial Bold's was a 4px
+// hairline, Segoe UI Black's 5px, Segoe Print's own 8px), and held inside
+// Comic Sans's line by the face's own ascent and descent, so a line holding an
+// arrow is the height every other line is and the plan needs no second font.
+// Every other character Comic Sans lacks still falls to Segoe Print, as before.
+const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
 
 // A taught word is written `{{word}}` on the board, and words copied onto the
 // wall keep the mark. Its braces never print, whatever card the words land
@@ -272,10 +284,12 @@ function colouredLetterBoxHtml(text, fillColour, style, letterPt, opts = {}) {
 }
 
 const PAGE_CSS = `
+@font-face { font-family: "Wall Arrows"; src: local("Segoe Print"), local("SegoePrint"); font-weight: 400; size-adjust: 140%; ascent-override: 78%; descent-override: 20%; line-gap-override: 0%; unicode-range: U+2190-21FF; }
+@font-face { font-family: "Wall Arrows"; src: local("Segoe Print Bold"), local("SegoePrint-Bold"); font-weight: 700; size-adjust: 140%; ascent-override: 78%; descent-override: 20%; line-gap-override: 0%; unicode-range: U+2190-21FF; }
 @page a3portrait { size: A3 portrait; margin: 0; }
 @page a3landscape { size: A3 landscape; margin: 0; }
 html, body { margin: 0; padding: 0; }
-body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
+body { font-family: "Comic Sans MS", "Wall Arrows", "Segoe Print", cursive; }
 .page {
   box-sizing: border-box;
   overflow: hidden;

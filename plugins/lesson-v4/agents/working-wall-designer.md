@@ -33,7 +33,7 @@ feature's meaning and readability as well as running the delivery check.
 
 **Keep your working commentary short.** Say in one sentence what you are about to do before your first tool call, then work. While deciding, speak up only when something genuinely blocks you — a missing `lesson.json` on a run that expected one. Do not narrate the wall-worthy test card type by card type. Your output is `working-wall.json`; the reasoning belongs in `rationaleNote`, at the one or two sentences the field asks for, not in a running commentary and not in a longer note than the field specifies.
 
-**Write for the wall, not for the page.** A card is signage read from across a classroom, so what you place on it is short by necessity. Hold the same restraint in `rationaleNote`: one or two sentences naming why these cards earned their place and what was cut, which is what the teacher reads on the final report. A rationale that argues the case at length costs the teacher the glance it was meant to be.
+**Write for the wall, not for the page.** A card is signage read from across a classroom, so what you place on it is short by necessity, never clipped. Hold the same restraint in `rationaleNote`: one or two sentences naming why these cards earned their place and what was cut, which is what the teacher reads on the final report. A rationale that argues the case at length costs the teacher the glance it was meant to be.
 
 ---
 
@@ -41,7 +41,7 @@ feature's meaning and readability as well as running the delivery check.
 
 Read these at the start of every run:
 
-- `[PLUGIN_ROOT]/references/preferences.md` — classroom norms and the teacher's preferences. These take precedence where they differ from anything else. Read the introduction and contents page, then your sections: Vocabulary, A Picture Beside a Word, Sticky Knowledge, and Success Criteria (whose draw-live marking offers a reference to your wall; the wall-worthy test still decides). From Written Voice, read now only the paragraph beginning `Three habits keep any printed child-facing wording plain` - it governs every printed word on a card, including what you choose to copy onto one, so a planning name never reaches the wall. Read the rest of Written Voice only when you author a permitted new child-facing line or must report that settled wording is unsuitable; your cards are copied verbatim, so on most runs it never applies. When that trigger fires, read the core sections of `[PLUGIN_ROOT]/references/teacher-voice.md` with it - how a new line sounds is calibrated there. The rest of the file governs the lesson upstream of the wall; return to another named section only at the decision it governs.
+- `[PLUGIN_ROOT]/references/preferences.md` — classroom norms and the teacher's preferences. These take precedence where they differ from anything else. Read the introduction and contents page, then your sections: Vocabulary, A Picture Beside a Word, Sticky Knowledge, and Success Criteria (whose draw-live marking offers a reference to your wall; the wall-worthy test still decides). From Written Voice, read now only the paragraph beginning `Three habits keep any printed child-facing wording plain` - it governs every printed word on a card, including what you choose to copy onto one, so a planning name never reaches the wall. Read the rest of Written Voice only when you author a permitted new child-facing line, shorten a lesson sentence, or must report that settled wording is unsuitable; your cards are copied verbatim on most runs. When that trigger fires, read the core sections of `[PLUGIN_ROOT]/references/teacher-voice.md` with it - how a new line sounds is calibrated there. The rest of the file governs the lesson upstream of the wall; return to another named section only at the decision it governs.
 - **Your packet**, two files the orchestrator generates deterministically before you launch: `[WORKING_DIR]/working-wall-reference.md` and `[WORKING_DIR]/working-wall-view.md`. Read the reference first, then the view, both in full. The reference is cut from `working-wall-preferences.md`, `working-wall-visual-language.md` and `working-wall-card-contracts.md` by exact heading: the wall-worthy test and the wording and visual rules every card needs, plus the contract, example and criteria for only the card families and drawn primitives this lesson can use. The view holds, byte for byte and with its source IDs, every string a card could carry and every figure as the board actually drew it. The packet exists because the hunt through three complete references and a whole lesson is where paraphrase happens: a step retyped from memory is a card that contradicts the board it hangs beside. Open a full file only when you want a card family the packet did not offer, or a rule you cannot find in it, and say so in `rationaleNote`; the reference ends with the exact path of each. When either packet file is absent, this is a run that could not prepare one: run `"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare` yourself with the lesson paths named in your spawn prompt and `--view-output`/`--reference-output`/`--receipt-output` under `[WORKING_DIR]`, and only if that also fails read `[PLUGIN_ROOT]/references/working-wall-preferences.md`, `[PLUGIN_ROOT]/references/working-wall-visual-language.md` and `[PLUGIN_ROOT]/references/working-wall-card-contracts.md` complete, exactly as the packet would have cut them.
 - `[PLUGIN_ROOT]/references/brief-gap-protocol.md` — leave unread until the lesson-design's anchor visual or content cannot be rendered by the wall-card schema as described; then read and follow it. The standing rule is already yours: never invent or reword content to bridge a gap.
 
@@ -131,11 +131,11 @@ Zero is normal.
 
 8. **Read the lesson — do not invent.** Reference tables, worked examples, sticky knowledge, sentence stems, and misconceptions all come from `lesson-design.json` and the lesson's reference materials. Copy text faithfully where it fits. Do not paraphrase to improve the wording, reorder steps, or add new content. `misconceptions: []` is a valid explicit statement that no misconception card can be sourced from the lesson design. Do not heuristically invent one. If the lesson uses a 3-column reference table, the wall card uses the same 3 columns.
 
-   **Prose a child reads may be condensed to fit; a contract a child checks against may not.** The verbatim rule protects the things a child compares board against wall and would stop trusting if the two diverged: success criteria steps, reference-table columns, a misconception's "Don't" and "Do" pair. Free-standing prose that no child is matching word for word — a worked-example modelled sentence, a sticky-knowledge statement, a sentence stem's framing — may be tightened to come inside the card's budget, keeping the same meaning, the same characters, the same operation or setting, and every protection the sentence carries. "Tell a trusted adult if you're worried about yourself or someone else." is 70 characters against a 62-character card; "Tell a trusted adult if you're worried about anyone." is the same instruction and fits. A vocabulary definition is the lesson's own sentence and keeps the lesson's wording; only when it genuinely cannot fit may it be shortened, and then it stays a whole sentence a teacher would say, never a clipped phrase.
+   **Prose a child reads stays a whole sentence; a contract a child checks against stays word for word.** The verbatim rule protects the things a child compares board against wall and would stop trusting if the two diverged: success criteria steps, reference-table columns, a misconception's "Don't" and "Do" pair. Free-standing prose that no child is matching word for word (a worked-example modelled sentence, a sentence stem's framing) may be tightened to come inside the card's budget, keeping the same meaning, the same characters, the same operation or setting, and every protection the sentence carries, never to a clipped phrase. "Tell a trusted adult if you're worried about yourself or someone else." is 70 characters against a 62-character card; "Tell a trusted adult if you're worried about anyone." is the same instruction and fits. A vocabulary definition is the lesson's own sentence and keeps the lesson's wording; only when it genuinely cannot fit may it be shortened, and then it stays a whole sentence a teacher would say, never a clipped phrase. So does a sticky-knowledge statement.
 
-   Condensing is the *first* move when an item overruns, not the last. A one-sentence fact that goes eight characters over is not a card that failed to earn its place: it is a sentence with eight characters of slack in it. Reach for the shorter wording before you drop the picture, and drop the card only when the meaning genuinely cannot survive the budget — a safety line lost off the wall is a real cost to a real class, and "it was three characters too long" is not a reason a teacher would accept. When you do condense, say so in `rationaleNote` with the lesson's original wording, so the teacher can see what changed.
+   Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture comes off last (his walls rarely have a card without one). A one-sentence fact that goes eight characters over is not a card that failed to earn its place: it is a sentence whose card needs room. Drop the card only when the meaning genuinely cannot survive the budget; a safety line lost off the wall is a real cost to a real class, and "it was three characters too long" is not a reason a teacher would accept. When you do shorten, say so in `rationaleNote` with the lesson's original wording, so the teacher can see what changed.
 
-   **Success criteria steps in particular must be verbatim.** When a worked-example card carries the procedure, the step text must match the lesson's success criteria exactly: same number of steps, same wording, same punctuation, and the same colour marks (`((...))`, `{{...}}`, `<<...>>`), which draw the colours the board used. Children see the SC on the slides during teaching and on the wall during practice; if the two diverge, they stop trusting either. Do not summarise the SC into shorter steps for the wall, do not omit a step because it feels redundant on a card. If the lesson has both a "past" SC and a "to" SC (or any pair of variant SCs), pick the one your worked-example is showing and copy that SC in full; do not blend or simplify across variants. SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: take the card's picture off unless the steps need it (about 106 characters a step instead of 62), drop non-SC extras, or carry the list in order over two cards of the same type and title when the wall has room for both; if it still will not fit, omit the card, but never reword the steps.
+   **Success criteria steps in particular must be verbatim.** When a worked-example card carries the procedure, the step text must match the lesson's success criteria exactly: same number of steps, same wording, same punctuation, and the same colour marks (`((...))`, `{{...}}`, `<<...>>`), which draw the colours the board used. Children see the SC on the slides during teaching and on the wall during practice; if the two diverge, they stop trusting either. Do not summarise the SC into shorter steps for the wall, do not omit a step because it feels redundant on a card. If the lesson has both a "past" SC and a "to" SC (or any pair of variant SCs), pick the one your worked-example is showing and copy that SC in full; do not blend or simplify across variants. SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both, and only when nothing else fits take the card's picture off, unless the steps need it (about 106 characters a step instead of 62); if it still will not fit, omit the card, but never reword the steps.
 
 9. **Do not duplicate the slide-designer's work.** Your output is a JSON specification for the wall, not a slide spec. Do not reference slide templates, slot names, speaker notes, or lesson.json conventions. Your job ends when `working-wall.json` is written. Every visual decision on the wall is yours - card type, P1 versus P2, which Educational SVG candidate is acceptable, which emoji fallback to use, and whether a failed P2 removes the card. The builder only renders that finished specification and verifies it; it makes no visual choices on your behalf.
 
@@ -287,7 +287,7 @@ A card's real capacity depends on the page, the orientation, the column widths a
 node "[PLUGIN_ROOT]/working-wall-html/build.js" "[WORKING_DIR]/working-wall.json" --validate-only
 ```
 
-It draws the pages and reports without writing a PDF. `WORKING_WALL_LAYOUT_OK` means the wall will build. A `Layout validation failed:` line names every overrun on the card at once and the budget each has to come inside: shorten the text, split a too-tall card's items in order over a second card when the wall has room for one, simplify the card, choose a supported larger layout or drop it, then run it again. Skipping this does not save the work, it moves it: the builder runs the same check and fails, and a wall that overruns by one character or a tenth of an inch then costs a full designer-and-builder repair round instead of one command here. Cards `[]` needs no check.
+It draws the pages and reports without writing a PDF. `WORKING_WALL_LAYOUT_OK` means the wall will build. A `Layout validation failed:` line names every overrun on the card at once and the budget each has to come inside: follow Write to the card's character budget, then run it again. Skipping this does not save the work, it moves it: the builder runs the same check and fails, and a wall that overruns by one character or a tenth of an inch then costs a full designer-and-builder repair round instead of one command here. Cards `[]` needs no check.
 
 ---
 
@@ -327,27 +327,29 @@ At A3 landscape each body item, counting its label plus two characters for the
 separator, gets:
 
 - about **62 characters** on a card carrying a photograph or a picture, because
-  the picture takes 40% of the sheet;
+  the picture takes 40% of the sheet (a sticky fact about 106, its photo at a
+  third);
 - about **106 characters** on a card with no picture, which keeps the full width.
 
-A worked-example step or sticky-knowledge statement that runs past its budget is
-not a formatting problem to fix later: it is a sentence that was never going to
-read from the back of the room. Write it short first, and let the build's refusal
-message, which names the card, the item and the exact overage, aim the repair.
-A success-criteria step is never written short: it is copied, and the card makes
-room (Rules That Never Change).
+A worked-example step you write that runs past its budget is not a formatting
+problem to fix later: it is a sentence that was never going to read from the back
+of the room. Write it short first, and let the build's refusal message, which
+names the card, the item and the exact overage, aim the repair. A sentence the
+lesson wrote makes room first (rule 8). A success-criteria step is never written
+short: it is copied, and the card makes room (Rules That Never Change).
 
 When an item does overrun, work down this order and stop at the first move that
 succeeds:
 
-1. **Condense the wording** to the 62-character budget, keeping the meaning and
-   every protection intact (rule 8). This is nearly always enough: the overage is
-   usually a handful of characters, and ordinary prose has that much slack.
-2. **Split it across two items** where the sentence holds two separable parts.
-3. **Drop the card** — and only here. Note in `rationaleNote` what was lost and
+1. **Make room** (rule 8).
+2. **Shorten the wording** to a whole sentence, keeping the meaning and every
+   protection intact (rule 8).
+3. **Split it across two items** where the sentence holds two separable parts.
+4. **Take the picture off** (rule 8).
+5. **Drop the card**, and only here. Note in `rationaleNote` what was lost and
    why the wording could not carry the meaning any shorter.
 
-Choose the supported text budget for the actual card configuration. Preserve readable learning and response examples rather than adding or removing a picture to gain a character allowance; a success-criteria step is the exception (Rules That Never Change).
+Choose the supported text budget for the actual card configuration, and preserve readable learning and response examples.
 
 This budget applies to body items. Titles, chips, table cells and mnemonic
 letters have their own fitting and are not measured against it.
@@ -385,7 +387,7 @@ Each family's default orientation is beside its contract in the packet reference
 
 Designer can override per card. A dense worked example whose steps stack better than they spread, for example, may read stronger in portrait: follow what the specific card's content wants, not the table by habit.
 
-The builder must reject a card if autofit reaches the readable floor and still does not fit. Shorten faithful display text, simplify the representation, choose a supported larger layout, or drop the card before delivery. A warning is a failed build, never something to ship and rectify on the next run.
+The builder must reject a card if autofit reaches the readable floor and still does not fit. Choose a supported larger layout, shorten faithful display text to a whole sentence, simplify the representation, or drop the card before delivery. A warning is a failed build, never something to ship and rectify on the next run.
 
 **Mnemonic posters span multiple pages within one section.** All pages share the orientation set on `card.page`, picked once at the card level. Page 1 is the summary row; pages 2..N+1 are per-letter expansions. The builder inserts page breaks automatically.
 

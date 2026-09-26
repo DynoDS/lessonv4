@@ -370,6 +370,31 @@ class SplitAcrossCardsTests(RepairScopeCase):
         result = self.run_check(before, after)
         self.assertEqual(result.returncode, 1, result.stdout)
 
+    # The teacher's rule of one three-line fact a wall card (26 September 2026)
+    # sends the next long fact to a second card of its own, so a split may leave
+    # a card one item. The fourth check found every such split refused.
+    def test_a_split_that_leaves_a_card_one_item_is_a_repair(self):
+        before = {"cards": [wall_card(WALL_STEPS)]}
+        after = {"cards": [wall_card(WALL_STEPS[:3]), wall_card(WALL_STEPS[3:])]}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("REPAIR_SCOPE_OK", result.stdout)
+
+    def test_two_long_facts_one_to_a_card_is_a_repair(self):
+        facts = [{"text": "Monasteries like Lindisfarne kept silver and gold and had nobody guarding them."},
+                 {"text": "The Amazon rainforest spreads across several countries; most of it is in Brazil."}]
+        sticky = lambda items: {"type": "stickyKnowledge", "page": {"size": "A3", "orientation": "landscape"},
+                                "title": "Remember", "photo": "photos/fact.jpg", "items": items}
+        result = self.run_check({"cards": [sticky(facts)]}, {"cards": [sticky(facts[:1]), sticky(facts[1:])]})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("REPAIR_SCOPE_OK", result.stdout)
+
+    def test_a_single_item_out_of_order_is_still_caught(self):
+        before = {"cards": [wall_card(WALL_STEPS)]}
+        after = {"cards": [wall_card(WALL_STEPS[3:]), wall_card(WALL_STEPS[:3])]}
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
     def test_a_summand_order_is_still_protected(self):
         before = {"slides": [{"template": "body-full", "body": {"type": "number-sentence", "items": [9, 4000, 50, 200]}}]}
         after = {"slides": [{"template": "body-full", "body": {"type": "number-sentence", "items": [4000, 200, 50, 9]}}]}

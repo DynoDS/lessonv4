@@ -78,13 +78,15 @@ function appendLine(text, line) {
   return `${current}${current.endsWith('\n') ? '' : '\n'}${line}\n`;
 }
 
-// Internal lesson-stage labels ("Teach 1", "Do 2", bare "Apply") belong to the
-// lesson-design document, never to a child-facing slide title. A title that is
-// only a stage label tells a child nothing about the slide, so it blocks the
-// check before any deck is built. Child-facing classroom labels — My Turn,
-// Your Turn, Quick check, Practise — do not match and stay valid.
+// Internal lesson-stage labels ("Teach 1", "Do 2", a bare "Practise" or
+// "Apply") belong to the lesson-design document, never to a child-facing slide
+// title. A title that is only a stage label tells a child nothing about the
+// slide, so it blocks the check before any deck is built. Child-facing
+// classroom labels (My Turn, Our Turn, Your Turn, Quick check) do not match and
+// stay valid. "Practise" names the slot, not the move, in every subject (the
+// teacher's "yes", 24 September 2026, `preferences.md` -> Slide Headings).
 const INTERNAL_STAGE_TITLE =
-  /^(?:(?:Teach|Do)\s+\d+(?:\s*:.*)?|Apply)$/i;
+  /^(?:(?:Teach|Do)\s+\d+(?:\s*:.*)?|Apply|Practise)$/i;
 
 function presentationWarnings(lesson) {
   const slides = Array.isArray(lesson && lesson.slides)
@@ -105,6 +107,24 @@ function presentationWarnings(lesson) {
       typeof slideData.title === 'string'
         ? slideData.title.trim()
         : '';
+    // An untitled arithmetic grid printed "Independent Tasks", a structural
+    // label the teacher keeps off the board. The final build now draws it with
+    // no title line rather than refuse the deck; this sends the designer back
+    // to title it, beside the stage-label rule below. A grid under the starter
+    // header is left alone: that header never prints a title, so asking for one
+    // would ask for a word nobody sees.
+    if (slideData.template === 'grid-calc' && !title && slideData.headerStyle !== 'starter') {
+      warnings.push({
+        signal: 'GRID_WITHOUT_TITLE',
+        slide: index + 1,
+        field: 'title',
+        message:
+          'a grid-calc slide has no "title", and the builder no longer prints ' +
+          '"Independent Tasks" for one. Give it the design\'s label as its title: ' +
+          'in maths the plain words, usually "Your Turn".'
+      });
+      return;
+    }
     if (maths && /^apply$/i.test(title)) return;
     if (!INTERNAL_STAGE_TITLE.test(title)) return;
     warnings.push({
@@ -112,7 +132,10 @@ function presentationWarnings(lesson) {
       slide: index + 1,
       field: 'title',
       message:
-        `"${title}" is an internal lesson-stage label, not a child-facing title.`
+        `"${title}" is an internal lesson-stage label, not a child-facing title. ` +
+        'Title the slide with the move the unit makes, in a child\'s words, from its own content. ' +
+        'In maths the plain words My Turn, Our Turn, Your Turn, Answers and Apply are the titles; ' +
+        'Practise is not one of them (preferences.md -> Slide Headings).'
     });
   });
 
@@ -236,6 +259,16 @@ function taskBlueAsks(node) {
 }
 
 function carriesItsTurn(slideData) {
+  // A grid's calculations are the class's turn: twelve sums to work out are the
+  // task, though no verb opens them. Without this the title the untitled grid's
+  // own message asks for, "Your Turn", was refused as a turn with no task.
+  if (
+    slideData.template === 'grid-calc' &&
+    Array.isArray(slideData.calculations) &&
+    slideData.calculations.some((calculation) => String(calculation || '').trim())
+  ) {
+    return true;
+  }
   let found = hasTaskSteps(slideData, false);
   walkContent(slideData, (node) => {
     if (found) return;
@@ -1347,7 +1380,8 @@ Fix that slide's layout slots, then run the check again.
   const cueNotes = capacityAll
     .filter((warning) => warning.cue)
     .map((warning) => `  note: slide ${warning.slide} ${warning.field}: ${warning.signal}: ${warning.message}`);
-  const presentation = teachLayout
+  const pictures = pictureWarnings(lesson);
+  const presentationAll = teachLayout
     .concat(launchPair)
     .concat(presentationWarnings(lesson))
     .concat(turnWarnings(lesson))
@@ -1358,8 +1392,23 @@ Fix that slide's layout slots, then run the check again.
     .concat(taskBlueWarnings(lesson, jsonPath))
     .concat(starterColourWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
-    .concat(pictureWarnings(lesson))
+    .concat(pictures)
     .concat(repeatedLineWarnings(lesson));
+  // A settled deck is checked by the slide decorator, and by the orchestrator
+  // after it. Composition is closed to the decorator, so a wording, title or
+  // layout fault the slide designer's round left is not its to mend, and
+  // failing on one cost the whole deck its drawings (release 7A's first check:
+  // a slide titled only "Practise"). With `settled`, those print as notes; a
+  // fault the decorator's own layer can cause (a picture drawn twice on one
+  // slide) and anything the scratch build refuses still fail.
+  const presentation = options.settled
+    ? presentationAll.filter((warning) => pictures.includes(warning))
+    : presentationAll;
+  const settledNotes = options.settled
+    ? presentationAll
+      .filter((warning) => !pictures.includes(warning))
+      .map((warning) => `  note: slide ${warning.slide} ${warning.field}: ${warning.signal}: ${warning.message}`)
+    : [];
 
   // What the spec alone shows is reported WITH what the build shows, never
   // instead of it.
@@ -1637,6 +1686,11 @@ Fix that slide's layout slots, then run the check again.
   }
 
   outcome = withEarly(outcome);
+  if (outcome && settledNotes.length) {
+    outcome.stderr =
+      `\n${settledNotes.length} note(s) on a settled deck, the slide designer's to mend and ` +
+      `never a reason to withhold its drawings:\n${settledNotes.join('\n')}\n${outcome.stderr || ''}`;
+  }
   if (outcome && cueNotes.length) {
     outcome.stderr =
       `\n${cueNotes.length} slide-design note(s), a cue to look and never a fault:\n` +
@@ -1654,13 +1708,14 @@ function writeText(stream, text) {
 
 function main(argv = process.argv.slice(2)) {
   const preview = argv.includes('--preview');
+  const settled = argv.includes('--settled');
   const args = [];
   let photoRequirementsPath = null;
   let photoRequirementsFlagSeen = false;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--preview') continue;
+    if (arg === '--preview' || arg === '--settled') continue;
     if (arg === '--photo-requirements') {
       photoRequirementsFlagSeen = true;
       const next = argv[index + 1];
@@ -1678,7 +1733,7 @@ function main(argv = process.argv.slice(2)) {
   ) {
     console.error(
       'Usage: node check-slide-design.js <lesson.json> ' +
-        '[--photo-requirements <photo-requirements.json>] [--preview]'
+        '[--photo-requirements <photo-requirements.json>] [--preview] [--settled]'
     );
     return 1;
   }
@@ -1686,6 +1741,7 @@ function main(argv = process.argv.slice(2)) {
   const result = runSlideDesignCheck(args[0], {
     retainPreview: preview,
     photoRequirementsPath,
+    settled,
   });
   writeText(process.stdout, result.stdout);
   writeText(process.stderr, result.stderr);
@@ -1712,6 +1768,7 @@ if (require.main === module) {
 
 module.exports = {
   BLOCKING_CAPACITY_SIGNALS,
+  presentationWarnings,
   countOptionalPictures,
   optionalPictureLine,
   buildDiagnostic,

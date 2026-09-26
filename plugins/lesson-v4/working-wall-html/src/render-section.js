@@ -23,12 +23,15 @@ const {
   fitTitleSize,
   titleBarHeightInches,
   fitLinearBodySize,
+  lineBoxPx,
+  wrappedLines,
 } = require("./layout");
 const { esc, markedHtml, mm, hash, imgTag, titleBarHtml } = require("./shared");
 const { plainCriteria } = require("../../shared/text/criteria-marks");
 const { pickVisual } = require("./visuals");
 
-const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
+// Arrows come from "Wall Arrows" (shared.js says why).
+const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
 
 // One theme per part, so a section reads as two or three distinct things at a
 // glance rather than one grey wall of boxes. The hues are the board's own
@@ -53,6 +56,12 @@ const RESULT_WORKED = "7030A0";
 // use, never past it: a heading nobody can read from a desk names nothing.
 const HEADING_PT = 44;
 const HEADING_MIN_PT = 36;
+// The heading strip as headingHtml draws it: its padding above and below the
+// words, at its sides, the gap under it, and its line height.
+const HEADING_PAD_IN = 0.06;
+const HEADING_SIDE_IN = 0.08;
+const HEADING_GAP_IN = 0.08;
+const HEADING_LINE = 1.15;
 // The ceiling the note fitter starts from, not the size notes come out at. It
 // is deliberately far above anything a note will use, because the fitter only
 // searches downward: a low ceiling is how the first draft of this family put
@@ -134,26 +143,40 @@ function textItemsFor(part) {
   return items;
 }
 
-function headingHtml(part, theme, widthIn) {
-  const pt = fitHeadingPt(part.heading || "", widthIn);
+function headingHtml(part, theme, heading) {
   return (
     `<div data-part="heading" style="box-sizing:border-box;width:100%;background:${hash(theme.strip)};` +
-    `padding:${mm(0.06)}mm ${mm(0.08)}mm;margin-bottom:${mm(0.08)}mm;">` +
+    `padding:${mm(heading.padIn)}mm ${mm(HEADING_SIDE_IN)}mm;margin-bottom:${mm(HEADING_GAP_IN)}mm;">` +
     `<div style="text-align:center;font-family:'${"Comic Sans MS"}', ${FONT_STACK_FALLBACK};` +
-    `font-weight:bold;font-size:${pt}pt;line-height:1.15;color:#FFFFFF;">${esc(part.heading || "")}</div></div>`
+    `font-weight:bold;font-size:${heading.pt}pt;line-height:${HEADING_LINE};color:#FFFFFF;">${esc(part.heading || "")}</div></div>`
   );
 }
 
 // A heading is one strip across its own column, so it shrinks to fit its
 // column rather than wrapping into three lines and eating the figure's room.
-function fitHeadingPt(text, widthIn) {
+// It is measured as the page draws it: whole words of Comic Sans MS Bold across
+// the strip's own width (layout.js, What the page draws).
+//
+// A heading line is 1.15 times its type, tighter than the font's own line box
+// (its ascender and descender, about 1.4 times), so the words of the first and
+// last lines reach past their line by the difference. The strip's padding takes
+// at least that much: at a flat 0.06in a saved heading, "Count backwards in
+// ones.", printed 2.3px past its strip (release 7A's audit, 26 September 2026).
+// Returns the size, the lines, the padding and the height the strip and the gap
+// under it take from the part.
+function headingFor(text, stripWidthPx) {
   let pt = HEADING_PT;
-  while (pt > HEADING_MIN_PT) {
-    const lines = Math.ceil((text.length * pt * 0.55) / 72 / Math.max(0.5, widthIn - 0.2));
-    if (lines <= 2) return pt;
+  let lines = wrappedLines(text, pt, stripWidthPx);
+  while (pt > HEADING_MIN_PT && lines > 2) {
     pt -= 2;
+    lines = wrappedLines(text, pt, stripWidthPx);
   }
-  return HEADING_MIN_PT;
+  const drawnLines = Number.isFinite(lines) ? lines : 2;
+  const px = pt * (96 / 72);
+  const overhangPx = Math.max(0, (lineBoxPx(pt) - px * HEADING_LINE) / 2);
+  const padIn = Math.max(HEADING_PAD_IN, (overhangPx + 0.5) / 96);
+  const heightIn = (2 * mm(padIn) + mm(HEADING_GAP_IN)) / 25.4 + (drawnLines * px * HEADING_LINE) / 96;
+  return { pt, lines: drawnLines, padIn, heightIn };
 }
 
 // The figure at its natural shape, never stretched into the height it was
@@ -258,6 +281,9 @@ function renderDiagramSection(card, style, specDir, ctx) {
   const rowHeight = (bodyHeight - GAP_IN * (rows - 1)) / rows;
   const colWidth = (dims.width - GAP_IN * (cols - 1)) / cols;
   const innerWidth = colWidth - 2 * PART_PAD_IN;
+  // The heading strip's own width for its words: the part less its padding and
+  // border, less the strip's side padding, as the HTML writes them.
+  const stripWidthPx = ((mm(colWidth) - 2 * mm(PART_PAD_IN) - 2 * mm(0.02) - 2 * mm(HEADING_SIDE_IN)) * 96) / 25.4;
 
   // Measure every part first, then draw them all at one shared note size.
   // Fitting each part on its own gave a sheet whose left column ran at 24pt
@@ -267,8 +293,8 @@ function renderDiagramSection(card, style, specDir, ctx) {
   const measured = parts.map((part, index) => {
     const figure = figures[index];
     const items = textItemsFor(part);
-    const headingIn = fitHeadingPt(part.heading, innerWidth) * 1.15 / 72 + 0.14;
-    const available = rowHeight - 2 * PART_PAD_IN - headingIn;
+    const heading = headingFor(part.heading, stripWidthPx);
+    const available = rowHeight - 2 * PART_PAD_IN - heading.heightIn;
     // The figure is the part. Words get a capped share and the drawing keeps
     // the rest, so a long note can never push the diagram down to a strip.
     const resultExtra = items.filter((item) => item.kind === "result").length * RESULT_EXTRA_IN;
@@ -285,7 +311,7 @@ function renderDiagramSection(card, style, specDir, ctx) {
           floorLinesPerItem: 2,
         })
       : 0;
-    return { part, figure, items, available, textCeiling, notePt, resultExtra };
+    return { part, figure, items, heading, available, textCeiling, notePt, resultExtra };
   });
 
   const sharedNotePt = measured.reduce(
@@ -293,7 +319,7 @@ function renderDiagramSection(card, style, specDir, ctx) {
     NOTE_PT
   );
 
-  const partHtmls = measured.map(({ part, figure, items, available, textCeiling, resultExtra }, index) => {
+  const partHtmls = measured.map(({ part, figure, items, heading, available, textCeiling, resultExtra }, index) => {
     const theme = PART_THEMES[index % PART_THEMES.length];
     const textHeight = items.length
       ? Math.min(textCeiling, items.length * (sharedNotePt * 1.3 / 72 + 0.04) + 0.06) + resultExtra
@@ -304,7 +330,7 @@ function renderDiagramSection(card, style, specDir, ctx) {
     // in what is left, so spare room reads as margin rather than as a hole
     // between the drawing and the note under it.
     const inner =
-      headingHtml(part, theme, innerWidth) +
+      headingHtml(part, theme, heading) +
       `<div style="flex:1;display:flex;flex-direction:column;justify-content:center;">` +
       figureHtml(figure, size) +
       textBlockHtml(items, sharedNotePt, theme) +

@@ -95,10 +95,14 @@ class TheRoutingCardOpensThePrideLessonsEveryReviewTests(unittest.TestCase):
         )
         self.assertIn(
             '"Read every review, before the User-fit judgement: it is the " '
-            '"calibration for how much one beat puts in front of the class and how " '
-            '"often a lesson returns to the same evidence.',
+            '"calibration for how much one beat puts in front of the class, and it " '
+            '"holds the Teach slides the teacher chose, written out.',
             text,
         )
+        # Release 7A (PF-X46): how often a lesson returns to the same evidence
+        # is What a Lesson Is For's rule and the reviewer's own, not a thing
+        # Pride Lessons holds, so the note no longer claims it.
+        self.assertNotIn('"often a lesson returns to the same evidence.', text)
 
 
 class TheDesignerHoldsPrideLessonsWhileWritingTests(unittest.TestCase):

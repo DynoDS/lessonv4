@@ -128,8 +128,10 @@ test("the drawing keeps at least 40% of its part, however much the words say", a
 
   const [bareFigure] = figureHeightsMm(bare);
   const [wordyFigure] = figureHeightsMm(wordy);
+  // Exactly 40% is allowed; the HTML writes millimetres to a hundredth, so the
+  // two heights are compared to that.
   assert.ok(
-    wordyFigure >= bareFigure * 0.4,
+    wordyFigure >= bareFigure * 0.4 - 0.01,
     `a note and a result cut the drawing from ${bareFigure.toFixed(0)}mm to ${wordyFigure.toFixed(0)}mm, ` +
       `past the 40% of its part the figure is guaranteed`
   );

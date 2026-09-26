@@ -36,7 +36,6 @@ def base_request() -> dict:
         "structure": "Content-based",
         "yearGroup": 4,
         "subject": "Science",
-        "scope": "Complete lesson",
         "vocabularyCount": 2,
         "vocabularyIntroductionCount": 2,
         "trimmedVocabularyCount": 1,
@@ -453,6 +452,32 @@ def test_route_mismatch_is_rejected_before_files_are_written():
         raise AssertionError(
             "invalid Content-based route unexpectedly validated"
         )
+
+
+def test_a_request_carrying_a_lesson_2_plan_is_refused():
+    # Release 7A: `scope` left the request with the lesson file's Lesson 2
+    # plan, and the scaffold no longer writes `testQuestionPath` or any of the
+    # three lesson keys.
+    request = base_request()
+    request["scope"] = "Complete lesson"
+    try:
+        scaffold.validate_request(request)
+    except scaffold.ScaffoldError as exc:
+        assert "scaffold request has unknown fields: scope" in str(exc)
+    else:
+        raise AssertionError("a request carrying scope unexpectedly validated")
+    assert scaffold.CONTENT_ENVELOPE_FIELDS["starter"] == ("activity", "connection", "format")
+
+
+def test_the_guide_example_request_is_one_the_scaffold_accepts():
+    # Release 7A: the guide's example is what the designer copies, so it
+    # carries exactly the fields the scaffold takes, and no `scope`.
+    guide = (ROOT / "references" / "lesson-design-scaffold.md").read_text(encoding="utf-8")
+    block = guide.split("## Scaffold request", 1)[1].split("```json", 1)[1].split("```", 1)[0]
+    example = json.loads(block)
+    assert "scope" not in example
+    assert set(example) == scaffold.REQUEST_FIELDS
+    scaffold.validate_request(example)
 
 
 def test_cli_writes_parseable_scaffolds_and_exact_success_marker():

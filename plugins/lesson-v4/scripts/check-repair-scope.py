@@ -377,6 +377,10 @@ class Census:
         # Every ordered value sequence, in the order the walk met it, so a
         # sequence split over consecutive containers can be recognised whole.
         self.sequences: list[tuple[str, str, tuple, int]] = []
+        # The pieces such a split can leave, in walk order: each sequence, and
+        # each list of a single value, which is no order on its own but may be
+        # the last piece of one (a wall card keeping one fact after a split).
+        self.pieces: list[tuple[str, str, tuple, int, bool]] = []
         self._visit(node, 1, False, "pupil")
 
     # ─── one node's own room to write ───
@@ -529,6 +533,9 @@ class Census:
                     if sequence is not None:
                         self._note_key(key, ", ".join(sequence), times, own, child_channel)
                         self.sequences.append((child_channel, key, sequence, times))
+                        self.pieces.append((child_channel, key, sequence, times, False))
+                    elif len(child) == 1 and is_flat(child[0]) and printed_part(child[0]) != BLANK:
+                        self.pieces.append((child_channel, key, (printed_part(child[0]),), times, True))
                 sub, sub_room, sub_case = self._visit(
                     child, times, key in LAYOUT_SLOT_KEYS, child_channel,
                     item_default if key == "items" else None,
@@ -637,26 +644,35 @@ def rejoin_split_sequences(before: "Census", after: "Census") -> None:
     after the repair and the next sequences under the same key, in order, join
     back into it exactly, the pieces stand for the original. Reordered, dropped
     or added values do not join back, so they are still reported.
+
+    A piece may be a single value: the teacher's rule of one three-line fact a
+    wall card sends the next fact to a second card of its own, and a list split
+    so that one card keeps one item was refused as the lost chain it had
+    rejoined (release 7A's fourth check, 26 September 2026). A single value has
+    no chain of its own to count, so only the pieces that are chains are taken
+    back off.
     """
     for channel, key, whole, times in before.sequences:
         entry = f"{key}: {', '.join(whole)}"
         wanted = before.content[entry] if channel == "pupil" else 0
         if channel != "pupil" or after.content.get(entry, 0) >= wanted:
             continue
-        pieces = [(i, seq, t) for i, (c, k, seq, t) in enumerate(after.sequences) if c == channel and k == key]
+        pieces = [(seq, t, single) for (c, k, seq, t, single) in after.pieces if c == channel and k == key]
         for start in range(len(pieces)):
             joined: tuple = ()
             used = []
-            for index, seq, t in pieces[start:]:
+            for seq, t, single in pieces[start:]:
                 if t != times or tuple(whole[len(joined):len(joined) + len(seq)]) != seq:
                     break
                 joined += seq
-                used.append(seq)
+                used.append((seq, single))
                 if joined == whole:
                     break
             if joined == whole and len(used) > 1:
                 after.content[entry] += times
-                for seq in used:
+                for seq, single in used:
+                    if single:
+                        continue
                     piece = f"{key}: {', '.join(seq)}"
                     after.content[piece] -= times
                     if after.content[piece] <= 0:

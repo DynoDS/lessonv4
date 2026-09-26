@@ -246,6 +246,29 @@ Read back to him:
   before (black edge, blue heading), he answered "1. yes 2. leave it 3. yes". The ring
   is purple with its row; the third part stays purple; an empty frame on paper is not
   purple.
+- **A wall card whose sentence does not fit (from release 7A's first check, 26
+  September):** told that 7A made a card drop its picture first, even three letters
+  over, and asked whether the order should be: the picture a little smaller first,
+  then a bigger or second card, the picture off only when nothing else fits, and a
+  sentence never cut, he answered "answer to your wall question, I guess, but I rarely
+  also use cards with no picture or helper, so?". A card keeps its picture or helper
+  almost always: the picture shrinks a little, then the card grows or splits, and taking
+  the picture off is the very last move, so a card with none stays as rare as on his
+  own walls.
+- **A sticky fact too long to sit beside its photo (from release 7A's second check, 26
+  September):** told that 48 of 142 saved sticky facts (73 to 106 letters) would not fit
+  beside a photo even after it gives up some room (about 72 letters), so the card would
+  lose its photo where 4.2.292 shortened the sentence, and asked whether the photo should
+  shrink further, to about a third of the card, so the whole sentence fits beside it; only
+  then the sentence rewritten as a shorter whole sentence; the photo off only as the very
+  last move, he answered "yys" (yes). The order: the photo shrinks to about a third of
+  the card, then a shorter whole sentence, then the photo off.
+- **How many long facts one wall card holds (from release 7A's third check, 26
+  September):** told that keeping a long sticky fact whole beside its photo makes it
+  run to three lines, where the wall's rule said two lines per item ("or the wall stops
+  being a wall and becomes a poster"), and that as built one card could hold three long
+  facts at three lines each, and asked whether a long fact may run to three lines but a
+  card holds only one of them, any other going on a second card, he answered "yes".
   Every decision on this list is now answered.
 
 ### Settled without a question
@@ -3027,3 +3050,20 @@ topic 9's.
 - **PF-N74 and PF-N75**: the PSHE food paragraphs are removed by his decision 6 on the subject-files list ("those balanced diet things sound like things I wouldnt want in the pshe subject files", then "maybe the subject file could say to look for guidance from eatwell guide thing" and "yes and yes"): PSHE's food section is one line pointing to the NHS Eatwell Guide, and science has the same line (SJ-J24 to J28). This ledger's "STAYS (SUBJ)" for them no longer holds: topic 7's 7B, which pins this list, pins them as gone, never as kept.
 - **PF-S13**: RE's picture paragraph keeps its words and gains a pointer, "(every lesson's rule, no picture of the Prophet Muhammad, is in `preferences.md` → Lesson Designer visual-need boundary)". His answers, "Okay, so yeah, let's not have any pictures of him." and "yes to prohet muhammad not being pictured", put "Islam does not depict the Prophet Muhammad, and no lesson may request a picture of him." into that section of `preferences.md` and into the adaptation designer's picture paragraph, while RE keeps "or of any prophet" beside its line that a nativity is ordinary (SJ-I08).
 - **PF-W29**: the Tudor boards lost "on 14 September 2026"; "the user chose" and every other word stay (the subject-files list's settled item 10: the dates beside his examples go and every word of the examples stays (the log holds each date); SJ-E21).
+
+## After release 7A (4.2.293, 26 September 2026)
+
+Release 7A built this list's decisions 20 (the Lesson 2 plan) and 21 (`Practise`
+flagged), settled item 1 (maths titles and the grid's default title), the wording half
+of decision 22 (the wall keeps sentences whole) and the change plan's question 2, with
+the out-of-date rows B16 assigned to it (A10, X46, Q18, Q19, V31, Y71, Y73, R98, R99;
+A29 is a code comment that stays, and the contents paragraph it showed was stale, A04,
+is corrected). 45 rows of this list changed, in the same paragraphs as the starters
+list's rows: A04, A10, A54, B75, B76, B77, B78, C75, C80, D21, G33, G50, I01, I02, I03,
+I06, I10, I11, I12, I20, I27 (the tall-picture starter's examples, after the first check), J38, J39, J41, L13, Q10, Q12, Q14, Q15, Q16, Q18, Q19, Q32,
+R98, R99, V04, V10, V11, V16, V31, W31, X41, X46, Y71, Y73. Each is in `PF_ROWS` in
+`streamline-tools/7a-change/build_7a_mapping.py`, with the decision that changed it and
+its new words, and is pinned in the starters pin file; 7B's pin file takes these rows
+from there, as it takes the colour rows from `COLOURS_ROWS`. How Much Fits in One
+Lesson is already a home in the starters pin file (`HOME-SA-PREF-FIT`), so 7B need not
+pin it again. V13 and V14 name no slot title and were not changed.

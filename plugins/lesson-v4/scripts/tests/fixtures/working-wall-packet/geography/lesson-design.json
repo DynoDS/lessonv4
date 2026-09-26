@@ -7,9 +7,6 @@
     "lo": "To describe and give examples of a biome and find the location and some features of the Amazon rainforest.",
     "displayedLo": "To describe biomes, give examples and locate and describe the Amazon rainforest",
     "durationMinutes": 45,
-    "scope": "Complete lesson",
-    "deferredLearning": null,
-    "lesson2Direction": null,
     "stickingPoint": "Children may treat biome as another word for rainforest and may read the Brazil label as if it contains the whole Amazon."
   },
   "teacherOrientation": "Teacher orientation: Children retrieve South America's place on a world map, learn what a biome is, notice the global tropical-rainforest pattern, then zoom in to locate and describe the Amazon from maps and real photographs. They produce a three-part description using biome, location and feature evidence. The tricky move is separating what a photograph can show about a biome from what a map can prove about location; this is taught in the final Teach beat and tested in Apply.",
@@ -23,8 +20,7 @@
     "content": {
       "activity": "Retrieve continents and oceans from a world map with South America highlighted.",
       "connection": "Makes the known world location visible before the lesson zooms in to the Amazon rainforest.",
-      "format": "Three short map questions.",
-      "testQuestionPath": null
+      "format": "Three short map questions."
     },
     "pupilInstruction": "Use the world map. Name the highlighted continent, the ocean to its east and the continent to its north-west.",
     "taskStructure": null,

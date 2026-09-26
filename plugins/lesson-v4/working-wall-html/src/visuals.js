@@ -3,6 +3,7 @@
 
 const {
   printableInches,
+  panelPage,
   WIDE_ASPECT,
 } = require("./layout");
 
@@ -147,6 +148,17 @@ function badgeInches(bodyPt) {
   return Math.max(0.6, (bodyPt * 1.4) / 72);
 }
 
+// A worked example's label ("Worked example") beside its text.
+function accentLabelPtFor(bodyPt) {
+  return Math.max(28, Math.round(bodyPt * 0.7));
+}
+
+// A numbered step draws as a badge row; any other label as a labelled paragraph.
+function isStepLabel(label) {
+  const text = String(label || "").toLowerCase();
+  return text.startsWith("step") || /^\d+\b/.test(text);
+}
+
 // ─── Visual buffer lookup ───────────────────────────────────────────────
 
 // The card's own name, so an autofit refusal points at a card the designer can
@@ -188,12 +200,52 @@ function floorLinesPerItem(card, panelFraction) {
   return (card && card.visual && panelFraction < 1.0) ? 4 : 2;
 }
 
-function stackedBodyOpts(card, panelFraction) {
+// The panel cards whose bodies are planned against the page they are drawn on
+// (layout.js, What the page draws). The misconception pair draws two panels
+// side by side and keeps its own arithmetic.
+const PAGED_CARDS = new Set(["stickyKnowledge", "vocabDefinition", "workedExample", "sentenceStem"]);
+
+function stackedBodyOpts(card, panelFraction, style) {
   return {
     label: cardLabel(card),
     maxLinesPerItem: MAX_LINES_PER_ITEM,
     floorLinesPerItem: floorLinesPerItem(card, panelFraction),
+    page: style && card && PAGED_CARDS.has(card.type) && card.page && card.page.size === "A3"
+      ? panelPage(card.page.orientation, style, panelFraction, {
+        badgeInches,
+        labelPt: accentLabelPtFor,
+      })
+      : undefined,
   };
+}
+
+// A card keeps its picture or helper almost always (the teacher, 26 September
+// 2026: "I rarely also use cards with no picture or helper"). When its words do
+// not fit beside the side picture at the floor size, the picture gives up a
+// little width first: the words' share grows from 60% to at most 70%, and the
+// first share that fits is drawn. A card whose words fit keeps the full share;
+// no side picture, or a picture made dominant, is left alone. A card that fits
+// at no share is measured, and refused, at the widest share tried, so the
+// refusal names the budget the card really has (about 72 characters beside a
+// photo, not the 62 of the full share) and then the next moves (a list over a
+// second card, the picture off only when nothing else fits; a sentence never
+// cut).
+const PICTURE_GIVES_WAY = [0.65, 0.7];
+
+// A sticky fact too long to sit beside its photo even then keeps both (his
+// answer of 26 September 2026, "yys"): the photo narrows to about a third of
+// the card, the widest share, and the whole sentence runs over the lines it
+// needs there, three at the floor size, where two hold about 72 letters and
+// three about 106. Only after that is the sentence shortened, to a whole
+// sentence, by the wall designer, and the photo comes off last of all. A card
+// holds one fact on three lines (his answer to the third check, "yes"); a
+// second goes on a second card.
+const PHOTO_AT_A_THIRD = { share: 0.7, floorLines: 3, factsOnThreeLines: 1 };
+
+function panelFractionThatFits(base, fitsAt) {
+  if (base !== 0.6 || fitsAt(base)) return base;
+  const roomier = PICTURE_GIVES_WAY.find((fraction) => fitsAt(fraction));
+  return roomier || PICTURE_GIVES_WAY[PICTURE_GIVES_WAY.length - 1];
 }
 
 function panelFractionFor(card, ctx, hasPhoto) {
@@ -229,6 +281,10 @@ const RESERVE_STEP_INCHES = 0.1;
 
 function wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor) {
   if (!card || !card.visual) return 0;
+  // A dominant figure sits beside the panel, never beneath it, so the panel
+  // keeps its full height. Reserving room under it anyway took height the page
+  // never used, and the loose plan hid it until the body was planned as drawn.
+  if (card.visualScale === "dominant") return 0;
   const v = pickVisual(card.visual, ctx);
   if (!v || (v.aspect || 1) < WIDE_ASPECT) return 0;
   const dims = printableInches(card.page.size, card.page.orientation, style);
@@ -241,6 +297,21 @@ function wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor) {
     if (bodyFitsAtFloor(reserve)) return reserve;
   }
   return guaranteed;
+}
+
+// The figure stacked under a panel as shared.js `panelWithVisualHtml` draws
+// it: the sheet's width less the panel's padding, no taller than its reserve
+// allows, below a 160dxa gap. The body is planned against this block, not the
+// reserve, which is an allowance a wide figure often does not fill: a number
+// line drawn across the sheet left the words a size smaller than their panel.
+function stackedFigureInches(card, ctx, style, reserve) {
+  const v = reserve > 0 && card && card.visual ? pickVisual(card.visual, ctx) : null;
+  if (!v) return 0;
+  const dims = printableInches(card.page.size, card.page.orientation, style);
+  const widthIn = Math.max(1, dims.width - (2 * 360) / 1440) * 0.96;
+  const heightIn = Math.min(widthIn / (v.aspect || 1), reserve - 0.25);
+  const mmOf = (inches) => Math.round(inches * 25.4 * 100) / 100;
+  return (mmOf(160 / 1440) + mmOf(heightIn)) / 25.4;
 }
 
 function pickVisual(marked, ctx) {
@@ -292,7 +363,11 @@ module.exports = {
   WIDE_VISUAL_SHARE_GUARANTEED,
   VISUAL_KEY_FNS,
   panelFractionFor,
+  panelFractionThatFits,
+  PICTURE_GIVES_WAY,
+  PHOTO_AT_A_THIRD,
   wideVisualReserveInches,
+  stackedFigureInches,
   pickVisual,
   defaultVisualLabel,
   cardLabel,
@@ -301,5 +376,7 @@ module.exports = {
   minBodyPt,
   panelLabelPt,
   badgeInches,
+  accentLabelPtFor,
+  isStepLabel,
   pickRainbowColour,
 };

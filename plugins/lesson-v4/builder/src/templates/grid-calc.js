@@ -20,7 +20,7 @@ const CALC_FONT    = 22;
 function drawGridCalc(pptx, slide, data, ctx) {
   drawHeader(slide, {
     headerStyle: data.headerStyle || 'title',
-    title: data.title || 'Independent Tasks',
+    title: data.title,
     instruction: data.instruction,
     signal: data.signal
   }, ctx);

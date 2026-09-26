@@ -34,9 +34,6 @@ Use exactly these top-level fields:
     "lo": "To ...",
     "displayedLo": "To ...",
     "durationMinutes": 45,
-    "scope": "Complete lesson",
-    "deferredLearning": null,
-    "lesson2Direction": null,
     "stickingPoint": "..."
   },
   "teacherOrientation": "Teacher orientation: ...",
@@ -63,12 +60,6 @@ Use exactly these top-level fields:
 - `Discovery`
 - `Dialogic`
 - `Task-Centred`
-
-`scope` is exactly `Complete lesson` or `Lesson 1 of 2`.
-
-For `Complete lesson`, both `deferredLearning` and `lesson2Direction` are `null`.
-
-For `Lesson 1 of 2`, both are non-empty strings.
 
 `stickingPoint` is the concise pedagogical sticking point the lesson was designed around. It replaces the final-report dependency that previously relied on Lesson Analysis.
 
@@ -363,7 +354,7 @@ Instead, the lesson-designer decides exact availability by putting the ID in eac
 
 This is a pedagogical availability decision. Downstream designers may choose where the referenced fact physically sits, but they must not add or remove a sticky-knowledge reference.
 
-A Teach slide lands its sentence once, at the top. `takeaway` is `null` and the `headline` carries that sentence, which is the usual case and stays the case when the sentence is one of the lesson's sticky facts; this unit leaves that fact out of its own `stickyKnowledgeRefs`, because a referenced fact is printed again as the slide's star line and the validator refuses the pair; later units that use it reference it. A `takeaway` referencing a sticky fact is for the beat that withholds its fact until children have reached it, where the headline names the move the class is making rather than the picture (`teaching-sequence-content-based.md`, Teach):
+A Teach slide lands its sentence once, usually at the top. `takeaway` is `null` and the `headline` carries that sentence, which is the usual case and stays the case when the sentence is one of the lesson's sticky facts; this unit leaves that fact out of its own `stickyKnowledgeRefs`, because a referenced fact is printed again as the slide's star line and the validator refuses the pair; later units that use it reference it. A `takeaway` referencing a sticky fact lands it last, as the star line: the shape for a beat that withholds its fact until children have reached it, and a choice where the fact reads better last, and the headline then names the move the class is making rather than the picture (`teaching-sequence-content-based.md`, Teach):
 
 ```json
 {
@@ -693,8 +684,7 @@ The starter is one source unit. Its `content.activity` is the exact question or 
   "content": {
     "activity": "...",
     "connection": "...",
-    "format": "...",
-    "testQuestionPath": null
+    "format": "..."
   },
   "pupilInstruction": "...",
   "taskStructure": null,
@@ -717,8 +707,6 @@ The starter is one source unit. Its `content.activity` is the exact question or 
   }
 }
 ```
-
-`testQuestionPath` is always `null`. The route that filled it - a starter built on a real past-paper question image - is parked while its question source is rebuilt, so there is nothing to put here and no path to invent. The field stays in the shape because the validator and the slide side still understand it, and the route will return to it.
 
 ### Teaching sequence
 

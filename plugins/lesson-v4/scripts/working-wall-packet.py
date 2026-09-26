@@ -498,7 +498,7 @@ def build_view(
         )
     lines.append("")
     lines.extend(["## Lesson", ""])
-    for key in ("structure", "subject", "yearGroup", "lo", "displayedLo", "durationMinutes", "scope"):
+    for key in ("structure", "subject", "yearGroup", "lo", "displayedLo", "durationMinutes"):
         if key in meta:
             lines.append(bullet(key, compact(meta[key])))
     lines.append(bullet("lessonSlug", working_dir.name))

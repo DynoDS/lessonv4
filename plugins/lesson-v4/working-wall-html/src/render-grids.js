@@ -24,7 +24,8 @@ const {
 const { esc, markedHtml, mm, hash, imgTag, titleBarHtml, panelHtml } = require("./shared");
 const { plainCriteria } = require("../../shared/text/criteria-marks");
 
-const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
+// Arrows come from "Wall Arrows" (shared.js says why).
+const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
 const WALL_TABLE_IMAGE_HEIGHT_CAP_IN = 1.6;
 
 // Local title-fit wrapper used by this renderer family.

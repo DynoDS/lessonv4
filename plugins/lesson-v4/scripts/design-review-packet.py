@@ -162,7 +162,9 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "The Apply Slide",
-        "Read when Apply may be unearned or repeat Your Turn.",
+        "Read when Apply may be unearned or repeat Your Turn, and when a lesson "
+        "that named an idea has no Apply and its reason does not say where the "
+        "idea met a case it was not taught on.",
     ),
     (
         "Practising a Test Question",
@@ -211,9 +213,9 @@ ALWAYS_READ_REVIEW_SECTIONS = (
         "preferences.md",
         "Pride Lessons (Quality Anchor)",
         "Read every review, before the User-fit judgement: it is the "
-        "calibration for how much one beat puts in front of the class and how "
-        "often a lesson returns to the same evidence. A fit judgement that "
-        "lists features present has not used it.",
+        "calibration for how much one beat puts in front of the class, and it "
+        "holds the Teach slides the teacher chose, written out. A fit judgement "
+        "that lists features present has not used it.",
     ),
     # Its old trigger ("when the final task could be produced by a child who
     # missed the teaching") was the finding itself, and its own contents line
@@ -2067,16 +2069,7 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         f"- Full learning objective: {lesson['lo']}",
         f"- Displayed learning objective: {lesson['displayedLo']}",
         f"- Duration: {lesson['durationMinutes']} minutes",
-        f"- Scope: {lesson['scope']}",
     ]
-    if lesson["deferredLearning"] is not None:
-        lines.append(
-            f"- Deferred learning: {lesson['deferredLearning']}"
-        )
-    if lesson["lesson2Direction"] is not None:
-        lines.append(
-            f"- Lesson 2 direction: {lesson['lesson2Direction']}"
-        )
     lines.extend(
         [
             f"- Sticking point: {lesson['stickingPoint']}",

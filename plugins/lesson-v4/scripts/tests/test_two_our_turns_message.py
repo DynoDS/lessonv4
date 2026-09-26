@@ -18,7 +18,7 @@ SCAFFOLD = Path(__file__).resolve().parents[1] / "lesson-design-scaffold.py"
 
 REQUEST = {
     "schemaVersion": 1, "structure": "Skill-based", "yearGroup": 4, "subject": "Maths",
-    "scope": "Complete lesson", "vocabularyCount": 1, "vocabularyIntroductionCount": 1,
+    "vocabularyCount": 1, "vocabularyIntroductionCount": 1,
     "trimmedVocabularyCount": 0,
     "representations": [{"configurations": [{"id": "model", "loadBearing": True}]}],
     "successCriteriaCount": 1, "stickyKnowledgeCount": 0, "misconceptionCount": 1,

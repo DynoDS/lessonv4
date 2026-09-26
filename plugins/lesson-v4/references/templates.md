@@ -60,8 +60,8 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `method-frame` | A taught mental strategy printed as a fill-in method: an ordered list of labelled lines (the strategy's own words - "First, add:", "Then, adjust:") inside a purple "method" panel (a worked example's colour), each line a stem in which `___` or `□` becomes a write-in box available for live completion during modelling. Caller sets how many blanks each line carries, so the same frame is shown fully worked, with one blank, or all blank - fade it across a set. The board twin of the worksheet's `method-frame`; for a SINGLE-LINE equation frame use a worksheet `inequality-with-boxes` instead |
 | `blank-surface` | A DRAW-YOUR-OWN working surface the child constructs on, not a pre-drawn fill-in. `surface: "number-line"` is a single faint baseline with a tall empty band above for the child's own jumps (no ticks, no numbers; optional `start`/`end` labels at the ends); `surface: "bar"` is one empty rectangle outline to partition (`bars: 2` for a comparison pair). Use when deciding WHERE the jump goes or HOW to partition is the skill. The slide's blank surface shows the class the surface they will draw their own version of. Distinct from `numberline`/`bar-model` (which draw the finished picture with blanks) |
 | `comparison-slot` | The empty ring a child writes `<`, `>` or `=` into, for the gap between two things being compared. Sized from the room it is given, so it stays in proportion to the charts, bars or numerals either side instead of being pinned to a point size that stops matching them the moment anything beside it changes. Optional `answer` prints the symbol inside the same ring for a reveal. Use this rather than typing a `○` into a text item: a typed circle is text, so it takes a text card and a fixed size, and lines up with nothing |
-| `numbered-questions` | Stacked question cards with auto blue `(1) (2) (3)` labels, for Apply / independent work |
-| `question-cards` | The same question set laid out as separate white cards instead of a list: one card per question, a blue number badge on each card's corner, each card at a degree or two of tilt. The cards pack across the zone and the type grows until the set fills the space. A second way to present a question set, not a replacement; see the entry in §4 for which of the two a set belongs in |
+| `numbered-questions` | Stacked question cards with auto purple `(1) (2) (3)` labels, for a starter, or for Apply / independent work in maths |
+| `question-cards` | The same question set laid out as separate white cards instead of a list: one card per question, a purple number badge on each card's corner, each card at a degree or two of tilt. The cards pack across the zone and the type grows until the set fills the space. A second way to present a question set, not a replacement; see the entry in §4 for which of the two a set belongs in |
 | `pyramid` | Ranking pyramid: rows of cells stacked from a single cell at the top to wider rows beneath. Used in dialogic lessons for ranking activities (e.g. influences from most to least important) |
 | `clock` | Analogue clock face, with or without hands. Use for time-telling lessons — My Turn slides show a preset time; Your Turn slides leave the face blank for children to draw on |
 | `number-network` | Circles joined by lines where every connected pair must add to a fixed target; blank circles show a faint `?` for the child to fill. Use for "each line adds to 100, find the missing numbers" addition-network reasoning |
@@ -136,7 +136,7 @@ Every non-cover template has a header area above the body. Two modes:
 | `title` | Title + optional instruction on one row | ~0.6" | Default for all non-starter slides |
 | `starter` | Date placeholder + LO + the "Starter" heading, and the slide's own prompt beneath it when it has one | ~2.3", ~2.9" with a prompt | Use when this slide is the starter |
 
-**The starter heading is always the word "Starter", and the builder writes it.** It is how a class and a cold teacher find the beginning of the lesson, so it is not a slot to fill. Give the slide a `title` (or a `heading`) as normal and the builder puts it on a full-width line underneath the label, at slide-title size, where a question is actually readable - so `title: "What do you remember about PSHE?"` renders as **Starter** with the question below it and the starter's questions below that. Before this, a title in that slot replaced the word "Starter" and was shrunk to fit a four-inch label bar; a Year 4 PSHE deck opened on two lines of small blue print and no "Starter" anywhere (flagged by the user, 2 September 2026). A `title` of exactly "Starter" adds no second line.
+**The starter heading is always the word "Starter", and the builder writes it.** It is how a class and a cold teacher find the beginning of the lesson, so it is not a slot to fill. Only a `heading` the starter deliberately carries, a question or instruction of its own, prints under it: the builder puts it on a full-width line underneath the label, at slide-title size, where a question is actually readable - so `heading: "What do you remember about PSHE?"` renders as **Starter** with the question below it and the starter's questions below that. A `title` never prints there, because the teacher wants the underlined heading alone: "Just the starter heading that's underlined is enough." A `heading` of exactly "Starter" adds no second line.
 
 **The date on the starter is a blank, and the builder writes it.** The header prints the word `Date` for a class to copy the day beside, exactly as they do in their books. A deck is built days before it is taught and is taught again next year, so a real date in the spec is wrong on the board on the day. Never put a calendar date in `lesson.json`: not in the starter's `instruction`, not in a title or body, and not as a top-level `date` field, which the builder has no use for and ignores. A Year 4 rounding deck built on a Saturday opened with `Saturday 12 September 2026` printed in the instruction box under its title, directly below the header's own empty `Date` label (flagged by the user, 12 September 2026, and found in five earlier decks). The build now refuses a spec that carries the build date anywhere in it. A date that is the lesson's own content is untouched by this: a year on a timeline, a date in a source, a date inside a word problem.
 
@@ -152,7 +152,7 @@ Pedagogically opinionated. Use when the slide's teaching moment matches the temp
 
 The lesson opens on the starter (slide 1). Its Date and LO sit in the `starter` header mode (§1.4) — children copy both into their books as they begin the starter. There is no separate "Copy the date and LO" cover slide: a slide whose only content is the date and LO spends a whole teaching beat on something the starter header already carries, which is why `preferences.md` rules it out.
 
-(A `lesson-cover` template still exists in the builder for historical reasons and is exercised only by build-test fixtures. Leave it out of real lessons, and don't reintroduce it to this catalogue as a recommended choice.)
+(A `lesson-cover` template exists in the builder and is exercised only by build-test fixtures. Leave it out of real lessons, and don't reintroduce it to this catalogue as a recommended choice.)
 
 ### 2.2 Maths MT/OT/YT family
 
@@ -421,7 +421,7 @@ These two templates exist because their geometry is unique and frequently needed
 
 **Purpose:** 4×3 grid of calculation cells. Each cell is a contained working space.
 
-**Slots:** `title` (defaults to "Independent Tasks"), `instruction`, `calculations` (array, max 12 strings), `startAt` (optional — the number the first cell is labelled with; omit it and the cells run from `(1)`).
+**Slots:** `title` (the design's label: in maths the plain words, usually `Your Turn`; an untitled grid prints no title line, and the slide check sends it back to be titled), `instruction`, `calculations` (array, max 12 strings), `startAt` (optional — the number the first cell is labelled with; omit it and the cells run from `(1)`).
 
 **Use for:** arithmetic practice, times tables, column-method fluency.
 
@@ -469,15 +469,15 @@ Reach for these when the slide's job is to *put words in a character's mouth*: s
 
 ### 2.8 Tall-image starter — `starter-question-tall`
 
-**Purpose:** A starter built around one tall portrait image the children read from, such as a scanned question. The standard full-width starter header leaves only the body height (~4.7") below it, which shrinks a tall image past the point a child at the back can read it. This template stacks the date, LO, and heading down the left column and gives the image the slide's full height on the right, so a portrait crop renders at or above the size it appears on paper.
+**Purpose:** A starter built around one tall portrait image the children read from. The standard full-width starter header leaves only the body height (~4.7") below it, which shrinks a tall image past the point a child at the back can read it. This template stacks the date, LO, and heading down the left column and gives the image the slide's full height on the right, so a portrait crop renders at or above the size it appears on paper.
 
-**Shape:** Left column carries the starter furniture (Date placeholder, LO, the "Starter" heading and the slide's own prompt when it has one) plus an optional content zone below. Right side is one full-height zone for the question image.
+**Shape:** Left column carries the starter furniture (Date placeholder, LO, the "Starter" heading and the slide's own prompt when it has one) plus an optional content zone below. Right side is one full-height zone for the image.
 
 **Slots:**
 - `lo` — the learning objective text (the builder prepends "LO: ").
-- `title` — the starter's own prompt, drawn under the fixed "Starter" heading in the left column. The heading itself is always "Starter" and is not a slot (§1.4).
+- `heading` - the starter's own prompt, when it deliberately carries one, drawn under the fixed "Starter" heading in the left column; a `title` never prints there. The heading itself is always "Starter" and is not a slot (§1.4).
 - `question` — the content object for the right zone, normally `{ "type": "image", "imagePath": "<file>.png" }`. Zone class A.
-- `left` — optional content object under the heading. On the question slide a short `text` prompt that states the learning action without choosing a recording surface or routine response method (for example, "Answer the question.") or nothing; on the answer slide the answer in green via the `||` marker (e.g. `{ "type": "text", "text": "||350 millilitres" }`). Zone class E-narrow.
+- `left` — optional content object under the heading. On the question slide a short `text` prompt that states the learning action without choosing a recording surface or routine response method (for example, "Which teeth cut food?") or nothing; on the answer slide the answer in green via the `||` marker (e.g. `{ "type": "text", "text": "||Incisors cut food." }`). Zone class E-narrow.
 
 There is no `headerStyle` on this template — it draws its own starter header in the left column. Use it only for slide 1 (and its answer twin): the shape exists to carry the lesson-opening furniture beside a tall image.
 
@@ -1099,7 +1099,7 @@ Zone class compatibility: fits A, B, C, D, E-wide, E-narrow.
 
 ### `numbered-questions`
 
-A vertical stack of question cards, each with a blue `(1) (2) (3)` label down the left. Use only on starter and main independent work slides — typically dropped into a `body-full` zone. Takes an optional `startAt` (the number the first card is labelled with); omit it and the cards run from `(1)`.
+A vertical stack of question cards, each with a purple `(1) (2) (3)` label down the left. Use only on starter and main independent work slides (the main independent work is numbered in maths only: `preferences.md` → Question Labelling), typically dropped into a `body-full` zone. Takes an optional `startAt` (the number the first card is labelled with); omit it and the cards run from `(1)`.
 
 ```json
 { "type": "numbered-questions",
@@ -1161,7 +1161,7 @@ right edge, so it reads as a real answer space rather than a thin label.
   "secondary": { "type": "place-value-chart", "columns": ["Th", "H", "T", "O"], "rows": [] } }
 ```
 
-For a smaller check between teaching steps, make `primary` an unnumbered `stack` or `row` and omit `questionNumbering`. Use `numbered-questions` in this rail only when it belongs to a starter or main independent task.
+For a smaller check between teaching steps, make `primary` an unnumbered `stack` or `row` and omit `questionNumbering`. Use `numbered-questions` in this rail only when it belongs to a starter or, in maths, a main independent task.
 
 What the rail may hold: a bare `place-value-chart` heading strip (`rows: []`), a `chip-bank` of the category or vocabulary words, a short `text` criteria line. One reference, not a panel of them.
 
@@ -1175,9 +1175,9 @@ For a set of SHORT questions, `question-cards` below is the other way to present
 
 ### `question-cards`
 
-**A second way to present a question set, beside `numbered-questions`.** The same questions, but each on its own plain white card with the shared soft shadow. Each carries a blue number badge on its corner and sits at a degree or two of tilt so the set reads as placed rather than gridded. The cards pack across the zone and wrap, and the type grows until the set fills the height it is given. The cards do not take category colours because an ordinary question list is not a set of categories.
+**A second way to present a question set, beside `numbered-questions`.** The same questions, but each on its own plain white card with the shared soft shadow. Each carries a purple number badge on its corner and sits at a degree or two of tilt so the set reads as placed rather than gridded. The cards pack across the zone and wrap, and the type grows until the set fills the height it is given. The cards do not take category colours because an ordinary question list is not a set of categories.
 
-Use `question-cards` only for a starter or main independent question set. Do not use it for a Do beat, quick check or another smaller task between teaching steps because every card carries a number badge.
+Use `question-cards` only for a starter or, in maths, a main independent question set. Do not use it for a Do beat, quick check or another smaller task between teaching steps because every card carries a number badge.
 
 ```json
 { "type": "question-cards",
@@ -1195,7 +1195,7 @@ Fields:
 
 Answer reveals work exactly as they do in a list: `"6 × 7 = ||42"` prints the answer in green, so a question slide and its answer slide can use the same helper. The inline colour markers (`**bold**`, `[[blue]]`, `{{green}}`, `<<orange>>`) all work inside a card too, but `{{green}}` is reserved for an answer/reveal slide. Prepared teaching models are worked examples: give the card `colorRole: "worked-purple"`.
 
-**Which of the two a set belongs in.** Both helpers are restricted to a starter or the lesson's main independent work. Within those permitted stages, use `numbered-questions` as the default. Use `question-cards` only when the set has about five or fewer short questions and the placed-card treatment makes those short prompts use the available space more clearly. A sentence-length or multi-sentence question belongs in `numbered-questions`. A Do beat, quick check, discussion question, My Turn or other smaller task uses an unnumbered composition instead of either numbered helper.
+**Which of the two a set belongs in.** Both helpers are restricted to a starter or the lesson's main independent work in maths. Within those permitted stages, use `numbered-questions` as the default. Use `question-cards` only when the set has about five or fewer short questions and the placed-card treatment makes those short prompts use the available space more clearly. A sentence-length or multi-sentence question belongs in `numbered-questions`. A Do beat, quick check, discussion question, My Turn or other smaller task uses an unnumbered composition instead of either numbered helper.
 
 Zone class compatibility: fits A, B, C, D, E-wide, E-narrow. Too compact for F or G.
 
@@ -2346,7 +2346,7 @@ The horizontal twin of `stack`. Holds two or more content objects and renders th
 
 Items render left-to-right, equal width by default. Content types don't have to match — a `row` can hold a mix (e.g. an image next to a text block). Zone class compatibility depends on its items — the zone must accept every item's content type.
 
-**Numbering a row's items.** Add `questionNumbering` only when the row belongs to a numbered starter, a numbered main independent task or a multi-question Maths Our Turn. The two modes have fixed roles:
+**Numbering a row's items.** Add `questionNumbering` only when the row belongs to a numbered starter, a numbered main independent task in maths, or a multi-question Maths Our Turn. The two modes have fixed roles:
 
 ```json
 { "type": "row", "questionNumbering": "teacher-led", "items": [] }

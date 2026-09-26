@@ -4,8 +4,8 @@ const { FONT, COLOURS, SIZE_CEILINGS, FIT } = require('../styles');
 const { SLIDE_H, SLIDE_W, MARGIN_X, starterPrompt } = require('../layout');
 const { drawContent } = require('../content');
 
-// A starter built around one tall portrait image the children read from, such
-// as a scanned question. The usual full-width starter header would leave the
+// A starter built around one tall portrait image the children read from.
+// The usual full-width starter header would leave the
 // image only the body height below it, shrinking it past readability — so this
 // template stacks the date / LO / heading down the LEFT column and gives the
 // image the slide's FULL height on the right. Wide crops don't need this: they

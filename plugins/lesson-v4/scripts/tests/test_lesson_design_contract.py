@@ -148,9 +148,6 @@ def valid_contract():
             "lo": "To add two-digit numbers using partitioning",
             "displayedLo": "To add two-digit numbers",
             "durationMinutes": 45,
-            "scope": "Complete lesson",
-            "deferredLearning": None,
-            "lesson2Direction": None,
             "stickingPoint": "Keep tens with tens and ones with ones.",
         },
         "teacherOrientation": (
@@ -169,7 +166,6 @@ def valid_contract():
                 "activity": "Recall number bonds to 10.",
                 "connection": "Retrieves addition facts used inside today's method.",
                 "format": "Four short calculations.",
-                "testQuestionPath": None,
             },
             "pupilInstruction": "Find each total.",
             "modellingState": None,
@@ -1614,16 +1610,29 @@ def test_nullable_acceptance_condition_rejects_empty_string():
     )
 
 
-def test_bank_starter_requires_exact_answer_slide_answer():
-    design, photos = valid_contract()
-    starter = design["starter"]
-    starter["content"]["testQuestionPath"] = "/bank/question.png"
-    starter["answer"] = no_answer()
-    assert_invalid_contract(
-        design,
-        photos,
-        "must be an exact answer-slide answer when starter.testQuestionPath is present",
-    )
+def test_the_test_question_starter_slot_is_gone():
+    # The teacher removed the test-question starter as if it had never existed
+    # (24 September 2026, release 7A), so its old always-empty slot is refused
+    # like any field the contract does not have, empty or filled.
+    for value in (None, "/bank/question.png"):
+        design, photos = valid_contract()
+        design["starter"]["content"]["testQuestionPath"] = value
+        assert_invalid_contract(design, photos, "has unknown fields: testQuestionPath")
+
+
+def test_the_lesson_2_plan_is_gone_from_the_lesson_file():
+    # The Lesson 2 plan came out (PF decision 20, release 7A): a lesson that
+    # left something for another lesson says what in one line of the
+    # walk-through's closing decisions, and the file plans nothing further.
+    for key, value in (
+        ("scope", "Complete lesson"),
+        ("scope", "Lesson 1 of 2"),
+        ("deferredLearning", None),
+        ("lesson2Direction", "Write the diary entry."),
+    ):
+        design, photos = valid_contract()
+        design["lesson"][key] = value
+        assert_invalid_contract(design, photos, f"lesson has unknown fields: {key}")
 
 
 def test_json_booleans_do_not_pass_as_integer_fields():
@@ -1944,7 +1953,7 @@ def test_cli_initial_photo_namespace_rejects_adaptation_object_before_merge():
 
 def test_cli_wrong_json_type_uses_contract_error_interface_without_traceback():
     design, photos = valid_contract()
-    design["lesson"]["scope"] = []
+    design["lesson"]["stickingPoint"] = []
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         design_path = tmp_path / "lesson-design.json"

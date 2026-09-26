@@ -17,7 +17,6 @@ REQUEST_FIELDS = {
     "structure",
     "yearGroup",
     "subject",
-    "scope",
     "vocabularyCount",
     "vocabularyIntroductionCount",
     "trimmedVocabularyCount",
@@ -305,7 +304,7 @@ def notes_scaffold(kind: str | None = None) -> dict[str, Any]:
 # decision (a teach takeaway, a task structure) stays a whole-value
 # placeholder.
 CONTENT_ENVELOPE_FIELDS: dict[str, tuple[str, ...]] = {
-    "starter": ("activity", "connection", "format", "testQuestionPath"),
+    "starter": ("activity", "connection", "format"),
     "prepare": ("mode", "activity"),
     "my-turn": ("example", "modelledExemplar"),
     "our-turn": ("example",),
@@ -775,18 +774,6 @@ def validate_request(raw: Any) -> dict[str, Any]:
     text(
         request["subject"],
         "subject",
-    )
-
-    scope = text(
-        request["scope"],
-        "scope",
-    )
-    require(
-        scope in {
-            "Complete lesson",
-            "Lesson 1 of 2",
-        },
-        f"scope invalid: {scope}",
     )
 
     for field in (
@@ -1267,17 +1254,6 @@ def build_scaffold(
             "lo": PLACEHOLDER,
             "displayedLo": PLACEHOLDER,
             "durationMinutes": PLACEHOLDER,
-            "scope": request["scope"],
-            "deferredLearning": (
-                None
-                if request["scope"] == "Complete lesson"
-                else PLACEHOLDER
-            ),
-            "lesson2Direction": (
-                None
-                if request["scope"] == "Complete lesson"
-                else PLACEHOLDER
-            ),
             "stickingPoint": PLACEHOLDER,
         },
         "teacherOrientation": PLACEHOLDER,

@@ -1012,3 +1012,19 @@ Looked at and left out of the rows, because this topic is not what they govern:
 - **`CONSOLIDATION_REPORT.md`** at the plugin's root (not an instruction file)
   still lists "real test question whole starter paperwork" among merged
   sections: history, left alone.
+
+## After release 7A (4.2.293, 26 September 2026)
+
+Every decision and settled item on this list is built in release 7A, uncommitted
+until he says (`streamline-tools/7a-release-report.md`). All 390 rows are pinned in
+`plugins/lesson-v4/scripts/tests/starters_sticky_apply_ledger_pins.json`; the 65 that
+changed are mapped, each with the decision that changed it, in
+`2026-09-26-starters-sticky-apply-mapping.md`. Five of them were changed first by the
+colours release (4.2.292): D21, I14, I15 and I16 are taken from its `COLOURS_ROWS`,
+and D23, which that release changed through PF-R18 without naming, is mapped with its
+words. G10 and H03 are kept word for word; H05's first two sentences and G12 moved to
+`preferences.md` -> Sticky Knowledge, and H08 moved there in full prose.
+
+The same lines are rows of the later topics' lists, which their releases read against
+the mapping: routes RT-C27, E12, E13, E40, E41, E42, E44, J06, P12, P13, P19; reviewer
+RV-H12, H14, J48, K02, S05, S25, T11; playbook PB-S14; voice VG-M33.

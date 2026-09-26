@@ -201,7 +201,12 @@ class TheRuleReachesEveryRouteAndSubjectTests(unittest.TestCase):
         text = flat(LESSON_DESIGNER)
         self.assertIn("Say which kind of thing that learning is: a fact, a method, or an idea", text)
         self.assertIn("which kind of learning it is, a fact, a method or an idea", text)
-        self.assertIn("a sticky fact is not where an idea goes", text)
+        # Release 7A folded the sticky rule into its home, which the designer's
+        # Sticky Knowledge section tells it to read before naming a fact.
+        self.assertIn("`preferences.md` → Sticky Knowledge is the home: read it before naming a sticky fact.", text)
+        sticky = section(REF / "preferences.md", "Sticky Knowledge")
+        self.assertIn("A sticky fact is not where an idea goes", sticky)
+        self.assertIn("`concepts` is where it lives, in every route.", sticky)
 
     def test_the_reviewer_checks_for_an_unnamed_idea_and_for_unchanging_evidence(self) -> None:
         text = flat(DESIGN_REVIEWER)

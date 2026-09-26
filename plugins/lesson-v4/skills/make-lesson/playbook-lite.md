@@ -708,7 +708,7 @@ skill. Composition is closed: change nothing but picture and decoration fields.
 
 SUCCESS_CHECK:
 node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
-  "[WORKING_DIR]/lesson.json"
+  "[WORKING_DIR]/lesson.json" --settled
 
 Require: SLIDE_DESIGN_CHECK_OK: [N] slides
 
@@ -728,7 +728,7 @@ TERMINAL_STATE: Slide decoration check: SLIDE_DECORATION_OK: [N] slides
 ```
 
 After return, require the record and the marker, and run the slide-design
-check yourself. Run the optional-picture check yourself too, with no
+check yourself with `--settled`. Run the optional-picture check yourself too, with no
 `--library-root` and with `--room "[WORKING_DIR]/slide-room.json"` when that
 file exists. It runs the Educational SVG resolver itself, so the library is
 "unavailable" only when the resolver says so, never because this launch had
@@ -1500,7 +1500,7 @@ failure at once, so one pass is normally enough. Validation keeps the record
 honest, it never withholds it: if the check still fails after two repair passes,
 send the teacher report anyway with the exact `RUN_REPORT_FAILED` output. Then
 send a short
-teacher-facing report naming the topic, year, subject, objective, lesson scope,
+teacher-facing report naming the topic, year, subject, objective,
 exact files, pedagogical highlights, design-review result and every teacher
 flag.
 
@@ -1517,8 +1517,8 @@ own check.
 Keep the teacher report concise. Always include a `Teacher flags` section, using
 `None` when empty. It carries each flagged slide and its fault, the design reviewer's unresolved findings, any
 declared cross-resource impact from a repair, every picture a designer was
-uneasy about, and every `SETUP_NOTE:` the start-up check printed. Worksheet pupil sheets and answer key remain separate. State when
-a two-lesson scope covers Lesson 1 only and name deferred learning.
+uneasy about, and every `SETUP_NOTE:` the start-up check printed. Worksheet pupil sheets and answer key remain separate. When the
+walk-through says the lesson left something for another lesson, say what in one line.
 
 ---
 

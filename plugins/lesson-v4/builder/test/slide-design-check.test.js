@@ -112,6 +112,100 @@ test('internal lesson-stage titles block, and the scratch build still runs', () 
   }
 });
 
+test('a bare Practise is a slot name in every subject, and a bare Apply only outside maths', () => {
+  // The teacher's "yes" of 24 September 2026 (release 7A): `Practise` names
+  // the slot, not the move, so a slide titled only that is flagged wherever it
+  // is; in maths `Apply` is one of the plain words he wants, so it passes there.
+  const { presentationWarnings } = require('../scripts/check-slide-design');
+  const flagged = (subject) =>
+    presentationWarnings({
+      subject,
+      slides: [
+        { title: 'Practise' },
+        { title: 'Apply' },
+        { title: 'Your Turn' },
+        { title: 'Practise rounding to the nearest 100' },
+        { title: 'practise' },
+      ],
+    }).map((warning) => `${warning.slide}:${warning.signal}`);
+  assert.deepEqual(flagged('Maths'), ['1:INTERNAL_STAGE_TITLE', '5:INTERNAL_STAGE_TITLE']);
+  assert.deepEqual(flagged('History'), ['1:INTERNAL_STAGE_TITLE', '2:INTERNAL_STAGE_TITLE', '5:INTERNAL_STAGE_TITLE']);
+  const [warning] = presentationWarnings({ subject: 'Maths', slides: [{ title: 'Practise' }] });
+  assert.match(
+    warning.message,
+    /In maths the plain words My Turn, Our Turn, Your Turn, Answers and Apply are the titles; Practise is not one of them/
+  );
+});
+
+test('on a settled deck a title slip is a note, and never costs the drawings', () => {
+  // Release 7A's first check: a bare "Practise" that survived the slide
+  // designer's round failed the decorator's check too, and the whole deck lost
+  // its drawings. The decorator and the orchestrator pass --settled; the
+  // designer's own check does not, so it is still sent back.
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(
+      root,
+      `'use strict';\n` +
+        `const fs = require('node:fs');\n` +
+        `const path = require('node:path');\n` +
+        `const out = path.join(process.argv[3], 'Scratch Check.pptx');\n` +
+        `fs.writeFileSync(out, 'deck');\n` +
+        `console.log('Wrote: ' + out);\n`
+    );
+    const titleSlip = writeLesson(root, {
+      ...ordinaryLesson(),
+      subject: 'History',
+      slides: [{ template: 'title', title: 'Practise' }]
+    });
+
+    const designer = runSlideDesignCheck(titleSlip, { buildPath: fakeBuilder });
+    assert.equal(designer.ok, false);
+    assert.equal(designer.reason, 'SLIDE_DESIGN_PRESENTATION');
+
+    const settled = runSlideDesignCheck(titleSlip, { buildPath: fakeBuilder, settled: true });
+    assert.equal(settled.ok, true, settled.stderr);
+    assert.match(settled.stderr, /never a reason to withhold its drawings/);
+    assert.match(settled.stderr, /note: slide 1 title: INTERNAL_STAGE_TITLE/);
+
+    // A fault the decorator's own layer can cause still fails on a settled deck.
+    const twice = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [{
+        template: 'split-h-50-50',
+        title: 'Look closely',
+        primary: { type: 'image', imagePath: 'photo.jpg' },
+        secondary: { type: 'image', imagePath: 'photo.jpg' }
+      }]
+    });
+    const picture = runSlideDesignCheck(twice, { buildPath: fakeBuilder, settled: true });
+    assert.equal(picture.ok, false);
+    assert.match(picture.stdout, /"signal":"PICTURE_TWICE_ON_ONE_SLIDE"/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('the command line passes --settled through', () => {
+  const root = makeRoot();
+  try {
+    const lessonPath = path.join(root, 'lesson.json.tmp.settled');
+    fs.writeFileSync(lessonPath, JSON.stringify({
+      lessonName: 'Settled',
+      subject: 'History',
+      slides: [{ template: 'body-full', title: 'Practise', body: { type: 'text', value: 'Put the three events in order.' } }]
+    }, null, 2));
+    const script = path.join(__dirname, '..', 'scripts', 'check-slide-design.js');
+    const plain = spawnSync(process.execPath, [script, lessonPath], { encoding: 'utf8' });
+    assert.equal(plain.status, 1, plain.stdout + plain.stderr);
+    const settled = spawnSync(process.execPath, [script, lessonPath, '--settled'], { encoding: 'utf8' });
+    assert.equal(settled.status, 0, settled.stdout + settled.stderr);
+    assert.match(settled.stdout, /SLIDE_DESIGN_CHECK_OK: 1 slides/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('a whole-blue block that tells and then asks blocks, and the scratch build still runs', () => {
   // Geography slide 6 painted "Look at the tropical rainforest regions. What
   // pattern do you notice around the Equator?" as one blue card, hiding the
@@ -1709,4 +1803,37 @@ test('a starter of task-blue lines is all blue, as one of focus-blue lines is', 
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+// `--settled` turns every wording, title and colour fault into a note. On the
+// slide designer's own check that would let them all through the one gate that
+// sends them back, so only the decorator's check, on a settled deck, and the
+// orchestrator's re-check after it carry it (the second check, 26 September
+// 2026, found that adding it to the designer's check passed every suite).
+test("the slide designer's own check never runs with --settled; only the decorator's does", () => {
+  const plugin = path.join(__dirname, '..', '..');
+  const read = (rel) => fs.readFileSync(path.join(plugin, rel), 'utf8').replace(/\r\n/g, '\n');
+  const commands = (text) =>
+    text.split(/\n\s*\n/).filter((block) => block.includes('builder/scripts/check-slide-design.js'));
+  let designerCommands = 0;
+  for (const name of fs.readdirSync(path.join(plugin, 'agents')).filter((file) => file.endsWith('.md'))) {
+    for (const block of commands(read(path.join('agents', name)))) {
+      if (name === 'slide-decorator.md') {
+        assert.match(block, /--settled/, `${name}: ${block}`);
+      } else {
+        assert.doesNotMatch(block, /--settled/, `${name}: ${block}`);
+        designerCommands += 1;
+      }
+    }
+  }
+  assert.ok(designerCommands >= 1, "the slide designer's check command was not found");
+  const playbook = read(path.join('skills', 'make-lesson', 'playbook-lite.md'));
+  const pass = playbook.indexOf('**The decoration pass.**');
+  assert.ok(pass > 0, 'the playbook no longer marks the decoration pass');
+  const trackA = commands(playbook.slice(0, pass));
+  assert.ok(trackA.length >= 1, "the playbook's Track A check was not found");
+  for (const block of trackA) assert.doesNotMatch(block, /--settled/, block);
+  const decorator = commands(playbook.slice(pass));
+  assert.ok(decorator.length >= 1, "the playbook's decorator check was not found");
+  for (const block of decorator) assert.match(block, /--settled/, block);
 });

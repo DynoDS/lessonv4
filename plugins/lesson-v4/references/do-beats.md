@@ -100,12 +100,12 @@ Choose a deliberate oral rehearsal only when saying the exact word, definition, 
 
 ### 1.5 Last Lesson / Last Week / Last Term
 Three quick recall questions structured by time-distance (Boxer, *Teaching Secondary Science*; CogSciSci). Bakes spacing into the starter itself.
-**Best for:** the starter of lesson 2+ in a sequence.
+**Best for:** the starter of lesson 2+ in a sequence, when the teacher requests mixed retrieval or the wider sequence gives it a clear purpose and children have enough security to choose productively between methods or knowledge (`preferences.md` → Starters).
 **SEND access:** the predictability of the structure is the access — pupils know what kind of pull is coming.
 
 ### 1.6 Retrieval Roulette
 A two-column grid: one column random-cued from this topic, one from earlier topics. Pupils answer both (Boxer & Walker; cogscisci.wordpress.com). Interleaving without effort.
-**Best for:** mid-unit lessons where prior topics matter.
+**Best for:** mid-unit lessons where prior topics matter, when the teacher requests mixed retrieval or the wider sequence gives it a clear purpose and children have enough security to choose productively between methods or knowledge (`preferences.md` → Starters).
 **SEND access:** the format is identical week to week — no novel demand on top of recall.
 
 ### 1.7 Choral Response

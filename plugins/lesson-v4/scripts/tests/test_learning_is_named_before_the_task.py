@@ -115,11 +115,15 @@ class TheDesignerNamesTheLearningFirstTests(unittest.TestCase):
         self.assertIn("the learning itself: what children will know, understand and be able to think", self.designer)
 
     def test_the_ending_decision_uses_the_named_learning(self) -> None:
-        self.assertIn("omit the ending when practice already draws on the intended learning", self.designer)
-        self.assertIn("Intended learning means what the quality-lock sentence and the sticky knowledge name", self.designer)
+        # Release 7A: the rule lives in its home, and the designer points at it.
+        apply = section(PREFERENCES, "The Apply Slide")
+        self.assertIn("omit the ending when practice already draws on the intended learning", apply)
+        self.assertIn("the lesson names it in the read-back sentence that closes the walk-through and in its sticky knowledge", apply)
+        self.assertIn("`preferences.md` → The Apply Slide owns when practice already draws on the intended learning", self.designer)
+        self.assertNotIn("quality-lock sentence", self.designer)
 
     def test_sticky_knowledge_is_traced_forward(self) -> None:
-        self.assertIn("trace each one forward to the stage that needs it", self.designer)
+        self.assertIn("trace each one forward to the stage that needs it", section(PREFERENCES, "Sticky Knowledge"))
 
 
 class TheReviewerChecksItTests(unittest.TestCase):

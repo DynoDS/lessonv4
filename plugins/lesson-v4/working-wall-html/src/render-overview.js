@@ -12,7 +12,8 @@ const {
 } = require("./layout");
 const { esc, mm, hash, imgTag, titleBarHtml } = require("./shared");
 
-const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
+// Arrows come from "Wall Arrows" (shared.js says why).
+const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
 
 // Local title-fit wrapper used by this renderer family.
 function titlePtFor(card, style) {

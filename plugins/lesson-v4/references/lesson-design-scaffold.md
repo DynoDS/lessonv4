@@ -31,7 +31,6 @@ Use exactly these top-level fields:
   "structure": "Content-based",
   "yearGroup": 4,
   "subject": "Science",
-  "scope": "Complete lesson",
   "vocabularyCount": 3,
   "vocabularyIntroductionCount": 2,
   "trimmedVocabularyCount": 0,

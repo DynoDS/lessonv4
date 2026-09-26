@@ -2043,10 +2043,9 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
                 expect_string(content[key], f"{path}.{key}")
 
     if kind == "starter":
-        keys = {"activity", "connection", "format", "testQuestionPath"}
+        keys = {"activity", "connection", "format"}
         expect_exact_keys(content, keys, keys, path)
         strings(("activity", "connection", "format"))
-        expect_nullable_string(content["testQuestionPath"], f"{path}.testQuestionPath")
     elif kind == "prepare":
         keys = {"mode", "activity"}
         expect_exact_keys(content, keys, keys, path)
@@ -2719,12 +2718,6 @@ def validate_source_unit(
             or answer_kind in {"model", "standard"},
             f"{path}.answer.delivery answer-slide is allowed only for a starter, "
             "main independent work, or a model/standard reveal",
-        )
-
-    if kind == "starter" and unit["content"]["testQuestionPath"] is not None:
-        expect(
-            answer_kind == "exact" and answer_delivery == "answer-slide",
-            f"{path}.answer must be an exact answer-slide answer when starter.testQuestionPath is present",
         )
 
     if kind == "my-turn":
@@ -3778,7 +3771,7 @@ def run_design_checks(
     lesson = expect_dict(root["lesson"], "lesson")
     lesson_fields = {
         "structure", "yearGroup", "subject", "lo", "displayedLo",
-        "durationMinutes", "scope", "deferredLearning", "lesson2Direction", "stickingPoint",
+        "durationMinutes", "stickingPoint",
     }
     expect_exact_keys(lesson, lesson_fields, lesson_fields, "lesson")
     structure = expect_string(lesson["structure"], "lesson.structure")
@@ -3824,16 +3817,6 @@ def run_design_checks(
             "synonyms route and validate differently and are not accepted",
         )
     expect_positive_int(lesson["durationMinutes"], "lesson.durationMinutes")
-    scope = expect_string(lesson["scope"], "lesson.scope")
-    expect(scope in {"Complete lesson", "Lesson 1 of 2"}, "lesson.scope invalid")
-    expect_nullable_string(lesson["deferredLearning"], "lesson.deferredLearning")
-    expect_nullable_string(lesson["lesson2Direction"], "lesson.lesson2Direction")
-    if scope == "Complete lesson":
-        expect(lesson["deferredLearning"] is None, "complete lesson must have deferredLearning null")
-        expect(lesson["lesson2Direction"] is None, "complete lesson must have lesson2Direction null")
-    else:
-        expect_string(lesson["deferredLearning"], "lesson.deferredLearning")
-        expect_string(lesson["lesson2Direction"], "lesson.lesson2Direction")
 
     orientation = expect_string(root["teacherOrientation"], "teacherOrientation")
     orientation_prefix = "Teacher orientation:"

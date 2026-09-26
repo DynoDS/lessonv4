@@ -1971,7 +1971,6 @@ def content_based_design() -> tuple[dict, dict]:
             "activity": "Name one thing a historian uses.",
             "connection": "DESIGNER ONLY connection",
             "format": "DESIGNER ONLY format",
-            "testQuestionPath": None,
         },
         sourceUnitId="lesson-section/starter/unit-001",
         speakerNotes={
