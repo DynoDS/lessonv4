@@ -4,23 +4,25 @@ Read this first, then `plans/streamline-plan.md` (the method, his rules, "What t
 
 ## Where it stands
 
-- **Committed on main, not pushed:** 4.2.287 to 4.2.295. The last is `8af6f8a9` (routes). Main's working tree is clean apart from two ignored comparison files (`plans/streamline-tools/ws-after-sheets.json`, `ws-before-sheets.json`, never committed).
+- **Committed on main, not pushed:** releases 4.2.287 to 4.2.296. The latest is the voice guide, joined after routes 4.2.295.
+- **Untracked local files:** lesson outputs and Roman numerals scratch files remain at the repository root, along with `plans/streamline-tools/ws-after-sheets.json` and `ws-before-sheets.json`. They predate this merge and must stay out of release commits.
 - **Codex:** he installed 4.2.294 from the main checkout at 12:21 on 26 September and ran a lesson (Roman numerals to L) on it. **Codex installs whatever is in the main checkout's working tree at that moment**, so never leave a half-joined release uncommitted in main when he might install, and tell him before he does.
-- **Done (7 of 10 behaviour releases):** worksheets 4.2.290, subject files 4.2.291, colours 4.2.292, 7A openings and closings 4.2.293, reviewer 4.2.294, routes 4.2.295, and the voice release built (below).
-- **Left:** finish and join voice; playbook 10A (started); humour (release 6); playbook 10B; playbook 10C. Then the tidy-ups (7B, routes release 4 folds, topic 9, two engine jobs), which are not needed before he uses it.
+- **Joined to main:** worksheets 4.2.290, subject files 4.2.291, colours 4.2.292, 7A openings and closings 4.2.293, reviewer 4.2.294, routes 4.2.295, and the voice guide 4.2.296.
+- **Left:** playbook 10A (started); humour (release 6); playbook 10B; playbook 10C. Then the tidy-ups (7B, routes release 4 folds, topic 9, two engine jobs), which are not needed before he uses it.
 
 ## In flight
 
-### 1. Voice guide (topic 8, release 5): nearly done
-- Worktree `C:\Users\Daniel\Projects\lessonv4-voice`, branch `streamline/8-voice`, from `91687471`. Report `plans/streamline-tools/vg-release-report.md` there; full check `vg-release-check.md` there.
-- Built, fully checked, every repair done, and his last answer ("yes thats fine": a phrase repeated for rhythm is fine in speaker notes, the warning stays for the written slide) built by `vg_00` and the guide's section 2 and 3 changes. Every suite passes on the branch (Python 2,325), 60 of 60 undo attacks caught, replay exact; a trial merge onto `8af6f8a9` passes (Python 2,382). `vg_09` restores his answer in the voice ledger if a conflict resolution drops it.
-- Then: a small look at the repairs (a fresh agent, smaller model), then join main (see "Joining a side branch"), numbered **4.2.296**, merge follow script `plans/streamline-tools/vg-change/vg_09_follow_at_merge.py` (take main's side in conflicts, then run it).
-- **The small look, ready to paste into a new Codex chat:** "In `C:\Users\Daniel\Projects\lessonv4-voice`, check only the voice release's repairs since its full check (`plans/streamline-tools/vg-release-check.md`; the repairs are described in `vg-release-report.md`'s later rounds, scripts in `vg-change/`). For each finding in the check, say done or not, quoting old and new. Confirm his answer "yes thats fine" is built as recorded in `plans/2026-09-23-teacher-voice-ledger.md` (entry "His week 3 notes, and a phrase repeated for rhythm"). Replay the scripts on a clean `91687471` copy in a scratch folder and confirm they give the branch exactly. Run `python -X utf8 -m pytest plugins/lesson-v4/scripts/tests -q -p no:cacheprovider` and `python -X utf8 -m pytest plugins/lesson-v4/evals/teacher-voice -q`. Change nothing; do every experiment in `plans/streamline-tools/scratch/`; write your report to `plans/streamline-tools/vg-release-second-check.md`; start it with CLEAN or NOT CLEAN."
-
-### 2. Playbook 10A: started, stopped part way
+### 1. Playbook 10A: started, stopped part way
 - Worktree `C:\Users\Daniel\Projects\lessonv4-playbook`, branch `streamline/10a-playbook`, from `8af6f8a9`. Brief: `plans/streamline-tools/playbook-10a-brief.md` (in main).
 - The builder was stopped for usage after writing scripts `c1` to `c7c` in `plans/streamline-tools/pb-change/` (worktree) and editing about 30 files. No report yet.
 - To resume: in the worktree, put the plugin back to `8af6f8a9` (`git -C C:/Users/Daniel/Projects/lessonv4-playbook checkout -- plugins/lesson-v4`, keeping `plans/`), rerun the scripts in order to see each one applies cleanly, then carry on from the brief. If a script half-applied or fails, fix that script, not the files.
+
+## Just joined
+
+### Voice guide (topic 8, release 5), 4.2.296
+- Built on `streamline/8-voice` from `91687471`; the release is now joined to main. The side worktree remains open with the branch changes. Its report, full check and repair check are `plans/streamline-tools/vg-release-report.md`, `vg-release-check.md` and `vg-release-second-check.md`.
+- The joining check is `plans/streamline-tools/merge-296-check.md`. `vg_09_follow_at_merge.py` restored the teacher's answer in the voice ledger, recorded the carried rows, moved seven earlier-topic pins (six routes and one Teach then Do), and rebuilt 781 pins across 43 changed rows, including VG-O41.
+- Every joined-tree suite passed: Python 2,382 passed, 1 skipped and 260,022 subtests; teacher-voice 21; builder 772; worksheet HTML 771; stick-in sheets 73; working wall 166; shared 126; root 46. The rhythm exception is for speaker notes; the warning remains for written board and page text.
 
 ## Still to build, in order
 
@@ -52,7 +54,7 @@ In Git Bash from `C:\Users\Daniel\Projects\lessonv4`:
 - **python3 hangs** (the Microsoft Store alias). For every test run put `C:\Users\Daniel\AppData\Local\Temp\claude\C--Users-Daniel-Projects-lessonv4\5661196e-1751-4711-8b0f-64aef26ec0c2\scratchpad\py3venv\Scripts` first on PATH (a venv whose `python.exe` is copied to `python3.exe`). If that folder is gone, make a new venv anywhere, `pip install pytest`, copy `python.exe` to `python3.exe`. Codex can also use `scripts/find-python.js`.
 - **Worktrees' `node_modules` are junctions** to main's. Before any `git worktree remove`, remove each junction with `rmdir` (never a recursive delete), or main loses its libraries. Worktrees still open: `lessonv4-colours`, `lessonv4-subjects`, `lessonv4-reviewer`, `lessonv4-routes` (all joined, safe to remove after rmdir-ing their four junctions), `lessonv4-voice`, `lessonv4-playbook` (in flight).
 - Agents doing undo attacks must do them in a scratch copy, never in the real files.
-- Test suites take about 5 minutes (Python) plus 2 (node). Agents often go idle waiting on background test runs; tell them to run in the foreground.
+- On the merged tree, Python took about 6 to 7 minutes and the Node suites about 2. The Python suite can sit for several minutes in one section; keep it in the foreground and wait for its final summary. `run-all-suites.sh` prints each suite's result but does not stop or aggregate failures, so confirm each suite's final result.
 - Large pictures (`colours-renders/`, `7a-renders/`) are git-ignored on purpose.
 
 ## Handing this to Codex

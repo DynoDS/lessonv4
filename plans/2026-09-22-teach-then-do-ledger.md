@@ -1170,3 +1170,9 @@ J03, Z19 and the home paragraph HOME-TD-LD-01 (the designer's rhythm paragraph g
 preferences decision 13b); TD-L07 and L09 (the reviewer's launch line gains 13b); TD-L10
 (the reviewer's four-parts line names `How this teacher explains`); TD-J20 (the skill
 route's Practise names `The launch`). No row was added or dropped.
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+- **TD-C19** (the dialogic route's Talk formats, pinned whole) moved with the voice guide release (topic 8, release 5), on the voice guide's list (`2026-09-23-teacher-voice-ledger.md`), whose mapping is `2026-09-26-teacher-voice-mapping.md`: the role-play example reads ("you're [character], what would you say?") (its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one).
+- **TD-J62** moved: the research file's red flag reads ("here are the seven kinds of influence - copy them down") (its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one; the quoted line is a teaching move to avoid, and its dash was not part of what it rejects).
+- **TD-G09, HOME-TD-PREF-19, HOME-TD-PREF-21 and the home record of the rhythm** moved: the same two lines as the quick-checks list's QC-G06, each reader now "a child in this class" (brought into this release by the lead from release 7B (its B1), in 7B's planned words and his: his speaker-notes answer on the rest-of-preferences list ("for the speaker notes it doesn't have to be short sentences ... speaker notes are as long as the idea needs, of course, and they're also conversational") and the voice list's decision 13 ("the plugin is for years one, two, three, four, five, and six"), so the reader is a child in this class).

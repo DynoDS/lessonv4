@@ -319,7 +319,7 @@
    "file": "agents/lesson-designer.md",
    "heading": "### Vocabulary",
    "paragraphs": [
-    "Governed by `preferences.md` → Vocabulary, whose definition rule you read before writing the set - a definition is a sentence you would say aloud to the class with a verb doing the work, never a noun phrase compressed until it is short. Open `teacher-voice.md` §5 with it. That section is the one place every vocabulary decision is written: which words earn a card (up to five, each with a job today), how a term the approved objective names is always taught (a card, or one explicit taught line, unless the teacher's sequence defers it), when two share a card, how each is defined and pictured, when each is introduced, and how the beat straight after the card uses it. Read it whole before choosing the set, and return to it before writing `vocabularyIntroductions`.",
+    "Governed by `preferences.md` → Vocabulary, whose definition rule you read before writing the set - a definition is a sentence you would say aloud to the class with a verb doing the work, never a noun phrase compressed until it is short. Open `teacher-voice.md` §5 with it. `preferences.md` → Vocabulary is the one place every vocabulary decision is written: which words earn a card (up to five, each with a job today), how a term the approved objective names is always taught (a card, or one explicit taught line, unless the teacher's sequence defers it), when two share a card, how each is defined and pictured, when each is introduced, and how the beat straight after the card uses it. Read it whole before choosing the set, and return to it before writing `vocabularyIntroductions`.",
     "Record the decisions in the contract (`output-template.md` → Vocabulary):",
     "- **The picture.** Give each word a structured `visual`. `preferences.md` → A Picture Beside a Word is the test for every picture you put beside a word: a vocabulary card, a word bank, a sorting set, a slide list. When word IS written form/symbol (digital time, decimal point, %), use structured `visual` object `{ \"kind\": \"built-in\", \"value\": \"...\" }` with notation as built-in glyph (e.g. \"10:05\" or \"0.7\") - analogue clock emoji beside \"digital time\" shows opposite. When word names idea no picture can honestly carry (line of latitude invisible), use `{ \"kind\": \"none\" }` - real option. Do not emit prose `visual:` field; use kinds defined in `output-template.md`. - **Words taken out.** A word a supplied plan listed and you trimmed goes in `trimmedVocabulary` with its reason. - **When each word arrives.** Plan when each word is introduced, and write it into `vocabularyIntroductions` as one entry per moment: the words introduced there, and the unit it follows. Each entry becomes one `key-vocabulary` slide, so a lesson may have one introduction or several, and how many is your decision rather than a default. Words that arrive at the same moment share one entry (`nutrients` and `carbohydrates` both met before the first food is shown are `[\"vocab-001\", \"vocab-002\"]` after the starter, one slide), because two entries on one anchor render as two consecutive single-word slides. - **What the teacher says.** Each entry carries its own `script`: the teacher stands in front of that slide and reads those cards, so it is written like any other script.",
     "The validator refuses a word introduced twice or not at all, and a word the beat straight after its card does not use on its board (its script alone does not count); its message names the beat where the word is first needed."
@@ -355,7 +355,7 @@
   },
   {
    "id": "VOC-A02",
-   "outcome": "folded into A01; the designer's section names the limit in its pointer",
+   "outcome": "folded into A01; the designer's section names the limit in its pointer; then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: out-of-date text says what is true now (\"That section\" named)",
    "present": [
     {
      "file": "agents/lesson-designer.md",
@@ -368,7 +368,7 @@
     },
     {
      "file": "agents/lesson-designer.md",
-     "text": "Governed by `preferences.md` → Vocabulary, whose definition rule you read before writing the set - a definition is a sentence you would say aloud to the class with a verb doing the work, never a noun phrase compressed until it is short. Open `teacher-voice.md` §5 with it. That section is the one place every vocabulary decision is written: which words earn a card (up to five, each with a job today), how a term the approved objective names is always taught (a card, or one explicit taught line, unless the teacher's sequence defers it), when two share a card, how each is defined and pictured, when each is introduced, and how the beat straight after the card uses it. Read it whole before choosing the set, and return to it before writing `vocabularyIntroductions`.",
+     "text": "Governed by `preferences.md` → Vocabulary, whose definition rule you read before writing the set - a definition is a sentence you would say aloud to the class with a verb doing the work, never a noun phrase compressed until it is short. Open `teacher-voice.md` §5 with it. `preferences.md` → Vocabulary is the one place every vocabulary decision is written: which words earn a card (up to five, each with a job today), how a term the approved objective names is always taught (a card, or one explicit taught line, unless the teacher's sequence defers it), when two share a card, how each is defined and pictured, when each is introduced, and how the beat straight after the card uses it. Read it whole before choosing the set, and return to it before writing `vocabularyIntroductions`.",
      "section": {
       "heading": "### Vocabulary",
       "occurrence": 0,
@@ -1417,22 +1417,22 @@
   },
   {
    "id": "VOC-C24",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 1: the guide's route names all four most-missed kinds, each with its reason, and the lesson designer points at that route instead of keeping a shorter copy of it (the guide's route names the definition); its settled item 1: the guide's route names all four most-missed kinds, each with its reason, and the lesson designer points at that route instead of keeping a shorter copy of it (the reason moved to the guide's route)",
    "present": [
     {
-     "file": "agents/lesson-designer.md",
-     "text": "§5 a vocabulary definition or explanation",
+     "file": "references/teacher-voice.md",
+     "text": "a definition or explanation §5",
      "section": {
-      "heading": "## Reference Files - precedence and decision-point loading",
+      "heading": "## How to read this file",
       "occurrence": 0,
       "intro": false
      }
     },
     {
-     "file": "agents/lesson-designer.md",
-     "text": "Definitions and scripts are the two most often missed, because a definition feels like a structured field being filled and a script feels like notes rather than writing; both are words a child reads or hears, and both are where the register slips first.",
+     "file": "references/teacher-voice.md",
+     "text": "**Definitions and scripts are the other two**, because a definition feels like a structured field being filled and a script feels like notes rather than writing; both are words a child reads or hears, and both are where the register slips first.",
      "section": {
-      "heading": "## Reference Files - precedence and decision-point loading",
+      "heading": "## How to read this file",
       "occurrence": 0,
       "intro": false
      }
@@ -5678,11 +5678,11 @@
   },
   {
    "id": "VOC-P02",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 6: each copy of \"keep precise subject vocabulary\" keeps its own condition; the plain repeats fold (the adaptation designer's copy points at Written Voice's Below paragraph)",
    "present": [
     {
      "file": "agents/adaptation-designer.md",
-     "text": "Keep essential subject vocabulary and proper nouns, supporting them with examples, visuals or plain-language bridges rather than automatically replacing them.",
+     "text": "On a separate Below resource, keep essential subject vocabulary and proper nouns as Written Voice's Below paragraph says: supported, not automatically replaced.",
      "section": {
       "heading": "### 4. Design any separate Below resource",
       "occurrence": 0,
@@ -5694,11 +5694,11 @@
   },
   {
    "id": "VOC-P03",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 6: each copy of \"keep precise subject vocabulary\" keeps its own condition; the plain repeats fold (the plain repeat is cut; the section's fuller copy, two lines on, holds it)",
    "present": [
     {
      "file": "references/adaptive-adaptation.md",
-     "text": "Keep necessary subject vocabulary and use accessible support around it.",
+     "text": "Keep essential subject vocabulary and proper nouns when the learning requires them, supporting difficult necessary words through a clear picture, labelled word bank, pronunciation cue or previously taught meaning rather than replacing them with vague alternatives.",
      "section": {
       "heading": "### Low-reading-load behaviour",
       "occurrence": 0,
@@ -6048,11 +6048,11 @@
   },
   {
    "id": "DEC-10",
-   "outcome": "decision 10: the designer's section sends it to the one home",
+   "outcome": "decision 10: the designer's section sends it to the one home; then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: out-of-date text says what is true now (\"That section\" named)",
    "present": [
     {
      "file": "agents/lesson-designer.md",
-     "text": "That section is the one place every vocabulary decision is written",
+     "text": "`preferences.md` → Vocabulary is the one place every vocabulary decision is written",
      "section": {
       "heading": "### Vocabulary",
       "occurrence": 0,
@@ -6393,11 +6393,11 @@
   },
   {
    "id": "HOME-LD-01",
-   "outcome": "a paragraph of agents/lesson-designer.md ### Vocabulary, pinned whole",
+   "outcome": "a paragraph of agents/lesson-designer.md ### Vocabulary, pinned whole; then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: out-of-date text says what is true now (\"That section\" named)",
    "present": [
     {
      "file": "agents/lesson-designer.md",
-     "text": "Governed by `preferences.md` → Vocabulary, whose definition rule you read before writing the set - a definition is a sentence you would say aloud to the class with a verb doing the work, never a noun phrase compressed until it is short. Open `teacher-voice.md` §5 with it. That section is the one place every vocabulary decision is written: which words earn a card (up to five, each with a job today), how a term the approved objective names is always taught (a card, or one explicit taught line, unless the teacher's sequence defers it), when two share a card, how each is defined and pictured, when each is introduced, and how the beat straight after the card uses it. Read it whole before choosing the set, and return to it before writing `vocabularyIntroductions`.",
+     "text": "Governed by `preferences.md` → Vocabulary, whose definition rule you read before writing the set - a definition is a sentence you would say aloud to the class with a verb doing the work, never a noun phrase compressed until it is short. Open `teacher-voice.md` §5 with it. `preferences.md` → Vocabulary is the one place every vocabulary decision is written: which words earn a card (up to five, each with a job today), how a term the approved objective names is always taught (a card, or one explicit taught line, unless the teacher's sequence defers it), when two share a card, how each is defined and pictured, when each is introduced, and how the beat straight after the card uses it. Read it whole before choosing the set, and return to it before writing `vocabularyIntroductions`.",
      "section": {
       "heading": "### Vocabulary",
       "occurrence": 0,

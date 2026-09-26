@@ -1092,3 +1092,7 @@ E41, E42, E44, J06, P12, P13, P19 by 7A, L20 by the subject files.
 - **Found in passing, not changed:** a discovery Use the learning's `activity` and a
   bounded attempt's `activity` are also words children are given, and the review view
   still leaves them out.
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+These rows quote lines the voice guide release (topic 8, release 5), on the voice guide's list (`2026-09-23-teacher-voice-ledger.md`), whose mapping is `2026-09-26-teacher-voice-mapping.md` changed (its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one): RT-A43 (the research file's red flag, "here are the seven kinds of influence - copy them down"), RT-F16 (the task route's "your research: most of the lesson") and RT-G07 (the dialogic route's "you're [character], what would you say?"). The dialogic route's discussion notes (RT-G09) keep every word and gain one sentence, "The discussion itself is not scripted; the words that open and frame it are." (the voice list's decision 12). The routes release's pins that held the old words followed them (`vg_06_repin_other_topics.py`).

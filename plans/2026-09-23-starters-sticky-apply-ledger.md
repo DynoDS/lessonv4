@@ -1040,3 +1040,9 @@ skill `prepare` unit's `activity` in `explanation` mode and a task lesson's `mod
 are words the class reads, routes 7e), SA-M08 (the reviewer's launch line gains his
 preferences decision 13b) and PF-Q14's paragraph (the teeth slide's story left the content
 route for the build log). SA-E20's words are the ledger's own row, extended.
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+- **SA-B18, HOME-SA-PREF-STARTERS-14 and the home record of `## Starters`** moved with the voice guide release (topic 8, release 5), on the voice guide's list (`2026-09-23-teacher-voice-ledger.md`), whose mapping is `2026-09-26-teacher-voice-mapping.md`: the starter example reads "true or false: felt blocks more sound than foil" (its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one).
+- **SA-J43 and PF-V16** (the slide designer's reading list, pinned whole) moved: the speech guidance is read "when a unit contains a speaking character, a voiced claim, a misconception, a disagreement, a prediction to judge, an advice-to-a-character move, or anyone who simply says what they think, gives their reason or asks a question" (its decision 4 (his "yes"): the slide designer's three triggers for the speech guidance take its own list, word for word, so a person who simply says what they think, gives their reason or asks a question opens it).
+- **SA-L21 and PF-I06** (the designer's Before You Design Anything paragraph, pinned whole) moved: an invented group's name (its decision 11 (his "Named but not always class 4a 4b etc, jazz it up"): a class the lesson comes back to gets a name the first time, and not always a class code (`Oak Class`, `the class at Hilltop School`)).

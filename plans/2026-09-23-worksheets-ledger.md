@@ -1381,3 +1381,7 @@ The routes release changed one paragraph of the designer's Worksheet home
 (HOME-WS-LD-08): a skill `prepare` unit's `activity` in `explanation` mode and a task
 lesson's `modelledOn` are words the class reads (routes settled item 7e). The home record
 and its pin moved in place.
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+- **WS-F20** moved with the voice guide release (topic 8, release 5), on the voice guide's list (`2026-09-23-teacher-voice-ledger.md`), whose mapping is `2026-09-26-teacher-voice-mapping.md`: Greater Depth wording "is still met by a child in this class reading it alone", where it said "a nine-year-old"; the same paragraph's example now names its child, "`Is Asha right about all of it?`" (brought into this release by the lead from release 7B (its B1), in 7B's planned words and his: his speaker-notes answer on the rest-of-preferences list ("for the speaker notes it doesn't have to be short sentences ... speaker notes are as long as the idea needs, of course, and they're also conversational") and the voice list's decision 13 ("the plugin is for years one, two, three, four, five, and six"), so the reader is a child in this class; the named child is the rest-of-preferences list's PF-N82, fixed in the same edit as 7B's plan had it).

@@ -91,12 +91,16 @@ class VoiceReachesEveryStringTests(unittest.TestCase):
 
     def test_definitions_and_scripts_are_named_in_the_loading_route(self) -> None:
         """The routing named model answers, worked examples and success
-        criteria and stopped there, so §5 had no trigger anywhere."""
-        designer = flat(LESSON_DESIGNER)
-        self.assertIn("§5 a vocabulary definition or explanation", designer)
-        self.assertIn("§§1 and 3 a spoken script", designer)
+        criteria and stopped there, so §5 had no trigger anywhere. The
+        guide's own route now names definitions and scripts with their
+        reason, and the designer reads the guide by that route rather than
+        by a shorter copy of it (the voice guide release, settled item 1)."""
+        voice = flat(VOICE)
+        self.assertIn("a definition or explanation §5", voice)
+        self.assertIn("A speaker-note script opens §16H before the first one you write", voice)
+        self.assertIn("**Definitions and scripts are the other two**", voice)
         self.assertIn(
-            "Definitions and scripts are the two most often missed", designer
+            "by the route its `How to read this file` sets out", flat(LESSON_DESIGNER)
         )
 
     def test_the_vocabulary_decision_point_carries_the_pointer(self) -> None:

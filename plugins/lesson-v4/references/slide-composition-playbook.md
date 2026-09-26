@@ -279,7 +279,7 @@ Green is the answer signal. Use the supported reveal treatment such as `||` exac
 
 ## 11. Claims and speaking characters need the thing being judged
 
-Whenever a source unit contains a speaking character, voiced claim, misconception, disagreement or advice-to-a-character move, read `slide-speech-and-characters.md` before composing it.
+Whenever a source unit contains a speaking character, a voiced claim, a misconception, a disagreement, a prediction to judge, an advice-to-a-character move, or anyone who simply says what they think, gives their reason or asks a question, read `slide-speech-and-characters.md` before composing it.
 
 Count the actual voices and choose the matching bubble count. Never invent another speaker to fill a template.
 

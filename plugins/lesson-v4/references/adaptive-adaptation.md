@@ -177,7 +177,7 @@ Treat a cautious low independent reading load as the normal design stance for Be
 
 Pictures, matching, sorting, symbols, short supported prompts, word banks, sentence stems, practical records and similar formats are useful options when they remove irrelevant decoding and preserve the intended subject thinking. They are not compulsory merely because the resource is Below.
 
-Reduce unnecessary reading load, descriptive padding and avoidable vocabulary. Shorter wording is useful when it genuinely makes the task easier to enter; it is not the target in itself. One short sentence may be right, while two or more connected sentences may be clearer when they carry one manageable idea naturally. Keep necessary subject vocabulary and use accessible support around it. Do not turn Below wording into fragments, telegraphic prose or a mechanical short-sentence pattern.
+Reduce unnecessary reading load, descriptive padding and avoidable vocabulary. Shorter wording is useful when it genuinely makes the task easier to enter; it is not the target in itself. One short sentence may be right, while two or more connected sentences may be clearer when they carry one manageable idea naturally. Do not turn Below wording into fragments, telegraphic prose or a mechanical short-sentence pattern.
 
 Use phonic accessibility as a practical guide for likely weak readers, not as a rigid formal compliance test. Simplify ordinary directions where helpful. Keep essential subject vocabulary and proper nouns when the learning requires them, supporting difficult necessary words through a clear picture, labelled word bank, pronunciation cue or previously taught meaning rather than replacing them with vague alternatives.
 

@@ -154,7 +154,7 @@ Teach and rehearse a small set of moves: agreeing/disagreeing politely, building
 **SEND access:** the strict turn structure protects quieter pupils who get talked over in open partner talk.
 
 ### 2.7 Convince Your Partner
-*"You believe the Vikings were settlers. Your partner believes they were raiders. Convince them — 60 seconds each."* Forces children to articulate a position with reasons.
+*"You believe the Vikings were settlers. Your partner believes they were raiders. Convince them - 60 seconds each."* Forces children to articulate a position with reasons.
 **Best for:** balanced-argument chunks, debates in history and PSHE.
 **SEND access:** can be allocated the easier position by the teacher; partner support carries language demand.
 
@@ -274,7 +274,7 @@ A small set of statements/images cut up at the table; pupils sort into pre-named
 **SEND access:** reading load is on short strips, not paragraphs; movement of cards is a hands-on bridge.
 
 ### 5.2 Odd One Out
-Three or four items on the board. *"Which is the odd one out — and why?"* Multiple defensible answers; the *because* is the work (theteachertoolkit.com; common in geography and science).
+Three or four items on the board. *"Which is the odd one out, and why?"* Multiple defensible answers; the *because* is the work (theteachertoolkit.com; common in geography and science).
 **Best for:** vocabulary checks, concept boundary tests, cross-unit comparison.
 **SEND access:** entry is low (any answer is admissible if justified); rich for stretch pupils.
 
@@ -379,7 +379,7 @@ The class forms two lines; one pupil walks down the middle as a character facing
 **Demands and supports:** brief whispered spoken line; listening; movement in a line; teacher chooses grouping and participation.
 
 ### 7.4 Gesture-as-Memory
-Teach a short gesture with the new term (*"erosion — fingers wearing down a fist"*). Pupils do it with the teacher, then again when the term reappears (Macedonia, 2011).
+Teach a short gesture with the new term (*"erosion: fingers wearing down a fist"*). Pupils do it with the teacher, then again when the term reappears (Macedonia, 2011).
 **Best for:** vocabulary that needs to stick — water cycle stages, scientific processes.
 **Demands and supports:** fine-motor gesture, visual and auditory encoding; repetition supports recall; not a guarantee of retention.
 
@@ -432,7 +432,7 @@ A short paragraph or diagram with a deliberate error; pupils find it and fix it 
 **SEND access:** the mistake-hunt frame is engaging without raising stakes.
 
 ### 8.6 Give-an-Example
-*"Give me an example — not from my slide — of an invertebrate."* (Or a renewable resource, an unfair law, a moral choice.) Tests whether the concept is portable or just memorised (Lemov, *TLAC 3.0*, **Stretch It**, Technique 9).
+*"Give me an example (not from my slide) of an invertebrate."* (Or a renewable resource, an unfair law, a moral choice.) Tests whether the concept is portable or just memorised (Lemov, *TLAC 3.0*, **Stretch It**, Technique 9).
 **Best for:** after defining a category; reveals depth of understanding fast.
 **SEND access:** allow paired think first; one example is enough.
 

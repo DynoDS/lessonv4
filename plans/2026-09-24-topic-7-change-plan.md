@@ -453,6 +453,8 @@ he did not ask for, so it is not planned.
 
 ### B1. The speaker notes (PF decision 3; settled item 3; the voice list's decision 13)
 
+**Moved to the voice guide release (topic 8, release 5), 26 September.** The lead brought the lesson designer's notes voice line (L88), the hand-off's gain of his words, and the voice list's decision 13 (preferences L218 and L222, the adaptation designer's Greater Depth line with PF-N82's named child) into that release after its first check, so the designer and the guide no longer pull against each other; 7B no longer carries them. B1's other part, the hand-off naming the notes' lines in the order they print (settled item 3), stays 7B's.
+
 His words: "speaker notes are as long as the idea needs, of course, and they're
 also conversational ... It's talking to children. It just needs to think how can
 I talk to children to get them to understand it."

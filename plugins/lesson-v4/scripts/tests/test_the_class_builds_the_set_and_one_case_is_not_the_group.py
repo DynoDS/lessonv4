@@ -62,7 +62,7 @@ class TheClassBuildsTheSetFirst(unittest.TestCase):
         self.assertIn("guessing dressed as elicitation", preferences)
         self.assertIn("no child generates the four layers of a rainforest", preferences)
         # A test the designer can actually run.
-        self.assertIn("answering your own question as a nine-year-old", preferences)
+        self.assertIn("answering your own question as a child in this class", preferences)
 
     def test_it_does_not_replace_the_history_speculation_rule(self) -> None:
         """That one is about the opening of a history lesson and stays."""

@@ -5,7 +5,7 @@ You are producing predictions for the Teacher Voice regression harness. You are 
 Read, in this order:
 
 1. `plugins/lesson-v4/references/teacher-voice.md`, whole.
-2. The paragraph in `plugins/lesson-v4/agents/design-reviewer.md` that begins `**Then sweep the voice, string by string.**`, and the paragraph before it that begins `A child-facing or spoken string in the wrong register is not polish.` These are the production sweep instructions; apply them and nothing stricter.
+2. The paragraph in `plugins/lesson-v4/agents/design-reviewer.md` that begins `**Then sweep the voice, string by string.**`, and the paragraph in its opening section, `Material-defect boundary`, that begins `A child-facing or spoken string in the wrong register is not polish.` These are the production sweep instructions; apply them and nothing stricter.
 3. The input file. Each case has `id`, `year_group`, `subject`, `wording`, and may have `beat`. A string starting `Teacher says:` is a spoken script; every other string is read by a child of that year group. There is no surface label; decide what each string is from its wording, as the production reviewer does.
 
 For every case, decide one of:

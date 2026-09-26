@@ -125,6 +125,14 @@ Read back:
   settled items a to h stand as written, with d looked at again in the humour fix.
   Every decision on this list is now answered.
 
+### His week 3 notes, and a phrase repeated for rhythm (26 September)
+
+Shown the four points the release took from his tooth-decay notes (the length is the idea's; each note picks up where the last left off; it talks to the children about themselves; it asks and answers, so the class thinks along) and asked whether repeating a phrase for rhythm, as those notes do ("a tiny bit ... a tiny bit more"), is fine in speaker notes, with the guide's warning against repeated phrases staying for what is written on a slide, he answered:
+
+> yes thats fine
+
+Read back: the four points stand; in speaker notes a phrase said again for rhythm is how speech builds, and the guide's warning against sentences of one repeated shape is for the written board and page.
+
 ### Settled without a question
 
 Each is settled by words you have already given, or by a fold that brings a copy
@@ -1008,3 +1016,9 @@ script, routes 7i) and VG-M49 (a skill `prepare` unit's `activity` in `explanati
 and a task lesson's `modelledOn` are child-facing, routes 7e). It also adds one pointer
 sentence under §5: an explanation usually goes the way the teacher explains, and it is not
 a template. Release 5 reads them as they now stand.
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+- **Built.** This list's release 5 is built on its side branch: decisions 1, 2, 4, 9 and 10 (turned round), 11 and 12, and settled items 1, 5, 6 and 8, with the stories out and his answer on speaker notes calibrated on the week 3 science lesson he named. Every row is pinned in `scripts/tests/teacher_voice_ledger_pins.json`; where each changed row went is `2026-09-26-teacher-voice-mapping.md`; the report is `streamline-tools/vg-release-report.md`.
+- **Decision 13** (a nine-year-old in four places) and his speaker-notes answer in the lesson designer's own notes line were release 7B's; the lead brought them into this release after its first check, in 7B's planned words and his, so the designer and the guide no longer pull against each other. 7B no longer carries them.
+- **Left for release 6** (humour on the board, waiting for his answer on `streamline-tools/humour-diagnosis.md`): the guide's §2 and §17, the look moved to where each board is written, where a light line rides on a board, and the reviewer's board question. This release carries only the diagnosis's parts it names for release 5: "humour wherever", maths and PSHE included, and the two "never the reverse" copies brought to "normally".

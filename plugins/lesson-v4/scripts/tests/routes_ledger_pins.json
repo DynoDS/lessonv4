@@ -1413,11 +1413,11 @@
   },
   {
    "id": "RT-A43",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one",
    "present": [
     {
      "file": "references/evidence-synthesis.md",
-     "text": "**Red flags.** Pure transmission of values dressed up as a discussion (\"here are the seven kinds of influence — copy them down\").",
+     "text": "**Red flags.** Pure transmission of values dressed up as a discussion (\"here are the seven kinds of influence - copy them down\").",
      "section": {
       "heading": "### Dialogic / Scenario-based (children form and justify positions through structured talk)",
       "occurrence": 0,
@@ -6751,11 +6751,11 @@
   },
   {
    "id": "RT-F16",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one",
    "present": [
     {
      "file": "references/teaching-sequence-task-centred.md",
-     "text": "Signal the weight in how the beat is named — \"your research — most of the lesson\" — not with a label that reads like a 90-second exercise.",
+     "text": "Signal the weight in how the beat is named — \"your research: most of the lesson\" — not with a label that reads like a 90-second exercise.",
      "section": {
       "heading": "## Teaching Sequence Specification",
       "occurrence": 0,
@@ -7534,7 +7534,7 @@
   },
   {
    "id": "RT-G07",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one",
    "present": [
     {
      "file": "references/teaching-sequence-dialogic.md",
@@ -7578,7 +7578,7 @@
     },
     {
      "file": "references/teaching-sequence-dialogic.md",
-     "text": "- Role-play or hot-seating (\"you're [character] — what would you say?\"), only when every child first writes what their character would say, or picks a side, before anyone performs",
+     "text": "- Role-play or hot-seating (\"you're [character], what would you say?\"), only when every child first writes what their character would say, or picks a side, before anyone performs",
      "section": {
       "heading": "## Teaching Sequence Specification",
       "occurrence": 0,
@@ -7601,7 +7601,7 @@
   },
   {
    "id": "RT-G08",
-   "outcome": "routes decision 1 (his \"y\"): four corners comes out of the discussion route; moving is allowed without his asking only when the movement is itself what is being learned",
+   "outcome": "routes decision 1 (his \"y\"): four corners comes out of the discussion route; moving is allowed without his asking only when the movement is itself what is being learned; then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one",
    "present": [
     {
      "file": "references/teaching-sequence-dialogic.md",
@@ -7615,7 +7615,7 @@
     },
     {
      "file": "references/teaching-sequence-dialogic.md",
-     "text": "**Talk** — children discuss the Stimulus. The active beat. Its `thinking` line names the position and the taught knowledge the position has to rest on (`is it ever fair to break this promise, given what we now know a promise is?`); a position children held walking in, reached without the grounding input, is an opinion the lesson has collected rather than thinking it has produced (`preferences.md` → What a Lesson Is For, `Would a child have needed this lesson to say it?`). When the lesson names an idea in `concepts`, a second Stimulus is a new case of it, not the first case reworded, and the Talk beats that meet the idea carry its `conceptRef`. Pick the format that matches the question's shape: - Partner talk with sentence stems (\"I think… because…\", \"I disagree because…\") - Snowball (pairs → fours → whole class) - A line on paper from agree to disagree, or a vote with a written reason (`do-beats.md` 6.2 and 6.4) - Ranking or sorting that forces a position (rank these influences from most to least; sort statements into \"always / sometimes / never\") - Role-play or hot-seating (\"you're [character] — what would you say?\"), only when every child first writes what their character would say, or picks a side, before anyone performs - Short structured debate, only when every child first picks a side and writes one reason",
+     "text": "**Talk** — children discuss the Stimulus. The active beat. Its `thinking` line names the position and the taught knowledge the position has to rest on (`is it ever fair to break this promise, given what we now know a promise is?`); a position children held walking in, reached without the grounding input, is an opinion the lesson has collected rather than thinking it has produced (`preferences.md` → What a Lesson Is For, `Would a child have needed this lesson to say it?`). When the lesson names an idea in `concepts`, a second Stimulus is a new case of it, not the first case reworded, and the Talk beats that meet the idea carry its `conceptRef`. Pick the format that matches the question's shape: - Partner talk with sentence stems (\"I think… because…\", \"I disagree because…\") - Snowball (pairs → fours → whole class) - A line on paper from agree to disagree, or a vote with a written reason (`do-beats.md` 6.2 and 6.4) - Ranking or sorting that forces a position (rank these influences from most to least; sort statements into \"always / sometimes / never\") - Role-play or hot-seating (\"you're [character], what would you say?\"), only when every child first writes what their character would say, or picks a side, before anyone performs - Short structured debate, only when every child first picks a side and writes one reason",
      "section": {
       "heading": "## Teaching Sequence Specification",
       "occurrence": 0,
@@ -7636,11 +7636,11 @@
   },
   {
    "id": "RT-G09",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its decision 12, \"yes\": the discussion itself is not scripted; the words that open and frame it are",
    "present": [
     {
      "file": "references/teaching-sequence-dialogic.md",
-     "text": "Specify the format and the discussion question on the slide. Speaker notes may include a small number of optional lesson-specific follow-up questions when they help the teacher deepen this actual discussion, especially where the topic may be unfamiliar. Use support such as \"What might change your mind?\" or \"What evidence supports that?\" Do not turn the notes into a compulsory script or prescribe who to call on, how to bounce answers or another discussion-management routine.",
+     "text": "Specify the format and the discussion question on the slide. Speaker notes may include a small number of optional lesson-specific follow-up questions when they help the teacher deepen this actual discussion, especially where the topic may be unfamiliar. Use support such as \"What might change your mind?\" or \"What evidence supports that?\" Do not turn the notes into a compulsory script or prescribe who to call on, how to bounce answers or another discussion-management routine. The discussion itself is not scripted; the words that open and frame it are.",
      "section": {
       "heading": "## Teaching Sequence Specification",
       "occurrence": 0,
@@ -9497,7 +9497,7 @@
   },
   {
    "id": "RT-J11",
-   "outcome": "routes settled item 7c: the activity list says what its entries carry and names the entries that replaced the gone ones",
+   "outcome": "routes settled item 7c: the activity list says what its entries carry and names the entries that replaced the gone ones; then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 8: a long dash in an example a child could be given is replaced, because the teacher does not write one",
    "present": [
     {
      "file": "references/do-beats.md",
@@ -9594,7 +9594,7 @@
     },
     {
      "file": "references/do-beats.md",
-     "text": "### 2.7 Convince Your Partner *\"You believe the Vikings were settlers. Your partner believes they were raiders. Convince them — 60 seconds each.\"* Forces children to articulate a position with reasons. **Best for:** balanced-argument chunks, debates in history and PSHE. **SEND access:** can be allocated the easier position by the teacher; partner support carries language demand.",
+     "text": "### 2.7 Convince Your Partner *\"You believe the Vikings were settlers. Your partner believes they were raiders. Convince them - 60 seconds each.\"* Forces children to articulate a position with reasons. **Best for:** balanced-argument chunks, debates in history and PSHE. **SEND access:** can be allocated the easier position by the teacher; partner support carries language demand.",
      "section": {
       "heading": "### 2.7 Convince Your Partner",
       "occurrence": 0,

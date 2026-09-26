@@ -3838,11 +3838,11 @@
   },
   {
    "id": "WS-F20",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: the voice list's decision 13, by his answer on the rest-of-preferences list (\"I actually don't know why it says nine-year-old. Um, because the plugin is for years one, two, three, four, five, and six, right?\"): the reader is a child in this class; planned for 7B (its B1) and brought into this release by the lead",
    "present": [
     {
      "file": "agents/adaptation-designer.md",
-     "text": "**Depth raises the thinking, never the register.** Greater Depth wording stays in the same child speech as every other sheet (Written Voice, full strength): the deeper task is still met by a nine-year-old reading it alone.",
+     "text": "**Depth raises the thinking, never the register.** Greater Depth wording stays in the same child speech as every other sheet (Written Voice, full strength): the deeper task is still met by a child in this class reading it alone.",
      "section": {
       "heading": "### 9. Design the Greater Depth work",
       "occurrence": 0,

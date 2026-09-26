@@ -1353,3 +1353,7 @@ must show an actual good one, never a list of what a good one includes); SC-H29 
 Turn ruling keeps his words without its date); SC-H47 (the task route's launch trigger
 asks whether the class has seen a good one in this lesson, routes decision 2). No row was
 added or dropped.
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+- **SC-D42** moved with the voice guide release (topic 8, release 5), on the voice guide's list (`2026-09-23-teacher-voice-ledger.md`), whose mapping is `2026-09-26-teacher-voice-mapping.md`: the lesson designer's read line no longer lists the guide's sections one by one, so its "§10 success criteria" is now the guide's own route, "success criteria §10" (its settled item 1: the guide's route names all four most-missed kinds, each with its reason, and the lesson designer reads the guide by that route instead of keeping a shorter copy of it). The designer's pointer to the preference sections (the row's second quote) is unchanged.
