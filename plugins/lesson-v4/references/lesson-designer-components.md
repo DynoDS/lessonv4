@@ -22,7 +22,7 @@ Weight: skill-based builds skill via repeated performance; content-based builds 
 
 Outcome may be open or tightly funnelled (Y4 fair test where variable almost picks itself still task-centred). Openness is dial, not test.
 
-Three conditions: one substantial task centre (not set of short items, not body of facts), child can attempt with what they have or after one short enabling input (applying, not discovering unknown, not being taught method to rehearse), doing sustained and artefact assessed.
+Three conditions: one substantial task centre (not set of short items, not body of facts), child can attempt with what they have or after a short enabling input, one idea at a time (applying, not discovering unknown, not being taught method to rehearse), doing sustained and artefact assessed.
 
 When in doubt Task-Centred vs Skill-based: repeated performances or task? Varied attempts to build skill = Skill-based even when last is challenge. One real investigation/thing made = Task-Centred even with short enabling input. Routing Task-Centred via Skill-based manufactures throwaway tasks and squeezes real task. Opposite error: ordinary practice/knowledge lesson not task-centred just because ends in task. Reach for Task-Centred only when carrying out task is point.
 

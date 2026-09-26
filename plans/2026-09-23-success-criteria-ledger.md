@@ -1342,3 +1342,14 @@ govern.
 ## After the design reviewer release (topic 8, release 2, 26 September 2026)
 
 - **SC-Q01** (the reviewer's section 3 list, pinned whole) moved with the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`: the same two sentences as the quick-checks list's QC-C08 (the restating Do goes back to the lesson designer, his decision 2 there (24 September 2026, "1. y"): small wording fixes are the reviewer's, and a picture swap or a rewritten Do beat goes to the lesson designer with the reviewer naming the fix; "now" left the `unlocks` line). No success-criteria wording changed.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved these pins in place, each with its decision:
+SC-H03 ("the existing route" goes, routes 7g); SC-H22 and SC-Q01 (his preferences decision
+13b, in the designer's walk-through line and the reviewer's launch line, which also takes
+routes decision 2's words); SC-R04 and R05 (the two `goodLooksLike` lines say the criteria
+must show an actual good one, never a list of what a good one includes); SC-H29 (the Our
+Turn ruling keeps his words without its date); SC-H47 (the task route's launch trigger
+asks whether the class has seen a good one in this lesson, routes decision 2). No row was
+added or dropped.

@@ -987,3 +987,15 @@ The finished topics' pin files hold 117 of these rows, marked "pinned" in their 
 - **Built on its side branch**, the change plan's release 2 (`2026-09-24-topic-8-change-plan.md`, section 3): every decision and settled item there, with his words as the standard. Where each row went is in `2026-09-26-design-reviewer-mapping.md`; the pins are `scripts/tests/design_reviewer_ledger_pins.json`, with `test_design_reviewer_ledger_is_kept.py`; the scripts and the report are in `streamline-tools/rv-change/` and `streamline-tools/rv-release-report.md`.
 - **Rows earlier releases changed after this list's snapshot**, mapped to the words they left: RV-S39 (the success-criteria release), RV-K10, L02, L08 and T22 (the worksheets release), RV-T05 to T08 (the subject-files release, recorded above).
 - **Rows release 7A changes** (RV-H12, H14, J48, K02, S05, S25, T11; its mapping's last section) follow its words when the mapping is rebuilt on the merged tree.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release, built beside the reviewer release, changed three of this
+list's rows' words: RV-C11 (the four-parts line names `How this teacher explains`, routes
+decisions 3 and 4), RV-J36 (the launch line takes routes decision 2's words, a launch when
+the class has not yet seen a good one of this product earlier in this lesson, and his
+preferences decision 13b, criteria that show an actual good one standing in for the good
+instance, which the program cannot see, so the reviewer judges it) and RV-E10 (the
+turn-label message carries his maths ruling, routes 7f). The reviewer release's pins for
+them, and for the paragraphs they sit in, move when the two releases are merged
+(`streamline-tools/rt-change/rt_follow_at_merge.py`).

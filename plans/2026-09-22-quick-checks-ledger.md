@@ -960,3 +960,10 @@ was verified and taken, except:
 ## After the design reviewer release (topic 8, release 2, 26 September 2026)
 
 - **QC-C08, QC-E11 and QC-P01** (the reviewer's section 3 list, pinned whole) and **QC-D08** moved with the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`. A Do that says its Teach back now reads "The repair keeps the chunk and is the Lesson Designer's, because it changes what children have to think: return it naming the fix, which asks for the because, ...", the list of repairs and both pointers unchanged (his decision 2 there (24 September 2026, "1. y"): small wording fixes are the reviewer's, and a picture swap or a rewritten Do beat goes to the lesson designer with the reviewer naming the fix; RV-J34); and "The design now states this in each unit's `unlocks`" lost "now" (its settled item 5, out-of-date text; RV-J18).
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved these pins in place, each with its decision: QC-C08,
+E11 and P01 (the reviewer's launch line gains his preferences decision 13b); QC-D11 to D16
+(the activity list's 1.2 names Free Recall, which replaced Brain Dump, routes settled item
+7c). No row was added or dropped.

@@ -191,7 +191,9 @@ class ATeachSlideLandsItsSentenceOnce(unittest.TestCase):
         # class has, the new thing, the look, the landed sentence) is three or
         # four different things and is the teaching. Both halves have to stay
         # stated together.
-        self.assertIn("Saying the same thing three ways is the fault above", flat(CONTENT_ROUTE))
+        # The section other routes read on its own names the fault inside
+        # itself (the routes release, repair round 1).
+        self.assertIn("Saying the same thing three ways is a fault (this section's last paragraph: the landed sentence again in other words)", flat(CONTENT_ROUTE))
         self.assertIn("walking the route is three or four different things and is the teaching itself", flat(CONTENT_ROUTE))
 
 

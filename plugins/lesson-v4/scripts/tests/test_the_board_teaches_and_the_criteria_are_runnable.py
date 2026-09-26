@@ -60,13 +60,17 @@ class TheTeachBoardTeaches(unittest.TestCase):
     def test_the_two_faults_are_held_apart(self) -> None:
         """Or the repair for one becomes the other."""
         route = flat(CONTENT_ROUTE)
-        self.assertIn("Saying the same thing three ways is the fault above", route)
+        # The section other routes read on its own names the fault inside
+        # itself (the routes release, repair round 1).
+        self.assertIn("Saying the same thing three ways is a fault (this section's last paragraph: the landed sentence again in other words)", route)
         self.assertIn("walking the route is three or four different things and is the teaching itself", route)
 
     def test_the_test_is_a_teacher_who_does_not_know_the_content(self) -> None:
         route = flat(CONTENT_ROUTE)
         self.assertIn("a teacher who does not already know this content and has not opened the notes", route)
-        self.assertIn("The children learn a label rather than a layer", route)
+        # The tooth slide left for the build log (the routes release); its
+        # reason stays as a clause.
+        self.assertIn("so the children learn a label rather than what it names", route)
         # Null was the exception you could defend until 14 September 2026, when
         # a Teach board that was a label under a photograph reached the user;
         # the validator refuses it now.

@@ -999,3 +999,12 @@ The standing rule: the reason stays, the incident goes to the build log, a case 
 
 - **VG-O25**: the reason a wrong-register string is not polish ended "and today the teacher edits it out by hand", a moment written as a reason; it now says "and the teacher would have to edit it out by hand" (the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`, its settled item 11: a dated story leaves for the build log, where the release copied its sentences first, and its reason stays; RV-D06).
 - **VG-O26**: "Read each one first as the child: the actual eight- or nine-year-old the year group names" is now "Read each one first as the child: the actual child in this class" (the lead's reading of his words, not his own wording (he said "I actually don't know why it says nine-year-old. Um, because the plugin is for years one, two, three, four, five, and six, right?" of other lines on the rest-of-preferences list, 24 September): the reader the voice sweep imagines is the actual child in this class; RV-G09).
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release changed two lines these rows quote: VG-L16 (the designer's
+form check now keeps the route on the board in whole sentences, said more fully in the
+script, routes 7i) and VG-M49 (a skill `prepare` unit's `activity` in `explanation` mode
+and a task lesson's `modelledOn` are child-facing, routes 7e). It also adds one pointer
+sentence under §5: an explanation usually goes the way the teacher explains, and it is not
+a template. Release 5 reads them as they now stand.

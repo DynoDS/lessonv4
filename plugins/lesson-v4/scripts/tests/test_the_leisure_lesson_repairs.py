@@ -104,12 +104,17 @@ class AnExplanationIsShownBeforeItIsAskedFor(unittest.TestCase):
         practise["content"]["task"] = "Answer the three questions about the road."
         validator.validate_design(design, photos)
 
-    def test_a_skill_lesson_is_left_alone(self) -> None:
-        # My Turn and Our Turn model the move in every skill lesson.
+    def test_a_skill_lesson_is_checked_too(self) -> None:
+        # Routes decision 2 (24 September 2026, "y"): one rule everywhere. A My
+        # Turn that models the method has not shown what a good explanation of
+        # it looks like, so it is not the good one (the plan's question 2, "Yes").
         sequence = [
+            {"kind": "my-turn", "content": {"example": "Round 3,462 to the nearest 1,000.", "modelledExemplar": None},
+             "answer": {"kind": "exact", "delivery": "answer-slide"}},
             {"kind": "practise", "content": {"format": "written-explanation", "reasoningWords": ["because"], "launch": None}},
         ]
-        validator.validate_explanation_task_is_modelled("Skill-based", sequence)
+        with self.assertRaises(validator.ContractError):
+            validator.validate_explanation_task_is_modelled("Skill-based", sequence)
 
 
 class TheReviewerSeesTheNamesAndEachDoBesideItsTeach(unittest.TestCase):

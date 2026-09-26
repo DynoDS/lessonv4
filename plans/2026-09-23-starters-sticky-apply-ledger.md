@@ -1032,3 +1032,11 @@ RV-H12, H14, J48, K02, S05, S25, T11; playbook PB-S14; voice VG-M33.
 ## After the design reviewer release (topic 8, release 2, 26 September 2026)
 
 - **SA-M08**'s pin holds the reviewer's section 3 list whole; it followed two sentences the design reviewer release (topic 8, release 2), on the design reviewer's list, whose mapping (`2026-09-26-design-reviewer-mapping.md`) names each row it changed changed there: a restating Do now goes back to the Lesson Designer (its decision 2 (a picture swap or a rewritten Do beat goes to the lesson designer, with the reviewer naming the fix); RV-J34), and "now" left the `unlocks` line (RV-J18). The test-question line this list changed is untouched.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved three pins of this list's file in place: SA-E20 (a
+skill `prepare` unit's `activity` in `explanation` mode and a task lesson's `modelledOn`
+are words the class reads, routes 7e), SA-M08 (the reviewer's launch line gains his
+preferences decision 13b) and PF-Q14's paragraph (the teeth slide's story left the content
+route for the build log). SA-E20's words are the ledger's own row, extended.

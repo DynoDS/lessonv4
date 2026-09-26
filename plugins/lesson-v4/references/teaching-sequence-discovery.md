@@ -34,7 +34,7 @@ Bring together or inspect the observations, outcomes or pattern before the expli
 
 Give the accurate explicit explanation of why the result or pattern occurred. This is the load-bearing teaching beat. Connect the explanation to what children observed, correct unsupported theories and preserve important distinctions rather than accepting any explanation because it followed an investigation.
 
-The board carries it, not only the script. `takeaway` is the one line children keep (the sticky fact when it is one); `accurateExplanation` is the explanation as the child reads it, two or three short lines on the evidence they just saw: what happened, why, what it looks like. A takeaway on the board with the why only in the notes is a slogan, and a paragraph of the script on the board is the other failure (`preferences.md` → Slide Philosophy, `Use the teaching object to carry meaning`).
+The board carries it, not only the script. `takeaway` is the one line children keep (the sticky fact when it is one); `accurateExplanation` is the explanation as the child reads it, two or three short lines on the evidence they just saw, the way this teacher explains (`teaching-sequence-content-based.md` → `How this teacher explains`), with the takeaway landing at the end, because children reach it themselves. A takeaway on the board with the why only in the notes is a slogan, and a paragraph of the script on the board is the other failure (`preferences.md` → Slide Philosophy, `Use the teaching object to carry meaning`).
 
 ### Use the learning
 
@@ -104,7 +104,7 @@ Teach why:
       "kind": "text",
       "text": "the one line children keep, or {\"kind\": \"sticky\", \"ref\": \"sk-001\"} when it is a sticky fact"
     },
-    "accurateExplanation": "the explicit explanation as the child reads it: two or three short lines on the evidence, what happened, why, what it looks like",
+    "accurateExplanation": "the explicit explanation as the child reads it: two or three short lines on the evidence, the way this teacher explains (`teaching-sequence-content-based.md` → How this teacher explains), the takeaway landing at the end",
     "unsupportedExplanationToCorrect": null
   }
 }

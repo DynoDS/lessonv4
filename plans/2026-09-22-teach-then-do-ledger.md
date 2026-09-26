@@ -1160,3 +1160,13 @@ proposed.
 
 - **TD-L07 and TD-L09** (the reviewer's section 3 list, pinned whole) moved with the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`: the restating Do goes back to the lesson designer (his decision 2 there (24 September 2026, "1. y"): small wording fixes are the reviewer's, and a picture swap or a rewritten Do beat goes to the lesson designer with the reviewer naming the fix; RV-J34), and "now" left the `unlocks` line (RV-J18).
 - **TD-L10** (the reviewer's Teach-board paragraph, pinned whole) moved: "Amount catches too much; this catches too little." ends there, the Tudor deck of 14 September leaving for the log (RV-C08); and the two lessons of 22 September left too, their two script lines staying as plain examples of the finding (RV-C13); both by its settled item 11: a dated story leaves for the build log, where the release copied its sentences first, and its reason stays. The paragraph's example written as an instruction to look (RV-C10) stays the reviewer's own repair, word for word, by his answer of 26 September ("yes" to the reviewer rewriting "Look at the diagram." itself as what children will notice).
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved these pins in place, each with its decision
+(`streamline-tools/rt-change/rt_07_repin_other_topics.py`): TD-J56 and TD-C19 (four
+corners leaves the discussion route, routes decision 1); TD-A04, B07, C03, D03, F13, I02,
+J03, Z19 and the home paragraph HOME-TD-LD-01 (the designer's rhythm paragraph gains his
+preferences decision 13b); TD-L07 and L09 (the reviewer's launch line gains 13b); TD-L10
+(the reviewer's four-parts line names `How this teacher explains`); TD-J20 (the skill
+route's Practise names `The launch`). No row was added or dropped.

@@ -267,6 +267,8 @@ However:
 
 # 5. Explanations and definitions
 
+An explanation usually goes the way this teacher explains (`teaching-sequence-content-based.md` → `How this teacher explains`); that is how he usually explains, not a template.
+
 ## Prefer direct explanation
 
 When a straightforward explanation works, use it.

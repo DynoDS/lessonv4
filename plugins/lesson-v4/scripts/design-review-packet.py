@@ -48,7 +48,10 @@ VOICE_SWEEP_RE = re.compile(
 # designer or the teacher and never reaches the class-facing view: `activity`,
 # `format`, `focus`, `evidenceProduced`, `modelledExemplar`,
 # `activityArchitecture`, `teacherListensFor` and their kind. In starter,
-# observe, apply and reflect units, activity is the actual pupil prompt.
+# observe, apply and reflect units, activity is the actual pupil prompt, and in
+# a skill `prepare` unit in `explanation` mode it is the explanation children
+# read on the board. A task lesson's `modelledOn` is the instance its teaching
+# is shown on, so the class reads it too.
 CHILD_FACING_CONTENT_KEYS = (
     "headline",
     "explanation",
@@ -63,12 +66,23 @@ CHILD_FACING_CONTENT_KEYS = (
     "input",
     "materialOnSlide",
     "enablingInput",
+    "modelledOn",
     "checkpointQuestion",
     "investigationBrief",
     "accurateExplanation",
     "conditionsAndSafety",
 )
 ACTIVITY_IS_THE_TASK_KINDS = {"starter", "observe", "apply", "reflect"}
+ACTIVITY_IS_READ_PREPARE_MODES = {"explanation"}
+
+
+def activity_is_child_facing(unit: dict) -> bool:
+    """Whether a unit's `activity` is words the class reads rather than a
+    description written for a designer."""
+    content = unit.get("content") or {}
+    return unit.get("kind") in ACTIVITY_IS_THE_TASK_KINDS or (
+        unit.get("kind") == "prepare" and content.get("mode") in ACTIVITY_IS_READ_PREPARE_MODES
+    )
 
 STRUCTURE_REFERENCE_FILES = {
     "Skill-based": "teaching-sequence-skill-based.md",
@@ -805,7 +819,7 @@ def without_class_view_strings(mapping: dict, keys) -> dict:
 def review_content(unit: dict) -> dict:
     content = unit.get("content") or {}
     keys = list(CHILD_FACING_CONTENT_KEYS)
-    if unit.get("kind") in ACTIVITY_IS_THE_TASK_KINDS:
+    if activity_is_child_facing(unit):
         keys.append("activity")
     residual = without_class_view_strings(content, keys)
     takeaway = content.get("takeaway")
@@ -1024,7 +1038,7 @@ def class_view_unit(
     """Every string on this unit a child reads or hears, in the order they meet it."""
     out: list[str] = []
     content = unit.get("content") or {}
-    if unit.get("kind") in ACTIVITY_IS_THE_TASK_KINDS:
+    if activity_is_child_facing(unit):
         class_view_strings(content.get("activity"), out)
     for key in CHILD_FACING_CONTENT_KEYS:
         class_view_strings(content.get(key), out)

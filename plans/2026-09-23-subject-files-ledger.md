@@ -1164,3 +1164,11 @@ Not pins, though the first list counted them: `test_design_review_packet.py` bui
 - "Never use 67" lives only in code, and is narrower there than your ruling (see its section).
 - The designer's summary of geography's route table says enquiry and fieldwork go task-centred; the file says task-centred or discovery (A10, G18). Shared with routes (RT-A02).
 - The skill's own text had about twenty maintainer sentences no ledger quoted (the check reported only some of them, and said the rest was headings and boilerplate); they are now quoted in their rows (C14 to C53, C56).
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release changed SJ-D81's pointer: it named `Teaching Sequence
+Specification`, where the step it points to sits under `Cycles, and the beats around them`
+(the same slip as the routes list's P07, settled 7g). The picture-rules home's launch
+paragraph (HOME-SJ-PICTURE-RULES-07) gains his preferences decision 13b. Both pins moved
+in place; no row was added or dropped.
