@@ -58,8 +58,8 @@ class ScaffoldError(ValueError):
 # Plain first names for the children who voice a claim, a prediction or a
 # mistake. A model asked to "choose a name" reaches for whichever name its
 # references used as an example, so one class met Dev every week; drawing the
-# names here, at random, is what makes them vary. The three class characters
-# (Mr Sear, Miss Brooker, Bailey) are the slide designer's and are not in the
+# names here, at random, is what makes them vary. The class character drawings
+# (three boys, three girls, Bailey) are the slide designer's and are not in the
 # pool.
 # The teacher's own name is out of the pool: a Year 4 design had the class
 # judging "Daniel rounds 6,432 and gets 5,432", which reads as their teacher
@@ -70,8 +70,17 @@ CHARACTER_NAME_POOL = (
     "Jack", "Jamal", "Kai", "Layla", "Leo", "Lily", "Maya", "Mia",
     "Nadia", "Noah", "Oliver", "Omar", "Priya", "Rosie", "Sam", "Sofia",
     "Theo", "Yusuf", "Zara", "Zoe",
+    # Added 28 September 2026, at the teacher's request: more names from the
+    # families a UK classroom holds, short and easy to read, in the same list
+    # rather than under headings.
+    "Abdi", "Aisha", "Ali", "Amara", "Anya", "Ayaan", "Bilal", "Chidi",
+    "Fatima", "Hassan", "Ibrahim", "Ines", "Jun", "Kacper", "Kofi", "Leila",
+    "Maja", "Mateo", "Mei", "Nia", "Ravi", "Simran", "Tariq", "Tobi",
+    "Yara", "Zain", "Zofia",
 )
-CHARACTER_NAMES_DRAWN = 4
+# Eight, not four: lessons on 28 September 2026 needed up to seven named
+# children and invented the rest, so the draw ran out before the lesson did.
+CHARACTER_NAMES_DRAWN = 8
 
 
 def draw_character_names(
@@ -233,9 +242,20 @@ def decided_fields_at_risk(
 
     at_risk: list[str] = []
 
+    # A sort's envelope arrives with two fixed values (answer kind `exact`,
+    # content null). While that envelope is still untouched it is scaffold,
+    # not decided work, so a corrected request that drops the sort may rebuild.
+    pristine = (task_structure_scaffold("sort"), answer_scaffold("sort"))
+
     for path in placeholders:
         found, value = resolve_path(existing, path)
         if found and value != PLACEHOLDER:
+            if any(
+                resolve_path(existing, path[:end]) == (True, untouched)
+                for end in range(len(path) + 1)
+                for untouched in pristine
+            ):
+                continue
             at_risk.append(format_path(name, path))
 
     return at_risk
@@ -275,13 +295,47 @@ def refuse_to_discard_decided_work(
     )
 
 
-def answer_scaffold() -> dict[str, Any]:
+def answer_scaffold(task_structure: str | None = None) -> dict[str, Any]:
+    if task_structure == "sort":
+        # A sort's key is its placements, one per card, so the answer carries
+        # `structure` and its `content` is null (validate_answer: a structured
+        # sort answer is `exact`). Without this slot a designer filling in
+        # place had nowhere to put the key and the fill stopped on the missing
+        # field (science run, 27 September 2026).
+        return {
+            "kind": "exact",
+            "content": None,
+            "structure": {
+                "kind": "sort",
+                "placements": [PLACEHOLDER],
+            },
+            "acceptanceCondition": PLACEHOLDER,
+            "delivery": PLACEHOLDER,
+        }
     return {
         "kind": PLACEHOLDER,
         "content": PLACEHOLDER,
         "acceptanceCondition": PLACEHOLDER,
         "delivery": PLACEHOLDER,
     }
+
+
+# The request may mark a teaching-sequence unit as a sort. Only a sort gets a
+# shaped envelope: its groups, items and structured answer are fixed keys the
+# validator checks, while every other task structure stays one whole-value
+# placeholder, because whether it exists at all is the designer's decision.
+REQUEST_TASK_STRUCTURES = {"sort"}
+
+
+def task_structure_scaffold(task_structure: str | None) -> Any:
+    if task_structure == "sort":
+        return {
+            "kind": "sort",
+            "groups": [PLACEHOLDER],
+            "items": [PLACEHOLDER],
+            "handling": PLACEHOLDER,
+        }
+    return PLACEHOLDER
 
 
 def notes_scaffold(kind: str | None = None) -> dict[str, Any]:
@@ -392,6 +446,7 @@ def source_unit(
     kind: str,
     concept_ref: str | None,
     success_criteria_refs: list[str] | None = None,
+    task_structure: str | None = None,
 ) -> dict[str, Any]:
     return {
         "sourceUnitId": source_unit_id,
@@ -403,7 +458,7 @@ def source_unit(
         "thinking": PLACEHOLDER,
         "content": content_scaffold(kind),
         "pupilInstruction": PLACEHOLDER,
-        "taskStructure": PLACEHOLDER,
+        "taskStructure": task_structure_scaffold(task_structure),
         "modellingState": PLACEHOLDER,
         "representationRefs": [PLACEHOLDER],
         "successCriteriaRefs": (
@@ -415,7 +470,7 @@ def source_unit(
         "misconceptionRefs": [PLACEHOLDER],
         "photoRefs": [PLACEHOLDER],
         "speakerNotes": notes_scaffold(kind),
-        "answer": answer_scaffold(),
+        "answer": answer_scaffold(task_structure),
     }
 
 
@@ -951,13 +1006,18 @@ def validate_request(raw: Any) -> dict[str, Any]:
             isinstance(item, dict),
             f"{path} must be an object",
         )
+        # `taskStructure` is optional: "sort" asks for a sort's envelope and
+        # its structured answer slot; absent or null keeps the placeholder.
         exact_keys(
             item,
-            {
-                "kind",
-                "conceptIndex",
-            },
+            {"kind", "conceptIndex"} | ({"taskStructure"} & set(item)),
             path,
+        )
+        require(
+            item.get("taskStructure") is None
+            or item["taskStructure"] in REQUEST_TASK_STRUCTURES,
+            f"{path}.taskStructure must be null or one of: "
+            f"{', '.join(sorted(REQUEST_TASK_STRUCTURES))}",
         )
 
         kind = text(
@@ -1161,6 +1221,7 @@ def build_scaffold(
                 item["kind"],
                 concept_ref,
                 success_criteria_refs,
+                item.get("taskStructure"),
             )
         )
 

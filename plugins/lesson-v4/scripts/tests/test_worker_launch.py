@@ -92,6 +92,7 @@ class SpecTests(unittest.TestCase):
             "lesson-designer": ("gpt-6-astra", "low"),
             "design-reviewer": ("gpt-6-astra", "low"),
             "design-reviewer-focused-repair": ("gpt-6-astra", "medium"),
+            "lesson-voice-editor": ("gpt-6-sol", "medium"),
             "adaptation-designer": ("gpt-6-astra", "low"),
             "slide-designer": ("gpt-5.6-sol", "medium"),
             "worksheet-designer": ("gpt-5.6-luna", "high"),
@@ -164,6 +165,7 @@ class SpecTests(unittest.TestCase):
         expected = {
             "lesson-designer": ("opus", "xhigh"),
             "design-reviewer": ("opus", "xhigh"),
+            "lesson-voice-editor": ("opus", "medium"),
             "slide-designer": ("opus", "xhigh"),
             "working-wall-designer": ("opus", "high"),
             "adaptation-designer": ("opus", "high"),

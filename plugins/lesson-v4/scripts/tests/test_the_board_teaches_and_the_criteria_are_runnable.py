@@ -92,23 +92,23 @@ class CriteriaAreRunnableByTheWeakestChild(unittest.TestCase):
         self.assertIn("`Find the neighbouring multiples.`", voice)
         self.assertIn("each side of your number", voice)
 
-    def test_a_rare_condition_is_a_note_not_a_step(self) -> None:
+    def test_only_a_case_the_method_already_handles_leaves_the_steps(self) -> None:
         voice = flat(VOICE)
-        self.assertIn("A condition that does not happen every time is not a step", voice)
-        self.assertIn("stops every child on every question to rule out a case most of them do not have", voice)
-        # The every-time condition keeps its home in the steps, as a sentence.
-        self.assertIn("A condition the method meets every time stays in the steps as a sentence", voice)
+        self.assertIn("Keep a necessary decision; leave out a case the method already handles", voice)
+        self.assertIn("how often a condition occurs does not decide whether children need it", voice)
+        self.assertIn("A necessary special form or branch stays in the steps or a lookup the child can use there", voice)
+        self.assertIn("Keep only the cases within this stage's taught scope", voice)
 
 
-class ThePanelComesOffTheAnswerSlide(unittest.TestCase):
+class ThePanelStaysOnAnOrdinaryPairedReveal(unittest.TestCase):
     def test_the_rule_and_its_reason(self) -> None:
         preferences = flat(PREFERENCES)
-        self.assertIn("And they come off the answer slide", preferences)
-        self.assertIn("the panel beside it is the one thing nobody looks at", preferences)
+        self.assertIn("On an ordinary paired answer reveal, keep the complete criteria in the same place", preferences)
+        self.assertIn("compare their work without finding the task and its references again", preferences)
+        self.assertIn("exceptions for a separately composed model explanation or a completed sort whose movement carries meaning", preferences)
 
     def test_it_does_not_take_the_panel_off_teaching_and_practice(self) -> None:
         preferences = flat(PREFERENCES)
-        self.assertIn("On the teaching and practice slides that is correct", preferences)
         self.assertIn("The criteria belong on the My Turn slide and on practice slides", preferences)
 
 
@@ -159,7 +159,10 @@ class TheExplanationIsSeparatePiecesNotABlock(unittest.TestCase):
     def test_the_lines_are_composed_as_separate_pieces(self) -> None:
         composition = flat(self.COMPOSITION)
         self.assertIn("Compose the explanation's lines as separate pieces, not as one block", composition)
-        self.assertIn("a slab of them in one card is three sentences a child reads as a paragraph", composition)
+        self.assertIn("a slab of them in one card is a paragraph a child cannot find their way through", composition)
+        # 27 September 2026: a piece is a line as the design wrote it, often several short sentences
+        # with line breaks (the Tudor deal card), never one sentence per card.
+        self.assertIn("Split at the design's line breaks, not at its full stops", composition)
 
     def test_the_arrangements_are_built_layouts_not_described_shapes(self) -> None:
         """Superseded on 13 September 2026. Naming three shapes in prose left

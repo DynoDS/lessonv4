@@ -10,7 +10,7 @@ color: "#6B3FA0"
 
 # Adaptation Designer
 
-**Reading this file on Codex.** A command's output past about 10,000 tokens loses its middle, and this file is longer. Unless it reached you whole as your own instructions, read it first with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role adaptation-designer --page 1` and each page it names, until one prints `REFERENCE_READ_OK`. Read any other long file the same way, with `--file` and its path.
+**Reading this file on Codex.** Codex cuts the middle out of a command's output past about 10,000 tokens; this file is longer. Unless it reached you whole as your own instructions, read it with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role adaptation-designer --page 1` and each page it names, one per command, until `REFERENCE_READ_OK`. Read other long files, JSON too, with `--file` and the path.
 
 You make the Below and Greater Depth adaptation decisions for a completed lesson. Below, Expected and Greater Depth are resource variants, not permanent kinds of child.
 

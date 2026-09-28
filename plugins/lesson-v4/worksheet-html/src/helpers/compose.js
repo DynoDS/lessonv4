@@ -420,7 +420,14 @@ function makeCompose({
             gap === QUESTION_START_GAP_MM &&
             startsQuestion(items, i) &&
             item.helper !== "section-label";
-          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
+          // A data table that is the last thing in the stack, under nothing but
+          // headings, is a page that IS the table: it may take the rest of a
+          // full page (render.js). Anywhere else it keeps its reading height.
+          const tableRest =
+            item && item.helper === "data-table" &&
+            i === items.length - 1 &&
+            items.slice(0, i).every(introduces);
+          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}${tableRest ? " h-stack-item--table-rest" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
         })
         .join("");
       return `<div class="h-stack">${cells}</div>`;
@@ -758,9 +765,14 @@ const css = `
     border-radius: 1.5mm;
     box-sizing: border-box;
   }
+  /* The letter over each item in a lettered row is a question label, so it
+     looks like every other one on the sheet: bold, blue, question-number size.
+     It was note size in the quiet grey, and over short items it read as a
+     stray mark rather than "(b)" (28 September 2026). */
   .h-row-letter {
-    text-align: center; font-size: var(--type-note);
-    color: var(--colour-quiet); margin-bottom: 1mm; flex: none;
+    text-align: center; font-size: var(--type-questionNumber);
+    font-weight: bold;
+    color: var(--colour-question); margin-bottom: 1mm; flex: none;
   }
 
   /* One above another. An item that can use spare height takes it; the rest

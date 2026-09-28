@@ -35,6 +35,8 @@ The validator holds mechanical limits a meaning-first rewrite crosses without fe
 
 The rewritten words still reach a class verbatim, so they must still sound like the teacher. Put the new string through `[PLUGIN_ROOT]/references/teacher-voice.md` → `17. Final pre-flight check` before you save it, and open the numbered section for that kind of string only if it still sounds off. Keep the thinking demand, the answer protection and the subject vocabulary the correction had. A shorter string that has lost the reason it was corrected has swapped one fault for another.
 
+Before shortening criteria, read `preferences.md` → Success Criteria and `teacher-voice.md` → 10. Success criteria; before shortening a stem or explanation support, read `preferences.md` → Support, Checking and Release and `teacher-voice.md` → 7. Scaffolding. Run the relevant task walkthrough on the changed words, preserving the correction's action, necessary decision and response support. This is a read-back of your repair, not permission to reopen the settled review or edit neighbouring fields.
+
 Planning fields (`lookFor`, `teacherInfo`, `acceptanceCondition`) are written for the teacher, not the class: shorten them plainly and keep what the teacher needs to notice.
 
 ## When the meaning will not fit
@@ -42,7 +44,6 @@ Planning fields (`lookFor`, `teacherInfo`, `acceptanceCondition`) are written fo
 Occasionally the correction genuinely cannot say what it had to say inside the limit. Then put the `Before` wording back exactly, which always validates because the design arrived valid, and record it honestly in `design-review.md`:
 
 - replace that line's `After` and `Read-back` with `Withdrawn: would not validate; original wording restored`;
-- lower the repaired count `[M]` on the `## Voice sweep` line by one when the withdrawn correction was a voice repair;
 - add one line under `## Flags for the teacher` naming the location, the original wording and the miss the correction was removing, so the teacher can decide it by hand. Replace `None.` there if it was the only entry.
 
 Do not change `## Result` or `## Judgements` even here. A withdrawn wording correction leaves the lesson as designed, and whether that design is approved was settled by the review.

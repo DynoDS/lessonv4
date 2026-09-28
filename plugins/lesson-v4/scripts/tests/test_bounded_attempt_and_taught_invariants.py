@@ -19,6 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DESIGNER = ROOT / "agents" / "lesson-designer.md"
 REVIEWER = ROOT / "agents" / "design-reviewer.md"
+VOICE_EDITOR = ROOT / "agents" / "lesson-voice-editor.md"
 SKILL_ROUTE = ROOT / "references" / "teaching-sequence-skill-based.md"
 SCIENCE = ROOT / "references" / "subject-science.md"
 
@@ -125,9 +126,10 @@ class ChildrenGetThePositiveFormTests(unittest.TestCase):
         )
 
     def test_category_abstractions_join_the_planning_word_tell(self):
-        designer = flat(DESIGNER)
-        self.assertIn("output components", designer)
-        self.assertIn("we can use a lamp or a buzzer", designer)
+        # 27 September 2026: the surface tells moved, word for word, to the lesson voice editor.
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("output components", editor)
+        self.assertIn("we can use a lamp or a buzzer", editor)
 
 
 if __name__ == "__main__":

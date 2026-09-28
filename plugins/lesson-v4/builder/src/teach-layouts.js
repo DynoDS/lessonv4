@@ -112,13 +112,25 @@ function textSlot(value, where, role) {
   return item;
 }
 
+function tellsAndAsks(value) {
+  const sentences = String(value).split(/(?<=[.?!])\s+|\n+/).map((p) => p.trim()).filter(Boolean);
+  const asks = sentences.filter((p) => p.endsWith('?')).length;
+  return asks > 0 && asks < sentences.length;
+}
+
 function toText(slot, role, extra) {
   const out = { type: 'text', value: slot.value, align: 'center' };
   if (role === 'sticky' && !/^\s*✨/.test(out.value)) out.value = STAR + out.value;
   if (slot.emphasis !== undefined) out.emphasis = slot.emphasis;
   if (slot.picture !== undefined) out.picture = slot.picture;
-  if (role === 'question') out.color = QUESTION_BLUE;
-  else if (slot.orange) out.color = TEACH_ORANGE;
+  // A question slot whose words tell before they ask keeps the telling in
+  // black and puts each asking sentence on its own line in blue
+  // (presentation-text.js, askingSentencesInBlue); a slot that only asks is
+  // blue throughout, as it always was.
+  if (role === 'question') {
+    if (tellsAndAsks(out.value)) out.asksInBlue = true;
+    else out.color = QUESTION_BLUE;
+  } else if (slot.orange) out.color = TEACH_ORANGE;
   else if (slot.worked) out.colorRole = 'worked-purple';
   return Object.assign(out, extra || {});
 }
@@ -161,10 +173,17 @@ function card(item, group, extra) {
 // with elements too, we make sure things are spaced same width and height in
 // different elements too". A caller may still pass a ratio where the inset is
 // the point; none does today.
+//
+// The cards now fit their words (28 September 2026). A column packs: every card
+// is as tall as its own text at one shared size, and the column is centred on
+// what stands beside it, stretching so tops and bottoms line up only when it
+// is nearly as tall already (content/stack.js, packToContent). Equal slices
+// had put one short sentence alone in a card half the slide tall.
 function column(items, group, ratio) {
   const stack = {
     type: 'stack',
     verticalAlign: 'center',
+    fitCards: true,
     items: items.map((item) => card(item, group, { weight: 1 }))
   };
   if (ratio) stack.heightRatio = ratio;
@@ -188,6 +207,14 @@ function bar(s) {
   return s.sticky ? toText(s.sticky, 'sticky', BAR) : toText(s.lead, 'lead', BAR);
 }
 
+// The three bands of picture-top-cards with a lead, in the body's 6.65in: the
+// lead a single line at lead size, the picture about 3.3in tall (a 2.6:1
+// drawing 8.6in across), and cards tall enough for a line to remember at 20pt
+// or more three to a row.
+const WIDE_LEAD_WEIGHT = 0.72;
+const WIDE_PICTURE_WEIGHT = 3.83;
+const WIDE_CARDS_WEIGHT = 1.9;
+
 function withWeight(visual, weight) {
   return Object.assign({}, visual, { weight });
 }
@@ -208,14 +235,35 @@ const LAYOUTS = {
       primary: { type: 'row', items: [s.pictures[0], column(s.columnItems, 'column')] }
     })
   },
+  // A wide picture, the kind a report drawing or a panorama is (about 2.6:1),
+  // is held by the slide's width, so beside a column of cards it comes out a
+  // strip. This is the layout that gives it the width, and it carries a whole
+  // Teach beat: the lead above the picture, and the explanation, the question
+  // and the line to remember as equal cards under it. Before it took a lead,
+  // a question or a sticky, two Year 4 history runs split one Teach beat about
+  // the 1842 mines report across three and four slides to fit the picture
+  // (27 September 2026).
   'picture-top-cards': {
-    use: 'A wide picture across the top, two or three equal cards in a row underneath.',
-    slots: { pictures: [1, 1], lines: [2, 3] },
-    build: (s) => ({
-      template: 'split-v-60-40', primarySide: 'top',
-      primary: s.pictures[0],
-      secondary: cardRow(s.lines.map((l) => toText(l, 'line')), 'cards')
-    })
+    use: 'A wide picture across the top, two or three equal cards in a row underneath; a lead line, when there is one, goes above the picture.',
+    slots: { lead: [0, 1], pictures: [1, 1], lines: [0, 3], question: [0, 1], sticky: [0, 1] },
+    column: [2, 3],
+    build: (s) => {
+      const cards = cardRow(s.columnItems, 'cards');
+      if (!s.lead) {
+        return { template: 'split-v-60-40', primarySide: 'top', primary: s.pictures[0], secondary: cards };
+      }
+      return {
+        template: 'body-full',
+        body: {
+          type: 'stack',
+          items: [
+            card(toText(s.lead, 'lead'), 'lead', { weight: WIDE_LEAD_WEIGHT }),
+            withWeight(s.pictures[0], WIDE_PICTURE_WEIGHT),
+            Object.assign(cards, { weight: WIDE_CARDS_WEIGHT })
+          ]
+        }
+      };
+    }
   },
   'two-pictures-captions': {
     use: 'Two pictures compared, each line directly under its own picture, one idea joining them along the bottom.',
@@ -264,6 +312,8 @@ const LAYOUTS = {
       primary: s.pictures[0],
       secondary: {
         type: 'stack',
+        verticalAlign: 'center',
+        fitCards: true,
         items: [
           card(toText(s.lead, 'lead'), 'statement', { weight: 2, fontSize: 40 }),
           card(toText(s.question, 'question'), 'question', { weight: 1 })
@@ -295,9 +345,9 @@ const LAYOUTS = {
     build: (s) => ({
       template: 'split-v-50-50', primarySide: 'top',
       primary: { type: 'row', items: [s.pictures[0],
-        card(toText(s.lines[0], 'line'), 'zigzag', { fontSize: 32 })] },
+        column([toText(s.lines[0], 'line', { fontSize: 32 })], 'zigzag')] },
       secondary: { type: 'row', items: [
-        card(toText(s.lines[1], 'line'), 'zigzag', { fontSize: 32 }), s.pictures[1]] }
+        column([toText(s.lines[1], 'line', { fontSize: 32 })], 'zigzag'), s.pictures[1]] }
     })
   },
   'big-fact-picture': {
@@ -307,7 +357,7 @@ const LAYOUTS = {
       template: 'split-v-60-40', primarySide: 'top',
       primary: card(toText(s.lead, 'lead'), 'fact', { fontSize: 54 }),
       secondary: { type: 'row', items: [s.pictures[0],
-        card(toText(s.sticky, 'sticky'), 'fact-sticky', { fontSize: 30 })] }
+        column([toText(s.sticky, 'sticky', { fontSize: 30 })], 'fact-sticky')] }
     })
   },
   'labelled-picture-lines': {
@@ -534,9 +584,9 @@ function expandSlide(slide, slideNumber) {
     if (!present) return;
     if (key === 'question' && Array.isArray(slide[key])) {
       if (!takesTwoQuestions) {
-        fail(at, 'this layout has one place for a question. A layout with a column of cards ' +
-          '(lead-picture-lines, picture-three-cards, labelled-picture-lines, banner-picture-sidebar, ' +
-          'four-cards) takes two.');
+        fail(at, 'this layout has one place for a question. A layout with a column or row of cards ' +
+          '(lead-picture-lines, picture-top-cards, picture-three-cards, labelled-picture-lines, ' +
+          'banner-picture-sidebar, four-cards) takes two.');
       }
       if (slide[key].length < 1 || slide[key].length > 2) {
         fail(at, `takes one or two questions; found ${slide[key].length}.`);
@@ -632,7 +682,7 @@ function expandSlide(slide, slideNumber) {
     const [min, max] = def.column;
     if (s.columnItems.length < min || s.columnItems.length > max) {
       const want = min === max ? `${min}` : `${min} to ${max}`;
-      fail(at, `the cards beside the picture take ${want} lines in total (lines, question and ` +
+      fail(at, `the cards with the picture take ${want} lines in total (lines, question and ` +
         `line to remember together); found ${s.columnItems.length}.`);
     }
   }

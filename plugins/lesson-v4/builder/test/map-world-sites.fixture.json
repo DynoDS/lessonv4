@@ -1,0 +1,128 @@
+{
+  "type": "map",
+  "map": "world-with-antarctica",
+  "presentation": "seven-continent-world",
+  "showEquator": true,
+  "continentLabels": [],
+  "oceanLabels": [],
+  "seaLabels": [],
+  "clueMarkers": [],
+  "annotations": [
+    {
+      "kind": "area",
+      "shaded": true,
+      "colour": "green",
+      "points": [
+        {
+          "lon": -78,
+          "lat": 6
+        },
+        {
+          "lon": -48,
+          "lat": 5
+        },
+        {
+          "lon": -45,
+          "lat": -12
+        },
+        {
+          "lon": -72,
+          "lat": -15
+        }
+      ]
+    },
+    {
+      "kind": "area",
+      "shaded": true,
+      "colour": "green",
+      "points": [
+        {
+          "lon": 9,
+          "lat": 6
+        },
+        {
+          "lon": 31,
+          "lat": 5
+        },
+        {
+          "lon": 29,
+          "lat": -9
+        },
+        {
+          "lon": 12,
+          "lat": -8
+        }
+      ]
+    },
+    {
+      "kind": "area",
+      "shaded": true,
+      "colour": "green",
+      "points": [
+        {
+          "lon": 95,
+          "lat": 12
+        },
+        {
+          "lon": 123,
+          "lat": 11
+        },
+        {
+          "lon": 128,
+          "lat": -8
+        },
+        {
+          "lon": 103,
+          "lat": -8
+        }
+      ]
+    },
+    {
+      "kind": "area",
+      "shaded": true,
+      "colour": "green",
+      "points": [
+        {
+          "lon": 132,
+          "lat": 1
+        },
+        {
+          "lon": 151,
+          "lat": 0
+        },
+        {
+          "lon": 151,
+          "lat": -11
+        },
+        {
+          "lon": 135,
+          "lat": -10
+        }
+      ]
+    },
+    {
+      "kind": "point",
+      "colour": "blue",
+      "at": {
+        "lon": 23,
+        "lat": -1
+      },
+      "label": "E"
+    },
+    {
+      "kind": "point",
+      "colour": "blue",
+      "at": {
+        "lon": 37,
+        "lat": -1
+      },
+      "label": "F"
+    }
+  ],
+  "key": [
+    {
+      "text": "Tropical rainforest",
+      "colour": "green"
+    }
+  ]
+}

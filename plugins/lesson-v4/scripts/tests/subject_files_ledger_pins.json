@@ -519,7 +519,7 @@
    "file": "references/preferences.md",
    "heading": "### Lesson Designer visual-need boundary",
    "paragraphs": [
-    "**Show the class the thing the slide is talking about.** The question to ask of every slide is `does this name something that exists in the world?` - a church, a carol service, a Bible, a food, a coin, a place, a building, an object, a person doing something. When it does, the class should be able to see it while the teacher explains. That picture is what a child looks at while you talk, what you point at, what they hook their own experience on to, and what they ask an unplanned question about. It earns its place on that alone, and nothing has to be decided from it.",
+    "**Show the class the thing the slide is talking about.** The question to ask of every slide is `does this name something that exists in the world?` - a church, a carol service, a Bible, a food, a coin, a place, a building, an object, a person doing something. When it does, the class should be able to see it while the teacher explains. That picture is what a child looks at while you talk, what you point at, what they hook their own experience on to, and what they ask an unplanned question about. It earns its place on that alone, and nothing has to be decided from it. The lesson designer never sees the slides, so it asks the question of each group of board lines about one thing, because a paced Teach run gives each of those a slide of its own (`A Teach run is paced`, above): a beat whose lines move from the crowded houses to the yard and pump, to a person ill in bed, to the deaths, asks for a picture of each, not one for the whole beat. The Year 4 diseases lesson planned six pictures for seventeen slides, and the deck the teacher chose showed fourteen.",
     "The test this replaces is `could a child work the learning out from this picture?`, and it is the wrong test because nothing else on a Teach slide is worked out either. `Christians believe Jesus is God's Son` is told to a class, not deduced by them; a photograph of a packed church at Christmas is told to them in the same way. Refusing the picture because it proves nothing holds it to a standard the sentence beside it never sits, and the subjects where it bites are the ones whose content is belief, feeling, rule or relationship rather than an observable fact. A Year 4 RE lesson on what Christmas means reached a class with a nativity, a carol service and a Bible all available and none of them requested, on the reasoning that meaning cannot be inferred from the appearance of a celebration. True, and beside the point: the child was not being asked to infer anything.",
     "**A person the lesson invents counts as something in the world, and is the hole in that question.** `Does this name something that exists in the world?` gets the answer no for Nadia and Grace, because they are made up, and the slide that quotes them ends up with nothing to look at. That is backwards: an invented person needs showing more than a real one does, not less, because showing them is the only thing that makes a child treat the words as somebody's rather than as an exercise. A Year 4 RE deck put two children's reasons for singing carols on the board as two text cards, with no faces and with the carol-singing photograph it had already sourced sitting unused on four other slides. So when a beat puts a person in front of the class, it owes the class that person: a portrait and a bubble (`slide-speech-and-characters.md` owns how), and the lesson's relevant photograph where one exists. The same test then does its ordinary work on what those people are talking about - carols, a nativity, a tree - and normally finds the picture already in the lesson.",
     "**When the slide names nothing in the world, no picture is wanted, and most decks will rightly have several such slides.** A slide handling the lesson's own business has no referent to show: here is your task, here are the success criteria, here is what we noticed on the slide before. A picture there is decoration sitting where attention should be, and this section is not a quota. The boundary against the paragraph above is whether a person is present in the beat or merely referred back to: two children whose words are on this slide are present, and a line recalling what the class concluded about them yesterday is not. The other limits below hold unchanged and still win where they apply: a picture that hands the child the answer is refused, a tool the engine draws is drawn rather than photographed, and text is the right teaching object when the text is what children are studying.",
@@ -585,7 +585,7 @@
   },
   {
    "id": "SJ-A04",
-   "outcome": "changed: settled item 12: one copy of a true repeat; history's and geography's word-for-word start notes fold into the designer's own reading line, carrying what they held (read before the structure is chosen because the routing is part of that choice; come back beside the teaching-sequence file; what each file is for)",
+   "outcome": "changed: settled item 12: one copy of a true repeat; history's and geography's word-for-word start notes fold into the designer's own reading line, carrying what they held (read before the structure is chosen because the routing is part of that choice; come back beside the teaching-sequence file; what each file is for) Then the reading release (27 September 2026) moved the voice guide to before the lesson is told, looked for humour while telling, and said each page is read in a command of its own, because Codex cut reads in the middle; the pin follows the new wording: see plans/2026-09-27-primary-access-ledger.md. Then the lesson voice editor release (27 September 2026, 4.2.299) rewrote this text in place when the voice work moved to agents/lesson-voice-editor.md; the pin follows the new wording: see plans/2026-09-27-voice-editor-plan.md.",
    "present": [
     {
      "file": "agents/lesson-designer.md",
@@ -598,7 +598,7 @@
     },
     {
      "file": "agents/lesson-designer.md",
-     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page, before the structure is chosen: in history and geography its routing is part of that choice. List the directory and match the subject. Do not guess a filename. Come back to it alongside the teaching-sequence file once the structure is set: the structure file tells you what shape the lesson takes, and the subject file what the thinking inside it should be.",
+     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read `preferences.md` → `Written Voice (House Style)` → `Core rules` before you tell the lesson: it describes this class and what every word must achieve for them (understanding, not decodability), which decides what you explain and how much. Read `teacher-voice.md` → 5. Explanations and definitions at the same point, because how this teacher explains is a teaching decision the telling is built on. The rest of the voice guide and Written Voice's read-back are the lesson voice editor's reading: it rewrites how every word sounds once the review has approved the lesson. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page, before the structure is chosen: in history and geography its routing is part of that choice. List the directory and match the subject. Do not guess a filename. Come back to it alongside the teaching-sequence file once the structure is set: the structure file tells you what shape the lesson takes, and the subject file what the thinking inside it should be.",
      "section": {
       "heading": "## Reference Files - precedence and decision-point loading",
       "occurrence": 0,
@@ -5263,7 +5263,7 @@
   },
   {
    "id": "SJ-E01",
-   "outcome": "folded into the designer's reading line (SJ-A04), settled item 12: one copy of a true repeat; history's and geography's word-for-word start notes fold into the designer's own reading line, carrying what they held (read before the structure is chosen because the routing is part of that choice; come back beside the teaching-sequence file; what each file is for)",
+   "outcome": "folded into the designer's reading line (SJ-A04), settled item 12: one copy of a true repeat; history's and geography's word-for-word start notes fold into the designer's own reading line, carrying what they held (read before the structure is chosen because the routing is part of that choice; come back beside the teaching-sequence file; what each file is for) Then the reading release (27 September 2026) moved the voice guide to before the lesson is told, looked for humour while telling, and said each page is read in a command of its own, because Codex cut reads in the middle; the pin follows the new wording: see plans/2026-09-27-primary-access-ledger.md. Then the lesson voice editor release (27 September 2026, 4.2.299) rewrote this text in place when the voice work moved to agents/lesson-voice-editor.md; the pin follows the new wording: see plans/2026-09-27-voice-editor-plan.md.",
    "present": [
     {
      "file": "agents/lesson-designer.md",
@@ -5276,7 +5276,7 @@
     },
     {
      "file": "agents/lesson-designer.md",
-     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page, before the structure is chosen: in history and geography its routing is part of that choice. List the directory and match the subject. Do not guess a filename. Come back to it alongside the teaching-sequence file once the structure is set: the structure file tells you what shape the lesson takes, and the subject file what the thinking inside it should be.",
+     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read `preferences.md` → `Written Voice (House Style)` → `Core rules` before you tell the lesson: it describes this class and what every word must achieve for them (understanding, not decodability), which decides what you explain and how much. Read `teacher-voice.md` → 5. Explanations and definitions at the same point, because how this teacher explains is a teaching decision the telling is built on. The rest of the voice guide and Written Voice's read-back are the lesson voice editor's reading: it rewrites how every word sounds once the review has approved the lesson. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page, before the structure is chosen: in history and geography its routing is part of that choice. List the directory and match the subject. Do not guess a filename. Come back to it alongside the teaching-sequence file once the structure is set: the structure file tells you what shape the lesson takes, and the subject file what the thinking inside it should be.",
      "section": {
       "heading": "## Reference Files - precedence and decision-point loading",
       "occurrence": 0,
@@ -6384,11 +6384,11 @@
   },
   {
    "id": "SJ-E44",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026) replaced this rule on purpose, and the pin follows its replacement: significance at primary is a big difference to many lives plus being remembered; the criteria-and-second-case method produced John Pounds and the KS3 ending. See plans/2026-09-27-primary-access-ledger.md.",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "**Say why this is remembered and something else is not.** Significance, and children reach for it constantly without being taught it. The thing they have to learn is that significance is ascribed rather than sitting inside the event:",
+     "text": "**Say why this person or event is remembered.** Significance, at primary, is two plain things: they made a big difference to a lot of people's lives, and people still remember them for it.",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6397,7 +6397,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "Like change and continuity it is an idea rather than a fact about one person, so it goes in `concepts` and is met on more than one case.",
+     "text": "**Say why this person or event is remembered.** Significance, at primary, is two plain things: they made a big difference to a lot of people's lives, and people still remember them for it.",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6406,7 +6406,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "somebody decided this mattered, at some point, for a reason, and that decision can be argued with. *Why do we remember Florence Nightingale and not the other nurses?* is the shape.",
+     "text": "**Say why this person or event is remembered.** Significance, at primary, is two plain things: they made a big difference to a lot of people's lives, and people still remember them for it.",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6418,11 +6418,11 @@
   },
   {
    "id": "SJ-E45",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026) replaced this rule on purpose, and the pin follows its replacement: significance at primary is a big difference to many lives plus being remembered; the criteria-and-second-case method produced John Pounds and the KS3 ending. See plans/2026-09-27-primary-access-ledger.md.",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "It collapses into impact, and that is the commonest slip in the subject, because \"it affected a lot of people\" is a different claim from \"we chose to remember it\".",
+     "text": "The wrong idea worth refusing is that significant means famous, or kind,",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6431,7 +6431,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "So significance gets a method, the way continuity does.",
+     "text": "The wrong idea worth refusing is that significant means famous, or kind,",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6443,11 +6443,11 @@
   },
   {
    "id": "SJ-E46",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026) replaced this rule on purpose, and the pin follows its replacement: significance at primary is a big difference to many lives plus being remembered; the criteria-and-second-case method produced John Pounds and the KS3 ending. See plans/2026-09-27-primary-access-ledger.md.",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "The warning on its own has not been enough: a Year 4 lesson on Lord Shaftesbury's significance built its criteria as *how many children, what changed for them, how do you know*, which is impact three times, and put the memorial fountain in Piccadilly Circus on a vocabulary card, where the one piece of ascribed significance in the lesson was spent as a hook.",
+     "text": "What significance is not, at primary, is a set of criteria taught as a tool",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6459,11 +6459,11 @@
   },
   {
    "id": "SJ-E47",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026) replaced this rule on purpose, and the pin follows its replacement: significance at primary is a big difference to many lives plus being remembered; the criteria-and-second-case method produced John Pounds and the KS3 ending. See plans/2026-09-27-primary-access-ledger.md.",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "**The criteria the class is given carry three things, and a lesson missing the third is teaching impact.**",
+     "text": "What significance is not, at primary, is a set of criteria taught as a tool",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6472,7 +6472,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "Then the class meets those criteria on more than one case, so a child can see that the same three questions produce a different answer for a different person.",
+     "text": "What significance is not, at primary, is a set of criteria taught as a tool",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6481,7 +6481,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "How much changed. How many people it changed things for. And how long it lasted, or who decided afterwards that it mattered: the memorial, the name on the building, the reason it is in this curriculum and something else is not. That third one is where significance actually lives, it is the one a designer drops, and it is usually the cheapest to teach, because the statue, the street name or the museum case is already a picture in the lesson.",
+     "text": "What significance is not, at primary, is a set of criteria taught as a tool",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6493,11 +6493,11 @@
   },
   {
    "id": "SJ-E48",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026) replaced this rule on purpose, and the pin follows its replacement: significance at primary is a big difference to many lives plus being remembered; the criteria-and-second-case method produced John Pounds and the KS3 ending. See plans/2026-09-27-primary-access-ledger.md. Then the primary-access release (27 September 2026) changed this text, or restored words an earlier edit had dropped, and the pin follows it: see plans/2026-09-27-primary-access-ledger.md.",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "The limit: an objective can legitimately ask about impact alone (`what changed for children because of the Mines Act`), and then the lesson is about impact and does not need the third criterion. What it may not do is use the word significance, or an objective that does, and quietly teach impact instead.",
+     "text": "What significance is not, at primary, is a set of criteria taught as a tool (how much changed, how many people, how long it lasted), a second person brought in to compare, or an ending that asks what would have happened if they had never lived. Those are secondary-school moves; with these children they replace the story with abstractions, and a person nobody introduced turns up at the end of the lesson to be judged. The limit: an objective or a supplied sequence that names two people, or asks children to compare, gets its comparison, with the second person introduced as properly as the first.",
      "section": {
       "heading": "## What children do when it is really history",
       "occurrence": 0,
@@ -6656,7 +6656,7 @@
   },
   {
    "id": "SJ-E53",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026) replaced this rule on purpose, and the pin follows its replacement: significance at primary is a big difference to many lives plus being remembered; the criteria-and-second-case method produced John Pounds and the KS3 ending. See plans/2026-09-27-primary-access-ledger.md.",
    "present": [
     {
      "file": "references/subject-history.md",
@@ -6678,7 +6678,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "Teach the criteria somebody used, then apply them to a second case",
+     "text": "Tell the story of what they did and what changed for people, then why we still remember them",
      "section": {
       "heading": "## Which move routes to which structure",
       "occurrence": 0,
@@ -7168,7 +7168,7 @@
   },
   {
    "id": "SJ-F04",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026, Daniel's Shaftesbury complaint) changed words inside this pinned text, which follows them: see plans/2026-09-27-primary-access-ledger.md",
    "present": [
     {
      "file": "references/subject-history.md",
@@ -7190,7 +7190,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "Designing the character question out is not the same as ruling it out in the room, and children will reach for it anyway: asked how significant somebody was, a nine-year-old answers whether they were kind. So a lesson that evaluates a person says the distinction out loud, once, in the words the class hears, at the point the criteria arrive: *\"We're not asking whether he was a nice man. We're asking how much difference he made.\"*",
+     "text": "Designing the character question out is not the same as ruling it out in the room, and children will reach for it anyway: asked how significant somebody was, a nine-year-old answers whether they were kind. So a lesson that evaluates a person says the distinction out loud, once, in the words the class hears, at the point the story shows what changed: *\"We're not asking whether he was a nice man. We're asking how much difference he made.\"*",
      "section": {
       "heading": "## The \"what can we learn from this today\" question",
       "occurrence": 0,
@@ -8251,7 +8251,7 @@
   },
   {
    "id": "SJ-F49",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then on 28 September 2026 the Florence Nightingale enquiry question was reworded to match the primary significance rule (what changed, and why we still remember her), because comparing her with the other nurses was the retired ascribed-significance method (B-h1 friction).",
    "present": [
     {
      "file": "references/subject-history.md",
@@ -8291,7 +8291,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "Why do we remember Florence Nightingale and not the other nurses?",
+     "text": "What did Florence Nightingale change, and why do we still remember her?",
      "section": {
       "heading": "## The lesson is a movement in a longer argument",
       "occurrence": 0,
@@ -8480,11 +8480,11 @@
   },
   {
    "id": "SJ-F56",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Then the primary-access release (27 September 2026, Daniel's Shaftesbury complaint) changed words inside this pinned text, which follows them: see plans/2026-09-27-primary-access-ledger.md",
    "present": [
     {
      "file": "references/subject-history.md",
-     "text": "- Significance is a property the event has, rather than something people decided about it afterwards.",
+     "text": "- Somebody is significant because they were famous, or because they were kind.",
      "section": {
       "heading": "## Misconceptions worth planning against",
       "occurrence": 0,
@@ -8512,7 +8512,7 @@
   },
   {
    "id": "SJ-G01",
-   "outcome": "folded into the designer's reading line (SJ-A04), settled item 12: one copy of a true repeat; history's and geography's word-for-word start notes fold into the designer's own reading line, carrying what they held (read before the structure is chosen because the routing is part of that choice; come back beside the teaching-sequence file; what each file is for)",
+   "outcome": "folded into the designer's reading line (SJ-A04), settled item 12: one copy of a true repeat; history's and geography's word-for-word start notes fold into the designer's own reading line, carrying what they held (read before the structure is chosen because the routing is part of that choice; come back beside the teaching-sequence file; what each file is for) Then the reading release (27 September 2026) moved the voice guide to before the lesson is told, looked for humour while telling, and said each page is read in a command of its own, because Codex cut reads in the middle; the pin follows the new wording: see plans/2026-09-27-primary-access-ledger.md. Then the lesson voice editor release (27 September 2026, 4.2.299) rewrote this text in place when the voice work moved to agents/lesson-voice-editor.md; the pin follows the new wording: see plans/2026-09-27-voice-editor-plan.md.",
    "present": [
     {
      "file": "agents/lesson-designer.md",
@@ -8525,7 +8525,7 @@
     },
     {
      "file": "agents/lesson-designer.md",
-     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page, before the structure is chosen: in history and geography its routing is part of that choice. List the directory and match the subject. Do not guess a filename. Come back to it alongside the teaching-sequence file once the structure is set: the structure file tells you what shape the lesson takes, and the subject file what the thinking inside it should be.",
+     "text": "- Read the introduction and contents of `preferences.md`, then `What a Lesson Is For`, `Classroom Norms`, `The Teach → Do → Teach → Do Rhythm`, `How Much Fits in One Lesson` and `Source and Scenario Integrity`. The rhythm section is the load-bearing shape of every structure, task-centred and discovery included. - Read `Pride Lessons` here, not only as a calibration example. Hold its two tests while you write every beat: what the class must take in before they can act, and, each time the same evidence returns, what is new to work out. Neither is a count - there is no cap on beats, slides, sources or words - and both are judgements you make as you write, not a shape to check afterwards. `design-reviewer.md` runs the same two tests on the finished lesson; writing to them here is what keeps a sound lesson from being sent back for its amount. - Read the introduction and contents of `evidence-synthesis.md` and `Cross-Cutting Principles`. Before choosing the structure, run `\"[PYTHON]\" \"[PLUGIN_ROOT]/scripts/read-reference.py\" --structure-menu` for all five source `Use when` paragraphs. Read the full candidate structure subsection before committing the choice. Read the full `Discovery / Inquiry` subsection whenever an investigation or bounded exploration is being considered, even when the final route is not Discovery. Read another full subsection when its conditions or trade-offs are needed to distinguish candidates; do not load all five execution discussions by default. - Read `preferences.md` → `Written Voice (House Style)` → `Core rules` before you tell the lesson: it describes this class and what every word must achieve for them (understanding, not decodability), which decides what you explain and how much. Read `teacher-voice.md` → 5. Explanations and definitions at the same point, because how this teacher explains is a teaching decision the telling is built on. The rest of the voice guide and Written Voice's read-back are the lesson voice editor's reading: it rewrites how every word sounds once the review has approved the lesson. - Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every page, before the structure is chosen: in history and geography its routing is part of that choice. List the directory and match the subject. Do not guess a filename. Come back to it alongside the teaching-sequence file once the structure is set: the structure file tells you what shape the lesson takes, and the subject file what the thinking inside it should be.",
      "section": {
       "heading": "## Reference Files - precedence and decision-point loading",
       "occurrence": 0,

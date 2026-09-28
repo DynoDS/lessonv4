@@ -4,6 +4,7 @@ const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
 const { drawQuestionCards, firstLabel } = require('./maths-your-turn');
 const { drawScPanel, scPanelWidth, panelWidening } = require('./maths-turn-sc');
+const { pairedEntries } = require('../content/reveal-pair');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const CARDS_X = 0.22;
@@ -28,6 +29,7 @@ function drawMathsYourTurnSc(pptx, slide, data, ctx) {
   }, ctx);
 
   const questions = Array.isArray(data.questions) ? data.questions : [];
+  const pair = data.revealPair ? pairedEntries(data, ctx) : null;
 
   // When the practice is placing shapes onto a Venn or Carroll, the diagram (and the
   // shapes to place) belong on the Your Turn itself, so a child reads them while they
@@ -42,12 +44,12 @@ function drawMathsYourTurnSc(pptx, slide, data, ctx) {
     if (questions.length) {
       drawQuestionCards(pptx, slide, questions, {
         x: CARDS_X, y: CARDS_Y + visualH + VISUAL_GAP, w: cardsW, h: CARDS_H - visualH - VISUAL_GAP
-      }, ctx, firstLabel(data));
+      }, ctx, firstLabel(data), pair);
     }
   } else {
     drawQuestionCards(pptx, slide, questions, {
       x: CARDS_X, y: CARDS_Y, w: cardsW, h: CARDS_H
-    }, ctx, firstLabel(data));
+    }, ctx, firstLabel(data), pair);
   }
 
   drawScPanel(pptx, slide, data, ctx, panelW);

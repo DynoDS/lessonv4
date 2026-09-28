@@ -93,7 +93,7 @@ what makes this route so hard to block: it is not asking the slide for room, it
 is asking whether any part of the slide is clear.
 
 So a slide whose content leaves no spare column can still take a framed
-picture, in a corner, over a card's edge, or faintly behind one. Answering that
+picture, in a corner, over a card's edge, or on a card's blank half. Answering that
 slide with "it is full" describes the inline route and says nothing at all
 about the framed one.
 
@@ -151,13 +151,20 @@ that still looks finished as text on its own, so a slide whose picture never
 arrives reads as deliberate rather than holed.
 
 A P3 never gets a place made for it, because it carries no meaning to justify
-one. It goes where the slide is already spare: behind a text card, straddling a
-card's edge, tucked into a corner of the slide, or resting in the margin a card's
-shape already leaves. Overlapping content is normal and usually reads better than
-floating in open space, because it ties the drawing into the composition instead
-of leaving it adrift. Use `layer: "low"` to sit behind a card and `layer: "high"`
-to rest on top of one. Overlapping must never cover a word, a number, a table
-cell or any part of a figure a child reads.
+one. It goes where the slide is already spare: tucked into a corner of the slide,
+straddling a card's edge, resting in the margin a card's shape already leaves, or
+on the blank half of a card. Overlapping content is normal and usually reads
+better than floating in open space, because it ties the drawing into the
+composition instead of leaving it adrift. Overlapping must never cover a word, a
+number, a table cell or any part of a figure a child reads.
+
+The teacher's default is in front: `layer: "high"`, in space clear of text. A
+drawing behind a text card (`layer: "low"`) is fine only while most of it still
+shows and a child could still say what it is. A globe pushed behind the cards of
+a geography deck left a faint arc under a card on slide after slide, and the
+teacher could not tell what it was (28 September 2026). So the check measures
+the built deck and refuses a drawing more than half hidden behind cards or off
+the slide's edge: bring it forward into clear space, move it, or remove it.
 
 Size a free-standing optional picture for its job: small enough that the eye
 still lands on the teaching first, large enough to read as a drawing rather than
@@ -479,12 +486,14 @@ Run the check before promoting the deck:
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
   --lesson "[the candidate lesson.json]" \
   --room "[WORKING_DIR]/slide-room.json" \
+  --pptx "[PREVIEW_PPTX]" \
   --library-root "[EDUCATIONAL_SVG_ROOT]"
 ```
 
 Require `OPTIONAL_PICTURE_PASS_OK`. Drop `--library-root` only when the resolver
 returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when the render
-produced no measurement.
+produced no measurement. `--pptx` is the preview deck the confirming check
+built; it measures how much of each drawing the cards hide, render or not.
 
 It also prints `OPTIONAL_PICTURE_SHAPE` - the per-slide counts in order, like
 `2,0,1,0,0,3,1`. That shape is the variety, made visible: a deck should read

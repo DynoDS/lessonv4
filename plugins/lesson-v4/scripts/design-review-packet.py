@@ -22,7 +22,6 @@ REQUIRED_REVIEW_HEADINGS = (
     "## Corrections made",
     "## Redesign required",
     "## Flags for the teacher",
-    "## Voice sweep",
 )
 
 # The review view opens with every string a child reads or hears, printed as
@@ -31,16 +30,12 @@ REQUIRED_REVIEW_HEADINGS = (
 # words on their own line hears a child at the back of the room. A
 # history lesson went to a class with `What does one visible detail suggest
 # about this class?` on the board after a review that corrected nothing: every
-# string had passed in its braces. The section's opening line carries the count,
-# and the review report returns the count as an omission check. Matching counts
-# do not prove the sweep happened or that its judgements were sound.
+# string had passed in its braces. The section's opening line carries the count.
+# The reviewer reads it for what the words teach; since 27 September 2026 the
+# lesson voice editor walks the same section for how they sound.
 CLASS_VIEW_HEADING = "## As the class meets it"
 CLASS_VIEW_COUNT_RE = re.compile(
     r"^(\d+) child-facing strings for a Year (\d+) class\."
-)
-VOICE_SWEEP_HEADING = "## Voice sweep"
-VOICE_SWEEP_RE = re.compile(
-    r"^Read (\d+) child-facing strings as a Year (\d+) child; repaired (\d+)\.$"
 )
 
 # Content fields a child reads on the board or hears the teacher say, across
@@ -105,7 +100,7 @@ PREFERENCE_REVIEW_ROUTES = (
     (
         "Written Voice (House Style)",
         "Read when exact child-facing or parent-facing wording is materially "
-        "unclear, unnatural, overloaded or answer-giving.",
+        "unclear, overloaded or answer-giving.",
     ),
     (
         "Classroom Norms",
@@ -131,7 +126,9 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "How Much Fits in One Lesson",
-        "Read when the lesson may need an honest split, and whenever an idea "
+        "Read when the lesson sets a second scene partway through (a new "
+        "place, time or problem with its own people), when the lesson may "
+        "need an honest split, and whenever an idea "
         "a Teach beat taught is not used again by the independent practice or "
         "the ending. That one is countable from the view: list what each Teach "
         "taught, then read the practice and the ending and mark off the ideas "
@@ -186,8 +183,8 @@ PREFERENCE_REVIEW_ROUTES = (
     (
         "The Apply Slide",
         "Read when Apply may be unearned or repeat Your Turn, and when a lesson "
-        "that named an idea has no Apply and its reason does not say where the "
-        "idea met a case it was not taught on.",
+        "that named an idea has no Apply and its reason does not identify its "
+        "meaningful instances and independent pupil decision.",
     ),
     (
         "Practising a Test Question",
@@ -200,7 +197,10 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "Support, Checking and Release",
-        "Read when support or release to independence is in doubt.",
+        "Read before judging any task that asks children to explain or justify "
+        "a verdict, including when no support is supplied, with "
+        "teacher-voice.md → 7. Scaffolding. Also read when other support or "
+        "release to independence is in doubt.",
     ),
     (
         "Purposeful Endings and Linked Lessons",
@@ -273,6 +273,21 @@ ALWAYS_READ_REVIEW_SECTIONS = (
         "beats, say in your own words the move each Teach taught and what its "
         "own Do makes children do, and check each pair before reading on.",
     ),
+    # The explanation standard every route writes its teaching to (takeaway,
+    # because, example, what it is not; the first line uses only words the class
+    # has; the child's route before the board's shape). It sits inside the
+    # content route's Output Format Block, and the route read stops before that
+    # block, so a reviewer following its reading card never read the standard it
+    # judges Teach boards against (logged 28 September 2026, the day the
+    # known-words rule moved into it). Every route has a beat that explains.
+    (
+        "teaching-sequence-content-based.md",
+        "How this teacher explains",
+        "Read every review, before the language and teacher-usability "
+        "checks: it is the standard every Teach board in every route is "
+        "written to, and it holds the rule that a board's first line and its "
+        "title use only words the class already has.",
+    ),
     # Its trigger was "when vocabulary selection, definition, quantity or
     # placement is in doubt", which the rule that catches an ordinary word a
     # sentence leans on (`government`, `order`) could never trip: the names
@@ -286,11 +301,6 @@ ALWAYS_READ_REVIEW_SECTIONS = (
         "names list cannot see an ordinary word a sentence leans on, and this "
         "is the rule that catches it. The rest of the section is for when "
         "vocabulary selection, definition, quantity or placement is in doubt.",
-    ),
-    (
-        "teacher-voice.md",
-        "17. Final pre-flight check",
-        "The test every string in the voice sweep is put through.",
     ),
     # The two probes in the thinking checks (can weak understanding still
     # pass; can good understanding be marked wrong) need a calibration across
@@ -620,7 +630,7 @@ def review_source_scopes(subject_path: Path | None) -> dict[str, str]:
         "teachingSequence": (
             "file start through the line before ## Output Format Block"
         ),
-        "teacherVoice": "Final pre-flight check, then only a section a doubtful string calls for",
+        "teacherVoice": "only the section a doubtful explanation calls for (the lesson voice editor owns the rest)",
         "routeChecks": "the lesson's own route section only",
     }
     if subject_path is not None:
@@ -1029,11 +1039,47 @@ def class_view_answer(unit: dict, out: list[str]) -> None:
             )
 
 
+DRAWING_PREFIX = "On the drawing: "
+
+
+def drawn_words(design: dict) -> dict[tuple[str, str], list[str]]:
+    """The words each representation configuration prints for children, as
+    the lesson designer quoted them in its `requiredFeatures`, keyed by
+    (representation id, configuration id). A drawing's labels are children's
+    reading like any board line, so the class view prints them where a unit
+    or a worksheet block uses the drawing, and the voice editor's lane
+    (`check-voice-edit.py`) reaches them through the view."""
+    words: dict[tuple[str, str], list[str]] = {}
+    extract = _load_design_validator().diagram_print
+    for rep in design.get("representations") or []:
+        if not isinstance(rep, dict):
+            continue
+        for config in rep.get("configurations") or []:
+            if not isinstance(config, dict):
+                continue
+            found = [
+                text
+                for feature in config.get("requiredFeatures") or []
+                for text in extract(feature)
+            ]
+            if found:
+                words[(rep.get("id"), config.get("id"))] = found
+    return words
+
+
+def class_view_drawings(refs: object, drawings: dict | None, out: list[str]) -> None:
+    for ref in refs if isinstance(refs, list) else []:
+        if isinstance(ref, dict):
+            for text in (drawings or {}).get((ref.get("ref"), ref.get("configuration")), []):
+                out.append(DRAWING_PREFIX + text)
+
+
 def class_view_unit(
     unit: dict,
     *,
     criteria: dict[str, dict],
     sticky: dict[str, str],
+    drawings: dict[tuple[str, str], list[str]] | None = None,
 ) -> list[str]:
     """Every string on this unit a child reads or hears, in the order they meet it."""
     out: list[str] = []
@@ -1074,6 +1120,7 @@ def class_view_unit(
         for row in task.get("items") or []:
             class_view_strings(row.get("label"), out)
             class_view_strings(row.get("detail"), out)
+    class_view_drawings(unit.get("representationRefs"), drawings, out)
     for ref in unit.get("successCriteriaRefs") or []:
         class_view_criteria(ref, criteria, out)
     for ref in unit.get("stickyKnowledgeRefs") or []:
@@ -1091,6 +1138,7 @@ def class_view_worksheet(
     *,
     criteria: dict[str, dict],
     sticky: dict[str, str],
+    drawings: dict[tuple[str, str], list[str]] | None = None,
 ) -> list[str]:
     out: list[str] = []
     for ref in worksheet.get("successCriteriaRefs") or []:
@@ -1099,12 +1147,14 @@ def class_view_worksheet(
         class_view_strings(sticky.get(ref), out)
     for block in worksheet.get("contentBlocks") or []:
         kind = block.get("kind")
+        class_view_drawings(block.get("representationRefs"), drawings, out)
         if kind == "question":
             class_view_strings(block.get("pupilPrompt"), out)
             class_view_strings(block.get("support"), out)
         elif kind == "question-group":
             class_view_strings(block.get("groupPrompt"), out)
             for part in block.get("parts") or []:
+                class_view_drawings(part.get("representationRefs"), drawings, out)
                 class_view_strings(part.get("pupilPrompt"), out)
                 class_view_strings(part.get("support"), out)
         elif kind == "frame":
@@ -1115,6 +1165,7 @@ def class_view_worksheet(
             class_view_strings(block.get("stimulus"), out)
             class_view_strings(block.get("pupilAction"), out)
             for prompt in block.get("prompts") or []:
+                class_view_drawings(prompt.get("representationRefs"), drawings, out)
                 class_view_strings(prompt.get("pupilPrompt"), out)
                 class_view_strings(prompt.get("support"), out)
         elif kind == "child-generated":
@@ -1278,13 +1329,14 @@ def worksheet_heading(design: dict) -> str:
     return f"Worksheet (done beside the success criteria shown above at {' and at '.join(places)})"
 
 
-def build_class_view(design: dict) -> tuple[list[str], int]:
-    """The lesson as the class meets it: plain text, lesson order, no field names.
-
-    Returns the section's lines and the number of strings it printed.
-    """
+def class_view_blocks(design: dict) -> list[tuple[str, list[str]]]:
+    """The class view's strings, grouped under the label of the unit they
+    follow, before any of them is printed. `check-voice-edit.py` matches whole
+    strings against these, so the lesson voice editor's lane is exactly what
+    this view prints."""
     criteria = {row["id"]: row for row in design.get("successCriteria") or []}
     sticky = {row["id"]: row["text"] for row in design.get("stickyKnowledge") or []}
+    drawings = drawn_words(design)
     blocks: list[tuple[str, list[str]]] = []
 
     # Words grouped by the unit they follow, so each group can be dropped into
@@ -1310,12 +1362,12 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
     starter = design.get("starter")
     if starter:
         blocks.append(
-            (starter["label"], class_view_unit(starter, criteria=criteria, sticky=sticky))
+            (starter["label"], class_view_unit(starter, criteria=criteria, sticky=sticky, drawings=drawings))
         )
         vocabulary_after(starter.get("sourceUnitId") or "")
 
     for unit in design.get("teachingSequence") or []:
-        blocks.append((unit["label"], class_view_unit(unit, criteria=criteria, sticky=sticky)))
+        blocks.append((unit["label"], class_view_unit(unit, criteria=criteria, sticky=sticky, drawings=drawings)))
         vocabulary_after(unit.get("sourceUnitId") or "")
 
     for groups in scheduled.values():
@@ -1325,14 +1377,22 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
     ending = design.get("ending") or {}
     beat = ending.get("beat")
     if ending.get("included") and beat:
-        blocks.append((beat["label"], class_view_unit(beat, criteria=criteria, sticky=sticky)))
+        blocks.append((beat["label"], class_view_unit(beat, criteria=criteria, sticky=sticky, drawings=drawings)))
 
     worksheet = design.get("worksheet") or {}
     if worksheet.get("status") == "generated":
-        strings = class_view_worksheet(worksheet, criteria=criteria, sticky=sticky)
+        strings = class_view_worksheet(worksheet, criteria=criteria, sticky=sticky, drawings=drawings)
         if strings:
             blocks.append((worksheet_heading(design), strings))
+    return blocks
 
+
+def build_class_view(design: dict) -> tuple[list[str], int]:
+    """The lesson as the class meets it: plain text, lesson order, no field names.
+
+    Returns the section's lines and the number of strings it printed.
+    """
+    blocks = class_view_blocks(design)
     count = sum(len(strings) for _, strings in blocks)
     year = design["lesson"]["yearGroup"]
     lines = [
@@ -1800,155 +1860,6 @@ def read_class_view_count(view_path: Path) -> tuple[int, int]:
         "design-review-view.md carries no `## As the class meets it` count line; "
         "re-run prepare so the view and the review come from the same packet"
     )
-
-
-def require_voice_sweep(
-    review_path: Path,
-    *,
-    expected_count: int,
-    expected_year: int,
-    view_path: Path | None = None,
-) -> tuple[int, int, int]:
-    """The review must say how many child-facing strings it read, and the number
-    must be the one the view printed. This checks reported coverage only;
-    it cannot establish that the reviewer read or judged the strings well."""
-    lines = review_path.read_text(encoding="utf-8").splitlines()
-    positions = [
-        index for index, line in enumerate(lines) if line.strip() == VOICE_SWEEP_HEADING
-    ]
-    expected_line = (
-        f"Read {expected_count} child-facing strings as a Year {expected_year} child; "
-        "repaired [M]."
-    )
-    if len(positions) != 1:
-        raise PacketError(
-            f"design-review.md must contain exactly one {VOICE_SWEEP_HEADING!r} "
-            f"heading followed by the line `{expected_line}`, where M is the number "
-            "of strings repaired in place"
-        )
-    cursor = positions[0] + 1
-    while cursor < len(lines) and not lines[cursor].strip():
-        cursor += 1
-    line = lines[cursor].strip() if cursor < len(lines) else ""
-    match = VOICE_SWEEP_RE.match(line)
-    if not match:
-        raise PacketError(
-            f"design-review.md {VOICE_SWEEP_HEADING} must be followed by exactly one "
-            f"line of the form `{expected_line}`; found {line!r}. The review view "
-            f"printed {expected_count} child-facing strings, and M counts the "
-            "strings repaired in place"
-        )
-    read_count, year, repaired = (int(group) for group in match.groups())
-    if read_count != expected_count:
-        raise PacketError(
-            f"design-review.md {VOICE_SWEEP_HEADING} says {read_count} strings were "
-            f"read, but the review view printed {expected_count} child-facing "
-            f"strings; the line must read `{expected_line}`"
-        )
-    if year != expected_year:
-        raise PacketError(
-            f"design-review.md {VOICE_SWEEP_HEADING} names Year {year}, but this is "
-            f"a Year {expected_year} lesson; the line must read `{expected_line}`"
-        )
-    if repaired > read_count:
-        raise PacketError(
-            f"design-review.md {VOICE_SWEEP_HEADING} repaired {repaired} strings, "
-            f"which cannot exceed the {read_count} strings read"
-        )
-    require_closest_calls(lines, cursor + 1, read_count, view_path)
-    return read_count, year, repaired
-
-
-# How many strings the sweep has to show its working on. Three is enough to be
-# evidence and small enough that a good lesson can always answer it: this is a
-# ranking of the lesson's own strings, not an accusation against any of them.
-CLOSEST_CALLS_HEADING = "Closest to a repair:"
-CLOSEST_CALLS_WANTED = 3
-CLOSEST_CALL_RE = re.compile(r'^>\s*"(.+)"\s*[-—]\s*(\S.*)$')
-
-
-def require_closest_calls(
-    lines: list[str], cursor: int, read_count: int, view_path: Path | None
-) -> None:
-    """Make the sweep show its working on named strings, not a tally.
-
-    `Read 66 child-facing strings as a Year 4 child; repaired 0.` is what a
-    sweep that happened and a sweep that did not both produce, which is the
-    exact fault the optional-picture pass had before it wrote a record. On 21
-    September 2026 a Year 4 PSHE review printed that line, and the four strings
-    the teacher could not read - `Food: rush through the morning without eating
-    until late afternoon.` and its three siblings - were in the view twice each.
-    The review even described them accurately, as "four short plan items", and
-    passed them.
-
-    So the sweep now names the strings it came closest to repairing and let
-    stand, quoted from the view, with the reason each stands. The quotes are
-    checked against the view, so they cannot be invented, and the reason is
-    where Daniel can see the judgement that was actually made.
-    """
-    wanted = min(CLOSEST_CALLS_WANTED, read_count)
-    if wanted <= 0:
-        return
-    while cursor < len(lines) and not lines[cursor].strip():
-        cursor += 1
-    heading = lines[cursor].strip() if cursor < len(lines) else ""
-    if heading != CLOSEST_CALLS_HEADING:
-        raise PacketError(
-            f"design-review.md {VOICE_SWEEP_HEADING} must then carry a "
-            f"`{CLOSEST_CALLS_HEADING}` line and {wanted} quoted string(s) from the "
-            "review view, each with the reason it stands, in the form "
-            '`> "the exact string" - why it stands`. A count of strings read is '
-            "what a sweep that happened and a sweep that did not both produce; "
-            "naming the calls you found hardest is what shows one happened"
-        )
-    cursor += 1
-    calls: list[tuple[str, str]] = []
-    while cursor < len(lines):
-        stripped = lines[cursor].strip()
-        if not stripped:
-            break
-        match = CLOSEST_CALL_RE.match(stripped)
-        if not match:
-            raise PacketError(
-                f"design-review.md {VOICE_SWEEP_HEADING} has a line under "
-                f"`{CLOSEST_CALLS_HEADING}` that is not "
-                f'`> "the exact string" - why it stands`: {stripped!r}'
-            )
-        calls.append((match.group(1).strip(), match.group(2).strip()))
-        cursor += 1
-    if len(calls) != wanted:
-        raise PacketError(
-            f"design-review.md {VOICE_SWEEP_HEADING} names {len(calls)} closest "
-            f"call(s) under `{CLOSEST_CALLS_HEADING}`; this lesson needs {wanted}"
-        )
-    seen: set[str] = set()
-    for quoted, reason in calls:
-        key = " ".join(quoted.split()).casefold()
-        if key in seen:
-            raise PacketError(
-                f"design-review.md {VOICE_SWEEP_HEADING} names {quoted!r} twice; "
-                "each closest call is a different string"
-            )
-        seen.add(key)
-        if len(reason.split()) < 4:
-            raise PacketError(
-                f"design-review.md {VOICE_SWEEP_HEADING} gives no reason {quoted!r} "
-                "stands. Say what a child gets from it as written"
-            )
-    if view_path is None:
-        return
-    # The check that stops this becoming another unfalsifiable line. A quoted
-    # string has to be one the view actually printed, so a sweep cannot answer
-    # with words it made up about a lesson it did not read.
-    view = " ".join(view_path.read_text(encoding="utf-8").split()).casefold()
-    for quoted, _reason in calls:
-        if " ".join(quoted.split()).casefold() not in view:
-            raise PacketError(
-                f"design-review.md {VOICE_SWEEP_HEADING} quotes {quoted!r} as a "
-                "closest call, but the review view does not print that string. "
-                "Quote the string exactly as the `As the class meets it` section "
-                "prints it"
-            )
 
 
 def require_review_judgements(review_path: Path, review_result: str) -> dict[str, str]:
@@ -3443,16 +3354,6 @@ def verify(args: argparse.Namespace) -> int:
             f"Year {class_view_year} lesson but the "
             f"design now says Year {design_year}"
         )
-    (
-        sweep_read,
-        _sweep_year,
-        sweep_repaired,
-    ) = require_voice_sweep(
-        review_path,
-        expected_count=class_view_count,
-        expected_year=design_year,
-        view_path=view_path,
-    )
 
     judgements = require_review_judgements(review_path, review_result)
 
@@ -3485,10 +3386,6 @@ def verify(args: argparse.Namespace) -> int:
             "sha256": sha256_file(
                 review_path
             ),
-        },
-        "voiceSweep": {
-            "childFacingStrings": sweep_read,
-            "repaired": sweep_repaired,
         },
         "currentInputs": {
             "lessonDesign": input_record(

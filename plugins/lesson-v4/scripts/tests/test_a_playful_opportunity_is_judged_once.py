@@ -42,6 +42,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
 DESIGN_REVIEWER = ROOT / "agents" / "design-reviewer.md"
+VOICE_EDITOR = ROOT / "agents" / "lesson-voice-editor.md"
 TEACHER_VOICE = ROOT / "references" / "teacher-voice.md"
 
 
@@ -113,51 +114,44 @@ class ThePreFlightAsksItOfTheLessonNotOfEachStringTests(unittest.TestCase):
         self.assertIn("**Does this sound natural, or suspiciously polished?**", text)
 
 
-class BothAgentsAskItAtTheEndWithTheMaterialInViewTests(unittest.TestCase):
-    def test_the_designer_asks_it_at_the_completion_pass(self) -> None:
-        text = flat(LESSON_DESIGNER)
-        completion = text.index("## One Completion Pass, Then Done")
-        self.assertIn(
-            "the playful-opportunity one is asked once, of the lesson",
-            text[completion:],
-        )
-        self.assertIn("the sources, pictures, real facts, numbers and people", text[completion:])
+class TheVoiceEditorAsksItOnceOfTheMaterialTests(unittest.TestCase):
+    """27 September 2026: the light moment moved to the lesson voice editor, which
+    reads the approved lesson whole with its material in view. The designer's part
+    is choosing material worth a smile; the reviewer no longer sweeps for it."""
 
-    def test_the_designer_is_told_why_asking_it_while_writing_fails(self) -> None:
-        text = flat(LESSON_DESIGNER)
-        self.assertIn(
-            "how a whole lesson comes out correct and completely flat",
-            text,
-        )
-
-    def test_section_four_is_routed_by_moment_not_by_kind_of_string(self) -> None:
-        text = flat(LESSON_DESIGNER)
-        self.assertIn("§4 is routed by moment rather than by kind of string", text)
-        self.assertIn("read it once at the completion pass, not while authoring", text)
-
-    def test_the_designer_is_warned_off_the_misconception_becoming_the_default(self) -> None:
-        text = flat(LESSON_DESIGNER)
-        self.assertIn("reach past the lesson's wrong idea", text)
-        self.assertIn("mannerism rather than a voice", text)
-
-    def test_the_reviewer_judges_it_against_the_material_not_each_string(self) -> None:
-        text = flat(DESIGN_REVIEWER)
+    def test_the_editor_owns_it_and_asks_it_of_the_material(self) -> None:
+        text = flat(VOICE_EDITOR)
+        self.assertIn("**The light moment is yours.**", text)
         self.assertIn(
             "Judge this one once, against the lesson's material rather than against each string",
             text,
         )
         self.assertIn("correct in every sentence and flat all the way through", text)
 
-    def test_the_reviewer_may_not_report_a_lesson_that_offers_nothing(self) -> None:
-        text = flat(DESIGN_REVIEWER)
-        self.assertIn(
-            "A lesson that offers nothing keeps its straight face and that is not a finding",
-            text,
-        )
+    def test_the_editor_is_warned_off_the_misconception_becoming_the_default(self) -> None:
+        text = flat(VOICE_EDITOR)
+        self.assertIn("Look past the lesson's wrong idea before you settle for none", text)
+        self.assertIn("mannerism rather than a voice", text)
 
-    def test_the_reviewer_leaves_placement_to_the_moment(self) -> None:
-        text = flat(DESIGN_REVIEWER)
+    def test_a_lesson_that_offers_nothing_is_not_a_fault(self) -> None:
+        text = flat(VOICE_EDITOR)
+        self.assertIn("A lesson that offers nothing keeps its straight face and that is not a finding", text)
+        self.assertIn("`None` is still a perfectly good answer and stays common", text)
+
+    def test_placement_stays_open_but_never_adds_a_piece(self) -> None:
+        text = flat(VOICE_EDITOR)
         self.assertIn("on the slide or in the script as the moment suits", text)
+        self.assertIn("goes inside a sentence already there, never as a new piece of its own", text)
+
+    def test_the_designer_chooses_the_material_and_hands_the_line_over(self) -> None:
+        text = flat(LESSON_DESIGNER)
+        self.assertIn("**Choose material with life in it.**", text)
+        self.assertIn("is the lesson voice editor's call once the lesson is approved", text)
+        self.assertNotIn("the playful-opportunity one is asked", text)
+
+    def test_the_reviewer_no_longer_sweeps_for_it(self) -> None:
+        text = flat(DESIGN_REVIEWER)
+        self.assertNotIn("an easy playful opportunity the content handed over", text)
 
 
 if __name__ == "__main__":

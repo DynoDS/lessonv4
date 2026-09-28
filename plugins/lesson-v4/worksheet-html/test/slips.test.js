@@ -277,10 +277,10 @@ test("slips follow the sheet's reading order and keep its question numbers", () 
     code: expected.spec.code,
     title: "Rounding",
   });
-  assert.equal((html.match(/class="slip"/g) || []).length, 4);
+  assert.equal((html.match(/class="slip[ "]/g) || []).length, 4);
   assert.equal((html.match(/data-worksheet-zone="slip-/g) || []).length, 4);
   assert.match(html, /<div class="slip-code">E<\/div>/);
-  const firstSlip = html.slice(html.indexOf('class="slip"'), html.indexOf('data-worksheet-zone="slip-2"'));
+  const firstSlip = html.slice(html.indexOf('class="slip '), html.indexOf('data-worksheet-zone="slip-2"'));
   assert.ok(firstSlip.indexOf("Round to the nearest 100.") < firstSlip.indexOf("Explain your answer"));
   assert.doesNotMatch(firstSlip, /h-lines/);
   // One cut across between two rows, one cut down between two columns.
@@ -346,18 +346,79 @@ test("slips sit at their own height, with the cut lines tight under them", () =>
   const tight = renderSlipsPage({ nodes: [], cols: 1, rows: 3, code: "E", title: "t", slipMm: 84.8 });
   assert.match(tight, /grid-template-rows:repeat\(3,84\.80mm\)/);
   assert.match(tight, /align-content:start/);
-  assert.match(tight, /class="cut cut--across" style="top:84\.80mm"/);
-  assert.match(tight, /class="cut cut--across" style="top:169\.60mm"/);
+  // The rows start 5mm down the page, so the first row's words keep the
+  // printer's edge room; the cuts follow them.
+  assert.match(tight, /class="cut cut--across" style="top:89\.80mm"/);
+  assert.match(tight, /class="cut cut--across" style="top:174\.60mm"/);
   // Without a height the page still divides evenly, as older calls expect.
   const even = renderSlipsPage({ nodes: [], cols: 1, rows: 3, code: "E", title: "t" });
   assert.match(even, /grid-template-rows:repeat\(3,1fr\)/);
-  assert.match(even, /class="cut cut--across" style="top:99\.00mm"/);
+  assert.match(even, /class="cut cut--across" style="top:102\.33mm"/);
+});
+
+test("the words sit close to a cut line and well in from the paper's edge", () => {
+  // Daniel trims close to the question, so 9mm between the cut line and the
+  // words meant trimming twice (28 September 2026). Beside a cut it is 4mm;
+  // at the paper's edge, where nobody trims, it stays 9mm for the printer.
+  const two = renderSlipsPage({ nodes: [], cols: 2, rows: 1, code: "E", title: "t" });
+  assert.match(two, /\.slip \{[^}]*padding: 4mm 9mm 4mm;/);
+  assert.match(two, /\.slip--left \{ padding-right: 4mm; \}/);
+  assert.match(two, /\.slip--right \{ padding-left: 4mm; \}/);
+  assert.match(two, /\.slips \{[^}]*top: 5mm;/);
+  assert.match(two, /class="slip slip--left"/);
+  assert.match(two, /class="slip slip--right"/);
+  const one = renderSlipsPage({ nodes: [], cols: 1, rows: 1, code: "E", title: "t" });
+  assert.doesNotMatch(one, /class="slip slip--(left|right)"/);
+});
+
+test("the level code shares the heading's line, or takes a line of its own", () => {
+  const beside = renderSlipsPage({ nodes: [], cols: 1, rows: 1, code: "GD", title: "t", codeBeside: true });
+  assert.doesNotMatch(beside, /class="slip slip--code-above"/);
+  const above = renderSlipsPage({ nodes: [], cols: 1, rows: 1, code: "GD", title: "t", codeBeside: false });
+  assert.match(above, /class="slip slip--code-above"/);
 });
 
 test("never more than four rows of slips, however short they are", () => {
+  // rowsFor takes a whole slip's height, padding included, and the page gives
+  // up 5mm at the top and 2mm at the foot for the printer's edge.
   assert.equal(rowsFor(10), MAX_ROWS);
   assert.equal(rowsFor(120), 2);
-  assert.equal(rowsFor(290), 0);
+  assert.equal(rowsFor(290), 1);
+  assert.equal(rowsFor(291), 0);
+});
+
+test("a packed number keeps its own line: the cell is as wide as the words really are", () => {
+  // A Year 4 slip packed (2b) 85 and (1b) LXXVIII into cells too narrow for
+  // them and both broke onto two lines (28 September 2026). Capitals and
+  // digits measure about 2.65mm at body size, and the row's gaps come out of
+  // the spare column, never out of a question's cell.
+  const q = (n, text) => ({ number: n, helper: "questions", showNumbers: false, items: [text] });
+  const [laid] = slipNodesFor([{ stack: ["2a", "2b", "2c", "2d"].map((n, i) => q(n, ["62", "85", "44", "92"][i])) }], 2);
+  const row = laid.stack[0];
+  const cells = row.row.filter((c) => c.number !== undefined).length;
+  const cellMm = row.parts[0];
+  assert.ok(cellMm >= 10 + 2 * 2.65, `a two-digit cell is ${cellMm}mm`);
+  const gaps = row.row.length - 1;
+  const total = row.parts.reduce((a, b) => a + b, 0);
+  assert.ok(total + gaps * 4 <= 92 + 0.01, "the cells and their gaps fit the slip");
+  assert.equal(cells, 4);
+  const [roman] = slipNodesFor([{ stack: [q("1a", "LVI"), q("1b", "LXXXVIII")] }], 2);
+  assert.ok(roman.stack[0].parts[0] >= 10 + 21.2, "LXXXVIII measures 21.2mm");
+});
+
+test("a group's task line keeps its own line above its packed parts", () => {
+  const line = { number: 2, helper: "instruction", text: "Write each number as Roman numerals.", groupPrompt: true };
+  const q = (n, text) => ({ number: n, helper: "questions", showNumbers: false, items: [text] });
+  const [laid] = slipNodesFor([{ stack: [line, q("2a", "62"), q("2b", "85")] }], 1);
+  assert.equal(laid.stack[0], line);
+  assert.ok(laid.stack[1].row, "the parts share a row under it");
+});
+
+test("a run of packed parts stops where the question changes", () => {
+  const q = (n, text) => ({ number: n, helper: "questions", showNumbers: false, items: [text] });
+  const [laid] = slipNodesFor([{ stack: [q("1a", "LVI"), q("1b", "XC"), q("2a", "62"), q("2b", "85")] }], 1);
+  const labels = laid.stack.map((r) => r.row.filter((c) => c.number !== undefined).map((c) => c.number));
+  assert.deepEqual(labels, [["1a", "1b"], ["2a", "2b"]]);
 });
 
 // ─── the build ───────────────────────────────────────────────────────────

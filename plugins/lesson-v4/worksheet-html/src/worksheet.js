@@ -137,9 +137,10 @@ function questionBehindItsMaterial(node) {
   if (Array.isArray(flagged.items) && flagged.items.length > 1) return node;
   if (items.slice(0, at).some((item) => item && item.helper === "section-label")) return node;
 
-  const { question, questionGroupId, ...inner } = flagged;
+  const { question, questionGroupId, groupPrompt, ...inner } = flagged;
   const hoisted = { ...node, question };
   if (questionGroupId !== undefined) hoisted.questionGroupId = questionGroupId;
+  if (groupPrompt !== undefined) hoisted.groupPrompt = groupPrompt;
   hoisted.stack = items.map((item, i) => (i === at ? inner : item));
   return hoisted;
 }
@@ -233,10 +234,47 @@ function makeNumberer() {
     );
   }
 
+  // A group's shared task line, printed once as the whole question: "(2) Write
+  // each number as Roman numerals." above (2a) 62, (2b) 85. The Lesson Design
+  // holds it as the group's `groupPrompt`, apart from its Parts, and the sheet
+  // carries it on the first Part. With nowhere else to go it used to print
+  // inside that Part, so a Year 4 sheet read "(2a) Write each number as Roman
+  // numerals. 62" and the task looked like part a's alone (Daniel, 28
+  // September 2026). It takes the group's main number but no answer of its
+  // own: the Parts are what the key answers.
+  function groupPromptLine(node, label, zoneId) {
+    const text = node.groupPrompt;
+    if (text === undefined || text === null) return null;
+    if (typeof text !== "string" || !text.trim()) {
+      throw new WorksheetError(
+        "GROUP_PROMPT_INVALID",
+        `zone "${zoneId}": groupPrompt must be the group's task line as words.`
+      );
+    }
+    const grouped = /^(\d+)a$/.exec(String(label));
+    if (!grouped) {
+      throw new WorksheetError(
+        "GROUP_PROMPT_MISPLACED",
+        `zone "${zoneId}": groupPrompt ${JSON.stringify(text)} is on question ` +
+          `${label}. It belongs on the first Part of a Question group, which ` +
+          `prints it once above all the Parts.`
+      );
+    }
+    return { number: Number(grouped[1]), helper: "instruction", text, groupPrompt: true };
+  }
+
+  // A Part with a task line walks to two items, the line and the Part; inside
+  // a stack both take their places in it, anywhere else they become one.
+  const SPLICE = Symbol("splice");
+  const settle = (value) => (value && value[SPLICE] ? { stack: value[SPLICE] } : value);
+
   function numberZones(zones) {
     const walk = (node, zoneId, insideNumberedQuestion = false) => {
       if (Array.isArray(node)) {
-        return node.map((n) => walk(n, zoneId, insideNumberedQuestion));
+        return node.flatMap((n) => {
+          const walked = walk(n, zoneId, insideNumberedQuestion);
+          return walked && walked[SPLICE] ? walked[SPLICE] : [walked];
+        });
       }
       if (!node || typeof node !== "object") return node;
       if (!insideNumberedQuestion) node = questionBehindItsMaterial(node);
@@ -287,12 +325,13 @@ function makeNumberer() {
         const label = labelForQuestion(node, zoneId);
         labels.push(String(label));
 
-        const { question, questionGroupId, ...rest } = node;
+        const { question, questionGroupId, groupPrompt, ...rest } = node;
         const out = { number: label };
         for (const [key, value] of Object.entries(rest)) {
-          out[key] = walk(value, zoneId, true);
+          out[key] = settle(walk(value, zoneId, true));
         }
-        return out;
+        const line = groupPromptLine(node, label, zoneId);
+        return line ? { [SPLICE]: [line, out] } : out;
       }
 
       // A container - a `row`, a nested `stack` - is not a question boundary,
@@ -301,9 +340,16 @@ function makeNumberer() {
       // numbered question was correctly suppressed, while the same helper one
       // level deeper started its own run again, and a question holding a
       // two-column recording surface printed "(1)" four times over.
+      if (node.groupPrompt !== undefined) {
+        throw new WorksheetError(
+          "GROUP_PROMPT_MISPLACED",
+          `zone "${zoneId}": groupPrompt is on something that is not a question. ` +
+            `It belongs on the first Part of a Question group.`
+        );
+      }
       const out = {};
       for (const [key, value] of Object.entries(node)) {
-        out[key] = walk(value, zoneId, insideNumberedQuestion);
+        out[key] = settle(walk(value, zoneId, insideNumberedQuestion));
       }
       return out;
     };
@@ -313,10 +359,10 @@ function makeNumberer() {
     // same reading order by definition. Array keys must not go through the
     // string sort ("10" sorts before "2").
     if (Array.isArray(zones)) {
-      return zones.map((zone, i) => walk(zone, String(i)));
+      return zones.map((zone, i) => settle(walk(zone, String(i))));
     }
     const out = {};
-    for (const id of Object.keys(zones).sort()) out[id] = walk(zones[id], id);
+    for (const id of Object.keys(zones).sort()) out[id] = settle(walk(zones[id], id));
     return out;
   }
 

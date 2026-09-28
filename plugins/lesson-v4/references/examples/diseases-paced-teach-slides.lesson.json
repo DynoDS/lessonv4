@@ -1,0 +1,470 @@
+{
+  "lessonName": "How diseases spread and were treated (paced Teach run)",
+  "yearGroup": "Year 4",
+  "subject": "History",
+  "lo": "To explain how diseases spread and were treated.",
+  "notes": [
+    "The opening Teach and Do run of a Year 4 history lesson (To explain how diseases spread and were treated). The lesson designer wrote the words; the slides were then paced by hand to one thing to look at per slide, the same words on 11 slides where the plugin had made 7, and the user chose it (on the 28th of that month) over the same words on fewer, fuller slides: \"THIS POWERPOINT is good... its broken down nicely, theres visuals and pictures everywhere.\" Read with preferences.md, Slide Philosophy, A Teach run is paced. The pictures were placeholders in that build and are not shipped; the layouts, slots, pacing, wording and speaker notes are the calibration. The word card for cholera, which came before the scene in that deck, is left out: a card for a word the story introduces follows the slide that introduces it."
+  ],
+  "slides": [
+    {
+      "template": "teach-layout",
+      "layout": "lead-picture-lines",
+      "headerStyle": "title",
+      "title": "Why did Victorians blame the smell?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-001",
+      "photoRefs": [
+        "photo-001"
+      ],
+      "lead": "Victorians thought bad air caused diseases, because of the terrible smell from rotting rubbish and toilet waste.",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/victorian-london-yard.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "In Victorian London, lots of families lived squashed together in small, dirty houses."
+      ],
+      "speakerNotes": "Say to children: Look at this picture. It was drawn in Victorian times, about a back yard in London. What can you see? In Victorian London, lots of families lived squashed together in small, dirty houses, sometimes a whole family in one room."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "zigzag",
+      "headerStyle": "title",
+      "title": "Why did Victorians blame the smell?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-001",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/victorian-yard-rubbish-heap.jpg",
+          "fit": "contain",
+          "essential": true
+        },
+        {
+          "type": "image",
+          "imagePath": "photos/victorian-street-pump-children-fetching-water.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        {
+          "value": "There were no toilets that flushed. Rubbish and toilet waste piled up in the yards, and it smelled terrible.",
+          "orange": true
+        },
+        "Families filled buckets at a pump in the street. Often, fetching the water was the children's job."
+      ],
+      "speakerNotes": "Say to children: There were no toilets that flushed and no bin lorries. Rubbish and toilet waste piled up in yards like this one, and it smelled terrible, all day, every day. And there were no taps in the houses. Families filled buckets at a pump in the street, and it was often the children's job to go and fetch the water.",
+      "photoRefs": [
+        "photo-007",
+        "photo-008"
+      ]
+    },
+    {
+      "template": "teach-layout",
+      "layout": "picture-top-cards",
+      "headerStyle": "title",
+      "title": "Why did Victorians blame the smell?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-001",
+      "photoRefs": [
+        "photo-006"
+      ],
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/person-ill-in-bed.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "In 1854 a disease called {{cholera}} spread through Soho, a part of London. A disease is an illness that can pass from one person to another, like chickenpox.",
+        "Blaming the smell made sense to them. Rotten things smell horrible, and rotten food can make you ill. They just didn't know yet what really caused {{cholera}}."
+      ],
+      "speakerNotes": "Say to children: In 1854 a disease called cholera spread through one part of London, called Soho. A disease is an illness that can pass from one person to another, like chickenpox or a tummy bug. Cholera made people very sick in their stomachs, and their bodies lost water so fast that lots of people died in a day or two. Now, it's easy to think that was a silly idea. It wasn't. Rotten things do smell horrible, and rotten food can make you ill, can't it? If you lived in that yard, the smell would be the first thing you'd blame too. They just didn't know yet what really caused cholera.\n\nTeacher information: Some children will laugh at the Victorians for blaming a smell. The move is the one on the board: ask what smells bad in their kitchen bin and whether they would eat it. The idea was sensible for what people knew; it was just wrong. Say 'bad air' rather than the historians' word 'miasma'."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "picture-statement-question",
+      "headerStyle": "title",
+      "title": "Why did Victorians blame the smell?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-001",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/victorian-medicine-bottles.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lead": "More than 500 people died in ten days, many of them children. Nobody had a {{treatment}} that worked.",
+      "question": "Why do you think people blamed the smell?",
+      "speakerNotes": "Say to children: More than 500 people died in just ten days, and many of them were children. Nobody had a treatment that worked. So what did people think was causing it? Nearly everyone, even the doctors, blamed the smell. They called it bad air: the smell from rotting rubbish and toilet waste. Why do you think they blamed the smell?",
+      "photoRefs": [
+        "photo-009"
+      ]
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "What would you do if you blamed the smell?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-002",
+      "body": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Imagine you believed the bad air made people ill.\n[[Which of these would you try?]]",
+            "align": "center",
+            "weight": 0.75
+          },
+          {
+            "type": "text",
+            "value": "Sort the cards into the two groups.",
+            "colorRole": "task-blue",
+            "align": "center",
+            "widthMode": "content",
+            "placement": "center",
+            "weight": 0.4
+          },
+          {
+            "type": "stack",
+            "weight": 2.6,
+            "items": [
+              {
+                "type": "row",
+                "equaliseTextCards": true,
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "Burn tar in the street to clean the air.",
+                    "align": "center",
+                    "sizeGroup": "sort-items"
+                  },
+                  {
+                    "type": "text",
+                    "value": "Stop drinking water from the street pump.",
+                    "align": "center",
+                    "sizeGroup": "sort-items"
+                  },
+                  {
+                    "type": "text",
+                    "value": "Hold a cloth soaked in vinegar over your nose.",
+                    "align": "center",
+                    "sizeGroup": "sort-items"
+                  }
+                ]
+              },
+              {
+                "type": "row",
+                "equaliseTextCards": true,
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "Boil the water before you drink it.",
+                    "align": "center",
+                    "sizeGroup": "sort-items"
+                  },
+                  {
+                    "type": "text",
+                    "value": "Sweep the rotting rubbish away.",
+                    "align": "center",
+                    "sizeGroup": "sort-items"
+                  },
+                  {
+                    "type": "text",
+                    "value": "Wash the toilet waste out of the streets and into the river.",
+                    "align": "center",
+                    "sizeGroup": "sort-items"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "items": [
+              {
+                "type": "stack",
+                "categoryColor": "blue",
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "Things you'd try if you blamed the bad air",
+                    "align": "center",
+                    "sizeGroup": "destinations"
+                  }
+                ]
+              },
+              {
+                "type": "stack",
+                "categoryColor": "orange",
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "Things you wouldn't even think of",
+                    "align": "center",
+                    "sizeGroup": "destinations"
+                  }
+                ]
+              }
+            ],
+            "weight": 0.75
+          }
+        ]
+      },
+      "speakerNotes": "Say to children: Now I want you to be a Victorian for a minute. Imagine you believed the bad air made people ill. Your street smells terrible, and people are catching cholera. What would you do about it? Here are six things people could do. Sort them into two groups: the things you'd try if you blamed the bad air, and the things you wouldn't even think of. For each card, ask yourself one question: does this get rid of the smell? When you've sorted them, I'll tell you what the Victorians really did. So, you were right. They burned tar in the streets to clean the air, they held cloths soaked in vinegar over their noses, and they swept the rubbish away. They even washed the toilet waste out of the streets and into the river, to move the smell away. Hold on to that one, because it matters later. But nobody stopped drinking from the pump, and nobody boiled their water. Why would they? The water didn't smell. And cholera kept spreading.\n\nTeacher information: The river card is the one children hesitate over; it belongs with the things they would try, because it moved the smell away (London really did flush waste into the Thames in 1848 to 1854, and the Thames was drinking water). Children who put the two water cards under 'would try' are thinking about what we know now; ask whether water that looked clean would smell bad. Burning tar and vinegar cloths were used in the cholera years of the 1830s to 1850s.\n\nAnswer to question(s) on this slide: Things you'd try if you blamed the bad air: Burn tar in the street to clean the air. Hold a cloth soaked in vinegar over your nose. Sweep the rotting rubbish away. Wash the toilet waste out of the streets and into the river. Things you wouldn't even think of: Stop drinking water from the street pump. Boil the water before you drink it.\n\nAlso accept: Accept the river card in either group only if the child says it moved the smell away; that reason places it with the things they would try.\n\nLook for: the river card placed as something they would try; both water cards left out because the water didn't smell."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "lead-picture-lines",
+      "headerStyle": "title",
+      "title": "Who was John Snow?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-003",
+      "photoRefs": [
+        "photo-002"
+      ],
+      "lead": "A doctor called John Snow thought {{cholera}} came from dirty water, not bad air.",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/john-snow-portrait.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "John Snow lived and worked in London.",
+        "He noticed that {{cholera}} made people ill in their stomachs, not their chests. When you breathe something bad in, it's your chest that suffers. So he thought people must be swallowing something, not breathing it in."
+      ],
+      "speakerNotes": "Say to children: One doctor didn't believe the bad-air idea. This is him. His name was John Snow, and he lived and worked in London. He noticed something about cholera. It made people ill in their stomachs, not in their chests. When you breathe something bad in, it's your chest that suffers, isn't it? Coughing, wheezing. But cholera was all stomach. So John Snow thought people must be swallowing something, not breathing it in."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "question-lines-picture",
+      "headerStyle": "title",
+      "title": "How did John Snow find the cause of cholera?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-003",
+      "lines": [
+        "When {{cholera}} came to Soho, he marked everyone who died on a map of the streets. Each little black mark is one person.",
+        "Look at the map: most of the marks are packed around one water pump, on Broad Street."
+      ],
+      "question": "Where are most of the marks on the map?",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/john-snow-cholera-map-1854.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "speakerNotes": "Say to children: When cholera came to Soho in 1854, he did something clever. He went round the streets and marked every person who had died on a map. Each little black line on this map is one person. Where are most of the marks? They're packed around this spot here. That's a water pump, on Broad Street. Families round there got all their water from that pump, and remember, it was often the children who fetched it. If the bad air was causing it, the whole smelly area should have been ill. But the deaths were bunched round one pump.\n\nTeacher information: Children who think cholera spread like a cold, through the air, are thinking what the Victorians thought. Point at the map: if it were the air, why would the marks bunch round one pump rather than spread across the smelly streets? The map's small black bars stand for deaths at each address.\n\nLook for: children pointing at the pump in the middle of the cluster, not just 'the middle of the map'.",
+      "photoRefs": [
+        "photo-003"
+      ]
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Bad air or dirty water?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-004",
+      "body": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "[[Which idea does each card fit: bad air, or John Snow's dirty water?]]\n[[What in the card shows you?]]",
+            "align": "center",
+            "weight": 0.62
+          },
+          {
+            "type": "text",
+            "value": "Read each card and put it in a group. Then tell your partner what in the card shows it.",
+            "align": "center",
+            "weight": 0.36
+          },
+          {
+            "type": "row",
+            "weight": 3.0,
+            "items": [
+              {
+                "type": "stack",
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "The brewery men",
+                    "align": "center",
+                    "sizeGroup": "ev-label",
+                    "weight": 0.32
+                  },
+                  {
+                    "type": "text",
+                    "value": "More than 70 men worked at a brewery, where they made beer, right next to the Broad Street pump. They breathed the same smelly air as everyone else. But they drank beer made with water from the brewery's own well. None of them died of {{cholera}}.",
+                    "align": "left",
+                    "sizeGroup": "ev-detail",
+                    "weight": 1.9
+                  }
+                ]
+              },
+              {
+                "type": "stack",
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "Susannah Eley",
+                    "align": "center",
+                    "sizeGroup": "ev-label",
+                    "weight": 0.32
+                  },
+                  {
+                    "type": "text",
+                    "value": "Susannah Eley lived miles away in Hampstead, where the air was fresh. She liked the taste of the Broad Street water, so her sons carried a bottle of it to her every day. She caught {{cholera}} and died.",
+                    "align": "left",
+                    "sizeGroup": "ev-detail",
+                    "weight": 1.9
+                  }
+                ]
+              },
+              {
+                "type": "stack",
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "The smelliest streets",
+                    "align": "center",
+                    "sizeGroup": "ev-label",
+                    "weight": 0.32
+                  },
+                  {
+                    "type": "text",
+                    "value": "Lots of the people who died lived in the most crowded, smelly streets of Soho.",
+                    "align": "left",
+                    "sizeGroup": "ev-detail",
+                    "weight": 1.9
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "row",
+            "items": [
+              {
+                "type": "stack",
+                "categoryColor": "blue",
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "It fits the bad-air idea",
+                    "align": "center",
+                    "sizeGroup": "destinations"
+                  }
+                ]
+              },
+              {
+                "type": "stack",
+                "categoryColor": "orange",
+                "items": [
+                  {
+                    "type": "text",
+                    "value": "It fits John Snow's dirty-water idea",
+                    "align": "center",
+                    "sizeGroup": "destinations"
+                  }
+                ]
+              }
+            ],
+            "weight": 0.62
+          }
+        ]
+      },
+      "speakerNotes": "Say to children: Other people in 1854 didn't believe John Snow. Most doctors still thought it was the bad air. So let's look at the evidence he found, the way a historian would. These are true things from 1854. For each one, ask yourself: if bad air caused cholera, what should have happened? And what really happened? Then decide which idea it fits. The brewery was a place where they made beer, right next to the pump. Hampstead was a village a long way from Soho, with fresh air. Read each card carefully, put it in a group, then tell your partner what in the card shows it. So, the brewery men breathed the same smelly air as everyone else, but they didn't drink the pump water, and none of them died. The bad-air idea can't explain that. So was beer the cure for cholera? No, and please don't tell anyone at home I said it was. It was the pump water they didn't drink that kept them safe. Susannah Eley breathed fresh air miles away, but she drank the pump water, and she died. The bad-air idea can't explain that either. And the smelly streets? That's the evidence the bad-air people used. But look at the map again: the smelly streets were round the pump too. So that card fits both ideas, which is why it couldn't settle the argument. The other two could.\n\nTeacher information: The third card is there so not every card goes one way. Key it to bad air, but a child who says it fits both, because those streets were also round the pump, has done the best thinking of all; praise that reason. The two stories are real: the Broad Street brewery workers, and Susannah Eley of Hampstead, whose water was carried from Broad Street, both reported by John Snow in 1855.\n\nAnswer to question(s) on this slide: It fits the bad-air idea: The smelliest streets. It fits John Snow's dirty-water idea: The brewery men Susannah Eley.\n\nAlso accept: Accept 'The smelliest streets' under either group, or placed between them, when the child says it fits both ideas because those streets were near the pump as well.\n\nLook for: 'same air but different water' for the brewery; 'fresh air but pump water' for Susannah."
+    },
+    {
+      "template": "teach-layout",
+      "layout": "lead-picture-lines",
+      "headerStyle": "title",
+      "title": "What stopped cholera at the pump?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-005",
+      "stickyKnowledgeRefs": [
+        "sk-002"
+      ],
+      "lead": "Once the handle came off the Broad Street pump, nobody could drink its dirty water, and soon no more people caught {{cholera}} from it.",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/broad-street-pump-handle-removed.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "John Snow told the people in charge of the streets what he had found, and they took the handle off."
+      ],
+      "sticky": "John Snow showed that {{cholera}} spread through dirty drinking water.",
+      "speakerNotes": "Say to children: So what did John Snow do? He took what he had found to the people in charge of the streets, and he persuaded them to take the handle off the Broad Street pump. No handle, no water. Nobody could drink from it any more. And soon, no more people were catching cholera from that pump. That's the treatment that worked. Not cleaning the air. Stopping people drinking the dirty water.\n\nTeacher information: The outbreak was already slowing when the handle came off on 8 September 1854, partly because many families had fled; 'soon no more people caught cholera from it' is accurate, but avoid saying the handle alone ended the outbreak. John Snow did not know about germs; he thought something in the water was making people ill.",
+      "photoRefs": [
+        "photo-010"
+      ]
+    },
+    {
+      "template": "teach-layout",
+      "layout": "zigzag",
+      "headerStyle": "title",
+      "title": "What stopped cholera at the pump?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-005",
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/victorian-sewer-tunnels.jpg",
+          "fit": "contain",
+          "essential": true
+        },
+        {
+          "type": "image",
+          "imagePath": "photos/glass-of-water-salt-and-sugar.jpg",
+          "fit": "contain",
+          "essential": true
+        }
+      ],
+      "lines": [
+        "Later, London built huge tunnels called sewers, to carry toilet waste far away from the water people drank. Before that, lots of it went into the river, and people drank river water too.",
+        "Today, doctors treat {{cholera}} by giving people lots of clean water with a little salt and sugar. It puts back the water the body has lost."
+      ],
+      "speakerNotes": "Say to children: Later, London built huge tunnels under the streets called sewers, to carry all the toilet waste far away from the water people drank. And remember washing the toilet waste into the river? People drank river water too, so that had been making it worse. Today, if someone catches cholera somewhere in the world, doctors treat it by giving them lots of clean water with a little salt and sugar in it, to put back the water their body has lost.",
+      "photoRefs": [
+        "photo-011",
+        "photo-012"
+      ]
+    },
+    {
+      "template": "teach-layout",
+      "layout": "picture-statement-question",
+      "headerStyle": "title",
+      "title": "What stopped cholera at the pump?",
+      "designUnitId": "lesson-section/teaching-sequence/unit-005",
+      "photoRefs": [
+        "photo-004",
+        "photo-014"
+      ],
+      "pictures": [
+        {
+          "type": "image",
+          "imagePath": "photos/broad-street-pump-today.jpg",
+          "fit": "contain",
+          "essential": true,
+          "inset": {
+            "imagePath": "photos/clean-tap-water.jpg",
+            "position": "top-right"
+          }
+        }
+      ],
+      "lead": "In Britain our tap water is cleaned, so children here don't catch {{cholera}}.",
+      "question": "Why is this pump in Soho kept without its handle today?",
+      "speakerNotes": "Say to children: And here in Britain our tap water is cleaned, so children here don't catch cholera. This is the pump in Soho today. It's kept without its handle. Why do you think it's kept like that?"
+    }
+  ]
+}

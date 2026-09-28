@@ -273,6 +273,24 @@ def summary_path_for(output_dir, round_number):
     return os.path.join(output_dir, f"_search-summary-{SOURCE}-r{round_number}.json")
 
 
+def already_shown(output_dir, round_number):
+    """Candidate IDs this source's round 1 already handed the scout.
+
+    A second round is the scout's second look, so it never gets the first look
+    back: a repeated query once returned the same files and a whole rung showed
+    nothing new (see the same function in unsplash_fetch.py).
+    """
+    if round_number != 2:
+        return set()
+    previous = os.path.join(os.path.dirname(output_dir), f"{SOURCE}-r1", f"_search-summary-{SOURCE}-r1.json")
+    try:
+        with open(previous, encoding="utf-8") as handle:
+            rows = json.load(handle).get("results") or []
+    except (OSError, ValueError, AttributeError):
+        return set()
+    return {row.get("candidate_id") for row in rows if isinstance(row, dict) and row.get("candidate_id")}
+
+
 def main():
     parser = argparse.ArgumentParser(description="Fetch licensed images from Wikimedia Commons")
     parser.add_argument("query"); parser.add_argument("--count", type=int, default=3); parser.add_argument("--round", type=int, default=1, choices=(1, 2)); parser.add_argument("--output", default=DEFAULT_OUTPUT)
@@ -287,9 +305,12 @@ def main():
     except SourceFailure as exc:
         _atomic_write(summary_path, {"query": args.query, "queries_run": queries_run, "source": SOURCE, "round": args.round, "complete": False, "requested_count": requested, "returned_candidate_count": 0, "download_failure_count": 0, "failure_kind": exc.failure_kind, "error": str(exc), "results": [], "considered": []}, "w")
         print(f"ERROR: {exc}"); raise SystemExit(1)
+    seen = already_shown(args.output, args.round)
+    fresh = [item for item in results if item.get("title") not in seen]
     downloaded = []; failures = 0; slug = sanitize_filename(args.query)
     for index, item in enumerate(results, 1):
         if len(downloaded) >= requested: break
+        if item.get("title") in seen: continue
         if not item.get("thumb_url"): failures += 1; continue
         suffix = Path(urllib.parse.urlparse(item["thumb_url"]).path).suffix or ".jpg"
         dest = Path(args.output) / f"{slug}_{index}_{sanitize_filename(item.get('title', 'candidate'))}{suffix}"
@@ -312,7 +333,7 @@ def main():
         }
         for item in results
     ]
-    complete = len(downloaded) >= requested or len(downloaded) == len(results)
+    complete = len(downloaded) >= requested or len(downloaded) == len(fresh)
     _atomic_write(summary_path, {"query": args.query, "queries_run": queries_run, "source": SOURCE, "round": args.round, "complete": bool(complete), "requested_count": requested, "returned_candidate_count": len(results), "download_failure_count": failures, "failure_kind": None if complete else "transport", "error": None if complete else "one or more candidate downloads failed", "results": downloaded, "considered": considered}, "w")
     print(f"Summary saved to: {summary_path}")
     if not complete: raise SystemExit(1)

@@ -63,9 +63,11 @@ class TheCalibrationIsBack(unittest.TestCase):
         designer = flat(DESIGNER)
         self.assertIn("Script: write the words, not a summary of them", designer)
         self.assertIn("Not a summary of the explanation", designer)
-        # The positive voice description, not only the four-word summary.
-        self.assertIn("warm direct tone that speaks to the child in front of you", designer)
-        self.assertIn("this catches a lot of people out", designer)
+        # The positive voice description, not only the four-word summary: since 27 September
+        # 2026 it lives, word for word, in the lesson voice editor, which owns how a script sounds.
+        editor = flat(ROOT / "agents" / "lesson-voice-editor.md")
+        self.assertIn("warm direct tone that speaks to the child in front of you", editor)
+        self.assertIn("this catches a lot of people out", editor)
 
     def test_a_full_worked_script_exists_and_is_routed_before_the_first_one(self) -> None:
         voice = flat(VOICE)

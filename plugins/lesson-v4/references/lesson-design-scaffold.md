@@ -161,6 +161,8 @@ Use only kinds allowed by the selected route. The scaffold rejects an out-of-ord
 
 Each generated source unit contains a `taskStructure` placeholder. Replace it with `null` for an ordinary prompt. Replace it with the complete `sort` or `evidence-classification` object from `output-template.md` when the settled task needs protected groups, items, fields or photograph-answer links.
 
+When a teaching-sequence unit is a sort, add `"taskStructure": "sort"` to its request entry (leave the key out otherwise). That unit then arrives with the sort's `groups`, `items` and `handling` to fill, and an answer already shaped as a sort key: `kind` `exact`, `content` `null` and a `structure` whose `placements` you fill, one per item.
+
 ## Ending
 
 `endingIncluded` records the decision already made about Apply or Reflect.

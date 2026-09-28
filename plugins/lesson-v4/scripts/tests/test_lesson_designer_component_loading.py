@@ -180,7 +180,7 @@ class ActivationAndPreservationTests(unittest.TestCase):
         for needed in (
             "Settle WHICH pictures the lesson wants before any of that",
             "Lesson Designer visual-need boundary", "Your picture budget is 16 across the whole design",
-            "Smallest coherent visual set learning requires", "Never photograph a tool the engine draws",
+            "Smallest coherent visual set a task requires", "Never photograph a tool the engine draws",
             '"Normally none" is not "never"',
         ):
             self.assertIn(needed, CORE)
@@ -216,7 +216,9 @@ class ActivationAndPreservationTests(unittest.TestCase):
         for needed in (
             "model: opus\neffort: xhigh\ncodex_model: astra\ncodex_effort: low",
             "## One Completion Pass, Then Done",
-            "Then run `teacher-voice.md` → Final pre-flight check over the same strings",
+            # 27 September 2026: the voice pre-flight moved to the lesson voice editor; the
+            # completion pass keeps the teaching check on each Teach board.
+            "Check each finished Teach board's takeaway and reason against `teacher-voice.md` §5",
             "By the end, children will [performance] because the lesson gives them",
             "LESSON_DESIGN_CHECK_FAILED", "Full trace runs once at end",
         ):

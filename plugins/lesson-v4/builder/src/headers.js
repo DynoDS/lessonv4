@@ -1,7 +1,7 @@
 'use strict';
 
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, CARD } = require('./styles');
-const { HEADER_TITLE, HEADER_STARTER, starterPrompt } = require('./layout');
+const { HEADER_TITLE, HEADER_STARTER, starterPrompt, instructionNeedsTwoLines, INSTRUCTION_TWO_LINE_H } = require('./layout');
 const { drawSignal, signalWidth } = require('./signals');
 
 // Card look: a white pill hugging a header text, so the title and the task
@@ -70,19 +70,24 @@ function drawTitleHeader(slide, data, ctx) {
   }
   if (instruction) {
     let textX = 0;
+    // Two lines at the same size when one will not hold it (layout.js,
+    // instructionNeedsTwoLines); the body zone has already moved down for it.
+    const instructionH = instructionNeedsTwoLines(data)
+      ? INSTRUCTION_TWO_LINE_H
+      : HEADER_TITLE.instructionH;
     if (pills) {
       textX = drawHeaderPill(slide, instruction, SIZE_CEILINGS.instruction, {
         x: HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
-        w: HEADER_TITLE.instructionW, h: HEADER_TITLE.instructionH
+        w: HEADER_TITLE.instructionW, h: instructionH
       }, 'right', data.signal);
     }
     const right = HEADER_TITLE.instructionX + HEADER_TITLE.instructionW;
     slide.addText(instruction, {
       x: textX || HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
       w: (right - (pills ? 0.12 : 0)) - (textX || HEADER_TITLE.instructionX),
-      h: HEADER_TITLE.instructionH,
+      h: instructionH,
       fontFace: FONT, fontSize: SIZE_CEILINGS.instruction, bold: true,
-      color: COLOURS.body, align: textX ? 'left' : 'right', valign: 'middle',
+      color: COLOURS.body, align: textX ? 'left' : (instructionH > HEADER_TITLE.instructionH ? 'center' : 'right'), valign: 'middle',
       margin: 0, fit: FIT
     });
   }

@@ -55,13 +55,11 @@ Every history LO is asking for one or two of these. Naming which one you are on 
 
 **Say what changed and what stayed the same.** Change and continuity, and it is where the "what can we learn from this today" instinct properly lands. The question is the pace and extent of the change rather than a list of differences, so *how much* changed beats *what* changed. It is an idea, not a fact about one object, so it goes in `concepts` and is met on more than one pair of sources: two pictures, what is the same and what is different, then a new pair. One pair of toy plates for a whole lesson teaches the plates. Its close relative is similarity and difference *within* one period, between groups of people alive at the same time, and that one is the antidote to children treating a past society as though everybody in it lived the same life.
 
-**Say why this is remembered and something else is not.** Significance, and children reach for it constantly without being taught it. The thing they have to learn is that significance is ascribed rather than sitting inside the event: somebody decided this mattered, at some point, for a reason, and that decision can be argued with. *Why do we remember Florence Nightingale and not the other nurses?* is the shape. Like change and continuity it is an idea rather than a fact about one person, so it goes in `concepts` and is met on more than one case.
+**Say why this person or event is remembered.** Significance, at primary, is two plain things: they made a big difference to a lot of people's lives, and people still remember them for it. Teach it through the story of what happened: the problem, what the person did, and what changed for the people it helped, told the way the rest of the lesson is told. The remembering is usually one picture the lesson already has, the statue, the street name, the reason they are in our history lessons, and it gives the lesson its ending: we still remember them because of what changed.
 
-It collapses into impact, and that is the commonest slip in the subject, because "it affected a lot of people" is a different claim from "we chose to remember it". The warning on its own has not been enough: a Year 4 lesson on Lord Shaftesbury's significance built its criteria as *how many children, what changed for them, how do you know*, which is impact three times, and put the memorial fountain in Piccadilly Circus on a vocabulary card, where the one piece of ascribed significance in the lesson was spent as a hook. So significance gets a method, the way continuity does.
+The wrong idea worth refusing is that significant means famous, or kind, and it is refused in a sentence at the point the story shows what changed (`It isn't just that he was kind. It's that he changed life for thousands of children.`).
 
-**The criteria the class is given carry three things, and a lesson missing the third is teaching impact.** How much changed. How many people it changed things for. And how long it lasted, or who decided afterwards that it mattered: the memorial, the name on the building, the reason it is in this curriculum and something else is not. That third one is where significance actually lives, it is the one a designer drops, and it is usually the cheapest to teach, because the statue, the street name or the museum case is already a picture in the lesson. Then the class meets those criteria on more than one case, so a child can see that the same three questions produce a different answer for a different person.
-
-The limit: an objective can legitimately ask about impact alone (`what changed for children because of the Mines Act`), and then the lesson is about impact and does not need the third criterion. What it may not do is use the word significance, or an objective that does, and quietly teach impact instead.
+What significance is not, at primary, is a set of criteria taught as a tool (how much changed, how many people, how long it lasted), a second person brought in to compare, or an ending that asks what would have happened if they had never lived. Those are secondary-school moves; with these children they replace the story with abstractions, and a person nobody introduced turns up at the end of the lesson to be judged. The limit: an objective or a supplied sequence that names two people, or asks children to compare, gets its comparison, with the second person introduced as properly as the first.
 
 **Place it in time so it can be reasoned with.** First this in 1877, then that in 1943, which means something. Dates support an answer; they are not the answer.
 
@@ -75,7 +73,7 @@ The limit: an objective can legitimately ask about impact alone (`what changed f
 | Read a source and work out what it tells us | Content-based | Model the inference on one source, then children do it on a fresh one |
 | Weigh two accounts, or take a position the evidence does not settle | Dialogic | Stimulus then Talk, ending on the child's own reasoned view with evidence attached |
 | Compare two periods, or say what changed and what stayed the same | Content-based | Both periods run side by side, not one taught and the other produced at the end |
-| Say why somebody or something is remembered | Content-based | Teach the criteria somebody used, then apply them to a second case |
+| Say why somebody or something is remembered | Content-based | Tell the story of what they did and what changed for people, then why we still remember them |
 | Answer the enquiry's big question using what the unit has banked | Task-Centred | Sort the evidence, argue it, then write |
 
 Almost every history LO carries knowledge before it carries thinking, so the commonest shape is telling then doing rather than either alone. What history does not tolerate is doing without telling.
@@ -120,7 +118,7 @@ The instinct is right and it runs through the lesson rather than being bolted on
 
 The working rule, and it is worth applying to the LO itself as much as to the closing question: the today question is allowed when it asks why things changed, and not allowed when it asks whether people in the past were right.
 
-**Where the lesson judges a person, the class is told what is being judged.** Designing the character question out is not the same as ruling it out in the room, and children will reach for it anyway: asked how significant somebody was, a nine-year-old answers whether they were kind. So a lesson that evaluates a person says the distinction out loud, once, in the words the class hears, at the point the criteria arrive: *"We're not asking whether he was a nice man. We're asking how much difference he made."* One sentence, on the board. It costs nothing and it is the difference between thirty children judging the evidence and thirty children judging a personality. The same holds wherever a real person is weighed, praised or blamed, and not only in a significance lesson.
+**Where the lesson judges a person, the class is told what is being judged.** Designing the character question out is not the same as ruling it out in the room, and children will reach for it anyway: asked how significant somebody was, a nine-year-old answers whether they were kind. So a lesson that evaluates a person says the distinction out loud, once, in the words the class hears, at the point the story shows what changed: *"We're not asking whether he was a nice man. We're asking how much difference he made."* One sentence, on the board. It costs nothing and it is the difference between thirty children judging the evidence and thirty children judging a personality. The same holds wherever a real person is weighed, praised or blamed, and not only in a significance lesson.
 
 ---
 
@@ -219,7 +217,7 @@ A question earns its place when it catches interest, puts a genuine piece of his
 | Weak | Strong |
 |---|---|
 | What were toys like long ago? | How can we tell this toy is old? |
-| Who was Florence Nightingale? | Why do we remember Florence Nightingale and not the other nurses? |
+| Who was Florence Nightingale? | What did Florence Nightingale change, and why do we still remember her? |
 | What was life like in the Stone Age? | Why is it so difficult to find out about Stone Age people? |
 | Were the Romans good for Britain? | What changed in Britain when the Romans came, and what stayed the same? |
 | Were the Vikings brutal? | Why have the Vikings been remembered as raiders when most of them were farmers? |
@@ -238,5 +236,5 @@ A misconception from this list is checked in a lesson, not built into its spine.
 - Everything before living memory happened at roughly the same time, so Romans, Vikings and Tudors sit in one undifferentiated long ago.
 - One person caused a change on their own, with no wider context behind it. Rosa Parks taught without the civil rights movement leaves children thinking segregation was about buses.
 - Bias in a source is a fault to be caught, rather than the thing that makes the source tell you something.
-- Significance is a property the event has, rather than something people decided about it afterwards.
+- Somebody is significant because they were famous, or because they were kind.
 - Everybody alive in a period lived the same life, so one Victorian childhood stands in for all of them.

@@ -260,16 +260,16 @@ const VISUALS = {
   // usable size. The base is the real shipped world map - the same asset the
   // board and the worksheet draw - so the map a child labels in their book is
   // the map they were taught from, and its coastlines are the world's rather
-  // than anyone's idea of it. The registry forces the write-on world form even
-  // if a labelled teaching map was copied across by mistake. It is the one
-  // shared map (shared/visuals/map-svg.js) in the pack's ink profile, laid out
-  // at the width it prints, so its markers and boxes are sized for a Year 4
-  // pencil rather than as a share of the picture (13 September 2026).
+  // than anyone's idea of it. The registry picks the write-on form for the
+  // task: an ordinary world map becomes the continents-and-oceans form (so a
+  // labelled teaching map copied across by mistake cannot print answers), a
+  // world map with shaded areas and named sites keeps that evidence, and a
+  // regional map keeps its country names but drops its answer shading. It is
+  // the one shared map (shared/visuals/map-svg.js) in the pack's ink profile,
+  // laid out at the width it prints, so its markers and boxes are sized for a
+  // Year 4 pencil rather than as a share of the picture (13 September 2026).
   map: sharedPiece(map, 150, {
-    specFn: (s) => Object.assign({}, s, {
-      map: map.WORLD_KEY,
-      worksheetMode: "continents-and-oceans",
-    }),
+    specFn: map.stickInSpec,
   }),
   // 145mm wide: this is a handwriting frame, so the ruled lines set the minimum
   // usable size. The registry always forces task mode, preventing optional

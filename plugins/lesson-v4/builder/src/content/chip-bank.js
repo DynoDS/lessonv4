@@ -60,6 +60,13 @@ function chipOf(raw) {
     : { label: text, taught: false };
 }
 
+function isValidChipLabel(raw) {
+  if (typeof raw !== 'string' || raw.trim() === '') return false;
+  if (!raw.trim().startsWith('{{')) return true;
+  const match = TAUGHT_CHIP.exec(raw.trim());
+  return !!match && match[1].trim() !== '';
+}
+
 // Estimate the rendered width of a chip at a given font size: text width by the
 // character-width estimate, plus the two-sided inner padding.
 function chipWidth(label, fontPt) {
@@ -91,10 +98,22 @@ function packRows(chips, fontPt, maxW) {
 }
 
 function drawChipBank(pptx, slide, zone, data) {
-  const chips = (Array.isArray(data.chips) ? data.chips : [])
-    .map(chipOf)
-    .filter(function (c) { return c.label !== ''; });
-  if (chips.length === 0) return;
+  if (!data || !Array.isArray(data.chips) || data.chips.length === 0) {
+    throw new Error(
+      'CHIP_BANK_CONTENT: a chip bank needs a non-empty "chips" array; ' +
+      '"items" is not read here. Add the visible labels as "chips".'
+    );
+  }
+  data.chips.forEach(function (raw, index) {
+    if (!isValidChipLabel(raw)) {
+      throw new Error(
+        `CHIP_BANK_CONTENT: chip ${index + 1} must be a non-empty text label. ` +
+        'Taught-word labels must use non-empty {{word}} braces. Remove it or ' +
+        'supply a valid string in "chips".'
+      );
+    }
+  });
+  const chips = data.chips.map(chipOf);
 
   const variant = VARIANTS[data.variant] || VARIANTS[DEFAULT_VARIANT];
   const title = (data.title != null && String(data.title) !== '') ? String(data.title) : null;
@@ -204,4 +223,4 @@ function drawChipBank(pptx, slide, zone, data) {
   });
 }
 
-module.exports = { drawChipBank };
+module.exports = { drawChipBank, isValidChipLabel };

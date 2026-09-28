@@ -226,6 +226,8 @@ That settles that it is a picture. It does not settle where the picture comes fr
 
 `loadBearing` belongs to a named configuration because the same representation family may have a load-bearing live-complete state, a different load-bearing prepared state, and a non-load-bearing reminder state. A configuration with `loadBearing: true` must contain at least one non-empty `requiredFeatures` entry. A non-load-bearing configuration lists the features its form carries meaning through, or `[]` when any reasonable drawing would do: `loadBearing` says whether the lesson still works without the visual, `requiredFeatures` says what the visual must show to mean what the lesson says about it. A Year 4 vocabulary line described "the space between 0 and 10 highlighted, not the tick" with `[]`, the helper check had nothing to test, and nothing noticed that no helper could draw a highlighted space until the finished deck was reviewed. Do not copy one configuration's capability requirements onto every use of the representation.
 
+Words the drawing prints for children (labels, boxes, marks, a caption) are written in a feature inside double quotation marks, exactly as they will print, and nothing else in a feature is quoted: `"boxes reading, in order, \"A rat has plague bacteria\", \"A flea bites the rat\" and \"The flea bites a person\""`. The class view prints them for the voice editor, who may reword only the quoted words, and the slide designer copies them into the helper exactly. A drawing's geometry, and numbers the helper draws from the lesson's data (an axis, a scale, a grid), stay unquoted description.
+
 A representation use is always an explicit object:
 
 ```json
@@ -325,7 +327,7 @@ For a Skill-based concept, define the concept once:
 
 Every My Turn, Our Turn and Your Turn for that concept uses exactly the same `successCriteriaRefs` array.
 
-In any other route, `concepts` holds the idea the lesson teaches, when its learning is an idea rather than a fact: a way of seeing that transfers to cases the lesson never showed. Continuity and change, cause, significance, what a source can and cannot tell, a pattern with a reason, a fair test, the same practice carrying different meanings. Define it once, with `successCriteriaRefs` as `[]` when no criteria belong to it, and give every beat that is an instance of it that concept's `conceptRef`, including the ending beat when it is one:
+In any other route, `concepts` holds the idea the lesson teaches, when its learning is an idea rather than a fact: a way of seeing that transfers to cases the lesson never showed. Continuity and change, cause, what a source can and cannot tell, a pattern with a reason, a fair test, the same practice carrying different meanings. Define it once, with `successCriteriaRefs` as `[]` when no criteria belong to it, and give every beat that is an instance of it that concept's `conceptRef`, including the ending beat when it is one:
 
 ```json
 {

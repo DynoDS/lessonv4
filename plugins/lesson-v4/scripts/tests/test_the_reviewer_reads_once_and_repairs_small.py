@@ -230,7 +230,9 @@ class TheCardSendsTheReviewerOnlyToItsOwnReading(unittest.TestCase):
             text = self.run_card_command(card, "## Always read")
             self.assertIn("## Pride Lessons (Quality Anchor)", text)
             self.assertIn("## What a Lesson Is For", text)
-            self.assertIn("Final pre-flight check", text)
+            # 27 September 2026: the voice pre-flight is the lesson voice editor's reading, not
+            # the reviewer's, so the card no longer sends the reviewer to it.
+            self.assertNotIn("Final pre-flight check", text)
             routes = card[card.index("## Conditional teacher-preference routing"):]
             self.assertNotIn("`Pride Lessons (Quality Anchor)`", routes)
             self.assertNotIn("`What a Lesson Is For`", routes)
@@ -259,12 +261,24 @@ class TheCardSendsTheReviewerOnlyToItsOwnReading(unittest.TestCase):
 
 
 class TheReviewerRepairsAfterItJudges(unittest.TestCase):
-    def test_voice_misses_are_heard_first_and_repaired_after_the_checks(self) -> None:
+    def test_voice_is_edited_once_after_the_design_is_approved(self) -> None:
+        # 27 September 2026: the reviewer no longer sweeps the voice, so it never polishes a
+        # string in a beat about to be redesigned; the lesson voice editor runs once, on the
+        # approved design only.
         reviewer = flat(ROOT / "agents" / "design-reviewer.md")
-        self.assertIn("Hear every string in this pass, before the learning-contract checks below", reviewer)
-        self.assertIn("a string in a beat you return for redesign is about to be replaced", reviewer)
-        self.assertIn("Name its miss inside that redesign item instead", reviewer)
-        self.assertNotIn("Complete this pass before the learning-contract checks below", reviewer)
+        self.assertNotIn("Hear every string in this pass", reviewer)
+        self.assertIn("How a string sounds is not yours to judge or repair", reviewer)
+        playbook = flat(ROOT / "skills" / "make-lesson" / "playbook-lite.md")
+        self.assertIn("It runs once, on the design that goes forward", playbook)
+        self.assertIn("and no review follows it; a deterministic check holds its lane", playbook)
+        # The independent check of the release (same day): the helper check's picture route can
+        # revise the design, so the edit starts after it; a failed lane keeps what was in it.
+        self.assertIn("Start it once the helper check prints `HELPER_COVERAGE_OK`", playbook)
+        self.assertLess(playbook.index("## Phase 1.5 — Helper Check"), playbook.index("## Phase 1.6 - The Lesson Voice Editor"))
+        self.assertIn("it keeps every edit inside the lane, puts the rest and the walk-through back", playbook)
+        self.assertIn("Then run the validator again, and the script's `restore` if it fails", playbook)
+        self.assertIn("A failed voice edit never stops a run", playbook)
+        self.assertIn("does not return here: its new words keep the designer's register, a known gap", playbook)
 
     def test_a_validator_hand_back_goes_to_the_compact_repair_role(self) -> None:
         playbook = flat(ROOT / "skills" / "make-lesson" / "playbook-lite.md")

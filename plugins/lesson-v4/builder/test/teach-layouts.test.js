@@ -37,7 +37,8 @@ const EXAMPLES = {
   'lead-picture-lines': { lead: 'A candle can hold a belief and a memory.', pictures: [picture(WIDE)],
     lines: ['Many Christians light a candle to remember Jesus.', { value: 'Its light can stand for hope.', orange: true }],
     question: 'What might a candle remind someone of?', sticky: 'One object can mean more than one thing.' },
-  'picture-top-cards': { pictures: [picture(WIDE)], lines: ['Enamel is the hardest material.', 'It takes every bite.', 'It never grows back.'] },
+  'picture-top-cards': { lead: 'Enamel covers every tooth.', pictures: [picture(WIDE)], lines: ['Enamel is the hardest material.'],
+    question: 'What does it protect?', sticky: 'Enamel never grows back.' },
   'two-pictures-captions': { pictures: [picture(WIDE), picture(WIDE)], captions: ['Skipping works your heart.', 'Balancing works your muscles.'], sticky: 'Movement helps in different ways.' },
   'question-lines-picture': { question: 'What is under the enamel?', pictures: [picture(TALL)], lines: ['A layer called dentine.', 'It makes up most of the tooth.'], sticky: 'Dentine is under the enamel.' },
   'compare-pictures': { sides: [{ heading: 'enamel', picture: picture(TALL), text: 'The hard covering.' }, { heading: 'dentine', picture: picture(TALL), text: 'The layer underneath.' }], headingRole: 'vocabulary' },
@@ -195,7 +196,7 @@ function refuses(slide, pattern) {
 }
 
 test('a slot the layout cannot place is refused, not dropped', () => {
-  refuses(teachSlide('picture-top-cards', { question: 'Where would this go?' }),
+  refuses(teachSlide('three-pictures-captions', { question: 'Where would this go?' }),
     /nowhere to put "question".*Layouts that use "question"/);
 });
 
@@ -217,7 +218,7 @@ test('orange stays one explanation line, and never a question, a sticky or a tau
 
 test('counts are checked against what the layout arranges', () => {
   refuses(teachSlide('three-pictures-captions', { captions: ['One.', 'Two.'] }), /takes 3 captions; found 2/);
-  refuses(teachSlide('picture-three-cards', { lines: ['One.'], sticky: undefined }), /cards beside the picture take 3/);
+  refuses(teachSlide('picture-three-cards', { lines: ['One.'], sticky: undefined }), /cards with the picture take 3/);
 });
 
 test('two key questions fit a column layout and are refused where there is one place', () => {
@@ -285,10 +286,12 @@ test('one Teach unit carried over two slides may keep its layout', (t) => {
 const TEACH_WITH_SCRIPT = [{ kind: 'teach', sourceUnitId: 'lesson-section/teaching-sequence/unit-001',
   speakerNotes: { script: 'Say to children: think about your home.' } }];
 
-test('a half of a split Teach beat that is only a picture and a lead line is refused', (t) => {
+test('a half of a split Teach beat that is only a picture and a label is refused', (t) => {
+  // 14 September 2026: the repair left a photograph captioned `A Tudor farm household`.
   const dir = tmpDir(t, 'teach-layouts-label-');
   const specPath = writeLesson(dir, [
-    teachSlide('picture-with-statement', { designUnitId: 'lesson-section/teaching-sequence/unit-001' }),
+    teachSlide('picture-with-statement', { designUnitId: 'lesson-section/teaching-sequence/unit-001',
+      lead: 'A Tudor farm household' }),
     teachSlide('four-cards', { designUnitId: 'lesson-section/teaching-sequence/unit-001' })
   ]);
   designFor(dir, TEACH_WITH_SCRIPT);
@@ -296,6 +299,20 @@ test('a half of a split Teach beat that is only a picture and a lead line is ref
   assert.equal(result.ok, false);
   assert.match(result.stdout, /TEACH_SPLIT_LEAVES_A_LABEL/);
   assert.match(result.stdout, /"slide":1/);
+});
+
+test('a half of a paced Teach beat may be a picture and one teaching sentence', (t) => {
+  // 28 September 2026: "one slide with this picture ... And then maybe one more
+  // slide, then do bit." A whole sentence of the explanation beside its picture teaches.
+  const dir = tmpDir(t, 'teach-layouts-paced-');
+  const specPath = writeLesson(dir, [
+    teachSlide('picture-with-statement', { designUnitId: 'lesson-section/teaching-sequence/unit-001',
+      lead: 'In Victorian London, lots of families lived squashed together in small, dirty houses.' }),
+    teachSlide('four-cards', { designUnitId: 'lesson-section/teaching-sequence/unit-001' })
+  ]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.doesNotMatch(result.stdout || '', /TEACH_SPLIT_LEAVES_A_LABEL/);
 });
 
 test('a Teach card that repeats the slide title is refused', (t) => {

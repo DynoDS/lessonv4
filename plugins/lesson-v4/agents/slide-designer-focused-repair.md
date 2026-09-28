@@ -42,7 +42,9 @@ Read reference material only under these triggers, and only the affected rules o
 
 - size, prominence, board-distance or accidental-dead-space faults: `slide-visual-sizing.md`;
 - a template, zone or content-object contract fault: that contract in `templates.md`;
-- an answer/reveal, slide-splitting or composition-rule fault, **or any repair that adds or removes a slide**: that rule and its regression tells in `slide-composition-playbook.md`. A finding names what would not fit, never the repair you choose, so a split arrives looking like a sizing job;
+- `ORDINARY_REVEAL_UNPAIRED` or another ordinary reveal fault: the `text` or question-helper `revealPair` contract in `templates.md` for every changing block on both adjacent slides;
+- an answer/reveal, slide-splitting or composition-rule fault, **or any repair that changes grouping, template, zones or slide count**: the affected rule and its regression tells in `slide-composition-playbook.md`, including §4 for task/material grouping and §10 for either state of a question/answer pair. A finding names what would not fit, never the repair you choose, so a regrouping can arrive as a sizing job;
+- a repair that changes task hierarchy, card boundaries, grouping or the placement of a repeated reference: the matching sections of `teacher-slide-visual-profile.md`;
 - a representation fault: `slide-representations.md`, plus `modelling-formats.md` only when the affected source unit has a non-null modelling state whose interpretation is part of the repair;
 - success-criteria or sticky-knowledge placement: `slide-success-criteria.md`;
 - a speaking character, a voiced claim, a misconception, a disagreement, a prediction to judge, an advice-to-a-character move, or anyone who simply says what they think, gives their reason or asks a question: `slide-speech-and-characters.md`;
@@ -79,6 +81,8 @@ check passed, and the comparison was gone. The failure prints what to do next.
 ## Repair and check
 
 Change only the affected slide data and unavoidable consequences of that change. Leave unrelated slide objects semantically unchanged.
+
+After a layout repair, recheck the resulting task relationships, not only text survival: a shared prompt still governs the same coherent set, and labels still name genuine tasks. If either state of an ordinary question/answer pair changes layout, repair its counterpart consequentially and verify shared geometry, item identity and static content under the playbook's continuity rule. Inspect the repaired rendered slide or pair using the assignment's render route; if page evidence is unavailable, report that limit rather than claiming a visual check.
 
 When the repair splits a Teach unit across two slides, the split falls where the teaching turns, never at the page boundary, and to the shape the rule sets out (`slide-composition-playbook.md` → `A Teach beat splits where its teaching turns`). A half the check refuses was cut in the wrong place, not short of room.
 

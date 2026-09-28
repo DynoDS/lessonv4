@@ -312,6 +312,22 @@ A group needs at least two Parts, and a group's Parts must run consecutively in
 reading order. Both mistakes are refused rather than guessed at, since either
 way round the engine would be inventing a relationship or discarding one.
 
+A group's shared task line goes on its first Part as `groupPrompt`, never in a
+Part's own text. It prints once as the whole question with the Parts beneath
+it, and the answer key still answers the Parts:
+
+```json
+{ "question": true, "questionGroupId": "qg-2", "groupPrompt": "Write each number as Roman numerals.",
+  "helper": "questions", "showNumbers": false, "items": ["62"] },
+{ "question": true, "questionGroupId": "qg-2", "helper": "questions", "showNumbers": false, "items": ["85"] }
+```
+
+```text
+(2) Write each number as Roman numerals.
+(2a) 62
+(2b) 85
+```
+
 Put the ID on the object carrying `question: true`, so it covers the Part as a
 whole. Where a Part's body is a helper holding several items, wrap it in a
 `stack` first — otherwise the ID would sit on a set that takes a run of numbers
@@ -361,6 +377,7 @@ reported rather than just the first.
 | `QUESTION_LABEL_INVALID` | A key entry's question label is empty or unreadable. |
 | `QUESTION_GROUP_INVALID` | A `questionGroupId` holds only one Part. Either it needs its other Parts, or it is an ordinary question and carries no ID. |
 | `QUESTION_GROUP_NONCONTIGUOUS` | A group's Parts are split apart by another question. The Parts of one Question group run consecutively. |
+| `GROUP_PROMPT_MISPLACED` | A `groupPrompt` sits somewhere other than the first Part of a Question group. |
 | `NUMBERING_CONFLICT` | A grouped Part also sets its own `number`/`startAt`, or a `questionGroupId` sits on a helper holding a SET of questions. |
 | `TWO_PAGE_EXCEPTION_REQUIRED` | A sheet has `pages` without `centralWriteOnVisualException`. Ordinary overflow never earns a second page. |
 | `TWO_PAGE_EXCEPTION_INVALID` | The exception is present but does not describe exactly two pages, or its named visual/reason is missing. |

@@ -54,6 +54,7 @@ const {
   validatePresentationSpec
 } = require('./presentation-text');
 const { MIN_FONT_PT } = require('./styles');
+const { isValidChipLabel } = require('./content/chip-bank');
 
 // Walk every nested object/array and call fn(value) for each value stored
 // under the given key, wherever it sits (body, stacks, rows, insets, vocab).
@@ -67,6 +68,17 @@ function forEachValue(node, key, fn) {
     if (k === key) fn(node[k], node);
     forEachValue(node[k], key, fn);
   });
+}
+
+// Visit typed helper objects at any depth, including stacks and rows.
+function forEachTypedObject(node, type, fn) {
+  if (Array.isArray(node)) {
+    node.forEach((item) => forEachTypedObject(item, type, fn));
+    return;
+  }
+  if (!node || typeof node !== 'object') return;
+  if (node.type === type) fn(node);
+  Object.keys(node).forEach((key) => forEachTypedObject(node[key], type, fn));
 }
 
 // Every string value anywhere in the slide object.
@@ -294,8 +306,46 @@ function validateLesson(lesson, lessonDir) {
       return;
     }
 
+    // Lesson slide templates read their content slots directly from the slide
+    // object (for example `body`, `primary` and `secondary`). A `zones` wrapper
+    // is used by other lesson-v4 artefacts, but the slide renderer does not
+    // unwrap it; nested slide content would therefore pass validation and be
+    // silently omitted from the deck.
+    if (Object.prototype.hasOwnProperty.call(slide, 'zones')) {
+      const zoneNames = slide.zones && typeof slide.zones === 'object' && !Array.isArray(slide.zones)
+        ? Object.keys(slide.zones)
+        : [];
+      const examplePath = zoneNames.length ? `zones.${zoneNames[0]}` : 'zones';
+      const destination = tpl === 'body-full' && zoneNames.includes('body')
+        ? 'move that content to "body"'
+        : 'put each content object directly on the slide using the slot name required by this template';
+      errors.push(
+        `slide ${n}: "zones" is not a supported lesson-slide content wrapper. ` +
+        `The builder reads template slots directly from the slide, so content at "${examplePath}" is ignored and may leave the slide blank; ${destination}.`
+      );
+    }
+
     validatePresentationFields(slide, n, errors);
     validateFontCeilings(slide, n, errors);
+
+    // A malformed chip bank otherwise renders as an empty patch of slide:
+    // the drawing helper consumes `chips`, while designers have supplied
+    // `items` in at least one real spec. Check every helper, including nested
+    // stack/row content, before rendering.
+    forEachTypedObject(slide, 'chip-bank', (bank) => {
+      if (!Array.isArray(bank.chips) || bank.chips.length === 0) {
+        const wrongField = Array.isArray(bank.items)
+          ? ' The supplied "items" field is not read by this helper.'
+          : '';
+        errors.push(`slide ${n}: a chip bank has no non-empty "chips" array, so its labels would not appear.${wrongField} Add the visible labels as "chips".`);
+        return;
+      }
+      bank.chips.forEach((chip, index) => {
+        if (!isValidChipLabel(chip)) {
+          errors.push(`slide ${n}: chip ${index + 1} in a chip bank is not a readable text label, so it would be omitted. Supply a non-empty string in "chips" or remove that entry.`);
+        }
+      });
+    });
 
     // Invented photo paths: the picture stage never obtains a file nobody promised, so
     // the slide would show a grey box (essential) or a silent gap (non-essential).
@@ -358,7 +408,7 @@ function validateLesson(lesson, lessonDir) {
     if (/^speech-bubbles-\d$/.test(tpl)) {
       forEachValue(slide, 'name', (v) => {
         if (typeof v === 'string' && v.trim().toLowerCase() === 'you') {
-          errors.push(`slide ${n}: a speech-bubble speaker is named "You" — every speaker is Mr Sear, Miss Brooker, Bailey, or the design's named child (see references/slide-speech-and-characters.md).`);
+          errors.push(`slide ${n}: a speech-bubble speaker is named "You" — every speaker is one of the class characters (a boy, a girl or Bailey the dog) carrying the design's named child (see references/slide-speech-and-characters.md).`);
         }
       });
     }
@@ -497,7 +547,7 @@ function validateLesson(lesson, lessonDir) {
       const hasGreenHelper = (function scan(node) {
         if (Array.isArray(node)) return node.some(scan);
         if (!node || typeof node !== 'object') return false;
-        if (node.type === 'sort-board') return true;
+        if (node.type === 'sort-board' && !Array.isArray(node.bank)) return true;
         return Object.keys(node).some((key) => scan(node[key]));
       })(slide);
       if (!hasGreenHelper && !strings.some((s) => s.includes('||'))) {

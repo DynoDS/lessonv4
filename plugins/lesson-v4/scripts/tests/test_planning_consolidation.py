@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 DESIGNER = (ROOT / 'agents/lesson-designer.md').read_text(encoding='utf-8')
 VOICE = (ROOT / 'references/teacher-voice.md').read_text(encoding='utf-8')
+VOICE_EDITOR = (ROOT / 'agents/lesson-voice-editor.md').read_text(encoding='utf-8')
 PLAN = DESIGNER.split('## Write the lesson, then the contract', 1)[1].split('### Complete the picture contract here', 1)[0]
 
 
@@ -14,9 +15,12 @@ class PlanningConsolidationTests(unittest.TestCase):
         self.assertIn('using the decision inventory at the end of this section', PLAN)
         self.assertEqual(PLAN.count('Then the decisions the walk-through does not show'), 1)
         self.assertNotIn("settle the lesson's learning chain:\n\n-", PLAN)
-        # The walk-through is written before the read-back, which is written
-        # before the closing decisions: the lesson first, then the checks.
-        self.assertLess(PLAN.index('The journey, in one line'), PLAN.index('Then the read-back'))
+        # The journey, the retelling and the telling come before any part is
+        # chosen (28 September 2026), and open the walk-through, which is
+        # written before the read-back, then the closing decisions.
+        self.assertLess(DESIGNER.index('The journey, in one line'), DESIGNER.index('## Write the lesson, then the contract'))
+        self.assertLess(DESIGNER.index('Then the retelling, before a word of the telling'), DESIGNER.index('**Tell the lesson before any slide.**'))
+        self.assertLess(PLAN.index('The journey, the retelling and the telling open the record'), PLAN.index('Then the read-back'))
         self.assertLess(PLAN.index('Then the read-back'), PLAN.index('Then the decisions the walk-through does not show'))
 
     def test_unique_decisions_from_both_old_inventories_survive(self):
@@ -52,7 +56,8 @@ class PlanningConsolidationTests(unittest.TestCase):
         ): self.assertIn(clause, PLAN)
         self.assertIn('Do not duplicate mechanical IDs', PLAN)
         self.assertIn('Use the checks below together', DESIGNER)
-        self.assertIn('Final pre-flight check', DESIGNER)
+        # 27 September 2026: the voice pre-flight is the lesson voice editor's now.
+        self.assertIn('Final pre-flight check', VOICE_EDITOR)
 
     def test_requirement_owner_preserves_commission_coverage_and_suggestion_boundary(self):
         owner = DESIGNER.split('## Your Role as Decision-Maker', 1)[1].split('\n---', 1)[0]
@@ -60,8 +65,8 @@ class PlanningConsolidationTests(unittest.TestCase):
             'Binding is marked by the teacher, never inferred from grammar',
             'must be honoured within safeguarding, factual accuracy and the approved curriculum objective',
             'The facts of the commission bind the same way',
-            'authoritative on objective, coverage and sequence',
-            'Flag a departure from its curriculum coverage, not a change of activity',
+            'It is authoritative on the objective and on the order of the unit',
+            'the content it lists as much as its activities, is material you judge',
             'Declining a suggestion needs no flag',
         ): self.assertIn(clause, owner)
         self.assertEqual(DESIGNER.count('The facts of the commission bind the same way'), 1)
@@ -80,7 +85,7 @@ class PlanningConsolidationTests(unittest.TestCase):
         routing = VOICE.split('## How to read this file', 1)[1].split('\n---', 1)[0]
         self.assertIn('a question or an instruction a child acts on opens §6', routing)
         self.assertIn('read sections 1-3, 15 and 17', routing)
-        self.assertIn('Read §4 once', routing)
+        self.assertIn('§4 belongs to the lesson voice editor', routing)
         self.assertNotIn('§6 was missing from that list', routing)
         self.assertIn('# 16. Calibrated examples', VOICE)
 

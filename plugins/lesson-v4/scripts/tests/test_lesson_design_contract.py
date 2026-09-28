@@ -2038,7 +2038,8 @@ def test_written_voice_contract_is_canonical_and_old_sentence_quota_is_gone():
     lesson_designer = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
     reviewer = (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8")
     for marker in (
-        "Write for understanding, not merely decodability.",
+        "Write for this class, and for the child in it who understands least.",
+        "write for understanding, not decodability",
         "Glanceable means low mental clutter, not a sentence-length quota.",
         "Put challenge in the thinking, not in avoidably difficult wording.",
         "Humour, personality, emojis, callbacks and small asides are optional tools, never quotas.",

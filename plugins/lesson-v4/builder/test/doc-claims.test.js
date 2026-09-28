@@ -405,11 +405,13 @@ test('blue is a question or a short task, and a longer instruction is black', ()
     !PLAYBOOK_MD.includes('Every child-facing question and pupil instruction carries the blue'),
     'the playbook must not keep sending instructions to house blue'
   );
-  // The starter is questions all the way down, so blue marks nothing there.
-  assert.match(TEACHER_PROFILE_MD, /The starter is the one place a question is normally black/);
-  assert.match(TEACHER_PROFILE_MD, /alternate them black, blue, black, blue/);
-  // Preferences' pointer names the exception, because a pointer is read first.
-  assert.match(PREFERENCES_MD, /the starter's questions, which stay black or alternate/);
+  // Starter colour serves the task's internal hierarchy before peer separation.
+  assert.match(TEACHER_PROFILE_MD, /Starter instructions are normally black/);
+  assert.match(TEACHER_PROFILE_MD, /instruction\/material\/condition hierarchy/);
+  assert.match(TEACHER_PROFILE_MD, /alternation is optional only when/);
+  assert.match(TEACHER_PROFILE_MD, /Supplied values may use any consistent, legible colour/);
+  // Preferences routes this scoped exception to its visual owner.
+  assert.match(PREFERENCES_MD, /starter's instruction\/material\/condition hierarchy/);
 });
 
 test('the composition regressions from the electrical-appliances deck stay fixed', () => {

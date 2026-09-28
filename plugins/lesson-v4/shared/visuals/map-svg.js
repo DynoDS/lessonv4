@@ -50,6 +50,7 @@
 const fs = require('fs');
 const maps = require('./map-annotations');
 const pixels = require('./map-pixels');
+const regional = require('./map-regional-layers');
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor, MM_TO_PT } = require('./surface-profiles');
 
@@ -453,8 +454,38 @@ function resolveGlobe(d) {
   };
 }
 
+// Select the task without dropping geographical evidence from site maps.
+// A regional map is copied as the lesson drew it: its shaded region and country
+// names are what the child reads to answer ("which other country has some
+// Amazon rainforest?"), so removing them would remove the task. A lesson where
+// the child does the shading asks for worksheetMode 'regional-marking' itself.
+function stickInSpec(d = {}) {
+  if (d.presentation === 'regional-layers' || d.worksheetMode === 'regional-marking') return { ...d };
+  const sites = d.map === WORLD_KEY && d.presentation === 'seven-continent-world'
+    && Array.isArray(d.annotations) && d.annotations.some(a => a.kind === 'area')
+    && d.annotations.filter(a => a.kind === 'point').length >= 2;
+  if (d.worksheetMode === 'world-sites' || sites) return { ...d, worksheetMode: 'world-sites' };
+  return { ...d, map: WORLD_KEY, worksheetMode: 'continents-and-oceans' };
+}
+
+function resolveWorldSites(d) {
+  if ((d.annotations || []).some(a => !['area', 'point'].includes(a.kind)))
+    throw new Error('MAP_WORLD_SITES_INVALID: use area evidence and points without response lines or rings.');
+  const points = (d.annotations || []).filter(a => a.kind === 'point');
+  if (points.length < 2 || points.some(a => !String(a.label || '').trim()))
+    throw new Error('MAP_WORLD_SITES_INVALID: provide at least two named sites.');
+  const s = resolveWorld({ ...d, presentation: 'seven-continent-world',
+    annotations: d.annotations.map(a => a.kind === 'point' ? { ...a, colour: 'blue' } : a),
+    clueMarkers: [], caption: '', focus: null });
+  if (!s.annotations.some(a => a.kind === 'area') || !s.showEquator || !s.mapKeyEntries.length)
+    throw new Error('MAP_WORLD_SITES_INVALID: retain area evidence, labelled Equator and key.');
+  return { ...s, siteMarking: true };
+}
+
 function resolve(spec) {
+  if (spec && spec.worksheetMode === 'world-sites') return resolveWorldSites(spec);
   const d = spec || {};
+  if (d.presentation === 'regional-layers' || d.worksheetMode === 'regional-marking') return regional.resolve(d);
   // The write-on form wins over any presentation a copied spec carries: the
   // stick-in pack forces it so that an answer map pasted in from a slide cannot
   // print thirty pre-labelled copies.
@@ -583,6 +614,7 @@ function widthForHeight(compose, maxW, ceiling, T, what) {
 }
 
 function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
+  if (spec.presentation === 'regional-layers' || spec.worksheetMode === 'regional-marking') return regional.build(spec, typeof profileOrSurface === 'string' ? profileFor(profileOrSurface, box || { widthPt: 500 }) : profileOrSurface, tightSvg).layout;
   const profile = typeof profileOrSurface === 'string' ? profileFor(profileOrSurface, box || { widthPt: 500 }) : profileOrSurface;
   const s = resolve(spec);
   const palette = paletteFor(profile, s);
@@ -693,6 +725,19 @@ function layoutMap(s, profile, T, ceiling, palette) {
   if (!(L.map.w >= MIN_MAP_W * T)) {
     throw crowding('MAP_ZONE_TOO_SMALL: ' + what + ' would print ' + f2(L.map.w / 72) + 'in wide, too small to read. Give it a bigger space.');
   }
+  // A 4mm pencil ring plus 1mm clear space must fit between sites. Never
+  // move the sites to make room, because their position is the evidence.
+  if (s.siteMarking) {
+    const sites = s.annotations.filter(a => a.kind === 'point');
+    const clearance = 5 * MM_TO_PT;
+    for (let i = 0; i < sites.length; i += 1) {
+      for (const other of sites.slice(i + 1)) {
+        const distance = Math.hypot((sites[i].at[0] - other.at[0]) * L.map.w,
+          (sites[i].at[1] - other.at[1]) * L.map.h);
+        if (distance < clearance) throw crowding('MAP_WORLD_SITES_TOO_SMALL: give the site map more width for pencil marks.');
+      }
+    }
+  }
   // Words that must print on one row and do not fit the picture at this size.
   const tooWide = [];
   if (L.footer && !fitsLines(L.footer.lines, L.w, T, bold)) tooWide.push('the joined-edge note');
@@ -768,7 +813,7 @@ function layoutMap(s, profile, T, ceiling, palette) {
   // read "Manaus" and could not see where Manaus was.
   s.annotations.forEach((mark) => {
     if (mark.kind !== 'point') return;
-    const r = Math.max(DOT_R_MIN_PT, DOT_R * T) * 1.6;
+    const r = Math.max(Math.max(DOT_R_MIN_PT, DOT_R * T) * 1.6, s.siteMarking ? 2.5 * MM_TO_PT : 0);
     obstacles.push({ x: fx(mark.at) - r, y: fy(mark.at) - r, w: 2 * r, h: 2 * r });
   });
 
@@ -1253,6 +1298,7 @@ function drawGlobe(L, id) {
 }
 
 function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
+  if (spec.presentation === 'regional-layers' || spec.worksheetMode === 'regional-marking') return regional.build(spec, typeof profileOrSurface === 'string' ? profileFor(profileOrSurface, box || { widthPt: 500 }) : profileOrSurface, tightSvg);
   const L = describeLayout(spec, profileOrSurface, box);
   const id = 'map' + hashOf(cacheKey(spec, L.profile));
   const { defs, parts } = L.s.mode === 'globe' ? drawGlobe(L, id) : drawMap(L, id);
@@ -1283,4 +1329,5 @@ module.exports = {
   MAX_OCEAN_LABELS,
   MAX_SEA_LABELS,
   MAX_CLUE_MARKERS,
+  stickInSpec,
 };

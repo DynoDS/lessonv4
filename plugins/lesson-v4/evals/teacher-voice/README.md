@@ -63,7 +63,7 @@ wrong produced three rounds of misleading results in September 2026:
 
 - **A beat label is a heading, not a string.** The class view prints it as
   `### <label>`. The same wording may reach a slide as its title, but the
-  reviewer is never asked to judge it as voice. A fixture must not contain it.
+  harness never asks for a verdict on it. A fixture must not contain it.
 - **One authored string may run over several lines.** The packet prints it as
   several `> ` lines closed by a blank line, and the reviewer takes one
   decision on the whole thing. Splitting it on the line break invents cases

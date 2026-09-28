@@ -197,7 +197,7 @@ class TheRuleReachesEveryAgentThatCouldBreakItTests(unittest.TestCase):
         had noticed could be passed by rejecting a silly option. A term's exact
         wording used on a fresh case is the one exception."""
         text = flat(DESIGN_REVIEWER)
-        self.assertIn("A restatement is never preserved as a check", text)
+        self.assertIn("A restatement may remain as supported rehearsal, but cannot substantiate an independent check", text)
         self.assertIn("the check is the term used on a fresh case, not the sentence said back", text)
         self.assertNotIn("the design saying so makes it right", text)
 

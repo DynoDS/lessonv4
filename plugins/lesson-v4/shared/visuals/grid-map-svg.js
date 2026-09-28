@@ -17,8 +17,8 @@
 // square): the easting "32" sits on its vertical line, the northing "51" on its
 // horizontal line, and the square referenced by "32 51" is the cell sitting
 // UP-AND-TO-THE-RIGHT of where those two lines cross. A feature whose square is
-// [32, 51] is drawn in exactly that cell. The optional highlightSquare ring lands
-// on that same bottom-left corner, because the Teach slide points to that corner
+// [32, 51] is drawn in exactly that cell. The optional highlightSquare rings that
+// cell and dots its bottom-left corner, because the Teach slide points to that corner
 // while saying "along the corridor, then up the stairs". If the numbers were
 // centred in cells instead of on the lines, the lesson's core method becomes
 // unteachable — so the corner/line placement is non-negotiable.
@@ -46,9 +46,9 @@
 //                   never colour-codes the answer away. `icon` is an optional
 //                   short glyph drawn above the name; omit it and a neutral dot is
 //                   drawn instead.
-//   highlightSquare optional [easting, northing] — a ring is drawn on the
-//                   BOTTOM-LEFT corner of this square, for the Teach slide that
-//                   models reading a reference off that exact corner.
+//   highlightSquare optional [easting, northing] — a ring is drawn round this
+//                   square and a dot on its BOTTOM-LEFT corner, for the Teach
+//                   slide that models reading a reference off that exact corner.
 
 // ─── CONSTANTS (geometry units; the whole drawing scales on placement) ──────
 const CELL          = 100;          // side of one grid square
@@ -84,7 +84,8 @@ const ICON_FONT     = CELL * 0.30;  // optional feature icon glyph
 
 const RING_COLOUR   = '#E8821E';    // warm highlight ring — pops off blue/grey
 const RING_W        = CELL * 0.075; // ring stroke
-const RING_R        = CELL * 0.27;  // ring radius on the corner
+const RING_R        = CELL * 0.47;  // ring round the whole highlighted square
+const CORNER_DOT_R  = CELL * 0.075; // the reading corner of that square
 // ─── END CONSTANTS ──────────────────────────────────────────────────────────
 
 const FONT = 'Comic Sans MS, Comic Sans, Chalkboard SE, sans-serif';
@@ -222,15 +223,24 @@ function tightSvg(data, profile) {
     const cj = iy(ft.square[1]);   // row index (line index of the bottom edge)
     const cx = px(ci + 0.5);
     const cy = py(cj + 0.5);
-    drawFeature(parts, cx, cy, CELL, ft);
+    // A bridge, ford or ferry is where people cross the water, so its marker sits
+    // ON the river where it passes through the square, not at the square's
+    // centre beside it (a map-features deck, 28 September 2026).
+    const onWater = CROSSING.test(String(ft.name || '')) ? riverPointInCell(riverPts, ci, cj, px, py) : null;
+    drawFeature(parts, cx, cy, CELL, ft, onWater);
   }
 
-  // ── Highlight ring on the bottom-left CORNER of the highlight square — the
-  //    exact crossing the Teach slide points to.
+  // ── Highlight: a ring round the whole square, so the class sees WHAT is being
+  //    found, and a solid dot on its bottom-left corner, the crossing the
+  //    reference is read from ("along the corridor, then up the stairs"). The ring
+  //    used to sit on the corner alone, and on the board it read as a circle that
+  //    had missed the bridge (the teacher, 28 September 2026: "was it meant to
+  //    circle the bridge?").
   if (s.highlight) {
-    const hx = px(ix(s.highlight[0]));
-    const hy = py(iy(s.highlight[1]));
-    parts.push(`<circle cx="${f(hx)}" cy="${f(hy)}" r="${f(RING_R)}" fill="none" stroke="${C.ring}" stroke-width="${f(RING_W)}"/>`);
+    const ci = ix(s.highlight[0]);
+    const cj = iy(s.highlight[1]);
+    parts.push(`<circle cx="${f(px(ci + 0.5))}" cy="${f(py(cj + 0.5))}" r="${f(RING_R)}" fill="none" stroke="${C.ring}" stroke-width="${f(RING_W)}"/>`);
+    parts.push(`<circle cx="${f(px(ci))}" cy="${f(py(cj))}" r="${f(CORNER_DOT_R)}" fill="${C.ring}"/>`);
   }
 
   // ── Grid numbers LAST, so they sit clearly on top of everything in the margins.
@@ -252,14 +262,22 @@ function tightSvg(data, profile) {
   return { svg, aspect: w / h, w, h };
 }
 
+// The picture renderer (librsvg, via sharp) ignores `dominant-baseline`, so a
+// number asked to sit "centred" on its line sat on it like a shelf: every northing
+// read above its own line and the top one poked out of the frame (the teacher saw
+// the "45" cut in half, 28 September 2026). Centre by hand instead: a baseline
+// CENTRE_SHIFT of the font below the point puts the middle of the digits there.
+const CENTRE_SHIFT = 0.36;
+function centredY(y, font) { return y + font * CENTRE_SHIFT; }
+
 function numberText(x, y, value) {
-  return `<text x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${NUM_COLOUR}">${escapeXml(value)}</text>`;
+  return `<text x="${f(x)}" y="${f(centredY(y, NUM_FONT))}" text-anchor="middle" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${NUM_COLOUR}">${escapeXml(value)}</text>`;
 }
 
 // Draw a feature inside its cell: an optional icon glyph (or a neutral marker
 // dot) with the name on up to two lines beneath, all sized to sit inside the cell
 // without spilling into its neighbours or over the grid lines.
-function drawFeature(parts, cx, cy, cell, ft) {
+function drawFeature(parts, cx, cy, cell, ft, markAt) {
   const name = String(ft.name || '');
   const maxW = cell * 0.92;           // keep the label inside its own cell
 
@@ -278,11 +296,17 @@ function drawFeature(parts, cx, cy, cell, ft) {
   const markH = hasIcon ? ICON_FONT : MARK_R * 2;
   const gap = cell * 0.05;
   const stackH = markH + gap + labelBlockH;
-  const top = cy - stackH / 2;
+  let top = cy - stackH / 2;
+  // A feature pinned to a point (a bridge on the river) puts its marker on that
+  // point and hangs its label below it, as long as the label still fits the cell.
+  if (markAt) {
+    top = markAt.y - markH / 2;
+    cx = markAt.x;
+  }
 
   if (hasIcon) {
     const iy = top + ICON_FONT * 0.5;
-    parts.push(`<text x="${f(cx)}" y="${f(iy)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(ICON_FONT)}">${escapeXml(ft.icon)}</text>`);
+    parts.push(`<text x="${f(cx)}" y="${f(centredY(iy, ICON_FONT))}" text-anchor="middle" font-family="${FONT}" font-size="${f(ICON_FONT)}">${escapeXml(ft.icon)}</text>`);
   } else {
     const my = top + MARK_R;
     parts.push(`<circle cx="${f(cx)}" cy="${f(my)}" r="${f(MARK_R)}" fill="${MARK_COLOUR}"/>`);
@@ -290,9 +314,45 @@ function drawFeature(parts, cx, cy, cell, ft) {
 
   let ly = top + markH + gap + lineH * 0.5;
   for (const ln of lines) {
-    parts.push(`<text x="${f(cx)}" y="${f(ly)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(font)}" font-weight="bold" fill="${MARK_COLOUR}">${escapeXml(ln)}</text>`);
+    parts.push(`<text x="${f(cx)}" y="${f(centredY(ly, font))}" text-anchor="middle" font-family="${FONT}" font-size="${f(font)}" font-weight="bold" fill="${MARK_COLOUR}">${escapeXml(ln)}</text>`);
     ly += lineH;
   }
+}
+
+const CROSSING = /\b(bridge|ford|ferry|stepping stones)\b/i;
+
+// The point of the drawn river nearest the middle of cell (ci, cj), or null when
+// the river does not pass through that cell. Samples the river along the same
+// smoothed curve it is drawn with, so the marker lands on the ribbon itself.
+function riverPointInCell(pts, ci, cj, px, py) {
+  if (!pts || pts.length < 2) return null;
+  const x0 = px(ci), x1 = px(ci + 1), y0 = py(cj + 1), y1 = py(cj);
+  const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+  let best = null;
+  for (const q of sampleCurve(pts, 40)) {
+    if (q.x < x0 || q.x > x1 || q.y < y0 || q.y > y1) continue;
+    const d = (q.x - mx) * (q.x - mx) + (q.y - my) * (q.y - my);
+    if (!best || d < best.d) best = { x: q.x, y: q.y, d: d };
+  }
+  return best;
+}
+
+// Points along the Catmull-Rom curve smoothPath draws, `steps` per segment.
+function sampleCurve(pts, steps) {
+  const out = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    const c1 = { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 };
+    const c2 = { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 };
+    for (let k = 0; k <= steps; k++) {
+      const u = k / steps, v = 1 - u;
+      out.push({
+        x: v * v * v * p1.x + 3 * v * v * u * c1.x + 3 * v * u * u * c2.x + u * u * u * p2.x,
+        y: v * v * v * p1.y + 3 * v * v * u * c1.y + 3 * v * u * u * c2.y + u * u * u * p2.y
+      });
+    }
+  }
+  return out;
 }
 
 // Wrap a feature name onto at most two lines, breaking on spaces or slashes so a

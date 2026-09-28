@@ -88,6 +88,38 @@ function starterHeaderHeight(data) {
   return HEADER_STARTER_H + (starterPrompt(data) ? STARTER_PROMPT_H : 0);
 }
 
+// A header instruction that does not fit on one line takes two.
+//
+// The instruction box is 5.06in wide and one line tall, so at its 16pt it held
+// about 43 characters, and every pupil instruction a Year 4 geography run wrote
+// for it (46 to 77 characters) was refused and moved into the body, three
+// repair passes running (27 September 2026). Shrinking it is not the answer:
+// 16pt is already the smallest size a header cue prints at. So a longer cue
+// wraps to a second line at the same size, its box and pill grow to hold both
+// lines, and the body starts a little lower on that slide only. Every slide
+// whose instruction fits one line is laid out exactly as before. The fixed
+// templates that place their own content start it at 0.70in or lower, which
+// already clears a two-line pill, so only the body zone below has to move.
+const INSTRUCTION_PT = 16;
+const INSTRUCTION_TEXT_INSET = 0.12;
+const INSTRUCTION_TWO_LINE_H = 0.62;
+const HEADER_TITLE_TWO_LINE_H = 0.74;
+
+function instructionNeedsTwoLines(data) {
+  const text = data && typeof data.instruction === 'string' ? data.instruction.trim() : '';
+  if (!text) return false;
+  const { textBoxWidthIn } = require('./glyph-width');
+  // The narrowest the text frame is drawn: inside the pill's inset, and after a
+  // signal icon when the slide names one.
+  const iconRoom = data.signal ? 0.55 : 0;
+  const width = HEADER_TITLE.instructionW - INSTRUCTION_TEXT_INSET - iconRoom;
+  return textBoxWidthIn(text, INSTRUCTION_PT, true) > width;
+}
+
+function titleHeaderHeight(data) {
+  return instructionNeedsTwoLines(data) ? HEADER_TITLE_TWO_LINE_H : HEADER_TITLE_H;
+}
+
 function bodyZone(headerStyle, data) {
   if (headerStyle === 'starter') {
     const headerH = starterHeaderHeight(data);
@@ -98,11 +130,12 @@ function bodyZone(headerStyle, data) {
       h: SLIDE_H - MARGIN_BOTTOM - (MARGIN_TOP + headerH)
     };
   }
+  const headerH = titleHeaderHeight(data);
   return {
     x: MARGIN_X,
-    y: HEADER_TITLE_H,
+    y: headerH,
     w: CONTENT_W,
-    h: SLIDE_H - MARGIN_BOTTOM - HEADER_TITLE_H
+    h: SLIDE_H - MARGIN_BOTTOM - headerH
   };
 }
 
@@ -112,5 +145,6 @@ module.exports = {
   HEADER_TITLE_H, HEADER_STARTER_H, STARTER_PROMPT_H,
   HEADER_TITLE, HEADER_STARTER,
   starterPrompt, starterHeaderHeight,
+  instructionNeedsTwoLines, titleHeaderHeight, INSTRUCTION_TWO_LINE_H,
   bodyZone
 };

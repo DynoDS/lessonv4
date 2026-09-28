@@ -165,6 +165,26 @@ def summary_path_for(output_dir, round_number):
     return os.path.join(output_dir, f"_search-summary-{SOURCE}-r{round_number}.json")
 
 
+def already_shown(output_dir, round_number):
+    """Candidate IDs this source's round 1 already handed the scout.
+
+    A second round is the scout's second look, so it never gets the first look
+    back. On 27 September 2026 a Houses of Parliament picture ran `unsplash`
+    round 2 with the round 1 query and received the same two files, so one of
+    its four rungs showed the scout nothing new. The compiled steps sit side by
+    side (`unsplash-r1`, `unsplash-r2`), which is where round 1 is read from.
+    """
+    if round_number != 2:
+        return set()
+    previous = os.path.join(os.path.dirname(output_dir), f"{SOURCE}-r1", f"_search-summary-{SOURCE}-r1.json")
+    try:
+        with open(previous, encoding="utf-8") as handle:
+            rows = json.load(handle).get("results") or []
+    except (OSError, ValueError, AttributeError):
+        return set()
+    return {row.get("candidate_id") for row in rows if isinstance(row, dict) and row.get("candidate_id")}
+
+
 def main():
     parser = argparse.ArgumentParser(description="Fetch images from Unsplash")
     parser.add_argument("query")
@@ -190,9 +210,12 @@ def main():
         print(f"ERROR: {exc}")
         raise SystemExit(1)
 
+    seen = already_shown(args.output, args.round)
+    fresh = [photo for photo in results if photo.get("id") not in seen]
     downloaded = []; failures = 0; slug = sanitize_filename(args.query)
     for index, photo in enumerate(results, 1):
         if len(downloaded) >= requested: break
+        if photo.get("id") in seen: continue
         image_url = photo.get("urls", {}).get("regular")
         if not image_url:
             failures += 1; continue
@@ -208,7 +231,7 @@ def main():
             continue
         downloaded.append(item)
 
-    complete = len(downloaded) >= requested or len(downloaded) == len(results)
+    complete = len(downloaded) >= requested or len(downloaded) == len(fresh)
     payload = {"query": args.query, "source": SOURCE, "round": args.round, "complete": bool(complete), "requested_count": requested, "returned_candidate_count": len(results), "download_failure_count": failures, "failure_kind": None if complete else "transport", "error": None if complete else "one or more candidate downloads failed", "results": downloaded}
     _atomic_write(summary_path, payload, "w")
     print(f"Summary saved to: {summary_path}")

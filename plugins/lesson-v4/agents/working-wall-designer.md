@@ -10,7 +10,7 @@ color: "#2E8B57"
 
 # Working Wall Designer
 
-**Reading this file on Codex.** A command's output past about 10,000 tokens loses its middle, and this file is longer. Unless it reached you whole as your own instructions, read it first with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role working-wall-designer --page 1` and each page it names, until one prints `REFERENCE_READ_OK`. Read any other long file the same way, with `--file` and its path.
+**Reading this file on Codex.** Codex cuts the middle out of a command's output past about 10,000 tokens; this file is longer. Unless it reached you whole as your own instructions, read it with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role working-wall-designer --page 1` and each page it names, one per command, until `REFERENCE_READ_OK`. Read other long files, JSON too, with `--file` and the path.
 
 You turn a completed **Lesson Design** into a working-wall specification: a single `working-wall.json` describing normally one large-format lesson-overview sheet, exceptionally two. A mechanical builder reads this file and renders a PDF, exactly one physical page per ordinary card, ready for the teacher to print and pin.
 

@@ -11,16 +11,36 @@ const GAP = 0.10;
 // ─── WIDTH SHARING ────────────────────────────────────────────
 const WIDTH_REFLOW_FLOOR = 0.10;
 
-function itemWidths(items, equalW) {
+// A photograph keeps its own shape, so in a row as tall as this one a portrait
+// or near-square photograph is held by the height and cannot fill an equal
+// share of the width. It used to keep that share anyway, so the words beside
+// it could not use the width it left empty and wrapped in a narrower column
+// than the row had room for: the slide designer of a Year 4 geography run met
+// it (27 September 2026), because `slide-visual-sizing.md` says a row gives
+// that width back and in the code only a comparison slot did. Now a delivered photograph caps itself at the width it
+// draws at this height, and the text beside it takes the rest.
+function capFor(item, zone, ctx) {
   const { maxUsefulWidth } = require('./index');
+  const cap = maxUsefulWidth(item);
+  if (cap !== null) return cap;
+  if (item && item.type === 'image' && zone && ctx) {
+    return require('./image').widthAtHeight(item, zone.h, ctx);
+  }
+  return null;
+}
+
+function itemWidths(items, equalW, zone, ctx) {
   const widths = items.map(function () { return equalW; });
   const growers = [];
   let released = 0;
 
   items.forEach(function (item, i) {
-    const cap = maxUsefulWidth(item);
+    const cap = capFor(item, zone, ctx);
     if (cap === null) { growers.push(i); return; }
     const spare = equalW - cap;
+    // A photograph wider than its share is held by the width, and can still
+    // use any width a neighbour gives back, as it always could.
+    if (item && item.type === 'image' && spare < 0) { growers.push(i); return; }
     if (spare > WIDTH_REFLOW_FLOOR) {
       widths[i] = cap;
       released += spare;
@@ -36,6 +56,38 @@ function itemWidths(items, equalW) {
   const share = released / growers.length;
   growers.forEach(function (i) { widths[i] += share; });
   return widths;
+}
+
+// A row holding cards that fit their words (a packing stack, content/stack.js)
+// lines them up with what stands beside them instead of stretching everything
+// to the row's height. Each item is measured at the full height; the tallest
+// sets a band centred in the row, and every other item keeps its own height,
+// centred on it. Nothing stretches to meet its neighbour (the teacher, 29
+// September 2026). His model, 28 September 2026, was a place value chart
+// centred against the two cards beside it. Null when anything cannot be
+// measured, and the row then lays out as it always has.
+function alignedBands(items, widths, lefts, zone, ctx, isPackingStack) {
+  if (!ctx || items.length < 2 || !items.some(isPackingStack)) return null;
+  const { measureCompositionExtent } = require('./index');
+  const heights = [];
+  for (let i = 0; i < items.length; i += 1) {
+    let extent = null;
+    try {
+      extent = measureCompositionExtent(
+        { x: lefts[i], y: zone.y, w: widths[i], h: zone.h,
+          class: zone.class, noCard: zone.noCard, compactCards: zone.compactCards },
+        items[i], ctx);
+    } catch {
+      extent = null;
+    }
+    if (!extent || !(extent.h > 0)) return null;
+    heights.push(Math.min(extent.h, zone.h));
+  }
+  const bandH = Math.max.apply(null, heights);
+  const bandY = zone.y + (zone.h - bandH) / 2;
+  return heights.map(function (h) {
+    return { y: bandY + (bandH - h) / 2, h: h, match: false };
+  });
 }
 
 function drawRow(pptx, slide, zone, data, ctx) {
@@ -199,7 +251,7 @@ function drawRow(pptx, slide, zone, data, ctx) {
   // smaller to leave a gap around a ring that never wanted it. Only helpers
   // that genuinely stop growing declare a cap; everything else keeps taking
   // whatever width it is given, exactly as before.
-  const widths = itemWidths(items, itemW);
+  const widths = itemWidths(items, itemW, zone, ctx);
   const lefts = widths.reduce(function (acc, w, i) {
     acc.push(i === 0 ? zone.x : acc[i - 1] + widths[i - 1] + GAP);
     return acc;
@@ -233,21 +285,23 @@ function drawRow(pptx, slide, zone, data, ctx) {
       (item.type === 'text' && String(item.heightMode || '').toLowerCase() === 'fill')
     );
   const isPicture = (item) => item && (item.type === 'image' || item.type === 'label-diagram');
-  const matchCardHeight =
+  const { isPackingStack } = require('./stack');
+  const bands = alignedBands(items, widths, lefts, zone, ctx, isPackingStack);
+  const matchCardHeight = !bands &&
     items.length > 1 && items.some(fillsHeight) && items.some(isPicture);
 
   items.forEach(function (item, i) {
     const subZone = {
       x: lefts[i],
-      y: zone.y,
+      y: bands ? bands[i].y : zone.y,
       w: widths[i],
-      h: zone.h,
+      h: bands ? bands[i].h : zone.h,
       class: zone.class,
       // A noCard panel owns everything in it; see the same line in stack.js.
       noCard: zone.noCard,
       compactCards: zone.compactCards,
       equalTextCardHeight: equaliseTextCards,
-      matchCardHeight,
+      matchCardHeight: bands ? bands[i].match : matchCardHeight,
       textFitGroup: rowTextFitGroup
     };
     if (clockBandH !== null && item && item.type === 'clock') {
@@ -317,7 +371,7 @@ function measureRow(zone, data, ctx) {
   const itemW = (zone.w - totalGap) / items.length;
   if (!(itemW > 0)) return null;
 
-  const widths = itemWidths(items, itemW);
+  const widths = itemWidths(items, itemW, zone, ctx);
 
   let tallest = 0;
   for (let i = 0; i < items.length; i += 1) {

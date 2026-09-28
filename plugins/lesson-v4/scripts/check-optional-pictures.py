@@ -734,6 +734,139 @@ def hidden_decorations(lesson: object, room: dict[int, dict]) -> list[str]:
     return failures
 
 
+# The built deck itself says what covers a drawing, with no render needed. A
+# Codex geography deck (28 September 2026) had no render route, so no room was
+# measured and the check above never ran: fourteen globes and compasses went
+# behind the cards at one stamped frame, and the teacher saw a faint arc peeking
+# out from under a card on slide after slide, a drawing nobody could name. The
+# preview PowerPoint exists whenever the decorator's preview check passed, and
+# it holds every shape in drawing order, so how much of a drawing is under an
+# opaque card is a fact read straight out of it.
+_NS = {
+    "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
+    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+}
+# A fill fainter than this lets the drawing show through it.
+_OPAQUE_ALPHA = 50000
+
+
+def _shape_box(element):
+    xfrm = element.find("p:spPr/a:xfrm", _NS)
+    if xfrm is None:
+        xfrm = element.find("p:xfrm", _NS)
+    if xfrm is None:
+        return None
+    off = xfrm.find("a:off", _NS)
+    ext = xfrm.find("a:ext", _NS)
+    if off is None or ext is None:
+        return None
+    try:
+        x, y = int(off.get("x")), int(off.get("y"))
+        w, h = int(ext.get("cx")), int(ext.get("cy"))
+    except (TypeError, ValueError):
+        return None
+    return (x, y, x + w, y + h) if w > 0 and h > 0 else None
+
+
+def _is_opaque(element, tag: str) -> bool:
+    if tag in ("pic", "graphicFrame"):
+        return True
+    if tag != "sp":
+        return False
+    sp_pr = element.find("p:spPr", _NS)
+    fill = sp_pr.find("a:solidFill", _NS) if sp_pr is not None else None
+    if fill is None:
+        return False
+    alpha = fill.find(".//a:alpha", _NS)
+    try:
+        return alpha is None or int(alpha.get("val")) >= _OPAQUE_ALPHA
+    except (TypeError, ValueError):
+        return True
+
+
+def _pptx_slides(pptx: Path) -> list:
+    """The slide size, then each slide's XML in deck order."""
+    import posixpath
+    import zipfile
+    import xml.etree.ElementTree as ET
+
+    with zipfile.ZipFile(pptx) as archive:
+        pres = ET.fromstring(archive.read("ppt/presentation.xml"))
+        rels = ET.fromstring(archive.read("ppt/_rels/presentation.xml.rels"))
+        targets = {rel.get("Id"): rel.get("Target") for rel in rels}
+        size = pres.find("p:sldSz", _NS)
+        slides = []
+        for sld in pres.findall("p:sldIdLst/p:sldId", _NS):
+            target = targets.get(sld.get(f"{{{_NS['r']}}}id"), "")
+            slides.append(archive.read(posixpath.normpath(posixpath.join("ppt", target))))
+        return [(int(size.get("cx")), int(size.get("cy")))] + slides
+
+
+def covered_decorations(pptx: Path) -> list[str]:
+    """Drawings the built deck draws mostly out of sight.
+
+    A drawing counts as seen where it is on the slide and no opaque shape drawn
+    after it (a filled card, a photograph, a table) lies over it. Sampled on a
+    grid, which is good to a few percent and only has to tell a drawing from a
+    sliver.
+    """
+    import xml.etree.ElementTree as ET
+
+    try:
+        (slide_w, slide_h), *slides = _pptx_slides(pptx)
+    except (OSError, KeyError, ValueError, TypeError, ET.ParseError) as exc:
+        raise PassError(f"could not read the preview deck {pptx}: {exc}") from exc
+    failures: list[str] = []
+    for number, xml in enumerate(slides, start=1):
+        tree = ET.fromstring(xml).find("p:cSld/p:spTree", _NS)
+        if tree is None:
+            continue
+        order = []
+        for element in tree.iter():
+            tag = element.tag.rsplit("}", 1)[-1]
+            if tag not in ("sp", "pic", "graphicFrame"):
+                continue
+            props = element.find(".//p:cNvPr", _NS)
+            name = props.get("name", "") if props is not None else ""
+            order.append((tag, name, element))
+        for index, (tag, name, element) in enumerate(order):
+            if tag != "pic" or not name.startswith("Decoration/"):
+                continue
+            box = _shape_box(element)
+            if box is None:
+                continue
+            covers = [
+                cover
+                for later_tag, later_name, later in order[index + 1:]
+                if not later_name.startswith("Decoration/")
+                and _is_opaque(later, later_tag)
+                and (cover := _shape_box(later)) is not None
+            ]
+            x0, y0, x1, y1 = box
+            steps, seen = 16, 0
+            for i in range(steps):
+                px = x0 + (x1 - x0) * (i + 0.5) / steps
+                for j in range(steps):
+                    py = y0 + (y1 - y0) * (j + 0.5) / steps
+                    if not (0 <= px <= slide_w and 0 <= py <= slide_h):
+                        continue
+                    if any(c0 <= px <= c1 and d0 <= py <= d1 for c0, d0, c1, d1 in covers):
+                        continue
+                    seen += 1
+            fraction = seen / (steps * steps)
+            if fraction >= VISIBLE_FRACTION:
+                continue
+            failures.append(
+                f"slide {number}: the drawing `{name[len('Decoration/'):]}` is "
+                f"{round((1 - fraction) * 100)}% hidden behind the slide's cards or "
+                "off its edge, so what shows is a sliver a child cannot name. Bring "
+                "it in front (`layer: \"high\"`) in space clear of every word, move "
+                "it where most of it shows, or remove it"
+            )
+    return failures
+
+
 def check(
     pass_path: Path,
     lesson_path: Path,
@@ -741,6 +874,7 @@ def check(
     room: dict[int, dict] | None = None,
     room_record: dict | None = None,
     flagged: set[int] | None = None,
+    pptx: Path | None = None,
 ) -> tuple[list[str], dict[int, list[str]], dict[str, int]]:
     record = read_json(pass_path, "optional-picture-pass.json")
     lesson = read_json(lesson_path, "lesson.json")
@@ -766,7 +900,12 @@ def check(
                 "drawings again: clear space is a fact about one arrangement, and a banner one line "
                 "taller moves the band beneath it onto the drawing"
             )
-        failures.extend(hidden_decorations(lesson, room))
+        if pptx is None:
+            failures.extend(hidden_decorations(lesson, room))
+    # The built deck is the exact answer where it exists; the measured room is
+    # the estimate from a render, used only when no deck was handed over.
+    if pptx is not None:
+        failures.extend(covered_decorations(pptx))
     reason_counts: dict[str, int] = {}
     seen: dict[int, dict] = {}
 
@@ -940,6 +1079,13 @@ def main(argv: list[str] | None = None) -> int:
              "reason is refused, because nothing else can tell a blank slide "
              "from a slide somebody declined.",
     )
+    parser.add_argument(
+        "--pptx",
+        help="the preview PowerPoint the decorator's check built. With it, a "
+             "drawing mostly hidden behind cards or off the slide's edge fails, "
+             "measured from the deck itself, so it holds on a machine that "
+             "cannot render.",
+    )
     args = parser.parse_args(argv)
 
     flagged: set[int] | None = None
@@ -977,7 +1123,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         failures, actual, reason_counts = check(
             Path(args.pass_record), Path(args.lesson), library_root, room,
-            room_record, flagged,
+            room_record, flagged, Path(args.pptx) if args.pptx else None,
         )
     except PassError as exc:
         print(f"OPTIONAL_PICTURE_PASS_FAILED: {exc}", file=sys.stderr)

@@ -128,10 +128,10 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
         self.assertIn("about 106 characters", prefs)
         self.assertNotIn("Condense first", prefs)
 
-    def test_a_lesson_that_named_an_idea_says_where_it_met_a_new_case(self) -> None:
-        """Decision 9: "yes"; the reviewer's routing card reads the Apply rules then."""
+    def test_a_lesson_that_named_an_idea_accounts_for_instances_and_independent_thinking(self) -> None:
+        """Retain concept learning and route the clarified independent-thinking check."""
         apply = section_by_heading(PREF, "## The Apply Slide", 0)
-        self.assertIn("one that named an idea says where the idea met a case it was not taught on", apply)
+        self.assertIn("One that named an idea identifies its meaningful instances and the independent decision children made", apply)
         designer = section_by_heading(LD, "### Apply Slide", 0)
         self.assertIn("For a lesson whose learning is a fact or a method, \"Your Turn and answers is sufficient AFL here - no distinct synthesis task is needed\" is complete justification.", designer)
         packet = load("design_review_packet_7a", "design-review-packet.py")
@@ -139,7 +139,7 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
         self.assertEqual(
             trigger,
             "Read when Apply may be unearned or repeat Your Turn, and when a lesson that named an idea has no "
-            "Apply and its reason does not say where the idea met a case it was not taught on.",
+            "Apply and its reason does not identify its meaningful instances and independent pupil decision.",
         )
 
     def test_maths_titles_and_practise(self) -> None:

@@ -42,6 +42,61 @@ def bare_slide() -> dict:
     return {"title": "t", "content": [{"text": "a"}]}
 
 
+_P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+_A = "http://schemas.openxmlformats.org/drawingml/2006/main"
+_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+EMU = 914400  # per inch; the slide is 13.333" by 7.5"
+
+
+def pic(name: str, x: float, y: float, w: float, h: float) -> str:
+    return (
+        f'<p:pic><p:nvPicPr><p:cNvPr id="2" name="{name}"/></p:nvPicPr>'
+        f'<p:spPr><a:xfrm><a:off x="{int(x * EMU)}" y="{int(y * EMU)}"/>'
+        f'<a:ext cx="{int(w * EMU)}" cy="{int(h * EMU)}"/></a:xfrm></p:spPr></p:pic>'
+    )
+
+
+def card(x: float, y: float, w: float, h: float, fill: bool = True) -> str:
+    paint = '<a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill>' if fill else "<a:noFill/>"
+    return (
+        '<p:sp><p:nvSpPr><p:cNvPr id="3" name="Shape 1"/></p:nvSpPr>'
+        f'<p:spPr><a:xfrm><a:off x="{int(x * EMU)}" y="{int(y * EMU)}"/>'
+        f'<a:ext cx="{int(w * EMU)}" cy="{int(h * EMU)}"/></a:xfrm>{paint}</p:spPr></p:sp>'
+    )
+
+
+def write_pptx(path: Path, slides: list[str]) -> None:
+    """The smallest PowerPoint the check reads: the slide size, the slide
+    order, and each slide's shapes in drawing order."""
+    import zipfile
+
+    ids = "".join(
+        f'<p:sldId id="{256 + n}" r:id="rId{n + 1}"/>' for n in range(len(slides))
+    )
+    rels = "".join(
+        f'<Relationship Id="rId{n + 1}" Target="slides/slide{n + 1}.xml" '
+        'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide"/>'
+        for n in range(len(slides))
+    )
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr(
+            "ppt/presentation.xml",
+            f'<p:presentation xmlns:p="{_P}" xmlns:r="{_R}"><p:sldIdLst>{ids}</p:sldIdLst>'
+            '<p:sldSz cx="12192000" cy="6858000"/></p:presentation>',
+        )
+        archive.writestr(
+            "ppt/_rels/presentation.xml.rels",
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            f"{rels}</Relationships>",
+        )
+        for n, shapes in enumerate(slides, start=1):
+            archive.writestr(
+                f"ppt/slides/slide{n}.xml",
+                f'<p:sld xmlns:p="{_P}" xmlns:a="{_A}"><p:cSld><p:spTree>'
+                f"{shapes}</p:spTree></p:cSld></p:sld>",
+            )
+
+
 class CheckRunner(unittest.TestCase):
     def run_check(
         self,
@@ -53,6 +108,7 @@ class CheckRunner(unittest.TestCase):
         room: list[dict] | None = None,
         held: list[str] | None = None,
         flagged: str | None = None,
+        pptx: list[str] | None = None,
     ):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -74,6 +130,10 @@ class CheckRunner(unittest.TestCase):
                 argv += ["--room", str(room_path)]
             if flagged is not None:
                 argv += ["--flagged-slides", flagged]
+            if pptx is not None:
+                deck_path = root / "preview.pptx"
+                write_pptx(deck_path, pptx)
+                argv += ["--pptx", str(deck_path)]
             if library:
                 # A library root is a place drawings are kept, and it is empty
                 # here on purpose. What the evidence check reads is the index
@@ -886,3 +946,51 @@ class ABlankFlaggedSlideSaysSoTests(CheckRunner):
             record, deck(slide_with("educational-svg"), bare_slide()), flagged=""
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class ADrawingMostlyUnderTheCardsNeverShipsTests(CheckRunner):
+    """The teacher's preference of 28 September 2026: drawings in front.
+
+    A Codex geography deck put a globe behind the cards on slide after slide,
+    at one stamped frame hanging off the corner, and what showed was a faint arc
+    nobody could name. That deck had no render, so the room-based check never
+    ran. The preview PowerPoint holds every shape in drawing order, so how much
+    of a drawing the cards hide is read from the deck itself.
+    """
+
+    RECORD = {"schemaVersion": 1, "slides": [
+        {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+    ]}
+    LESSON = deck({"title": "t", "content": [{"text": "a"}], "decorations": [
+        {"id": "decoration-globe-01", "kind": "educational-svg", "layer": "low"},
+    ]})
+
+    def test_a_globe_behind_a_card_and_off_the_corner_fails(self):
+        # The geography shape: a 3" globe at 65% across and down, under a card
+        # that reaches nearly to the bottom, its last strip off the slide.
+        shapes = pic("Decoration/decoration-globe-01", 8.7, 4.9, 3.0, 3.0) + card(0.2, 4.0, 12.9, 3.25)
+        result = self.run_check(self.RECORD, self.LESSON, pptx=[shapes])
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("decoration-globe-01", result.stderr)
+        self.assertIn("hidden behind the slide's cards", result.stderr)
+
+    def test_the_same_drawing_in_front_of_the_card_passes(self):
+        shapes = card(0.2, 4.0, 12.9, 3.25) + pic("Decoration/decoration-globe-01", 10.0, 4.2, 2.5, 2.5)
+        result = self.run_check(self.RECORD, self.LESSON, pptx=[shapes])
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_behind_a_card_is_fine_while_most_of_it_shows(self):
+        # Only the drawing's left third tucks under the card's edge.
+        shapes = pic("Decoration/decoration-globe-01", 5.0, 1.0, 3.0, 3.0) + card(0.2, 0.8, 6.0, 4.0)
+        result = self.run_check(self.RECORD, self.LESSON, pptx=[shapes])
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_an_unfilled_text_box_over_a_drawing_hides_nothing(self):
+        shapes = pic("Decoration/decoration-globe-01", 5.0, 1.0, 3.0, 3.0) + card(0.2, 0.8, 12.0, 5.0, fill=False)
+        result = self.run_check(self.RECORD, self.LESSON, pptx=[shapes])
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_the_decorator_passes_the_preview_deck(self):
+        decorator = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
+        self.assertIn('--pptx "[PREVIEW_PPTX]"', decorator)
+        self.assertIn('in front of what is there by default (`layer: "high"`)', decorator)

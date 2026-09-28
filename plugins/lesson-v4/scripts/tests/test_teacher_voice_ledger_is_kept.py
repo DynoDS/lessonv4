@@ -40,6 +40,7 @@ PINS = Path(__file__).resolve().with_name("teacher_voice_ledger_pins.json")
 LEDGER = ROOT.parents[1] / "plans" / "2026-09-23-teacher-voice-ledger.md"
 VOICE = ROOT / "references" / "teacher-voice.md"
 DESIGNER = ROOT / "agents" / "lesson-designer.md"
+VOICE_EDITOR = ROOT / "agents" / "lesson-voice-editor.md"
 PREFERENCES = ROOT / "references" / "preferences.md"
 SPEECH = ROOT / "references" / "slide-speech-and-characters.md"
 SLIDE_DESIGNER = ROOT / "agents" / "slide-designer.md"
@@ -97,7 +98,7 @@ class HisDecisionsAreBuilt(unittest.TestCase):
         # Decision 1 (his "yes"): nothing sent a writer to §7 or §14.
         route = paragraph_holding(VOICE, "Read the numbered section for the kind of thing you are writing")
         self.assertIn("a sentence stem or other support §7", route)
-        self.assertIn("and §14 once, when the kind of lesson is settled", route)
+        self.assertIn("Read §14 once, when the kind of lesson is settled", route)
         # Settled item 1's fold keeps the designer's own condition: a critique
         # prompt, as well as a comparison prompt, opens §12.
         self.assertIn("a comparison or critique prompt §12", route)
@@ -114,11 +115,15 @@ class HisDecisionsAreBuilt(unittest.TestCase):
         self.assertIn("**Definitions and scripts are the other two**, because a definition feels like a structured "
                       "field being filled and a script feels like notes rather than writing", missed)
         self.assertIn("Routing by the kind of string only works if you stop and name the kind.", missed)
-        read_line = paragraph_holding(DESIGNER, "Read `teacher-voice.md` at the same point")
-        self.assertIn("by the route its `How to read this file` sets out", read_line)
+        # 27 September 2026: the lesson voice editor reads the guide whole and opens the
+        # section for the kind of string in hand; the designer keeps §6, because what a
+        # question asks is a task decision.
+        read_line = paragraph_holding(DESIGNER, "Open `teacher-voice.md` → 6. Questions and pupil instructions")
         self.assertIn("(including `Say what you mean, and give a second question that leads to the first`, because a "
                       "question naming nothing concrete is answered only by the most confident children)", read_line)
-        self.assertIn("§4 is routed by moment rather than by kind of string", read_line)
+        editor = " ".join(VOICE_EDITOR.read_text(encoding="utf-8").split())
+        self.assertIn("opening the numbered section for the kind of string in hand when one feels off", editor)
+        self.assertIn("the guide has a section for each kind: open it for the kind of string in hand", editor)
         for gone in ("Definitions and scripts are the two most often missed", "§§1 and 3 a spoken script",
                      "§5 a vocabulary definition or explanation"):
             self.assertNotIn(gone, self.designer)
@@ -183,7 +188,8 @@ class HisDecisionsAreBuilt(unittest.TestCase):
     def test_the_slide_is_normally_the_tighter_version(self) -> None:
         # Settled item 5: "normally" stays, and the copies say so too.
         self.assertIn("Do not normally reverse this relationship.", self.voice)
-        self.assertIn("the slide keeps the tighter version, not normally the reverse", self.designer)
+        self.assertIn("the slide keeps the tighter version, not normally the reverse",
+                      " ".join(VOICE_EDITOR.read_text(encoding="utf-8").split()))
         self.assertIn("the fuller conversational version - not normally the other way round.", self.preferences)
         for path in RUNTIME:
             with self.subTest(file=path.name):
@@ -199,7 +205,7 @@ class HisDecisionsAreBuilt(unittest.TestCase):
         self.assertIn("Keep central subject vocabulary and proper nouns, supporting them with examples, visuals or "
                       "plain-language bridges rather than automatically replacing them.", self.preferences)
         self.assertIn("Necessary taught subject vocabulary stays.", self.preferences)
-        self.assertIn("Precise subject vocab when helps.", self.designer)
+        self.assertIn("Precise subject vocab when it helps.", self.designer)
 
     def test_the_out_of_date_lines_say_what_is_true(self) -> None:
         # Settled item 8.
@@ -267,7 +273,11 @@ class HisDecisionsAreBuilt(unittest.TestCase):
         # His speaker-notes answer in the line that writes every script, and the
         # voice list's decision 13, both brought from 7B by the lead so the
         # designer and the guide no longer pull against each other.
-        voice_line = paragraph_holding(DESIGNER, "The voice: ")
+        # 27 September 2026: how a script sounds moved to the lesson voice editor, word for
+        # word; the designer keeps the length and the teacher's words about it.
+        self.assertIn("Write it as long as the idea needs, said to this class (the teacher: \"it doesn't have to be "
+                      "short sentences\")", self.designer)
+        voice_line = paragraph_holding(VOICE_EDITOR, "The voice: ")
         self.assertIn("as long as the idea needs and conversational, in words the children in this class follow",
                       voice_line)
         self.assertIn("\"it doesn't have to be short sentences\"", voice_line)

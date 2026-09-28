@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "lesson": {
+    "structure": "Skill-based",
+    "yearGroup": 4,
+    "subject": "English",
+    "lo": "Changing tense"
+  },
+  "teachingSequence": [
+    {
+      "sourceUnitId": "trial/grammar/unit-001",
+      "label": "Changing tense",
+      "kind": "independent-practice",
+      "pupilInstruction": "Change each sentence to the past tense.",
+      "items": [
+        { "id": "a", "text": "I walk to the gate." },
+        { "id": "b", "text": "She runs to the shop." },
+        { "id": "c", "text": "We carry the bags." }
+      ],
+      "speakerNotes": {
+        "script": "Say to children: Read each sentence and change the action word so it tells us the action already happened. Write the whole sentence.",
+        "teacherInfo": null
+      },
+      "answer": {
+        "kind": "exact",
+        "delivery": "answer-slide",
+        "items": [
+          { "id": "a", "text": "I walked to the gate." },
+          { "id": "b", "text": "She ran to the shop." },
+          { "id": "c", "text": "We carried the bags." }
+        ]
+      }
+    }
+  ]
+}

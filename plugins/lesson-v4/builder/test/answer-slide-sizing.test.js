@@ -44,13 +44,15 @@ test('a set that is all answers is set larger than the same set of questions', (
   assert.ok(answerFont > questionFont, `answers ${answerFont} vs questions ${questionFont}`);
 });
 
-test('an answer block fills its zone rather than hugging in the corner', () => {
+test('an answer marker changes colour without changing the default text height mode', () => {
   const reveal = { type: 'text', value: '||346 → 300.\n350 → 400.' };
-  assert.equal(measureText(ZONE, reveal, {}), null, 'a reveal measures as a fill');
+  const revealed = measureText(ZONE, reveal, {});
+  assert.ok(revealed && revealed.h < ZONE.h, 'a reveal hugs by default');
 
   const teaching = { type: 'text', value: '346 → 300.\n350 → 400.' };
   const hugged = measureText(ZONE, teaching, {});
   assert.ok(hugged && hugged.h < ZONE.h, 'ordinary text still hugs');
+  assert.equal(revealed.h, hugged.h, 'the marker does not change geometry');
 });
 
 test('a designer who names a height mode still gets it', () => {

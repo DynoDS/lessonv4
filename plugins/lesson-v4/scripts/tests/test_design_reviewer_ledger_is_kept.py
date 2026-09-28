@@ -75,8 +75,10 @@ class HisDecisionsAreBuilt(unittest.TestCase):
         self.assertIn("you may repair it yourself as wording", self.reviewer)
         self.assertIn("a bounded wording or answer-key correction that keeps the settled pedagogy is yours",
                       self.reviewer)
+        # 27 September 2026: carrying the spoken question onto the board is a voice repair,
+        # now the lesson voice editor's, word for word.
         self.assertIn("Repair it by carrying the spoken wording onto the board, trimmed rather than reworded.",
-                      self.reviewer)
+                      flat((ROOT / "agents" / "lesson-voice-editor.md").read_text(encoding="utf-8")))
 
     def test_the_board_is_judged_first_and_the_notes_separately(self) -> None:
         # Settled item 4: "Judge the board first ... board first, speaker notes separate."
@@ -106,9 +108,8 @@ class HisDecisionsAreBuilt(unittest.TestCase):
                       "must change.", paragraphs(REVIEWER))
         # Each near-repeat keeps its own words.
         for kept in ("Make a local correction only when one clear bounded change restores the settled lesson.",
-                     "Here judge the wording you noted in its teaching context.",
+                     "Here judge wording for what it teaches; how it sounds is the lesson voice editor's.",
                      "- full and displayed objectives;",
-                     "the packet check refuses a report whose `[N]` does not match the view.",
                      "Do not perform separate whole-lesson rereads for each one.",
                      "11. Read the closing decisions of `design-decisions.md` only for the final decision-drift check."):
             self.assertIn(kept, self.reviewer)
@@ -130,42 +131,50 @@ class HisDecisionsAreBuilt(unittest.TestCase):
                      "every sheet counted on 12 September 2026"):
             self.assertIn(kept, log)
         # The reasons, and the lines kept as plain examples.
-        for reason in ("A count line alone is what a sweep that happened and a sweep that did not both produce.",
-                       "A string read inside JSON braces beside its field name is read as a specification.",
+        # 27 September 2026: the sweep's reasons moved with the sweep to the lesson voice editor;
+        # its count receipt was retired for the editor's lane check.
+        editor = flat((ROOT / "agents" / "lesson-voice-editor.md").read_text(encoding="utf-8"))
+        self.assertIn("`What do their reasons share?` printed over a script saying", editor)
+        for reason in ("A string read inside JSON braces beside its field name is read as a specification.",
                        "`He wasn't a king who could order everybody to obey him`",
-                       "`What do their reasons share?` printed over a script saying",
-                       "the teacher would have to edit it out by hand",
                        "Read the forms rather than confirming the objective matches.",
                        "as in a *name the layers of teeth* sheet that asked for three names"):
             self.assertIn(reason, self.reviewer)
 
     def test_the_sweep_imagines_the_child_in_this_class(self) -> None:
+        editor = flat((ROOT / "agents" / "lesson-voice-editor.md").read_text(encoding="utf-8"))
         self.assertIn("Read each one first as the child: the actual child in this class, who has not read the plan",
-                      self.reviewer)
+                      editor)
         self.assertNotIn("nine-year-old", self.reviewer)
+        self.assertNotIn("nine-year-old", editor)
         # The wording is the lead's reading of his words, and the log says so
         # rather than passing it off as his (the first check's item 4).
         log = flat(LOG.read_text(encoding="utf-8"))
         self.assertIn("\"the actual child in this class\". This is the lead's reading of his words, not his wording:",
                       log)
 
-    def test_his_four_pieces_calibration_is_untouched(self) -> None:
-        # Settled item 1: "not if it hassnt been broken anyway".
+    def test_his_slide_ceiling_is_his_words(self) -> None:
+        # Settled item 1 kept his calibration untouched ("not if it hassnt been broken anyway");
+        # on 27 September 2026 he restated it himself: "its just 5 is a max", judged, and never a
+        # reason to cut every board to two cards and a picture.
         preferences = flat((ROOT / "references" / "preferences.md").read_text(encoding="utf-8"))
-        self.assertIn("So the working ceiling for a Teach slide is about four pieces of text beside its picture, "
-                      "with the sticky fact as one of them.", preferences)
+        self.assertIn("So the ceiling for a Teach slide is five things on the board, counting everything "
+                      "the class looks at", preferences)
+        self.assertIn("Five is the most, not the target", preferences)
         self.assertIn("Neither is a count. There is no cap on beats, slides, sources or words", self.reviewer)
 
     def test_what_must_not_move_has_not(self) -> None:
-        # The voice harness's sweep runner reads these two paragraph openings.
-        starts = [p[:80] for p in paragraphs(REVIEWER)]
-        self.assertTrue(any(p.startswith("**Then sweep the voice, string by string.**") for p in starts))
-        self.assertTrue(any(p.startswith("A child-facing or spoken string in the wrong register is not polish.")
-                            for p in starts))
+        # The voice harness's sweep runner reads these two sections of the lesson voice editor
+        # (27 September 2026: the production voice instructions moved there from the reviewer).
+        editor = (ROOT / "agents" / "lesson-voice-editor.md").read_text(encoding="utf-8")
+        self.assertIn("## What you change, and how each kind of string should sound\n", editor)
+        self.assertIn("## What you never change\n", editor)
+        runner = (ROOT / "evals" / "teacher-voice" / "sweep-runner.md").read_text(encoding="utf-8")
+        self.assertIn("agents/lesson-voice-editor.md", runner)
         # Every heading the after-review check reads, once each, in order.
         raw = REVIEWER.read_text(encoding="utf-8")
         at = [raw.index(heading) for heading in ("## Result\n", "## Corrections made\n", "## Redesign required\n",
-                                                  "## Flags for the teacher\n", "## Voice sweep\n")]
+                                                  "## Flags for the teacher\n", "## Judgements\n")]
         self.assertEqual(at, sorted(at))
         # And the launch settings.
         for line in ("model: opus", "effort: xhigh", "codex_model: astra", "codex_effort: low"):

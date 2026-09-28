@@ -3,6 +3,7 @@
 const { FONT, COLOURS, SIZE_CEILINGS, FIT } = require('../styles');
 const { drawHeader } = require('../headers');
 const { splitAnswerRuns } = require('../answer-text');
+const { pairedEntries, PAIRED_LAYOUT } = require('../content/reveal-pair');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const CARDS_X        = 0.22;
@@ -39,9 +40,10 @@ function drawMathsYourTurn(pptx, slide, data, ctx) {
   }, ctx);
 
   const questions = Array.isArray(data.questions) ? data.questions : [];
+  const pair = data.revealPair ? pairedEntries(data, ctx) : null;
   drawQuestionCards(pptx, slide, questions, {
     x: CARDS_X, y: CARDS_Y, w: CARDS_W, h: CARDS_H
-  }, ctx, firstLabel(data));
+  }, ctx, firstLabel(data), pair);
 }
 
 // Independent practice numbers, and the numbering runs on across the slides
@@ -77,7 +79,7 @@ function firstLabel(data) {
 // What is NOT delegated: a set whose questions are content objects (clocks,
 // diagrams) still uses the local grid, because those need cell geometry rather
 // than text cards.
-function drawQuestionCards(pptx, slide, questions, box, ctx, startAt) {
+function drawQuestionCards(pptx, slide, questions, box, ctx, startAt, pair) {
   if (questions.length === 0) return;
 
   // Callers pass firstLabel(data); this guard is the backstop so a missed or
@@ -89,6 +91,7 @@ function drawQuestionCards(pptx, slide, questions, box, ctx, startAt) {
   // Visual content objects (e.g. clocks) use a grid layout - tall vertical
   // cards give each visual too little height to be readable.
   if (questions.some(isContentObject)) {
+    if (pair) throw new Error('REVEAL_PAIR_UNSUPPORTED: maths-your-turn visual-object grids need a separate reveal composition.');
     return drawVisualGrid(pptx, slide, questions, box, ctx, startAt);
   }
 
@@ -100,7 +103,14 @@ function drawQuestionCards(pptx, slide, questions, box, ctx, startAt) {
     pptx,
     slide,
     box,
-    { questions: questions.map(function (q) { return normaliseCircles(String(q)); }), startAt: startAt },
+    {
+      questions: questions.map(function (q) { return normaliseCircles(String(q)); }),
+      startAt: startAt,
+      [PAIRED_LAYOUT]: pair && Object.assign(
+        pair.map(function (texts) { return texts.map(normaliseCircles); }),
+        { pairId: pair.pairId }
+      )
+    },
     ctx
   );
 }

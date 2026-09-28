@@ -19,6 +19,8 @@ const {
   pictureMetrics,
   drawContentPicture
 } = require('../content-picture');
+const { pairedEntries } = require('./reveal-pair');
+const { fitGroupId, growFitObjectName } = require('../text-fit');
 
 // A question set drawn as CARDS rather than as a stacked list.
 //
@@ -148,17 +150,25 @@ function placeTilted(card, w, h, cx, cy) {
 function measureCard(question, fontPt, capW, gutterW) {
   const text       = question.text;
   const lineH      = (fontPt * LINE_H_RATIO) / 72;
-  const naturalW   = (plainLength(text) * fontPt * CHAR_W_EM) / 72;
+  const variantWidths = (question.layoutTexts || [text]).map(function (variant) {
+    return (plainLength(variant) * fontPt * CHAR_W_EM) / 72;
+  });
+  const naturalW   = Math.max(...variantWidths);
   const maxTextW   = Math.max(0.4, capW - gutterW - 2 * CARD_PAD_X);
   const textW      = Math.min(naturalW, maxTextW);
   const lines      = Math.max(1, Math.ceil(naturalW / Math.max(textW, 0.1)));
   return {
     source: question.source,
     text:  text,
+    layoutTexts: question.layoutTexts,
     answer: question.answer,
     revealed: question.revealed,
     textW: textW,
     lines: lines,
+    shortVariantWraps: (question.layoutTexts || [text]).some(function (variant, index) {
+      return plainLength(variant) <= NO_WRAP_CHARS &&
+        variantWidths[index] > textW + 0.001;
+    }),
     w:     textW + gutterW + 2 * CARD_PAD_X,
     h:     lines * lineH + 2 * CARD_PAD_Y
   };
@@ -197,6 +207,7 @@ function tiltAllowance(w, h) {
 
 function drawQuestionCards(pptx, slide, zone, data, ctx) {
   const answerBoxes = data.answerBoxes === true;
+  const pair = pairedEntries(data, ctx);
   const entries = (Array.isArray(data.questions) ? data.questions : [])
     .map(function (q) {
       return { source: q, text: stripLeadingLabel(itemText(q)) };
@@ -209,9 +220,13 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
       : { text: entry.text, answer: '', revealed: false };
     parsed.source = entry.source;
     parsed.picture = pictures[i];
+    if (pair) parsed.layoutTexts = pair[i].map(stripLeadingLabel);
     return parsed;
   });
   if (questions.length === 0) return;
+  const pairFitGroup = pair
+    ? fitGroupId(zone, 'revealpair-' + pair.pairId + '-question-cards')
+    : null;
 
   const zoneX = zone.x + PAD;
   const zoneY = zone.y + PAD;
@@ -263,9 +278,7 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
     // which is the "stretched card" the helper is supposed to avoid.
     rowHs  = rows.map(function (r) { return r.reduce(function (m, c) { return Math.max(m, c.h); }, 0); });
     blockH = rowHs.reduce(function (s, h) { return s + h; }, 0) + (rows.length - 1) * gapY;
-    const splitShort = cards.some(function (c) {
-      return c.lines > 1 && plainLength(c.text) <= NO_WRAP_CHARS;
-    });
+    const splitShort = cards.some(function (c) { return c.shortVariantWraps; });
     if ((blockH <= innerH && !splitShort) || fontPt <= fontFloor) break;
     fontPt -= 1;
   }
@@ -399,7 +412,11 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
           // centring splits it either side instead of pooling it all on the right
           // where it reads as a card that didn't fill.
           color: baseColor, align: 'center', valign: 'middle',
-          margin: 0, fit: FIT, rotate: tilt
+          margin: 0, fit: FIT, rotate: tilt,
+          ...(pairFitGroup ? {
+            objectName: growFitObjectName(pairFitGroup, fontPt,
+              'question-text-' + (n + 1), Math.max(CARD_FONT_MIN, MIN_FONT_PT))
+          } : {})
         }
       ));
 

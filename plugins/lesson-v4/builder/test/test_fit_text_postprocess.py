@@ -44,6 +44,29 @@ def run_sizes(shape):
     ]
 
 
+def test_reveal_pair_uses_one_final_font_across_slides():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "paired.pptx"
+        presentation = Presentation()
+        group = "revealpair-practice-1-numbered-question-text-500-1000-12000-5000"
+        shapes = []
+        for text in ("VII", "VII is seven because V adds five and II adds two"):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+            shapes.append(add_box(slide, f"GROWFIT__{group}__54__MIN18__question-text-1",
+                                  text, 0.5, 1.0, 4.0, 0.9, size=54))
+        best = [MODULE.measure_shape(shape, 54, 18)["best"] for shape in shapes]
+        assert best[0] > best[1], "test must exercise unequal independent fit sizes"
+        presentation.save(deck)
+
+        MODULE.process(str(deck), floor_pt=18)
+        checked = Presentation(deck)
+        fitted = [run_sizes(slide.shapes[0])[0] for slide in checked.slides]
+        assert fitted == [best[1], best[1]]
+        assert [(slide.shapes[0].left, slide.shapes[0].top,
+                 slide.shapes[0].width, slide.shapes[0].height)
+                for slide in checked.slides] == [(Inches(0.5), Inches(1), Inches(4), Inches(0.9))] * 2
+
+
 def test_explicit_projected_floor_refuses_text_that_only_fits_at_ten_points(capsys):
     with tempfile.TemporaryDirectory() as temp_dir:
         deck = Path(temp_dir) / "small-table.pptx"

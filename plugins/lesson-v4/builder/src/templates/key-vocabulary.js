@@ -4,7 +4,7 @@ const { FONT, COLOURS, FIT, MIN_FONT_PT } = require('../styles');
 const { drawHeader } = require('../headers');
 const { drawVisual, resolveVocabVisual } = require('../content/vocab');
 const { estimateLines } = require('../content/text');
-const { getWarnings, restoreWarnings } = require('../warnings');
+const { getWarnings, restoreWarnings, withoutRecording } = require('../warnings');
 const PptxGenJS = require('../require-global')('pptxgenjs');
 
 // ─── COORDINATES ──────────────────────────────────────────────
@@ -308,6 +308,14 @@ function naturalCardHeight(item, visual, fonts, visualW) {
 // its ink covered. Warnings the dry draw raises are set aside: the real draw
 // raises them again. A picture that cannot be drawn this way keeps the widest
 // panel and the real draw reports what went wrong.
+//
+// The dry draw records nothing, findings included. A tall photograph drawn
+// into the widest panel fills about half of it, which is the whole point of
+// the measurement, and the figure check used to keep that as a finding: a
+// Year 4 history vocabulary card whose panel had already been narrowed to the
+// fountain's own shape was reported as a picture filling 55% of a 1.21:1 slot,
+// a slot that was never drawn, with nothing a designer could change (B-h1,
+// 27 September 2026). The real draw into the fitted panel is what is checked.
 function panelWidthFor(visual, panelH, ctx) {
   if (visual.type === 'text') return PANEL_MIN_W;
   const innerH = panelH - 2 * VISUAL_PAD;
@@ -320,8 +328,8 @@ function panelWidthFor(visual, panelH, ctx) {
     probe.defineLayout({ name: 'PROBE', width: 20, height: 20 });
     probe.layout = 'PROBE';
     const slide = probe.addSlide();
-    drawVisual(probe, slide, { x: 1, y: 1, w: innerW, h: innerH }, visual,
-      Object.assign({}, ctx, { cardLook: false }));
+    withoutRecording(() => drawVisual(probe, slide, { x: 1, y: 1, w: innerW, h: innerH }, visual,
+      Object.assign({}, ctx, { cardLook: false })));
     let minX = Infinity;
     let maxX = -Infinity;
     (slide._slideObjects || []).forEach(function (o) {
@@ -406,17 +414,27 @@ function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual, visualW) 
   // same division `naturalCardHeight` measured the card by. A fixed share here
   // would hand the word height it cannot use and clip the definition.
   const wordH = Math.min(textH, wordFont * LINE_RATIO * WORD_LINE_SLACK);
-  const defnH = textH - wordH;
+
+  // The word and its definition sit in the middle of the card's height, not at
+  // the top of it. A card that takes the slide's spare height beside a tall
+  // picture held a three-line definition at the top with half the card empty
+  // under it (a Year 4 science vocabulary card, 28 September 2026). The block
+  // is measured the way the card's height was, and moved down by half of what
+  // it does not use; the definition's box still runs to the bottom of the card,
+  // so a definition that wraps once more than measured still has room.
+  const defnNeed = estimateLines(item.definition || '', defnFont, textW) * defnFont * LINE_RATIO;
+  const offset = Math.max(0, (textH - wordH - defnNeed) / 2);
+  const defnH = textH - wordH - offset;
 
   slide.addText(item.word || '', {
-    x: textX, y: textY, w: textW, h: wordH,
+    x: textX, y: textY + offset, w: textW, h: wordH,
     fontFace: FONT, fontSize: wordFont, bold: true,
     color: COLOURS.green, align: 'left', valign: 'middle',
     margin: 0, fit: FIT
   });
 
   slide.addText(item.definition || '', {
-    x: textX, y: textY + wordH, w: textW, h: defnH,
+    x: textX, y: textY + offset + wordH, w: textW, h: defnH,
     fontFace: FONT, fontSize: defnFont, bold: true,
     color: COLOURS.body, align: 'left', valign: 'top',
     margin: 0, fit: FIT

@@ -49,22 +49,25 @@ def flat(path: Path) -> str:
     return " ".join(path.read_text(encoding="utf-8").split())
 
 
-class SignificanceGetsAMethodNotAWarning(unittest.TestCase):
-    def test_significance_is_an_idea_met_on_more_than_one_case(self) -> None:
-        history = flat(HISTORY)
-        self.assertIn("it goes in `concepts` and is met on more than one case", history)
+class SignificanceAtPrimaryIsTheStory(unittest.TestCase):
+    """The 4.2.139 method (criteria, a second case, a what-if ending) was retired on 27 September
+    2026: with Year 4 it produced John Pounds from nowhere and a KS3 ending."""
 
-    def test_the_criteria_carry_the_third_thing(self) -> None:
+    def test_significance_is_a_difference_and_remembering(self) -> None:
         history = flat(HISTORY)
-        self.assertIn("a lesson missing the third is teaching impact", history)
-        self.assertIn("how long it lasted, or who decided afterwards that it mattered", history)
-        # The cheap route to it, which is usually already in the lesson.
-        self.assertIn("the statue, the street name or the museum case", history)
+        self.assertIn("Significance, at primary, is two plain things", history)
+        self.assertIn("they made a big difference to a lot of people's lives, and people still remember them for it", history)
 
-    def test_the_limit_keeps_an_honest_impact_objective_legal(self) -> None:
+    def test_the_secondary_school_moves_are_named_and_refused(self) -> None:
         history = flat(HISTORY)
-        self.assertIn("an objective can legitimately ask about impact alone", history)
-        self.assertIn("What it may not do is use the word significance", history)
+        self.assertIn("a set of criteria taught as a tool", history)
+        self.assertIn("a second person brought in to compare", history)
+        self.assertIn("what would have happened if they had never lived", history)
+        self.assertNotIn("a lesson missing the third is teaching impact", history)
+
+    def test_the_limit_keeps_a_named_comparison(self) -> None:
+        history = flat(HISTORY)
+        self.assertIn("names two people, or asks children to compare, gets its comparison", history)
 
 
 class TheCharacterDistinctionReachesTheClass(unittest.TestCase):
@@ -89,17 +92,17 @@ class AnEndingMayTransferNotOnlySynthesise(unittest.TestCase):
     def test_the_preference_names_transfer_as_a_second_kind(self) -> None:
         preferences = flat(PREFERENCES)
         self.assertIn("Synthesis is not the only thing an ending can be", preferences)
-        self.assertIn("whether the idea has been anywhere except the cases that taught it", preferences)
+        self.assertIn("Judge what further thinking the ending would add", preferences)
         # The existing synthesis test is not removed, only bounded.
         self.assertIn("where the Your Turn and its answers already are the synthesis moment", preferences)
 
     def test_the_designer_holds_the_two_shapes(self) -> None:
         designer = flat(DESIGNER)
         self.assertIn("that is where the Apply comes from", designer)
-        self.assertIn("The idea on a case the lesson never showed", designer)
-        self.assertIn("the question asked the other way round", designer.lower())
-        # The worked case, so the shape is recognisable rather than abstract.
-        self.assertIn("Would children's lives still have changed?", designer)
+        self.assertIn("the idea on an accessible case the lesson never showed", designer)
+        # The turned-round what-if was retired on 27 September 2026.
+        self.assertIn("A \"what if it had never happened?\" question is not this shape at primary", designer)
+        self.assertNotIn("Would children's lives still have changed?", designer)
 
 
 class OrderTheLessonTheWayAChildFollowsIt(unittest.TestCase):

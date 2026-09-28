@@ -170,9 +170,10 @@ class TheVocabularyHasOneHome(unittest.TestCase):
         # Decision 11: it is about answer slides, and sits with that rule now.
         vocabulary = section(self.PREFERENCES, "## Vocabulary")
         checking = section(self.PREFERENCES, "## Support, Checking and Release")
-        self.assertNotIn("A PREFERENCE, not a rule", vocabulary)
-        self.assertIn("**A PREFERENCE, not a rule: an answer slide that looks like its question slide", checking)
-        self.assertIn("It's just the preference I have.", checking)
+        self.assertNotIn("A trailing answer arrow", vocabulary)
+        self.assertIn("**A trailing answer arrow remains optional.**", checking)
+        self.assertIn("Do not add arrows to every practice set or add a check requiring them.", checking)
+        self.assertIn("ordinary paired answer reveal", checking)
 
     def test_the_designer_keeps_no_second_copy_of_the_teaching_rules(self) -> None:
         designer = section(ROOT / "agents" / "lesson-designer.md", "### Vocabulary")

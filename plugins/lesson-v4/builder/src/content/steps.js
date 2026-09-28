@@ -418,6 +418,81 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   }
 
   const rows = cardRows(steps, zone, innerX, innerW, innerH);
+
+  // A refusal names the item that failed, and also what the whole list needs.
+  //
+  // It used to name one limit at a time. A Year 4 PSHE task panel was refused
+  // first for its sticky line, then, with that moved, for cards too short to
+  // hold a line, then, with the panel taller, for a 41-character criterion in
+  // a card that held 40: three repair passes on one panel, each fixing the one
+  // limit it had been told about (27 September 2026). The list's own need is
+  // known here, every item on its own lines at the floor at this width, so the
+  // refusal says it once and one repair clears them all. The height it needs
+  // also travels with the refusal, so a stack above can say the weight that
+  // reaches it.
+  const wholeList = () => {
+    const needAt = (h, w = innerW) => {
+      const r = cardRows(steps, zone, innerX, w, h);
+      return {
+        rows: r,
+        need: steps.reduce((total, s) => total + floorNeed(textOf(s), r, floorFor(s)), 0)
+      };
+    };
+    let h = panelH;
+    let found = needAt(h);
+    for (let pass = 0; pass < 8 && Number.isFinite(found.need) && found.need > h + 1e-6; pass += 1) {
+      h = found.need;
+      found = needAt(h);
+    }
+    if (!Number.isFinite(found.need)) {
+      return {
+        sentence: ` One word in this list is wider than its card at ${TEXT_FONT_MIN}pt, so the ` +
+          'panel needs more width; no height fits it.',
+        short: null
+      };
+    }
+    const short = Math.max(h, found.need) - panelH;
+    if (short <= 0.02) return { sentence: '', short: null };
+    let criterion = 0;
+    const parts = steps.map((s) => {
+      const lines = wrappedLineCount(textOf(s), usableWidth(Math.max(0.3, found.rows.stepTextW)), floorFor(s));
+      const name = isReferenceStep(s) ? 'the sticky line' : `criterion ${criterion += 1}`;
+      return `${name} ${lines} line${lines === 1 ? '' : 's'}`;
+    });
+    // The other lever: the least extra width at which the list fits the
+    // height it has now, searched up to half the slide's width.
+    const fitsAtWidth = (w) => {
+      const n = needAt(panelH, w).need;
+      return Number.isFinite(n) && n <= panelH + 1e-6;
+    };
+    const widest = Math.max(innerW, 6.4);
+    let wider = '';
+    if (fitsAtWidth(widest)) {
+      let lo = innerW;
+      let hi = widest;
+      while (hi - lo > 0.02) {
+        const mid = (lo + hi) / 2;
+        if (fitsAtWidth(mid)) hi = mid; else lo = mid;
+      }
+      wider = `, or about ${(hi - innerW + 0.02).toFixed(2)}in more width at this height,`;
+    }
+    return {
+      sentence: ` That is not this item's limit alone: at ${TEXT_FONT_MIN}pt and this width the ` +
+        `whole list needs about ${(panelH + short).toFixed(2)}in of height (${parts.join(', ')}) ` +
+        `and has ${panelH.toFixed(2)}in. About ${short.toFixed(2)}in more height${wider || ','} ` +
+        `clears every item at once${wider ? '' : '; no width up to half the slide does it at this height'}.`,
+      short
+    };
+  };
+  const refuse = (message) => {
+    const whole = wholeList();
+    const error = new Error(message + whole.sentence);
+    if (whole.short) {
+      error.neededZoneHeight = zone.h + whole.short;
+      error.zoneHeight = zone.h;
+    }
+    return error;
+  };
   const { rowH, badgeW, badgeFont, cardW, cardX, stepTextW, rowGapForFit } = rows;
 
   // The height each item genuinely needs at the readable floor.
@@ -541,7 +616,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     );
 
     if (referenceFloorTotal && stepNeedTotal + referenceFloorTotal > innerH) {
-      throw new Error(
+      throw refuse(
         overloadMessage(
           steps,
           steps.findIndex(isReferenceStep),
@@ -576,7 +651,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
       // zone has. Not printed unreadably small, and not trimmed: either the
       // words or the room has to change, and both are decisions above this
       // renderer.
-      throw new Error(
+      throw refuse(
         overloadMessage(
           steps,
           textNeed.indexOf(Math.max(...textNeed)),
@@ -642,7 +717,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
 
   const overloadedAt = perStepFont.indexOf(null);
   if (overloadedAt !== -1) {
-    throw new Error(
+    throw refuse(
       overloadMessage(
         steps,
         overloadedAt,
@@ -707,7 +782,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     );
 
     if (fits === null) {
-      throw new Error(
+      throw refuse(
         overloadMessage(
           steps,
           i,

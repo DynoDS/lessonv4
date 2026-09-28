@@ -91,8 +91,8 @@ class MarkedRequirementsBindTests(unittest.TestCase):
             "A suggestion you judged and declined needs neither trace nor flag",
             designer,
         )
-        # Coverage stays the school's call, so it keeps its flag.
-        self.assertIn("coverage is the school's call", designer)
+        # Plan content left out is noted in one line, not defended (27 September 2026).
+        self.assertIn("it is a note, not a defence", designer)
 
     def test_the_reviewer_does_not_push_the_brief_back_in(self) -> None:
         """The reviewer independently checked that teacher requirements were

@@ -41,6 +41,18 @@ copying cost that would swallow the lesson. Daniel's ruling on the Year 4
 nearest-1,000 Greater Depth sheet, 19 September 2026: one digit box does not
 make a write-on sheet.
 
+**Room to answer is what a book is.** A `response` upstream that says where the
+answers go - handwriting lines, an open working area, space to try numerals and
+list what you find, boxes for a search - describes answer room. The book
+supplies that room, and the slip is the same question with it taken out, so it
+never makes a sheet on its own. Neither does a speech bubble, a claim or a
+reference the child reads before writing: it prints on the slip and is read
+there. Greater Depth is where this goes wrong: a finite search and a
+counterexample, each answered with a list or an explanation, were marked
+`"sheet"` on four Year 4 maths lessons in a row because their answer room was
+described as a printed working area. A sheet needs something printed that the
+child works *on*.
+
 **Say why, either way.** Every sheet carries `"recordingReason"`: one line saying
 why this whole sheet is better that way. For `"sheet"`, name the question that
 needs the page and what the child does to it - `"Q4: the child labels the printed

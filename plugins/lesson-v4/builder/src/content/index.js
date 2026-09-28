@@ -437,8 +437,13 @@ function drawContent(pptx, slide, zone, data, ctx) {
             // handed enough room has to read the allocation, not the hug: the
             // hug is the answer to that question, so measuring it would always
             // agree with itself.
+            // A card stretched to its neighbour's height holds what it
+            // measured in the middle of it, not at the top.
+            const centredY = zone.matchCardHeight
+              ? drawn.y + Math.max(0, (zone.h - 2 * pad - drawn.h) / 2)
+              : drawn.y;
             inner = Object.assign({}, inner, {
-              x: drawn.x, y: drawn.y, w: drawn.w, h: drawn.h,
+              x: drawn.x, y: centredY, w: drawn.w, h: drawn.h,
               cell: { x: inner.x, y: inner.y, w: inner.w, h: inner.h }
             });
           }

@@ -71,6 +71,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -193,6 +194,25 @@ def repeats_of(value: dict) -> int:
     return 1
 
 
+def is_reveal_pair(value: object) -> bool:
+    """Whether a reveal-pair declaration is the renderer's exact contract.
+
+    This small declaration identifies two views of the same authored text; it
+    is authoring metadata, not another content object. Keep this deliberately
+    narrower than a generic nested-object exception.
+    """
+    if not isinstance(value, dict) or set(value) != {"id", "state"}:
+        return False
+    pair_id = value.get("id")
+    state = value.get("state")
+    return (
+        isinstance(pair_id, str)
+        and bool(re.fullmatch(r"[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*", pair_id))
+        and isinstance(state, str)
+        and state in {"question", "answer"}
+    )
+
+
 def is_flat(item: object) -> bool:
     """A value, not a container.
 
@@ -216,7 +236,9 @@ def is_flat(item: object) -> bool:
             for cell in item
         )
     return isinstance(item, dict) and not any(
-        isinstance(child, (dict, list)) for child in item.values()
+        isinstance(child, (dict, list))
+        for key, child in item.items()
+        if not (key == "revealPair" and is_reveal_pair(child))
     )
 
 
@@ -344,7 +366,7 @@ PRINTED_METADATA_FIELDS = {"lo", "lesson", "name", "title"}
 RESPONSE_SET_HELPERS = {"questions": 0, "written-answers": 3}
 
 
-def channel_of(channel: str, key: str) -> str:
+def channel_of(channel: str, key: str, value: object = None) -> str:
     """Which audience the value under this key belongs to.
 
     Once inside the teacher's copy everything below stays there. Metadata is the
@@ -353,6 +375,8 @@ def channel_of(channel: str, key: str) -> str:
     """
     if channel == "teacher" or key in TEACHER_KEYS:
         return "teacher"
+    if key == "revealPair" and is_reveal_pair(value):
+        return "metadata"
     if key in METADATA_KEYS:
         return "metadata"
     if channel == "metadata":
@@ -514,7 +538,7 @@ class Census:
                 continue
             if key == "parts" and is_width_split(child):
                 continue
-            child_channel = channel_of(channel, key)
+            child_channel = channel_of(channel, key, child)
             if key in DISCRIMINATORS or key == "visual":
                 # Already counted as an object, with a helper's aliases
                 # resolved. Counting the name again here would call a legal

@@ -205,69 +205,14 @@ def write_science_contract(
     return design, photos
 
 
-def voice_sweep_line(
-    working_dir: Path,
-    *,
-    read_count: int | None = None,
-    repaired: int = 0,
-) -> str:
-    """The receipt line a review must carry, counted from the prepared view."""
-    view = working_dir / "design-review-view.md"
-    count, year = 0, 4
-    if view.exists():
-        for line in view.read_text(encoding="utf-8").splitlines():
-            match = re.match(
-                r"^(\d+) child-facing strings for a Year (\d+) class\.",
-                line.strip(),
-            )
-            if match:
-                count, year = int(match.group(1)), int(match.group(2))
-                break
-    if read_count is not None:
-        count = read_count
-    line = (
-        f"Read {count} child-facing strings as a Year {year} child; "
-        f"repaired {repaired}."
-    )
-    calls = closest_calls(view, min(3, count))
-    if calls:
-        line += "\nClosest to a repair:\n" + "\n".join(calls)
-    return line
-
-
-def closest_calls(view: Path, wanted: int) -> list[str]:
-    """Quote real strings out of the prepared view, as a review must.
-
-    The sweep has to name the calls it found hardest, and the packet checks the
-    quotes against the view, so a fixture cannot invent them either.
-    """
-    if wanted <= 0 or not view.exists():
-        return []
-    quoted: list[str] = []
-    for line in view.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped.startswith("> ") and len(stripped) > 4:
-            text = " ".join(stripped[2:].split())
-            if text and text not in quoted:
-                quoted.append(text)
-        if len(quoted) == wanted:
-            break
-    return [f'> "{text}" - a child can act on this as written.' for text in quoted]
-
-
 def write_review(
     working_dir: Path,
     result: str,
-    *,
-    voice_sweep: str | None = None,
 ) -> Path:
     path = (
         working_dir
         / "design-review.md"
     )
-    if voice_sweep is None:
-        voice_sweep = voice_sweep_line(working_dir)
-
     if result == "APPROVED":
         redesign_required = "- None.\n\n"
     else:
@@ -289,8 +234,6 @@ def write_review(
         f"{redesign_required}"
         "## Flags for the teacher\n"
         "- None.\n\n"
-        "## Voice sweep\n"
-        f"{voice_sweep}\n\n"
         "## Judgements\n"
         f"Pedagogy: {'PASS' if result == 'APPROVED' else 'REVISE'}\n"
         "User-fit: PASS\n",
@@ -1871,9 +1814,7 @@ def test_verify_rejects_out_of_order_required_review_headings():
             "## Corrections made\n"
             "- None.\n\n"
             "## Flags for the teacher\n"
-            "- None.\n\n"
-            "## Voice sweep\n"
-            f"{voice_sweep_line(working_dir)}\n",
+            "- None.\n",
             encoding="utf-8",
         )
 
@@ -2337,52 +2278,11 @@ def test_a_lesson_with_no_key_vocabulary_says_so():
     )
 
 
-def test_verify_accepts_a_voice_sweep_that_matches_the_view():
-    with tempfile.TemporaryDirectory() as tmp:
-        working_dir = Path(tmp)
-        write_science_contract(working_dir)
-        prepare_result, preflight, reference = prepare(working_dir)
-        assert prepare_result.returncode == 0
-
-        review = write_review(
-            working_dir,
-            "APPROVED",
-            voice_sweep=voice_sweep_line(working_dir, repaired=2),
-        )
-        result, postflight = verify(working_dir, preflight, reference, review)
-
-        assert result.returncode == 0, result.stderr
-        receipt = json.loads(postflight.read_text(encoding="utf-8"))
-        assert receipt["voiceSweep"]["repaired"] == 2
-        assert receipt["voiceSweep"]["childFacingStrings"] > 0
-
-
-def test_verify_rejects_a_voice_sweep_whose_count_is_not_the_views():
-    with tempfile.TemporaryDirectory() as tmp:
-        working_dir = Path(tmp)
-        write_science_contract(working_dir)
-        prepare_result, preflight, reference = prepare(working_dir)
-        assert prepare_result.returncode == 0
-
-        expected = voice_sweep_line(working_dir)
-        expected_count = int(expected.split()[1])
-        review = write_review(
-            working_dir,
-            "APPROVED",
-            voice_sweep=voice_sweep_line(
-                working_dir,
-                read_count=expected_count + 5,
-            ),
-        )
-        result, postflight = verify(working_dir, preflight, reference, review)
-
-        assert result.returncode == 1
-        assert f"review view printed {expected_count} child-facing strings" in result.stderr
-        assert f"Read {expected_count} child-facing strings as a Year" in result.stderr
-        assert not postflight.exists()
-
-
-def test_verify_rejects_a_review_with_no_voice_sweep():
+def test_verify_accepts_a_review_with_no_voice_sweep():
+    """27 September 2026: the reviewer's string-by-string voice sweep and its
+    count receipt are retired. How every string sounds belongs to the lesson
+    voice editor, which runs after the review and is held by its own lane check
+    (`check-voice-edit.py`), so a review without a sweep is a whole review."""
     with tempfile.TemporaryDirectory() as tmp:
         working_dir = Path(tmp)
         write_science_contract(working_dir)
@@ -2390,13 +2290,27 @@ def test_verify_rejects_a_review_with_no_voice_sweep():
         assert prepare_result.returncode == 0
 
         review = write_review(working_dir, "APPROVED")
-        text = review.read_text(encoding="utf-8")
-        review.write_text(text[: text.index("## Voice sweep")], encoding="utf-8")
+        assert "## Voice sweep" not in review.read_text(encoding="utf-8")
         result, postflight = verify(working_dir, preflight, reference, review)
 
-        assert result.returncode == 1
-        assert "exactly one '## Voice sweep' heading" in result.stderr
-        assert not postflight.exists()
+        assert result.returncode == 0, result.stderr
+        receipt = json.loads(postflight.read_text(encoding="utf-8"))
+        assert "voiceSweep" not in receipt
+
+
+def test_the_reviewer_leaves_how_words_sound_to_the_voice_editor():
+    reviewer = " ".join(
+        (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8").split()
+    )
+    assert "How a string sounds is not yours to judge or repair" in reviewer
+    assert "Closest to a repair:" not in reviewer
+    assert "## Voice sweep" not in reviewer
+    # What the words teach is still the reviewer's.
+    assert "Read the words for what they teach" in reviewer
+    assert "whether any wording gives an answer away" in reviewer
+
+
+
 
 
 def _routing() -> dict[str, str]:
@@ -2472,88 +2386,8 @@ def test_progression_calibration_covers_false_links_and_legitimate_convergence()
 # gap; the sweep left no evidence of a judgement, so it now names the calls it
 # found hardest and the packet checks the quotes against the view.
 
-def test_verify_rejects_a_sweep_that_only_counts():
-    with tempfile.TemporaryDirectory() as tmp:
-        working_dir = Path(tmp)
-        write_science_contract(working_dir)
-        prepare_result, preflight, reference = prepare(working_dir)
-        assert prepare_result.returncode == 0
-
-        counted_only = voice_sweep_line(working_dir).split("\nClosest")[0]
-        review = write_review(working_dir, "APPROVED", voice_sweep=counted_only)
-        result, _ = verify(working_dir, preflight, reference, review)
-
-        assert result.returncode == 1
-        assert "Closest to a repair:" in result.stderr
-        assert "both produce" in result.stderr
 
 
-def test_verify_rejects_a_quote_the_view_never_printed():
-    """The check that stops this becoming another unfalsifiable line."""
-    with tempfile.TemporaryDirectory() as tmp:
-        working_dir = Path(tmp)
-        write_science_contract(working_dir)
-        prepare_result, preflight, reference = prepare(working_dir)
-        assert prepare_result.returncode == 0
-
-        sweep = voice_sweep_line(working_dir).split("\nClosest")[0]
-        sweep += (
-            "\nClosest to a repair:\n"
-            '> "A string no lesson ever wrote." - it reads clearly enough.\n'
-            '> "Another invention." - a child can act on this as written.\n'
-            '> "A third one." - a child can act on this as written.'
-        )
-        review = write_review(working_dir, "APPROVED", voice_sweep=sweep)
-        result, _ = verify(working_dir, preflight, reference, review)
-
-        assert result.returncode == 1
-        assert "does not print that string" in result.stderr
-
-
-def test_verify_rejects_a_closest_call_with_no_reason():
-    with tempfile.TemporaryDirectory() as tmp:
-        working_dir = Path(tmp)
-        write_science_contract(working_dir)
-        prepare_result, preflight, reference = prepare(working_dir)
-        assert prepare_result.returncode == 0
-
-        real = closest_calls(working_dir / "design-review-view.md", 3)
-        quoted = real[0].split('" - ')[0] + '" - fine.'
-        sweep = voice_sweep_line(working_dir).split("\nClosest")[0]
-        sweep += "\nClosest to a repair:\n" + "\n".join([quoted] + real[1:])
-        review = write_review(working_dir, "APPROVED", voice_sweep=sweep)
-        result, _ = verify(working_dir, preflight, reference, review)
-
-        assert result.returncode == 1
-        assert "gives no reason" in result.stderr
-
-
-def test_verify_rejects_the_same_string_named_twice():
-    with tempfile.TemporaryDirectory() as tmp:
-        working_dir = Path(tmp)
-        write_science_contract(working_dir)
-        prepare_result, preflight, reference = prepare(working_dir)
-        assert prepare_result.returncode == 0
-
-        real = closest_calls(working_dir / "design-review-view.md", 3)
-        sweep = voice_sweep_line(working_dir).split("\nClosest")[0]
-        sweep += "\nClosest to a repair:\n" + "\n".join([real[0], real[0], real[2]])
-        review = write_review(working_dir, "APPROVED", voice_sweep=sweep)
-        result, _ = verify(working_dir, preflight, reference, review)
-
-        assert result.returncode == 1
-        assert "twice" in result.stderr
-
-
-def test_the_reviewer_is_told_to_name_its_hardest_calls():
-    reviewer = " ".join(
-        (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8").split()
-    )
-    assert "Closest to a repair:" in reviewer
-    assert "quoted exactly as the view prints it" in reviewer
-    # The discrimination case: a good lesson still answers, because it is a
-    # ranking of its own strings and not an accusation against any of them.
-    assert "Write them even when the lesson reads well" in reviewer
 
 
 # The design reviewer release (topic 8, release 2). His decision 7 on the
@@ -2647,6 +2481,27 @@ def _names_listed(design: dict) -> dict[str, str]:
     }
 
 
+def test_explanation_support_is_routed_before_the_reviewer_detects_a_gap():
+    """An absent frame must still open its owner; this checks delivery, not pedagogy."""
+    routes = _routing()
+    trigger = routes["Support, Checking and Release"]
+    assert "before judging any task that asks children to explain or justify" in trigger
+    assert "including when no support is supplied" in trigger
+    assert "teacher-voice.md → 7. Scaffolding" in trigger
+    assert "other support or release to independence is in doubt" in trigger
+    with tempfile.TemporaryDirectory() as tmp:
+        working_dir = Path(tmp)
+        write_science_contract(working_dir)
+        result, _preflight, reference = prepare(working_dir)
+        assert result.returncode == 0
+        card = reference.read_text(encoding="utf-8")
+    assert f"- `Support, Checking and Release`: {trigger}" in card.splitlines()
+    owner = _preference_section("## Support, Checking and Release")
+    assert "can a child who has reached a verdict select evidence and explain how it supports that verdict" in owner
+    assert "no number of stems or words is required" in owner
+    assert "deliberately assessing unaided expression can need none" in owner
+
+
 def test_a_one_word_name_opening_its_board_sentence_is_listed_when_the_script_names_it():
     """The release's second check, item 2: the name case fires on a real person,
     place, organisation or event the list prints, and the list could not see a
@@ -2709,21 +2564,4 @@ def test_the_designer_makes_two_fixes_the_reviewer_names_and_the_reviewer_makes_
                 assert mark not in text, (row["id"], mark)
 
 
-def test_the_report_shape_shows_the_closest_calls_the_check_requires():
-    """The shape the reviewer is told to use exactly now carries the lines the
-    after-review check refuses a report without."""
-    reviewer = (ROOT / "agents" / "design-reviewer.md").read_text(encoding="utf-8")
-    shape = reviewer[reviewer.index("Use exactly this report shape:"):]
-    shape = shape[shape.index("```markdown"):]
-    shape = shape[: shape.index("```\n", 12)]
-    lines = shape.splitlines()
-    at = lines.index("## Voice sweep")
-    assert packet_module.VOICE_SWEEP_RE.match(
-        lines[at + 1].replace("[N]", "12").replace("[Y]", "4").replace("[M]", "0")
-    )
-    assert lines[at + 2] == packet_module.CLOSEST_CALLS_HEADING
-    calls = lines[at + 3: at + 3 + packet_module.CLOSEST_CALLS_WANTED]
-    assert len(calls) == packet_module.CLOSEST_CALLS_WANTED
-    for call in calls:
-        assert packet_module.CLOSEST_CALL_RE.match(call), call
-    assert lines[at + 3 + packet_module.CLOSEST_CALLS_WANTED] == ""
+

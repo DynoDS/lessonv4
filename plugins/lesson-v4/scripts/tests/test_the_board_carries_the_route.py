@@ -106,7 +106,7 @@ class TheCalibrationIsAtBothOwners(unittest.TestCase):
         # Routes decisions 3 and 4 (his 3, widened): how he usually explains
         # anything, not a template, written once for every route.
         self.assertIn("This is how this teacher usually explains anything, on a Teach board in any kind of lesson or wherever else something is explained: the takeaway, then a because or so that explains that one key point, then an example or what it does not mean.", text)
-        self.assertIn("It is how he usually explains, not a template, and the board reads that way unless the beat has a reason not to.", text)
+        self.assertIn("It is how he usually explains, not a template. The takeaway is on every Teach board, and the because or so is nearly always there with it", text)
         for owner in (PREFERENCES, LESSON_DESIGNER, DESIGN_REVIEWER):
             self.assertIn("the takeaway, the because or so, the example the class looks at, and what it does not mean", flat(owner))
         self.assertIn("never `No shops, no switches`", text)

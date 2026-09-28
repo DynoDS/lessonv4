@@ -229,7 +229,7 @@ module.exports = {
 
   // ─── geography ───
   map:
-    "A real shipped map with the lesson's marks on top, the same map the board draws: copy the slide's map object. `worksheetMode: \"continents-and-oceans\"` is the landscape write-on world form.",
+    "A real shipped map with the lesson's marks on top, the same map the board draws: copy the slide's map object, including the `continents-and-oceans` write-on world and South America's `regional-layers`.",
   "cause-path-grid":
     "Named steps across the top and a choice to make at each one, so a child traces a cause through to its effect rather than naming both ends.",
   "evidence-chain-frame":

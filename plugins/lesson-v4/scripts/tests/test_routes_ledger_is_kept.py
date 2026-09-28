@@ -166,9 +166,10 @@ class TheTeachersWayOfExplaining(unittest.TestCase):
 
     def test_his_calibration_examples_stay_exactly(self) -> None:
         content = text(CONTENT)
-        for example in ("`Lord Shaftesbury campaigned with others to protect children through laws.`",
-                        "`He wasn't a king who could order everyone to obey him, so he had to persuade Parliament to "
-                        "pass laws.`",
+        # The teacher rejected the earlier campaign/laws sentence on 26 September
+        # and explicitly endorsed this concrete takeaway. Preserve that calibration.
+        for example in ("`Lord Shaftesbury wanted children to spend less time working in factories.`",
+                        "`Long days at work left children tired, with little time to learn or play.`",
                         "`Look at her. She isn't being paid to do this.`",
                         "`Victorian children from poor families worked because their families needed the money`",
                         "\"we want variety, and sometimes it's not relevant just stating the misconception\"",

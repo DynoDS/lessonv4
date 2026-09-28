@@ -71,9 +71,18 @@ function alignSplitHPair(primaryZone, primaryData, secondaryZone, secondaryData,
     sides[0].settles ? sides[0].h : sides[0].zone.h,
     sides[1].settles ? sides[1].h : sides[1].zone.h
   );
+  // Cards that fit their words (a packing stack, content/stack.js) share the
+  // pair's band with their partner, so the two are centred on each other, and
+  // neither stretches to meet the other (the teacher's rules of 28 and 29
+  // September 2026). A packing stack used to keep its whole zone and centre in
+  // it while a shorter picture beside it centred on the top of the zone.
+  const { isPackingStack } = require('./content/stack');
+  const packing = sides.some((side) => isPackingStack(side.data) && side.settles);
   sides.forEach((side) => {
     if (isFillText(side.data)) {
       side.zone.h = spanH;
+    } else if (packing && isPackingStack(side.data)) {
+      side.zone.h = alignH;
     } else if (side.measured && side.h < alignH - 0.05) {
       side.zone.y += (alignH - side.h) / 2;
     }

@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PREFERENCES = ROOT / "references" / "preferences.md"
 VOICE = ROOT / "references" / "teacher-voice.md"
 DESIGNER = ROOT / "agents" / "lesson-designer.md"
+VOICE_EDITOR = ROOT / "agents" / "lesson-voice-editor.md"
 
 
 def flat(path: Path) -> str:
@@ -180,20 +181,23 @@ class ThePlayfulDecisionIsWrittenDown(unittest.TestCase):
     The question was being asked at the completion pass, where the cheapest
     answer is to change nothing."""
 
-    def test_the_answer_is_recorded_in_the_closing_decisions(self) -> None:
-        designer = flat(DESIGNER)
-        self.assertIn("Write the answer down, in one line, in the walk-through's closing decisions", designer)
-        self.assertIn("Name what the material offered and what you did with it", designer)
+    # 27 September 2026: the light moment is the lesson voice editor's, and it writes the
+    # decision into its own report rather than the designer's closing decisions.
+    def test_the_answer_is_recorded_in_the_voice_edit_report(self) -> None:
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("Record what you decided under `Light moment` in your report", editor)
+        self.assertIn("naming what the material offered and what you did with it", editor)
+        self.assertIn("## Light moment", editor)
 
     def test_the_diagnosis_of_why_none_kept_winning_is_stated(self) -> None:
-        designer = flat(DESIGNER)
-        self.assertIn("the cheapest answer is to change nothing", designer)
-        self.assertIn("A line you have to write is a decision", designer)
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("the cheapest answer is to change nothing", editor)
+        self.assertIn("a line you have to write is a decision", editor)
 
     def test_none_is_still_a_real_answer(self) -> None:
-        designer = flat(DESIGNER)
-        self.assertIn("`None` is still a perfectly good answer and stays common", designer)
-        self.assertIn("Most lessons hand over nothing", designer)
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("`None` is still a perfectly good answer and stays common", editor)
+        self.assertIn("most lessons hand over nothing", editor)
 
 
 class HowMuchATeachSlideHolds(unittest.TestCase):
@@ -209,7 +213,7 @@ class HowMuchATeachSlideHolds(unittest.TestCase):
 
     def test_the_working_ceiling_is_stated(self) -> None:
         preferences = flat(PREFERENCES)
-        self.assertIn("about four pieces of text beside its picture", preferences)
+        self.assertIn("five things on the board, counting everything the class looks at", preferences)
         self.assertIn("the slide is over on pieces rather than on words", preferences)
 
     def test_teaching_that_will_not_fit_gets_a_slide_not_the_script(self) -> None:
@@ -261,9 +265,13 @@ class ALightLineCompetesForTheBoard(unittest.TestCase):
     yaknow, it doesnt have to live in speaker notes, is that in plugin?" It
     was, and the amount rule was overruling it."""
 
-    def test_the_line_is_one_of_the_four_rather_than_an_extra(self) -> None:
+    def test_the_line_is_never_squeezed_out_by_the_budget(self) -> None:
+        # 27 September 2026: a light line on the board now sits inside a sentence
+        # already there (the lesson voice editor's, by his ruling on who owns the
+        # board), so it no longer competes for one of the pieces.
         preferences = flat(PREFERENCES)
-        self.assertIn("A light line is one of the things this budget is for", preferences)
+        self.assertIn("A light line is never squeezed out by this budget", preferences)
+        self.assertIn("goes inside a sentence already there rather than as a piece of its own", preferences)
         self.assertIn("demoted for a reason that has nothing to do with where it belonged", preferences)
         self.assertIn("it does not do is lose automatically because it arrived last", preferences)
 

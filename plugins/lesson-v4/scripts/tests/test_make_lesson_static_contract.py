@@ -671,7 +671,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         """
         designer = self._designer_text()
         section = designer.split(
-            "When every decision is made,",
+            "When the parts are chosen,",
             1,
         )[1].split(
             "Use these alignment traces:",

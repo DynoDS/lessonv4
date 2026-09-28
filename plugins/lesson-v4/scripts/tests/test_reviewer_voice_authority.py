@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 REVIEWER = ROOT / "agents" / "design-reviewer.md"
+VOICE_EDITOR = ROOT / "agents" / "lesson-voice-editor.md"
 VOICE = ROOT / "references" / "teacher-voice.md"
 
 
@@ -34,88 +35,59 @@ class ReviewerVoiceAuthorityTests(unittest.TestCase):
     banned, and bounded corrections existed only to "restore the settled
     lesson". A dutiful reviewer runs the check, classes the miss as polish,
     and moves on. The repair is authority, not another authoring tell.
+
+    27 September 2026: that authority moved to the lesson voice editor, a worker
+    whose only job is the words, run after the review approves the lesson. The
+    reviewer's sweep had caught 4 of 62 strings on a Codex lesson and passed the
+    adult register; a focused voice pass on the same lesson did far better. The
+    calibration below moved with the authority, word for word.
     """
 
-    def test_register_is_a_material_outcome(self) -> None:
+    def test_register_is_the_voice_editors_outcome_not_the_reviewers(self) -> None:
         reviewer = flat(REVIEWER)
         self.assertIn(
-            "the teacher's voice in child-facing and spoken words", reviewer
-        )
-
-    def test_the_polish_exclusion_no_longer_swallows_register(self) -> None:
-        """"Do not report polish" stays for design polish; a wrong-register
-        string is carved out with the reason it is not polish."""
-        reviewer = flat(REVIEWER)
-        self.assertIn(
-            "Do not report polish that has no material teaching or learning "
-            "effect.",
+            "The teacher's voice in child-facing and spoken words is the lesson voice editor's outcome",
             reviewer,
         )
+        self.assertIn("How a string sounds is not yours to judge or repair", reviewer)
         self.assertIn(
-            "A child-facing or spoken string in the wrong register is not "
-            "polish.",
+            "Do not report polish that has no material teaching or learning effect.",
             reviewer,
         )
-        # The reason: strings ship verbatim, so otherwise the teacher fixes them.
-        self.assertIn("no downstream agent is permitted to reword it", reviewer)
-        self.assertIn("the teacher would have to edit it out by hand", reviewer)
+        self.assertNotIn("Then sweep the voice, string by string.", reviewer)
 
-    def test_the_sweep_is_enumerated_not_an_impression(self) -> None:
-        """"The voice seemed fine" is what failed; the sweep walks strings."""
-        reviewer = flat(REVIEWER)
-        self.assertIn("Then sweep the voice, string by string.", reviewer)
+    def test_the_editor_walks_every_string_not_an_impression(self) -> None:
+        """"The voice seemed fine" is what failed; the editor walks strings."""
+        editor = flat(VOICE_EDITOR)
         self.assertIn(
             "every script, explanation, definition, question, task "
             "instruction, success criterion, sticky fact, model answer and "
             "worksheet string",
-            reviewer,
+            editor,
         )
-        self.assertIn("Final pre-flight check", reviewer)
+        self.assertIn("Final pre-flight check", editor)
+        self.assertIn('a general "the voice seemed fine" is not the job', editor)
 
-    def test_the_real_misses_calibrate_the_sweep(self) -> None:
-        reviewer = flat(REVIEWER)
-        # The written-register script, with the spoken repair beside it.
-        self.assertIn(
-            "Trace where the electricity comes from in each photograph",
-            reviewer,
-        )
-        self.assertIn(
-            "Look at where each one gets its electricity from", reviewer
-        )
-        # The machine-rhythm run of nutrient sentences.
-        self.assertIn("Carbohydrates are our main source of energy.", reviewer)
-        # The repeated-construction model answer.
-        self.assertIn("The pitta provides", reviewer)
-        # The missed playful opening, guarded by the guide's own judgement.
-        self.assertIn(
-            "an easy playful opportunity the content handed over and nothing "
-            "took",
-            reviewer,
-        )
-        self.assertIn("never force one", reviewer)
+    def test_the_real_misses_calibrate_the_editor(self) -> None:
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("Trace where the electricity comes from in each photograph", editor)
+        self.assertIn("Look at where each one gets its electricity from", editor)
+        self.assertIn("Carbohydrates are our main source of energy.", editor)
+        self.assertIn("The pitta provides", editor)
+        self.assertIn("an easy playful opportunity the content handed over and nothing took", editor)
+        self.assertIn("never force one", editor)
 
     def test_repairs_are_bounded_and_metadata_is_off_limits(self) -> None:
         """The calibrator's boundary: repair only genuine misses, and never
-        judge planning fields as voice."""
-        reviewer = flat(REVIEWER)
-        self.assertIn(
-            "same meaning, same teaching, same difficulty, the teacher's "
-            "register",
-            reviewer,
-        )
-        self.assertIn(
-            "rewriting sound strings to taste is the same fault in the other "
-            "direction",
-            reviewer,
-        )
-        self.assertIn("Never reword planning metadata", reviewer)
-        for field in ("`teacherInfo`", "`acceptanceCondition`",
-                      "`flagsForTeacher`"):
+        judge planning fields as voice. The lane check enforces the second."""
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("same meaning, same teaching, same difficulty, the teacher's register", editor)
+        self.assertIn("rewriting sound strings to taste is the same fault in the other direction", editor)
+        self.assertIn("Never reword planning metadata", editor)
+        for field in ("`teacherInfo`", "`acceptanceCondition`", "`flagsForTeacher`"):
             with self.subTest(field=field):
-                self.assertIn(field, reviewer)
-        self.assertIn(
-            "Record each repair under Corrections made", reviewer
-        )
+                self.assertIn(field, editor)
+        self.assertIn("check-voice-edit.py", editor)
 
     def test_a_recorded_caveat_binds_the_wording_it_governs(self) -> None:
         """The balanced-diet lesson wrote `a single lunch can illustrate
@@ -142,8 +114,8 @@ class ReviewerVoiceAuthorityTests(unittest.TestCase):
         voice = flat(VOICE)
         self.assertIn("opportunity-sensitive, not quota-based", voice)
         self.assertIn("Final pre-flight check", voice)
-        reviewer = flat(REVIEWER)
-        self.assertIn("teacher-voice.md", reviewer)
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("teacher-voice.md", editor)
 
 
 if __name__ == "__main__":

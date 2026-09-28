@@ -1269,3 +1269,58 @@ test("a side-by-side ratio does set a real width", () => {
   assert.throws(() => renderSheet({ ...base, layout: "side-20-80" }), /needs \d+mm wide, zone is \d+mm/);
   assert.doesNotThrow(() => renderSheet({ ...base, layout: "side-50-50" }));
 });
+
+test("a group's task line prints once as the whole question, above its Parts", () => {
+  // "(2a) Write each number as Roman numerals. 62" read as part a's task alone
+  // (Daniel, 28 September 2026). The line takes the main number; the key still
+  // answers the Parts.
+  const part = (t, extra = {}) => ({
+    question: true,
+    questionGroupId: "qg-2",
+    ...extra,
+    helper: "questions",
+    showNumbers: false,
+    items: [t],
+  });
+  const sheets = sheetsOf(
+    groupedSheet({
+      a: {
+        stack: [
+          { question: true, stack: [{ helper: "questions", items: ["First."] }] },
+          part("62", { groupPrompt: "Write each number as Roman numerals." }),
+          part("85"),
+        ],
+      },
+    })
+  );
+  const stack = sheets[0].spec.zones.a.stack;
+  assert.deepEqual(stack.map((n) => n.number), [1, 2, "2a", "2b"]);
+  assert.equal(stack[1].helper, "instruction");
+  assert.equal(stack[1].text, "Write each number as Roman numerals.");
+  assert.equal(stack[2].groupPrompt, undefined);
+  assert.equal(JSON.stringify(stack[2]).includes("Write each number"), false);
+  // Printed: the line's (1), then the Parts. The key answers only the Parts.
+  const spec = groupedSheet({ a: { stack: [part("62", { groupPrompt: "Do this." }), part("85")] } });
+  assert.deepEqual(labelsOf(spec), ["1", "1a", "1b"]);
+  spec.answerKey = { expected: [{ question: "1a", answer: "LXII" }, { question: "1b", answer: "LXXXV" }] };
+  assert.doesNotThrow(() => answerKeyOf(spec));
+  spec.answerKey.expected.push({ question: 1, answer: "a task line has no answer of its own" });
+  assert.throws(() => answerKeyOf(spec), (error) => error.signal === "ANSWER_KEY_EXTRA");
+});
+
+test("a task line anywhere but a group's first Part is refused", () => {
+  const part = (extra = {}) => ({ question: true, questionGroupId: "g", ...extra, helper: "questions", showNumbers: false, items: ["x"] });
+  for (const stack of [
+    [part(), part({ groupPrompt: "Late." })],
+    [{ question: true, groupPrompt: "Alone.", helper: "questions", showNumbers: false, items: ["x"] }],
+    [{ groupPrompt: "Not a question.", helper: "instruction", text: "x" }],
+  ]) {
+    assert.throws(
+      () => sheetsOf(groupedSheet({ a: { stack } })),
+      (error) => {
+        assert.equal(error.signal, "GROUP_PROMPT_MISPLACED");
+        return true;
+      }
+    );
+  }
+});

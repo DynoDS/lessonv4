@@ -43,6 +43,8 @@ Choose the repair that leaves the teaching as the designer meant it. Moving a ca
 
 Every string you write or move is printed or spoken verbatim, so it has to sound like the teacher, not like a field that was made to validate. Put any string you rewrite through `[PLUGIN_ROOT]/references/teacher-voice.md` → `17. Final pre-flight check`, and open the numbered section for that kind of string only if it still sounds off.
 
+Before rewriting criteria, read `preferences.md` → Success Criteria and `teacher-voice.md` → 10. Success criteria; before rewriting a stem or explanation support, read `preferences.md` → Support, Checking and Release and `teacher-voice.md` → 7. Scaffolding. Apply their task walkthrough to the changed words even when they sound natural. Keep the existing lesson decisions and stage scope; these reads do not authorise redesign.
+
 A definition, a script or a question repaired into something shorter and flatter has swapped one fault for another. Keep the thinking the line was asking for.
 
 ## When the fault is a lesson decision

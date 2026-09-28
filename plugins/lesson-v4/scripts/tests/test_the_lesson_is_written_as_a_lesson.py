@@ -87,7 +87,7 @@ class ThePlannerWritesTheLessonFirst(unittest.TestCase):
 
     def test_the_walk_through_order_puts_the_thought_before_the_activity(self) -> None:
         text = DESIGNER.read_text(encoding="utf-8")
-        section = text.split("**Then each slide, in order.**", 1)[1].split("**Then the read-back", 1)[0]
+        section = text.split("**Then each slide, in order, cut from the told lesson.**", 1)[1].split("**Then the read-back", 1)[0]
         self.assertLess(section.index("- the thought:"), section.index("- what happens:"))
 
     def test_the_read_back_and_the_closing_decisions_survive(self) -> None:

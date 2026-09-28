@@ -161,7 +161,7 @@ class BecauseSentenceHasItsBoundaryTests(unittest.TestCase):
     def test_a_because_already_on_the_board_is_not_a_use(self) -> None:
         beats = flat(DO_BEATS)
         self.assertIn("whether the because is already on the board", beats)
-        self.assertIn("applied to a case the Teach did not cover", beats)
+        self.assertIn("applied to a fresh case with enough supplied context to use the taught relationship", beats)
 
 
 class ThePacketShowsWhereEachStickyFactIsUsedTests(unittest.TestCase):

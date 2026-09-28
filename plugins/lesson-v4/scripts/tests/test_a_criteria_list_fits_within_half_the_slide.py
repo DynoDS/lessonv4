@@ -1,9 +1,9 @@
 """A criteria list the panels the guidance names cannot hold is caught at design time.
 
 A practice slide's success-criteria panel widens itself only as far as its list
-needs to read at 18pt, and never past 6.35in; when even that refuses, the
-guidance sends the slide designer to the half-width split, whose side is 0.15in
-taller. Nobody after the lesson designer may reword a criterion, so the teacher
+needs to read at 18pt, and never past 6.35in; the half-width split is a roomier
+option whose side is 0.15in taller, while shorter lists may use narrower free
+geometry when measured fit permits it. Nobody after the lesson designer may reword a criterion, so the teacher
 decided on 23 September 2026 that a list too long even for the widest box is
 caught by the lesson check before any slides are made, and the lesson designer,
 who owns the words, tightens it. The check measures exactly the shapes the
@@ -332,22 +332,21 @@ def test_the_letter_widths_are_the_builders():
 
 def test_the_guidance_says_what_the_builder_and_the_check_now_do():
     ssc = " ".join((ROOT / "references" / "slide-success-criteria.md").read_text(encoding="utf-8").split())
-    assert ("What holds a list today: the practice templates' panel widens itself, only as far as "
-            "the whole list needs to read at 18pt and never past half the slide: 4.60in (about 26 "
-            "characters a line), then 5.50in (about 33), then 6.35in (about 39), each about 14 lines tall.") in ssc
-    assert "so there is nothing to choose, and a list that fits 4.60in keeps it." in ssc
-    assert ("When even the widest refuses, or a slide needs a free layout, use the half-width split "
-            "(`split-h-50-50`) with the criteria in an `sc-panel` down one whole side: about 39 characters "
-            "a line like the widest practice panel, and 0.15in taller, so it holds a little more.") in ssc
-    assert ("A list that neither the practice panel nor the half-width split can hold is caught by the "
-            "lesson check before any slides are made, and the lesson designer tightens it. One it could not "
-            "tighten is marked too long in the design (`tooLongForPanels`): place it as any long list, and "
-            "the builder draws it at the largest size that fits, down to 16pt, the one exception to the 18pt "
-            "minimum (a sticky line beside it stays at 18pt), on a finished slide it flags for the teacher to "
-            "check (`CRITERIA_BELOW_READABLE_FLOOR`, "
-            "the design's to answer for, so leave it).") in ssc
-    assert ("the rarest case is a marked list no panel holds even at 16pt) is delivered flagged for the "
-            "teacher to check, never cut to fit.") in ssc
+    # Delivery check for the owning guidance, not evidence of visual judgement.
+    # Preserve engine thresholds and the source-owner exception while retiring
+    # the blanket half-width fallback and categorical narrow-panel prohibition.
+    assert "18pt minimum through both initial layout and the final text-fitting pass" in ssc
+    assert "4.60in, then 5.50in, then 6.35in, never beyond half the slide" in ssc
+    assert "half-area limit is a ceiling, not an allocation target" in ssc
+    assert "A narrow column, a band or a panel sharing a column is suitable when" in ssc
+    assert "all its content and furniture remain readable and the task stays usable" in ssc
+    assert "Only that owner may tighten wording" in ssc
+    assert "`tooLongForPanels`" in ssc and "down to 16pt" in ssc
+    assert "a sticky line beside it stays at 18pt" in ssc
+    assert "`CRITERIA_BELOW_READABLE_FLOOR`" in ssc
+    assert "delivered flagged for the teacher to check, never cut to fit" in ssc
+    assert "Never put a method's steps in a 30% column" not in ssc
+    assert "or a slide needs a free layout, use the half-width split" not in ssc
     assert "as much as the widest practice panel holds" not in ssc
     templates = " ".join((ROOT / "references" / "templates.md").read_text(encoding="utf-8").split())
     assert "**The panel widens itself for a long list.** Across the `*-sc` family" in templates

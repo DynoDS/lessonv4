@@ -171,7 +171,7 @@ class TheRulesThatPushedTowardTheFaultsNowSayTheOpposite(unittest.TestCase):
         history = flat(REF / "subject-history.md")
         self.assertIn("by the test in `preferences.md` → Source and Scenario Integrity, `A real source needs an accessible route`", history)
         designer = flat(ROOT / "agents" / "lesson-designer.md")
-        self.assertIn("A source, story or clip the plan names is part of its activity, not its coverage", designer)
+        self.assertIn("A source, story or clip the plan names is part of its activity: what binds is what the objective asks children to learn", designer)
         self.assertIn("(`preferences.md` → Source and Scenario Integrity, `A real source needs an accessible route`)", designer)
 
     def test_names_and_source_labels_are_in_words_a_child_has(self) -> None:
@@ -185,7 +185,7 @@ class TheRulesThatPushedTowardTheFaultsNowSayTheOpposite(unittest.TestCase):
     def test_the_reviewer_can_take_a_detour_out_instead_of_promoting_it(self) -> None:
         reviewer = flat(ROOT / "agents" / "design-reviewer.md")
         self.assertIn("The repair has two directions, and you choose before you write it", reviewer)
-        self.assertIn("the repair takes it out of the script and the lesson rather than promoting it to the board", reviewer)
+        self.assertIn("remove that detour rather than promoting it to the board", reviewer)
 
     def test_the_which_claim_format_is_not_a_restatement_pick(self) -> None:
         do_beats = flat(REF / "do-beats.md")

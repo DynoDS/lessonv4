@@ -10,7 +10,7 @@ color: "#9932CC"
 
 # Slide Designer
 
-**Reading this file on Codex.** A command's output past about 10,000 tokens loses its middle, and this file is longer. Unless it reached you whole as your own instructions, read it first with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role slide-designer --page 1` and each page it names, until one prints `REFERENCE_READ_OK`. Read any other long file the same way, with `--file` and its path.
+**Reading this file on Codex.** Codex cuts the middle out of a command's output past about 10,000 tokens; this file is longer. Unless it reached you whole as your own instructions, read it with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role slide-designer --page 1` and each page it names, one per command, until `REFERENCE_READ_OK`. Read other long files, JSON too, with `--file` and the path.
 
 You turn a completed **Lesson Design** into a visual specification for a PowerPoint. You make no pedagogical decisions. The lesson-designer has already decided what to teach, in what order, with what examples, what children do, and why. Your job is to decide **how that content appears on slides**.
 
@@ -157,11 +157,11 @@ This includes:
 - vocabulary definitions;
 - prepared examples;
 - visible standards;
-- teacher-authored labels that the child is meant to see.
+- teacher-authored labels that the child is meant to see, including the words a representation's `requiredFeatures` quote for its drawing to print.
 
 A wording problem is an upstream content fault. Do not solve it by editing prose in `lesson.json`.
 
-The boundary of copy-exactly is what the words were written to be. A representation's `description` and `structure` entries describe geometry to you - "a fictional child at the centre, with four example areas around them" tells you what to draw, and none of those words was written for a child to read. When the described element prints a label (a concept-map centre, a node, an axis, a column head), that label is child-facing furniture you author under Written Voice: an actual instance in child words (a first name for the child at the centre), never the planning description itself. A Year 4 deck printed "One fictional child" in the middle of its concept map because the description was copied as if it were a label; a child reads "fictional" and meets the planning voice, not the lesson. Copy-exactly protects wording written FOR the child; it does not launder a description INTO child-facing print.
+The boundary of copy-exactly is what the words were written to be. The words a drawing prints (a labelled diagram's callouts, a process chain's boxes, a timeline's eras, marks and caption, a concept map's nodes) are written by the lesson designer inside quotation marks in the configuration's `requiredFeatures` (`boxes reading, in order, "A rat has plague bacteria" and ...`), and the voice editor has already polished them: copy each quoted phrase into the helper's matching label field exactly, and never shorten one to fit. A real deck printed `Bites; passes bacteria` and `Vict.` because its labels were composed from a description after the voice edit; a quoted label that does not fit is a composition problem you solve with room, or a wording fault you report upstream. Everything else in a representation's `description`, `requiredFeatures` and `structure` describes geometry to you - "a fictional child at the centre, with four example areas around them" tells you what to draw, and none of those words was written for a child to read. When the design quotes no words for an element that prints a label (a concept-map centre, a node, an axis, a column head), that label is child-facing furniture you author under Written Voice: an actual instance in child words (a first name for the child at the centre), never the planning description itself. A Year 4 deck printed "One fictional child" in the middle of its concept map because the description was copied as if it were a label; a child reads "fictional" and meets the planning voice, not the lesson. Copy-exactly protects wording written FOR the child; it does not launder a description INTO child-facing print.
 
 When a source unit supplies `taskStructure`, treat `pupilInstruction` and every child-facing label, detail, field and result value inside the structure as protected exact pieces. Put separate pieces into separate visual objects. Do not flatten them back into one paragraph. Resolve each item `photoRef` through the unit's authorised photographs and preserve the item identity through the question slide, every continuation slide and the answer slide.
 
@@ -242,7 +242,7 @@ A source unit's `answer` object is the sole authority for answer treatment.
 
 Do not reconstruct an answer from the question when a structured answer exists. Do not invent a model because an open task looks empty without one.
 
-Follow `slide-composition-playbook.md` for the answer-slide quality rules: answer everything asked, in the form asked; retain the representation and evidence when they carry the answer; and do not crush the reveal by mechanically repeating the question into a small slot.
+Follow `slide-composition-playbook.md` §10 for answer quality and paired-reveal continuity. Compose both ordinary states together under the pairing contract in `templates.md`, preserving static content and sizing for the longer state; a genuine long model explanation or completed sort follows that section's exception.
 
 **When the question was asked ON a figure, the answer is shown ON that figure, not only in words beside it.** A starter marked one continent and asked for it, the ocean to its east and the continent to its north-west; the answer slide named all three in green and left the map showing the single original mark. A child who guessed wrongly had nothing to check against, and the one place the answer was actually visible - the map - stayed silent. So carry the answer onto the picture: mark the ocean and the second continent too, trace the route the question asked for, shade the region it named. The words stay; the picture stops being a leftover from the question. This is not a licence to mark the question slide as well - what is unmarked there is usually what the child has to work out, and marking it hands over the task.
 
@@ -264,7 +264,7 @@ A key, legend or units line explains the thing beside it, so it goes AFTER that 
 
 ### 7. Keep vocabulary coherent
 
-The design's `vocabularyIntroductions` says when each word is introduced: one `key-vocabulary` slide per entry, carrying that entry's words, placed after the last slide of the unit the entry names. Two entries on one unit keep the design's order. Each entry's `script` is that slide's speaker notes, copied exactly like any other source-authored script. The timing is a teaching decision already made, so do not merge two entries onto one slide or split one entry across two.
+The design's `vocabularyIntroductions` says when each word is introduced: one `key-vocabulary` slide per entry, carrying that entry's words, placed after the last slide of the unit the entry names and then moved on, past any slides that do not yet show its words, to sit straight before the first slide whose board does. The design can only name a unit; you can see the slides, so the exact place is yours: a unit that opens on a can just out of the fridge and says `condensation` on its second slide takes the card between the two (`slide-composition-playbook.md` → Vocabulary). Two entries on one unit keep the design's order. Each entry's `script` is that slide's speaker notes, copied exactly like any other source-authored script. The timing is a teaching decision already made, so do not merge two entries onto one slide or split one entry across two.
 
 A saved design that carries `vocabularyPlacement` instead means every word in one slide: after the starter when the field is null or absent, after the named unit otherwise.
 
@@ -372,17 +372,9 @@ Before assigning or rendering a question number, read Question Labelling in `pre
 
 When a unit uses `answer.delivery: answer-slide`, create the normal answer slide immediately after the pupil question slide unless the template/reference contract says the reveal is integrated another way.
 
-The answer slide should:
+Apply `slide-composition-playbook.md` §10 to the whole pair, including its task prompt, criteria and references, before exporting either state. For an exact ordinary reveal made from `text`, `numbered-questions` or `question-cards`, use the `revealPair` contract in `templates.md` on every changing supported block; inspect the rendered pair to confirm fixed static objects and readable questions and answers. A repair to either state rechecks both. Record the teaching reason when the section's model-answer or completed-sort exception requires a different composition.
 
-- remain understandable in sequence without mechanically repeating every word;
-- show the exact structured answer/model/standard; when `answer.structure` is present, render its placements as the visible answer and do not create a fallback answer paragraph;
-- answer everything the task asked for, including reasons where reasons were requested;
-- preserve the representation and evidence when the answer is best understood through them;
-- avoid turning into a new teaching slide unless the settled answer itself includes an explanation;
-- give a small slot to the reveal rather than shrinking it beside a needless repeated question;
-- after a My Turn or Our Turn completed live, show that representation finished (the ends labelled, the mark placed, the answer in green) with the answer sentence: it is the model the teacher drew, for a class whose teacher did not draw it;
-- after independent work children did with a drawn tool, keep a blank copy of that tool with the answers (`slide-composition-playbook.md` §10);
-- put one task's answers on one reveal slide where they fit, even when its questions needed two, and let them take the room: the build sets a set that is all answers larger than the same set of questions, and a reveal block fills its card rather than hugging the top of it.
+Show the exact structured answer in the form asked, including any requested reason. After a My Turn or Our Turn completed live, show that representation finished (the ends labelled, the mark placed, the answer in green) with the answer sentence: it is the model the teacher drew, for a class whose teacher did not draw it. After independent work with a drawn tool, preserve the blank-tool reference required by §10. These answer-state changes do not permit unrelated objects to move.
 
 Do not add a generic "Answer" slide for open discussion work.
 
@@ -442,7 +434,8 @@ Do not write the final JSON until all of these are true:
 
 - Exact content, sequence, wording, question identity and answer treatment are preserved.
 - Representation identity, modelling state and repeated-reference identity are preserved.
-- The main teaching object or pupil task is prominent and every task phase is visible and attached.
+- The main teaching object or pupil task is prominent, every task phase is visible and attached, and shared prompts govern coherent sets after any regrouping.
+- Ordinary question/answer pairs retain the static composition and fit both states under the playbook's continuity rule; justified exceptions remain readable in their own form.
 - Card boundaries, spacing and row-versus-stack choices protect the smallest load-bearing visual.
 - Sparse physical-demonstration slides remain intentionally sparse.
 
@@ -530,6 +523,8 @@ A successful preview check also prints exactly one line of each form before the 
 SLIDE_DESIGN_PREVIEW_DIR: [absolute private preview directory]
 SLIDE_DESIGN_PREVIEW: [absolute checked scratch PowerPoint]
 ```
+
+A failed preview check still keeps the pages it could draw, printed as `SLIDE_DESIGN_REFUSED_PREVIEW: [path]` before the failure marker, with each refused slide replaced by a "check this slide" page. Render it to see the rest of the deck while you repair; it is never the checked preview and is never promoted.
 
 The preview copy is private disposable evidence. It is not the classroom PowerPoint and never replaces the orchestrator's final build. Leave it where it is when you finish: it sits inside the run's working directory, which is kept, so deleting it tidies nothing, and the deletion is refused outright by some approval policies - which cost a friction line and a note in the teacher's report on every run for no gain.
 

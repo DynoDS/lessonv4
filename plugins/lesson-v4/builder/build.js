@@ -369,8 +369,12 @@ async function main() {
       deliverFlagged
         ? 'Those slides carry a "check this slide" note in the deck, and the rest of ' +
             'the deck is built and checked as normal.'
-        : 'Those slides are left blank in this build so the rest of the deck is still ' +
-            'checked. No deck will be published until they are fixed.'
+        : designPreview
+          ? 'Those slides carry a "check this slide" note in the preview, and the rest ' +
+              'of the deck is built and checked as normal. No deck will be published until ' +
+              'they are fixed.'
+          : 'Those slides are left blank in this build so the rest of the deck is still ' +
+              'checked. No deck will be published until they are fixed.'
     );
   }
 
@@ -414,7 +418,7 @@ async function main() {
     try {
       if (!layoutFailedSlides.has(i + 1)) {
         drawSlide(pptx, slide, coreSlideData, ctx);
-      } else if (deliverFlagged) {
+      } else if (deliverFlagged || designPreview) {
         drawCheckThisSlide(slide, coreSlideData);
       }
     } catch (err) {
@@ -632,14 +636,36 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
       }
     }
 
-    try {
-      fs.unlinkSync(tempOutputPath);
-    } catch {
-      // A temporary file that will not delete is not worth failing over; it is
-      // named so it is obviously not the deck.
+    // A design preview keeps the pages it could draw even when the deck is
+    // refused. One refused slide used to stop the whole preview, so a slide
+    // designer repairing a Year 4 PSHE deck over three passes never saw a page
+    // of it (27 September 2026). The refused slides carry a "check this slide"
+    // note, the deck is named on its own line and never on the `Wrote:` line
+    // a caller promotes, and the build still exits 1. A deck whose shapes sit
+    // at coordinates no program can read is not kept, preview or not.
+    const partialPreview = designPreview && geometry.faults.length === 0;
+    let keptPreview = false;
+    if (partialPreview) {
+      try {
+        fs.renameSync(tempOutputPath, outputPath);
+        keptPreview = true;
+        console.log(`PARTIAL_PREVIEW: ${outputPath}`);
+      } catch {
+        keptPreview = false;
+      }
+    }
+    if (!keptPreview) {
+      try {
+        fs.unlinkSync(tempOutputPath);
+      } catch {
+        // A temporary file that will not delete is not worth failing over; it is
+        // named so it is obviously not the deck.
+      }
     }
 
-    if (fs.existsSync(outputPath)) {
+    if (keptPreview) {
+      console.error('The pages above were kept as a preview only. No PowerPoint was published.');
+    } else if (fs.existsSync(outputPath)) {
       console.error(
         `The existing ${path.basename(outputPath)} was left exactly as it was. ` +
           `Nothing was overwritten.`

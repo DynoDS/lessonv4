@@ -7,6 +7,7 @@ const {
 } = require('../presentation-text');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { drawSignal, signalWidth } = require('../signals');
+const { pairedText } = require('./reveal-pair');
 const {
   PICTURE_GAP,
   resolvePictureSet,
@@ -100,25 +101,7 @@ function textPlacement(data) {
   return TEXT_PLACEMENTS.has(value) ? value : 'left';
 }
 
-// A block whose every line is an answer reveal is the whole point of its slide,
-// and hugging leaves it small in the top corner of a full-width white card with
-// the rest of the slide empty (the teacher, 19 September 2026: "the card isnt
-// great because its the full width of deadspace ... they can be bigger right?").
-// So a reveal fills its zone unless the designer said otherwise. A line that is
-// only partly an answer is ordinary teaching text and hugs as before.
-function wholeBlockIsAnAnswer(value) {
-  const lines = String(value || '').split('\n').map(function (line) { return line.trim(); })
-    .filter(function (line) { return line !== ''; });
-  if (!lines.length) return false;
-  // A leading reveal marker colours every paragraph after it, so the first line
-  // deciding is the same rule the colouring uses.
-  return /^(\|\||\{\{)/.test(lines[0]);
-}
-
 function textHeightMode(data) {
-  if (data.heightMode === undefined && wholeBlockIsAnAnswer(data.value || data.text)) {
-    return 'fill';
-  }
   const value = String(data.heightMode || 'hug').toLowerCase();
   if (!TEXT_HEIGHT_MODES.has(value)) {
     throw new Error(
@@ -169,7 +152,11 @@ function sizeGroupName(data, ceiling) {
 
 function drawText(pptx, slide, zone, data, ctx) {
   let value = data.value || data.text || '';
+  const pair = pairedText(data, ctx);
   if (!value) return;
+  if (pair && data.picture) {
+    throw new Error(`REVEAL_PAIR_UNSUPPORTED: "${pair.id}" text with an optional picture needs a separate composition.`);
+  }
   const heightMode = textHeightMode(data);
 
   const ceiling = data.fontSize || TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
@@ -229,7 +216,13 @@ function drawText(pptx, slide, zone, data, ctx) {
     // card floats half a card below the long one it is being compared with.
     color: displayColor, align: align, valign: zone.valignTop ? 'top' : 'middle',
     margin: 0, fit: FIT,
-    objectName: sizeGroupName(
+    objectName: (pair ? growFitObjectName(
+      `revealpair-${pair.id}`,
+      heightMode === 'fill'
+        ? (data.fontSize || Math.min(fillGrowCeiling(pair.question), fillGrowCeiling(pair.answer)))
+        : ceiling,
+      'paired-text'
+    ) : null) || sizeGroupName(
       data,
       heightMode === 'fill' ? (data.fontSize || fillGrowCeiling(value)) : ceiling
     ) || (zone.textFitGroup
@@ -261,7 +254,25 @@ function drawText(pptx, slide, zone, data, ctx) {
 // returns null so the card spans the whole zone and the text keeps every
 // inch the flat look would have given it - hugging is only for slack.
 function measureText(zone, data, ctx) {
-  const value = String(data.value || data.text || '');
+  const pair = pairedText(data, ctx);
+  if (pair && data.picture) {
+    throw new Error(`REVEAL_PAIR_UNSUPPORTED: "${pair.id}" text with an optional picture needs a separate composition.`);
+  }
+  if (pair) {
+    if (textHeightMode(data) === 'fill') return null;
+    const question = measureTextValue(zone, data, ctx, pair.question);
+    const answer = measureTextValue(zone, data, ctx, pair.answer);
+    if (!question || !answer) return null;
+    return {
+      x: Math.min(question.x, answer.x), y: zone.y,
+      w: Math.max(question.x + question.w, answer.x + answer.w) - Math.min(question.x, answer.x),
+      h: Math.max(question.h, answer.h), clamp: true
+    };
+  }
+  return measureTextValue(zone, data, ctx, String(data.value || data.text || ''));
+}
+
+function measureTextValue(zone, data, ctx, value) {
   if (!value) return null;
   if (textHeightMode(data) === 'fill') return null;
   const fs = data.fontSize || TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
@@ -325,4 +336,4 @@ function measureText(zone, data, ctx) {
   };
 }
 
-module.exports = { drawText, measureText, estimateLines };
+module.exports = { drawText, measureText, estimateLines, fillGrowCeiling, TEXT_CEILINGS, FALLBACK_CEILING };

@@ -142,6 +142,27 @@ function checkZoneFill(ctx, zone, drawn, label) {
   const axis = acrossIsWasted ? 'either side of it' : 'above and below it';
   const spare = acrossIsWasted ? wastedW : wastedH;
 
+  // Say which way the slot is wrong and what usually made it so, because the
+  // generic advice did not reach the designer. A Year 4 geography task slide
+  // stacked its world map under the question in the top half of a 50-50 split,
+  // with the criteria panel across the whole bottom half: the map's band came
+  // out 5.5 times as wide as it was tall, the map drew at about a fifth of the
+  // slide with its "South America" label covering most of the continent, and
+  // the slide shipped with this finding on it (28 September 2026). The finding
+  // had said "a wider, shallower zone for a wide picture, or a taller one for a
+  // tall picture", which read as permission for the wide band it already had.
+  const repair = acrossIsWasted
+    ? `The slot is too shallow for it: the height holds it to ${drawn.h.toFixed(1)}in tall ` +
+      `and ${drawn.w.toFixed(1)}in wide. It needs a taller slot, and on a slide that shares ` +
+      `its height with a band across the whole width (a criteria panel, a row of cards, a ` +
+      `question strip) that means putting that band beside the figure instead: split the ` +
+      `slide left and right, give a map or picture children work from the full height of ` +
+      `one side, and stack the rest in the other.`
+    : `The slot is too narrow for it: the width holds it to ${drawn.w.toFixed(1)}in wide ` +
+      `and ${drawn.h.toFixed(1)}in tall. It needs a wider slot, and on a slide that shares ` +
+      `its width with a column beside it that means putting that column above or below the ` +
+      `figure instead, so the figure has the full width of the slide.`;
+
   findings.push({
     signal: 'FIGURE_ZONE_UNDERFILLED',
     slide: ctx.slideIndex + 1,
@@ -150,10 +171,9 @@ function checkZoneFill(ctx, zone, drawn, label) {
       `${label} fills only ${Math.round(coverage * 100)}% of the space it was given, ` +
       `leaving ${spare.toFixed(1)}in empty ${axis}. Its true proportions are ` +
       `${(drawn.w / drawn.h).toFixed(2)}:1 and the slot's are ${(zone.w / zone.h).toFixed(2)}:1, ` +
-      `so containing it without distorting it cannot use the rest. Give this figure a slot ` +
-      `shaped more like it - a wider, shallower zone for a wide picture, or a taller one for a ` +
-      `tall picture - or put something beside it in the space it cannot reach. Do not stretch it: ` +
-      `a distorted map draws countries the wrong shape.` + suggestion(drawn, zone),
+      `so containing it without distorting it cannot use the rest. ${repair} Or put something ` +
+      `beside it in the space it cannot reach. Do not stretch it: a distorted map draws ` +
+      `countries the wrong shape.` + suggestion(drawn, zone),
   });
 }
 

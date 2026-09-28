@@ -1172,3 +1172,8 @@ Specification`, where the step it points to sits under `Cycles, and the beats ar
 (the same slip as the routes list's P07, settled 7g). The picture-rules home's launch
 paragraph (HOME-SJ-PICTURE-RULES-07) gains his preferences decision 13b. Both pins moved
 in place; no row was added or dropped.
+
+
+## 26 September 2026 primary-teaching clarification
+
+The Shaftesbury feedback authorises actual primary explanation and immediate prepared use. The concept requirement still spans meaningful instances; independent judgement may use taught instances when its conclusion has not been supplied. Unseen factual content is no longer compulsory. Significance keeps later remembrance and meaningful comparison; a second person is used when helpful or required and must be introduced properly. Exact updated preservation passages are recorded in `evaluations/shaftesbury-access-20260926/pin-migration.json`; baseline passages remain in its `pin-baseline` and instruction `baseline` directories. These edits are local and not a release.

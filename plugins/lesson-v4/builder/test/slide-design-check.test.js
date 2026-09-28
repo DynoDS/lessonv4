@@ -1837,3 +1837,34 @@ test("the slide designer's own check never runs with --settled; only the decorat
   assert.ok(decorator.length >= 1, "the playbook's decorator check was not found");
   for (const block of decorator) assert.match(block, /--settled/, block);
 });
+
+// The teacher's rule of 28 September 2026: a word card sits straight before the
+// first slide whose board shows its word. A Codex geography deck put `climate`
+// before a Sahara slide whose board never said it.
+test('a word card before a slide whose board lacks its word names the slide to move to', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const lesson = { slides: [
+    { template: 'key-vocabulary', words: [{ word: 'climate', definition: 'The weather a place usually has.' }] },
+    { template: 'teach-layout', title: 'From dry land to thick forest', lead: 'The Sahara gets very little rain.',
+      speakerNotes: 'Climate means the weather a place usually has.' },
+    { template: 'teach-layout', title: 'From dry land to thick forest', lead: 'Its climate stays warm and wet.' }
+  ] };
+  const found = vocabCardBeforeItsWord(lesson);
+  assert.strictEqual(found.length, 1, 'the notes do not count as the board');
+  assert.match(found[0].message, /slide 3: move the card/);
+});
+
+test('a word card straight before its word, in any form, is left alone', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const lesson = { slides: [
+    { template: 'key-vocabulary', words: [{ word: 'biome', definition: 'A large area.' }] },
+    { template: 'key-vocabulary', words: [{ word: 'Equator', definition: 'A line.' }] },
+    { template: 'teach-layout', title: 'What makes a biome?', lead: 'Deserts are biomes too.' },
+    { template: 'key-vocabulary', words: [{ word: 'city', definition: 'A big town.' }] },
+    { template: 'teach-layout', lead: 'Most people live in cities.' }
+  ] };
+  const found = vocabCardBeforeItsWord(lesson);
+  assert.strictEqual(found.length, 1, 'only Equator, which no board shows');
+  assert.match(found[0].message, /Equator/);
+  assert.match(found[0].message, /No board after it shows the word/);
+});

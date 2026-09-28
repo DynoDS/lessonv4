@@ -219,6 +219,119 @@ function wholeCalculationRuns(runs) {
   );
 }
 
+// A line that tells and then asks, printed with only its asking sentences in
+// question blue and each on a line of its own, the telling left in the line's
+// own colour above it.
+//
+// A Teach slide's question slot used to paint the whole block blue, so a key
+// question the design opened with a telling sentence ("Look at the children in
+// the picture. What are they doing?") came out as one blue block, which the
+// check refuses (MIXED_BLOCK_WHOLE_BLUE) because blue marks the child's job and
+// the telling is not it. A Year 4 history slide designer had to break such a
+// question apart by hand (27 September 2026). The words are the design's and
+// stay as they are; only the colour and the line break are the board's.
+// Only words in the line's own base colour turn blue: a taught word in green or
+// a supplied fact in orange keeps its colour inside the question.
+function askingSentencesInBlue(runs, base, bold) {
+  const plain = { color: base, bold: !!bold };
+  const list = [];
+  const pushText = function (text, options) {
+    String(text).split('\n').forEach(function (part, index, parts) {
+      if (part !== '') list.push({ text: part, options: options });
+      if (index < parts.length - 1) list.push({ text: '\n', options: plain });
+    });
+  };
+  if (typeof runs === 'string') pushText(runs, plain);
+  else if (Array.isArray(runs)) runs.forEach(function (run) { pushText(run.text, run.options || plain); });
+  else return runs;
+
+  const full = list.map(function (run) { return run.text; }).join('');
+  const sentences = [];
+  let start = 0;
+  for (let i = 0; i < full.length; i += 1) {
+    const c = full[i];
+    if (c === '\n') {
+      sentences.push({ start: start, end: i, gapEnd: i });
+      start = i + 1;
+    } else if ('.?!'.indexOf(c) !== -1 && (i + 1 === full.length || /[ \t\n]/.test(full[i + 1]))) {
+      let j = i + 1;
+      while (j < full.length && (full[j] === ' ' || full[j] === '\t')) j += 1;
+      sentences.push({ start: start, end: i + 1, gapEnd: j });
+      start = j;
+      i = j - 1;
+    }
+  }
+  if (start < full.length) sentences.push({ start: start, end: full.length, gapEnd: full.length });
+  sentences.forEach(function (s) { s.asks = full.slice(s.start, s.end).trim().endsWith('?'); });
+
+  const blue = new Array(full.length).fill(false);
+  const breakAt = new Array(full.length).fill(false);
+  sentences.forEach(function (s, k) {
+    if (s.asks) for (let i = s.start; i < s.end; i += 1) blue[i] = true;
+    const next = sentences[k + 1];
+    // A telling sentence followed on the same line by an asking one: the space
+    // between them becomes the line break.
+    if (next && !s.asks && next.asks && s.gapEnd > s.end && full[s.gapEnd - 1] !== '\n') {
+      for (let i = s.end; i < s.gapEnd; i += 1) breakAt[i] = true;
+    }
+  });
+
+  const sameColour = function (a, b) {
+    return String(a || '').replace('#', '').toUpperCase() === String(b || '').replace('#', '').toUpperCase();
+  };
+  // Every line break, the design's own and the one added before a question,
+  // is made a real paragraph break (`breakLine` on the run before it), so each
+  // line is its own centred paragraph. A bare newline run is written into the
+  // text itself by the deck library, and a renderer lays that out as one
+  // paragraph with a break inside it.
+  const out = [];
+  const lineBreak = function () {
+    if (out.length && !out[out.length - 1].options.breakLine) {
+      const last = out[out.length - 1];
+      out[out.length - 1] = { text: last.text, options: Object.assign({}, last.options, { breakLine: true }) };
+    } else {
+      out.push({ text: '', options: Object.assign({}, plain, { breakLine: true }) });
+    }
+  };
+  let offset = 0;
+  list.forEach(function (run) {
+    if (run.text === '\n') {
+      lineBreak();
+      offset += 1;
+      return;
+    }
+    let buffer = '';
+    let bufferBlue = null;
+    const flush = function () {
+      if (!buffer) return;
+      const options = bufferBlue
+        ? Object.assign({}, run.options, { color: COLOURS.title })
+        : Object.assign({}, run.options);
+      delete options.breakLine;
+      out.push({ text: buffer, options: options });
+      buffer = '';
+    };
+    let breaking = false;
+    for (let i = 0; i < run.text.length; i += 1) {
+      const at = offset + i;
+      if (breakAt[at]) {
+        flush();
+        if (!breaking) lineBreak();
+        breaking = true;
+        continue;
+      }
+      breaking = false;
+      const turnBlue = blue[at] && sameColour(run.options && run.options.color, base);
+      if (bufferBlue !== null && turnBlue !== bufferBlue) flush();
+      bufferBlue = turnBlue;
+      buffer += run.text[i];
+    }
+    flush();
+    offset += run.text.length;
+  });
+  return out;
+}
+
 function presentationRuns(value, bold, baseColor, owner) {
   const text = String(value == null ? '' : value);
   const data = owner && typeof owner === 'object' && !Array.isArray(owner)
@@ -232,7 +345,8 @@ function presentationRuns(value, bold, baseColor, owner) {
   const base = baseColourForRole(baseColor, data.colorRole);
 
   if (!Array.isArray(data.emphasis) || data.emphasis.length === 0) {
-    return wholeCalculationRuns(splitAnswerRuns(text, bold, base));
+    const runs = splitAnswerRuns(text, bold, base);
+    return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(runs, base, bold) : runs);
   }
 
   const ranges = data.emphasis
@@ -278,7 +392,7 @@ function presentationRuns(value, bold, baseColor, owner) {
     pushLines(text.slice(cursor), plain);
   }
 
-  return wholeCalculationRuns(runs);
+  return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(runs, base, bold) : runs);
 }
 
 module.exports = {

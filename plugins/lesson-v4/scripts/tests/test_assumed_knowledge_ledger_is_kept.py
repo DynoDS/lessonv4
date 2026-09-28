@@ -50,11 +50,14 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
         self.assertIn("hiding a reminder does not preserve a diagnostic decision if the script supplies it", designer)
         self.assertIn("Read the spoken script too, because it can supply a decision that the printed support carefully withholds.", flat(PREF.read_text(encoding="utf-8")))
 
-    def test_an_earlier_lesson_gets_a_short_reminder_never_a_reteach(self) -> None:
-        """Decisions 2 and 3: a plan's earlier lessons are rough context; what today leans on is reminded."""
+    def test_an_earlier_lesson_is_told_again_before_it_is_needed(self) -> None:
+        """Decisions 2 and 3, then the primary-access release (27 September 2026): a plan's earlier
+        lessons are rough context; what today leans on is told again on the board, for a child who
+        forgot or was away ("they wont remember, and what if child wasnt there")."""
         designer = flat((ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8"))
         self.assertIn("A plan's lessons before this one are rough context", designer)
-        self.assertIn("never a reteach", designer)
+        self.assertIn("is told again on the board before the new idea needs it", designer)
+        self.assertIn("or was away that day", designer)
 
     def test_a_name_arrives_with_its_context_in_every_subject(self) -> None:
         """Decision 4, with the teacher's words on decision 8: the wording, not a card."""

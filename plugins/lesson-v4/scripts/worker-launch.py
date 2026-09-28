@@ -73,6 +73,10 @@ HOST_MODELS = {
     "codex": {
         "astra": "gpt-6-astra",
         "sol": "gpt-5.6-sol",
+        # The GPT-6 Sol rung, kept apart from `sol` so choosing it for one role
+        # moves no other: the lesson voice editor was tested on it (27 September
+        # 2026), while the roles on `sol` keep the model they were set to.
+        "sol6": "gpt-6-sol",
         "terra": "gpt-5.6-terra",
         "luna": "gpt-5.6-luna",
         "haiku": "gpt-5.6-luna",
@@ -91,6 +95,7 @@ HOST_EFFORTS = {
     "codex": {
         "gpt-6-astra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-sol": ("low", "medium", "high", "xhigh", "max", "ultra"),
+        "gpt-6-sol": ("low", "medium", "high", "xhigh"),
         "gpt-5.6-terra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-luna": ("low", "medium", "high", "xhigh", "max"),
     },

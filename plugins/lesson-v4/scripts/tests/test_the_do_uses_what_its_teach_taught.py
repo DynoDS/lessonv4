@@ -147,6 +147,37 @@ class ConceptualLoadIsASecondKindOfOverloadTests(unittest.TestCase):
         self.assertIn("when a lesson is carrying too many new ideas", self.text)
 
 
+class ALessonTellsOneStoryTests(unittest.TestCase):
+    """27 September 2026: two designs of Year 4 History lesson 6 (Codex and Claude) each told
+    Tudor plague and Victorian cholera in full, every chunk earning its place, and the teacher
+    said "it's definitely too much, for sure". Nothing counted stories: How Much Fits counted
+    abstractions, and the reviewer only opened it for a split or an unused idea. One designer
+    wrote that two diseases were needed to "preserve the plural objective"."""
+
+    def setUp(self) -> None:
+        self.text = flat(PREFERENCES)
+
+    def test_how_much_fits_counts_stories_with_its_reason_and_example(self) -> None:
+        self.assertIn("**The same measure counts stories, not only ideas.**", self.text)
+        self.assertIn("it doubles what a child holds however well each half is told", self.text)
+        self.assertIn("it's definitely too much, for sure", self.text)
+
+    def test_a_plural_objective_does_not_ask_for_two_full_stories(self) -> None:
+        self.assertIn("is met by one story told properly and that comparison, not by two full stories", self.text)
+
+    def test_its_limit_is_the_lesson_whose_objective_is_the_comparison(self) -> None:
+        self.assertIn("This is not the lesson whose objective is the comparison itself", self.text)
+        self.assertIn("each told lightly, never each told in full", self.text)
+
+    def test_the_calibration_shows_one_story(self) -> None:
+        self.assertIn("What it shows: one story followed from start to end", self.text)
+
+    def test_the_designer_and_the_reviewer_are_both_sent_to_it(self) -> None:
+        self.assertIn("so may a lesson that would tell two stories", flat(LESSON_DESIGNER))
+        trigger = dict(packet.PREFERENCE_REVIEW_ROUTES)["How Much Fits in One Lesson"]
+        self.assertIn("when the lesson sets a second scene partway through", trigger)
+
+
 class TheRuleReachesEveryAgentThatCouldBreakItTests(unittest.TestCase):
     def test_the_designer_carries_the_pairing_test_beside_questioning_is_not_doing(self) -> None:
         # The designer's worked copy folded into the one home in 4.2.285; its

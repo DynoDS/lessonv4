@@ -129,6 +129,8 @@ Do not duplicate the same task wording in both places.
 
 If a fixed template would force an essential multi-action pupil task into the header instruction, use a free template whose body can carry the task visibly.
 
+The instruction prints at 16pt in a box about 5in wide, so one line holds about 43 characters. A longer cue wraps to a second line at the same size, and on a free template the body starts a little lower on that slide to make room; the fixed templates already start their content below a two-line cue. Three lines do not fit: a cue that long is the task, and belongs in the body.
+
 Every non-cover template has a header area above the body. Two modes:
 
 | Mode | Contains | Height | Use |
@@ -204,14 +206,15 @@ There's no `workingSpace` flag to set here: this template never draws a working 
 
 **Slots:**
 - `title` (optional, defaults to "Your Turn")
-- `questions` (required) - 2–4 entries. Plain strings stack as full-width cards dividing the body height equally; content objects (a clock per question) switch the whole set to a grid, one visual per cell.
+- `questions` (required) - plain strings form content-sized numbered cards; the count depends on what remains readable in the available space. Content objects (a clock per question) switch the whole set to a grid, one visual per cell.
 - `startAt` (optional) — the number the first card is labelled with. Omit it and the cards run `(1) (2) (3)`.
+- `revealPair` (ordinary text-question reveals) — set `{ "id": "unique-set-id", "state": "question" }` on this slide and the same id with `"state": "answer"` on its matching slide. Keep the template, instruction, questions slot and other visible content unchanged; give the answer slide title `Answers` and write every answer with `||`. The shared numbered-card renderer sizes the pair together. Visual-object question grids need their own deliberate answer composition.
 
 #### `maths-your-turn-sc`
 
 **Purpose:** As `maths-your-turn` but cards narrower with a full-height SC panel on the right.
 
-**Slots:** `title`, `questions`, `criteria`, `criteriaLabel`, `questionVisual` (optional).
+**Slots:** `title`, `questions`, `criteria`, `criteriaLabel`, `questionVisual` (optional), and `revealPair` for an ordinary text-question reveal as above. Keep the criteria and shared visual in the same position on the answer slide.
 
 - `questionVisual` (optional) — a content object shown across the top of the left area, with the question cards beneath it and the SC panel down the right. Use it when the Your Turn places items onto a diagram the child must read — a Venn or Carroll, a coordinate grid, a dial — so the diagram and its labels sit on the slide where the child works, not described in words inside the success criteria. To show the shapes being placed *as pictures*, make the `questionVisual` a `stack` whose first item is a `row` of `geoboard`/`triangle` visuals (each labelled, lettered `(a) (b) (c)`) and whose second item is the `venn`/`carroll`; give the diagram the larger stack `weight`. With no `questionVisual`, the cards keep the whole left area as before.
 
@@ -252,7 +255,7 @@ For a content Teach unit the design's fields map straight across: `headline` is 
 
 - `lead`: the slide's first-read line, which on a Teach slide is the design's `headline`: the sentence the slide lands. Not a caption naming what the picture shows, which spends the largest line on what a child can already see. `statement` is the same kind of line on `two-speakers`.
 - `lines`: the explanation, one short statement per entry.
-- `question`: printed in question blue. The layouts with a column of cards also take a list of two, when the unit carries two key questions.
+- `question`: printed in question blue. The layouts with a column or row of cards (`lead-picture-lines`, `picture-top-cards`, `picture-three-cards`, `labelled-picture-lines`, `banner-picture-sidebar`, `four-cards`) also take a list of two, when the unit carries two key questions.
 - `sticky`: the line to remember. The builder adds the star and the purple, so write the sentence alone.
 - `captions`: one line per picture, printed under it in the same order.
 - `pictures`: ordinary content objects with a `type` (an `image`, a `label-diagram`, or another drawn visual), with their usual fields such as `essential` and `fit`.
@@ -264,7 +267,7 @@ A text slot is a string, or an object with `value` plus `emphasis` for inline ta
 | Layout | Slots | What it is for |
 |---|---|---|
 | `lead-picture-lines` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | The big idea across the top, one picture below it, the explanation beside the picture. Cards in total: 1 to 4. |
-| `picture-top-cards` | `pictures`, `lines` 2 to 3 | A wide picture across the top, two or three equal cards in a row underneath. |
+| `picture-top-cards` | `lead` optional, `pictures`, `lines` up to 3, `question` optional, `sticky` optional | A wide picture across the top, two or three equal cards in a row underneath; a `lead` goes in a band above the picture. The layout for a wide picture (a report drawing, a panorama, about 2:1 or wider), which beside a column of cards comes out a strip: it holds a whole Teach beat, lead, picture, explanation, question and line to remember, on one slide. Cards in total: 2 to 3. |
 | `two-pictures-captions` | `pictures` 2, `captions` 2, `sticky` optional, `lead` optional | Two pictures compared, each line directly under its own picture, one idea joining them along the bottom. |
 | `question-lines-picture` | `question`, `pictures`, `lines` 1 to 3, `sticky` optional | The question in a band across the top, then the explanation beside the picture that answers it. For a unit whose sentence is kept for the end, or the later half of a split; a unit's first slide with a `headline` uses a `lead` layout. Cards in total: 1 to 4. |
 | `compare-pictures` | `sides` 2, `headingRole` optional | Two things, or a wrong idea and the truth, in two matching cards, each with its own picture and line. |
@@ -275,7 +278,7 @@ A text slot is a string, or an object with `value` plus `emphasis` for inline ta
 | `big-fact-picture` | `lead`, `pictures`, `sticky` | One big fact fills the top of the slide; the picture and the line to remember sit underneath. |
 | `labelled-picture-lines` | `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | A picture with its parts labelled on it, and the explanation beside it in equal cards. Cards in total: 2 to 4. |
 | `question-picture-answer` | `question`, `pictures`, `lines` | A big question on one half; the picture and the answer on the other. |
-| `banner-picture-sidebar` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | A short banner, a big picture under it, and equal key-point cards down the side. Cards in total: 2 to 3. |
+| `banner-picture-sidebar` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `sticky` optional | A short banner, a big picture under it, and equal key-point cards down the side. A wide picture cannot fill the column's height, so the height it leaves goes to the banner, whose lead prints larger. Cards in total: 2 to 3. |
 | `picture-steps` | `pictures`, `steps` 2 to 5 | The explanation as numbered steps beside the picture, for something that happens in order. |
 | `picture-with-statement` | `pictures`, `lead` | The picture takes most of the slide, with one statement along the bottom. |
 | `one-speaker` | `pictures`, `speakers` | The object on one side and one person's claim on the other, for the class to test. |
@@ -435,13 +438,15 @@ These two templates exist because their geometry is unique and frequently needed
 
 ### 2.7 Dialogue (speech bubbles)
 
-Three recurring class characters voice the content: **Mr Sear** (boy), **Miss Brooker** (girl), and **Bailey** (the class dog). Each speaker is a white speech bubble with a tail pointing down to a line-drawn figure and their name. These are fixed templates because the character-and-bubble arrangement carries the pedagogical move - modelling talk, sharing predictions, voicing a misconception - rather than just holding free content.
+Seven recurring class characters voice the content: three boys (`boy-1`, `boy-2`, `boy-3`), three girls (`girl-1`, `girl-2`, `girl-3`) and **Bailey** (`bailey`, the class dog, who talks as freely as any child). Each speaker is a white speech bubble with a tail pointing down to a line-drawn figure and their name. These are fixed templates because the character-and-bubble arrangement carries the pedagogical move - modelling talk, sharing predictions, voicing a misconception - rather than just holding free content.
 
 Reach for these when the slide's job is to *put words in a character's mouth*: showing how two children might reason differently, prompting partner talk, or letting Bailey ask the "silly" question a child might be afraid to ask. For plain information or a single statement, an ordinary text template reads better — the bubbles earn their place only when someone is speaking.
 
-**Choose the variant by how many voices the lesson actually has.** One child voicing a claim, prediction, or misconception the class then tests is `speech-bubbles-1`; two contrasting views are `speech-bubbles-2`; three contributors are `speech-bubbles-3`. Render only the voices the design gives — when it has one speaker, don't add a second bubble and invent a line to fill it (a teacher asking "is she right?", a manufactured "correct view"), because the fabricated voice dilutes the one real claim children are meant to weigh. Keep every speaker a named character (Mr Sear, Miss Brooker, Bailey) or the design's named child via `name`; a bubble labelled "You" addresses the reader instead of voicing a character. The keys mislead about the art: `mr-sear` is drawn as a boy, `miss-brooker` as a girl and `bailey` as the class dog, so a lesson inventing two children has a face for each. `name` prints the lesson's own name over the portrait, and a character speaking on more than one slide keeps the same portrait throughout.
+**Choose the variant by how many voices the lesson actually has.** One child voicing a claim, prediction, or misconception the class then tests is `speech-bubbles-1`; two contrasting views are `speech-bubbles-2`; three contributors are `speech-bubbles-3`. Render only the voices the design gives — when it has one speaker, don't add a second bubble and invent a line to fill it (a teacher asking "is she right?", a manufactured "correct view"), because the fabricated voice dilutes the one real claim children are meant to weigh. Every speaker is one of the class characters, with the design's name for the child via `name`; a bubble labelled "You" addresses the reader instead of voicing a character. Pick a face that fits the child and vary it across the three of each (`slide-speech-and-characters.md` → The named characters). `name` prints the lesson's own name over the portrait, and a character speaking on more than one slide keeps the same portrait throughout.
 
-**Shared slots:** `statement` (a string, or a `text` content object — the one lead text box under the header), `speakers` (array). Each speaker takes `speech` (what they say), `name` (optional — defaults to the character's own name), and `child` (optional — `"mr-sear"`, `"miss-brooker"`, or `"bailey"`; speakers that omit it fill in the order Mr Sear → Miss Brooker → Bailey).
+**Shared slots:** `statement` (a string, or a `text` content object — the one lead text box under the header), `speakers` (array). Each speaker takes `speech` (what they say), `name` (optional — defaults to the character's own name), and `child` (`"boy-1"`, `"boy-2"`, `"boy-3"`, `"girl-1"`, `"girl-2"`, `"girl-3"` or `"bailey"`; set it every time, choosing the face that fits the speaker. Speakers that omit it fill in the order boy 1 → girl 1 → Bailey. The old keys `mr-sear` and `miss-brooker` still work and mean boy 1 and girl 1).
+
+When a speaker says a calculation, the speakers take the width it needs: a calculation stays on one line, so the statement beside them gives up width, down to the narrowest share at which the statement itself still fits, until the calculation fits a bubble at the full bubble size. A statement that cannot give up enough (a long criteria panel, say) keeps what it needs, and the calculation steps down in size to fit, never below 18pt. Speech with no calculation keeps the `statementRatio` asked for. When that leaves a calculation small because a full criteria panel shares the slide side by side, you may stack them instead: the speakers across the full width and the criteria in a band with them, so the numbers print large and the criteria stay in view (the teacher, 28 September 2026: "it can, not it must always"). Side by side stays fine whenever the calculation already reads at size.
 
 #### `speech-bubbles-1`
 
@@ -541,7 +546,7 @@ Zone names: `primary` (the larger) and `secondary` (the smaller). Each takes a c
 | `side-big-v` | 50/25/25 vertical (`primarySide` picks top/bottom) | `primary`, `secondary1`, `secondary2` | A / B / B |
 | `sandwich-v` | Thin top strip + tall middle + thin bottom strip | `top`, `middle`, `bottom` | F / A / F |
 
-**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and a short fourth piece in the bottom strip, which holds one criteria step of at most two lines at 18pt and never two steps: put steps in a practice template's panel or the half-width side (`slide-success-criteria.md`). Centre is class A so it accepts large visual tools.
+**`quad-v` use case:** designed for maths modelling slides (My Turn / Our Turn) that need four pieces stacked: question, abstract diagram (e.g. two part-whole models in a `row`), concrete reference (e.g. coin row), and a short fourth piece in the bottom strip. Put criteria there only when the complete wording and heading fit legibly at the applicable floor (normally 18pt); otherwise give the criteria a larger panel (`slide-success-criteria.md`). Centre is class A so it accepts large visual tools.
 
 ### 3.3 Grid layouts
 
@@ -576,6 +581,8 @@ Distinct arrangements that don't reduce to a ratio.
 **Zones:** `banner` (B), `body` (E-wide), `sidebar` (E-narrow).
 
 **Use for:** reading passage + questions + vocabulary reference (three things, all needed, sidebar is reference-only).
+
+When the `body` is a picture held by its width (a wide photograph or drawing), it cannot use the body's full height; the builder gives that height to a text `banner` above it, which grows to fill it, so the picture sits straight under the banner and the column keeps the sidebar's top and bottom edges. Words in the body keep the zone they were given.
 
 #### `flanked-split`
 
@@ -655,6 +662,8 @@ These fields are supported on `text`, on object entries inside `bullets`, `numbe
 
 `heightMode` is optional, and **the default is what almost every text card should use.** Omit it, or use `"hug"`, and the card wraps closely around its own words at their natural size. Ordinary body text, a pupil instruction, a prompt, a question, a caption, a teaching sentence: all hug. Say nothing and you get the right answer.
 
+An answer marker changes the words' colour, not this height rule: `"||She ran to the shop."` still hugs unless `heightMode` explicitly says `"fill"`.
+
 `fill` is the rare exception, and it exists for one job: making a short reference card stand to the same height as the visual beside it, so the pair reads as one deliberate thing rather than two objects that happen to be adjacent. A diagram beside its concise explanation is the shape. A worked answer beside the photograph it answers is the shape. In both, the text is short, the neighbour is tall, and the two are meant to be read together.
 
 That is the whole of it. `fill` is not an alignment tool and not a way to tidy a ragged edge: a hugged member that measures shorter than its partner is already vertically centred on the pair rather than pinned to the top with a void underneath, so the untidiness `fill` looks like the cure for does not exist. Reaching for it on ordinary instructions inflates their type past the size the slide's hierarchy intended and makes a secondary card shout as loudly as the teaching.
@@ -674,6 +683,8 @@ Short `text` in an `E-narrow` zone may now grow to a 28pt ceiling and shrink onl
 ```json
 { "type": "text", "value": "A fronted adverbial goes at the start of a sentence." }
 ```
+
+For an ordinary question/answer reveal made from unnumbered `text` blocks, put `revealPair: { "id": "unique-item-id", "state": "question" }` on each changing question block and the same id with `"state": "answer"` on its corresponding answer block. Keep each block in the same nested slot, with the same `value` or `text` field and all other fields unchanged; author the answer with `||`. Each id occurs once in each state. The builder measures both wordings before placing cards or reflowing a stack and fits the final type across both slides. Pair every changing answer-bearing text block, not only the first one. A text block with an optional `picture` cannot use this paired contract because its picture slot depends on the wording; choose a separate supported composition and inspect both states. Follow `preferences.md` → Slide Headings for the answer title: Maths uses `Answers`, while other subjects use the task title with ` - check`.
 
 A short text block with comfortable spare width may carry one relevant picture:
 
@@ -759,6 +770,8 @@ A step of a worked example set out as steps is `{ "text": "...", "colorRole": "w
 ```json
 { "type": "image", "imagePath": "C:/path/to/photo.jpg", "caption": "Optional italic caption" }
 ```
+
+A delivered photograph always takes its own shape: it is contained, never stretched, and fills whichever of the width or the height it is given runs out first; its card hugs it, and in a `row` a photograph held by the height gives the width it cannot use to the items beside it. A picture that has not arrived yet holds a square, because any picture may go there.
 
 With an optional inset — a smaller second image overlaid in one corner. Use for the "big photo with small photo tucked in the corner" pattern.
 
@@ -1173,6 +1186,22 @@ Zone class compatibility: fits A, B, C, D, E-wide, E-narrow. Too compact for F o
 
 For a set of SHORT questions, `question-cards` below is the other way to present the same set — read that entry before choosing.
 
+**Ordinary paired reveal:** Keep the question and answer slides on the same template, with the question set in the same content slot and all other visible content unchanged (task prompt, reference, criteria and framing). Set `revealPair` on both `numbered-questions` or both `question-cards` blocks with one unique id and opposite states. Keep the same question count; on `numbered-questions`, also keep the same `startAt`. `question-cards` always numbers from 1, so use `numbered-questions` for a continued numbering run. Use stable `id` values on object entries when source identity matters. Author each answer explicitly at its corresponding position with `||` so it turns green. Use the answer heading from `preferences.md` → Slide Headings. The builder measures both sets together before placing either one, so longer answers do not move cards, numbers, or text boxes. A mismatch stops the build instead of silently reflowing the answer. For a long model explanation or a completed sort where movement expresses the answer, compose a separate answer slide without `revealPair`.
+
+Pair ids use letters and digits, with optional internal hyphens (for example `practice-1`); spaces, slashes and underscores are not supported.
+
+```json
+{ "type": "numbered-questions", "revealPair": { "id": "practice-1", "state": "question" },
+  "questions": [{ "id": "q1", "text": "VII" }, { "id": "q2", "text": "IX" }] }
+```
+
+The matching slide uses the same surrounding composition and slot:
+
+```json
+{ "type": "numbered-questions", "revealPair": { "id": "practice-1", "state": "answer" },
+  "questions": [{ "id": "q1", "text": "||VII is 7" }, { "id": "q2", "text": "||IX is 9" }] }
+```
+
 ### `question-cards`
 
 **A second way to present a question set, beside `numbered-questions`.** The same questions, but each on its own plain white card with the shared soft shadow. Each carries a purple number badge on its corner and sits at a degree or two of tilt so the set reads as placed rather than gridded. The cards pack across the zone and wrap, and the type grows until the set fills the height it is given. The cards do not take category colours because an ordinary question list is not a set of categories.
@@ -1193,7 +1222,7 @@ Fields:
   answer box. Use `||answer` on the answer slide to fill it green without moving
   it.
 
-Answer reveals work exactly as they do in a list: `"6 × 7 = ||42"` prints the answer in green, so a question slide and its answer slide can use the same helper. The inline colour markers (`**bold**`, `[[blue]]`, `{{green}}`, `<<orange>>`) all work inside a card too, but `{{green}}` is reserved for an answer/reveal slide. Prepared teaching models are worked examples: give the card `colorRole: "worked-purple"`.
+Answer reveals work exactly as they do in a list: `"6 × 7 = ||42"` prints the answer in green. Use the `revealPair` contract above for an ordinary question/answer pair so the cards share their actual positions. The inline colour markers (`**bold**`, `[[blue]]`, `{{green}}`, `<<orange>>`) all work inside a card too, but `{{green}}` is reserved for an answer/reveal slide. Prepared teaching models are worked examples: give the card `colorRole: "worked-purple"`.
 
 **Which of the two a set belongs in.** Both helpers are restricted to a starter or the lesson's main independent work in maths. Within those permitted stages, use `numbered-questions` as the default. Use `question-cards` only when the set has about five or fewer short questions and the placed-card treatment makes those short prompts use the available space more clearly. A sentence-length or multi-sentence question belongs in `numbered-questions`. A Do beat, quick check, discussion question, My Turn or other smaller task uses an unnumbered composition instead of either numbered helper.
 
@@ -1570,6 +1599,16 @@ A completed structured sort with 2 to 6 category panels. Use it for `answer.stru
     { "label": "Uses electricity", "items": ["Kettle", "Torch"] },
     { "label": "Does not use electricity", "items": ["Book", "Wooden spoon"] }
   ] }
+```
+
+**The sort children do** is the same helper with a `bank`: the cards to sort, and groups with no `items`. It draws the `instruction` (optional) on its own line in task blue, the cards as white cards at one text size in the arrangement that lets them print largest, a clear gap, then each group as a tinted panel with a dashed coloured border and its heading at the top, the rest left empty as the place the cards go. Cards and places never look alike. A card is a string, or `{ "label", "text" }` for a named card whose words sit under its name. Groups that already hold items are refused here (`SORT_BOARD_BANK_WITH_ANSWERS`): the finished sort is the answer slide's `sort-board` without a `bank`. When the cards do not fit, the board says so (`SORT_BOARD_BANK_CAPACITY`, or the fit pass's overload): split by complete groups across two slides or give it a taller zone.
+
+```json
+{ "type": "sort-board",
+  "instruction": "Sort the cards into the two groups.",
+  "bank": ["Burn tar in the street to clean the air.", "Boil the water before you drink it."],
+  "groups": [ { "label": "Things you'd try if you blamed the bad air" },
+              { "label": "Things you wouldn't even think of" } ] }
 ```
 
 Use no more than 6 groups and 12 total items. When the board reports `SORT_BOARD_ITEM_CAPACITY`, split by complete groups or give it a larger zone. Do not shorten labels.
@@ -2280,6 +2319,23 @@ The complete labelled seven-continent board map, on `map: "world-with-antarctica
 
 `showEquator` draws the Equator, and `showTropics` draws the Tropic of Cancer and the Tropic of Capricorn with it (it turns the Equator on too, since the three only teach anything together). All three are computed from the asset's own equirectangular geometry rather than placed by eye, so the line sits where that latitude really is. This is the picture for "why is this biome found in this band of the world?" — climate, rainforest and desert distribution lessons — with the places themselves marked as `annotations` or supplied as a real thematic map through the picture route.
 
+#### `presentation: "regional-layers"` (South America, named countries and sourced layers)
+
+For a lesson about where something is inside South America (the Amazon rainforest crossing borders, the Equator running through Ecuador, Colombia and Brazil) with country names a child reads off the map.
+
+```json
+{ "type": "map", "map": "south-america", "presentation": "regional-layers",
+  "view": [0, 0.03, 0.82, 0.48],
+  "countryLabels": ["Brazil", "Colombia", "Peru", "Ecuador", "Bolivia", "Venezuela", "Guyana", "Suriname"],
+  "regionLayers": ["Amazon rainforest"], "referenceLines": ["Equator"] }
+```
+
+- `countryLabels` names from: Brazil, Colombia, Peru, Ecuador, Bolivia, Venezuela, Guyana, Suriname, Argentina, Chile, Paraguay, Uruguay. A name sits inside its country when it fits, otherwise out at sea on a leader to a dot in the country. French Guiana is not offered, because the shipped map does not draw it.
+- `regionLayers: ["Amazon rainforest"]` shades the rainforest from a sourced outline registered to this map, with a key; `referenceLines: ["Equator"]` draws the real Equator. Never trace either by eye, and never use `basin` for rainforest: the drainage basin is a different, larger area.
+- `view` shows part of the map, `[left, top, right, bottom]` as fractions. `[0, 0.03, 0.82, 0.48]` is northern South America, which is what keeps eight names readable; leave it out for the whole continent.
+- It is a detailed picture: give it at least half the slide, ideally the 60% side of `split-h-60-40`. A slot too small for its names is refused by name (`MAP_LABELS_DO_NOT_FIT`), never shrunk under the board's 18pt floor.
+- `locator: true` adds a small world map under it. `worksheetMode: "regional-marking"` removes the shading, for a task where the child shades the region. Full spec: `references/map-regional-layers.md`.
+
 #### Worksheet form: `worksheetMode: "continents-and-oceans"`
 
 The same real asset has a full-width landscape write-on form, drawn on every surface and the only form the stick-in pack prints: exactly 7 compact numbered `continentMarkers`, exactly 5 lettered `oceanMarkers` with `repeatAt` on the Pacific, exactly 3 `seaInitialSpaces` (dashed write-on boxes on water), plus the Equator, compass and joined-edge cues. On a worksheet its own 120-143mm height range keeps the full figure legible across landscape A4. Markers and write-on boxes are placed where you put them and never nudged, so two that would print on top of each other at the map's size are refused by name (`MAP_MARKERS_OVERLAP`): on the board's 18pt markers that needs nearly the whole body. The worked example lives in the worksheet catalogue. This form has its own strict marker contract and does not raise the ordinary map's 8-annotation ceiling.
@@ -2330,6 +2386,10 @@ Items render in the order given. Each item keeps its own styling; the stack just
 
 **Optional per-item `weight`** (default 1) sets each item's share of the zone height. Without it, every item claims an equal slice — which strands a short label or context line in the middle of an over-large band, away from the content it belongs with. Give a one-line label or context line a small weight (e.g. `"weight": 0.5`) and the main content a larger one (e.g. `"weight": 2`) so the slim item sits close to what it introduces. (For the common "label above a step list" case, a `steps` object with a `heading` is simpler than a weighted two-item stack.)
 
+**Cards fit their words, then line up.** A stack with `"verticalAlign": "center"` that holds only text cards sizes each card to its own words, at the size it was written at, and centres the group in its zone. Beside a picture or panel in a `row` or a split, the two are centred on each other. Cards never stretch to meet their neighbour, however close in height they are: the group keeps a small, even gap above and below instead. The teacher's rules, 28 and 29 September 2026: "fit the text like it should and then align those cards with the other elements on the page", and never stretch. The Teach layouts' columns of cards work this way, sharing one text size. A group whose words do not fit its zone at 18pt lays out by its weights and the fit pass reports it.
+
+Weights are a starting share, not a promise. When a text block or an `sc-panel` of steps cannot hold its words at 18pt in its share, the stack shares its height out by what each item needs instead: at 20pt when everything fits at that size, at 18pt when only that fits, with a photograph keeping the height its card reaches. Nothing moves in a stack where every item already fits its share. So a task slide's case, question and criteria panel do not need their weights tuned pass by pass; when the build still refuses one of them, the stack does not have the height for all of them at 18pt, and the repair is a roomier composition (more width, another side of the slide, or the beat across two slides), not another weight.
+
 ### `row`
 
 The horizontal twin of `stack`. Holds two or more content objects and renders them **side-by-side** within a single zone. Use when a zone needs to carry a row of items — e.g. four civilisation photographs along the top of a starter, two pyramid images above a pair of sentence stems.
@@ -2345,6 +2405,8 @@ The horizontal twin of `stack`. Holds two or more content objects and renders th
 ```
 
 Items render left-to-right, equal width by default. Content types don't have to match — a `row` can hold a mix (e.g. an image next to a text block). Zone class compatibility depends on its items — the zone must accept every item's content type.
+
+**A photograph held by the row's height gives its spare width away.** A portrait or near-square photograph in a wide row draws only as wide as its shape allows at the row's height, so the row gives it that width and shares the rest among the items beside it (text, a stack of cards), which then wrap less and print larger. A photograph not yet delivered keeps its equal share, because its real shape is not known. Nothing moves in a row of photographs alone.
 
 **Numbering a row's items.** Add `questionNumbering` only when the row belongs to a numbered starter, a numbered main independent task in maths, or a multi-question Maths Our Turn. The two modes have fixed roles:
 
@@ -2756,7 +2818,7 @@ Worked answer (adds the image + arrow):
 
 ### `grid-map`
 
-A schematic river-town map drawn on a **numbered four-figure grid**, the kind a Year 4 child reads human/physical features and four-figure grid references off. **This is the whole point of the lesson, so the drawing gets the method exactly right:** a four-figure grid reference names the **bottom-left corner** of a square, read **along the bottom first, then up the side**. The grid numbers therefore label the grid **lines at the corners** (not floating in the middle of a square): the easting `32` sits on its vertical line, the northing `51` on its horizontal line, and the square `32 51` is the cell sitting **up-and-to-the-right** of where those two lines cross. The optional `highlightSquare` ring lands on that exact bottom-left corner, so the Teach slide can point to it while saying "along the corridor, then up the stairs". A blue river winds through with a meander; features sit inside their squares in one neutral ink, so a child still has to **decide** human vs physical rather than reading it off a colour.
+A schematic river-town map drawn on a **numbered four-figure grid**, the kind a Year 4 child reads human/physical features and four-figure grid references off. **This is the whole point of the lesson, so the drawing gets the method exactly right:** a four-figure grid reference names the **bottom-left corner** of a square, read **along the bottom first, then up the side**. The grid numbers therefore label the grid **lines at the corners** (not floating in the middle of a square): the easting `32` sits on its vertical line, the northing `51` on its horizontal line, and the square `32 51` is the cell sitting **up-and-to-the-right** of where those two lines cross. The optional `highlightSquare` draws a ring round that whole square, so the class sees what is being found, and a solid dot on its bottom-left corner, the crossing the reference is read from, so the Teach slide can point to it while saying "along the corridor, then up the stairs". A feature named as a crossing (a bridge, ford, ferry or stepping stones) is drawn on the river where it passes through its square. A blue river winds through with a meander; features sit inside their squares in one neutral ink, so a child still has to **decide** human vs physical rather than reading it off a colour.
 
 A teaching map with a ring on the first reference modelled:
 ```json
@@ -3053,6 +3115,6 @@ Some layouts are geometrically distinct but pedagogically indistinguishable (e.g
 
 - **Arrangement gaps.** Are there shapes the teacher uses in practice that aren't in §3? If yes, add them here.
 - **Zone class refinement.** If content types have gained or lost zone compatibility in §5 in practice, correct the table.
-- **Answer slides.** No dedicated "answer slide" template exists in this layer — the slide-designer reuses the originating template (or one of its family) with the answers filled in. Confirm this matches how you've taught and corrected.
+- **Answer slides.** No dedicated "answer slide" template exists in this layer. For ordinary paired reveals, reuse the originating template and composition, follow `preferences.md` → Slide Headings for the title, and pair each changing supported text or question block with `revealPair` as described above. Compose a separate layout for a long model explanation or a completed sort where movement expresses the answer. Confirm the result matches how the class was taught and corrected.
 
 ---

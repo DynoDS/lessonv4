@@ -135,12 +135,14 @@ class TeacherVoiceRoutingTests(unittest.TestCase):
             with self.subTest(agent=name):
                 self.assertIn("teacher-voice.md", flat(AGENTS / name))
 
-    def test_lesson_designer_runs_the_voice_check_at_completion(self) -> None:
+    def test_the_lesson_voice_editor_runs_the_voice_check(self) -> None:
         """The pre-flight is the voice test the Written Voice read-back is
-        not; without it the model-answer register has no check anywhere."""
-        self.assertIn(
-            "Final pre-flight check", flat(AGENTS / "lesson-designer.md")
-        )
+        not; without it the model-answer register has no check anywhere.
+        27 September 2026: it runs in the lesson voice editor, over every
+        string it owns, model answers included."""
+        editor = flat(AGENTS / "lesson-voice-editor.md")
+        self.assertIn("Final pre-flight check", editor)
+        self.assertIn("model answers included", editor)
 
 
 if __name__ == "__main__":

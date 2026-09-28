@@ -612,6 +612,68 @@ function repeatedLineWarnings(lesson) {
   return warnings;
 }
 
+// A word card sits straight before the first slide whose board shows its word.
+// The card is not where a word is taught: it is there so a child can read the
+// word on the slide that comes next (the teacher's rule, 28 September 2026:
+// "Is there an important word to do with the topic that they would need to know
+// in the next slide? If so, vocab slide"). The design can only name a unit, so
+// the slide designer moves the card on to the exact slide, and a Codex
+// geography deck the same day still put `climate` before a Sahara slide whose
+// board never said it. Only the board counts: the title and every printed
+// piece, never the speaker notes.
+function boardWords(slideData) {
+  const text = [slideData.title || '']
+    .concat(slideLines(slideData).map(({ text: line }) => line))
+    .join(' ');
+  return ` ${sameLineWords(text)} `;
+}
+
+function showsTerm(board, term) {
+  const words = sameLineWords(term);
+  if (!words) return true;
+  const stem = words.endsWith('y') ? `${words.slice(0, -1)}(?:y|ies)` : words;
+  return new RegExp(` ${stem.replace(/ /g, ' ')}(?:s|es)? `).test(board);
+}
+
+function vocabCardBeforeItsWord(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  const isCard = (slideData) => slideData && slideData.template === 'key-vocabulary';
+  slides.forEach((slideData, index) => {
+    if (!isCard(slideData)) return;
+    const terms = (Array.isArray(slideData.words) ? slideData.words : [])
+      .map((entry) => (entry && typeof entry.word === 'string' ? entry.word : ''))
+      .filter(Boolean);
+    if (!terms.length) return;
+    let next = index + 1;
+    while (next < slides.length && isCard(slides[next])) next += 1;
+    if (next >= slides.length) return;
+    const shows = (at) => {
+      const board = boardWords(slides[at] || {});
+      return terms.some((term) => showsTerm(board, term));
+    };
+    if (shows(next)) return;
+    let first = next + 1;
+    while (first < slides.length && (isCard(slides[first]) || !shows(first))) first += 1;
+    const named = terms.map((term) => `"${term}"`).join(' and ');
+    warnings.push({
+      signal: 'VOCAB_CARD_BEFORE_A_SLIDE_WITHOUT_ITS_WORD',
+      slide: index + 1,
+      field: 'words',
+      message:
+        `The card for ${named} sits before slide ${next + 1}, whose board does not show ` +
+        `${terms.length > 1 ? 'those words' : 'that word'}. A card is there so a child can read ` +
+        'its word on the very next slide, not to teach it early. ' +
+        (first < slides.length
+          ? `The first board after it that shows it is slide ${first + 1}: move the card to sit ` +
+            'straight before that slide, and keep its speaker notes exactly as written.'
+          : 'No board after it shows the word. Put the word on the board where the idea lands, ' +
+            'or report the card upstream as a word no slide needs.')
+    });
+  });
+  return warnings;
+}
+
 function pictureWarnings(lesson) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const warnings = [];
@@ -1038,6 +1100,92 @@ function slideUnitIds(slideData) {
   return ids;
 }
 
+// The source design decides whether an adjacent reveal is an exact answer.
+// Headings are presentation choices and cannot establish that pedagogical fact.
+function exactAnswerUnits(jsonPath) {
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return null;
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+  } catch {
+    return null;
+  }
+  const ids = new Set();
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (typeof node.sourceUnitId === 'string' && node.answer &&
+        node.answer.kind === 'exact' && node.answer.delivery === 'answer-slide' &&
+        !node.answer.structure) {
+      ids.add(node.sourceUnitId);
+    }
+    Object.values(node).forEach(visit);
+  };
+  visit(design);
+  return ids;
+}
+
+function revealBlocks(slideData) {
+  const blocks = [];
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (node.revealPair) blocks.push(node);
+    Object.keys(node).forEach((key) => {
+      if (!['speakerNotes', 'notes', 'revealPair'].includes(key)) visit(node[key]);
+    });
+  };
+  visit(slideData);
+  return blocks;
+}
+
+function answerBearingBlocks(slideData) {
+  const found = [];
+  const visit = (node) => {
+    if (node == null) return;
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (typeof node !== 'object') return;
+    if (node.type === 'text' && String(node.value || node.text || '').includes('||')) found.push(node);
+    if ((['numbered-questions', 'question-cards'].includes(node.type) ||
+         ['maths-your-turn', 'maths-your-turn-sc'].includes(node.template)) &&
+        Array.isArray(node.questions) && node.questions.some((item) =>
+      String(typeof item === 'string' ? item : item && item.text || '').includes('||'))) found.push(node);
+    Object.keys(node).forEach((key) => {
+      if (!['speakerNotes', 'notes'].includes(key)) visit(node[key]);
+    });
+  };
+  visit(slideData);
+  return found;
+}
+
+function ordinaryRevealWarnings(lesson, jsonPath) {
+  const exact = exactAnswerUnits(jsonPath);
+  if (!exact) return [];
+  const slides = Array.isArray(lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((answer, index) => {
+    if (!index) return;
+    const answerLeaves = answerBearingBlocks(answer);
+    if (!answerLeaves.length) return;
+    const question = slides[index - 1];
+    const ids = slideUnitIds(answer).filter((id) => exact.has(id) && slideUnitIds(question).includes(id));
+    if (!ids.length) return;
+    const answerBlocks = revealBlocks(answer);
+    const questionBlocks = revealBlocks(question);
+    const answerIds = answerBlocks.map((block) => block.revealPair.id);
+    const questionIds = questionBlocks.map((block) => block.revealPair.id);
+    if (answerLeaves.some((block) => !block.revealPair) ||
+        !answerIds.length || answerIds.length !== questionIds.length ||
+        answerIds.some((id) => !questionIds.includes(id))) {
+      warnings.push({
+        signal: 'ORDINARY_REVEAL_UNPAIRED', slide: index + 1, field: 'revealPair',
+        message: `source unit ${ids[0]} has an exact answer-slide reveal. Pair every ordinary answer-bearing text or question block with the preceding task slide using matching revealPair ids and opposite states, then keep the static composition unchanged. If the settled source calls for a different model or visual completion, refer that teaching decision to the lesson designer.`
+      });
+    }
+  });
+  return warnings;
+}
+
 // Every Teach unit in the design beside lesson.json, by id, with whether its
 // design carries a script. Null when there is no design to read.
 function teachUnits(jsonPath) {
@@ -1143,6 +1291,22 @@ function carriesTeaching(slideData) {
   });
 }
 
+// A lead that is a whole teaching sentence teaches: a paced Teach run gives
+// each thing the class looks at its own slide, and one of those slides can be
+// a picture and the one sentence about it (the teacher, 28 September 2026:
+// "one slide with this picture ... And then maybe one more slide, then do
+// bit"). What stays refused is the label the 14 September repair produced,
+// `A Tudor farm household`: a few words with no sentence in them.
+function leadIsATeachingSentence(slideData) {
+  const lead = slideData.lead && typeof slideData.lead === 'object' ? slideData.lead.value : slideData.lead;
+  if (typeof lead !== 'string') return false;
+  const text = lead.replace(/\{\{|\}\}/g, '').trim();
+  if (!/[.!?]$/.test(text)) return false;
+  if (text.split(/\s+/).length < 6) return false;
+  const titleWords = wordsOf(slideData.title);
+  return !titleWords || wordsOf(text) !== titleWords;
+}
+
 function teachLayoutWarnings(lesson, jsonPath) {
   const slides = Array.isArray(lesson.slides) ? lesson.slides : [];
   const warnings = [];
@@ -1221,7 +1385,7 @@ function teachLayoutWarnings(lesson, jsonPath) {
         });
       }
       if (slideData.template === 'teach-layout' && slidesByUnit.get(unit).length > 1 &&
-          !carriesTeaching(slideData)) {
+          !carriesTeaching(slideData) && !leadIsATeachingSentence(slideData)) {
         warnings.push({
           slide: index + 1,
           field: 'layout',
@@ -1383,6 +1547,7 @@ Fix that slide's layout slots, then run the check again.
   const pictures = pictureWarnings(lesson);
   const presentationAll = teachLayout
     .concat(launchPair)
+    .concat(ordinaryRevealWarnings(lesson, jsonPath))
     .concat(presentationWarnings(lesson))
     .concat(turnWarnings(lesson))
     .concat(consecutiveModellingWarnings(lesson))
@@ -1393,7 +1558,8 @@ Fix that slide's layout slots, then run the check again.
     .concat(starterColourWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
     .concat(pictures)
-    .concat(repeatedLineWarnings(lesson));
+    .concat(repeatedLineWarnings(lesson))
+    .concat(vocabCardBeforeItsWord(lesson));
   // A settled deck is checked by the slide decorator, and by the orchestrator
   // after it. Composition is closed to the decorator, so a wording, title or
   // layout fault the slide designer's round left is not its to mend, and
@@ -1658,6 +1824,35 @@ Fix that slide's layout slots, then run the check again.
         }
       }
     }
+
+    // A check that fails still keeps the pages it drew, when a preview was
+    // asked for. One refused slide used to stop the whole preview, so the
+    // slide designer of a Year 4 PSHE deck repaired a panel three passes
+    // running without seeing a page (27 September 2026). The pages go under
+    // their own names, never `previewDir`, so nothing promotes a deck the
+    // check refused; the refused slides carry a "check this slide" note.
+    if (options.retainPreview && outcome && (!outcome.ok || early.reason) && !outcome.previewDir) {
+      const partialLine = childStdout
+        .split(/\r?\n/)
+        .find((line) => line.startsWith('PARTIAL_PREVIEW: ') || line.startsWith('Wrote: '));
+      const drawnPath = partialLine
+        ? path.resolve(partialLine.slice(partialLine.indexOf(':') + 1).trim())
+        : null;
+      if (drawnPath && pathIsInside(drawnPath, scratchDir) && fs.existsSync(drawnPath)) {
+        try {
+          const partialDir = fs.mkdtempSync(
+            path.join(os.tmpdir(), 'lesson-resources-slide-preview-refused-')
+          );
+          const partialPath = path.join(partialDir, path.basename(drawnPath));
+          fs.copyFileSync(drawnPath, partialPath);
+          outcome.partialPreviewDir = partialDir;
+          outcome.partialPreviewOutputPath = partialPath;
+        } catch {
+          // The pages are a convenience while repairing; the check's verdict
+          // stands without them.
+        }
+      }
+    }
   } catch (error) {
     outcome = {
       ok: false,
@@ -1758,6 +1953,9 @@ function main(argv = process.argv.slice(2)) {
     return 0;
   }
 
+  if (result.partialPreviewOutputPath) {
+    console.log(`SLIDE_DESIGN_REFUSED_PREVIEW: ${result.partialPreviewOutputPath}`);
+  }
   console.error(`SLIDE_DESIGN_CHECK_FAILED: ${result.reason}`);
   return 1;
 }
@@ -1771,11 +1969,13 @@ module.exports = {
   presentationWarnings,
   countOptionalPictures,
   optionalPictureLine,
+  ordinaryRevealWarnings,
   buildDiagnostic,
   main,
   parseBuildDiagnostics,
   pathIsInside,
   repeatedLineWarnings,
+  vocabCardBeforeItsWord,
   runSlideDesignCheck,
   stripScratchWroteLine,
 };

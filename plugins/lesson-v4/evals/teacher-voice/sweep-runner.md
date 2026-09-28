@@ -5,13 +5,13 @@ You are producing predictions for the Teacher Voice regression harness. You are 
 Read, in this order:
 
 1. `plugins/lesson-v4/references/teacher-voice.md`, whole.
-2. The paragraph in `plugins/lesson-v4/agents/design-reviewer.md` that begins `**Then sweep the voice, string by string.**`, and the paragraph in its opening section, `Material-defect boundary`, that begins `A child-facing or spoken string in the wrong register is not polish.` These are the production sweep instructions; apply them and nothing stricter.
-3. The input file. Each case has `id`, `year_group`, `subject`, `wording`, and may have `beat`. A string starting `Teacher says:` is a spoken script; every other string is read by a child of that year group. There is no surface label; decide what each string is from its wording, as the production reviewer does.
+2. The sections of `plugins/lesson-v4/agents/lesson-voice-editor.md` headed `What you change, and how each kind of string should sound` and `What you never change`. Since 27 September 2026 the lesson voice editor, not the design reviewer, owns how every string sounds, so these are the production voice instructions; apply them and nothing stricter.
+3. The input file. Each case has `id`, `year_group`, `subject`, `wording`, and may have `beat`. A string starting `Teacher says:` is a spoken script; every other string is read by a child of that year group. There is no surface label; decide what each string is from its wording, as the production voice editor does.
 
 For every case, decide one of:
 
 - `KEEP`: the wording can ship as written for what it is. A string can be short, plain, or carry a fact you would teach differently and still be KEEP; the question is register and child access, not whether you would have written it.
-- `REPAIR`: the wording has a material voice or child-access problem that would merit a bounded rewording in a real review: planning language where a child needs the thing, a full form where speech contracts, a compressed label with no verb doing the work, several adjacent sentences in one shape and length, a question a child of this year cannot answer without first working out what it refers to, or a spoken script you cannot hear the teacher saying.
+- `REPAIR`: the wording has a material voice or child-access problem that would merit a rewording in a real voice edit: planning language where a child needs the thing, a full form where speech contracts, a compressed label with no verb doing the work, several adjacent sentences in one shape and length, a question a child of this year cannot answer without first working out what it refers to, or a spoken script you cannot hear the teacher saying.
 
 Do not repair for structure: a Teach explanation that lacks a reason or a "what it's not" is a route fault for the design reviewer's Teach-board read, not a voice REPAIR, unless its wording also fails a test above.
 

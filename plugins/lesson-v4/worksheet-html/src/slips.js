@@ -346,26 +346,41 @@ function slipContentOf(sheetSpec) {
 // Only a question whose whole content is one short item is packed: anything
 // with a picture, a stem, a blank in its words or a figure keeps its own line.
 // A run stops where a question group changes, so (1f) never shares a row with
-// (2).
-const BODY_CHAR_MM = 12 * 0.3528 * 0.5; // body type, the width the engine's line estimate assumes
-const NUMBER_ROOM_MM = 10; // the "(1a)" label and the gap after it, with a little to spare
+// (2), and a group's own task line ("Write each number as Roman numerals.")
+// always keeps a line of its own above its parts.
+//
+// A cell is sized from the words' real width at body size, measured in the
+// browser (28 September 2026): a capital or a digit is about 2.65mm, other
+// letters and punctuation about 2mm. The estimate used to be 2.1mm for
+// everything, and the row then took its gaps out of the cells a second time, so
+// on a Year 4 slip "LXXVIII" and even "85" broke onto two lines.
+const CAPITAL_OR_DIGIT_MM = 2.75;
+const OTHER_CHAR_MM = 2.1;
+const NUMBER_ROOM_MM = 10; // the "(1a)" label (6.8mm at 10pt bold) in its 8mm column, and the gap after it
 const MAX_ACROSS = 4;
+
+function textWidthMm(text) {
+  let mm = 0;
+  for (const ch of String(text)) mm += /[A-Z0-9]/.test(ch) ? CAPITAL_OR_DIGIT_MM : OTHER_CHAR_MM;
+  return mm;
+}
 
 // How long a question's words may be and still share a row: what fits a cell at
 // two across. Beyond that the row maths below would refuse it anyway, so this
 // is the same judgement made once rather than a separate number to keep in
 // step. It replaced a flat 16 characters, which kept "Round 4,280 to the
 // nearest 1,000." on a line of its own beside half a slip of blank paper.
-function packableChars(widthMm) {
-  return Math.floor((widthMm / 2 - NUMBER_ROOM_MM - GAP_MM) / BODY_CHAR_MM);
+function packableWidthMm(widthMm) {
+  return widthMm / 2 - NUMBER_ROOM_MM - GAP_MM;
 }
 
 // A numbered question whose whole content is one short line of words, whether
 // the sheet wrote that line as a question item or as the instruction above a
 // figure the slip has dropped. Anything with a picture, a stem, a blank in its
 // words or a figure still keeps its own line.
-function shortQuestionText(node, maxChars) {
+function shortQuestionText(node, maxWidthMm) {
   if (!node || typeof node !== "object" || node.number === undefined) return null;
+  if (node.groupPrompt) return null;
   let inner = node;
   if (isStack(node)) {
     if (!Array.isArray(node.stack) || node.stack.length !== 1) return null;
@@ -380,22 +395,31 @@ function shortQuestionText(node, maxChars) {
   } else if (inner.helper === "instruction") {
     text = typeof inner.text === "string" ? inner.text : null;
   }
-  if (text === null || /_{2,}/.test(text) || text.length > maxChars) return null;
+  if (text === null || /_{2,}/.test(text) || textWidthMm(text) > maxWidthMm) return null;
   return text;
 }
 
 // An invisible cell that keeps the last row's columns under the ones above.
 const COLUMN_FILLER = () => ({ helper: "instruction", text: " " });
 
+// Which question a packed item belongs to. The numberer has already turned a
+// grouped Part's questionGroupId into its label, so "2c" is part of question 2;
+// a plain numbered question shares a run with its plain neighbours, as before.
+function mainQuestionOf(node) {
+  const label = node && node.number !== undefined ? String(node.number) : "";
+  const grouped = /^(\d+)[a-z]$/.exec(label);
+  return grouped ? grouped[1] : "plain";
+}
+
 function packShortQuestions(content, widthMm) {
   if (!isStack(content) || !Array.isArray(content.stack)) return content;
 
-  const maxChars = packableChars(widthMm);
+  const maxWidthMm = packableWidthMm(widthMm);
   const out = [];
   let run = [];
   const flush = () => {
-    const longest = Math.max(0, ...run.map((r) => r.text.length));
-    const cellMm = NUMBER_ROOM_MM + longest * BODY_CHAR_MM + GAP_MM;
+    const longest = Math.max(0, ...run.map((r) => textWidthMm(r.text)));
+    const cellMm = NUMBER_ROOM_MM + longest;
     const across = Math.min(MAX_ACROSS, Math.floor((widthMm + GAP_MM) / (cellMm + GAP_MM)));
     if (run.length < 2 || across < 2) {
       out.push(...run.map((r) => r.node));
@@ -405,7 +429,11 @@ function packShortQuestions(content, widthMm) {
       // shared out so that six four-digit numbers sit a finger apart across the
       // page. Stated parts are exact, so the columns still line up row to row -
       // (3a) above (3e) - which is what makes a run readable at a glance.
-      const spareMm = widthMm - across * cellMm;
+      // The row puts a gap between every pair of cells, the empty column
+      // included, and takes those gaps out of the width before sharing it, so
+      // the spare column is what is left after them. Left in, the gaps came out
+      // of every question's own cell instead.
+      const spareMm = widthMm - across * cellMm - across * GAP_MM;
       const trailing = spareMm > GAP_MM;
       for (let i = 0; i < run.length; i += across) {
         const cells = run.slice(i, i + across).map((r) => r.node);
@@ -422,8 +450,8 @@ function packShortQuestions(content, widthMm) {
   };
 
   for (const node of content.stack) {
-    const text = shortQuestionText(node, maxChars);
-    const group = node && node.questionGroupId;
+    const text = shortQuestionText(node, maxWidthMm);
+    const group = mainQuestionOf(node);
     if (text !== null && (!run.length || run[0].group === group)) {
       run.push({ node, text, group });
       continue;
@@ -445,17 +473,46 @@ function slipNodesFor(nodes, cols) {
 
 const PAGE_W_MM = 210;
 const PAGE_H_MM = 297;
-// Content sits well inside every slip, so a slip on the page edge keeps its
-// words clear of a classroom printer's unprintable strip.
-const PAD_TOP_MM = 9;
-const PAD_SIDE_MM = 9;
-const PAD_BOTTOM_MM = 6;
+// Two kinds of edge, two kinds of room. Beside a cut line the words sit close,
+// because the teacher trims close to the question: 9mm there meant trimming the
+// line and then trimming again nearer the words (Daniel, 28 September 2026:
+// "I often trim close to the question ... closer, not too close obviously
+// because of human error of cutting"). 4mm leaves a wobbly cut clear of the
+// words. At the paper's own edge the room stays wide, so the words keep clear
+// of a classroom printer's unprintable strip; nobody trims there.
+const CUT_PAD_MM = 4;
+const EDGE_PAD_MM = 9;
+// The page's top edge is the first row's top: the grid starts this far down so
+// that row's words still sit EDGE_PAD_MM from the paper. The foot keeps the old
+// 6mm from the last words to the paper.
+const PAGE_TOP_INSET_MM = EDGE_PAD_MM - CUT_PAD_MM;
+const PAGE_FOOT_INSET_MM = 6 - CUT_PAD_MM;
+// The level code ("E", "GD") sits on the first line, at the right, when that
+// line is a section heading, which leaves the right of the line empty. Over
+// anything else it needs a line of its own above the words.
+const CODE_LINE_MM = 3.5;
 const GAP_MM = SPACE.item;
 // Four rows at most: past that every page is more cutting than it saves.
 const MAX_ROWS = 4;
 
+// One strip has the paper's edge on both sides; two across share a cut line
+// down the middle.
+function sidePadsMm(cols) {
+  return cols === 1 ? EDGE_PAD_MM * 2 : EDGE_PAD_MM + CUT_PAD_MM;
+}
+
 function contentWidthMm(cols) {
-  return PAGE_W_MM / cols - PAD_SIDE_MM * 2;
+  return PAGE_W_MM / cols - sidePadsMm(cols);
+}
+
+function opensWithHeading(nodes) {
+  const first = nodes[0];
+  const inner = first && Array.isArray(first.stack) ? first.stack[0] : first;
+  return Boolean(inner && inner.helper === "section-label");
+}
+
+function slipPadTopMm(codeBeside) {
+  return CUT_PAD_MM + (codeBeside ? 0 : CODE_LINE_MM);
 }
 
 // Two slips across when every item can be read at half the page's width,
@@ -481,9 +538,9 @@ function estimatedContentMm(nodes, cols) {
   return total + Math.max(0, nodes.length - 1) * GAP_MM;
 }
 
-function rowsFor(contentMm) {
-  const slipMm = contentMm + PAD_TOP_MM + PAD_BOTTOM_MM;
-  return Math.min(MAX_ROWS, Math.floor(PAGE_H_MM / slipMm));
+function rowsFor(slipMm) {
+  const usableMm = PAGE_H_MM - PAGE_TOP_INSET_MM - PAGE_FOOT_INSET_MM;
+  return Math.min(MAX_ROWS, Math.floor(usableMm / slipMm));
 }
 
 // ─── HTML ────────────────────────────────────────────────────────────────
@@ -499,13 +556,16 @@ const SLIP_CSS = `
     position: relative;
     overflow: hidden;
   }
-  .slips { position: absolute; inset: 0; display: grid; }
+  .slips { position: absolute; left: 0; right: 0; top: ${PAGE_TOP_INSET_MM}mm; bottom: 0; display: grid; }
   .slip {
     position: relative;
     box-sizing: border-box;
-    padding: ${PAD_TOP_MM}mm ${PAD_SIDE_MM}mm ${PAD_BOTTOM_MM}mm;
+    padding: ${CUT_PAD_MM}mm ${EDGE_PAD_MM}mm ${CUT_PAD_MM}mm;
     overflow: hidden;
   }
+  .slip--code-above { padding-top: ${CUT_PAD_MM + CODE_LINE_MM}mm; }
+  .slip--left { padding-right: ${CUT_PAD_MM}mm; }
+  .slip--right { padding-left: ${CUT_PAD_MM}mm; }
   .slip-body {
     display: flex;
     flex-direction: column;
@@ -536,10 +596,12 @@ const SLIP_CSS = `
   /* A row of packed short questions: each cell holds one line, so it does not
      stretch to the tallest neighbour's full height. */
   .slip-item .h-row { height: auto; }
+  .slip--left .slip-code { right: ${CUT_PAD_MM}mm; }
+  .slip--code-above .slip-code { top: ${CUT_PAD_MM - 1}mm; }
   .slip-code {
     position: absolute;
-    right: ${PAD_SIDE_MM}mm;
-    top: ${PAD_TOP_MM - 5}mm;
+    right: ${EDGE_PAD_MM}mm;
+    top: ${CUT_PAD_MM}mm;
     font-size: var(--type-note);
     line-height: 1.35;
     color: var(--colour-quiet);
@@ -595,19 +657,22 @@ function measureHtml(nodes, cols) {
 // under the explain, and then have to make another trim to the top of the next
 // slip. So all that is just wasted trimming motions and wasted dead space." It
 // does not change how many slips fit; that is settled before this is called.
-function renderSlipsPage({ nodes, cols, rows, code, title, slipMm }) {
+function renderSlipsPage({ nodes, cols, rows, code, title, slipMm, codeBeside = true }) {
   const inner = bodyHtml(nodes, cols);
   const cells = [];
   for (let i = 0; i < cols * rows; i += 1) {
+    const classes = ["slip"];
+    if (cols === 2) classes.push(i % 2 === 0 ? "slip--left" : "slip--right");
+    if (code && !codeBeside) classes.push("slip--code-above");
     cells.push(
-      `<div class="slip">${code ? `<div class="slip-code">${esc(code)}</div>` : ""}` +
+      `<div class="${classes.join(" ")}">${code ? `<div class="slip-code">${esc(code)}</div>` : ""}` +
         `<div class="slip-body" data-worksheet-zone="slip-${i + 1}">${inner}</div></div>`
     );
   }
-  const rowMm = slipMm || PAGE_H_MM / rows;
+  const rowMm = slipMm || (PAGE_H_MM - PAGE_TOP_INSET_MM) / rows;
   const cuts = [];
   for (let r = 1; r < rows; r += 1) {
-    cuts.push(`<div class="cut cut--across" style="top:${(rowMm * r).toFixed(2)}mm"></div>`);
+    cuts.push(`<div class="cut cut--across" style="top:${(PAGE_TOP_INSET_MM + rowMm * r).toFixed(2)}mm"></div>`);
   }
   for (let c = 1; c < cols; c += 1) {
     cuts.push(`<div class="cut cut--down" style="left:${((PAGE_W_MM / cols) * c).toFixed(2)}mm"></div>`);
@@ -647,6 +712,7 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   const nodes = slipContentOf(sheetSpec);
   if (!nodes.length) return { skipped: "the sheet has nothing left to print once its answer spaces are taken out" };
   const code = sheetSpec.code || "";
+  const codeBeside = !code || opensWithHeading(nodes);
 
   // Two across when the content can be read at half width, and one full-width
   // strip as well: long questions wrap less on a strip, so a strip can fit
@@ -669,8 +735,9 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
     }
     // A hair of margin over the browser's measurement, as the sheets keep.
     const askedMm = contentMm + (browser ? 1 : 0);
-    const rows = rowsFor(askedMm);
-    if (rows >= 1) plans.push({ cols, rows, laid, slipMm: askedMm + PAD_TOP_MM + PAD_BOTTOM_MM });
+    const slipMm = askedMm + slipPadTopMm(codeBeside) + CUT_PAD_MM;
+    const rows = rowsFor(slipMm);
+    if (rows >= 1) plans.push({ cols, rows, laid, slipMm });
   }
   plans.sort((a, b) => b.cols * b.rows - a.cols * a.rows || a.cols + a.rows - (b.cols + b.rows));
   if (!plans.length) return { skipped: "its questions are too long to fit a slip shorter than a page" };
@@ -678,7 +745,7 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   const { cols, laid, slipMm } = plans[0];
   let { rows } = plans[0];
   while (rows >= 1) {
-    const html = renderSlipsPage({ nodes: laid, cols, rows, code, title, slipMm });
+    const html = renderSlipsPage({ nodes: laid, cols, rows, code, title, slipMm, codeBeside });
     if (!browser) return { html, cols, rows };
     const { pdf, fitProblems } = await htmlToPdf(html, { browser, inspectFit: true });
     if (!fitProblems.length) return { html, pdf, cols, rows };

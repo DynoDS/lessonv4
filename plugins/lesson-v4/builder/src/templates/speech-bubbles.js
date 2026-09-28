@@ -8,6 +8,8 @@ const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
 const { FONT, COLOURS, FIT } = require('../styles');
 const { splitAnswerRuns } = require('../answer-text');
+const { keepCalculationsWhole } = require('../presentation-text');
+const { textBoxWidthIn } = require('../glyph-width');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const STATEMENT_H_RATIO        = 0.20;   // a short text statement sits in a slim band
@@ -78,10 +80,98 @@ const HUG_SAFETY = 1.15;
 
 const BREAK = String.fromCharCode(10);
 
-function estimateSpeechHeight(speech, innerW) {
+// A calculation is read as one thing, so it stays on one line in a bubble as
+// it does everywhere else. The bubble printed its words without the deck's
+// calculation rule, so "5,372 - 2,146" in a narrow bubble at 34pt broke one
+// number or sign to a line (a Year 4 maths deck, 28 September 2026). Now the
+// numbers and signs of a calculation are joined, and the bubble's size steps
+// down until the widest unbreakable run (a whole calculation, or a long word)
+// fits the bubble's width, never below the 18pt floor; at the floor the fit
+// pass reports the bubble, as it would any box too narrow for its words.
+const SPEECH_FLOOR = 18;
+
+function readable(speech) {
   // Inline markers style runs without printing; count only what a child reads.
-  const text = String(speech || '').replace(/\[\[|\]\]|\*\*|\|\|/g, '');
-  const glyphW = (BUBBLE_FONT * CHAR_W_EM) / 72;
+  return keepCalculationsWhole(String(speech || '').replace(/\[\[|\]\]|\*\*|\|\||\{\{|\}\}|<<|>>/g, ''));
+}
+
+function measurable(unit) {
+  return unit.replace(/\u00a0/g, ' ').replace(/\u2212/g, '-');
+}
+
+function speechFont(speech, innerW) {
+  const units = readable(speech).split(/[ \t\n]+/).filter(Boolean);
+  for (let pt = BUBBLE_FONT; pt > SPEECH_FLOOR; pt -= 1) {
+    // Measured with an ordinary space and hyphen: the width table does not know
+    // the joining space or the minus sign and would count each as a wide letter.
+    if (units.every(function (unit) { return textBoxWidthIn(measurable(unit), pt, true) <= innerW; })) return pt;
+  }
+  return SPEECH_FLOOR;
+}
+
+// When a speaker says a calculation, the speakers get the width it needs.
+//
+// A calculation stays on one line, so in a narrow bubble the only way to fit it
+// is smaller type: two Year 4 maths bubbles holding "5,372 - 2,146 = 3,234."
+// beside a criteria panel that took 60% of the slide printed at the 18pt floor,
+// under portraits larger than the words (28 September 2026). The teacher agreed
+// the speakers should have the room (29 September 2026). So when any speech
+// holds a calculation, the statement beside the speakers gives up width until
+// the widest calculation fits a bubble at the full bubble size, but never so
+// much that the statement itself stops fitting: each narrower width is tried on
+// a slide nobody sees, and the narrowest that the statement still fits is used.
+// A deck with no calculation in its speech keeps the share it asked for.
+const NARROWEST_STATEMENT = 0.3;
+const STATEMENT_STEP = 0.02;
+
+function widestCalculation(speakers) {
+  let widest = 0;
+  speakers.forEach(function (speaker) {
+    readable(speaker && speaker.speech).split(/[ \t\n]+/).forEach(function (unit) {
+      // A joined calculation is one run with joining spaces inside it.
+      if (unit.indexOf('\u00a0') === -1 || !/\d/.test(unit)) return;
+      widest = Math.max(widest, textBoxWidthIn(measurable(unit), BUBBLE_FONT, true));
+    });
+  });
+  return widest;
+}
+
+function statementRatioForCalculations(bodyW, ratio, speakers, count, statement, ctx) {
+  const widest = widestCalculation(speakers.slice(0, count));
+  if (!(widest > 0)) return ratio;
+  const speakersNeed = count * (widest + 2 * TEXT_PAD_X + 0.05) + (count - 1) * COL_GAP;
+  const wanted = 1 - (speakersNeed + SIDE_STATEMENT_GAP / 2) / bodyW;
+  if (wanted >= ratio) return ratio;
+  const PptxGenJS = require('../require-global')('pptxgenjs');
+  const { withoutRecording } = require('../warnings');
+  const fits = function (r) {
+    const dry = new PptxGenJS();
+    const barrier = ctx._cardBarrier;
+    const container = ctx._containerType;
+    try {
+      withoutRecording(function () {
+        drawContent(dry, dry.addSlide(), {
+          x: 0, y: 0.6, w: bodyW * r - SIDE_STATEMENT_GAP / 2, h: 6.65, class: 'E-wide'
+        }, statement, ctx);
+      });
+      return true;
+    } catch (err) {
+      return false;
+    } finally {
+      ctx._cardBarrier = barrier;
+      ctx._containerType = container;
+    }
+  };
+  for (let r = Math.max(NARROWEST_STATEMENT, wanted); r < ratio; r += STATEMENT_STEP) {
+    if (fits(r)) return r;
+  }
+  return ratio;
+}
+
+function estimateSpeechHeight(speech, innerW) {
+  const text = readable(speech);
+  const pt = speechFont(speech, innerW);
+  const glyphW = (pt * CHAR_W_EM) / 72;
   const charsPerLine = Math.max(1, Math.floor(innerW / glyphW));
   // A break the author put in is a line the bubble has to hold.
   //
@@ -95,7 +185,7 @@ function estimateSpeechHeight(speech, innerW) {
   let lines = 0;
   const paragraphs = text.split(BREAK);
   for (const paragraph of paragraphs) {
-    const words = paragraph.split(/\s+/).filter(Boolean);
+    const words = paragraph.split(/[ \t]+/).filter(Boolean);
     if (!words.length) { lines += 1; continue; }   // a blank line is still a line
     let used = 1;
     let len = 0;
@@ -106,20 +196,31 @@ function estimateSpeechHeight(speech, innerW) {
     }
     lines += used;
   }
-  return Math.max(1, lines) * ((BUBBLE_FONT * LINE_H_EM) / 72) * HUG_SAFETY;
+  return Math.max(1, lines) * ((pt * LINE_H_EM) / 72) * HUG_SAFETY;
 }
 
 // Bundled character art lives beside the coins in assets/. Each entry records
 // the file, the default on-slide name, and the trimmed natural aspect (w / h)
 // so the figure embeds without ever being squashed.
 const CHILD_DIR = path.join(__dirname, '..', '..', 'assets', 'children');
+// Six children and Bailey the class dog, who talks like anyone else. The keys say what
+// each picture is, so a designer can give a named child a face that fits: `boy-1` to
+// `boy-3`, `girl-1` to `girl-3`. The teacher added boys 2 and 3 and girls 2 and 3 on
+// 28 September 2026, so a lesson with several children no longer runs out of faces.
 const CHILDREN = {
-  'bailey':       { file: 'bailey.png',       name: 'Bailey',       aspect: 1.0509 },
-  'mr-sear':      { file: 'mr-sear.png',      name: 'Mr Sear',      aspect: 0.7097 },
-  'miss-brooker': { file: 'miss-brooker.png', name: 'Miss Brooker', aspect: 0.7482 }
+  'bailey': { file: 'bailey.png', name: 'Bailey', aspect: 1.0509 },
+  'boy-1':  { file: 'boy-1.png',  name: 'Boy',    aspect: 0.7097 },
+  'boy-2':  { file: 'boy-2.png',  name: 'Boy',    aspect: 0.7764 },
+  'boy-3':  { file: 'boy-3.png',  name: 'Boy',    aspect: 0.7497 },
+  'girl-1': { file: 'girl-1.png', name: 'Girl',   aspect: 0.7482 },
+  'girl-2': { file: 'girl-2.png', name: 'Girl',   aspect: 0.6544 },
+  'girl-3': { file: 'girl-3.png', name: 'Girl',   aspect: 0.76 }
 };
+// Decks saved before the rename still say `mr-sear` and `miss-brooker`; they are
+// boy 1 and girl 1, so an old deck still builds with the same faces.
+const RENAMED = { 'mr-sear': 'boy-1', 'miss-brooker': 'girl-1' };
 // Speakers that don't name a character fill in this order, left to right.
-const DEFAULT_ORDER = ['mr-sear', 'miss-brooker', 'bailey'];
+const DEFAULT_ORDER = ['boy-1', 'girl-1', 'bailey'];
 
 // Which side of the body the statement column takes. Children read left to
 // right, so the side decides what they meet first: the thing being judged, or
@@ -154,6 +255,8 @@ function drawSpeechBubbles(pptx, slide, data, ctx, count) {
   if (sideStatement) {
     let ratio = (typeof data.statementRatio === 'number') ? data.statementRatio : SIDE_STATEMENT_RATIO;
     ratio = Math.max(0.3, Math.min(0.6, ratio));
+    ratio = statementRatioForCalculations(
+      bz.w, ratio, Array.isArray(data.speakers) ? data.speakers : [], count, statement, ctx);
     const statementW = bz.w * ratio - SIDE_STATEMENT_GAP / 2;
     const speakersW = bz.w - statementW - SIDE_STATEMENT_GAP;
     const statementFirst = statementSide(data) === 'left';
@@ -263,17 +366,22 @@ function drawBubble(pptx, slide, b) {
   // must weigh, a **stressed** word, or a ||answer reveal inside a character's
   // line renders as styled runs rather than literal brackets, asterisks, or
   // pipes — exactly as the same markers render in body text and steps.
-  slide.addText(splitAnswerRuns(b.speech, true), {
+  const runs = splitAnswerRuns(b.speech, true);
+  const whole = typeof runs === 'string'
+    ? keepCalculationsWhole(runs)
+    : runs.map(function (run) { return Object.assign({}, run, { text: keepCalculationsWhole(run.text) }); });
+  slide.addText(whole, {
     x: b.x + TEXT_PAD_X, y: y + TEXT_PAD_Y,
     w: b.w - 2 * TEXT_PAD_X, h: h - 2 * TEXT_PAD_Y,
-    fontFace: FONT, fontSize: BUBBLE_FONT, bold: true,
+    fontFace: FONT, fontSize: speechFont(b.speech, b.w - 2 * TEXT_PAD_X), bold: true,
     color: COLOURS.body, align: 'left', valign: 'top',
     margin: 0, fit: FIT
   });
 }
 
 function drawFigure(pptx, slide, f, ctx) {
-  const key = f.speaker.child || DEFAULT_ORDER[f.index % DEFAULT_ORDER.length];
+  const asked = f.speaker.child && (RENAMED[f.speaker.child] || f.speaker.child);
+  const key = asked || DEFAULT_ORDER[f.index % DEFAULT_ORDER.length];
   const child = CHILDREN[key] || CHILDREN[DEFAULT_ORDER[f.index % DEFAULT_ORDER.length]];
   const displayName = f.speaker.name || child.name;
 

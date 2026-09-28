@@ -1,0 +1,85 @@
+{
+  "lessonName": "Changing tense",
+  "yearGroup": "Year 4",
+  "subject": "English",
+  "lo": "Changing tense",
+  "slides": [
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Changing tense",
+      "designUnitId": "trial/grammar/unit-001",
+      "body": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Change each sentence to the past tense.",
+            "colorRole": "task-blue",
+            "weight": 0.8
+          },
+          {
+            "type": "text",
+            "id": "a",
+            "value": "I walk to the gate.",
+            "fontSize": 34,
+            "weight": 1
+          },
+          {
+            "type": "text",
+            "id": "b",
+            "value": "She runs to the shop.",
+            "fontSize": 34,
+            "weight": 1
+          },
+          {
+            "type": "text",
+            "id": "c",
+            "value": "We carry the bags.",
+            "fontSize": 34,
+            "weight": 1
+          }
+        ]
+      },
+      "speakerNotes": "Say to children: Read each sentence and change the action word so it tells us the action already happened. Write the whole sentence.\n\nAnswer to question(s) on this slide:\nI walked to the gate.\nShe ran to the shop.\nWe carried the bags."
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Changing tense - check",
+      "designUnitId": "trial/grammar/unit-001",
+      "body": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Change each sentence to the past tense.",
+            "colorRole": "task-blue",
+            "weight": 0.8
+          },
+          {
+            "type": "text",
+            "id": "a",
+            "value": "||I walked to the gate.",
+            "fontSize": 34,
+            "weight": 1
+          },
+          {
+            "type": "text",
+            "id": "b",
+            "value": "||She ran to the shop.",
+            "fontSize": 34,
+            "weight": 1
+          },
+          {
+            "type": "text",
+            "id": "c",
+            "value": "||We carried the bags.",
+            "fontSize": 34,
+            "weight": 1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -21,6 +21,7 @@ const {
   drawContentPicture
 } = require('../content-picture');
 const { textBoxWidthIn } = require('../glyph-width');
+const { pairedEntries, PAIRED_LAYOUT } = require('./reveal-pair');
 
 // A stack of question cards with purple labels, independent of body colour.
 //
@@ -188,8 +189,10 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
   // the break is the design, so the card hugs the longest line while still
   // carrying the room each shorter phase needs.
   const naturalLines = questions.map(function (q) {
-    return String(q.text).split('\n').map(function (line) {
-      return lineWidth(line, fontPt);
+    return (q.layoutTexts || [q.text]).map(function (text) {
+      return String(text).split('\n').map(function (line) {
+        return lineWidth(line, fontPt);
+      });
     });
   });
   const textWidths = naturalLines.map(function (lines, i) {
@@ -197,7 +200,7 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
       0.4,
       maxW - labelW - answerGutterW - 2 * CARD_PAD_X - pictureSlots[i]
     );
-    const longestLine = lines.reduce(function (m, w) { return Math.max(m, w); }, 0);
+    const longestLine = lines.flat().reduce(function (m, w) { return Math.max(m, w); }, 0);
     return Math.min(longestLine, maxTextW);
   });
   const widestRowW = textWidths.reduce(function (m, textW, i) {
@@ -205,9 +208,11 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
   }, 0);
 
   const cards = questions.map(function (q, i) {
-    const lines = naturalLines[i].reduce(function (total, lineW) {
-      return total + Math.max(1, Math.ceil(lineW / Math.max(textWidths[i], 0.1)));
-    }, 0);
+    const lines = Math.max(...naturalLines[i].map(function (variant) {
+      return variant.reduce(function (total, lineW) {
+        return total + Math.max(1, Math.ceil(lineW / Math.max(textWidths[i], 0.1)));
+      }, 0);
+    }));
     return {
       source: q.source,
       text: q.text,
@@ -288,6 +293,7 @@ function widerArrangement(questions, options) {
 
 function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   const answerBoxes = data.answerBoxes === true;
+  const pair = data[PAIRED_LAYOUT] || pairedEntries(data, ctx);
   const entries = (Array.isArray(data.questions) ? data.questions : [])
     .map(function (q) {
       return { source: q, text: stripLeadingLabel(itemText(q)) };
@@ -300,6 +306,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       : { text: entry.text, answer: '', revealed: false };
     parsed.source = entry.source;
     parsed.picture = pictures[i];
+    if (pair) parsed.layoutTexts = pair[i].map(stripLeadingLabel);
     return parsed;
   });
   if (questions.length === 0) return;
@@ -331,14 +338,15 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   const innerY = zone.y + PAD;
   const innerW = Math.max(0.8, zone.w - 2 * PAD);
   const innerH = Math.max(0.4, zone.h - 2 * PAD);
-  const questionTextGroup = fitGroupId(zone, 'numbered-question-text');
+  const questionTextGroup = fitGroupId(zone,
+    pair ? 'revealpair-' + pair.pairId + '-numbered-question-text' : 'numbered-question-text');
 
   const fontFloor = Math.max(CARD_FONT_MIN, MIN_FONT_PT);
   // Every item revealed means this set is the reveal, not the task.
   const allRevealed = questions.length > 0 && questions.every(function (q) {
     return /\|\||\{\{/.test(String(q.text || ''));
   });
-  const ceilingPt = allRevealed ? ANSWER_FONT_MAX : CARD_FONT_MAX;
+  const ceilingPt = pair ? CARD_FONT_MAX : (allRevealed ? ANSWER_FONT_MAX : CARD_FONT_MAX);
 
   // Grow the type until the stack fills the height it has. Bigger type makes each
   // card taller, and makes a long question wrap onto more lines, so the largest
@@ -359,16 +367,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
     scaledForOverflow = true;
     const room  = Math.max(0.3 * cards.length, innerH - CARD_GAP * (cards.length - 1));
     const scale = room / cards.reduce(function (s, c) { return s + c.h; }, 0);
-    cards = cards.map(function (c) {
-      return {
-        source: c.source,
-        text: c.text,
-        answer: c.answer,
-        revealed: c.revealed,
-        lines: c.lines,
-        h: c.h * scale
-      };
-    });
+    cards = cards.map(function (c) { return Object.assign({}, c, { h: c.h * scale }); });
   }
 
   // Pictures shorten the text column and can add a line. The set keeps every
@@ -615,7 +614,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
         // An answers set is measured at the size it was laid out at, so the
         // grow pass may not take it past that: a card sized for one line and
         // text grown a rung larger wraps out of its own box.
-        allRevealed ? fontPt : ceilingPt,
+        (allRevealed || pair) ? fontPt : ceilingPt,
         'question-text-' + (startAt + i),
         Math.max(CARD_FONT_MIN, MIN_FONT_PT)
       )

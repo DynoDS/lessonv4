@@ -1863,7 +1863,6 @@ PRINT_NEGATED = re.compile(
     r"\b(?:no|without)\s+(?:captions?|labels?|headings?|titles?)\b|\bnot\s+(?:labell?ed|captioned|written|printed)\b|\bunlabell?ed\b",
     re.IGNORECASE,
 )
-PRINTED_QUOTED = re.compile(r"['‘\"“]([^'’\"”]+)['’\"”]")
 PRINTED_AFTER_COLON = re.compile(
     r"\b(?:captions?|captioned|labels?|labell?ed|headings?|titles?|reading|reads|saying|says)\b[^:.;]{0,20}:\s*([^.;]+)",
     re.IGNORECASE,
@@ -1875,12 +1874,51 @@ PRINTED_AFTER = re.compile(
 PRINTED_BEFORE = re.compile(r"((?:[^\s,.;:]+\s+){1,3})(?:labell?ed|written|printed)\b", re.IGNORECASE)
 
 
+# The exact words a drawing prints for children, as the lesson designer quotes
+# them in a required feature: `boxes reading "A rat has the plague" and "A flea
+# bites the rat"`. These are children's reading, so the voice editor rewords
+# them (`check-voice-edit.py`) and the slide designer copies them exactly; the
+# quotation marks are what lets both find every word and nothing else. Double
+# quotes, straight or curly, hold an apostrophe (`"the rat's blood"`); single
+# quotes are read too, with an apostrophe inside a word (`'Sarah's day'`) kept
+# as part of the label.
+PRINT_WORDS_MARKER = re.compile(
+    r"\b(?:captions?|captioned|labels?|labell?ed|headings?|titles?|written|printed|prints?"
+    r"|reading|reads|saying|says|marked)\b",
+    re.IGNORECASE,
+)
+QUOTED_PRINT = re.compile(
+    r"\"([^\"\n]+)\"|“([^”\n]+)”|(?<![\w’'])['‘]((?:[^'‘’\n]|(?<=\w)['’](?=\w))+?)['’](?!\w)"
+)
+
+
+def diagram_print(feature: str) -> list[str]:
+    """The exact words, in order, a required feature quotes for its drawing to
+    print, or none when the feature names no print or says there is none."""
+    if not isinstance(feature, str) or not PRINT_WORDS_MARKER.search(feature) or PRINT_NEGATED.search(feature):
+        return []
+    words = []
+    for match in QUOTED_PRINT.finditer(feature):
+        text = next(group for group in match.groups() if group is not None).strip()
+        if text:
+            words.append(text)
+    return words
+
+
+def diagram_print_frame(feature: str) -> str:
+    """The feature with each printed phrase blanked: what a reword of the
+    printed words alone leaves unchanged."""
+    if not diagram_print(feature):
+        return feature
+    return QUOTED_PRINT.sub("«»", feature)
+
+
 def _printed_words(feature: str) -> str:
     """The words a picture's required feature says it prints, lower-cased,
     or nothing when the feature only describes the picture."""
     if not PRINT_MARKER.search(feature) or PRINT_NEGATED.search(feature):
         return ""
-    found = [m.group(1) for m in PRINTED_QUOTED.finditer(feature)]
+    found = [next(g for g in m.groups() if g is not None) for m in QUOTED_PRINT.finditer(feature)]
     found += [m.group(1) for m in PRINTED_AFTER_COLON.finditer(feature)]
     found += [" ".join(m.group(1).split()[:8]) for m in PRINTED_AFTER.finditer(feature)]
     found += [m.group(1) for m in PRINTED_BEFORE.finditer(feature)]

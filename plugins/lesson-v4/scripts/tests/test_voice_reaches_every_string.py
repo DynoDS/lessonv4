@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 LESSON_DESIGNER = ROOT / "agents" / "lesson-designer.md"
+VOICE_EDITOR = ROOT / "agents" / "lesson-voice-editor.md"
 PREFERENCES = ROOT / "references" / "preferences.md"
 VOICE = ROOT / "references" / "teacher-voice.md"
 
@@ -57,29 +58,30 @@ class VoiceReachesEveryStringTests(unittest.TestCase):
         """Cause two. The script was routed to §2 alone, which governs what
         belongs in a script rather than how it reads - and the split was the
         one thing the lesson got right."""
-        designer = flat(LESSON_DESIGNER)
-        self.assertIn("`teacher-voice.md` §§1-3", designer)
-        self.assertIn("§1 and §3 settle HOW IT SOUNDS", designer)
+        # 27 September 2026: how a script sounds is the lesson voice editor's, word for word.
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("§1 and §3 settle HOW IT SOUNDS", editor)
         # The tells, or the rule is an adjective again.
-        self.assertIn("do not all receive", designer)
-        self.assertIn("what provides the power", designer)
+        self.assertIn("do not all receive", editor)
+        self.assertIn("what provides the power", editor)
 
     def test_the_tells_fire_per_component_not_once_at_the_top(self) -> None:
         """Cause three. Voice is a property of every string, so a single
         start-of-run read decays; the worksheet clue set written last was the
         worst rhythm failure in the lesson."""
+        # 27 September 2026: the tells fire in the lesson voice editor, over every string it
+        # walks; the designer keeps the explanation comparison inside its per-component read.
         designer = flat(LESSON_DESIGNER)
-        self.assertIn("Four tells the register has slipped", designer)
-        self.assertIn(
-            "Voice is a property of every string, not a decision made once",
-            designer,
-        )
-        # It must sit inside the per-component read-back to fire repeatedly.
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("Voice is a property of every string, not a decision made once", editor)
+        self.assertIn("passing them is not a voice pass", editor)
+        self.assertIn("return to the teaching route rather than polishing the list", designer)
         components = designer[designer.index("Read every component as child"):]
         self.assertLess(
-            components.index("Four tells the register has slipped"),
+            components.index("Apply the teacher's explanation to every Teach board"),
             components.index("Calculation questions normally full equations"),
         )
+        designer = editor
         for tell in (
             "a full form where speech contracts",
             "no verb doing the work",
@@ -100,7 +102,7 @@ class VoiceReachesEveryStringTests(unittest.TestCase):
         self.assertIn("A speaker-note script opens §16H before the first one you write", voice)
         self.assertIn("**Definitions and scripts are the other two**", voice)
         self.assertIn(
-            "by the route its `How to read this file` sets out", flat(LESSON_DESIGNER)
+            "opening the numbered section for the kind of string in hand", flat(VOICE_EDITOR)
         )
 
     def test_the_vocabulary_decision_point_carries_the_pointer(self) -> None:
@@ -134,8 +136,10 @@ class ScriptTeachesRatherThanDirectsTests(unittest.TestCase):
     """
 
     def test_a_third_tell_covers_directing_instead_of_teaching(self) -> None:
+        # 27 September 2026: the first two tells moved to the lesson voice editor; the third,
+        # a script that directs instead of teaching, is about what a script teaches and stays.
         designer = flat(LESSON_DESIGNER)
-        self.assertIn("Three tells that it has drifted", designer)
+        self.assertIn("Two tells that it has drifted", flat(VOICE_EDITOR))
         self.assertIn(
             "a script that directs children around the resources instead of "
             "teaching them anything",
@@ -154,8 +158,8 @@ class ScriptTeachesRatherThanDirectsTests(unittest.TestCase):
             designer,
         )
         # The adult idiom, folded in beside the abstraction it belongs with.
-        self.assertIn("decide whether Dev's rule holds", designer)
-        self.assertIn("so, is Dev right?", designer)
+        self.assertIn("decide whether Dev's rule holds", flat(VOICE_EDITOR))
+        self.assertIn("so, is Dev right?", flat(VOICE_EDITOR))
 
     def test_the_tell_is_checkable_rather_than_an_adjective(self) -> None:
         """"Sound natural" is what failed twice; a deletion test can be run."""
@@ -166,7 +170,7 @@ class ScriptTeachesRatherThanDirectsTests(unittest.TestCase):
         )
 
     def test_the_first_two_tells_survive(self) -> None:
-        designer = flat(LESSON_DESIGNER)
+        designer = flat(VOICE_EDITOR)
         self.assertIn("do not all receive", designer)
         self.assertIn("what provides the power", designer)
 

@@ -156,7 +156,7 @@ function imageWillDraw(imageData, ctx) {
 // and never count at all.
 const WORKING_PICTURE_SKIP_KEYS = new Set(['inset', 'words', 'supports', 'decorations', 'speakerNotes']);
 
-// The class characters (Mr Sear, Miss Brooker, Bailey) are drawings of who is
+// The class characters (boys 1 to 3, girls 1 to 3, Bailey the dog) are drawings of who is
 // speaking. Children read what the character says, never the drawing, so a
 // portrait is context however small it lands, exactly as a picture marked
 // `essential: false` is: out of the readable-floor check and out of the count
@@ -166,7 +166,7 @@ const WORKING_PICTURE_SKIP_KEYS = new Set(['inset', 'words', 'supports', 'decora
 // September 2026). Matched on the engine's own character folder, wherever the
 // plugin is installed, because a run writes its install path into the spec;
 // a sourced photograph that merely shares a file name keeps its floor.
-const CLASS_CHARACTER_PORTRAIT = /(^|[\\/])assets[\\/]children[\\/](mr-sear|miss-brooker|bailey)\.png$/i;
+const CLASS_CHARACTER_PORTRAIT = /(^|[\\/])assets[\\/]children[\\/](boy-[1-3]|girl-[1-3]|bailey|mr-sear|miss-brooker)\.png$/i;
 
 function isClassCharacterPortrait(imagePath) {
   return typeof imagePath === 'string' && CLASS_CHARACTER_PORTRAIT.test(imagePath);
@@ -670,7 +670,34 @@ function imageAspect(data, ctx) {
   return dims.w / dims.h;
 }
 
+// The width a delivered photograph uses when it is held by the height `zoneH`,
+// with its padding and caption, or null when that cannot be known: a cover
+// fit, a picture not delivered yet (its real shape may be wider than the one
+// its space is reserved at), an inset set into it, or no measured size. A row
+// asks this so a portrait photograph beside words hands them the width it
+// cannot fill (content/row.js). A caption keeps the width its words need at
+// caption size, so narrowing the slot never shrinks the caption.
+function widthAtHeight(data, zoneH, ctx) {
+  if (!data || !imageWillDraw(data, ctx)) return null;
+  if (resolveFit(data, false) !== 'contain') return null;
+  if (data.inset) return null;
+  const resolved = resolveForEmbed(data.imagePath, ctx);
+  if (!resolved || !fs.existsSync(resolved)) return null;
+  const dims = ctx && ctx.imageDims ? ctx.imageDims[data.imagePath] : null;
+  if (!dims || !(dims.w > 0) || !(dims.h > 0)) return null;
+  const caption = data.caption || '';
+  const frameH = zoneH - 2 * PAD - (caption ? (CAPTION_H + CAPTION_GAP) : 0);
+  if (!(frameH > 0.3)) return null;
+  let w = frameH * (dims.w / dims.h) + 2 * PAD;
+  if (caption) {
+    const { textBoxWidthIn } = require('../glyph-width');
+    w = Math.max(w, textBoxWidthIn(caption, data.captionFontSize || CAPTION_FONT, false) + 2 * PAD);
+  }
+  return w;
+}
+
 module.exports = {
+  widthAtHeight,
   drawImage,
   imageWillDraw,
   measureImage,

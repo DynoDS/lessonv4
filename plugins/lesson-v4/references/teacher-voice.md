@@ -17,7 +17,7 @@ A sentence can sound like the teacher and still be wrong for the task if it:
 
 This guide owns **how the voice sounds**. What the words must **achieve** is owned by `preferences.md` → Written Voice (House Style) and applies at full strength alongside this file: understanding over decodability, density and paragraph breaks, protecting the answer, the printed-surface habits, and the em dash rule.
 
-When authoring anything a child reads or hears, read sections 1-3, 15 and 17. Read §4 once when considering the whole lesson at completion, not for each string, and §14 once, when the kind of lesson is settled. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a sentence stem or other support §7, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison or critique prompt §12, a practical lesson §13. **A speaker-note script opens §16H before the first one you write in a lesson**, because it is the only example here at the real length and the failure it exists for is a note too thin to teach from. Read the rest of §16's calibrated examples only when wording remains uncertain after that.
+When authoring anything a child reads or hears, read sections 1-3, 15 and 17. The lesson designer is the exception: it reads §5, §6 and §8 where its instructions say, because how its words finally sound is the lesson voice editor's. Read §14 once, when the kind of lesson is settled. §4 belongs to the lesson voice editor, which reads this guide whole and asks §4 once of the lesson's material, not of each string; anyone else leaves light moments to it. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a sentence stem or other support §7, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison or critique prompt §12, a practical lesson §13. **A speaker-note script opens §16H before the first one you write in a lesson**, because it is the only example here at the real length and the failure it exists for is a note too thin to teach from. Read the rest of §16's calibrated examples only when wording remains uncertain after that.
 
 **§6 and §12 are two of the four most often missed, and they are missed the same way:** the writer does not notice which kind of thing they are writing, so the section that owns it is never opened. Questions and instructions are the most common thing anyone here writes, and a comparison prompt arrives disguised as a heading. Questions and comparison prompts missed this way have reached real children. Every one was written by an agent that had read each section it was routed to. Routing by the kind of string only works if you stop and name the kind. **Definitions and scripts are the other two**, because a definition feels like a structured field being filled and a script feels like notes rather than writing; both are words a child reads or hears, and both are where the register slips first.
 
@@ -129,6 +129,8 @@ A science lesson he taught and thought went well (how a tooth decays) sounds lik
 ### Default relationship
 
 **Short/direct can become the slide. Fuller/conversational can expand it in the notes. Do not normally reverse this relationship.**
+
+Fuller means more words, never more teaching. A reason, an example or a question that teaches in the notes is on the board too, in shorter words, because the teacher reads the board: "most of the time a teacher does not read the speaker notes. So the board has to show the teaching." The notes' extra words are the chat.
 
 ### The check that catches the reversal
 
@@ -325,7 +327,9 @@ if `partition` is the expected mathematical language.
 
 ## Adjust language to conceptual difficulty
 
-When the underlying idea is abstract or difficult, lighter language can reduce unnecessary cognitive load.
+Write an explanation addressed to primary children: help them follow what happened, why and what it means. The failure is secondary-level exposition that reports facts and abstract relationships without teaching them to this class. Natural wording and actual teaching are both required; conversational substitutions alone do not repair a summary of facts. Secure background knowledge does not excuse language pitched above the class. Say what people wanted, did and experienced, and connect it with familiar words such as because and so. For example, `required some schooling` becomes `The law said these children had to have some lessons.` Preserve the meaning and scope; do not merely replace one formal word while leaving the rest of the sentence sounding like a report. Useful taught terms remain, but the words around them should still sound addressed to children. This applies to the written board as well as speech: warmth comes from helping children follow the thought, not adding chatty padding.
+
+When the underlying idea is abstract or difficult, this language also reduces unnecessary cognitive load.
 
 Example:
 > Claudius had something to prove.
@@ -565,7 +569,7 @@ Question:
 Natural stem:
 > The circuit will not work because...
 
-A stem can be perfectly grammatical but still feel wrong if it sounds disconnected from the actual question.
+A stem can be perfectly grammatical but still feel wrong if it sounds disconnected from the actual question. Read it as the answer a child will complete: for a judgement, can the child state a verdict, bring in evidence and say why that evidence supports it? `I agree / disagree because...` may be enough for familiar reasoning; when linking evidence is the barrier, a frame such as `I noticed ___. This supports my answer because ___.` can help without choosing the evidence or conclusion. Use the question's own subject words where they make the frame more concrete. `preferences.md` → Support, Checking and Release owns when that support is needed; this is not a requirement to frame every answer.
 
 ---
 
@@ -695,9 +699,9 @@ What a criterion leaves out is explanation the teaching already gave: why the st
 
 **A step that is already clear is finished.** The repair above is for steps that leave a child guessing, not a licence to lengthen every step. `Use expanded noun phrases.` in a writing lesson that has taught them needs nothing added, and `Use expanded noun phrases to describe the trees, the path and the shadows.` is worse: it spends words and starts choosing the child's content. Ask of each step whether a stuck child could act on it; only where the answer is no do words go in, and only the words that answer it.
 
-**Read each step as an instruction to the weakest child in the class.** Short, imperative and specific is the shape of a step and not the test of one, so a step can have that shape and still fail in front of a child who is stuck. `Find the neighbouring multiples.` is four words, imperative and exact, and `neighbouring multiples` is a phrase a struggling Year 4 does not hold, so the step tells them nothing they can do. `Find the 10s or 100s each side of your number.` is plainer and still not runnable, because it names what to find without saying how, and a Year 4 class stuck on 346 had nothing to act on. `Change the ones digit to 0.` then `Add 10.` says how, in words they own. The criteria are the thing that child leans on when the teaching has moved on, so every step is written in words they already own: do this, then do this, then do this. Scaffold the method, not the answer: a step never supplies the value, verdict or conclusion the child is meant to reach.
+**Read each step as an instruction to the weakest child in the class.** Short, imperative and specific is the shape of a step and not the test of one, so a step can have that shape and still fail in front of a child who is stuck. `Find the neighbouring multiples.` is four words, imperative and exact, and `neighbouring multiples` is a phrase a struggling Year 4 does not hold, so the step tells them nothing they can do. `Find the 10s or 100s each side of your number.` is plainer and still not runnable, because it names what to find without saying how, and a Year 4 class stuck on 346 had nothing to act on. `Change the ones digit to 0.` then `Add 10.` says how, in words they own. Use the walkthrough in `preferences.md` → Success Criteria to test the whole method, not just each line's sound. A short instruction such as `Move on` needs its destination when the child could repeat or skip part of the work; supply that missing action, not a paragraph explaining why the method works. Scaffold the method, not the answer: a step never supplies the value, verdict or conclusion the child is meant to reach.
 
-**A condition that does not happen every time is not a step.** `If it is already a multiple, keep it.` is true and useful and it is not part of running the method, so as step 2 of six it stops every child on every question to rule out a case most of them do not have. A condition the method meets every time stays in the steps as a sentence (`If you have ten ones, exchange them for one ten.`); a case that comes up occasionally is extra knowledge, the kind sticky knowledge or the teaching carries, so it is taught where it comes up, in the model and the script, and left out of the steps. Often the method already covers it: a number ending in 0 is its own ten below, so it sits on the end of the line and stays.
+**Keep a necessary decision; leave out a case the method already handles.** `If it is already a multiple, keep it.` need not become another step when the taught method already leaves that number on the end of the line. But how often a condition occurs does not decide whether children need it: `If you have ten ones, exchange them for one ten.` stays when it is the decision they must make. A necessary special form or branch stays in the steps or a lookup the child can use there; explanation and extra knowledge belong in teaching or sticky knowledge. Keep only the cases within this stage's taught scope.
 
 Where a class needs more support, the support goes in the step's own words rather than in an explanation after it:
 
@@ -961,17 +965,30 @@ What is **not** in them, and this is the part that goes wrong: no staging instru
 
 ---
 
+## I. Board wording, polished by the teacher
+
+On 27 September 2026 the teacher polished the wording of a first-draft Year 4 history deck (Lord Shaftesbury). The content was the designer's and only the wording changed, so these show how a board sentence should sound, not what a slide should hold: in his words, "better, teachable, but not perfect".
+
+- Drafted: `Lord Shaftesbury was a rich lord in Parliament, and he believed every child mattered, rich or poor.` Polished: `Lord Shaftesbury was a member of Parliament. He wanted the law changed so young children could no longer be sent underground to work.` What a person wanted carries the story on; what they were like does not.
+- Drafted: `No rule stopped the owners sending them down.` Polished: `There was no law saying mine owners had to stop.` The slide's idea is a law, so it stays a law: one word for one thing.
+- Drafted: `Why do you think pictures like this shocked people?` Polished: `What might people have thought when they saw pictures like this?` The first hands children the answer inside the question.
+- Drafted: the ragged schools first (`Ragged schools were free schools for the poorest children...`), then why they were needed. Polished: the problem first (`In towns and cities, many of the poorest children had never been to school. Most schools cost money, and their families couldn't afford it.`), then the schools, then his part. When children do not yet know the problem, the answer means nothing until they do; and `couldn't afford it` is what a teacher says where `their families had none` is what a page says.
+- Drafted: `These are real children who spoke to the 1842 report.` / `Did the new law keep each of them out of the mine?` / `Check each child against the new law on the board, then sort them.` Polished: `These are real children who were asked about their work for the 1842 report.` / `Did the new law stop each of them working underground?` / `Use the new law to sort each child.` Words a child would say, a simplification that stays true (the law was about working underground, not about the mine), and the action named plainly.
+- Drafted: `thousands of poor people stood in the streets of London, some in the rain, to say goodbye.` Polished: `thousands of people lined the streets of London to say goodbye. Many were poor people he had spent his life trying to help.` The reason they came is worth the space; the rain is not.
+
+---
+
 # 17. Final pre-flight check
 
 Before finalising pupil-facing material, quickly check:
 
-1. **Does this sound natural, or suspiciously polished?**
+1. **Does this sound natural, or suspiciously polished?** And does it explain the idea to these primary children in the teacher’s voice, at their level? Apply §5: check the actual words and the connected teaching, not just factual accuracy, sentence length or conversational tone. Keep this language check even when the background has been taught. Then check that the board guides a teacher unfamiliar with the topic and the notes provide the fuller explanation; do not assume either audience already knows it.
 2. **Could I remove words without losing useful teaching - and have I already removed words the child needed to know what to do?**
 3. **Does the sentence belong on the slide, or would I actually say it aloud? A script or note must pass as speech: hear the teacher saying it, sentence by sentence.**
 4. **Have I kept useful subject vocabulary where it helps?**
 5. **If I've added scaffolding, what barrier is it solving?**
 6. **Have I accidentally given away the answer - or presupposed the verdict the child is meant to reach?**
-7. **Is the wording clear to the pupil, not merely clear to a teacher?**
+7. **Can this pupil picture the people, objects and actions, understand the relationship, and tell what to do using the teaching so far?** Apply `preferences.md` → Written Voice and Vocabulary to the actual sentence, including familiar words with unfamiliar meanings. Apply the Vocabulary familiarity judgement: a word reasonably clear in context need not have a definition, but a needed explanation must be provided, not delegated to assumed teacher knowledge. Judge the combined burden, not whether every possible word has a printed definition.
 8. **If humour is present, did the content genuinely invite it?**
 9. **Asked once for the whole lesson, not of each sentence: looking at the sources, pictures, facts, numbers and people this lesson puts in front of the class, did any of them hand me an easy playful line, and did I take it?** Per sentence this question can only ever be answered no. See §4.
 10. **Across several sentences, does the rhythm feel human rather than mechanically even?**

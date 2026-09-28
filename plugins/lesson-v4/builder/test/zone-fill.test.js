@@ -52,7 +52,8 @@ test('a small picture leaving a small margin is not reported', () => {
 
 test('the finding says what to do and what not to do', () => {
   const [found] = findingsFor({ w: 13.0, h: 3.5 }, { w: 7.0, h: 3.5 });
-  assert.match(found.message, /Give this figure a slot shaped more like it/);
+  // A wide slot holding a picture by its height is told which way to go.
+  assert.match(found.message, /too shallow for it.*It needs a taller slot/);
   assert.match(found.message, /Do not stretch it/, 'the wrong repair must be named as wrong');
   assert.match(found.message, /2\.00:1.*3\.71:1/, 'both shapes are stated so the fix is obvious');
 });

@@ -728,3 +728,10 @@ govern. Each goes with its own topic.
 - **VOC-A02, DEC-10, HOME-LD-01 and the home record of the designer's `### Vocabulary`** moved: "That section is the one place every vocabulary decision is written" read as the voice guide's §5, which holds none of those decisions, so it now names `preferences.md` → Vocabulary (its settled item 8, out-of-date text).
 - **VOC-P02** moved: the adaptation designer's copy now points at Written Voice's Below paragraph, keeping both halves: "On a separate Below resource, keep essential subject vocabulary and proper nouns as Written Voice's Below paragraph says: supported, not automatically replaced." (its settled item 6: each copy of "keep precise subject vocabulary" keeps its own condition, and the two plain repeats fold).
 - **VOC-P03** moved: the adaptation reference's plain repeat, two lines above its fuller copy (VOC-P04), is cut, and the pin now holds that fuller copy (its settled item 6: each copy of "keep precise subject vocabulary" keeps its own condition, and the two plain repeats fold).
+
+
+## 26 September 2026: primary teaching and voice clarification
+
+User-authorised changes replace the abstraction-heavy teaching example, require primary-level explanation and teacher support, and distinguish necessary teaching from unnecessary definitions of familiar words. The response still uses taught relationships; useful rehearsal, subject vocabulary, accuracy and visible essential teaching remain. The voice check judges actual teaching language, not just grammar or brevity.
+
+Affected stored passages: VOC-H01, VOC-H02, VOC-H03, VOC-J17, HOME-PREF-20. The original ledger records remain as history. Current wording and exact before/after mappings: `evaluations/shaftesbury-access-20260926/candidate.diff` and `pin-migration.json`; user evidence and scope: `findings.md`. This updates the intentional wording checks; it does not establish generation quality.

@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+import unittest.mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / "read-reference.py"
 spec = importlib.util.spec_from_file_location("lesson_reference_reader", SCRIPT)
@@ -232,6 +233,15 @@ class PagingTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         (self.root / "references").mkdir()
         (self.root / "agents").mkdir()
+        # The lesson voice editor's role read carries its companion guidance.
+        (self.root / "references" / "teacher-voice.md").write_text("# Teacher Voice Guide\n\nvoice\n", encoding="utf-8")
+        (self.root / "references" / "preferences.md").write_text(
+            "# Teacher Preferences\n\n## Written Voice (House Style)\n\n### Core rules\n\ncore\n\n"
+            "### Written Voice read-back\n\nread-back\n\n### Calibration examples\n\nnot this\n\n"
+            "## Pride Lessons (Quality Anchor)\n\n### What a Teach slide holds: the Tudor calibration\n\ntudor boards\n\n"
+            "### A whole lesson at the right amount: the Shaftesbury calibration\n\nshaftesbury lesson\n",
+            encoding="utf-8",
+        )
 
     def run_main(self, *args):
         out, err = io.StringIO(), io.StringIO()
@@ -269,7 +279,7 @@ class PagingTests(unittest.TestCase):
 
     def test_only_the_last_page_reports_success(self):
         (self.root / "agents" / "lesson-designer.md").write_text(self.long_text(), encoding="utf-8")
-        total = len(reader.pages(self.long_text()))
+        total = len(reader.pages(reader.role_reading(self.root, "lesson-designer")))
         self.assertGreater(total, 1)
         seen = ""
         for page in range(1, total + 1):
@@ -288,8 +298,8 @@ class PagingTests(unittest.TestCase):
             self.assertIn(f"Rule {n}.", seen)
 
     def test_a_page_past_the_end_is_an_error(self):
-        (self.root / "agents" / "lesson-designer.md").write_text("# Role\nshort\n", encoding="utf-8")
-        rc, out, err = self.run_main("--role", "lesson-designer", "--page", "2")
+        (self.root / "agents" / "slide-designer.md").write_text("# Role\nshort\n", encoding="utf-8")
+        rc, out, err = self.run_main("--role", "slide-designer", "--page", "2")
         self.assertEqual(rc, 2)
         self.assertEqual(out, "")
         self.assertIn("1 page", err)
@@ -306,22 +316,117 @@ class PagingTests(unittest.TestCase):
         self.assertEqual(rc, 0)
         self.assertIn("the class view", out)
         with self.assertRaises(reader.ReferenceError):
-            reader.read_working_file(self.root / "lesson-design.json")
+            reader.read_working_file(self.root / "slides.pptx")
 
-    def test_whole_file_reads_stand_alone(self):
-        for args in (["--role", "x", "--select", "a.md::A"], ["--role", "x", "--index", "a.md"], ["--file", "v.md", "--structure-menu"]):
-            with self.assertRaises(SystemExit):
-                with contextlib.redirect_stderr(io.StringIO()):
-                    reader.main(["--plugin-root", str(self.root), *args])
+    def test_file_pages_the_design_json_and_a_plan(self):
+        # A worker reads the design it builds from; on Codex a long one lost its middle.
+        design = self.root / "lesson-design.json"
+        design.write_text("{\n" + "".join(f'  "field{n}": "{"x" * 900}",\n' for n in range(60)) + '  "end": 1\n}\n', encoding="utf-8")
+        (self.root / "plan.txt").write_text("Lesson 5\n", encoding="utf-8")
+        total = len(reader.pages(design.read_text(encoding="utf-8")))
+        self.assertGreater(total, 1)
+        seen = ""
+        for page in range(1, total + 1):
+            rc, out, _ = self.run_main("--file", str(design), "--page", str(page))
+            self.assertEqual(rc, 0)
+            seen += out
+        self.assertIn('"field0"', seen)
+        self.assertIn('"field59"', seen)
+        self.assertIn("REFERENCE_READ_OK", seen)
+        rc, out, _ = self.run_main("--file", str(self.root / "plan.txt"))
+        self.assertIn("Lesson 5", out)
 
-    def test_every_real_role_file_pages_under_the_limit(self):
-        # The live role files are the reads this exists for.
-        agents = SCRIPT.parents[1] / "agents"
-        for role in sorted(agents.glob("*.md")):
-            text = role.read_text(encoding="utf-8")
-            split = reader.pages(text)
-            self.assertEqual("".join(split), text, role.name)
-            self.assertTrue(all(len(page) <= reader.PAGE_CHARS for page in split), role.name)
+    def test_the_voice_editor_role_read_carries_the_voice_it_writes_in(self):
+        # Its whole job is the words children hear, so the guide arrives with the role.
+        (self.root / "agents" / "lesson-voice-editor.md").write_text("# Lesson Voice Editor\nrole\n", encoding="utf-8")
+        rc, out, _ = self.run_main("--role", "lesson-voice-editor")
+        self.assertEqual(rc, 0)
+        self.assertLess(out.index("role"), out.index("voice"))
+        for piece in ("core", "read-back", "tudor boards", "shaftesbury lesson"):
+            self.assertIn(piece, out)
+        self.assertNotIn("not this", out)
+        # The designer decides the teaching; the voice guide is not its role read.
+        (self.root / "agents" / "lesson-designer.md").write_text("# Lesson Designer\ndesigns\n", encoding="utf-8")
+        rc, out, _ = self.run_main("--role", "lesson-designer")
+        self.assertNotIn("voice", out)
+
+
+class SameCallTests(unittest.TestCase):
+    """On Codex a tool call's output is cut in the middle past about 10,000 tokens,
+    whether it holds one read or several. A read that shares a call with reads it
+    would not fit beside is refused, so what does print arrives whole."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        (self.root / "agents").mkdir()
+        (self.root / "references").mkdir()
+        body = "# Role\n\n" + "".join(f"Rule {n}. " + ("word " * 300) + "\n\n" for n in range(60))
+        (self.root / "agents" / "slide-designer.md").write_text(body, encoding="utf-8")
+        self.clock = [1000.0]
+        patches = [
+            unittest.mock.patch.dict(os.environ, {"CODEX_THREAD_ID": "thread-1"}),
+            unittest.mock.patch.object(reader.tempfile, "gettempdir", return_value=str(self.root / "tmp")),
+            unittest.mock.patch.object(reader, "_now", side_effect=lambda: self.clock[0]),
+        ]
+        for p in patches:
+            p.start()
+            self.addCleanup(p.stop)
+
+    def read(self, page, advance=1.0):
+        self.clock[0] += advance
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+            rc = reader.main(["--plugin-root", str(self.root), "--role", "slide-designer", "--page", str(page)])
+        return rc, out.getvalue()
+
+    def test_a_second_page_in_the_same_call_is_refused_and_named(self):
+        rc, first = self.read(1)
+        self.assertEqual(rc, 0)
+        rc, second = self.read(2)
+        self.assertEqual(rc, 3)
+        self.assertIn("REFERENCE_READ_REFUSED", second)
+        self.assertIn("--role slide-designer --page 2", second)
+        self.assertNotIn("Rule", second)
+
+    def test_a_chain_of_pages_in_one_call_prints_one_page(self):
+        printed = [self.read(page)[1] for page in (1, 2, 3, 4)]
+        self.assertEqual(sum("REFERENCE_READ_REFUSED" in out for out in printed), 3)
+        self.assertLessEqual(sum(len(out) for out in printed), reader.SAME_CALL_BUDGET_CHARS)
+
+    def test_pages_in_separate_calls_all_arrive(self):
+        for page in (1, 2, 3):
+            rc, out = self.read(page, advance=2.5)
+            self.assertEqual(rc, 0, page)
+            self.assertNotIn("REFERENCE_READ_REFUSED", out)
+
+    def test_short_reads_share_a_call(self):
+        (self.root / "references" / "a.md").write_text("## A\nshort\n", encoding="utf-8")
+        for _ in range(3):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                self.assertEqual(reader.main(["--plugin-root", str(self.root), "--select", "a.md::A"]), 0)
+            self.clock[0] += 0.1
+
+    def test_off_codex_nothing_is_refused(self):
+        with unittest.mock.patch.dict(os.environ, {"CODEX_THREAD_ID": ""}):
+            for page in (1, 2):
+                rc, out = self.read(page)
+                self.assertEqual(rc, 0)
+
+    def test_reads_started_together_print_at_most_one_page(self):
+        # Real processes, as a code cell's parallel reads are.
+        env = {**os.environ, "CODEX_THREAD_ID": f"parallel-{os.getpid()}", "TMP": str(self.root / "tmp"), "TEMP": str(self.root / "tmp")}
+        (self.root / "tmp").mkdir(exist_ok=True)
+        procs = [
+            subprocess.Popen([sys.executable, str(SCRIPT), "--plugin-root", str(self.root), "--role", "slide-designer", "--page", str(p)],
+                             env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            for p in (1, 2, 3)
+        ]
+        outs = [p.communicate(timeout=60)[0].decode("utf-8") for p in procs]
+        self.assertLessEqual(sum("<!-- page" in out for out in outs), 1)
+        self.assertLessEqual(sum(len(out) for out in outs), reader.SAME_CALL_BUDGET_CHARS)
 
 
 if __name__ == "__main__":

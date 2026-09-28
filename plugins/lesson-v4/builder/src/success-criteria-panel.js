@@ -107,6 +107,10 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       // with the tight padding that keeps the step text at full size.
       compactCards: true
     };
+    // A container measuring how tall this panel must be to hold its criteria at
+    // a given size draws it on a slide nobody sees with that size as the floor
+    // (content/stack.js). Never set on a panel that is really drawn.
+    if (Number.isFinite(zone.measureFloorPt)) contentZone.floorPt = zone.measureFloorPt;
 
     // The panel owns its surface, so nested content must not draw cards on
     // top of it — EXCEPT steps, whose per-item white cards ARE the criteria's
@@ -129,7 +133,8 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       // holds at 18pt: its mark is stale (left behind after the list was
       // tightened), and drawing it smaller, or telling the teacher it is too
       // long for every panel, would both be untrue.
-      if (content.type === 'steps' && isMarkedList(content.steps, ctx.markedCriteria) &&
+      if (!Number.isFinite(zone.measureFloorPt) &&
+          content.type === 'steps' && isMarkedList(content.steps, ctx.markedCriteria) &&
           (!zone.practicePanel || zone.widestPracticePanel) &&
           !markedListHeldAt18(content.steps, ctx)) {
         const PptxGenJS = requireGlobal('pptxgenjs');

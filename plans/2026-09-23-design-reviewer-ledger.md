@@ -999,3 +999,10 @@ instance, which the program cannot see, so the reviewer judges it) and RV-E10 (t
 turn-label message carries his maths ruling, routes 7f). The reviewer release's pins for
 them, and for the paragraphs they sit in, move when the two releases are merged
 (`streamline-tools/rt-change/rt_follow_at_merge.py`).
+
+
+## 26 September 2026: primary teaching and voice clarification
+
+User-authorised changes replace the abstraction-heavy teaching example, require primary-level explanation and teacher support, and distinguish necessary teaching from unnecessary definitions of familiar words. The response still uses taught relationships; useful rehearsal, subject vocabulary, accuracy and visible essential teaching remain. The voice check judges actual teaching language, not just grammar or brevity.
+
+Affected stored passages: RV-B07, RV-C08, RV-C10, RV-C11, RV-C12, RV-C13, RV-C15, RV-C16, RV-G05, RV-G09, RV-G10, HOME-RV-BOUNDARY-05, HOME-RV-BOUNDARY-07, HOME-RV-METHOD-04. The original ledger records remain as history. Current wording and exact before/after mappings: `evaluations/shaftesbury-access-20260926/candidate.diff` and `pin-migration.json`; user evidence and scope: `findings.md`. This updates the intentional wording checks; it does not establish generation quality.

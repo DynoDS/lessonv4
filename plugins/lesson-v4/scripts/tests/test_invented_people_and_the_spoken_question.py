@@ -12,6 +12,7 @@ TEMPLATES = ROOT / "references" / "templates.md"
 COMPONENTS = ROOT / "references" / "lesson-designer-components.md"
 DESIGNER = ROOT / "agents" / "lesson-designer.md"
 REVIEWER = ROOT / "agents" / "design-reviewer.md"
+VOICE_EDITOR = ROOT / "agents" / "lesson-voice-editor.md"
 
 
 def flat(path: Path) -> str:
@@ -58,15 +59,17 @@ class InventedPeopleAreShownTests(unittest.TestCase):
         self.assertIn("whether the beat needs a person at all", designer)
 
     def test_the_character_art_is_described_as_it_actually_looks(self) -> None:
-        """The keys read as two teachers and a dog; the art is a boy and a girl.
+        """The keys used to read as two teachers and a dog; since 28 September 2026
+        they say what each picture is (three boys, three girls and Bailey).
 
         A designer that believes it has no child portraits falls back to text
         cards, which is exactly what happened to the two carol singers.
         """
         for path in (SPEECH, TEMPLATES):
             text = flat(path)
-            self.assertIn("`mr-sear` is drawn as a boy", text)
-            self.assertIn("`miss-brooker` as a girl", text)
+            for key in ("boy-1", "boy-2", "boy-3", "girl-1", "girl-2", "girl-3", "bailey"):
+                self.assertIn(f"`{key}`", text)
+        self.assertIn("Bailey is a character like the others, not a spare", flat(SPEECH))
 
     def test_the_reviewer_checks_for_the_missing_face(self) -> None:
         self.assertIn(
@@ -95,16 +98,14 @@ class TheSpokenQuestionReachesTheBoardTests(unittest.TestCase):
         # Without its limit this fires on every script that frames or explains.
         self.assertIn("genuine difference of job", voice)
 
-    def test_the_designer_runs_it_at_completion(self) -> None:
-        designer = flat(DESIGNER)
-        self.assertIn("read each beat's script beside its own visible wording", designer.lower())
-        self.assertIn("Nobody downstream may repair it", designer)
-
-    def test_the_reviewer_runs_it_in_the_voice_sweep(self) -> None:
-        self.assertIn(
-            "a question the script asks plainly and the slide asks compactly",
-            flat(REVIEWER),
-        )
+    def test_the_voice_editor_runs_it_on_every_beat(self) -> None:
+        # 27 September 2026: the check moved from the designer's completion pass and the
+        # reviewer's sweep to the lesson voice editor, which may now repair it downstream.
+        editor = flat(VOICE_EDITOR)
+        self.assertIn("read each beat's script beside its own visible wording", editor.lower())
+        self.assertIn("a question the script asks plainly and the slide asks compactly", editor)
+        self.assertIn("Repair it by carrying the spoken wording onto the board, trimmed rather than reworded.", editor)
+        self.assertNotIn("Nobody downstream may repair it", flat(DESIGNER))
 
 
 class VoiceGuidanceStaysInTheAlwaysReadPathTests(unittest.TestCase):

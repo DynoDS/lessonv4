@@ -247,3 +247,18 @@ test("the rule between two questions sits inside the gap and adds no height", ()
   const plainSection = renderContent({ stack: [question(1), { helper: "section-label", text: "Reasoning" }] }, 170);
   assert.ok(!plainSection.includes("h-stack-item--new-question"), "a heading marks itself");
 });
+
+test("only a table that is the rest of the page may stretch to fill it", () => {
+  // A Year 4 Below sheet's letters reference sat above two questions and was
+  // stretched to fill the page anyway: its one row drew 24mm tall, and with a
+  // caption it pushed into the question under it (28 September 2026).
+  const table = { helper: "data-table", columns: ["Letter", "I"], rows: [["Value", "1"]] };
+  const heading = { helper: "section-label", text: "Answers" };
+  const question = { helper: "instruction", text: "Write each Roman numeral as a number." };
+  const rest = renderContent({ stack: [heading, table] });
+  assert.match(rest, /h-stack-item--table-rest/);
+  const above = renderContent({ stack: [table, heading, question] });
+  assert.doesNotMatch(above, /h-stack-item--table-rest/);
+  const between = renderContent({ stack: [heading, table, question] });
+  assert.doesNotMatch(between, /h-stack-item--table-rest/);
+});

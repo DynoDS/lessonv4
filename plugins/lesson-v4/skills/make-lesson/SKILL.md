@@ -31,7 +31,10 @@ Your job is to:
 The pipeline splits work across three layers:
 
 1. **Pedagogy** — `lesson-designer` settles the lesson and writes
-   `design-decisions.md`, `lesson-design.json` and `photo-requirements.json`.
+   `design-decisions.md`, `lesson-design.json` and `photo-requirements.json`;
+   `design-reviewer` approves it; then `lesson-voice-editor` rewrites how every
+   word children see or hear is said, in the teacher's voice, changing no
+   decision.
 2. **Rendering** — named semantic resource designers write checked
    specifications; deterministic commands build the direct fixed resources;
    the retained Working Wall builder performs its required physical-output

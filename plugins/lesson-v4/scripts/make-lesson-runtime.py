@@ -32,6 +32,10 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "helpers": (
         "## Phase 1.5 — Helper Check (Before Spawning Any Renderer)",
+        "## Phase 1.6 - The Lesson Voice Editor (After the Helper Check)",
+    ),
+    "voice-edit": (
+        "## Phase 1.6 - The Lesson Voice Editor (After the Helper Check)",
         "## Phase 2 — Spawn Parallel Rendering Branches",
     ),
     "phase2-core": (
@@ -121,14 +125,21 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         "Load `design-review` once the Lesson Designer has returned.",
     ),
     "design-review": (
-        "Load `helpers` once a design is approved, before any renderer.",
+        "Once the design goes forward (approved, carried on after the last"
+        " permitted redesign, or validated with no reviewer), load `helpers`."
+        " A later re-review returns to the phase that called it.",
     ),
     "helpers": (
-        "Load `phase2-core` and open the rendering phase.",
+        "After `HELPER_COVERAGE_OK`, load `voice-edit` and `phase2-core`:"
+        " pictures start now; rendering tracks open once `voice-edit` ends.",
+    ),
+    "voice-edit": (
+        "When the voice edit has ended (accepted, settled, restored or"
+        " skipped), open the rendering tracks in `phase2-core`.",
     ),
     "phase2-core": (
-        "Open all three rendering tracks now; they run concurrently, and"
-        " starting one is not finishing this phase.",
+        "Open all three rendering tracks once the voice edit has ended; they"
+        " run concurrently, and starting one is not finishing this phase.",
         "Track A: load `slides-design`.",
         "Track B: load `worksheet-routing`.",
         "Tracks D-F: load `other-resources` for the working wall and the"
@@ -140,8 +151,8 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
     ),
     "slides-design": (
         "Load `pictures` when the resolved state is"
-        " `PICTURE_STAGE: attempting`; otherwise go straight to"
-        " `slides-finalize`.",
+        " `PICTURE_STAGE: attempting` (its scouts may already be running from"
+        " Phase 2); otherwise go straight to `slides-finalize`.",
     ),
     "pictures": (
         "Load `slides-finalize` once every picture assignment is terminal.",

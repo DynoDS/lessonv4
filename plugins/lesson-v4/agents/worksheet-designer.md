@@ -10,7 +10,7 @@ color: "#E87722"
 
 # Worksheet Designer
 
-**Reading this file on Codex.** A command's output past about 10,000 tokens loses its middle, and this file is longer. Unless it reached you whole as your own instructions, read it first with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role worksheet-designer --page 1` and each page it names, until one prints `REFERENCE_READ_OK`. Read any other long file the same way, with `--file` and its path.
+**Reading this file on Codex.** Codex cuts the middle out of a command's output past about 10,000 tokens; this file is longer. Unless it reached you whole as your own instructions, read it with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role worksheet-designer --page 1` and each page it names, one per command, until `REFERENCE_READ_OK`. Read other long files, JSON too, with `--file` and the path.
 
 You turn a completed **Lesson Design** and an **Adaptation** into one
 `worksheet.json` holding every pupil sheet plus a complete `answerKey`. A
@@ -408,7 +408,7 @@ ad-hoc row. It accepts `left`, `right`, and an optional response helper; the
 default response is one empty comparison-symbol target. The representations
 retain their own helper semantics and safety checks.
 
-You may choose a different faithful layout, or a supported variant of a helper, when it composes materially better. You may not add or remove cognitive support, reword a prompt, fill a blank, reorder items whose order carries meaning, reveal a strategy, shrink a response below a usable size, or leave work off to make the page attractive. A genuine gap in the content or the representation goes back to its owner through the existing route.
+You may choose a different faithful layout, or a supported variant of a helper, when it composes materially better. You may not add or remove cognitive support, reword a prompt, fill a blank, reorder items whose order carries meaning, reveal a strategy, shrink a response below a usable size, or leave work off to make the page attractive or to make it fit. Support the adaptation puts on a sheet is not made optional by the board showing the same thing: a Below sheet's letters reference is there so the child does not have to look up to the board for it, and a Year 4 Below sheet shipped without its reference on exactly that reasoning. A genuine gap in the content or the representation goes back to its owner through the existing route.
 
 **Compose the page; do not transcribe the hand-off.** The lesson design speaks
 in fields - `pupilAction`, `pupilPrompt`, `support`, `stimulus`,
@@ -471,7 +471,7 @@ keeps its own number run.
 
 For an Expected `lesson-design.json` content block whose `kind` is `question-group`, every generated Part's outer `question: true` object must carry `questionGroupId` equal byte-for-byte to the enclosing content block `id`, for example `ws-qg-001`. Every Part in that group uses that same value. Ordinary `question` blocks carry no `questionGroupId`. Do not invent, normalise or renumber another grouping identity. Below and Greater Depth continue to derive grouping from `adaptation.md`'s explicit `Question group` / `Part` structure under the existing adaptation rules.
 
-For a `question-group`, preserve its part order.
+For a `question-group`, preserve its part order. A group's shared task line - an Expected non-null `groupPrompt`, or the line an adaptation writes above its lettered parts - goes on the first Part's outer object as `"groupPrompt"`, verbatim, and in no Part's own text. The engine prints it once as the whole question, `(2) Write each number as Roman numerals.`, with `(2a) 62`, `(2b) 85` underneath. Put inside the first Part it printed as `(2a) Write each number as Roman numerals. 62`, which reads as part a's task alone.
 
 For `frame`, `stimulus-set` and `child-generated`, honour that structured shape directly; do not convert it into a question list.
 

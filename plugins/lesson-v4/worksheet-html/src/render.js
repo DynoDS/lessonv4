@@ -760,9 +760,16 @@ ${cssVariables()}
   /* A full-page data table owns the remaining page after any heading above
      it. Let its rows share that real height instead of stopping at the
      arithmetic estimate and leaving a large false blank below the table.
-     Other layouts keep data tables at their natural reading height. */
-  .area--full .h-stack-item:has(> .h-data) { flex: 1 1 auto; }
-  .area--full .h-stack-item > .h-data { height: 100%; }
+     Other layouts keep data tables at their natural reading height.
+     Only when the table is the last thing on the page and nothing but
+     headings sits above it: a Year 4 sheet with a letters reference above
+     two questions stretched the reference's one row to 24mm, and with a
+     caption the stretched table pushed past its box into the question under
+     it, so the sheet was refused (28 September 2026). A captioned table keeps
+     its natural height, because the caption sits outside the table's own
+     height and would overflow the box. */
+  .area--full .h-stack-item--table-rest:not(:has(caption)) { flex: 1 1 auto; }
+  .area--full .h-stack-item--table-rest > .h-data:not(:has(> caption)) { height: 100%; }
 
   /* The sheet's code, when a worksheet holds more than one level. It is an
      ABBREVIATION of the level and not the level written out: three sheets

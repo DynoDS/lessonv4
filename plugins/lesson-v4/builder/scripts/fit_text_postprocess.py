@@ -695,6 +695,38 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             file=sys.stderr,
         )
 
+    def settle_group(members):
+        measured = []
+        group_failed = False
+        for slide_number, shape, ceiling in members:
+            try:
+                result = measure_shape(shape, ceiling, shape_floor(shape.name, min(floor_pt, ceiling)))
+                if result is None:
+                    group_failed = True
+                    continue
+                measured.append((slide_number, shape, result))
+            except Exception as error:
+                record_failure(slide_number, shape, error)
+                group_failed = True
+        if group_failed or not measured:
+            return
+
+        shared = min(result["best"] for _, _, result in measured)
+        for slide_number, shape, result in measured:
+            record_change(shape.text_frame, result["current"], shared)
+            note_below_target(below_target, slide_number, shape, shared)
+            note_underfilled(underfilled, slide_number, shape, result)
+            if result["hit_floor"]:
+                full = shape.text_frame.text
+                preview = full.strip().replace("\n", " ")[:60]
+                overloaded.append((
+                    slide_number,
+                    shape.name or "<unnamed>",
+                    preview,
+                    text_budget(shape, shape_floor(shape.name, floor_pt), full),
+                ))
+
+    paired_grouped = {}
     for slide_idx, slide in enumerate(prs.slides):
         slide_number = slide_idx + 1
         grouped = {}
@@ -713,7 +745,8 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             directive = grow_fit_directive(shape.name)
             if directive is not None:
                 group_id, ceiling = directive
-                grouped.setdefault(group_id, []).append((shape, ceiling))
+                target = paired_grouped if group_id.startswith("revealpair-") else grouped
+                target.setdefault(group_id, []).append((slide_number, shape, ceiling))
                 continue
 
             if not force and tf.auto_size != MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE:
@@ -721,36 +754,7 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
             ordinary.append(shape)
 
         for members in grouped.values():
-            measured = []
-            group_failed = False
-            for shape, ceiling in members:
-                try:
-                    result = measure_shape(shape, ceiling, shape_floor(shape.name, min(floor_pt, ceiling)))
-                    if result is None:
-                        skipped += 1
-                        group_failed = True
-                        continue
-                    measured.append((shape, result))
-                except Exception as error:
-                    record_failure(slide_number, shape, error)
-                    group_failed = True
-            if group_failed or not measured:
-                continue
-
-            shared = min(result["best"] for _, result in measured)
-            for shape, result in measured:
-                record_change(shape.text_frame, result["current"], shared)
-                note_below_target(below_target, slide_number, shape, shared)
-                note_underfilled(underfilled, slide_number, shape, result)
-                if result["hit_floor"]:
-                    full = shape.text_frame.text
-                    preview = full.strip().replace("\n", " ")[:60]
-                    overloaded.append((
-                        slide_number,
-                        shape.name or "<unnamed>",
-                        preview,
-                        text_budget(shape, shape_floor(shape.name, floor_pt), full),
-                    ))
+            settle_group(members)
 
         for shape in ordinary:
             tf = shape.text_frame
@@ -777,6 +781,11 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
                     ))
             except Exception as error:
                 record_failure(slide_number, shape, error)
+
+    # Only explicitly paired reveal groups share a final fitted size across
+    # slides. Legacy groups still settle independently within each slide.
+    for members in paired_grouped.values():
+        settle_group(members)
 
     prs.save(path)
     print(

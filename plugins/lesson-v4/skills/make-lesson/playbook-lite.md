@@ -72,6 +72,7 @@ Check the named agents under `[PLUGIN_ROOT]/agents/`. `lesson-designer` is
 required. Missing optional agents skip only their resource or review:
 
 - no `design-reviewer`: use the validated design and report review skipped;
+- no `lesson-voice-editor`: skip Phase 1.6 and keep the reviewed words;
 - no `adaptation-designer`: build only the expected-range worksheet;
 - no `slide-designer`, `worksheet-designer`, stick-in or wall role: omit only
   that output and exclude it as NOT DELIVERED naming the missing role;
@@ -509,6 +510,71 @@ route, which is read only on a `build`, so the ordinary run - all `covered` and
 
 ---
 
+## Phase 1.6 - The Lesson Voice Editor (After the Helper Check)
+
+The design's words were written by the designer at the end of a long teaching
+job. The lesson voice editor rewrites how every word children see or hear is
+said, in the teacher's voice, and changes no decision: not what is taught, the
+order, a board's pieces, a task's decision, an answer or a number. It runs once,
+on the design that goes forward (approved, carried on after the last permitted
+redesign, or validated when there is no reviewer), and no review follows it; a
+deterministic check holds its lane. Skip it when `lesson-voice-editor` is absent.
+
+Start it once the helper check prints `HELPER_COVERAGE_OK`: that check's picture
+route can revise the design. The picture stage never reads the words and the
+editor never touches the photo contract, so load `phase2-core` now as well; the
+resource designers copy the words, so they wait for this phase to end.
+
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-voice-edit.py" snapshot --working-dir "[WORKING_DIR]"
+```
+
+Require `VOICE_EDIT_SNAPSHOT_OK` (otherwise skip the edit and say why in the run
+report), then launch the editor with the fields from `worker-launch.py spec
+--role lesson-voice-editor`:
+
+```text
+You are the lesson voice editor. Read your agent instructions at:
+[PLUGIN_ROOT]/agents/lesson-voice-editor.md
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+PYTHON: [PYTHON]
+WORKING_DIR: [WORKING_DIR]
+
+AUTHORITATIVE_INPUTS:
+VOICE_EDIT_VIEW: [WORKING_DIR]/voice-edit-view.md
+LESSON_DESIGN: [WORKING_DIR]/lesson-design.json
+DESIGN_DECISIONS: [WORKING_DIR]/design-decisions.md
+
+OWNED_OUTPUTS:
+- [WORKING_DIR]/lesson-design.json (wording only)
+- [WORKING_DIR]/design-decisions.md (the passages that match it)
+- [WORKING_DIR]/voice-edit.md
+
+SUCCESS_CHECK:
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-voice-edit.py" check --working-dir "[WORKING_DIR]"
+Require: VOICE_EDIT_OK
+[the design validator the review ran: `validator.command` in [WORKING_DIR]/design-review-preflight.json, or with no preflight `validate-lesson-design.py --initial-photo-namespace` over the two canonical files]
+Require exactly: LESSON_DESIGN_OK
+
+TERMINAL_STATE: COMPLETE
+```
+
+After return, run both checks yourself. When either fails, give the editor one
+focused retry carrying the exact failure lines. If the lane check still fails,
+run the same script's `settle`: it keeps every edit inside the lane, puts the
+rest and the walk-through back (`VOICE_EDIT_SETTLED`), or restores the approved
+files when the structure changed (`VOICE_EDIT_RESTORED`). Then run the validator
+again, and the script's `restore` if it fails. A failed voice edit never stops a run: the reviewed lesson is
+complete without it. Record which happened in the run report, and carry each
+line of `voice-edit.md` under `For the lesson designer` into the teacher flags.
+
+A later revision of the design (a content-gap wave, a Phase 3.5 owner repair,
+or a re-review either brings) does not return here: its new words keep the
+designer's register, a known gap.
+
+---
+
 ## Phase 2 — Spawn Parallel Rendering Branches
 
 **After the slides and the worksheets build, confirm the promised visuals
@@ -579,6 +645,13 @@ afterwards. An unavailable picture stage never excuses a missing specification:
 each designer still writes and validates its owned file.
 
 Carry the same line into the run report's picture results.
+
+### Pictures start now; designers wait for the voice edit
+
+The picture stage reads the frozen contract, never the lesson's words, so launch
+its image scouts (the `pictures` slice) as soon as the assignments are compiled,
+while the lesson voice editor may still be working. The designers below copy the
+lesson's words: launch them only once Phase 1.6 has ended.
 
 ### Launch the branches
 
@@ -795,7 +868,8 @@ building.
 `photo-requirements.json` and list every terminal filename whose requirement
 says `essential: true`; `finalize-picture-assignment.py` prints
 `PICTURE_ESSENTIAL_LOST:` naming them. A non-empty list is the content-gap
-picture wave, not a re-point, and it is taken now: an essential photograph that
+picture wave, not a re-point, and it is taken now (after the voice edit, which
+also writes the design): an essential photograph that
 never arrived is a hole in the teaching, and each track's reconcile below will
 otherwise close it silently by pointing the reference at a surviving picture.
 A deck shipped twelve of sixteen slides bare that way on 21 September 2026.
