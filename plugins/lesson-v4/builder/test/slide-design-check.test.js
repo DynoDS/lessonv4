@@ -1868,3 +1868,19 @@ test('a word card straight before its word, in any form, is left alone', () => {
   assert.match(found[0].message, /Equator/);
   assert.match(found[0].message, /No board after it shows the word/);
 });
+
+// 29 September 2026: a paced Teach said "a disease called cholera" on a slide
+// before its card, whose script then said "the word we've just met".
+test('a word card after a slide that already shows its word is sent back before that slide', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const lesson = { slides: [
+    { template: 'body-full', lo: 'To explain how cholera spread and was treated', title: 'Victorian London', body: 'Families lived squashed together.' },
+    { template: 'teach-layout', title: 'Why did Victorians blame the smell?', lead: 'In 1854, a disease called cholera spread through Soho.' },
+    { template: 'key-vocabulary', words: [{ word: 'cholera', definition: 'A disease that makes people very sick.' }] },
+    { template: 'teach-layout', lead: 'Cholera made people very sick in their stomachs.' }
+  ] };
+  const found = vocabCardBeforeItsWord(lesson);
+  assert.strictEqual(found.length, 1, 'the objective line on slide 1 does not count');
+  assert.strictEqual(found[0].signal, 'VOCAB_CARD_AFTER_A_SLIDE_WITH_ITS_WORD');
+  assert.match(found[0].message, /move it back to sit before slide 2/);
+});

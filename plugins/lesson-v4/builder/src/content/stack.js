@@ -92,6 +92,10 @@ function stackLayout(zone, data, ctx) {
 
   return drawnItems.map(function (item, i) {
     const subZone = zoneFor(item, cursorY, heights[i]);
+    // A packed card is exactly as tall as its words, so it keeps its card
+    // however short it is; the short-zone rule below is for cards that would
+    // burst out of a thin strip, and would leave a one-line packed card bare.
+    if (packed) subZone.packedCard = true;
     cursorY += heights[i] + GAP;
     // contentH and the weights travel with the zone so that a child refusing
     // for want of height can be told the weight that would give it, rather
@@ -424,6 +428,10 @@ function settleByNeed(items, heights, zone, zoneFor, ctx) {
 // whose words do not fit its height at the floor: the fit pass then says so.
 
 const PACK_FLOOR_PT = 18;
+// The group always keeps at least this much clear above and below, so it reads
+// as centred on its neighbour rather than filling beside it (the teacher: a
+// small, even gap top and bottom, 29 September 2026).
+const PACK_MARGIN = 0.15;
 
 function isPackingStack(data) {
   if (!data || data.type !== 'stack' || !Array.isArray(data.items) || !data.items.length) return false;
@@ -442,58 +450,48 @@ function packToContent(items, zone, data, ctx) {
   let needs;
   let drawnItems = items;
 
-  if (data.fitCards) {
-    // Each card's own ceiling is the size a hugging card in this zone prints
-    // at, or the size the layout named for it (a big statement at 40); the
-    // cards share one size under their ceilings, the largest at which they all
-    // fit. A fill card's grow ceiling (44 to 60) is not used: it is the size
-    // that made a short sentence poster-sized to fill its box.
-    const { TEXT_CEILINGS, FALLBACK_CEILING } = require('./text');
-    const classCeiling = TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
-    const ceilings = items.map(function (it) {
-      return Math.floor(Number.isFinite(it.fontSize) ? it.fontSize : classCeiling);
+  // Each card's ceiling is the size it was written at: its `fontSize`, or the
+  // zone's own text size (a fill card's grow ceiling, 44 to 60, is not used; it
+  // is the size that made a short sentence poster-sized to fill its box). The
+  // cards step down together from the largest ceiling until they all fit the
+  // height stacked, each at the smaller of that size and its own ceiling, so
+  // cards written alike print alike. The words are measured the way the fit
+  // pass measures them, because a card's own hug estimate is deliberately
+  // generous: on cholera slide 18 it put two cards that fitted at 3.3in and
+  // 1.3in over the height of the slide.
+  //
+  // Stepping down is what a centred stack of plain cards had been missing. It
+  // used to measure them at their ceiling only, and when four cards beside a
+  // UK map did not fit at the column's 32pt it gave up and fell back to equal
+  // weighted slices: the cards filled the column from top to bottom and the
+  // fit pass shrank each on its own, so one printed large and the task card
+  // small (a Year 4 geography slide, 29 September 2026). Only a group that
+  // does not fit at the 18pt floor falls back now, and the fit pass says so.
+  const { TEXT_CEILINGS, FALLBACK_CEILING } = require('./text');
+  const classCeiling = TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
+  const ceilings = items.map(function (it) {
+    return Math.floor(Number.isFinite(it.fontSize) ? it.fontSize : classCeiling);
+  });
+  let sizes = null;
+  for (let pt = Math.max.apply(null, ceilings); pt >= PACK_FLOOR_PT; pt -= 1) {
+    const at = items.map(function (it, i) {
+      const hug = Object.assign({}, it);
+      delete hug.heightMode;
+      return textNeed(hug, zone, Math.min(pt, ceilings[i]), ctx);
     });
-    let sizes = null;
-    for (let pt = Math.max.apply(null, ceilings); pt >= PACK_FLOOR_PT; pt -= 1) {
-      const at = items.map(function (it, i) {
-        const hug = Object.assign({}, it);
-        delete hug.heightMode;
-        return textNeed(hug, zone, Math.min(pt, ceilings[i]), ctx);
-      });
-      if (at.some(function (n) { return n == null; })) return null;
-      if (at.reduce(function (a, b) { return a + b; }, 0) <= room + 1e-6) {
-        sizes = ceilings.map(function (c) { return Math.min(pt, c); });
-        needs = at;
-        break;
-      }
+    if (at.some(function (n) { return n == null; })) return null;
+    if (at.reduce(function (a, b) { return a + b; }, 0) <= room - 2 * PACK_MARGIN + 1e-6) {
+      sizes = ceilings.map(function (c) { return Math.min(pt, c); });
+      needs = at;
+      break;
     }
-    if (sizes === null) return null;
-    // The card spans the height it is given, and its words never print larger
-    // than the size the cards were measured at.
-    drawnItems = items.map(function (it, i) {
-      return Object.assign({}, it, { heightMode: 'fill', fontSize: sizes[i] });
-    });
-  } else {
-    // Each card keeps the size it was written at (its `fontSize`, or the
-    // zone's own text size), measured the way the fit pass measures words, so
-    // a card is as tall as its words really are. The card's own hug estimate
-    // is deliberately generous, and on cholera slide 18 it put two cards that
-    // fitted at 3.3in and 1.3in over the height of the slide, so the stack
-    // fell back to weighted slices and the cards filled them. The card then
-    // spans exactly the height measured, with its words never larger than
-    // they were written.
-    const { TEXT_CEILINGS, FALLBACK_CEILING } = require('./text');
-    const classCeiling = TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
-    const sizes = items.map(function (it) {
-      return Math.floor(Number.isFinite(it.fontSize) ? it.fontSize : classCeiling);
-    });
-    needs = items.map(function (it, i) { return textNeed(it, zone, sizes[i], ctx); });
-    if (needs.some(function (n) { return n == null; })) return null;
-    if (needs.reduce(function (a, b) { return a + b; }, 0) > room + 1e-6) return null;
-    drawnItems = items.map(function (it, i) {
-      return Object.assign({}, it, { heightMode: 'fill', fontSize: sizes[i] });
-    });
   }
+  if (sizes === null) return null;
+  // The card spans the height it is given, and its words never print larger
+  // than the size the cards were measured at.
+  drawnItems = items.map(function (it, i) {
+    return Object.assign({}, it, { heightMode: 'fill', fontSize: sizes[i] });
+  });
 
   const total = needs.reduce(function (a, b) { return a + b; }, 0);
   const naturalH = total + gaps;

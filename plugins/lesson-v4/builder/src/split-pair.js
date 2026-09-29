@@ -78,11 +78,21 @@ function alignSplitHPair(primaryZone, primaryData, secondaryZone, secondaryData,
   // it while a shorter picture beside it centred on the top of the zone.
   const { isPackingStack } = require('./content/stack');
   const packing = sides.some((side) => isPackingStack(side.data) && side.settles);
+  // With packed cards, the pair itself is centred in the height of the slide,
+  // and a shorter partner is given exactly its own height at the middle of the
+  // pair. A helper that centres itself in whatever zone it is given (a place
+  // value chart) otherwise centred in the whole zone after being moved down,
+  // and sat low beside the cards (29 September 2026).
+  const pairOffset = packing ? Math.max(0, (sides[0].zone.h - alignH) / 2) : 0;
   sides.forEach((side) => {
     if (isFillText(side.data)) {
       side.zone.h = spanH;
     } else if (packing && isPackingStack(side.data)) {
+      side.zone.y += pairOffset;
       side.zone.h = alignH;
+    } else if (packing && side.measured) {
+      side.zone.y += pairOffset + Math.max(0, (alignH - side.h) / 2);
+      side.zone.h = Math.min(side.zone.h, Math.max(side.h, 0.3));
     } else if (side.measured && side.h < alignH - 0.05) {
       side.zone.y += (alignH - side.h) / 2;
     }

@@ -135,9 +135,10 @@ Choose the response from what children need to show about the past. A comparison
 - **Place it in time.** Put three events on the timeline, or in order (`do-beats.md` 5.8), when the order lets children reason with it: what happened before the law could not have been caused by it.
 - **Build the chain.** Arrange what led to what and say which link matters (5.9): the fire, the wooden houses, the wind, the missing fire service.
 - **Match the evidence to the claim.** Three source cards and the claim `Tudor children worked`: children tick the sources that could show it and cross the one that could not. The crossed one is about the right period and the wrong question.
+- **Circle it in the picture.** On a picture from the period the class has not seen (a Victorian street, a Tudor kitchen), children circle the things that show today's idea and tell a partner what each one shows, so a child who reads slowly can still show they have it.
 - **Sort what changed and what stayed the same.** Features of a Victorian and a modern classroom into only then, both, and only now, then say which change was biggest (5.10).
 - **Say what the source cannot tell us.** Under a source children have not seen, two boxes: children write one thing it shows and one thing it cannot tell us. For a lesson whose objective is what sources can tell us; elsewhere the caution is the one question step 5 of the sketch asks, not a beat of its own.
-- **Fix the claim.** `All Tudor children went to school` or `the Vikings only raided`: children cross out the word that makes it wrong and write the fact from today that corrects it, so the misconception is named out loud and then undone (8.8).
+- **Fix the claim.** `All Tudor children went to school` or `the Vikings only raided`: children cross out the word that makes it wrong and tell a partner the fact from today that corrects it, so the misconception is named out loud and then undone (8.8).
 
 **Talk when it helps children form or show an answer.** Partner rehearsal can prepare writing; an individual spoken explanation can itself be the outcome. Make each child's understanding available to the teacher rather than relying on the most confident group spokesperson.
 

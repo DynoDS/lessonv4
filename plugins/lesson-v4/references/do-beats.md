@@ -49,7 +49,7 @@ Write the line in the register `teacher-voice.md` §6 owns: spoken to the childr
 ## How to pick
 
 1. Settle the intended thinking or checking purpose, using `preferences.md` → The Teach → Do → Teach → Do Rhythm, `Name what the chunk needs children to do with it`. That list is what a purpose is stated in; arriving here without one is how a beat ends up chosen by topic. Then write the beat's `thinking` line, the actual question a child's mind answers while working, and keep it beside you as you compare formats: a format that lets the child answer that question by reading the slide, or from what they knew walking in, is out, whatever section it came from; and read the line against the subject file's own doing-versus-thinking test, because reading a source, a map or a result is the doing the objective names and not yet the thought.
-2. Notice the response form's actual demands and supports, such as writing load, spoken language, public performance, reading, movement, fine-motor control, partner dependence or visual structure.
+2. Notice the response form's actual demands and supports, such as writing load, spoken language, public performance, reading, movement, fine-motor control, partner dependence or visual structure, and keep only the demands the lesson is teaching (`preferences.md` → `Make every child do the thinking, and take away only the reading and writing that is not the learning`).
 3. Compare plausible activities for that purpose using the subject file's `What a Do beat looks like` and the contents below; choose the one whose actual pupil action best serves the learning and supplied pupil needs. A fact may suit recall or a sort, a process labelling, sketching or sequencing, and a judgement ranking or talk; these are starting possibilities, not routes that settle the choice. An explanation, cause, mechanism or relationship is the case with no obvious channel, and the one most often answered with a summary that only says it back: §10 holds the beats that use it, and talk (§2), writing (§3) or a diagram (§4) can each carry them. The contents are indexed by response channel, so more than one section will usually hold a candidate for a single purpose. For a beat the lesson relies on, name what the child does with the material (`preferences.md` → The Teach → Do → Teach → Do Rhythm, `Choose the material and the thinking together`); `Operations to think with` at the end of this file gives each operation an example and what makes it the real thing, and is there to open when a candidate's operation is unclear or you want wider options. An operation is not a band: the bands above are how hard the thinking is, and the same operation can sit in any of them depending on the material and the support.
 4. Read the sequence of pupil actions together against the purposeful-variety judgement in `preferences.md`. Keep useful repetition; reconsider a string of generic explanations even when each individually matches the taught content.
 
@@ -62,8 +62,8 @@ Use the contents to open only the activity families relevant to the intended thi
 - **§1 Recall** — seven retrieval formats (free recall, choral response, retrieval roulette). Read when a chunk is facts, names, dates, definitions or rules that need locking in before you build on them.
 - **§2 Talk** — seven oral-rehearsal formats (partner discussion, think-pair-share, convince your partner). Read when children need to say it before they can write it: explanations, comparisons, opinions, why-questions.
 - **§3 Write** — seven committed-record formats, including the hinge and diagnostic questions. Read when a chunk needs committing in writing, or when you need a move-on-or-reteach decision mid-lesson.
-- **§4 Visual / Draw** — eight dual-coding formats (quick sketch, labelled diagram, fishbone, concept map). Read when the chunk has spatial, sequential or diagrammatic structure, or the lesson's writing load is stacking up.
-- **§5 Sort / Classify** — ten keyed decision formats (card sort, odd one out, always/sometimes/never, put it in order, causal chain, same and different). Read when the chunk is category-forming or misconception-prone; every keyed format here passes through the answer-scatter principle above.
+- **§4 Visual / Draw** — ten dual-coding formats (quick sketch, labelled diagram, finish the picture, circle the clues, fishbone, concept map). Read when the chunk has spatial, sequential or diagrammatic structure, or the lesson's writing load is stacking up.
+- **§5 Sort / Classify** — eleven keyed decision formats (card sort, odd one out, always/sometimes/never, put it in order, causal chain, same and different, which picture shows it). Read when the chunk is category-forming or misconception-prone; every keyed format here passes through the answer-scatter principle above.
 - **§6 Rank / Position** — five commit-and-defend formats (diamond nine, continuum line, vote with reason). Read when the chunk is significance, values or judgement: PSHE, RE, historical significance and interpretation.
 - **§7 Movement / Embodied** — seven body-as-channel formats (freeze frame, conscience alley, gesture-as-memory). Read for narrative, sequence or vocabulary chunks, and when an embodied response improves access or understanding.
 - **§8 Generative** — eight make-something-new formats (write the question, apply to a new case, spot the mistake, prove Sam wrong). Read when a chunk is understood and now needs using: transfer, application, generating fresh examples.
@@ -259,6 +259,18 @@ Pupils draw a small symbol in answer to a question — a tick/cross, a smiley/sa
 **Best for:** binary or three-way decisions; quick check before moving on.
 **SEND access:** no writing at all; pure visible commit.
 
+### 4.9 Finish the Picture
+Children complete a figure that is partly drawn for them: the missing arrow in a food chain or a cause chain, the last stage of a cycle, the bulb a circuit still needs, the third box of a three-box strip showing what happens next, or a sketch of the prediction before the reveal (where the shadow falls, which way the water goes). The frame carries everything except the one part the idea decides.
+**Best for:** processes, directions and predictions in science and geography, sequences in history; a child who cannot yet write the explanation can still show they hold it.
+**The limit:** the frame is the point. Children of this age draw well to learn from when they are told what to add to a partly drawn figure and badly from a blank page (Van Meter and Garner 2005; Karpicke and colleagues 2014 found blank recall gives about a tenth). Name the one thing to add and a stop (`one arrow`, `stick figures, the one thing that changes`); a gap only one thing could fill is a shape puzzle, not a decision.
+**Demands and supports:** no writing; needs a printed frame (a stick-in piece) or a simple copy in books.
+
+### 4.10 Circle the Clues
+On a picture the Teach did not show (a new street, a new landscape, a new object), children circle two or three things that show today's idea and label each with one word from a small bank, or number the circles and say what each shows to a partner.
+**Best for:** applying a category to a fresh case in geography (clues this place is hot and dry), history (clues this is a Victorian street), science (clues this material is waterproof) and RE (clues this is a place of worship).
+**The limit:** the picture must be new and uncluttered; the teaching picture again is finding, and a busy scene lets anything be circled.
+**Demands and supports:** reading one small word bank at most; the picture needs to be in front of each child (a stick-in piece).
+
 ---
 
 ## 5. Sort / Classify
@@ -320,6 +332,12 @@ Three or four cards that each caused the next; children arrange them into the ch
 Two cases side by side (two places, two periods, two practices, two materials); children sort feature cards into *only this one*, *both* and *only that one*, then name the difference that matters most for today's question. The criteria for comparing come from what was taught, or the sort is a spot-the-difference picture game.
 **Best for:** comparing places in geography, then and now in history, two traditions or two people in RE.
 **SEND access:** the three columns carry the structure; the one named difference can be spoken.
+
+### 5.11 Which Picture Shows It?
+Three or four pictures, one question: `which one shows water evaporating?`, `which is a physical feature?`, `which one would the Victorians have blamed on the smell?`. Each child writes the letter, then the answer is shown. Every wrong picture is a near miss that holds a real misconception (ice melting beside the puddle drying), so choosing is discriminating, not spotting.
+**Best for:** checking a new category or process straight after the Teach with almost no reading, for EAL and SEND children above all: pictures as the options cut language load more than any other change to a question (Noble and colleagues 2020).
+**The limit:** a wrong picture no child would pick makes it a guess; pictures the Teach already showed make it finding. The pictures must be clear enough to read at the back of the room.
+**Demands and supports:** one letter to write; the question read aloud.
 
 ---
 

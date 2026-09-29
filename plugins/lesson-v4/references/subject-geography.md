@@ -76,12 +76,13 @@ A geography Do beat has a map, a photograph, a graph or a place in it, and the c
 - **Mark it.** Put the river, city or biome on a blank map, working outward from what the class already holds.
 - **Where is it from here?** On a map in front of them, children circle the village upstream of the dam, or tick the town nearer the coast: the decision is the spatial relationship, not the name.
 - **Spot the pattern, then the one that doesn't fit.** Children choose from three statements the one that describes where the shaded areas are, then cross the place that breaks the pattern. The reason comes after the noticing.
+- **Circle the clues.** On a photograph of a place the class has not seen, children circle two things that show it is a hot, wet place, or a place people have changed (`do-beats.md` 4.10).
 - **Order the process.** Put the stages of a river's journey or the water cycle in order, or fill the stage that is missing (`do-beats.md` 5.8, 5.9).
-- **Map to sentence, sentence to map.** Turn the climate graph into two true sentences, or mark on the map where a description puts the town (10.5, 10.6).
+- **Map to sentence, sentence to map.** Say two true things the climate graph shows, or mark on the map where a description puts the town (10.5, 10.6).
 - **Sort physical and human.** Cards from a place children have not studied yet, sorted by the features the lesson taught them to see.
 - **Same and different.** Two places on the criteria the lesson taught (climate, relief, how people live), with the difference that matters named (5.10).
 - **Local, national or global?** Six cards (litter in the park, a flood in one town, plastic in the ocean) sorted into three columns by how far the issue reaches.
-- **Try it on a new place.** Two photographs of coasts the class has not seen: children tick the one that will wear away faster and write the feature from today's teaching that decided it.
+- **Try it on a new place.** Two photographs of coasts the class has not seen: children tick the one that will wear away faster and tell a partner the feature from today's teaching that decided it.
 
 ---
 

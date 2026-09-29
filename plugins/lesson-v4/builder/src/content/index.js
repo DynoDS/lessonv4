@@ -342,7 +342,7 @@ function wantsCard(zone, type, data, ctx) {
   // and a child saw one instruction floating on the background while every
   // other line on the slide sat on white.
   if (!zone.compactCards && zone.w < 1.0) return false;
-  if (!zone.compactCards && zone.h < 0.7) {
+  if (!zone.compactCards && !zone.packedCard && zone.h < 0.7) {
     if (type !== 'text') return false;
     const extent = measureContentExtent(zone, data, ctx);
     return !!extent && extent.h <= zone.h;

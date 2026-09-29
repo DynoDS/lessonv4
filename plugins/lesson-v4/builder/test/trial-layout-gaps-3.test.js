@@ -192,3 +192,45 @@ test('speech with no calculation keeps the width the design asked for', () => {
   // The speakers stand on the left, and each bubble's text starts just inside it.
   assert.ok(Math.abs(draw('It is bigger.') - 0.44) < 0.02, 'a plain claim moved');
 });
+
+// ─── round five: four plain cards beside a map (29 September 2026) ────────
+
+// Geography slide 7, "Which way do these rivers flow?": four cards with no
+// size of their own beside a UK map. They did not fit at the column's 32pt, so
+// the stack gave up on fitting and fell back to equal slices: the cards filled
+// the column and each printed at its own size.
+const RIVER_CARDS = { type: 'stack', verticalAlign: 'center', items: [
+  { type: 'text', value: 'Here are three more rivers in the UK.' },
+  { type: 'text', value: 'Where does each river start, and which way does its water flow?', colorRole: 'focus-blue' },
+  { type: 'text', value: 'On your own map, put an S at the {{source}} of each river, then draw one arrow on each river pointing the way its water goes.', colorRole: 'task-blue' },
+  { type: 'text', value: 'You\'ve finished when all three rivers have an S and an arrow.' }
+] };
+
+test('plain cards too big for their column step down together and stay centred', () => {
+  const zone = { x: 5.5, y: 0.6, w: 7.6, h: 6.65, class: 'E-wide' };
+  const laid = stackLayout(zone, RIVER_CARDS, CTX);
+  const sizes = laid.map((entry) => entry.item.fontSize);
+  assert.ok(sizes.every((size) => Number.isFinite(size)), 'the cards fell back to weighted slices');
+  assert.equal(new Set(sizes).size, 1, `the cards print at different sizes: ${sizes.join(', ')}`);
+  assert.ok(sizes[0] >= 20, `the cards print at ${sizes[0]}pt`);
+  const top = laid[0].zone.y - zone.y;
+  const last = laid[laid.length - 1].zone;
+  const bottom = zone.y + zone.h - (last.y + last.h);
+  assert.ok(top >= 0.1, `no gap above the cards (${top.toFixed(2)}in)`);
+  assert.ok(Math.abs(top - bottom) < 0.02, `not centred: ${top.toFixed(2)}in above, ${bottom.toFixed(2)}in below`);
+  laid.forEach((entry) => assert.ok(entry.zone.packedCard, 'a packed card can lose its card when short'));
+});
+
+test('a helper beside packed cards is centred on them, not left centring in the whole zone', () => {
+  const { alignSplitHPair } = require('../src/split-pair');
+  const left = { x: 0.2, y: 0.6, w: 5.2, h: 6.65, class: 'E-narrow' };
+  const right = { x: 5.6, y: 0.6, w: 7.5, h: 6.65, class: 'E-wide' };
+  const chart = { type: 'place-value-chart', columns: ['T', 'O'],
+    rows: [{ label: '52', cells: ['5', '2'], counters: { T: 5, O: 2 } }] };
+  alignSplitHPair(left, chart, right, RIVER_CARDS, CTX);
+  const chartMiddle = left.y + left.h / 2;
+  const cardsMiddle = right.y + right.h / 2;
+  assert.ok(left.h < 6.6, `the chart was left the whole ${left.h.toFixed(2)}in zone to centre in`);
+  assert.ok(Math.abs(chartMiddle - cardsMiddle) < 0.05,
+    `the chart's middle is at ${chartMiddle.toFixed(2)}in and the cards' at ${cardsMiddle.toFixed(2)}in`);
+});

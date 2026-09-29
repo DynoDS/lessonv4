@@ -33,7 +33,7 @@ An RE Do beat makes children connect what people do with what they believe, and 
 - **Whose voice?** Children sort three statements into one person, many people in the tradition, and the tradition's own teaching.
 - **More than one view inside a tradition.** From four responses, children tick the two that could both come from Christians, built so one person can hold more than one meaning (`preferences.md` → What a Lesson Is For, `Needed is not tidy`).
 - **Order the practice.** The stages of a ceremony or a festival day, in order (`do-beats.md` 5.8).
-- **Which teaching explains it?** Children underline the line in the extract that supports this practice, and write how.
+- **Which teaching explains it?** Children underline the line in the extract that supports this practice, and tell a partner how.
 - **Fix the claim.** `All Christians celebrate Christmas in the same way`: correct it with what the lesson taught (8.8).
 - **Which beliefs clash?** A short story card with four belief cards beneath: children circle the two that pull against each other in this situation.
 - **Religious, non-religious or either?** Sort reasons someone might give for helping a neighbour.

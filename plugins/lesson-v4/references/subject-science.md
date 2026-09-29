@@ -58,13 +58,15 @@ Normally make sense of the result while children can still see the equipment, ob
 
 A science Do beat makes children use the scientific relationship, not describe what they saw. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each changes the case from the one the Teach showed:
 
-- **Predict with a reason.** Children tick the circuits whose bulb will light, or write the letter of the ice cube that melts first, with one reason, before anything is tested. The prediction has to be decided by the taught idea, and changing one thing is the cleanest way to make it so (`do-beats.md` 10.3, 10.4).
+- **Predict with a reason.** Children tick the circuits whose bulb will light, or write the letter of the ice cube that melts first, and tell a partner the reason, before anything is tested. The prediction has to be decided by the taught idea, and changing one thing is the cleanest way to make it so (`do-beats.md` 10.3, 10.4).
+- **Which picture shows it?** Three pictures of changes the class has not discussed: children write the letter of the one where water is evaporating, with melting ice as the near miss (`do-beats.md` 5.11).
 - **Which is not?** Three examples and one non-example of the category just taught, with the boundary case where the misconception lives: a whale among the fish, an aluminium can among the steel ones.
 - **Sort by the property.** Materials, animals or changes sorted by the taught property, including one the class has not handled.
 - **Complete the mechanism.** Fill the missing step: the sun heats the puddle, the water ___, the vapour rises (10.2).
 - **Label a new diagram.** The same parts on a different plant, tooth or circuit from the one taught, so the label is recognised rather than remembered.
+- **Draw the arrow.** On a picture of a new situation (a steaming kettle, a puddle on a sunny day), children draw where the water goes and write the one taught word beside the arrow.
 - **Which result supports it?** Choose the result that is evidence for the claim, and say what rules the others out (10.8: results children read for themselves, with wrong options a child could believe).
-- **Keep it fair.** From four cards describing the test, children circle the one thing that must stay the same and write what would go wrong if it changed.
+- **Keep it fair.** From four cards describing the test, children circle the one thing that must stay the same and tell a partner what would go wrong if it changed.
 - **Model or real?** On a diagram the lesson used (the Earth and Sun with arrows, particles as dots), children tick what is really there and cross what is drawn only to help us understand.
 - **Prove Sam wrong.** `Sam says all metals are attracted to magnets.` Find the case that breaks it (8.8).
 

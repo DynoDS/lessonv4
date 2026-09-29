@@ -212,7 +212,7 @@ class TheSettledItems(unittest.TestCase):
 
     def test_the_activity_lists_contents_count_its_entries(self) -> None:
         catalogue = (REF / "do-beats.md").read_text(encoding="utf-8")
-        words = {"five": 5, "seven": 7, "eight": 8, "ten": 10}
+        words = {"five": 5, "seven": 7, "eight": 8, "ten": 10, "eleven": 11}
         for number in range(1, 11):
             section = re.search(rf"(?ms)^## {number}\. .*?(?=^## |\Z)", catalogue).group(0)
             entries = len(re.findall(rf"(?m)^### {number}\.\d+ ", section))

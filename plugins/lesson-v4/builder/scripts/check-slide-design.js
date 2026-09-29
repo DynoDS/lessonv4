@@ -622,8 +622,11 @@ function repeatedLineWarnings(lesson) {
 // board never said it. Only the board counts: the title and every printed
 // piece, never the speaker notes.
 function boardWords(slideData) {
-  const text = [slideData.title || '']
-    .concat(slideLines(slideData).map(({ text: line }) => line))
+  // The objective line is the teacher's LO, printed on every lesson's first
+  // slide; a word in it has not been met yet.
+  const { lo, ...board } = slideData;
+  const text = [board.title || '']
+    .concat(slideLines(board).map(({ text: line }) => line))
     .join(' ');
   return ` ${sameLineWords(text)} `;
 }
@@ -645,17 +648,34 @@ function vocabCardBeforeItsWord(lesson) {
       .map((entry) => (entry && typeof entry.word === 'string' ? entry.word : ''))
       .filter(Boolean);
     if (!terms.length) return;
-    let next = index + 1;
-    while (next < slides.length && isCard(slides[next])) next += 1;
-    if (next >= slides.length) return;
     const shows = (at) => {
       const board = boardWords(slides[at] || {});
       return terms.some((term) => showsTerm(board, term));
     };
+    const named = terms.map((term) => `"${term}"`).join(' and ');
+    // Too late: a board before the card already shows the word (a paced Teach
+    // that says "a disease called cholera" on its fourth slide, with the card
+    // after the whole Teach and a script saying "the word we've just met").
+    const earlier = slides.findIndex((other, at) => at < index && !isCard(other) && shows(at));
+    if (earlier !== -1) {
+      warnings.push({
+        signal: 'VOCAB_CARD_AFTER_A_SLIDE_WITH_ITS_WORD',
+        slide: index + 1,
+        field: 'words',
+        message:
+          `The card for ${named} comes after slide ${earlier + 1}, whose board already shows ` +
+          `${terms.length > 1 ? 'those words' : 'that word'}. A card sits straight before the first slide ` +
+          `that uses its word, so move it back to sit before slide ${earlier + 1}. If its speaker notes ` +
+          'speak as if the word was already met, report that upstream rather than rewording them.'
+      });
+      return;
+    }
+    let next = index + 1;
+    while (next < slides.length && isCard(slides[next])) next += 1;
+    if (next >= slides.length) return;
     if (shows(next)) return;
     let first = next + 1;
     while (first < slides.length && (isCard(slides[first]) || !shows(first))) first += 1;
-    const named = terms.map((term) => `"${term}"`).join(' and ');
     warnings.push({
       signal: 'VOCAB_CARD_BEFORE_A_SLIDE_WITHOUT_ITS_WORD',
       slide: index + 1,

@@ -62,7 +62,7 @@ class TheCatalogueAgreesWithItself(unittest.TestCase):
         text = flat(REF / "do-beats.md")
         for heading in ("### 5.8 Put It in Order", "### 5.9 Causal Chain", "### 5.10 Same and Different", "### 8.8 Prove Sam Wrong"):
             self.assertIn(heading, text)
-        self.assertIn("ten keyed decision formats", text)
+        self.assertIn("eleven keyed decision formats", text)
         self.assertIn("eight make-something-new formats", text)
 
     def test_a_prediction_is_decided_by_the_teaching(self) -> None:

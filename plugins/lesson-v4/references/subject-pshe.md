@@ -38,7 +38,7 @@ A PSHE Do beat has children apply the taught reason or boundary to a situation, 
 - **What could she say?** Choose, or write, the sentence that keeps the boundary clearly and kindly.
 - **Who could help?** Match the situation to the trusted adult or service that fits it.
 - **Now or later?** Sort consequences into what happens straight away and what builds up over time.
-- **Which website would you trust?** Three website cards for one health question: children rank them 1 to 3 and write the clue that decided the top one.
+- **Which website would you trust?** Three website cards for one health question: children rank them 1 to 3 and tell a partner the clue that decided the top one.
 - **What does each person need?** A story with three characters and a set of need cards: children match each need to the character it belongs to.
 
 No beat needs a child's own experience to be completed; a private choice can stay private (`Use safe distance` above).
