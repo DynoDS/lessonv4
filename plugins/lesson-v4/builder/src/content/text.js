@@ -6,7 +6,7 @@ const {
   presentationRuns
 } = require('../presentation-text');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
-const { drawSignal, signalWidth } = require('../signals');
+const { drawSignal, signalWidth, TASK_SIGNALS } = require('../signals');
 const { pairedText } = require('./reveal-pair');
 const {
   PICTURE_GAP,
@@ -39,6 +39,18 @@ function starTopInset(zone) {
   const h = Math.min(STAR_TOP_H_MAX, Math.max(0.2, zone.h - 2 * PAD) * 0.2);
   const w = signalWidth('star', h);
   return w ? { h: h, w: w, inset: h + STAR_GAP } : null;
+}
+
+// The sign at the start of a text card: one line of the text tall, never taller
+// than the card, and never wider than a quarter of it.
+const SIGN_H_MAX = 0.75;
+
+function textSignal(data, zone, fontPt) {
+  if (!data || !TASK_SIGNALS.has(data.signal)) return null;
+  const h = Math.min(SIGN_H_MAX, fontPt * 1.25 / 72, Math.max(0.2, zone.h - 2 * PAD));
+  const w = signalWidth(data.signal, h);
+  if (!w || w > zone.w / 4) return null;
+  return { h: h, w: w, indent: w + STAR_GAP };
 }
 
 function isPortrait(zone) {
@@ -171,6 +183,19 @@ function drawText(pptx, slide, zone, data, ctx) {
 
   let indent = 0;
   let topInset = 0;
+  // A sign at the start of the card (`signal`: pencil, talk, magnifier, tick),
+  // one line of the text tall, the way the header pill carries one. A pencil
+  // beside a sentence starter says "you write this" before a word is read.
+  // One sign per card: a line to remember already has its star, and the check
+  // refuses a second sign on it (validate.js).
+  const sign = textSignal(data, zone, ceiling);
+  if (sign && !isSticky(value)) {
+    drawSignal(slide, data.signal, {
+      x: zone.x + PAD,
+      y: zone.y + (zone.h - sign.h) / 2, h: sign.h
+    });
+    indent = sign.indent;
+  }
   if (isSticky(value)) {
     if (isPortrait(zone)) {
       const star = starTopInset(zone);
@@ -282,9 +307,10 @@ function measureTextValue(zone, data, ctx, value) {
   // this function's contract.
   const sticky = isSticky(value);
   const portrait = isPortrait(zone);
+  const sign = !sticky ? textSignal(data, zone, fs) : null;
   const stickyIndent = sticky && !portrait
     ? signalWidth('star', STAR_H_MAX) + STAR_GAP
-    : 0;
+    : (sign ? sign.indent : 0);
   const baseW = Math.max(0.5, zone.w - 2 * PAD - stickyIndent);
   const pictureLayout = optionalPictureLayout(zone, data, ctx, stickyIndent, fs, value);
   const availW = Math.max(0.5, baseW - (pictureLayout ? pictureLayout.slotW : 0));

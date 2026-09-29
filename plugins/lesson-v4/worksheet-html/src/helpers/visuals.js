@@ -665,6 +665,10 @@ function labelDiagramArgs(spec) {
     // 12mm. Slim vertical bands leave the height to the drawing, which is the
     // part a child has to read.
     marginYRatio: 0.03,
+    // A tall picture (a body, a plant) drawn at full width runs off the page.
+    // `frame` gives it a squarer box to be fitted and centred in, which is the
+    // honest way to make it shorter: the dots stay sized to the real picture.
+    frame: spec.frame || null,
   };
 }
 

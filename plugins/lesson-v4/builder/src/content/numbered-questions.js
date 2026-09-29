@@ -267,11 +267,17 @@ function fullRowColumnCounts(count) {
 // already multi-line by choice. Pictures and answer boxes keep the single
 // column, whose measurement they are built around.
 function widerArrangement(questions, options) {
-  const { measure, innerW, innerH, ceilingPt, currentPt } = options;
+  const { measure, innerW, innerH, ceilingPt, currentPt, answerBoxes } = options;
   if (questions.length < 2 || currentPt >= ceilingPt) return null;
 
   let best = null;
-  fullRowColumnCounts(questions.length).forEach(function (columns) {
+  // Full rows first. When none of them wins anything (five questions offer only
+  // one row of five), rows with a short last row are tried as well, the last
+  // row centred under the others: five starter questions with answer boxes
+  // otherwise stayed in one narrow column down the left 40% of a Year 4 maths
+  // slide, height-bound at a small size with the rest of the body empty (29
+  // September 2026).
+  const tryColumns = function (columns) {
     const columnW = (innerW - CARD_GAP * (columns - 1)) / columns;
     if (columnW < MIN_COLUMN_W) return;
     const rows = Math.ceil(questions.length / columns);
@@ -279,7 +285,7 @@ function widerArrangement(questions, options) {
       if (best && fontPt <= best.fontPt) break;
       const cardH = oneLineCardHeight(fontPt);
       if (rows * cardH + CARD_GAP * (rows - 1) > innerH) continue;
-      const stack = measure(questions, fontPt, columnW, false);
+      const stack = measure(questions, fontPt, columnW, !!answerBoxes);
       const wraps = stack.cards.some(function (card) {
         return card.h > cardH + 0.001;
       });
@@ -287,7 +293,13 @@ function widerArrangement(questions, options) {
       best = { columns: columns, fontPt: fontPt, stack: stack };
       break;
     }
-  });
+  };
+  fullRowColumnCounts(questions.length).forEach(tryColumns);
+  if (!best) {
+    for (let columns = 2; columns < questions.length; columns += 1) {
+      if (questions.length % columns !== 0) tryColumns(columns);
+    }
+  }
   return best;
 }
 
@@ -306,7 +318,14 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
       : { text: entry.text, answer: '', revealed: false };
     parsed.source = entry.source;
     parsed.picture = pictures[i];
-    if (pair) parsed.layoutTexts = pair[i].map(stripLeadingLabel);
+    // With answer boxes the answer is drawn in its box, not in the line, so
+    // the answer slide's wording is measured without it, as the question is.
+    if (pair) {
+      parsed.layoutTexts = pair[i].map(function (text) {
+        const plain = stripLeadingLabel(text);
+        return answerBoxes ? splitAnswerBoxText(plain).text : plain;
+      });
+    }
     return parsed;
   });
   if (questions.length === 0) return;
@@ -479,14 +498,15 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   // holding for it all along - the case a wide, shallow zone under a task
   // instruction creates every time it carries a short question set.
   let columns = 1;
-  const wider = (answerBoxes || questions.some(function (q) { return !!q.picture; }))
+  const wider = questions.some(function (q) { return !!q.picture; })
     ? null
     : widerArrangement(questions, {
         measure: measureHere,
         innerW: innerW,
         innerH: innerH,
         ceilingPt: ceilingPt,
-        currentPt: fontPt
+        currentPt: fontPt,
+        answerBoxes: answerBoxes
       });
   if (wider) {
     columns = wider.columns;
@@ -529,7 +549,11 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
 
   cards.forEach(function (c, i) {
     const label = '(' + (startAt + i) + ')';
-    const cardX = blockX + (i % columns) * (stack.w + CARD_GAP);
+    // A short last row is centred under the full rows above it.
+    const rowIndex = Math.floor(i / columns);
+    const inRow = Math.min(columns, cards.length - rowIndex * columns);
+    const rowShift = (columns - inRow) * (stack.w + CARD_GAP) / 2;
+    const cardX = blockX + rowShift + (i % columns) * (stack.w + CARD_GAP);
     const cardY = rowTops[Math.floor(i / columns)];
 
     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {

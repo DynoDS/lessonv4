@@ -263,6 +263,42 @@ function readPromisedPhotos(lessonDir) {
   return { promised, error: null };
 }
 
+// The signs (signals.js): a header `signal` beside the slide's `instruction`,
+// and a `signal` at the start of a text card. Four may be named, each once per
+// place, and a line to remember keeps only its own star.
+function validateSignals(slide, n, errors, warnings) {
+  if (!slide || typeof slide !== 'object') return;
+  const { TASK_SIGNALS } = require('./signals');
+  const names = [...TASK_SIGNALS].join(', ');
+  if (slide.signal !== undefined) {
+    if (!TASK_SIGNALS.has(slide.signal)) {
+      errors.push(`slide ${n}: signal ${JSON.stringify(slide.signal)} is not a sign the deck draws; use one of ${names}.`);
+    } else if (!slide.instruction) {
+      warnings.push(`slide ${n}: the header signal "${slide.signal}" draws inside the header instruction's pill, and this slide has no \`instruction\`, so it will not appear.`);
+    }
+  }
+  const walk = (node) => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== 'object') return;
+    if (node.type === 'text' && node.signal !== undefined) {
+      const words = String(node.value || node.text || '');
+      if (!TASK_SIGNALS.has(node.signal)) {
+        errors.push(`slide ${n}: text signal ${JSON.stringify(node.signal)} is not a sign the deck draws; use one of ${names}.`);
+      } else if (/^\s*\u2728/.test(words)) {
+        errors.push(`slide ${n}: "${words.slice(0, 50)}" is a line to remember and already carries its star; a card takes one sign, so drop its \`signal\`.`);
+      }
+    }
+    Object.keys(node).forEach((key) => {
+      if (key === 'speakerNotes' || key === 'decorations' || key === 'signal') return;
+      walk(node[key]);
+    });
+  };
+  Object.keys(slide).forEach((key) => {
+    if (key === 'signal' || key === 'speakerNotes' || key === 'decorations') return;
+    walk(slide[key]);
+  });
+}
+
 function validateLesson(lesson, lessonDir) {
   const errors = [];
   const warnings = [];
@@ -294,6 +330,8 @@ function validateLesson(lesson, lessonDir) {
       label: `slide ${n}`,
     });
     warnings.push(...decorationCheck.warnings);
+
+    validateSignals(slide, n, errors, warnings);
 
     const tpl = slide && slide.template;
 

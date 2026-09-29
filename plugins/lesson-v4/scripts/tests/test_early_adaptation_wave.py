@@ -217,7 +217,7 @@ class CompilerEarlyWaveTests(unittest.TestCase):
             sys.executable, str(SCRIPTS / "compile-picture-assignments.py"), "compile",
             "--requirements", str(requirements), "--expected-prefix", prefix,
             "--output-dir", str(root / "assignments"), "--working-dir", str(root),
-            "--summary-output", str(root / "summary.json"),
+            "--summary-output", str(root / "summary.json"), "--image-generation", "available",
         ]
         for name in filenames:
             command.extend(["--expected-filename", name])

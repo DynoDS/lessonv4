@@ -181,10 +181,28 @@ function resolveImages(node, baseDir, problems) {
       throw err;
     }
     out.imageHref = image.href;
-    // Only filled in when the spec has not stated them. A designer who has
-    // measured the picture themselves is not overruled.
-    if (out.imageWidth === undefined) out.imageWidth = image.width;
-    if (out.imageHeight === undefined) out.imageHeight = image.height;
+    // Always the file's own size. This used to keep a size the spec stated, on
+    // the idea that a designer had measured the picture. Nobody had: a stated
+    // size is always a guess or a box shape, and it did real damage. The Week 4
+    // digestive sheet (29 Sept 2026) said 75 by 56 for a 1024 by 1536 body, to
+    // squeeze the tall picture onto the page; the dots are sized from the
+    // picture, so they came out as giant circles covering the organs, and the
+    // anchors, which are percentages of the real picture, drifted with it.
+    //
+    // What the designer wanted from a different shape was a squarer box, so on
+    // a labelled diagram that shape becomes its `frame`: the picture is fitted
+    // and centred in it, and the dots stay the right size and in the right
+    // place. Everywhere else a stated size is simply not used.
+    const statedW = Number(out.imageWidth);
+    const statedH = Number(out.imageHeight);
+    const statedShapeDiffers =
+      statedW > 0 && statedH > 0 &&
+      Math.abs(statedW / statedH - image.width / image.height) > 0.02 * (image.width / image.height);
+    if (out.helper === "label-diagram" && !out.frame && statedShapeDiffers) {
+      out.frame = [statedW, statedH];
+    }
+    out.imageWidth = image.width;
+    out.imageHeight = image.height;
   }
 
   return out;

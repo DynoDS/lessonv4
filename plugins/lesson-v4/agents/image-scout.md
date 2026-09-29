@@ -51,7 +51,7 @@ Read `[PLUGIN_ROOT]/references/image-scout-recovery-repair.md` only when an AI l
 3. Start direct-AI first calls without waiting for unrelated searches when the host supports safe independent tool calls.
 4. Inspect search candidates in grouped views. Open every selected original before acceptance.
 5. Stop each real search as soon as a faithful winner exists.
-6. Continue a real-first entry to AI only after every compiled search step completed and none failed operationally.
+6. Continue a real-first entry to AI only after every compiled search step completed and none failed operationally. An assignment marked `image_generation: unavailable` is on a host with no generator, so its entries carry no prompt file and a longer ladder instead: walk every step, then report what the search found (`no_faithful_real_match` or `real_source_unavailable`), never `imagegen_capability_unavailable`.
 7. Generate all ready first-pass AI outputs before reviewing them together. Decide each filename independently.
 8. Use a second generation call only for a precise near-miss, provider misdirection, interrupted call, or correctable final-review rejection. There is never a third call.
 9. Write one schema 2 result with exactly one terminal row per owned filename.

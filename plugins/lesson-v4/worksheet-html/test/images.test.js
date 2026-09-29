@@ -124,13 +124,50 @@ test("resolveImages walks a whole sheet and embeds every picture in it", () => {
   assert.equal(spec.zones.a.imageHref, undefined);
 });
 
-test("a size the designer stated themselves is not overruled", () => {
+// A stated size is never the picture's size. The Week 4 digestive sheet (29
+// Sept 2026) said 75 by 56 for a 1024 by 1536 body to squeeze it onto the
+// page, and the dots, which are sized from the picture, came out as giant
+// circles over the organs. The file's own size always wins; the box shape the
+// designer was reaching for becomes the diagram's frame.
+test("a stated size never replaces the picture's real size", () => {
   const resolved = resolveImages(
-    { helper: "label-diagram", imagePath: "photos/sunflower.jpg", imageWidth: 400 },
+    { helper: "label-diagram", imagePath: "photos/sunflower.jpg", imageWidth: 75, imageHeight: 56 },
     __dirname
   );
-  assert.equal(resolved.imageWidth, 400, "the stated width was overwritten");
-  assert.equal(resolved.imageHeight, 1200, "the missing height was still filled in");
+  assert.equal(resolved.imageWidth, 800);
+  assert.equal(resolved.imageHeight, 1200);
+  assert.deepEqual(resolved.frame, [75, 56], "the stated box shape became the frame");
+});
+
+test("a stated size with the picture's own shape is simply dropped", () => {
+  const resolved = resolveImages(
+    { helper: "label-diagram", imagePath: "photos/sunflower.jpg", imageWidth: 400, imageHeight: 600 },
+    __dirname
+  );
+  assert.equal(resolved.imageWidth, 800);
+  assert.equal(resolved.imageHeight, 1200);
+  assert.equal(resolved.frame, undefined);
+});
+
+test("a framed tall picture keeps small dots on the picture's own points", () => {
+  const { buildLabelDiagramSvg } = require("../../shared/visuals/label-diagram-svg");
+  const callouts = [{ anchor: [50, 50], label: "stem", given: false }];
+  const plain = buildLabelDiagramSvg({ href: "x", width: 800, height: 1200, callouts });
+  const framed = buildLabelDiagramSvg({ href: "x", width: 800, height: 1200, callouts, frame: [4, 3] });
+  const r = (svg) => Number(/<circle[^>]* r="([\d.]+)"/.exec(svg)[1]);
+  const dot = (svg) => /<circle cx="([\d.]+)" cy="([\d.]+)"/.exec(svg).slice(1).map(Number);
+  const img = (svg) => /<image x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)"/.exec(svg).slice(1).map(Number);
+
+  // The frame makes the figure squarer, which is the whole point...
+  assert.ok(framed.aspect > plain.aspect, "the framed figure is wider for its height");
+  // ...without shrinking the picture the dots are sized from...
+  assert.ok(r(framed.svg) >= r(plain.svg));
+  // ...and the picture is drawn whole, and the dot sits at its centre.
+  const [ix, iy, iw, ih] = img(framed.svg);
+  assert.equal(iw, 800);
+  assert.equal(ih, 1200);
+  const [cx, cy] = dot(framed.svg);
+  assert.ok(Math.abs(cx - (ix + iw / 2)) < 0.01 && Math.abs(cy - (iy + ih / 2)) < 0.01);
 });
 
 // ─── what the picture's size lets the diagram do ─────────────────────────

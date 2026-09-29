@@ -89,13 +89,22 @@ def image_info(path: Path) -> tuple[int, int, str]:
     return width, height, decoded_format
 
 
+def generation_is_available(assignment: dict) -> bool:
+    return assignment.get("image_generation") != "unavailable"
+
+
 def validate_assignment_shape(assignment: dict, requirements_path: Path, working_dir: Path, expected_batch_id: str, expected: list[str]) -> tuple[dict, list[dict]]:
     if not isinstance(assignment, dict) or assignment.get("schema_version") != 2 or assignment.get("kind") != "image":
         raise ValidationError("assignment must be schema_version 2 and kind image")
     if assignment.get("batch_id") != expected_batch_id:
         raise ValidationError("assignment batch_id does not match expected batch")
-    if set(assignment) - {"schema_version", "kind", "batch_id", "requirements", "work_root", "entries", "repair"}:
+    if set(assignment) - {"schema_version", "kind", "batch_id", "requirements", "work_root", "entries", "repair", "image_generation"}:
         raise ValidationError("assignment has unexpected fields")
+    # Absent means the host can generate, which is how every assignment read
+    # before the field existed; the compiler writes it only to say "cannot".
+    if "image_generation" in assignment and assignment["image_generation"] != "unavailable":
+        raise ValidationError("assignment image_generation may only say unavailable")
+    generation_available = generation_is_available(assignment)
     ref = assignment.get("requirements")
     if not isinstance(ref, dict) or set(ref) != {"path", "sha256"}:
         raise ValidationError("assignment requirements reference is malformed")
@@ -131,7 +140,7 @@ def validate_assignment_shape(assignment: dict, requirements_path: Path, working
         expected_route = compiler.initial_route(photo)
         if row["initial_route"] != expected_route:
             raise ValidationError(f"{row['filename']}: initial_route is not compiler-derived")
-        expected_steps = compiler.source_schedule(photo)
+        expected_steps = compiler.source_schedule(photo, generation_available)
         if expected_steps:
             for step, actual in zip(expected_steps, row["search_schedule"]):
                 expected_path = str((work_root / compiler.entry_key(photo["filename"]) / f"{step['source']}-r{step['round']}" / f"_search-summary-{step['source']}-r{step['round']}.json").resolve())
@@ -141,7 +150,7 @@ def validate_assignment_shape(assignment: dict, requirements_path: Path, working
                 raise ValidationError(f"{row['filename']}: compiled search schedule length changed")
         elif row["search_schedule"] != []:
             raise ValidationError(f"{row['filename']}: AI entry must have no search schedule")
-        authorised = compiler.ai_authorised(photo)
+        authorised = generation_available and compiler.ai_authorised(photo)
         if authorised:
             prompt = Path(row["generation_prompt_file"])
             if not prompt.is_file() or prompt.is_symlink() or row["generation_prompt_sha256"] != digest(prompt):
@@ -498,6 +507,7 @@ def validate_result(args) -> None:
     if not isinstance(rows, list) or [r.get("filename") if isinstance(r, dict) else None for r in rows] != expected:
         raise ValidationError("result must contain exactly the expected filename set in order")
     compiler = load_compiler(); attempts = load_attempts()
+    generation_available = generation_is_available(assignment)
     outage_notes: list[str] = []
     for row, compiled in zip(rows, assignment_entries):
         label = row.get("filename") if isinstance(row, dict) else "<invalid>"
@@ -578,6 +588,8 @@ def validate_result(args) -> None:
                 raise ValidationError(f"{label}: generated requires a staged path and no selection")
             if not compiler.ai_authorised({"acquisition_mode": compiled["acquisition_mode"], "fallback_action": compiled["fallback_action"]}):
                 raise ValidationError(f"{label}: generated status is not AI-authorised")
+            if not generation_available:
+                raise ValidationError(f"{label}: this assignment was compiled for a host that cannot generate")
             outage_allowed = compiled["fallback_action"] == "ai"
             schedule = compiled["search_schedule"]
             for index, step in enumerate(schedule):
@@ -650,6 +662,16 @@ def validate_result(args) -> None:
                 expected_status = "omitted" if compiled["fallback_action"] == "omit" else "unsatisfied"
                 if status != expected_status:
                     raise ValidationError(f"{label}: capability-unavailable status disagrees with fallback_action")
+                # On a host with no generator a real-first entry was compiled
+                # the whole real ladder instead, so "no generator" is never its
+                # answer: it ends on what the search found. A PSHE lesson lost
+                # eight essential photographs to this reason after one Unsplash
+                # round each (29 September 2026).
+                if not generation_available and compiled["initial_route"] == "real":
+                    raise ValidationError(
+                        f"{label}: this host has no generator, so a real-first entry walks every "
+                        f"compiled search step and reports what the search found"
+                    )
                 ledger_text = compiled.get("ai_ledger_path")
                 if isinstance(ledger_text, str) and Path(ledger_text).exists():
                     ledger_data = attempts.read_ledger(ledger_text, label)
@@ -680,7 +702,8 @@ def validate_result(args) -> None:
             # picture. Neither an exhausted search nor a source outage is a
             # terminal answer while that fallback remains unused.
             if (
-                compiled["initial_route"] == "real"
+                generation_available
+                and compiled["initial_route"] == "real"
                 and compiled["fallback_action"] == "ai"
                 and reason in {
                     "no_faithful_real_match",
@@ -701,6 +724,13 @@ def validate_result(args) -> None:
                     for step in compiled["search_schedule"]
                 ):
                     raise ValidationError(f"{label}: real_source_unavailable lacks final outage evidence")
+                # With no generator behind it, an AI-fallback picture has only
+                # its ladder, so one shut shelf is not the end of it: every
+                # rung must have answered or stayed down through its retry.
+                if not generation_available and compiled["fallback_action"] == "ai":
+                    for step in compiled["search_schedule"]:
+                        if not step_has_final_operational_failure(step, label):
+                            completed_step_summary(step, label)
 
             ai_terminal_reasons = {
                 "fundamental_generation_miss",

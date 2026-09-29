@@ -83,7 +83,7 @@ class SupplementalWaveManifestTests(unittest.TestCase):
             "--expected-prefix", "w",
             "--output-dir", str(self.output),
             "--working-dir", str(self.root),
-            "--summary-output", str(self.root / "w-1-summary.json"),
+            "--summary-output", str(self.root / "w-1-summary.json"), "--image-generation", "available",
         ]
         for filename in filenames:
             command += ["--expected-filename", filename]
@@ -148,7 +148,7 @@ class SupplementalWaveManifestTests(unittest.TestCase):
                 "--expected-prefix", "p",
                 "--output-dir", str(whole),
                 "--working-dir", str(self.root),
-                "--summary-output", str(summary),
+                "--summary-output", str(summary), "--image-generation", "available",
             ],
             capture_output=True, text=True,
         )

@@ -144,6 +144,26 @@ Every non-cover template has a header area above the body. Two modes:
 
 The lesson's opening Date + LO are not a third scenario: they are carried by the starter (slide 1) using the `starter` header mode above. Children copy the date and LO from the starter header into their books as they begin — there is no separate cover slide before the starter, because a slide whose only job is the date and LO spends a teaching beat on something the starter header already does (see `preferences.md`).
 
+### Signs: `signal`
+
+A sign is a small drawing children learn once and read before a word: it says what kind of job this is. Put one on the slide's header instruction with a slide-level `"signal"` (it draws at the start of the instruction's pill, so the slide needs an `instruction`), or at the start of a text card with `"signal"` on that `text` item. Any template that has a header takes the slide-level field, `teach-layout` included.
+
+| `signal` | Means | Use it |
+|---|---|---|
+| `pencil` | You write now | whenever children write, and on every sentence starter (`"Finish the sentence: Harry could ___ because ___."`) |
+| `talk` | Talk to your partner | whenever children tell a partner |
+| `magnifier` | Look closely | when children look closely at a picture, a source or a map |
+| `tick` | Mark your work | on answer and check slides, where children check what they wrote |
+
+One sign per place: one on the header, one per text card, never two on a card. A line to remember already carries its star (the builder draws it), so it takes no `signal`, and the check refuses one there. The star and the criteria panel's flipchart are drawn by the builder and are never named by hand. The sign is sized from the card's text, about one line tall.
+
+```json
+{ "template": "body-full", "title": "What should Harry do?",
+  "instruction": "Write your answer in your book.", "signal": "pencil",
+  "body": { "type": "text", "value": "Finish the sentence: Harry could ___ because ___.",
+            "colorRole": "task-blue", "signal": "pencil" } }
+```
+
 ---
 
 ## 2. Fixed templates
@@ -407,6 +427,7 @@ Examples:
 - `{ "word": "trapezium", "definition": "...", "visual": { "type": "geoboard", "cols": 4, "rows": 2, "shape": [[0,0],[4,0],[3,2],[1,2]] } }`
 - `{ "word": "regular polygon", "definition": "...", "visual": { "type": "polygon", "shapes": [ { "name": "hexagon" } ] } }`
 - A word the design gives no `visual` (the rare word nothing can honestly show) leaves its picture cell empty.
+- A picture made of words, `{ "type": "text", "value": "7 + 3 = 10" }`, fills its panel: its lines print at the largest size the card's height allows, in one, two or three columns, and the panel takes the width that needs, up to just under half the card. Write a family one sentence per line (`"0 + 10 = {{10}}\n1 + 9 = {{10}}\n..."`); each line stays on one line, and `{{ }}` prints a part green. Its `fontSize` is not used: the panel decides the size.
 
 ### 2.5 Success Criteria (standalone)
 
@@ -438,13 +459,13 @@ These two templates exist because their geometry is unique and frequently needed
 
 ### 2.7 Dialogue (speech bubbles)
 
-Seven recurring class characters voice the content: three boys (`boy-1`, `boy-2`, `boy-3`), three girls (`girl-1`, `girl-2`, `girl-3`) and **Bailey** (`bailey`, the class dog, who talks as freely as any child). Each speaker is a white speech bubble with a tail pointing down to a line-drawn figure and their name. These are fixed templates because the character-and-bubble arrangement carries the pedagogical move - modelling talk, sharing predictions, voicing a misconception - rather than just holding free content.
+Seven recurring class characters voice the content: three boys (`boy-1`, `boy-2`, `boy-3`), three girls (`girl-1`, `girl-2`, `girl-3`) and **Bailey** (`bailey`, the class dog, who talks as freely as any child), plus grown-ups and a baby for the people in a lesson's story: `man-1`, `man-2`, `woman-1`, `woman-2`, `old-man`, `old-woman` and `baby`. Each speaker is a white speech bubble with a tail pointing down to a line-drawn figure and their name. These are fixed templates because the character-and-bubble arrangement carries the pedagogical move - modelling talk, sharing predictions, voicing a misconception - rather than just holding free content.
 
 Reach for these when the slide's job is to *put words in a character's mouth*: showing how two children might reason differently, prompting partner talk, or letting Bailey ask the "silly" question a child might be afraid to ask. For plain information or a single statement, an ordinary text template reads better — the bubbles earn their place only when someone is speaking.
 
 **Choose the variant by how many voices the lesson actually has.** One child voicing a claim, prediction, or misconception the class then tests is `speech-bubbles-1`; two contrasting views are `speech-bubbles-2`; three contributors are `speech-bubbles-3`. Render only the voices the design gives — when it has one speaker, don't add a second bubble and invent a line to fill it (a teacher asking "is she right?", a manufactured "correct view"), because the fabricated voice dilutes the one real claim children are meant to weigh. Every speaker is one of the class characters, with the design's name for the child via `name`; a bubble labelled "You" addresses the reader instead of voicing a character. Pick a face that fits the child and vary it across the three of each (`slide-speech-and-characters.md` → The named characters). `name` prints the lesson's own name over the portrait, and a character speaking on more than one slide keeps the same portrait throughout.
 
-**Shared slots:** `statement` (a string, or a `text` content object — the one lead text box under the header), `speakers` (array). Each speaker takes `speech` (what they say), `name` (optional — defaults to the character's own name), and `child` (`"boy-1"`, `"boy-2"`, `"boy-3"`, `"girl-1"`, `"girl-2"`, `"girl-3"` or `"bailey"`; set it every time, choosing the face that fits the speaker. Speakers that omit it fill in the order boy 1 → girl 1 → Bailey. The old keys `mr-sear` and `miss-brooker` still work and mean boy 1 and girl 1).
+**Shared slots:** `statement` (a string, or a `text` content object — the one lead text box under the header), `speakers` (array). Each speaker takes `speech` (what they say), `name` (optional — defaults to the character's own name), and `child` (`"boy-1"`, `"boy-2"`, `"boy-3"`, `"girl-1"`, `"girl-2"`, `"girl-3"`, `"bailey"`, `"man-1"`, `"man-2"`, `"woman-1"`, `"woman-2"`, `"old-man"`, `"old-woman"` or `"baby"`; set it every time, choosing the face that fits the speaker. Speakers that omit it fill in the order boy 1 → girl 1 → Bailey. The old keys `mr-sear` and `miss-brooker` still work and mean boy 1 and girl 1).
 
 When a speaker says a calculation, the speakers take the width it needs: a calculation stays on one line, so the statement beside them gives up width, down to the narrowest share at which the statement itself still fits, until the calculation fits a bubble at the full bubble size. A statement that cannot give up enough (a long criteria panel, say) keeps what it needs, and the calculation steps down in size to fit, never below 18pt. Speech with no calculation keeps the `statementRatio` asked for. When that leaves a calculation small because a full criteria panel shares the slide side by side, you may stack them instead: the speakers across the full width and the criteria in a band with them, so the numbers print large and the criteria stay in view (the teacher, 28 September 2026: "it can, not it must always"). Side by side stays fine whenever the calculation already reads at size.
 
@@ -770,6 +791,8 @@ A step of a worked example set out as steps is `{ "text": "...", "colorRole": "w
 ```json
 { "type": "image", "imagePath": "C:/path/to/photo.jpg", "caption": "Optional italic caption" }
 ```
+
+A class child (the drawings in the builder's `assets/children` folder: boy 1 to 3, girl 1 to 3, Bailey) is drawn bare wherever an `image` points at one: no white card, no border and no shadow, because the drawings are see-through and stand on the slide itself.
 
 A delivered photograph always takes its own shape: it is contained, never stretched, and fills whichever of the width or the height it is given runs out first; its card hugs it, and in a `row` a photograph held by the height gives the width it cannot use to the items beside it. A picture that has not arrived yet holds a square, because any picture may go there.
 
@@ -2727,9 +2750,12 @@ Fully worked (an answer slide, or a worked example to copy):
 
 - `title` — optional purple heading above the lines ("Adjusting strategy", "Round and compensate").
 - `frame` — draw the purple panel behind the lines. Default `true`; set `false` for the bare lines (e.g. a small reference zone where the panel would crowd).
-- `lines` — `[{ label, content }]`. `label` is optional (the method language); `content` is a string where `___` or `□` becomes a write-in box and everything else is bold text. Content need not be an equation — `"Take ___ from ___ to make ___"` works too.
+- `lines` — `[{ label, content, step }]`. `label` is optional (the method language); `content` is a string where `___` or `□` becomes a write-in box and everything else is bold text. Content need not be an equation — `"Take ___ from ___ to make ___"` works too. `step` is optional: a number printed in a small green circle before the label.
+- `numbered` — `true` numbers the lines 1, 2, 3 in the same green circles. Give a line its own `step` instead when the frame's steps should match the success criteria's numbers and they do not start at 1.
 
-**Sizing:** the font fills the zone (rows large for reading from across the room) and shrinks only if the widest line would overflow, so it reads at full-body and half-column widths alike. For a SINGLE-LINE equation frame, the worksheet's `inequality-with-boxes` already covers that pattern; `method-frame` is for the multi-line, labelled case. A FILLED method (no blanks) on the working wall is the `workedExample` card, not this — a wall card is a reference, never a fill-in.
+Each step is one line: the step number, the label, then its boxes. Keep a label short (`"Make 10:"`, `"Add the last number:"`): it never wraps, so a long one makes the whole frame smaller. The purple panel is fitted to its lines and centred in its zone.
+
+**Sizing:** the lines print at the largest size, up to 32pt, at which every line fits the zone on one line, and the panel hugs them, so it reads at full-body and half-column widths alike. For a SINGLE-LINE equation frame, the worksheet's `inequality-with-boxes` already covers that pattern; `method-frame` is for the multi-line, labelled case. A FILLED method (no blanks) on the working wall is the `workedExample` card, not this — a wall card is a reference, never a fill-in.
 
 ### `number-network`
 

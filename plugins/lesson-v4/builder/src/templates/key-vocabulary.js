@@ -43,6 +43,7 @@ const CARD_BORDER_W   = 1.5;
 // under the readable floor. That is the one list here, and a type missing from
 // it still draws, beside the text, at the width it uses.
 const PANEL_MIN_W = 2.20;
+const TEXT_PICTURE_MAX_W = 5.60;
 const PANEL_MAX_W = 7.40;
 const STACKED_VISUALS = new Set([
   'table', 'bullets', 'steps', 'numbered-questions', 'question-cards', 'chip-bank',
@@ -317,7 +318,14 @@ function naturalCardHeight(item, visual, fonts, visualW) {
 // a slot that was never drawn, with nothing a designer could change (B-h1,
 // 27 September 2026). The real draw into the fitted panel is what is checked.
 function panelWidthFor(visual, panelH, ctx) {
-  if (visual.type === 'text') return PANEL_MIN_W;
+  // A picture made of words takes the width its lines need at the largest size
+  // the panel's height allows (vocab.js, textPictureLayout), up to just under
+  // half the card, so the definition beside it keeps the larger share.
+  if (visual.type === 'text') {
+    const { textPictureLayout } = require('../content/vocab');
+    const layout = textPictureLayout(visual.value, panelH - 2 * VISUAL_PAD, TEXT_PICTURE_MAX_W - 2 * VISUAL_PAD);
+    return layout ? Math.max(PANEL_MIN_W, layout.w + 2 * VISUAL_PAD + 0.1) : PANEL_MIN_W;
+  }
   const innerH = panelH - 2 * VISUAL_PAD;
   const innerW = PANEL_MAX_W - 2 * VISUAL_PAD;
   const saved = getWarnings();

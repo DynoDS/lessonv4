@@ -311,12 +311,40 @@ def select_expected(photos: list[dict], expected_filenames) -> list[dict]:
     return chosen
 
 
-def source_schedule(photo: dict) -> list[dict]:
+def no_generator_schedule(photo: dict, sources: list[str]) -> list[dict]:
+    """The whole real ladder, for an AI-fallback picture on a host that cannot generate.
+
+    Everything below that keeps an AI-fallback schedule short assumes the
+    fallback can run: one search, then generate. On Claude Code it cannot, so
+    the short schedule is the lesson's only chance and it was spent on one
+    shelf. On 29 September 2026 a Year 4 PSHE lesson lost all eight of its
+    essential school-scene photographs after one Unsplash round each (Openverse
+    compiled as a standby that was never owed), then lost most of a rescue wave
+    the same way. With no generator the picture is in the same position as one
+    whose contract says `unsatisfied`, so it gets that ladder and more: both
+    stock libraries whatever the profile named, Openverse, a second phrasing on
+    the designer's first source, and, for an essential picture, the open web.
+    """
+    count = 3 if photo["essential"] else 2
+    order = list(sources) + [s for s in ("unsplash", "wikimedia") if s not in sources]
+    candidates = [(source, 1) for source in order]
+    candidates += [(LADDER_SOURCE, 1), (sources[0], 2)]
+    if photo["essential"]:
+        candidates.append((OPEN_WEB_SOURCE, 1))
+    return [
+        {"source": source, "round": round_number, "candidate_count": count}
+        for source, round_number in candidates
+    ]
+
+
+def source_schedule(photo: dict, generation_available: bool = True) -> list[dict]:
     if photo["acquisition_mode"] == "controlled-ai":
         return []
     sources = SOURCES[photo["source_profile"]]
     if not sources:
         raise AssignmentError(f"{photo['id']}: real route has no source profile")
+    if photo["fallback_action"] == "ai" and not generation_available:
+        return no_generator_schedule(photo, sources)
     if photo["coherent_mode"] == "all-real" or photo["acquisition_mode"] == "authentic-real":
         budget = 3
     elif photo["essential"] and photo["fallback_action"] != "ai":
@@ -412,8 +440,8 @@ def initial_route(photo: dict) -> str:
     return "ai" if photo["acquisition_mode"] == "controlled-ai" else "real"
 
 
-def prompt_paths(photo: dict, output_dir: Path, batch_id: str, working_dir: Path) -> tuple[str | None, str | None]:
-    if not ai_authorised(photo):
+def prompt_paths(photo: dict, output_dir: Path, batch_id: str, working_dir: Path, generation_available: bool = True) -> tuple[str | None, str | None]:
+    if not (generation_available and ai_authorised(photo)):
         return None, None
     path = (output_dir / "prompts" / batch_id / f"{entry_key(photo['filename'])}.txt").resolve()
     data = (render_prompt(photo) + "\n").encode("utf-8")
@@ -503,11 +531,13 @@ def pack_batches(photos: list[dict]) -> list[list[dict]]:
     return ordered
 
 
-def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str, prefix: str, output_dir: Path, working_dir: Path, repair: dict | None = None) -> dict:
+def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str, prefix: str, output_dir: Path, working_dir: Path, repair: dict | None = None, generation_available: bool = True) -> dict:
     work_root = (working_dir / "unsplash" / "_picture-work" / batch_id).resolve()
     rows = []
     for photo in photos:
-        prompt_file, prompt_hash = prompt_paths(photo, output_dir, batch_id, working_dir)
+        # No prompt and no ledger on a host that cannot generate: with nothing
+        # to reserve, no generation attempt can be spent finding that out.
+        prompt_file, prompt_hash = prompt_paths(photo, output_dir, batch_id, working_dir, generation_available)
         rows.append({
             "entry_key": entry_key(photo["filename"]),
             "filename": photo["filename"],
@@ -528,11 +558,11 @@ def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str,
                     **step,
                     "summary_path": str((work_root / entry_key(photo["filename"]) / f"{step['source']}-r{step['round']}" / f"_search-summary-{step['source']}-r{step['round']}.json").resolve()),
                 }
-                for step in source_schedule(photo)
+                for step in source_schedule(photo, generation_available)
             ],
             "generation_prompt_file": prompt_file,
             "generation_prompt_sha256": prompt_hash,
-            "ai_ledger_path": ai_ledger_path(working_dir, photo["filename"]) if ai_authorised(photo) else None,
+            "ai_ledger_path": ai_ledger_path(working_dir, photo["filename"]) if prompt_file else None,
         })
     assignment = {
         "schema_version": 2,
@@ -542,6 +572,10 @@ def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str,
         "work_root": str(work_root),
         "entries": rows,
     }
+    # Written only when generation is unavailable, so a host that can generate
+    # compiles byte for byte what it always did.
+    if not generation_available:
+        assignment["image_generation"] = "unavailable"
     if repair is not None:
         assignment["repair"] = repair
     return assignment
@@ -559,11 +593,16 @@ def compile_command(args) -> int:
     output_dir = Path(args.output_dir).resolve()
     working_dir = Path(args.working_dir).resolve()
     batches = pack_batches(photos)
+    generation = resolve_image_generation(getattr(args, "image_generation", "available"))
+    generation_available = generation == "available"
     manifest_rows = []
     for number, batch in enumerate(batches, 1):
         batch_id = f"{prefix}{number}"
         assignment_path = (output_dir / f"{batch_id}.json").resolve()
-        assignment = build_assignment(requirements_path, batch, batch_id, prefix, output_dir, working_dir)
+        assignment = build_assignment(
+            requirements_path, batch, batch_id, prefix, output_dir, working_dir,
+            generation_available=generation_available,
+        )
         write_json_immutable(assignment_path, assignment)
         manifest_rows.append({
             "batch_id": batch_id,
@@ -592,9 +631,43 @@ def compile_command(args) -> int:
         f"PICTURE_ASSIGNMENTS_OK: {len(batches)} assignments, "
         f"{len(photos)} pictures"
     )
+    if not generation_available:
+        print("PICTURE_IMAGE_GENERATION: unavailable - AI-fallback pictures get the whole real ladder")
     print(f"MANIFEST={manifest_path}")
     print(f"SUMMARY={Path(args.summary_output).resolve()}")
     return 0
+
+
+# Variables Codex sets in the shell it runs commands in. Any one of them means
+# Codex, even when Codex itself was started from inside a Claude Code session
+# and so also inherited CLAUDECODE.
+CODEX_MARKERS = ("CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_CI", "CODEX_SHELL", "CODEX_SANDBOX_NETWORK_DISABLED")
+
+
+def resolve_image_generation(requested: str, environ=None) -> str:
+    """Can this host make a picture itself? It sets the whole picture ladder.
+
+    An AI-fallback picture compiles to one search because generation is meant
+    to catch the miss. Claude Code has no image generator, so there that one
+    search was the picture's only chance: a Year 4 PSHE lesson (29 September
+    2026) lost all eight essential school-scene photographs after one round
+    each. The orchestrator used to record "cannot generate" only as prose in
+    orchestrator-context.md, which no script reads.
+
+    Read from the environment rather than from a flag the orchestrator fills
+    in, because the orchestrator's playbook is at its size budget and a guessed
+    flag is the same fault in a new place. Claude Code sets CLAUDECODE=1 in every
+    shell it runs. Codex, and any other host, keeps the behaviour it always
+    had, so a host this cannot recognise is treated as able to generate.
+    """
+    if requested in ("available", "unavailable"):
+        return requested
+    env = os.environ if environ is None else environ
+    if any(env.get(name, "").strip() for name in CODEX_MARKERS):
+        return "available"
+    if env.get("CLAUDECODE", "").strip() == "1":
+        return "unavailable"
+    return "available"
 
 
 def _hash_recorded_path(value, label: str) -> dict | None:
@@ -638,7 +711,10 @@ def repair_command(args) -> int:
     row = dict(matching[0])
     repair = {"fault_file": str(fault), "fault_sha256": fault_hash, "previous_receipt": str(receipt), "previous_receipt_sha256": receipt_hash, "prior_summaries": prior_summaries, "prior_staged_assets": staged_assets, "additional_real_searches": 1}
     output = Path(args.output).resolve()
-    repaired = {"schema_version": 2, "kind": "image", "batch_id": args.batch_id, "requirements": assignment["requirements"], "work_root": str((Path(args.working_dir).resolve() / "unsplash" / "_picture-work" / args.batch_id).resolve()), "entries": [row], "repair": repair}
+    repaired = {"schema_version": 2, "kind": "image", "batch_id": args.batch_id, "requirements": assignment["requirements"], "work_root": str((Path(args.working_dir).resolve() / "unsplash" / "_picture-work" / args.batch_id).resolve()), "entries": [row]}
+    if "image_generation" in assignment:
+        repaired["image_generation"] = assignment["image_generation"]
+    repaired["repair"] = repair
     write_json_immutable(output, repaired)
     summary = {"schema_version": 2, "kind": "picture-repair-slice", "assignment": str(assignment_path), "output": str(output), "fault_sha256": fault_hash, "previous_receipt_sha256": receipt_hash, "additional_real_searches": 1}
     write_json_immutable(Path(args.summary_output).resolve(), summary)
@@ -657,6 +733,9 @@ def parser() -> argparse.ArgumentParser:
     compile_parser.add_argument("--output-dir", required=True)
     compile_parser.add_argument("--working-dir", required=True)
     compile_parser.add_argument("--summary-output", required=True)
+    # Whether this host can generate a picture. `auto` reads the host from the
+    # environment; name it outright to override. See resolve_image_generation.
+    compile_parser.add_argument("--image-generation", choices=("auto", "available", "unavailable"), default="auto")
     compile_parser.set_defaults(func=compile_command)
     repair = sub.add_parser("slice")
     for option in ("assignment", "batch-id", "output", "working-dir", "expected-filename", "review-fault-file", "previous-receipt", "summary-output"):

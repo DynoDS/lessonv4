@@ -59,89 +59,141 @@ const BOX_LINE        = '444444';
 const BOX_LINE_W      = 1.25;   // pt
 // ─── END CONSTANTS ────────────────────────────────────────────
 
+// The width of a piece of content text, measured with the deck's Comic Sans
+// widths plus a little room, so a frame is sized to its real words.
+function segTextW(text, font) {
+  const { textBoxWidthIn } = require('../glyph-width');
+  return textBoxWidthIn(String(text || ' '), font, true) + 0.04;
+}
+
 // Estimated width (inches) of one line's content at a given font size (pt).
 function lineWidth(segs, font, boxW, segGap) {
   let w = 0;
   segs.forEach((seg, i) => {
     if (i > 0) w += segGap;
     if (seg.box) w += boxW;
-    else w += Math.max(1, seg.text.length) * (CHAR_W_FACTOR * font) / 72;
+    else w += segTextW(seg.text, font);
   });
   return w;
 }
 
+// Each step is one line: an optional small step number, the label, then the
+// content with its write-in boxes, and the purple panel hugs the lines.
+//
+// The labels used to sit in a column a third of the frame wide whatever they
+// said, so "Two numbers that make 10:" wrapped over four lines and the panel
+// ran the full height of its zone with big empty purple areas around two rows
+// of boxes (a Year 4 maths My Turn, six slides running, 29 September 2026). The
+// label column is now as wide as the longest label at the chosen size, every
+// label stays on one line, the size is the largest at which every line fits the
+// width, and the panel is only as big as its lines, centred in the zone. A
+// step number (`step` on a line, or `numbered: true` for 1, 2, 3...) prints in
+// a small green circle like the success criteria's, so step 1 of the frame is
+// criterion 1 of the panel beside it.
+const STEP_FILL       = '00B050';
+const STEP_D_FACTOR   = 1.15;   // step circle diameter as a multiple of font size
+const STEP_GAP        = 0.12;   // inches between the step circle and the label
+
 function drawMethodFrame(pptx, slide, zone, data) {
+  const { textBoxWidthIn } = require('../glyph-width');
   const lines = Array.isArray(data.lines) ? data.lines : [];
   if (lines.length === 0) return;
 
   const drawFrame = data.frame !== false;
+  const pad = drawFrame ? PANEL_PAD : BARE_PAD;
+  const maxInnerW = zone.w - 2 * pad;
+  let maxInnerH = zone.h - 2 * pad;
+  const titleH = data.title ? Math.min(TITLE_H_MAX, maxInnerH * TITLE_H_FRAC) : 0;
+  if (data.title) maxInnerH -= titleH + TITLE_GAP;
+
+  const hasLabels = lines.some((l) => l && String(l.label || '').trim().length > 0);
+  const numbered = data.numbered === true || lines.some((l) => l && Number.isFinite(l.step));
+  const tokenized = lines.map((l, i) => ({
+    label: String((l && l.label) || ''),
+    step: l && Number.isFinite(l.step) ? l.step : i + 1,
+    segs: tokenizeWriteInContent(l && l.content)
+  }));
+
+  const measure = (font) => {
+    const boxW = (BOX_W_FACTOR * font) / 72;
+    const boxH = (BOX_H_FACTOR * font) / 72;
+    const segGap = (SEG_GAP_FACTOR * font) / 72;
+    const stepD = numbered ? (STEP_D_FACTOR * font) / 72 : 0;
+    const stepW = numbered ? stepD + STEP_GAP : 0;
+    const labelW = hasLabels
+      ? tokenized.reduce((m, t) => Math.max(m, t.label.trim() ? textBoxWidthIn(t.label, font, true) : 0), 0)
+      : 0;
+    const labelGap = hasLabels ? LABEL_GAP + segGap : 0;
+    const contentW = tokenized.reduce((m, t) => Math.max(m, lineWidth(t.segs, font, boxW, segGap)), 0);
+    const rowH = boxH * (1 + 2 * ROW_GAP_FRAC);
+    return {
+      font, boxW, boxH, segGap, stepD, stepW, labelW, labelGap, contentW, rowH,
+      w: stepW + labelW + labelGap + contentW,
+      h: rowH * tokenized.length
+    };
+  };
+
+  // The largest size at which every line fits the width and the rows fit the
+  // height, never below the floor.
+  let m = measure(TEXT_FONT_MIN);
+  for (let font = TEXT_FONT_MAX; font >= TEXT_FONT_MIN; font -= 1) {
+    const trial = measure(font);
+    if (trial.w <= maxInnerW && trial.h <= maxInnerH) { m = trial; break; }
+  }
+
+  const innerW = Math.min(maxInnerW, m.w);
+  const titleW = data.title ? Math.min(maxInnerW, Math.max(innerW, textBoxWidthIn(String(data.title), TITLE_FONT, true))) : 0;
+  const panelInnerW = Math.max(innerW, titleW);
+  const panelW = panelInnerW + 2 * pad;
+  const panelH = (data.title ? titleH + TITLE_GAP : 0) + m.h + 2 * pad;
+  const panelX = zone.x + Math.max(0, (zone.w - panelW) / 2);
+  const panelY = zone.y + Math.max(0, (zone.h - panelH) / 2);
 
   if (drawFrame) {
     slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-      x: zone.x, y: zone.y, w: zone.w, h: zone.h,
+      x: panelX, y: panelY, w: panelW, h: panelH,
       fill: { color: PANEL_FILL },
       line: { color: PANEL_LINE, width: PANEL_LINE_W },
       rectRadius: PANEL_RADIUS
     });
   }
 
-  const pad = drawFrame ? PANEL_PAD : BARE_PAD;
-  const innerX = zone.x + pad;
-  let   innerY = zone.y + pad;
-  const innerW = zone.w - 2 * pad;
-  let   innerH = zone.h - 2 * pad;
-
-  // Optional title sits above the lines and takes only the room it needs.
+  let innerY = panelY + pad;
+  const innerX = panelX + pad + (panelInnerW - innerW) / 2;
   if (data.title) {
-    const titleH = Math.min(TITLE_H_MAX, innerH * TITLE_H_FRAC);
     slide.addText(String(data.title), {
-      x: innerX, y: innerY, w: innerW, h: titleH,
+      x: panelX + pad, y: innerY, w: panelInnerW, h: titleH,
       fontFace: FONT, fontSize: TITLE_FONT, bold: true,
       color: TITLE_COLOUR, align: 'left', valign: 'middle', margin: 0, fit: FIT
     });
     innerY += titleH + TITLE_GAP;
-    innerH -= titleH + TITLE_GAP;
   }
 
-  const hasLabels = lines.some((l) => l && String(l.label || '').trim().length > 0);
-  const labelW = hasLabels ? innerW * LABEL_FRACTION : 0;
-  const contentX = innerX + (hasLabels ? labelW + LABEL_GAP : 0);
-  const contentW = innerW - (hasLabels ? labelW + LABEL_GAP : 0);
-
-  const tokenized = lines.map((l) => ({
-    label: String((l && l.label) || ''),
-    segs: tokenizeWriteInContent(l && l.content)
-  }));
-
-  const rowH = innerH / lines.length;
-
-  // Font sizing — fill the zone. Start from the largest font the row height can
-  // hold (the box must fit the row), then shrink only if the widest line would
-  // overflow the content width, so a thin frame and a wide frame each grow to
-  // the space they are given rather than floating small in it.
-  const rowCapFont = Math.floor((rowH * (1 - 2 * ROW_GAP_FRAC)) * 72 / BOX_H_FACTOR);
-  let font = Math.max(TEXT_FONT_MIN, Math.min(TEXT_FONT_MAX, rowCapFont));
-  while (font > TEXT_FONT_MIN) {
-    const boxW = (BOX_W_FACTOR * font) / 72;
-    const segGap = (SEG_GAP_FACTOR * font) / 72;
-    const widest = tokenized.reduce((m, t) => Math.max(m, lineWidth(t.segs, font, boxW, segGap)), 0);
-    if (widest <= contentW) break;
-    font -= 1;
-  }
-
-  const boxW = (BOX_W_FACTOR * font) / 72;
-  const boxH = (BOX_H_FACTOR * font) / 72;
-  const segGap = (SEG_GAP_FACTOR * font) / 72;
+  const font = m.font;
+  const labelX = innerX + m.stepW;
+  const contentX = labelX + m.labelW + m.labelGap;
 
   tokenized.forEach((t, i) => {
-    const rowY = innerY + i * rowH;
-    const midY = rowY + rowH / 2;
+    const rowY = innerY + i * m.rowH;
+    const midY = rowY + m.rowH / 2;
+
+    if (numbered) {
+      slide.addShape(pptx.shapes.OVAL, {
+        x: innerX, y: midY - m.stepD / 2, w: m.stepD, h: m.stepD,
+        fill: { color: STEP_FILL }, line: { type: 'none' }
+      });
+      slide.addText(String(t.step), {
+        x: innerX, y: midY - m.stepD / 2, w: m.stepD, h: m.stepD,
+        fontFace: FONT, fontSize: Math.max(10, Math.round(font * 0.62)), bold: true,
+        color: 'FFFFFF', align: 'center', valign: 'middle', margin: 0
+      });
+    }
 
     if (hasLabels && t.label.trim()) {
       slide.addText(t.label, {
-        x: innerX, y: rowY, w: labelW, h: rowH,
+        x: labelX, y: rowY, w: m.labelW, h: m.rowH,
         fontFace: FONT, fontSize: font, bold: true,
-        color: LABEL_COLOUR, align: 'left', valign: 'middle', margin: 0, fit: FIT
+        color: LABEL_COLOUR, align: 'left', valign: 'middle', margin: 0, fit: FIT, wrap: false
       });
     }
 
@@ -149,19 +201,19 @@ function drawMethodFrame(pptx, slide, zone, data) {
     t.segs.forEach((seg) => {
       if (seg.box) {
         slide.addShape(pptx.shapes.RECTANGLE, {
-          x: cx, y: midY - boxH / 2, w: boxW, h: boxH,
+          x: cx, y: midY - m.boxH / 2, w: m.boxW, h: m.boxH,
           fill: { color: BOX_FILL },
           line: { color: BOX_LINE, width: BOX_LINE_W }
         });
-        cx += boxW + segGap;
+        cx += m.boxW + m.segGap;
       } else {
-        const w = Math.max(1, seg.text.length) * (CHAR_W_FACTOR * font) / 72;
+        const w = segTextW(seg.text, font);
         slide.addText(seg.text, {
-          x: cx, y: rowY, w, h: rowH,
+          x: cx, y: rowY, w, h: m.rowH,
           fontFace: FONT, fontSize: font, bold: true,
           color: COLOURS.body, align: 'left', valign: 'middle', margin: 0, fit: FIT
         });
-        cx += w + segGap;
+        cx += w + m.segGap;
       }
     });
   });

@@ -166,7 +166,7 @@ const WORKING_PICTURE_SKIP_KEYS = new Set(['inset', 'words', 'supports', 'decora
 // September 2026). Matched on the engine's own character folder, wherever the
 // plugin is installed, because a run writes its install path into the spec;
 // a sourced photograph that merely shares a file name keeps its floor.
-const CLASS_CHARACTER_PORTRAIT = /(^|[\\/])assets[\\/]children[\\/](boy-[1-3]|girl-[1-3]|bailey|mr-sear|miss-brooker)\.png$/i;
+const CLASS_CHARACTER_PORTRAIT = /(^|[\\/])assets[\\/]children[\\/](boy-[1-3]|girl-[1-3]|man-[12]|woman-[12]|old-man|old-woman|baby|bailey|mr-sear|miss-brooker)\.png$/i;
 
 function isClassCharacterPortrait(imagePath) {
   return typeof imagePath === 'string' && CLASS_CHARACTER_PORTRAIT.test(imagePath);
@@ -459,7 +459,10 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
     // Contained means the picture keeps its true shape, so a frame shaped unlike
     // it leaves the rest empty. `cover` is exempt because it fills by design, and
     // an inset is exempt because being small in a corner is the whole point of one.
-    if (!isInset) checkZoneFill(ctx, frame, fitted, 'this photograph');
+    // A class child is a drawing that stands on the slide with no card of its
+    // own, so the room either side of it is the slide, not a slot it fails to
+    // fill.
+    if (!isInset && !isClassCharacterPortrait(imageData.imagePath)) checkZoneFill(ctx, frame, fitted, 'this photograph');
     slide.addImage({
       path: resolved,
       x: fitted.x,
@@ -697,6 +700,7 @@ function widthAtHeight(data, zoneH, ctx) {
 }
 
 module.exports = {
+  isClassCharacterPortrait,
   widthAtHeight,
   drawImage,
   imageWillDraw,

@@ -99,6 +99,73 @@ function resolveVocabVisual(visual, ctx) {
   return null;
 }
 
+// A picture made of words: an example sentence, a number sentence, or a whole
+// family of them ("0 + 10 = {{10}}" to "10 + 0 = {{10}}"), one per line.
+//
+// It printed at a size worked out from its character count inside a panel the
+// card sized for a small drawing, so "7 + 3 = 10" sat at about 23pt in a tall,
+// narrow grey box on a Year 4 maths vocabulary card (29 September 2026). Now its
+// lines are laid out in one, two or three columns, whichever lets them print
+// largest in the panel's height, and the panel takes the width that layout
+// needs. Each line stays on one line; the size stops at TEXT_PICTURE_MAX.
+const TEXT_PICTURE_MAX = 60;
+const TEXT_PICTURE_MIN = 18;
+const TEXT_PICTURE_LINE = 1.25;
+const TEXT_PICTURE_COL_GAP = 0.3;
+const TEXT_PICTURE_SLACK = 0.15;
+
+function textPictureLines(value) {
+  return String(value == null ? '' : value).split('\n')
+    .map(function (line) { return line.trim(); })
+    .filter(Boolean);
+}
+
+function textPictureLayout(value, availH, maxW) {
+  const { textBoxWidthIn } = require('../glyph-width');
+  const lines = textPictureLines(value);
+  if (!lines.length) return null;
+  const plain = lines.map(function (line) {
+    return line.replace(/\{\{|\}\}|\[\[|\]\]|<<|>>|\*\*|\|\||\(\(|\)\)/g, '');
+  });
+  let best = null;
+  for (let columns = 1; columns <= Math.min(3, lines.length); columns += 1) {
+    const rows = Math.ceil(lines.length / columns);
+    for (let pt = TEXT_PICTURE_MAX; pt >= TEXT_PICTURE_MIN; pt -= 1) {
+      if (best && pt <= best.size) break;
+      if (rows * pt * TEXT_PICTURE_LINE / 72 > availH) continue;
+      const colW = plain.reduce(function (most, line) {
+        return Math.max(most, textBoxWidthIn(line, pt, false));
+      }, 0) + TEXT_PICTURE_SLACK;
+      const w = columns * colW + (columns - 1) * TEXT_PICTURE_COL_GAP;
+      if (w > maxW) continue;
+      best = { size: pt, columns: columns, rows: rows, colW: colW, w: w, lines: lines };
+      break;
+    }
+  }
+  return best;
+}
+
+function drawTextPicture(slide, zone, value) {
+  const layout = textPictureLayout(value, zone.h, zone.w);
+  if (!layout) return false;
+  const lineH = layout.size * TEXT_PICTURE_LINE / 72;
+  const blockW = layout.w;
+  const blockH = layout.rows * lineH;
+  const x0 = zone.x + (zone.w - blockW) / 2;
+  const y0 = zone.y + (zone.h - blockH) / 2;
+  layout.lines.forEach(function (line, i) {
+    const col = Math.floor(i / layout.rows);
+    const row = i % layout.rows;
+    slide.addText(splitAnswerRuns(line, false, COLOURS.body), {
+      x: x0 + col * (layout.colW + TEXT_PICTURE_COL_GAP), y: y0 + row * lineH,
+      w: layout.colW, h: lineH,
+      fontFace: FONT, fontSize: layout.size, color: COLOURS.body,
+      align: 'center', valign: 'middle', margin: 0, fit: FIT, wrap: false
+    });
+  });
+  return true;
+}
+
 function drawVisual(pptx, slide, zone, visual, ctx) {
   if (!visual || !visual.type) return;
   if (visual.type === 'money') return drawMoney(pptx, slide, zone, visual, ctx);
@@ -125,6 +192,7 @@ function drawVisual(pptx, slide, zone, visual, ctx) {
   if (visual.type === 'text') {
     const value = visual.value != null ? String(visual.value) : '';
     if (!value) return;
+    if (drawTextPicture(slide, zone, value)) return;
     const tokens = value.trim().split(/\s+/);
     const notationSequence = visual.singleLine === true ||
       (visual.singleLine !== false && value.length <= 12 && tokens.length > 1 &&
@@ -220,4 +288,4 @@ function drawVocab(pptx, slide, zone, data, ctx) {
   });
 }
 
-module.exports = { drawVocab, drawVisual, resolveVocabVisual };
+module.exports = { drawVocab, drawVisual, resolveVocabVisual, textPictureLayout };

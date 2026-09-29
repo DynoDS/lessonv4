@@ -7,7 +7,7 @@ const { drawText, measureText } = require('./text');
 const { drawBullets } = require('./bullets');
 const { drawSteps } = require('./steps');
 const { drawVocab } = require('./vocab');
-const { drawImage, measureImage } = require('./image');
+const { drawImage, measureImage, isClassCharacterPortrait } = require('./image');
 const { drawTable } = require('./table');
 // Pictures drawn once in shared/visuals/ and placed here without a slide file
 // of their own (see shared-figure.js).
@@ -329,6 +329,12 @@ function wantsCard(zone, type, data, ctx) {
   if (ctx._cardBarrier) return false;               // inside a helper that owns its surface
   if (zone.noCard) return false;
   if (OWN_SURFACE.has(type)) return false;
+  // The class children (boy 1 to 3, girl 1 to 3, Bailey) are line drawings on
+  // a see-through background, made to stand on the slide itself. On a white
+  // card they read as a photograph of a drawing, and a Year 4 PSHE deck put
+  // every one of them on one, seven slides running (29 September 2026). The
+  // teacher: no card behind a class child, anywhere.
+  if (type === 'image' && data && isClassCharacterPortrait(data.imagePath)) return false;
   // An explicit category has earned a container border. It may wrap a row or
   // stack as one group, and it may sit in a short F-zone when a hint repeats
   // the category language used by the larger cards above it.

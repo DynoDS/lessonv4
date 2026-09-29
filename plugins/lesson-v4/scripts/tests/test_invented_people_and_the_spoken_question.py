@@ -67,7 +67,8 @@ class InventedPeopleAreShownTests(unittest.TestCase):
         """
         for path in (SPEECH, TEMPLATES):
             text = flat(path)
-            for key in ("boy-1", "boy-2", "boy-3", "girl-1", "girl-2", "girl-3", "bailey"):
+            for key in ("boy-1", "boy-2", "boy-3", "girl-1", "girl-2", "girl-3", "bailey",
+                        "man-1", "man-2", "woman-1", "woman-2", "old-man", "old-woman", "baby"):
                 self.assertIn(f"`{key}`", text)
         self.assertIn("Bailey is a character like the others, not a spare", flat(SPEECH))
 

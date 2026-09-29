@@ -61,6 +61,18 @@
 //                 grammar.
 //   answerColour  the colour of the part of a label after `||`, default the
 //                 answer green. The photocopied stick-in pack passes ink.
+//   frame         optional [w, h]: the SHAPE of the box the picture is shown in
+//                 (only the ratio matters). The picture is fitted inside it and
+//                 centred, never stretched, and the labels sit around the box.
+//                 This is how a tall picture (a body, a plant) fits a page it
+//                 would overrun at full width. Anchors stay percentages of the
+//                 PICTURE, so the dots land where diagram-anchor put them.
+//
+// `width` and `height` must be the picture's real pixel size. The dots and
+// lines are sized from it, with a floor for small pictures, so a made-up small
+// size turns the floor into giant circles (the Week 4 digestive sheet, 29 Sept
+// 2026, was told 75 by 56 for a 1024 by 1536 picture). A box shape belongs in
+// `frame`, never in the size.
 
 const INK = '#1A1A1A';
 const DEFAULT_BLUE = '#0070C0';   // house board blue; engines may pass their own
@@ -141,8 +153,23 @@ function wrapLabel(text, maxChars) {
   return lines;
 }
 
-function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN }) {
-  const W = width, H = height;
+// The box the picture is shown in: the picture itself, or with a `frame` the
+// smallest box of that shape that holds it whole, with the picture centred.
+function frameBox(W0, H0, frame) {
+  const fw = Array.isArray(frame) ? Number(frame[0]) : NaN;
+  const fh = Array.isArray(frame) ? Number(frame[1]) : NaN;
+  if (!(fw > 0) || !(fh > 0)) return { W: W0, H: H0, dx: 0, dy: 0 };
+  const r = fw / fh;
+  const W = W0 / H0 < r ? Math.round(H0 * r) : W0;
+  const H = W0 / H0 < r ? H0 : Math.round(W0 / r);
+  return { W, H, dx: (W - W0) / 2, dy: (H - H0) / 2 };
+}
+
+function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null }) {
+  // W and H are the box everything is laid out around; W0 and H0 the picture
+  // inside it. With no frame they are the same, and the drawing is unchanged.
+  const W0 = width, H0 = height;
+  const { W, H, dx: picDX, dy: picDY } = frameBox(W0, H0, frame);
   const maxDim = Math.max(W, H);
 
   const fsize = Math.round(maxDim * 0.05);
@@ -271,8 +298,8 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   const ox = MXL, oy = MY;
 
   for (const o of list) {
-    o.ax = ox + (o.c.anchor[0] / 100) * W;
-    o.ay = oy + (o.c.anchor[1] / 100) * H;
+    o.ax = ox + picDX + (o.c.anchor[0] / 100) * W0;
+    o.ay = oy + picDY + (o.c.anchor[1] / 100) * H0;
   }
 
   // ── Place each label. 'sides' stacks the labels down the two side margins,
@@ -292,8 +319,8 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   } else {
     for (const o of list) {
       if (o.c.label_at) {
-        o.lx = ox + (o.c.label_at[0] / 100) * W;
-        o.ly = oy + (o.c.label_at[1] / 100) * H;
+        o.lx = ox + picDX + (o.c.label_at[0] / 100) * W0;
+        o.ly = oy + picDY + (o.c.label_at[1] / 100) * H0;
       } else {
         const dl = o.ax - ox, dr = ox + W - o.ax, dt = o.ay - oy, db = oy + H - o.ay;
         const m = Math.min(dl, dr, dt, db);
@@ -305,7 +332,7 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     }
   }
 
-  const parts = [`<image x="${ox}" y="${oy}" width="${W}" height="${H}" href="${href}"/>`];
+  const parts = [`<image x="${ox + picDX}" y="${oy + picDY}" width="${W0}" height="${H0}" href="${href}"/>`];
 
   for (const o of list) {
     const { c, ax, ay, lx, ly, side } = o;
@@ -423,6 +450,7 @@ function tightSvg(spec = {}) {
     labelMaxChars: spec.labelMaxChars != null ? spec.labelMaxChars : (isSides ? 16 : 0),
     arrow: spec.arrow != null ? spec.arrow : false,
     labelColour: spec.labelColour || undefined,
+    frame: spec.frame || null,
   });
 }
 
@@ -436,6 +464,7 @@ function cacheKey(spec = {}) {
     JSON.stringify(spec.callouts || spec.labels || []),
     spec.layout || 'auto',
     spec.marginXRatio, spec.marginYRatio, spec.labelMaxChars, spec.arrow, spec.labelColour,
+    JSON.stringify(spec.frame || null),
   ].join('|');
 }
 

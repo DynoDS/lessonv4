@@ -147,12 +147,23 @@ function placeTilted(card, w, h, cx, cy) {
 
 // Measure one card at a candidate font size: how wide it wants to be, how many
 // lines its question wraps onto, and therefore how tall it is.
-function measureCard(question, fontPt, capW, gutterW) {
+function measureCard(question, fontPt, capW, gutterW, zoneCapW) {
   const text       = question.text;
   const lineH      = (fontPt * LINE_H_RATIO) / 72;
   const variantWidths = (question.layoutTexts || [text]).map(function (variant) {
     return (plainLength(variant) * fontPt * CHAR_W_EM) / 72;
   });
+  // The aspect cap is there to make a longer question take a second line
+  // instead of running on as a long low bar. A question short enough never to
+  // wrap (a bare calculation) has no second line to take, so the cap only ever
+  // split it, which the search then paid for by stepping the type down: five
+  // starter sums on a Year 4 maths slide stopped at about 25pt in a strip
+  // across the middle of an empty body (29 September 2026). A short question's
+  // card may run as wide as the zone instead.
+  const allShort = (question.layoutTexts || [text]).every(function (variant) {
+    return plainLength(variant) <= NO_WRAP_CHARS;
+  });
+  if (allShort && Number.isFinite(zoneCapW)) capW = Math.max(capW, zoneCapW);
   const naturalW   = Math.max(...variantWidths);
   const maxTextW   = Math.max(0.4, capW - gutterW - 2 * CARD_PAD_X);
   const textW      = Math.min(naturalW, maxTextW);
@@ -220,7 +231,14 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
       : { text: entry.text, answer: '', revealed: false };
     parsed.source = entry.source;
     parsed.picture = pictures[i];
-    if (pair) parsed.layoutTexts = pair[i].map(stripLeadingLabel);
+    // With answer boxes the answer is drawn in its box, not in the line, so
+    // the answer slide's wording is measured without it, as the question is.
+    if (pair) {
+      parsed.layoutTexts = pair[i].map(function (text) {
+        const plain = stripLeadingLabel(text);
+        return answerBoxes ? splitAnswerBoxText(plain).text : plain;
+      });
+    }
     return parsed;
   });
   if (questions.length === 0) return;
@@ -234,6 +252,10 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
   const zoneH = Math.max(0.4, zone.h - 2 * PAD);
 
   const fontFloor = Math.max(CARD_FONT_MIN, MIN_FONT_PT);
+  // A set carrying pictures keeps the card aspect cap for every question: the
+  // pictures are fitted into the cards at the chosen size, and a short card
+  // grown to the zone's width would leave them no room.
+  const shortCap = !questions.some(function (q) { return !!q.picture; });
 
   // Grow the type until the block of cards fills the height it has been given,
   // then stop. Bigger type makes each card wider, which makes the set wrap into
@@ -256,7 +278,7 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
     const gutterW = badgeD + BADGE_GAP + answerGutterW;
     const aspectW  = CARD_MAX_ASPECT * oneLineH;
     const capSeed = Math.min(zoneW, aspectW);
-    const seed    = questions.map(function (q) { return measureCard(q, fontPt, capSeed, gutterW); });
+    const seed    = questions.map(function (q) { return measureCard(q, fontPt, capSeed, gutterW, shortCap ? zoneW : undefined); });
     const seedW   = seed.reduce(function (m, c) { return Math.max(m, c.w); }, 0);
     const seedH   = seed.reduce(function (m, c) { return Math.max(m, c.h); }, 0);
     const allowY  = tiltAllowance(seedW, seedH);
@@ -270,7 +292,7 @@ function drawQuestionCards(pptx, slide, zone, data, ctx) {
     gapY   = CARD_GAP_Y + 2 * allowY;
 
     const capW = Math.min(innerW, aspectW);
-    cards  = questions.map(function (q) { return measureCard(q, fontPt, capW, gutterW); });
+    cards  = questions.map(function (q) { return measureCard(q, fontPt, capW, gutterW, shortCap ? innerW : undefined); });
     rows   = packRows(cards, innerW, gapX);
     // A row's cards level up to the tallest in THAT row, not to the tallest in the
     // whole set. Levelling a row keeps it tidy; levelling the whole set would make

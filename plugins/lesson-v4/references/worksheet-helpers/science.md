@@ -82,6 +82,13 @@ need a wide line and so a big diagram. Numbered dots with a list beside them
 need about 148mm across together, half a page rather than a full one, which is
 the option to reach for when the diagram has to share a page.
 
+A tall picture is the exception: a body or a plant printed across the page can
+stand 250mm high and leave no room for anything else. Give it `"frame": [4, 3]`
+(any width-to-height shape) and the picture is fitted and centred in a box of
+that shape, never stretched, so the whole figure comes out shorter while the
+dots stay on their parts. The build reads the picture's real size from the
+file, so its size is never something to write in the spec.
+
 ---
 
 ## Sorting

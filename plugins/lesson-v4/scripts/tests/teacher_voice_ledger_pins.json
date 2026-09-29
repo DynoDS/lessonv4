@@ -6316,11 +6316,11 @@
   },
   {
    "id": "VG-K10",
-   "outcome": "unchanged in place Then, on 28 September 2026, the teacher added three more child drawings and asked for plain keys (boy-1 to boy-3, girl-1 to girl-3, Bailey) and a dog that talks; the pin follows the rewritten paragraph.",
+   "outcome": "unchanged in place Then, on 28 September 2026, the teacher added three more child drawings and asked for plain keys (boy-1 to boy-3, girl-1 to girl-3, Bailey) and a dog that talks; the pin follows the rewritten paragraph. Then, on 29 September 2026, the named characters gained grown-ups and a baby (man-1, man-2, woman-1, woman-2, old-man, old-woman, baby); the pin follows its text.",
    "present": [
     {
      "file": "references/slide-speech-and-characters.md",
-     "text": "The class characters are six children and a dog: `boy-1`, `boy-2`, `boy-3`, `girl-1`, `girl-2`, `girl-3` and `bailey`. Every speaker is one of them, carrying the lesson-designer's name for the person in `speaker.name`. Never relabel a speaker \"You\", which points the claim back at the reader instead of at a character.",
+     "text": "The class characters are six children and a dog: `boy-1`, `boy-2`, `boy-3`, `girl-1`, `girl-2`, `girl-3` and `bailey`, and the grown-ups and a baby in a lesson's story: `man-1`, `man-2`, `woman-1`, `woman-2` (a teacher, a parent, any adult), `old-man`, `old-woman` (a grandparent) and `baby`. An adult who speaks or has feelings the class judges (the teacher in a social story, a parent giving a reason) takes one of these faces, like any invented child. Every speaker is one of them, carrying the lesson-designer's name for the person in `speaker.name`. Never relabel a speaker \"You\", which points the claim back at the reader instead of at a character.",
      "section": {
       "heading": "## The named characters",
       "occurrence": 0,

@@ -214,7 +214,17 @@ const CHILDREN = {
   'boy-3':  { file: 'boy-3.png',  name: 'Boy',    aspect: 0.7497 },
   'girl-1': { file: 'girl-1.png', name: 'Girl',   aspect: 0.7482 },
   'girl-2': { file: 'girl-2.png', name: 'Girl',   aspect: 0.6544 },
-  'girl-3': { file: 'girl-3.png', name: 'Girl',   aspect: 0.76 }
+  'girl-3': { file: 'girl-3.png', name: 'Girl',   aspect: 0.76 },
+  // Grown-ups and a baby, added by the teacher on 29 September 2026 so a teacher,
+  // a parent, a grandparent or a baby in a lesson's story has a face: a PSHE
+  // social story had Mr Reed's feelings as plain text because no adult existed.
+  'man-1':     { file: 'man-1.png',     name: 'Man',   aspect: 0.8277 },
+  'man-2':     { file: 'man-2.png',     name: 'Man',   aspect: 0.919 },
+  'woman-1':   { file: 'woman-1.png',   name: 'Woman', aspect: 0.839 },
+  'woman-2':   { file: 'woman-2.png',   name: 'Woman', aspect: 0.72 },
+  'old-man':   { file: 'old-man.png',   name: 'Man',   aspect: 0.7826 },
+  'old-woman': { file: 'old-woman.png', name: 'Woman', aspect: 0.759 },
+  'baby':      { file: 'baby.png',      name: 'Baby',  aspect: 0.8431 }
 };
 // Decks saved before the rename still say `mr-sear` and `miss-brooker`; they are
 // boy 1 and girl 1, so an old deck still builds with the same faces.

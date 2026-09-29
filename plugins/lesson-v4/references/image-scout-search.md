@@ -121,7 +121,7 @@ Retry one clearly transient transport failure once, in a `retry-1` child directo
 
 If a compiled step stays unavailable after its one retry, walk on to the next step, and here alone that includes a `standby_only` rung: a source never reached has answered nothing. The schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Record the outage; never restart or re-retry it.
 
-Only with no rung left does the contract decide. When `fallback_action` is `ai`, continue to generation and report its outcome. Otherwise report `real_source_unavailable`: no substitute is authorised, and a picture invented in place of an outage would be provenance the contract refused.
+Only with no rung left does the contract decide. When `fallback_action` is `ai` and a prompt file exists, continue to generation and report its outcome. Otherwise report `real_source_unavailable`: no substitute is authorised, and an invented picture would be provenance the contract refused.
 
 ## Candidate inspection
 

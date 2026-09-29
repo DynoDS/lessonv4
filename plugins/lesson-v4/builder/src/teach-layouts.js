@@ -40,7 +40,7 @@ const SLOT_KEYS = [
 
 // Keys that belong to the whole slide and pass straight through to the expanded one.
 const PASS_THROUGH = [
-  'title', 'headerStyle', 'instruction', 'designUnitId', 'designUnitIds',
+  'title', 'headerStyle', 'instruction', 'signal', 'designUnitId', 'designUnitIds',
   'speakerNotes', 'decorations', 'representationRefs', 'successCriteriaRefs',
   'stickyKnowledgeRefs', 'photoRefs',
   // Passed through so build.js can name the `speakerNotes` rename itself.

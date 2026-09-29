@@ -64,4 +64,10 @@ function drawSignalTopRight(slide, name, box, opts) {
   return drawSignal(slide, name, { x: box.x + box.w - w - inset, y: box.y + inset, h: h });
 }
 
-module.exports = { drawSignal, drawSignalTopRight, signalWidth };
+// The signs a designer may put on a slide's header `instruction` or at the
+// start of a text card. The star is drawn by the builder on every line to
+// remember, and the flipchart on a criteria panel built live, so neither is
+// named by hand.
+const TASK_SIGNALS = new Set(['pencil', 'talk', 'magnifier', 'tick']);
+
+module.exports = { drawSignal, drawSignalTopRight, signalWidth, TASK_SIGNALS };
