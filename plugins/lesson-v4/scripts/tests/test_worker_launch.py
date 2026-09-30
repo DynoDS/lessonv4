@@ -286,14 +286,16 @@ class SpecTests(unittest.TestCase):
 
 class AuditTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.tmp = Path(__file__).resolve().parent / "_worker_launch_tmp"
-        self.tmp.mkdir(exist_ok=True)
+        # Outside the plugin, for the reason SessionChoiceTests gives.
+        import tempfile
+
+        self.tmp = Path(tempfile.mkdtemp(prefix="worker-launch-tmp-"))
         self.session = self.tmp / "rollout-test.jsonl"
 
     def tearDown(self) -> None:
-        for path in self.tmp.glob("*"):
-            path.unlink()
-        self.tmp.rmdir()
+        import shutil
+
+        shutil.rmtree(self.tmp, ignore_errors=True)
 
     def audit(self) -> subprocess.CompletedProcess:
         return run("audit", "--session", str(self.session))
@@ -427,14 +429,19 @@ class SessionChoiceTests(unittest.TestCase):
     """
 
     def setUp(self) -> None:
-        self.home = Path(__file__).resolve().parent / "_worker_launch_home"
+        # A temporary folder of its own, never one inside the plugin: other
+        # checks walk the plugin's folders, and one made and removed under them
+        # while they run side by side breaks their walk.
+        import tempfile
+
+        self.home = Path(tempfile.mkdtemp(prefix="worker-launch-home-"))
         self.sessions = self.home / "sessions" / "2026" / "08" / "31"
         self.sessions.mkdir(parents=True, exist_ok=True)
 
     def tearDown(self) -> None:
-        for path in sorted(self.home.rglob("*"), reverse=True):
-            path.unlink() if path.is_file() else path.rmdir()
-        self.home.rmdir()
+        import shutil
+
+        shutil.rmtree(self.home, ignore_errors=True)
 
     def worker_session(self, name: str, text: str) -> Path:
         path = self.sessions / name

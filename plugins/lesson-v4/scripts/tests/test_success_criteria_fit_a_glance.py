@@ -105,7 +105,7 @@ def test_review_view_surfaces_both_draw_live_decisions_and_count_cues():
 def test_guidance_puts_clarity_before_brevity_and_protects_complete_method():
     preferences = (ROOT / 'references/preferences.md').read_text(encoding='utf-8')
     assert 'as few words as possible without making the child work out what they mean' in preferences
-    assert 'There is no word target and no step target' in preferences
+    assert 'There is no word target or step target' in preferences
     assert 'repeat and call back' not in preferences
     assert 'Aim for 2-5 words' not in preferences
     assert 'Actual unreadability or insufficient working space remains a blocking fault' in preferences
@@ -116,7 +116,8 @@ def test_guidance_puts_clarity_before_brevity_and_protects_complete_method():
     assert 'Aim for 2-5 words' not in voice
     reviewer = (ROOT / 'agents/design-reviewer.md').read_text(encoding='utf-8')
     assert 'short, memorable and easy to call back' not in reviewer
-    assert "from the steps' words alone" in reviewer
+    assert 'Apply the fresh-example and relevant-variation walkthrough' in reviewer
+    assert 'Supply no missing move from adult knowledge' in preferences
     route = (ROOT / 'references/teaching-sequence-skill-based.md').read_text(encoding='utf-8')
     assert 'validator refuses a sixth' not in route
     assert 'validator refuses a step past 8' not in route
@@ -215,4 +216,4 @@ def test_guidance_says_a_lesson_label_for_something_visible_is_not_owned_vocabul
     assert 'A word the lesson brings in to name something the child can already see is not vocabulary the class owns' in voice
     assert 'says what the decision changes on the page' in voice
     designer = (ROOT / 'agents/lesson-designer.md').read_text(encoding='utf-8')
-    assert 'a child who has only the page and not your plan' in designer
+    assert 'using only the teaching and references available at that stage' in designer

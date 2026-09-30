@@ -41,8 +41,8 @@
       "supports": {
         "type": "row",
         "items": [
-          { "type": "image", "imagePath": "unsplash/mayan-glyph.jpg",   "caption": "A Mayan glyph" },
-          { "type": "image", "imagePath": "unsplash/mayan-calendar.jpg", "caption": "A Mayan calendar fragment" }
+          { "type": "image", "imagePath": "unsplash/mayan-glyph.jpg", "essential": false,   "caption": "A Mayan glyph" },
+          { "type": "image", "imagePath": "unsplash/mayan-calendar.jpg", "essential": false, "caption": "A Mayan calendar fragment" }
         ]
       },
       "speakerNotes": "Two pyramid cards on top, supporting Mayan artefacts on a row below."
@@ -96,7 +96,7 @@
       "instruction": "Hero image left, key sentence right",
       "primary": {
         "type": "image",
-        "imagePath": "unsplash/tikal-hero.jpg",
+        "imagePath": "unsplash/tikal-hero.jpg", "essential": false,
         "caption": "The Mayan city of Tikal"
       },
       "secondary": {

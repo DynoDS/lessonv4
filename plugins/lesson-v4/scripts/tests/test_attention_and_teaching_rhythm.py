@@ -109,17 +109,17 @@ class SuccessCriteriaRecede(unittest.TestCase):
             FLAT_PLAYBOOK,
         )
         self.assertIn(
-            "Put them on the slides where children are actually working to them",
+            "Put them on the slides where children are working to them",
             FLAT_PLAYBOOK,
         )
-        self.assertIn("they take a receded share", FLAT_PLAYBOOK)
+        self.assertIn("keeping the current work prominent", FLAT_PLAYBOOK)
 
     def test_completeness_is_still_protected(self) -> None:
         """Receding is position and proportion, never truncation. Removing the
         old rule must not license shortening the criteria instead."""
         self.assertIn("they stay complete and exact", FLAT_PLAYBOOK)
         self.assertIn(
-            "never a reason to shorten or compact them", FLAT_PLAYBOOK
+            "an earlier appearance never permits shortened steps", FLAT_PLAYBOOK
         )
         self.assertIn(
             "Receding is position and proportion, never truncation",
@@ -128,11 +128,15 @@ class SuccessCriteriaRecede(unittest.TestCase):
 
     def test_the_sideways_version_of_the_fault_is_named(self) -> None:
         """The panel was moved into the photograph row and took a third of it,
-        which the old rule's own advice ('place it beside the task') produced."""
-        self.assertIn("keep it the smallest column in that row", FLAT_PLAYBOOK)
+        which the old rule's own advice ('place it beside the task') produced.
+        Since 4.2.300 no share is a default: the panel is judged together with
+        the task and working surface it sits beside."""
         self.assertIn(
-            "giving it a third of a row beside two photographs children must "
-            "inspect does the same thing sideways",
+            "neither the smallest column nor half the slide is a default",
+            FLAT_PLAYBOOK,
+        )
+        self.assertIn(
+            "judge the complete panel, heading, task and working surface together",
             FLAT_PLAYBOOK,
         )
 

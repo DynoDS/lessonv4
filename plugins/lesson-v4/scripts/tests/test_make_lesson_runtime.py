@@ -703,8 +703,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 repository_text = compact_text.replace("\r\n", "\n")
                 # The slide designer's repair carries the speech guidance's
                 # own list of who opens it, word for word (the voice guide
-                # release, his decision 4), so it is allowed 200 bytes more.
-                budget = 8200 if owner == "slide-designer" else 8000
+                # release, his decision 4), and since 4.2.300 the recheck
+                # after a layout repair (reveal pairs, grouping, the drawn
+                # slide). The teacher agreed 8,800 on 30 September 2026, after
+                # its stories were moved out; the next growth means trimming.
+                budget = 8800 if owner == "slide-designer" else 8000
                 self.assertLess(len(repository_text.encode("utf-8")), budget)
                 self.assertIn(
                     f"name: {filename.removesuffix('.md')}",

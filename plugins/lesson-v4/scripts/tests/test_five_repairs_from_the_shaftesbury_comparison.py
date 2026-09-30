@@ -123,14 +123,17 @@ class OrderTheLessonTheWayAChildFollowsIt(unittest.TestCase):
 class EveryChildCanStart(unittest.TestCase):
     def test_the_support_section_prices_both_failures(self) -> None:
         preferences = flat(PREFERENCES)
-        self.assertIn("Then check the other end: can every child start?", preferences)
+        self.assertIn("Then check the other end: can every child start and say what they mean?", preferences)
         self.assertIn("what the weakest child in this class puts on the page in the first thirty seconds", preferences)
-        self.assertIn("Run it hardest on the beat the lesson turns on", preferences)
+        self.assertIn("Run this hardest on the beat the lesson turns on", preferences)
 
     def test_the_ways_in_do_not_supply_the_thought(self) -> None:
         preferences = flat(PREFERENCES)
-        self.assertIn("a way in that is not the answer", preferences)
-        self.assertIn("a stem that contains the thought is the fault this section spends its length on", preferences)
+        self.assertIn("provide a way in that leaves the thinking theirs", preferences)
+        self.assertIn(
+            "Leave the verdict, evidence selection and substantive reason for the child wherever these are the intended thinking",
+            preferences,
+        )
 
     def test_the_oversupport_rules_are_not_weakened(self) -> None:
         preferences = flat(PREFERENCES)

@@ -124,6 +124,21 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                         self.assertIn(pin["text"], home)
 
         def test_every_retired_phrase_stays_gone(self) -> None:
+            # Each file is read and flattened once for this whole check, not
+            # once per phrase, and a file reports only when it holds a phrase:
+            # every phrase is still looked for in every file it names.
+            bodies: dict[Path, str] = {}
+            lowered: dict[Path, str] = {}
+
+            def body_of(path: Path, any_case: bool) -> str:
+                if path not in bodies:
+                    bodies[path] = flat(path.read_text(encoding="utf-8"))
+                if not any_case:
+                    return bodies[path]
+                if path not in lowered:
+                    lowered[path] = bodies[path].lower()
+                return lowered[path]
+
             for row in self.pins:
                 for pin in row["absent"]:
                     # "Everywhere" means every instruction file and the pin's
@@ -138,13 +153,13 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                             self.assertFalse(own.exists(), "a file the teacher removed is back")
                     files = sorted(set(RUNTIME) | set(PROGRAMS) | {own}) if pin.get("everywhere") else [own]
                     files = [path for path in files if path.exists() or not pin.get("fileRemoved")]
+                    any_case = bool(pin.get("anyCase"))
+                    phrase = pin["text"].lower() if any_case else pin["text"]
                     for path in files:
-                        with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
-                            body = flat(path.read_text(encoding="utf-8"))
-                            if pin.get("anyCase"):
-                                self.assertNotIn(pin["text"].lower(), body.lower())
-                            else:
-                                self.assertNotIn(pin["text"], body)
+                        body = body_of(path, any_case)
+                        if phrase in body:
+                            with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
+                                self.assertNotIn(phrase, body)
 
         def test_route_rules_stay_above_the_reviewers_line(self) -> None:
             # The reviewer reads each route file only down to `## Output Format

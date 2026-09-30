@@ -85,13 +85,14 @@
       "template": "body-full",
       "headerStyle": "title",
       "title": "Image",
-      "instruction": "Placeholder shown when path does not exist",
+      "instruction": "An optional picture whose file does not exist",
       "body": {
         "type": "image",
         "imagePath": "unsplash/does-not-exist.jpg",
-        "caption": "Fallback — grey placeholder rectangle with caption"
+        "essential": false,
+        "caption": "Optional picture that could not be found"
       },
-      "speakerNotes": "Image content type with missing file — should render grey placeholder."
+      "speakerNotes": "Image content type with a missing optional file: the zone is left as clean background. A missing required picture stops the build, which test/required-picture-publication.test.js checks."
     }
   ]
 }

@@ -28,7 +28,7 @@ You do not own pedagogy. Do not change a question, example, answer, success crit
 
 **One exception: a picture the assignment names as terminally unavailable.** That file will never exist, so keeping the reference loses the deck rather than protecting it. Re-point it at a picture this run published or a supported helper, or compose the beat without the image; keep the teaching it carried, change nothing else. Any other picture stays exactly as it is.
 
-The missing picture never becomes a sentence saying what it showed. When the child's task was to read something off that photograph, a caption such as `New photograph evidence: boats and riverfront buildings stand beside the river` has done the task for them (a Year 4 class met exactly that under "find one human feature"). A substitute photograph carries the evidence; words describing it hand over the answer. Use a published photograph of the same kind of thing and keep the task; caption it only with where or which it is (`Iquitos, Peru`, `Photograph B`); let the speaker script say what children would have seen. If nothing keeps the child's thinking, leave it unrepaired and say which decision the lesson designer needs.
+The missing picture never becomes a sentence saying what it showed. When the child's task was to read something off that photograph, a caption such as `Boats and riverfront buildings stand beside the river` has done the task for them. A substitute photograph carries the evidence; words describing it hand over the answer. Use a published photograph of the same kind of thing and keep the task; caption it only with where or which it is (`Iquitos, Peru`, `Photograph B`); let the speaker script say what children would have seen. If nothing keeps the child's thinking, leave it unrepaired and say which decision the lesson designer needs.
 
 ## Start narrow
 
@@ -74,9 +74,7 @@ Require `REPAIR_SCOPE_OK` and return that line with your repair-impact fields.
 `REPAIR_SCOPE_FAILED` names a content object that arrived and did not leave. You
 may move one, split it across slides, change its template or rebuild the layout
 around it; you may not finish with fewer of the things children read, work from
-or write into than you were handed. A compare-two-objects slide once went in
-with a two-row recording table and came out with one column of boxes: every
-check passed, and the comparison was gone. The failure prints what to do next.
+or write into than you were handed. The failure prints what to do next.
 
 ## Repair and check
 
@@ -84,7 +82,7 @@ Change only the affected slide data and unavoidable consequences of that change.
 
 After a layout repair, recheck the resulting task relationships, not only text survival: a shared prompt still governs the same coherent set, and labels still name genuine tasks. If either state of an ordinary question/answer pair changes layout, repair its counterpart consequentially and verify shared geometry, item identity and static content under the playbook's continuity rule. Inspect the repaired rendered slide or pair using the assignment's render route; if page evidence is unavailable, report that limit rather than claiming a visual check.
 
-When the repair splits a Teach unit across two slides, the split falls where the teaching turns, never at the page boundary, and to the shape the rule sets out (`slide-composition-playbook.md` → `A Teach beat splits where its teaching turns`). A half the check refuses was cut in the wrong place, not short of room.
+When the repair splits a Teach unit, the split falls where the teaching turns, never at the page boundary (`slide-composition-playbook.md` → `A Teach beat splits where its teaching turns`); a half the check refuses was cut in the wrong place, not short of room.
 
 Repair with the layout's own levers, not with side effects. When a reference panel or table is too small to read, the first move is re-shaping - a side panel in a row instead of a full-width band under the task, a tighter card, a different template - not growing its share of the stack, which squeezes the task the reference serves. And never repair through an undocumented accident of the renderer (a whitespace value that flips an allocation branch): a lever the contract does not name is a lever the next engine change silently removes.
 

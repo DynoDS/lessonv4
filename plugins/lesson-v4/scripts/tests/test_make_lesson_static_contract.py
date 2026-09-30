@@ -725,7 +725,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             reviewer,
         )
         self.assertIn(
-            "rather than a list of facts or a lesson outline",
+            "rather than facts or a lesson outline",
             reviewer,
         )
 

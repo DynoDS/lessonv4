@@ -92,13 +92,19 @@ class EveryColourRowIsStillInItsHome(unittest.TestCase):
                     self.assertIn(pin["text"], {flat(x) for x in raw.split("\n\n")})
 
     def test_every_retired_phrase_stays_gone(self) -> None:
+        # Each file is read and flattened once for this check, not once per
+        # phrase; a file reports only when it holds a phrase.
+        bodies: dict[Path, str] = {}
         for row in self.pins:
             for pin in row["absent"]:
                 own = ROOT / pin["file"]
                 files = sorted(set(RUNTIME) | set(PROGRAMS) | {own}) if pin.get("everywhere") else [own]
                 for path in files:
-                    with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
-                        self.assertNotIn(pin["text"], flat(path.read_text(encoding="utf-8")))
+                    if path not in bodies:
+                        bodies[path] = flat(path.read_text(encoding="utf-8"))
+                    if pin["text"] in bodies[path]:
+                        with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
+                            self.assertNotIn(pin["text"], bodies[path])
 
     def test_the_home_holds_exactly_its_paragraphs(self) -> None:
         for home in self.data["homes"]:

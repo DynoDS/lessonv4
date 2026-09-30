@@ -129,6 +129,9 @@ class EveryLedgerRowIsStillInItsHome(unittest.TestCase):
                     self.assertIn(pin["text"], home)
 
     def test_every_retired_phrase_stays_gone(self) -> None:
+        # Each file is read and flattened once for this check, not once per
+        # phrase; a file reports only when it holds a phrase.
+        bodies: dict[Path, str] = {}
         for row in self.pins:
             for pin in row["absent"]:
                 if pin.get("fileRemoved"):
@@ -144,8 +147,11 @@ class EveryLedgerRowIsStillInItsHome(unittest.TestCase):
                 reach = RUNTIME + ([] if story else PROGRAMS)
                 files = reach if pin.get("everywhere") else [ROOT / pin["file"]]
                 for path in files:
-                    with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
-                        self.assertNotIn(pin["text"], flat(path.read_text(encoding="utf-8")))
+                    if path not in bodies:
+                        bodies[path] = flat(path.read_text(encoding="utf-8"))
+                    if pin["text"] in bodies[path]:
+                        with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
+                            self.assertNotIn(pin["text"], bodies[path])
 
     def test_the_vocabulary_homes_hold_exactly_their_paragraphs(self) -> None:
         # Nothing added round a rule to negate it, nothing reordered so that
